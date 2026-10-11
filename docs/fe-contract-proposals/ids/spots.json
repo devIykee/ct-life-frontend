@@ -1,8 +1,8 @@
 {
   "_owner": "FE",
   "_provisional": true,
-  "version": "1.0.0-rc1+fe.2",
-  "_note": "FE-owned registry (contract section 2). Proposed as an ADDITIVE replacement of contract/ids/spots.json: every id in contract-v1.0.0-rc1 is kept unchanged; new ids are appended. Never renamed. Spot ids are global (venueId.spotId), as the rc1 venue room expects for `sit`. Each spot carries its venue-local position (x, z metres; rotY radians; x right, z forward) and, if claimable with `sit`, the clip the server should set (`anim`: act_sit / act_type); FE walkable rectangles match the venue scenes. Kinds kept from rc1 where the id existed. fe.2 (venue builder, 2026-10-08): additive spots for the venue dioramas; new sets checker_kiosk, yacht_club, penthouse_row.",
+  "version": "1.0.0-rc1+fe.3",
+  "_note": "FE-owned registry (contract section 2). Proposed as an ADDITIVE replacement of contract/ids/spots.json: every id in contract-v1.0.0-rc1 is kept unchanged; new ids are appended. Never renamed. Spot ids are global (venueId.spotId), as the rc1 venue room expects for `sit`. Each spot carries its venue-local position (x, z metres; rotY radians; x right, z forward) and, if claimable with `sit`, the clip the server should set (`anim`: act_sit / act_type); FE walkable rectangles match the venue scenes. Kinds kept from rc1 where the id existed. fe.2 (venue builder, 2026-10-08): additive spots for the venue dioramas; new sets checker_kiosk, yacht_club, penthouse_row. fe.3 (integration lead, 2026-10-08): builder_hills set for Phase 5 (Ventures): project_board opens the project board and hq_door the project HQ (both `stand`, mapped to the Builder app by VenturesSpots). Positions are proposals: there is no Builder Hills scene yet, so the venue lane places the anchors when it builds the venue.",
   "units": "metres, radians; venue-local; x right, z forward",
   "venues": {
     "timeline_square": {
@@ -2742,6 +2742,53 @@
           "x": -5,
           "z": -5.4,
           "rotY": 3.142
+        }
+      ]
+    },
+    "builder_hills": {
+      "walkable": [
+        {
+          "x0": -12,
+          "z0": -10,
+          "x1": 12,
+          "z1": 10
+        }
+      ],
+      "spots": [
+        {
+          "id": "builder_hills.entrance",
+          "kind": "exit",
+          "x": 0,
+          "z": -9,
+          "rotY": 0
+        },
+        {
+          "id": "builder_hills.exit",
+          "kind": "exit",
+          "x": 0,
+          "z": -10,
+          "rotY": 3.142
+        },
+        {
+          "id": "builder_hills.center",
+          "kind": "stand",
+          "x": 0,
+          "z": 0,
+          "rotY": 0.0
+        },
+        {
+          "id": "builder_hills.project_board",
+          "kind": "stand",
+          "x": -6,
+          "z": 7,
+          "rotY": 0.0
+        },
+        {
+          "id": "builder_hills.hq_door",
+          "kind": "stand",
+          "x": 6,
+          "z": 9,
+          "rotY": 0.0
         }
       ]
     }

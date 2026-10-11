@@ -19,6 +19,8 @@ namespace CTLife.UI
         public static Func<string, string, Action, VisualElement> PlayerActions;
         /// <summary>Set by the composition root (City Life): knock on a player's home.</summary>
         public static Action<string, string> VisitHome;
+        /// <summary>Extra NPC actions (archetypeId, npcId, close), e.g. Phase 6 "Talk" for the AI Agent and Sleuth; null = none.</summary>
+        public static Func<string, string, Action, VisualElement> NpcActions;
 
         private readonly VisualElement _layer;
         private readonly Subscriptions _subs = new Subscriptions();
@@ -123,6 +125,8 @@ namespace CTLife.UI
                     Close(sheet);
                 }, "ct-btn ct-btn-danger"));
             }
+            var talk = NpcActions?.Invoke(s.archetypeId, s.npcId, () => Close(sheet));
+            if (talk != null) sheet.Add(talk);
             sheet.Add(El.Btn(Strings.T("common.close"), () => Close(sheet), "ct-btn ct-btn-ghost"));
         }
 

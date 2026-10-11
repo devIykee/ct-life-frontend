@@ -7,11 +7,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using CTLife.Careers;
 using CTLife.CityLife;
+using CTLife.Competition;
 using CTLife.Core;
 using CTLife.Economy;
 using CTLife.Net;
 using CTLife.Realtime;
 using CTLife.SocialFeatures;
+using CTLife.Ventures;
 using CTLife.World;
 using RetainedKey = CTLife.SocialFeatures.RetainedKey;
 using Newtonsoft.Json.Linq;
@@ -23,7 +25,9 @@ namespace CTLife.App.Dev
     /// Development-only feature pass against the real backend, through the same lane APIs the phone apps call.
     /// Runs in the editor (Tests/Integration) and on a dev APK (launch extra `integration=1`, optional `peer=<userId>`),
     /// writes `persistentDataPath/integration-features.json` and logs one `CTLIFE [probe]` line per feature.
-    /// Result: pass | fail | blocked (the backend lacks or breaks what the feature needs; item = backend-dev-feedback #).
+    /// Result: pass | fail | blocked (the backend lacks or breaks what the feature needs; item = backend-dev-feedback #) |
+    /// n/a (Phase 5/6 proposal route this backend does not serve yet: 404 without a contract body, 405 or 501, which the
+    /// apps show as "Not available yet").
     /// Never signs a transaction and never fakes a server response.
     /// </summary>
     public static class FeatureProbe
@@ -139,11 +143,74 @@ namespace CTLife.App.Dev
                 if (list == null || list.Count == 0) return Pass("no live bookings");
                 return list.All(a => a["imageUrl"] != null) ? Pass(list.Count + " creatives") : Blocked("66", "creatives without imageUrl");
             });
+            await CheckVentures(rest, ct);
+            await CheckCompetition(rest, peerUserId, ct);
             await CheckVenues(ct);
             subs.Dispose();
             Save();
             return new List<Row>(Rows);
         }
+
+        /// <summary>Phase 5 (Ventures lane): Ad Desk, Builder Hills projects, VC Row, through the lane's own API classes.</summary>
+        private static async Task CheckVentures(IRestClient rest, CancellationToken ct)
+        {
+            var ads = new AdsApi(rest, null);
+            var projects = new ProjectsApi(rest);
+            string Key() => Guid.NewGuid().ToString("D");
+            await Proposal("ventures.ad_slots", async () => { var l = await ads.Slots(ct); return Pass(l.Items.Count + " slots, " + l.Skipped + " skipped"); });
+            await Proposal("ventures.ad_bookings", async () => { var pg = await ads.Bookings(null, ct); return Pass("GET /ads/bookings: " + pg.Items.Count); });
+            string projectId = null;
+            await Proposal("ventures.project_create", async () =>
+            {
+                var created = await projects.Create(ProjectsApi.CreateBody("memecoin", "Probe " + DateTime.UtcNow.ToString("HHmmss"), null), Key(), ct);
+                projectId = created.ProjectId;
+                return Pass("project " + created.ProjectId + " (" + created.Kind + ")");
+            }, e => e.Is("VALIDATION_FAILED") && ((string)e.Details?["reason"] ?? "").Contains("insufficient cash") ? "77" : null);
+            await Proposal("ventures.projects_mine", async () => { var pg = await projects.List("mine", null, ct); return Pass(pg.Items.Count + " of mine"); });
+            await Proposal("ventures.project_detail", async () =>
+            {
+                if (projectId == null) return NotYet("no project to read");
+                var d = await projects.Detail(projectId, ct);
+                return Pass("detail " + d.Project?.ProjectId);
+            });
+            await Proposal("ventures.hire_offers", async () => { var pg = await projects.MyOffers(null, ct); return Pass(pg.Items.Count + " offers"); });
+            await Proposal("ventures.vc_deals", async () => { var pg = await projects.VcDeals(null, ct); return Pass(pg.Items.Count + " deals"); });
+        }
+
+        /// <summary>Phase 6 (Competition lane): league, tribes, districts, beef, farm/sybil, cabal, NPC chat quota, X link.</summary>
+        private static async Task CheckCompetition(IRestClient rest, string peerUserId, CancellationToken ct)
+        {
+            var api = new CompetitionApi(rest);
+            await Proposal("competition.tribes", async () => Pass((await api.Tribes(ct)).Count + " tribes"));
+            await Proposal("competition.districts", async () => Pass((await api.Districts(ct)).Count + " districts"));
+            await Proposal("competition.leagues", async () => Pass((await api.Leagues(ct)).Count + " leagues"));
+            await Proposal("competition.my_league", async () => { var m = await api.MyLeague(ct); return Pass("league " + Json.Serialize(m)); });
+            await Proposal("competition.beef_list", async () => { var pg = await api.BeefList("mine", null, null, ct); return Pass("GET /beef: " + Json.Serialize(pg)); });
+            await Proposal("competition.beef_open", async () =>
+            {
+                if (string.IsNullOrEmpty(peerUserId)) return Fail("no peer user id");
+                var body = CompetitionApi.BeefOpenBody(100, CompStrings.BeefTopics[0], peerUserId);
+                var m = await api.OpenBeef(body, Guid.NewGuid().ToString("D"), ct);
+                return Pass("beef " + m.MatchId + " " + m.Status);
+            });
+            await Proposal("competition.beef_elo", async () => Pass("elo " + Json.Serialize(await api.Elo(null, ct))));
+            await Proposal("competition.farm", async () => Pass("farm " + Json.Serialize(await api.Farm(ct))));
+            await Proposal("competition.sybil_status", async () => Pass("sybil " + Json.Serialize(await api.Sybil(ct))));
+            await Proposal("competition.venue_access", async () => Pass("dubai_marina " + Json.Serialize(await api.Access("dubai_marina", ct))));
+            await Proposal("competition.cabal", async () => Pass("cabal " + Json.Serialize(await api.MyCabal(ct))));
+            await Proposal("competition.cabal_invites", async () => Pass((await api.CabalInvites("guest", ct)).Count + " invites"));
+            await Proposal("competition.llm_quota", async () => Pass("quota " + Json.Serialize(await api.Quota(ct))));
+            await Proposal("competition.x_link", async () => Pass("x link " + Json.Serialize(await api.XLink(ct))));
+        }
+
+        /// <summary>A Phase 5/6 proposal call: a route this backend does not serve yet is "n/a" (the app shows "Not available yet").</summary>
+        private static Task Proposal(string feature, Func<Task<(string result, string detail, string item)>> body, Func<ApiException, string> blockedBy = null) =>
+            Check(feature, async () =>
+            {
+                try { return await body(); }
+                catch (ApiException e) when (RouteMissing(e) || e.Status == 405 || e.Status == 501) { return NotYet(e.Status + " " + e.ServerMessage); }
+                catch (ApiException e) when (blockedBy?.Invoke(e) is string item) { return Blocked(item, e.Code + " " + e.Status + ": " + e.Details?.ToString(Newtonsoft.Json.Formatting.None)); }
+            });
 
         private static async Task CheckVenues(CancellationToken ct)
         {
@@ -178,6 +245,7 @@ namespace CTLife.App.Dev
         private static (string result, string detail, string item) Pass(string d) => ("pass", d, null);
         private static (string result, string detail, string item) Fail(string d) => ("fail", d, null);
         private static (string result, string detail, string item) Blocked(string item, string d) => ("blocked", d, item);
+        private static (string result, string detail, string item) NotYet(string d) => ("n/a", d, null);
 
         private static bool RouteMissing(ApiException e) => e.Status == 404 && (e.ServerMessage ?? "").Contains("No route");
 

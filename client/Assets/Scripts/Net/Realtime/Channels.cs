@@ -81,6 +81,7 @@ namespace CTLife.Net
             On<CallInviteMessage>("call_invite", m => { CallInvite?.Invoke(m); Bus.Publish(m); });
             On<KickedMessage>("kicked", m => { Kicked?.Invoke(m); Bus.Publish(m); });
             On<ToastMessage>("toast", m => Bus.Publish(ToastSignal.Id(m.textId, m.@params)));
+            foreach (var t in RawRoomMessages.CityTypes) { var type = t; On<Dictionary<string, object>>(type, m => RawRoomMessages.Publish(type, m)); }
 
             var cb = Callbacks.Get(Room);
             Track(cb.OnChange(Room.State, ReadRoot));
@@ -170,6 +171,7 @@ namespace CTLife.Net
         {
             On<SaidMessage>("said", m => { Said?.Invoke(m); Bus.Publish(m); });
             On<ToastMessage>("toast", m => Bus.Publish(ToastSignal.Id(m.textId, m.@params)));
+            foreach (var t in RawRoomMessages.VenueTypes) { var type = t; On<Dictionary<string, object>>(type, m => RawRoomMessages.Publish(type, m)); }
 
             var cb = Callbacks.Get(Room);
             _players = new DynamicMapMirror<PlayerState>();

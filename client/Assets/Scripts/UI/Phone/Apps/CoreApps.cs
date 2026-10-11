@@ -153,6 +153,9 @@ namespace CTLife.UI
     {
         private readonly Action _signOut;
         public SettingsApp(Action signOut) { _signOut = signOut; }
+
+        /// <summary>An extra settings section from a feature lane (Phase 6 verified X link); null = none.</summary>
+        public static Func<VisualElement> ExtraSection;
         public override string Id => "settings";
         public override string Title => Strings.T("app.settings");
         public override string Color => "#4b6584";
@@ -187,6 +190,7 @@ namespace CTLife.UI
                 page.Add(Slider(Strings.T("settings.voice"), am.voiceVolume, v => am.voiceVolume = v));
                 page.Add(Slider(Strings.T("settings.ambience"), am.ambienceVolume, v => am.ambienceVolume = v));
             }
+            var extra = ExtraSection?.Invoke(); if (extra != null) page.Add(extra);
             page.Add(AssetCredits.Build());
             page.Add(El.Text(Strings.F("settings.version", Semver.ClientVersion), "ct-small ct-muted"));
             page.Add(El.Btn(Strings.T("settings.signout"), () => { Phone.Close(); _signOut?.Invoke(); }, "ct-btn ct-btn-danger", sfx: null));

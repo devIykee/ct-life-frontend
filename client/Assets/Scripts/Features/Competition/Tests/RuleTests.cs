@@ -13,6 +13,7 @@ namespace CTLife.Competition.Tests
             CompErrors.From(new ApiException(status, code, "msg", details, network), write);
 
         [Test] public void MissingRouteIsUnavailable() { Assert.IsTrue(E(404, "HTTP_404").IsUnavailable); Assert.IsTrue(E(405, "HTTP_405").IsUnavailable); Assert.IsTrue(E(501, "HTTP_501").IsUnavailable); }
+        [Test] public void ServerNoRouteIsUnavailable() { Assert.IsTrue(CompErrors.From(new ApiException(404, "NOT_FOUND", "No route for this path and method."), false).IsUnavailable); }
         [Test] public void ContractNotFoundIsNotUnavailable() { var e = E(404, "NOT_FOUND"); Assert.IsFalse(e.IsUnavailable); Assert.AreEqual("err.notFound", e.Key); }
         [Test] public void UnavailableMessageSaysNotAvailable() => StringAssert.Contains("Not available", E(404, "HTTP_404").Message);
         [Test] public void LlmDisabledIsItsOwnState() { var e = E(503, "LLM_DISABLED"); Assert.IsFalse(e.IsUnavailable); Assert.AreEqual("err.llmDisabled", e.Key); }

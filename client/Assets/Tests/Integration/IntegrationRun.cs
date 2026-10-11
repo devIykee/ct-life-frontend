@@ -7,12 +7,14 @@ using CTLife.App;
 using CTLife.Core;
 using CTLife.Net;
 using CTLife.Realtime;
+using CTLife.UI;
 using CTLife.World;
 using Newtonsoft.Json.Linq;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UIElements;
 
 namespace CTLife.Tests.Integration
 {
@@ -236,6 +238,46 @@ namespace CTLife.Tests.Integration
             var rows = await CTLife.App.Dev.FeatureProbe.Run(botUser, default);
             Features.Clear();
             foreach (var r in rows) Features.Add(r.ToJson());
+
+            // Phase 5/6 apps through the real catalog and phone: each must open without an error; a route this backend lacks
+            // must say "Not available yet" (n/a), never show invented data.
+            Features.AddRange(await OpenApps("ads", "builder", "vc", "league", "beef", "farm", "cabal", "npcchat", "xlink"));
+        }
+
+        private static async Task<List<JObject>> OpenApps(params string[] ids)
+        {
+            var rows = new List<JObject>();
+            var layer = UiRoot.Instance != null ? UiRoot.Instance.PhoneLayer : null;
+            if (layer == null) { rows.Add(AppRow("apps", "fail", "no phone layer")); return rows; }
+            var phone = new PhoneShell(layer);
+            try
+            {
+                PhoneCatalog.Register(phone, _ => { }, () => { });
+                foreach (var id in ids)
+                {
+                    var errors = new List<string>();
+                    void OnLog(string msg, string stack, LogType type) { if (type == LogType.Exception || type == LogType.Error) errors.Add(msg); }
+                    Application.logMessageReceived += OnLog;
+                    try { phone.Open(id); await Task.Delay(4000); }
+                    catch (Exception e) { errors.Add(e.GetType().Name + ": " + e.Message); }
+                    finally { Application.logMessageReceived -= OnLog; }
+                    var text = string.Join(" | ", layer.Query<TextElement>().ToList()
+                        .Where(t => t.resolvedStyle.display != DisplayStyle.None && !string.IsNullOrWhiteSpace(t.text)).Select(t => t.text.Trim()));
+                    bool notYet = text.IndexOf("Not available yet", StringComparison.OrdinalIgnoreCase) >= 0;
+                    string result = errors.Count > 0 ? "fail" : notYet ? "n/a" : "pass";
+                    rows.Add(AppRow("app." + id, result, (errors.Count > 0 ? "ERROR " + errors[0] + " || " : "") + text));
+                    phone.Close();
+                }
+            }
+            finally { phone.Dispose(); }
+            return rows;
+        }
+
+        private static JObject AppRow(string feature, string result, string detail)
+        {
+            if (detail != null && detail.Length > 400) detail = detail.Substring(0, 400);
+            Debug.Log($"CTLIFE [integration] {feature}: {result} {detail}");
+            return new JObject { ["feature"] = feature, ["result"] = result, ["detail"] = detail, ["item"] = null };
         }
 
         private static void Finish(string fatal)

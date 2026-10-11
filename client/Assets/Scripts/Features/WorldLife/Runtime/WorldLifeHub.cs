@@ -23,6 +23,9 @@ namespace CTLife.WorldLife
         private readonly NpcPresenter _presenter;
         private readonly MomentStage _stage;
         private readonly LiveSurfaces _surfaces;
+
+        /// <summary>Phase 5 `ads_changed`: reload the venue ad creatives now instead of at the next poll.</summary>
+        public void RefreshAds() => _surfaces.RefreshAdsNow();
         private readonly Subscriptions _subs = new Subscriptions();
         private readonly ConfigStore _config;
         private readonly HashSet<string> _seenEvents = new HashSet<string>(StringComparer.Ordinal);

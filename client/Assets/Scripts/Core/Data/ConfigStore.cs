@@ -180,6 +180,8 @@ namespace CTLife.Core
             MergeRegistry(ids, "archetypes", r["archetypes"], null);
             MergeRegistry(ids, "tribes", r["tribes"], null);
             MergeRegistry(ids, "items", r["items"], null);
+            MergeRegistry(ids, "ad_rejection_reasons", r["ad_rejection_reasons"], null);   // Phase 5 (Ventures labels)
+            MergeRegistry(ids, "project_events", r["project_events"], null);
 
             var lines = r["npc_lines"] ?? r["npcLines"];
             if (lines is JObject lo && lo.Count > 0)

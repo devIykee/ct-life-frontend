@@ -118,6 +118,14 @@ namespace CTLife.Ventures.Tests
         }
 
         [Test]
+        public void ServerNoRoute_IsUnavailable()
+        {
+            var e = VErrors.From(new ApiException(404, "NOT_FOUND", "No route for this path and method."), false);
+            Assert.IsTrue(e.IsUnavailable);
+            Assert.AreEqual("err.unavailable", e.Key);
+        }
+
+        [Test]
         public void ContractNotFound_IsNotUnavailable()
         {
             var e = VErrors.From(new ApiException(404, "NOT_FOUND", "no such booking"), false);

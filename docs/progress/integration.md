@@ -1,4 +1,4 @@
-READY TO COMMIT (device round on dev 456ad50): client/Assets/Scripts/UI/El.cs, docs/progress/integration.md. Commit message: "fix(ui): buttons no parent sizes keep their text width (connection-retry Try again); device round: venues, release size, EditMode". Checks: compile_check dev/release/editor 0 errors; EditMode 793/793; Seeker retry screen verified.
+READY TO COMMIT (Phase 5/6 wiring on dev 059d16f): client/Assets/Scripts/App/{CTLife.App.asmdef,PhoneCatalog.cs,FlowController.cs,Dev/FeatureProbe.cs}, client/Assets/Scripts/Net/Realtime/{Channels.cs,RawRoomMessages.cs,RawRoomMessages.cs.meta}, client/Assets/Scripts/Core/{Data/ConfigStore.cs,Env/LaunchArgs.cs}, client/Assets/Scripts/UI/{Overlays/ProfileCard.cs,Phone/Apps/CoreApps.cs,Text/Strings.cs}, client/Assets/Scripts/Features/WorldLife/Runtime/{LiveSurfaces.cs,WorldLifeHub.cs}, client/Assets/Scripts/Features/Competition/{Logic/CompErrors.cs,Tests/RuleTests.cs}, client/Assets/Scripts/Features/Ventures/{Logic/VErrors.cs,Tests/WireAndErrorTests.cs}, client/Assets/Tests/Integration/IntegrationRun.cs, client/Assets/Resources/Contract/config_snapshot.json, docs/fe-contract-proposals/ids/spots.json, docs/progress/{integration,backend-dev-feedback,requests}.md. NOT mine, leave out: client/Assets/Art/characters/cast/materials/snow_everyday.mat (Unity filled _MainTex on import). Commit message: "integration: wire Phase 5 ventures and Phase 6 competition; missing routes say Not available yet". Checks: compile_check dev/release/editor 0 errors; lane runners Competition 225/225, Ventures 283/283; editor integration 13/13 core + Phase 5/6 rows; Seeker smoke 7/9 apps.
 
 # Integration lead log
 
@@ -127,6 +127,18 @@ backend gap, item N in `backend-dev-feedback.md`; no client workaround fakes ser
 | Chat with soft keyboard, emote labels | – | pass (panel docks above keyboard; labels readable) |
 | Proximity voice (local LiveKit, dev token; no /rtc/token #40) | – | mic track published (audio/red), seen by LiveKit |
 | EditMode tests (Unity) | 792/792 | – |
+| Ventures: Ad Desk (slots, bookings) | pass (4 slots, 0 bookings) | pass: opens, slots and kinds listed |
+| Ventures: Builder Hills projects | create blocked #77 (seed $500, $339 cash, VALIDATION_FAILED); list/offers n/a #78 | pass: opens, "Not available yet" |
+| Ventures: VC Row | n/a #78 (no `GET /vc-row/deals`) | pass: opens, "Not available yet" |
+| Ventures: Hire on profile card | wired (copies the player id, opens Builder); not exercised, hire offers n/a | – |
+| Ventures: ads_changed → live ad refresh; spot links | wired; server sends no `ads_changed` #80; `builder_hills` spots fe.3 have no scene yet | – |
+| Competition: League, tribes, leagues | pass (7 tribes, 5 leagues, no membership before rollover); 0 districts #79 | pass: "No league yet", tabs |
+| Competition: Beef | open pass (stake, topic, invited peer → `open`); Elo pass; list n/a #79 | pass: opens, list "Not available yet" |
+| Competition: Farm / Sybil Barn | n/a #79 (`/airdrop/farm`, `/me/sybil-status`) | pass: "Not available yet", Check again |
+| Competition: Cabal, gated venues | invites pass (0); `/me/cabal`, `/venues/{id}/access` n/a #79 (gate falls through; the room decides) | pass: "Not available yet" |
+| Competition: NPC Chat (AI Agent, Sleuth; profile "Talk") | quota n/a #79; app opens, input says "Not available yet" | not captured (carrier USSD dialog over the app) |
+| Competition: X link (Settings section + app) | `GET /x/link` pass (not linked); app opens | not captured (adb server restarts) |
+| Competition: raw room messages, sybil kick → Sybil Barn | wired (14 city types, 2 venue types); server sends none #80 | – |
 
 APK (local dev, all lanes + 18 venues + 4 homes): 183.8 MiB (budget 150; was 159.5 before the venue merge).
 Audio payload measured 20.9 MB `.resource` (audio lane estimate 20.5-21.3; was 36.7 before the import policy).
@@ -407,6 +419,65 @@ The dev APK's file size is not a usable metric this round. It holds 171.9 MiB of
 ### 4. EditMode suite
 **793/793 passed** (7 assemblies, same `-assemblyNames` as last round; was 792/792). Results:
 `../ct-life-evidence/perf-venues-20261008/editmode-results.xml`.
+
+## 2026-10-08: Phase 5/6 wiring (dev 059d16f)
+
+Both lanes' requests are wired (requests.md "2026-10-08 phase5-ventures" and "phase6-competition"):
+- **App asmdef:** references `CTLife.Features.Ventures` and `CTLife.Features.Competition`.
+- **PhoneCatalog:**
+  - Ad Desk (`ads`, same id as the old tile), Builder (`builder`), VC Row (`vc`).
+  - League (`league`), Beef, Farm, Cabal, Chat (`npcchat`), X link.
+- **Raw room messages:** one forwarder, `Net/Realtime/RawRoomMessages.cs`, takes both lanes' types. The city room carries
+  5 Phase 5 and 9 Phase 6 types; venue rooms carry `beef_update`/`beef_result`.
+  - FlowController sends each message to `VenturesRealtime.Dispatch` first and gives the rest to `CompetitionRuntime.OnRaw`.
+  - Each lane ignores types that aren't its own.
+- **FlowController:**
+  - `CompetitionRuntime.Bind`/`Unbind` and `CompetitionLinks.OpenApp` set and cleared with gameplay.
+  - The pre-join gate in `Travel` (dubai_marina / cabal_lounge / sybil_barn); "null" means the room decides.
+  - Join-rejection wording for the three gate codes, found anywhere in the join error chain. A refused join shows the
+    reason and stays put instead of entering offline.
+  - `kicked {sybil_jailed}` sends the player to the Sybil Barn instead of signing out.
+  - `AdsChangedSignal` → `WorldLifeHub.RefreshAds()` (the WorldLife lane's two one-line methods, as requested).
+  - `VenturesSpotLinks` added as an overlay.
+- **ProfileCard:**
+  - Players get Social + Competition (Beef, Cabal) + Ventures Hire. Hire copies the player id and opens Builder, because
+    the lane has no prefill hook.
+  - NPCs get "Talk" for the AI Agent and Sleuth (`ProfileCard.NpcActions`).
+- **Settings:** `SettingsApp.ExtraSection` = `XLinkPanel.Build`.
+- **Config:** `ConfigStore` merges `ad_rejection_reasons` and `project_events` when the server serves them.
+- **Spots:** `builder_hills` set added as **fe.3**, additive, in `docs/fe-contract-proposals/ids/spots.json` and the client
+  snapshot:
+  - entrance/exit/center plus `builder_hills.project_board` and `builder_hills.hq_door` (stand).
+  - [Proposal] Positions only: there is no Builder Hills scene yet, so the venue lane places the anchors.
+- **Skipped as asked (stubs):** project HQ presenter, creative picker, city-map district flags, Ratio Arena board lines.
+
+**Fix found by the run: "Not found." instead of "Not available yet".**
+- This backend answers an unknown route with the contract body `404 NOT_FOUND "No route for this path and method."`.
+  Both lanes counted only a 404 *without* that body as a missing route.
+- `CompErrors` and `VErrors` now also treat that exact server message as unavailable. A real `NOT_FOUND` keeps its
+  meaning. One test was added per lane; the lane runners pass 225/225 and 283/283.
+- Backend ask #81.
+
+**Editor integration.**
+- `tools/integration/run_editor_integration.sh` gives 13/13 core checks; venue isolation is still blocked by #39.
+- Phase 5/6 feature rows come from `FeatureProbe`: the lanes' APIs, with "n/a" meaning "not available yet".
+- Every new app is opened through the real catalog and phone (`IntegrationRun.OpenApps`). All 9 open without errors, and
+  the missing routes show "Not available yet" (0 "Not found.").
+- Receipt: `../ct-life-evidence/integration/editor-20261008-070316/receipt.json`.
+
+**Seeker smoke** (dev APK env=local, dev account): a new dev-only launch extra `app=<id>` opens a phone app after entering
+the city (`seeker_launch.sh -e autoenter 1 -e app beef`).
+- Results:
+  - Ad Desk, Builder, VC Row, League, Beef, Farm and Cabal open; missing routes say "Not available yet".
+  - Chat and X link weren't captured. A carrier USSD dialog (data-balance menu) appeared over the screen during the Chat
+    run and is still on screen; I didn't touch it. The adb server was also restarted repeatedly; [Inference] Android
+    Studio, which the user has open, is restarting it.
+- Characters are still in T-pose (the feel fix isn't merged; ignored as asked).
+- [Unverified] Each smoke launch logged an async exception stack before the app opened. Its message wasn't captured, and
+  the editor runs log no error in these apps.
+- Evidence: `../ct-life-evidence/phase56-20261008/app-*.png`.
+
+**Backend:** items #77–#81 added to `backend-dev-feedback.md` (verified live; lanes' unprobed rows stay in their logs).
 
 ## Status
 

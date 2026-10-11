@@ -493,3 +493,29 @@ Helper scripts: frontend `tools/backend-local/{up,down}.sh`. Every item below re
     `POST /v1/market/trades {coinId, side:"buy", cashCents:500, maxSlippageBps:10000}` →
     `SLIPPAGE_EXCEEDED {expected:"1000000", actual:"40833374"}` (also at 500 and 2000 bps). The execution price for a
     $5 buy is 40.8× the quoted price, so no spot trade can execute.
+
+### Phase 5 ventures + Phase 6 competition (integration lead; checked live 2026-10-08 against main @ 9f3e5ef)
+
+Probe: editor run `../ct-life-evidence/integration/editor-20261008-070316/receipt.json` (lanes' own API classes, dev user).
+Lane logs with the full proposal-vs-main tables: `docs/progress/phase5-ventures.md`, `docs/progress/phase6-competition.md`
+("Backend gaps"); rows not listed here were not probed [Unverified].
+
+77. **`POST /projects` refuses for cash with a generic error.** `{kind:"memecoin", name}` from a dev user with $339 →
+    `400 VALIDATION_FAILED {reason:"insufficient cash for project seed", have:"33925", need:"50000"}` (verified, also with
+    `{kind}` only). Ask: `402 INSUFFICIENT_CASH` (contract code) so the app can say why, and expose the $500 seed in
+    config/economy so the form shows it before the tap.
+78. **Phase 5 routes missing** (404 "No route", verified): `GET /projects?scope=mine`, `GET /me/project-offers`,
+    `GET /vc-row/deals`. Present and working: `GET /ads/slots` (4 slots), `GET /ads/bookings`.
+79. **Phase 6 routes missing** (404 "No route", verified): `GET /beef` (list), `GET /airdrop/farm`, `GET /me/sybil-status`,
+    `GET /venues/{id}/access`, `GET /me/cabal`, `GET /llm/quota`. Working: `GET /tribes` (7), `GET /leagues` (5),
+    `GET /me/league` (no membership before rollover), `POST /beef {stakeCents, topicId, invitedUserId}` (status `open`;
+    [Unverified] whether `topicId`/`invitedUserId` are stored), `GET /beef/elo`, `GET /cabal/invites`, `GET /x/link`.
+    `GET /districts` returns **0 districts**, so district flags and standings stay empty.
+80. **No realtime for Phase 5/6.** The server sends none of `ad_booking_update`, `ads_changed`, `vc_offer`, `hire_offer`,
+    `project_event`, `district_flipped`, `season_rollover`, `league_result`, `beef_challenge`, `beef_update`, `beef_result`,
+    `sybil_status`, `cabal_invite`, `x_link_update` (no sender in `server/`, verified by search), no
+    `kicked {reasonId:"sybil_jailed"}`, and no venue join codes `NET_WORTH_TOO_LOW` / `INVITE_REQUIRED` / `SYBIL_JAILED`
+    (only the Marina home gate checks jail/net worth). The client handles all of them when they arrive.
+81. **Unknown routes answer with the contract body** `404 NOT_FOUND "No route for this path and method."`, the same code as
+    a missing record. The client now tells them apart by that message text. Ask: a distinct code (e.g. `ROUTE_NOT_FOUND`)
+    or `501` for proposal routes that are not built yet.

@@ -967,7 +967,7 @@ chip or a spot tap. No venue prefab was touched.
 **10. Backend.** Forward the Phase 6 gaps in `docs/progress/phase6-competition.md` ("Backend gaps") to `docs/progress/backend-dev-feedback.md`
 (I did not edit that file).
 
-Status: open
+Status: wired by the integration lead 2026-10-08 (docs/progress/integration.md, "Phase 5/6 wiring")
 
 ## 2026-10-08 phase5-ventures -> integration lead: wire Ad Desk, Builder Hills, VC Row (Phase 5, features #36 and #37)
 
@@ -1045,4 +1045,4 @@ registry first). Until then the Ad Desk reads a PNG/JPEG from a path inside `App
 (a mainnet environment shows "devnet-only in this build" instead of a pay button). Backend mismatches to forward to devIykee are listed in
 `docs/progress/phase5-ventures.md` ("Backend gaps").
 
-Status: open
+Status: wired by the integration lead 2026-10-08 (docs/progress/integration.md, "Phase 5/6 wiring")

@@ -64,6 +64,9 @@ namespace CTLife.WorldLife
         private string _venueId;
         private float _nextAds, _nextFeed;
         private int _adsFailures, _feedFailures;
+
+        /// <summary>Reload ad creatives on the next tick (Phase 5 `ads_changed`, glued in FlowController).</summary>
+        public void RefreshAdsNow() { _nextAds = 0f; _adsFailures = 0; }
         private bool _adsUnsupported, _feedUnsupported, _adsBusy, _feedBusy;
         private ThemeStyleSheet _theme;
         private Font _display, _body;

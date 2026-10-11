@@ -202,6 +202,7 @@ namespace CTLife.UI
             ["profile.blocked"] = "Player blocked.", ["profile.reportTitle"] = "Report {0}",
             ["profile.reportWhy"] = "What happened?", ["profile.reportThanks"] = "Report sent. Thanks for letting us know.",
             ["profile.netWorth"] = "{0} · Net worth {1}", ["profile.dropWallet"] = "Drop wallet",
+            ["profile.hire"] = "Hire for a project", ["profile.hireCopied"] = "Player id copied. Paste it into a project's Hire form.",
             ["profile.giveaway"] = "“Like, RT, drop your wallets, join my TG”",
             ["report.spam"] = "Spam", ["report.scam"] = "Scam", ["report.harassment"] = "Harassment",
             ["report.impersonation"] = "Impersonation", ["report.nsfw"] = "Sexual or graphic content",

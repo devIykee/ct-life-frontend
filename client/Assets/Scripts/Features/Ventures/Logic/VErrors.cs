@@ -104,7 +104,10 @@ namespace CTLife.Ventures
                 err.OutcomeUnknown = write;
                 return err;
             }
-            if ((a.Status == 404 && !a.Is("NOT_FOUND")) || a.Status == 405 || a.Status == 501)
+            // The backend answers an unknown route with 404 NOT_FOUND "No route for this path and method." (verified on main @ 9f3e5ef,
+            // 2026-10-08): a missing route, not a missing record.
+            bool noRoute = a.Status == 404 && (a.ServerMessage ?? "").StartsWith("No route", StringComparison.Ordinal);
+            if ((a.Status == 404 && (!a.Is("NOT_FOUND") || noRoute)) || a.Status == 405 || a.Status == 501)
             {
                 err.Code = "UNAVAILABLE";
                 err.Key = "err.unavailable";

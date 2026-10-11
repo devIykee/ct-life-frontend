@@ -2,9 +2,11 @@ using System;
 using CTLife.Core;
 using CTLife.Careers;
 using CTLife.CityLife;
+using CTLife.Competition;
 using CTLife.Economy;
 using CTLife.SocialFeatures;
 using CTLife.UI;
+using CTLife.Ventures;
 
 namespace CTLife.App
 {
@@ -32,8 +34,17 @@ namespace CTLife.App
             phone.Register(new CityShopApp());
             phone.Register(new CityWeekApp());
             phone.Register(new CityBusinessApp());
-            phone.Register(new ComingApp("ads", "Ads", 5, "#778ca3"));
-            phone.Register(new ComingApp("league", "League", 6, "#4b7bec"));
+            // Phase 5 (Ventures lane): "ads" keeps the placeholder's id so the lobby tile still opens it. One shared VenturesHub.
+            phone.Register(new AdDeskApp());
+            phone.Register(new BuilderApp());
+            phone.Register(new VcRowApp());
+            // Phase 6 (Competition lane): one shared CompetitionHub; "league" keeps the placeholder's id.
+            phone.Register(new LeagueApp());
+            phone.Register(new BeefApp());
+            phone.Register(new FarmApp());
+            phone.Register(new CabalApp());
+            phone.Register(new NpcChatApp());
+            phone.Register(new XLinkApp());
         }
     }
 }

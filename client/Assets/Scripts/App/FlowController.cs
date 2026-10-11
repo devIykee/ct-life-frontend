@@ -10,6 +10,7 @@ using CTLife.Rest.Model;
 using CTLife.UI;
 using CTLife.World;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace CTLife.App
 {
@@ -62,7 +63,12 @@ namespace CTLife.App
                 _overlays.Add(new ProfileCard(ui.ModalLayer));
                 _overlays.Add(new CTLife.CityLife.CityLifeOverlays(ui.ModalLayer));
                 _overlays.Add(new BusyOverlay(ui.ToastLayer));
-                _overlays.Add(new CTLife.WorldLife.WorldLifeHub());
+                var worldLife = new CTLife.WorldLife.WorldLifeHub();
+                _overlays.Add(worldLife);
+                // Phase 5: a booking went live or ended, so the venue screens reload their ad creatives now.
+                _subscriptions.On<CTLife.Ventures.AdsChangedSignal>(_ => worldLife.RefreshAds());
+                _overlays.Add(new CTLife.Ventures.VenturesSpotLinks(id => { if (_phone != null) _phone.Open(id); }));
+                RawRoomMessages.Received += OnRawRoomMessage;
                 RunAction(ConfigRefreshLoop);
                 _subscriptions.On<UpdateRequiredSignal>(signal =>
                 {
@@ -293,6 +299,11 @@ namespace CTLife.App
             UnbindKick();
             ProfileCard.PlayerActions = null;
             ProfileCard.VisitHome = null;
+            ProfileCard.NpcActions = null;
+            SettingsApp.ExtraSection = null;
+            CTLife.Competition.CompetitionLinks.OpenApp = null;
+            // Resets the live Phase 6 state, so a second account never sees the first one's jail, invites or flags.
+            CTLife.Competition.CompetitionRuntime.Unbind();
         }
 
         private void RunGameAction(FlowLifetime game, Func<Task> action)
@@ -343,6 +354,14 @@ namespace CTLife.App
                     while (GameAlive(game) && (VenueSession.Current == null || !VenueSession.Current.IsActive) && Time.realtimeSinceStartup < deadline)
                         await Awaitable.WaitForSecondsAsync(0.5f, game.Token);
                     await Dev.FeatureProbe.Run(LaunchArgs.Get("peer"), game.Token);
+                });
+                // Device smoke (dev builds only): `app=<phone app id>` opens that app once the player is in a venue.
+                if (LaunchArgs.Get("app") is string smokeApp && smokeApp.Length > 0) RunGameAction(game, async () =>
+                {
+                    float deadline = Time.realtimeSinceStartup + 90f;
+                    while (GameAlive(game) && (VenueSession.Current == null || !VenueSession.Current.IsActive) && Time.realtimeSinceStartup < deadline)
+                        await Awaitable.WaitForSecondsAsync(0.5f, game.Token);
+                    if (GameAlive(game)) { Log.Info("flow", "Opening app " + smokeApp + " (launch extra)"); _phone?.Open(smokeApp); }
                 });
 #endif
             }
@@ -453,7 +472,14 @@ namespace CTLife.App
 
             VenueSession.RemoteLookFallback = CreatorLookCatalog.FallbackLook;
             ProfileCard.VisitHome = (id, name) => { CTLife.CityLife.CityLifeLinks.VisitHome(id, name); _phone?.Open("home"); };
-            ProfileCard.PlayerActions = (id, name, close) => CTLife.SocialFeatures.SocialProfileActions.Build(id, name, close, app => _phone?.Open(app));
+            ProfileCard.PlayerActions = (id, name, close) => El.Div("ct-col",
+                CTLife.SocialFeatures.SocialProfileActions.Build(id, name, close, app => _phone?.Open(app)),
+                CTLife.Competition.CompetitionProfileActions.Build(id, name, close),
+                HireAction(id, close));
+            ProfileCard.NpcActions = CTLife.Competition.CompetitionProfileActions.BuildNpc;
+            SettingsApp.ExtraSection = CTLife.Competition.XLinkPanel.Build;
+            CTLife.Competition.CompetitionRuntime.Bind();
+            CTLife.Competition.CompetitionLinks.OpenApp = app => _phone?.Open(app);
 
             _hud?.Element.RemoveFromHierarchy();
             _hud?.Dispose();
@@ -556,10 +582,29 @@ namespace CTLife.App
             _lobby?.SetBusy(true);
             _lobby?.Element.SetEnabled(false);
             Log.Info("flow", "Travel to " + venueId);
+            bool rejected = false;
+            void ReopenLobby()
+            {
+                lobby?.SetBusy(false);
+                lobby?.Element.SetEnabled(true);
+            }
             try
             {
+                // Phase 6 gated venues (dubai_marina net worth, cabal_lounge membership, sybil_barn jailed-only). Null = go ahead,
+                // including when the server cannot answer yet: the room's own check then decides.
+                var blocked = await game.Wait(CTLife.Competition.CompetitionLinks.BlockMessageBeforeJoin(venueId, game.Token));
+                if (blocked != null) { Bus.Publish(ToastSignal.Text(blocked, ToastKind.Bad)); ReopenLobby(); return; }
                 try { await game.Wait(VenueSession.Enter(venueId, joinRoom: true, owner: game.Token)); }
                 catch (OperationCanceledException) when (!GameAlive(game)) { throw; }
+                catch (Exception e) when (GatedJoinRejection(e) is string rejection)
+                {
+                    Log.Warn("flow", $"Venue room refused the join ({e.Message})");
+                    Bus.Publish(ToastSignal.Text(rejection, ToastKind.Bad));
+                    rejected = true;
+                    ReopenLobby();
+                    if (lobby != null) AudioManager.Instance?.Music.SetDistrict("lobby");
+                    return;
+                }
                 catch (Exception e)
                 {
                     Log.Warn("flow", $"Venue room join failed ({e.Message}); entering the venue offline");
@@ -582,7 +627,7 @@ namespace CTLife.App
             finally
             {
                 if (ReferenceEquals(_travelGameplay, game)) { _travelGameplay = null; _travelling = false; }
-                if (GameAlive(game) && leavingOwnHome && VenueSession.Current == null) ShowLobby();
+                if (GameAlive(game) && (leavingOwnHome || rejected) && VenueSession.Current == null) ShowLobby();
             }
         }
 
@@ -604,7 +649,7 @@ namespace CTLife.App
             UnbindKick();
             if (!GameAlive(game) || city == null) return;
             _kickCity = city;
-            _kickHandler = message => { if (GameAlive(game)) OnKicked(message.reasonId); };
+            _kickHandler = message => { if (GameAlive(game)) OnKicked(game, message.reasonId); };
             city.Kicked += _kickHandler;
         }
 
@@ -615,11 +660,56 @@ namespace CTLife.App
             _kickHandler = null;
         }
 
-        private void OnKicked(string reasonId)
+        private void OnKicked(FlowLifetime game, string reasonId)
         {
             if (!Alive) return;
+            if (reasonId == "sybil_jailed" && GameAlive(game))
+            {
+                // Phase 6: a jailed player stays signed in; the server only lets them into the Sybil Barn, where the farm app
+                // shows the jail and bail. [Unverified] the 9f3e5ef backend never sends this kick yet.
+                Bus.Publish(ToastSignal.Text(CTLife.Competition.CompErrors.JoinRejection("SYBIL_JAILED"), ToastKind.Bad));
+                RunGameAction(game, () => Travel(game, "sybil_barn"));
+                return;
+            }
             Bus.Publish(ToastSignal.Text("Disconnected: " + reasonId, ToastKind.Bad));
             RunAction(SignOut);
+        }
+
+        /// <summary>
+        /// Phase 6 room messages without generated types (RawRoomMessages): Ventures takes its own types, Competition the rest.
+        /// Each lane ignores types that are not its own.
+        /// </summary>
+        private static void OnRawRoomMessage(string type, object payload)
+        {
+            bool ventures = false;
+            try { ventures = CTLife.Ventures.VenturesRealtime.Dispatch(type, payload); }
+            catch (Exception e) { Log.Exception("ventures", e); }
+            if (!ventures) CTLife.Competition.CompetitionRuntime.OnRaw(type, payload);
+        }
+
+        /// <summary>A gated venue room's join error (Phase 6 codes) as the player-facing message; null for any other failure.</summary>
+        private static string GatedJoinRejection(Exception e)
+        {
+            for (var x = e; x != null; x = x.InnerException)
+                foreach (var code in new[] { "NET_WORTH_TOO_LOW", "INVITE_REQUIRED", "SYBIL_JAILED" })
+                    if (x.Message != null && x.Message.Contains(code)) return CTLife.Competition.CompErrors.JoinRejection(code);
+            return null;
+        }
+
+        /// <summary>
+        /// Phase 5 "Hire" on another player's card. The Builder app's hire form takes a player id, so this copies the id and opens
+        /// Builder (the Ventures lane has no prefill hook; requests.md phase5-ventures item 8).
+        /// </summary>
+        private VisualElement HireAction(string userId, Action close)
+        {
+            if (string.IsNullOrEmpty(userId) || !Phases.IsOpen(5)) return null;
+            return El.Btn(Strings.T("profile.hire"), () =>
+            {
+                GUIUtility.systemCopyBuffer = userId;
+                close?.Invoke();
+                Bus.Publish(ToastSignal.Text(Strings.T("profile.hireCopied"), ToastKind.Info));
+                _phone?.Open("builder");
+            }, "ct-btn");
         }
 
         private void OnDestroy()
@@ -627,6 +717,7 @@ namespace CTLife.App
             Cleanup(EndGameplay);
             Cleanup(() => _owner?.Dispose());
             _subscriptions.Dispose();
+            RawRoomMessages.Received -= OnRawRoomMessage;
             UnbindKick();
             for (int i = _overlays.Count - 1; i >= 0; i--) Cleanup(_overlays[i].Dispose);
             _overlays.Clear();
