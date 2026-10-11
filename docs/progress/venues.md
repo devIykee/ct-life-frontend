@@ -1,5 +1,74 @@
-READY TO COMMIT (round 6) — one commit. Use `git add -A` on these paths so the deletions are recorded too (the seat-pose builder removed its stale blend children). The `client/Assets/Art/Candidates/` re-saves are Unity import churn and are discarded. The worktree is fast-forwarded to dev aa1685a (feel round 2).
-READY TO COMMIT (round 6: real modelled venue furniture): art/pipeline/env_config.py art/pipeline/env_process.py art/pipeline/env_custom_r6.py art/processed/environment/manifest.json art/processed/environment/_shared art/processed/environment/terminal_cafe art/processed/environment/spaces_studio art/processed/environment/timeline_square client/Assets/Art/environment/manifest.json client/Assets/Art/environment/manifest.json.meta client/Assets/Art/environment/_shared client/Assets/Art/environment/terminal_cafe client/Assets/Art/environment/spaces_studio client/Assets/Art/environment/timeline_square client/Assets/Scripts/Editor/VenueBuild/VenueKit.cs client/Assets/Scripts/Editor/VenueBuild/VenueVerify.cs client/Assets/Scripts/Editor/VenueBuild/VenueCloseups.cs client/Assets/Scripts/Editor/VenueBuild/VenueCloseups.cs.meta client/Assets/Scripts/Editor/VenueBuild/Venues_Cafe.cs client/Assets/Scripts/Editor/VenueBuild/Venues_Spaces.cs client/Assets/Scripts/Editor/VenueBuild/Venues_TimelineSquare.cs client/Assets/World/Venues/terminal_cafe client/Assets/World/Venues/spaces_studio client/Assets/World/Venues/timeline_square client/Assets/Resources/Characters/SeatFits.asset client/Assets/Resources/Characters/AvatarController.controller client/Assets/Resources/Characters/RainController.overrideController client/Assets/Art/animations/seated tools/venues/propose_spots.py docs/fe-contract-proposals/ids/spots.json docs/progress/venues.md docs/progress/requests.md art/LICENSES.md — feat(venues): real modelled CC0 furniture in Terminal Café, Spaces Studio and Timeline Square (palette colourways, LODs, foliage atlas), fe.7 café anchor nudges, bench_4 railing, seat fits re-run
+READY TO COMMIT (round 7) — one commit. Use `git add -A` on these paths. The `client/Assets/Art/Candidates/` re-saves are Unity import churn and are discarded. The worktree is fast-forwarded to dev f3f4fce.
+READY TO COMMIT (round 7: compact, dense Terminal Café): tools/venues/propose_spots.py tools/venues/make_venue_signs.py docs/fe-contract-proposals/ids/spots.json art/pipeline/env_config.py art/pipeline/env_custom_r6.py art/processed/environment/manifest.json art/processed/environment/_shared art/processed/environment/terminal_cafe client/Assets/Art/environment/manifest.json client/Assets/Art/environment/_shared client/Assets/Art/environment/terminal_cafe client/Assets/Scripts/Editor/VenueBuild/Venues_Cafe.cs client/Assets/Scripts/Editor/VenueBuild/VenueCatalog.cs client/Assets/Scripts/Editor/VenueBuild/VenueCloseups.cs client/Assets/Scripts/Editor/VenueBuild/VenueVerify.cs client/Assets/Scripts/Editor/VenueBuild/VenueBuildPipeline.cs client/Assets/World/Venues/terminal_cafe client/Assets/World/Venues/spaces_studio client/Assets/World/Venues/_Shared/Materials/M_hexagonal_concrete_paving_diff_1k.mat client/Assets/World/Venues/_Shared/Materials/M_hexagonal_concrete_paving_diff_1k.mat.meta client/Assets/Resources/Characters/SeatFits.asset client/Assets/Resources/Characters/AvatarController.controller client/Assets/Resources/Characters/RainController.overrideController client/Assets/Art/animations/seated docs/progress/venues.md docs/progress/requests.md art/LICENSES.md — feat(venues): Terminal Café v3: 17 x 12 m compact room (spots.json fe.8), density and warmth pass (rugs per zone, hanging planters, shelf clutter, full pastry case, framed prints, table items, sidewalk), bare-floor frame metric, seat fits re-run
+
+## 2026-10-08 round 7: compact, dense Terminal Café; Spaces Studio checked
+
+Evidence (`ct-life-evidence/venues/round7/`):
+- `terminal_cafe-before-after-concept.png`: round 6, then round 7, at the entrance and centre spots, then the concept.
+- `terminal_cafe-closeups-sheet.png`: bar, pastry case, espresso, communal, booths, round tables, lounge, armchairs,
+  trading.
+- Single shots `*-after*.png`, `*-spot-*.png`.
+- The Spaces Studio check shots (`spaces_studio-*-check.png`).
+- Seat builder reports and `venue-physicality-audit-after.json`.
+- Logs `venues/logs/140`–`152`.
+
+**New frame metric** (`VenueVerify`, every build): the share of the gameplay frame that is bare floor.
+- How it works: rays through a 96 × 44 grid hit the render meshes. A hit on the shell floor, facing up, below 3 cm
+  counts as bare floor; rugs, furniture and decor count as room content.
+- Logged as `CTLIFE [venues] <venue> entrance|center: bare floor N% of the frame`, and stored in the verify receipt
+  (`bareFloorOfFrame`).
+
+| Venue | Entrance view | Centre view |
+| --- | --- | --- |
+| Terminal Café, round 6 (coordinator's estimate) | ≈60% | — |
+| Terminal Café, round 7 | **25%** | **16%** |
+| Spaces Studio, unchanged | 29% | 25% |
+
+- Most of the café's remaining 25% at the entrance is the new sidewalk at the bottom of the frame.
+- Spaces Studio is under the 50% threshold from the default camera (bean bags, poufs, rugs, risers and the stage fill
+  it), so it was not tightened. It was rebuilt once for the metric; its content is unchanged from round 6.
+
+**Terminal Café v3** (`Venues_Cafe.cs` rewritten for the compact layout):
+- **Footprint:** 24.6 × 18 m → **17 × 12 m** (walkable x −8.5..8.5, z −6..6; `spots.json` fe.8).
+- **Zones, all within about 2 m of each other:**
+  - Bar along the back-left (5 m counter, full back counter).
+  - Communal laptop table in the centre, two round tables right of it.
+  - Booths under the back windows.
+  - Trading wall (four desks) on the brick.
+  - Sofa lounge and window seat by the street windows; armchairs front-right.
+- **Density and warmth:**
+  - Rugs: a rug under every zone (communal, each round table, each booth, the armchairs, the lounge), a runner along
+    the trading desks and one in front of the bar stools.
+  - Hanging greens: six macramé planters (ours) hang from the ceiling line with pothos trailing, plus pothos from the
+    window heads and shelves.
+  - Shelves: cluttered with jars of beans, coffee bags and cup stacks (ours), books, mugs and plants. There is also a
+    tall open bookcase by the door.
+  - Pastry case: full, with croissants and muffins below, doughnuts, cupcakes and a cake above, and cookies on top.
+  - Prints: four framed prints on the brick (two new ones: a botanical and a coffee-cup line drawing; letter-free).
+  - Small items: a cup, a mug and a pastry on a plate on every table; books and a desk lamp on the communal table.
+  - Sun: stronger and warmer, with a lower fill, so the window-mullion patches on the floor read.
+  - Outside: the front is now a sidewalk with hex paving, a kerb and street, lush planter boxes against the low front
+    wall, two sidewalk bistro sets and lamp posts.
+- **Budgets:** gameplay max **21** draws (round 6: 26); tris 99.8k (84.0k); LOD0 101.1k.
+- **APK:** café LZ4 8.54 → **9.27 MiB (+0.73**, within the +1 MiB allowance). All 25 venues: 34.2 → 35.0 MiB.
+  - [Inference] The release estimate goes from ≈145 to ≈146 MiB.
+- **Spots:** 17/17 reachable; physicality audit 0 walk-through regions.
+- **Seats:** `SeatFitBuilder` → `SeatPoseBuilder` (Build + Measure) re-run. Heights are unchanged, apart from
+  `terminal_5..8`, now 0.449 m (was 0.455). Moves are listed in `requests.md`.
+- **Fixes on the way:**
+  - The reachability gate now prints the ASCII NavMesh map for approach failures too.
+  - Small obstacles block the desks' near corners, which the seat carve leaves uncarved round the anchor.
+
+**Life (NPC patrons):** not venue data. Venue NPCs come only from the backend room
+(`server/realtime/rooms/venue.ts` `npcArchetypesFor`):
+- The café gets one Wallet Tracker that stands at `terminal_4`.
+- Spaces Studio gets none.
+- B10 can drop café joins offline.
+
+Request filed in `requests.md` ("patrons in Terminal Café and Spaces Studio"):
+- Backend B17/B10: a barista at `counter`, typers at `terminal_1..4`, a trader at `terminal_5..8`, the studio host,
+  guests and audience.
+- World-life lane: aliases and looks.
 
 ## 2026-10-08 round 6: real modelled props (Terminal Café, Spaces Studio, Timeline Square)
 

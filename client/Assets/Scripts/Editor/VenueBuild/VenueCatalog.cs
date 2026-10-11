@@ -43,7 +43,7 @@ namespace CTLife.EditorTools.VenueBuild
                 "pastry case, espresso machine, chalkboard menu, communal laptop table, twin-monitor trading desks, booths, round tables, sofa, " +
                 "armchairs, exposed brick with a sunrise-coffee neon, pendants, rugs and plants; five Tier A community eggs.",
                 VenuesCafe.TerminalCafe).SeatMotionFrom("Assets/Art/Candidates/PlayableVenues20261007/terminal_cafe.prefab")
-                .SunAt(24f, 72f).Look(C("ffcf96"), 1.6f, C("c6d6e4"), C("e8d2b2"), C("8a6c52"))
+                .SunAt(24f, 72f).Look(C("ffcf96"), 2.2f, C("b9c9d8"), C("dcc4a2"), C("7a5c44"))
                 .Grade(C("d6e6f2"), 0.08f, 10f, 12f, 10f, C("fff4e6"), bloom: 0.35f, bloomAt: 0.95f, vignetteValue: 0.15f),
             // Spaces Studio, redesigned in round 3 (layout build; the old repack source is no longer used).
             V("spaces_studio", "Spaces Studio", "timeline",

@@ -174,7 +174,7 @@ namespace CTLife.EditorTools.VenueBuild
                         ["spot"] = s.id, ["kind"] = s.kind, ["onNavMesh"] = on, ["offset"] = on ? Math.Round(Vector3.Distance(new Vector3(hit.position.x, 0, hit.position.z), p), 3) : -1,
                         ["reachable"] = reach, ["approach"] = approach != null ? (approachOk ? "reachable" : "UNREACHABLE") : "none",
                     });
-                    if (!reach)
+                    if (!reach || !approachOk)
                     {
                         // ASCII NavMesh map round the spot (0.2 m cells): '.' walkable, '#' not, 'S' spot, 'A' approach.
                         var sb = new System.Text.StringBuilder();
@@ -191,7 +191,7 @@ namespace CTLife.EditorTools.VenueBuild
                                 sb.Append(ch);
                             }
                         }
-                        throw new InvalidDataException($"{spec.id}: spot {s.id} unreachable from the entrance (onNavMesh={on}, approach {(approach != null ? approach.position.ToString("F2") : "none")}).{sb}");
+                        throw new InvalidDataException($"{spec.id}: {(reach ? "approach for " : "spot ")}{s.id} unreachable from the entrance (onNavMesh={on}, approach {(approach != null ? approach.position.ToString("F2") : "none")}).{sb}");
                     }
                     if (!approachOk) throw new InvalidDataException($"{spec.id}: approach for {s.id} unreachable.");
                 }

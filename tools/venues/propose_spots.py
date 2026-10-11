@@ -92,10 +92,19 @@ MOVES["terminal_cafe"] = {
     "table_1": (0.65, 2.85, 0.785), "table_2": (1.75, 2.85, -0.785), "table_3": (5.65, 2.85, 0.785), "table_4": (6.75, 2.85, -0.785),
     "counter": (-7.0, 5.25, 3.142),
 }
+# fe.8 (round 7, compact café 17 x 12 m): every zone moves closer; ids, kinds and anims unchanged.
+MOVES["terminal_cafe"].update({
+    "terminal_1": (-2.7, -2.7, 0.0), "terminal_2": (-0.1, -2.7, 0.0), "terminal_3": (-2.7, -0.5, 3.142), "terminal_4": (-0.1, -0.5, 3.142),
+    "terminal_5": (7.4, -3.6, 1.571), "terminal_6": (7.4, -1.5, 1.571), "terminal_7": (7.4, 0.6, 1.571), "terminal_8": (7.4, 2.7, 1.571),
+    "table_1": (1.15, 0.45, 0.785), "table_2": (2.25, 0.45, -0.785), "table_3": (4.35, 0.45, 0.785), "table_4": (5.45, 0.45, -0.785),
+    "counter": (-5.3, 4.5, 3.142), "entrance": (0.0, -5.0, 0.0), "exit": (0.0, -6.0, 3.142), "center": (0.3, 1.4, 0.0),
+    "pulse_screen": (-0.45, 5.2, 3.142),
+})
 
 # fe.5: walkable rectangles that change with a venue rebuild (the venue's own NavMesh is built from these).
 WALKABLE = {
     "timeline_square": [{"x0": -11.5, "z0": -12.4, "x1": 11.5, "z1": 9.8}, {"x0": -3.5, "z0": 9.8, "x1": 3.5, "z1": 12.0}],
+    "terminal_cafe": [{"x0": -8.5, "z0": -6.0, "x1": 8.5, "z1": 6.0}],
 }
 
 NEW_VENUES = {
@@ -160,7 +169,7 @@ def main():
                     s["x"], s["z"], s["rotY"] = x, z, rot
                     moved += 1
     if added or moved or " fe.4 " in doc["_note"]:
-        doc["version"] = "1.0.0-rc1+fe.7"
+        doc["version"] = "1.0.0-rc1+fe.8"
         cut = doc["_note"].find(" fe.4 ")
         if cut >= 0:
             doc["_note"] = doc["_note"][:cut]  # fe.4 notes are rewritten whole on every run
@@ -179,7 +188,10 @@ def main():
                      " 3..4 facing south), terminal_5..8 at twin-monitor desks on the east wall (facing east), table_1..4 at two round"
                      " tables (facing the table), counter behind the new bar (facing south); ids, kinds and anims unchanged.",
                      " fe.7 (venue builder, 2026-10-08, round 6, character-feel reach request): terminal_1..4 move 0.10 m towards the"
-                     " communal table (z -3.7 / -1.5) and terminal_5..8 0.25 m towards their desks (x 10.75); the furniture they use stays put."):
+                     " communal table (z -3.7 / -1.5) and terminal_5..8 0.25 m towards their desks (x 10.75); the furniture they use stays put.",
+                     " fe.8 (venue builder, 2026-10-08, round 7, compact café): terminal_cafe walkable shrinks to 17 x 12 m (x -8.5..8.5,"
+                     " z -6..6) so the zones sit close together; every terminal, table, the counter, entrance, exit, center and pulse_screen"
+                     " move with their furniture (relative seat/furniture offsets as fe.7); ids, kinds, anims and facings unchanged."):
             if note.strip() not in doc["_note"]:
                 doc["_note"] += note
     out = json.dumps(doc, indent=2, ensure_ascii=False) + "\n"

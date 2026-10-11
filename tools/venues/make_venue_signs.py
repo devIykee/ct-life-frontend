@@ -1110,6 +1110,26 @@ def art_print(w, h, seed):
             y = h * (.5 + k * .15)
             pts = [(0, h)] + [(x, y + math.sin(x / w * 6 + k) * h * .05) for x in range(0, w + 1, 8)] + [(w, h)]
             d.polygon(pts, fill=col)
+    elif seed % 5 == 4:
+        # Botanical print: a leafy stem on cream (round 7)
+        im = Image.new("RGB", (w, h), (240, 232, 214))
+        d = ImageDraw.Draw(im)
+        d.line([(w * .5, h * .92), (w * .48, h * .12)], fill=(70, 98, 60), width=max(3, w // 60))
+        for k in range(7):
+            y = h * (.2 + k * .1); s = 1 if k % 2 else -1
+            cx, cy = w * .49 + s * w * .14, y
+            d.ellipse([cx - w * .13, cy - h * .045, cx + w * .13, cy + h * .045], fill=[(86, 132, 70), (104, 150, 82), (70, 112, 62)][k % 3])
+    elif seed % 5 == 1 and seed > 3:
+        # Coffee cup line drawing on terracotta (no letters)
+        im = vgrad(w, h, (214, 132, 92), (184, 100, 72))
+        d = ImageDraw.Draw(im)
+        lw = max(3, w // 50)
+        d.rounded_rectangle([w * .25, h * .42, w * .7, h * .78], radius=int(w * .08), outline=(250, 236, 214), width=lw)
+        d.arc([w * .62, h * .48, w * .84, h * .68], -90, 90, fill=(250, 236, 214), width=lw)
+        for k in range(3):
+            x = w * (.35 + k * .12)
+            d.arc([x - w * .05, h * .18, x + w * .05, h * .38], 200, 340, fill=(250, 236, 214), width=lw)
+        d.line([(w * .18, h * .82), (w * .82, h * .82)], fill=(250, 236, 214), width=lw)
     else:
         im = Image.new("RGB", (w, h), (238, 230, 214))
         d = ImageDraw.Draw(im)
@@ -1408,6 +1428,8 @@ def venue_signs(vid):
             "cf_candles_1": candles(512, 320, 1), "cf_candles_2": candles(512, 320, 2), "cf_candles_3": candles(512, 320, 3),
             "cf_candles_4": candles(512, 320, 4), "cf_brick": brick_wall(512, 512), "cf_tiles": green_tiles(256, 256),
             "cf_town": town_view(1024, 512), "cf_art_1": art_print(256, 320, 2), "cf_art_2": art_print(256, 320, 3),
+            "cf_art_3": art_print(256, 320, 9), "cf_art_4": art_print(256, 320, 11),
+            "cf_art_6": art_print(256, 320, 7),
             "cf_pastry": shop_window(512, 256, "bakery", 321),
             "cf_rug_1": rug(768, 384, 31, (196, 176, 150), (150, 110, 84)), "cf_rug_2": rug(512, 512, 32, (206, 190, 166), (146, 112, 86), round_=True),
             "cf_rug_3": rug(640, 384, 33, (176, 120, 96), (232, 214, 186)),

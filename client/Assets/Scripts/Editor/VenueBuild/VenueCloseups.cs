@@ -27,14 +27,15 @@ namespace CTLife.EditorTools.VenueBuild
         {
             ["terminal_cafe"] = new[]
             {
-                S("bar", new Vector3(-4.2f, 2.0f, 1.4f), new Vector3(-7.4f, 0.9f, 5.2f)),
-                S("espresso", new Vector3(-6.0f, 1.75f, 6.4f), new Vector3(-6.6f, 1.15f, 8.45f), 38f),
-                S("communal", new Vector3(2.6f, 2.0f, -6.1f), new Vector3(0f, 0.7f, -2.6f)),
-                S("booths", new Vector3(5.6f, 1.8f, 4.6f), new Vector3(7.9f, 0.6f, 7.9f)),
-                S("round_tables", new Vector3(3.9f, 1.9f, 0.3f), new Vector3(1.2f, 0.6f, 3.4f)),
-                S("lounge", new Vector3(-6.9f, 1.8f, -3.6f), new Vector3(-10.4f, 0.45f, -5.8f)),
-                S("armchairs", new Vector3(8.75f, 1.7f, -4.0f), new Vector3(8.75f, 0.45f, -7.4f)),
-                S("trading", new Vector3(8.3f, 1.8f, -0.4f), new Vector3(11.3f, 1.0f, -2.2f)),
+                S("bar", new Vector3(-1.4f, 2.0f, -0.2f), new Vector3(-5.0f, 0.9f, 3.6f)),
+                S("pastry", new Vector3(-6.2f, 1.6f, 1.6f), new Vector3(-6.95f, 1.25f, 3.25f), 36f),
+                S("espresso", new Vector3(-4.3f, 1.75f, 3.6f), new Vector3(-4.9f, 1.15f, 5.7f), 38f),
+                S("communal", new Vector3(1.4f, 2.0f, -5.0f), new Vector3(-1.4f, 0.7f, -1.6f)),
+                S("booths", new Vector3(3.4f, 1.8f, 1.9f), new Vector3(5.4f, 0.6f, 5.0f)),
+                S("round_tables", new Vector3(3.3f, 1.9f, -2.4f), new Vector3(3.3f, 0.6f, 1.0f)),
+                S("lounge", new Vector3(-4.3f, 1.8f, -1.6f), new Vector3(-7.6f, 0.45f, -3.8f)),
+                S("armchairs", new Vector3(4.85f, 1.7f, -1.1f), new Vector3(4.85f, 0.45f, -4.4f)),
+                S("trading", new Vector3(4.6f, 1.8f, 1.6f), new Vector3(7.9f, 1.0f, -0.6f)),
             },
             ["spaces_studio"] = new[]
             {
