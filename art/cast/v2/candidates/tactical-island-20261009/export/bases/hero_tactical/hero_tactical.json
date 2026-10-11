@@ -1,0 +1,344 @@
+{
+ "id": "hero_tactical",
+ "label": "Tactical red visor",
+ "gender": "m",
+ "source": "Sketchfab CC-BY (row 26)",
+ "licence": "CC BY 4.0",
+ "archetypes": [
+  "sniper_bot",
+  "anon",
+  "cabal_insider"
+ ],
+ "tiers": {
+  "hero": {
+   "triangles": 11275,
+   "vertices": 8942,
+   "max_influences": 4
+  },
+  "lod0": {
+   "triangles": 5636,
+   "vertices": 4866,
+   "max_influences": 4
+  },
+  "lod1": {
+   "triangles": 2818,
+   "vertices": 2704,
+   "max_influences": 4
+  },
+  "lod2": {
+   "triangles": 1125,
+   "vertices": 1286,
+   "max_influences": 2
+  }
+ },
+ "files": {
+  "crowd_fbx": "bases/hero_tactical/hero_tactical.fbx",
+  "hero_fbx": "bases/hero_tactical/hero_tactical_Hero.fbx"
+ },
+ "textures": {
+  "albedo": "bases/hero_tactical/hero_tactical_Albedo.png",
+  "mask0": "bases/hero_tactical/hero_tactical_TintMask0.png",
+  "mask1": "bases/hero_tactical/hero_tactical_TintMask1.png",
+  "emission": "bases/hero_tactical/hero_tactical_Emission.png"
+ },
+ "tint_defaults": {
+  "skin": "#040507",
+  "hair": "#0c0c10",
+  "top": "#17181c",
+  "bottom": "#17181c",
+  "shoes": "#0f1012",
+  "accent": "#212123"
+ },
+ "look_defaults": {},
+ "hair_library": {},
+ "parts": {
+  "top": {
+   "fbx": "bases/hero_tactical/parts/hero_tactical__top.fbx",
+   "slot": "top",
+   "triangles": {
+    "hero": 4303,
+    "lod0": 2151,
+    "lod1": 1076,
+    "lod2": 430
+   }
+  },
+  "head": {
+   "fbx": "bases/hero_tactical/parts/hero_tactical__head.fbx",
+   "slot": "head",
+   "triangles": {
+    "hero": 4746,
+    "lod0": 2372,
+    "lod1": 1186,
+    "lod2": 474
+   }
+  },
+  "bottom": {
+   "fbx": "bases/hero_tactical/parts/hero_tactical__bottom.fbx",
+   "slot": "bottom",
+   "triangles": {
+    "hero": 1566,
+    "lod0": 783,
+    "lod1": 391,
+    "lod2": 156
+   }
+  },
+  "feet": {
+   "fbx": "bases/hero_tactical/parts/hero_tactical__feet.fbx",
+   "slot": "feet",
+   "triangles": {
+    "hero": 660,
+    "lod0": 330,
+    "lod1": 165,
+    "lod2": 65
+   }
+  }
+ },
+ "accessories": {
+  "pixel_face_mask": {
+   "fbx": "bases/hero_tactical/accessories/hero_tactical__pixel_face_mask.fbx",
+   "socket": "face",
+   "bone": "Head",
+   "flags": {
+    "occludes_face": true
+   },
+   "triangles": 272
+  },
+  "tv_head": {
+   "fbx": "bases/hero_tactical/accessories/hero_tactical__tv_head.fbx",
+   "socket": "head_top",
+   "bone": "Head",
+   "flags": {
+    "replaces_head": true,
+    "hides_hair": true,
+    "occludes_face": true
+   },
+   "triangles": 100
+  },
+  "visor": {
+   "fbx": "bases/hero_tactical/accessories/hero_tactical__visor.fbx",
+   "socket": "face",
+   "bone": "Head",
+   "flags": {
+    "double_sided": true
+   },
+   "triangles": 240
+  },
+  "helmet": {
+   "fbx": "bases/hero_tactical/accessories/hero_tactical__helmet.fbx",
+   "socket": "head_top",
+   "bone": "Head",
+   "flags": {
+    "hides_hair": true,
+    "occludes_face": true
+   },
+   "triangles": 520
+  },
+  "laser_eyes": {
+   "fbx": "bases/hero_tactical/accessories/hero_tactical__laser_eyes.fbx",
+   "socket": "face",
+   "bone": "Head",
+   "flags": {
+    "emissive": true
+   },
+   "triangles": 272
+  },
+  "chain": {
+   "fbx": "bases/hero_tactical/accessories/hero_tactical__chain.fbx",
+   "socket": "neck",
+   "bone": "spine_03",
+   "flags": {},
+   "triangles": 396
+  },
+  "headphones": {
+   "fbx": "bases/hero_tactical/accessories/hero_tactical__headphones.fbx",
+   "socket": "head_top",
+   "bone": "Head",
+   "flags": {},
+   "triangles": 344
+  },
+  "small_wings": {
+   "fbx": "bases/hero_tactical/accessories/hero_tactical__small_wings.fbx",
+   "socket": "back",
+   "bone": "spine_03",
+   "flags": {
+    "double_sided": true
+   },
+   "triangles": 60
+  },
+  "shoulder_drone": {
+   "fbx": "bases/hero_tactical/accessories/hero_tactical__shoulder_drone.fbx",
+   "socket": "shoulder_r",
+   "bone": "clavicle_r",
+   "flags": {
+    "emissive": true
+   },
+   "triangles": 400
+  }
+ },
+ "sockets": {
+  "head_top": {
+   "bone": "Head",
+   "humanoid": "Head",
+   "position_character_m": [
+    0.0,
+    -0.0028,
+    1.8
+   ],
+   "offset_in_bone_space_m": [
+    -0.0,
+    0.307,
+    0.0257
+   ]
+  },
+  "face": {
+   "bone": "Head",
+   "humanoid": "Head",
+   "position_character_m": [
+    0.0,
+    -0.1186,
+    1.6667
+   ],
+   "offset_in_bone_space_m": [
+    -0.0,
+    0.1737,
+    0.1416
+   ]
+  },
+  "neck": {
+   "bone": "spine_03",
+   "humanoid": "UpperChest",
+   "position_character_m": [
+    -0.0,
+    -0.1535,
+    1.3921
+   ],
+   "offset_in_bone_space_m": [
+    -0.0,
+    0.0804,
+    0.1965
+   ]
+  },
+  "back": {
+   "bone": "spine_03",
+   "humanoid": "UpperChest",
+   "position_character_m": [
+    -0.0,
+    0.2752,
+    1.2859
+   ],
+   "offset_in_bone_space_m": [
+    -0.0,
+    0.0331,
+    -0.2426
+   ]
+  },
+  "shoulder_l": {
+   "bone": "clavicle_l",
+   "humanoid": "LeftShoulder",
+   "position_character_m": [
+    0.1774,
+    0.049,
+    1.4171
+   ],
+   "offset_in_bone_space_m": [
+    0.0169,
+    0.1055,
+    0.0547
+   ]
+  },
+  "shoulder_r": {
+   "bone": "clavicle_r",
+   "humanoid": "RightShoulder",
+   "position_character_m": [
+    -0.1774,
+    0.0463,
+    1.4171
+   ],
+   "offset_in_bone_space_m": [
+    -0.0172,
+    0.1055,
+    0.0547
+   ]
+  },
+  "hand_l": {
+   "bone": "hand_l",
+   "humanoid": "LeftHand",
+   "position_character_m": [
+    0.5495,
+    -0.0258,
+    0.9563
+   ],
+   "offset_in_bone_space_m": [
+    0.0041,
+    0.0499,
+    -0.003
+   ]
+  },
+  "hand_r": {
+   "bone": "hand_r",
+   "humanoid": "RightHand",
+   "position_character_m": [
+    -0.5492,
+    -0.0261,
+    0.9566
+   ],
+   "offset_in_bone_space_m": [
+    -0.0044,
+    0.0496,
+    -0.0037
+   ]
+  }
+ },
+ "measurements": {
+  "head_center": [
+   0.0,
+   -0.0028,
+   1.6667
+  ],
+  "top_z": 1.8,
+  "chin_z": 1.4826,
+  "eye_z": 1.6667,
+  "half_w": 0.1068,
+  "half_d": 0.1158,
+  "front_y": -0.1186,
+  "back_y": 0.1131,
+  "neck_z": 1.4121,
+  "neck_y": 0.0476,
+  "chest_front_y": -0.1635,
+  "chest_back_y": 0.2752,
+  "chest_z": 1.2859,
+  "chest_half_w": 0.1895,
+  "shoulder_l": [
+   0.1774,
+   0.049,
+   1.3571
+  ],
+  "shoulder_r": [
+   -0.1774,
+   0.0463,
+   1.3571
+  ],
+  "hand_l": [
+   0.5495,
+   -0.0258,
+   0.9563
+  ],
+  "hand_r": [
+   -0.5492,
+   -0.0261,
+   0.9566
+  ]
+ },
+ "height_m": 1.8,
+ "source_component_exclusions": [
+  {
+   "object": "Object_102",
+   "materials": [
+    "material"
+   ],
+   "vertices": 722,
+   "source_sha256": "e25e0ac0520ef669c324af2de88b9cb614dd01eeef8d6ed7db917f5f6f682f20",
+   "reason": "Isolated source component stays at shin height in source POSE and REST, 98.48% Head weight; candidate exclusion pending before/after visual review."
+  }
+ ]
+}

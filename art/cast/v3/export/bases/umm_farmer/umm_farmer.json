@@ -1,0 +1,368 @@
+{
+ "id": "umm_farmer",
+ "label": "Literal farmer",
+ "gender": "m",
+ "family": "umm",
+ "source": "Quaternius Ultimate Modular Men: Farmer",
+ "source_file": {
+  "file": "art/raw/quaternius/ultimate_modular_men/Humanoid Rig/Individual Characters/FBX/Farmer.fbx",
+  "sha256": "76d57bf99aa30146b9376ecfc903fefdef67f8a293d82de323e2dd660933a352"
+ },
+ "licence": "CC0 1.0 (quaternius.com pack page + bundled License.txt)",
+ "archetypes": [
+  "airdrop_farmer"
+ ],
+ "tiers": {
+  "hero": {
+   "triangles": 5476,
+   "vertices": 2786,
+   "max_influences": 4
+  },
+  "lod0": {
+   "triangles": 4200,
+   "vertices": 2148,
+   "max_influences": 4
+  },
+  "lod1": {
+   "triangles": 2546,
+   "vertices": 1321,
+   "max_influences": 4
+  },
+  "lod2": {
+   "triangles": 1069,
+   "vertices": 578,
+   "max_influences": 2
+  }
+ },
+ "files": {
+  "crowd_fbx": "bases/umm_farmer/umm_farmer.fbx",
+  "hero_fbx": "bases/umm_farmer/umm_farmer_Hero.fbx"
+ },
+ "textures": {
+  "albedo": "families/umm/umm_Albedo.png",
+  "mask0": "families/umm/umm_TintMask0.png",
+  "mask1": "families/umm/umm_TintMask1.png",
+  "emission": "families/umm/umm_Emission.png"
+ },
+ "material": "umm_Mat (shared by the whole family)",
+ "tint_reference": {
+  "skin": "#9a9a9a",
+  "hair": "#9a9a9a",
+  "top": "#9a9a9a",
+  "bottom": "#9a9a9a",
+  "shoes": "#9a9a9a",
+  "accent": "#9a9a9a",
+  "brows": "#9a9a9a",
+  "hat": "#9a9a9a"
+ },
+ "tint_authored": {
+  "skin": "#cbaa84",
+  "hair": "#504631",
+  "top": "#73623f",
+  "bottom": "#323e46",
+  "shoes": "#73623f",
+  "accent": "#7a0f1e",
+  "brows": "#3d3328",
+  "hat": "#99947a"
+ },
+ "look_defaults": {
+  "skin_tone": "skin_10",
+  "skin": "#4f3222",
+  "hair": "#1b1512",
+  "top": "#f2f2ee",
+  "bottom": "#4b5320",
+  "shoes": "#73623f",
+  "accent": "#7a0f1e",
+  "brows": "#191514",
+  "hat": "#b9a27a"
+ },
+ "default_parts": {
+  "head": "head/farmer",
+  "top": "top/farmer",
+  "bottom": "bottom/farmer",
+  "feet": "feet/farmer"
+ },
+ "parts": {
+  "head": {
+   "fbx": "families/umm/parts/umm__head_farmer.fbx",
+   "slot": "head",
+   "triangles": {
+    "hero": 816,
+    "lod0": 816,
+    "lod1": 816,
+    "lod2": 379
+   }
+  },
+  "top": {
+   "fbx": "families/umm/parts/umm__top_farmer.fbx",
+   "slot": "top",
+   "triangles": {
+    "hero": 3358,
+    "lod0": 2100,
+    "lod1": 1050,
+    "lod2": 420
+   }
+  },
+  "bottom": {
+   "fbx": "families/umm/parts/umm__bottom_farmer.fbx",
+   "slot": "bottom",
+   "triangles": {
+    "hero": 918,
+    "lod0": 900,
+    "lod1": 450,
+    "lod2": 180
+   }
+  },
+  "feet": {
+   "fbx": "families/umm/parts/umm__feet_farmer.fbx",
+   "slot": "feet",
+   "triangles": {
+    "hero": 384,
+    "lod0": 384,
+    "lod1": 230,
+    "lod2": 90
+   }
+  }
+ },
+ "accessories": {
+  "pixel_face_mask": {
+   "fbx": "bases/umm_farmer/accessories/umm_farmer__pixel_face_mask.fbx",
+   "socket": "face",
+   "bone": "Head",
+   "flags": {
+    "occludes_face": true
+   },
+   "triangles": 272
+  },
+  "visor": {
+   "fbx": "bases/umm_farmer/accessories/umm_farmer__visor.fbx",
+   "socket": "face",
+   "bone": "Head",
+   "flags": {
+    "double_sided": true
+   },
+   "triangles": 240
+  },
+  "helmet": {
+   "fbx": "bases/umm_farmer/accessories/umm_farmer__helmet.fbx",
+   "socket": "head_top",
+   "bone": "Head",
+   "flags": {
+    "hides_hair": true,
+    "occludes_face": true
+   },
+   "triangles": 520
+  },
+  "laser_eyes": {
+   "fbx": "bases/umm_farmer/accessories/umm_farmer__laser_eyes.fbx",
+   "socket": "face",
+   "bone": "Head",
+   "flags": {
+    "emissive": true
+   },
+   "triangles": 272
+  },
+  "chain": {
+   "fbx": "bases/umm_farmer/accessories/umm_farmer__chain.fbx",
+   "socket": "neck",
+   "bone": "spine_03",
+   "flags": {},
+   "triangles": 396
+  },
+  "headphones": {
+   "fbx": "bases/umm_farmer/accessories/umm_farmer__headphones.fbx",
+   "socket": "head_top",
+   "bone": "Head",
+   "flags": {},
+   "triangles": 344
+  },
+  "small_wings": {
+   "fbx": "bases/umm_farmer/accessories/umm_farmer__small_wings.fbx",
+   "socket": "back",
+   "bone": "spine_03",
+   "flags": {
+    "double_sided": true
+   },
+   "triangles": 60
+  },
+  "shoulder_drone": {
+   "fbx": "bases/umm_farmer/accessories/umm_farmer__shoulder_drone.fbx",
+   "socket": "shoulder_r",
+   "bone": "clavicle_r",
+   "flags": {
+    "emissive": true
+   },
+   "triangles": 400
+  },
+  "backpack": {
+   "family_part": "extra/backpack",
+   "fbx": "families/umm/parts/umm__extra_backpack.fbx",
+   "socket": "back",
+   "bone": "spine_03",
+   "flags": {
+    "skinned": true
+   },
+   "triangles": {
+    "hero": 1500,
+    "lod0": 592,
+    "lod1": 284,
+    "lod2": 129
+   }
+  }
+ },
+ "sockets": {
+  "head_top": {
+   "bone": "Head",
+   "humanoid": "Head",
+   "position_character_m": [
+    -0.0003,
+    -0.0655,
+    1.861
+   ],
+   "offset_in_bone_space_m": [
+    -0.0,
+    0.2683,
+    0.0224
+   ]
+  },
+  "face": {
+   "bone": "Head",
+   "humanoid": "Head",
+   "position_character_m": [
+    -0.0003,
+    -0.2442,
+    1.7404
+   ],
+   "offset_in_bone_space_m": [
+    -0.0,
+    0.1478,
+    0.2011
+   ]
+  },
+  "neck": {
+   "bone": "spine_03",
+   "humanoid": "UpperChest",
+   "position_character_m": [
+    -0.0,
+    -0.1641,
+    1.4959
+   ],
+   "offset_in_bone_space_m": [
+    0.0003,
+    0.1155,
+    0.1214
+   ]
+  },
+  "back": {
+   "bone": "spine_03",
+   "humanoid": "UpperChest",
+   "position_character_m": [
+    -0.0,
+    0.0597,
+    1.3827
+   ],
+   "offset_in_bone_space_m": [
+    0.0003,
+    -0.0019,
+    -0.1002
+   ]
+  },
+  "shoulder_l": {
+   "bone": "clavicle_l",
+   "humanoid": "LeftShoulder",
+   "position_character_m": [
+    0.1525,
+    -0.0598,
+    1.4975
+   ],
+   "offset_in_bone_space_m": [
+    -0.0263,
+    0.0994,
+    0.0421
+   ]
+  },
+  "shoulder_r": {
+   "bone": "clavicle_r",
+   "humanoid": "RightShoulder",
+   "position_character_m": [
+    -0.1525,
+    -0.0598,
+    1.4975
+   ],
+   "offset_in_bone_space_m": [
+    0.0263,
+    0.0994,
+    0.0421
+   ]
+  },
+  "hand_l": {
+   "bone": "hand_l",
+   "humanoid": "LeftHand",
+   "position_character_m": [
+    0.6436,
+    -0.0871,
+    1.4424
+   ],
+   "offset_in_bone_space_m": [
+    0.0006,
+    0.0758,
+    0.0045
+   ]
+  },
+  "hand_r": {
+   "bone": "hand_r",
+   "humanoid": "RightHand",
+   "position_character_m": [
+    -0.6436,
+    -0.0871,
+    1.4424
+   ],
+   "offset_in_bone_space_m": [
+    -0.0006,
+    0.0758,
+    0.0045
+   ]
+  }
+ },
+ "measurements": {
+  "head_center": [
+   -0.0003,
+   -0.0655,
+   1.7404
+  ],
+  "top_z": 1.861,
+  "chin_z": 1.5739,
+  "eye_z": 1.7404,
+  "half_w": 0.1528,
+  "half_d": 0.1787,
+  "front_y": -0.2442,
+  "back_y": 0.1133,
+  "neck_z": 1.5159,
+  "neck_y": -0.0431,
+  "chest_front_y": -0.1741,
+  "chest_back_y": 0.0597,
+  "chest_z": 1.3827,
+  "chest_half_w": 0.1539,
+  "shoulder_l": [
+   0.1525,
+   -0.0598,
+   1.4375
+  ],
+  "shoulder_r": [
+   -0.1525,
+   -0.0598,
+   1.4375
+  ],
+  "hand_l": [
+   0.6436,
+   -0.0871,
+   1.4424
+  ],
+  "hand_r": [
+   -0.6436,
+   -0.0871,
+   1.4424
+  ]
+ },
+ "height_m": 1.861
+}

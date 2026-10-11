@@ -1,0 +1,188 @@
+{
+ "version": 3,
+ "scope": "art-side customiser data proposal (Snapchat/Bitmoji-style); NOT the backend Look schema",
+ "look": {
+  "base": "manifest base id (fixes gender, family, skeleton proportions)",
+  "skin": "skin_01..skin_10 from this export skin_palette (fair -> deep); UI ids collide with older hexes: translate explicitly",
+  "parts": "{head, top, bottom, feet}: keys from the base family library (modular families only); omitted = base default",
+  "hair": "UBC only: hair_library key or none; modular families pick hair via parts.head",
+  "facial": "UBC m only: additive facial hair list",
+  "tints": "{skin, hair, top, bottom, shoes, accent, hat, brows}: palette names or #hex; brows default = brow_color(hair)",
+  "accessories": "list of base accessory keys; one per socket; flags hides_hair/occludes_face/emissive"
+ },
+ "validation": [
+  "reject parts from another family or a non-modular base",
+  "reject bottom/feet and top/bottom pairs listed as gaps",
+  "reject two accessories on one socket",
+  "sum the selected tier of every visible part + accessories and gate on budgets.triangles",
+  "resolve completely or refuse: never keep a stale default actor when a part is missing"
+ ],
+ "tint_formula": "sequential per region: out = lerp(out, tint * min(luminance(out) / max(0.03, luminance(tint_reference[region])), 1.6), mask); luminance in linear light; masks non-colour; family atlases store tintable texels as shade x #9a9a9a so every part of a family re-colours identically",
+ "tint_resolution": "modular families: tints = default_tints of the selected parts (feet, bottom, top, head order) <- base look_defaults <- user tints; brows = brow_color(final hair) unless the user sets brows. UBC/heroes: base look_defaults <- user tints.",
+ "mask_channels": {
+  "skin": {
+   "texture": "TintMask0",
+   "channel": "R"
+  },
+  "hair": {
+   "texture": "TintMask0",
+   "channel": "G"
+  },
+  "top": {
+   "texture": "TintMask0",
+   "channel": "B"
+  },
+  "bottom": {
+   "texture": "TintMask0",
+   "channel": "A"
+  },
+  "shoes": {
+   "texture": "TintMask1",
+   "channel": "R"
+  },
+  "accent": {
+   "texture": "TintMask1",
+   "channel": "G"
+  },
+  "brows": {
+   "texture": "TintMask1",
+   "channel": "B"
+  },
+  "hat": {
+   "texture": "TintMask1",
+   "channel": "A"
+  }
+ },
+ "examples": [
+  {
+   "base": "umm_hoodie",
+   "skin": "skin_04",
+   "parts": {},
+   "tints": {
+    "top": "black",
+    "bottom": "black",
+    "shoes": "white",
+    "hair": "black",
+    "accent": "sol_green"
+   },
+   "accessories": [
+    "pixel_face_mask"
+   ],
+   "label": "Anon"
+  },
+  {
+   "base": "umw_suit",
+   "skin": "skin_09",
+   "parts": {},
+   "tints": {
+    "top": "white",
+    "bottom": "white",
+    "shoes": "gold",
+    "hair": "black",
+    "accent": "gold"
+   },
+   "accessories": [
+    "chain",
+    "shoulder_drone"
+   ],
+   "label": "Whale"
+  },
+  {
+   "base": "umw_punk",
+   "skin": "skin_02",
+   "parts": {},
+   "tints": {
+    "hair": "green",
+    "top": "sol_purple",
+    "bottom": "black",
+    "shoes": "white",
+    "accent": "sol_green"
+   },
+   "accessories": [
+    "headphones"
+   ],
+   "label": "Degen"
+  },
+  {
+   "base": "umm_punk",
+   "skin": "skin_10",
+   "parts": {},
+   "tints": {
+    "hair": "platinum",
+    "top": "red",
+    "bottom": "black",
+    "shoes": "white",
+    "accent": "gold"
+   },
+   "accessories": [
+    "headphones",
+    "chain"
+   ],
+   "label": "KOL / caller"
+  },
+  {
+   "base": "umw_cyber",
+   "skin": "skin_06",
+   "parts": {},
+   "tints": {
+    "hair": "black",
+    "top": "charcoal",
+    "accent": "sol_green",
+    "hat": "sol_green"
+   },
+   "accessories": [
+    "visor",
+    "shoulder_drone"
+   ],
+   "label": "Builder"
+  },
+  {
+   "base": "umm_swat",
+   "skin": "skin_05",
+   "parts": {},
+   "tints": {
+    "top": "charcoal",
+    "bottom": "black",
+    "hat": "black",
+    "accent": "red"
+   },
+   "accessories": [
+    "visor"
+   ],
+   "label": "Sniper bot"
+  },
+  {
+   "base": "umm_tee",
+   "skin": "skin_08",
+   "parts": {},
+   "tints": {
+    "top": "orange",
+    "bottom": "black",
+    "shoes": "orange",
+    "hair": "black",
+    "accent": "gold"
+   },
+   "accessories": [
+    "laser_eyes",
+    "chain"
+   ],
+   "label": "Laser-eyes maxi"
+  },
+  {
+   "base": "umw_hood",
+   "skin": "skin_03",
+   "parts": {},
+   "tints": {
+    "hat": "black",
+    "top": "black",
+    "accent": "sol_purple",
+    "hair": "black"
+   },
+   "accessories": [
+    "visor",
+    "chain"
+   ],
+   "label": "Cabal"
+  }
+ ]
+}

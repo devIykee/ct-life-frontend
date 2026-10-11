@@ -1,0 +1,10595 @@
+{
+ "version": "art-runtime-map-v3-20261010",
+ "purpose": "Unity integration input; not a shipped UI or server catalogue",
+ "current_wire_fields": [
+  "skinTone",
+  "headId",
+  "hairId",
+  "topId",
+  "bottomId",
+  "shoesId",
+  "accId"
+ ],
+ "wire_status": "no aliases registered: integrator must add baseId (or encode it in headId) before modular looks can travel",
+ "bases": {
+  "umm_hoodie": {
+   "family": "umm",
+   "gender": "m",
+   "geometry_root": "art/cast/v3/export",
+   "complete_default": {
+    "crowd_fbx": "bases/umm_hoodie/umm_hoodie.fbx",
+    "hero_fbx": "bases/umm_hoodie/umm_hoodie_Hero.fbx"
+   },
+   "material": "umm_Mat (shared by the whole family)",
+   "textures": {
+    "albedo": "families/umm/umm_Albedo.png",
+    "mask0": "families/umm/umm_TintMask0.png",
+    "mask1": "families/umm/umm_TintMask1.png",
+    "emission": "families/umm/umm_Emission.png"
+   },
+   "tint_reference": {
+    "skin": "#9a9a9a",
+    "hair": "#9a9a9a",
+    "top": "#9a9a9a",
+    "bottom": "#9a9a9a",
+    "shoes": "#9a9a9a",
+    "accent": "#9a9a9a",
+    "brows": "#9a9a9a",
+    "hat": "#9a9a9a"
+   },
+   "look_defaults": {
+    "skin_tone": "skin_02",
+    "skin": "#e7bfa5",
+    "hair": "#3a2519",
+    "top": "#1c1d22",
+    "bottom": "#3a3d44",
+    "shoes": "#f2f2ee",
+    "accent": "#402814",
+    "brows": "#261b16"
+   },
+   "sockets": {
+    "head_top": {
+     "bone": "Head",
+     "humanoid": "Head",
+     "position_character_m": [
+      -0.0003,
+      -0.0416,
+      1.8716
+     ],
+     "offset_in_bone_space_m": [
+      -0.0,
+      0.2789,
+      -0.0015
+     ]
+    },
+    "face": {
+     "bone": "Head",
+     "humanoid": "Head",
+     "position_character_m": [
+      -0.0003,
+      -0.1704,
+      1.7495
+     ],
+     "offset_in_bone_space_m": [
+      -0.0,
+      0.1569,
+      0.1273
+     ]
+    },
+    "neck": {
+     "bone": "spine_03",
+     "humanoid": "UpperChest",
+     "position_character_m": [
+      -0.0,
+      -0.1714,
+      1.4959
+     ],
+     "offset_in_bone_space_m": [
+      0.0003,
+      0.1157,
+      0.1287
+     ]
+    },
+    "back": {
+     "bone": "spine_03",
+     "humanoid": "UpperChest",
+     "position_character_m": [
+      -0.0,
+      0.0911,
+      1.3827
+     ],
+     "offset_in_bone_space_m": [
+      0.0003,
+      -0.0025,
+      -0.1317
+     ]
+    },
+    "shoulder_l": {
+     "bone": "clavicle_l",
+     "humanoid": "LeftShoulder",
+     "position_character_m": [
+      0.1525,
+      -0.0598,
+      1.4975
+     ],
+     "offset_in_bone_space_m": [
+      -0.0263,
+      0.0994,
+      0.0421
+     ]
+    },
+    "shoulder_r": {
+     "bone": "clavicle_r",
+     "humanoid": "RightShoulder",
+     "position_character_m": [
+      -0.1525,
+      -0.0598,
+      1.4975
+     ],
+     "offset_in_bone_space_m": [
+      0.0263,
+      0.0994,
+      0.0421
+     ]
+    },
+    "hand_l": {
+     "bone": "hand_l",
+     "humanoid": "LeftHand",
+     "position_character_m": [
+      0.6436,
+      -0.0871,
+      1.4424
+     ],
+     "offset_in_bone_space_m": [
+      0.0006,
+      0.0758,
+      0.0045
+     ]
+    },
+    "hand_r": {
+     "bone": "hand_r",
+     "humanoid": "RightHand",
+     "position_character_m": [
+      -0.6436,
+      -0.0871,
+      1.4424
+     ],
+     "offset_in_bone_space_m": [
+      -0.0006,
+      0.0758,
+      0.0045
+     ]
+    }
+   },
+   "accessories": {
+    "pixel_face_mask": {
+     "fbx": "bases/umm_hoodie/accessories/umm_hoodie__pixel_face_mask.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "occludes_face": true
+     }
+    },
+    "visor": {
+     "fbx": "bases/umm_hoodie/accessories/umm_hoodie__visor.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "double_sided": true
+     }
+    },
+    "helmet": {
+     "fbx": "bases/umm_hoodie/accessories/umm_hoodie__helmet.fbx",
+     "socket": "head_top",
+     "bone": "Head",
+     "flags": {
+      "hides_hair": true,
+      "occludes_face": true
+     }
+    },
+    "laser_eyes": {
+     "fbx": "bases/umm_hoodie/accessories/umm_hoodie__laser_eyes.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "emissive": true
+     }
+    },
+    "chain": {
+     "fbx": "bases/umm_hoodie/accessories/umm_hoodie__chain.fbx",
+     "socket": "neck",
+     "bone": "spine_03",
+     "flags": {}
+    },
+    "headphones": {
+     "fbx": "bases/umm_hoodie/accessories/umm_hoodie__headphones.fbx",
+     "socket": "head_top",
+     "bone": "Head",
+     "flags": {}
+    },
+    "small_wings": {
+     "fbx": "bases/umm_hoodie/accessories/umm_hoodie__small_wings.fbx",
+     "socket": "back",
+     "bone": "spine_03",
+     "flags": {
+      "double_sided": true
+     }
+    },
+    "shoulder_drone": {
+     "fbx": "bases/umm_hoodie/accessories/umm_hoodie__shoulder_drone.fbx",
+     "socket": "shoulder_r",
+     "bone": "clavicle_r",
+     "flags": {
+      "emissive": true
+     }
+    },
+    "backpack": {
+     "fbx": "families/umm/parts/umm__extra_backpack.fbx",
+     "socket": "back",
+     "bone": "spine_03",
+     "flags": {
+      "skinned": true
+     }
+    }
+   },
+   "wire_head_id": null,
+   "slots": {
+    "Head": "head/hoodie",
+    "Top": "top/hoodie",
+    "Bottom": "bottom/hoodie",
+    "Shoes": "feet/hoodie"
+   },
+   "options": {
+    "head": [
+     "astro",
+     "beach",
+     "farmer",
+     "hiker",
+     "hoodie",
+     "punk",
+     "suit",
+     "swat",
+     "tee",
+     "worker"
+    ],
+    "top": [
+     "astro",
+     "beach",
+     "farmer",
+     "hiker",
+     "hoodie",
+     "punk",
+     "suit",
+     "swat",
+     "tee",
+     "worker"
+    ],
+    "bottom": [
+     "astro",
+     "beach",
+     "farmer",
+     "hiker",
+     "hoodie",
+     "punk",
+     "suit",
+     "swat",
+     "tee",
+     "worker"
+    ],
+    "feet": [
+     "astro",
+     "beach",
+     "farmer",
+     "hiker",
+     "hoodie",
+     "punk",
+     "suit",
+     "swat",
+     "tee",
+     "worker"
+    ]
+   },
+   "compatibility": {
+    "bottom_feet": {
+     "hoodie": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "tee": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "suit": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "punk": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "swat": [
+      "astro",
+      "farmer",
+      "hiker",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "astro": [
+      "astro",
+      "farmer",
+      "hiker",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "worker": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "hiker": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "farmer": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "beach": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ]
+    },
+    "top_bottom": {
+     "hoodie": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "tee": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "suit": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "punk": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "swat": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "astro": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "worker": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "hiker": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "farmer": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "beach": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ]
+    },
+    "note": "pairs whose stacked z ranges leave a visible gap are not offered"
+   },
+   "hair": "hair/headwear is part of the head option (Quaternius heads carry their hair/hat); hair colour is a tint"
+  },
+  "umm_tee": {
+   "family": "umm",
+   "gender": "m",
+   "geometry_root": "art/cast/v3/export",
+   "complete_default": {
+    "crowd_fbx": "bases/umm_tee/umm_tee.fbx",
+    "hero_fbx": "bases/umm_tee/umm_tee_Hero.fbx"
+   },
+   "material": "umm_Mat (shared by the whole family)",
+   "textures": {
+    "albedo": "families/umm/umm_Albedo.png",
+    "mask0": "families/umm/umm_TintMask0.png",
+    "mask1": "families/umm/umm_TintMask1.png",
+    "emission": "families/umm/umm_Emission.png"
+   },
+   "tint_reference": {
+    "skin": "#9a9a9a",
+    "hair": "#9a9a9a",
+    "top": "#9a9a9a",
+    "bottom": "#9a9a9a",
+    "shoes": "#9a9a9a",
+    "accent": "#9a9a9a",
+    "brows": "#9a9a9a",
+    "hat": "#9a9a9a"
+   },
+   "look_defaults": {
+    "skin_tone": "skin_08",
+    "skin": "#7b5239",
+    "hair": "#1b1512",
+    "top": "#ff7a1a",
+    "bottom": "#3b5a8a",
+    "shoes": "#f2f2ee",
+    "accent": "#3e2714",
+    "brows": "#191514"
+   },
+   "sockets": {
+    "head_top": {
+     "bone": "Head",
+     "humanoid": "Head",
+     "position_character_m": [
+      -0.0003,
+      -0.0012,
+      1.862
+     ],
+     "offset_in_bone_space_m": [
+      -0.0,
+      0.2693,
+      -0.0419
+     ]
+    },
+    "face": {
+     "bone": "Head",
+     "humanoid": "Head",
+     "position_character_m": [
+      -0.0003,
+      -0.1704,
+      1.736
+     ],
+     "offset_in_bone_space_m": [
+      -0.0,
+      0.1434,
+      0.1273
+     ]
+    },
+    "neck": {
+     "bone": "spine_03",
+     "humanoid": "UpperChest",
+     "position_character_m": [
+      -0.0,
+      -0.1641,
+      1.4959
+     ],
+     "offset_in_bone_space_m": [
+      0.0003,
+      0.1155,
+      0.1214
+     ]
+    },
+    "back": {
+     "bone": "spine_03",
+     "humanoid": "UpperChest",
+     "position_character_m": [
+      -0.0,
+      0.0597,
+      1.3827
+     ],
+     "offset_in_bone_space_m": [
+      0.0003,
+      -0.0019,
+      -0.1002
+     ]
+    },
+    "shoulder_l": {
+     "bone": "clavicle_l",
+     "humanoid": "LeftShoulder",
+     "position_character_m": [
+      0.1525,
+      -0.0598,
+      1.4975
+     ],
+     "offset_in_bone_space_m": [
+      -0.0263,
+      0.0994,
+      0.0421
+     ]
+    },
+    "shoulder_r": {
+     "bone": "clavicle_r",
+     "humanoid": "RightShoulder",
+     "position_character_m": [
+      -0.1525,
+      -0.0598,
+      1.4975
+     ],
+     "offset_in_bone_space_m": [
+      0.0263,
+      0.0994,
+      0.0421
+     ]
+    },
+    "hand_l": {
+     "bone": "hand_l",
+     "humanoid": "LeftHand",
+     "position_character_m": [
+      0.6436,
+      -0.0871,
+      1.4424
+     ],
+     "offset_in_bone_space_m": [
+      0.0006,
+      0.0758,
+      0.0045
+     ]
+    },
+    "hand_r": {
+     "bone": "hand_r",
+     "humanoid": "RightHand",
+     "position_character_m": [
+      -0.6436,
+      -0.0871,
+      1.4424
+     ],
+     "offset_in_bone_space_m": [
+      -0.0006,
+      0.0758,
+      0.0045
+     ]
+    }
+   },
+   "accessories": {
+    "pixel_face_mask": {
+     "fbx": "bases/umm_tee/accessories/umm_tee__pixel_face_mask.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "occludes_face": true
+     }
+    },
+    "visor": {
+     "fbx": "bases/umm_tee/accessories/umm_tee__visor.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "double_sided": true
+     }
+    },
+    "helmet": {
+     "fbx": "bases/umm_tee/accessories/umm_tee__helmet.fbx",
+     "socket": "head_top",
+     "bone": "Head",
+     "flags": {
+      "hides_hair": true,
+      "occludes_face": true
+     }
+    },
+    "laser_eyes": {
+     "fbx": "bases/umm_tee/accessories/umm_tee__laser_eyes.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "emissive": true
+     }
+    },
+    "chain": {
+     "fbx": "bases/umm_tee/accessories/umm_tee__chain.fbx",
+     "socket": "neck",
+     "bone": "spine_03",
+     "flags": {}
+    },
+    "headphones": {
+     "fbx": "bases/umm_tee/accessories/umm_tee__headphones.fbx",
+     "socket": "head_top",
+     "bone": "Head",
+     "flags": {}
+    },
+    "small_wings": {
+     "fbx": "bases/umm_tee/accessories/umm_tee__small_wings.fbx",
+     "socket": "back",
+     "bone": "spine_03",
+     "flags": {
+      "double_sided": true
+     }
+    },
+    "shoulder_drone": {
+     "fbx": "bases/umm_tee/accessories/umm_tee__shoulder_drone.fbx",
+     "socket": "shoulder_r",
+     "bone": "clavicle_r",
+     "flags": {
+      "emissive": true
+     }
+    },
+    "backpack": {
+     "fbx": "families/umm/parts/umm__extra_backpack.fbx",
+     "socket": "back",
+     "bone": "spine_03",
+     "flags": {
+      "skinned": true
+     }
+    }
+   },
+   "wire_head_id": null,
+   "slots": {
+    "Head": "head/tee",
+    "Top": "top/tee",
+    "Bottom": "bottom/tee",
+    "Shoes": "feet/tee"
+   },
+   "options": {
+    "head": [
+     "astro",
+     "beach",
+     "farmer",
+     "hiker",
+     "hoodie",
+     "punk",
+     "suit",
+     "swat",
+     "tee",
+     "worker"
+    ],
+    "top": [
+     "astro",
+     "beach",
+     "farmer",
+     "hiker",
+     "hoodie",
+     "punk",
+     "suit",
+     "swat",
+     "tee",
+     "worker"
+    ],
+    "bottom": [
+     "astro",
+     "beach",
+     "farmer",
+     "hiker",
+     "hoodie",
+     "punk",
+     "suit",
+     "swat",
+     "tee",
+     "worker"
+    ],
+    "feet": [
+     "astro",
+     "beach",
+     "farmer",
+     "hiker",
+     "hoodie",
+     "punk",
+     "suit",
+     "swat",
+     "tee",
+     "worker"
+    ]
+   },
+   "compatibility": {
+    "bottom_feet": {
+     "hoodie": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "tee": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "suit": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "punk": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "swat": [
+      "astro",
+      "farmer",
+      "hiker",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "astro": [
+      "astro",
+      "farmer",
+      "hiker",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "worker": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "hiker": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "farmer": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "beach": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ]
+    },
+    "top_bottom": {
+     "hoodie": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "tee": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "suit": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "punk": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "swat": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "astro": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "worker": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "hiker": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "farmer": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "beach": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ]
+    },
+    "note": "pairs whose stacked z ranges leave a visible gap are not offered"
+   },
+   "hair": "hair/headwear is part of the head option (Quaternius heads carry their hair/hat); hair colour is a tint"
+  },
+  "umm_suit": {
+   "family": "umm",
+   "gender": "m",
+   "geometry_root": "art/cast/v3/export",
+   "complete_default": {
+    "crowd_fbx": "bases/umm_suit/umm_suit.fbx",
+    "hero_fbx": "bases/umm_suit/umm_suit_Hero.fbx"
+   },
+   "material": "umm_Mat (shared by the whole family)",
+   "textures": {
+    "albedo": "families/umm/umm_Albedo.png",
+    "mask0": "families/umm/umm_TintMask0.png",
+    "mask1": "families/umm/umm_TintMask1.png",
+    "emission": "families/umm/umm_Emission.png"
+   },
+   "tint_reference": {
+    "skin": "#9a9a9a",
+    "hair": "#9a9a9a",
+    "top": "#9a9a9a",
+    "bottom": "#9a9a9a",
+    "shoes": "#9a9a9a",
+    "accent": "#9a9a9a",
+    "brows": "#9a9a9a",
+    "hat": "#9a9a9a"
+   },
+   "look_defaults": {
+    "skin_tone": "skin_05",
+    "skin": "#b18060",
+    "hair": "#1b1512",
+    "top": "#1f2c4a",
+    "bottom": "#1f2c4a",
+    "shoes": "#1c1d22",
+    "accent": "#e0a72e",
+    "brows": "#191514"
+   },
+   "sockets": {
+    "head_top": {
+     "bone": "Head",
+     "humanoid": "Head",
+     "position_character_m": [
+      -0.0003,
+      -0.0427,
+      1.861
+     ],
+     "offset_in_bone_space_m": [
+      -0.0,
+      0.2684,
+      -0.0003
+     ]
+    },
+    "face": {
+     "bone": "Head",
+     "humanoid": "Head",
+     "position_character_m": [
+      -0.0003,
+      -0.1704,
+      1.7405
+     ],
+     "offset_in_bone_space_m": [
+      -0.0,
+      0.1478,
+      0.1273
+     ]
+    },
+    "neck": {
+     "bone": "spine_03",
+     "humanoid": "UpperChest",
+     "position_character_m": [
+      -0.0,
+      -0.1602,
+      1.4959
+     ],
+     "offset_in_bone_space_m": [
+      0.0003,
+      0.1155,
+      0.1175
+     ]
+    },
+    "back": {
+     "bone": "spine_03",
+     "humanoid": "UpperChest",
+     "position_character_m": [
+      -0.0,
+      0.0597,
+      1.3827
+     ],
+     "offset_in_bone_space_m": [
+      0.0003,
+      -0.0019,
+      -0.1002
+     ]
+    },
+    "shoulder_l": {
+     "bone": "clavicle_l",
+     "humanoid": "LeftShoulder",
+     "position_character_m": [
+      0.1525,
+      -0.0598,
+      1.4975
+     ],
+     "offset_in_bone_space_m": [
+      -0.0263,
+      0.0994,
+      0.0421
+     ]
+    },
+    "shoulder_r": {
+     "bone": "clavicle_r",
+     "humanoid": "RightShoulder",
+     "position_character_m": [
+      -0.1525,
+      -0.0598,
+      1.4975
+     ],
+     "offset_in_bone_space_m": [
+      0.0263,
+      0.0994,
+      0.0421
+     ]
+    },
+    "hand_l": {
+     "bone": "hand_l",
+     "humanoid": "LeftHand",
+     "position_character_m": [
+      0.6436,
+      -0.0871,
+      1.4424
+     ],
+     "offset_in_bone_space_m": [
+      0.0006,
+      0.0758,
+      0.0045
+     ]
+    },
+    "hand_r": {
+     "bone": "hand_r",
+     "humanoid": "RightHand",
+     "position_character_m": [
+      -0.6436,
+      -0.0871,
+      1.4424
+     ],
+     "offset_in_bone_space_m": [
+      -0.0006,
+      0.0758,
+      0.0045
+     ]
+    }
+   },
+   "accessories": {
+    "pixel_face_mask": {
+     "fbx": "bases/umm_suit/accessories/umm_suit__pixel_face_mask.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "occludes_face": true
+     }
+    },
+    "visor": {
+     "fbx": "bases/umm_suit/accessories/umm_suit__visor.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "double_sided": true
+     }
+    },
+    "helmet": {
+     "fbx": "bases/umm_suit/accessories/umm_suit__helmet.fbx",
+     "socket": "head_top",
+     "bone": "Head",
+     "flags": {
+      "hides_hair": true,
+      "occludes_face": true
+     }
+    },
+    "laser_eyes": {
+     "fbx": "bases/umm_suit/accessories/umm_suit__laser_eyes.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "emissive": true
+     }
+    },
+    "chain": {
+     "fbx": "bases/umm_suit/accessories/umm_suit__chain.fbx",
+     "socket": "neck",
+     "bone": "spine_03",
+     "flags": {}
+    },
+    "headphones": {
+     "fbx": "bases/umm_suit/accessories/umm_suit__headphones.fbx",
+     "socket": "head_top",
+     "bone": "Head",
+     "flags": {}
+    },
+    "small_wings": {
+     "fbx": "bases/umm_suit/accessories/umm_suit__small_wings.fbx",
+     "socket": "back",
+     "bone": "spine_03",
+     "flags": {
+      "double_sided": true
+     }
+    },
+    "shoulder_drone": {
+     "fbx": "bases/umm_suit/accessories/umm_suit__shoulder_drone.fbx",
+     "socket": "shoulder_r",
+     "bone": "clavicle_r",
+     "flags": {
+      "emissive": true
+     }
+    },
+    "backpack": {
+     "fbx": "families/umm/parts/umm__extra_backpack.fbx",
+     "socket": "back",
+     "bone": "spine_03",
+     "flags": {
+      "skinned": true
+     }
+    }
+   },
+   "wire_head_id": null,
+   "slots": {
+    "Head": "head/suit",
+    "Top": "top/suit",
+    "Bottom": "bottom/suit",
+    "Shoes": "feet/suit"
+   },
+   "options": {
+    "head": [
+     "astro",
+     "beach",
+     "farmer",
+     "hiker",
+     "hoodie",
+     "punk",
+     "suit",
+     "swat",
+     "tee",
+     "worker"
+    ],
+    "top": [
+     "astro",
+     "beach",
+     "farmer",
+     "hiker",
+     "hoodie",
+     "punk",
+     "suit",
+     "swat",
+     "tee",
+     "worker"
+    ],
+    "bottom": [
+     "astro",
+     "beach",
+     "farmer",
+     "hiker",
+     "hoodie",
+     "punk",
+     "suit",
+     "swat",
+     "tee",
+     "worker"
+    ],
+    "feet": [
+     "astro",
+     "beach",
+     "farmer",
+     "hiker",
+     "hoodie",
+     "punk",
+     "suit",
+     "swat",
+     "tee",
+     "worker"
+    ]
+   },
+   "compatibility": {
+    "bottom_feet": {
+     "hoodie": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "tee": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "suit": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "punk": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "swat": [
+      "astro",
+      "farmer",
+      "hiker",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "astro": [
+      "astro",
+      "farmer",
+      "hiker",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "worker": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "hiker": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "farmer": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "beach": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ]
+    },
+    "top_bottom": {
+     "hoodie": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "tee": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "suit": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "punk": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "swat": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "astro": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "worker": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "hiker": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "farmer": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "beach": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ]
+    },
+    "note": "pairs whose stacked z ranges leave a visible gap are not offered"
+   },
+   "hair": "hair/headwear is part of the head option (Quaternius heads carry their hair/hat); hair colour is a tint"
+  },
+  "umm_punk": {
+   "family": "umm",
+   "gender": "m",
+   "geometry_root": "art/cast/v3/export",
+   "complete_default": {
+    "crowd_fbx": "bases/umm_punk/umm_punk.fbx",
+    "hero_fbx": "bases/umm_punk/umm_punk_Hero.fbx"
+   },
+   "material": "umm_Mat (shared by the whole family)",
+   "textures": {
+    "albedo": "families/umm/umm_Albedo.png",
+    "mask0": "families/umm/umm_TintMask0.png",
+    "mask1": "families/umm/umm_TintMask1.png",
+    "emission": "families/umm/umm_Emission.png"
+   },
+   "tint_reference": {
+    "skin": "#9a9a9a",
+    "hair": "#9a9a9a",
+    "top": "#9a9a9a",
+    "bottom": "#9a9a9a",
+    "shoes": "#9a9a9a",
+    "accent": "#9a9a9a",
+    "brows": "#9a9a9a",
+    "hat": "#9a9a9a"
+   },
+   "look_defaults": {
+    "skin_tone": "skin_01",
+    "skin": "#f7d7c3",
+    "hair": "#36a36a",
+    "top": "#1c1d22",
+    "bottom": "#3b5a8a",
+    "shoes": "#1c1d22",
+    "accent": "#b1b1b1",
+    "brows": "#355441"
+   },
+   "sockets": {
+    "head_top": {
+     "bone": "Head",
+     "humanoid": "Head",
+     "position_character_m": [
+      -0.0003,
+      -0.0354,
+      1.9708
+     ],
+     "offset_in_bone_space_m": [
+      -0.0,
+      0.3782,
+      -0.0077
+     ]
+    },
+    "face": {
+     "bone": "Head",
+     "humanoid": "Head",
+     "position_character_m": [
+      -0.0003,
+      -0.2303,
+      1.8041
+     ],
+     "offset_in_bone_space_m": [
+      -0.0,
+      0.2115,
+      0.1872
+     ]
+    },
+    "neck": {
+     "bone": "spine_03",
+     "humanoid": "UpperChest",
+     "position_character_m": [
+      -0.0,
+      -0.1641,
+      1.4959
+     ],
+     "offset_in_bone_space_m": [
+      0.0003,
+      0.1155,
+      0.1214
+     ]
+    },
+    "back": {
+     "bone": "spine_03",
+     "humanoid": "UpperChest",
+     "position_character_m": [
+      -0.0,
+      0.0545,
+      1.3827
+     ],
+     "offset_in_bone_space_m": [
+      0.0003,
+      -0.0018,
+      -0.0951
+     ]
+    },
+    "shoulder_l": {
+     "bone": "clavicle_l",
+     "humanoid": "LeftShoulder",
+     "position_character_m": [
+      0.1525,
+      -0.0598,
+      1.4975
+     ],
+     "offset_in_bone_space_m": [
+      -0.0263,
+      0.0994,
+      0.0421
+     ]
+    },
+    "shoulder_r": {
+     "bone": "clavicle_r",
+     "humanoid": "RightShoulder",
+     "position_character_m": [
+      -0.1525,
+      -0.0598,
+      1.4975
+     ],
+     "offset_in_bone_space_m": [
+      0.0263,
+      0.0994,
+      0.0421
+     ]
+    },
+    "hand_l": {
+     "bone": "hand_l",
+     "humanoid": "LeftHand",
+     "position_character_m": [
+      0.6436,
+      -0.0871,
+      1.4424
+     ],
+     "offset_in_bone_space_m": [
+      0.0006,
+      0.0758,
+      0.0045
+     ]
+    },
+    "hand_r": {
+     "bone": "hand_r",
+     "humanoid": "RightHand",
+     "position_character_m": [
+      -0.6436,
+      -0.0871,
+      1.4424
+     ],
+     "offset_in_bone_space_m": [
+      -0.0006,
+      0.0758,
+      0.0045
+     ]
+    }
+   },
+   "accessories": {
+    "pixel_face_mask": {
+     "fbx": "bases/umm_punk/accessories/umm_punk__pixel_face_mask.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "occludes_face": true
+     }
+    },
+    "visor": {
+     "fbx": "bases/umm_punk/accessories/umm_punk__visor.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "double_sided": true
+     }
+    },
+    "helmet": {
+     "fbx": "bases/umm_punk/accessories/umm_punk__helmet.fbx",
+     "socket": "head_top",
+     "bone": "Head",
+     "flags": {
+      "hides_hair": true,
+      "occludes_face": true
+     }
+    },
+    "laser_eyes": {
+     "fbx": "bases/umm_punk/accessories/umm_punk__laser_eyes.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "emissive": true
+     }
+    },
+    "chain": {
+     "fbx": "bases/umm_punk/accessories/umm_punk__chain.fbx",
+     "socket": "neck",
+     "bone": "spine_03",
+     "flags": {}
+    },
+    "headphones": {
+     "fbx": "bases/umm_punk/accessories/umm_punk__headphones.fbx",
+     "socket": "head_top",
+     "bone": "Head",
+     "flags": {}
+    },
+    "small_wings": {
+     "fbx": "bases/umm_punk/accessories/umm_punk__small_wings.fbx",
+     "socket": "back",
+     "bone": "spine_03",
+     "flags": {
+      "double_sided": true
+     }
+    },
+    "shoulder_drone": {
+     "fbx": "bases/umm_punk/accessories/umm_punk__shoulder_drone.fbx",
+     "socket": "shoulder_r",
+     "bone": "clavicle_r",
+     "flags": {
+      "emissive": true
+     }
+    },
+    "backpack": {
+     "fbx": "families/umm/parts/umm__extra_backpack.fbx",
+     "socket": "back",
+     "bone": "spine_03",
+     "flags": {
+      "skinned": true
+     }
+    }
+   },
+   "wire_head_id": null,
+   "slots": {
+    "Head": "head/punk",
+    "Top": "top/punk",
+    "Bottom": "bottom/punk",
+    "Shoes": "feet/punk"
+   },
+   "options": {
+    "head": [
+     "astro",
+     "beach",
+     "farmer",
+     "hiker",
+     "hoodie",
+     "punk",
+     "suit",
+     "swat",
+     "tee",
+     "worker"
+    ],
+    "top": [
+     "astro",
+     "beach",
+     "farmer",
+     "hiker",
+     "hoodie",
+     "punk",
+     "suit",
+     "swat",
+     "tee",
+     "worker"
+    ],
+    "bottom": [
+     "astro",
+     "beach",
+     "farmer",
+     "hiker",
+     "hoodie",
+     "punk",
+     "suit",
+     "swat",
+     "tee",
+     "worker"
+    ],
+    "feet": [
+     "astro",
+     "beach",
+     "farmer",
+     "hiker",
+     "hoodie",
+     "punk",
+     "suit",
+     "swat",
+     "tee",
+     "worker"
+    ]
+   },
+   "compatibility": {
+    "bottom_feet": {
+     "hoodie": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "tee": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "suit": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "punk": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "swat": [
+      "astro",
+      "farmer",
+      "hiker",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "astro": [
+      "astro",
+      "farmer",
+      "hiker",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "worker": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "hiker": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "farmer": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "beach": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ]
+    },
+    "top_bottom": {
+     "hoodie": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "tee": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "suit": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "punk": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "swat": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "astro": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "worker": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "hiker": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "farmer": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "beach": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ]
+    },
+    "note": "pairs whose stacked z ranges leave a visible gap are not offered"
+   },
+   "hair": "hair/headwear is part of the head option (Quaternius heads carry their hair/hat); hair colour is a tint"
+  },
+  "umm_swat": {
+   "family": "umm",
+   "gender": "m",
+   "geometry_root": "art/cast/v3/export",
+   "complete_default": {
+    "crowd_fbx": "bases/umm_swat/umm_swat.fbx",
+    "hero_fbx": "bases/umm_swat/umm_swat_Hero.fbx"
+   },
+   "material": "umm_Mat (shared by the whole family)",
+   "textures": {
+    "albedo": "families/umm/umm_Albedo.png",
+    "mask0": "families/umm/umm_TintMask0.png",
+    "mask1": "families/umm/umm_TintMask1.png",
+    "emission": "families/umm/umm_Emission.png"
+   },
+   "tint_reference": {
+    "skin": "#9a9a9a",
+    "hair": "#9a9a9a",
+    "top": "#9a9a9a",
+    "bottom": "#9a9a9a",
+    "shoes": "#9a9a9a",
+    "accent": "#9a9a9a",
+    "brows": "#9a9a9a",
+    "hat": "#9a9a9a"
+   },
+   "look_defaults": {
+    "skin_tone": "skin_07",
+    "skin": "#8e6145",
+    "hair": "#212221",
+    "top": "#1c1d22",
+    "bottom": "#3a3d44",
+    "shoes": "#1c1d22",
+    "accent": "#3a3d44",
+    "brows": "#212221",
+    "hat": "#1c1d22"
+   },
+   "sockets": {
+    "head_top": {
+     "bone": "Head",
+     "humanoid": "Head",
+     "position_character_m": [
+      -0.0003,
+      -0.0541,
+      1.8579
+     ],
+     "offset_in_bone_space_m": [
+      -0.0,
+      0.2652,
+      0.011
+     ]
+    },
+    "face": {
+     "bone": "Head",
+     "humanoid": "Head",
+     "position_character_m": [
+      -0.0003,
+      -0.1919,
+      1.7375
+     ],
+     "offset_in_bone_space_m": [
+      -0.0,
+      0.1449,
+      0.1489
+     ]
+    },
+    "neck": {
+     "bone": "spine_03",
+     "humanoid": "UpperChest",
+     "position_character_m": [
+      -0.0,
+      -0.1787,
+      1.4959
+     ],
+     "offset_in_bone_space_m": [
+      0.0003,
+      0.1158,
+      0.1359
+     ]
+    },
+    "back": {
+     "bone": "spine_03",
+     "humanoid": "UpperChest",
+     "position_character_m": [
+      -0.0,
+      0.0597,
+      1.3827
+     ],
+     "offset_in_bone_space_m": [
+      0.0003,
+      -0.0019,
+      -0.1002
+     ]
+    },
+    "shoulder_l": {
+     "bone": "clavicle_l",
+     "humanoid": "LeftShoulder",
+     "position_character_m": [
+      0.1525,
+      -0.0598,
+      1.4975
+     ],
+     "offset_in_bone_space_m": [
+      -0.0263,
+      0.0994,
+      0.0421
+     ]
+    },
+    "shoulder_r": {
+     "bone": "clavicle_r",
+     "humanoid": "RightShoulder",
+     "position_character_m": [
+      -0.1525,
+      -0.0598,
+      1.4975
+     ],
+     "offset_in_bone_space_m": [
+      0.0263,
+      0.0994,
+      0.0421
+     ]
+    },
+    "hand_l": {
+     "bone": "hand_l",
+     "humanoid": "LeftHand",
+     "position_character_m": [
+      0.6436,
+      -0.0871,
+      1.4424
+     ],
+     "offset_in_bone_space_m": [
+      0.0006,
+      0.0758,
+      0.0045
+     ]
+    },
+    "hand_r": {
+     "bone": "hand_r",
+     "humanoid": "RightHand",
+     "position_character_m": [
+      -0.6436,
+      -0.0871,
+      1.4424
+     ],
+     "offset_in_bone_space_m": [
+      -0.0006,
+      0.0758,
+      0.0045
+     ]
+    }
+   },
+   "accessories": {
+    "pixel_face_mask": {
+     "fbx": "bases/umm_swat/accessories/umm_swat__pixel_face_mask.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "occludes_face": true
+     }
+    },
+    "visor": {
+     "fbx": "bases/umm_swat/accessories/umm_swat__visor.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "double_sided": true
+     }
+    },
+    "helmet": {
+     "fbx": "bases/umm_swat/accessories/umm_swat__helmet.fbx",
+     "socket": "head_top",
+     "bone": "Head",
+     "flags": {
+      "hides_hair": true,
+      "occludes_face": true
+     }
+    },
+    "laser_eyes": {
+     "fbx": "bases/umm_swat/accessories/umm_swat__laser_eyes.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "emissive": true
+     }
+    },
+    "chain": {
+     "fbx": "bases/umm_swat/accessories/umm_swat__chain.fbx",
+     "socket": "neck",
+     "bone": "spine_03",
+     "flags": {}
+    },
+    "headphones": {
+     "fbx": "bases/umm_swat/accessories/umm_swat__headphones.fbx",
+     "socket": "head_top",
+     "bone": "Head",
+     "flags": {}
+    },
+    "small_wings": {
+     "fbx": "bases/umm_swat/accessories/umm_swat__small_wings.fbx",
+     "socket": "back",
+     "bone": "spine_03",
+     "flags": {
+      "double_sided": true
+     }
+    },
+    "shoulder_drone": {
+     "fbx": "bases/umm_swat/accessories/umm_swat__shoulder_drone.fbx",
+     "socket": "shoulder_r",
+     "bone": "clavicle_r",
+     "flags": {
+      "emissive": true
+     }
+    },
+    "backpack": {
+     "fbx": "families/umm/parts/umm__extra_backpack.fbx",
+     "socket": "back",
+     "bone": "spine_03",
+     "flags": {
+      "skinned": true
+     }
+    }
+   },
+   "wire_head_id": null,
+   "slots": {
+    "Head": "head/swat",
+    "Top": "top/swat",
+    "Bottom": "bottom/swat",
+    "Shoes": "feet/swat"
+   },
+   "options": {
+    "head": [
+     "astro",
+     "beach",
+     "farmer",
+     "hiker",
+     "hoodie",
+     "punk",
+     "suit",
+     "swat",
+     "tee",
+     "worker"
+    ],
+    "top": [
+     "astro",
+     "beach",
+     "farmer",
+     "hiker",
+     "hoodie",
+     "punk",
+     "suit",
+     "swat",
+     "tee",
+     "worker"
+    ],
+    "bottom": [
+     "astro",
+     "beach",
+     "farmer",
+     "hiker",
+     "hoodie",
+     "punk",
+     "suit",
+     "swat",
+     "tee",
+     "worker"
+    ],
+    "feet": [
+     "astro",
+     "beach",
+     "farmer",
+     "hiker",
+     "hoodie",
+     "punk",
+     "suit",
+     "swat",
+     "tee",
+     "worker"
+    ]
+   },
+   "compatibility": {
+    "bottom_feet": {
+     "hoodie": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "tee": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "suit": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "punk": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "swat": [
+      "astro",
+      "farmer",
+      "hiker",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "astro": [
+      "astro",
+      "farmer",
+      "hiker",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "worker": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "hiker": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "farmer": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "beach": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ]
+    },
+    "top_bottom": {
+     "hoodie": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "tee": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "suit": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "punk": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "swat": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "astro": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "worker": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "hiker": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "farmer": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "beach": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ]
+    },
+    "note": "pairs whose stacked z ranges leave a visible gap are not offered"
+   },
+   "hair": "hair/headwear is part of the head option (Quaternius heads carry their hair/hat); hair colour is a tint"
+  },
+  "umm_astro": {
+   "family": "umm",
+   "gender": "m",
+   "geometry_root": "art/cast/v3/export",
+   "complete_default": {
+    "crowd_fbx": "bases/umm_astro/umm_astro.fbx",
+    "hero_fbx": "bases/umm_astro/umm_astro_Hero.fbx"
+   },
+   "material": "umm_Mat (shared by the whole family)",
+   "textures": {
+    "albedo": "families/umm/umm_Albedo.png",
+    "mask0": "families/umm/umm_TintMask0.png",
+    "mask1": "families/umm/umm_TintMask1.png",
+    "emission": "families/umm/umm_Emission.png"
+   },
+   "tint_reference": {
+    "skin": "#9a9a9a",
+    "hair": "#9a9a9a",
+    "top": "#9a9a9a",
+    "bottom": "#9a9a9a",
+    "shoes": "#9a9a9a",
+    "accent": "#9a9a9a",
+    "brows": "#9a9a9a",
+    "hat": "#9a9a9a"
+   },
+   "look_defaults": {
+    "skin_tone": "skin_04",
+    "skin": "#c49373",
+    "hair": "#754429",
+    "top": "#a05c30",
+    "bottom": "#2f3b3e",
+    "shoes": "#a05c30",
+    "accent": "#415250",
+    "brows": "#4e362c",
+    "hat": "#a05c30"
+   },
+   "sockets": {
+    "head_top": {
+     "bone": "Head",
+     "humanoid": "Head",
+     "position_character_m": [
+      -0.0003,
+      -0.0287,
+      1.8913
+     ],
+     "offset_in_bone_space_m": [
+      -0.0,
+      0.2986,
+      -0.0144
+     ]
+    },
+    "face": {
+     "bone": "Head",
+     "humanoid": "Head",
+     "position_character_m": [
+      -0.0003,
+      -0.1973,
+      1.6986
+     ],
+     "offset_in_bone_space_m": [
+      -0.0,
+      0.1059,
+      0.1542
+     ]
+    },
+    "neck": {
+     "bone": "spine_03",
+     "humanoid": "UpperChest",
+     "position_character_m": [
+      -0.0,
+      -0.1702,
+      1.4959
+     ],
+     "offset_in_bone_space_m": [
+      0.0003,
+      0.1157,
+      0.1274
+     ]
+    },
+    "back": {
+     "bone": "spine_03",
+     "humanoid": "UpperChest",
+     "position_character_m": [
+      -0.0,
+      0.0659,
+      1.3827
+     ],
+     "offset_in_bone_space_m": [
+      0.0003,
+      -0.002,
+      -0.1064
+     ]
+    },
+    "shoulder_l": {
+     "bone": "clavicle_l",
+     "humanoid": "LeftShoulder",
+     "position_character_m": [
+      0.1525,
+      -0.0598,
+      1.4975
+     ],
+     "offset_in_bone_space_m": [
+      -0.0263,
+      0.0994,
+      0.0421
+     ]
+    },
+    "shoulder_r": {
+     "bone": "clavicle_r",
+     "humanoid": "RightShoulder",
+     "position_character_m": [
+      -0.1525,
+      -0.0598,
+      1.4975
+     ],
+     "offset_in_bone_space_m": [
+      0.0263,
+      0.0994,
+      0.0421
+     ]
+    },
+    "hand_l": {
+     "bone": "hand_l",
+     "humanoid": "LeftHand",
+     "position_character_m": [
+      0.6436,
+      -0.0871,
+      1.4424
+     ],
+     "offset_in_bone_space_m": [
+      0.0006,
+      0.0758,
+      0.0045
+     ]
+    },
+    "hand_r": {
+     "bone": "hand_r",
+     "humanoid": "RightHand",
+     "position_character_m": [
+      -0.6436,
+      -0.0871,
+      1.4424
+     ],
+     "offset_in_bone_space_m": [
+      -0.0006,
+      0.0758,
+      0.0045
+     ]
+    }
+   },
+   "accessories": {
+    "pixel_face_mask": {
+     "fbx": "bases/umm_astro/accessories/umm_astro__pixel_face_mask.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "occludes_face": true
+     }
+    },
+    "visor": {
+     "fbx": "bases/umm_astro/accessories/umm_astro__visor.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "double_sided": true
+     }
+    },
+    "helmet": {
+     "fbx": "bases/umm_astro/accessories/umm_astro__helmet.fbx",
+     "socket": "head_top",
+     "bone": "Head",
+     "flags": {
+      "hides_hair": true,
+      "occludes_face": true
+     }
+    },
+    "laser_eyes": {
+     "fbx": "bases/umm_astro/accessories/umm_astro__laser_eyes.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "emissive": true
+     }
+    },
+    "chain": {
+     "fbx": "bases/umm_astro/accessories/umm_astro__chain.fbx",
+     "socket": "neck",
+     "bone": "spine_03",
+     "flags": {}
+    },
+    "headphones": {
+     "fbx": "bases/umm_astro/accessories/umm_astro__headphones.fbx",
+     "socket": "head_top",
+     "bone": "Head",
+     "flags": {}
+    },
+    "small_wings": {
+     "fbx": "bases/umm_astro/accessories/umm_astro__small_wings.fbx",
+     "socket": "back",
+     "bone": "spine_03",
+     "flags": {
+      "double_sided": true
+     }
+    },
+    "shoulder_drone": {
+     "fbx": "bases/umm_astro/accessories/umm_astro__shoulder_drone.fbx",
+     "socket": "shoulder_r",
+     "bone": "clavicle_r",
+     "flags": {
+      "emissive": true
+     }
+    },
+    "backpack": {
+     "fbx": "families/umm/parts/umm__extra_backpack.fbx",
+     "socket": "back",
+     "bone": "spine_03",
+     "flags": {
+      "skinned": true
+     }
+    }
+   },
+   "wire_head_id": null,
+   "slots": {
+    "Head": "head/astro",
+    "Top": "top/astro",
+    "Bottom": "bottom/astro",
+    "Shoes": "feet/astro"
+   },
+   "options": {
+    "head": [
+     "astro",
+     "beach",
+     "farmer",
+     "hiker",
+     "hoodie",
+     "punk",
+     "suit",
+     "swat",
+     "tee",
+     "worker"
+    ],
+    "top": [
+     "astro",
+     "beach",
+     "farmer",
+     "hiker",
+     "hoodie",
+     "punk",
+     "suit",
+     "swat",
+     "tee",
+     "worker"
+    ],
+    "bottom": [
+     "astro",
+     "beach",
+     "farmer",
+     "hiker",
+     "hoodie",
+     "punk",
+     "suit",
+     "swat",
+     "tee",
+     "worker"
+    ],
+    "feet": [
+     "astro",
+     "beach",
+     "farmer",
+     "hiker",
+     "hoodie",
+     "punk",
+     "suit",
+     "swat",
+     "tee",
+     "worker"
+    ]
+   },
+   "compatibility": {
+    "bottom_feet": {
+     "hoodie": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "tee": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "suit": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "punk": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "swat": [
+      "astro",
+      "farmer",
+      "hiker",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "astro": [
+      "astro",
+      "farmer",
+      "hiker",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "worker": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "hiker": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "farmer": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "beach": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ]
+    },
+    "top_bottom": {
+     "hoodie": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "tee": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "suit": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "punk": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "swat": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "astro": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "worker": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "hiker": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "farmer": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "beach": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ]
+    },
+    "note": "pairs whose stacked z ranges leave a visible gap are not offered"
+   },
+   "hair": "hair/headwear is part of the head option (Quaternius heads carry their hair/hat); hair colour is a tint"
+  },
+  "umm_worker": {
+   "family": "umm",
+   "gender": "m",
+   "geometry_root": "art/cast/v3/export",
+   "complete_default": {
+    "crowd_fbx": "bases/umm_worker/umm_worker.fbx",
+    "hero_fbx": "bases/umm_worker/umm_worker_Hero.fbx"
+   },
+   "material": "umm_Mat (shared by the whole family)",
+   "textures": {
+    "albedo": "families/umm/umm_Albedo.png",
+    "mask0": "families/umm/umm_TintMask0.png",
+    "mask1": "families/umm/umm_TintMask1.png",
+    "emission": "families/umm/umm_Emission.png"
+   },
+   "tint_reference": {
+    "skin": "#9a9a9a",
+    "hair": "#9a9a9a",
+    "top": "#9a9a9a",
+    "bottom": "#9a9a9a",
+    "shoes": "#9a9a9a",
+    "accent": "#9a9a9a",
+    "brows": "#9a9a9a",
+    "hat": "#9a9a9a"
+   },
+   "look_defaults": {
+    "skin_tone": "skin_09",
+    "skin": "#66422d",
+    "hair": "#1b1512",
+    "top": "#b9a27a",
+    "bottom": "#3a3d44",
+    "shoes": "#3e3e3e",
+    "accent": "#ff7a1a",
+    "brows": "#191514",
+    "hat": "#e8b81c"
+   },
+   "sockets": {
+    "head_top": {
+     "bone": "Head",
+     "humanoid": "Head",
+     "position_character_m": [
+      -0.0003,
+      -0.0653,
+      1.8682
+     ],
+     "offset_in_bone_space_m": [
+      -0.0,
+      0.2755,
+      0.0223
+     ]
+    },
+    "face": {
+     "bone": "Head",
+     "humanoid": "Head",
+     "position_character_m": [
+      -0.0003,
+      -0.2333,
+      1.7446
+     ],
+     "offset_in_bone_space_m": [
+      -0.0,
+      0.1519,
+      0.1902
+     ]
+    },
+    "neck": {
+     "bone": "spine_03",
+     "humanoid": "UpperChest",
+     "position_character_m": [
+      -0.0,
+      -0.1641,
+      1.4959
+     ],
+     "offset_in_bone_space_m": [
+      0.0003,
+      0.1155,
+      0.1214
+     ]
+    },
+    "back": {
+     "bone": "spine_03",
+     "humanoid": "UpperChest",
+     "position_character_m": [
+      -0.0,
+      0.0597,
+      1.3827
+     ],
+     "offset_in_bone_space_m": [
+      0.0003,
+      -0.0019,
+      -0.1002
+     ]
+    },
+    "shoulder_l": {
+     "bone": "clavicle_l",
+     "humanoid": "LeftShoulder",
+     "position_character_m": [
+      0.1525,
+      -0.0598,
+      1.4975
+     ],
+     "offset_in_bone_space_m": [
+      -0.0263,
+      0.0994,
+      0.0421
+     ]
+    },
+    "shoulder_r": {
+     "bone": "clavicle_r",
+     "humanoid": "RightShoulder",
+     "position_character_m": [
+      -0.1525,
+      -0.0598,
+      1.4975
+     ],
+     "offset_in_bone_space_m": [
+      0.0263,
+      0.0994,
+      0.0421
+     ]
+    },
+    "hand_l": {
+     "bone": "hand_l",
+     "humanoid": "LeftHand",
+     "position_character_m": [
+      0.6436,
+      -0.0871,
+      1.4424
+     ],
+     "offset_in_bone_space_m": [
+      0.0006,
+      0.0758,
+      0.0045
+     ]
+    },
+    "hand_r": {
+     "bone": "hand_r",
+     "humanoid": "RightHand",
+     "position_character_m": [
+      -0.6436,
+      -0.0871,
+      1.4424
+     ],
+     "offset_in_bone_space_m": [
+      -0.0006,
+      0.0758,
+      0.0045
+     ]
+    }
+   },
+   "accessories": {
+    "pixel_face_mask": {
+     "fbx": "bases/umm_worker/accessories/umm_worker__pixel_face_mask.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "occludes_face": true
+     }
+    },
+    "visor": {
+     "fbx": "bases/umm_worker/accessories/umm_worker__visor.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "double_sided": true
+     }
+    },
+    "helmet": {
+     "fbx": "bases/umm_worker/accessories/umm_worker__helmet.fbx",
+     "socket": "head_top",
+     "bone": "Head",
+     "flags": {
+      "hides_hair": true,
+      "occludes_face": true
+     }
+    },
+    "laser_eyes": {
+     "fbx": "bases/umm_worker/accessories/umm_worker__laser_eyes.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "emissive": true
+     }
+    },
+    "chain": {
+     "fbx": "bases/umm_worker/accessories/umm_worker__chain.fbx",
+     "socket": "neck",
+     "bone": "spine_03",
+     "flags": {}
+    },
+    "headphones": {
+     "fbx": "bases/umm_worker/accessories/umm_worker__headphones.fbx",
+     "socket": "head_top",
+     "bone": "Head",
+     "flags": {}
+    },
+    "small_wings": {
+     "fbx": "bases/umm_worker/accessories/umm_worker__small_wings.fbx",
+     "socket": "back",
+     "bone": "spine_03",
+     "flags": {
+      "double_sided": true
+     }
+    },
+    "shoulder_drone": {
+     "fbx": "bases/umm_worker/accessories/umm_worker__shoulder_drone.fbx",
+     "socket": "shoulder_r",
+     "bone": "clavicle_r",
+     "flags": {
+      "emissive": true
+     }
+    },
+    "backpack": {
+     "fbx": "families/umm/parts/umm__extra_backpack.fbx",
+     "socket": "back",
+     "bone": "spine_03",
+     "flags": {
+      "skinned": true
+     }
+    }
+   },
+   "wire_head_id": null,
+   "slots": {
+    "Head": "head/worker",
+    "Top": "top/worker",
+    "Bottom": "bottom/worker",
+    "Shoes": "feet/worker"
+   },
+   "options": {
+    "head": [
+     "astro",
+     "beach",
+     "farmer",
+     "hiker",
+     "hoodie",
+     "punk",
+     "suit",
+     "swat",
+     "tee",
+     "worker"
+    ],
+    "top": [
+     "astro",
+     "beach",
+     "farmer",
+     "hiker",
+     "hoodie",
+     "punk",
+     "suit",
+     "swat",
+     "tee",
+     "worker"
+    ],
+    "bottom": [
+     "astro",
+     "beach",
+     "farmer",
+     "hiker",
+     "hoodie",
+     "punk",
+     "suit",
+     "swat",
+     "tee",
+     "worker"
+    ],
+    "feet": [
+     "astro",
+     "beach",
+     "farmer",
+     "hiker",
+     "hoodie",
+     "punk",
+     "suit",
+     "swat",
+     "tee",
+     "worker"
+    ]
+   },
+   "compatibility": {
+    "bottom_feet": {
+     "hoodie": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "tee": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "suit": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "punk": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "swat": [
+      "astro",
+      "farmer",
+      "hiker",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "astro": [
+      "astro",
+      "farmer",
+      "hiker",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "worker": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "hiker": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "farmer": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "beach": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ]
+    },
+    "top_bottom": {
+     "hoodie": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "tee": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "suit": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "punk": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "swat": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "astro": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "worker": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "hiker": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "farmer": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "beach": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ]
+    },
+    "note": "pairs whose stacked z ranges leave a visible gap are not offered"
+   },
+   "hair": "hair/headwear is part of the head option (Quaternius heads carry their hair/hat); hair colour is a tint"
+  },
+  "umm_hiker": {
+   "family": "umm",
+   "gender": "m",
+   "geometry_root": "art/cast/v3/export",
+   "complete_default": {
+    "crowd_fbx": "bases/umm_hiker/umm_hiker.fbx",
+    "hero_fbx": "bases/umm_hiker/umm_hiker_Hero.fbx"
+   },
+   "material": "umm_Mat (shared by the whole family)",
+   "textures": {
+    "albedo": "families/umm/umm_Albedo.png",
+    "mask0": "families/umm/umm_TintMask0.png",
+    "mask1": "families/umm/umm_TintMask1.png",
+    "emission": "families/umm/umm_Emission.png"
+   },
+   "tint_reference": {
+    "skin": "#9a9a9a",
+    "hair": "#9a9a9a",
+    "top": "#9a9a9a",
+    "bottom": "#9a9a9a",
+    "shoes": "#9a9a9a",
+    "accent": "#9a9a9a",
+    "brows": "#9a9a9a",
+    "hat": "#9a9a9a"
+   },
+   "look_defaults": {
+    "skin_tone": "skin_06",
+    "skin": "#a07051",
+    "hair": "#5e3b24",
+    "top": "#4b5320",
+    "bottom": "#b9a27a",
+    "shoes": "#3e3e3e",
+    "accent": "#575135",
+    "brows": "#3f2e25"
+   },
+   "sockets": {
+    "head_top": {
+     "bone": "Head",
+     "humanoid": "Head",
+     "position_character_m": [
+      -0.0003,
+      -0.0407,
+      1.8614
+     ],
+     "offset_in_bone_space_m": [
+      -0.0,
+      0.2687,
+      -0.0024
+     ]
+    },
+    "face": {
+     "bone": "Head",
+     "humanoid": "Head",
+     "position_character_m": [
+      -0.0003,
+      -0.1751,
+      1.7262
+     ],
+     "offset_in_bone_space_m": [
+      -0.0,
+      0.1335,
+      0.132
+     ]
+    },
+    "neck": {
+     "bone": "spine_03",
+     "humanoid": "UpperChest",
+     "position_character_m": [
+      -0.0,
+      -0.1735,
+      1.4959
+     ],
+     "offset_in_bone_space_m": [
+      0.0003,
+      0.1157,
+      0.1308
+     ]
+    },
+    "back": {
+     "bone": "spine_03",
+     "humanoid": "UpperChest",
+     "position_character_m": [
+      -0.0,
+      0.0597,
+      1.3827
+     ],
+     "offset_in_bone_space_m": [
+      0.0003,
+      -0.0019,
+      -0.1002
+     ]
+    },
+    "shoulder_l": {
+     "bone": "clavicle_l",
+     "humanoid": "LeftShoulder",
+     "position_character_m": [
+      0.1525,
+      -0.0598,
+      1.4975
+     ],
+     "offset_in_bone_space_m": [
+      -0.0263,
+      0.0994,
+      0.0421
+     ]
+    },
+    "shoulder_r": {
+     "bone": "clavicle_r",
+     "humanoid": "RightShoulder",
+     "position_character_m": [
+      -0.1525,
+      -0.0598,
+      1.4975
+     ],
+     "offset_in_bone_space_m": [
+      0.0263,
+      0.0994,
+      0.0421
+     ]
+    },
+    "hand_l": {
+     "bone": "hand_l",
+     "humanoid": "LeftHand",
+     "position_character_m": [
+      0.6436,
+      -0.0871,
+      1.4424
+     ],
+     "offset_in_bone_space_m": [
+      0.0006,
+      0.0758,
+      0.0045
+     ]
+    },
+    "hand_r": {
+     "bone": "hand_r",
+     "humanoid": "RightHand",
+     "position_character_m": [
+      -0.6436,
+      -0.0871,
+      1.4424
+     ],
+     "offset_in_bone_space_m": [
+      -0.0006,
+      0.0758,
+      0.0045
+     ]
+    }
+   },
+   "accessories": {
+    "pixel_face_mask": {
+     "fbx": "bases/umm_hiker/accessories/umm_hiker__pixel_face_mask.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "occludes_face": true
+     }
+    },
+    "visor": {
+     "fbx": "bases/umm_hiker/accessories/umm_hiker__visor.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "double_sided": true
+     }
+    },
+    "helmet": {
+     "fbx": "bases/umm_hiker/accessories/umm_hiker__helmet.fbx",
+     "socket": "head_top",
+     "bone": "Head",
+     "flags": {
+      "hides_hair": true,
+      "occludes_face": true
+     }
+    },
+    "laser_eyes": {
+     "fbx": "bases/umm_hiker/accessories/umm_hiker__laser_eyes.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "emissive": true
+     }
+    },
+    "chain": {
+     "fbx": "bases/umm_hiker/accessories/umm_hiker__chain.fbx",
+     "socket": "neck",
+     "bone": "spine_03",
+     "flags": {}
+    },
+    "headphones": {
+     "fbx": "bases/umm_hiker/accessories/umm_hiker__headphones.fbx",
+     "socket": "head_top",
+     "bone": "Head",
+     "flags": {}
+    },
+    "small_wings": {
+     "fbx": "bases/umm_hiker/accessories/umm_hiker__small_wings.fbx",
+     "socket": "back",
+     "bone": "spine_03",
+     "flags": {
+      "double_sided": true
+     }
+    },
+    "shoulder_drone": {
+     "fbx": "bases/umm_hiker/accessories/umm_hiker__shoulder_drone.fbx",
+     "socket": "shoulder_r",
+     "bone": "clavicle_r",
+     "flags": {
+      "emissive": true
+     }
+    },
+    "backpack": {
+     "fbx": "families/umm/parts/umm__extra_backpack.fbx",
+     "socket": "back",
+     "bone": "spine_03",
+     "flags": {
+      "skinned": true
+     }
+    }
+   },
+   "wire_head_id": null,
+   "slots": {
+    "Head": "head/hiker",
+    "Top": "top/hiker",
+    "Bottom": "bottom/hiker",
+    "Shoes": "feet/hiker"
+   },
+   "options": {
+    "head": [
+     "astro",
+     "beach",
+     "farmer",
+     "hiker",
+     "hoodie",
+     "punk",
+     "suit",
+     "swat",
+     "tee",
+     "worker"
+    ],
+    "top": [
+     "astro",
+     "beach",
+     "farmer",
+     "hiker",
+     "hoodie",
+     "punk",
+     "suit",
+     "swat",
+     "tee",
+     "worker"
+    ],
+    "bottom": [
+     "astro",
+     "beach",
+     "farmer",
+     "hiker",
+     "hoodie",
+     "punk",
+     "suit",
+     "swat",
+     "tee",
+     "worker"
+    ],
+    "feet": [
+     "astro",
+     "beach",
+     "farmer",
+     "hiker",
+     "hoodie",
+     "punk",
+     "suit",
+     "swat",
+     "tee",
+     "worker"
+    ]
+   },
+   "compatibility": {
+    "bottom_feet": {
+     "hoodie": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "tee": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "suit": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "punk": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "swat": [
+      "astro",
+      "farmer",
+      "hiker",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "astro": [
+      "astro",
+      "farmer",
+      "hiker",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "worker": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "hiker": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "farmer": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "beach": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ]
+    },
+    "top_bottom": {
+     "hoodie": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "tee": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "suit": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "punk": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "swat": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "astro": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "worker": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "hiker": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "farmer": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "beach": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ]
+    },
+    "note": "pairs whose stacked z ranges leave a visible gap are not offered"
+   },
+   "hair": "hair/headwear is part of the head option (Quaternius heads carry their hair/hat); hair colour is a tint"
+  },
+  "umm_farmer": {
+   "family": "umm",
+   "gender": "m",
+   "geometry_root": "art/cast/v3/export",
+   "complete_default": {
+    "crowd_fbx": "bases/umm_farmer/umm_farmer.fbx",
+    "hero_fbx": "bases/umm_farmer/umm_farmer_Hero.fbx"
+   },
+   "material": "umm_Mat (shared by the whole family)",
+   "textures": {
+    "albedo": "families/umm/umm_Albedo.png",
+    "mask0": "families/umm/umm_TintMask0.png",
+    "mask1": "families/umm/umm_TintMask1.png",
+    "emission": "families/umm/umm_Emission.png"
+   },
+   "tint_reference": {
+    "skin": "#9a9a9a",
+    "hair": "#9a9a9a",
+    "top": "#9a9a9a",
+    "bottom": "#9a9a9a",
+    "shoes": "#9a9a9a",
+    "accent": "#9a9a9a",
+    "brows": "#9a9a9a",
+    "hat": "#9a9a9a"
+   },
+   "look_defaults": {
+    "skin_tone": "skin_10",
+    "skin": "#4f3222",
+    "hair": "#1b1512",
+    "top": "#f2f2ee",
+    "bottom": "#4b5320",
+    "shoes": "#73623f",
+    "accent": "#7a0f1e",
+    "brows": "#191514",
+    "hat": "#b9a27a"
+   },
+   "sockets": {
+    "head_top": {
+     "bone": "Head",
+     "humanoid": "Head",
+     "position_character_m": [
+      -0.0003,
+      -0.0655,
+      1.861
+     ],
+     "offset_in_bone_space_m": [
+      -0.0,
+      0.2683,
+      0.0224
+     ]
+    },
+    "face": {
+     "bone": "Head",
+     "humanoid": "Head",
+     "position_character_m": [
+      -0.0003,
+      -0.2442,
+      1.7404
+     ],
+     "offset_in_bone_space_m": [
+      -0.0,
+      0.1478,
+      0.2011
+     ]
+    },
+    "neck": {
+     "bone": "spine_03",
+     "humanoid": "UpperChest",
+     "position_character_m": [
+      -0.0,
+      -0.1641,
+      1.4959
+     ],
+     "offset_in_bone_space_m": [
+      0.0003,
+      0.1155,
+      0.1214
+     ]
+    },
+    "back": {
+     "bone": "spine_03",
+     "humanoid": "UpperChest",
+     "position_character_m": [
+      -0.0,
+      0.0597,
+      1.3827
+     ],
+     "offset_in_bone_space_m": [
+      0.0003,
+      -0.0019,
+      -0.1002
+     ]
+    },
+    "shoulder_l": {
+     "bone": "clavicle_l",
+     "humanoid": "LeftShoulder",
+     "position_character_m": [
+      0.1525,
+      -0.0598,
+      1.4975
+     ],
+     "offset_in_bone_space_m": [
+      -0.0263,
+      0.0994,
+      0.0421
+     ]
+    },
+    "shoulder_r": {
+     "bone": "clavicle_r",
+     "humanoid": "RightShoulder",
+     "position_character_m": [
+      -0.1525,
+      -0.0598,
+      1.4975
+     ],
+     "offset_in_bone_space_m": [
+      0.0263,
+      0.0994,
+      0.0421
+     ]
+    },
+    "hand_l": {
+     "bone": "hand_l",
+     "humanoid": "LeftHand",
+     "position_character_m": [
+      0.6436,
+      -0.0871,
+      1.4424
+     ],
+     "offset_in_bone_space_m": [
+      0.0006,
+      0.0758,
+      0.0045
+     ]
+    },
+    "hand_r": {
+     "bone": "hand_r",
+     "humanoid": "RightHand",
+     "position_character_m": [
+      -0.6436,
+      -0.0871,
+      1.4424
+     ],
+     "offset_in_bone_space_m": [
+      -0.0006,
+      0.0758,
+      0.0045
+     ]
+    }
+   },
+   "accessories": {
+    "pixel_face_mask": {
+     "fbx": "bases/umm_farmer/accessories/umm_farmer__pixel_face_mask.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "occludes_face": true
+     }
+    },
+    "visor": {
+     "fbx": "bases/umm_farmer/accessories/umm_farmer__visor.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "double_sided": true
+     }
+    },
+    "helmet": {
+     "fbx": "bases/umm_farmer/accessories/umm_farmer__helmet.fbx",
+     "socket": "head_top",
+     "bone": "Head",
+     "flags": {
+      "hides_hair": true,
+      "occludes_face": true
+     }
+    },
+    "laser_eyes": {
+     "fbx": "bases/umm_farmer/accessories/umm_farmer__laser_eyes.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "emissive": true
+     }
+    },
+    "chain": {
+     "fbx": "bases/umm_farmer/accessories/umm_farmer__chain.fbx",
+     "socket": "neck",
+     "bone": "spine_03",
+     "flags": {}
+    },
+    "headphones": {
+     "fbx": "bases/umm_farmer/accessories/umm_farmer__headphones.fbx",
+     "socket": "head_top",
+     "bone": "Head",
+     "flags": {}
+    },
+    "small_wings": {
+     "fbx": "bases/umm_farmer/accessories/umm_farmer__small_wings.fbx",
+     "socket": "back",
+     "bone": "spine_03",
+     "flags": {
+      "double_sided": true
+     }
+    },
+    "shoulder_drone": {
+     "fbx": "bases/umm_farmer/accessories/umm_farmer__shoulder_drone.fbx",
+     "socket": "shoulder_r",
+     "bone": "clavicle_r",
+     "flags": {
+      "emissive": true
+     }
+    },
+    "backpack": {
+     "fbx": "families/umm/parts/umm__extra_backpack.fbx",
+     "socket": "back",
+     "bone": "spine_03",
+     "flags": {
+      "skinned": true
+     }
+    }
+   },
+   "wire_head_id": null,
+   "slots": {
+    "Head": "head/farmer",
+    "Top": "top/farmer",
+    "Bottom": "bottom/farmer",
+    "Shoes": "feet/farmer"
+   },
+   "options": {
+    "head": [
+     "astro",
+     "beach",
+     "farmer",
+     "hiker",
+     "hoodie",
+     "punk",
+     "suit",
+     "swat",
+     "tee",
+     "worker"
+    ],
+    "top": [
+     "astro",
+     "beach",
+     "farmer",
+     "hiker",
+     "hoodie",
+     "punk",
+     "suit",
+     "swat",
+     "tee",
+     "worker"
+    ],
+    "bottom": [
+     "astro",
+     "beach",
+     "farmer",
+     "hiker",
+     "hoodie",
+     "punk",
+     "suit",
+     "swat",
+     "tee",
+     "worker"
+    ],
+    "feet": [
+     "astro",
+     "beach",
+     "farmer",
+     "hiker",
+     "hoodie",
+     "punk",
+     "suit",
+     "swat",
+     "tee",
+     "worker"
+    ]
+   },
+   "compatibility": {
+    "bottom_feet": {
+     "hoodie": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "tee": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "suit": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "punk": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "swat": [
+      "astro",
+      "farmer",
+      "hiker",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "astro": [
+      "astro",
+      "farmer",
+      "hiker",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "worker": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "hiker": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "farmer": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "beach": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ]
+    },
+    "top_bottom": {
+     "hoodie": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "tee": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "suit": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "punk": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "swat": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "astro": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "worker": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "hiker": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "farmer": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "beach": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ]
+    },
+    "note": "pairs whose stacked z ranges leave a visible gap are not offered"
+   },
+   "hair": "hair/headwear is part of the head option (Quaternius heads carry their hair/hat); hair colour is a tint"
+  },
+  "umm_beach": {
+   "family": "umm",
+   "gender": "m",
+   "geometry_root": "art/cast/v3/export",
+   "complete_default": {
+    "crowd_fbx": "bases/umm_beach/umm_beach.fbx",
+    "hero_fbx": "bases/umm_beach/umm_beach_Hero.fbx"
+   },
+   "material": "umm_Mat (shared by the whole family)",
+   "textures": {
+    "albedo": "families/umm/umm_Albedo.png",
+    "mask0": "families/umm/umm_TintMask0.png",
+    "mask1": "families/umm/umm_TintMask1.png",
+    "emission": "families/umm/umm_Emission.png"
+   },
+   "tint_reference": {
+    "skin": "#9a9a9a",
+    "hair": "#9a9a9a",
+    "top": "#9a9a9a",
+    "bottom": "#9a9a9a",
+    "shoes": "#9a9a9a",
+    "accent": "#9a9a9a",
+    "brows": "#9a9a9a",
+    "hat": "#9a9a9a"
+   },
+   "look_defaults": {
+    "skin_tone": "skin_03",
+    "skin": "#d6a88a",
+    "hair": "#c9a463",
+    "top": "#f2f2ee",
+    "bottom": "#1aa6a6",
+    "shoes": "#7b2633",
+    "accent": "#ac8548",
+    "brows": "#574c3b"
+   },
+   "sockets": {
+    "head_top": {
+     "bone": "Head",
+     "humanoid": "Head",
+     "position_character_m": [
+      -0.0003,
+      -0.0475,
+      1.8831
+     ],
+     "offset_in_bone_space_m": [
+      -0.0,
+      0.2904,
+      0.0044
+     ]
+    },
+    "face": {
+     "bone": "Head",
+     "humanoid": "Head",
+     "position_character_m": [
+      -0.0003,
+      -0.1811,
+      1.7532
+     ],
+     "offset_in_bone_space_m": [
+      -0.0,
+      0.1606,
+      0.138
+     ]
+    },
+    "neck": {
+     "bone": "spine_03",
+     "humanoid": "UpperChest",
+     "position_character_m": [
+      -0.0,
+      -0.1641,
+      1.4959
+     ],
+     "offset_in_bone_space_m": [
+      0.0003,
+      0.1155,
+      0.1214
+     ]
+    },
+    "back": {
+     "bone": "spine_03",
+     "humanoid": "UpperChest",
+     "position_character_m": [
+      -0.0,
+      0.0498,
+      1.3827
+     ],
+     "offset_in_bone_space_m": [
+      0.0003,
+      -0.0017,
+      -0.0904
+     ]
+    },
+    "shoulder_l": {
+     "bone": "clavicle_l",
+     "humanoid": "LeftShoulder",
+     "position_character_m": [
+      0.1525,
+      -0.0598,
+      1.4975
+     ],
+     "offset_in_bone_space_m": [
+      -0.0263,
+      0.0994,
+      0.0421
+     ]
+    },
+    "shoulder_r": {
+     "bone": "clavicle_r",
+     "humanoid": "RightShoulder",
+     "position_character_m": [
+      -0.1525,
+      -0.0598,
+      1.4975
+     ],
+     "offset_in_bone_space_m": [
+      0.0263,
+      0.0994,
+      0.0421
+     ]
+    },
+    "hand_l": {
+     "bone": "hand_l",
+     "humanoid": "LeftHand",
+     "position_character_m": [
+      0.6436,
+      -0.0871,
+      1.4424
+     ],
+     "offset_in_bone_space_m": [
+      0.0006,
+      0.0758,
+      0.0045
+     ]
+    },
+    "hand_r": {
+     "bone": "hand_r",
+     "humanoid": "RightHand",
+     "position_character_m": [
+      -0.6436,
+      -0.0871,
+      1.4424
+     ],
+     "offset_in_bone_space_m": [
+      -0.0006,
+      0.0758,
+      0.0045
+     ]
+    }
+   },
+   "accessories": {
+    "pixel_face_mask": {
+     "fbx": "bases/umm_beach/accessories/umm_beach__pixel_face_mask.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "occludes_face": true
+     }
+    },
+    "visor": {
+     "fbx": "bases/umm_beach/accessories/umm_beach__visor.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "double_sided": true
+     }
+    },
+    "helmet": {
+     "fbx": "bases/umm_beach/accessories/umm_beach__helmet.fbx",
+     "socket": "head_top",
+     "bone": "Head",
+     "flags": {
+      "hides_hair": true,
+      "occludes_face": true
+     }
+    },
+    "laser_eyes": {
+     "fbx": "bases/umm_beach/accessories/umm_beach__laser_eyes.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "emissive": true
+     }
+    },
+    "chain": {
+     "fbx": "bases/umm_beach/accessories/umm_beach__chain.fbx",
+     "socket": "neck",
+     "bone": "spine_03",
+     "flags": {}
+    },
+    "headphones": {
+     "fbx": "bases/umm_beach/accessories/umm_beach__headphones.fbx",
+     "socket": "head_top",
+     "bone": "Head",
+     "flags": {}
+    },
+    "small_wings": {
+     "fbx": "bases/umm_beach/accessories/umm_beach__small_wings.fbx",
+     "socket": "back",
+     "bone": "spine_03",
+     "flags": {
+      "double_sided": true
+     }
+    },
+    "shoulder_drone": {
+     "fbx": "bases/umm_beach/accessories/umm_beach__shoulder_drone.fbx",
+     "socket": "shoulder_r",
+     "bone": "clavicle_r",
+     "flags": {
+      "emissive": true
+     }
+    },
+    "backpack": {
+     "fbx": "families/umm/parts/umm__extra_backpack.fbx",
+     "socket": "back",
+     "bone": "spine_03",
+     "flags": {
+      "skinned": true
+     }
+    }
+   },
+   "wire_head_id": null,
+   "slots": {
+    "Head": "head/beach",
+    "Top": "top/beach",
+    "Bottom": "bottom/beach",
+    "Shoes": "feet/beach"
+   },
+   "options": {
+    "head": [
+     "astro",
+     "beach",
+     "farmer",
+     "hiker",
+     "hoodie",
+     "punk",
+     "suit",
+     "swat",
+     "tee",
+     "worker"
+    ],
+    "top": [
+     "astro",
+     "beach",
+     "farmer",
+     "hiker",
+     "hoodie",
+     "punk",
+     "suit",
+     "swat",
+     "tee",
+     "worker"
+    ],
+    "bottom": [
+     "astro",
+     "beach",
+     "farmer",
+     "hiker",
+     "hoodie",
+     "punk",
+     "suit",
+     "swat",
+     "tee",
+     "worker"
+    ],
+    "feet": [
+     "astro",
+     "beach",
+     "farmer",
+     "hiker",
+     "hoodie",
+     "punk",
+     "suit",
+     "swat",
+     "tee",
+     "worker"
+    ]
+   },
+   "compatibility": {
+    "bottom_feet": {
+     "hoodie": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "tee": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "suit": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "punk": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "swat": [
+      "astro",
+      "farmer",
+      "hiker",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "astro": [
+      "astro",
+      "farmer",
+      "hiker",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "worker": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "hiker": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "farmer": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "beach": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ]
+    },
+    "top_bottom": {
+     "hoodie": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "tee": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "suit": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "punk": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "swat": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "astro": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "worker": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "hiker": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "farmer": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ],
+     "beach": [
+      "astro",
+      "beach",
+      "farmer",
+      "hiker",
+      "hoodie",
+      "punk",
+      "suit",
+      "swat",
+      "tee",
+      "worker"
+     ]
+    },
+    "note": "pairs whose stacked z ranges leave a visible gap are not offered"
+   },
+   "hair": "hair/headwear is part of the head option (Quaternius heads carry their hair/hat); hair colour is a tint"
+  },
+  "umw_tee": {
+   "family": "umw",
+   "gender": "f",
+   "geometry_root": "art/cast/v3/export",
+   "complete_default": {
+    "crowd_fbx": "bases/umw_tee/umw_tee.fbx",
+    "hero_fbx": "bases/umw_tee/umw_tee_Hero.fbx"
+   },
+   "material": "umw_Mat (shared by the whole family)",
+   "textures": {
+    "albedo": "families/umw/umw_Albedo.png",
+    "mask0": "families/umw/umw_TintMask0.png",
+    "mask1": "families/umw/umw_TintMask1.png",
+    "emission": "families/umw/umw_Emission.png"
+   },
+   "tint_reference": {
+    "skin": "#9a9a9a",
+    "hair": "#9a9a9a",
+    "top": "#9a9a9a",
+    "bottom": "#9a9a9a",
+    "shoes": "#9a9a9a",
+    "accent": "#9a9a9a",
+    "brows": "#9a9a9a",
+    "hat": "#9a9a9a"
+   },
+   "look_defaults": {
+    "skin_tone": "skin_09",
+    "skin": "#66422d",
+    "hair": "#1b1512",
+    "top": "#f2f2ee",
+    "bottom": "#8a4dff",
+    "shoes": "#3a3d44",
+    "accent": "#7c683e",
+    "brows": "#191514"
+   },
+   "sockets": {
+    "head_top": {
+     "bone": "Head",
+     "humanoid": "Head",
+     "position_character_m": [
+      -0.0003,
+      -0.0465,
+      1.852
+     ],
+     "offset_in_bone_space_m": [
+      -0.0,
+      0.2562,
+      0.0034
+     ]
+    },
+    "face": {
+     "bone": "Head",
+     "humanoid": "Head",
+     "position_character_m": [
+      -0.0003,
+      -0.1925,
+      1.7175
+     ],
+     "offset_in_bone_space_m": [
+      -0.0,
+      0.1217,
+      0.1494
+     ]
+    },
+    "neck": {
+     "bone": "spine_03",
+     "humanoid": "UpperChest",
+     "position_character_m": [
+      0.0,
+      -0.1788,
+      1.4991
+     ],
+     "offset_in_bone_space_m": [
+      0.0003,
+      0.1158,
+      0.136
+     ]
+    },
+    "back": {
+     "bone": "spine_03",
+     "humanoid": "UpperChest",
+     "position_character_m": [
+      0.0,
+      0.0116,
+      1.3859
+     ],
+     "offset_in_bone_space_m": [
+      0.0003,
+      -0.001,
+      -0.0522
+     ]
+    },
+    "shoulder_l": {
+     "bone": "clavicle_l",
+     "humanoid": "LeftShoulder",
+     "position_character_m": [
+      0.1174,
+      -0.0598,
+      1.5118
+     ],
+     "offset_in_bone_space_m": [
+      -0.0251,
+      0.0947,
+      0.0447
+     ]
+    },
+    "shoulder_r": {
+     "bone": "clavicle_r",
+     "humanoid": "RightShoulder",
+     "position_character_m": [
+      -0.1174,
+      -0.0598,
+      1.5118
+     ],
+     "offset_in_bone_space_m": [
+      0.0251,
+      0.0947,
+      0.0447
+     ]
+    },
+    "hand_l": {
+     "bone": "hand_l",
+     "humanoid": "LeftHand",
+     "position_character_m": [
+      0.6562,
+      -0.0935,
+      1.4533
+     ],
+     "offset_in_bone_space_m": [
+      0.0016,
+      0.0616,
+      -0.0
+     ]
+    },
+    "hand_r": {
+     "bone": "hand_r",
+     "humanoid": "RightHand",
+     "position_character_m": [
+      -0.6545,
+      -0.0936,
+      1.4533
+     ],
+     "offset_in_bone_space_m": [
+      -0.0013,
+      0.0599,
+      -0.0
+     ]
+    }
+   },
+   "accessories": {
+    "pixel_face_mask": {
+     "fbx": "bases/umw_tee/accessories/umw_tee__pixel_face_mask.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "occludes_face": true
+     }
+    },
+    "visor": {
+     "fbx": "bases/umw_tee/accessories/umw_tee__visor.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "double_sided": true
+     }
+    },
+    "helmet": {
+     "fbx": "bases/umw_tee/accessories/umw_tee__helmet.fbx",
+     "socket": "head_top",
+     "bone": "Head",
+     "flags": {
+      "hides_hair": true,
+      "occludes_face": true
+     }
+    },
+    "laser_eyes": {
+     "fbx": "bases/umw_tee/accessories/umw_tee__laser_eyes.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "emissive": true
+     }
+    },
+    "chain": {
+     "fbx": "bases/umw_tee/accessories/umw_tee__chain.fbx",
+     "socket": "neck",
+     "bone": "spine_03",
+     "flags": {}
+    },
+    "headphones": {
+     "fbx": "bases/umw_tee/accessories/umw_tee__headphones.fbx",
+     "socket": "head_top",
+     "bone": "Head",
+     "flags": {}
+    },
+    "small_wings": {
+     "fbx": "bases/umw_tee/accessories/umw_tee__small_wings.fbx",
+     "socket": "back",
+     "bone": "spine_03",
+     "flags": {
+      "double_sided": true
+     }
+    },
+    "shoulder_drone": {
+     "fbx": "bases/umw_tee/accessories/umw_tee__shoulder_drone.fbx",
+     "socket": "shoulder_r",
+     "bone": "clavicle_r",
+     "flags": {
+      "emissive": true
+     }
+    }
+   },
+   "wire_head_id": null,
+   "slots": {
+    "Head": "head/tee",
+    "Top": "top/tee",
+    "Bottom": "bottom/tee",
+    "Shoes": "feet/tee"
+   },
+   "options": {
+    "head": [
+     "cyber",
+     "dress",
+     "hiker",
+     "hood",
+     "punk",
+     "suit",
+     "tactical",
+     "tee",
+     "worker"
+    ],
+    "top": [
+     "cyber",
+     "dress",
+     "hiker",
+     "hood",
+     "punk",
+     "suit",
+     "tactical",
+     "tee",
+     "worker"
+    ],
+    "bottom": [
+     "cyber",
+     "dress",
+     "hiker",
+     "hood",
+     "punk",
+     "suit",
+     "tactical",
+     "tee",
+     "worker"
+    ],
+    "feet": [
+     "cyber",
+     "dress",
+     "hiker",
+     "hood",
+     "punk",
+     "suit",
+     "tactical",
+     "tee",
+     "worker"
+    ]
+   },
+   "compatibility": {
+    "bottom_feet": {
+     "tee": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "suit": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "dress": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "punk": [
+      "cyber",
+      "hiker",
+      "hood",
+      "punk",
+      "tactical"
+     ],
+     "tactical": [
+      "cyber",
+      "hiker",
+      "hood",
+      "punk",
+      "tactical"
+     ],
+     "cyber": [
+      "cyber",
+      "hiker",
+      "hood",
+      "punk",
+      "tactical"
+     ],
+     "worker": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "hiker": [
+      "cyber",
+      "hiker",
+      "hood",
+      "punk",
+      "tactical"
+     ],
+     "hood": [
+      "cyber",
+      "hiker",
+      "hood",
+      "punk",
+      "tactical"
+     ]
+    },
+    "top_bottom": {
+     "tee": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "suit": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "dress": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "punk": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "tactical": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "cyber": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "worker": [
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "worker"
+     ],
+     "hiker": [
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "worker"
+     ],
+     "hood": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ]
+    },
+    "note": "pairs whose stacked z ranges leave a visible gap are not offered"
+   },
+   "hair": "hair/headwear is part of the head option (Quaternius heads carry their hair/hat); hair colour is a tint"
+  },
+  "umw_suit": {
+   "family": "umw",
+   "gender": "f",
+   "geometry_root": "art/cast/v3/export",
+   "complete_default": {
+    "crowd_fbx": "bases/umw_suit/umw_suit.fbx",
+    "hero_fbx": "bases/umw_suit/umw_suit_Hero.fbx"
+   },
+   "material": "umw_Mat (shared by the whole family)",
+   "textures": {
+    "albedo": "families/umw/umw_Albedo.png",
+    "mask0": "families/umw/umw_TintMask0.png",
+    "mask1": "families/umw/umw_TintMask1.png",
+    "emission": "families/umw/umw_Emission.png"
+   },
+   "tint_reference": {
+    "skin": "#9a9a9a",
+    "hair": "#9a9a9a",
+    "top": "#9a9a9a",
+    "bottom": "#9a9a9a",
+    "shoes": "#9a9a9a",
+    "accent": "#9a9a9a",
+    "brows": "#9a9a9a",
+    "hat": "#9a9a9a"
+   },
+   "look_defaults": {
+    "skin_tone": "skin_02",
+    "skin": "#e7bfa5",
+    "hair": "#e3dccb",
+    "top": "#1c1d22",
+    "bottom": "#1c1d22",
+    "shoes": "#1c1d22",
+    "accent": "#7c683e",
+    "brows": "#4f4d49"
+   },
+   "sockets": {
+    "head_top": {
+     "bone": "Head",
+     "humanoid": "Head",
+     "position_character_m": [
+      -0.0003,
+      -0.0464,
+      1.8519
+     ],
+     "offset_in_bone_space_m": [
+      -0.0,
+      0.256,
+      0.0033
+     ]
+    },
+    "face": {
+     "bone": "Head",
+     "humanoid": "Head",
+     "position_character_m": [
+      -0.0003,
+      -0.1925,
+      1.7174
+     ],
+     "offset_in_bone_space_m": [
+      -0.0,
+      0.1216,
+      0.1494
+     ]
+    },
+    "neck": {
+     "bone": "spine_03",
+     "humanoid": "UpperChest",
+     "position_character_m": [
+      0.0,
+      -0.1831,
+      1.4991
+     ],
+     "offset_in_bone_space_m": [
+      0.0003,
+      0.1159,
+      0.1403
+     ]
+    },
+    "back": {
+     "bone": "spine_03",
+     "humanoid": "UpperChest",
+     "position_character_m": [
+      0.0,
+      0.0163,
+      1.3859
+     ],
+     "offset_in_bone_space_m": [
+      0.0003,
+      -0.0011,
+      -0.0569
+     ]
+    },
+    "shoulder_l": {
+     "bone": "clavicle_l",
+     "humanoid": "LeftShoulder",
+     "position_character_m": [
+      0.1174,
+      -0.0598,
+      1.5118
+     ],
+     "offset_in_bone_space_m": [
+      -0.0251,
+      0.0947,
+      0.0447
+     ]
+    },
+    "shoulder_r": {
+     "bone": "clavicle_r",
+     "humanoid": "RightShoulder",
+     "position_character_m": [
+      -0.1174,
+      -0.0598,
+      1.5118
+     ],
+     "offset_in_bone_space_m": [
+      0.0251,
+      0.0947,
+      0.0447
+     ]
+    },
+    "hand_l": {
+     "bone": "hand_l",
+     "humanoid": "LeftHand",
+     "position_character_m": [
+      0.6562,
+      -0.0935,
+      1.4533
+     ],
+     "offset_in_bone_space_m": [
+      0.0016,
+      0.0616,
+      -0.0
+     ]
+    },
+    "hand_r": {
+     "bone": "hand_r",
+     "humanoid": "RightHand",
+     "position_character_m": [
+      -0.6545,
+      -0.0936,
+      1.4533
+     ],
+     "offset_in_bone_space_m": [
+      -0.0013,
+      0.0599,
+      -0.0
+     ]
+    }
+   },
+   "accessories": {
+    "pixel_face_mask": {
+     "fbx": "bases/umw_suit/accessories/umw_suit__pixel_face_mask.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "occludes_face": true
+     }
+    },
+    "visor": {
+     "fbx": "bases/umw_suit/accessories/umw_suit__visor.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "double_sided": true
+     }
+    },
+    "helmet": {
+     "fbx": "bases/umw_suit/accessories/umw_suit__helmet.fbx",
+     "socket": "head_top",
+     "bone": "Head",
+     "flags": {
+      "hides_hair": true,
+      "occludes_face": true
+     }
+    },
+    "laser_eyes": {
+     "fbx": "bases/umw_suit/accessories/umw_suit__laser_eyes.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "emissive": true
+     }
+    },
+    "chain": {
+     "fbx": "bases/umw_suit/accessories/umw_suit__chain.fbx",
+     "socket": "neck",
+     "bone": "spine_03",
+     "flags": {}
+    },
+    "headphones": {
+     "fbx": "bases/umw_suit/accessories/umw_suit__headphones.fbx",
+     "socket": "head_top",
+     "bone": "Head",
+     "flags": {}
+    },
+    "small_wings": {
+     "fbx": "bases/umw_suit/accessories/umw_suit__small_wings.fbx",
+     "socket": "back",
+     "bone": "spine_03",
+     "flags": {
+      "double_sided": true
+     }
+    },
+    "shoulder_drone": {
+     "fbx": "bases/umw_suit/accessories/umw_suit__shoulder_drone.fbx",
+     "socket": "shoulder_r",
+     "bone": "clavicle_r",
+     "flags": {
+      "emissive": true
+     }
+    }
+   },
+   "wire_head_id": null,
+   "slots": {
+    "Head": "head/suit",
+    "Top": "top/suit",
+    "Bottom": "bottom/suit",
+    "Shoes": "feet/suit"
+   },
+   "options": {
+    "head": [
+     "cyber",
+     "dress",
+     "hiker",
+     "hood",
+     "punk",
+     "suit",
+     "tactical",
+     "tee",
+     "worker"
+    ],
+    "top": [
+     "cyber",
+     "dress",
+     "hiker",
+     "hood",
+     "punk",
+     "suit",
+     "tactical",
+     "tee",
+     "worker"
+    ],
+    "bottom": [
+     "cyber",
+     "dress",
+     "hiker",
+     "hood",
+     "punk",
+     "suit",
+     "tactical",
+     "tee",
+     "worker"
+    ],
+    "feet": [
+     "cyber",
+     "dress",
+     "hiker",
+     "hood",
+     "punk",
+     "suit",
+     "tactical",
+     "tee",
+     "worker"
+    ]
+   },
+   "compatibility": {
+    "bottom_feet": {
+     "tee": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "suit": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "dress": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "punk": [
+      "cyber",
+      "hiker",
+      "hood",
+      "punk",
+      "tactical"
+     ],
+     "tactical": [
+      "cyber",
+      "hiker",
+      "hood",
+      "punk",
+      "tactical"
+     ],
+     "cyber": [
+      "cyber",
+      "hiker",
+      "hood",
+      "punk",
+      "tactical"
+     ],
+     "worker": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "hiker": [
+      "cyber",
+      "hiker",
+      "hood",
+      "punk",
+      "tactical"
+     ],
+     "hood": [
+      "cyber",
+      "hiker",
+      "hood",
+      "punk",
+      "tactical"
+     ]
+    },
+    "top_bottom": {
+     "tee": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "suit": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "dress": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "punk": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "tactical": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "cyber": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "worker": [
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "worker"
+     ],
+     "hiker": [
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "worker"
+     ],
+     "hood": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ]
+    },
+    "note": "pairs whose stacked z ranges leave a visible gap are not offered"
+   },
+   "hair": "hair/headwear is part of the head option (Quaternius heads carry their hair/hat); hair colour is a tint"
+  },
+  "umw_dress": {
+   "family": "umw",
+   "gender": "f",
+   "geometry_root": "art/cast/v3/export",
+   "complete_default": {
+    "crowd_fbx": "bases/umw_dress/umw_dress.fbx",
+    "hero_fbx": "bases/umw_dress/umw_dress_Hero.fbx"
+   },
+   "material": "umw_Mat (shared by the whole family)",
+   "textures": {
+    "albedo": "families/umw/umw_Albedo.png",
+    "mask0": "families/umw/umw_TintMask0.png",
+    "mask1": "families/umw/umw_TintMask1.png",
+    "emission": "families/umw/umw_Emission.png"
+   },
+   "tint_reference": {
+    "skin": "#9a9a9a",
+    "hair": "#9a9a9a",
+    "top": "#9a9a9a",
+    "bottom": "#9a9a9a",
+    "shoes": "#9a9a9a",
+    "accent": "#9a9a9a",
+    "brows": "#9a9a9a",
+    "hat": "#9a9a9a"
+   },
+   "look_defaults": {
+    "skin_tone": "skin_06",
+    "skin": "#a07051",
+    "hair": "#7a3420",
+    "top": "#2ee6a6",
+    "bottom": "#581c11",
+    "shoes": "#1c1d22",
+    "accent": "#2b2017",
+    "brows": "#4f2d26"
+   },
+   "sockets": {
+    "head_top": {
+     "bone": "Head",
+     "humanoid": "Head",
+     "position_character_m": [
+      -0.0003,
+      -0.0419,
+      1.8521
+     ],
+     "offset_in_bone_space_m": [
+      -0.0,
+      0.2563,
+      -0.0012
+     ]
+    },
+    "face": {
+     "bone": "Head",
+     "humanoid": "Head",
+     "position_character_m": [
+      -0.0003,
+      -0.2007,
+      1.7182
+     ],
+     "offset_in_bone_space_m": [
+      -0.0,
+      0.1224,
+      0.1576
+     ]
+    },
+    "neck": {
+     "bone": "spine_03",
+     "humanoid": "UpperChest",
+     "position_character_m": [
+      0.0,
+      -0.1831,
+      1.4991
+     ],
+     "offset_in_bone_space_m": [
+      0.0003,
+      0.1159,
+      0.1403
+     ]
+    },
+    "back": {
+     "bone": "spine_03",
+     "humanoid": "UpperChest",
+     "position_character_m": [
+      0.0,
+      0.0163,
+      1.3859
+     ],
+     "offset_in_bone_space_m": [
+      0.0003,
+      -0.0011,
+      -0.0569
+     ]
+    },
+    "shoulder_l": {
+     "bone": "clavicle_l",
+     "humanoid": "LeftShoulder",
+     "position_character_m": [
+      0.1174,
+      -0.0598,
+      1.5118
+     ],
+     "offset_in_bone_space_m": [
+      -0.0251,
+      0.0947,
+      0.0447
+     ]
+    },
+    "shoulder_r": {
+     "bone": "clavicle_r",
+     "humanoid": "RightShoulder",
+     "position_character_m": [
+      -0.1174,
+      -0.0598,
+      1.5118
+     ],
+     "offset_in_bone_space_m": [
+      0.0251,
+      0.0947,
+      0.0447
+     ]
+    },
+    "hand_l": {
+     "bone": "hand_l",
+     "humanoid": "LeftHand",
+     "position_character_m": [
+      0.6562,
+      -0.0935,
+      1.4533
+     ],
+     "offset_in_bone_space_m": [
+      0.0016,
+      0.0616,
+      -0.0
+     ]
+    },
+    "hand_r": {
+     "bone": "hand_r",
+     "humanoid": "RightHand",
+     "position_character_m": [
+      -0.6545,
+      -0.0936,
+      1.4533
+     ],
+     "offset_in_bone_space_m": [
+      -0.0013,
+      0.0599,
+      -0.0
+     ]
+    }
+   },
+   "accessories": {
+    "pixel_face_mask": {
+     "fbx": "bases/umw_dress/accessories/umw_dress__pixel_face_mask.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "occludes_face": true
+     }
+    },
+    "visor": {
+     "fbx": "bases/umw_dress/accessories/umw_dress__visor.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "double_sided": true
+     }
+    },
+    "helmet": {
+     "fbx": "bases/umw_dress/accessories/umw_dress__helmet.fbx",
+     "socket": "head_top",
+     "bone": "Head",
+     "flags": {
+      "hides_hair": true,
+      "occludes_face": true
+     }
+    },
+    "laser_eyes": {
+     "fbx": "bases/umw_dress/accessories/umw_dress__laser_eyes.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "emissive": true
+     }
+    },
+    "chain": {
+     "fbx": "bases/umw_dress/accessories/umw_dress__chain.fbx",
+     "socket": "neck",
+     "bone": "spine_03",
+     "flags": {}
+    },
+    "headphones": {
+     "fbx": "bases/umw_dress/accessories/umw_dress__headphones.fbx",
+     "socket": "head_top",
+     "bone": "Head",
+     "flags": {}
+    },
+    "small_wings": {
+     "fbx": "bases/umw_dress/accessories/umw_dress__small_wings.fbx",
+     "socket": "back",
+     "bone": "spine_03",
+     "flags": {
+      "double_sided": true
+     }
+    },
+    "shoulder_drone": {
+     "fbx": "bases/umw_dress/accessories/umw_dress__shoulder_drone.fbx",
+     "socket": "shoulder_r",
+     "bone": "clavicle_r",
+     "flags": {
+      "emissive": true
+     }
+    }
+   },
+   "wire_head_id": null,
+   "slots": {
+    "Head": "head/dress",
+    "Top": "top/dress",
+    "Bottom": "bottom/dress",
+    "Shoes": "feet/dress"
+   },
+   "options": {
+    "head": [
+     "cyber",
+     "dress",
+     "hiker",
+     "hood",
+     "punk",
+     "suit",
+     "tactical",
+     "tee",
+     "worker"
+    ],
+    "top": [
+     "cyber",
+     "dress",
+     "hiker",
+     "hood",
+     "punk",
+     "suit",
+     "tactical",
+     "tee",
+     "worker"
+    ],
+    "bottom": [
+     "cyber",
+     "dress",
+     "hiker",
+     "hood",
+     "punk",
+     "suit",
+     "tactical",
+     "tee",
+     "worker"
+    ],
+    "feet": [
+     "cyber",
+     "dress",
+     "hiker",
+     "hood",
+     "punk",
+     "suit",
+     "tactical",
+     "tee",
+     "worker"
+    ]
+   },
+   "compatibility": {
+    "bottom_feet": {
+     "tee": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "suit": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "dress": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "punk": [
+      "cyber",
+      "hiker",
+      "hood",
+      "punk",
+      "tactical"
+     ],
+     "tactical": [
+      "cyber",
+      "hiker",
+      "hood",
+      "punk",
+      "tactical"
+     ],
+     "cyber": [
+      "cyber",
+      "hiker",
+      "hood",
+      "punk",
+      "tactical"
+     ],
+     "worker": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "hiker": [
+      "cyber",
+      "hiker",
+      "hood",
+      "punk",
+      "tactical"
+     ],
+     "hood": [
+      "cyber",
+      "hiker",
+      "hood",
+      "punk",
+      "tactical"
+     ]
+    },
+    "top_bottom": {
+     "tee": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "suit": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "dress": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "punk": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "tactical": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "cyber": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "worker": [
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "worker"
+     ],
+     "hiker": [
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "worker"
+     ],
+     "hood": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ]
+    },
+    "note": "pairs whose stacked z ranges leave a visible gap are not offered"
+   },
+   "hair": "hair/headwear is part of the head option (Quaternius heads carry their hair/hat); hair colour is a tint"
+  },
+  "umw_punk": {
+   "family": "umw",
+   "gender": "f",
+   "geometry_root": "art/cast/v3/export",
+   "complete_default": {
+    "crowd_fbx": "bases/umw_punk/umw_punk.fbx",
+    "hero_fbx": "bases/umw_punk/umw_punk_Hero.fbx"
+   },
+   "material": "umw_Mat (shared by the whole family)",
+   "textures": {
+    "albedo": "families/umw/umw_Albedo.png",
+    "mask0": "families/umw/umw_TintMask0.png",
+    "mask1": "families/umw/umw_TintMask1.png",
+    "emission": "families/umw/umw_Emission.png"
+   },
+   "tint_reference": {
+    "skin": "#9a9a9a",
+    "hair": "#9a9a9a",
+    "top": "#9a9a9a",
+    "bottom": "#9a9a9a",
+    "shoes": "#9a9a9a",
+    "accent": "#9a9a9a",
+    "brows": "#9a9a9a",
+    "hat": "#9a9a9a"
+   },
+   "look_defaults": {
+    "skin_tone": "skin_04",
+    "skin": "#c49373",
+    "hair": "#7a4dd1",
+    "top": "#ff4fa3",
+    "bottom": "#1c1d22",
+    "shoes": "#1c1d22",
+    "accent": "#302d2a",
+    "brows": "#564285"
+   },
+   "sockets": {
+    "head_top": {
+     "bone": "Head",
+     "humanoid": "Head",
+     "position_character_m": [
+      -0.0003,
+      -0.047,
+      1.9681
+     ],
+     "offset_in_bone_space_m": [
+      -0.0,
+      0.3723,
+      0.0039
+     ]
+    },
+    "face": {
+     "bone": "Head",
+     "humanoid": "Head",
+     "position_character_m": [
+      -0.0003,
+      -0.218,
+      1.8044
+     ],
+     "offset_in_bone_space_m": [
+      -0.0,
+      0.2085,
+      0.1749
+     ]
+    },
+    "neck": {
+     "bone": "spine_03",
+     "humanoid": "UpperChest",
+     "position_character_m": [
+      0.0,
+      -0.1831,
+      1.4991
+     ],
+     "offset_in_bone_space_m": [
+      0.0003,
+      0.1159,
+      0.1403
+     ]
+    },
+    "back": {
+     "bone": "spine_03",
+     "humanoid": "UpperChest",
+     "position_character_m": [
+      0.0,
+      0.0214,
+      1.3859
+     ],
+     "offset_in_bone_space_m": [
+      0.0003,
+      -0.0012,
+      -0.062
+     ]
+    },
+    "shoulder_l": {
+     "bone": "clavicle_l",
+     "humanoid": "LeftShoulder",
+     "position_character_m": [
+      0.1174,
+      -0.0598,
+      1.5118
+     ],
+     "offset_in_bone_space_m": [
+      -0.0251,
+      0.0947,
+      0.0447
+     ]
+    },
+    "shoulder_r": {
+     "bone": "clavicle_r",
+     "humanoid": "RightShoulder",
+     "position_character_m": [
+      -0.1174,
+      -0.0598,
+      1.5118
+     ],
+     "offset_in_bone_space_m": [
+      0.0251,
+      0.0947,
+      0.0447
+     ]
+    },
+    "hand_l": {
+     "bone": "hand_l",
+     "humanoid": "LeftHand",
+     "position_character_m": [
+      0.6562,
+      -0.0935,
+      1.4533
+     ],
+     "offset_in_bone_space_m": [
+      0.0016,
+      0.0616,
+      -0.0
+     ]
+    },
+    "hand_r": {
+     "bone": "hand_r",
+     "humanoid": "RightHand",
+     "position_character_m": [
+      -0.6545,
+      -0.0936,
+      1.4533
+     ],
+     "offset_in_bone_space_m": [
+      -0.0013,
+      0.0599,
+      -0.0
+     ]
+    }
+   },
+   "accessories": {
+    "pixel_face_mask": {
+     "fbx": "bases/umw_punk/accessories/umw_punk__pixel_face_mask.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "occludes_face": true
+     }
+    },
+    "visor": {
+     "fbx": "bases/umw_punk/accessories/umw_punk__visor.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "double_sided": true
+     }
+    },
+    "helmet": {
+     "fbx": "bases/umw_punk/accessories/umw_punk__helmet.fbx",
+     "socket": "head_top",
+     "bone": "Head",
+     "flags": {
+      "hides_hair": true,
+      "occludes_face": true
+     }
+    },
+    "laser_eyes": {
+     "fbx": "bases/umw_punk/accessories/umw_punk__laser_eyes.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "emissive": true
+     }
+    },
+    "chain": {
+     "fbx": "bases/umw_punk/accessories/umw_punk__chain.fbx",
+     "socket": "neck",
+     "bone": "spine_03",
+     "flags": {}
+    },
+    "headphones": {
+     "fbx": "bases/umw_punk/accessories/umw_punk__headphones.fbx",
+     "socket": "head_top",
+     "bone": "Head",
+     "flags": {}
+    },
+    "small_wings": {
+     "fbx": "bases/umw_punk/accessories/umw_punk__small_wings.fbx",
+     "socket": "back",
+     "bone": "spine_03",
+     "flags": {
+      "double_sided": true
+     }
+    },
+    "shoulder_drone": {
+     "fbx": "bases/umw_punk/accessories/umw_punk__shoulder_drone.fbx",
+     "socket": "shoulder_r",
+     "bone": "clavicle_r",
+     "flags": {
+      "emissive": true
+     }
+    }
+   },
+   "wire_head_id": null,
+   "slots": {
+    "Head": "head/punk",
+    "Top": "top/punk",
+    "Bottom": "bottom/punk",
+    "Shoes": "feet/punk"
+   },
+   "options": {
+    "head": [
+     "cyber",
+     "dress",
+     "hiker",
+     "hood",
+     "punk",
+     "suit",
+     "tactical",
+     "tee",
+     "worker"
+    ],
+    "top": [
+     "cyber",
+     "dress",
+     "hiker",
+     "hood",
+     "punk",
+     "suit",
+     "tactical",
+     "tee",
+     "worker"
+    ],
+    "bottom": [
+     "cyber",
+     "dress",
+     "hiker",
+     "hood",
+     "punk",
+     "suit",
+     "tactical",
+     "tee",
+     "worker"
+    ],
+    "feet": [
+     "cyber",
+     "dress",
+     "hiker",
+     "hood",
+     "punk",
+     "suit",
+     "tactical",
+     "tee",
+     "worker"
+    ]
+   },
+   "compatibility": {
+    "bottom_feet": {
+     "tee": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "suit": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "dress": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "punk": [
+      "cyber",
+      "hiker",
+      "hood",
+      "punk",
+      "tactical"
+     ],
+     "tactical": [
+      "cyber",
+      "hiker",
+      "hood",
+      "punk",
+      "tactical"
+     ],
+     "cyber": [
+      "cyber",
+      "hiker",
+      "hood",
+      "punk",
+      "tactical"
+     ],
+     "worker": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "hiker": [
+      "cyber",
+      "hiker",
+      "hood",
+      "punk",
+      "tactical"
+     ],
+     "hood": [
+      "cyber",
+      "hiker",
+      "hood",
+      "punk",
+      "tactical"
+     ]
+    },
+    "top_bottom": {
+     "tee": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "suit": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "dress": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "punk": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "tactical": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "cyber": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "worker": [
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "worker"
+     ],
+     "hiker": [
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "worker"
+     ],
+     "hood": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ]
+    },
+    "note": "pairs whose stacked z ranges leave a visible gap are not offered"
+   },
+   "hair": "hair/headwear is part of the head option (Quaternius heads carry their hair/hat); hair colour is a tint"
+  },
+  "umw_tactical": {
+   "family": "umw",
+   "gender": "f",
+   "geometry_root": "art/cast/v3/export",
+   "complete_default": {
+    "crowd_fbx": "bases/umw_tactical/umw_tactical.fbx",
+    "hero_fbx": "bases/umw_tactical/umw_tactical_Hero.fbx"
+   },
+   "material": "umw_Mat (shared by the whole family)",
+   "textures": {
+    "albedo": "families/umw/umw_Albedo.png",
+    "mask0": "families/umw/umw_TintMask0.png",
+    "mask1": "families/umw/umw_TintMask1.png",
+    "emission": "families/umw/umw_Emission.png"
+   },
+   "tint_reference": {
+    "skin": "#9a9a9a",
+    "hair": "#9a9a9a",
+    "top": "#9a9a9a",
+    "bottom": "#9a9a9a",
+    "shoes": "#9a9a9a",
+    "accent": "#9a9a9a",
+    "brows": "#9a9a9a",
+    "hat": "#9a9a9a"
+   },
+   "look_defaults": {
+    "skin_tone": "skin_07",
+    "skin": "#8e6145",
+    "hair": "#3a2519",
+    "top": "#1c1d22",
+    "bottom": "#4b5320",
+    "shoes": "#1c1d22",
+    "accent": "#4e5259",
+    "brows": "#261b16"
+   },
+   "sockets": {
+    "head_top": {
+     "bone": "Head",
+     "humanoid": "Head",
+     "position_character_m": [
+      -0.0003,
+      -0.0548,
+      1.8379
+     ],
+     "offset_in_bone_space_m": [
+      -0.0,
+      0.242,
+      0.0117
+     ]
+    },
+    "face": {
+     "bone": "Head",
+     "humanoid": "Head",
+     "position_character_m": [
+      -0.0003,
+      -0.1773,
+      1.7193
+     ],
+     "offset_in_bone_space_m": [
+      -0.0,
+      0.1235,
+      0.1342
+     ]
+    },
+    "neck": {
+     "bone": "spine_03",
+     "humanoid": "UpperChest",
+     "position_character_m": [
+      0.0,
+      -0.1831,
+      1.4991
+     ],
+     "offset_in_bone_space_m": [
+      0.0003,
+      0.1159,
+      0.1403
+     ]
+    },
+    "back": {
+     "bone": "spine_03",
+     "humanoid": "UpperChest",
+     "position_character_m": [
+      0.0,
+      0.0163,
+      1.3859
+     ],
+     "offset_in_bone_space_m": [
+      0.0003,
+      -0.0011,
+      -0.0569
+     ]
+    },
+    "shoulder_l": {
+     "bone": "clavicle_l",
+     "humanoid": "LeftShoulder",
+     "position_character_m": [
+      0.1174,
+      -0.0598,
+      1.5118
+     ],
+     "offset_in_bone_space_m": [
+      -0.0251,
+      0.0947,
+      0.0447
+     ]
+    },
+    "shoulder_r": {
+     "bone": "clavicle_r",
+     "humanoid": "RightShoulder",
+     "position_character_m": [
+      -0.1174,
+      -0.0598,
+      1.5118
+     ],
+     "offset_in_bone_space_m": [
+      0.0251,
+      0.0947,
+      0.0447
+     ]
+    },
+    "hand_l": {
+     "bone": "hand_l",
+     "humanoid": "LeftHand",
+     "position_character_m": [
+      0.6562,
+      -0.0935,
+      1.4533
+     ],
+     "offset_in_bone_space_m": [
+      0.0016,
+      0.0616,
+      -0.0
+     ]
+    },
+    "hand_r": {
+     "bone": "hand_r",
+     "humanoid": "RightHand",
+     "position_character_m": [
+      -0.6545,
+      -0.0936,
+      1.4533
+     ],
+     "offset_in_bone_space_m": [
+      -0.0013,
+      0.0599,
+      -0.0
+     ]
+    }
+   },
+   "accessories": {
+    "pixel_face_mask": {
+     "fbx": "bases/umw_tactical/accessories/umw_tactical__pixel_face_mask.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "occludes_face": true
+     }
+    },
+    "visor": {
+     "fbx": "bases/umw_tactical/accessories/umw_tactical__visor.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "double_sided": true
+     }
+    },
+    "helmet": {
+     "fbx": "bases/umw_tactical/accessories/umw_tactical__helmet.fbx",
+     "socket": "head_top",
+     "bone": "Head",
+     "flags": {
+      "hides_hair": true,
+      "occludes_face": true
+     }
+    },
+    "laser_eyes": {
+     "fbx": "bases/umw_tactical/accessories/umw_tactical__laser_eyes.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "emissive": true
+     }
+    },
+    "chain": {
+     "fbx": "bases/umw_tactical/accessories/umw_tactical__chain.fbx",
+     "socket": "neck",
+     "bone": "spine_03",
+     "flags": {}
+    },
+    "headphones": {
+     "fbx": "bases/umw_tactical/accessories/umw_tactical__headphones.fbx",
+     "socket": "head_top",
+     "bone": "Head",
+     "flags": {}
+    },
+    "small_wings": {
+     "fbx": "bases/umw_tactical/accessories/umw_tactical__small_wings.fbx",
+     "socket": "back",
+     "bone": "spine_03",
+     "flags": {
+      "double_sided": true
+     }
+    },
+    "shoulder_drone": {
+     "fbx": "bases/umw_tactical/accessories/umw_tactical__shoulder_drone.fbx",
+     "socket": "shoulder_r",
+     "bone": "clavicle_r",
+     "flags": {
+      "emissive": true
+     }
+    }
+   },
+   "wire_head_id": null,
+   "slots": {
+    "Head": "head/tactical",
+    "Top": "top/tactical",
+    "Bottom": "bottom/tactical",
+    "Shoes": "feet/tactical"
+   },
+   "options": {
+    "head": [
+     "cyber",
+     "dress",
+     "hiker",
+     "hood",
+     "punk",
+     "suit",
+     "tactical",
+     "tee",
+     "worker"
+    ],
+    "top": [
+     "cyber",
+     "dress",
+     "hiker",
+     "hood",
+     "punk",
+     "suit",
+     "tactical",
+     "tee",
+     "worker"
+    ],
+    "bottom": [
+     "cyber",
+     "dress",
+     "hiker",
+     "hood",
+     "punk",
+     "suit",
+     "tactical",
+     "tee",
+     "worker"
+    ],
+    "feet": [
+     "cyber",
+     "dress",
+     "hiker",
+     "hood",
+     "punk",
+     "suit",
+     "tactical",
+     "tee",
+     "worker"
+    ]
+   },
+   "compatibility": {
+    "bottom_feet": {
+     "tee": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "suit": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "dress": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "punk": [
+      "cyber",
+      "hiker",
+      "hood",
+      "punk",
+      "tactical"
+     ],
+     "tactical": [
+      "cyber",
+      "hiker",
+      "hood",
+      "punk",
+      "tactical"
+     ],
+     "cyber": [
+      "cyber",
+      "hiker",
+      "hood",
+      "punk",
+      "tactical"
+     ],
+     "worker": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "hiker": [
+      "cyber",
+      "hiker",
+      "hood",
+      "punk",
+      "tactical"
+     ],
+     "hood": [
+      "cyber",
+      "hiker",
+      "hood",
+      "punk",
+      "tactical"
+     ]
+    },
+    "top_bottom": {
+     "tee": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "suit": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "dress": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "punk": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "tactical": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "cyber": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "worker": [
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "worker"
+     ],
+     "hiker": [
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "worker"
+     ],
+     "hood": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ]
+    },
+    "note": "pairs whose stacked z ranges leave a visible gap are not offered"
+   },
+   "hair": "hair/headwear is part of the head option (Quaternius heads carry their hair/hat); hair colour is a tint"
+  },
+  "umw_cyber": {
+   "family": "umw",
+   "gender": "f",
+   "geometry_root": "art/cast/v3/export",
+   "complete_default": {
+    "crowd_fbx": "bases/umw_cyber/umw_cyber.fbx",
+    "hero_fbx": "bases/umw_cyber/umw_cyber_Hero.fbx"
+   },
+   "material": "umw_Mat (shared by the whole family)",
+   "textures": {
+    "albedo": "families/umw/umw_Albedo.png",
+    "mask0": "families/umw/umw_TintMask0.png",
+    "mask1": "families/umw/umw_TintMask1.png",
+    "emission": "families/umw/umw_Emission.png"
+   },
+   "tint_reference": {
+    "skin": "#9a9a9a",
+    "hair": "#9a9a9a",
+    "top": "#9a9a9a",
+    "bottom": "#9a9a9a",
+    "shoes": "#9a9a9a",
+    "accent": "#9a9a9a",
+    "brows": "#9a9a9a",
+    "hat": "#9a9a9a"
+   },
+   "look_defaults": {
+    "skin_tone": "skin_05",
+    "skin": "#b18060",
+    "hair": "#1b1512",
+    "top": "#1c1d22",
+    "bottom": "#302d2a",
+    "shoes": "#727272",
+    "accent": "#1aa6a6",
+    "brows": "#191514",
+    "hat": "#1aa6a6"
+   },
+   "sockets": {
+    "head_top": {
+     "bone": "Head",
+     "humanoid": "Head",
+     "position_character_m": [
+      -0.0003,
+      -0.0467,
+      1.8626
+     ],
+     "offset_in_bone_space_m": [
+      -0.0,
+      0.2668,
+      0.0036
+     ]
+    },
+    "face": {
+     "bone": "Head",
+     "humanoid": "Head",
+     "position_character_m": [
+      -0.0003,
+      -0.1923,
+      1.7432
+     ],
+     "offset_in_bone_space_m": [
+      -0.0,
+      0.1473,
+      0.1492
+     ]
+    },
+    "neck": {
+     "bone": "spine_03",
+     "humanoid": "UpperChest",
+     "position_character_m": [
+      0.0,
+      -0.1734,
+      1.4991
+     ],
+     "offset_in_bone_space_m": [
+      0.0003,
+      0.1157,
+      0.1307
+     ]
+    },
+    "back": {
+     "bone": "spine_03",
+     "humanoid": "UpperChest",
+     "position_character_m": [
+      0.0,
+      0.0302,
+      1.3859
+     ],
+     "offset_in_bone_space_m": [
+      0.0003,
+      -0.0013,
+      -0.0707
+     ]
+    },
+    "shoulder_l": {
+     "bone": "clavicle_l",
+     "humanoid": "LeftShoulder",
+     "position_character_m": [
+      0.1174,
+      -0.0598,
+      1.5118
+     ],
+     "offset_in_bone_space_m": [
+      -0.0251,
+      0.0947,
+      0.0447
+     ]
+    },
+    "shoulder_r": {
+     "bone": "clavicle_r",
+     "humanoid": "RightShoulder",
+     "position_character_m": [
+      -0.1174,
+      -0.0598,
+      1.5118
+     ],
+     "offset_in_bone_space_m": [
+      0.0251,
+      0.0947,
+      0.0447
+     ]
+    },
+    "hand_l": {
+     "bone": "hand_l",
+     "humanoid": "LeftHand",
+     "position_character_m": [
+      0.6562,
+      -0.0935,
+      1.4533
+     ],
+     "offset_in_bone_space_m": [
+      0.0016,
+      0.0616,
+      -0.0
+     ]
+    },
+    "hand_r": {
+     "bone": "hand_r",
+     "humanoid": "RightHand",
+     "position_character_m": [
+      -0.6545,
+      -0.0936,
+      1.4533
+     ],
+     "offset_in_bone_space_m": [
+      -0.0013,
+      0.0599,
+      -0.0
+     ]
+    }
+   },
+   "accessories": {
+    "pixel_face_mask": {
+     "fbx": "bases/umw_cyber/accessories/umw_cyber__pixel_face_mask.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "occludes_face": true
+     }
+    },
+    "visor": {
+     "fbx": "bases/umw_cyber/accessories/umw_cyber__visor.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "double_sided": true
+     }
+    },
+    "helmet": {
+     "fbx": "bases/umw_cyber/accessories/umw_cyber__helmet.fbx",
+     "socket": "head_top",
+     "bone": "Head",
+     "flags": {
+      "hides_hair": true,
+      "occludes_face": true
+     }
+    },
+    "laser_eyes": {
+     "fbx": "bases/umw_cyber/accessories/umw_cyber__laser_eyes.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "emissive": true
+     }
+    },
+    "chain": {
+     "fbx": "bases/umw_cyber/accessories/umw_cyber__chain.fbx",
+     "socket": "neck",
+     "bone": "spine_03",
+     "flags": {}
+    },
+    "headphones": {
+     "fbx": "bases/umw_cyber/accessories/umw_cyber__headphones.fbx",
+     "socket": "head_top",
+     "bone": "Head",
+     "flags": {}
+    },
+    "small_wings": {
+     "fbx": "bases/umw_cyber/accessories/umw_cyber__small_wings.fbx",
+     "socket": "back",
+     "bone": "spine_03",
+     "flags": {
+      "double_sided": true
+     }
+    },
+    "shoulder_drone": {
+     "fbx": "bases/umw_cyber/accessories/umw_cyber__shoulder_drone.fbx",
+     "socket": "shoulder_r",
+     "bone": "clavicle_r",
+     "flags": {
+      "emissive": true
+     }
+    }
+   },
+   "wire_head_id": null,
+   "slots": {
+    "Head": "head/cyber",
+    "Top": "top/cyber",
+    "Bottom": "bottom/cyber",
+    "Shoes": "feet/cyber"
+   },
+   "options": {
+    "head": [
+     "cyber",
+     "dress",
+     "hiker",
+     "hood",
+     "punk",
+     "suit",
+     "tactical",
+     "tee",
+     "worker"
+    ],
+    "top": [
+     "cyber",
+     "dress",
+     "hiker",
+     "hood",
+     "punk",
+     "suit",
+     "tactical",
+     "tee",
+     "worker"
+    ],
+    "bottom": [
+     "cyber",
+     "dress",
+     "hiker",
+     "hood",
+     "punk",
+     "suit",
+     "tactical",
+     "tee",
+     "worker"
+    ],
+    "feet": [
+     "cyber",
+     "dress",
+     "hiker",
+     "hood",
+     "punk",
+     "suit",
+     "tactical",
+     "tee",
+     "worker"
+    ]
+   },
+   "compatibility": {
+    "bottom_feet": {
+     "tee": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "suit": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "dress": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "punk": [
+      "cyber",
+      "hiker",
+      "hood",
+      "punk",
+      "tactical"
+     ],
+     "tactical": [
+      "cyber",
+      "hiker",
+      "hood",
+      "punk",
+      "tactical"
+     ],
+     "cyber": [
+      "cyber",
+      "hiker",
+      "hood",
+      "punk",
+      "tactical"
+     ],
+     "worker": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "hiker": [
+      "cyber",
+      "hiker",
+      "hood",
+      "punk",
+      "tactical"
+     ],
+     "hood": [
+      "cyber",
+      "hiker",
+      "hood",
+      "punk",
+      "tactical"
+     ]
+    },
+    "top_bottom": {
+     "tee": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "suit": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "dress": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "punk": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "tactical": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "cyber": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "worker": [
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "worker"
+     ],
+     "hiker": [
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "worker"
+     ],
+     "hood": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ]
+    },
+    "note": "pairs whose stacked z ranges leave a visible gap are not offered"
+   },
+   "hair": "hair/headwear is part of the head option (Quaternius heads carry their hair/hat); hair colour is a tint"
+  },
+  "umw_worker": {
+   "family": "umw",
+   "gender": "f",
+   "geometry_root": "art/cast/v3/export",
+   "complete_default": {
+    "crowd_fbx": "bases/umw_worker/umw_worker.fbx",
+    "hero_fbx": "bases/umw_worker/umw_worker_Hero.fbx"
+   },
+   "material": "umw_Mat (shared by the whole family)",
+   "textures": {
+    "albedo": "families/umw/umw_Albedo.png",
+    "mask0": "families/umw/umw_TintMask0.png",
+    "mask1": "families/umw/umw_TintMask1.png",
+    "emission": "families/umw/umw_Emission.png"
+   },
+   "tint_reference": {
+    "skin": "#9a9a9a",
+    "hair": "#9a9a9a",
+    "top": "#9a9a9a",
+    "bottom": "#9a9a9a",
+    "shoes": "#9a9a9a",
+    "accent": "#9a9a9a",
+    "brows": "#9a9a9a",
+    "hat": "#9a9a9a"
+   },
+   "look_defaults": {
+    "skin_tone": "skin_10",
+    "skin": "#4f3222",
+    "hair": "#1b1512",
+    "top": "#f2f2ee",
+    "bottom": "#74623f",
+    "shoes": "#302d2a",
+    "accent": "#ff7a1a",
+    "brows": "#191514",
+    "hat": "#e8b81c"
+   },
+   "sockets": {
+    "head_top": {
+     "bone": "Head",
+     "humanoid": "Head",
+     "position_character_m": [
+      -0.0003,
+      -0.0727,
+      1.8673
+     ],
+     "offset_in_bone_space_m": [
+      -0.0,
+      0.2715,
+      0.0296
+     ]
+    },
+    "face": {
+     "bone": "Head",
+     "humanoid": "Head",
+     "position_character_m": [
+      -0.0003,
+      -0.2373,
+      1.7454
+     ],
+     "offset_in_bone_space_m": [
+      -0.0,
+      0.1496,
+      0.1942
+     ]
+    },
+    "neck": {
+     "bone": "spine_03",
+     "humanoid": "UpperChest",
+     "position_character_m": [
+      0.0,
+      -0.1823,
+      1.4991
+     ],
+     "offset_in_bone_space_m": [
+      0.0003,
+      0.1159,
+      0.1395
+     ]
+    },
+    "back": {
+     "bone": "spine_03",
+     "humanoid": "UpperChest",
+     "position_character_m": [
+      0.0,
+      0.0163,
+      1.3859
+     ],
+     "offset_in_bone_space_m": [
+      0.0003,
+      -0.0011,
+      -0.0569
+     ]
+    },
+    "shoulder_l": {
+     "bone": "clavicle_l",
+     "humanoid": "LeftShoulder",
+     "position_character_m": [
+      0.1174,
+      -0.0598,
+      1.5118
+     ],
+     "offset_in_bone_space_m": [
+      -0.0251,
+      0.0947,
+      0.0447
+     ]
+    },
+    "shoulder_r": {
+     "bone": "clavicle_r",
+     "humanoid": "RightShoulder",
+     "position_character_m": [
+      -0.1174,
+      -0.0598,
+      1.5118
+     ],
+     "offset_in_bone_space_m": [
+      0.0251,
+      0.0947,
+      0.0447
+     ]
+    },
+    "hand_l": {
+     "bone": "hand_l",
+     "humanoid": "LeftHand",
+     "position_character_m": [
+      0.6562,
+      -0.0935,
+      1.4533
+     ],
+     "offset_in_bone_space_m": [
+      0.0016,
+      0.0616,
+      -0.0
+     ]
+    },
+    "hand_r": {
+     "bone": "hand_r",
+     "humanoid": "RightHand",
+     "position_character_m": [
+      -0.6545,
+      -0.0936,
+      1.4533
+     ],
+     "offset_in_bone_space_m": [
+      -0.0013,
+      0.0599,
+      -0.0
+     ]
+    }
+   },
+   "accessories": {
+    "pixel_face_mask": {
+     "fbx": "bases/umw_worker/accessories/umw_worker__pixel_face_mask.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "occludes_face": true
+     }
+    },
+    "visor": {
+     "fbx": "bases/umw_worker/accessories/umw_worker__visor.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "double_sided": true
+     }
+    },
+    "helmet": {
+     "fbx": "bases/umw_worker/accessories/umw_worker__helmet.fbx",
+     "socket": "head_top",
+     "bone": "Head",
+     "flags": {
+      "hides_hair": true,
+      "occludes_face": true
+     }
+    },
+    "laser_eyes": {
+     "fbx": "bases/umw_worker/accessories/umw_worker__laser_eyes.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "emissive": true
+     }
+    },
+    "chain": {
+     "fbx": "bases/umw_worker/accessories/umw_worker__chain.fbx",
+     "socket": "neck",
+     "bone": "spine_03",
+     "flags": {}
+    },
+    "headphones": {
+     "fbx": "bases/umw_worker/accessories/umw_worker__headphones.fbx",
+     "socket": "head_top",
+     "bone": "Head",
+     "flags": {}
+    },
+    "small_wings": {
+     "fbx": "bases/umw_worker/accessories/umw_worker__small_wings.fbx",
+     "socket": "back",
+     "bone": "spine_03",
+     "flags": {
+      "double_sided": true
+     }
+    },
+    "shoulder_drone": {
+     "fbx": "bases/umw_worker/accessories/umw_worker__shoulder_drone.fbx",
+     "socket": "shoulder_r",
+     "bone": "clavicle_r",
+     "flags": {
+      "emissive": true
+     }
+    }
+   },
+   "wire_head_id": null,
+   "slots": {
+    "Head": "head/worker",
+    "Top": "top/worker",
+    "Bottom": "bottom/worker",
+    "Shoes": "feet/worker"
+   },
+   "options": {
+    "head": [
+     "cyber",
+     "dress",
+     "hiker",
+     "hood",
+     "punk",
+     "suit",
+     "tactical",
+     "tee",
+     "worker"
+    ],
+    "top": [
+     "cyber",
+     "dress",
+     "hiker",
+     "hood",
+     "punk",
+     "suit",
+     "tactical",
+     "tee",
+     "worker"
+    ],
+    "bottom": [
+     "cyber",
+     "dress",
+     "hiker",
+     "hood",
+     "punk",
+     "suit",
+     "tactical",
+     "tee",
+     "worker"
+    ],
+    "feet": [
+     "cyber",
+     "dress",
+     "hiker",
+     "hood",
+     "punk",
+     "suit",
+     "tactical",
+     "tee",
+     "worker"
+    ]
+   },
+   "compatibility": {
+    "bottom_feet": {
+     "tee": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "suit": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "dress": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "punk": [
+      "cyber",
+      "hiker",
+      "hood",
+      "punk",
+      "tactical"
+     ],
+     "tactical": [
+      "cyber",
+      "hiker",
+      "hood",
+      "punk",
+      "tactical"
+     ],
+     "cyber": [
+      "cyber",
+      "hiker",
+      "hood",
+      "punk",
+      "tactical"
+     ],
+     "worker": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "hiker": [
+      "cyber",
+      "hiker",
+      "hood",
+      "punk",
+      "tactical"
+     ],
+     "hood": [
+      "cyber",
+      "hiker",
+      "hood",
+      "punk",
+      "tactical"
+     ]
+    },
+    "top_bottom": {
+     "tee": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "suit": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "dress": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "punk": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "tactical": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "cyber": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "worker": [
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "worker"
+     ],
+     "hiker": [
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "worker"
+     ],
+     "hood": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ]
+    },
+    "note": "pairs whose stacked z ranges leave a visible gap are not offered"
+   },
+   "hair": "hair/headwear is part of the head option (Quaternius heads carry their hair/hat); hair colour is a tint"
+  },
+  "umw_hiker": {
+   "family": "umw",
+   "gender": "f",
+   "geometry_root": "art/cast/v3/export",
+   "complete_default": {
+    "crowd_fbx": "bases/umw_hiker/umw_hiker.fbx",
+    "hero_fbx": "bases/umw_hiker/umw_hiker_Hero.fbx"
+   },
+   "material": "umw_Mat (shared by the whole family)",
+   "textures": {
+    "albedo": "families/umw/umw_Albedo.png",
+    "mask0": "families/umw/umw_TintMask0.png",
+    "mask1": "families/umw/umw_TintMask1.png",
+    "emission": "families/umw/umw_Emission.png"
+   },
+   "tint_reference": {
+    "skin": "#9a9a9a",
+    "hair": "#9a9a9a",
+    "top": "#9a9a9a",
+    "bottom": "#9a9a9a",
+    "shoes": "#9a9a9a",
+    "accent": "#9a9a9a",
+    "brows": "#9a9a9a",
+    "hat": "#9a9a9a"
+   },
+   "look_defaults": {
+    "skin_tone": "skin_01",
+    "skin": "#f7d7c3",
+    "hair": "#b05a2a",
+    "top": "#4b5320",
+    "bottom": "#b9a27a",
+    "shoes": "#74623f",
+    "accent": "#453f25",
+    "brows": "#6b4435"
+   },
+   "sockets": {
+    "head_top": {
+     "bone": "Head",
+     "humanoid": "Head",
+     "position_character_m": [
+      -0.0003,
+      -0.0594,
+      1.8361
+     ],
+     "offset_in_bone_space_m": [
+      -0.0,
+      0.2403,
+      0.0163
+     ]
+    },
+    "face": {
+     "bone": "Head",
+     "humanoid": "Head",
+     "position_character_m": [
+      -0.0003,
+      -0.1732,
+      1.7277
+     ],
+     "offset_in_bone_space_m": [
+      -0.0,
+      0.1319,
+      0.1301
+     ]
+    },
+    "neck": {
+     "bone": "spine_03",
+     "humanoid": "UpperChest",
+     "position_character_m": [
+      0.0,
+      -0.1831,
+      1.4991
+     ],
+     "offset_in_bone_space_m": [
+      0.0003,
+      0.1159,
+      0.1403
+     ]
+    },
+    "back": {
+     "bone": "spine_03",
+     "humanoid": "UpperChest",
+     "position_character_m": [
+      0.0,
+      0.2012,
+      1.3859
+     ],
+     "offset_in_bone_space_m": [
+      0.0003,
+      -0.0046,
+      -0.2417
+     ]
+    },
+    "shoulder_l": {
+     "bone": "clavicle_l",
+     "humanoid": "LeftShoulder",
+     "position_character_m": [
+      0.1174,
+      -0.0598,
+      1.5118
+     ],
+     "offset_in_bone_space_m": [
+      -0.0251,
+      0.0947,
+      0.0447
+     ]
+    },
+    "shoulder_r": {
+     "bone": "clavicle_r",
+     "humanoid": "RightShoulder",
+     "position_character_m": [
+      -0.1174,
+      -0.0598,
+      1.5118
+     ],
+     "offset_in_bone_space_m": [
+      0.0251,
+      0.0947,
+      0.0447
+     ]
+    },
+    "hand_l": {
+     "bone": "hand_l",
+     "humanoid": "LeftHand",
+     "position_character_m": [
+      0.6562,
+      -0.0935,
+      1.4533
+     ],
+     "offset_in_bone_space_m": [
+      0.0016,
+      0.0616,
+      -0.0
+     ]
+    },
+    "hand_r": {
+     "bone": "hand_r",
+     "humanoid": "RightHand",
+     "position_character_m": [
+      -0.6545,
+      -0.0936,
+      1.4533
+     ],
+     "offset_in_bone_space_m": [
+      -0.0013,
+      0.0599,
+      -0.0
+     ]
+    }
+   },
+   "accessories": {
+    "pixel_face_mask": {
+     "fbx": "bases/umw_hiker/accessories/umw_hiker__pixel_face_mask.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "occludes_face": true
+     }
+    },
+    "visor": {
+     "fbx": "bases/umw_hiker/accessories/umw_hiker__visor.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "double_sided": true
+     }
+    },
+    "helmet": {
+     "fbx": "bases/umw_hiker/accessories/umw_hiker__helmet.fbx",
+     "socket": "head_top",
+     "bone": "Head",
+     "flags": {
+      "hides_hair": true,
+      "occludes_face": true
+     }
+    },
+    "laser_eyes": {
+     "fbx": "bases/umw_hiker/accessories/umw_hiker__laser_eyes.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "emissive": true
+     }
+    },
+    "chain": {
+     "fbx": "bases/umw_hiker/accessories/umw_hiker__chain.fbx",
+     "socket": "neck",
+     "bone": "spine_03",
+     "flags": {}
+    },
+    "headphones": {
+     "fbx": "bases/umw_hiker/accessories/umw_hiker__headphones.fbx",
+     "socket": "head_top",
+     "bone": "Head",
+     "flags": {}
+    },
+    "small_wings": {
+     "fbx": "bases/umw_hiker/accessories/umw_hiker__small_wings.fbx",
+     "socket": "back",
+     "bone": "spine_03",
+     "flags": {
+      "double_sided": true
+     }
+    },
+    "shoulder_drone": {
+     "fbx": "bases/umw_hiker/accessories/umw_hiker__shoulder_drone.fbx",
+     "socket": "shoulder_r",
+     "bone": "clavicle_r",
+     "flags": {
+      "emissive": true
+     }
+    }
+   },
+   "wire_head_id": null,
+   "slots": {
+    "Head": "head/hiker",
+    "Top": "top/hiker",
+    "Bottom": "bottom/hiker",
+    "Shoes": "feet/hiker"
+   },
+   "options": {
+    "head": [
+     "cyber",
+     "dress",
+     "hiker",
+     "hood",
+     "punk",
+     "suit",
+     "tactical",
+     "tee",
+     "worker"
+    ],
+    "top": [
+     "cyber",
+     "dress",
+     "hiker",
+     "hood",
+     "punk",
+     "suit",
+     "tactical",
+     "tee",
+     "worker"
+    ],
+    "bottom": [
+     "cyber",
+     "dress",
+     "hiker",
+     "hood",
+     "punk",
+     "suit",
+     "tactical",
+     "tee",
+     "worker"
+    ],
+    "feet": [
+     "cyber",
+     "dress",
+     "hiker",
+     "hood",
+     "punk",
+     "suit",
+     "tactical",
+     "tee",
+     "worker"
+    ]
+   },
+   "compatibility": {
+    "bottom_feet": {
+     "tee": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "suit": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "dress": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "punk": [
+      "cyber",
+      "hiker",
+      "hood",
+      "punk",
+      "tactical"
+     ],
+     "tactical": [
+      "cyber",
+      "hiker",
+      "hood",
+      "punk",
+      "tactical"
+     ],
+     "cyber": [
+      "cyber",
+      "hiker",
+      "hood",
+      "punk",
+      "tactical"
+     ],
+     "worker": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "hiker": [
+      "cyber",
+      "hiker",
+      "hood",
+      "punk",
+      "tactical"
+     ],
+     "hood": [
+      "cyber",
+      "hiker",
+      "hood",
+      "punk",
+      "tactical"
+     ]
+    },
+    "top_bottom": {
+     "tee": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "suit": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "dress": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "punk": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "tactical": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "cyber": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "worker": [
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "worker"
+     ],
+     "hiker": [
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "worker"
+     ],
+     "hood": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ]
+    },
+    "note": "pairs whose stacked z ranges leave a visible gap are not offered"
+   },
+   "hair": "hair/headwear is part of the head option (Quaternius heads carry their hair/hat); hair colour is a tint"
+  },
+  "umw_hood": {
+   "family": "umw",
+   "gender": "f",
+   "geometry_root": "art/cast/v3/export",
+   "complete_default": {
+    "crowd_fbx": "bases/umw_hood/umw_hood.fbx",
+    "hero_fbx": "bases/umw_hood/umw_hood_Hero.fbx"
+   },
+   "material": "umw_Mat (shared by the whole family)",
+   "textures": {
+    "albedo": "families/umw/umw_Albedo.png",
+    "mask0": "families/umw/umw_TintMask0.png",
+    "mask1": "families/umw/umw_TintMask1.png",
+    "emission": "families/umw/umw_Emission.png"
+   },
+   "tint_reference": {
+    "skin": "#9a9a9a",
+    "hair": "#9a9a9a",
+    "top": "#9a9a9a",
+    "bottom": "#9a9a9a",
+    "shoes": "#9a9a9a",
+    "accent": "#9a9a9a",
+    "brows": "#9a9a9a",
+    "hat": "#9a9a9a"
+   },
+   "look_defaults": {
+    "skin_tone": "skin_08",
+    "skin": "#7b5239",
+    "hair": "#1b1512",
+    "top": "#3a3d44",
+    "bottom": "#302d2a",
+    "shoes": "#6d4523",
+    "accent": "#8a4dff",
+    "brows": "#191514",
+    "hat": "#1c1d22"
+   },
+   "sockets": {
+    "head_top": {
+     "bone": "Head",
+     "humanoid": "Head",
+     "position_character_m": [
+      -0.0003,
+      -0.0365,
+      1.886
+     ],
+     "offset_in_bone_space_m": [
+      -0.0,
+      0.2902,
+      -0.0066
+     ]
+    },
+    "face": {
+     "bone": "Head",
+     "humanoid": "Head",
+     "position_character_m": [
+      -0.0003,
+      -0.1925,
+      1.7361
+     ],
+     "offset_in_bone_space_m": [
+      -0.0,
+      0.1403,
+      0.1494
+     ]
+    },
+    "neck": {
+     "bone": "spine_03",
+     "humanoid": "UpperChest",
+     "position_character_m": [
+      0.0,
+      -0.1831,
+      1.4991
+     ],
+     "offset_in_bone_space_m": [
+      0.0003,
+      0.1159,
+      0.1403
+     ]
+    },
+    "back": {
+     "bone": "spine_03",
+     "humanoid": "UpperChest",
+     "position_character_m": [
+      0.0,
+      0.018,
+      1.3859
+     ],
+     "offset_in_bone_space_m": [
+      0.0003,
+      -0.0011,
+      -0.0585
+     ]
+    },
+    "shoulder_l": {
+     "bone": "clavicle_l",
+     "humanoid": "LeftShoulder",
+     "position_character_m": [
+      0.1174,
+      -0.0598,
+      1.5118
+     ],
+     "offset_in_bone_space_m": [
+      -0.0251,
+      0.0947,
+      0.0447
+     ]
+    },
+    "shoulder_r": {
+     "bone": "clavicle_r",
+     "humanoid": "RightShoulder",
+     "position_character_m": [
+      -0.1174,
+      -0.0598,
+      1.5118
+     ],
+     "offset_in_bone_space_m": [
+      0.0251,
+      0.0947,
+      0.0447
+     ]
+    },
+    "hand_l": {
+     "bone": "hand_l",
+     "humanoid": "LeftHand",
+     "position_character_m": [
+      0.6562,
+      -0.0935,
+      1.4533
+     ],
+     "offset_in_bone_space_m": [
+      0.0016,
+      0.0616,
+      -0.0
+     ]
+    },
+    "hand_r": {
+     "bone": "hand_r",
+     "humanoid": "RightHand",
+     "position_character_m": [
+      -0.6545,
+      -0.0936,
+      1.4533
+     ],
+     "offset_in_bone_space_m": [
+      -0.0013,
+      0.0599,
+      -0.0
+     ]
+    }
+   },
+   "accessories": {
+    "pixel_face_mask": {
+     "fbx": "bases/umw_hood/accessories/umw_hood__pixel_face_mask.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "occludes_face": true
+     }
+    },
+    "visor": {
+     "fbx": "bases/umw_hood/accessories/umw_hood__visor.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "double_sided": true
+     }
+    },
+    "helmet": {
+     "fbx": "bases/umw_hood/accessories/umw_hood__helmet.fbx",
+     "socket": "head_top",
+     "bone": "Head",
+     "flags": {
+      "hides_hair": true,
+      "occludes_face": true
+     }
+    },
+    "laser_eyes": {
+     "fbx": "bases/umw_hood/accessories/umw_hood__laser_eyes.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "emissive": true
+     }
+    },
+    "chain": {
+     "fbx": "bases/umw_hood/accessories/umw_hood__chain.fbx",
+     "socket": "neck",
+     "bone": "spine_03",
+     "flags": {}
+    },
+    "headphones": {
+     "fbx": "bases/umw_hood/accessories/umw_hood__headphones.fbx",
+     "socket": "head_top",
+     "bone": "Head",
+     "flags": {}
+    },
+    "small_wings": {
+     "fbx": "bases/umw_hood/accessories/umw_hood__small_wings.fbx",
+     "socket": "back",
+     "bone": "spine_03",
+     "flags": {
+      "double_sided": true
+     }
+    },
+    "shoulder_drone": {
+     "fbx": "bases/umw_hood/accessories/umw_hood__shoulder_drone.fbx",
+     "socket": "shoulder_r",
+     "bone": "clavicle_r",
+     "flags": {
+      "emissive": true
+     }
+    }
+   },
+   "wire_head_id": null,
+   "slots": {
+    "Head": "head/hood",
+    "Top": "top/hood",
+    "Bottom": "bottom/hood",
+    "Shoes": "feet/hood"
+   },
+   "options": {
+    "head": [
+     "cyber",
+     "dress",
+     "hiker",
+     "hood",
+     "punk",
+     "suit",
+     "tactical",
+     "tee",
+     "worker"
+    ],
+    "top": [
+     "cyber",
+     "dress",
+     "hiker",
+     "hood",
+     "punk",
+     "suit",
+     "tactical",
+     "tee",
+     "worker"
+    ],
+    "bottom": [
+     "cyber",
+     "dress",
+     "hiker",
+     "hood",
+     "punk",
+     "suit",
+     "tactical",
+     "tee",
+     "worker"
+    ],
+    "feet": [
+     "cyber",
+     "dress",
+     "hiker",
+     "hood",
+     "punk",
+     "suit",
+     "tactical",
+     "tee",
+     "worker"
+    ]
+   },
+   "compatibility": {
+    "bottom_feet": {
+     "tee": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "suit": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "dress": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "punk": [
+      "cyber",
+      "hiker",
+      "hood",
+      "punk",
+      "tactical"
+     ],
+     "tactical": [
+      "cyber",
+      "hiker",
+      "hood",
+      "punk",
+      "tactical"
+     ],
+     "cyber": [
+      "cyber",
+      "hiker",
+      "hood",
+      "punk",
+      "tactical"
+     ],
+     "worker": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "hiker": [
+      "cyber",
+      "hiker",
+      "hood",
+      "punk",
+      "tactical"
+     ],
+     "hood": [
+      "cyber",
+      "hiker",
+      "hood",
+      "punk",
+      "tactical"
+     ]
+    },
+    "top_bottom": {
+     "tee": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "suit": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "dress": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "punk": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "tactical": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "cyber": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ],
+     "worker": [
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "worker"
+     ],
+     "hiker": [
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "worker"
+     ],
+     "hood": [
+      "cyber",
+      "dress",
+      "hiker",
+      "hood",
+      "punk",
+      "suit",
+      "tactical",
+      "tee",
+      "worker"
+     ]
+    },
+    "note": "pairs whose stacked z ranges leave a visible gap are not offered"
+   },
+   "hair": "hair/headwear is part of the head option (Quaternius heads carry their hair/hat); hair colour is a tint"
+  },
+  "ubc_m": {
+   "family": null,
+   "gender": "m",
+   "geometry_root": "art/cast/v3/export",
+   "complete_default": {
+    "crowd_fbx": "bases/ubc_m/ubc_m.fbx",
+    "hero_fbx": "bases/ubc_m/ubc_m_Hero.fbx"
+   },
+   "material": "ubc_m_Mat (accessories bind the same material)",
+   "textures": {
+    "albedo": "bases/ubc_m/ubc_m_Albedo.png",
+    "mask0": "bases/ubc_m/ubc_m_TintMask0.png",
+    "mask1": "bases/ubc_m/ubc_m_TintMask1.png",
+    "emission": "bases/ubc_m/ubc_m_Emission.png"
+   },
+   "tint_reference": {
+    "skin": "#a26643",
+    "hair": "#392418",
+    "top": "#aba9a6",
+    "bottom": "#9f9d9a",
+    "shoes": "#d5d2d0",
+    "accent": "#7a4a44",
+    "brows": "#261a15"
+   },
+   "look_defaults": {
+    "skin_tone": "skin_06",
+    "skin": "#a07051",
+    "hair": "#3a2519",
+    "top": "#3a3d44",
+    "bottom": "#3b5a8a",
+    "shoes": "#f2f2ee",
+    "accent": "#7a4a44",
+    "brows": "#261b16"
+   },
+   "sockets": {
+    "head_top": {
+     "bone": "Head",
+     "humanoid": "Head",
+     "position_character_m": [
+      0.0,
+      -0.0003,
+      1.8397
+     ],
+     "offset_in_bone_space_m": [
+      -0.0,
+      0.2403,
+      0.0107
+     ]
+    },
+    "face": {
+     "bone": "Head",
+     "humanoid": "Head",
+     "position_character_m": [
+      0.0,
+      -0.1087,
+      1.7292
+     ],
+     "offset_in_bone_space_m": [
+      -0.0,
+      0.133,
+      0.1223
+     ]
+    },
+    "neck": {
+     "bone": "spine_03",
+     "humanoid": "UpperChest",
+     "position_character_m": [
+      0.0,
+      -0.1183,
+      1.5005
+     ],
+     "offset_in_bone_space_m": [
+      -0.0,
+      0.1597,
+      0.1511
+     ]
+    },
+    "back": {
+     "bone": "spine_03",
+     "humanoid": "UpperChest",
+     "position_character_m": [
+      -0.0,
+      0.1664,
+      1.3109
+     ],
+     "offset_in_bone_space_m": [
+      0.0,
+      0.0389,
+      -0.1689
+     ]
+    },
+    "shoulder_l": {
+     "bone": "clavicle_l",
+     "humanoid": "LeftShoulder",
+     "position_character_m": [
+      0.212,
+      0.0654,
+      1.5155
+     ],
+     "offset_in_bone_space_m": [
+      -0.0091,
+      0.2057,
+      0.0203
+     ]
+    },
+    "shoulder_r": {
+     "bone": "clavicle_r",
+     "humanoid": "RightShoulder",
+     "position_character_m": [
+      -0.212,
+      0.0654,
+      1.5155
+     ],
+     "offset_in_bone_space_m": [
+      0.0091,
+      0.2057,
+      0.0203
+     ]
+    },
+    "hand_l": {
+     "bone": "hand_l",
+     "humanoid": "LeftHand",
+     "position_character_m": [
+      0.7642,
+      0.0578,
+      1.4532
+     ],
+     "offset_in_bone_space_m": [
+      0.0023,
+      0.0577,
+      0.0076
+     ]
+    },
+    "hand_r": {
+     "bone": "hand_r",
+     "humanoid": "RightHand",
+     "position_character_m": [
+      -0.7642,
+      0.0578,
+      1.4532
+     ],
+     "offset_in_bone_space_m": [
+      -0.0023,
+      0.0577,
+      0.0076
+     ]
+    }
+   },
+   "accessories": {
+    "pixel_face_mask": {
+     "fbx": "bases/ubc_m/accessories/ubc_m__pixel_face_mask.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "occludes_face": true
+     }
+    },
+    "visor": {
+     "fbx": "bases/ubc_m/accessories/ubc_m__visor.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "double_sided": true
+     }
+    },
+    "helmet": {
+     "fbx": "bases/ubc_m/accessories/ubc_m__helmet.fbx",
+     "socket": "head_top",
+     "bone": "Head",
+     "flags": {
+      "hides_hair": true,
+      "occludes_face": true
+     }
+    },
+    "laser_eyes": {
+     "fbx": "bases/ubc_m/accessories/ubc_m__laser_eyes.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "emissive": true
+     }
+    },
+    "chain": {
+     "fbx": "bases/ubc_m/accessories/ubc_m__chain.fbx",
+     "socket": "neck",
+     "bone": "spine_03",
+     "flags": {}
+    },
+    "headphones": {
+     "fbx": "bases/ubc_m/accessories/ubc_m__headphones.fbx",
+     "socket": "head_top",
+     "bone": "Head",
+     "flags": {}
+    },
+    "small_wings": {
+     "fbx": "bases/ubc_m/accessories/ubc_m__small_wings.fbx",
+     "socket": "back",
+     "bone": "spine_03",
+     "flags": {
+      "double_sided": true
+     }
+    },
+    "shoulder_drone": {
+     "fbx": "bases/ubc_m/accessories/ubc_m__shoulder_drone.fbx",
+     "socket": "shoulder_r",
+     "bone": "clavicle_r",
+     "flags": {
+      "emissive": true
+     }
+    }
+   },
+   "wire_head_id": null,
+   "slots": {
+    "parts": [
+     "eyes",
+     "head",
+     "top",
+     "bottom",
+     "feet",
+     "hair",
+     "brows",
+     "hair_Hair_Buzzed",
+     "hair_Hair_Long",
+     "hair_Hair_Buns",
+     "facial_Hair_Beard"
+    ]
+   },
+   "hair_styles": {
+    "Hair_SimpleParted": {
+     "part": "hair",
+     "fbx": "bases/ubc_m/parts/ubc_m__hair.fbx",
+     "default": true,
+     "fit": "native"
+    },
+    "Hair_Buzzed": {
+     "part": "hair_Hair_Buzzed",
+     "fbx": "bases/ubc_m/parts/ubc_m__hair_Hair_Buzzed.fbx",
+     "default": false,
+     "fit": "native"
+    },
+    "Hair_Long": {
+     "part": "hair_Hair_Long",
+     "fbx": "bases/ubc_m/parts/ubc_m__hair_Hair_Long.fbx",
+     "default": false,
+     "fit": "cross-fitted"
+    },
+    "Hair_Buns": {
+     "part": "hair_Hair_Buns",
+     "fbx": "bases/ubc_m/parts/ubc_m__hair_Hair_Buns.fbx",
+     "default": false,
+     "fit": "cross-fitted"
+    }
+   },
+   "facial_hair": {
+    "Hair_Beard": {
+     "part": "facial_Hair_Beard",
+     "fbx": "bases/ubc_m/parts/ubc_m__facial_Hair_Beard.fbx",
+     "default": false,
+     "fit": "native"
+    }
+   },
+   "options": "hair library only; no outfit swaps"
+  },
+  "ubc_f": {
+   "family": null,
+   "gender": "f",
+   "geometry_root": "art/cast/v3/export",
+   "complete_default": {
+    "crowd_fbx": "bases/ubc_f/ubc_f.fbx",
+    "hero_fbx": "bases/ubc_f/ubc_f_Hero.fbx"
+   },
+   "material": "ubc_f_Mat (accessories bind the same material)",
+   "textures": {
+    "albedo": "bases/ubc_f/ubc_f_Albedo.png",
+    "mask0": "bases/ubc_f/ubc_f_TintMask0.png",
+    "mask1": "bases/ubc_f/ubc_f_TintMask1.png",
+    "emission": "bases/ubc_f/ubc_f_Emission.png"
+   },
+   "tint_reference": {
+    "skin": "#976742",
+    "hair": "#1b1512",
+    "top": "#aaa8a6",
+    "bottom": "#9f9d9a",
+    "shoes": "#d5d2d0",
+    "accent": "#7a4842",
+    "brows": "#191414"
+   },
+   "look_defaults": {
+    "skin_tone": "skin_03",
+    "skin": "#d6a88a",
+    "hair": "#1b1512",
+    "top": "#f2f2ee",
+    "bottom": "#1c1d22",
+    "shoes": "#f2f2ee",
+    "accent": "#7a4842",
+    "brows": "#191514"
+   },
+   "sockets": {
+    "head_top": {
+     "bone": "Head",
+     "humanoid": "Head",
+     "position_character_m": [
+      -0.0,
+      0.0248,
+      1.7772
+     ],
+     "offset_in_bone_space_m": [
+      0.0,
+      0.2273,
+      -0.018
+     ]
+    },
+    "face": {
+     "bone": "Head",
+     "humanoid": "Head",
+     "position_character_m": [
+      -0.0,
+      -0.1119,
+      1.6612
+     ],
+     "offset_in_bone_space_m": [
+      -0.0,
+      0.1138,
+      0.1208
+     ]
+    },
+    "neck": {
+     "bone": "spine_03",
+     "humanoid": "UpperChest",
+     "position_character_m": [
+      0.0,
+      -0.1331,
+      1.4649
+     ],
+     "offset_in_bone_space_m": [
+      -0.0,
+      0.1444,
+      0.1664
+     ]
+    },
+    "back": {
+     "bone": "spine_03",
+     "humanoid": "UpperChest",
+     "position_character_m": [
+      0.0,
+      0.1336,
+      1.2906
+     ],
+     "offset_in_bone_space_m": [
+      0.0,
+      0.0259,
+      -0.1294
+     ]
+    },
+    "shoulder_l": {
+     "bone": "clavicle_l",
+     "humanoid": "LeftShoulder",
+     "position_character_m": [
+      0.1516,
+      0.0543,
+      1.4781
+     ],
+     "offset_in_bone_space_m": [
+      -0.0016,
+      0.141,
+      0.0477
+     ]
+    },
+    "shoulder_r": {
+     "bone": "clavicle_r",
+     "humanoid": "RightShoulder",
+     "position_character_m": [
+      -0.1516,
+      0.0543,
+      1.4781
+     ],
+     "offset_in_bone_space_m": [
+      0.0016,
+      0.141,
+      0.0477
+     ]
+    },
+    "hand_l": {
+     "bone": "hand_l",
+     "humanoid": "LeftHand",
+     "position_character_m": [
+      0.6844,
+      0.0469,
+      1.4171
+     ],
+     "offset_in_bone_space_m": [
+      0.001,
+      0.0432,
+      0.0053
+     ]
+    },
+    "hand_r": {
+     "bone": "hand_r",
+     "humanoid": "RightHand",
+     "position_character_m": [
+      -0.6844,
+      0.0469,
+      1.4171
+     ],
+     "offset_in_bone_space_m": [
+      -0.001,
+      0.0432,
+      0.0053
+     ]
+    }
+   },
+   "accessories": {
+    "pixel_face_mask": {
+     "fbx": "bases/ubc_f/accessories/ubc_f__pixel_face_mask.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "occludes_face": true
+     }
+    },
+    "visor": {
+     "fbx": "bases/ubc_f/accessories/ubc_f__visor.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "double_sided": true
+     }
+    },
+    "helmet": {
+     "fbx": "bases/ubc_f/accessories/ubc_f__helmet.fbx",
+     "socket": "head_top",
+     "bone": "Head",
+     "flags": {
+      "hides_hair": true,
+      "occludes_face": true
+     }
+    },
+    "laser_eyes": {
+     "fbx": "bases/ubc_f/accessories/ubc_f__laser_eyes.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "emissive": true
+     }
+    },
+    "chain": {
+     "fbx": "bases/ubc_f/accessories/ubc_f__chain.fbx",
+     "socket": "neck",
+     "bone": "spine_03",
+     "flags": {}
+    },
+    "headphones": {
+     "fbx": "bases/ubc_f/accessories/ubc_f__headphones.fbx",
+     "socket": "head_top",
+     "bone": "Head",
+     "flags": {}
+    },
+    "small_wings": {
+     "fbx": "bases/ubc_f/accessories/ubc_f__small_wings.fbx",
+     "socket": "back",
+     "bone": "spine_03",
+     "flags": {
+      "double_sided": true
+     }
+    },
+    "shoulder_drone": {
+     "fbx": "bases/ubc_f/accessories/ubc_f__shoulder_drone.fbx",
+     "socket": "shoulder_r",
+     "bone": "clavicle_r",
+     "flags": {
+      "emissive": true
+     }
+    }
+   },
+   "wire_head_id": null,
+   "slots": {
+    "parts": [
+     "eyes",
+     "head",
+     "top",
+     "bottom",
+     "feet",
+     "hair",
+     "brows",
+     "hair_Hair_Buns",
+     "hair_Hair_BuzzedFemale",
+     "hair_Hair_SimpleParted"
+    ]
+   },
+   "hair_styles": {
+    "Hair_Long": {
+     "part": "hair",
+     "fbx": "bases/ubc_f/parts/ubc_f__hair.fbx",
+     "default": true,
+     "fit": "native"
+    },
+    "Hair_Buns": {
+     "part": "hair_Hair_Buns",
+     "fbx": "bases/ubc_f/parts/ubc_f__hair_Hair_Buns.fbx",
+     "default": false,
+     "fit": "native"
+    },
+    "Hair_BuzzedFemale": {
+     "part": "hair_Hair_BuzzedFemale",
+     "fbx": "bases/ubc_f/parts/ubc_f__hair_Hair_BuzzedFemale.fbx",
+     "default": false,
+     "fit": "native"
+    },
+    "Hair_SimpleParted": {
+     "part": "hair_Hair_SimpleParted",
+     "fbx": "bases/ubc_f/parts/ubc_f__hair_Hair_SimpleParted.fbx",
+     "default": false,
+     "fit": "cross-fitted"
+    }
+   },
+   "facial_hair": {},
+   "options": "hair library only; no outfit swaps"
+  },
+  "hero_assassin": {
+   "family": null,
+   "gender": "f",
+   "geometry_root": "art/cast/v2/export",
+   "complete_default": {
+    "crowd_fbx": "bases/hero_assassin/hero_assassin.fbx",
+    "hero_fbx": "bases/hero_assassin/hero_assassin_Hero.fbx"
+   },
+   "material": null,
+   "textures": {
+    "albedo": "bases/hero_assassin/hero_assassin_v3_Albedo.png",
+    "mask0": "bases/hero_assassin/hero_assassin_v3_TintMask0.png",
+    "mask1": "bases/hero_assassin/hero_assassin_v3_TintMask1.png",
+    "emission": "bases/hero_assassin/hero_assassin_v3_Emission.png"
+   },
+   "tint_reference": {
+    "top": "#393a38",
+    "accent": "#3b444a",
+    "bottom": "#495967",
+    "shoes": "#060606"
+   },
+   "look_defaults": {
+    "top": "#393a38",
+    "accent": "#3b444a",
+    "bottom": "#495967",
+    "shoes": "#060606"
+   },
+   "sockets": {
+    "head_top": {
+     "bone": "Head",
+     "humanoid": "Head",
+     "position_character_m": [
+      0.0,
+      0.0142,
+      1.72
+     ],
+     "offset_in_bone_space_m": [
+      0.0,
+      0.2681,
+      0.0202
+     ]
+    },
+    "face": {
+     "bone": "Head",
+     "humanoid": "Head",
+     "position_character_m": [
+      -0.0,
+      -0.1232,
+      1.6078
+     ],
+     "offset_in_bone_space_m": [
+      0.0,
+      0.1559,
+      0.1576
+     ]
+    },
+    "neck": {
+     "bone": "spine_03",
+     "humanoid": "UpperChest",
+     "position_character_m": [
+      0.0,
+      -0.1362,
+      1.371
+     ],
+     "offset_in_bone_space_m": [
+      0.0,
+      0.0882,
+      0.1716
+     ]
+    },
+    "back": {
+     "bone": "spine_03",
+     "humanoid": "UpperChest",
+     "position_character_m": [
+      -0.0,
+      0.1416,
+      1.2727
+     ],
+     "offset_in_bone_space_m": [
+      -0.0,
+      0.0067,
+      -0.1116
+     ]
+    },
+    "shoulder_l": {
+     "bone": "clavicle_l",
+     "humanoid": "LeftShoulder",
+     "position_character_m": [
+      0.1228,
+      0.0118,
+      1.4381
+     ],
+     "offset_in_bone_space_m": [
+      -0.0088,
+      0.1464,
+      0.0584
+     ]
+    },
+    "shoulder_r": {
+     "bone": "clavicle_r",
+     "humanoid": "RightShoulder",
+     "position_character_m": [
+      -0.1228,
+      0.0118,
+      1.4381
+     ],
+     "offset_in_bone_space_m": [
+      0.0088,
+      0.1464,
+      0.0584
+     ]
+    },
+    "hand_l": {
+     "bone": "hand_l",
+     "humanoid": "LeftHand",
+     "position_character_m": [
+      0.5242,
+      0.0123,
+      1.0722
+     ],
+     "offset_in_bone_space_m": [
+      0.0029,
+      0.0436,
+      0.0002
+     ]
+    },
+    "hand_r": {
+     "bone": "hand_r",
+     "humanoid": "RightHand",
+     "position_character_m": [
+      -0.5242,
+      0.0123,
+      1.0722
+     ],
+     "offset_in_bone_space_m": [
+      -0.0029,
+      0.0436,
+      0.0002
+     ]
+    }
+   },
+   "accessories": {
+    "pixel_face_mask": {
+     "fbx": "bases/hero_assassin/accessories/hero_assassin__pixel_face_mask.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "occludes_face": true
+     }
+    },
+    "visor": {
+     "fbx": "bases/hero_assassin/accessories/hero_assassin__visor.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "double_sided": true
+     }
+    },
+    "helmet": {
+     "fbx": "bases/hero_assassin/accessories/hero_assassin__helmet.fbx",
+     "socket": "head_top",
+     "bone": "Head",
+     "flags": {
+      "hides_hair": true,
+      "occludes_face": true
+     }
+    },
+    "laser_eyes": {
+     "fbx": "bases/hero_assassin/accessories/hero_assassin__laser_eyes.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "emissive": true
+     }
+    },
+    "chain": {
+     "fbx": "bases/hero_assassin/accessories/hero_assassin__chain.fbx",
+     "socket": "neck",
+     "bone": "spine_03",
+     "flags": {}
+    },
+    "headphones": {
+     "fbx": "bases/hero_assassin/accessories/hero_assassin__headphones.fbx",
+     "socket": "head_top",
+     "bone": "Head",
+     "flags": {}
+    },
+    "small_wings": {
+     "fbx": "bases/hero_assassin/accessories/hero_assassin__small_wings.fbx",
+     "socket": "back",
+     "bone": "spine_03",
+     "flags": {
+      "double_sided": true
+     }
+    },
+    "shoulder_drone": {
+     "fbx": "bases/hero_assassin/accessories/hero_assassin__shoulder_drone.fbx",
+     "socket": "shoulder_r",
+     "bone": "clavicle_r",
+     "flags": {
+      "emissive": true
+     }
+    }
+   },
+   "wire_head_id": null,
+   "slots": {
+    "parts": [
+     "head",
+     "top",
+     "bottom",
+     "feet"
+    ]
+   },
+   "hair_styles": {},
+   "facial_hair": {},
+   "options": "hair library only; no outfit swaps"
+  },
+  "hero_gynoid": {
+   "family": null,
+   "gender": "f",
+   "geometry_root": "art/cast/v2/export",
+   "complete_default": {
+    "crowd_fbx": "bases/hero_gynoid/hero_gynoid.fbx",
+    "hero_fbx": "bases/hero_gynoid/hero_gynoid_Hero.fbx"
+   },
+   "material": null,
+   "textures": {
+    "albedo": "bases/hero_gynoid/hero_gynoid_v3_Albedo.png",
+    "mask0": "bases/hero_gynoid/hero_gynoid_v3_TintMask0.png",
+    "mask1": "bases/hero_gynoid/hero_gynoid_v3_TintMask1.png",
+    "emission": "bases/hero_gynoid/hero_gynoid_v3_Emission.png"
+   },
+   "tint_reference": {
+    "top": "#bebbb9",
+    "bottom": "#cbc8c6",
+    "accent": "#b2aeae",
+    "shoes": "#cbcac6"
+   },
+   "look_defaults": {
+    "top": "#b9bfcf",
+    "bottom": "#b9bfcf",
+    "accent": "#b2aeae",
+    "shoes": "#b9bfcf"
+   },
+   "sockets": {
+    "head_top": {
+     "bone": "Head",
+     "humanoid": "Head",
+     "position_character_m": [
+      -0.0,
+      0.0133,
+      1.72
+     ],
+     "offset_in_bone_space_m": [
+      -0.0,
+      0.2253,
+      0.004
+     ]
+    },
+    "face": {
+     "bone": "Head",
+     "humanoid": "Head",
+     "position_character_m": [
+      -0.0,
+      -0.099,
+      1.6204
+     ],
+     "offset_in_bone_space_m": [
+      -0.0,
+      0.1257,
+      0.1163
+     ]
+    },
+    "neck": {
+     "bone": "spine_03",
+     "humanoid": "UpperChest",
+     "position_character_m": [
+      0.0,
+      -0.1873,
+      1.4257
+     ],
+     "offset_in_bone_space_m": [
+      0.0,
+      0.0462,
+      0.1992
+     ]
+    },
+    "back": {
+     "bone": "spine_03",
+     "humanoid": "UpperChest",
+     "position_character_m": [
+      0.0,
+      0.0879,
+      1.3557
+     ],
+     "offset_in_bone_space_m": [
+      0.0,
+      0.01,
+      -0.0825
+     ]
+    },
+    "shoulder_l": {
+     "bone": "clavicle_l",
+     "humanoid": "LeftShoulder",
+     "position_character_m": [
+      0.1366,
+      0.016,
+      1.4749
+     ],
+     "offset_in_bone_space_m": [
+      0.0118,
+      0.0814,
+      0.0576
+     ]
+    },
+    "shoulder_r": {
+     "bone": "clavicle_r",
+     "humanoid": "RightShoulder",
+     "position_character_m": [
+      -0.1366,
+      0.0157,
+      1.4749
+     ],
+     "offset_in_bone_space_m": [
+      -0.0118,
+      0.0814,
+      0.0576
+     ]
+    },
+    "hand_l": {
+     "bone": "hand_l",
+     "humanoid": "LeftHand",
+     "position_character_m": [
+      0.5835,
+      0.016,
+      1.1569
+     ],
+     "offset_in_bone_space_m": [
+      0.0066,
+      0.0592,
+      -0.0033
+     ]
+    },
+    "hand_r": {
+     "bone": "hand_r",
+     "humanoid": "RightHand",
+     "position_character_m": [
+      -0.5826,
+      0.0157,
+      1.1574
+     ],
+     "offset_in_bone_space_m": [
+      -0.0067,
+      0.0581,
+      -0.003
+     ]
+    }
+   },
+   "accessories": {
+    "pixel_face_mask": {
+     "fbx": "bases/hero_gynoid/accessories/hero_gynoid__pixel_face_mask.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "occludes_face": true
+     }
+    },
+    "visor": {
+     "fbx": "bases/hero_gynoid/accessories/hero_gynoid__visor.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "double_sided": true
+     }
+    },
+    "helmet": {
+     "fbx": "bases/hero_gynoid/accessories/hero_gynoid__helmet.fbx",
+     "socket": "head_top",
+     "bone": "Head",
+     "flags": {
+      "hides_hair": true,
+      "occludes_face": true
+     }
+    },
+    "laser_eyes": {
+     "fbx": "bases/hero_gynoid/accessories/hero_gynoid__laser_eyes.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "emissive": true
+     }
+    },
+    "chain": {
+     "fbx": "bases/hero_gynoid/accessories/hero_gynoid__chain.fbx",
+     "socket": "neck",
+     "bone": "spine_03",
+     "flags": {}
+    },
+    "headphones": {
+     "fbx": "bases/hero_gynoid/accessories/hero_gynoid__headphones.fbx",
+     "socket": "head_top",
+     "bone": "Head",
+     "flags": {}
+    },
+    "small_wings": {
+     "fbx": "bases/hero_gynoid/accessories/hero_gynoid__small_wings.fbx",
+     "socket": "back",
+     "bone": "spine_03",
+     "flags": {
+      "double_sided": true
+     }
+    },
+    "shoulder_drone": {
+     "fbx": "bases/hero_gynoid/accessories/hero_gynoid__shoulder_drone.fbx",
+     "socket": "shoulder_r",
+     "bone": "clavicle_r",
+     "flags": {
+      "emissive": true
+     }
+    }
+   },
+   "wire_head_id": null,
+   "slots": {
+    "parts": [
+     "head",
+     "top",
+     "bottom",
+     "feet"
+    ]
+   },
+   "hair_styles": {},
+   "facial_hair": {},
+   "options": "hair library only; no outfit swaps"
+  },
+  "hero_hazmat": {
+   "family": null,
+   "gender": "m",
+   "geometry_root": "art/cast/v2/export",
+   "complete_default": {
+    "crowd_fbx": "bases/hero_hazmat/hero_hazmat.fbx",
+    "hero_fbx": "bases/hero_hazmat/hero_hazmat_Hero.fbx"
+   },
+   "material": null,
+   "textures": {
+    "albedo": "bases/hero_hazmat/hero_hazmat_v3_Albedo.png",
+    "mask0": "bases/hero_hazmat/hero_hazmat_v3_TintMask0.png",
+    "mask1": "bases/hero_hazmat/hero_hazmat_v3_TintMask1.png",
+    "emission": "bases/hero_hazmat/hero_hazmat_v3_Emission.png"
+   },
+   "tint_reference": {
+    "hair": "#1b1b1c",
+    "top": "#2a2928",
+    "bottom": "#403f40",
+    "shoes": "#0d0c0b"
+   },
+   "look_defaults": {
+    "hair": "#1b1b1c",
+    "top": "#4b5139",
+    "bottom": "#3d4231",
+    "shoes": "#0d0c0b"
+   },
+   "sockets": {
+    "head_top": {
+     "bone": "Head",
+     "humanoid": "Head",
+     "position_character_m": [
+      0.0,
+      0.0075,
+      1.8
+     ],
+     "offset_in_bone_space_m": [
+      0.0,
+      0.225,
+      -0.0213
+     ]
+    },
+    "face": {
+     "bone": "Head",
+     "humanoid": "Head",
+     "position_character_m": [
+      0.0,
+      -0.1219,
+      1.6977
+     ],
+     "offset_in_bone_space_m": [
+      0.0,
+      0.1227,
+      0.108
+     ]
+    },
+    "neck": {
+     "bone": "spine_03",
+     "humanoid": "UpperChest",
+     "position_character_m": [
+      0.0,
+      -0.1955,
+      1.483
+     ],
+     "offset_in_bone_space_m": [
+      0.0,
+      0.092,
+      0.1496
+     ]
+    },
+    "back": {
+     "bone": "spine_03",
+     "humanoid": "UpperChest",
+     "position_character_m": [
+      0.0,
+      0.0639,
+      1.323
+     ],
+     "offset_in_bone_space_m": [
+      0.0,
+      0.1047,
+      -0.1549
+     ]
+    },
+    "shoulder_l": {
+     "bone": "clavicle_l",
+     "humanoid": "LeftShoulder",
+     "position_character_m": [
+      0.2001,
+      -0.028,
+      1.509
+     ],
+     "offset_in_bone_space_m": [
+      -0.0045,
+      0.2047,
+      0.0593
+     ]
+    },
+    "shoulder_r": {
+     "bone": "clavicle_r",
+     "humanoid": "RightShoulder",
+     "position_character_m": [
+      -0.2003,
+      -0.0221,
+      1.509
+     ],
+     "offset_in_bone_space_m": [
+      0.0043,
+      0.2079,
+      0.0593
+     ]
+    },
+    "hand_l": {
+     "bone": "hand_l",
+     "humanoid": "LeftHand",
+     "position_character_m": [
+      0.326,
+      -0.0621,
+      0.8367
+     ],
+     "offset_in_bone_space_m": [
+      -0.0,
+      0.0285,
+      -0.0
+     ]
+    },
+    "hand_r": {
+     "bone": "hand_r",
+     "humanoid": "RightHand",
+     "position_character_m": [
+      -0.326,
+      -0.0624,
+      0.837
+     ],
+     "offset_in_bone_space_m": [
+      -0.0,
+      0.0285,
+      0.0
+     ]
+    }
+   },
+   "accessories": {
+    "pixel_face_mask": {
+     "fbx": "bases/hero_hazmat/accessories/hero_hazmat__pixel_face_mask.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "occludes_face": true
+     }
+    },
+    "visor": {
+     "fbx": "bases/hero_hazmat/accessories/hero_hazmat__visor.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "double_sided": true
+     }
+    },
+    "helmet": {
+     "fbx": "bases/hero_hazmat/accessories/hero_hazmat__helmet.fbx",
+     "socket": "head_top",
+     "bone": "Head",
+     "flags": {
+      "hides_hair": true,
+      "occludes_face": true
+     }
+    },
+    "laser_eyes": {
+     "fbx": "bases/hero_hazmat/accessories/hero_hazmat__laser_eyes.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "emissive": true
+     }
+    },
+    "chain": {
+     "fbx": "bases/hero_hazmat/accessories/hero_hazmat__chain.fbx",
+     "socket": "neck",
+     "bone": "spine_03",
+     "flags": {}
+    },
+    "headphones": {
+     "fbx": "bases/hero_hazmat/accessories/hero_hazmat__headphones.fbx",
+     "socket": "head_top",
+     "bone": "Head",
+     "flags": {}
+    },
+    "small_wings": {
+     "fbx": "bases/hero_hazmat/accessories/hero_hazmat__small_wings.fbx",
+     "socket": "back",
+     "bone": "spine_03",
+     "flags": {
+      "double_sided": true
+     }
+    },
+    "shoulder_drone": {
+     "fbx": "bases/hero_hazmat/accessories/hero_hazmat__shoulder_drone.fbx",
+     "socket": "shoulder_r",
+     "bone": "clavicle_r",
+     "flags": {
+      "emissive": true
+     }
+    }
+   },
+   "wire_head_id": null,
+   "slots": {
+    "parts": [
+     "head",
+     "top",
+     "bottom",
+     "feet"
+    ]
+   },
+   "hair_styles": {},
+   "facial_hair": {},
+   "options": "hair library only; no outfit swaps"
+  },
+  "hero_balaclava": {
+   "family": null,
+   "gender": "m",
+   "geometry_root": "art/cast/v2/export",
+   "complete_default": {
+    "crowd_fbx": "bases/hero_balaclava/hero_balaclava.fbx",
+    "hero_fbx": "bases/hero_balaclava/hero_balaclava_Hero.fbx"
+   },
+   "material": null,
+   "textures": {
+    "albedo": "bases/hero_balaclava/hero_balaclava_v3_Albedo.png",
+    "mask0": "bases/hero_balaclava/hero_balaclava_v3_TintMask0.png",
+    "mask1": "bases/hero_balaclava/hero_balaclava_v3_TintMask1.png",
+    "emission": "bases/hero_balaclava/hero_balaclava_v3_Emission.png"
+   },
+   "tint_reference": {
+    "top": "#2f292b",
+    "bottom": "#121112",
+    "accent": "#807f7f",
+    "shoes": "#fff9ee",
+    "skin": "#ca8979"
+   },
+   "look_defaults": {
+    "top": "#1f2c4a",
+    "bottom": "#3a3d44",
+    "accent": "#c8102e",
+    "shoes": "#fff9ee",
+    "skin": "#8e6145"
+   },
+   "sockets": {
+    "head_top": {
+     "bone": "Head",
+     "humanoid": "Head",
+     "position_character_m": [
+      0.0,
+      -0.0609,
+      1.8
+     ],
+     "offset_in_bone_space_m": [
+      0.0,
+      0.225,
+      -0.0317
+     ]
+    },
+    "face": {
+     "bone": "Head",
+     "humanoid": "Head",
+     "position_character_m": [
+      0.0,
+      -0.1745,
+      1.6983
+     ],
+     "offset_in_bone_space_m": [
+      0.0,
+      0.1233,
+      0.0819
+     ]
+    },
+    "neck": {
+     "bone": "spine_03",
+     "humanoid": "UpperChest",
+     "position_character_m": [
+      0.0,
+      -0.1954,
+      1.483
+     ],
+     "offset_in_bone_space_m": [
+      0.0,
+      0.1144,
+      0.1133
+     ]
+    },
+    "back": {
+     "bone": "spine_03",
+     "humanoid": "UpperChest",
+     "position_character_m": [
+      0.0,
+      0.1158,
+      1.323
+     ],
+     "offset_in_bone_space_m": [
+      0.0,
+      0.1809,
+      -0.2302
+     ]
+    },
+    "shoulder_l": {
+     "bone": "clavicle_l",
+     "humanoid": "LeftShoulder",
+     "position_character_m": [
+      0.1855,
+      -0.1348,
+      1.509
+     ],
+     "offset_in_bone_space_m": [
+      -0.0071,
+      0.1706,
+      0.0587
+     ]
+    },
+    "shoulder_r": {
+     "bone": "clavicle_r",
+     "humanoid": "RightShoulder",
+     "position_character_m": [
+      -0.1865,
+      -0.1356,
+      1.509
+     ],
+     "offset_in_bone_space_m": [
+      0.0071,
+      0.1712,
+      0.0587
+     ]
+    },
+    "hand_l": {
+     "bone": "hand_l",
+     "humanoid": "LeftHand",
+     "position_character_m": [
+      0.3083,
+      -0.0431,
+      0.8417
+     ],
+     "offset_in_bone_space_m": [
+      0.0,
+      0.0288,
+      -0.0
+     ]
+    },
+    "hand_r": {
+     "bone": "hand_r",
+     "humanoid": "RightHand",
+     "position_character_m": [
+      -0.259,
+      -0.1045,
+      0.8276
+     ],
+     "offset_in_bone_space_m": [
+      0.0,
+      0.0288,
+      0.0
+     ]
+    }
+   },
+   "accessories": {
+    "pixel_face_mask": {
+     "fbx": "bases/hero_balaclava/accessories/hero_balaclava__pixel_face_mask.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "occludes_face": true
+     }
+    },
+    "visor": {
+     "fbx": "bases/hero_balaclava/accessories/hero_balaclava__visor.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "double_sided": true
+     }
+    },
+    "helmet": {
+     "fbx": "bases/hero_balaclava/accessories/hero_balaclava__helmet.fbx",
+     "socket": "head_top",
+     "bone": "Head",
+     "flags": {
+      "hides_hair": true,
+      "occludes_face": true
+     }
+    },
+    "laser_eyes": {
+     "fbx": "bases/hero_balaclava/accessories/hero_balaclava__laser_eyes.fbx",
+     "socket": "face",
+     "bone": "Head",
+     "flags": {
+      "emissive": true
+     }
+    },
+    "chain": {
+     "fbx": "bases/hero_balaclava/accessories/hero_balaclava__chain.fbx",
+     "socket": "neck",
+     "bone": "spine_03",
+     "flags": {}
+    },
+    "headphones": {
+     "fbx": "bases/hero_balaclava/accessories/hero_balaclava__headphones.fbx",
+     "socket": "head_top",
+     "bone": "Head",
+     "flags": {}
+    },
+    "small_wings": {
+     "fbx": "bases/hero_balaclava/accessories/hero_balaclava__small_wings.fbx",
+     "socket": "back",
+     "bone": "spine_03",
+     "flags": {
+      "double_sided": true
+     }
+    },
+    "shoulder_drone": {
+     "fbx": "bases/hero_balaclava/accessories/hero_balaclava__shoulder_drone.fbx",
+     "socket": "shoulder_r",
+     "bone": "clavicle_r",
+     "flags": {
+      "emissive": true
+     }
+    }
+   },
+   "wire_head_id": null,
+   "slots": {
+    "parts": [
+     "head",
+     "top",
+     "bottom",
+     "feet"
+    ]
+   },
+   "hair_styles": {},
+   "facial_hair": {},
+   "options": "hair library only; no outfit swaps"
+  }
+ }
+}

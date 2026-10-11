@@ -1,0 +1,1483 @@
+{
+ "id": "umw",
+ "label": "Quaternius Ultimate Modular Women (CC0)",
+ "gender": "f",
+ "rig_signature_sha1": "cee98fe316aa513b77f242b1d352e446f1cd9ba4",
+ "skeleton": "CTS (own proportions)",
+ "bone_mapping_source_to_cts": {
+  "Root": "root",
+  "Hips": "pelvis",
+  "Abdomen": "spine_01",
+  "Torso": "spine_02",
+  "Chest": "spine_03",
+  "Neck": "neck_01",
+  "Head": "Head",
+  "Shoulder.L": "clavicle_l",
+  "UpperArm.L": "upperarm_l",
+  "LowerArm.L": "lowerarm_l",
+  "Hand.L": "hand_l",
+  "UpperLeg.L": "thigh_l",
+  "LowerLeg.L": "calf_l",
+  "Foot.L": "foot_l",
+  "Index1.L": "index_01_l",
+  "Index2.L": "index_02_l",
+  "Index3.L": "index_03_l",
+  "Middle1.L": "middle_01_l",
+  "Middle2.L": "middle_02_l",
+  "Middle3.L": "middle_03_l",
+  "Ring1.L": "ring_01_l",
+  "Ring2.L": "ring_02_l",
+  "Ring3.L": "ring_03_l",
+  "Pinky1.L": "pinky_01_l",
+  "Pinky2.L": "pinky_02_l",
+  "Pinky3.L": "pinky_03_l",
+  "Thumb1.L": "thumb_01_l",
+  "Thumb2.L": "thumb_02_l",
+  "Thumb3.L": "thumb_03_l",
+  "Shoulder.R": "clavicle_r",
+  "UpperArm.R": "upperarm_r",
+  "LowerArm.R": "lowerarm_r",
+  "Hand.R": "hand_r",
+  "UpperLeg.R": "thigh_r",
+  "LowerLeg.R": "calf_r",
+  "Foot.R": "foot_r",
+  "Index1.R": "index_01_r",
+  "Index2.R": "index_02_r",
+  "Index3.R": "index_03_r",
+  "Middle1.R": "middle_01_r",
+  "Middle2.R": "middle_02_r",
+  "Middle3.R": "middle_03_r",
+  "Ring1.R": "ring_01_r",
+  "Ring2.R": "ring_02_r",
+  "Ring3.R": "ring_03_r",
+  "Pinky1.R": "pinky_01_r",
+  "Pinky2.R": "pinky_02_r",
+  "Pinky3.R": "pinky_03_r",
+  "Thumb1.R": "thumb_01_r",
+  "Thumb2.R": "thumb_02_r",
+  "Thumb3.R": "thumb_03_r"
+ },
+ "textures": {
+  "albedo": "families/umw/umw_Albedo.png",
+  "mask0": "families/umw/umw_TintMask0.png",
+  "mask1": "families/umw/umw_TintMask1.png",
+  "emission": "families/umw/umw_Emission.png"
+ },
+ "atlas_size": 2048,
+ "material": "umw_Mat",
+ "tint_reference_hex": "#9a9a9a",
+ "bases": [
+  "umw_tee",
+  "umw_suit",
+  "umw_dress",
+  "umw_punk",
+  "umw_tactical",
+  "umw_cyber",
+  "umw_worker",
+  "umw_hiker",
+  "umw_hood"
+ ],
+ "library": {
+  "top": {
+   "tee": {
+    "fbx": "families/umw/parts/umw__top_tee.fbx",
+    "source_character": "umw_tee",
+    "triangles": {
+     "hero": 2626,
+     "lod0": 2100,
+     "lod1": 1049,
+     "lod2": 419
+    },
+    "source_triangles": 2626,
+    "z_range_m": [
+     1.1335,
+     1.5491
+    ],
+    "regions": {
+     "top": 230,
+     "skin": 1098
+    },
+    "default_tints": {
+     "top": "#f2f2ee",
+     "skin": "#66422d"
+    }
+   },
+   "suit": {
+    "fbx": "families/umw/parts/umw__top_suit.fbx",
+    "source_character": "umw_suit",
+    "triangles": {
+     "hero": 2736,
+     "lod0": 2100,
+     "lod1": 1049,
+     "lod2": 419
+    },
+    "source_triangles": 2736,
+    "z_range_m": [
+     1.1394,
+     1.5491
+    ],
+    "regions": {
+     "top": 372,
+     "none": 70,
+     "skin": 944
+    },
+    "default_tints": {
+     "top": "#1c1d22",
+     "skin": "#e7bfa5"
+    }
+   },
+   "dress": {
+    "fbx": "families/umw/parts/umw__top_dress.fbx",
+    "source_character": "umw_dress",
+    "triangles": {
+     "hero": 2616,
+     "lod0": 2100,
+     "lod1": 1050,
+     "lod2": 420
+    },
+    "source_triangles": 2616,
+    "z_range_m": [
+     1.1286,
+     1.5491
+    ],
+    "regions": {
+     "top": 142,
+     "skin": 1172,
+     "none": 14
+    },
+    "default_tints": {
+     "top": "#2ee6a6",
+     "skin": "#a07051"
+    }
+   },
+   "punk": {
+    "fbx": "families/umw/parts/umw__top_punk.fbx",
+    "source_character": "umw_punk",
+    "triangles": {
+     "hero": 3062,
+     "lod0": 2100,
+     "lod1": 1050,
+     "lod2": 419
+    },
+    "source_triangles": 3062,
+    "z_range_m": [
+     1.1405,
+     1.5489
+    ],
+    "regions": {
+     "skin": 1216,
+     "top": 194,
+     "accent": 132
+    },
+    "default_tints": {
+     "skin": "#c49373",
+     "top": "#ff4fa3",
+     "accent": "#302d2a"
+    }
+   },
+   "tactical": {
+    "fbx": "families/umw/parts/umw__top_tactical.fbx",
+    "source_character": "umw_tactical",
+    "triangles": {
+     "hero": 2708,
+     "lod0": 2100,
+     "lod1": 1049,
+     "lod2": 419
+    },
+    "source_triangles": 2708,
+    "z_range_m": [
+     1.1417,
+     1.5562
+    ],
+    "regions": {
+     "top": 232,
+     "accent": 88,
+     "skin": 1048
+    },
+    "default_tints": {
+     "top": "#1c1d22",
+     "accent": "#4e5259",
+     "skin": "#8e6145"
+    }
+   },
+   "cyber": {
+    "fbx": "families/umw/parts/umw__top_cyber.fbx",
+    "source_character": "umw_cyber",
+    "triangles": {
+     "hero": 3238,
+     "lod0": 2100,
+     "lod1": 1050,
+     "lod2": 419
+    },
+    "source_triangles": 3238,
+    "z_range_m": [
+     1.133,
+     1.5508
+    ],
+    "regions": {
+     "top": 730,
+     "none": 122,
+     "skin": 560,
+     "accent": 222
+    },
+    "default_tints": {
+     "top": "#1c1d22",
+     "skin": "#b18060",
+     "accent": "#1aa6a6"
+    }
+   },
+   "worker": {
+    "fbx": "families/umw/parts/umw__top_worker.fbx",
+    "source_character": "umw_worker",
+    "triangles": {
+     "hero": 2596,
+     "lod0": 2100,
+     "lod1": 1050,
+     "lod2": 419
+    },
+    "source_triangles": 2596,
+    "z_range_m": [
+     1.1542,
+     1.5491
+    ],
+    "regions": {
+     "skin": 1048,
+     "accent": 88,
+     "none": 52,
+     "top": 124
+    },
+    "default_tints": {
+     "skin": "#4f3222",
+     "accent": "#ff7a1a",
+     "top": "#f2f2ee"
+    }
+   },
+   "hiker": {
+    "fbx": "families/umw/parts/umw__top_hiker.fbx",
+    "source_character": "umw_hiker",
+    "triangles": {
+     "hero": 3800,
+     "lod0": 2100,
+     "lod1": 1045,
+     "lod2": 411
+    },
+    "source_triangles": 3970,
+    "z_range_m": [
+     1.1542,
+     1.5774
+    ],
+    "regions": {
+     "accent": 244,
+     "top": 550,
+     "none": 232,
+     "skin": 982
+    },
+    "default_tints": {
+     "accent": "#453f25",
+     "top": "#4b5320",
+     "skin": "#f7d7c3"
+    }
+   },
+   "hood": {
+    "fbx": "families/umw/parts/umw__top_hood.fbx",
+    "source_character": "umw_hood",
+    "triangles": {
+     "hero": 3214,
+     "lod0": 2100,
+     "lod1": 1049,
+     "lod2": 419
+    },
+    "source_triangles": 3214,
+    "z_range_m": [
+     1.0672,
+     1.5627
+    ],
+    "regions": {
+     "top": 206,
+     "none": 284,
+     "accent": 194,
+     "skin": 942
+    },
+    "default_tints": {
+     "top": "#3a3d44",
+     "accent": "#8a4dff",
+     "skin": "#7b5239"
+    }
+   }
+  },
+  "feet": {
+   "tee": {
+    "fbx": "families/umw/parts/umw__feet_tee.fbx",
+    "source_character": "umw_tee",
+    "triangles": {
+     "hero": 538,
+     "lod0": 450,
+     "lod1": 230,
+     "lod2": 90
+    },
+    "source_triangles": 538,
+    "z_range_m": [
+     0.0,
+     0.1921
+    ],
+    "regions": {
+     "shoes": 216,
+     "skin": 56
+    },
+    "default_tints": {
+     "shoes": "#3a3d44",
+     "skin": "#66422d"
+    }
+   },
+   "suit": {
+    "fbx": "families/umw/parts/umw__feet_suit.fbx",
+    "source_character": "umw_suit",
+    "triangles": {
+     "hero": 522,
+     "lod0": 450,
+     "lod1": 230,
+     "lod2": 90
+    },
+    "source_triangles": 522,
+    "z_range_m": [
+     0.0067,
+     0.2004
+    ],
+    "regions": {
+     "shoes": 204,
+     "skin": 58
+    },
+    "default_tints": {
+     "shoes": "#1c1d22",
+     "skin": "#e7bfa5"
+    }
+   },
+   "dress": {
+    "fbx": "families/umw/parts/umw__feet_dress.fbx",
+    "source_character": "umw_dress",
+    "triangles": {
+     "hero": 490,
+     "lod0": 450,
+     "lod1": 230,
+     "lod2": 90
+    },
+    "source_triangles": 490,
+    "z_range_m": [
+     0.0096,
+     0.1907
+    ],
+    "regions": {
+     "skin": 126,
+     "shoes": 124
+    },
+    "default_tints": {
+     "skin": "#a07051",
+     "shoes": "#1c1d22"
+    }
+   },
+   "punk": {
+    "fbx": "families/umw/parts/umw__feet_punk.fbx",
+    "source_character": "umw_punk",
+    "triangles": {
+     "hero": 650,
+     "lod0": 450,
+     "lod1": 230,
+     "lod2": 90
+    },
+    "source_triangles": 720,
+    "z_range_m": [
+     0.0103,
+     0.4376
+    ],
+    "regions": {
+     "shoes": 246,
+     "none": 126
+    },
+    "default_tints": {
+     "shoes": "#1c1d22"
+    }
+   },
+   "tactical": {
+    "fbx": "families/umw/parts/umw__feet_tactical.fbx",
+    "source_character": "umw_tactical",
+    "triangles": {
+     "hero": 650,
+     "lod0": 450,
+     "lod1": 230,
+     "lod2": 90
+    },
+    "source_triangles": 1036,
+    "z_range_m": [
+     0.0081,
+     0.4375
+    ],
+    "regions": {
+     "shoes": 314,
+     "none": 216
+    },
+    "default_tints": {
+     "shoes": "#1c1d22"
+    }
+   },
+   "cyber": {
+    "fbx": "families/umw/parts/umw__feet_cyber.fbx",
+    "source_character": "umw_cyber",
+    "triangles": {
+     "hero": 634,
+     "lod0": 450,
+     "lod1": 228,
+     "lod2": 89
+    },
+    "source_triangles": 634,
+    "z_range_m": [
+     0.0087,
+     0.539
+    ],
+    "regions": {
+     "none": 104,
+     "shoes": 222
+    },
+    "default_tints": {
+     "shoes": "#727272"
+    }
+   },
+   "worker": {
+    "fbx": "families/umw/parts/umw__feet_worker.fbx",
+    "source_character": "umw_worker",
+    "triangles": {
+     "hero": 522,
+     "lod0": 450,
+     "lod1": 230,
+     "lod2": 90
+    },
+    "source_triangles": 522,
+    "z_range_m": [
+     0.0067,
+     0.2057
+    ],
+    "regions": {
+     "shoes": 204,
+     "skin": 58
+    },
+    "default_tints": {
+     "shoes": "#302d2a",
+     "skin": "#4f3222"
+    }
+   },
+   "hiker": {
+    "fbx": "families/umw/parts/umw__feet_hiker.fbx",
+    "source_character": "umw_hiker",
+    "triangles": {
+     "hero": 650,
+     "lod0": 450,
+     "lod1": 230,
+     "lod2": 90
+    },
+    "source_triangles": 772,
+    "z_range_m": [
+     0.0081,
+     0.4454
+    ],
+    "regions": {
+     "shoes": 210,
+     "none": 188
+    },
+    "default_tints": {
+     "shoes": "#74623f"
+    }
+   },
+   "hood": {
+    "fbx": "families/umw/parts/umw__feet_hood.fbx",
+    "source_character": "umw_hood",
+    "triangles": {
+     "hero": 570,
+     "lod0": 450,
+     "lod1": 230,
+     "lod2": 89
+    },
+    "source_triangles": 570,
+    "z_range_m": [
+     0.0087,
+     0.4665
+    ],
+    "regions": {
+     "none": 90,
+     "shoes": 198
+    },
+    "default_tints": {
+     "shoes": "#6d4523"
+    }
+   }
+  },
+  "head": {
+   "tee": {
+    "fbx": "families/umw/parts/umw__head_tee.fbx",
+    "source_character": "umw_tee",
+    "triangles": {
+     "hero": 2526,
+     "lod0": 1900,
+     "lod1": 949,
+     "lod2": 376
+    },
+    "source_triangles": 2526,
+    "z_range_m": [
+     1.5318,
+     1.852
+    ],
+    "regions": {
+     "brows": 268,
+     "hair": 848,
+     "eyes": 12,
+     "skin": 170
+    },
+    "default_tints": {
+     "brows": "#191514",
+     "hair": "#1b1512",
+     "skin": "#66422d"
+    }
+   },
+   "suit": {
+    "fbx": "families/umw/parts/umw__head_suit.fbx",
+    "source_character": "umw_suit",
+    "triangles": {
+     "hero": 2526,
+     "lod0": 1900,
+     "lod1": 949,
+     "lod2": 376
+    },
+    "source_triangles": 2526,
+    "z_range_m": [
+     1.5317,
+     1.8519
+    ],
+    "regions": {
+     "brows": 268,
+     "hair": 848,
+     "eyes": 12,
+     "skin": 170
+    },
+    "default_tints": {
+     "brows": "#4f4d49",
+     "hair": "#e3dccb",
+     "skin": "#e7bfa5"
+    }
+   },
+   "dress": {
+    "fbx": "families/umw/parts/umw__head_dress.fbx",
+    "source_character": "umw_dress",
+    "triangles": {
+     "hero": 2542,
+     "lod0": 1897,
+     "lod1": 948,
+     "lod2": 375
+    },
+    "source_triangles": 2542,
+    "z_range_m": [
+     1.5333,
+     1.8521
+    ],
+    "regions": {
+     "hair": 1056,
+     "brows": 20,
+     "eyes": 12,
+     "skin": 198
+    },
+    "default_tints": {
+     "hair": "#7a3420",
+     "brows": "#4f2d26",
+     "skin": "#a07051"
+    }
+   },
+   "punk": {
+    "fbx": "families/umw/parts/umw__head_punk.fbx",
+    "source_character": "umw_punk",
+    "triangles": {
+     "hero": 1386,
+     "lod0": 1386,
+     "lod1": 950,
+     "lod2": 379
+    },
+    "source_triangles": 1386,
+    "z_range_m": [
+     1.5473,
+     1.9681
+    ],
+    "regions": {
+     "skin": 192,
+     "brows": 20,
+     "eyes": 12,
+     "accent": 80,
+     "hair": 392
+    },
+    "default_tints": {
+     "skin": "#c49373",
+     "brows": "#564285",
+     "accent": "#302d2a",
+     "hair": "#7a4dd1"
+    }
+   },
+   "tactical": {
+    "fbx": "families/umw/parts/umw__head_tactical.fbx",
+    "source_character": "umw_tactical",
+    "triangles": {
+     "hero": 2848,
+     "lod0": 1900,
+     "lod1": 950,
+     "lod2": 375
+    },
+    "source_triangles": 2848,
+    "z_range_m": [
+     1.547,
+     1.8379
+    ],
+    "regions": {
+     "brows": 244,
+     "hair": 1002,
+     "skin": 170,
+     "eyes": 12
+    },
+    "default_tints": {
+     "brows": "#261b16",
+     "hair": "#3a2519",
+     "skin": "#8e6145"
+    }
+   },
+   "cyber": {
+    "fbx": "families/umw/parts/umw__head_cyber.fbx",
+    "source_character": "umw_cyber",
+    "triangles": {
+     "hero": 2582,
+     "lod0": 1900,
+     "lod1": 949,
+     "lod2": 376
+    },
+    "source_triangles": 2582,
+    "z_range_m": [
+     1.547,
+     1.8626
+    ],
+    "regions": {
+     "brows": 268,
+     "hair": 780,
+     "hat": 68,
+     "skin": 182,
+     "eyes": 12,
+     "none": 16
+    },
+    "default_tints": {
+     "brows": "#191514",
+     "hair": "#1b1512",
+     "hat": "#1aa6a6",
+     "skin": "#b18060"
+    }
+   },
+   "worker": {
+    "fbx": "families/umw/parts/umw__head_worker.fbx",
+    "source_character": "umw_worker",
+    "triangles": {
+     "hero": 2148,
+     "lod0": 1900,
+     "lod1": 950,
+     "lod2": 375
+    },
+    "source_triangles": 2148,
+    "z_range_m": [
+     1.547,
+     1.8673
+    ],
+    "regions": {
+     "brows": 20,
+     "eyes": 12,
+     "hair": 766,
+     "hat": 160,
+     "skin": 150
+    },
+    "default_tints": {
+     "brows": "#191514",
+     "hair": "#1b1512",
+     "hat": "#e8b81c",
+     "skin": "#4f3222"
+    }
+   },
+   "hiker": {
+    "fbx": "families/umw/parts/umw__head_hiker.fbx",
+    "source_character": "umw_hiker",
+    "triangles": {
+     "hero": 646,
+     "lod0": 646,
+     "lod1": 646,
+     "lod2": 380
+    },
+    "source_triangles": 646,
+    "z_range_m": [
+     1.547,
+     1.8361
+    ],
+    "regions": {
+     "skin": 172,
+     "brows": 20,
+     "eyes": 12,
+     "hair": 124
+    },
+    "default_tints": {
+     "skin": "#f7d7c3",
+     "brows": "#6b4435",
+     "hair": "#b05a2a"
+    }
+   },
+   "hood": {
+    "fbx": "families/umw/parts/umw__head_hood.fbx",
+    "source_character": "umw_hood",
+    "triangles": {
+     "hero": 2022,
+     "lod0": 1900,
+     "lod1": 950,
+     "lod2": 376
+    },
+    "source_triangles": 2022,
+    "z_range_m": [
+     1.5292,
+     1.886
+    ],
+    "regions": {
+     "skin": 154,
+     "brows": 20,
+     "eyes": 12,
+     "hair": 276,
+     "hat": 552,
+     "none": 16
+    },
+    "default_tints": {
+     "skin": "#7b5239",
+     "brows": "#191514",
+     "hair": "#1b1512",
+     "hat": "#1c1d22"
+    }
+   }
+  },
+  "bottom": {
+   "tee": {
+    "fbx": "families/umw/parts/umw__bottom_tee.fbx",
+    "source_character": "umw_tee",
+    "triangles": {
+     "hero": 706,
+     "lod0": 706,
+     "lod1": 450,
+     "lod2": 180
+    },
+    "source_triangles": 706,
+    "z_range_m": [
+     0.1547,
+     1.1425
+    ],
+    "regions": {
+     "bottom": 360
+    },
+    "default_tints": {
+     "bottom": "#8a4dff"
+    }
+   },
+   "suit": {
+    "fbx": "families/umw/parts/umw__bottom_suit.fbx",
+    "source_character": "umw_suit",
+    "triangles": {
+     "hero": 710,
+     "lod0": 710,
+     "lod1": 450,
+     "lod2": 178
+    },
+    "source_triangles": 710,
+    "z_range_m": [
+     0.1562,
+     1.1674
+    ],
+    "regions": {
+     "bottom": 362
+    },
+    "default_tints": {
+     "bottom": "#1c1d22"
+    }
+   },
+   "dress": {
+    "fbx": "families/umw/parts/umw__bottom_dress.fbx",
+    "source_character": "umw_dress",
+    "triangles": {
+     "hero": 482,
+     "lod0": 482,
+     "lod1": 449,
+     "lod2": 179
+    },
+    "source_triangles": 482,
+    "z_range_m": [
+     0.1874,
+     1.1405
+    ],
+    "regions": {
+     "skin": 174,
+     "top": 68
+    },
+    "default_tints": {
+     "skin": "#a07051",
+     "top": "#2ee6a6"
+    }
+   },
+   "punk": {
+    "fbx": "families/umw/parts/umw__bottom_punk.fbx",
+    "source_character": "umw_punk",
+    "triangles": {
+     "hero": 788,
+     "lod0": 788,
+     "lod1": 448,
+     "lod2": 180
+    },
+    "source_triangles": 788,
+    "z_range_m": [
+     0.3808,
+     1.1471
+    ],
+    "regions": {
+     "none": 30,
+     "bottom": 324,
+     "skin": 48
+    },
+    "default_tints": {
+     "bottom": "#1c1d22",
+     "skin": "#c49373"
+    }
+   },
+   "tactical": {
+    "fbx": "families/umw/parts/umw__bottom_tactical.fbx",
+    "source_character": "umw_tactical",
+    "triangles": {
+     "hero": 1308,
+     "lod0": 900,
+     "lod1": 450,
+     "lod2": 179
+    },
+    "source_triangles": 1308,
+    "z_range_m": [
+     0.3419,
+     1.1627
+    ],
+    "regions": {
+     "bottom": 428,
+     "none": 218
+    },
+    "default_tints": {
+     "bottom": "#4b5320"
+    }
+   },
+   "cyber": {
+    "fbx": "families/umw/parts/umw__bottom_cyber.fbx",
+    "source_character": "umw_cyber",
+    "triangles": {
+     "hero": 544,
+     "lod0": 544,
+     "lod1": 450,
+     "lod2": 179
+    },
+    "source_triangles": 544,
+    "z_range_m": [
+     0.4414,
+     1.1424
+    ],
+    "regions": {
+     "none": 146,
+     "bottom": 132
+    },
+    "default_tints": {
+     "bottom": "#302d2a"
+    }
+   },
+   "worker": {
+    "fbx": "families/umw/parts/umw__bottom_worker.fbx",
+    "source_character": "umw_worker",
+    "triangles": {
+     "hero": 818,
+     "lod0": 818,
+     "lod1": 450,
+     "lod2": 179
+    },
+    "source_triangles": 818,
+    "z_range_m": [
+     0.1548,
+     1.1627
+    ],
+    "regions": {
+     "bottom": 312,
+     "none": 108
+    },
+    "default_tints": {
+     "bottom": "#74623f"
+    }
+   },
+   "hiker": {
+    "fbx": "families/umw/parts/umw__bottom_hiker.fbx",
+    "source_character": "umw_hiker",
+    "triangles": {
+     "hero": 1412,
+     "lod0": 898,
+     "lod1": 448,
+     "lod2": 174
+    },
+    "source_triangles": 1412,
+    "z_range_m": [
+     0.3721,
+     1.1944
+    ],
+    "regions": {
+     "none": 378,
+     "skin": 108,
+     "bottom": 228
+    },
+    "default_tints": {
+     "skin": "#f7d7c3",
+     "bottom": "#b9a27a"
+    }
+   },
+   "hood": {
+    "fbx": "families/umw/parts/umw__bottom_hood.fbx",
+    "source_character": "umw_hood",
+    "triangles": {
+     "hero": 598,
+     "lod0": 598,
+     "lod1": 450,
+     "lod2": 179
+    },
+    "source_triangles": 598,
+    "z_range_m": [
+     0.3533,
+     1.1452
+    ],
+    "regions": {
+     "bottom": 310
+    },
+    "default_tints": {
+     "bottom": "#302d2a"
+    }
+   }
+  }
+ },
+ "compatibility": {
+  "bottom_feet": {
+   "tee": [
+    "cyber",
+    "dress",
+    "hiker",
+    "hood",
+    "punk",
+    "suit",
+    "tactical",
+    "tee",
+    "worker"
+   ],
+   "suit": [
+    "cyber",
+    "dress",
+    "hiker",
+    "hood",
+    "punk",
+    "suit",
+    "tactical",
+    "tee",
+    "worker"
+   ],
+   "dress": [
+    "cyber",
+    "dress",
+    "hiker",
+    "hood",
+    "punk",
+    "suit",
+    "tactical",
+    "tee",
+    "worker"
+   ],
+   "punk": [
+    "cyber",
+    "hiker",
+    "hood",
+    "punk",
+    "tactical"
+   ],
+   "tactical": [
+    "cyber",
+    "hiker",
+    "hood",
+    "punk",
+    "tactical"
+   ],
+   "cyber": [
+    "cyber",
+    "hiker",
+    "hood",
+    "punk",
+    "tactical"
+   ],
+   "worker": [
+    "cyber",
+    "dress",
+    "hiker",
+    "hood",
+    "punk",
+    "suit",
+    "tactical",
+    "tee",
+    "worker"
+   ],
+   "hiker": [
+    "cyber",
+    "hiker",
+    "hood",
+    "punk",
+    "tactical"
+   ],
+   "hood": [
+    "cyber",
+    "hiker",
+    "hood",
+    "punk",
+    "tactical"
+   ]
+  },
+  "top_bottom": {
+   "tee": [
+    "cyber",
+    "dress",
+    "hiker",
+    "hood",
+    "punk",
+    "suit",
+    "tactical",
+    "tee",
+    "worker"
+   ],
+   "suit": [
+    "cyber",
+    "dress",
+    "hiker",
+    "hood",
+    "punk",
+    "suit",
+    "tactical",
+    "tee",
+    "worker"
+   ],
+   "dress": [
+    "cyber",
+    "dress",
+    "hiker",
+    "hood",
+    "punk",
+    "suit",
+    "tactical",
+    "tee",
+    "worker"
+   ],
+   "punk": [
+    "cyber",
+    "dress",
+    "hiker",
+    "hood",
+    "punk",
+    "suit",
+    "tactical",
+    "tee",
+    "worker"
+   ],
+   "tactical": [
+    "cyber",
+    "dress",
+    "hiker",
+    "hood",
+    "punk",
+    "suit",
+    "tactical",
+    "tee",
+    "worker"
+   ],
+   "cyber": [
+    "cyber",
+    "dress",
+    "hiker",
+    "hood",
+    "punk",
+    "suit",
+    "tactical",
+    "tee",
+    "worker"
+   ],
+   "worker": [
+    "hiker",
+    "hood",
+    "punk",
+    "suit",
+    "tactical",
+    "worker"
+   ],
+   "hiker": [
+    "hiker",
+    "hood",
+    "punk",
+    "suit",
+    "tactical",
+    "worker"
+   ],
+   "hood": [
+    "cyber",
+    "dress",
+    "hiker",
+    "hood",
+    "punk",
+    "suit",
+    "tactical",
+    "tee",
+    "worker"
+   ]
+  },
+  "note": "pairs whose stacked z ranges leave a visible gap are not offered"
+ },
+ "slot_caps": {
+  "hero": {
+   "head": 4000,
+   "top": 3800,
+   "bottom": 1600,
+   "feet": 650,
+   "extra": 1500
+  },
+  "lod0": {
+   "head": 1900,
+   "top": 2100,
+   "bottom": 900,
+   "feet": 450,
+   "extra": 600
+  },
+  "lod1": {
+   "head": 950,
+   "top": 1050,
+   "bottom": 450,
+   "feet": 230,
+   "extra": 300
+  },
+  "lod2": {
+   "head": 380,
+   "top": 420,
+   "bottom": 180,
+   "feet": 90,
+   "extra": 120
+  }
+ },
+ "excluded_characters": {
+  "Witch": "witch hat/robe; fantasy, not a current-CT look"
+ },
+ "classification": {
+  "umw__top_tee": {
+   "regions": {
+    "top": 230,
+    "skin": 1098
+   }
+  },
+  "umw__feet_tee": {
+   "regions": {
+    "shoes": 216,
+    "skin": 56
+   }
+  },
+  "umw__head_tee": {
+   "regions": {
+    "brows": 268,
+    "hair": 848,
+    "eyes": 12,
+    "skin": 170
+   },
+   "eye_z": 1.6911,
+   "brow_faces_from_hair": 268
+  },
+  "umw__bottom_tee": {
+   "regions": {
+    "bottom": 360
+   }
+  },
+  "umw__top_suit": {
+   "regions": {
+    "top": 372,
+    "none": 70,
+    "skin": 944
+   }
+  },
+  "umw__feet_suit": {
+   "regions": {
+    "shoes": 204,
+    "skin": 58
+   }
+  },
+  "umw__head_suit": {
+   "regions": {
+    "brows": 268,
+    "hair": 848,
+    "eyes": 12,
+    "skin": 170
+   },
+   "eye_z": 1.6909,
+   "brow_faces_from_hair": 268
+  },
+  "umw__bottom_suit": {
+   "regions": {
+    "bottom": 362
+   }
+  },
+  "umw__top_dress": {
+   "regions": {
+    "top": 142,
+    "skin": 1172,
+    "none": 14
+   }
+  },
+  "umw__feet_dress": {
+   "regions": {
+    "skin": 126,
+    "shoes": 124
+   }
+  },
+  "umw__head_dress": {
+   "regions": {
+    "hair": 1056,
+    "brows": 20,
+    "eyes": 12,
+    "skin": 198
+   },
+   "eye_z": 1.6909,
+   "brow_faces_from_hair": 0
+  },
+  "umw__bottom_dress": {
+   "regions": {
+    "skin": 174,
+    "top": 68
+   }
+  },
+  "umw__top_punk": {
+   "regions": {
+    "skin": 1216,
+    "top": 194,
+    "accent": 132
+   }
+  },
+  "umw__feet_punk": {
+   "regions": {
+    "shoes": 246,
+    "none": 126
+   }
+  },
+  "umw__head_punk": {
+   "regions": {
+    "skin": 192,
+    "brows": 20,
+    "eyes": 12,
+    "accent": 80,
+    "hair": 392
+   },
+   "eye_z": 1.6909,
+   "brow_faces_from_hair": 20
+  },
+  "umw__bottom_punk": {
+   "regions": {
+    "none": 30,
+    "bottom": 324,
+    "skin": 48
+   }
+  },
+  "umw__top_tactical": {
+   "regions": {
+    "top": 232,
+    "accent": 88,
+    "skin": 1048
+   }
+  },
+  "umw__feet_tactical": {
+   "regions": {
+    "shoes": 314,
+    "none": 216
+   }
+  },
+  "umw__head_tactical": {
+   "regions": {
+    "brows": 244,
+    "hair": 1002,
+    "skin": 170,
+    "eyes": 12
+   },
+   "eye_z": 1.6909,
+   "brow_faces_from_hair": 244
+  },
+  "umw__bottom_tactical": {
+   "regions": {
+    "bottom": 428,
+    "none": 218
+   }
+  },
+  "umw__top_cyber": {
+   "regions": {
+    "top": 730,
+    "none": 122,
+    "skin": 560,
+    "accent": 222
+   }
+  },
+  "umw__feet_cyber": {
+   "regions": {
+    "none": 104,
+    "shoes": 222
+   }
+  },
+  "umw__head_cyber": {
+   "regions": {
+    "brows": 268,
+    "hair": 780,
+    "hat": 68,
+    "skin": 182,
+    "eyes": 12,
+    "none": 16
+   },
+   "eye_z": 1.6909,
+   "brow_faces_from_hair": 268
+  },
+  "umw__bottom_cyber": {
+   "regions": {
+    "none": 146,
+    "bottom": 132
+   }
+  },
+  "umw__top_worker": {
+   "regions": {
+    "skin": 1048,
+    "accent": 88,
+    "none": 52,
+    "top": 124
+   }
+  },
+  "umw__feet_worker": {
+   "regions": {
+    "shoes": 204,
+    "skin": 58
+   }
+  },
+  "umw__head_worker": {
+   "regions": {
+    "brows": 20,
+    "eyes": 12,
+    "hair": 766,
+    "hat": 160,
+    "skin": 150
+   },
+   "eye_z": 1.6909,
+   "brow_faces_from_hair": 20
+  },
+  "umw__bottom_worker": {
+   "regions": {
+    "bottom": 312,
+    "none": 108
+   }
+  },
+  "umw__top_hiker": {
+   "regions": {
+    "accent": 244,
+    "top": 550,
+    "none": 232,
+    "skin": 982
+   }
+  },
+  "umw__feet_hiker": {
+   "regions": {
+    "shoes": 210,
+    "none": 188
+   }
+  },
+  "umw__head_hiker": {
+   "regions": {
+    "skin": 172,
+    "brows": 20,
+    "eyes": 12,
+    "hair": 124
+   },
+   "eye_z": 1.6909,
+   "brow_faces_from_hair": 20
+  },
+  "umw__bottom_hiker": {
+   "regions": {
+    "none": 378,
+    "skin": 108,
+    "bottom": 228
+   },
+   "unweighted_vertices_filled": 340
+  },
+  "umw__top_hood": {
+   "regions": {
+    "top": 206,
+    "none": 284,
+    "accent": 194,
+    "skin": 942
+   }
+  },
+  "umw__feet_hood": {
+   "regions": {
+    "none": 90,
+    "shoes": 198
+   }
+  },
+  "umw__head_hood": {
+   "regions": {
+    "skin": 154,
+    "brows": 20,
+    "eyes": 12,
+    "hair": 276,
+    "hat": 552,
+    "none": 16
+   },
+   "eye_z": 1.6909,
+   "brow_faces_from_hair": 0
+  },
+  "umw__bottom_hood": {
+   "regions": {
+    "bottom": 310
+   }
+  }
+ },
+ "sources": {
+  "umw_tee": {
+   "file": "art/raw/quaternius/ultimate_modular_women/Humanoid Rigs/Individual Characters/FBX/Casual.fbx",
+   "sha256": "2009fc379bee9e3e01ddf440e7a7b4a375b6d9f6989cbb1d6ea79c64eb0714ab"
+  },
+  "umw_suit": {
+   "file": "art/raw/quaternius/ultimate_modular_women/Humanoid Rigs/Individual Characters/FBX/Suit.fbx",
+   "sha256": "6f9a543c597379e13a16d070a72417713f07df826fbd98c154f0ea24d6a1c537"
+  },
+  "umw_dress": {
+   "file": "art/raw/quaternius/ultimate_modular_women/Humanoid Rigs/Individual Characters/FBX/Formal.fbx",
+   "sha256": "32baa84de3935c84d84ef9cb210850fefb548e3ae7ccb3d3ca29bc5a9c0204b7"
+  },
+  "umw_punk": {
+   "file": "art/raw/quaternius/ultimate_modular_women/Humanoid Rigs/Individual Characters/FBX/Punk.fbx",
+   "sha256": "499cd0eb9895c037fb5ef78444cafc5909899028781aca5ec487b2ce9c4386c1"
+  },
+  "umw_tactical": {
+   "file": "art/raw/quaternius/ultimate_modular_women/Humanoid Rigs/Individual Characters/FBX/Soldier.fbx",
+   "sha256": "e6911062f42a3ee99ba1a48a75eabea6e3287c59c44d47607c4672080bd37269"
+  },
+  "umw_cyber": {
+   "file": "art/raw/quaternius/ultimate_modular_women/Humanoid Rigs/Individual Characters/FBX/SciFi.fbx",
+   "sha256": "2ab53ed30dee4d7db84e6aab308604f6df2957113d21d661f52c74cddcefedb7"
+  },
+  "umw_worker": {
+   "file": "art/raw/quaternius/ultimate_modular_women/Humanoid Rigs/Individual Characters/FBX/Worker.fbx",
+   "sha256": "cac9cb16299b43e1ef8e0888f505bd77ce9bb82facacd10af5e84de743b22884"
+  },
+  "umw_hiker": {
+   "file": "art/raw/quaternius/ultimate_modular_women/Humanoid Rigs/Individual Characters/FBX/Adventurer.fbx",
+   "sha256": "511aff0d19dcae794e2c9e04c4cb50e3b1317a962cce75551a8aa2012819941d"
+  },
+  "umw_hood": {
+   "file": "art/raw/quaternius/ultimate_modular_women/Humanoid Rigs/Individual Characters/FBX/Medieval.fbx",
+   "sha256": "3c46289eaaeb19719de8f08d7144b407a27c31bf97805445bfbc5d5e9c40c7cf"
+  }
+ }
+}

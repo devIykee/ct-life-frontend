@@ -1,0 +1,4414 @@
+{
+  "version": "v2-reconciled-20261009",
+  "status": "existing_exports_reconciled_not_runtime_accepted",
+  "skeleton": "cts_humanoid_map.json",
+  "customizer_schema": "customizer_schema.json",
+  "runtime_part_map": "runtime_part_map.json",
+  "validation": {
+    "path": "validation_v2.json",
+    "sha256": "12431af46ef35b0d75b0de0d8230ffdc4a9eb55111cd3ab89ee2396391baa390",
+    "all_pass": false,
+    "original_failures_preserved": {
+      "files": 119,
+      "failed": 8,
+      "seconds": 7.495
+    },
+    "reconciliation": {
+      "ubc_m": {
+        "errors": [],
+        "metadata_reconciliations": []
+      },
+      "ubc_f": {
+        "errors": [],
+        "metadata_reconciliations": []
+      },
+      "hero_tactical": {
+        "errors": [
+          {
+            "file": "bases/hero_tactical/hero_tactical.fbx",
+            "error": "hero_tactical_LOD2: head_weight_low=39"
+          },
+          {
+            "file": "bases/hero_tactical/hero_tactical.fbx",
+            "error": "hero_tactical_LOD1: head_weight_low=109"
+          },
+          {
+            "file": "bases/hero_tactical/hero_tactical.fbx",
+            "error": "hero_tactical_LOD0: head_weight_low=237"
+          },
+          {
+            "file": "bases/hero_tactical/hero_tactical_Hero.fbx",
+            "error": "hero_tactical_Hero: head_weight_low=449"
+          },
+          {
+            "file": "bases/hero_tactical/parts/hero_tactical__head.fbx",
+            "error": "hero_tactical__head_LOD0: head_weight_low=237"
+          },
+          {
+            "file": "bases/hero_tactical/parts/hero_tactical__head.fbx",
+            "error": "hero_tactical__head_LOD2: head_weight_low=39"
+          },
+          {
+            "file": "bases/hero_tactical/parts/hero_tactical__head.fbx",
+            "error": "hero_tactical__head_LOD1: head_weight_low=109"
+          },
+          {
+            "file": "bases/hero_tactical/parts/hero_tactical__head.fbx",
+            "error": "hero_tactical__head_Hero: head_weight_low=449"
+          }
+        ],
+        "metadata_reconciliations": [
+          {
+            "file": "bases/hero_tactical/hero_tactical.fbx",
+            "tier": "lod2",
+            "authoring": 1127,
+            "fresh_import": 1123
+          },
+          {
+            "file": "bases/hero_tactical/hero_tactical.fbx",
+            "tier": "lod1",
+            "authoring": 2817,
+            "fresh_import": 2815
+          },
+          {
+            "file": "bases/hero_tactical/parts/hero_tactical__top.fbx",
+            "authoring": {
+              "hero": 4071,
+              "lod0": 2034,
+              "lod1": 1016,
+              "lod2": 407
+            },
+            "fresh_import": {
+              "lod0": 2034,
+              "lod1": 1014,
+              "hero": 4071,
+              "lod2": 403
+            }
+          }
+        ]
+      },
+      "hero_gynoid": {
+        "errors": [],
+        "metadata_reconciliations": []
+      },
+      "hero_assassin": {
+        "errors": [],
+        "metadata_reconciliations": [
+          {
+            "file": "bases/hero_assassin/hero_assassin.fbx",
+            "tier": "lod2",
+            "authoring": 1125,
+            "fresh_import": 1122
+          },
+          {
+            "file": "bases/hero_assassin/parts/hero_assassin__top.fbx",
+            "authoring": {
+              "hero": 5644,
+              "lod0": 2821,
+              "lod1": 1411,
+              "lod2": 564
+            },
+            "fresh_import": {
+              "lod0": 2821,
+              "hero": 5644,
+              "lod2": 562,
+              "lod1": 1411
+            }
+          },
+          {
+            "file": "bases/hero_assassin/parts/hero_assassin__bottom.fbx",
+            "authoring": {
+              "hero": 1798,
+              "lod0": 898,
+              "lod1": 448,
+              "lod2": 179
+            },
+            "fresh_import": {
+              "lod0": 898,
+              "hero": 1798,
+              "lod2": 178,
+              "lod1": 448
+            }
+          }
+        ]
+      },
+      "hero_hazmat": {
+        "errors": [],
+        "metadata_reconciliations": []
+      },
+      "hero_balaclava": {
+        "errors": [],
+        "metadata_reconciliations": []
+      }
+    }
+  },
+  "budgets": {
+    "triangles": {
+      "hero": 12000,
+      "lod0": 6000,
+      "lod1": 3000,
+      "lod2": 1200
+    },
+    "max_bone_influences": {
+      "hero": 4,
+      "lod0": 4,
+      "lod1": 4,
+      "lod2": 2
+    },
+    "materials_per_character_target": 1,
+    "actual_texture_size": 1024,
+    "crowd_texture_size_target": 512,
+    "crowd_512_exports_exist": false,
+    "scope": "combined visible assembly, including accessories; material merging and crowd downsizing pending"
+  },
+  "palettes": {
+    "skin": [
+      {
+        "id": "skin_01",
+        "name": "porcelain",
+        "hex": "#f7d7c3",
+        "lab": [
+          88.0,
+          8.0,
+          14.0
+        ]
+      },
+      {
+        "id": "skin_02",
+        "name": "fair",
+        "hex": "#e7bfa5",
+        "lab": [
+          80.1,
+          10.7,
+          18.3
+        ]
+      },
+      {
+        "id": "skin_03",
+        "name": "light",
+        "hex": "#d6a88a",
+        "lab": [
+          72.2,
+          12.9,
+          21.9
+        ]
+      },
+      {
+        "id": "skin_04",
+        "name": "light_medium",
+        "hex": "#c49373",
+        "lab": [
+          64.7,
+          14.3,
+          24.0
+        ]
+      },
+      {
+        "id": "skin_05",
+        "name": "medium",
+        "hex": "#b18060",
+        "lab": [
+          57.8,
+          14.9,
+          25.0
+        ]
+      },
+      {
+        "id": "skin_06",
+        "name": "tan",
+        "hex": "#a07051",
+        "lab": [
+          51.4,
+          15.1,
+          24.7
+        ]
+      },
+      {
+        "id": "skin_07",
+        "name": "brown",
+        "hex": "#8e6145",
+        "lab": [
+          45.3,
+          15.0,
+          23.4
+        ]
+      },
+      {
+        "id": "skin_08",
+        "name": "dark_brown",
+        "hex": "#7b5239",
+        "lab": [
+          38.7,
+          14.3,
+          21.6
+        ]
+      },
+      {
+        "id": "skin_09",
+        "name": "deep",
+        "hex": "#66422d",
+        "lab": [
+          31.6,
+          12.9,
+          19.1
+        ]
+      },
+      {
+        "id": "skin_10",
+        "name": "very_deep",
+        "hex": "#4f3222",
+        "lab": [
+          24.0,
+          11.0,
+          16.0
+        ]
+      }
+    ],
+    "skin_method": "Equal CIEDE2000 steps along a CIELAB skin locus (L* 88 -> 24); sRGB D65.",
+    "skin_neighbour_delta_e2000": [
+      6.01,
+      6.08,
+      6.03,
+      5.99,
+      6.1,
+      6.09,
+      6.04,
+      6.01,
+      6.04
+    ],
+    "hair": {
+      "black": "#1b1512",
+      "dark_brown": "#3a2519",
+      "brown": "#5e3b24",
+      "auburn": "#7a3420",
+      "ginger": "#b05a2a",
+      "blonde": "#c9a463",
+      "platinum": "#e3dccb",
+      "grey": "#8d8a86",
+      "pink": "#e05aa8",
+      "blue": "#3a6fd8",
+      "green": "#36a36a",
+      "purple": "#7a4dd1"
+    },
+    "cloth": {
+      "black": "#1c1d22",
+      "charcoal": "#3a3d44",
+      "white": "#f2f2ee",
+      "navy": "#1f2c4a",
+      "denim": "#3b5a8a",
+      "khaki": "#b9a27a",
+      "olive": "#4b5320",
+      "red": "#c8102e",
+      "orange": "#ff7a1a",
+      "gold": "#e0a72e",
+      "green": "#2e8b57",
+      "teal": "#1aa6a6",
+      "purple": "#6b3fd1",
+      "pink": "#ff4fa3",
+      "sol_purple": "#8a4dff",
+      "sol_green": "#2ee6a6"
+    }
+  },
+  "tint_regions": [
+    "skin",
+    "hair",
+    "top",
+    "bottom",
+    "shoes",
+    "accent"
+  ],
+  "sockets": {
+    "head_top": {
+      "bone": "Head",
+      "humanoid": "Head",
+      "use": "hats, helmets, TV head"
+    },
+    "face": {
+      "bone": "Head",
+      "humanoid": "Head",
+      "use": "masks, visors, glasses, laser glow"
+    },
+    "neck": {
+      "bone": "spine_03",
+      "humanoid": "UpperChest",
+      "use": "chains, headphones worn on the neck"
+    },
+    "back": {
+      "bone": "spine_03",
+      "humanoid": "UpperChest",
+      "use": "wings, backpacks"
+    },
+    "shoulder_l": {
+      "bone": "clavicle_l",
+      "humanoid": "LeftShoulder",
+      "use": "drones, pets"
+    },
+    "shoulder_r": {
+      "bone": "clavicle_r",
+      "humanoid": "RightShoulder",
+      "use": "drones, pets"
+    },
+    "hand_l": {
+      "bone": "hand_l",
+      "humanoid": "LeftHand",
+      "use": "hand props"
+    },
+    "hand_r": {
+      "bone": "hand_r",
+      "humanoid": "RightHand",
+      "use": "hand props"
+    }
+  },
+  "bases": {
+    "ubc_m": {
+      "id": "ubc_m",
+      "label": "Athletic base (M)",
+      "gender": "m",
+      "source": "Quaternius Universal Base Characters [Standard] Superhero_Male",
+      "licence": "CC0 1.0 (bundled License_Standard.txt)",
+      "archetypes": [
+        "customisation blank"
+      ],
+      "tiers": {
+        "hero": {
+          "triangles": 10041,
+          "vertices": 6451,
+          "max_influences": 4
+        },
+        "lod0": {
+          "triangles": 5331,
+          "vertices": 3758,
+          "max_influences": 4
+        },
+        "lod1": {
+          "triangles": 2663,
+          "vertices": 2126,
+          "max_influences": 4
+        },
+        "lod2": {
+          "triangles": 1062,
+          "vertices": 963,
+          "max_influences": 2
+        }
+      },
+      "files": {
+        "crowd_fbx": "bases/ubc_m/ubc_m.fbx",
+        "hero_fbx": "bases/ubc_m/ubc_m_Hero.fbx"
+      },
+      "textures": {
+        "albedo": "bases/ubc_m/ubc_m_Albedo.png",
+        "mask0": "bases/ubc_m/ubc_m_TintMask0.png",
+        "mask1": "bases/ubc_m/ubc_m_TintMask1.png",
+        "emission": "bases/ubc_m/ubc_m_Emission.png"
+      },
+      "tint_defaults": {
+        "skin": "#a26643",
+        "hair": "#5e5d54",
+        "top": "#aba9a6",
+        "bottom": "#9f9d9a",
+        "shoes": "#d4d2d0",
+        "accent": "#794b44"
+      },
+      "look_defaults": {
+        "hair": "dark_brown",
+        "top": "charcoal",
+        "bottom": "denim",
+        "shoes": "white"
+      },
+      "hair_library": {
+        "hair": {
+          "Hair_SimpleParted": {
+            "part": "hair",
+            "fbx": "bases/ubc_m/parts/ubc_m__hair.fbx",
+            "default": true,
+            "fit": "native"
+          },
+          "Hair_Buzzed": {
+            "part": "hair_Hair_Buzzed",
+            "fbx": "bases/ubc_m/parts/ubc_m__hair_Hair_Buzzed.fbx",
+            "default": false,
+            "fit": "native"
+          },
+          "Hair_Long": {
+            "part": "hair_Hair_Long",
+            "fbx": "bases/ubc_m/parts/ubc_m__hair_Hair_Long.fbx",
+            "default": false,
+            "fit": "cross-fitted"
+          },
+          "Hair_Buns": {
+            "part": "hair_Hair_Buns",
+            "fbx": "bases/ubc_m/parts/ubc_m__hair_Hair_Buns.fbx",
+            "default": false,
+            "fit": "cross-fitted"
+          }
+        },
+        "facial": {
+          "Hair_Beard": {
+            "part": "facial_Hair_Beard",
+            "fbx": "bases/ubc_m/parts/ubc_m__facial_Hair_Beard.fbx",
+            "default": false,
+            "fit": "native"
+          }
+        }
+      },
+      "parts": {
+        "eyes": {
+          "fbx": "bases/ubc_m/parts/ubc_m__eyes.fbx",
+          "slot": "head",
+          "triangles": {
+            "lod0": 224,
+            "lod1": 112,
+            "hero": 450,
+            "lod2": 45
+          },
+          "authoring_triangles": {
+            "hero": 450,
+            "lod0": 224,
+            "lod1": 112,
+            "lod2": 45
+          },
+          "asset_sha256": "fa564ce0303051a4bee21da693bb53763551c8a21d0d4a2054b9751ac7628a12"
+        },
+        "head": {
+          "fbx": "bases/ubc_m/parts/ubc_m__head.fbx",
+          "slot": "head",
+          "triangles": {
+            "lod0": 852,
+            "hero": 1704,
+            "lod1": 426,
+            "lod2": 169
+          },
+          "authoring_triangles": {
+            "hero": 1704,
+            "lod0": 852,
+            "lod1": 426,
+            "lod2": 169
+          },
+          "asset_sha256": "393d73e4b1c7905c8766c8bd8828ac8bd5f106028e61bfd6a5002478c37440e2"
+        },
+        "top": {
+          "fbx": "bases/ubc_m/parts/ubc_m__top.fbx",
+          "slot": "top",
+          "triangles": {
+            "lod2": 367,
+            "hero": 3676,
+            "lod1": 919,
+            "lod0": 1838
+          },
+          "authoring_triangles": {
+            "hero": 3676,
+            "lod0": 1838,
+            "lod1": 919,
+            "lod2": 367
+          },
+          "asset_sha256": "53652fbbe43db2f6f52479041ab3bc565413dbe4d38b3207d4acce889b0b7587"
+        },
+        "bottom": {
+          "fbx": "bases/ubc_m/parts/ubc_m__bottom.fbx",
+          "slot": "bottom",
+          "triangles": {
+            "lod0": 777,
+            "lod1": 388,
+            "hero": 1554,
+            "lod2": 154
+          },
+          "authoring_triangles": {
+            "hero": 1554,
+            "lod0": 777,
+            "lod1": 388,
+            "lod2": 154
+          },
+          "asset_sha256": "e5dc7a2930250601a0dab7f98f1d15f2684937b526ced838ce03b30834db1e5e"
+        },
+        "feet": {
+          "fbx": "bases/ubc_m/parts/ubc_m__feet.fbx",
+          "slot": "feet",
+          "triangles": {
+            "lod2": 78,
+            "lod0": 390,
+            "hero": 780,
+            "lod1": 194
+          },
+          "authoring_triangles": {
+            "hero": 780,
+            "lod0": 390,
+            "lod1": 194,
+            "lod2": 78
+          },
+          "asset_sha256": "9351c40d0f1b2277082352c26cd15169d1d6bf1ec4bd12f57b841eeeb0ac7368"
+        },
+        "hair": {
+          "fbx": "bases/ubc_m/parts/ubc_m__hair.fbx",
+          "slot": "hair",
+          "triangles": {
+            "lod1": 480,
+            "lod2": 192,
+            "lod0": 962,
+            "hero": 1301
+          },
+          "authoring_triangles": {
+            "hero": 1301,
+            "lod0": 962,
+            "lod1": 480,
+            "lod2": 192
+          },
+          "asset_sha256": "392d47267ca65da2e1deb2af30ed3e6c3b4097b197676d32264e67a608b00c87"
+        },
+        "brows": {
+          "fbx": "bases/ubc_m/parts/ubc_m__brows.fbx",
+          "slot": "head",
+          "triangles": {
+            "lod0": 288,
+            "lod1": 144,
+            "hero": 576,
+            "lod2": 57
+          },
+          "authoring_triangles": {
+            "hero": 576,
+            "lod0": 288,
+            "lod1": 144,
+            "lod2": 57
+          },
+          "asset_sha256": "46c5b69d3b569e3afe90529cf21ee028f1d5dfb05bddfd80b0a253c7f9c13cc8"
+        },
+        "hair_Hair_Buzzed": {
+          "fbx": "bases/ubc_m/parts/ubc_m__hair_Hair_Buzzed.fbx",
+          "slot": "hair",
+          "kind": "hair",
+          "style": "Hair_Buzzed",
+          "triangles": {
+            "hero": 830,
+            "lod2": 191,
+            "lod1": 480,
+            "lod0": 830
+          },
+          "authoring_triangles": {
+            "hero": 830,
+            "lod0": 830,
+            "lod1": 480,
+            "lod2": 191
+          },
+          "asset_sha256": "c7f392acc7d99583968f058aff873858e6b0d0eb3620661357568f4bfeb6095a"
+        },
+        "hair_Hair_Long": {
+          "fbx": "bases/ubc_m/parts/ubc_m__hair_Hair_Long.fbx",
+          "slot": "hair",
+          "kind": "hair",
+          "style": "Hair_Long",
+          "triangles": {
+            "lod0": 963,
+            "hero": 1927,
+            "lod1": 481,
+            "lod2": 192
+          },
+          "authoring_triangles": {
+            "hero": 1927,
+            "lod0": 963,
+            "lod1": 481,
+            "lod2": 192
+          },
+          "asset_sha256": "30030c7a691bc0660983bb812225ec4c225e43732caca765dcb74fef932e9364"
+        },
+        "hair_Hair_Buns": {
+          "fbx": "bases/ubc_m/parts/ubc_m__hair_Hair_Buns.fbx",
+          "slot": "hair",
+          "kind": "hair",
+          "style": "Hair_Buns",
+          "triangles": {
+            "lod0": 963,
+            "hero": 1927,
+            "lod1": 480,
+            "lod2": 192
+          },
+          "authoring_triangles": {
+            "hero": 1927,
+            "lod0": 963,
+            "lod1": 480,
+            "lod2": 192
+          },
+          "asset_sha256": "1e270a7cc3b267a6f1c1ff60a64bbb78217e760c501f9f975d93220e8efdd8fb"
+        },
+        "facial_Hair_Beard": {
+          "fbx": "bases/ubc_m/parts/ubc_m__facial_Hair_Beard.fbx",
+          "slot": "hair",
+          "kind": "facial",
+          "style": "Hair_Beard",
+          "triangles": {
+            "lod1": 150,
+            "hero": 606,
+            "lod0": 303,
+            "lod2": 60
+          },
+          "authoring_triangles": {
+            "hero": 606,
+            "lod0": 303,
+            "lod1": 150,
+            "lod2": 60
+          },
+          "asset_sha256": "427e9bd719c640fe1724bb8315e933de31bf83672fd79253375326db592e88bf"
+        }
+      },
+      "accessories": {
+        "pixel_face_mask": {
+          "fbx": "bases/ubc_m/accessories/ubc_m__pixel_face_mask.fbx",
+          "socket": "face",
+          "bone": "Head",
+          "flags": {
+            "occludes_face": true
+          },
+          "triangles": 272,
+          "asset_sha256": "707a702c84011483987be702ce26bf9d8dda30b4ab9efda2fc58a07d5cff074a"
+        },
+        "tv_head": {
+          "fbx": "bases/ubc_m/accessories/ubc_m__tv_head.fbx",
+          "socket": "head_top",
+          "bone": "Head",
+          "flags": {
+            "replaces_head": true,
+            "hides_hair": true,
+            "occludes_face": true
+          },
+          "triangles": 100,
+          "asset_sha256": "a434f70dc12941f58ce25e7abbefa2847dbf71272dccf7d2db0570bc7907d550"
+        },
+        "visor": {
+          "fbx": "bases/ubc_m/accessories/ubc_m__visor.fbx",
+          "socket": "face",
+          "bone": "Head",
+          "flags": {
+            "double_sided": true
+          },
+          "triangles": 240,
+          "asset_sha256": "c3e43d2cfa21576650690580422244ad9f334f032dab1c7843e074dbd2ac2e62"
+        },
+        "helmet": {
+          "fbx": "bases/ubc_m/accessories/ubc_m__helmet.fbx",
+          "socket": "head_top",
+          "bone": "Head",
+          "flags": {
+            "hides_hair": true,
+            "occludes_face": true
+          },
+          "triangles": 520,
+          "asset_sha256": "7bd4781e6421c41e1b0cd09464b93c000a787ea54cebe054a5d137937af24646"
+        },
+        "laser_eyes": {
+          "fbx": "bases/ubc_m/accessories/ubc_m__laser_eyes.fbx",
+          "socket": "face",
+          "bone": "Head",
+          "flags": {
+            "emissive": true
+          },
+          "triangles": 272,
+          "asset_sha256": "4c1d25004b1f36ae4e47d78ff68a891784550f6cf6bfdc81c265c2b0d5778ea3"
+        },
+        "chain": {
+          "fbx": "bases/ubc_m/accessories/ubc_m__chain.fbx",
+          "socket": "neck",
+          "bone": "spine_03",
+          "flags": {},
+          "triangles": 396,
+          "asset_sha256": "da03ed657e8ad8b149973570fe70262386eb2b0b76e03f041167ed659fd09f18"
+        },
+        "headphones": {
+          "fbx": "bases/ubc_m/accessories/ubc_m__headphones.fbx",
+          "socket": "head_top",
+          "bone": "Head",
+          "flags": {},
+          "triangles": 344,
+          "asset_sha256": "36456739286de3eccc5339022f169dc5b316aa958bcc9177877e6895fad14d55"
+        },
+        "small_wings": {
+          "fbx": "bases/ubc_m/accessories/ubc_m__small_wings.fbx",
+          "socket": "back",
+          "bone": "spine_03",
+          "flags": {
+            "double_sided": true
+          },
+          "triangles": 60,
+          "asset_sha256": "53b645a378ef0484f64d8f5f7e10fb8a0b0553c30d66718417ccdd22f8b27a49"
+        },
+        "shoulder_drone": {
+          "fbx": "bases/ubc_m/accessories/ubc_m__shoulder_drone.fbx",
+          "socket": "shoulder_r",
+          "bone": "clavicle_r",
+          "flags": {
+            "emissive": true
+          },
+          "triangles": 400,
+          "asset_sha256": "c4c94454df40993e11ebcabb409f4a8354a9e5cfa20772c4c51cf0e73017b4e4"
+        }
+      },
+      "sockets": {
+        "head_top": {
+          "bone": "Head",
+          "humanoid": "Head",
+          "position_character_m": [
+            0.0,
+            -0.0003,
+            1.8397
+          ],
+          "offset_in_bone_space_m": [
+            -0.0,
+            0.2403,
+            0.0107
+          ]
+        },
+        "face": {
+          "bone": "Head",
+          "humanoid": "Head",
+          "position_character_m": [
+            0.0,
+            -0.1087,
+            1.7292
+          ],
+          "offset_in_bone_space_m": [
+            -0.0,
+            0.133,
+            0.1223
+          ]
+        },
+        "neck": {
+          "bone": "spine_03",
+          "humanoid": "UpperChest",
+          "position_character_m": [
+            0.0,
+            -0.1183,
+            1.5005
+          ],
+          "offset_in_bone_space_m": [
+            -0.0,
+            0.1597,
+            0.1511
+          ]
+        },
+        "back": {
+          "bone": "spine_03",
+          "humanoid": "UpperChest",
+          "position_character_m": [
+            -0.0,
+            0.1664,
+            1.3109
+          ],
+          "offset_in_bone_space_m": [
+            0.0,
+            0.0389,
+            -0.1689
+          ]
+        },
+        "shoulder_l": {
+          "bone": "clavicle_l",
+          "humanoid": "LeftShoulder",
+          "position_character_m": [
+            0.212,
+            0.0654,
+            1.5155
+          ],
+          "offset_in_bone_space_m": [
+            -0.0091,
+            0.2057,
+            0.0203
+          ]
+        },
+        "shoulder_r": {
+          "bone": "clavicle_r",
+          "humanoid": "RightShoulder",
+          "position_character_m": [
+            -0.212,
+            0.0654,
+            1.5155
+          ],
+          "offset_in_bone_space_m": [
+            0.0091,
+            0.2057,
+            0.0203
+          ]
+        },
+        "hand_l": {
+          "bone": "hand_l",
+          "humanoid": "LeftHand",
+          "position_character_m": [
+            0.7642,
+            0.0578,
+            1.4532
+          ],
+          "offset_in_bone_space_m": [
+            0.0023,
+            0.0577,
+            0.0076
+          ]
+        },
+        "hand_r": {
+          "bone": "hand_r",
+          "humanoid": "RightHand",
+          "position_character_m": [
+            -0.7642,
+            0.0578,
+            1.4532
+          ],
+          "offset_in_bone_space_m": [
+            -0.0023,
+            0.0577,
+            0.0076
+          ]
+        }
+      },
+      "measurements": {
+        "head_center": [
+          0.0,
+          -0.0003,
+          1.7292
+        ],
+        "top_z": 1.8397,
+        "chin_z": 1.5766,
+        "eye_z": 1.7292,
+        "half_w": 0.0783,
+        "half_d": 0.1084,
+        "front_y": -0.1087,
+        "back_y": 0.1082,
+        "neck_z": 1.5205,
+        "neck_y": 0.0414,
+        "chest_front_y": -0.1283,
+        "chest_back_y": 0.1664,
+        "chest_z": 1.3109,
+        "chest_half_w": 0.2017,
+        "shoulder_l": [
+          0.212,
+          0.0654,
+          1.4555
+        ],
+        "shoulder_r": [
+          -0.212,
+          0.0654,
+          1.4555
+        ],
+        "hand_l": [
+          0.7642,
+          0.0578,
+          1.4532
+        ],
+        "hand_r": [
+          -0.7642,
+          0.0578,
+          1.4532
+        ]
+      },
+      "height_m": 1.84,
+      "authoring_metadata_sha256": "19f446b3b09b3e25acfeefc9ce04bc8624434ee27c3b40ed7c5771462f3fe334",
+      "source_metadata_triangles": {
+        "hero": 10041,
+        "lod0": 5331,
+        "lod1": 2663,
+        "lod2": 1062
+      },
+      "texture_dimensions": {
+        "albedo": [
+          1024,
+          1024
+        ],
+        "mask0": [
+          1024,
+          1024
+        ],
+        "mask1": [
+          1024,
+          1024
+        ],
+        "emission": [
+          1024,
+          1024
+        ]
+      },
+      "validation": {
+        "structural_errors": [],
+        "metadata_reconciliations": [],
+        "unity_import": "not_reviewed",
+        "animation_and_visual_fit": "not_accepted",
+        "default_assembly": {
+          "parts": [
+            "eyes",
+            "head",
+            "top",
+            "bottom",
+            "feet",
+            "hair",
+            "brows"
+          ],
+          "accessories": [],
+          "triangles": {
+            "hero": 10041,
+            "lod0": 5331,
+            "lod1": 2663,
+            "lod2": 1062
+          },
+          "over_budget": {}
+        }
+      },
+      "source_geometry_findings": []
+    },
+    "ubc_f": {
+      "id": "ubc_f",
+      "label": "Athletic base (F)",
+      "gender": "f",
+      "source": "Quaternius Universal Base Characters [Standard] Superhero_Female",
+      "licence": "CC0 1.0 (bundled License_Standard.txt)",
+      "archetypes": [
+        "customisation blank"
+      ],
+      "tiers": {
+        "hero": {
+          "triangles": 11275,
+          "vertices": 8135,
+          "max_influences": 4
+        },
+        "lod0": {
+          "triangles": 5634,
+          "vertices": 4510,
+          "max_influences": 4
+        },
+        "lod1": {
+          "triangles": 2814,
+          "vertices": 2544,
+          "max_influences": 4
+        },
+        "lod2": {
+          "triangles": 1121,
+          "vertices": 1233,
+          "max_influences": 2
+        }
+      },
+      "files": {
+        "crowd_fbx": "bases/ubc_f/ubc_f.fbx",
+        "hero_fbx": "bases/ubc_f/ubc_f_Hero.fbx"
+      },
+      "textures": {
+        "albedo": "bases/ubc_f/ubc_f_Albedo.png",
+        "mask0": "bases/ubc_f/ubc_f_TintMask0.png",
+        "mask1": "bases/ubc_f/ubc_f_TintMask1.png",
+        "emission": "bases/ubc_f/ubc_f_Emission.png"
+      },
+      "tint_defaults": {
+        "skin": "#966742",
+        "hair": "#1e1714",
+        "top": "#aaa8a6",
+        "bottom": "#9f9d9a",
+        "shoes": "#d4d2d0",
+        "accent": "#7a4842"
+      },
+      "look_defaults": {
+        "hair": "black",
+        "top": "white",
+        "bottom": "black",
+        "shoes": "white"
+      },
+      "hair_library": {
+        "hair": {
+          "Hair_Long": {
+            "part": "hair",
+            "fbx": "bases/ubc_f/parts/ubc_f__hair.fbx",
+            "default": true,
+            "fit": "native"
+          },
+          "Hair_Buns": {
+            "part": "hair_Hair_Buns",
+            "fbx": "bases/ubc_f/parts/ubc_f__hair_Hair_Buns.fbx",
+            "default": false,
+            "fit": "native"
+          },
+          "Hair_BuzzedFemale": {
+            "part": "hair_Hair_BuzzedFemale",
+            "fbx": "bases/ubc_f/parts/ubc_f__hair_Hair_BuzzedFemale.fbx",
+            "default": false,
+            "fit": "native"
+          },
+          "Hair_SimpleParted": {
+            "part": "hair_Hair_SimpleParted",
+            "fbx": "bases/ubc_f/parts/ubc_f__hair_Hair_SimpleParted.fbx",
+            "default": false,
+            "fit": "cross-fitted"
+          }
+        },
+        "facial": {}
+      },
+      "parts": {
+        "eyes": {
+          "fbx": "bases/ubc_f/parts/ubc_f__eyes.fbx",
+          "slot": "head",
+          "triangles": {
+            "lod2": 44,
+            "hero": 458,
+            "lod0": 229,
+            "lod1": 114
+          },
+          "authoring_triangles": {
+            "hero": 458,
+            "lod0": 229,
+            "lod1": 114,
+            "lod2": 44
+          },
+          "asset_sha256": "1f1081b5cc01b7826296e419d9181945f158772007dc0e57b01b7ec10b1d8d98"
+        },
+        "head": {
+          "fbx": "bases/ubc_f/parts/ubc_f__head.fbx",
+          "slot": "head",
+          "triangles": {
+            "lod1": 464,
+            "hero": 1860,
+            "lod0": 929,
+            "lod2": 185
+          },
+          "authoring_triangles": {
+            "hero": 1860,
+            "lod0": 929,
+            "lod1": 464,
+            "lod2": 185
+          },
+          "asset_sha256": "2329b8a81f4ab2cd9cef81b4ca9e80812a8de63561e82be1bc5c284b524e4002"
+        },
+        "top": {
+          "fbx": "bases/ubc_f/parts/ubc_f__top.fbx",
+          "slot": "top",
+          "triangles": {
+            "lod1": 944,
+            "lod2": 377,
+            "lod0": 1888,
+            "hero": 3777
+          },
+          "authoring_triangles": {
+            "hero": 3777,
+            "lod0": 1888,
+            "lod1": 944,
+            "lod2": 377
+          },
+          "asset_sha256": "9c17d54e751c50ceec45b692cad84affe6370a6f43f66df942b491a353940c58"
+        },
+        "bottom": {
+          "fbx": "bases/ubc_f/parts/ubc_f__bottom.fbx",
+          "slot": "bottom",
+          "triangles": {
+            "lod0": 777,
+            "hero": 1553,
+            "lod1": 387,
+            "lod2": 155
+          },
+          "authoring_triangles": {
+            "hero": 1553,
+            "lod0": 777,
+            "lod1": 387,
+            "lod2": 155
+          },
+          "asset_sha256": "22f420cdfe7bfb4aa631a6d4ff6bd9e1352c30552254e852ea3403180745f0c0"
+        },
+        "feet": {
+          "fbx": "bases/ubc_f/parts/ubc_f__feet.fbx",
+          "slot": "feet",
+          "triangles": {
+            "lod2": 78,
+            "hero": 786,
+            "lod0": 392,
+            "lod1": 196
+          },
+          "authoring_triangles": {
+            "hero": 786,
+            "lod0": 392,
+            "lod1": 196,
+            "lod2": 78
+          },
+          "asset_sha256": "ab252e50b1d0248eb4683141ab489c50dee6036b3199363dcca9b0fbe767d335"
+        },
+        "hair": {
+          "fbx": "bases/ubc_f/parts/ubc_f__hair.fbx",
+          "slot": "hair",
+          "triangles": {
+            "lod1": 489,
+            "hero": 1959,
+            "lod0": 979,
+            "lod2": 194
+          },
+          "authoring_triangles": {
+            "hero": 1959,
+            "lod0": 979,
+            "lod1": 489,
+            "lod2": 194
+          },
+          "asset_sha256": "8c4640bacc58c9f7f94e48bad67f88791cf18bdf302c6c91176a8088d556faa4"
+        },
+        "brows": {
+          "fbx": "bases/ubc_f/parts/ubc_f__brows.fbx",
+          "slot": "head",
+          "triangles": {
+            "lod0": 440,
+            "lod1": 220,
+            "hero": 882,
+            "lod2": 88
+          },
+          "authoring_triangles": {
+            "hero": 882,
+            "lod0": 440,
+            "lod1": 220,
+            "lod2": 88
+          },
+          "asset_sha256": "a2cf95c7f3a613a989d6aaf5f6bc1176bbc980c766cddd5d52539f56d95faba1"
+        },
+        "hair_Hair_Buns": {
+          "fbx": "bases/ubc_f/parts/ubc_f__hair_Hair_Buns.fbx",
+          "slot": "hair",
+          "kind": "hair",
+          "style": "Hair_Buns",
+          "triangles": {
+            "lod0": 979,
+            "lod1": 489,
+            "hero": 1959,
+            "lod2": 195
+          },
+          "authoring_triangles": {
+            "hero": 1959,
+            "lod0": 979,
+            "lod1": 489,
+            "lod2": 195
+          },
+          "asset_sha256": "ce824b2759f32a5d2f399f028cd02ad8ccaacffb8fd21c0781e3d1f3e6c07f14"
+        },
+        "hair_Hair_BuzzedFemale": {
+          "fbx": "bases/ubc_f/parts/ubc_f__hair_Hair_BuzzedFemale.fbx",
+          "slot": "hair",
+          "kind": "hair",
+          "style": "Hair_BuzzedFemale",
+          "triangles": {
+            "lod1": 488,
+            "lod0": 830,
+            "hero": 830,
+            "lod2": 195
+          },
+          "authoring_triangles": {
+            "hero": 830,
+            "lod0": 830,
+            "lod1": 488,
+            "lod2": 195
+          },
+          "asset_sha256": "b34c9a0dd6b14b46fc186ab473439796ab95842180fbdc5e21f7963efa3ef6d9"
+        },
+        "hair_Hair_SimpleParted": {
+          "fbx": "bases/ubc_f/parts/ubc_f__hair_Hair_SimpleParted.fbx",
+          "slot": "hair",
+          "kind": "hair",
+          "style": "Hair_SimpleParted",
+          "triangles": {
+            "lod0": 978,
+            "lod1": 489,
+            "hero": 1301,
+            "lod2": 194
+          },
+          "authoring_triangles": {
+            "hero": 1301,
+            "lod0": 978,
+            "lod1": 489,
+            "lod2": 194
+          },
+          "asset_sha256": "51676206a0818dead9abd7fd6d2e735807cd8d7e4e68ef0e72cd989030a6a64c"
+        }
+      },
+      "accessories": {
+        "pixel_face_mask": {
+          "fbx": "bases/ubc_f/accessories/ubc_f__pixel_face_mask.fbx",
+          "socket": "face",
+          "bone": "Head",
+          "flags": {
+            "occludes_face": true
+          },
+          "triangles": 272,
+          "asset_sha256": "e8d19f3224eefba317d32afa25dc4e75ec788a715783f58eb30b364754a9257a"
+        },
+        "tv_head": {
+          "fbx": "bases/ubc_f/accessories/ubc_f__tv_head.fbx",
+          "socket": "head_top",
+          "bone": "Head",
+          "flags": {
+            "replaces_head": true,
+            "hides_hair": true,
+            "occludes_face": true
+          },
+          "triangles": 100,
+          "asset_sha256": "7ecff199a9c22dbabbbacb208355a93b375aa53e2fe39e70bcd7a82b5814b857"
+        },
+        "visor": {
+          "fbx": "bases/ubc_f/accessories/ubc_f__visor.fbx",
+          "socket": "face",
+          "bone": "Head",
+          "flags": {
+            "double_sided": true
+          },
+          "triangles": 240,
+          "asset_sha256": "602454d4488b97ce48dba02375783748690200e43472aed68cb58a7abdbdc57c"
+        },
+        "helmet": {
+          "fbx": "bases/ubc_f/accessories/ubc_f__helmet.fbx",
+          "socket": "head_top",
+          "bone": "Head",
+          "flags": {
+            "hides_hair": true,
+            "occludes_face": true
+          },
+          "triangles": 520,
+          "asset_sha256": "66e364c82fc31cac4cad40fc092c39c80d34764473523b0b17ece74d8c9b53d1"
+        },
+        "laser_eyes": {
+          "fbx": "bases/ubc_f/accessories/ubc_f__laser_eyes.fbx",
+          "socket": "face",
+          "bone": "Head",
+          "flags": {
+            "emissive": true
+          },
+          "triangles": 272,
+          "asset_sha256": "9fc7e5936fe6437a6a24fae32004df93ddca444aa771c10933c5ec5838ace505"
+        },
+        "chain": {
+          "fbx": "bases/ubc_f/accessories/ubc_f__chain.fbx",
+          "socket": "neck",
+          "bone": "spine_03",
+          "flags": {},
+          "triangles": 396,
+          "asset_sha256": "e87964cf64a0b22db02afe12ee04ae14dcc324774feed33e136cc577843a2652"
+        },
+        "headphones": {
+          "fbx": "bases/ubc_f/accessories/ubc_f__headphones.fbx",
+          "socket": "head_top",
+          "bone": "Head",
+          "flags": {},
+          "triangles": 344,
+          "asset_sha256": "a67c230d368d3fd790fe2c840b96b09b49dab490d87deb6e6e4e210a6dc5d010"
+        },
+        "small_wings": {
+          "fbx": "bases/ubc_f/accessories/ubc_f__small_wings.fbx",
+          "socket": "back",
+          "bone": "spine_03",
+          "flags": {
+            "double_sided": true
+          },
+          "triangles": 60,
+          "asset_sha256": "6598b44dd54af46c4d12bc6acbdeca61997fe86650cae8c4784150bff360b555"
+        },
+        "shoulder_drone": {
+          "fbx": "bases/ubc_f/accessories/ubc_f__shoulder_drone.fbx",
+          "socket": "shoulder_r",
+          "bone": "clavicle_r",
+          "flags": {
+            "emissive": true
+          },
+          "triangles": 400,
+          "asset_sha256": "1348062f9a1ff1fbcf99af215ab4aabb22b598b5655715c4daeaf4166b8aa261"
+        }
+      },
+      "sockets": {
+        "head_top": {
+          "bone": "Head",
+          "humanoid": "Head",
+          "position_character_m": [
+            -0.0,
+            0.0248,
+            1.7772
+          ],
+          "offset_in_bone_space_m": [
+            0.0,
+            0.2273,
+            -0.018
+          ]
+        },
+        "face": {
+          "bone": "Head",
+          "humanoid": "Head",
+          "position_character_m": [
+            -0.0,
+            -0.1119,
+            1.6612
+          ],
+          "offset_in_bone_space_m": [
+            -0.0,
+            0.1138,
+            0.1208
+          ]
+        },
+        "neck": {
+          "bone": "spine_03",
+          "humanoid": "UpperChest",
+          "position_character_m": [
+            0.0,
+            -0.1331,
+            1.4649
+          ],
+          "offset_in_bone_space_m": [
+            -0.0,
+            0.1444,
+            0.1664
+          ]
+        },
+        "back": {
+          "bone": "spine_03",
+          "humanoid": "UpperChest",
+          "position_character_m": [
+            0.0,
+            0.1336,
+            1.2906
+          ],
+          "offset_in_bone_space_m": [
+            0.0,
+            0.0259,
+            -0.1294
+          ]
+        },
+        "shoulder_l": {
+          "bone": "clavicle_l",
+          "humanoid": "LeftShoulder",
+          "position_character_m": [
+            0.1516,
+            0.0543,
+            1.4781
+          ],
+          "offset_in_bone_space_m": [
+            -0.0016,
+            0.141,
+            0.0477
+          ]
+        },
+        "shoulder_r": {
+          "bone": "clavicle_r",
+          "humanoid": "RightShoulder",
+          "position_character_m": [
+            -0.1516,
+            0.0543,
+            1.4781
+          ],
+          "offset_in_bone_space_m": [
+            0.0016,
+            0.141,
+            0.0477
+          ]
+        },
+        "hand_l": {
+          "bone": "hand_l",
+          "humanoid": "LeftHand",
+          "position_character_m": [
+            0.6844,
+            0.0469,
+            1.4171
+          ],
+          "offset_in_bone_space_m": [
+            0.001,
+            0.0432,
+            0.0053
+          ]
+        },
+        "hand_r": {
+          "bone": "hand_r",
+          "humanoid": "RightHand",
+          "position_character_m": [
+            -0.6844,
+            0.0469,
+            1.4171
+          ],
+          "offset_in_bone_space_m": [
+            -0.001,
+            0.0432,
+            0.0053
+          ]
+        }
+      },
+      "measurements": {
+        "head_center": [
+          -0.0,
+          0.0248,
+          1.6612
+        ],
+        "top_z": 1.7772,
+        "chin_z": 1.5009,
+        "eye_z": 1.6612,
+        "half_w": 0.0941,
+        "half_d": 0.1368,
+        "front_y": -0.1119,
+        "back_y": 0.1616,
+        "neck_z": 1.4849,
+        "neck_y": 0.0406,
+        "chest_front_y": -0.1431,
+        "chest_back_y": 0.1336,
+        "chest_z": 1.2906,
+        "chest_half_w": 0.1441,
+        "shoulder_l": [
+          0.1516,
+          0.0543,
+          1.4181
+        ],
+        "shoulder_r": [
+          -0.1516,
+          0.0543,
+          1.4181
+        ],
+        "hand_l": [
+          0.6844,
+          0.0469,
+          1.4171
+        ],
+        "hand_r": [
+          -0.6844,
+          0.0469,
+          1.4171
+        ]
+      },
+      "height_m": 1.778,
+      "authoring_metadata_sha256": "f5daf924a914b7f619e4784727aa15878d7d0c3efaeff1db9014a3e46bc8eb74",
+      "source_metadata_triangles": {
+        "hero": 11275,
+        "lod0": 5634,
+        "lod1": 2814,
+        "lod2": 1121
+      },
+      "texture_dimensions": {
+        "albedo": [
+          1024,
+          1024
+        ],
+        "mask0": [
+          1024,
+          1024
+        ],
+        "mask1": [
+          1024,
+          1024
+        ],
+        "emission": [
+          1024,
+          1024
+        ]
+      },
+      "validation": {
+        "structural_errors": [],
+        "metadata_reconciliations": [],
+        "unity_import": "not_reviewed",
+        "animation_and_visual_fit": "not_accepted",
+        "default_assembly": {
+          "parts": [
+            "eyes",
+            "head",
+            "top",
+            "bottom",
+            "feet",
+            "hair",
+            "brows"
+          ],
+          "accessories": [],
+          "triangles": {
+            "hero": 11275,
+            "lod0": 5634,
+            "lod1": 2814,
+            "lod2": 1121
+          },
+          "over_budget": {}
+        }
+      },
+      "source_geometry_findings": []
+    },
+    "hero_tactical": {
+      "id": "hero_tactical",
+      "label": "Tactical red visor",
+      "gender": "m",
+      "source": "Sketchfab CC-BY (row 26)",
+      "licence": "CC BY 4.0",
+      "archetypes": [
+        "sniper_bot",
+        "anon",
+        "cabal_insider"
+      ],
+      "tiers": {
+        "hero": {
+          "triangles": 11278,
+          "vertices": 9059,
+          "max_influences": 4
+        },
+        "lod0": {
+          "triangles": 5635,
+          "vertices": 4935,
+          "max_influences": 4
+        },
+        "lod1": {
+          "triangles": 2815,
+          "vertices": 2745,
+          "max_influences": 4
+        },
+        "lod2": {
+          "triangles": 1123,
+          "vertices": 1297,
+          "max_influences": 2
+        }
+      },
+      "files": {
+        "crowd_fbx": "bases/hero_tactical/hero_tactical.fbx",
+        "hero_fbx": "bases/hero_tactical/hero_tactical_Hero.fbx"
+      },
+      "textures": {
+        "albedo": "bases/hero_tactical/hero_tactical_Albedo.png",
+        "mask0": "bases/hero_tactical/hero_tactical_TintMask0.png",
+        "mask1": "bases/hero_tactical/hero_tactical_TintMask1.png",
+        "emission": "bases/hero_tactical/hero_tactical_Emission.png"
+      },
+      "tint_defaults": {
+        "skin": "#000000",
+        "hair": "#000000",
+        "top": "#000000",
+        "bottom": "#000000",
+        "shoes": "#000000",
+        "accent": "#000000"
+      },
+      "parts": {
+        "top": {
+          "fbx": "bases/hero_tactical/parts/hero_tactical__top.fbx",
+          "slot": "top",
+          "triangles": {
+            "lod0": 2034,
+            "lod1": 1014,
+            "hero": 4071,
+            "lod2": 403
+          },
+          "authoring_triangles": {
+            "hero": 4071,
+            "lod0": 2034,
+            "lod1": 1016,
+            "lod2": 407
+          },
+          "asset_sha256": "da7bc489ade0ced5159458c0e8056ef50cebdb2b3d94b6af4deb8911e3d2c5f0"
+        },
+        "head": {
+          "fbx": "bases/hero_tactical/parts/hero_tactical__head.fbx",
+          "slot": "head",
+          "triangles": {
+            "lod0": 2549,
+            "lod2": 510,
+            "lod1": 1275,
+            "hero": 5100
+          },
+          "authoring_triangles": {
+            "hero": 5100,
+            "lod0": 2549,
+            "lod1": 1275,
+            "lod2": 510
+          },
+          "asset_sha256": "e8a31f629c346cb983bce2bc0cb7329901389c2076e0d1f8e18ee26a73c055e6"
+        },
+        "bottom": {
+          "fbx": "bases/hero_tactical/parts/hero_tactical__bottom.fbx",
+          "slot": "bottom",
+          "triangles": {
+            "lod2": 148,
+            "lod1": 370,
+            "lod0": 740,
+            "hero": 1482
+          },
+          "authoring_triangles": {
+            "hero": 1482,
+            "lod0": 740,
+            "lod1": 370,
+            "lod2": 148
+          },
+          "asset_sha256": "cd5da3e8d8cfa0d4c276ba8712472f8218b301c2b92648e00193f9596b5afa35"
+        },
+        "feet": {
+          "fbx": "bases/hero_tactical/parts/hero_tactical__feet.fbx",
+          "slot": "feet",
+          "triangles": {
+            "lod0": 312,
+            "lod2": 62,
+            "hero": 625,
+            "lod1": 156
+          },
+          "authoring_triangles": {
+            "hero": 625,
+            "lod0": 312,
+            "lod1": 156,
+            "lod2": 62
+          },
+          "asset_sha256": "002cdfaaf172db0cd2b6b1d029e979cd68b45474fdd939bf0a5fe0f3c58ee8a8"
+        }
+      },
+      "accessories": {
+        "pixel_face_mask": {
+          "fbx": "bases/hero_tactical/accessories/hero_tactical__pixel_face_mask.fbx",
+          "socket": "face",
+          "bone": "Head",
+          "flags": {
+            "occludes_face": true
+          },
+          "triangles": 272,
+          "asset_sha256": "0729d129b1f08aa091e98207515a0a1aea5853905fe412f91959876cda7596f7"
+        },
+        "tv_head": {
+          "fbx": "bases/hero_tactical/accessories/hero_tactical__tv_head.fbx",
+          "socket": "head_top",
+          "bone": "Head",
+          "flags": {
+            "replaces_head": true,
+            "hides_hair": true,
+            "occludes_face": true
+          },
+          "triangles": 100,
+          "asset_sha256": "83988d099cb4c520ae194d5fc37d6a3e18843f18331f5511c8b9cd85c9522d45"
+        },
+        "visor": {
+          "fbx": "bases/hero_tactical/accessories/hero_tactical__visor.fbx",
+          "socket": "face",
+          "bone": "Head",
+          "flags": {
+            "double_sided": true
+          },
+          "triangles": 240,
+          "asset_sha256": "4bf24664aeff9fde930a0523c40f59657a689c449b71fd6213affd308d76fda0"
+        },
+        "helmet": {
+          "fbx": "bases/hero_tactical/accessories/hero_tactical__helmet.fbx",
+          "socket": "head_top",
+          "bone": "Head",
+          "flags": {
+            "hides_hair": true,
+            "occludes_face": true
+          },
+          "triangles": 520,
+          "asset_sha256": "4ff11efce957972768cfb98e4f1737807292c40f085d3005685c231dc4d5ac28"
+        },
+        "laser_eyes": {
+          "fbx": "bases/hero_tactical/accessories/hero_tactical__laser_eyes.fbx",
+          "socket": "face",
+          "bone": "Head",
+          "flags": {
+            "emissive": true
+          },
+          "triangles": 272,
+          "asset_sha256": "d9962b0e6707dc6c12587ce29140d462908df065352d8d49fe93c2396ea0551c"
+        },
+        "chain": {
+          "fbx": "bases/hero_tactical/accessories/hero_tactical__chain.fbx",
+          "socket": "neck",
+          "bone": "spine_03",
+          "flags": {},
+          "triangles": 396,
+          "asset_sha256": "5c72ca6d9c6e40843d50cfdda500679080aed088a1dd5292269b9c35648faa6c"
+        },
+        "headphones": {
+          "fbx": "bases/hero_tactical/accessories/hero_tactical__headphones.fbx",
+          "socket": "head_top",
+          "bone": "Head",
+          "flags": {},
+          "triangles": 344,
+          "asset_sha256": "63d4874d88d4698402d8b721fb13bb61b5a5f9cfe0a09488ba8bd03ba11201ff"
+        },
+        "small_wings": {
+          "fbx": "bases/hero_tactical/accessories/hero_tactical__small_wings.fbx",
+          "socket": "back",
+          "bone": "spine_03",
+          "flags": {
+            "double_sided": true
+          },
+          "triangles": 60,
+          "asset_sha256": "41d5b2756413412867d4d06f406e736435397995ea91136275ce24b0b5d6344b"
+        },
+        "shoulder_drone": {
+          "fbx": "bases/hero_tactical/accessories/hero_tactical__shoulder_drone.fbx",
+          "socket": "shoulder_r",
+          "bone": "clavicle_r",
+          "flags": {
+            "emissive": true
+          },
+          "triangles": 400,
+          "asset_sha256": "98bb46f8312aaf7ef19dfdb9170eb09365bf3460e5790ae1f78ab1ed88569699"
+        }
+      },
+      "sockets": {
+        "head_top": {
+          "bone": "Head",
+          "humanoid": "Head",
+          "position_character_m": [
+            0.0,
+            0.0006,
+            1.8
+          ],
+          "offset_in_bone_space_m": [
+            -0.0,
+            0.307,
+            0.0224
+          ]
+        },
+        "face": {
+          "bone": "Head",
+          "humanoid": "Head",
+          "position_character_m": [
+            0.0,
+            -0.1119,
+            1.1702
+          ],
+          "offset_in_bone_space_m": [
+            -0.0,
+            -0.3228,
+            0.1349
+          ]
+        },
+        "neck": {
+          "bone": "spine_03",
+          "humanoid": "UpperChest",
+          "position_character_m": [
+            -0.0,
+            -0.1535,
+            1.3921
+          ],
+          "offset_in_bone_space_m": [
+            -0.0,
+            0.0804,
+            0.1965
+          ]
+        },
+        "back": {
+          "bone": "spine_03",
+          "humanoid": "UpperChest",
+          "position_character_m": [
+            -0.0,
+            0.2752,
+            1.2859
+          ],
+          "offset_in_bone_space_m": [
+            -0.0,
+            0.0331,
+            -0.2426
+          ]
+        },
+        "shoulder_l": {
+          "bone": "clavicle_l",
+          "humanoid": "LeftShoulder",
+          "position_character_m": [
+            0.1774,
+            0.049,
+            1.4171
+          ],
+          "offset_in_bone_space_m": [
+            0.0169,
+            0.1055,
+            0.0547
+          ]
+        },
+        "shoulder_r": {
+          "bone": "clavicle_r",
+          "humanoid": "RightShoulder",
+          "position_character_m": [
+            -0.1774,
+            0.0463,
+            1.4171
+          ],
+          "offset_in_bone_space_m": [
+            -0.0172,
+            0.1055,
+            0.0547
+          ]
+        },
+        "hand_l": {
+          "bone": "hand_l",
+          "humanoid": "LeftHand",
+          "position_character_m": [
+            0.5495,
+            -0.0258,
+            0.9563
+          ],
+          "offset_in_bone_space_m": [
+            0.0041,
+            0.0499,
+            -0.003
+          ]
+        },
+        "hand_r": {
+          "bone": "hand_r",
+          "humanoid": "RightHand",
+          "position_character_m": [
+            -0.5492,
+            -0.0261,
+            0.9566
+          ],
+          "offset_in_bone_space_m": [
+            -0.0044,
+            0.0496,
+            -0.0037
+          ]
+        }
+      },
+      "measurements": {
+        "head_center": [
+          0.0,
+          0.0006,
+          1.1702
+        ],
+        "top_z": 1.8,
+        "chin_z": 0.3004,
+        "eye_z": 1.1702,
+        "half_w": 0.1036,
+        "half_d": 0.1125,
+        "front_y": -0.1119,
+        "back_y": 0.1131,
+        "neck_z": 1.4121,
+        "neck_y": 0.0476,
+        "chest_front_y": -0.1635,
+        "chest_back_y": 0.2752,
+        "chest_z": 1.2859,
+        "chest_half_w": 0.1895,
+        "shoulder_l": [
+          0.1774,
+          0.049,
+          1.3571
+        ],
+        "shoulder_r": [
+          -0.1774,
+          0.0463,
+          1.3571
+        ],
+        "hand_l": [
+          0.5495,
+          -0.0258,
+          0.9563
+        ],
+        "hand_r": [
+          -0.5492,
+          -0.0261,
+          0.9566
+        ]
+      },
+      "height_m": 1.8,
+      "authoring_metadata_sha256": "ac3dc41c7d3544c9e9e14db85dd4250360631886a4a941d34b70026febe57d3f",
+      "source_metadata_triangles": {
+        "hero": 11278,
+        "lod0": 5635,
+        "lod1": 2817,
+        "lod2": 1127
+      },
+      "texture_dimensions": {
+        "albedo": [
+          1024,
+          1024
+        ],
+        "mask0": [
+          1024,
+          1024
+        ],
+        "mask1": [
+          1024,
+          1024
+        ],
+        "emission": [
+          1024,
+          1024
+        ]
+      },
+      "validation": {
+        "structural_errors": [
+          {
+            "file": "bases/hero_tactical/hero_tactical.fbx",
+            "error": "hero_tactical_LOD2: head_weight_low=39"
+          },
+          {
+            "file": "bases/hero_tactical/hero_tactical.fbx",
+            "error": "hero_tactical_LOD1: head_weight_low=109"
+          },
+          {
+            "file": "bases/hero_tactical/hero_tactical.fbx",
+            "error": "hero_tactical_LOD0: head_weight_low=237"
+          },
+          {
+            "file": "bases/hero_tactical/hero_tactical_Hero.fbx",
+            "error": "hero_tactical_Hero: head_weight_low=449"
+          },
+          {
+            "file": "bases/hero_tactical/parts/hero_tactical__head.fbx",
+            "error": "hero_tactical__head_LOD0: head_weight_low=237"
+          },
+          {
+            "file": "bases/hero_tactical/parts/hero_tactical__head.fbx",
+            "error": "hero_tactical__head_LOD2: head_weight_low=39"
+          },
+          {
+            "file": "bases/hero_tactical/parts/hero_tactical__head.fbx",
+            "error": "hero_tactical__head_LOD1: head_weight_low=109"
+          },
+          {
+            "file": "bases/hero_tactical/parts/hero_tactical__head.fbx",
+            "error": "hero_tactical__head_Hero: head_weight_low=449"
+          }
+        ],
+        "metadata_reconciliations": [
+          {
+            "file": "bases/hero_tactical/hero_tactical.fbx",
+            "tier": "lod2",
+            "authoring": 1127,
+            "fresh_import": 1123
+          },
+          {
+            "file": "bases/hero_tactical/hero_tactical.fbx",
+            "tier": "lod1",
+            "authoring": 2817,
+            "fresh_import": 2815
+          },
+          {
+            "file": "bases/hero_tactical/parts/hero_tactical__top.fbx",
+            "authoring": {
+              "hero": 4071,
+              "lod0": 2034,
+              "lod1": 1016,
+              "lod2": 407
+            },
+            "fresh_import": {
+              "lod0": 2034,
+              "lod1": 1014,
+              "hero": 4071,
+              "lod2": 403
+            }
+          }
+        ],
+        "unity_import": "not_reviewed",
+        "animation_and_visual_fit": "not_accepted",
+        "default_assembly": {
+          "parts": [
+            "top",
+            "head",
+            "bottom",
+            "feet"
+          ],
+          "accessories": [],
+          "triangles": {
+            "hero": 11278,
+            "lod0": 5635,
+            "lod1": 2815,
+            "lod2": 1123
+          },
+          "over_budget": {}
+        }
+      },
+      "source_geometry_findings": [
+        {
+          "kind": "duplicate_face_indices_in_exported_fbx",
+          "counts": {
+            "lod1": 2,
+            "lod2": 4
+          },
+          "evidence": "../provenance/fbx-triangle-reconciliation-20261009.json",
+          "scope": "Exact duplicate vertex-index sets account for observed Blender import-count reductions. Original FBX remains unchanged; Unity handling unverified."
+        },
+        {
+          "kind": "placeholder_hands",
+          "source": "scripts/v2_adapters.py:mitten_hands",
+          "scope": "Source gloves are removed. Replacements are palm/thumb boxes with rigid hand-bone weights, no articulated finger geometry. Not art or interaction accepted."
+        },
+        {
+          "kind": "misplaced_head_weighted_source_component",
+          "scope": "Object_102/material,722 vertices at shin height in source POSE and REST. A separate exclusion candidate exists but is not selected or accepted."
+        }
+      ]
+    },
+    "hero_gynoid": {
+      "id": "hero_gynoid",
+      "label": "Gynoid 2000",
+      "gender": "f",
+      "source": "Sketchfab CC-BY (row 16)",
+      "licence": "CC BY 4.0",
+      "archetypes": [
+        "ai_agent",
+        "sniper_bot"
+      ],
+      "tiers": {
+        "hero": {
+          "triangles": 11276,
+          "vertices": 5811,
+          "max_influences": 4
+        },
+        "lod0": {
+          "triangles": 5634,
+          "vertices": 2962,
+          "max_influences": 4
+        },
+        "lod1": {
+          "triangles": 2816,
+          "vertices": 1525,
+          "max_influences": 4
+        },
+        "lod2": {
+          "triangles": 1138,
+          "vertices": 653,
+          "max_influences": 2
+        }
+      },
+      "files": {
+        "crowd_fbx": "bases/hero_gynoid/hero_gynoid.fbx",
+        "hero_fbx": "bases/hero_gynoid/hero_gynoid_Hero.fbx"
+      },
+      "textures": {
+        "albedo": "bases/hero_gynoid/hero_gynoid_Albedo.png",
+        "mask0": "bases/hero_gynoid/hero_gynoid_TintMask0.png",
+        "mask1": "bases/hero_gynoid/hero_gynoid_TintMask1.png",
+        "emission": "bases/hero_gynoid/hero_gynoid_Emission.png"
+      },
+      "tint_defaults": {
+        "skin": "#757578",
+        "hair": "#aca9ac",
+        "top": "#fbf5f3",
+        "bottom": "#fef9f5",
+        "shoes": "#eeeaeb",
+        "accent": "#fbf5f3"
+      },
+      "parts": {
+        "head": {
+          "fbx": "bases/hero_gynoid/parts/hero_gynoid__head.fbx",
+          "slot": "head",
+          "triangles": {
+            "lod0": 542,
+            "lod2": 108,
+            "hero": 1087,
+            "lod1": 271
+          },
+          "authoring_triangles": {
+            "hero": 1087,
+            "lod0": 542,
+            "lod1": 271,
+            "lod2": 108
+          },
+          "asset_sha256": "17583452b8fb16d735db5ed6d3eeaf69acb8d413af4cc7eb207a8996916bd83b"
+        },
+        "top": {
+          "fbx": "bases/hero_gynoid/parts/hero_gynoid__top.fbx",
+          "slot": "top",
+          "triangles": {
+            "lod0": 3726,
+            "hero": 7454,
+            "lod1": 1862,
+            "lod2": 745
+          },
+          "authoring_triangles": {
+            "hero": 7454,
+            "lod0": 3726,
+            "lod1": 1862,
+            "lod2": 745
+          },
+          "asset_sha256": "783256aa29ada981d1901cc78f25275ec3e7066d5af3fd733c83aa007d39ef87"
+        },
+        "bottom": {
+          "fbx": "bases/hero_gynoid/parts/hero_gynoid__bottom.fbx",
+          "slot": "bottom",
+          "triangles": {
+            "lod0": 1309,
+            "hero": 2621,
+            "lod1": 655,
+            "lod2": 261
+          },
+          "authoring_triangles": {
+            "hero": 2621,
+            "lod0": 1309,
+            "lod1": 655,
+            "lod2": 261
+          },
+          "asset_sha256": "657744f65cc1a29c06989b6674e702a4f40640aa188da79bb93fd02efac4c833"
+        },
+        "feet": {
+          "fbx": "bases/hero_gynoid/parts/hero_gynoid__feet.fbx",
+          "slot": "feet",
+          "triangles": {
+            "lod1": 28,
+            "lod0": 57,
+            "hero": 114,
+            "lod2": 24
+          },
+          "authoring_triangles": {
+            "hero": 114,
+            "lod0": 57,
+            "lod1": 28,
+            "lod2": 24
+          },
+          "asset_sha256": "33544451e5536efe9a5bcba60fb3a6cfad2aa3eea1adb0f70b2424d8d937fb09"
+        }
+      },
+      "accessories": {
+        "pixel_face_mask": {
+          "fbx": "bases/hero_gynoid/accessories/hero_gynoid__pixel_face_mask.fbx",
+          "socket": "face",
+          "bone": "Head",
+          "flags": {
+            "occludes_face": true
+          },
+          "triangles": 272,
+          "asset_sha256": "18999ec1a66ee6cc1b223d8d7b3492924522fcf0c2f246f247e5b8a335b05f1a"
+        },
+        "tv_head": {
+          "fbx": "bases/hero_gynoid/accessories/hero_gynoid__tv_head.fbx",
+          "socket": "head_top",
+          "bone": "Head",
+          "flags": {
+            "replaces_head": true,
+            "hides_hair": true,
+            "occludes_face": true
+          },
+          "triangles": 100,
+          "asset_sha256": "509c2a59c65127233f3dbaa1ce2951a07139dcd502cd07d457dad9fcf74f846b"
+        },
+        "visor": {
+          "fbx": "bases/hero_gynoid/accessories/hero_gynoid__visor.fbx",
+          "socket": "face",
+          "bone": "Head",
+          "flags": {
+            "double_sided": true
+          },
+          "triangles": 240,
+          "asset_sha256": "3a4660cbde3a33a426f0cc5a4a942517388c78686daa5c5f6b5d8be000304efd"
+        },
+        "helmet": {
+          "fbx": "bases/hero_gynoid/accessories/hero_gynoid__helmet.fbx",
+          "socket": "head_top",
+          "bone": "Head",
+          "flags": {
+            "hides_hair": true,
+            "occludes_face": true
+          },
+          "triangles": 520,
+          "asset_sha256": "eff5c361cb48ac6e515fd9e28badcb2891755f83465229067f14992ee1539837"
+        },
+        "laser_eyes": {
+          "fbx": "bases/hero_gynoid/accessories/hero_gynoid__laser_eyes.fbx",
+          "socket": "face",
+          "bone": "Head",
+          "flags": {
+            "emissive": true
+          },
+          "triangles": 272,
+          "asset_sha256": "826093315c55be0fbf947d91a06556ed0d6dc700d4574d0ef516130bf46df539"
+        },
+        "chain": {
+          "fbx": "bases/hero_gynoid/accessories/hero_gynoid__chain.fbx",
+          "socket": "neck",
+          "bone": "spine_03",
+          "flags": {},
+          "triangles": 396,
+          "asset_sha256": "f5bf716b224b0c4b07feb338f94a6d40e3f6e80e3deb38c17610964b37a7c051"
+        },
+        "headphones": {
+          "fbx": "bases/hero_gynoid/accessories/hero_gynoid__headphones.fbx",
+          "socket": "head_top",
+          "bone": "Head",
+          "flags": {},
+          "triangles": 344,
+          "asset_sha256": "5093dc48bb6de574aebf3ff9934665b006d47932bb9a7b5d491d2e92a2a3ae1e"
+        },
+        "small_wings": {
+          "fbx": "bases/hero_gynoid/accessories/hero_gynoid__small_wings.fbx",
+          "socket": "back",
+          "bone": "spine_03",
+          "flags": {
+            "double_sided": true
+          },
+          "triangles": 60,
+          "asset_sha256": "4b2a74b25ec2b02f849cf12183c49063cd1338372bc1cfacdbba1826d7764932"
+        },
+        "shoulder_drone": {
+          "fbx": "bases/hero_gynoid/accessories/hero_gynoid__shoulder_drone.fbx",
+          "socket": "shoulder_r",
+          "bone": "clavicle_r",
+          "flags": {
+            "emissive": true
+          },
+          "triangles": 400,
+          "asset_sha256": "b68d60bdfba6cf511e447526e5d2e21ce61999bbc9cefbc71beee3d2f418a45d"
+        }
+      },
+      "sockets": {
+        "head_top": {
+          "bone": "Head",
+          "humanoid": "Head",
+          "position_character_m": [
+            -0.0,
+            0.0133,
+            1.72
+          ],
+          "offset_in_bone_space_m": [
+            -0.0,
+            0.2253,
+            0.004
+          ]
+        },
+        "face": {
+          "bone": "Head",
+          "humanoid": "Head",
+          "position_character_m": [
+            -0.0,
+            -0.099,
+            1.6204
+          ],
+          "offset_in_bone_space_m": [
+            -0.0,
+            0.1257,
+            0.1163
+          ]
+        },
+        "neck": {
+          "bone": "spine_03",
+          "humanoid": "UpperChest",
+          "position_character_m": [
+            0.0,
+            -0.1873,
+            1.4257
+          ],
+          "offset_in_bone_space_m": [
+            0.0,
+            0.0462,
+            0.1992
+          ]
+        },
+        "back": {
+          "bone": "spine_03",
+          "humanoid": "UpperChest",
+          "position_character_m": [
+            0.0,
+            0.0879,
+            1.3557
+          ],
+          "offset_in_bone_space_m": [
+            0.0,
+            0.01,
+            -0.0825
+          ]
+        },
+        "shoulder_l": {
+          "bone": "clavicle_l",
+          "humanoid": "LeftShoulder",
+          "position_character_m": [
+            0.1366,
+            0.016,
+            1.4749
+          ],
+          "offset_in_bone_space_m": [
+            0.0118,
+            0.0814,
+            0.0576
+          ]
+        },
+        "shoulder_r": {
+          "bone": "clavicle_r",
+          "humanoid": "RightShoulder",
+          "position_character_m": [
+            -0.1366,
+            0.0157,
+            1.4749
+          ],
+          "offset_in_bone_space_m": [
+            -0.0118,
+            0.0814,
+            0.0576
+          ]
+        },
+        "hand_l": {
+          "bone": "hand_l",
+          "humanoid": "LeftHand",
+          "position_character_m": [
+            0.5835,
+            0.016,
+            1.1569
+          ],
+          "offset_in_bone_space_m": [
+            0.0066,
+            0.0592,
+            -0.0033
+          ]
+        },
+        "hand_r": {
+          "bone": "hand_r",
+          "humanoid": "RightHand",
+          "position_character_m": [
+            -0.5826,
+            0.0157,
+            1.1574
+          ],
+          "offset_in_bone_space_m": [
+            -0.0067,
+            0.0581,
+            -0.003
+          ]
+        }
+      },
+      "measurements": {
+        "head_center": [
+          -0.0,
+          0.0133,
+          1.6204
+        ],
+        "top_z": 1.72,
+        "chin_z": 1.4828,
+        "eye_z": 1.6204,
+        "half_w": 0.108,
+        "half_d": 0.1123,
+        "front_y": -0.099,
+        "back_y": 0.1256,
+        "neck_z": 1.4457,
+        "neck_y": 0.0158,
+        "chest_front_y": -0.1973,
+        "chest_back_y": 0.0879,
+        "chest_z": 1.3557,
+        "chest_half_w": 0.1228,
+        "shoulder_l": [
+          0.1366,
+          0.016,
+          1.4149
+        ],
+        "shoulder_r": [
+          -0.1366,
+          0.0157,
+          1.4149
+        ],
+        "hand_l": [
+          0.5835,
+          0.016,
+          1.1569
+        ],
+        "hand_r": [
+          -0.5826,
+          0.0157,
+          1.1574
+        ]
+      },
+      "height_m": 1.72,
+      "authoring_metadata_sha256": "e5f2159a7a6909be9deb5f36c91039ac285554b38d81d6d174e3b709b0233c75",
+      "source_metadata_triangles": {
+        "hero": 11276,
+        "lod0": 5634,
+        "lod1": 2816,
+        "lod2": 1138
+      },
+      "texture_dimensions": {
+        "albedo": [
+          1024,
+          1024
+        ],
+        "mask0": [
+          1024,
+          1024
+        ],
+        "mask1": [
+          1024,
+          1024
+        ],
+        "emission": [
+          1024,
+          1024
+        ]
+      },
+      "validation": {
+        "structural_errors": [],
+        "metadata_reconciliations": [],
+        "unity_import": "not_reviewed",
+        "animation_and_visual_fit": "not_accepted",
+        "default_assembly": {
+          "parts": [
+            "head",
+            "top",
+            "bottom",
+            "feet"
+          ],
+          "accessories": [],
+          "triangles": {
+            "hero": 11276,
+            "lod0": 5634,
+            "lod1": 2816,
+            "lod2": 1138
+          },
+          "over_budget": {}
+        }
+      },
+      "source_geometry_findings": []
+    },
+    "hero_assassin": {
+      "id": "hero_assassin",
+      "label": "Gas-mask runner",
+      "gender": "f",
+      "source": "Sketchfab CC-BY (row 1)",
+      "licence": "CC BY 4.0",
+      "archetypes": [
+        "anon",
+        "sniper_bot",
+        "rug_dev"
+      ],
+      "tiers": {
+        "hero": {
+          "triangles": 11276,
+          "vertices": 5796,
+          "max_influences": 4
+        },
+        "lod0": {
+          "triangles": 5635,
+          "vertices": 2963,
+          "max_influences": 4
+        },
+        "lod1": {
+          "triangles": 2817,
+          "vertices": 1533,
+          "max_influences": 4
+        },
+        "lod2": {
+          "triangles": 1122,
+          "vertices": 654,
+          "max_influences": 2
+        }
+      },
+      "files": {
+        "crowd_fbx": "bases/hero_assassin/hero_assassin.fbx",
+        "hero_fbx": "bases/hero_assassin/hero_assassin_Hero.fbx"
+      },
+      "textures": {
+        "albedo": "bases/hero_assassin/hero_assassin_Albedo.png",
+        "mask0": "bases/hero_assassin/hero_assassin_TintMask0.png",
+        "mask1": "bases/hero_assassin/hero_assassin_TintMask1.png",
+        "emission": "bases/hero_assassin/hero_assassin_Emission.png"
+      },
+      "tint_defaults": {
+        "skin": "#242623",
+        "hair": "#333738",
+        "top": "#55514b",
+        "bottom": "#4e5b64",
+        "shoes": "#0e0d0d"
+      },
+      "parts": {
+        "head": {
+          "fbx": "bases/hero_assassin/parts/hero_assassin__head.fbx",
+          "slot": "head",
+          "triangles": {
+            "lod1": 848,
+            "lod0": 1696,
+            "hero": 3392,
+            "lod2": 338
+          },
+          "authoring_triangles": {
+            "hero": 3392,
+            "lod0": 1696,
+            "lod1": 848,
+            "lod2": 338
+          },
+          "asset_sha256": "9e83cf66a8da52f500026f13dbc7e9626654ad12b08bbc03be99cf57ecbaac1f"
+        },
+        "top": {
+          "fbx": "bases/hero_assassin/parts/hero_assassin__top.fbx",
+          "slot": "top",
+          "triangles": {
+            "lod0": 2821,
+            "hero": 5644,
+            "lod2": 562,
+            "lod1": 1411
+          },
+          "authoring_triangles": {
+            "hero": 5644,
+            "lod0": 2821,
+            "lod1": 1411,
+            "lod2": 564
+          },
+          "asset_sha256": "df608a87d28d80dc01eccec4e75466db1880ef8cb0d8df1915a234d1264b9f80"
+        },
+        "bottom": {
+          "fbx": "bases/hero_assassin/parts/hero_assassin__bottom.fbx",
+          "slot": "bottom",
+          "triangles": {
+            "lod0": 898,
+            "hero": 1798,
+            "lod2": 178,
+            "lod1": 448
+          },
+          "authoring_triangles": {
+            "hero": 1798,
+            "lod0": 898,
+            "lod1": 448,
+            "lod2": 179
+          },
+          "asset_sha256": "0bfcee972577c4f97d41e1331f4b089c74ce4069f572783cb2fc29064128e81e"
+        },
+        "feet": {
+          "fbx": "bases/hero_assassin/parts/hero_assassin__feet.fbx",
+          "slot": "feet",
+          "triangles": {
+            "lod0": 220,
+            "hero": 442,
+            "lod1": 110,
+            "lod2": 44
+          },
+          "authoring_triangles": {
+            "hero": 442,
+            "lod0": 220,
+            "lod1": 110,
+            "lod2": 44
+          },
+          "asset_sha256": "645f6850b823fc150f46172785d25d7426a563b44d78e06ffaf69ee6948ff8ae"
+        }
+      },
+      "accessories": {
+        "pixel_face_mask": {
+          "fbx": "bases/hero_assassin/accessories/hero_assassin__pixel_face_mask.fbx",
+          "socket": "face",
+          "bone": "Head",
+          "flags": {
+            "occludes_face": true
+          },
+          "triangles": 272,
+          "asset_sha256": "7acf53ed1e462afb3390bc45a871415a2d3cfffbc11bf726622c6b0f1ab60783"
+        },
+        "tv_head": {
+          "fbx": "bases/hero_assassin/accessories/hero_assassin__tv_head.fbx",
+          "socket": "head_top",
+          "bone": "Head",
+          "flags": {
+            "replaces_head": true,
+            "hides_hair": true,
+            "occludes_face": true
+          },
+          "triangles": 100,
+          "asset_sha256": "ba7db09265fe91aa24b6d993016390bd1de3b6b978e4b8f1fb2fe2f6d9cc54cc"
+        },
+        "visor": {
+          "fbx": "bases/hero_assassin/accessories/hero_assassin__visor.fbx",
+          "socket": "face",
+          "bone": "Head",
+          "flags": {
+            "double_sided": true
+          },
+          "triangles": 240,
+          "asset_sha256": "4d3e1afd019b7126e6862d35c8a2d7c393d993889af2e15a1753363f25267751"
+        },
+        "helmet": {
+          "fbx": "bases/hero_assassin/accessories/hero_assassin__helmet.fbx",
+          "socket": "head_top",
+          "bone": "Head",
+          "flags": {
+            "hides_hair": true,
+            "occludes_face": true
+          },
+          "triangles": 520,
+          "asset_sha256": "475f3aa038295b69396981cd5fe86556fae1be95ef30dafbfc0e0e20fe93fbba"
+        },
+        "laser_eyes": {
+          "fbx": "bases/hero_assassin/accessories/hero_assassin__laser_eyes.fbx",
+          "socket": "face",
+          "bone": "Head",
+          "flags": {
+            "emissive": true
+          },
+          "triangles": 272,
+          "asset_sha256": "248e2d6583ed673a2c3569289dd9a03c90b83614accccd0a58da3539c5458cac"
+        },
+        "chain": {
+          "fbx": "bases/hero_assassin/accessories/hero_assassin__chain.fbx",
+          "socket": "neck",
+          "bone": "spine_03",
+          "flags": {},
+          "triangles": 396,
+          "asset_sha256": "8da3b48a55018cc81bb80875ad96a1132054ba5abc6796f01b857abbcf49503b"
+        },
+        "headphones": {
+          "fbx": "bases/hero_assassin/accessories/hero_assassin__headphones.fbx",
+          "socket": "head_top",
+          "bone": "Head",
+          "flags": {},
+          "triangles": 344,
+          "asset_sha256": "f70d532698a1aa884fd8ce145d46bfeb8e5e5e0b613cf010059b1e44dbe5e1ac"
+        },
+        "small_wings": {
+          "fbx": "bases/hero_assassin/accessories/hero_assassin__small_wings.fbx",
+          "socket": "back",
+          "bone": "spine_03",
+          "flags": {
+            "double_sided": true
+          },
+          "triangles": 60,
+          "asset_sha256": "fdf1e0fd9fd98d22348961b853061917b3812eae258bcfa0a23de80e2e877a5f"
+        },
+        "shoulder_drone": {
+          "fbx": "bases/hero_assassin/accessories/hero_assassin__shoulder_drone.fbx",
+          "socket": "shoulder_r",
+          "bone": "clavicle_r",
+          "flags": {
+            "emissive": true
+          },
+          "triangles": 400,
+          "asset_sha256": "249a59f001619e1199f449cacf45490aed523f7e5fceede45b9c6ab00dd088fd"
+        }
+      },
+      "sockets": {
+        "head_top": {
+          "bone": "Head",
+          "humanoid": "Head",
+          "position_character_m": [
+            0.0,
+            0.0142,
+            1.72
+          ],
+          "offset_in_bone_space_m": [
+            0.0,
+            0.2681,
+            0.0202
+          ]
+        },
+        "face": {
+          "bone": "Head",
+          "humanoid": "Head",
+          "position_character_m": [
+            -0.0,
+            -0.1232,
+            1.6078
+          ],
+          "offset_in_bone_space_m": [
+            0.0,
+            0.1559,
+            0.1576
+          ]
+        },
+        "neck": {
+          "bone": "spine_03",
+          "humanoid": "UpperChest",
+          "position_character_m": [
+            0.0,
+            -0.1362,
+            1.371
+          ],
+          "offset_in_bone_space_m": [
+            0.0,
+            0.0882,
+            0.1716
+          ]
+        },
+        "back": {
+          "bone": "spine_03",
+          "humanoid": "UpperChest",
+          "position_character_m": [
+            -0.0,
+            0.1416,
+            1.2727
+          ],
+          "offset_in_bone_space_m": [
+            -0.0,
+            0.0067,
+            -0.1116
+          ]
+        },
+        "shoulder_l": {
+          "bone": "clavicle_l",
+          "humanoid": "LeftShoulder",
+          "position_character_m": [
+            0.1228,
+            0.0118,
+            1.4381
+          ],
+          "offset_in_bone_space_m": [
+            -0.0088,
+            0.1464,
+            0.0584
+          ]
+        },
+        "shoulder_r": {
+          "bone": "clavicle_r",
+          "humanoid": "RightShoulder",
+          "position_character_m": [
+            -0.1228,
+            0.0118,
+            1.4381
+          ],
+          "offset_in_bone_space_m": [
+            0.0088,
+            0.1464,
+            0.0584
+          ]
+        },
+        "hand_l": {
+          "bone": "hand_l",
+          "humanoid": "LeftHand",
+          "position_character_m": [
+            0.5242,
+            0.0123,
+            1.0722
+          ],
+          "offset_in_bone_space_m": [
+            0.0029,
+            0.0436,
+            0.0002
+          ]
+        },
+        "hand_r": {
+          "bone": "hand_r",
+          "humanoid": "RightHand",
+          "position_character_m": [
+            -0.5242,
+            0.0123,
+            1.0722
+          ],
+          "offset_in_bone_space_m": [
+            -0.0029,
+            0.0436,
+            0.0002
+          ]
+        }
+      },
+      "measurements": {
+        "head_center": [
+          0.0,
+          0.0142,
+          1.6078
+        ],
+        "top_z": 1.72,
+        "chin_z": 1.4529,
+        "eye_z": 1.6078,
+        "half_w": 0.1282,
+        "half_d": 0.1374,
+        "front_y": -0.1232,
+        "back_y": 0.1517,
+        "neck_z": 1.391,
+        "neck_y": 0.0369,
+        "chest_front_y": -0.1462,
+        "chest_back_y": 0.1416,
+        "chest_z": 1.2727,
+        "chest_half_w": 0.1424,
+        "shoulder_l": [
+          0.1228,
+          0.0118,
+          1.3781
+        ],
+        "shoulder_r": [
+          -0.1228,
+          0.0118,
+          1.3781
+        ],
+        "hand_l": [
+          0.5242,
+          0.0123,
+          1.0722
+        ],
+        "hand_r": [
+          -0.5242,
+          0.0123,
+          1.0722
+        ]
+      },
+      "height_m": 1.719,
+      "authoring_metadata_sha256": "c753e7a15a52b871a4fdbf83221da53645773540a5a3d20eff69715f7f73becf",
+      "source_metadata_triangles": {
+        "hero": 11276,
+        "lod0": 5635,
+        "lod1": 2817,
+        "lod2": 1125
+      },
+      "texture_dimensions": {
+        "albedo": [
+          1024,
+          1024
+        ],
+        "mask0": [
+          1024,
+          1024
+        ],
+        "mask1": [
+          1024,
+          1024
+        ],
+        "emission": [
+          1024,
+          1024
+        ]
+      },
+      "validation": {
+        "structural_errors": [],
+        "metadata_reconciliations": [
+          {
+            "file": "bases/hero_assassin/hero_assassin.fbx",
+            "tier": "lod2",
+            "authoring": 1125,
+            "fresh_import": 1122
+          },
+          {
+            "file": "bases/hero_assassin/parts/hero_assassin__top.fbx",
+            "authoring": {
+              "hero": 5644,
+              "lod0": 2821,
+              "lod1": 1411,
+              "lod2": 564
+            },
+            "fresh_import": {
+              "lod0": 2821,
+              "hero": 5644,
+              "lod2": 562,
+              "lod1": 1411
+            }
+          },
+          {
+            "file": "bases/hero_assassin/parts/hero_assassin__bottom.fbx",
+            "authoring": {
+              "hero": 1798,
+              "lod0": 898,
+              "lod1": 448,
+              "lod2": 179
+            },
+            "fresh_import": {
+              "lod0": 898,
+              "hero": 1798,
+              "lod2": 178,
+              "lod1": 448
+            }
+          }
+        ],
+        "unity_import": "not_reviewed",
+        "animation_and_visual_fit": "not_accepted",
+        "default_assembly": {
+          "parts": [
+            "head",
+            "top",
+            "bottom",
+            "feet"
+          ],
+          "accessories": [],
+          "triangles": {
+            "hero": 11276,
+            "lod0": 5635,
+            "lod1": 2817,
+            "lod2": 1122
+          },
+          "over_budget": {}
+        }
+      },
+      "source_geometry_findings": [
+        {
+          "kind": "duplicate_face_indices_in_exported_fbx",
+          "counts": {
+            "lod2": 3
+          },
+          "evidence": "../provenance/fbx-triangle-reconciliation-20261009.json",
+          "scope": "Exact duplicate vertex-index sets account for observed Blender import-count reductions. Original FBX remains unchanged; Unity handling unverified."
+        }
+      ]
+    },
+    "hero_hazmat": {
+      "id": "hero_hazmat",
+      "label": "Hazmat operator",
+      "gender": "m",
+      "source": "Sketchfab CC-BY (row 6)",
+      "licence": "CC BY 4.0",
+      "archetypes": [
+        "anon",
+        "cabal_insider",
+        "sniper_bot"
+      ],
+      "tiers": {
+        "hero": {
+          "triangles": 11278,
+          "vertices": 9064,
+          "max_influences": 4
+        },
+        "lod0": {
+          "triangles": 5638,
+          "vertices": 5360,
+          "max_influences": 4
+        },
+        "lod1": {
+          "triangles": 2818,
+          "vertices": 2995,
+          "max_influences": 4
+        },
+        "lod2": {
+          "triangles": 1126,
+          "vertices": 1404,
+          "max_influences": 2
+        }
+      },
+      "files": {
+        "crowd_fbx": "bases/hero_hazmat/hero_hazmat.fbx",
+        "hero_fbx": "bases/hero_hazmat/hero_hazmat_Hero.fbx"
+      },
+      "textures": {
+        "albedo": "bases/hero_hazmat/hero_hazmat_Albedo.png",
+        "mask0": "bases/hero_hazmat/hero_hazmat_TintMask0.png",
+        "mask1": "bases/hero_hazmat/hero_hazmat_TintMask1.png",
+        "emission": "bases/hero_hazmat/hero_hazmat_Emission.png"
+      },
+      "tint_defaults": {
+        "skin": "#0f0f10",
+        "hair": "#1b1b1c",
+        "top": "#2a2929",
+        "bottom": "#3f3f3f",
+        "shoes": "#0d0d0c"
+      },
+      "parts": {
+        "head": {
+          "fbx": "bases/hero_hazmat/parts/hero_hazmat__head.fbx",
+          "slot": "head",
+          "triangles": {
+            "lod0": 411,
+            "lod1": 205,
+            "hero": 822,
+            "lod2": 82
+          },
+          "authoring_triangles": {
+            "hero": 822,
+            "lod0": 411,
+            "lod1": 205,
+            "lod2": 82
+          },
+          "asset_sha256": "4a39c3d990c5a45602a2ce66fd547b10030c8ec0039c84981230a9c130528e7a"
+        },
+        "top": {
+          "fbx": "bases/hero_hazmat/parts/hero_hazmat__top.fbx",
+          "slot": "top",
+          "triangles": {
+            "lod1": 1451,
+            "lod0": 2903,
+            "hero": 5806,
+            "lod2": 580
+          },
+          "authoring_triangles": {
+            "hero": 5806,
+            "lod0": 2903,
+            "lod1": 1451,
+            "lod2": 580
+          },
+          "asset_sha256": "770dbf9d50df04e9bf7647bd8bff60c89e01f4492f5d8e1c9186c7a8344a5a7e"
+        },
+        "bottom": {
+          "fbx": "bases/hero_hazmat/parts/hero_hazmat__bottom.fbx",
+          "slot": "bottom",
+          "triangles": {
+            "lod1": 1065,
+            "hero": 4261,
+            "lod2": 426,
+            "lod0": 2130
+          },
+          "authoring_triangles": {
+            "hero": 4261,
+            "lod0": 2130,
+            "lod1": 1065,
+            "lod2": 426
+          },
+          "asset_sha256": "4066aa79e4f25b984a8d99fe90a45b159840da89dc989602f55580da733093f8"
+        },
+        "feet": {
+          "fbx": "bases/hero_hazmat/parts/hero_hazmat__feet.fbx",
+          "slot": "feet",
+          "triangles": {
+            "lod2": 38,
+            "lod1": 97,
+            "hero": 389,
+            "lod0": 194
+          },
+          "authoring_triangles": {
+            "hero": 389,
+            "lod0": 194,
+            "lod1": 97,
+            "lod2": 38
+          },
+          "asset_sha256": "c6e550111e62ea0d5a32770b46d6fe13052ac641b10154941723daae9b9f38e8"
+        }
+      },
+      "accessories": {
+        "pixel_face_mask": {
+          "fbx": "bases/hero_hazmat/accessories/hero_hazmat__pixel_face_mask.fbx",
+          "socket": "face",
+          "bone": "Head",
+          "flags": {
+            "occludes_face": true
+          },
+          "triangles": 272,
+          "asset_sha256": "edb9c38c52347e96e1c985995009758de9a6c384311441f7a6e4ab40865d4c2e"
+        },
+        "tv_head": {
+          "fbx": "bases/hero_hazmat/accessories/hero_hazmat__tv_head.fbx",
+          "socket": "head_top",
+          "bone": "Head",
+          "flags": {
+            "replaces_head": true,
+            "hides_hair": true,
+            "occludes_face": true
+          },
+          "triangles": 100,
+          "asset_sha256": "837d1eeb829417e055f2508447a69f6f9f1312921d7e28c694c815e2e7b4adb4"
+        },
+        "visor": {
+          "fbx": "bases/hero_hazmat/accessories/hero_hazmat__visor.fbx",
+          "socket": "face",
+          "bone": "Head",
+          "flags": {
+            "double_sided": true
+          },
+          "triangles": 240,
+          "asset_sha256": "61747d501660adec37810f4b23a656e5f44affafdec070587a606bb2b59f827d"
+        },
+        "helmet": {
+          "fbx": "bases/hero_hazmat/accessories/hero_hazmat__helmet.fbx",
+          "socket": "head_top",
+          "bone": "Head",
+          "flags": {
+            "hides_hair": true,
+            "occludes_face": true
+          },
+          "triangles": 520,
+          "asset_sha256": "07e3e230f8df032bb3eec257e77bc5b4cda8f18985b99a268ead08131d56a229"
+        },
+        "laser_eyes": {
+          "fbx": "bases/hero_hazmat/accessories/hero_hazmat__laser_eyes.fbx",
+          "socket": "face",
+          "bone": "Head",
+          "flags": {
+            "emissive": true
+          },
+          "triangles": 272,
+          "asset_sha256": "d8d0993cf173ecbcbbaf69a1cf8529c6269495050d7f85e950ef5ee69728f230"
+        },
+        "chain": {
+          "fbx": "bases/hero_hazmat/accessories/hero_hazmat__chain.fbx",
+          "socket": "neck",
+          "bone": "spine_03",
+          "flags": {},
+          "triangles": 396,
+          "asset_sha256": "509d6815b9c86792b574a337616deb879f16b527d8a6425cd9531c1083adff65"
+        },
+        "headphones": {
+          "fbx": "bases/hero_hazmat/accessories/hero_hazmat__headphones.fbx",
+          "socket": "head_top",
+          "bone": "Head",
+          "flags": {},
+          "triangles": 344,
+          "asset_sha256": "e4e0fee76741d1dea30835cd66f843566ab3eb011b719b1903f84ea6b992321d"
+        },
+        "small_wings": {
+          "fbx": "bases/hero_hazmat/accessories/hero_hazmat__small_wings.fbx",
+          "socket": "back",
+          "bone": "spine_03",
+          "flags": {
+            "double_sided": true
+          },
+          "triangles": 60,
+          "asset_sha256": "4a545ecb45228fbb21617e36c47c16eb5b7be3ece3d94192b0a9e2fcdfb58917"
+        },
+        "shoulder_drone": {
+          "fbx": "bases/hero_hazmat/accessories/hero_hazmat__shoulder_drone.fbx",
+          "socket": "shoulder_r",
+          "bone": "clavicle_r",
+          "flags": {
+            "emissive": true
+          },
+          "triangles": 400,
+          "asset_sha256": "286f46716296b5aeca2442f8f3b9a7e7418ab86498241845b2230a6e4678a6a3"
+        }
+      },
+      "sockets": {
+        "head_top": {
+          "bone": "Head",
+          "humanoid": "Head",
+          "position_character_m": [
+            0.0,
+            0.0075,
+            1.8
+          ],
+          "offset_in_bone_space_m": [
+            0.0,
+            0.225,
+            -0.0213
+          ]
+        },
+        "face": {
+          "bone": "Head",
+          "humanoid": "Head",
+          "position_character_m": [
+            0.0,
+            -0.1219,
+            1.6977
+          ],
+          "offset_in_bone_space_m": [
+            0.0,
+            0.1227,
+            0.108
+          ]
+        },
+        "neck": {
+          "bone": "spine_03",
+          "humanoid": "UpperChest",
+          "position_character_m": [
+            0.0,
+            -0.1955,
+            1.483
+          ],
+          "offset_in_bone_space_m": [
+            0.0,
+            0.092,
+            0.1496
+          ]
+        },
+        "back": {
+          "bone": "spine_03",
+          "humanoid": "UpperChest",
+          "position_character_m": [
+            0.0,
+            0.0639,
+            1.323
+          ],
+          "offset_in_bone_space_m": [
+            0.0,
+            0.1047,
+            -0.1549
+          ]
+        },
+        "shoulder_l": {
+          "bone": "clavicle_l",
+          "humanoid": "LeftShoulder",
+          "position_character_m": [
+            0.2001,
+            -0.028,
+            1.509
+          ],
+          "offset_in_bone_space_m": [
+            -0.0045,
+            0.2047,
+            0.0593
+          ]
+        },
+        "shoulder_r": {
+          "bone": "clavicle_r",
+          "humanoid": "RightShoulder",
+          "position_character_m": [
+            -0.2003,
+            -0.0221,
+            1.509
+          ],
+          "offset_in_bone_space_m": [
+            0.0043,
+            0.2079,
+            0.0593
+          ]
+        },
+        "hand_l": {
+          "bone": "hand_l",
+          "humanoid": "LeftHand",
+          "position_character_m": [
+            0.326,
+            -0.0621,
+            0.8367
+          ],
+          "offset_in_bone_space_m": [
+            -0.0,
+            0.0285,
+            -0.0
+          ]
+        },
+        "hand_r": {
+          "bone": "hand_r",
+          "humanoid": "RightHand",
+          "position_character_m": [
+            -0.326,
+            -0.0624,
+            0.837
+          ],
+          "offset_in_bone_space_m": [
+            -0.0,
+            0.0285,
+            0.0
+          ]
+        }
+      },
+      "measurements": {
+        "head_center": [
+          0.0,
+          0.0075,
+          1.6977
+        ],
+        "top_z": 1.8,
+        "chin_z": 1.5565,
+        "eye_z": 1.6977,
+        "half_w": 0.1079,
+        "half_d": 0.1294,
+        "front_y": -0.1219,
+        "back_y": 0.1368,
+        "neck_z": 1.503,
+        "neck_y": -0.0014,
+        "chest_front_y": -0.2055,
+        "chest_back_y": 0.0639,
+        "chest_z": 1.323,
+        "chest_half_w": 0.1694,
+        "shoulder_l": [
+          0.2001,
+          -0.028,
+          1.449
+        ],
+        "shoulder_r": [
+          -0.2003,
+          -0.0221,
+          1.449
+        ],
+        "hand_l": [
+          0.326,
+          -0.0621,
+          0.8367
+        ],
+        "hand_r": [
+          -0.326,
+          -0.0624,
+          0.837
+        ]
+      },
+      "height_m": 1.799,
+      "authoring_metadata_sha256": "59ba05e919622573851d94a2c2e7298e86440732c8096adcdc7307f009d05157",
+      "source_metadata_triangles": {
+        "hero": 11278,
+        "lod0": 5638,
+        "lod1": 2818,
+        "lod2": 1126
+      },
+      "texture_dimensions": {
+        "albedo": [
+          1024,
+          1024
+        ],
+        "mask0": [
+          1024,
+          1024
+        ],
+        "mask1": [
+          1024,
+          1024
+        ],
+        "emission": [
+          1024,
+          1024
+        ]
+      },
+      "validation": {
+        "structural_errors": [],
+        "metadata_reconciliations": [],
+        "unity_import": "not_reviewed",
+        "animation_and_visual_fit": "not_accepted",
+        "default_assembly": {
+          "parts": [
+            "head",
+            "top",
+            "bottom",
+            "feet"
+          ],
+          "accessories": [],
+          "triangles": {
+            "hero": 11278,
+            "lod0": 5638,
+            "lod1": 2818,
+            "lod2": 1126
+          },
+          "over_budget": {}
+        }
+      },
+      "source_geometry_findings": []
+    },
+    "hero_balaclava": {
+      "id": "hero_balaclava",
+      "label": "Balaclava streetwear",
+      "gender": "m",
+      "source": "Sketchfab CC-BY (row 13)",
+      "licence": "CC BY 4.0",
+      "archetypes": [
+        "cabal_insider",
+        "rug_dev",
+        "perp_degen_npc"
+      ],
+      "tiers": {
+        "hero": {
+          "triangles": 11277,
+          "vertices": 10965,
+          "max_influences": 4
+        },
+        "lod0": {
+          "triangles": 5635,
+          "vertices": 5885,
+          "max_influences": 4
+        },
+        "lod1": {
+          "triangles": 2818,
+          "vertices": 3210,
+          "max_influences": 4
+        },
+        "lod2": {
+          "triangles": 1124,
+          "vertices": 1376,
+          "max_influences": 2
+        }
+      },
+      "files": {
+        "crowd_fbx": "bases/hero_balaclava/hero_balaclava.fbx",
+        "hero_fbx": "bases/hero_balaclava/hero_balaclava_Hero.fbx"
+      },
+      "textures": {
+        "albedo": "bases/hero_balaclava/hero_balaclava_Albedo.png",
+        "mask0": "bases/hero_balaclava/hero_balaclava_TintMask0.png",
+        "mask1": "bases/hero_balaclava/hero_balaclava_TintMask1.png",
+        "emission": "bases/hero_balaclava/hero_balaclava_Emission.png"
+      },
+      "tint_defaults": {
+        "skin": "#9f7268",
+        "hair": "#181419",
+        "top": "#18181c",
+        "bottom": "#1a181f",
+        "shoes": "#c4c1bc",
+        "accent": "#5b0f09"
+      },
+      "parts": {
+        "head": {
+          "fbx": "bases/hero_balaclava/parts/hero_balaclava__head.fbx",
+          "slot": "head",
+          "triangles": {
+            "lod2": 295,
+            "hero": 2964,
+            "lod0": 1481,
+            "lod1": 741
+          },
+          "authoring_triangles": {
+            "hero": 2964,
+            "lod0": 1481,
+            "lod1": 741,
+            "lod2": 295
+          },
+          "asset_sha256": "f48688d05f7834b3866bef744ccd2bf7ceff974d5369ecf19cca8b689ce97e5b"
+        },
+        "top": {
+          "fbx": "bases/hero_balaclava/parts/hero_balaclava__top.fbx",
+          "slot": "top",
+          "triangles": {
+            "lod0": 2371,
+            "lod1": 1185,
+            "hero": 4743,
+            "lod2": 474
+          },
+          "authoring_triangles": {
+            "hero": 4743,
+            "lod0": 2371,
+            "lod1": 1185,
+            "lod2": 474
+          },
+          "asset_sha256": "22297015dedc5e79b679b155c89bcdf191fab48042902126523276a45025f47b"
+        },
+        "bottom": {
+          "fbx": "bases/hero_balaclava/parts/hero_balaclava__bottom.fbx",
+          "slot": "bottom",
+          "triangles": {
+            "lod0": 1449,
+            "hero": 2901,
+            "lod2": 290,
+            "lod1": 725
+          },
+          "authoring_triangles": {
+            "hero": 2901,
+            "lod0": 1449,
+            "lod1": 725,
+            "lod2": 290
+          },
+          "asset_sha256": "646ea0cc2abcca4f689418f2cbee8ee9ec3c8476942b14227e8a025eb194ca05"
+        },
+        "feet": {
+          "fbx": "bases/hero_balaclava/parts/hero_balaclava__feet.fbx",
+          "slot": "feet",
+          "triangles": {
+            "lod0": 334,
+            "lod2": 65,
+            "hero": 669,
+            "lod1": 167
+          },
+          "authoring_triangles": {
+            "hero": 669,
+            "lod0": 334,
+            "lod1": 167,
+            "lod2": 65
+          },
+          "asset_sha256": "8314defe80e199c1f3fbba8ec80d0c74df531db64af56e220fb3ab027d32a501"
+        }
+      },
+      "accessories": {
+        "pixel_face_mask": {
+          "fbx": "bases/hero_balaclava/accessories/hero_balaclava__pixel_face_mask.fbx",
+          "socket": "face",
+          "bone": "Head",
+          "flags": {
+            "occludes_face": true
+          },
+          "triangles": 272,
+          "asset_sha256": "3f10329e96df9d078a099b20f565fc78cb6559187b2681f43bfead37731c447a"
+        },
+        "tv_head": {
+          "fbx": "bases/hero_balaclava/accessories/hero_balaclava__tv_head.fbx",
+          "socket": "head_top",
+          "bone": "Head",
+          "flags": {
+            "replaces_head": true,
+            "hides_hair": true,
+            "occludes_face": true
+          },
+          "triangles": 100,
+          "asset_sha256": "7b7f468832d3b12bd6af1898e48b1ea3f67d9a2e788899b0e5d63816b209b543"
+        },
+        "visor": {
+          "fbx": "bases/hero_balaclava/accessories/hero_balaclava__visor.fbx",
+          "socket": "face",
+          "bone": "Head",
+          "flags": {
+            "double_sided": true
+          },
+          "triangles": 240,
+          "asset_sha256": "7bcfdf1af612fe1de8f447957cf647c101c823355621560eb72a4ab839ede3a8"
+        },
+        "helmet": {
+          "fbx": "bases/hero_balaclava/accessories/hero_balaclava__helmet.fbx",
+          "socket": "head_top",
+          "bone": "Head",
+          "flags": {
+            "hides_hair": true,
+            "occludes_face": true
+          },
+          "triangles": 520,
+          "asset_sha256": "d7b4213f951b7bde996f570c442e65b1913db45fdd0e8e5321e5c93bd2c5b810"
+        },
+        "laser_eyes": {
+          "fbx": "bases/hero_balaclava/accessories/hero_balaclava__laser_eyes.fbx",
+          "socket": "face",
+          "bone": "Head",
+          "flags": {
+            "emissive": true
+          },
+          "triangles": 272,
+          "asset_sha256": "bab71b886c1036d50b3ca77ca0908e5414d3efa3d97952dfd1c64f415b363586"
+        },
+        "chain": {
+          "fbx": "bases/hero_balaclava/accessories/hero_balaclava__chain.fbx",
+          "socket": "neck",
+          "bone": "spine_03",
+          "flags": {},
+          "triangles": 396,
+          "asset_sha256": "7c1874b697efd479a32ab08dd0cdd61fa54b95f34e9d748edafded9d71e76e92"
+        },
+        "headphones": {
+          "fbx": "bases/hero_balaclava/accessories/hero_balaclava__headphones.fbx",
+          "socket": "head_top",
+          "bone": "Head",
+          "flags": {},
+          "triangles": 344,
+          "asset_sha256": "144f42b0cd6d061c987ccc5ef11728bd0995d698b831a55425de8e2f4e7c9d41"
+        },
+        "small_wings": {
+          "fbx": "bases/hero_balaclava/accessories/hero_balaclava__small_wings.fbx",
+          "socket": "back",
+          "bone": "spine_03",
+          "flags": {
+            "double_sided": true
+          },
+          "triangles": 60,
+          "asset_sha256": "0fd7a8cba76e0ffa6c9938988957efc68b3134a9ff5d777ebee9ef1c5cda0d0e"
+        },
+        "shoulder_drone": {
+          "fbx": "bases/hero_balaclava/accessories/hero_balaclava__shoulder_drone.fbx",
+          "socket": "shoulder_r",
+          "bone": "clavicle_r",
+          "flags": {
+            "emissive": true
+          },
+          "triangles": 400,
+          "asset_sha256": "edd3c875548b3b5a3bcf1f82c39c5edff650e5c4b463aa1d47c6f4a8e3cc5b4d"
+        }
+      },
+      "sockets": {
+        "head_top": {
+          "bone": "Head",
+          "humanoid": "Head",
+          "position_character_m": [
+            0.0,
+            -0.0609,
+            1.8
+          ],
+          "offset_in_bone_space_m": [
+            0.0,
+            0.225,
+            -0.0317
+          ]
+        },
+        "face": {
+          "bone": "Head",
+          "humanoid": "Head",
+          "position_character_m": [
+            0.0,
+            -0.1745,
+            1.6983
+          ],
+          "offset_in_bone_space_m": [
+            0.0,
+            0.1233,
+            0.0819
+          ]
+        },
+        "neck": {
+          "bone": "spine_03",
+          "humanoid": "UpperChest",
+          "position_character_m": [
+            0.0,
+            -0.1954,
+            1.483
+          ],
+          "offset_in_bone_space_m": [
+            0.0,
+            0.1144,
+            0.1133
+          ]
+        },
+        "back": {
+          "bone": "spine_03",
+          "humanoid": "UpperChest",
+          "position_character_m": [
+            0.0,
+            0.1158,
+            1.323
+          ],
+          "offset_in_bone_space_m": [
+            0.0,
+            0.1809,
+            -0.2302
+          ]
+        },
+        "shoulder_l": {
+          "bone": "clavicle_l",
+          "humanoid": "LeftShoulder",
+          "position_character_m": [
+            0.1855,
+            -0.1348,
+            1.509
+          ],
+          "offset_in_bone_space_m": [
+            -0.0071,
+            0.1706,
+            0.0587
+          ]
+        },
+        "shoulder_r": {
+          "bone": "clavicle_r",
+          "humanoid": "RightShoulder",
+          "position_character_m": [
+            -0.1865,
+            -0.1356,
+            1.509
+          ],
+          "offset_in_bone_space_m": [
+            0.0071,
+            0.1712,
+            0.0587
+          ]
+        },
+        "hand_l": {
+          "bone": "hand_l",
+          "humanoid": "LeftHand",
+          "position_character_m": [
+            0.3083,
+            -0.0431,
+            0.8417
+          ],
+          "offset_in_bone_space_m": [
+            0.0,
+            0.0288,
+            -0.0
+          ]
+        },
+        "hand_r": {
+          "bone": "hand_r",
+          "humanoid": "RightHand",
+          "position_character_m": [
+            -0.259,
+            -0.1045,
+            0.8276
+          ],
+          "offset_in_bone_space_m": [
+            0.0,
+            0.0288,
+            0.0
+          ]
+        }
+      },
+      "measurements": {
+        "head_center": [
+          0.0,
+          -0.0609,
+          1.6983
+        ],
+        "top_z": 1.8,
+        "chin_z": 1.5579,
+        "eye_z": 1.6983,
+        "half_w": 0.0854,
+        "half_d": 0.1136,
+        "front_y": -0.1745,
+        "back_y": 0.0527,
+        "neck_z": 1.503,
+        "neck_y": -0.0355,
+        "chest_front_y": -0.2054,
+        "chest_back_y": 0.1158,
+        "chest_z": 1.323,
+        "chest_half_w": 0.1411,
+        "shoulder_l": [
+          0.1855,
+          -0.1348,
+          1.449
+        ],
+        "shoulder_r": [
+          -0.1865,
+          -0.1356,
+          1.449
+        ],
+        "hand_l": [
+          0.3083,
+          -0.0431,
+          0.8417
+        ],
+        "hand_r": [
+          -0.259,
+          -0.1045,
+          0.8276
+        ]
+      },
+      "height_m": 1.8,
+      "authoring_metadata_sha256": "44407e790e2fa794964b58e6504054080c2e980466b754e0a1389fe5678576f6",
+      "source_metadata_triangles": {
+        "hero": 11277,
+        "lod0": 5635,
+        "lod1": 2818,
+        "lod2": 1124
+      },
+      "texture_dimensions": {
+        "albedo": [
+          1024,
+          1024
+        ],
+        "mask0": [
+          1024,
+          1024
+        ],
+        "mask1": [
+          1024,
+          1024
+        ],
+        "emission": [
+          1024,
+          1024
+        ]
+      },
+      "validation": {
+        "structural_errors": [],
+        "metadata_reconciliations": [],
+        "unity_import": "not_reviewed",
+        "animation_and_visual_fit": "not_accepted",
+        "default_assembly": {
+          "parts": [
+            "head",
+            "top",
+            "bottom",
+            "feet"
+          ],
+          "accessories": [],
+          "triangles": {
+            "hero": 11277,
+            "lod0": 5635,
+            "lod1": 2818,
+            "lod2": 1124
+          },
+          "over_budget": {}
+        }
+      },
+      "source_geometry_findings": []
+    }
+  },
+  "catalogue": {
+    "ubc_m": {
+      "label": "Athletic base (M)",
+      "gender": "m",
+      "archetypes": [
+        "customisation blank"
+      ],
+      "swap_family": "ubc_m",
+      "wire_head_id": null
+    },
+    "ubc_f": {
+      "label": "Athletic base (F)",
+      "gender": "f",
+      "archetypes": [
+        "customisation blank"
+      ],
+      "swap_family": "ubc_f",
+      "wire_head_id": null
+    },
+    "hero_tactical": {
+      "label": "Tactical red visor",
+      "gender": "m",
+      "archetypes": [
+        "sniper_bot",
+        "anon",
+        "cabal_insider"
+      ],
+      "swap_family": "hero_tactical",
+      "wire_head_id": null
+    },
+    "hero_gynoid": {
+      "label": "Gynoid 2000",
+      "gender": "f",
+      "archetypes": [
+        "ai_agent",
+        "sniper_bot"
+      ],
+      "swap_family": "hero_gynoid",
+      "wire_head_id": null
+    },
+    "hero_assassin": {
+      "label": "Gas-mask runner",
+      "gender": "f",
+      "archetypes": [
+        "anon",
+        "sniper_bot",
+        "rug_dev"
+      ],
+      "swap_family": "hero_assassin",
+      "wire_head_id": null
+    },
+    "hero_hazmat": {
+      "label": "Hazmat operator",
+      "gender": "m",
+      "archetypes": [
+        "anon",
+        "cabal_insider",
+        "sniper_bot"
+      ],
+      "swap_family": "hero_hazmat",
+      "wire_head_id": null
+    },
+    "hero_balaclava": {
+      "label": "Balaclava streetwear",
+      "gender": "m",
+      "archetypes": [
+        "cabal_insider",
+        "rug_dev",
+        "perp_degen_npc"
+      ],
+      "swap_family": "hero_balaclava",
+      "wire_head_id": null
+    }
+  },
+  "balance": {
+    "bases": 7,
+    "female": 3,
+    "male": 4
+  },
+  "inventory": {
+    "referenced_files": 153,
+    "fbx_files_on_disk": 119,
+    "preserved_unreferenced_files": [
+      "bases/ubc_f/parts/ubc_f__body.fbx"
+    ],
+    "assets": {
+      "bases/hero_assassin/accessories/hero_assassin__chain.fbx": {
+        "sha256": "8da3b48a55018cc81bb80875ad96a1132054ba5abc6796f01b857abbcf49503b",
+        "bytes": 144396
+      },
+      "bases/hero_assassin/accessories/hero_assassin__headphones.fbx": {
+        "sha256": "f70d532698a1aa884fd8ce145d46bfeb8e5e5e0b613cf010059b1e44dbe5e1ac",
+        "bytes": 143164
+      },
+      "bases/hero_assassin/accessories/hero_assassin__helmet.fbx": {
+        "sha256": "475f3aa038295b69396981cd5fe86556fae1be95ef30dafbfc0e0e20fe93fbba",
+        "bytes": 148060
+      },
+      "bases/hero_assassin/accessories/hero_assassin__laser_eyes.fbx": {
+        "sha256": "248e2d6583ed673a2c3569289dd9a03c90b83614accccd0a58da3539c5458cac",
+        "bytes": 142892
+      },
+      "bases/hero_assassin/accessories/hero_assassin__pixel_face_mask.fbx": {
+        "sha256": "7acf53ed1e462afb3390bc45a871415a2d3cfffbc11bf726622c6b0f1ab60783",
+        "bytes": 142092
+      },
+      "bases/hero_assassin/accessories/hero_assassin__shoulder_drone.fbx": {
+        "sha256": "249a59f001619e1199f449cacf45490aed523f7e5fceede45b9c6ab00dd088fd",
+        "bytes": 144172
+      },
+      "bases/hero_assassin/accessories/hero_assassin__small_wings.fbx": {
+        "sha256": "fdf1e0fd9fd98d22348961b853061917b3812eae258bcfa0a23de80e2e877a5f",
+        "bytes": 139212
+      },
+      "bases/hero_assassin/accessories/hero_assassin__tv_head.fbx": {
+        "sha256": "ba7db09265fe91aa24b6d993016390bd1de3b6b978e4b8f1fb2fe2f6d9cc54cc",
+        "bytes": 139548
+      },
+      "bases/hero_assassin/accessories/hero_assassin__visor.fbx": {
+        "sha256": "4d3e1afd019b7126e6862d35c8a2d7c393d993889af2e15a1753363f25267751",
+        "bytes": 141644
+      },
+      "bases/hero_assassin/hero_assassin.fbx": {
+        "sha256": "ac07f1d364bb4f79a013124b97dd3f246fdc57236210bd41fb16a4324ee0c9e4",
+        "bytes": 790348
+      },
+      "bases/hero_assassin/hero_assassin.json": {
+        "sha256": "c753e7a15a52b871a4fdbf83221da53645773540a5a3d20eff69715f7f73becf",
+        "bytes": 5992
+      },
+      "bases/hero_assassin/hero_assassin_Albedo.png": {
+        "sha256": "bc08590e3e9a2ae66a38663461c92198e1c44d72671da10a53cc2d81a6f29c02",
+        "bytes": 1129816
+      },
+      "bases/hero_assassin/hero_assassin_Emission.png": {
+        "sha256": "c28fa1d9997819dbdba9b73a8b31774fd6cefbbcbdc4991be2bbda45c46495e2",
+        "bytes": 3937
+      },
+      "bases/hero_assassin/hero_assassin_Hero.fbx": {
+        "sha256": "77e0e5d713322b8e099b56a79f0cfd7d476797cc2d88f39b20732e1cb423b1c8",
+        "bytes": 750492
+      },
+      "bases/hero_assassin/hero_assassin_TintMask0.png": {
+        "sha256": "6c1bc4ce7a4b9222a81e4105e8d006ce94ffb1426d7128d832faa6e519d64d46",
+        "bytes": 73658
+      },
+      "bases/hero_assassin/hero_assassin_TintMask1.png": {
+        "sha256": "1634e9185afbe448711a735ac39ecce0aada9717e024a5bed3f262468ea4f19b",
+        "bytes": 10314
+      },
+      "bases/hero_assassin/parts/hero_assassin__bottom.fbx": {
+        "sha256": "0bfcee972577c4f97d41e1331f4b089c74ce4069f572783cb2fc29064128e81e",
+        "bytes": 508428
+      },
+      "bases/hero_assassin/parts/hero_assassin__feet.fbx": {
+        "sha256": "645f6850b823fc150f46172785d25d7426a563b44d78e06ffaf69ee6948ff8ae",
+        "bytes": 385980
+      },
+      "bases/hero_assassin/parts/hero_assassin__head.fbx": {
+        "sha256": "9e83cf66a8da52f500026f13dbc7e9626654ad12b08bbc03be99cf57ecbaac1f",
+        "bytes": 636156
+      },
+      "bases/hero_assassin/parts/hero_assassin__top.fbx": {
+        "sha256": "df608a87d28d80dc01eccec4e75466db1880ef8cb0d8df1915a234d1264b9f80",
+        "bytes": 925452
+      },
+      "bases/hero_balaclava/accessories/hero_balaclava__chain.fbx": {
+        "sha256": "7c1874b697efd479a32ab08dd0cdd61fa54b95f34e9d748edafded9d71e76e92",
+        "bytes": 144108
+      },
+      "bases/hero_balaclava/accessories/hero_balaclava__headphones.fbx": {
+        "sha256": "144f42b0cd6d061c987ccc5ef11728bd0995d698b831a55425de8e2f4e7c9d41",
+        "bytes": 142876
+      },
+      "bases/hero_balaclava/accessories/hero_balaclava__helmet.fbx": {
+        "sha256": "d7b4213f951b7bde996f570c442e65b1913db45fdd0e8e5321e5c93bd2c5b810",
+        "bytes": 147852
+      },
+      "bases/hero_balaclava/accessories/hero_balaclava__laser_eyes.fbx": {
+        "sha256": "bab71b886c1036d50b3ca77ca0908e5414d3efa3d97952dfd1c64f415b363586",
+        "bytes": 142684
+      },
+      "bases/hero_balaclava/accessories/hero_balaclava__pixel_face_mask.fbx": {
+        "sha256": "3f10329e96df9d078a099b20f565fc78cb6559187b2681f43bfead37731c447a",
+        "bytes": 141900
+      },
+      "bases/hero_balaclava/accessories/hero_balaclava__shoulder_drone.fbx": {
+        "sha256": "edd3c875548b3b5a3bcf1f82c39c5edff650e5c4b463aa1d47c6f4a8e3cc5b4d",
+        "bytes": 143852
+      },
+      "bases/hero_balaclava/accessories/hero_balaclava__small_wings.fbx": {
+        "sha256": "0fd7a8cba76e0ffa6c9938988957efc68b3134a9ff5d777ebee9ef1c5cda0d0e",
+        "bytes": 138988
+      },
+      "bases/hero_balaclava/accessories/hero_balaclava__tv_head.fbx": {
+        "sha256": "7b7f468832d3b12bd6af1898e48b1ea3f67d9a2e788899b0e5d63816b209b543",
+        "bytes": 139276
+      },
+      "bases/hero_balaclava/accessories/hero_balaclava__visor.fbx": {
+        "sha256": "7bcfdf1af612fe1de8f447957cf647c101c823355621560eb72a4ab839ede3a8",
+        "bytes": 141404
+      },
+      "bases/hero_balaclava/hero_balaclava.fbx": {
+        "sha256": "19c6b6a8de18edbafc234caac09bdbed2097a170a72225cfc6757a5e6b176db2",
+        "bytes": 983692
+      },
+      "bases/hero_balaclava/hero_balaclava.json": {
+        "sha256": "44407e790e2fa794964b58e6504054080c2e980466b754e0a1389fe5678576f6",
+        "bytes": 6060
+      },
+      "bases/hero_balaclava/hero_balaclava_Albedo.png": {
+        "sha256": "ef0feeeec9dc30fcba45c3f9331406333fcc565f6c7e500511ab7a0577a315ea",
+        "bytes": 1013597
+      },
+      "bases/hero_balaclava/hero_balaclava_Emission.png": {
+        "sha256": "e4ed6250fa58278ba1f1e2864e805089705886dd5ddc27e6cd6eb6646f683936",
+        "bytes": 60979
+      },
+      "bases/hero_balaclava/hero_balaclava_Hero.fbx": {
+        "sha256": "af24b342d93612c886fe259b48a258ce50ca699791e372c34b92d78b1274b8f9",
+        "bytes": 879068
+      },
+      "bases/hero_balaclava/hero_balaclava_TintMask0.png": {
+        "sha256": "40913ab7311eda137ac07ebc41486f5b7d0404715b19b21fee3282ee48baf889",
+        "bytes": 53634
+      },
+      "bases/hero_balaclava/hero_balaclava_TintMask1.png": {
+        "sha256": "05da1e763465b3100781f4de7c5452ecc2f368883d5b50f5f291f55a66ba8876",
+        "bytes": 10114
+      },
+      "bases/hero_balaclava/parts/hero_balaclava__bottom.fbx": {
+        "sha256": "646ea0cc2abcca4f689418f2cbee8ee9ec3c8476942b14227e8a025eb194ca05",
+        "bytes": 695900
+      },
+      "bases/hero_balaclava/parts/hero_balaclava__feet.fbx": {
+        "sha256": "8314defe80e199c1f3fbba8ec80d0c74df531db64af56e220fb3ab027d32a501",
+        "bytes": 420652
+      },
+      "bases/hero_balaclava/parts/hero_balaclava__head.fbx": {
+        "sha256": "f48688d05f7834b3866bef744ccd2bf7ceff974d5369ecf19cca8b689ce97e5b",
+        "bytes": 653948
+      },
+      "bases/hero_balaclava/parts/hero_balaclava__top.fbx": {
+        "sha256": "22297015dedc5e79b679b155c89bcdf191fab48042902126523276a45025f47b",
+        "bytes": 1017468
+      },
+      "bases/hero_gynoid/accessories/hero_gynoid__chain.fbx": {
+        "sha256": "f5bf716b224b0c4b07feb338f94a6d40e3f6e80e3deb38c17610964b37a7c051",
+        "bytes": 144828
+      },
+      "bases/hero_gynoid/accessories/hero_gynoid__headphones.fbx": {
+        "sha256": "5093dc48bb6de574aebf3ff9934665b006d47932bb9a7b5d491d2e92a2a3ae1e",
+        "bytes": 143852
+      },
+      "bases/hero_gynoid/accessories/hero_gynoid__helmet.fbx": {
+        "sha256": "eff5c361cb48ac6e515fd9e28badcb2891755f83465229067f14992ee1539837",
+        "bytes": 148444
+      },
+      "bases/hero_gynoid/accessories/hero_gynoid__laser_eyes.fbx": {
+        "sha256": "826093315c55be0fbf947d91a06556ed0d6dc700d4574d0ef516130bf46df539",
+        "bytes": 143340
+      },
+      "bases/hero_gynoid/accessories/hero_gynoid__pixel_face_mask.fbx": {
+        "sha256": "18999ec1a66ee6cc1b223d8d7b3492924522fcf0c2f246f247e5b8a335b05f1a",
+        "bytes": 142716
+      },
+      "bases/hero_gynoid/accessories/hero_gynoid__shoulder_drone.fbx": {
+        "sha256": "b68d60bdfba6cf511e447526e5d2e21ce61999bbc9cefbc71beee3d2f418a45d",
+        "bytes": 144636
+      },
+      "bases/hero_gynoid/accessories/hero_gynoid__small_wings.fbx": {
+        "sha256": "4b2a74b25ec2b02f849cf12183c49063cd1338372bc1cfacdbba1826d7764932",
+        "bytes": 139660
+      },
+      "bases/hero_gynoid/accessories/hero_gynoid__tv_head.fbx": {
+        "sha256": "509c2a59c65127233f3dbaa1ce2951a07139dcd502cd07d457dad9fcf74f846b",
+        "bytes": 140028
+      },
+      "bases/hero_gynoid/accessories/hero_gynoid__visor.fbx": {
+        "sha256": "3a4660cbde3a33a426f0cc5a4a942517388c78686daa5c5f6b5d8be000304efd",
+        "bytes": 142124
+      },
+      "bases/hero_gynoid/hero_gynoid.fbx": {
+        "sha256": "e6ae61f85aa4358b6c988c2f894292a83546222a25e1655569ed9f277eedbfa0",
+        "bytes": 746844
+      },
+      "bases/hero_gynoid/hero_gynoid.json": {
+        "sha256": "e5f2159a7a6909be9deb5f36c91039ac285554b38d81d6d174e3b709b0233c75",
+        "bytes": 5917
+      },
+      "bases/hero_gynoid/hero_gynoid_Albedo.png": {
+        "sha256": "95eceab7598cf2f4fa126f7522140996d8cd6dc7ce771cfdff64268fcfa8283d",
+        "bytes": 603814
+      },
+      "bases/hero_gynoid/hero_gynoid_Emission.png": {
+        "sha256": "c28fa1d9997819dbdba9b73a8b31774fd6cefbbcbdc4991be2bbda45c46495e2",
+        "bytes": 3937
+      },
+      "bases/hero_gynoid/hero_gynoid_Hero.fbx": {
+        "sha256": "8140ba8f006affa869e0d23866b4607c62b30a400931778c9b37e99583d28b54",
+        "bytes": 652732
+      },
+      "bases/hero_gynoid/hero_gynoid_TintMask0.png": {
+        "sha256": "2e7c31b730e6aadc7844536f402e5f630e5dafe8d542b766bee2fa55374a942e",
+        "bytes": 55632
+      },
+      "bases/hero_gynoid/hero_gynoid_TintMask1.png": {
+        "sha256": "c32a1a1457fcbcad4d853207946662783358fc56b03d7fc3a84b031cae2c47c3",
+        "bytes": 21415
+      },
+      "bases/hero_gynoid/parts/hero_gynoid__bottom.fbx": {
+        "sha256": "657744f65cc1a29c06989b6674e702a4f40640aa188da79bb93fd02efac4c833",
+        "bytes": 563372
+      },
+      "bases/hero_gynoid/parts/hero_gynoid__feet.fbx": {
+        "sha256": "33544451e5536efe9a5bcba60fb3a6cfad2aa3eea1adb0f70b2424d8d937fb09",
+        "bytes": 354444
+      },
+      "bases/hero_gynoid/parts/hero_gynoid__head.fbx": {
+        "sha256": "17583452b8fb16d735db5ed6d3eeaf69acb8d413af4cc7eb207a8996916bd83b",
+        "bytes": 424988
+      },
+      "bases/hero_gynoid/parts/hero_gynoid__top.fbx": {
+        "sha256": "783256aa29ada981d1901cc78f25275ec3e7066d5af3fd733c83aa007d39ef87",
+        "bytes": 977308
+      },
+      "bases/hero_hazmat/accessories/hero_hazmat__chain.fbx": {
+        "sha256": "509d6815b9c86792b574a337616deb879f16b527d8a6425cd9531c1083adff65",
+        "bytes": 143948
+      },
+      "bases/hero_hazmat/accessories/hero_hazmat__headphones.fbx": {
+        "sha256": "e4e0fee76741d1dea30835cd66f843566ab3eb011b719b1903f84ea6b992321d",
+        "bytes": 142812
+      },
+      "bases/hero_hazmat/accessories/hero_hazmat__helmet.fbx": {
+        "sha256": "07e3e230f8df032bb3eec257e77bc5b4cda8f18985b99a268ead08131d56a229",
+        "bytes": 147756
+      },
+      "bases/hero_hazmat/accessories/hero_hazmat__laser_eyes.fbx": {
+        "sha256": "d8d0993cf173ecbcbbaf69a1cf8529c6269495050d7f85e950ef5ee69728f230",
+        "bytes": 142268
+      },
+      "bases/hero_hazmat/accessories/hero_hazmat__pixel_face_mask.fbx": {
+        "sha256": "edb9c38c52347e96e1c985995009758de9a6c384311441f7a6e4ab40865d4c2e",
+        "bytes": 141836
+      },
+      "bases/hero_hazmat/accessories/hero_hazmat__shoulder_drone.fbx": {
+        "sha256": "286f46716296b5aeca2442f8f3b9a7e7418ab86498241845b2230a6e4678a6a3",
+        "bytes": 143692
+      },
+      "bases/hero_hazmat/accessories/hero_hazmat__small_wings.fbx": {
+        "sha256": "4a545ecb45228fbb21617e36c47c16eb5b7be3ece3d94192b0a9e2fcdfb58917",
+        "bytes": 138812
+      },
+      "bases/hero_hazmat/accessories/hero_hazmat__tv_head.fbx": {
+        "sha256": "837d1eeb829417e055f2508447a69f6f9f1312921d7e28c694c815e2e7b4adb4",
+        "bytes": 139100
+      },
+      "bases/hero_hazmat/accessories/hero_hazmat__visor.fbx": {
+        "sha256": "61747d501660adec37810f4b23a656e5f44affafdec070587a606bb2b59f827d",
+        "bytes": 141276
+      },
+      "bases/hero_hazmat/hero_hazmat.fbx": {
+        "sha256": "0d262e2316eef45d710eb37e93dcbcf9bc6d833647c8bf88ef2f38f7973db079",
+        "bytes": 955676
+      },
+      "bases/hero_hazmat/hero_hazmat.json": {
+        "sha256": "59ba05e919622573851d94a2c2e7298e86440732c8096adcdc7307f009d05157",
+        "bytes": 5897
+      },
+      "bases/hero_hazmat/hero_hazmat_Albedo.png": {
+        "sha256": "f49504ab83caa839b0467ea99572c67b739f345ab5578e95d4f6c57449731784",
+        "bytes": 1434821
+      },
+      "bases/hero_hazmat/hero_hazmat_Emission.png": {
+        "sha256": "c28fa1d9997819dbdba9b73a8b31774fd6cefbbcbdc4991be2bbda45c46495e2",
+        "bytes": 3937
+      },
+      "bases/hero_hazmat/hero_hazmat_Hero.fbx": {
+        "sha256": "9ff9785121a1665f00a8b8eda018953847b16cda17922284e99915b7b805f547",
+        "bytes": 801068
+      },
+      "bases/hero_hazmat/hero_hazmat_TintMask0.png": {
+        "sha256": "de4f26fa842bb91a837139cf3d13309359c01a99849cd607923590106cf81870",
+        "bytes": 71637
+      },
+      "bases/hero_hazmat/hero_hazmat_TintMask1.png": {
+        "sha256": "d7c19dde5b30eb1bd5ea5e17c1e49053ac33beb05623ddfd04e6e3900048edfb",
+        "bytes": 10485
+      },
+      "bases/hero_hazmat/parts/hero_hazmat__bottom.fbx": {
+        "sha256": "4066aa79e4f25b984a8d99fe90a45b159840da89dc989602f55580da733093f8",
+        "bytes": 799564
+      },
+      "bases/hero_hazmat/parts/hero_hazmat__feet.fbx": {
+        "sha256": "c6e550111e62ea0d5a32770b46d6fe13052ac641b10154941723daae9b9f38e8",
+        "bytes": 385660
+      },
+      "bases/hero_hazmat/parts/hero_hazmat__head.fbx": {
+        "sha256": "4a39c3d990c5a45602a2ce66fd547b10030c8ec0039c84981230a9c130528e7a",
+        "bytes": 434396
+      },
+      "bases/hero_hazmat/parts/hero_hazmat__top.fbx": {
+        "sha256": "770dbf9d50df04e9bf7647bd8bff60c89e01f4492f5d8e1c9186c7a8344a5a7e",
+        "bytes": 1063244
+      },
+      "bases/hero_tactical/accessories/hero_tactical__chain.fbx": {
+        "sha256": "5c72ca6d9c6e40843d50cfdda500679080aed088a1dd5292269b9c35648faa6c",
+        "bytes": 144124
+      },
+      "bases/hero_tactical/accessories/hero_tactical__headphones.fbx": {
+        "sha256": "63d4874d88d4698402d8b721fb13bb61b5a5f9cfe0a09488ba8bd03ba11201ff",
+        "bytes": 143212
+      },
+      "bases/hero_tactical/accessories/hero_tactical__helmet.fbx": {
+        "sha256": "4ff11efce957972768cfb98e4f1737807292c40f085d3005685c231dc4d5ac28",
+        "bytes": 147644
+      },
+      "bases/hero_tactical/accessories/hero_tactical__laser_eyes.fbx": {
+        "sha256": "d9962b0e6707dc6c12587ce29140d462908df065352d8d49fe93c2396ea0551c",
+        "bytes": 142748
+      },
+      "bases/hero_tactical/accessories/hero_tactical__pixel_face_mask.fbx": {
+        "sha256": "0729d129b1f08aa091e98207515a0a1aea5853905fe412f91959876cda7596f7",
+        "bytes": 142076
+      },
+      "bases/hero_tactical/accessories/hero_tactical__shoulder_drone.fbx": {
+        "sha256": "98bb46f8312aaf7ef19dfdb9170eb09365bf3460e5790ae1f78ab1ed88569699",
+        "bytes": 143900
+      },
+      "bases/hero_tactical/accessories/hero_tactical__small_wings.fbx": {
+        "sha256": "41d5b2756413412867d4d06f406e736435397995ea91136275ce24b0b5d6344b",
+        "bytes": 138988
+      },
+      "bases/hero_tactical/accessories/hero_tactical__tv_head.fbx": {
+        "sha256": "83988d099cb4c520ae194d5fc37d6a3e18843f18331f5511c8b9cd85c9522d45",
+        "bytes": 139356
+      },
+      "bases/hero_tactical/accessories/hero_tactical__visor.fbx": {
+        "sha256": "4bf24664aeff9fde930a0523c40f59657a689c449b71fd6213affd308d76fda0",
+        "bytes": 141484
+      },
+      "bases/hero_tactical/hero_tactical.fbx": {
+        "sha256": "99766051ee6d26349ecb921c293900a990eff56d1e19a120cc1dcf2c8b4f3d1b",
+        "bytes": 905996
+      },
+      "bases/hero_tactical/hero_tactical.json": {
+        "sha256": "ac3dc41c7d3544c9e9e14db85dd4250360631886a4a941d34b70026febe57d3f",
+        "bytes": 6031
+      },
+      "bases/hero_tactical/hero_tactical_Albedo.png": {
+        "sha256": "10a27f8a52677b9eb27223c0eedf98b8086a77676a00c2c9f640f6d235d0cf46",
+        "bytes": 400813
+      },
+      "bases/hero_tactical/hero_tactical_Emission.png": {
+        "sha256": "c28fa1d9997819dbdba9b73a8b31774fd6cefbbcbdc4991be2bbda45c46495e2",
+        "bytes": 3937
+      },
+      "bases/hero_tactical/hero_tactical_Hero.fbx": {
+        "sha256": "e507faffb82c9ffcdcc05f576237a4c8ca82d200ffb3076a0ad304998a30f99c",
+        "bytes": 758700
+      },
+      "bases/hero_tactical/hero_tactical_TintMask0.png": {
+        "sha256": "43784dd250aaa6808106073367abe58161f7a0d559607a30ddd5a220a591d58f",
+        "bytes": 67576
+      },
+      "bases/hero_tactical/hero_tactical_TintMask1.png": {
+        "sha256": "2b503314593c1a60635bc32ba6dc47f573edd23bad42000802b7f435205bdd3c",
+        "bytes": 28410
+      },
+      "bases/hero_tactical/parts/hero_tactical__bottom.fbx": {
+        "sha256": "cd5da3e8d8cfa0d4c276ba8712472f8218b301c2b92648e00193f9596b5afa35",
+        "bytes": 500124
+      },
+      "bases/hero_tactical/parts/hero_tactical__feet.fbx": {
+        "sha256": "002cdfaaf172db0cd2b6b1d029e979cd68b45474fdd939bf0a5fe0f3c58ee8a8",
+        "bytes": 418252
+      },
+      "bases/hero_tactical/parts/hero_tactical__head.fbx": {
+        "sha256": "e8a31f629c346cb983bce2bc0cb7329901389c2076e0d1f8e18ee26a73c055e6",
+        "bytes": 875228
+      },
+      "bases/hero_tactical/parts/hero_tactical__top.fbx": {
+        "sha256": "da7bc489ade0ced5159458c0e8056ef50cebdb2b3d94b6af4deb8911e3d2c5f0",
+        "bytes": 795532
+      },
+      "bases/ubc_f/accessories/ubc_f__chain.fbx": {
+        "sha256": "e87964cf64a0b22db02afe12ee04ae14dcc324774feed33e136cc577843a2652",
+        "bytes": 143868
+      },
+      "bases/ubc_f/accessories/ubc_f__headphones.fbx": {
+        "sha256": "a67c230d368d3fd790fe2c840b96b09b49dab490d87deb6e6e4e210a6dc5d010",
+        "bytes": 142620
+      },
+      "bases/ubc_f/accessories/ubc_f__helmet.fbx": {
+        "sha256": "66e364c82fc31cac4cad40fc092c39c80d34764473523b0b17ece74d8c9b53d1",
+        "bytes": 147500
+      },
+      "bases/ubc_f/accessories/ubc_f__laser_eyes.fbx": {
+        "sha256": "9fc7e5936fe6437a6a24fae32004df93ddca444aa771c10933c5ec5838ace505",
+        "bytes": 142396
+      },
+      "bases/ubc_f/accessories/ubc_f__pixel_face_mask.fbx": {
+        "sha256": "e8d19f3224eefba317d32afa25dc4e75ec788a715783f58eb30b364754a9257a",
+        "bytes": 141548
+      },
+      "bases/ubc_f/accessories/ubc_f__shoulder_drone.fbx": {
+        "sha256": "1348062f9a1ff1fbcf99af215ab4aabb22b598b5655715c4daeaf4166b8aa261",
+        "bytes": 143548
+      },
+      "bases/ubc_f/accessories/ubc_f__small_wings.fbx": {
+        "sha256": "6598b44dd54af46c4d12bc6acbdeca61997fe86650cae8c4784150bff360b555",
+        "bytes": 138700
+      },
+      "bases/ubc_f/accessories/ubc_f__tv_head.fbx": {
+        "sha256": "7ecff199a9c22dbabbbacb208355a93b375aa53e2fe39e70bcd7a82b5814b857",
+        "bytes": 138988
+      },
+      "bases/ubc_f/accessories/ubc_f__visor.fbx": {
+        "sha256": "602454d4488b97ce48dba02375783748690200e43472aed68cb58a7abdbdc57c",
+        "bytes": 141084
+      },
+      "bases/ubc_f/parts/ubc_f__bottom.fbx": {
+        "sha256": "22f420cdfe7bfb4aa631a6d4ff6bd9e1352c30552254e852ea3403180745f0c0",
+        "bytes": 486604
+      },
+      "bases/ubc_f/parts/ubc_f__brows.fbx": {
+        "sha256": "a2cf95c7f3a613a989d6aaf5f6bc1176bbc980c766cddd5d52539f56d95faba1",
+        "bytes": 404300
+      },
+      "bases/ubc_f/parts/ubc_f__eyes.fbx": {
+        "sha256": "1f1081b5cc01b7826296e419d9181945f158772007dc0e57b01b7ec10b1d8d98",
+        "bytes": 377468
+      },
+      "bases/ubc_f/parts/ubc_f__feet.fbx": {
+        "sha256": "ab252e50b1d0248eb4683141ab489c50dee6036b3199363dcca9b0fbe767d335",
+        "bytes": 414540
+      },
+      "bases/ubc_f/parts/ubc_f__hair.fbx": {
+        "sha256": "8c4640bacc58c9f7f94e48bad67f88791cf18bdf302c6c91176a8088d556faa4",
+        "bytes": 526428
+      },
+      "bases/ubc_f/parts/ubc_f__hair_Hair_Buns.fbx": {
+        "sha256": "ce824b2759f32a5d2f399f028cd02ad8ccaacffb8fd21c0781e3d1f3e6c07f14",
+        "bytes": 530268
+      },
+      "bases/ubc_f/parts/ubc_f__hair_Hair_BuzzedFemale.fbx": {
+        "sha256": "b34c9a0dd6b14b46fc186ab473439796ab95842180fbdc5e21f7963efa3ef6d9",
+        "bytes": 409020
+      },
+      "bases/ubc_f/parts/ubc_f__hair_Hair_SimpleParted.fbx": {
+        "sha256": "51676206a0818dead9abd7fd6d2e735807cd8d7e4e68ef0e72cd989030a6a64c",
+        "bytes": 442844
+      },
+      "bases/ubc_f/parts/ubc_f__head.fbx": {
+        "sha256": "2329b8a81f4ab2cd9cef81b4ca9e80812a8de63561e82be1bc5c284b524e4002",
+        "bytes": 485948
+      },
+      "bases/ubc_f/parts/ubc_f__top.fbx": {
+        "sha256": "9c17d54e751c50ceec45b692cad84affe6370a6f43f66df942b491a353940c58",
+        "bytes": 726668
+      },
+      "bases/ubc_f/ubc_f.fbx": {
+        "sha256": "6576302e921fbdc43053cef68b689c75f707d58b65a6b52f7d4d5a5cc694618f",
+        "bytes": 810604
+      },
+      "bases/ubc_f/ubc_f.json": {
+        "sha256": "f5daf924a914b7f619e4784727aa15878d7d0c3efaeff1db9014a3e46bc8eb74",
+        "bytes": 7849
+      },
+      "bases/ubc_f/ubc_f_Albedo.png": {
+        "sha256": "fa74eef8f54cba8c166fe8381d260ffca9262d2c4e749ac4d67989fdc99ad3c4",
+        "bytes": 929077
+      },
+      "bases/ubc_f/ubc_f_Emission.png": {
+        "sha256": "c28fa1d9997819dbdba9b73a8b31774fd6cefbbcbdc4991be2bbda45c46495e2",
+        "bytes": 3937
+      },
+      "bases/ubc_f/ubc_f_Hero.fbx": {
+        "sha256": "a828403e64e8cf4cc0cc4921103a2c4f194ea0db2d5c899652529f03c9e87f33",
+        "bytes": 661756
+      },
+      "bases/ubc_f/ubc_f_TintMask0.png": {
+        "sha256": "369d8acaa74fbfea535845e659c7f5c4e7c7289d73b897c58ec1b9457332af2f",
+        "bytes": 32030
+      },
+      "bases/ubc_f/ubc_f_TintMask1.png": {
+        "sha256": "d9137c0cf6b12e211581ac6f561e674d60256844c08b1394004d7bee8e53e8b3",
+        "bytes": 7598
+      },
+      "bases/ubc_m/accessories/ubc_m__chain.fbx": {
+        "sha256": "da03ed657e8ad8b149973570fe70262386eb2b0b76e03f041167ed659fd09f18",
+        "bytes": 144284
+      },
+      "bases/ubc_m/accessories/ubc_m__headphones.fbx": {
+        "sha256": "36456739286de3eccc5339022f169dc5b316aa958bcc9177877e6895fad14d55",
+        "bytes": 143244
+      },
+      "bases/ubc_m/accessories/ubc_m__helmet.fbx": {
+        "sha256": "7bd4781e6421c41e1b0cd09464b93c000a787ea54cebe054a5d137937af24646",
+        "bytes": 148092
+      },
+      "bases/ubc_m/accessories/ubc_m__laser_eyes.fbx": {
+        "sha256": "4c1d25004b1f36ae4e47d78ff68a891784550f6cf6bfdc81c265c2b0d5778ea3",
+        "bytes": 142988
+      },
+      "bases/ubc_m/accessories/ubc_m__pixel_face_mask.fbx": {
+        "sha256": "707a702c84011483987be702ce26bf9d8dda30b4ab9efda2fc58a07d5cff074a",
+        "bytes": 142252
+      },
+      "bases/ubc_m/accessories/ubc_m__shoulder_drone.fbx": {
+        "sha256": "c4c94454df40993e11ebcabb409f4a8354a9e5cfa20772c4c51cf0e73017b4e4",
+        "bytes": 144156
+      },
+      "bases/ubc_m/accessories/ubc_m__small_wings.fbx": {
+        "sha256": "53b645a378ef0484f64d8f5f7e10fb8a0b0553c30d66718417ccdd22f8b27a49",
+        "bytes": 139260
+      },
+      "bases/ubc_m/accessories/ubc_m__tv_head.fbx": {
+        "sha256": "a434f70dc12941f58ce25e7abbefa2847dbf71272dccf7d2db0570bc7907d550",
+        "bytes": 139596
+      },
+      "bases/ubc_m/accessories/ubc_m__visor.fbx": {
+        "sha256": "c3e43d2cfa21576650690580422244ad9f334f032dab1c7843e074dbd2ac2e62",
+        "bytes": 141660
+      },
+      "bases/ubc_m/parts/ubc_m__bottom.fbx": {
+        "sha256": "e5dc7a2930250601a0dab7f98f1d15f2684937b526ced838ce03b30834db1e5e",
+        "bytes": 483516
+      },
+      "bases/ubc_m/parts/ubc_m__brows.fbx": {
+        "sha256": "46c5b69d3b569e3afe90529cf21ee028f1d5dfb05bddfd80b0a253c7f9c13cc8",
+        "bytes": 380156
+      },
+      "bases/ubc_m/parts/ubc_m__eyes.fbx": {
+        "sha256": "fa564ce0303051a4bee21da693bb53763551c8a21d0d4a2054b9751ac7628a12",
+        "bytes": 377324
+      },
+      "bases/ubc_m/parts/ubc_m__facial_Hair_Beard.fbx": {
+        "sha256": "427e9bd719c640fe1724bb8315e933de31bf83672fd79253375326db592e88bf",
+        "bytes": 374252
+      },
+      "bases/ubc_m/parts/ubc_m__feet.fbx": {
+        "sha256": "9351c40d0f1b2277082352c26cd15169d1d6bf1ec4bd12f57b841eeeb0ac7368",
+        "bytes": 420220
+      },
+      "bases/ubc_m/parts/ubc_m__hair.fbx": {
+        "sha256": "392d47267ca65da2e1deb2af30ed3e6c3b4097b197676d32264e67a608b00c87",
+        "bytes": 441548
+      },
+      "bases/ubc_m/parts/ubc_m__hair_Hair_Buns.fbx": {
+        "sha256": "1e270a7cc3b267a6f1c1ff60a64bbb78217e760c501f9f975d93220e8efdd8fb",
+        "bytes": 529628
+      },
+      "bases/ubc_m/parts/ubc_m__hair_Hair_Buzzed.fbx": {
+        "sha256": "c7f392acc7d99583968f058aff873858e6b0d0eb3620661357568f4bfeb6095a",
+        "bytes": 413804
+      },
+      "bases/ubc_m/parts/ubc_m__hair_Hair_Long.fbx": {
+        "sha256": "30030c7a691bc0660983bb812225ec4c225e43732caca765dcb74fef932e9364",
+        "bytes": 525196
+      },
+      "bases/ubc_m/parts/ubc_m__head.fbx": {
+        "sha256": "393d73e4b1c7905c8766c8bd8828ac8bd5f106028e61bfd6a5002478c37440e2",
+        "bytes": 475932
+      },
+      "bases/ubc_m/parts/ubc_m__top.fbx": {
+        "sha256": "53652fbbe43db2f6f52479041ab3bc565413dbe4d38b3207d4acce889b0b7587",
+        "bytes": 713980
+      },
+      "bases/ubc_m/ubc_m.fbx": {
+        "sha256": "f23386be2644942ab7f4080dbeb3a3c0e91efd3eaac6c30a2681350c04ff7340",
+        "bytes": 754780
+      },
+      "bases/ubc_m/ubc_m.json": {
+        "sha256": "19f446b3b09b3e25acfeefc9ce04bc8624434ee27c3b40ed7c5771462f3fe334",
+        "bytes": 8191
+      },
+      "bases/ubc_m/ubc_m_Albedo.png": {
+        "sha256": "8d59a6ee6d29c0e5614a7d1f4023afc4f9946039fcf0a1f66912d8c284308e24",
+        "bytes": 899479
+      },
+      "bases/ubc_m/ubc_m_Emission.png": {
+        "sha256": "c28fa1d9997819dbdba9b73a8b31774fd6cefbbcbdc4991be2bbda45c46495e2",
+        "bytes": 3937
+      },
+      "bases/ubc_m/ubc_m_Hero.fbx": {
+        "sha256": "aae78b7046a188e77d03f67faae6df2c9a672eff54e02c2e7efb3a9d10e8917e",
+        "bytes": 594828
+      },
+      "bases/ubc_m/ubc_m_TintMask0.png": {
+        "sha256": "c598f7d1edbe685cb92c961861284c7302ef90c54bb895dff71d808ed1b6178f",
+        "bytes": 31528
+      },
+      "bases/ubc_m/ubc_m_TintMask1.png": {
+        "sha256": "5d537ffe74e3b3cdf974fc928f0c632d853f88a2c8641e45e0435fa56ec1181f",
+        "bytes": 7566
+      }
+    }
+  },
+  "provenance": "../provenance/README.md"
+}
