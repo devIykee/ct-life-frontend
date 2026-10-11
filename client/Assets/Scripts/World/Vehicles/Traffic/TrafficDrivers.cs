@@ -14,7 +14,7 @@ namespace CTLife.World.Vehicles
     public sealed class TrafficDrivers : IDisposable
     {
         public const int Max = 5;
-        public const float AttachWithin = 42f, DetachBeyond = 58f;
+        public const float AttachWithin = 55f, DetachBeyond = 70f;
 
         private readonly TrafficSystem _sys;
         private readonly List<AvatarView> _free = new List<AvatarView>();
@@ -28,6 +28,9 @@ namespace CTLife.World.Vehicles
         public TrafficDrivers(TrafficSystem sys) { _sys = sys; }
 
         public int Seated => _seated.Count;
+        /// <summary>From the last scan: cars within <see cref="AttachWithin"/> and in view, and how many of those have no driver seat.</summary>
+        public int NearInView { get; private set; }
+        public int NearWithoutSeat { get; private set; }
 
         private string NextArchetype()
         {
@@ -78,15 +81,20 @@ namespace CTLife.World.Vehicles
             foreach (var c in _detach) Detach(c);
             // onto the nearest seen cars without one
             TrafficCar best = null; float bestD = AttachWithin * AttachWithin;
+            int near = 0, noSeat = 0;
             foreach (var c in cars)
             {
-                if (c == null || _seated.ContainsKey(c) || c.Vehicle == null || c.Vehicle.Seat == null) continue;
+                if (c == null) continue;
                 float d = (c.transform.position - eye).sqrMagnitude;
-                if (d >= bestD) continue;
+                if (d >= AttachWithin * AttachWithin) continue;
                 var vp = cam.WorldToViewportPoint(c.transform.position);
                 if (vp.z < 0f || vp.x < -0.2f || vp.x > 1.2f || vp.y < -0.2f || vp.y > 1.2f) continue;
+                near++;
+                if (c.Vehicle == null || c.Vehicle.Seat == null) { noSeat++; continue; }
+                if (_seated.ContainsKey(c) || d >= bestD) continue;
                 best = c; bestD = d;
             }
+            NearInView = near; NearWithoutSeat = noSeat;
             if (best == null) return;
             AvatarView view = null;
             if (_free.Count > 0) { view = _free[_free.Count - 1]; _free.RemoveAt(_free.Count - 1); }
