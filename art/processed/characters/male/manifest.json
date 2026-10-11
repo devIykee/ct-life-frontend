@@ -1170,12 +1170,12 @@
   "tris_per_region": {
    "head": [
     944,
-    399,
-    194
+    405,
+    199
    ],
    "neck": [
     92,
-    51,
+    49,
     28
    ],
    "chest": [
@@ -1186,11 +1186,11 @@
    "belly": [
     92,
     50,
-    36
+    34
    ],
    "hips": [
     64,
-    58,
+    56,
     37
    ],
    "shoulder_l": [
@@ -1226,7 +1226,7 @@
    "calf_l": [
     48,
     41,
-    27
+    25
    ],
    "foot_l": [
     84,
@@ -1276,10 +1276,10 @@
   },
   "tris_total": [
    2510,
-   1567,
-   877
+   1569,
+   878
   ],
-  "eyes_tris": 172,
+  "eyes_tris": 540,
   "skin_textures": {
    "tone1": "textures/skin_tone1.png",
    "tone2": "textures/skin_tone2.png",
@@ -1293,8 +1293,44 @@
    "darkbrown": "textures/eyes_darkbrown.png",
    "blue": "textures/eyes_blue.png",
    "green": "textures/eyes_green.png",
-   "grey": "textures/eyes_grey.png"
+   "grey": "textures/eyes_grey.png",
+   "hazel": "textures/eyes_hazel.png"
+  },
+  "blend_shapes": {
+   "meshes": [
+    "body_head_LOD0",
+    "body_head_LOD1",
+    "eyes_LOD0 (blink only)",
+    "eyes_LOD1 (blink only)"
+   ],
+   "names": [
+    "blink",
+    "blink_l",
+    "blink_r",
+    "jaw_open",
+    "viseme_A",
+    "viseme_E",
+    "viseme_I",
+    "viseme_O",
+    "viseme_U",
+    "mouth_smile",
+    "mouth_frown"
+   ],
+   "note": "blink/blink_l/blink_r = eyelids; jaw_open + viseme_A/E/I/O/U for lip-sync (uLipSync), mouth_smile/mouth_frown for mood. The jaw bone can drive mouth opening too."
   },
   "source": "MPFB 2.0.17 / MakeHuman system assets (CC0): proxy male1591/male1591.proxy"
- }
+ },
+ "face_shapes": [
+  "blink",
+  "blink_l",
+  "blink_r",
+  "jaw_open",
+  "viseme_A",
+  "viseme_E",
+  "viseme_I",
+  "viseme_O",
+  "viseme_U",
+  "mouth_smile",
+  "mouth_frown"
+ ]
 }

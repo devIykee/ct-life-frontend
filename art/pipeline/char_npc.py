@@ -9,6 +9,7 @@ import numpy as np
 sys.path.insert(0, os.path.dirname(__file__))
 import ctl_config as C
 import ctl_tex as T
+import ctl_face as CF
 from ctl_mesh import dup, decimate, clean_weights, ensure_skinned, export_fbx, tris, select_only
 
 ONLY = sys.argv[sys.argv.index('--') + 1].split(',') if '--' in sys.argv and len(sys.argv) > sys.argv.index('--') + 1 else None
@@ -54,7 +55,7 @@ def build(name, spec):
         hides.update(man['parts'][p]['hides_regions'])
     # texture tiles
     tex = {'skin': (os.path.join(base, man['body']['skin_textures'][skin]), 512),
-           'eyes': (os.path.join(base, man['body']['eye_textures'][eyes]), 128)}
+           'eyes': (os.path.join(base, man['body']['eye_textures'][eyes]), 256)}
     for p, v in parts.items():
         info = man['parts'][p]
         tex[p] = (os.path.join(base, info['textures'].get(v) or info['textures'][info['default']]), info['tile'])
@@ -104,7 +105,9 @@ def build(name, spec):
     bmesh.ops.delete(bm, geom=[v for v in bm.verts if not v.link_faces], context='VERTS')
     bm.to_mesh(b.data); bm.free()
     srcs.append(('skin', b, 'body'))
-    srcs.append(('eyes', dup(bpy.data.objects['CTL_Eyes'], 'npc_eyes'), 'eyes'))
+    FL = CF.landmarks(rig, bpy.data.objects['CTL_Eyes'], body)
+    eyes_obj, lash_idx = CF.eyes_with_lashes(bpy.data.objects['CTL_Eyes'], bpy.data.objects['CTL_Lashes'], body, 'npc_eyes')
+    srcs.append(('eyes', eyes_obj, 'eyes'))
     for p in parts:
         srcs.append((p, dup(bpy.data.objects['part.' + p], 'npc_' + p), man['parts'][p]['slot']))
     # remap UVs into the atlas (FBX/Blender UV origin = bottom-left; numpy row 0 = top)
@@ -148,6 +151,26 @@ def build(name, spec):
             ensure_skinned(d, rig)
             d.data.materials.clear()
             lods[i].append(d)
+    # crowd budget: shrink the clothing/hair/accessories of LOD0 until the whole NPC fits NPC_LOD0_CAP
+    for _ in range(3):
+        total = sum(tris(d) for d in lods[0])
+        if total <= C.NPC_LOD0_CAP:
+            break
+        fixed = sum(tris(d) for (k, o, slot), d in zip(srcs, lods[0]) if slot in ('body', 'eyes'))
+        var = [d for (k, o, slot), d in zip(srcs, lods[0]) if slot not in ('body', 'eyes')]
+        factor = max(0.3, (C.NPC_LOD0_CAP - fixed) / max(1, sum(tris(d) for d in var)) * 0.98)
+        for d in var:
+            decimate(d, target_tris=max(40, int(tris(d) * factor)))
+            clean_weights(d, 4)
+    # blend shapes: blink + lip-sync on the body, blink on the lashes (LOD0 and LOD1)
+    shape_names = []
+    for i in (0, 1):
+        for (k, o, slot), d in zip(srcs, lods[i]):
+            if slot == 'body':
+                got = CF.add_face_shapes(d, FL, mouth=True)
+                shape_names = shape_names or got
+            elif slot == 'eyes':
+                CF.add_blink_only(d, FL, lash_idx)
     mat = bpy.data.materials.new(f'M_npc_{name}')
     mat.use_nodes = True
     png = os.path.join(OUT, f'{name}.png')
@@ -168,7 +191,7 @@ def build(name, spec):
     fbx = os.path.join(OUT, f'{name}.fbx')
     export_fbx(fbx, finals, rig)
     info = {'fbx': f'{name}.fbx', 'atlas': f'{name}.png', 'sex': sex, 'tris': [tris(f) for f in finals],
-            'parts': parts, 'skin': skin, 'eyes': eyes, 'hidden_regions': sorted(hides),
+            'parts': parts, 'skin': skin, 'eyes': eyes, 'hidden_regions': sorted(hides), 'blend_shapes': shape_names,
             'emissive': any((p, None) in C.EMISSIVE or (p, v) in C.EMISSIVE for p, v in parts.items()),
             'atlas_layout': {k: list(v) for k, v in layout.items()}}
     log(name, info['tris'])

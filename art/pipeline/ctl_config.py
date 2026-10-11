@@ -71,6 +71,17 @@ STYLE_TARGETS = (
     + [{"target": f"{s}-eye-scale-incr", "value": 1.0} for s in 'lr']
     + [{"target": t, "value": 0.5} for t in ('nose-scale-horiz-decr', 'nose-scale-vert-decr', 'nose-scale-depth-decr')]
     + [{"target": "mouth-scale-horiz-decr", "value": 0.25}]
+    # face pass (Sims 4 look): open friendly eyes, fuller lips, slight smile, softer jaw and cheeks
+    + [{"target": f"{s}-eye-height2-incr", "value": 0.35} for s in 'lr']
+    + [{"target": f"{s}-eye-bag-decr", "value": 0.7} for s in 'lr']
+    + [{"target": f"{s}-eye-corner1-up", "value": 0.2} for s in 'lr']
+    + [{"target": t, "value": v} for t, v in (('mouth-upperlip-volume-incr', 0.6), ('mouth-lowerlip-volume-incr', 0.65),
+                                               ('mouth-upperlip-height-incr', 0.25), ('mouth-lowerlip-height-incr', 0.2),
+                                               ('mouth-angles-up', 0.55), ('mouth-cupidsbow-incr', 0.3),
+                                               ('chin-prominent-decr', 0.35), ('chin-width-decr', 0.15),
+                                               ('nose-point-width-decr', 0.3))]
+    + [{"target": f"{s}-cheek-volume-incr", "value": 0.35} for s in 'lr']
+    + [{"target": f"{s}-cheek-bones-decr", "value": 0.3} for s in 'lr']
 )
 BODIES = {
     'male': dict(
@@ -91,14 +102,14 @@ BODIES = {
 
 # Six skin tones (sRGB hex). Warm, saturated, Sims-like.
 SKIN_TONES = {
-    'tone1': 'EEC7AB',
-    'tone2': 'E8BA9A',
-    'tone3': 'CF9A74',
-    'tone4': 'AD744E',
-    'tone5': '7E4C30',
+    'tone1': 'F0C6A6',
+    'tone2': 'E3AD87',
+    'tone3': 'CB9068',
+    'tone4': 'A86C46',
+    'tone5': '7C482D',
     'tone6': '52301F',
 }
-EYE_COLORS = {'brown': 'brown', 'darkbrown': 'brownlight', 'blue': 'blue', 'green': 'green', 'grey': 'lightblue'}
+EYE_COLORS = {'brown': 'brown', 'darkbrown': 'brownlight', 'blue': 'blue', 'green': 'green', 'grey': 'lightblue', 'hazel': 'brown'}  # stylised repaint in ctl_face
 
 # ---------------------------------------------------------------- MPFB (MakeHuman) CC0 parts
 # key -> (mpfb asset path, slot, covers, game id, tile size)
@@ -208,6 +219,7 @@ PROC_VARIANTS = {
 EMISSIVE = {('ring_light', None), ('shades', 'laser'), ('ore_backpack', None), ('phone', None)}
 # NPC presets are crowd characters: their LOD0 part budgets are scaled down (player avatars keep the full LOD0)
 NPC_LOD_SCALE = (0.75, 0.9, 1.0)
+NPC_LOD0_CAP = 5900          # crowd budget: whole NPC LOD0 <= ~6k tris
 # LOD triangle budgets per slot: (LOD0, LOD1, LOD2). LOD0 keeps the source if it is already lighter.
 LOD_BUDGET = {
     'body': (0.8, 0.5, 0.28),           # ratios for the body (LOD0: only hands/feet are reduced)

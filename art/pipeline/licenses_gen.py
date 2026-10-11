@@ -105,6 +105,18 @@ for a in ph:
         authors = ', '.join(a.get('authors', {}).keys())
         rows.append(f"| Poly Haven texture `{a['name']}` (1k diffuse only) | {a['page']} | CC0 | {authors} | {DATE} | {ph_used[a['id']]} |")
 own = sorted(i for i in env_man if EC.ITEMS and any(it['id'] == i and it['src'].startswith('ctlife_custom') for it in EC.ITEMS))
+# every other downloaded pack (brief: every downloaded file gets a row)
+for pk, p in sorted(packs.items()):
+    if pk in used_by_pack:
+        continue
+    note = 'downloaded, not used'
+    if 'polypizza' in pk:
+        note = 'downloaded, NOT used: [Unverified] licence is only the uploader declaration on an aggregator'
+    rows.append(f"| {p['name']} | {p['source_page']} | {p['licence']} | {p['author']} | {p['date_downloaded']} | {note} |")
+for z in sorted(os.listdir(os.path.join(C.RAW, 'mpfb'))):
+    if z.endswith('_cc0.zip'):
+        pk = z[:-8]
+        rows.append(f"| MakeHuman asset pack `{pk}` (zip) | http://static.makehumancommunity.org/assets/assetpacks/{pk}.html | CC0 | MakeHuman community (per-asset authors in the pack json) | {DATE} | installed for MPFB; assets actually used are listed in the characters table |")
 rows.append(f"| CT Life procedural environment pieces (art/pipeline/env_custom.py) | made in this repo | CC0 (made by us) | CT Life assets agent | {DATE} | {', '.join(own)} |")
 rows.append(f"| CT Life city palette `ctl_palette.png` + recoloured `*_steel.png`, `BlossomTree_Leaves` (tint of Quaternius MapleTree_Leaves_BW, CC0) | art/pipeline/env_process.py | CC0 (derived from CC0) | CT Life assets agent | {DATE} | every palettised mesh, ORE refinery, tree_blossom_* |")
 block = ['<!-- BEGIN environment -->', '## Environment, props and nature', '',

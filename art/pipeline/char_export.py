@@ -16,6 +16,7 @@ from mathutils import Vector, Matrix
 sys.path.insert(0, os.path.dirname(__file__))
 import ctl_config as C
 import ctl_tex as T
+import ctl_face as CF
 from ctl_mesh import ensure_skinned as _ensure_skinned, export_fbx as _export_fbx, lods_for as _lods_for
 
 SEX = sys.argv[sys.argv.index('--') + 1] if '--' in sys.argv else 'male'
@@ -173,9 +174,9 @@ def skin_textures():
     # detail ratio around the mean skin colour (keeps lips/brow ridge/nipple tint, drops photo realism)
     valid = T.lum(base) > 0.05
     mean = base[valid].mean(axis=0)
-    detail = np.power(np.clip(base / mean[None, None, :], 0, 3), 0.55)
-    # smooth a little: Sims skin is clean
-    detail = 0.5 * detail + 0.5 * T.resize(T.resize(detail, 128, 128), W, W)
+    detail = np.power(np.clip(base / mean[None, None, :], 0, 3), 0.42)
+    # smooth: Sims skin is clean (keeps lip/brow-ridge colour shifts, drops pores and photo noise)
+    detail = 0.35 * detail + 0.65 * T.resize(T.resize(detail, 96, 96), W, W)
 
     # brows + lash line + underwear: baked onto the body UV
     def bake_sel(src_obj, color_from_alpha):
@@ -272,13 +273,59 @@ def skin_textures():
     bake_self(body, emission_material('under', under_mask), W, p)
     under = T.load(p, 3)[:, :, :1]
     under = T.resize(T.resize(under, 256, 256), W, W)  # soften edges a touch
+    # face paint masks baked in object space: R = cheek blush, G = lips, B = lip seam (reads as an open mouth when the jaw drops)
+    LM = CF.landmarks(rig, eyes, body)
+    ex, ey, ez = abs(LM['eye_l'].x), LM['eye_l'].y, LM['eye_l'].z
+    mo = LM['mouth']
+    mw_ = LM['mouth_w']
+    def ellipsoid(nt, sep_xyz, centre, radii, soft=0.55):
+        # 1 at the centre -> 0 at the ellipsoid surface (smooth)
+        sub = nt.nodes.new('ShaderNodeVectorMath'); sub.operation = 'SUBTRACT'
+        nt.links.new(sep_xyz, sub.inputs[0]); sub.inputs[1].default_value = centre
+        mul = nt.nodes.new('ShaderNodeVectorMath'); mul.operation = 'MULTIPLY'
+        nt.links.new(sub.outputs[0], mul.inputs[0]); mul.inputs[1].default_value = tuple(1.0 / r for r in radii)
+        ln = nt.nodes.new('ShaderNodeVectorMath'); ln.operation = 'LENGTH'
+        nt.links.new(mul.outputs[0], ln.inputs[0])
+        mr = nt.nodes.new('ShaderNodeMapRange'); mr.interpolation_type = 'SMOOTHSTEP'
+        nt.links.new(ln.outputs['Value'], mr.inputs['Value'])
+        mr.inputs['From Min'].default_value = soft; mr.inputs['From Max'].default_value = 1.0
+        mr.inputs['To Min'].default_value = 1.0; mr.inputs['To Max'].default_value = 0.0
+        return mr.outputs['Result']
+    def face_masks(nt):
+        tc = nt.nodes.new('ShaderNodeTexCoord')
+        obj_co = tc.outputs['Object']
+        bl = ellipsoid(nt, obj_co, (ex + 0.004, ey + 0.006, ez - 0.036), (0.026, 0.05, 0.02))
+        br = ellipsoid(nt, obj_co, (-ex - 0.004, ey + 0.006, ez - 0.036), (0.026, 0.05, 0.02))
+        mx = nt.nodes.new('ShaderNodeMath'); mx.operation = 'MAXIMUM'
+        nt.links.new(bl, mx.inputs[0]); nt.links.new(br, mx.inputs[1])
+        lips = ellipsoid(nt, obj_co, (0.0, mo.y + 0.004, mo.z - 0.0005), (mw_ * 1.02, 0.03, 0.0125), soft=0.7)
+        seam = ellipsoid(nt, obj_co, (0.0, mo.y + 0.004, mo.z), (mw_ * 0.92, 0.03, 0.0026), soft=0.5)
+        cc = nt.nodes.new('ShaderNodeCombineColor')
+        nt.links.new(mx.outputs[0], cc.inputs[0]); nt.links.new(lips, cc.inputs[1]); nt.links.new(seam, cc.inputs[2])
+        return cc.outputs[0]
+    p = os.path.join(TMP, 'face.png')
+    bake_self(body, emission_material('face', face_masks), W, p)
+    face = T.load(p, 3)
+    blush, lipm, seam = face[:, :, 0:1], face[:, :, 1:2], face[:, :, 2:3]
+    def grow(a, n=1):
+        for _ in range(n):
+            a = np.maximum.reduce([a, np.roll(a, 1, 0), np.roll(a, -1, 0), np.roll(a, 1, 1), np.roll(a, -1, 1)])
+        return a
+    brow_a2 = np.clip(grow(brow_a, 1) * 1.35, 0, 1)
+    lash_a2 = np.clip(grow(lash_a, 1) * 1.2, 0, 1)
     out = {}
     for tone, hx in C.SKIN_TONES.items():
-        col = T.hex_rgb(hx)[None, None, :] * detail
-        # blush + lips warmth already in detail; brows (darkened) and lash line
-        browc = np.clip(brow_rgb / np.maximum(brow_a, 1e-3), 0, 1) * 0.55
-        col = col * (1 - brow_a * 0.9) + browc * brow_a * 0.9
-        col = col * (1 - lash_a * 0.85) + np.array([0.08, 0.06, 0.05])[None, None, :] * lash_a * 0.85
+        tone_rgb = T.hex_rgb(hx)
+        col = tone_rgb[None, None, :] * detail
+        dark_tone = float(tone_rgb.mean()) < 0.45
+        col = col * (1 - blush * 0.45) + col * np.array([1.06, 0.86, 0.84])[None, None, :] * blush * 0.45
+        lipc = np.array([1.0, 0.70, 0.70]) * (0.95 if not dark_tone else 0.8)
+        col = col * (1 - lipm * 0.7) + col * lipc[None, None, :] * lipm * 0.7
+        col = col * (1 - seam * 0.75) + col * 0.28 * seam * 0.75
+        browc = np.clip(brow_rgb / np.maximum(brow_a, 1e-3), 0, 1) * 0.35 + np.array([0.16, 0.11, 0.08]) * 0.65
+        browc = np.minimum(browc, tone_rgb * 0.45 + 0.02)
+        col = col * (1 - brow_a2 * 0.92) + browc * brow_a2 * 0.92
+        col = col * (1 - lash_a2) + np.array([0.06, 0.045, 0.04])[None, None, :] * lash_a2
         uc = T.hex_rgb('3A3F4A' if SEX == 'male' else '4A3F55')
         col = col * (1 - under) + uc[None, None, :] * (0.85 + 0.15 * detail.mean(axis=2, keepdims=True)) * under
         tile = T.resize(np.clip(col, 0, 1), 512, 512)
@@ -290,16 +337,12 @@ def skin_textures():
 
 
 def eye_textures():
+    """Stylised Sims-like eyes (own work, CC0): bigger darker iris, limbal ring, painted highlights, lash corner."""
     out = {}
-    for name, mh in C.EYE_COLORS.items():
-        mat = os.path.join(C.MPFB_DATA, 'eyes', 'materials', mh + '.mhmat')
-        diff = None
-        for line in open(mat):
-            if line.startswith('diffuseTexture'):
-                diff = os.path.join(os.path.dirname(mat), os.path.basename(line.split(None, 1)[1].strip()))
-        a = T.load(diff, 3)
+    for name, (main, ring) in CF.EYE_COLOURS.items():
+        a = CF.eye_texture(main, ring, 512)
         path = os.path.join(TEX, f'eyes_{name}.png')
-        T.save(T.resize(a, 128, 128), path)
+        T.save(T.resize(a, 256, 256), path)
         out[name] = rel(path)
     return out
 
@@ -525,6 +568,7 @@ if 'part.sweater' in bpy.data.objects and 'part.hoodie' not in bpy.data.objects:
     bpy.context.scene.collection.objects.link(hd)
     hd['ctl_slot'] = 'top'
 
+FACE_L = CF.landmarks(rig, eyes, body)
 if not ONLY or 'body' in ONLY:
     skin = skin_textures()
     eyetex = eye_textures()
@@ -567,14 +611,18 @@ if not ONLY or 'body' in ONLY:
             for vg in b.vertex_groups:
                 o.vertex_groups.new(name=vg.name)
             # bmesh copies deform weights through the deform layer
+            if rname == 'head' and i < 2:
+                manifest.setdefault('face_shapes', CF.add_face_shapes(o, FACE_L, mouth=True))
             ensure_skinned(o)
             set_material(o, f'M_{SEX}_skin', skin['tone2'])
             body_objs.append(o)
             body_tris.setdefault(rname, [0, 0, 0])[i] = tris(o)
         bm.free()
         bpy.data.objects.remove(b, do_unlink=True)
-        e = dup(eyes, f'eyes_LOD{i}')
+        e, lash_idx = CF.eyes_with_lashes(eyes, lashes, body, f'eyes_LOD{i}')
         clean_weights(e, 1)
+        if i < 2:
+            CF.add_blink_only(e, FACE_L, lash_idx)
         ensure_skinned(e)
         set_material(e, f'M_{SEX}_eyes', eyetex['brown'])
         body_objs.append(e)
@@ -582,7 +630,11 @@ if not ONLY or 'body' in ONLY:
     export_fbx(fbx, body_objs)
     manifest['body'] = {'fbx': rel(fbx), 'regions': REG, 'tris_per_region': body_tris,
                         'tris_total': [sum(v[i] for v in body_tris.values()) for i in range(3)],
-                        'eyes_tris': tris(eyes), 'skin_textures': skin, 'eye_textures': eyetex,
+                        'eyes_tris': tris(eyes) + tris(lashes), 'skin_textures': skin, 'eye_textures': eyetex,
+                        'blend_shapes': {'meshes': ['body_head_LOD0', 'body_head_LOD1', 'eyes_LOD0 (blink only)', 'eyes_LOD1 (blink only)'],
+                                         'names': manifest.get('face_shapes', []),
+                                         'note': 'blink/blink_l/blink_r = eyelids; jaw_open + viseme_A/E/I/O/U for lip-sync (uLipSync), '
+                                                 'mouth_smile/mouth_frown for mood. The jaw bone can drive mouth opening too.'},
                         'source': 'MPFB 2.0.17 / MakeHuman system assets (CC0): proxy ' + C.BODIES[SEX]['proxy']}
     for o in body_objs:
         bpy.data.objects.remove(o, do_unlink=True)

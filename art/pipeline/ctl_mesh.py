@@ -89,7 +89,7 @@ def export_fbx(path, objs, rig):
     bpy.ops.export_scene.fbx(
         filepath=path, use_selection=True, object_types={'ARMATURE', 'MESH'},
         apply_unit_scale=True, apply_scale_options='FBX_SCALE_ALL', axis_forward='-Z', axis_up='Y',
-        use_mesh_modifiers=True, mesh_smooth_type='FACE', use_tspace=False, use_triangles=True,
+        use_mesh_modifiers=False,   # only Armature modifiers remain; False keeps shape keys (blink/visemes) mesh_smooth_type='FACE', use_tspace=False, use_triangles=True,
         add_leaf_bones=False, primary_bone_axis='Y', secondary_bone_axis='X',
         use_armature_deform_only=True, armature_nodetype='NULL', bake_anim=False,
         path_mode='RELATIVE', embed_textures=False)
