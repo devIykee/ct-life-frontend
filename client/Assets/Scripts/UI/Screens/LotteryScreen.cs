@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using System.Linq;
 using CTLife.Core;
 using CTLife.Rest.Model;
 using UnityEngine;
@@ -20,6 +21,7 @@ namespace CTLife.UI
         private VisualElement _cards;
         private Button _btn;
         private PostLotteryRoll200Response _result;
+        private bool _rolling;
 
         public LotteryScreen(bool isSeeker, Func<Task<PostLotteryRoll200Response>> roll, Action<PostLotteryRoll200Response> onDone)
         {
@@ -30,32 +32,37 @@ namespace CTLife.UI
 
         protected override VisualElement Build()
         {
-            _title = El.Text("Birth lottery", "ct-h1");
-            _detail = El.Text("Where you start is luck. Where you end up is on you.", "ct-body");
+            _title = El.Text(Strings.T("lottery.title"), "ct-h1");
+            _detail = El.Text(Strings.T("lottery.body"), "ct-body ct-muted");
             _error = El.Text("", "ct-error");
             _cards = El.Div("ct-lottery-cards",
-                Card("insider", "Insider Baby", "$3,000 + a Studio"),
-                Card("exit_liquidity", "Exit Liquidity Baby", "$300 and $720 of debt"));
-            if (_isSeeker) _cards.Add(Card("seeker", "Seeker Baby", "$1,500 + Hacker House + badge"));
-            _btn = El.Btn("Roll", OnRoll, "ct-btn ct-btn-primary ct-btn-big");
-            return El.Div("ct-lottery", _title, _detail, _cards, _error, _btn);
+                Card("insider", Strings.T("lottery.insider"), Strings.T("lottery.insiderDetail")),
+                Card("exit_liquidity", Strings.T("lottery.exit"), Strings.T("lottery.exitDetail")));
+            if (_isSeeker) _cards.Add(Card("seeker", Strings.T("lottery.seeker"), Strings.T("lottery.seekerDetail")));
+            _btn = El.Btn(Strings.T("lottery.roll"), OnRoll, "ct-btn ct-btn-primary ct-btn-big");
+            return El.Div("ct-lottery", El.Text(Strings.T("lottery.eyebrow"), "ct-eyebrow"), _title, _detail, _cards,
+                El.Text(Strings.T("lottery.note"), "ct-small ct-muted"), _error, _btn);
         }
 
         private static VisualElement Card(string id, string name, string sub)
         {
-            var c = El.Div("ct-lottery-card", El.Text(name, "ct-h2"), El.Text(sub, "ct-small"));
+            var c = El.Div("ct-lottery-card", new UiIcon(id == "insider" ? "home" : id == "seeker" ? "phone" : "wallet"),
+                El.Div("ct-grow", El.Text(name, "ct-h2"), El.Text(sub, "ct-small ct-muted")));
             c.name = "card_" + id;
             return c;
         }
 
         private async void OnRoll()
         {
+            if (_rolling) return;
             if (_result != null)
             {
                 _onDone?.Invoke(_result);
                 return;
             }
             _btn.SetEnabled(false);
+            _btn.text = Strings.T("lottery.rolling");
+            _rolling = true;
             _error.text = "";
             var spin = Spin();
             try
@@ -64,13 +71,19 @@ namespace CTLife.UI
             }
             catch (Exception e)
             {
-                _error.text = e is CTLife.Net.ApiException api ? Strings.Error(api.Code, api.ServerMessage) : e.Message;
+                _rolling = false;
+                await spin;
+                foreach (var card in _cards.Children()) card.EnableInClassList("ct-lottery-hot", false);
+                _error.text = AppUi.Err(e);
+                _btn.text = Strings.T("lottery.roll");
                 _btn.SetEnabled(true);
                 return;
             }
             await spin;
+            _rolling = false;
+            if (Element?.parent == null) return;
             Reveal(_result);
-            _btn.text = "Enter CT City";
+            _btn.text = Strings.T("lottery.enter");
             _btn.SetEnabled(true);
         }
 
@@ -79,7 +92,7 @@ namespace CTLife.UI
             var cards = new System.Collections.Generic.List<VisualElement>(_cards.Children());
             float t0 = Time.unscaledTime;
             int i = 0;
-            while (Time.unscaledTime - t0 < 2.2f || _result == null)
+            while (_rolling && (Time.unscaledTime - t0 < 2.2f || _result == null))
             {
                 for (int k = 0; k < cards.Count; k++) cards[k].EnableInClassList("ct-lottery-hot", k == i % cards.Count);
                 i++;
@@ -99,9 +112,18 @@ namespace CTLife.UI
                 c.EnableInClassList("ct-lottery-win", c.name == "card_" + id);
                 c.EnableInClassList("ct-lottery-lose", c.name != "card_" + id);
             }
-            _title.text = id == "insider" ? "INSIDER BABY" : id == "seeker" ? "SEEKER BABY" : "EXIT LIQUIDITY BABY";
-            _detail.text = $"You start with {Money.Cash(r.CashCents)}" + (r.DebtCents > 0 ? $" and owe {Money.Cash(r.DebtCents)}" : "") + $". Home: {r.HomeId}.";
+            _title.text = Strings.T(id == "insider" ? "lottery.insider" : id == "seeker" ? "lottery.seeker" : "lottery.exit");
+            var homes = Services.Get<ConfigStore>().Registries.Homes;
+            var home = homes.FirstOrDefault(h => h.id == r.HomeId)?.name ?? Strings.ReadableId(r.HomeId);
+            _detail.text = Strings.F("lottery.result", Money.Cash(r.CashCents), home) +
+                (r.DebtCents > 0 ? "\n" + Strings.F("lottery.debt", Money.Cash(r.DebtCents)) : "");
             Bus.Publish(new SfxSignal(id == "exit_liquidity" ? "sfx_rug" : "sfx_moon_horn"));
+        }
+
+        public override void Close()
+        {
+            _rolling = false;
+            base.Close();
         }
     }
 }

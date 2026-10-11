@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using CTLife.Core;
 using UnityEngine;
+using UnityEngine.AI;
 
 namespace CTLife.World
 {
@@ -19,6 +20,19 @@ namespace CTLife.World
 
         [Tooltip("Ground layer for tap raycasts.")]
         public LayerMask groundMask = ~0;
+
+        [Tooltip("Editor-built navigation from the contract walkable rectangles and the venue's solid props.")]
+        public NavMeshData navigation;
+
+        [Tooltip("Authored high three-quarter view. Zero distance keeps the generic camera settings.")]
+        public float cameraDistance;
+        public float cameraPitch = 50f;
+        public float cameraYaw = 25f;
+        public float cameraFieldOfView = 42f;
+        public Vector3 cameraLookAhead;
+        [Range(0f, 0.5f), Tooltip("Zero uses fixed look-ahead. Otherwise frame the followed player's feet at this viewport height.")]
+        public float cameraTargetViewportY;
+        public float cameraFocusHeight = 1f;
 
         public bool IsGreybox { get; set; }
 
@@ -58,6 +72,25 @@ namespace CTLife.World
             position = transform.position;
             rotYRad = 0;
             return false;
+        }
+
+        /// <summary>Local comparison key. Wire IDs remain registry-owned.</summary>
+        public string LocalSpotId(string spotId) => !string.IsNullOrEmpty(venueId) &&
+            spotId != null && spotId.StartsWith(venueId + ".", System.StringComparison.Ordinal)
+                ? spotId.Substring(venueId.Length + 1) : spotId;
+
+        /// <summary>Authored navigation approach, or the existing seat point for unchanged venues.</summary>
+        public bool TryGetSpotApproach(string spotId, out Vector3 position)
+        {
+            var local = LocalSpotId(spotId);
+            if (!string.IsNullOrEmpty(local) &&
+                (_anchors.TryGetValue(local, out var anchor) || _anchors.TryGetValue(spotId, out anchor)) &&
+                anchor.approach != null)
+            {
+                position = anchor.approach.position;
+                return true;
+            }
+            return TryGetSpot(spotId, out position, out _);
         }
 
         public SpotDef SpotDef(string spotId) =>

@@ -1,159 +1,515 @@
-/* CT Life UI Toolkit styles. Reference resolution 1080x2400 (PanelSettings). Warm Sims-like base, CT green/red accents. */
-
+/* CT Life · tactile city game. 1080 × 2400 reference canvas.
+   Lilita One display, Manrope body, Phosphor fill/bold. Touch targets >= 124 units. */
 :root {
-    --ct-bg: rgb(255, 248, 240);
-    --ct-card: rgb(255, 255, 255);
-    --ct-ink: rgb(34, 31, 46);
-    --ct-muted: rgb(120, 114, 130);
-    --ct-green: rgb(32, 191, 107);
-    --ct-red: rgb(235, 59, 90);
-    --ct-gold: rgb(247, 183, 49);
-    --ct-violet: rgb(136, 84, 208);
-    --ct-blue: rgb(45, 152, 218);
-    --ct-shadow: rgba(20, 16, 30, 0.35);
+    --ct-bg: #EAF3FF;
+    --ct-card: #FFFFFF;
+    --ct-ink: #172343;
+    --ct-muted: #536887;
+    --ct-line: #AFCAEB;
+    --ct-surface: #D8E9FF;
+    --ct-hover: #C3DDFF;
+    --ct-accent: #FFD247;
+    --ct-accent-hover: #FFE278;
+    --ct-deep: #173B88;
+    --ct-green: #137754;
+    --ct-green-light: #DEF4EF;
+    --ct-red: #C34258;
+    --ct-gold: #FFD247;
+    --ct-violet: #7750BF;
+    --ct-blue: #177CCE;
+    --ct-shadow: rgba(13, 25, 58, 0.35);
+    --ct-preview: #E8E6E1;
+    --ct-float: rgba(239, 248, 255, 0.98);
+    --ct-scrim: rgba(14, 28, 57, 0.93);
+    --ct-game-blue: #197BD4;
+    --ct-game-blue-light: #61BFFF;
+    --ct-game-blue-depth: #1256A6;
+    --ct-game-yellow-depth: #C28A1F;
+    --ct-game-cyan: #57DBF3;
+    --ct-game-coral: #FF8A73;
+    --ct-game-purple: #B594FF;
+    --ct-game-green: #85DB9B;
+    --ct-game-highlight: rgba(255, 255, 255, 0.55);
+    --ct-game-white: #FFFFFF;
+    --ct-game-outline: #14213F;
+    --ct-control-ring: rgba(16,42,85,0.42);
+    --ct-control-ring-active: rgba(21,115,200,0.58);
+    --ct-game-pattern: rgba(83,194,255,0.17);
+    --ct-resource-depth: rgba(0,0,0,0.2);
+    --ct-phone-scrim: rgba(13,25,58,0.56);
 }
 
-.ct-root { flex-grow: 1; color: var(--ct-ink); font-size: 34px; }
+.ct-root { flex-grow: 1; color: var(--ct-ink); font-size: 36px; -unity-font-definition: url("Fonts/Manrope-Regular.ttf"); -unity-font-style: normal; }
+.layer-screen-backdrop { background-color: var(--ct-bg); }
 .ct-layer { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
-.ct-grow { flex-grow: 1; }
+.ct-grow { flex-grow: 1; min-width: 0; }
 .ct-row { flex-direction: row; align-items: center; }
 .ct-col { flex-direction: column; }
 .ct-right { align-items: flex-end; }
-.ct-header { padding: 24px 32px; }
-
-.ct-h1 { font-size: 56px; -unity-font-style: bold; margin: 16px 0 12px 0; white-space: normal; }
-.ct-h2 { font-size: 40px; -unity-font-style: bold; margin: 20px 0 8px 0; white-space: normal; }
-.ct-body { font-size: 34px; white-space: normal; margin: 6px 0; }
-.ct-small { font-size: 26px; white-space: normal; }
+.ct-center { -unity-text-align: middle-center; }
+.ct-header { padding: 32px 40px 20px 40px; flex-shrink: 0; }
+.ct-h1 { font-size: 56px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-font-style: normal; margin: 12px 0 16px 0; white-space: normal; }
+.ct-h2 { font-size: 40px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-font-style: normal; margin: 16px 0 12px 0; white-space: normal; }
+.ct-body { font-size: 36px; white-space: normal; margin: 8px 0; }
+.ct-small { font-size: 28px; white-space: normal; }
 .ct-muted { color: var(--ct-muted); }
+.ct-eyebrow { color: var(--ct-muted); font-size: 27px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-font-style: normal; letter-spacing: 0; white-space: normal; }
 .ct-error { color: var(--ct-red); font-size: 30px; white-space: normal; margin: 8px 0; }
 .ct-green { color: var(--ct-green); }
 .ct-red { color: var(--ct-red); }
-.ct-big-number { font-size: 96px; -unity-font-style: bold; }
-.ct-badge { background-color: var(--ct-violet); color: white; border-radius: 16px; padding: 4px 14px; align-self: flex-start; font-size: 26px; }
+.ct-big-number { font-size: 76px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-font-style: normal; white-space: normal; margin: 16px 0 32px 0; }
+.ct-badge { background-color: var(--ct-green-light); color: var(--ct-green); border-radius: 12px; padding: 10px 20px; align-self: flex-start; font-size: 24px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-font-style: normal; letter-spacing: 0; }
+.ct-icon { width: 52px; height: 52px; flex-shrink: 0; -unity-background-scale-mode: scale-to-fit; -unity-background-image-tint-color: var(--ct-ink); }
 
-/* Buttons */
-.ct-btn { background-color: rgb(238, 232, 246); color: var(--ct-ink); border-radius: 28px; border-width: 0; padding: 18px 32px; margin: 8px 6px; font-size: 32px; -unity-font-style: bold; }
-.ct-btn:hover { background-color: rgb(226, 218, 240); }
-.ct-btn:active { scale: 0.97 0.97; }
-.ct-btn:disabled { opacity: 0.45; }
-.ct-btn-primary { background-color: var(--ct-green); color: white; }
-.ct-btn-danger { background-color: var(--ct-red); color: white; }
-.ct-btn-ghost { background-color: rgba(0, 0, 0, 0); border-width: 3px; border-color: rgb(210, 200, 225); }
-.ct-btn-big { padding: 30px 40px; font-size: 40px; border-radius: 40px; }
-.ct-btn-icon { min-width: 84px; padding: 12px 18px; font-size: 40px; }
-.ct-btn-round { border-radius: 48px; padding: 20px 30px; background-color: rgba(255, 255, 255, 0.92); }
-.ct-btn-live { background-color: var(--ct-red); color: white; }
-.ct-row-btn { background-color: var(--ct-card); border-radius: 22px; border-width: 0; padding: 26px 30px; margin: 6px 0; -unity-text-align: middle-left; font-size: 34px; }
-.ct-chip { background-color: var(--ct-card); border-radius: 30px; border-width: 3px; border-color: rgb(220, 212, 232); padding: 14px 24px; margin: 6px; font-size: 30px; flex-direction: column; }
-.ct-chip-on { border-color: var(--ct-green); background-color: rgb(225, 248, 235); }
-.ct-chip-sub { font-size: 22px; color: var(--ct-muted); }
-.ct-chips { flex-direction: row; flex-wrap: wrap; }
-.ct-field { margin: 12px 0; font-size: 34px; }
-.ct-toggle { margin: 18px 0; font-size: 32px; }
-.ct-slider { margin: 12px 0; }
-.ct-card { background-color: var(--ct-card); border-radius: 26px; padding: 24px; margin: 10px 0; }
+/* One button language. Explicit focus state is also useful with keyboard / controller input. */
+.ct-btn { background-color: var(--ct-surface); color: var(--ct-ink); border-radius: 20px; border-width: 2px; border-color: rgba(0, 0, 0, 0); padding: 24px 32px; margin: 8px 0; min-height: 124px; font-size: 36px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-font-style: normal; white-space: normal; justify-content: center; align-items: center; }
+.ct-btn:hover { background-color: var(--ct-hover); }
+.ct-btn:focus { border-color: var(--ct-deep); }
+.ct-btn:active { scale: 0.98 0.98; }
+.ct-btn:disabled { opacity: 0.5; }
+.ct-btn-primary { background-color: var(--ct-accent); color: var(--ct-ink); }
+.ct-btn-primary:hover { background-color: var(--ct-accent-hover); }
+.ct-btn-primary:focus { border-color: var(--ct-deep); }
+.ct-btn-danger { background-color: var(--ct-red); color: var(--ct-card); }
+.ct-btn-danger:hover { background-color: rgb(150, 48, 58); }
+.ct-btn-ghost { background-color: rgba(0, 0, 0, 0); border-color: var(--ct-line); }
+.ct-btn-big { padding: 28px 36px; font-size: 36px; min-height: 136px; border-radius: 24px; }
+.ct-btn-icon { width: 124px; min-width: 124px; min-height: 124px; padding: 28px; flex-shrink: 0; }
+.ct-btn-round { border-radius: 40px; background-color: rgba(255, 253, 248, 0.95); }
+.ct-btn-live { background-color: var(--ct-deep); color: white; }
+.ct-row-btn { background-color: var(--ct-card); color: var(--ct-ink); border-radius: 20px; border-width: 2px; border-color: var(--ct-line); padding: 32px; margin: 8px 0; min-height: 124px; -unity-text-align: middle-left; font-size: 36px; white-space: normal; }
+.ct-row-btn:hover { background-color: var(--ct-green-light); }
+.ct-row-btn:focus { border-color: var(--ct-deep); }
+.ct-chip { background-color: var(--ct-card); color: var(--ct-ink); border-radius: 20px; border-width: 3px; border-color: var(--ct-line); padding: 24px; margin: 8px; min-height: 124px; font-size: 32px; flex-direction: column; align-items: flex-start; justify-content: center; white-space: normal; }
+.ct-chip:hover { background-color: var(--ct-hover); }
+.ct-chip:focus { border-color: var(--ct-deep); }
+.ct-chip-on { border-color: var(--ct-deep); background-color: var(--ct-green-light); color: var(--ct-ink); }
+.ct-chip-title { font-size: 34px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-font-style: normal; white-space: normal; }
+.ct-chip-sub { font-size: 27px; color: var(--ct-muted); white-space: normal; margin-top: 10px; }
+.ct-chips { flex-direction: row; flex-wrap: wrap; margin-left: -8px; margin-right: -8px; }
+.ct-field { margin: 16px 0; font-size: 36px; flex-direction: column; }
+.ct-field > .unity-text-field__label { color: var(--ct-muted); margin-bottom: 12px; font-size: 28px; }
+.ct-field > .unity-text-field__input { min-height: 124px; background-color: var(--ct-card); color: var(--ct-ink); border-width: 3px; border-color: var(--ct-line); border-radius: 20px; padding: 24px; font-size: 38px; }
+.ct-field > .unity-text-field__input:focus { border-color: var(--ct-deep); }
+.ct-toggle { margin: 36px 0 12px 0; min-height: 124px; font-size: 32px; flex-shrink: 0; align-items: center; }
+.ct-toggle > .unity-toggle__label { flex-grow: 1; white-space: normal; }
+.ct-toggle > .unity-toggle__input > .unity-toggle__checkmark { width: 64px; height: 64px; border-radius: 16px; border-width: 3px; border-color: var(--ct-deep); margin-right: 20px; }
+/* Native Slider.fill follows the real value; the complete track area is touchable. */
+.ct-slider { margin: 24px 0; min-height: 172px; font-size: 32px; flex-direction: column; flex-shrink: 0; }
+.ct-slider > .unity-slider__label { min-width: 0; margin: 0 0 8px 0; padding: 0; color: var(--ct-ink); white-space: normal; }
+.ct-slider > .unity-slider__input { min-height: 124px; margin: 0; padding: 0; flex-grow: 1; }
+.ct-slider .unity-base-slider__drag-container { min-height: 124px; margin: 0; padding: 0; flex-grow: 1; }
+.ct-slider .unity-base-slider__tracker { position: absolute; left: 32px; right: 32px; top: 50%; height: 12px; margin-top: -6px; border-width: 0; border-radius: 6px; background-color: var(--ct-line); }
+.ct-slider .unity-base-slider__fill { position: absolute; border-radius: 6px; background-color: var(--ct-deep); }
+.ct-slider .unity-base-slider__dragger { position: absolute; left: 0; top: 50%; width: 64px; height: 64px; margin: -32px 0 0 0; border-width: 4px; border-color: var(--ct-deep); border-radius: 32px; background-color: var(--ct-card); }
+.ct-slider .unity-base-slider__dragger-border { display: none; }
+.ct-slider:hover .unity-base-slider__dragger,
+.ct-slider:focus .unity-base-slider__dragger,
+.ct-slider .unity-base-slider__dragger.unity-base-slider--movable { background-color: var(--ct-accent); }
+.ct-slider:disabled { opacity: 0.5; }
+.ct-card { background-color: var(--ct-card); border-radius: 24px; border-width: 2px; border-color: var(--ct-line); padding: 32px; margin: 12px 0; }
+.ct-section-heading { flex-direction: row; align-items: flex-start; margin-bottom: 24px; }
+.ct-section-number { color: var(--ct-green); background-color: var(--ct-green-light); border-radius: 16px; width: 68px; height: 68px; -unity-text-align: middle-center; font-size: 25px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-font-style: normal; margin-right: 24px; margin-top: 4px; }
+.ct-section-title { font-size: 40px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-font-style: normal; white-space: normal; margin-bottom: 10px; }
 
-/* Flow screens */
+/* Brand / welcome. Real portrait preview is created only for an exact authored look. */
 .ct-screen { position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: var(--ct-bg); }
-.ct-splash, .ct-signin, .ct-lottery { flex-grow: 1; align-items: center; justify-content: center; padding: 64px; }
-.ct-logo { font-size: 140px; -unity-font-style: bold; color: var(--ct-ink); letter-spacing: 6px; }
-.ct-tagline { font-size: 36px; color: var(--ct-muted); white-space: normal; -unity-text-align: middle-center; margin: 12px 40px 40px 40px; }
-.ct-splash-status { font-size: 30px; color: var(--ct-muted); margin-top: 60px; }
+.ct-brand { flex-direction: row; align-items: center; flex-shrink: 0; }
+.ct-brand-mark { width: 84px; height: 84px; border-radius: 24px; background-color: var(--ct-deep); align-items: center; justify-content: center; margin-right: 20px; }
+.ct-brand-mark .ct-icon { -unity-background-image-tint-color: var(--ct-accent); }
+.ct-brand-wordmark { font-size: 40px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); letter-spacing: 3px; }
+.ct-brand-compact .ct-brand-mark { width: 68px; height: 68px; border-radius: 20px; }
+.ct-brand-compact .ct-icon { width: 44px; height: 44px; }
+.ct-brand-compact .ct-brand-wordmark { font-size: 30px; letter-spacing: 2px; }
+.ct-splash { flex-grow: 1; align-items: center; justify-content: center; padding: 64px; }
+.ct-splash-emblem { width: 192px; height: 192px; border-radius: 52px; background-color: var(--ct-deep); align-items: center; justify-content: center; margin-bottom: 36px; }
+.ct-splash-emblem .ct-icon { width: 124px; height: 124px; -unity-background-image-tint-color: var(--ct-accent); }
+.ct-logo { font-size: 100px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); color: var(--ct-ink); letter-spacing: 6px; }
+.ct-tagline { font-size: 36px; color: var(--ct-muted); white-space: normal; -unity-text-align: middle-center; margin: 24px 24px 48px 24px; }
+.ct-loading-track { width: 180px; height: 8px; border-radius: 4px; background-color: var(--ct-line); margin-top: 64px; }
+.ct-loading-accent { width: 60%; height: 8px; border-radius: 4px; background-color: var(--ct-deep); }
+.ct-splash-status { font-size: 28px; color: var(--ct-muted); white-space: normal; -unity-text-align: middle-center; margin-top: 28px; }
+.ct-signin { flex-grow: 1; padding: 48px 48px 20px 48px; }
+.ct-welcome-scroll { flex-grow: 1; min-height: 0; margin-top: 24px; }
+.ct-welcome-hero { flex-grow: 1; padding: 24px 0 0 0; }
+.ct-welcome-title { font-size: 64px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); white-space: normal; margin: 20px 0; letter-spacing: -2px; }
+.ct-welcome-body { font-size: 32px; color: var(--ct-muted); white-space: normal; max-width: 880px; margin: 8px 0 28px 0; }
+.ct-welcome-portrait { flex-grow: 1; min-height: 640px; height: 0; flex-shrink: 0; border-radius: 36px; overflow: hidden; background-color: var(--ct-preview); -unity-background-scale-mode: scale-and-crop; margin: 8px 0 24px 0; }
+.ct-welcome-actions { flex-shrink: 0; padding: 0 0 12px 0; }
+.ct-welcome-actions > .ct-small { margin: 12px 24px 24px 24px; }
+.ct-legal { font-size: 27px; color: var(--ct-muted); white-space: normal; -unity-text-align: middle-center; margin: 24px 24px 12px 24px; }
+
+/* Character studio: the avatar owns the first page, controls sit at the edge of its stage. */
 .ct-creator { flex-grow: 1; flex-direction: column; }
-.ct-preview { height: 34%; -unity-background-scale-mode: scale-to-fit; background-color: rgb(250, 232, 220); }
-.ct-scroll { flex-grow: 1; padding: 16px 40px 80px 40px; }
-.ct-slot { flex-direction: row; align-items: center; background-color: var(--ct-card); border-radius: 20px; margin: 5px 0; padding: 4px 12px; }
-.ct-slot-label { width: 160px; font-size: 30px; color: var(--ct-muted); }
-.ct-slot-value { flex-grow: 1; -unity-text-align: middle-center; font-size: 32px; }
-.ct-lottery-cards { flex-direction: row; flex-wrap: wrap; justify-content: center; margin: 40px 0; }
-.ct-lottery-card { width: 300px; height: 380px; margin: 14px; border-radius: 30px; background-color: var(--ct-card); padding: 24px; justify-content: center; border-width: 6px; border-color: rgba(0, 0, 0, 0); transition-duration: 0.12s; }
-.ct-lottery-hot { border-color: var(--ct-gold); scale: 1.06 1.06; }
-.ct-lottery-win { border-color: var(--ct-green); scale: 1.12 1.12; }
-.ct-lottery-lose { opacity: 0.35; }
-.ct-map { flex-grow: 1; }
-.ct-district { background-color: var(--ct-card); border-radius: 28px; padding: 20px 28px; margin: 12px 0; }
-.ct-venue { flex-direction: row; justify-content: space-between; background-color: rgb(246, 242, 250); border-radius: 18px; border-width: 0; padding: 22px 26px; margin: 5px 0; font-size: 34px; }
-.ct-venue-locked { opacity: 0.5; }
+.ct-creator-header { padding: 28px 40px 0 40px; flex-shrink: 0; }
+.ct-creator-title { font-size: 30px; color: var(--ct-muted); white-space: normal; margin-left: 24px; }
+.ct-creator-steps { flex-direction: row; margin: 16px 0 0 0; }
+.ct-creator-tab { flex-grow: 1; flex-basis: 0; min-width: 0; min-height: 124px; font-size: 30px; color: var(--ct-muted); background-color: rgba(0, 0, 0, 0); border-radius: 0; border-width: 0; border-bottom-width: 4px; border-bottom-color: var(--ct-line); margin: 0; padding: 24px 8px; white-space: normal; -unity-text-align: middle-center; }
+.ct-creator-tab-on { color: var(--ct-ink); border-bottom-color: var(--ct-deep); -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); }
+.ct-creator-tab:focus { border-bottom-color: var(--ct-accent-hover); }
+.ct-creator-content { flex-grow: 1; min-height: 0; }
+.ct-creator-look-page { flex-grow: 1; min-height: 0; padding: 20px 24px 0 24px; }
+.ct-creator-model { flex-grow: 1; flex-basis: 0; min-height: 520px; border-radius: 32px; overflow: hidden; -unity-background-scale-mode: scale-to-fit; background-color: var(--ct-preview); }
+.ct-preview-hint { position: absolute; left: 24px; bottom: 24px; color: var(--ct-muted); padding: 8px 12px; font-size: 26px; }
+.ct-creator-missing { flex-grow: 1; justify-content: center; padding: 48px; }
+.ct-creator-focus-row { position: absolute; right: 16px; top: 16px; flex-direction: column; flex-shrink: 0; }
+.ct-creator-focus { min-height: 124px; min-width: 132px; border-radius: 24px; border-width: 2px; border-color: rgba(255, 255, 255, 0.7); background-color: var(--ct-float); color: var(--ct-muted); margin: 6px; padding: 12px 8px; align-items: center; justify-content: center; }
+.ct-creator-focus .ct-icon { width: 42px; height: 42px; }
+.ct-creator-focus .ct-dock-label { font-size: 25px; margin-top: 8px; }
+.ct-creator-focus-on { background-color: var(--ct-deep); color: var(--ct-card); }
+.ct-creator-focus-on .ct-icon { -unity-background-image-tint-color: var(--ct-card); }
+.ct-creator-focus:focus { border-color: var(--ct-accent-hover); }
+.ct-creator-look-details { flex-shrink: 0; padding: 16px 16px 0 16px; }
+.ct-creator-look-selector { flex-direction: row; align-items: center; }
+.ct-creator-look-copy { align-items: flex-start; padding: 0 12px; }
+.ct-creator-look-name { font-size: 38px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); white-space: normal; margin-bottom: 4px; }
+.ct-creator-look-status { font-size: 27px; flex-shrink: 0; margin: 8px 12px; -unity-text-align: middle-left; }
+.ct-scroll { flex-grow: 1; min-height: 0; padding: 16px 40px 48px 40px; }
+.ct-creator-scroll { padding-top: 24px; padding-bottom: 24px; }
+.ct-creator-section { padding: 24px 0; border-bottom-width: 2px; border-bottom-color: var(--ct-line); }
+.ct-creator-section .ct-chips > .ct-chip { min-width: 42%; flex-grow: 1; flex-basis: 42%; }
+.ct-creator-footer { flex-shrink: 0; background-color: var(--ct-bg); padding: 12px 40px 24px 40px; }
+.ct-creator-footer .ct-error { -unity-text-align: middle-center; }
+.ct-creator-footer .ct-btn { margin-top: 12px; }
+.ct-creator-actions { align-items: stretch; }
+.ct-creator-back { margin-right: 16px; min-width: 192px; }
+.ct-selection-count { font-size: 28px; color: var(--ct-muted); margin-bottom: 12px; }
 
-/* HUD */
-.ct-hud { position: absolute; left: 0; top: 0; right: 0; bottom: 0; padding: 24px; }
-.ct-hud-top { flex-direction: row; align-items: flex-start; }
-.ct-hud-bottom { flex-direction: row; align-items: center; }
-.ct-cash { font-size: 54px; -unity-font-style: bold; color: white; background-color: rgba(34, 31, 46, 0.78); border-radius: 30px; padding: 10px 28px; }
-.ct-venue-name { color: white; font-size: 28px; margin: 8px 10px; text-shadow: 2px 2px 4px var(--ct-shadow); }
-.ct-pill { color: white; background-color: rgba(34, 31, 46, 0.7); border-radius: 24px; padding: 8px 20px; margin: 4px 0; font-size: 28px; }
-.ct-pill.ct-green { background-color: rgba(32, 191, 107, 0.9); color: white; }
-.ct-pill.ct-red { background-color: rgba(235, 59, 90, 0.9); color: white; }
-.ct-needs { flex-direction: column; width: 240px; margin-top: 16px; background-color: rgba(255, 255, 255, 0.85); border-radius: 22px; padding: 12px 16px; }
-.ct-need { flex-direction: row; align-items: center; margin: 4px 0; }
-.ct-need-label { width: 36px; font-size: 24px; -unity-font-style: bold; }
-.ct-need-track { flex-grow: 1; height: 16px; background-color: rgb(230, 226, 236); border-radius: 8px; overflow: hidden; }
-.ct-need-fill { height: 100%; width: 80%; background-color: var(--ct-green); border-radius: 8px; }
+/* Origin reveal. */
+.ct-lottery { flex-grow: 1; align-items: stretch; justify-content: center; padding: 48px; }
+.ct-lottery > .ct-eyebrow, .ct-lottery > .ct-h1, .ct-lottery > .ct-body, .ct-lottery > .ct-small { -unity-text-align: middle-center; }
+.ct-lottery-cards { flex-direction: column; align-items: stretch; margin: 40px 0; }
+.ct-lottery-card { flex-direction: row; align-items: center; min-height: 220px; margin: 12px 0; border-radius: 32px; background-color: var(--ct-card); padding: 32px; border-width: 3px; border-color: var(--ct-line); transition-duration: 0.12s; }
+.ct-lottery-card .ct-icon { width: 88px; height: 88px; color: var(--ct-green); margin-right: 32px; }
+.ct-lottery-card .ct-h2 { margin: 0 0 16px 0; }
+.ct-lottery-hot { border-color: var(--ct-gold); background-color: var(--ct-accent); }
+.ct-lottery-win { border-color: var(--ct-deep); background-color: var(--ct-green-light); }
+.ct-lottery-lose { opacity: 0.45; }
+
+/* A district guide, with distinct local color and generous travel targets. */
+.ct-map { flex-grow: 1; min-height: 0; }
+.ct-map-intro { padding: 0 8px 24px 8px; }
+.ct-map-count { align-self: flex-start; font-size: 26px; color: var(--ct-green); background-color: var(--ct-green-light); padding: 12px 20px; border-radius: 16px; margin-top: 24px; }
+.ct-district { background-color: var(--ct-card); border-radius: 32px; border-width: 2px; border-color: var(--ct-line); padding: 28px; margin: 16px 0; }
+.ct-district-heading { flex-direction: row; align-items: center; padding: 8px 0 28px 0; }
+.ct-district-heading .ct-h2 { margin: 0 0 10px 0; }
+.ct-district-symbol { width: 108px; height: 108px; flex-shrink: 0; border-radius: 24px; background-color: var(--ct-game-cyan); border-width: 3px; border-color: var(--ct-game-outline); align-items: center; justify-content: center; margin-right: 24px; }
+.ct-district-trenches .ct-district-symbol { background-color: var(--ct-game-coral); }
+.ct-district-builder_hills .ct-district-symbol { background-color: var(--ct-game-purple); }
+.ct-district-airdrop_farm .ct-district-symbol { background-color: var(--ct-game-green); }
+.ct-district-dubai_marina .ct-district-symbol { background-color: var(--ct-gold); }
+.ct-venue { flex-direction: row; align-items: center; background-color: var(--ct-bg); color: var(--ct-ink); border-radius: 20px; border-width: 2px; border-color: rgba(0, 0, 0, 0); padding: 24px 28px; margin: 8px 0; min-height: 144px; }
+.ct-venue:hover { background-color: var(--ct-green-light); }
+.ct-venue:focus { border-color: var(--ct-deep); }
+.ct-venue-title { font-size: 36px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-font-style: normal; white-space: normal; }
+.ct-venue-status { font-size: 26px; color: var(--ct-green); margin-top: 8px; }
+.ct-venue-locked { opacity: 0.6; }
+.ct-venue-locked .ct-venue-status { color: var(--ct-muted); }
+
+/* In-world HUD: two light corner clusters leave the city and movement surface open. */
+.ct-hud { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+.ct-hud-top { position: absolute; left: 28px; top: 24px; right: 28px; flex-direction: row; align-items: flex-start; }
+.ct-cash-card { flex-direction: row; align-items: center; background-color: var(--ct-float); border-radius: 24px; padding: 14px 20px; }
+.ct-cash-card .ct-icon { width: 40px; height: 40px; margin-right: 16px; }
+.ct-hud-caption { color: var(--ct-muted); font-size: 23px; }
+.ct-cash { font-size: 36px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); color: var(--ct-ink); margin-top: 0; }
+.ct-venue-name { align-self: flex-start; color: white; background-color: var(--ct-scrim); border-radius: 16px; padding: 8px 16px; font-size: 27px; margin: 10px 0 0 0; white-space: normal; max-width: 460px; }
+.ct-pill { color: var(--ct-ink); background-color: var(--ct-float); border-radius: 16px; padding: 8px 16px; margin: 0 0 8px 0; font-size: 25px; }
+.ct-pill.ct-green { color: var(--ct-green); }
+.ct-pill.ct-red { color: var(--ct-red); }
+.ct-needs-toggle { position: absolute; right: 24px; top: 132px; flex-direction: row; align-items: center; min-height: 124px; margin: 0; padding: 12px 18px; color: var(--ct-ink); background-color: var(--ct-float); border-width: 2px; border-color: rgba(255, 255, 255, 0.65); border-radius: 24px; }
+.ct-needs-toggle .ct-icon { width: 38px; height: 38px; margin-right: 14px; }
+.ct-needs-toggle-title { font-size: 25px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); }
+.ct-needs-summary { font-size: 23px; color: var(--ct-muted); margin-top: 2px; }
+.ct-needs-alert { border-color: var(--ct-red); }
+.ct-needs-open { border-color: var(--ct-deep); }
+.ct-needs { position: absolute; right: 24px; top: 268px; width: 510px; background-color: var(--ct-float); border-radius: 24px; padding: 24px; }
+.ct-needs-title { color: var(--ct-muted); font-size: 27px; margin-bottom: 8px; }
+.ct-need { flex-direction: row; align-items: center; margin: 10px 0; }
+.ct-need-label { width: 136px; font-size: 25px; }
+.ct-need-value { width: 52px; margin-left: 16px; font-size: 25px; -unity-text-align: middle-right; }
+.ct-need-track { flex-grow: 1; height: 8px; background-color: var(--ct-line); border-radius: 4px; overflow: hidden; }
+.ct-need-fill { height: 100%; width: 0%; background-color: var(--ct-deep); border-radius: 4px; }
 .ct-need-low { background-color: var(--ct-red); }
-.ct-chat { flex-direction: row; align-items: center; background-color: rgba(255, 255, 255, 0.95); border-radius: 30px; padding: 8px 12px; margin: 8px 0; }
-.ct-chat-field { flex-grow: 1; font-size: 32px; }
-.ct-emotes { flex-direction: row; flex-wrap: wrap; background-color: rgba(255, 255, 255, 0.95); border-radius: 30px; padding: 10px; margin: 8px 0; max-height: 600px; }
+.ct-hud-social { position: absolute; left: 24px; bottom: 24px; flex-direction: row; align-items: flex-end; }
+.ct-hud-personal { position: absolute; right: 24px; bottom: 24px; flex-direction: row; align-items: flex-end; }
+.ct-dock-action { min-width: 132px; width: 144px; min-height: 144px; margin: 0 6px; padding: 20px 8px; border-radius: 36px; border-width: 2px; border-color: rgba(255, 255, 255, 0.65); background-color: var(--ct-float); color: var(--ct-ink); align-items: center; justify-content: center; }
+.ct-dock-action .ct-icon { width: 46px; height: 46px; }
+.ct-dock-action:hover { background-color: var(--ct-hover); }
+.ct-dock-action:active { scale: 0.97 0.97; }
+.ct-dock-action:focus { border-color: var(--ct-deep); }
+.ct-dock-action:disabled { opacity: 0.6; }
+.ct-dock-label { font-size: 25px; margin-top: 10px; white-space: normal; -unity-text-align: middle-center; }
+.ct-dock-primary { background-color: var(--ct-accent); border-color: var(--ct-accent); }
+.ct-dock-primary:hover { background-color: var(--ct-accent-hover); }
+.ct-dock-action.ct-btn-live { background-color: var(--ct-deep); color: white; }
+.ct-dock-action.ct-btn-live .ct-icon { -unity-background-image-tint-color: white; }
+.ct-chat { position: absolute; left: 24px; right: 24px; bottom: 192px; background-color: var(--ct-float); border-radius: 28px; padding: 28px; }
+.ct-chat-field { flex-grow: 1; min-width: 0; font-size: 36px; margin-right: 16px; }
+.ct-chat-field > .unity-text-field__input { min-height: 124px; border-radius: 20px; border-width: 2px; border-color: var(--ct-line); padding: 20px; background-color: white; color: var(--ct-ink); }
+.ct-emotes { position: absolute; left: 24px; right: 24px; bottom: 192px; flex-direction: column; background-color: var(--ct-float); border-radius: 28px; padding: 28px; max-height: 640px; }
+.ct-emote-scroll { flex-grow: 1; min-height: 140px; max-height: 500px; }
 
-/* World labels */
-.ct-tag { position: absolute; left: 0; top: 0; color: white; font-size: 24px; -unity-font-style: bold; background-color: rgba(34, 31, 46, 0.55); border-radius: 14px; padding: 2px 12px; }
-.ct-tag-npc { background-color: rgba(136, 84, 208, 0.75); }
-.ct-tag-talking { background-color: rgba(32, 191, 107, 0.85); }
-.ct-bubble { position: absolute; left: 0; top: 0; max-width: 520px; background-color: white; border-radius: 26px; padding: 14px 22px; border-width: 3px; border-color: rgb(225, 220, 235); }
+/* Name tags and short-lived conversation bubbles. */
+.ct-tag { position: absolute; left: 0; top: 0; color: white; font-size: 24px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-font-style: normal; background-color: var(--ct-scrim); border-radius: 14px; padding: 6px 14px; }
+.ct-tag-npc { background-color: rgba(94, 75, 119, 0.84); }
+.ct-tag-talking { background-color: rgba(35, 102, 76, 0.94); }
+.ct-bubble { position: absolute; left: 0; top: 0; max-width: 520px; background-color: var(--ct-card); border-radius: 26px; padding: 20px 24px; border-width: 2px; border-color: var(--ct-line); }
 .ct-bubble-npc { border-color: var(--ct-violet); }
 .ct-bubble-text { white-space: normal; font-size: 28px; color: var(--ct-ink); }
-
-/* Toasts */
-.layer-toast { align-items: center; padding-top: 120px; }
-.ct-toast { background-color: rgba(34, 31, 46, 0.92); border-radius: 26px; padding: 18px 28px; margin: 6px 40px; max-width: 960px; }
+.layer-toast { align-items: center; padding-top: 112px; }
+.ct-toast { background-color: var(--ct-deep); border-radius: 20px; padding: 24px 32px; margin: 8px 32px; max-width: 960px; }
 .ct-toast-text { color: white; font-size: 30px; white-space: normal; -unity-text-align: middle-center; }
-.ct-toast-good { background-color: rgba(32, 191, 107, 0.95); }
-.ct-toast-bad { background-color: rgba(235, 59, 90, 0.95); }
-.ct-toast-event { background-color: rgba(247, 183, 49, 0.97); }
-.ct-toast-event > .ct-toast-text { color: var(--ct-ink); -unity-font-style: bold; }
+.ct-toast-good { background-color: rgba(35, 102, 76, 0.97); }
+.ct-toast-bad { background-color: rgba(172, 59, 70, 0.97); }
+.ct-toast-event { background-color: var(--ct-gold); }
+.ct-toast-event > .ct-toast-text { color: var(--ct-ink); -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-font-style: normal; }
 
-/* Modals and sheets */
-.ct-modal-backdrop { position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: rgba(20, 16, 30, 0.55); align-items: center; justify-content: center; }
+/* Bottom sheets, dialogs, and the in-game phone. */
+.ct-modal-backdrop { position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: rgba(33, 27, 40, 0.5); align-items: center; justify-content: center; }
 .ct-modal-bottom { justify-content: flex-end; }
-.ct-sheet { background-color: var(--ct-bg); border-top-left-radius: 40px; border-top-right-radius: 40px; padding: 32px 40px 56px 40px; align-self: stretch; }
-.ct-rekt { background-color: rgb(30, 10, 18); border-radius: 40px; padding: 48px; width: 860px; align-items: center; border-width: 6px; border-color: var(--ct-red); }
-.ct-rekt-title { font-size: 180px; -unity-font-style: bold; color: var(--ct-red); }
-.ct-rekt-loss { font-size: 80px; -unity-font-style: bold; color: white; }
-.ct-rekt .ct-body { color: rgb(240, 200, 210); }
-
-/* Phone */
+.ct-sheet { background-color: var(--ct-bg); border-top-left-radius: 40px; border-top-right-radius: 40px; padding: 32px 48px 48px 48px; align-self: stretch; max-height: 90%; }
+.ct-sheet-handle { width: 104px; height: 8px; background-color: var(--ct-line); border-radius: 4px; align-self: center; margin-bottom: 24px; }
+.ct-sheet .ct-row > .ct-btn { flex-grow: 1; flex-basis: 0; margin: 8px; }
+.ct-busy-card { width: 86%; max-width: 880px; align-items: center; padding: 48px; }
+.ct-busy-card .ct-body, .ct-busy-card .ct-small { -unity-text-align: middle-center; }
 .layer-phone { justify-content: flex-end; }
-.ct-phone { position: absolute; left: 24px; right: 24px; top: 140px; bottom: 24px; background-color: var(--ct-bg); border-radius: 56px; border-width: 10px; border-color: rgb(34, 31, 46); overflow: hidden; }
-.ct-phone-bar { flex-direction: row; align-items: center; padding: 10px 16px; background-color: rgb(34, 31, 46); }
-.ct-phone-bar .ct-btn-icon { background-color: rgba(255, 255, 255, 0.12); color: white; }
-.ct-phone-title { color: white; font-size: 36px; -unity-font-style: bold; margin-left: 12px; }
-.ct-phone-clock { color: white; font-size: 28px; margin-right: 12px; }
-.ct-phone-grid { flex-direction: row; flex-wrap: wrap; padding: 28px; }
-.ct-phone-body { flex-grow: 1; }
-.ct-app { width: 25%; align-items: center; background-color: rgba(0, 0, 0, 0); border-width: 0; padding: 12px 0; margin: 0; }
-.ct-app-icon { width: 150px; height: 150px; border-radius: 40px; align-items: center; justify-content: center; }
-.ct-app-mono { color: white; font-size: 56px; -unity-font-style: bold; }
-.ct-app-label { font-size: 24px; margin-top: 8px; }
-.ct-app-phase { font-size: 20px; color: var(--ct-muted); }
-.ct-app-page { flex-grow: 1; padding: 24px 36px 60px 36px; }
-.ct-lb-row { flex-direction: row; align-items: center; background-color: var(--ct-card); border-radius: 18px; padding: 16px 22px; margin: 4px 0; }
-.ct-lb-rank { width: 110px; -unity-font-style: bold; }
-.ct-lb-name { flex-grow: 1; }
-.ct-lb-value { -unity-font-style: bold; }
+.ct-phone { position: absolute; left: 96px; right: 28px; top: 220px; bottom: 24px; background-color: var(--ct-bg); border-radius: 48px; border-width: 3px; border-color: var(--ct-card); overflow: hidden; }
+.ct-phone-handle { width: 100px; height: 6px; border-radius: 3px; align-self: center; background-color: var(--ct-line); margin: 18px 0 4px 0; }
+.ct-phone-bar { flex-direction: row; align-items: center; padding: 0 12px 8px 12px; border-bottom-width: 2px; border-bottom-color: var(--ct-line); flex-shrink: 0; }
+.ct-phone-bar .ct-btn-icon { background-color: rgba(0, 0, 0, 0); min-width: 124px; width: 124px; min-height: 124px; }
+.ct-phone-title { color: var(--ct-ink); font-size: 32px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); margin-left: 0; white-space: normal; flex-shrink: 1; }
+.ct-phone-clock { color: var(--ct-muted); font-size: 26px; margin-right: 4px; }
+.ct-phone-home { flex-grow: 1; min-height: 0; }
+.ct-phone-welcome { padding: 28px 36px 16px 36px; }
+.ct-phone-greeting { font-size: 42px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); white-space: normal; margin: 0 0 10px 0; }
+.ct-phone-section { font-size: 25px; color: var(--ct-muted); margin: 24px 36px 8px 36px; }
+.ct-phone-grid { flex-direction: row; flex-wrap: wrap; padding: 4px 20px 24px 20px; }
+.ct-phone-grid-later { padding-bottom: 36px; }
+.ct-phone-body { flex-grow: 1; min-height: 0; }
+.ct-app { width: 33.3333%; align-items: center; background-color: rgba(0, 0, 0, 0); color: var(--ct-ink); border-width: 0; padding: 20px 8px; margin: 0; min-height: 220px; }
+.ct-app:hover .ct-app-icon { background-color: var(--ct-hover); }
+.ct-app:active .ct-app-icon { scale: 0.96 0.96; }
+.ct-app:focus .ct-app-icon { border-color: var(--ct-deep); }
+.ct-app-icon { width: 124px; height: 124px; border-radius: 32px; border-width: 2px; border-color: var(--ct-line); background-color: var(--ct-card); align-items: center; justify-content: center; }
+.ct-app-icon .ct-icon { width: 64px; height: 64px; -unity-background-image-tint-color: var(--ct-deep); }
+.ct-app-locked .ct-app-icon { background-color: var(--ct-surface); border-color: var(--ct-surface); }
+.ct-app-locked .ct-icon { -unity-background-image-tint-color: var(--ct-muted); }
+.ct-app-label { font-size: 28px; margin-top: 12px; white-space: normal; -unity-text-align: middle-center; }
+.ct-app-phase { font-size: 23px; color: var(--ct-muted); margin-top: 4px; }
+.ct-phone-home-line { flex-shrink: 0; align-self: center; width: 144px; height: 6px; border-radius: 3px; background-color: var(--ct-line); margin: 12px 0 20px 0; }
+.ct-app-page { flex-grow: 1; min-height: 0; padding: 32px 40px 56px 40px; }
+.ct-bank-hero { background-color: var(--ct-green-light); border-radius: 32px; padding: 40px; margin-bottom: 28px; }
+.ct-bank-hero .ct-big-number { color: var(--ct-ink); }
+.ct-lb-row { flex-direction: row; align-items: center; background-color: var(--ct-card); border-radius: 20px; border-width: 2px; border-color: var(--ct-line); padding: 28px; margin: 8px 0; min-height: 112px; }
+.ct-lb-rank { width: 110px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-font-style: normal; color: var(--ct-green); }
+.ct-lb-name { flex-grow: 1; flex-shrink: 1; min-width: 0; white-space: normal; }
+.ct-lb-value { -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-font-style: normal; font-size: 32px; margin-left: 16px; }
+.ct-app-tabs { flex-direction: row; margin-bottom: 24px; }
+.ct-app-tabs > .ct-chip { flex-grow: 1; flex-basis: 0; align-items: center; font-size: 30px; }
 
-/* Mini-games */
-.ct-mg { justify-content: flex-start; padding: 140px 32px 40px 32px; }
+/* Existing feature surfaces keep their states while inheriting the new design language. */
+.ct-rekt { background-color: var(--ct-deep); border-radius: 40px; padding: 48px; width: 86%; max-width: 900px; align-items: center; border-width: 4px; border-color: var(--ct-red); }
+.ct-rekt-title { font-size: 160px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-font-style: normal; color: rgb(239, 132, 135); }
+.ct-rekt-loss { font-size: 72px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-font-style: normal; color: white; white-space: normal; }
+.ct-rekt .ct-body { color: rgb(245, 214, 218); }
+.ct-rekt .ct-small { color: rgb(222, 195, 202); }
+.ct-rekt .ct-btn-ghost { color: white; }
+.ct-mg { justify-content: flex-start; padding: 64px 32px 40px 32px; }
 .ct-mg > .ct-row .ct-h2, .ct-mg > .ct-body { color: white; }
-.ct-mg-arena { flex-grow: 1; align-self: stretch; background-color: rgba(255, 255, 255, 0.08); border-radius: 36px; margin-top: 20px; }
-.ct-mg-score { color: var(--ct-gold); font-size: 56px; -unity-font-style: bold; margin-right: 24px; }
+.ct-mg-arena { flex-grow: 1; align-self: stretch; background-color: rgba(255, 255, 255, 0.08); border-radius: 36px; margin-top: 24px; }
+.ct-mg-score { color: var(--ct-gold); font-size: 56px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-font-style: normal; margin-right: 24px; }
 .ct-mg-time { color: white; font-size: 44px; }
-.ct-mg-target { position: absolute; padding: 26px 30px; border-radius: 30px; border-width: 0; font-size: 30px; max-width: 420px; white-space: normal; }
+.ct-mg-target { position: absolute; padding: 28px 32px; border-radius: 24px; border-width: 0; font-size: 32px; min-height: 120px; max-width: 420px; white-space: normal; }
 .ct-mg-good { background-color: var(--ct-red); color: white; }
 .ct-mg-bad { background-color: var(--ct-green); color: white; }
-
-/* Spike overlay */
 .ct-spike { position: absolute; left: 24px; top: 24px; background-color: rgba(0, 0, 0, 0.7); border-radius: 20px; padding: 18px 24px; }
 .ct-spike .ct-small, .ct-spike .ct-body { color: white; }
 
-/* Busy / degraded */
-.ct-busy-card { width: 820px; align-items: center; padding: 48px; }
+/* Asset credits are available offline from Settings. Long license text wraps inside the phone. */
+.ct-credits { margin-top: 28px; padding-top: 20px; border-top-width: 2px; border-top-color: var(--ct-line); }
+.ct-credit { padding: 20px 0; border-bottom-width: 2px; border-bottom-color: var(--ct-line); }
+.ct-credit-title { font-size: 34px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); white-space: normal; }
+.ct-license { font-size: 28px; white-space: normal; color: var(--ct-muted); margin: 16px 0; }
+.ct-btn-danger .ct-icon { -unity-background-image-tint-color: var(--ct-card); }
+
+
+/* Tactile controls. The native Button retains events/focus; these two faces ignore picking. */
+.ct-pressable { border-width: 4px; border-color: var(--ct-game-outline); border-radius: 24px; overflow: hidden; }
+.ct-button-depth { position: absolute; left: 0; right: 0; bottom: 0; height: 12px; background-color: var(--ct-game-blue-depth); border-bottom-left-radius: 18px; border-bottom-right-radius: 18px; }
+.ct-button-glint { position: absolute; left: 12px; right: 12px; top: 3px; height: 8px; border-radius: 4px; background-color: var(--ct-game-highlight); }
+.ct-pressable:active { translate: 0 6px; scale: 1 1; }
+.ct-pressable:active > .ct-button-depth { height: 3px; }
+.ct-pressable:active > .ct-button-glint { height: 4px; opacity: 0.55; }
+.ct-pressable:focus { border-color: var(--ct-game-outline); }
+.ct-pressable:disabled { opacity: 0.5; }
+.ct-btn { background-color: var(--ct-game-blue); color: var(--ct-game-white); border-width: 4px; border-color: var(--ct-game-outline); padding-bottom: 32px; font-size: 42px; -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); -unity-text-outline-color: var(--ct-game-outline); -unity-text-outline-width: 1px; }
+.ct-btn:hover { background-color: var(--ct-game-blue-light); }
+.ct-btn-primary { background-color: var(--ct-accent); color: var(--ct-ink); -unity-text-outline-width: 0; }
+.ct-btn-primary:hover { background-color: var(--ct-accent-hover); }
+.ct-btn-primary > .ct-button-depth { background-color: var(--ct-game-yellow-depth); }
+.ct-btn-ghost { background-color: var(--ct-card); color: var(--ct-ink); -unity-text-outline-width: 0; }
+.ct-btn-ghost > .ct-button-depth { background-color: var(--ct-line); }
+.ct-btn-danger { background-color: var(--ct-red); color: var(--ct-card); }
+.ct-btn-danger > .ct-button-depth { background-color: var(--ct-ink); opacity: 0.35; }
+.ct-btn .ct-icon { -unity-background-image-tint-color: var(--ct-game-white); }
+.ct-btn-primary .ct-icon, .ct-btn-ghost .ct-icon { -unity-background-image-tint-color: var(--ct-ink); }
+.ct-row-btn, .ct-chip, .ct-venue { border-width: 4px; border-color: var(--ct-game-outline); padding-bottom: 36px; }
+.ct-row-btn > .ct-button-depth, .ct-chip > .ct-button-depth, .ct-venue > .ct-button-depth { background-color: var(--ct-line); }
+.ct-chip-on { background-color: var(--ct-accent); color: var(--ct-ink); border-color: var(--ct-game-outline); }
+.ct-chip-on > .ct-button-depth { background-color: var(--ct-game-yellow-depth); }
+.ct-h1, .ct-h2, .ct-section-title, .ct-chip-title, .ct-venue-title, .ct-phone-title, .ct-brand-wordmark, .ct-logo, .ct-big-number { -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); letter-spacing: 0; }
+.ct-h1 { font-size: 60px; }
+.ct-h2 { font-size: 42px; }
+.ct-brand-mark { background-color: var(--ct-accent); border-width: 4px; border-color: var(--ct-game-outline); border-radius: 18px; }
+.ct-brand-mark .ct-icon { -unity-background-image-tint-color: var(--ct-ink); }
+.ct-brand-wordmark { color: var(--ct-game-white); -unity-text-outline-color: var(--ct-game-outline); -unity-text-outline-width: 2px; }
+.ct-welcome-title { -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 78px; letter-spacing: 0; color: var(--ct-ink); }
+.ct-welcome-portrait { border-width: 4px; border-color: var(--ct-game-outline); }
+.ct-creator-tab { border-width: 0; border-bottom-width: 8px; border-color: var(--ct-line); border-radius: 18px 18px 0 0; -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); }
+.ct-creator-tab > .ct-button-depth, .ct-creator-tab > .ct-button-glint { display: none; }
+.ct-creator-tab-on { border-bottom-color: var(--ct-game-blue); background-color: var(--ct-game-blue); color: var(--ct-card); }
+.ct-creator-focus { border-width: 4px; border-color: var(--ct-game-outline); border-radius: 24px; padding-bottom: 24px; }
+.ct-creator-focus-on { background-color: var(--ct-accent); color: var(--ct-ink); }
+.ct-creator-focus-on .ct-icon { -unity-background-image-tint-color: var(--ct-ink); }
+.ct-creator-focus > .ct-button-depth { background-color: var(--ct-line); }
+.ct-creator-focus-on > .ct-button-depth { background-color: var(--ct-game-yellow-depth); }
+.ct-creator-model { border-width: 4px; border-color: var(--ct-game-outline); }
+.ct-card, .ct-district, .ct-lb-row { border-width: 3px; border-color: var(--ct-game-outline); }
+.ct-phone { background-color: var(--ct-bg); border-width: 5px; border-color: var(--ct-game-outline); border-radius: 36px; }
+.ct-phone-bar { background-color: var(--ct-game-blue); border-bottom-width: 5px; border-bottom-color: var(--ct-game-outline); padding-top: 8px; }
+.ct-phone-title { color: var(--ct-card); font-size: 40px; -unity-text-outline-color: var(--ct-game-outline); -unity-text-outline-width: 1.5px; }
+.ct-phone-clock { color: var(--ct-card); }
+.ct-phone-handle { background-color: var(--ct-game-outline); }
+.ct-phone-bar .ct-btn-icon { min-height: 110px; width: 110px; min-width: 110px; margin: 8px; padding: 24px; background-color: var(--ct-game-blue-light); }
+.ct-app.ct-pressable { background-color: rgba(0,0,0,0); border-width: 0; overflow: visible; }
+.ct-app > .ct-button-depth, .ct-app > .ct-button-glint { display: none; }
+.ct-app-icon { background-color: var(--ct-game-blue-light); border-width: 4px; border-bottom-width: 10px; border-color: var(--ct-game-outline); border-radius: 28px; width: 140px; height: 140px; }
+.ct-app-icon .ct-icon { width: 82px; height: 82px; -unity-background-image-tint-color: var(--ct-ink); }
+.ct-app-locked .ct-app-icon { background-color: var(--ct-surface); border-color: var(--ct-muted); }
+.ct-app-label { -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 34px; }
+.ct-phone-greeting { -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); }
+.ct-slider .unity-base-slider__dragger { border-color: var(--ct-game-outline); background-color: var(--ct-accent); }
+
+/* Game HUD: left thumb moves; two compact rows on the right contain actions. */
+.ct-cash-card { background-color: var(--ct-scrim); border-width: 4px; border-color: var(--ct-game-outline); border-radius: 22px; padding: 12px 20px 16px 12px; }
+.ct-cash-card .ct-icon { width: 64px; height: 64px; -unity-background-image-tint-color: var(--ct-accent); }
+.ct-hud-caption { color: var(--ct-game-cyan); font-size: 22px; }
+.ct-cash { font-size: 42px; color: var(--ct-game-white); -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); }
+.ct-pill { background-color: var(--ct-scrim); color: var(--ct-game-white); border-width: 3px; border-color: var(--ct-game-outline); }
+.ct-pill.ct-green { color: var(--ct-game-green); }
+.ct-pill.ct-red { color: var(--ct-game-coral); }
+.ct-needs-toggle { top: 148px; background-color: var(--ct-card); border-width: 4px; border-color: var(--ct-game-outline); padding-bottom: 20px; }
+.ct-needs-toggle > .ct-button-depth { background-color: var(--ct-line); }
+.ct-needs-toggle .ct-icon { width: 48px; height: 48px; -unity-background-image-tint-color: var(--ct-red); }
+.ct-needs-toggle-title { font-size: 30px; -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); }
+.ct-needs { top: 286px; border-width: 4px; border-color: var(--ct-game-outline); }
+.ct-need-track { height: 14px; border-radius: 7px; }
+.ct-need-fill { border-radius: 7px; background-color: var(--ct-game-blue); }
+.ct-hud-social { left: auto; right: 24px; bottom: 218px; }
+.ct-hud-personal { right: 24px; bottom: 28px; }
+.ct-dock-action { width: 144px; min-width: 144px; min-height: 160px; padding: 16px 8px 24px 8px; border-width: 4px; border-color: var(--ct-game-outline); border-radius: 28px; background-color: var(--ct-game-blue-light); color: var(--ct-ink); }
+.ct-dock-action .ct-icon { width: 66px; height: 66px; -unity-background-image-tint-color: var(--ct-ink); }
+.ct-dock-label { font-size: 30px; -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); }
+.ct-dock-primary { background-color: var(--ct-accent); }
+.ct-dock-primary > .ct-button-depth { background-color: var(--ct-game-yellow-depth); }
+.ct-dock-action.ct-btn-live { background-color: var(--ct-game-green); color: var(--ct-ink); }
+.ct-chat, .ct-emotes { bottom: 446px; border-width: 4px; border-color: var(--ct-game-outline); }
+
+/* Movement sizes use the same 1080 reference canvas as the HUD. */
+.ct-move-controls { position: absolute; left: 16px; bottom: 12px; width: 420px; height: 420px; }
+.ct-move-zone { width: 420px; height: 420px; position: relative; align-items: center; justify-content: center; }
+.ct-move-ring { position: absolute; width: 300px; height: 300px; left: 60px; top: 48px; border-radius: 150px; border-width: 6px; border-color: var(--ct-game-outline); background-color: var(--ct-control-ring); }
+.ct-move-thumb { position: absolute; left: 50%; top: 50%; margin-left: -62px; margin-top: -62px; width: 124px; height: 124px; border-radius: 62px; border-width: 5px; border-bottom-width: 12px; border-color: var(--ct-game-outline); background-color: var(--ct-game-blue-light); }
+.ct-move-active .ct-move-ring { background-color: var(--ct-control-ring-active); }
+.ct-move-active .ct-move-thumb { background-color: var(--ct-game-cyan); }
+.ct-move-running .ct-move-thumb { background-color: var(--ct-accent); }
+.ct-move-hint { position: absolute; left: 0; right: 0; bottom: 12px; -unity-text-align: middle-center; color: var(--ct-card); -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 30px; -unity-text-outline-color: var(--ct-game-outline); -unity-text-outline-width: 2px; }
+.ct-move-arrows { position: absolute; left: 12px; top: 12px; width: 396px; height: 396px; }
+.ct-move-arrow { position: absolute; width: 124px; height: 124px; background-color: var(--ct-game-blue-light); border-width: 5px; border-bottom-width: 12px; border-color: var(--ct-game-outline); border-radius: 26px; align-items: center; justify-content: center; }
+.ct-move-up { left: 136px; top: 0; }
+.ct-move-down { left: 136px; top: 272px; }
+.ct-move-left { left: 0; top: 136px; }
+.ct-move-right { left: 272px; top: 136px; }
+.ct-move-arrow-glyph { width: 64px; height: 64px; -unity-background-image-tint-color: var(--ct-ink); }
+.ct-move-up .ct-move-arrow-glyph { rotate: 90deg; }
+.ct-move-down .ct-move-arrow-glyph { rotate: -90deg; }
+.ct-move-right .ct-move-arrow-glyph { rotate: 180deg; }
+.ct-move-arrow.ct-move-active { background-color: var(--ct-accent); }
+
+/* Signed-in game home. The illustration is original art; balances and story are live data. */
+.ct-lobby { background-color: var(--ct-game-blue); overflow: hidden; }
+.ct-game-pattern { position: absolute; left: 0; top: 0; right: 0; bottom: 0; overflow: hidden; }
+.ct-game-pattern-tile { position: absolute; width: 140px; height: 140px; rotate: 45deg; border-radius: 28px; background-color: var(--ct-game-pattern); }
+.ct-lobby-content { flex-grow: 1; padding: 28px 28px 20px 28px; }
+.ct-lobby-header { flex-direction: row; align-items: center; flex-shrink: 0; }
+.ct-lobby-player { flex-grow: 1; flex-shrink: 1; flex-basis: 0; min-width: 0; flex-direction: row; align-items: center; padding: 12px 20px 22px 12px; background-color: var(--ct-deep); color: var(--ct-card); min-height: 140px; margin-right: 20px; }
+.ct-lobby-player > .ct-button-depth { background-color: var(--ct-game-outline); }
+.ct-lobby-avatar { width: 100px; height: 100px; border-radius: 24px; background-color: var(--ct-game-purple); border-width: 4px; border-color: var(--ct-game-outline); align-items: center; justify-content: center; margin-right: 20px; flex-shrink: 0; }
+.ct-lobby-avatar .ct-icon { width: 76px; height: 76px; -unity-background-image-tint-color: var(--ct-ink); }
+.ct-lobby-alias { font-size: 44px; -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ct-lobby-tribe { font-size: 26px; color: var(--ct-surface); white-space: normal; }
+.ct-lobby-settings { width: 132px; min-width: 132px; flex-shrink: 0; min-height: 132px; padding: 28px; margin: 0; background-color: var(--ct-game-cyan); }
+.ct-lobby-settings .ct-icon { -unity-background-image-tint-color: var(--ct-ink); }
+.ct-lobby-resources { flex-direction: row; flex-shrink: 0; margin: 24px 0 0 0; }
+.ct-lobby-resource { min-height: 124px; flex-direction: row; align-items: center; padding: 8px 20px 16px 8px; background-color: var(--ct-game-outline); color: var(--ct-card); }
+.ct-lobby-resource > .ct-button-depth { background-color: var(--ct-resource-depth); }
+.ct-lobby-resource > .ct-button-glint { opacity: 0.2; }
+.ct-lobby-cash-resource { flex-grow: 1; margin-right: 20px; }
+.ct-lobby-energy-resource { width: 310px; }
+.ct-lobby-resource-medallion { width: 88px; height: 88px; border-radius: 44px; background-color: var(--ct-accent); border-width: 4px; border-color: var(--ct-game-yellow-depth); align-items: center; justify-content: center; margin-right: 16px; flex-shrink: 0; }
+.ct-lobby-resource-medallion .ct-icon { width: 58px; height: 58px; -unity-background-image-tint-color: var(--ct-ink); }
+.ct-lobby-energy-resource .ct-lobby-resource-medallion { background-color: var(--ct-game-green); border-color: var(--ct-green); }
+.ct-lobby-resource-label { color: var(--ct-line); font-size: 21px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); }
+.ct-lobby-cash { font-size: 45px; -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); white-space: normal; }
+.ct-lobby-energy { font-size: 38px; -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); }
+.ct-lobby-stage { flex-grow: 1; min-height: 760px; margin: 28px -12px 0 -12px; align-items: stretch; }
+.ct-lobby-eyebrow { font-size: 24px; color: var(--ct-game-cyan); -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-text-align: middle-center; }
+.ct-lobby-title { font-size: 88px; -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); color: var(--ct-card); -unity-text-align: middle-center; white-space: normal; -unity-text-outline-color: var(--ct-game-outline); -unity-text-outline-width: 3px; margin: 8px 0 0 0; }
+.ct-lobby-island { flex-grow: 1; min-height: 490px; height: 0; margin: -12px -20px 0 -20px; }
+.ct-lobby-stories { flex-direction: row; flex-shrink: 0; margin: 0 0 16px 0; }
+.ct-lobby-story { width: 48.8%; min-height: 142px; flex-direction: row; align-items: center; padding: 20px 18px 28px 18px; background-color: var(--ct-card); color: var(--ct-ink); }
+.ct-lobby-dream { margin-right: 2.4%; background-color: var(--ct-game-purple); }
+.ct-lobby-home { background-color: var(--ct-game-cyan); }
+.ct-lobby-story > .ct-button-depth { background-color: var(--ct-game-outline); opacity: 0.22; }
+.ct-lobby-story .ct-icon { width: 60px; height: 60px; flex-shrink: 0; margin-right: 16px; }
+.ct-lobby-story-label { font-size: 22px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); }
+.ct-lobby-story-value { font-size: 33px; -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); white-space: normal; }
+.ct-lobby-enter { min-height: 176px; font-size: 62px; margin: 0 8px 28px 8px; border-width: 5px; border-radius: 28px; }
+.ct-lobby-enter > .ct-button-depth { height: 20px; }
+.ct-lobby-enter > .ct-button-glint { height: 12px; left: 18px; right: 18px; top: 5px; }
+.ct-lobby-enter:active > .ct-button-depth { height: 5px; }
+.ct-lobby-navigation { flex-direction: row; flex-shrink: 0; justify-content: space-between; }
+.ct-lobby-nav { width: 18.8%; min-height: 186px; align-items: center; justify-content: center; padding: 18px 6px 28px 6px; border-radius: 28px; color: var(--ct-ink); }
+.ct-lobby-nav .ct-icon { width: 82px; height: 82px; margin-bottom: 10px; }
+.ct-lobby-nav-label { font-size: 32px; -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); }
+.ct-lobby-nav > .ct-button-depth { background-color: var(--ct-game-outline); opacity: 0.25; }
+.ct-tone-cyan { background-color: var(--ct-game-cyan); }
+.ct-tone-coral { background-color: var(--ct-game-coral); }
+.ct-tone-gold { background-color: var(--ct-accent); }
+.ct-tone-violet { background-color: var(--ct-game-purple); }
+.ct-tone-green { background-color: var(--ct-game-green); }
+
+/* Mounted beside the safe-area PhoneLayer: blocks lobby/world input including edge strips. */
+.ct-phone-scrim, .ct-phone-scrim:hover, .ct-phone-scrim:active, .ct-phone-scrim:focus {
+    position: absolute; left: 0; top: 0; right: 0; bottom: 0;
+    margin: 0; padding: 0; border-width: 0; border-radius: 0;
+    background-color: var(--ct-phone-scrim);
+}
+
+/* Visible native focus: a thicker light rim on dark faces, dark-blue rim on light faces. */
+.ct-pressable:focus { border-width: 6px; border-color: var(--ct-game-white); }
+.ct-btn-primary:focus, .ct-btn-ghost:focus, .ct-chip:focus, .ct-row-btn:focus,
+.ct-venue:focus, .ct-lobby-story:focus, .ct-lobby-nav:focus, .ct-lobby-settings:focus,
+.ct-creator-focus:focus, .ct-needs-toggle:focus, .ct-dock-action:focus { border-color: var(--ct-game-blue-depth); }
+.ct-pressable:focus > .ct-button-glint { opacity: 1; height: 10px; }
+.ct-creator-tab:focus { border-width: 0; border-bottom-width: 8px; border-bottom-color: var(--ct-game-yellow-depth); }
+.ct-app:focus { border-width: 0; }
+.ct-app:focus .ct-app-icon { border-color: var(--ct-game-blue-depth); border-top-width: 6px; border-left-width: 6px; border-right-width: 6px; }
+
+.ct-pressable:focus:active > .ct-button-glint { height: 4px; opacity: 0.55; }
+
+.layer-screen-backdrop.ct-backdrop-lobby { background-color: var(--ct-game-blue); }
+
+/* A mode caption above the cluster stays clear of the down arrow and every touch target. */
+.ct-move-hint { top: -40px; bottom: auto; }

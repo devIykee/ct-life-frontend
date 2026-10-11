@@ -1,18 +1,21 @@
+using System;
 using System.Collections.Generic;
 using CTLife.Core;
-using CTLife.Realtime;
 using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace CTLife.UI
 {
     /// <summary>
-    /// Toasts (toasts.json ids, literal text) and server events (feature #10, city `event`): "JUST IN" banners
-    /// with a stinger. Liquidations aimed at this player open the REKT card instead.
+    /// Toasts (toasts.json ids, literal text). City incidents have their own readable, bounded presentation.
+    /// Liquidations aimed at this player open the REKT card through its separate subscription.
     /// </summary>
-    public sealed class ToastLayer
+    public sealed class ToastLayer : IDisposable
     {
         private const int MaxVisible = 3;
+        private readonly UiRoot _ui;
+        private readonly IncidentPresentation _incidents;
+        private bool _disposed;
         private readonly VisualElement _layer;
         private readonly Queue<(string text, ToastKind kind)> _queue = new Queue<(string, ToastKind)>();
         private readonly List<(VisualElement el, float until)> _live = new List<(VisualElement, float)>();
@@ -21,46 +24,21 @@ namespace CTLife.UI
         public ToastLayer(VisualElement layer)
         {
             _layer = layer;
+            _ui = UiRoot.Instance;
+            _layer.RegisterCallback<DetachFromPanelEvent>(OnDetached);
             _subs.On<ToastSignal>(OnToast);
-            _subs.On<EventMessage>(OnEvent);
-            UiRoot.Instance.AddUpdater(Tick);
+            _incidents = new IncidentPresentation(_ui);
+            _ui.AddUpdater(Tick);
         }
 
         private void OnToast(ToastSignal t)
         {
+            if (_disposed) return;
             var text = t.literal ?? Strings.Toast(t.textId, t.@params);
             var kind = t.kind;
             if (t.textId == "toast_drained") kind = ToastKind.Bad;
             Enqueue(text, kind);
             Bus.Publish(new SfxSignal(kind == ToastKind.Bad ? "sfx_ui_error" : "sfx_ui_toast"));
-        }
-
-        private void OnEvent(EventMessage e)
-        {
-            var p = e.@params ?? new Dictionary<string, string>();
-            string P(string k) => p.TryGetValue(k, out var v) ? v : "?";
-            string Cents(string k) => p.TryGetValue(k, out var v) && Money.TryParseCents(v, out var c) ? Money.Cash(c, true) : "?";
-            string text;
-            string sfx = "sfx_ui_toast";
-            switch (e.eventId)
-            {
-                case "evt_liquidation": text = $"JUST IN: {P("alias")} got liquidated on ${P("ticker")} at {P("leverage")}x, {Cents("lossCents")} gone"; sfx = "sfx_liquidation"; break;
-                case "evt_rug": text = $"JUST IN: ${P("ticker")} rugged. Peak mcap {Cents("peakMcapCents")}"; sfx = "sfx_rug"; break;
-                case "evt_coin_launch": text = $"New launch: ${P("ticker")} ({P("name")})"; sfx = "sfx_new_coin"; break;
-                case "evt_coin_graduated": text = $"${P("ticker")} graduated at {P("multiple")}x"; sfx = "sfx_graduation"; break;
-                case "evt_big_win": text = $"{P("alias")} flipped {Cents("fromCents")} into {Cents("toCents")} on ${P("ticker")}"; sfx = "sfx_whale_horn"; break;
-                case "evt_mood_change": text = $"Market Mood {(P("direction") == "up" ? "turned green" : "turned red")} ({P("moodBps")} bps)"; break;
-                case "evt_exploit": text = $"JUST IN: exploit on {P("target")}"; sfx = "sfx_rug"; break;
-                case "evt_ore_motherlode": text = $"JUST IN: ORE motherlode hit, {P("amountOre")} ORE"; sfx = "sfx_moon_horn"; break;
-                case "evt_sunday_unlock": text = "Sunday Unlock: rent and gas are due"; sfx = "sfx_sunday_bell"; break;
-                case "evt_meta_rotated": text = "The Weekly Meta rotated"; break;
-                default:
-                    Log.UnknownId("events", e.eventId);
-                    text = "Something happened in CT City";
-                    break;
-            }
-            Enqueue(text, ToastKind.Event);
-            Bus.Publish(new SfxSignal(sfx));
         }
 
         private void Enqueue(string text, ToastKind kind)
@@ -80,8 +58,27 @@ namespace CTLife.UI
             }
         }
 
+        private void OnDetached(DetachFromPanelEvent e)
+        {
+            if (e.target == _layer) Dispose();
+        }
+
+        public void Dispose()
+        {
+            if (_disposed) return;
+            _disposed = true;
+            _layer.UnregisterCallback<DetachFromPanelEvent>(OnDetached);
+            _subs.Dispose();
+            if (_ui != null) _ui.RemoveUpdater(Tick);
+            _incidents.Dispose();
+            foreach (var toast in _live) toast.el.RemoveFromHierarchy();
+            _live.Clear();
+            _queue.Clear();
+        }
+
         private void Tick()
         {
+            if (_disposed) return;
             for (int i = _live.Count - 1; i >= 0; i--)
             {
                 if (Time.unscaledTime < _live[i].until) continue;

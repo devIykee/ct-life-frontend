@@ -8,7 +8,29 @@ namespace CTLife.World
     {
         private static Sprite _blob;
 
-        public static AvatarView Create(string name, string[] look, bool isNpc, string archetypeId = null, Transform parent = null)
+        public static AvatarView Create(string name, string[] look, bool isNpc, string archetypeId = null, Transform parent = null, bool forPreview = false)
+            => CreateResolved(name, look, isNpc, archetypeId, parent, forPreview, null);
+
+        /// <summary>Server role/identity selects only explicitly curated FE presentation. Missing bindings keep the legacy route.</summary>
+        public static AvatarView CreateNpc(string name, string npcId, string archetypeId, Transform parent = null,
+            NpcCastCatalog catalog = null)
+        {
+            var registry = CharacterRegistry.Instance;
+            // An explicit catalog supports a real-path development fixture without changing any resource asset.
+            if (catalog == null) catalog = NpcCastCatalog.Instance;
+            CharacterRegistry.Entry entry = null;
+            string reason = "no-cast-catalog";
+            if (catalog != null) catalog.TryResolve(npcId, archetypeId, registry, out entry, out reason);
+            var view = CreateResolved(name, null, true, archetypeId, parent, false, entry);
+            view.npcId = npcId;
+#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
+            CTLife.Core.Log.Info("npc-cast", $"role={archetypeId}; selection={entry?.key ?? "legacy-fallback"}; reason={reason}");
+#endif
+            return view;
+        }
+
+        private static AvatarView CreateResolved(string name, string[] look, bool isNpc, string archetypeId,
+            Transform parent, bool forPreview, CharacterRegistry.Entry selectedEntry)
         {
             GameObject go;
             Animator animator = null;
@@ -17,8 +39,28 @@ namespace CTLife.World
             Mesh[] lods = null;
 
             var resolvedLook = isNpc ? NpcLook(archetypeId) : look;
-            if (ItemCatalog.TryResolve(resolvedLook, out var basePrefab, out var partPrefabs))
+            float height = 1.75f;
+            var reg = CharacterRegistry.Instance;
+            var entry = selectedEntry ?? (reg == null ? null : isNpc ? reg.ForArchetype(archetypeId) : reg.ForLook(look));
+
+            if (entry?.prefab != null)
             {
+                // 1) Any Humanoid prefab from the registry (single mesh or pre-assembled).
+                go = Object.Instantiate(forPreview && entry.previewPrefab != null ? entry.previewPrefab : entry.prefab, parent);
+                go.name = name;
+                animator = go.GetComponentInChildren<Animator>();
+                if (animator == null) animator = go.AddComponent<Animator>();
+                var ctrl = entry.controllerOverride != null ? entry.controllerOverride :
+                    reg.controller != null ? reg.controller : ItemCatalog.AvatarController;
+                if (ctrl != null) animator.runtimeAnimatorController = ctrl;
+                animator.applyRootMotion = false;
+                animator.cullingMode = AnimatorCullingMode.CullCompletely;
+                body = LargestSkinnedRenderer(go);
+                height = entry.height > 0 ? entry.height : MeasureHeight(go, 1.75f);
+            }
+            else if (ItemCatalog.TryResolve(resolvedLook, out var basePrefab, out var partPrefabs))
+            {
+                // 2) Optional modular parts merged into one SkinnedMeshRenderer.
                 go = Object.Instantiate(basePrefab, parent);
                 go.name = name;
                 var instances = new List<GameObject>();
@@ -37,6 +79,7 @@ namespace CTLife.World
             }
             else
             {
+                // 3) Procedural placeholder (always available).
                 var palette = PlaceholderHumanoid.PaletteFor(resolvedLook);
                 go = PlaceholderHumanoid.Create(name, palette, out body, out var bones, out lods);
                 if (parent != null) go.transform.SetParent(parent, false);
@@ -55,9 +98,36 @@ namespace CTLife.World
             view.isNpc = isNpc;
             view.archetypeId = archetypeId;
             view.displayName = name;
-            view.Init(animator, proc, body, lods, 1.75f);
+            view.Init(animator, proc, body, lods, height);
+            if(!forPreview && entry?.prefab != null)
+            {
+                var runProfile=Resources.Load<SnowRunCorrectionProfile>(SnowRunCorrectionProfile.ResourcePath);
+                if(runProfile!=null)view.BindRunCorrection(runProfile,entry.prefab);
+            }
             view.BabblePitch = isNpc ? 0.85f + (Mathf.Abs((archetypeId ?? "").GetHashCode()) % 40) / 100f : 1f;
             return view;
+        }
+
+        private static SkinnedMeshRenderer LargestSkinnedRenderer(GameObject go)
+        {
+            SkinnedMeshRenderer best = null;
+            int bestVerts = -1;
+            foreach (var r in go.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+            {
+                int v = r.sharedMesh != null ? r.sharedMesh.vertexCount : 0;
+                if (v > bestVerts) { best = r; bestVerts = v; }
+            }
+            return best;
+        }
+
+        private static float MeasureHeight(GameObject go, float fallback)
+        {
+            var renderers = go.GetComponentsInChildren<Renderer>(true);
+            if (renderers.Length == 0) return fallback;
+            var b = renderers[0].bounds;
+            foreach (var r in renderers) b.Encapsulate(r.bounds);
+            float h = b.max.y - go.transform.position.y;
+            return h > 0.5f && h < 4f ? h : fallback;
         }
 
         /// <summary>Deterministic NPC outfit from the archetype id until NPC prefabs exist.</summary>
@@ -80,7 +150,7 @@ namespace CTLife.World
                     {
                         float dx = (x + 0.5f) / n * 2f - 1f, dy = (y + 0.5f) / n * 2f - 1f;
                         float a = Mathf.Clamp01(1f - Mathf.Sqrt(dx * dx + dy * dy));
-                        tex.SetPixel(x, y, new Color(0, 0, 0, a * a * 0.45f));
+                        tex.SetPixel(x, y, new Color(0, 0, 0, a * 0.50f));
                     }
                 tex.Apply(false, true);
                 _blob = Sprite.Create(tex, new Rect(0, 0, n, n), new Vector2(0.5f, 0.5f), n / 1f);

@@ -26,6 +26,10 @@ namespace CTLife.UI
         public VisualElement ToastLayer { get; private set; }
 
         private UIDocument _doc;
+        private PanelSettings _ownedPanelSettings;
+        private VisualElement _screenBackdrop;
+        private Rect _lastSafeArea;
+        private Vector2 _lastPanelSize;
         private readonly List<Action> _updaters = new List<Action>();
 
         public static UiRoot Create()
@@ -39,6 +43,7 @@ namespace CTLife.UI
             var doc = go.AddComponent<UIDocument>();
             doc.panelSettings = LoadPanelSettings();
             var root = go.AddComponent<UiRoot>();
+            root._ownedPanelSettings = doc.panelSettings;
             go.SetActive(true);
             return root;
         }
@@ -46,7 +51,8 @@ namespace CTLife.UI
         private static PanelSettings LoadPanelSettings()
         {
             var ps = Resources.Load<PanelSettings>("UI/PanelSettings");
-            if (ps != null) return ps;
+            // Runtime layout must not mutate the imported settings asset in Editor review.
+            if (ps != null) return Instantiate(ps);
             ps = ScriptableObject.CreateInstance<PanelSettings>();
             ps.name = "RuntimePanelSettings";
             ps.themeStyleSheet = Resources.Load<ThemeStyleSheet>("UI/CTLifeTheme");
@@ -64,6 +70,17 @@ namespace CTLife.UI
             _doc = GetComponent<UIDocument>();
         }
 
+        private void OnDestroy()
+        {
+            if (Instance == this) Instance = null;
+            _updaters.Clear();
+            if (_ownedPanelSettings == null) return;
+            if (_doc != null && _doc.panelSettings == _ownedPanelSettings)
+                _doc.panelSettings = null;
+            Destroy(_ownedPanelSettings);
+            _ownedPanelSettings = null;
+        }
+
         private void OnEnable()
         {
             Root = _doc.rootVisualElement;
@@ -72,16 +89,25 @@ namespace CTLife.UI
             var sheet = Resources.Load<StyleSheet>("UI/ctlife");
             if (sheet != null) Root.styleSheets.Add(sheet);
             else Log.Warn("ui", "Missing Resources/UI/ctlife.uss");
+            var worldSheet = Resources.Load<StyleSheet>("UI/city-hud");
+            if (worldSheet != null) Root.styleSheets.Add(worldSheet);
+            var phoneSheet = Resources.Load<StyleSheet>("UI/phone-ui");
+            if (phoneSheet != null) Root.styleSheets.Add(phoneSheet);
+            var landscapeSheet = Resources.Load<StyleSheet>("UI/landscape");
+            if (landscapeSheet != null) Root.styleSheets.Add(landscapeSheet);
 
             WorldLayer = Layer("layer-world", PickingMode.Position);
             LabelLayer = Layer("layer-labels", PickingMode.Ignore);
             HudLayer = Layer("layer-hud", PickingMode.Ignore);
+            _screenBackdrop = Layer("layer-screen-backdrop", PickingMode.Position);
+            _screenBackdrop.Show(false);
             ScreenLayer = Layer("layer-screens", PickingMode.Ignore);
             PhoneLayer = Layer("layer-phone", PickingMode.Ignore);
             ModalLayer = Layer("layer-modal", PickingMode.Ignore);
             ToastLayer = Layer("layer-toast", PickingMode.Ignore);
             WorldInputLayer.Attach(WorldLayer);
-            ApplySafeArea();
+            Root.RegisterCallback<GeometryChangedEvent>(_ => ApplySafeArea(true));
+            ApplySafeArea(true);
         }
 
         private VisualElement Layer(string cls, PickingMode picking)
@@ -93,22 +119,40 @@ namespace CTLife.UI
             return e;
         }
 
-        /// <summary>Pads the HUD/screen/phone layers by the device safe area (Seeker has a punch-hole camera).</summary>
-        private void ApplySafeArea()
+        // A full-bleed backing covers the unsafe strips while controls remain inside safe insets.
+        internal void RefreshScreenBackdrop()
         {
+            if (_screenBackdrop == null) return;
+            VisualElement topScreen = null;
+            if (ScreenLayer != null)
+                foreach (var screen in ScreenLayer.Children())
+                    if (screen.resolvedStyle.display != DisplayStyle.None) topScreen = screen;
+            _screenBackdrop.EnableInClassList("ct-backdrop-lobby", topScreen != null && topScreen.ClassListContains("ct-lobby"));
+            _screenBackdrop.Show(topScreen != null);
+        }
+
+        /// <summary>Inset layer bounds: absolute-positioned children do not respect their parent's padding.</summary>
+        private void ApplySafeArea(bool force = false)
+        {
+            bool landscape = Screen.width > Screen.height;
+            var reference = landscape ? new Vector2Int(2400, 1080) : new Vector2Int(1080, 2400);
+            if (_doc.panelSettings.referenceResolution != reference)
+                _doc.panelSettings.referenceResolution = reference;
+            Root.EnableInClassList("ct-landscape", landscape);
             var sa = Screen.safeArea;
-            if (Screen.width <= 0 || Screen.height <= 0) return;
-            Root.RegisterCallback<GeometryChangedEvent>(_ =>
+            var size = Root.layout.size;
+            if (Screen.width <= 0 || Screen.height <= 0 || size.x <= 0f || size.y <= 0f || float.IsNaN(size.x)) return;
+            if (!force && sa == _lastSafeArea && size == _lastPanelSize) return;
+            _lastSafeArea = sa;
+            _lastPanelSize = size;
+            float sx = size.x / Screen.width, sy = size.y / Screen.height;
+            foreach (var layer in new[] { HudLayer, ScreenLayer, PhoneLayer, ModalLayer, ToastLayer })
             {
-                float sx = Root.layout.width / Screen.width, sy = Root.layout.height / Screen.height;
-                foreach (var l in new[] { HudLayer, ScreenLayer, PhoneLayer, ModalLayer, ToastLayer })
-                {
-                    l.style.paddingTop = (Screen.height - sa.yMax) * sy;
-                    l.style.paddingBottom = sa.yMin * sy;
-                    l.style.paddingLeft = sa.xMin * sx;
-                    l.style.paddingRight = (Screen.width - sa.xMax) * sx;
-                }
-            });
+                layer.style.top = Mathf.Max(0f, Screen.height - sa.yMax) * sy;
+                layer.style.bottom = Mathf.Max(0f, sa.yMin) * sy;
+                layer.style.left = Mathf.Max(0f, sa.xMin) * sx;
+                layer.style.right = Mathf.Max(0f, Screen.width - sa.xMax) * sx;
+            }
         }
 
         /// <summary>Per-frame callbacks for UI that tracks the world (labels, bubbles).</summary>
@@ -117,6 +161,7 @@ namespace CTLife.UI
 
         private void LateUpdate()
         {
+            ApplySafeArea();
             for (int i = 0; i < _updaters.Count; i++)
             {
                 try { _updaters[i](); } catch (Exception e) { Log.Exception("ui", e); }

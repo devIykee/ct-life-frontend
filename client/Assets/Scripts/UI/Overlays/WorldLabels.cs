@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using CTLife.Core;
 using CTLife.World;
@@ -11,9 +12,11 @@ namespace CTLife.UI
     /// per avatar). NPCs are always tagged "NPC" (Build Spec "Density"), Seeker holders get a check badge, ORE
     /// stakers a pickaxe tier mark, and speakers a live dot. Only avatars within 16 m get a tag.
     /// </summary>
-    public sealed class WorldLabels
+    public sealed class WorldLabels : IDisposable
     {
         private const float TagDistance = 16f;
+        private readonly UiRoot _ui;
+        private bool _disposed;
 
         private readonly VisualElement _layer;
         private readonly Dictionary<AvatarView, Label> _tags = new Dictionary<AvatarView, Label>();
@@ -24,13 +27,15 @@ namespace CTLife.UI
         public WorldLabels(VisualElement layer)
         {
             _layer = layer;
+            _ui = UiRoot.Instance;
+            _layer.RegisterCallback<DetachFromPanelEvent>(OnDetached);
             _subs.On<BubbleSignal>(OnBubble);
-            UiRoot.Instance.AddUpdater(Tick);
+            _ui.AddUpdater(Tick);
         }
 
         private void OnBubble(BubbleSignal b)
         {
-            if (b.anchor == null || string.IsNullOrEmpty(b.text)) return;
+            if (_disposed || b.anchor == null || string.IsNullOrEmpty(b.text)) return;
             for (int i = _bubbles.Count - 1; i >= 0; i--)
                 if (_bubbles[i].anchor == b.anchor) { _bubbles[i].el.RemoveFromHierarchy(); _bubbles.RemoveAt(i); }
             var el = El.Div(b.isNpc ? "ct-bubble ct-bubble-npc" : "ct-bubble", El.Text(b.text, "ct-bubble-text"));
@@ -39,11 +44,31 @@ namespace CTLife.UI
             _bubbles.Add((b.anchor, el, Time.unscaledTime + (b.seconds > 0 ? b.seconds : 4f)));
         }
 
+        private void OnDetached(DetachFromPanelEvent e)
+        {
+            if (e.target == _layer) Dispose();
+        }
+
+        public void Dispose()
+        {
+            if (_disposed) return;
+            _disposed = true;
+            _layer.UnregisterCallback<DetachFromPanelEvent>(OnDetached);
+            _subs.Dispose();
+            if (_ui != null) _ui.RemoveUpdater(Tick);
+            foreach (var tag in _tags.Values) tag.RemoveFromHierarchy();
+            foreach (var bubble in _bubbles) bubble.el.RemoveFromHierarchy();
+            _tags.Clear();
+            _bubbles.Clear();
+            _stale.Clear();
+        }
+
         private void Tick()
         {
+            if (_disposed) return;
             var cam = CameraRig.Instance != null ? CameraRig.Instance.Camera : Camera.main;
-            if (cam == null || UiRoot.Instance == null) return;
-            var ui = UiRoot.Instance;
+            if (cam == null || _ui == null) return;
+            var ui = _ui;
             var camPos = cam.transform.position;
 
             foreach (var a in AvatarView.All)

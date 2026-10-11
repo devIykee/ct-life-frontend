@@ -12,13 +12,17 @@ namespace CTLife.UI
     {
         public static ScrollView Page(params VisualElement[] children)
         {
-            var s = new ScrollView(ScrollViewMode.Vertical);
+            var s = El.VerticalScroll();
             s.AddToClassList("ct-app-page");
             foreach (var c in children) if (c != null) s.Add(c);
             return s;
         }
 
-        public static string Err(Exception e) => e is ApiException api ? Strings.Error(api.Code, api.ServerMessage) : e.Message;
+        public static string Err(Exception e)
+        {
+            Log.Exception("phone", e);
+            return e is ApiException api ? Strings.Error(api.Code, api.ServerMessage) : Strings.T("common.error");
+        }
     }
 
     /// <summary>Travel (feature #4).</summary>
@@ -27,26 +31,17 @@ namespace CTLife.UI
         private readonly Action<string> _travel;
         public MapApp(Action<string> travel) { _travel = travel; }
         public override string Id => "map";
-        public override string Title => "Map";
+        public override string Title => Strings.T("app.map");
         public override string Color => "#20bf6b";
 
         public override VisualElement Open()
         {
             var reg = Services.Get<ConfigStore>().Registries;
-            var page = AppUi.Page();
-            foreach (var d in reg.Districts)
+            return CityMapScreen.BuildGuide(reg, Phone.CurrentPhase, id =>
             {
-                page.Add(El.Text(d.Value, "ct-h2"));
-                foreach (var v in reg.VenueOrder.Where(v => v.districtId == d.Key))
-                {
-                    bool open = v.phase <= Phone.CurrentPhase;
-                    var id = v.id;
-                    var b = El.Btn(v.name + (open ? "" : $"  · Phase {v.phase}"), () => { Phone.Close(); _travel(id); }, open ? "ct-row-btn" : "ct-row-btn ct-venue-locked");
-                    b.SetEnabled(open);
-                    page.Add(b);
-                }
-            }
-            return page;
+                Phone.Close();
+                _travel?.Invoke(id);
+            });
         }
     }
 
@@ -54,18 +49,18 @@ namespace CTLife.UI
     public sealed class BankApp : PhoneApp
     {
         public override string Id => "bank";
-        public override string Title => "Bank";
+        public override string Title => Strings.T("app.bank");
         public override string Color => "#f7b731";
 
         public override VisualElement Open()
         {
             var p = Services.Get<PlayerProfile>();
             return AppUi.Page(
-                El.Text("Cash", "ct-small ct-muted"),
-                El.Text(Money.Cash(p.CashCents), "ct-big-number"),
-                El.Text(p.DebtCents > 0 ? $"Debt: {Money.Cash(p.DebtCents)} (repaid $120 a week)" : "No debt", "ct-body"),
-                El.Text("Cash is game money. It can never be withdrawn.", "ct-small ct-muted"),
-                El.Btn("Top up Cash (Phase 2)", () => Bus.Publish(ToastSignal.Text("Top-ups arrive in Phase 2")), "ct-btn ct-btn-ghost"));
+                El.Text(Strings.T("bank.title"), "ct-h1"),
+                El.Div("ct-bank-hero", El.Text(Strings.T("bank.balance"), "ct-eyebrow"),
+                    El.Text(Money.Cash(p.CashCents), "ct-big-number"), El.Text(Strings.T("bank.note"), "ct-small ct-muted")),
+                El.Div("ct-card", El.Text(p.DebtCents > 0 ? Strings.F("bank.debt", Money.Cash(p.DebtCents)) : Strings.T("bank.noDebt"), "ct-body")),
+                El.Btn(Strings.T("bank.topup"), () => Bus.Publish(ToastSignal.Text(Strings.T("bank.topup"))), "ct-btn ct-btn-ghost"));
         }
     }
 
@@ -73,96 +68,59 @@ namespace CTLife.UI
     public sealed class RichListApp : PhoneApp
     {
         public override string Id => "richlist";
-        public override string Title => "Rich List";
+        public override string Title => Strings.T("app.richlist");
         public override string Color => "#8854d0";
+        private int _requestVersion;
 
         public override VisualElement Open()
         {
             var list = El.Div("ct-col");
-            var tabs = El.Div("ct-row");
-            var page = AppUi.Page(tabs, list);
+            var tabs = El.Div("ct-app-tabs");
+            var page = AppUi.Page(El.Text(Strings.T("rich.title"), "ct-h1"), tabs, list);
             void Load(string board)
             {
                 list.Clear();
-                list.Add(El.Text("Loading…", "ct-small"));
-                Fetch(board, list);
+                list.Add(El.Text(Strings.T("common.loading"), "ct-small ct-muted"));
+                foreach (var tab in tabs.Children()) tab.EnableInClassList("ct-chip-on", tab.name == board);
+                Fetch(board, list, ++_requestVersion);
             }
-            tabs.Add(El.Btn("Net Worth", () => Load("net_worth"), "ct-chip"));
-            tabs.Add(El.Btn("Weekly PnL", () => Load("weekly_pnl"), "ct-chip"));
+            var net = El.Btn(Strings.T("rich.netWorth"), () => Load("net_worth"), "ct-chip");
+            net.name = "net_worth";
+            var weekly = El.Btn(Strings.T("rich.weekly"), () => Load("weekly_pnl"), "ct-chip");
+            weekly.name = "weekly_pnl";
+            tabs.Add(net);
+            tabs.Add(weekly);
             Load("net_worth");
             return page;
         }
 
-        private static async void Fetch(string board, VisualElement list)
+        public override void Closed() => _requestVersion++;
+
+        private async void Fetch(string board, VisualElement list, int version)
         {
             try
             {
                 var lb = await Services.Get<Api>().Leaderboard(board);
+                if (version != _requestVersion) return;
                 list.Clear();
                 foreach (var e in lb.Entries ?? new List<BoardEntry>())
                     list.Add(El.Div("ct-lb-row", El.Text("#" + e.Rank, "ct-lb-rank"), El.Text(e.Alias, "ct-lb-name"), El.Text(Money.Cash(e.Value, true), "ct-lb-value")));
-                if (lb.Me != null) list.Add(El.Text($"You: #{lb.Me.Rank} · {Money.Cash(lb.Me.Value, true)}", "ct-body"));
+                if (lb.Entries == null || lb.Entries.Count == 0) list.Add(El.Text(Strings.T("rich.empty"), "ct-body ct-muted"));
+                if (lb.Me != null) list.Add(El.Text(Strings.F("rich.you", lb.Me.Rank, Money.Cash(lb.Me.Value, true)), "ct-body"));
             }
             catch (Exception e)
             {
+                if (version != _requestVersion) return;
                 list.Clear();
                 list.Add(El.Text(AppUi.Err(e), "ct-error"));
             }
         }
     }
 
-    /// <summary>Home and needs (feature #8): eat, sleep, shower, touch grass.</summary>
-    public sealed class HomeApp : PhoneApp
-    {
-        public override string Id => "home";
-        public override string Title => "Home";
-        public override string Color => "#fa8231";
-
-        public override VisualElement Open()
-        {
-            var p = Services.Get<PlayerProfile>();
-            var cfg = Services.Get<ConfigStore>().Config("needs");
-            var page = AppUi.Page(El.Text("Home: " + (p.Me?.HomeId ?? "none"), "ct-h2"));
-            var status = El.Text("", "ct-small");
-            foreach (var action in new[] { "eat", "sleep", "shower", "touch_grass" })
-            {
-                var a = action;
-                var cost = cfg?["actions"]?[a]?.Long("costCents") ?? 0;
-                page.Add(El.Btn(Label(a) + (cost > 0 ? $"  ({Money.Cash(cost)})" : ""), async () =>
-                {
-                    status.text = "…";
-                    try
-                    {
-                        var r = await Services.Get<Api>().NeedsAction(a);
-                        p.SetNeeds(r.Needs);
-                        p.SetCash(r.CashCents);
-                        status.text = "Done";
-                        Bus.Publish(new SfxSignal("sfx_ui_success"));
-                    }
-                    catch (Exception e)
-                    {
-                        status.text = AppUi.Err(e);
-                    }
-                }, "ct-row-btn"));
-            }
-            page.Add(status);
-            return page;
-        }
-
-        private static string Label(string a) => a switch
-        {
-            "eat" => "Eat",
-            "sleep" => "Sleep",
-            "shower" => "Shower",
-            "touch_grass" => "Touch grass",
-            _ => a,
-        };
-    }
-
     public sealed class ProfileApp : PhoneApp
     {
         public override string Id => "profile";
-        public override string Title => "Profile";
+        public override string Title => Strings.T("app.profile");
         public override string Color => "#2d98da";
 
         public override VisualElement Open()
@@ -173,12 +131,12 @@ namespace CTLife.UI
             var page = AppUi.Page(
                 El.Text(p.Alias + (me?.User?.IsSeeker == true ? " ✓" : ""), "ct-h1"),
                 El.Text(reg.Tribe(me?.Character?.TribeId)?.name ?? "", "ct-body"),
-                El.Text("Wallet " + Short(me?.User?.Wallet) + (string.IsNullOrEmpty(me?.User?.SkrName) ? "" : " · " + me.User.SkrName), "ct-small ct-muted"),
-                El.Text("Miner tier: " + (me?.MinerTier.ToString() ?? "none"), "ct-small"));
+                El.Text(Strings.F("profile.wallet", Short(me?.User?.Wallet)) + (string.IsNullOrEmpty(me?.User?.SkrName) ? "" : " · " + me.User.SkrName), "ct-small ct-muted"),
+                El.Text(Strings.F("profile.miner", Strings.ReadableId(me?.MinerTier.ToString())), "ct-small"));
             if (me?.Skills != null)
             {
                 var s = me.Skills;
-                page.Add(El.Text("Skills", "ct-h2"));
+                page.Add(El.Text(Strings.T("profile.skills"), "ct-h2"));
                 foreach (var (name, v) in new[] { ("Clout", s.Clout), ("Coding", s.Coding), ("Trading", s.Trading), ("Writing", s.Writing), ("Design", s.Design), ("Security", s.Security) })
                     page.Add(El.Div("ct-lb-row", El.Text(name, "ct-lb-name"), El.Text(v + "/10", "ct-lb-value")));
             }
@@ -193,27 +151,45 @@ namespace CTLife.UI
         private readonly Action _signOut;
         public SettingsApp(Action signOut) { _signOut = signOut; }
         public override string Id => "settings";
-        public override string Title => "Settings";
+        public override string Title => Strings.T("app.settings");
         public override string Color => "#4b6584";
 
         public override VisualElement Open()
         {
             var am = CTLife.Audio.AudioManager.Instance;
-            var page = AppUi.Page(El.Text("Settings", "ct-h1"));
+            var page = AppUi.Page(El.Text(Strings.T("settings.note"), "ct-body ct-muted"));
+            var controls = El.Div("ct-app-tabs");
+            var controlHelp = El.Text("", "ct-small ct-muted");
+            Button analog = null, arrows = null;
+            analog = El.Btn(Strings.T("controls.analog"), () => SelectControls(MovementControlMode.Analog), "ct-chip");
+            arrows = El.Btn(Strings.T("controls.arrows"), () => SelectControls(MovementControlMode.Arrows), "ct-chip");
+            void SelectControls(MovementControlMode mode)
+            {
+                ControlSettings.MovementMode = mode;
+                analog.EnableInClassList("ct-chip-on", mode == MovementControlMode.Analog);
+                arrows.EnableInClassList("ct-chip-on", mode == MovementControlMode.Arrows);
+                controlHelp.text = Strings.T(mode == MovementControlMode.Analog ? "controls.analogHelp" : "controls.arrowsHelp");
+            }
+            controls.Add(analog);
+            controls.Add(arrows);
+            SelectControls(ControlSettings.MovementMode);
+            page.Add(El.Text(Strings.T("controls.title"), "ct-section-title"));
+            page.Add(controls);
+            page.Add(controlHelp);
             if (am != null)
             {
-                page.Add(Slider("Music", am.musicVolume, v => am.musicVolume = v));
-                page.Add(Slider("Sound effects", am.sfxVolume, v => am.sfxVolume = v));
+                page.Add(Slider(Strings.T("settings.music"), am.musicVolume, v => am.musicVolume = v));
+                page.Add(Slider(Strings.T("settings.sound"), am.sfxVolume, v => am.sfxVolume = v));
             }
-            var cfg = Services.Get<ConfigStore>();
-            page.Add(El.Text($"Version {Semver.ClientVersion} · contract {Semver.ContractVersion} · config {cfg.Version} ({cfg.Source}) · env {Env.Current.id}", "ct-small ct-muted"));
-            page.Add(El.Btn("Sign out", () => { Phone.Close(); _signOut?.Invoke(); }, "ct-btn ct-btn-danger"));
+            page.Add(AssetCredits.Build());
+            page.Add(El.Text(Strings.F("settings.version", Semver.ClientVersion), "ct-small ct-muted"));
+            page.Add(El.Btn(Strings.T("settings.signout"), () => { Phone.Close(); _signOut?.Invoke(); }, "ct-btn ct-btn-danger", sfx: null));
             return page;
         }
 
         private static VisualElement Slider(string label, float value, Action<float> set)
         {
-            var s = new Slider(label, 0f, 1f) { value = value };
+            var s = new Slider(label, 0f, 1f) { value = value, fill = true };
             s.AddToClassList("ct-slider");
             s.RegisterValueChangedCallback(e => set(e.newValue));
             return s;

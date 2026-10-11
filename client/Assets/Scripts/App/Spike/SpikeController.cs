@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using CTLife.Core;
 using CTLife.Net;
@@ -20,14 +21,20 @@ namespace CTLife.App
     {
         public const int TargetAvatars = 62;
 
+        private readonly List<IDisposable> _overlays = new List<IDisposable>();
+        private UiRoot _ui;
+        private VisualElement _panel;
+        private Action _tick;
+        private bool _disposed;
         private Label _fps, _colyseus, _livekit, _siws, _avatars;
 
         private async void Start()
         {
+            _ui = UiRoot.Instance;
             BuildOverlay();
-            new WorldLabels(UiRoot.Instance.LabelLayer);
-            new ToastLayer(UiRoot.Instance.ToastLayer);
-            new BusyOverlay(UiRoot.Instance.ToastLayer);
+            _overlays.Add(new WorldLabels(_ui.LabelLayer));
+            _overlays.Add(new ToastLayer(_ui.ToastLayer));
+            _overlays.Add(new BusyOverlay(_ui.ToastLayer));
             await Run();
         }
 
@@ -38,15 +45,29 @@ namespace CTLife.App
             _colyseus = El.Text("Colyseus: waiting", "ct-small");
             _livekit = El.Text("LiveKit: waiting", "ct-small");
             _siws = El.Text("SIWS: not tried (needs fingerprint)", "ct-small");
-            var panel = El.Div("ct-spike", El.Text("CT Life engine spike", "ct-body"), _fps, _avatars, _colyseus, _livekit, _siws,
-                El.Btn("Sign in with Solana", () => _ = TrySiws(), "ct-btn ct-btn-primary"));
-            panel.pickingMode = PickingMode.Position;
-            UiRoot.Instance.HudLayer.Add(panel);
-            UiRoot.Instance.AddUpdater(() =>
+            _panel = El.Div("ct-spike", El.Text("CT Life engine spike", "ct-body"), _fps, _avatars, _colyseus, _livekit, _siws,
+                El.Btn("Sign in with Solana", () => { if (!_disposed) _ = TrySiws(); }, "ct-btn ct-btn-primary"));
+            _panel.pickingMode = PickingMode.Position;
+            _ui.HudLayer.Add(_panel);
+            _tick = () =>
             {
+                if (_disposed) return;
                 _fps.text = $"fps {FpsMeter.Average:0.0} (min {FpsMeter.Min:0.0}, 1% {FpsMeter.OnePercentLow:0.0})";
                 _avatars.text = $"avatars {AvatarView.All.Count} · thermal {(PerfManager.Instance != null ? PerfManager.Instance.ThermalLevel : -1)}";
-            });
+            };
+            _ui.AddUpdater(_tick);
+        }
+
+        private void OnDestroy()
+        {
+            if (_disposed) return;
+            _disposed = true;
+            for (int i = _overlays.Count - 1; i >= 0; i--) _overlays[i].Dispose();
+            _overlays.Clear();
+            if (_ui != null && _tick != null) _ui.RemoveUpdater(_tick);
+            _tick = null;
+            _panel?.RemoveFromHierarchy();
+            _panel = null;
         }
 
         private async Task Run()
@@ -155,9 +176,9 @@ namespace CTLife.App
             }
         }
 
-        private static void Report(Label label, string text)
+        private void Report(Label label, string text)
         {
-            if (label != null) label.text = text;
+            if (!_disposed && label != null) label.text = text;
             Log.Info("spike", text);
         }
     }

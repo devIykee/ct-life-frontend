@@ -34,7 +34,9 @@ namespace CTLife.Net
 
         public async Task<Me> Refresh(CancellationToken ct = default)
         {
-            Me = await _api.GetMe(ct);
+            var current = await _api.GetMe(ct);
+            ct.ThrowIfCancellationRequested();
+            Me = current;
             Bus.Publish(new ProfileChangedSignal());
             return Me;
         }

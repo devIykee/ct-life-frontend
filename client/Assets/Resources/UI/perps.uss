@@ -1,0 +1,56 @@
+/* Landscape phone terminal. Existing CT palette and Manrope; no standalone theme. */
+.ct-perps { padding: 0; }
+.ct-perp-content { padding: 24px 32px 40px 32px; flex-shrink: 0; }
+/* The ScrollView owns overflow. Its sections must retain their intrinsic text height. */
+.ct-perp-content > *, .ct-perp-market-panel > *, .ct-perp-order > *,
+.ct-perp-position > *, .ct-perp-receipt > *, .ct-perp-top > .ct-grow > * { flex-shrink: 0; }
+.ct-perp-top, .ct-perp-toolbar { flex-direction: row; align-items: center; justify-content: space-between; }
+.ct-perp-top { margin-bottom: 16px; }
+.ct-perp-title { font-size: 32px; white-space: normal; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); margin: 4px 0; }
+.ct-perp-eyebrow { font-size: 22px; color: var(--ct-muted); white-space: normal; margin: 4px 0 8px 0; }
+.ct-perp-copy { font-size: 28px; white-space: normal; margin: 8px 0; }
+.ct-perp-note { font-size: 24px; color: var(--ct-muted); white-space: normal; margin: 6px 0; }
+.ct-perp-cash { align-items: flex-end; margin-left: 24px; min-width: 200px; }
+/* Right-aligned cash copy must use the column width, not a near-wrap intrinsic width. */
+.ct-perp-cash > .ct-perp-eyebrow, .ct-perp-cash > .ct-perp-cash-value { align-self: stretch; width: 100%; -unity-text-align: middle-right; }
+.ct-perp-cash-value { font-size: 34px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); white-space: normal; }
+.ct-perp-button { font-size: 28px; padding: 20px 24px; min-width: 180px; min-height: 136px; flex-shrink: 0; border-radius: 16px; }
+.ct-perp-toolbar > .ct-perp-button, .ct-perp-top > .ct-perp-button { margin-left: 24px; width: 228px; flex-shrink: 0; }
+.ct-perp-market-panel, .ct-perp-order, .ct-perp-position, .ct-perp-receipt { border-width: 1px; border-color: var(--ct-line); border-radius: 20px; padding: 24px; margin: 16px 0; background-color: var(--ct-card); }
+.ct-perp-market-panel { padding-bottom: 16px; }
+.ct-perp-ticker { font-size: 44px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); white-space: normal; }
+.ct-perp-price { font-size: 52px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); white-space: normal; }
+.ct-perp-change { font-size: 28px; white-space: normal; margin-left: 16px; }
+.ct-perp-chart { height: 220px; min-height: 220px; color: var(--ct-deep); border-bottom-width: 1px; border-bottom-color: var(--ct-line); }
+.ct-perp-split { flex-direction: row; flex-shrink: 0; margin: 8px -4px; }
+.ct-perp-split > .ct-perp-button { flex-grow: 1; flex-basis: 0; min-width: 136px; flex-shrink: 0; margin: 0 4px; }
+.ct-phone .ct-perp-selected { background-color: var(--ct-ink); color: var(--ct-card); border-color: var(--ct-ink); }
+.ct-phone .ct-perp-selected:hover { background-color: var(--ct-deep); color: var(--ct-card); }
+.ct-perp-input { flex-direction: column; margin: 20px 0 8px 0; font-size: 28px; }
+.ct-perp-input > .unity-base-field__label { margin: 0 0 12px 0; min-width: 0; }
+.ct-perp-input .unity-text-field__input { min-height: 124px; border-width: 1px; border-color: var(--ct-line); border-radius: 16px; background-color: var(--ct-card); color: var(--ct-ink); font-size: 36px; padding: 20px 24px; }
+.ct-perp-input:focus .unity-text-field__input { border-width: 3px; border-color: var(--ct-deep); }
+.ct-perp-slider { height: 124px; min-height: 124px; margin: 0 24px; }
+.ct-perp-slider .unity-base-slider__tracker { height: 8px; background-color: var(--ct-line); }
+.ct-perp-slider .unity-base-slider__dragger { width: 56px; height: 56px; margin-top: -24px; border-radius: 28px; background-color: var(--ct-deep); border-width: 0; }
+.ct-perp-metrics { flex-direction: row; flex-wrap: wrap; margin: 12px -8px; }
+.ct-perp-metric { flex-grow: 1; flex-basis: 30%; min-width: 160px; margin: 0 8px; }
+.ct-perp-number { font-size: 30px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); white-space: normal; }
+.ct-perp-status { font-size: 22px; color: var(--ct-muted); margin-left: 16px; white-space: normal; }
+.ct-perp-notice, .ct-perp-message { padding: 20px 24px; margin: 12px 0; border-left-width: 4px; border-left-color: var(--ct-deep); background-color: var(--ct-bg); font-size: 26px; color: var(--ct-ink); white-space: normal; }
+.ct-perp-message { margin: 16px 32px 0 32px; }
+.ct-perp-empty { padding: 28px 0; }
+.ct-perp-market-row { flex-direction: row; align-items: center; min-height: 148px; min-width: 136px; flex-shrink: 0; padding: 20px 24px; margin: 8px 0; border-width: 1px; border-color: var(--ct-line); border-radius: 16px; background-color: var(--ct-card); color: var(--ct-ink); }
+.ct-perp-market-row:hover { background-color: var(--ct-bg); }
+.ct-perp-market-row:focus { border-width: 3px; border-color: var(--ct-deep); }
+.ct-perp-review-watermark { font-size: 24px; color: var(--ct-ink); background-color: var(--ct-accent); padding: 16px 20px; margin-bottom: 20px; white-space: normal; }
+
+/* Atomic prices/statuses cannot wrap at a measured intrinsic-width rounding boundary.
+   Wrap the owning row/group, while descriptive text keeps ordinary multiline flow. */
+.ct-perp-eyebrow, .ct-perp-status, .ct-perp-change, .ct-perp-number,
+.ct-perp-price, .ct-perp-cash-value { white-space: nowrap; flex-shrink: 0; }
+.ct-perp-top { flex-wrap: wrap; }
+.ct-perp-cash { flex-shrink: 0; }
+.ct-perp-cash > .ct-perp-cash-value { width: auto; }
+.ct-perp-price-column { min-width: 640px; flex-shrink: 0; }
+.ct-perp-metric { flex-basis: auto; flex-shrink: 0; min-width: 200px; }

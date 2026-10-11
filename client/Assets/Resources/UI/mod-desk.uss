@@ -1,0 +1,46 @@
+/* Uses the existing CT Life palette and type assets. Staged outside Assets for coordinated import. */
+.ct-desk-overlay { position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: var(--ct-scrim); align-items: center; justify-content: center; padding: 24px; }
+.ct-desk-panel { width: 100%; max-width: 1400px; height: 96%; max-height: 1600px; flex-shrink: 1; padding: 40px; border-radius: 24px; background-color: var(--ct-bg); border-width: 2px; border-color: var(--ct-line); }
+.ct-desk-header { flex-direction: row; align-items: center; margin-bottom: 24px; flex-shrink: 0; }
+.ct-desk-heading { flex-grow: 1; flex-shrink: 1; min-width: 0; }
+.ct-desk-eyebrow { color: var(--ct-muted); font-size: 24px; letter-spacing: 3px; margin-bottom: 8px; }
+.ct-desk-title { color: var(--ct-ink); font-size: 48px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); white-space: normal; }
+.ct-desk-timer { background-color: var(--ct-ink); color: var(--ct-card); border-radius: 20px; padding: 20px 24px; font-size: 36px; margin-left: 24px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); }
+.ct-desk-progress { height: 10px; background-color: var(--ct-surface); border-radius: 8px; overflow: hidden; flex-shrink: 0; }
+.ct-desk-progress-fill { height: 100%; background-color: var(--ct-game-blue); }
+.ct-desk-meta { flex-direction: row; align-items: center; justify-content: space-between; margin: 20px 0 12px 0; flex-shrink: 0; }
+.ct-desk-context { color: var(--ct-muted); font-size: 22px; white-space: normal; flex-shrink: 1; }
+.ct-desk-tally { color: var(--ct-deep); font-size: 28px; margin-left: 16px; }
+.ct-desk-content { flex-grow: 1; flex-shrink: 1; min-height: 0; }
+.ct-desk-rules { color: var(--ct-muted); font-size: 28px; white-space: normal; margin-bottom: 24px; }
+.ct-desk-message-card { background-color: var(--ct-card); border-radius: 24px; border-width: 2px; border-color: var(--ct-line); padding: 32px; }
+.ct-desk-case-number { color: var(--ct-muted); font-size: 22px; letter-spacing: 2px; margin-bottom: 24px; }
+.ct-desk-author { color: var(--ct-deep); font-size: 30px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); margin-bottom: 16px; white-space: normal; }
+.ct-desk-message { color: var(--ct-ink); font-size: 42px; white-space: normal; }
+.ct-desk-feedback { background-color: var(--ct-surface); border-radius: 24px; padding: 24px; margin-top: 20px; }
+.ct-desk-feedback-correct { background-color: var(--ct-green-light); }
+.ct-desk-feedback-incorrect { border-left-width: 6px; border-left-color: var(--ct-red); }
+.ct-desk-feedback-title { color: var(--ct-ink); font-size: 30px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); margin-bottom: 8px; }
+.ct-desk-feedback-body { color: var(--ct-ink); font-size: 28px; white-space: normal; }
+.ct-desk-choices { flex-direction: row; margin-top: 24px; flex-shrink: 0; }
+.ct-desk-choice { border-width: 1px; border-color: var(--ct-deep); border-radius: 16px; width: 48%; flex-grow: 1; margin: 0 8px; min-height: 124px; background-color: var(--ct-deep); color: var(--ct-card); font-size: 38px; }
+.ct-desk-choice:hover, .ct-desk-choice:focus { background-color: var(--ct-ink); border-color: var(--ct-card); color: var(--ct-card); }
+.ct-desk-choice, .ct-desk-next { -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); }
+.ct-desk-choice > .ct-button-depth, .ct-desk-choice > .ct-button-glint, .ct-desk-next > .ct-button-depth, .ct-desk-next > .ct-button-glint { display: none; }
+.ct-desk-next { border-width: 1px; border-color: var(--ct-line); border-radius: 16px; min-height: 124px; margin-top: 24px; font-size: 38px; flex-shrink: 0; }
+.ct-desk-footnote { color: var(--ct-muted); font-size: 22px; white-space: normal; margin-top: 16px; -unity-text-align: middle-center; flex-shrink: 0; }
+.ct-desk-landscape .ct-desk-panel { max-width: 1600px; max-height: 1040px; padding: 24px 40px; }
+.ct-desk-landscape .ct-desk-header { margin-bottom: 12px; }
+.ct-desk-landscape .ct-desk-title { font-size: 48px; }
+.ct-desk-landscape .ct-desk-meta { margin-top: 12px; }
+.ct-desk-landscape .ct-desk-rules { font-size: 26px; margin-bottom: 16px; }
+.ct-desk-landscape .ct-desk-message-card { padding: 24px; }
+.ct-desk-landscape .ct-desk-case-number { margin-bottom: 12px; }
+.ct-desk-landscape .ct-desk-message { font-size: 38px; }
+.ct-desk-landscape .ct-desk-feedback { margin-top: 12px; padding: 16px 24px; }
+.ct-desk-landscape .ct-desk-choices, .ct-desk-landscape .ct-desk-next { margin-top: 16px; }
+.ct-shift-panel { max-width: 960px; max-height: 90%; height: 800px; padding: 48px; }
+.ct-shift-heading { color: var(--ct-ink); font-size: 54px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); white-space: normal; margin: 16px 0; }
+.ct-shift-copy { color: var(--ct-muted); font-size: 30px; white-space: normal; margin-bottom: 24px; }
+.ct-shift-pay { color: var(--ct-deep); font-size: 56px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); white-space: normal; margin: 20px 0; }
+.ct-shift-xp { color: var(--ct-green); font-size: 32px; white-space: normal; margin-bottom: 24px; }

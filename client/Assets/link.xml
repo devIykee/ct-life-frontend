@@ -15,4 +15,12 @@
   <assembly fullname="Solana.Unity.Programs" preserve="all" />
   <assembly fullname="LiveKit" preserve="all" />
   <assembly fullname="Google.Protobuf" preserve="all" />
+  <!-- Engine code stripping removed SphereCollider ("Can't add component because class SphereCollider doesn't exist"
+       on the Seeker): GameObject.CreatePrimitive adds colliders the scripts never reference by type. -->
+  <assembly fullname="UnityEngine.PhysicsModule">
+    <type fullname="UnityEngine.SphereCollider" preserve="all" />
+    <type fullname="UnityEngine.BoxCollider" preserve="all" />
+    <type fullname="UnityEngine.CapsuleCollider" preserve="all" />
+    <type fullname="UnityEngine.MeshCollider" preserve="all" />
+  </assembly>
 </linker>

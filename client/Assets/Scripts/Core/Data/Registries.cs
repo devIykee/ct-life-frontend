@@ -77,9 +77,9 @@ namespace CTLife.Core
             ["ratio_arena"] = "timeline", ["ct_jail"] = "timeline",
             ["terminal_cafe"] = "trenches", ["perp_pit"] = "trenches", ["rekt_clinic"] = "trenches",
             ["launchpad_tower"] = "trenches", ["prediction_pit"] = "trenches", ["the_trenches"] = "trenches",
-            ["audit_row"] = "builder_hills", ["vc_row"] = "builder_hills", ["hackathon_house"] = "builder_hills",
+            ["builder_hills"] = "builder_hills", ["audit_row"] = "builder_hills", ["vc_row"] = "builder_hills", ["hackathon_house"] = "builder_hills",
             ["conference_hall"] = "builder_hills",
-            ["ore_refinery"] = "airdrop_farm", ["airdrop_fields"] = "airdrop_farm", ["sybil_barn"] = "airdrop_farm",
+            ["airdrop_farm"] = "airdrop_farm", ["ore_refinery"] = "airdrop_farm", ["airdrop_fields"] = "airdrop_farm", ["sybil_barn"] = "airdrop_farm",
             ["dubai_marina"] = "dubai_marina", ["club_liquidity"] = "dubai_marina", ["cabal_lounge"] = "dubai_marina",
         };
 

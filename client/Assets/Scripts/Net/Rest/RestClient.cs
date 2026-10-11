@@ -23,7 +23,7 @@ namespace CTLife.Net
     /// Every request sends X-Client-Version and X-Contract-Version. Every POST/PUT/PATCH/DELETE sends an
     /// Idempotency-Key (UUIDv4); retries reuse the same key so the server replays the first response.
     /// </summary>
-    public sealed class RestClient : IRestClient
+    public sealed class RestClient : IRestClient, IUnreplayedRestClient
     {
         private const int TimeoutSeconds = 15;
         private const int MaxNetworkRetries = 2;
@@ -43,6 +43,39 @@ namespace CTLife.Net
 
         public Task<T> Post<T>(string path, object body = null, bool auth = true, string idempotencyKey = null, CancellationToken ct = default) =>
             Send<T>("POST", path, body, auth, idempotencyKey ?? Ids.NewIdempotencyKey(), ct);
+
+        /// <summary>Opt-in economic request: exactly one HTTP attempt; caller retains intent and reconciles uncertainty.</summary>
+        public async Task<T> PostOnce<T>(string path, object body, string idempotencyKey, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            if (!PerpIntent.IsRequestKey(idempotencyKey))
+                throw new ArgumentException("An explicit retained idempotency key is required", nameof(idempotencyKey));
+            var user = _session.UserId;
+            if (!_session.IsSignedIn || string.IsNullOrEmpty(user)) throw new ApiException(401, "UNAUTHORIZED", "Sign in before sending an order");
+            var json = body == null ? null : (body is string s ? s : Json.Serialize(body));
+            // A refresh may precede the write. No 401-triggered write replay follows it.
+            if (_session.AccessTokenStale && RefreshHandler != null && !string.IsNullOrEmpty(_session.RefreshToken))
+                await RefreshHandler();
+            ct.ThrowIfCancellationRequested();
+            if (!_session.IsSignedIn || _session.UserId != user) throw new OperationCanceledException("The signed-in identity changed", ct);
+            var response = await SendOnce("POST", path, json, true, idempotencyKey, null, ct, followRedirects: false);
+            ct.ThrowIfCancellationRequested();
+            if (response.status == 0) throw new ApiException(0, "NETWORK_ERROR", "The request outcome is unknown", isNetwork: true);
+            if (response.status < 200 || response.status >= 300) throw ParseError(response);
+            if (typeof(T) == typeof(NoContent) || response.status == 204) return default;
+            try
+            {
+                if (string.IsNullOrEmpty(response.body)) throw new FormatException("Missing receipt");
+                if (typeof(T) == typeof(string)) return (T)(object)response.body;
+                if (typeof(JToken).IsAssignableFrom(typeof(T))) return (T)(object)Json.ParseRaw(response.body);
+                return Json.Deserialize<T>(response.body);
+            }
+            catch (Exception)
+            {
+                // The write may have committed. Do not present a decode failure as an order rejection.
+                throw new ApiException((int)response.status, "DECODE_FAILED", "The response could not be read; outcome is unknown");
+            }
+        }
 
         public Task<T> Put<T>(string path, object body, CancellationToken ct = default) =>
             Send<T>("PUT", path, body, true, Ids.NewIdempotencyKey(), ct);
@@ -140,7 +173,7 @@ namespace CTLife.Net
         }
 
         private async Task<RawResponse> SendOnce(string method, string path, string jsonBody, bool auth,
-            string idempotencyKey, string ifNoneMatch, CancellationToken ct)
+            string idempotencyKey, string ifNoneMatch, CancellationToken ct, bool followRedirects = true)
         {
             var url = Env.Current.ApiUrl(path);
             using var req = new UnityWebRequest(url, method)
@@ -148,6 +181,7 @@ namespace CTLife.Net
                 downloadHandler = new DownloadHandlerBuffer(),
                 timeout = TimeoutSeconds,
             };
+            if (!followRedirects) req.redirectLimit = 0; // Opt-in orders must not be replayed at another URL.
             if (jsonBody != null)
             {
                 req.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(jsonBody)) { contentType = "application/json" };

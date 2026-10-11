@@ -11,12 +11,17 @@ namespace CTLife.Audio
         public float volume = 1f;
         public float pitchJitter = 0.03f;
         public string category;
+        /// <summary>The raw entry, for set-specific fields (babble: chars_per_second, npc_pitch_range_semitones…).</summary>
+        public JToken raw;
     }
 
     public sealed class MusicEntry
     {
         public string districtId;
         public float bpm;
+        /// <summary>A licensed complete composition. Empty selects the original adaptive-stem mode.</summary>
+        public string fullMix;
+        public float volume = 1f;
         public readonly Dictionary<string, string> stems = new Dictionary<string, string>();
     }
 
@@ -59,7 +64,13 @@ namespace CTLife.Audio
             {
                 foreach (var p in music.Properties())
                 {
-                    var m = new MusicEntry { districtId = p.Name, bpm = p.Value.Float("bpm", 100) };
+                    var m = new MusicEntry
+                    {
+                        districtId = p.Name,
+                        bpm = p.Value.Float("bpm", 100),
+                        fullMix = p.Value.Str("full_mix"),
+                        volume = UnityEngine.Mathf.Clamp01(p.Value.Float("volume", 1f)),
+                    };
                     if (p.Value["stems"] is JObject stems)
                         foreach (var s in stems.Properties()) m.stems[s.Name] = s.Value.ToString();
                     map.Music[p.Name] = m;
@@ -74,7 +85,7 @@ namespace CTLife.Audio
             foreach (var p in obj.Properties())
             {
                 if (p.Name.StartsWith("$") || p.Name.StartsWith("_") || p.Name == "version") continue;
-                var e = new SfxEntry { id = p.Name };
+                var e = new SfxEntry { id = p.Name, raw = p.Value };
                 var v = p.Value;
                 if (v.Type == JTokenType.String) e.files.Add(v.ToString());
                 else if (v is JObject o)

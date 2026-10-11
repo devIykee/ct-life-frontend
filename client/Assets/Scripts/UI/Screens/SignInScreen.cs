@@ -5,48 +5,70 @@ using UnityEngine.UIElements;
 namespace CTLife.UI
 {
     /// <summary>
-    /// Sign In With Solana (contract section 3). Mobile Wallet Adapter is the only real sign-in; the dev button
-    /// appears only where the environment allows `POST /v1/auth/dev` (mock, local).
+    /// Sign In With Solana (contract section 3). The public entry has one path: wallet authentication.
     /// </summary>
     public sealed class SignInScreen : UiScreen
     {
         private readonly Action _onWallet;
-        private readonly Action _onDev;
         private readonly bool _walletAvailable;
         private Label _error;
-        private Button _walletBtn, _devBtn;
+        private Button _walletBtn;
+        private AvatarPreview _preview;
 
-        public SignInScreen(Action onWallet, Action onDev, bool walletAvailable)
+        public SignInScreen(Action onWallet, bool walletAvailable)
         {
             _onWallet = onWallet;
-            _onDev = onDev;
             _walletAvailable = walletAvailable;
         }
 
         protected override VisualElement Build()
         {
-            _walletBtn = El.Btn("Sign in with Solana", _onWallet, "ct-btn ct-btn-primary ct-btn-big");
+            _walletBtn = El.Btn(Strings.T("welcome.wallet"), _onWallet, "ct-btn ct-btn-primary ct-btn-big");
             bool loginUp = Features.IsAvailable(Features.Login);
             _walletBtn.SetEnabled(_walletAvailable && loginUp);
-            _devBtn = El.Btn("Dev sign-in (" + Env.Current.id + ")", _onDev, "ct-btn ct-btn-ghost");
-            _devBtn.Show(Env.Current.allowDevAuth && _onDev != null);
-            _error = El.Text(loginUp ? "" : "Sign-in is temporarily unavailable. Try again in a few minutes.", "ct-error");
-            return El.Div("ct-signin",
-                El.Text("CT LIFE", "ct-logo"),
-                El.Text("Get a job. Trade fake coins. Get rugged. Climb the rich list.", "ct-tagline"),
-                El.Div("ct-grow"),
-                _walletBtn,
-                El.Text(_walletAvailable ? "Uses your Seeker's Seed Vault through Mobile Wallet Adapter." : "Wallet sign-in needs the Android app (Mobile Wallet Adapter).", "ct-small"),
-                _devBtn,
+            _error = El.Text(loginUp ? "" : Strings.T("welcome.unavailable"), "ct-error");
+            var copy = El.Div("ct-welcome-copy",
+                El.Text(Strings.T("welcome.eyebrow"), "ct-eyebrow"),
+                El.Text(Strings.T("welcome.title"), "ct-welcome-title"),
+                El.Text(Strings.T("welcome.body"), "ct-welcome-body"));
+            var hero = El.Div("ct-welcome-hero", copy);
+            var looks = CreatorLookCatalog.Available();
+            if (looks.Count > 0)
+            {
+                _preview = new AvatarPreview(1080, 1440);
+                _preview.SetLook(looks[0].look);
+                _preview.SetYaw(looks[0].previewYaw);
+                _preview.SetPortrait(true);
+                var portrait = El.Div("ct-welcome-portrait");
+                portrait.style.backgroundImage = Background.FromRenderTexture(_preview.Texture);
+                portrait.pickingMode = PickingMode.Ignore;
+                hero.Add(portrait);
+            }
+            var actions = El.Div("ct-welcome-actions", _walletBtn,
+                El.Text(Strings.T(_walletAvailable ? "welcome.walletNote" : "welcome.walletAndroid"), "ct-small ct-muted ct-center"),
                 _error,
-                El.Text("18+ only. Cash is fictional and can never be withdrawn.", "ct-small ct-muted"));
+                El.Text(Strings.T("welcome.age"), "ct-legal"));
+            var scroll = El.VerticalScroll("ct-welcome-scroll");
+            scroll.Add(hero);
+            scroll.contentViewport.RegisterCallback<GeometryChangedEvent>(e =>
+            {
+                if (e.newRect.height > 0) scroll.contentContainer.style.minHeight = e.newRect.height;
+            });
+            return El.Div("ct-signin", El.Brand(true), El.Div("ct-welcome-layout", scroll, actions));
         }
 
         public void SetBusy(bool busy)
         {
-            _walletBtn?.SetEnabled(!busy && _walletAvailable);
-            _devBtn?.SetEnabled(!busy);
+            _walletBtn?.SetEnabled(!busy && _walletAvailable && Features.IsAvailable(Features.Login));
+            if (_walletBtn != null) _walletBtn.text = Strings.T(busy ? "welcome.busy" : "welcome.wallet");
             if (busy && _error != null) _error.text = "";
+        }
+
+        public override void Close()
+        {
+            base.Close();
+            _preview?.Dispose();
+            _preview = null;
         }
 
         public void ShowError(string text)

@@ -49,6 +49,9 @@ namespace CTLife.Core
             }
 #if UNITY_ANDROID && !UNITY_EDITOR
             ReadAndroidExtras(new[] { "env", "autologin", "wallet", "venue", "spike", "seeker", "livekitToken", "livekitUrl" });
+#if DEVELOPMENT_BUILD
+            ReadAndroidExtras(new[] { "review", "reviewScreen", "reviewCapture", "reviewSequence", "reviewExit", "reviewChecks", "reviewNpcChecks", "reviewCastChecks", "reviewAudioChecks", "reviewGaitChecks", "reviewCrowd", "reviewControls", "reviewLook", "reviewTextStress", "reviewInputTrace", "reviewLandscape", "reviewCloseCamera", "reviewIncidentChecks", "reviewIncidentFixture" });
+#endif
 #endif
 #endif
         }

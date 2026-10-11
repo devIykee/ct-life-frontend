@@ -1,0 +1,74 @@
+/* Existing CT palette and Manrope. A single statement sheet beside physical paper slips. */
+.ct-receipt-panel { width: 96%; height: 96%; max-width: 2600px; max-height: 1080px; padding: 16px 40px; }
+.ct-receipt-panel .ct-desk-header { margin-bottom: 4px; }
+.ct-receipt-panel .ct-desk-timer { font-size: 24px; padding: 4px 24px; white-space: nowrap; flex-shrink: 0; }
+.ct-receipt-title, .ct-receipt-score { font-size: 32px; color: var(--ct-ink); -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); white-space: nowrap; flex-shrink: 0; }
+.ct-receipt-score { color: var(--ct-deep); margin-left: 24px; }
+.ct-receipt-meta { flex-direction: row; align-items: center; justify-content: space-between; flex-shrink: 0; margin: 4px 0 2px 0; }
+.ct-receipt-board-title { font-size: 28px; color: var(--ct-ink); -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); white-space: nowrap; flex-shrink: 0; }
+.ct-receipt-counter { font-size: 24px; color: var(--ct-muted); white-space: nowrap; flex-shrink: 0; margin-left: 24px; }
+.ct-receipt-instruction { font-size: 24px; color: var(--ct-muted); white-space: normal; flex-shrink: 0; min-height: 32px; margin-bottom: 4px; }
+.ct-receipt-outcome { color: var(--ct-green); -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); }
+.ct-receipt-outcome-error { color: var(--ct-red); }
+.ct-receipt-workspace { flex-direction: row; flex-grow: 1; flex-shrink: 1; min-height: 556px; }
+.ct-receipt-statement, .ct-receipt-tray { flex-grow: 1; flex-basis: 0; min-width: 0; padding: 4px 24px; border-radius: 16px; }
+.ct-receipt-statement { background-color: var(--ct-card); margin-right: 24px; border-width: 1px; border-color: var(--ct-line); }
+.ct-receipt-tray { background-color: var(--ct-deep); }
+.ct-receipt-section { font-size: 22px; white-space: nowrap; flex-shrink: 0; margin: 0 0 4px 0; color: var(--ct-muted); }
+.ct-receipt-tray .ct-receipt-section { color: var(--ct-card); }
+.ct-receipt-entry, .ct-receipt-slip { min-height: 124px; flex-grow: 1; flex-shrink: 0; margin: 0 0 4px 0; padding: 8px 16px; border-width: 2px; border-color: transparent; border-radius: 8px; background-color: var(--ct-card); color: var(--ct-ink); -unity-text-outline-width: 0; }
+.ct-receipt-entry { border-radius: 0; border-bottom-width: 1px; border-bottom-color: var(--ct-line); }
+.ct-receipt-entry-inner, .ct-receipt-slip-inner { width: 100%; flex-direction: row; align-items: center; }
+.ct-receipt-entry-copy, .ct-receipt-slip-copy { flex-grow: 1; min-width: 0; }
+.ct-receipt-line { flex-direction: row; align-items: center; justify-content: space-between; flex-shrink: 0; }
+.ct-receipt-number, .ct-receipt-letter { width: 56px; margin-right: 16px; font-size: 28px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); color: var(--ct-muted); -unity-text-align: middle-center; white-space: nowrap; flex-shrink: 0; }
+.ct-receipt-letter { color: var(--ct-deep); }
+.ct-receipt-amount { font-size: 32px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); color: var(--ct-ink); white-space: nowrap; flex-shrink: 0; }
+.ct-receipt-item { font-size: 26px; color: var(--ct-ink); white-space: nowrap; flex-shrink: 0; margin-right: 16px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); }
+.ct-receipt-reference, .ct-receipt-date { font-size: 24px; color: var(--ct-muted); white-space: nowrap; flex-shrink: 0; margin-top: 4px; }
+.ct-receipt-date { margin-left: 16px; }
+.ct-receipt-row-state, .ct-receipt-slip-state { font-size: 22px; color: var(--ct-muted); white-space: nowrap; flex-shrink: 0; margin-left: 16px; }
+.ct-receipt-row-paired .ct-receipt-row-state { color: var(--ct-deep); -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); }
+.ct-receipt-slip-paired .ct-receipt-letter { background-color: var(--ct-surface); border-radius: 8px; }
+.ct-receipt-selected { translate: -8px 0; border-color: var(--ct-accent); }
+.ct-receipt-selected .ct-receipt-letter { background-color: var(--ct-accent); border-radius: 8px; }
+.ct-receipt-selected .ct-receipt-slip-state { color: var(--ct-deep); -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); }
+.ct-receipt-notch { position: absolute; top: 50%; margin-top: -8px; width: 16px; height: 16px; border-radius: 8px; background-color: var(--ct-deep); }
+.ct-receipt-notch-left { left: -8px; }
+.ct-receipt-notch-right { right: -8px; }
+.ct-receipt-entry:hover { background-color: var(--ct-bg); }
+.ct-receipt-slip { border-bottom-width: 4px; border-bottom-color: var(--ct-line); }
+.ct-receipt-slip:hover { background-color: var(--ct-card); }
+.ct-receipt-entry:focus, .ct-receipt-slip:focus { border-color: var(--ct-deep); }
+.ct-receipt-selected:focus { border-color: var(--ct-accent); }
+.ct-receipt-entry:disabled, .ct-receipt-slip:disabled { opacity: 1; }
+.ct-receipt-correct .ct-receipt-row-state, .ct-receipt-correct .ct-receipt-slip-state { color: var(--ct-green); }
+.ct-receipt-wrong .ct-receipt-row-state, .ct-receipt-wrong .ct-receipt-slip-state { color: var(--ct-red); }
+.ct-receipt-wrong { border-left-width: 4px; border-left-color: var(--ct-red); }
+.ct-receipt-entry > .ct-button-depth, .ct-receipt-entry > .ct-button-glint,
+.ct-receipt-slip > .ct-button-depth, .ct-receipt-slip > .ct-button-glint,
+.ct-receipt-control > .ct-button-depth, .ct-receipt-control > .ct-button-glint { display: none; }
+.ct-receipt-controls { flex-direction: row; flex-shrink: 0; margin: 8px -8px 0 -8px; }
+.ct-receipt-control { min-height: 124px; min-width: 240px; flex-grow: 1; flex-basis: 0; flex-shrink: 0; margin: 0 8px; padding: 16px 24px; background-color: var(--ct-card); border-width: 1px; border-color: var(--ct-line); border-radius: 16px; color: var(--ct-ink); font-size: 28px; white-space: nowrap; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-text-outline-width: 0; }
+.ct-receipt-control:hover { background-color: var(--ct-bg); }
+.ct-receipt-primary { background-color: var(--ct-accent); border-bottom-width: 6px; border-bottom-color: var(--ct-game-yellow-depth); }
+.ct-receipt-primary:active { scale: 1 1; translate: 0 4px; border-bottom-width: 2px; }
+.ct-receipt-footnote { font-size: 20px; color: var(--ct-muted); white-space: nowrap; flex-shrink: 0; margin-top: 8px; -unity-text-align: middle-center; }
+.ct-receipt-paused { position: absolute; left: 0; right: 0; top: 0; bottom: 0; background-color: var(--ct-scrim); align-items: center; justify-content: center; border-radius: 24px; }
+.ct-receipt-pause-panel { width: 1080px; padding: 40px; border-width: 1px; border-color: var(--ct-line); border-radius: 24px; background-color: var(--ct-bg); }
+.ct-receipt-pause-copy { font-size: 26px; color: var(--ct-muted); white-space: normal; flex-shrink: 0; margin: 16px 0 24px 0; }
+
+/* Global ct-pressable active motion must not move adjacent receipt hit regions into one another. */
+.ct-receipt-panel .ct-receipt-entry:active,
+.ct-receipt-panel .ct-receipt-slip:active { translate: 0 0; scale: 1 1; }
+.ct-receipt-panel .ct-receipt-slip.ct-receipt-selected,
+.ct-receipt-panel .ct-receipt-slip.ct-receipt-selected:active { translate: -8px 0; scale: 1 1; }
+.ct-receipt-panel .ct-receipt-entry:focus,
+.ct-receipt-panel .ct-receipt-slip:focus { border-width: 2px; }
+.ct-receipt-panel .ct-receipt-entry:focus { border-bottom-width: 1px; }
+.ct-receipt-panel .ct-receipt-slip:focus { border-bottom-width: 4px; }
+/* The global ct-btn font is Lilita; receipt data and status copy explicitly use the desk's Manrope. */
+.ct-receipt-entry, .ct-receipt-slip { -unity-font-definition: url("Fonts/Manrope-Regular.ttf"); -unity-text-outline-width: 0; }
+.ct-receipt-reference, .ct-receipt-date, .ct-receipt-row-state, .ct-receipt-slip-state {
+    -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-text-outline-width: 0;
+}

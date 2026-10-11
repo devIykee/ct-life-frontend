@@ -1,6 +1,8 @@
+using System;
 using CTLife.Core;
 using UnityEngine;
 using UnityEngine.AdaptivePerformance;
+using UnityEngine.AdaptivePerformance.Provider;
 using UnityEngine.Rendering.Universal;
 
 namespace CTLife.World
@@ -8,8 +10,8 @@ namespace CTLife.World
     /// <summary>
     /// Seeker budgets (Build Spec "Performance budgets" and "Unity must-dos"): 60 fps cap (Android defaults to 30),
     /// render scale 0.7, and on a thermal warning drop render scale to 0.6 and halve animation rates.
-    /// Thermal signal: Adaptive Performance 6.0 (Android provider) when it is initialised, else Android's
-    /// PowerManager.getCurrentThermalStatus() (API 29+) polled every 5 s.
+    /// Android's full thermal status is polled even when Adaptive Performance is active, since its
+    /// coarse warning level cannot distinguish severe, critical and emergency temperatures.
     /// </summary>
     public sealed class PerfManager : MonoBehaviour
     {
@@ -23,6 +25,35 @@ namespace CTLife.World
         private float _originalScale = -1f;
         private float _nextPoll;
         private bool _apActive;
+        private int _lastAndroidThermalStatus = -1;
+        private float _lastThermalPollAt = -1f;
+        private int _adaptiveLevel;
+#if UNITY_ANDROID && !UNITY_EDITOR
+        // Reduce frame work at Android moderate / AP imminent, before severe pressure.
+        // Cool gameplay stays at 60; recovery still needs 30 observed cooler seconds.
+        private readonly ThermalBudget _budget = new ThermalBudget(limitModerateFrameRate: true);
+#else
+        private readonly ThermalBudget _budget = new ThermalBudget();
+#endif
+        private int _originalFrameRate, _originalSleepTimeout, _originalVSync;
+        private float _originalAnimationScale;
+
+        /// <summary>Observed sensor state is separate from the level last applied by adaptation.</summary>
+        public string ThermalTelemetry()
+        {
+            if (_apActive)
+            {
+                var ap = Holder.Instance;
+                bool known = ap != null && ap.Active && ap.SupportedFeature(Feature.WarningLevel);
+                var warning = known ? ap.ThermalStatus.ThermalMetrics.WarningLevel : WarningLevel.NoWarning;
+                string observed = known ? (warning == WarningLevel.Throttling ? "2" : warning == WarningLevel.ThrottlingImminent ? "1" : "0") : "unknown";
+                return $"thermal={observed} thermalSource=AdaptivePerformance thermalRaw={(known ? warning.ToString() : "unknown")} androidThermalRaw={_lastAndroidThermalStatus} thermalApplied={ThermalLevel} thermalBudget={_budget.Severity}";
+            }
+            string level = _lastAndroidThermalStatus < 0 ? "unknown" : _lastAndroidThermalStatus >= 3 ? "2" : _lastAndroidThermalStatus == 2 ? "1" : "0";
+            string raw = _lastAndroidThermalStatus < 0 ? "unknown" : _lastAndroidThermalStatus.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            float age = _lastThermalPollAt < 0 ? -1f : Time.unscaledTime - _lastThermalPollAt;
+            return FormattableString.Invariant($"thermal={level} thermalSource=PowerManager thermalRaw={raw} thermalApplied={ThermalLevel} thermalBudget={_budget.Severity} thermalPollAgeSec={age:0.0}");
+        }
 
         public static PerfManager Ensure()
         {
@@ -36,6 +67,11 @@ namespace CTLife.World
         private void Awake()
         {
             Instance = this;
+            _originalFrameRate = Application.targetFrameRate;
+            _originalSleepTimeout = Screen.sleepTimeout;
+            _originalVSync = QualitySettings.vSyncCount;
+            _originalAnimationScale = AvatarLod.ThermalScale;
+            AvatarLod.ThermalScale = 1f;
             Application.targetFrameRate = TargetFps;
             QualitySettings.vSyncCount = 0;
             Screen.sleepTimeout = SleepTimeout.NeverSleep;
@@ -52,9 +88,12 @@ namespace CTLife.World
             {
                 ap.ThermalStatus.ThermalEvent += OnThermalEvent;
                 _apActive = true;
+                if (ap.SupportedFeature(Feature.WarningLevel))
+                    _adaptiveLevel = WarningToLevel(ap.ThermalStatus.ThermalMetrics.WarningLevel);
                 Log.Info("perf", "Adaptive Performance active: " + ap.Subsystem?.GetType().Name);
             }
             else Log.Info("perf", "Adaptive Performance not active; using PowerManager thermal polling");
+            PollThermal();
             Log.Info("perf", $"targetFrameRate={Application.targetFrameRate} renderScale={(urp != null ? urp.renderScale : 1f)} screen={Screen.width}x{Screen.height}@{Screen.currentResolution.refreshRateRatio}");
         }
 
@@ -63,33 +102,55 @@ namespace CTLife.World
             var urp = UniversalRenderPipeline.asset;
             if (urp != null && _originalScale > 0f) urp.renderScale = _originalScale;
             if (_apActive && Holder.Instance != null) Holder.Instance.ThermalStatus.ThermalEvent -= OnThermalEvent;
+            Application.targetFrameRate = _originalFrameRate;
+            Screen.sleepTimeout = _originalSleepTimeout;
+            QualitySettings.vSyncCount = _originalVSync;
+            AvatarLod.ThermalScale = _originalAnimationScale;
+            if (Instance == this) Instance = null;
         }
 
         private void OnThermalEvent(ThermalMetrics ev)
         {
-            int level = ev.WarningLevel == WarningLevel.Throttling ? 2 : ev.WarningLevel == WarningLevel.ThrottlingImminent ? 1 : 0;
-            SetThermal(level, $"AP {ev.WarningLevel} temp={ev.TemperatureLevel:0.00} trend={ev.TemperatureTrend:0.00}");
+            _adaptiveLevel = WarningToLevel(ev.WarningLevel);
+            ApplyThermalBudget();
+        }
+
+        private static int WarningToLevel(WarningLevel warning) =>
+            warning == WarningLevel.Throttling ? 2 : warning == WarningLevel.ThrottlingImminent ? 1 : 0;
+
+        private void OnApplicationPause(bool paused)
+        {
+            // Time spent suspended is not a sequence of observed cooler sensor readings.
+            _budget.InterruptRecovery();
+            if (!paused) _nextPoll = 0f;
         }
 
         private void Update()
         {
-            if (_apActive || Time.unscaledTime < _nextPoll) return;
-            _nextPoll = Time.unscaledTime + 5f;
-            int status = AndroidThermalStatus();
-            if (status < 0) return;
-            // THERMAL_STATUS_NONE 0, LIGHT 1, MODERATE 2, SEVERE 3, CRITICAL 4, EMERGENCY 5, SHUTDOWN 6.
-            SetThermal(status >= 3 ? 2 : status == 2 ? 1 : 0, "PowerManager status " + status);
+            if (Time.unscaledTime < _nextPoll) return;
+            PollThermal();
         }
 
-        private void SetThermal(int level, string why)
+        private void PollThermal()
         {
-            if (level == ThermalLevel) return;
-            ThermalLevel = level;
+            _nextPoll = Time.unscaledTime + 5f;
+            int status = AndroidThermalStatus();
+            _lastAndroidThermalStatus = status;
+            _lastThermalPollAt = Time.unscaledTime;
+            ApplyThermalBudget();
+        }
+
+        private void ApplyThermalBudget()
+        {
+            if (!_budget.Observe(_lastAndroidThermalStatus, _adaptiveLevel, Time.realtimeSinceStartupAsDouble)) return;
+            ThermalLevel = _budget.SignalLevel;
             var urp = UniversalRenderPipeline.asset;
-            if (urp != null) urp.renderScale = level >= 2 ? HotRenderScale : NormalRenderScale;
-            AvatarLod.ThermalScale = level >= 2 ? 0.5f : 1f;
-            Log.Info("perf", $"Thermal level {level} ({why}) → renderScale {(urp != null ? urp.renderScale : 1f)}");
-            Bus.Publish(new ThermalSignal { level = level });
+            if (urp != null) urp.renderScale = ThermalLevel >= 2 ? HotRenderScale : NormalRenderScale;
+            AvatarLod.ThermalScale = ThermalLevel >= 2 ? 0.5f : 1f;
+            Application.targetFrameRate = _budget.FramesPerSecond;
+            Screen.sleepTimeout = _budget.AllowScreenSleep ? SleepTimeout.SystemSetting : SleepTimeout.NeverSleep;
+            Log.Info("perf", $"Thermal budget {_budget.Severity} (Android {_lastAndroidThermalStatus}, AP {_adaptiveLevel}) → targetFps {Application.targetFrameRate}, renderScale {(urp != null ? urp.renderScale : 1f)}, allowSleep {_budget.AllowScreenSleep}");
+            Bus.Publish(new ThermalSignal { level = ThermalLevel });
         }
 
         private static int AndroidThermalStatus()

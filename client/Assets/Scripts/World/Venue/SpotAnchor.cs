@@ -18,6 +18,9 @@ namespace CTLife.World
         [Tooltip("anims.json id the server sets while a player claims this spot with `sit` (e.g. act_sit, act_type). Empty = not claimable.")]
         public string anim = "";
 
+        [Tooltip("Optional frontend walking/standing point beside furniture. Does not change the contract seat anchor or wire ID.")]
+        public Transform approach;
+
         public float RotY => transform.eulerAngles.y * Mathf.Deg2Rad;
 
 #if UNITY_EDITOR

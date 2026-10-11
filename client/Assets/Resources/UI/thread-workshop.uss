@@ -1,0 +1,38 @@
+/* Existing Manrope + CT phone palette. Neutral fragments: no colour-coded solution. */
+.ct-thread-panel { width: 96%; height: 96%; max-width: 1400px; max-height: 1600px; padding: 24px 40px; }
+.ct-thread-brief { font-size: 26px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); margin: 0 0 8px 0; white-space: normal; flex-shrink: 0; }
+.ct-thread-instruction, .ct-thread-local { font-size: 24px; color: var(--ct-muted); white-space: normal; flex-shrink: 0; margin: 0 0 12px 0; }
+.ct-thread-panel .ct-desk-context, .ct-thread-panel .ct-desk-tally { white-space: nowrap; flex-shrink: 0; }
+.ct-thread-local { margin: 12px 0 0 0; }
+.ct-thread-body { flex-grow: 1; flex-shrink: 1; min-height: 0; }
+.ct-thread-tray, .ct-thread-compose { flex-grow: 1; flex-shrink: 1; min-height: 0; }
+.ct-thread-tray { padding-right: 12px; }
+.ct-thread-compose { padding-left: 12px; }
+.ct-thread-number, .ct-thread-eyebrow { font-size: 22px; color: var(--ct-muted); white-space: nowrap; flex-shrink: 0; margin: 4px 0 12px 0; }
+.ct-thread-story { font-size: 32px; color: var(--ct-deep); -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); white-space: normal; flex-shrink: 0; margin: 0; }
+.ct-thread-fragments, .ct-thread-slots { flex-shrink: 0; }
+.ct-thread-fragment, .ct-thread-slot, .ct-thread-control { border-width: 1px; border-color: var(--ct-line); border-radius: 16px; background-color: var(--ct-card); color: var(--ct-ink); font-size: 30px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-text-outline-width: 0; white-space: normal; flex-shrink: 0; min-height: 136px; padding: 20px 24px; margin: 0 0 12px 0; }
+.ct-thread-fragment { -unity-text-align: middle-left; min-height: 136px; }
+.ct-thread-slot { flex-direction: row; justify-content: flex-start; align-items: center; min-height: 136px; }
+.ct-thread-slot-number { width: 60px; min-width: 60px; font-size: 24px; color: var(--ct-muted); margin-right: 16px; white-space: nowrap; flex-shrink: 0; }
+.ct-thread-slot-copy { -unity-text-align: middle-left; font-size: 30px; white-space: normal; flex-grow: 1; flex-shrink: 1; min-width: 0; }
+.ct-thread-empty { min-height: 136px; border-width: 1px; border-color: var(--ct-line); border-radius: 16px; font-size: 26px; color: var(--ct-muted); white-space: normal; margin-bottom: 12px; padding: 24px; -unity-text-align: middle-left; flex-shrink: 0; }
+.ct-thread-fragment:hover, .ct-thread-slot:hover, .ct-thread-control:hover { background-color: var(--ct-bg); color: var(--ct-ink); }
+.ct-thread-fragment:focus, .ct-thread-slot:focus, .ct-thread-control:focus { border-width: 3px; border-color: var(--ct-deep); }
+.ct-thread-selected { border-width: 3px; border-color: var(--ct-deep); background-color: var(--ct-surface); }
+.ct-thread-fragment > .ct-button-depth, .ct-thread-fragment > .ct-button-glint,
+.ct-thread-slot > .ct-button-depth, .ct-thread-slot > .ct-button-glint,
+.ct-thread-control > .ct-button-depth, .ct-thread-control > .ct-button-glint { display: none; }
+.ct-thread-controls { flex-direction: row; flex-wrap: wrap; flex-shrink: 0; margin: 12px -4px 0 -4px; }
+.ct-thread-control { flex-grow: 1; flex-basis: 0; min-width: 180px; min-height: 136px; margin: 0 4px; font-size: 26px; }
+.ct-thread-publish { flex-grow: 2; min-width: 280px; background-color: var(--ct-accent); }
+.ct-thread-feedback { padding: 16px 20px; border-left-width: 4px; border-left-color: var(--ct-deep); background-color: var(--ct-bg); margin: 8px 0; flex-shrink: 0; }
+.ct-thread-feedback-title { font-size: 28px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); white-space: normal; margin-bottom: 8px; }
+.ct-thread-feedback-body { font-size: 26px; white-space: normal; }
+.ct-thread-landscape .ct-thread-panel { width: 96%; max-width: 2600px; max-height: 1080px; }
+.ct-thread-landscape .ct-desk-header { margin-bottom: 8px; }
+.ct-thread-landscape .ct-desk-meta { margin: 8px 0; }
+.ct-thread-landscape .ct-thread-body { flex-direction: row; }
+.ct-thread-landscape .ct-thread-tray { width: 44%; flex-grow: 0; }
+.ct-thread-landscape .ct-thread-compose { width: 56%; flex-grow: 0; }
+.ct-thread-landscape .ct-thread-controls { flex-wrap: nowrap; }

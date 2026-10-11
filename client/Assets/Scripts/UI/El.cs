@@ -22,6 +22,23 @@ namespace CTLife.UI
             return l;
         }
 
+        /// <summary>Constrain wrapping to the visible width, not ScrollView's unbounded content size.</summary>
+        public static ScrollView VerticalScroll(string cls = null)
+        {
+            var scroll = new ScrollView(ScrollViewMode.Vertical)
+            {
+                horizontalScrollerVisibility = ScrollerVisibility.Hidden,
+                verticalScrollerVisibility = ScrollerVisibility.Hidden,
+            };
+            if (!string.IsNullOrEmpty(cls)) scroll.With(cls);
+            scroll.contentContainer.style.minWidth = 0;
+            scroll.contentViewport.RegisterCallback<GeometryChangedEvent>(e =>
+            {
+                if (e.newRect.width > 0) scroll.contentContainer.style.width = e.newRect.width;
+            });
+            return scroll;
+        }
+
         public static Button Btn(string text, Action onClick, string cls = "ct-btn", string sfx = "sfx_ui_tap")
         {
             var b = new Button(() =>
@@ -30,6 +47,11 @@ namespace CTLife.UI
                 onClick?.Invoke();
             }) { text = text };
             if (!string.IsNullOrEmpty(cls)) foreach (var c in cls.Split(' ')) b.AddToClassList(c);
+            // Decorative layers never participate in layout or pointer handling. Keeping the
+            // real Button preserves keyboard, disabled, click and value-binding behavior.
+            b.AddToClassList("ct-pressable");
+            b.Add(PassThrough(Div("ct-button-depth")));
+            b.Add(PassThrough(Div("ct-button-glint")));
             return b;
         }
 
@@ -40,5 +62,38 @@ namespace CTLife.UI
         }
 
         public static void Show(this VisualElement e, bool on) => e.style.display = on ? DisplayStyle.Flex : DisplayStyle.None;
+
+        public static Button IconButton(string icon, string label, Action onClick, string cls = "ct-btn ct-btn-icon", string sfx = "sfx_ui_tap")
+        {
+            var button = Btn("", onClick, cls, sfx);
+            button.tooltip = label;
+            button.Add(new UiIcon(icon));
+            return button;
+        }
+
+        public static Button DockButton(string icon, string label, Action onClick, string cls = "ct-dock-action", string sfx = "sfx_ui_tap")
+        {
+            var button = IconButton(icon, label, onClick, cls, sfx);
+            button.Add(Text(label, "ct-dock-label"));
+            return button;
+        }
+
+        public static VisualElement Section(string number, string title, string detail = null)
+        {
+            var copy = Div("ct-grow", Text(title, "ct-section-title"));
+            if (!string.IsNullOrEmpty(detail)) copy.Add(Text(detail, "ct-small ct-muted"));
+            return Div("ct-section-heading", Text(number, "ct-section-number"), copy);
+        }
+
+        public static VisualElement Brand(bool compact = false) => Div(compact ? "ct-brand ct-brand-compact" : "ct-brand",
+            Div("ct-brand-mark", new UiIcon("city")), Text(Strings.Brand, "ct-brand-wordmark"));
+
+        /// <summary>Read-only HUD decoration must not swallow taps intended for the city behind it.</summary>
+        public static VisualElement PassThrough(VisualElement element)
+        {
+            element.pickingMode = PickingMode.Ignore;
+            foreach (var child in element.Children()) PassThrough(child);
+            return element;
+        }
     }
 }

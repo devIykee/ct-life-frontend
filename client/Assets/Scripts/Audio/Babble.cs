@@ -32,14 +32,13 @@ namespace CTLife.Audio
 
             int syllables = Mathf.Clamp(CountSyllables(text), 2, 14);
             var rng = new System.Random(text.GetHashCode());
-            float vol = am != null ? am.sfxVolume * 0.6f : 0.6f;
             for (int i = 0; i < syllables; i++)
             {
                 AudioClip clip = null;
                 if (files != null && files.Count > 0) clip = am.Clip(files[rng.Next(files.Count)]);
                 if (clip == null) clip = SynthSyllable(rng.Next(4));
                 source.pitch = basePitch * (0.92f + (float)rng.NextDouble() * 0.16f);
-                source.PlayOneShot(clip, vol);
+                source.PlayOneShot(clip, am != null ? am.sfxVolume * 0.6f : 0.6f);
                 yield return new WaitForSeconds(0.075f + (float)rng.NextDouble() * 0.03f);
             }
             source.pitch = 1f;

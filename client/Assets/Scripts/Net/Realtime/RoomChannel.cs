@@ -14,6 +14,7 @@ namespace CTLife.Net
     public abstract class RoomChannel<TState> where TState : Colyseus.Schema.Schema
     {
         protected Room<TState> Room { get; private set; }
+        private long _joinRevision;
         private readonly List<Action> _unsubscribe = new List<Action>();
 
         public string RoomName { get; }
@@ -33,9 +34,25 @@ namespace CTLife.Net
             RoomName = roomName;
         }
 
-        internal async Task Join(Client client, Dictionary<string, object> options)
+        internal async Task Join(Client client, Dictionary<string, object> options, RoomJoinAttempt owner)
         {
-            Room = await client.JoinOrCreate<TState>(RoomName, options);
+            owner.ThrowIfObsolete();
+            long revision = ++_joinRevision;
+            var joined = await client.JoinOrCreate<TState>(RoomName, options);
+            // The installed SDK has no CancellationToken join overload. Drain the exact raw result before
+            // assigning Room or registering welcome/state/message handlers when its owner is obsolete.
+            try
+            {
+                owner.ThrowIfObsolete();
+                if (revision != _joinRevision) throw new OperationCanceledException("Channel join was superseded.", owner.Token);
+            }
+            catch
+            {
+                try { await joined.Leave(); }
+                catch (Exception e) { Log.Warn("rt", $"Discarded {RoomName} join leave: {e.Message}"); }
+                throw;
+            }
+            Room = joined;
             InstanceId = Room.RoomId;
             // Register synchronously right after the join completes so `welcome` is not missed.
             On<WelcomeMessage>("welcome", OnWelcome);
@@ -103,6 +120,7 @@ namespace CTLife.Net
 
         public async Task Leave()
         {
+            _joinRevision++;
             foreach (var u in _unsubscribe)
             {
                 try { u(); } catch { /* ignore */ }

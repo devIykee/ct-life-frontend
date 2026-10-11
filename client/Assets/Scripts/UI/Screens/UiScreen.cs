@@ -18,6 +18,7 @@ namespace CTLife.UI
                 Element.pickingMode = PickingMode.Position;
             }
             if (Element.parent == null) UiRoot.Instance.ScreenLayer.Add(Element);
+            UiRoot.Instance.RefreshScreenBackdrop();
             OnShown();
         }
 
@@ -26,6 +27,7 @@ namespace CTLife.UI
         public virtual void Close()
         {
             Element?.RemoveFromHierarchy();
+            if (UiRoot.Instance != null) UiRoot.Instance.RefreshScreenBackdrop();
         }
     }
 }

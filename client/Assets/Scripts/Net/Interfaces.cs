@@ -7,7 +7,7 @@ using CTLife.Rest.Model;
 namespace CTLife.Net
 {
     // The network layer sits behind these interfaces so the transport and contract bindings can be swapped
-    // (our local stand-in contract today; the backend developer's contract-v1.0.0-rc1 once the client has access)
+    // (the backend developer's imported contract-v1.0.0-rc1; see contract/SOURCE.md)
     // without touching World/UI code. Consumers resolve them with Services.Get<IRestClient>() etc.
 
     /// <summary>HTTP transport: auth header, version headers, Idempotency-Key, retries, error mapping.</summary>
@@ -42,9 +42,9 @@ namespace CTLife.Net
         VenueChannel Venue { get; }
         event Action<VenueChannel> VenueJoined;
         event Action VenueLeft;
-        Task ConnectCity();
-        Task ConnectMarket();
-        Task<VenueChannel> JoinVenue(string venueId);
+        Task ConnectCity(CancellationToken ct = default);
+        Task ConnectMarket(CancellationToken ct = default);
+        Task<VenueChannel> JoinVenue(string venueId, CancellationToken ct = default);
         Task LeaveVenue();
         Task DisconnectAll();
     }

@@ -26,11 +26,30 @@ namespace CTLife.World
         private NavMeshAgent _agent;
         private Func<string, Transform> _findUser;
         private string _lastKey;
+        private string _lastEmoteId;
+        private NpcState _pendingState;
         private string _arriveAnim;
         private bool _arriveLoop;
         private bool _leaving;
         private Transform _followTarget;
         private float _nextIdleFidget;
+        private float _nextFollowPath;
+        private float _nextGroundCheck;
+        private float _arriveRotation;
+        private Vector3 _pathTarget;
+        private bool _travelling;
+        private bool _followPathRequested;
+        private float _nextBindAttempt;
+        private NavMeshPath _validatedPath;
+#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
+        private bool _reportedStopOrder;
+        public bool ReviewHasLeaveReceipt { get; private set; }
+        public Vector3 ReviewLeaveRoot { get; private set; }
+        public Vector3 ReviewLeaveNavigation { get; private set; }
+        public Vector3 ReviewLeaveTarget { get; private set; }
+        public string ReviewLeaveSnapshot { get; private set; }
+#endif
+        private bool AgentReady => _agent != null && _agent.isActiveAndEnabled && _agent.isOnNavMesh;
 
         public void Init(string npcId, NpcState state, VenueSceneRoot venue, Func<string, Transform> findUser)
         {
@@ -39,6 +58,14 @@ namespace CTLife.World
             _findUser = findUser;
             _view = GetComponent<AvatarView>();
             _view.npcId = npcId;
+            // NavMeshPath allocates native state and cannot run in a MonoBehaviour constructor.
+            _validatedPath = new NavMeshPath();
+            // Binding starts when the component is added. Place the actor first, rather than
+            // creating an agent at the prefab origin and assuming a same-frame Warp has bound it.
+            Vector3 spawn = venue.EntrancePosition;
+            if (!string.IsNullOrEmpty(state.spotId) && venue.TryGetSpot(state.spotId, out var sp, out _)) spawn = sp;
+            bool sampledSpawn = NavMesh.SamplePosition(spawn, out var hit, 3f, NavMesh.AllAreas);
+            transform.position = sampledSpawn ? hit.position : spawn;
             _agent = gameObject.AddComponent<NavMeshAgent>();
             _agent.speed = WalkSpeed;
             _agent.radius = 0.3f;
@@ -46,25 +73,52 @@ namespace CTLife.World
             _agent.angularSpeed = 540f;
             _agent.acceleration = 8f;
             _agent.stoppingDistance = 0.1f;
+            _agent.baseOffset = 0f;
             _agent.obstacleAvoidanceType = ObstacleAvoidanceType.LowQualityObstacleAvoidance;
 
-            // Spawn at the state's spot (or the entrance) so a late joiner sees the NPC in place.
-            Vector3 spawn = venue.EntrancePosition;
-            if (!string.IsNullOrEmpty(state.spotId) && venue.TryGetSpot(state.spotId, out var sp, out _)) spawn = sp;
-            if (NavMesh.SamplePosition(spawn, out var hit, 3f, NavMesh.AllAreas)) _agent.Warp(hit.position);
-            else transform.position = spawn;
+            RefreshGrounding();
             Apply(state);
+#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
+            Log.Info("npc-nav", $"Init sampledSpawn={sampledSpawn}; requested={spawn:F3}; {ReviewSnapshot()}");
+#endif
         }
 
         /// <summary>Called on every NpcState change.</summary>
         public void Apply(NpcState s)
         {
+            if (s == null) return;
             State = s;
-            var key = s.state + "|" + s.spotId + "|" + s.animId + "|" + s.lineId + "|" + s.startedAt;
-            if (key == _lastKey) return;
+            // A newly enabled agent can bind on the next navigation tick. Keep the latest
+            // replicated state pending; do not deduplicate an entry whose Stop/path never ran.
+            if (!AgentReady)
+            {
+                _pendingState = s;
+                _lastKey = null;
+                Stop();
+                _view?.SetBase("loco_idle");
+                return;
+            }
+            _pendingState = null;
+            var key = s.state + "|" + s.spotId + "|" + s.animId + "|" + s.lineId + "|" + s.startedAt +
+                "|" + s.targetUserId;
+            bool newEmote = s.emoteId != _lastEmoteId;
+            _lastEmoteId = s.emoteId;
+            if (key == _lastKey)
+            {
+                // An overlay update is not a fresh journey. Re-entering GoToSpot here would
+                // compare the old start time to the remaining trip and can teleport mid-walk.
+                if (newEmote && !string.IsNullOrEmpty(s.emoteId) && s.state != "react")
+                    _view.PlayOneShot(s.emoteId);
+                return;
+            }
             _lastKey = key;
+            // A state owns its path. Do not resume a stale destination after talk/idle, or carry
+            // a pending leave into the next state and hide the NPC at an unrelated arrival.
+            Stop();
             _followTarget = null;
             _arriveAnim = null;
+            _leaving = s.state == "leave";
+            _nextFollowPath = 0f;
             float since = ServerClock.IsSynced ? ServerClock.SecondsSince(s.startedAt) : 0f;
 
             switch (s.state)
@@ -72,6 +126,7 @@ namespace CTLife.World
                 case "idle":
                     Stop();
                     _view.SetBase("loco_idle");
+                    _nextIdleFidget = Time.time + UnityEngine.Random.Range(6f, 12f);
                     break;
                 case "wander":
                 case "goto":
@@ -82,17 +137,19 @@ namespace CTLife.World
                     break;
                 case "talk":
                     Stop();
+                    _view.SetBase("loco_idle");
                     Talk(s);
                     break;
                 case "react":
                     Stop();
+                    _view.SetBase("loco_idle");
                     _view.PlayOneShot(s.animId, -since);
                     break;
                 case "follow":
                     _followTarget = _findUser?.Invoke(s.targetUserId);
+                    _view.SetBase("loco_idle");
                     break;
                 case "leave":
-                    _leaving = true;
                     GoToSpot("exit", since, null, false);
                     break;
                 default:
@@ -108,30 +165,68 @@ namespace CTLife.World
         {
             if (!_venue.TryGetSpot(spotId, out var target, out var rot))
             {
-                if (thenAnim != null) _view.SetBase(thenAnim);
+                FailPath("missing spot " + spotId);
+                return;
+            }
+            if (!AgentReady || !NavMesh.SamplePosition(target, out var navTarget, 0.75f, _agent.areaMask))
+            {
+                FailPath("no navigation at spot " + spotId);
+                return;
+            }
+            // Sampling proves that the target lies on *a* mesh, not that this agent can reach it.
+            if (!NavMesh.CalculatePath(_agent.nextPosition, navTarget.position, _agent.areaMask, _validatedPath) ||
+                _validatedPath.status != NavMeshPathStatus.PathComplete)
+            {
+                FailPath("unreachable spot " + spotId + " (" + _validatedPath.status + ")");
                 return;
             }
             _arriveAnim = thenAnim;
             _arriveLoop = loop;
-            float dist = Vector3.Distance(transform.position, target);
-            bool shouldHaveArrived = secondsSinceStart > dist / WalkSpeed + 0.5f;
-            if (shouldHaveArrived || !_agent.isOnNavMesh)
+            _arriveRotation = rot;
+            _pathTarget = navTarget.position;
+            float dist = Vector3.Distance(_agent.nextPosition, navTarget.position);
+            float pathLength = 0f;
+            var corners = _validatedPath.corners;
+            for (int i = 1; i < corners.Length; i++) pathLength += Vector3.Distance(corners[i - 1], corners[i]);
+            bool shouldHaveArrived = secondsSinceStart > pathLength / WalkSpeed + 0.5f;
+            if (shouldHaveArrived || dist <= _agent.stoppingDistance + 0.05f)
             {
-                if (_agent.isOnNavMesh) _agent.Warp(target);
-                else transform.position = target;
-                transform.rotation = Quaternion.Euler(0, rot * Mathf.Rad2Deg, 0);
-                Arrive();
+                if (_agent.Warp(navTarget.position))
+                {
+                    _nextGroundCheck = 0f;
+                    RefreshGrounding();
+                    Arrive();
+                }
+                else FailPath("warp rejected at " + spotId);
                 return;
             }
             _agent.isStopped = false;
-            _agent.SetDestination(target);
+            if (!_agent.SetPath(_validatedPath))
+            {
+                FailPath("path rejected at " + spotId);
+                return;
+            }
+            _travelling = true;
             _view.SetBase("loco_walk");
         }
 
         private void Arrive()
         {
+            Stop();
+            transform.rotation = Quaternion.Euler(0, _arriveRotation * Mathf.Rad2Deg, 0);
             if (_leaving)
             {
+#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
+                // Read navigation while the agent is still bound. Deactivation makes those
+                // native getters unavailable; retain the actual last position for the fixture.
+                ReviewHasLeaveReceipt = true;
+                ReviewLeaveRoot = transform.position;
+                ReviewLeaveNavigation = _agent.nextPosition;
+                ReviewLeaveTarget = _pathTarget;
+                _venue.TryGetSpot("exit", out var rawExit, out _);
+                ReviewLeaveSnapshot = $"rawExit={rawExit:F3}; pathTarget={_pathTarget:F3}; " + ReviewSnapshot();
+                Log.Info("npc-nav", "Leave before hide: " + ReviewLeaveSnapshot);
+#endif
                 // The server removes the NPC from state shortly after; hide now so it does not linger.
                 gameObject.SetActive(false);
                 return;
@@ -147,7 +242,44 @@ namespace CTLife.World
 
         private void Stop()
         {
-            if (_agent != null && _agent.isOnNavMesh) _agent.isStopped = true;
+            _travelling = false;
+            _followPathRequested = false;
+            if (AgentReady)
+            {
+#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
+                // One diagnostic captures the formerly failing operation order on the real engine.
+                _agent.isStopped = true;
+                bool afterSet = _agent.isStopped;
+#endif
+                _agent.ResetPath();
+#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
+                bool afterReset = _agent.isStopped;
+#endif
+                _agent.velocity = Vector3.zero;
+                // Path/manual-velocity operations precede the final authoritative stopped state,
+                // matching the already device-checked LocalPlayer.CancelMovement ordering.
+#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
+                bool afterVelocity = _agent.isStopped;
+#endif
+                _agent.isStopped = true;
+#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
+                if (!_reportedStopOrder)
+                {
+                    _reportedStopOrder = true;
+                    Log.Info("npc-nav", $"Stop order npc={NpcId}; afterSet={afterSet}; afterReset={afterReset}; " +
+                        $"afterVelocity={afterVelocity}; final={_agent.isStopped}");
+                }
+#endif
+            }
+            _view?.SetSpeed(0f);
+        }
+
+        private void FailPath(string reason)
+        {
+            Stop();
+            _arriveAnim = null;
+            _view.SetBase("loco_idle");
+            Log.Warn("npc-nav", NpcId + ": " + reason + "; waiting for a new server state.");
         }
 
         private void Talk(NpcState s)
@@ -156,30 +288,94 @@ namespace CTLife.World
             if (Services.TryGet<ConfigStore>(out var cfg)) text = cfg.Registries.FormatLine(s.lineId, s.lineParams, s.archetypeId);
             if (string.IsNullOrEmpty(text)) return;
             Bus.Publish(new BubbleSignal { anchor = _view.HeadAnchor, text = text, isNpc = true, seconds = 3.5f });
-            Babble.Speak(this, _view.Voice, text, _view.archetypeId, _view.BabblePitch);
+            var bank = AudioManager.Instance != null ? AudioManager.Instance.BabbleBankFor(_view.archetypeId) : null;
+            if (bank != null)
+            {
+                var player = GetComponent<BabblePlayer>();
+                if (player == null) player = gameObject.AddComponent<BabblePlayer>();
+                player.bank = bank;
+                player.npcId = NpcId;
+                player.Say(text);
+            }
+            else Babble.Speak(this, _view.Voice, text, _view.archetypeId, _view.BabblePitch);
             _view.PlayOneShot("emote_point");
         }
 
         private void Update()
         {
             if (_agent == null) return;
+            if (!AgentReady)
+            {
+                _view.SetSpeed(0f);
+                _view.SetBase("loco_idle");
+                if (_pendingState == null && State != null)
+                {
+                    _pendingState = State;
+                    _lastKey = null;
+                }
+                // If navigation is installed after the actor, retry binding at its current
+                // position. Respect an externally disabled agent; never enable it here.
+                if (_agent.isActiveAndEnabled && Time.unscaledTime >= _nextBindAttempt)
+                {
+                    _nextBindAttempt = Time.unscaledTime + 0.2f;
+                    if (NavMesh.SamplePosition(transform.position, out var bind, 0.75f, _agent.areaMask))
+                        _agent.Warp(bind.position);
+                }
+                if (!AgentReady) return;
+            }
+            if (_pendingState != null)
+            {
+                Apply(_pendingState);
+#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
+                Log.Info("npc-nav", "Deferred state applied; " + ReviewSnapshot());
+#endif
+                if (!gameObject.activeInHierarchy) return;
+            }
+            RefreshGrounding();
             _view.SetSpeed(_agent.velocity.magnitude);
 
-            if (_followTarget != null && _agent.isOnNavMesh)
+            if (State?.state == "follow")
             {
-                var behind = _followTarget.position - _followTarget.forward * 2f;
-                if ((behind - transform.position).sqrMagnitude > 0.5f) _agent.SetDestination(behind);
+                // A followed player may be replicated after the NPC. Resolve again until available.
+                if (_followTarget == null) _followTarget = _findUser?.Invoke(State.targetUserId);
+                if (_followTarget == null || !AgentReady)
+                {
+                    Stop();
+                    _view.SetBase("loco_idle");
+                    return;
+                }
+                if (Time.unscaledTime >= _nextFollowPath)
+                {
+                    _nextFollowPath = Time.unscaledTime + 0.2f;
+                    var behind = _followTarget.position - _followTarget.forward * 2f;
+                    if ((behind - transform.position).sqrMagnitude <= 0.36f) Stop();
+                    else if (NavMesh.SamplePosition(behind, out var hit, 0.75f, _agent.areaMask) &&
+                             _venue.IsWalkable(hit.position))
+                    {
+                        _agent.isStopped = false;
+                        _followPathRequested = _agent.SetDestination(hit.position);
+                        if (!_followPathRequested) Stop();
+                    }
+                    else Stop();
+                }
+                if (_followPathRequested && !_agent.pathPending && _agent.pathStatus != NavMeshPathStatus.PathComplete)
+                    Stop();
                 _view.SetBase(_agent.velocity.sqrMagnitude > 0.04f ? "loco_walk" : "loco_idle");
                 return;
             }
 
-            if (_agent.isOnNavMesh && !_agent.isStopped && _agent.hasPath && !_agent.pathPending &&
-                _agent.remainingDistance <= _agent.stoppingDistance + 0.05f)
+            if (_travelling && !_agent.pathPending)
             {
-                _agent.ResetPath();
-                if (State != null && _venue.TryGetSpot(State.spotId, out _, out var rot))
-                    transform.rotation = Quaternion.Euler(0, rot * Mathf.Rad2Deg, 0);
-                Arrive();
+                if (_agent.pathStatus != NavMeshPathStatus.PathComplete || !_agent.hasPath)
+                    FailPath("path became unavailable");
+                else if (_agent.remainingDistance <= _agent.stoppingDistance + 0.05f)
+                {
+                    // A partial endpoint must never become an act/leave arrival.
+                    var delta = _agent.nextPosition - _pathTarget;
+                    delta.y = 0f;
+                    if (delta.sqrMagnitude <= 0.25f * 0.25f) Arrive();
+                    else FailPath("path ended before target");
+                }
             }
 
             if (State != null && State.state == "idle" && Time.time > _nextIdleFidget)
@@ -188,5 +384,30 @@ namespace CTLife.World
                 if (UnityEngine.Random.value < 0.3f) _view.PlayOneShot("emote_shrug");
             }
         }
+
+        private void RefreshGrounding()
+        {
+            if (!AgentReady || Time.unscaledTime < _nextGroundCheck) return;
+            _nextGroundCheck = Time.unscaledTime + 0.2f;
+            // Match the local player's collider-based correction for voxelized navigation height.
+            if (!NavMesh.SamplePosition(transform.position, out var nav, 0.75f, _agent.areaMask) ||
+                !Physics.Raycast(nav.position + Vector3.up * 0.35f, Vector3.down, out var floor, 0.85f,
+                    _venue.groundMask.value, QueryTriggerInteraction.Ignore) || floor.normal.y < 0.7f) return;
+            float offset = floor.point.y - nav.position.y;
+            if (Mathf.Abs(offset) <= 0.35f) _agent.baseOffset = offset;
+        }
+
+#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
+        public string ReviewSnapshot()
+        {
+            string basic = $"npc={NpcId}; state={State?.state}; active={gameObject.activeInHierarchy}; " +
+                $"agentEnabled={_agent != null && _agent.isActiveAndEnabled}; ready={AgentReady}; " +
+                $"pendingState={_pendingState != null}; position={transform.position:F3}; target={_pathTarget:F3}";
+            return !AgentReady ? basic : basic + $"; stopped={_agent.isStopped}; path={_agent.hasPath}; " +
+                $"pathPending={_agent.pathPending}; pathStatus={_agent.pathStatus}; " +
+                $"velocity={_agent.velocity.magnitude:F3}; navPosition={_agent.nextPosition:F3}; " +
+                $"baseOffset={_agent.baseOffset:F4}; travelling={_travelling}";
+        }
+#endif
     }
 }

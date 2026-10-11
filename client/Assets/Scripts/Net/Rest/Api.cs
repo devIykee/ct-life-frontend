@@ -8,7 +8,7 @@ using Newtonsoft.Json.Linq;
 namespace CTLife.Net
 {
     /// <summary>
-    /// Typed endpoints from the backend developer's contract (contract/backend-dev/openapi.json, 1.0.0-rc1;
+    /// Typed endpoints from the backend developer's contract (contract/openapi.yaml, 1.0.0-rc1;
     /// paths are relative to the `servers` base, which already includes /v1), grouped by area. Phase 1 endpoints first; later phases are
     /// added as their screens are built. Bodies are the generated CTLife.Rest.Model types where they exist.
     /// </summary>
@@ -24,13 +24,17 @@ namespace CTLife.Net
         }
 
         public IRestClient Rest => _rest;
+        public PerpsApi Perps => new PerpsApi(_rest);
+        public SpacesApi Spaces => new SpacesApi(_rest);
 
         // ---------------------------------------------------------------- config (Ph 1)
 
         /// <summary>GET /v1/config with If-None-Match. Returns true when a new payload was applied.</summary>
         public async Task<bool> RefreshConfig(CancellationToken ct = default)
         {
-            var res = await _rest.SendRaw("GET", "/config", null, false, null, _config.ETag, ct);
+            // A cached ETag must not produce a cold-start 304 before raw server item IDs have been confirmed.
+            var res = await _rest.SendRaw("GET", "/config", null, false, null,
+                _config.HasNetworkValidation ? _config.ETag : null, ct);
             if (res.status == 304) return false;
             _config.Apply(res.body, res.etag);
             if (Semver.IsOutdated(_config.MinClientVersion))

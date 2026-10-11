@@ -7,11 +7,10 @@ namespace CTLife.World
     /// <summary>
     /// Turns screen taps (delivered by the UI layer's full-screen world-input element) into world actions:
     /// tap an avatar → AvatarTappedSignal (profile card / NPC actions); tap a claimable spot → walk and sit;
-    /// tap ground → walk there.
+    /// Ground taps do not move the player; the HUD's direct controls own locomotion.
     /// </summary>
     public static class WorldInput
     {
-        public static event Action<Vector3> GroundTapped;
         public static event Action<SpotAnchor> SpotTapped;
 
         private static readonly RaycastHit[] _hits = new RaycastHit[16];
@@ -42,13 +41,22 @@ namespace CTLife.World
             for (int i = 0; i < n; i++)
             {
                 if (_hits[i].collider.isTrigger) continue;
+                // Authored furniture can live under its existing immutable spot anchor.
+                // Resolve the touched seat directly; a chair back may be above the legacy floor-radius test.
+                var tagged = _hits[i].collider.GetComponentInParent<SpotAnchor>();
+                if (tagged != null)
+                {
+                    if (!string.IsNullOrEmpty(tagged.anim)) SpotTapped?.Invoke(tagged);
+                    return;
+                }
                 var spot = NearestClaimableSpot(_hits[i].point, 0.9f);
                 if (spot != null)
                 {
                     SpotTapped?.Invoke(spot);
                     return;
                 }
-                GroundTapped?.Invoke(_hits[i].point);
+                // A ground tap must not unexpectedly replace direct thumb movement with a distant path.
+                // Intentional paths (seat interactions and review) use LocalPlayerController.MoveTo.
                 return;
             }
         }

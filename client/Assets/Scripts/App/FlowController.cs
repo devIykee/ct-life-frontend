@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
+using CTLife.Realtime;
+using CTLife.Audio;
 using CTLife.Core;
 using CTLife.Net;
 using CTLife.Rest.Model;
@@ -11,66 +14,114 @@ using UnityEngine;
 namespace CTLife.App
 {
     /// <summary>
-    /// splash → sign-in → character creator → birth lottery → city (Phase 1 flow). Each step is skipped when the
+    /// splash → sign-in → character creator → birth lottery → lobby → city. Each onboarding step is skipped when the
     /// server says it's already done (`hasCharacter`, `flags.lotteryRolled`). Automated runs: launch extras
     /// `autologin=dev` (and optional `wallet`, `seeker=1`, `venue=perp_pit`).
     /// </summary>
     public sealed class FlowController : MonoBehaviour
     {
         public const string StartVenue = "timeline_square";
+        private string _homeReturnVenueId;
 
+        private readonly List<IDisposable> _overlays = new List<IDisposable>();
         private Hud _hud;
         private PhoneShell _phone;
+        private DashboardScreen _lobby;
+        private bool _travelling;
         private bool _updateRequired;
+        private bool _signingOut;
+        private FlowLifetime _owner, _gameplay, _travelGameplay;
+        private UiScreen _gameplayScreen;
+        private readonly Subscriptions _subscriptions = new Subscriptions();
+        private CityChannel _kickCity;
+        private Action<KickedMessage> _kickHandler;
+        private UiScreen _flowScreen, _updateScreen;
+        private bool Alive => _owner != null && _owner.IsAlive;
+
+        private void Awake()
+        {
+            // Cache the Unity6.3 destruction token while this MonoBehaviour is still alive.
+            var destruction = destroyCancellationToken;
+            _owner = new FlowLifetime(destruction, e => Log.Warn("flow", "Late owned operation failed: " + e.GetType().Name));
+        }
 
         private async void Start()
         {
-            var ui = UiRoot.Instance;
-            new ToastLayer(ui.ToastLayer);
-            new WorldLabels(ui.LabelLayer);
-            new RektCard(ui.ModalLayer);
-            new ProfileCard(ui.ModalLayer);
-            new BusyOverlay(ui.ToastLayer);
-            _ = ConfigRefreshLoop();
-            Bus.Subscribe<UpdateRequiredSignal>(s =>
-            {
-                if (_updateRequired) return;
-                _updateRequired = true;
-                new UpdateRequiredScreen(s.minClientVersion).Show();
-            });
             try
             {
-                await Run();
+                _owner.ThrowIfClosed();
+                var ui = UiRoot.Instance;
+                _overlays.Add(new ToastLayer(ui.ToastLayer));
+                _overlays.Add(new WorldLabels(ui.LabelLayer));
+                _overlays.Add(new RektCard(ui.ModalLayer));
+                _overlays.Add(new ProfileCard(ui.ModalLayer));
+                _overlays.Add(new BusyOverlay(ui.ToastLayer));
+                RunAction(ConfigRefreshLoop);
+                _subscriptions.On<UpdateRequiredSignal>(signal =>
+                {
+                    if (!Alive || _updateRequired) return;
+                    _updateRequired = true;
+                    _updateScreen = new UpdateRequiredScreen(signal.minClientVersion);
+                    _updateScreen.Show();
+                });
+                await _owner.Wait(Run());
             }
-            catch (Exception e)
-            {
-                Log.Exception("flow", e);
-                Bus.Publish(ToastSignal.Text("Something broke: " + e.Message, ToastKind.Bad));
-            }
+            catch (OperationCanceledException) when (!Alive) { }
+            catch (Exception e) { ReportFailure(e); }
+        }
+
+        private async void RunAction(Func<Task> action)
+        {
+            if (!Alive) return;
+            try { await _owner.Wait(action()); }
+            catch (OperationCanceledException) when (!Alive) { }
+            catch (Exception e) { ReportFailure(e); }
+        }
+
+        private void ReportFailure(Exception e)
+        {
+            if (!Alive) return;
+            Log.Exception("flow", e);
+            Bus.Publish(ToastSignal.Text(Strings.T("common.error"), ToastKind.Bad));
+        }
+
+        private void ShowFlow(UiScreen screen)
+        {
+            _owner.ThrowIfClosed();
+            if (!ReferenceEquals(_flowScreen, screen)) _flowScreen?.Close();
+            _flowScreen = screen;
+            screen.Show();
+        }
+
+        private bool Owns(UiScreen screen) => Alive && ReferenceEquals(_flowScreen, screen);
+        private void CloseFlow(UiScreen screen)
+        {
+            if (ReferenceEquals(_flowScreen, screen)) _flowScreen = null;
+            screen?.Close();
         }
 
         private async Task Run()
         {
             var splash = new SplashScreen();
-            splash.Show();
-            splash.SetStatus("Loading config…");
+            ShowFlow(splash);
             try
             {
-                await Services.Get<Api>().RefreshConfig();
+                splash.SetStatus("Loading config…");
+                try { await _owner.Wait(Services.Get<Api>().RefreshConfig(_owner.Token)); }
+                catch (OperationCanceledException) when (!Alive) { throw; }
+                catch (Exception e)
+                {
+                    Log.Warn("flow", "Config refresh failed, using " + Services.Get<ConfigStore>().Source + ": " + e.Message);
+                }
+                _owner.ThrowIfClosed();
+                if (_updateRequired) return;
+                splash.SetStatus("Signing in…");
+                bool signedIn = await _owner.Wait(Services.Get<IAuthService>().TryResume(_owner.Token));
+                CloseFlow(splash);
+                if (!signedIn) await _owner.Wait(SignIn());
+                await _owner.Wait(EnterGame());
             }
-            catch (Exception e)
-            {
-                Log.Warn("flow", "Config refresh failed, using " + Services.Get<ConfigStore>().Source + ": " + e.Message);
-            }
-            if (_updateRequired) return;
-
-            splash.SetStatus("Signing in…");
-            var auth = Services.Get<IAuthService>();
-            bool signedIn = await auth.TryResume();
-            splash.Close();
-            if (!signedIn) await SignIn();
-
-            await EnterGame();
+            finally { CloseFlow(splash); }
         }
 
         private Task SignIn()
@@ -79,61 +130,78 @@ namespace CTLife.App
             var auth = Services.Get<IAuthService>();
             var wallet = Services.Get<IWalletSignIn>();
             SignInScreen screen = null;
+            bool pending = false;
 
             async void Wallet()
             {
+                if (pending || !Owns(screen)) return;
+                pending = true;
                 screen.SetBusy(true);
                 try
                 {
-                    await auth.SignInWithWallet(wallet);
-                    screen.Close();
+                    await _owner.Wait(auth.SignInWithWallet(wallet, _owner.Token));
+                    if (!Owns(screen)) return;
+                    CloseFlow(screen);
                     tcs.TrySetResult(true);
                 }
+                catch (OperationCanceledException) when (!Alive) { }
                 catch (WalletException e)
                 {
-                    screen.ShowError(e.UserDeclined ? "You cancelled in the wallet." : e.Message);
+                    if (Owns(screen)) screen.ShowError(e.UserDeclined ? "You cancelled in the wallet." : e.Message);
                 }
                 catch (ApiException e)
                 {
-                    screen.ShowError(Strings.Error(e.Code, e.ServerMessage));
+                    if (Owns(screen)) screen.ShowError(Strings.Error(e.Code, e.ServerMessage));
                 }
                 catch (Exception e)
                 {
-                    screen.ShowError(e.Message);
+                    if (Owns(screen)) screen.ShowError(e.Message);
                 }
                 finally
                 {
-                    screen.SetBusy(false);
+                    pending = false;
+                    if (Owns(screen)) screen.SetBusy(false);
                 }
             }
 
+#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
             async void Dev()
             {
+                if (pending || !Owns(screen)) return;
+                pending = true;
                 screen.SetBusy(true);
                 try
                 {
                     var w = LaunchArgs.Get("wallet", DevWallet());
-                    await auth.SignInDev(w, LaunchArgs.Flag("seeker"));
-                    screen.Close();
+                    await _owner.Wait(auth.SignInDev(w, LaunchArgs.Flag("seeker"), _owner.Token));
+                    if (!Owns(screen)) return;
+                    CloseFlow(screen);
                     tcs.TrySetResult(true);
                 }
+                catch (OperationCanceledException) when (!Alive) { }
                 catch (Exception e)
                 {
-                    screen.ShowError(e is ApiException api ? Strings.Error(api.Code, api.ServerMessage) : e.Message);
+                    if (Owns(screen)) screen.ShowError(e is ApiException api ? Strings.Error(api.Code, api.ServerMessage) : e.Message);
                 }
                 finally
                 {
-                    screen.SetBusy(false);
+                    pending = false;
+                    if (Owns(screen)) screen.SetBusy(false);
                 }
             }
+#endif
 
-            screen = new SignInScreen(Wallet, auth.DevAuthAllowed ? (Action)Dev : null, wallet.IsAvailable);
-            screen.Show();
+            screen = new SignInScreen(Wallet, wallet.IsAvailable);
+            ShowFlow(screen);
+#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
+            // Explicit development automation only. No guest/demo route is exposed in the product UI.
             if (LaunchArgs.Get("autologin") == "dev" && auth.DevAuthAllowed) Dev();
-            return tcs.Task;
+#endif
+            return _owner.Wait(tcs.Task);
         }
 
-        /// <summary>A stable per-install fake wallet for dev auth (base58 alphabet, 44 chars).</summary>
+#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
+        /// <summary>A stable per-install fake wallet for explicit development automation.</summary>
         private static string DevWallet()
         {
             const string key = "ctlife.devwallet";
@@ -148,139 +216,352 @@ namespace CTLife.App
             PlayerPrefs.Save();
             return w;
         }
+#endif
+
+        private bool GameAlive(FlowLifetime game) => Alive && game != null && ReferenceEquals(_gameplay, game) && game.IsAlive;
+        private bool Owns(FlowLifetime game, UiScreen screen) => GameAlive(game) && Owns(screen);
+
+        private FlowLifetime BeginGameplay()
+        {
+            _owner.ThrowIfClosed();
+            EndGameplay();
+            return _gameplay = new FlowLifetime(_owner.Token,
+                error => Log.Warn("flow", "Late gameplay operation failed: " + error.GetType().Name));
+        }
+
+        private void EndGameplay()
+        {
+            var game = _gameplay;
+            _gameplay = null;
+            _homeReturnVenueId = null;
+            var screen = _gameplayScreen;
+            _gameplayScreen = null;
+            // Invalidate callbacks before cancelling. Room leases release only their captured channel.
+            game?.Dispose();
+            if (screen != null) CloseFlow(screen);
+            if (ReferenceEquals(_travelGameplay, game)) { _travelGameplay = null; _travelling = false; }
+            UnbindKick();
+        }
+
+        private void RunGameAction(FlowLifetime game, Func<Task> action)
+        {
+            if (GameAlive(game)) RunAction(action);
+        }
 
         private async Task EnterGame()
         {
-            var profile = Services.Get<PlayerProfile>();
-            var session = Services.Get<Session>();
-            await profile.Refresh();
-
-            if (!profile.HasCharacter) await CreateCharacter();
-            if (!profile.LotteryRolled) await Lottery(session.IsSeeker);
-
-            var rt = Services.Get<IRealtimeService>();
+            var game = BeginGameplay();
             try
             {
-                await rt.ConnectCity();
-                rt.City.Kicked += k => OnKicked(k.reasonId);
-            }
-            catch (Exception e) { Log.Warn("flow", "City room unavailable: " + e.Message); }
-            try { await rt.ConnectMarket(); }
-            catch (Exception e) { Log.Warn("flow", "Market room unavailable: " + e.Message); }
+                var profile = Services.Get<PlayerProfile>();
+                var session = Services.Get<Session>();
+                await game.Wait(profile.Refresh(game.Token));
+                if (!profile.HasCharacter) await game.Wait(CreateCharacter(game));
+                if (!profile.LotteryRolled) await game.Wait(Lottery(game, session.IsSeeker));
 
-            BuildHudAndPhone();
-            await Travel(LaunchArgs.Get("venue", StartVenue));
+                var rt = Services.Get<IRealtimeService>();
+                try
+                {
+                    await game.Wait(rt.ConnectCity(game.Token));
+                    BindKick(game, rt.City);
+                }
+                catch (OperationCanceledException) when (!GameAlive(game)) { throw; }
+                catch (Exception e) { Log.Warn("flow", "City room unavailable: " + e.Message); }
+                try { await game.Wait(rt.ConnectMarket(game.Token)); }
+                catch (OperationCanceledException) when (!GameAlive(game)) { throw; }
+                catch (Exception e) { Log.Warn("flow", "Market room unavailable: " + e.Message); }
+
+                game.ThrowIfClosed();
+                BuildHudAndPhone(game);
+                ShowLobby();
+            }
+            catch (OperationCanceledException) when (!GameAlive(game)) { }
         }
 
-        private Task CreateCharacter()
+        private Task CreateCharacter(FlowLifetime game)
         {
             var tcs = new TaskCompletionSource<bool>();
             CharacterCreatorScreen screen = null;
-            screen = new CharacterCreatorScreen(Services.Get<ConfigStore>().Registries, async draft =>
+            bool pending = false;
+            var config = Services.Get<ConfigStore>();
+            screen = new CharacterCreatorScreen(config.Registries, async draft =>
             {
+                if (pending || !Owns(game, screen)) return;
+                pending = true;
                 screen.SetBusy(true);
                 try
                 {
-                    await Services.Get<Api>().CreateCharacter(draft.alias, draft.look, draft.traitIds, draft.dreamId,
-                        draft.tribeId, draft.ageConfirmed);
-                    await Services.Get<PlayerProfile>().Refresh();
-                    screen.Close();
+                    await game.Wait(Services.Get<Api>().CreateCharacter(draft.alias, draft.look, draft.traitIds, draft.dreamId,
+                        draft.tribeId, draft.ageConfirmed));
+                    await game.Wait(Services.Get<PlayerProfile>().Refresh(game.Token));
+                    if (!Owns(game, screen)) return;
+                    CloseFlow(screen);
                     tcs.TrySetResult(true);
                 }
+                catch (OperationCanceledException) when (!GameAlive(game)) { }
                 catch (Exception e)
                 {
-                    screen.ShowError(e is ApiException api ? Strings.Error(api.Code, api.ServerMessage) : e.Message);
-                    screen.SetBusy(false);
+                    if (Owns(game, screen)) screen.ShowError(e is ApiException api ? Strings.Error(api.Code, api.ServerMessage) : e.Message);
+                    if (Owns(game, screen)) screen.SetBusy(false);
                 }
-            });
-            screen.Show();
-            return tcs.Task;
+                finally { pending = false; }
+            }, serverLookConfirmed: config.IsLookConfirmed);
+            ShowFlow(screen);
+            _gameplayScreen = screen;
+            return game.Wait(tcs.Task);
         }
 
-        private Task Lottery(bool isSeeker)
+        private Task Lottery(FlowLifetime game, bool isSeeker)
         {
             var tcs = new TaskCompletionSource<bool>();
             LotteryScreen screen = null;
-            screen = new LotteryScreen(isSeeker, () => Services.Get<Api>().RollLottery(), r =>
+            var api = Services.Get<Api>();
+            screen = new LotteryScreen(isSeeker, () =>
             {
+                game.ThrowIfClosed();
+                return api.RollLottery(); // A started roll keeps its original economic lifetime.
+            }, r =>
+            {
+                if (!Owns(game, screen)) return;
                 Services.Get<PlayerProfile>().ApplyLottery(r);
-                screen.Close();
+                CloseFlow(screen);
                 tcs.TrySetResult(true);
             });
-            screen.Show();
-            return tcs.Task;
+            ShowFlow(screen);
+            _gameplayScreen = screen;
+            return game.Wait(tcs.Task);
         }
 
-        private void BuildHudAndPhone()
+        private void BuildHudAndPhone(FlowLifetime game)
         {
+            game.ThrowIfClosed();
             var ui = UiRoot.Instance;
+            _phone?.Dispose();
             _phone = new PhoneShell(ui.PhoneLayer);
-            _phone.Register(new MapApp(id => _ = Travel(id)));
-            _phone.Register(new JobsApp());
-            _phone.Register(new BankApp());
-            _phone.Register(new RichListApp());
-            _phone.Register(new HomeApp());
-            _phone.Register(new ProfileApp());
-            _phone.Register(new SettingsApp(() => _ = SignOut()));
-            _phone.Register(new ComingApp("pulse", "Pulse", 2, "#20bf6b", Features.Markets));
-            _phone.Register(new ComingApp("perps", "Perps", 2, "#eb3b5a", Features.Markets));
-            _phone.Register(new ComingApp("predict", "Predict", 2, "#3867d6", Features.Markets));
-            _phone.Register(new ComingApp("ore", "ORE", 2, "#fd9644", Features.OreReader));
-            _phone.Register(new ComingApp("topup", "Top up", 2, "#f7b731", Features.Payments));
-            _phone.Register(new ComingApp("timeline", "Timeline", 3, "#2d98da", Features.Feed));
-            _phone.Register(new ComingApp("messages", "Messages", 3, "#26de81", Features.Dms));
-            _phone.Register(new ComingApp("spaces", "Spaces", 3, "#a55eea", Features.Voice));
-            _phone.Register(new ComingApp("calls", "Calls", 3, "#0fb9b1", Features.Voice));
-            _phone.Register(new ComingApp("shop", "Shop", 4, "#fc5c65"));
-            _phone.Register(new ComingApp("ads", "Ads", 5, "#778ca3"));
-            _phone.Register(new ComingApp("league", "League", 6, "#4b7bec"));
+            PhoneCatalog.Register(_phone, id => RunGameAction(game, () => Travel(game, id)), () => RunGameAction(game, SignOut),
+                homeOverride: new HomeApp(() => RunGameAction(game, () => EnterOwnHome(game)),
+                    () => RunGameAction(game, () => ReturnFromHome(game)),
+                    () => GameAlive(game) && !_travelling && VenueSession.CanEnterOwnHome(),
+                    () => GameAlive(game) && VenueSession.Current != null && VenueSession.Current.IsOwnHome));
 
-            _hud = new Hud { OpenPhone = () => _phone.Open(), OpenMap = () => _phone.Open("map") };
+            _hud?.Element.RemoveFromHierarchy();
+            _hud?.Dispose();
+            _hud = new Hud { OpenPhone = () => { if (GameAlive(game)) _phone?.Open(); }, OpenMap = () => { if (GameAlive(game)) _phone?.Open("map"); }, OpenHome = () => { if (GameAlive(game)) ShowLobby(); } };
             ui.HudLayer.Add(_hud.Element);
         }
 
-        private async Task Travel(string venueId)
+        private void ShowLobby()
         {
+            var game = _gameplay;
+            if (!GameAlive(game) || _travelling || _lobby != null) return;
+            _phone?.Close();
+            VenueSession.Current?.LocalPlayer?.CancelMovement();
+            _hud?.Show(false);
+            _lobby = new DashboardScreen(() => RunGameAction(game, () => EnterCityFromLobby(game)), id => { if (GameAlive(game)) _phone?.Open(id); });
+            _lobby.Show();
+            AudioManager.Instance?.Music.SetDistrict("lobby");
+        }
+
+        private async Task EnterCityFromLobby(FlowLifetime game)
+        {
+            if (!GameAlive(game) || _travelling) return;
+            if (VenueSession.Current != null && VenueSession.Current.IsOwnHome)
+                await ReturnFromHome(game);
+            else if (VenueSession.Current == null)
+                await Travel(game, LaunchArgs.Get("venue", StartVenue));
+            else
+            {
+                CloseLobby();
+                var current = VenueSession.Current;
+                var venue = Services.Get<ConfigStore>().Registries.Venue(current.VenueId);
+                AudioManager.Instance?.Music.SetMusic(current.VenueId, venue?.districtId, venue != null && venue.isClub);
+            }
+        }
+
+        private void CloseLobby()
+        {
+            _lobby?.Close();
+            _lobby = null;
+            _hud?.Show(true);
+        }
+
+        private async Task EnterOwnHome(FlowLifetime game)
+        {
+            if (!GameAlive(game) || _travelling || !VenueSession.CanEnterOwnHome()) return;
+            if (VenueSession.Current != null && VenueSession.Current.IsOwnHome) { _phone?.Close(); CloseLobby(); return; }
+            _travelling = true; _travelGameplay = game;
+            _phone?.Close();
+            var current = VenueSession.Current;
+            var reg = Services.Get<ConfigStore>().Registries;
+            var returnVenue = current != null && reg.Venue(current.VenueId) != null ? current.VenueId : StartVenue;
+            var lobby = _lobby; lobby?.SetBusy(true); lobby?.Element.SetEnabled(false);
+            try
+            {
+                var home = await game.Wait(VenueSession.EnterOwnHome(game.Token));
+                game.ThrowIfClosed();
+                if (!ReferenceEquals(VenueSession.Current, home) || !home.IsActive || !home.IsOwnHome) return;
+                _homeReturnVenueId = returnVenue;
+                CloseLobby();
+            }
+            catch (OperationCanceledException) { }
+            catch (Exception error)
+            {
+                if (GameAlive(game))
+                {
+                    Log.Warn("home", "Private Home entry failed: " + error.GetType().Name);
+                    Bus.Publish(ToastSignal.Text(HomeStrings.T("entryFailed"), ToastKind.Bad));
+                }
+            }
+            finally
+            {
+                if (ReferenceEquals(_travelGameplay, game)) { _travelGameplay = null; _travelling = false; }
+                if (GameAlive(game))
+                {
+                    lobby?.SetBusy(false); lobby?.Element.SetEnabled(true);
+                    // An entry failure may occur after the previous visit has been fully released.
+                    // Reopen the existing dashboard owner; do not revive an obsolete scene/channel.
+                    if (VenueSession.Current == null) ShowLobby();
+                }
+            }
+        }
+
+        private Task ReturnFromHome(FlowLifetime game)
+        {
+            if (!GameAlive(game) || _travelling) return Task.CompletedTask;
+            var id = _homeReturnVenueId;
+            if (string.IsNullOrEmpty(id) || Services.Get<ConfigStore>().Registries.Venue(id) == null) id = StartVenue;
+            return Travel(game, id);
+        }
+
+        private async Task Travel(FlowLifetime game, string venueId)
+        {
+            if (!GameAlive(game) || _travelling) return;
+            if (venueId == "home") return; // Private Home has a separate Me.homeId-selected entry.
+            bool leavingOwnHome = VenueSession.Current != null && VenueSession.Current.IsOwnHome;
+            _travelling = true;
+            _travelGameplay = game;
+            _phone?.Close();
+            var lobby = _lobby;
+            _lobby?.SetBusy(true);
+            _lobby?.Element.SetEnabled(false);
             Log.Info("flow", "Travel to " + venueId);
             try
             {
-                await VenueSession.Enter(venueId, joinRoom: true);
+                try { await game.Wait(VenueSession.Enter(venueId, joinRoom: true, owner: game.Token)); }
+                catch (OperationCanceledException) when (!GameAlive(game)) { throw; }
+                catch (Exception e)
+                {
+                    Log.Warn("flow", $"Venue room join failed ({e.Message}); entering the venue offline");
+                    Bus.Publish(ToastSignal.Text("Realtime is offline. You're alone here for now.", ToastKind.Bad));
+                    await game.Wait(VenueSession.Enter(venueId, joinRoom: false, owner: game.Token));
+                }
+                _homeReturnVenueId = null;
+                CloseLobby();
             }
+            catch (OperationCanceledException) when (!GameAlive(game)) { }
             catch (Exception e)
             {
-                Log.Warn("flow", $"Venue room join failed ({e.Message}); entering offline greybox");
-                Bus.Publish(ToastSignal.Text("Realtime is offline. You're alone here for now.", ToastKind.Bad));
-                await VenueSession.Enter(venueId, joinRoom: false);
+                if (!GameAlive(game)) return;
+                Log.Exception("flow", e);
+                Bus.Publish(ToastSignal.Text(e.Message, ToastKind.Bad));
+                lobby?.SetBusy(false);
+                lobby?.Element.SetEnabled(true);
+                if (lobby != null) AudioManager.Instance?.Music.SetDistrict("lobby");
+            }
+            finally
+            {
+                if (ReferenceEquals(_travelGameplay, game)) { _travelGameplay = null; _travelling = false; }
+                if (GameAlive(game) && leavingOwnHome && VenueSession.Current == null) ShowLobby();
             }
         }
 
         /// <summary>Re-reads GET /config every 2 minutes (If-None-Match, so usually a 304) to pick up `degraded`.</summary>
         private async Task ConfigRefreshLoop()
         {
-            while (this != null)
+            while (Alive)
             {
-                await Awaitable.WaitForSecondsAsync(120f);
-                try { await Services.Get<Api>().RefreshConfig(); }
+                await Awaitable.WaitForSecondsAsync(120f, _owner.Token);
+                _owner.ThrowIfClosed();
+                try { await _owner.Wait(Services.Get<Api>().RefreshConfig(_owner.Token)); }
+                catch (OperationCanceledException) when (!Alive) { throw; }
                 catch (Exception e) { Log.Debug("flow", "config refresh: " + e.Message); }
             }
         }
 
+        private void BindKick(FlowLifetime game, CityChannel city)
+        {
+            UnbindKick();
+            if (!GameAlive(game) || city == null) return;
+            _kickCity = city;
+            _kickHandler = message => { if (GameAlive(game)) OnKicked(message.reasonId); };
+            city.Kicked += _kickHandler;
+        }
+
+        private void UnbindKick()
+        {
+            if (_kickCity != null && _kickHandler != null) _kickCity.Kicked -= _kickHandler;
+            _kickCity = null;
+            _kickHandler = null;
+        }
+
         private void OnKicked(string reasonId)
         {
+            if (!Alive) return;
             Bus.Publish(ToastSignal.Text("Disconnected: " + reasonId, ToastKind.Bad));
-            _ = SignOut();
+            RunAction(SignOut);
+        }
+
+        private void OnDestroy()
+        {
+            Cleanup(EndGameplay);
+            Cleanup(() => _owner?.Dispose());
+            _subscriptions.Dispose();
+            UnbindKick();
+            for (int i = _overlays.Count - 1; i >= 0; i--) Cleanup(_overlays[i].Dispose);
+            _overlays.Clear();
+            Cleanup(() => _flowScreen?.Close()); _flowScreen = null;
+            Cleanup(() => _updateScreen?.Close()); _updateScreen = null;
+            Cleanup(() => _lobby?.Close()); _lobby = null;
+            Cleanup(() => _phone?.Dispose()); _phone = null;
+            Cleanup(() => _hud?.Element.RemoveFromHierarchy());
+            Cleanup(() => _hud?.Dispose()); _hud = null;
+        }
+
+        private static void Cleanup(Action close)
+        {
+            try { close(); }
+            catch (Exception e) { Log.Exception("flow-cleanup", e); }
+        }
+
+        private static async Task FinishSignOut(VenueSession venue, IRealtimeService realtime, IAuthService auth, IWalletSignIn wallet)
+        {
+            if (venue != null) await venue.Exit();
+            await realtime.DisconnectAll();
+            await auth.SignOut(wallet);
         }
 
         private async Task SignOut()
         {
-            if (VenueSession.Current != null) await VenueSession.Current.Exit();
-            await Services.Get<IRealtimeService>().DisconnectAll();
-            await Services.Get<IAuthService>().SignOut(Services.Get<IWalletSignIn>());
-            _hud?.Element.RemoveFromHierarchy();
-            _hud?.Dispose();
-            _phone?.Close();
-            await SignIn();
-            await EnterGame();
+            if (!Alive || _signingOut) return;
+            _signingOut = true;
+            try
+            {
+                EndGameplay();
+                _lobby?.Close();
+                _lobby = null;
+                UnbindKick();
+                // An explicitly requested logout continues its existing exit/disconnect/revoke sequence
+                // even if this UI owner disappears. Only the controller's wait is cancelled.
+                await _owner.Wait(FinishSignOut(VenueSession.Current, Services.Get<IRealtimeService>(),
+                    Services.Get<IAuthService>(), Services.Get<IWalletSignIn>()));
+                _hud?.Element.RemoveFromHierarchy();
+                _hud?.Dispose();
+                _phone?.Dispose();
+                _phone = null;
+                await _owner.Wait(SignIn());
+                await _owner.Wait(EnterGame());
+            }
+            finally { _signingOut = false; }
         }
     }
 }

@@ -92,38 +92,67 @@ namespace CTLife.World
                 if (tex != null && !textures.Contains(tex)) textures.Add(tex);
             }
 
-            Material material = materialOverride != null ? materialOverride : firstMaterial;
-            if (materialOverride == null && textures.Count > 1)
-                material = Atlas(textures, partRanges, uvs, firstMaterial, atlasMaxSize) ?? firstMaterial;
+            Mesh merged = null;
+            Material generatedMaterial = null;
+            Texture2D generatedAtlas = null;
+            GameObject bodyGo = null;
+            try
+            {
+                Material material = materialOverride != null ? materialOverride : firstMaterial;
+                if (materialOverride == null && textures.Count > 1)
+                {
+                    var atlasMaterial = Atlas(textures, partRanges, uvs, firstMaterial, atlasMaxSize,
+                        out generatedAtlas, out generatedMaterial);
+                    if (atlasMaterial != null) material = atlasMaterial;
+                }
 
-            var merged = new Mesh { name = "avatar_merged" };
-            if (verts.Count > 65535) merged.indexFormat = IndexFormat.UInt32;
-            merged.SetVertices(verts);
-            merged.SetNormals(normals);
-            merged.SetTangents(tangents);
-            merged.SetUVs(0, uvs);
-            merged.boneWeights = weights.ToArray();
-            merged.bindposes = bindposes.ToArray();
-            merged.SetTriangles(tris, 0);
-            CopyBlendShapes(parts, merged, verts.Count);
-            merged.RecalculateBounds();
+                merged = new Mesh { name = "avatar_merged" };
+                if (verts.Count > 65535) merged.indexFormat = IndexFormat.UInt32;
+                merged.SetVertices(verts);
+                merged.SetNormals(normals);
+                merged.SetTangents(tangents);
+                merged.SetUVs(0, uvs);
+                merged.boneWeights = weights.ToArray();
+                merged.bindposes = bindposes.ToArray();
+                merged.SetTriangles(tris, 0);
+                CopyBlendShapes(parts, merged, verts.Count);
+                merged.RecalculateBounds();
 
-            var bodyGo = new GameObject("body");
-            bodyGo.transform.SetParent(skeletonRoot, false);
-            var body = bodyGo.AddComponent<SkinnedMeshRenderer>();
-            body.sharedMesh = merged;
-            body.bones = bones.ToArray();
-            body.rootBone = boneByName.TryGetValue("pelvis", out var pelvis) ? pelvis : skeletonRoot;
-            body.sharedMaterial = material;
-            body.quality = SkinQuality.Bone4;
-            body.shadowCastingMode = ShadowCastingMode.Off;
-            body.receiveShadows = false;
-            body.updateWhenOffscreen = false;
-            return body;
+                bodyGo = new GameObject("body");
+                // Add the owner while active, before parenting below a possibly inactive avatar.
+                // Its serialized references also survive an Editor domain reload.
+                var owner = bodyGo.AddComponent<GeneratedAvatarResources>();
+                bodyGo.transform.SetParent(skeletonRoot, false);
+                var body = bodyGo.AddComponent<SkinnedMeshRenderer>();
+                body.sharedMesh = merged;
+                body.bones = bones.ToArray();
+                body.rootBone = boneByName.TryGetValue("pelvis", out var pelvis) ? pelvis : skeletonRoot;
+                body.sharedMaterial = material;
+                body.quality = SkinQuality.Bone4;
+                body.shadowCastingMode = ShadowCastingMode.Off;
+                body.receiveShadows = false;
+                body.updateWhenOffscreen = false;
+                // Only assets allocated by this Merge belong to this owner. Imported meshes,
+                // caller-supplied overrides, source materials and source textures stay shared.
+                owner.TakeOwnership(merged, generatedMaterial, generatedAtlas);
+                return body;
+            }
+            catch
+            {
+                // Ownership is transferred only after all renderer setup succeeds.
+                GeneratedAvatarResources.DestroyGenerated(merged);
+                GeneratedAvatarResources.DestroyGenerated(generatedMaterial);
+                GeneratedAvatarResources.DestroyGenerated(generatedAtlas);
+                GeneratedAvatarResources.DestroyGenerated(bodyGo);
+                throw;
+            }
         }
 
-        private static Material Atlas(List<Texture2D> textures, List<(int start, int count, Texture2D tex)> ranges, List<Vector2> uvs, Material template, int maxSize)
+        private static Material Atlas(List<Texture2D> textures, List<(int start, int count, Texture2D tex)> ranges,
+            List<Vector2> uvs, Material template, int maxSize, out Texture2D generatedAtlas, out Material generatedMaterial)
         {
+            generatedAtlas = null;
+            generatedMaterial = null;
             foreach (var t in textures)
             {
                 if (!t.isReadable)
@@ -132,8 +161,9 @@ namespace CTLife.World
                     return null;
                 }
             }
-            var atlas = new Texture2D(2, 2, TextureFormat.RGBA32, true) { name = "avatar_atlas" };
-            var rects = atlas.PackTextures(textures.ToArray(), 2, maxSize, false);
+            // Assign each allocation immediately so Merge can release it if a later step throws.
+            generatedAtlas = new Texture2D(2, 2, TextureFormat.RGBA32, true) { name = "avatar_atlas" };
+            var rects = generatedAtlas.PackTextures(textures.ToArray(), 2, maxSize, false);
             foreach (var r in ranges)
             {
                 if (r.tex == null) continue;
@@ -144,11 +174,14 @@ namespace CTLife.World
                     uvs[i] = new Vector2(rect.x + Mathf.Repeat(u.x, 1f) * rect.width, rect.y + Mathf.Repeat(u.y, 1f) * rect.height);
                 }
             }
-            atlas.Apply(true, true);
-            var m = template != null ? new Material(template) : Mats.Textured(atlas);
-            if (m.HasProperty(BaseMapId)) m.SetTexture(BaseMapId, atlas);
-            m.mainTexture = atlas;
-            return m;
+            generatedAtlas.Apply(true, true);
+            generatedMaterial = template != null ? new Material(template) :
+                new Material(Mats.LitShader) { name = "tex_" + generatedAtlas.name, enableInstancing = true };
+            if (generatedMaterial.HasProperty(BaseMapId)) generatedMaterial.SetTexture(BaseMapId, generatedAtlas);
+            generatedMaterial.mainTexture = generatedAtlas;
+            if (template == null && generatedMaterial.HasProperty("_BaseColor"))
+                generatedMaterial.SetColor("_BaseColor", Color.white);
+            return generatedMaterial;
         }
 
         private static void CopyBlendShapes(IList<SkinnedMeshRenderer> parts, Mesh merged, int totalVerts)

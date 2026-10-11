@@ -18,6 +18,8 @@ namespace CTLife.Core
         public JToken Root { get; private set; }
         public Registries Registries { get; private set; } = new Registries();
         public string ETag { get; private set; }
+        /// <summary>A full config response has been validated in this process; disk caches alone do not grant creator IDs.</summary>
+        public bool HasNetworkValidation { get; private set; }
         public string Version => Root.Str("version", "0.0.0");
         public string MinClientVersion => Root.Str("minClientVersion");
         public bool IsLoaded => Root != null;
@@ -39,6 +41,19 @@ namespace CTLife.Core
         private static string CachePath(string f) => Path.Combine(Application.persistentDataPath, f);
 
         private JObject _snapshot;
+        private readonly System.Collections.Generic.Dictionary<string, string> _confirmedStarterItems = new();
+        private static readonly string[] LookSlots = { "skin", "head", "hair", "top", "bottom", "shoes", "acc" };
+
+        /// <summary>Only an explicit item registry received from the server can authorize new creator IDs.
+        /// Snapshot and cached/merged presentation data are deliberately insufficient.</summary>
+        public bool IsLookConfirmed(string[] look)
+        {
+            // The contract's skinTone is a plain string, not an item registry entry.
+            if (!HasNetworkValidation || look == null || look.Length != LookSlots.Length || string.IsNullOrWhiteSpace(look[0])) return false;
+            for (int i = 1; i < LookSlots.Length; i++)
+                if (string.IsNullOrWhiteSpace(look[i]) || !_confirmedStarterItems.TryGetValue(look[i], out var slot) || slot != LookSlots[i]) return false;
+            return true;
+        }
 
         /// <summary>The bundled stand-in contract (ids + config); the base every server payload is merged over.</summary>
         private JObject Snapshot
@@ -86,10 +101,16 @@ namespace CTLife.Core
         /// <summary>Applies a payload from the network (or cache) and rebuilds the registries.</summary>
         public void Apply(string json, string etag, bool persist = true)
         {
-            var root = Normalize(Json.ParseRaw(json));
+            var raw = Json.ParseRaw(json);
+            if (!(raw is JObject)) throw new InvalidDataException("Config response must be an object.");
+            var root = Normalize(raw);
+            var registries = Registries.Parse(root["ids"], root["config"]);
+            _confirmedStarterItems.Clear();
+            HasNetworkValidation = persist;
+            if (persist) ConfirmRawItems(raw["ids"]?["items"] ?? raw["items"]);
             Root = root;
             ETag = etag;
-            Registries = Registries.Parse(root["ids"], root["config"]);
+            Registries = registries;
             ApplyDegraded(root["degraded"] ?? root["config"]?["degraded"]);
             Source = persist ? "network" : Source;
             if (persist)
@@ -98,6 +119,7 @@ namespace CTLife.Core
                 {
                     File.WriteAllText(CachePath(CacheFile), json);
                     if (!string.IsNullOrEmpty(etag)) File.WriteAllText(CachePath(EtagFile), etag);
+                    else if (File.Exists(CachePath(EtagFile))) File.Delete(CachePath(EtagFile));
                 }
                 catch (Exception e)
                 {
@@ -106,6 +128,30 @@ namespace CTLife.Core
             }
             Log.Info("config", $"Config {Version} ({Source}): {Registries.Venues.Count} venues, {Registries.Anims.Count} anims, {Registries.NpcLines.Count} NPC lines");
             Changed?.Invoke();
+        }
+
+        // Read the unmerged network registry only. Snapshot fields must never fill an authorization gap.
+        // Mirrors Normalize's accepted registry shapes: {items:[...]} or {itemId:{...}}.
+        private void ConfirmRawItems(JToken registry)
+        {
+            if (!(registry is JObject obj)) return;
+            if (obj["items"] is JArray items)
+            {
+                foreach (var token in items)
+                    if (token is JObject item) ConfirmRawItem(item.Str("id"), item);
+                return;
+            }
+            foreach (var property in obj.Properties())
+                if (property.Value is JObject item) ConfirmRawItem(item.Str("id", property.Name), item);
+        }
+
+        private void ConfirmRawItem(string id, JObject item)
+        {
+            if (string.IsNullOrWhiteSpace(id)) return;
+            var starter = item["starter"];
+            bool free = starter?.Type == JTokenType.Boolean ? starter.Value<bool>()
+                : starter == null && item["cashCents"]?.Type == JTokenType.Integer && item["cashCents"].Value<long>() == 0;
+            if (free && !string.IsNullOrWhiteSpace(item.Str("slot"))) _confirmedStarterItems[id] = item.Str("slot");
         }
 
         /// <summary>
@@ -133,6 +179,7 @@ namespace CTLife.Core
             });
             MergeRegistry(ids, "archetypes", r["archetypes"], null);
             MergeRegistry(ids, "tribes", r["tribes"], null);
+            MergeRegistry(ids, "items", r["items"], null);
 
             var lines = r["npc_lines"] ?? r["npcLines"];
             if (lines is JObject lo && lo.Count > 0)

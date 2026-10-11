@@ -1,6 +1,8 @@
 using System;
 using CTLife.World;
 using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 
 namespace CTLife.UI
 {
@@ -12,32 +14,53 @@ namespace CTLife.UI
     public sealed class AvatarPreview : IDisposable
     {
         private static int _slot;
+        // Reserved for off-world portraits; no project layer currently uses index 31.
+        private const int PreviewLayer = 31;
+        private const int PreviewMask = 1 << PreviewLayer;
 
         private readonly GameObject _root;
         private readonly Camera _cam;
         private AvatarView _avatar;
         private float _yaw = 200f;
+        private Vector3 _frameCentre;
+        private float _frameDistance;
+        private Bounds _bodyBounds, _portraitBounds;
+        private bool _portrait;
+        private bool _disposed;
+        private readonly Light _keyLight;
+        private Light _previousSun;
+        private bool _lightingOverride;
+        private UniversalRenderPipelineAsset _pipeline;
+        private float _previousRenderScale;
+        private bool _previousAdaptive;
 
         public RenderTexture Texture { get; }
 
-        public AvatarPreview(int width = 640, int height = 800)
+        public AvatarPreview(int width = 1080, int height = 1620)
         {
             var origin = new Vector3(1000f + 50f * _slot++, -500f, 0f);
             _root = new GameObject("CTLife.AvatarPreview");
             _root.transform.position = origin;
             UnityEngine.Object.DontDestroyOnLoad(_root);
 
-            Texture = new RenderTexture(width, height, 16, RenderTextureFormat.ARGB32) { name = "avatar_preview", antiAliasing = 2 };
+            // UI Toolkit samples this texture directly. Keep its attachments and the
+            // preview camera single-sampled; world-camera MSAA remains unchanged.
+            Texture = new RenderTexture(width, height, 16, RenderTextureFormat.ARGB32) { name = "avatar_preview", antiAliasing = 1 };
+            Texture.Create();
             var camGo = new GameObject("preview_cam");
             camGo.transform.SetParent(_root.transform, false);
             camGo.transform.localPosition = new Vector3(0f, 1.15f, 3.4f);
             camGo.transform.localRotation = Quaternion.Euler(6f, 180f, 0f);
             _cam = camGo.AddComponent<Camera>();
+            _cam.allowMSAA = false;
+            _cam.allowHDR = false;
+            _cam.cullingMask = PreviewMask;
             _cam.targetTexture = Texture;
+            _cam.aspect = (float)width / height;
             _cam.clearFlags = CameraClearFlags.SolidColor;
-            _cam.backgroundColor = new Color(0, 0, 0, 0);
+            _cam.backgroundColor = new Color32(232, 230, 225, 255);
             _cam.fieldOfView = 30f;
-            _cam.nearClipPlane = 0.5f;
+            _cam.nearClipPlane = 0.1f;
             _cam.farClipPlane = 20f;
 
             var lightGo = new GameObject("preview_light");
@@ -47,28 +70,194 @@ namespace CTLife.UI
             l.type = LightType.Directional;
             l.intensity = 1.1f;
             l.color = new Color(1f, 0.95f, 0.88f);
+            l.cullingMask = PreviewMask;
+            _keyLight = l;
+            // URP selects RenderSettings.sun before choosing other directional lights.
+            // The city sun must not replace the portrait's studio key (and vice versa).
+            RenderPipelineManager.beginCameraRendering += BeginPreview;
+            RenderPipelineManager.endCameraRendering += EndPreview;
         }
 
         public void SetLook(string[] look)
         {
             if (_avatar != null) UnityEngine.Object.Destroy(_avatar.gameObject);
-            _avatar = AvatarFactory.Create("preview", (string[])look.Clone(), false, null, _root.transform);
+            _avatar = AvatarFactory.Create("preview", (string[])look.Clone(), false, null, _root.transform, forPreview: true);
             _avatar.transform.localPosition = Vector3.zero;
             _avatar.transform.localRotation = Quaternion.Euler(0, _yaw, 0);
-            _avatar.PlayOneShot("emote_wave");
+            foreach (var child in _avatar.GetComponentsInChildren<Transform>(true)) child.gameObject.layer = PreviewLayer;
             AvatarView.All.Remove(_avatar); // Not part of the world: no name tag, no LOD.
+            if (_avatar.Animator != null)
+            {
+                _avatar.Animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
+                _avatar.Animator.Rebind();
+                _avatar.Animator.Play("loco_idle", 0, 0);
+                _avatar.Animator.Update(0);
+            }
+            FrameAvatar();
+        }
+
+        private void BeginPreview(ScriptableRenderContext context, Camera camera)
+        {
+            if (camera != _cam || _disposed) return;
+            if (!Texture.IsCreated()) Texture.Create();
+            _previousSun = RenderSettings.sun;
+            RenderSettings.sun = _keyLight;
+            _pipeline = UniversalRenderPipeline.asset;
+            if (_pipeline != null)
+            {
+                // Verified in installed URP: camera render data reads these after
+                // beginCameraRendering. Restore before the next/world camera.
+                _previousRenderScale = _pipeline.renderScale;
+                _previousAdaptive = _pipeline.useAdaptivePerformance;
+                _pipeline.renderScale = 1f;
+                _pipeline.useAdaptivePerformance = false;
+            }
+            _lightingOverride = true;
+        }
+
+        private void EndPreview(ScriptableRenderContext context, Camera camera)
+        {
+            if (camera != _cam || !_lightingOverride) return;
+            RenderSettings.sun = _previousSun;
+            if (_pipeline != null) { _pipeline.renderScale = _previousRenderScale; _pipeline.useAdaptivePerformance = _previousAdaptive; }
+            _lightingOverride = false;
+        }
+
+        private void FrameAvatar()
+        {
+            // Imported skinned-renderer culling bounds can be padded or offset.
+            // Measure the current mesh instead, once per outfit change, so hair
+            // and shoes are included without pulling the camera far offstage.
+            var bounds = new Bounds();
+            bool measured = false;
+            Mesh baked = null;
+            foreach (var renderer in _avatar.GetComponentsInChildren<Renderer>(true))
+            {
+                if (!renderer.enabled || !renderer.gameObject.activeInHierarchy || renderer is SpriteRenderer) continue;
+                Bounds part;
+                bool localBounds = false;
+                if (renderer is SkinnedMeshRenderer skinned && skinned.sharedMesh != null)
+                {
+                    if (baked == null) baked = new Mesh { name = "avatar_preview_measurement" };
+                    skinned.BakeMesh(baked, false);
+                    if (baked.vertexCount == 0) continue;
+                    baked.RecalculateBounds();
+                    part = baked.bounds;
+                    localBounds = true;
+                }
+                else if (renderer.TryGetComponent<MeshFilter>(out var filter) && filter.sharedMesh != null)
+                {
+                    part = filter.sharedMesh.bounds;
+                    localBounds = true;
+                }
+                else part = renderer.bounds;
+
+                for (int x = -1; x <= 1; x += 2)
+                    for (int y = -1; y <= 1; y += 2)
+                        for (int z = -1; z <= 1; z += 2)
+                        {
+                            var corner = part.center + Vector3.Scale(part.extents, new Vector3(x, y, z));
+                            var world = localBounds ? renderer.transform.TransformPoint(corner) : corner;
+                            var point = _avatar.transform.InverseTransformPoint(world);
+                            if (!measured) { bounds = new Bounds(point, Vector3.zero); measured = true; }
+                            else bounds.Encapsulate(point);
+                        }
+            }
+            if (baked != null) UnityEngine.Object.Destroy(baked);
+            if (!measured) bounds = new Bounds(new Vector3(0, 0.9f, 0), new Vector3(0.8f, 1.8f, 0.6f));
+
+            _bodyBounds = bounds;
+            // Frame the face and shoulders, keeping the measured top of the hair.
+            // Humanoid head position anchors the crop; an upper-body crop is the
+            // fallback for a non-Humanoid asset, never a claim of editable faces.
+            var headCentre = new Vector3(bounds.center.x, bounds.max.y - bounds.size.y * 0.12f, bounds.center.z);
+            var animator = _avatar.Animator;
+            if (animator != null && animator.avatar != null && animator.isHuman)
+            {
+                var head = animator.GetBoneTransform(HumanBodyBones.Head);
+                if (head != null) headCentre = _avatar.transform.InverseTransformPoint(head.position);
+            }
+            float lower = Mathf.Clamp(headCentre.y - bounds.size.y * 0.13f,
+                bounds.min.y + bounds.size.y * 0.60f, bounds.min.y + bounds.size.y * 0.72f);
+            float portraitHeight = Mathf.Max(0.3f, bounds.max.y - lower);
+            float portraitWidth = Mathf.Max(portraitHeight * 0.84f, bounds.size.y * 0.23f);
+            _portraitBounds = new Bounds(new Vector3(headCentre.x, lower + portraitHeight * 0.5f, headCentre.z),
+                new Vector3(portraitWidth, portraitHeight, Mathf.Min(portraitWidth, bounds.size.z)));
+            ApplyFraming();
+        }
+
+        private void ApplyFraming()
+        {
+            if (_avatar == null) return;
+            var bounds = _portrait ? _portraitBounds : _bodyBounds;
+
+            // A horizontal radius keeps every turntable angle inside the frame.
+            // Include the nearest surface's depth plus breathing room above the
+            // hair and below the shoes; the camera aims at the measured centre.
+            var scale = _avatar.transform.lossyScale;
+            var extent = Vector3.Scale(bounds.extents, new Vector3(Mathf.Abs(scale.x), Mathf.Abs(scale.y), Mathf.Abs(scale.z)));
+            float radius = Mathf.Max(0.1f, new Vector2(extent.x, extent.z).magnitude);
+            float tanVertical = Mathf.Tan(_cam.fieldOfView * Mathf.Deg2Rad * 0.5f);
+            _frameDistance = Mathf.Max(extent.y / tanVertical, radius / (tanVertical * _cam.aspect)) * 1.06f + radius;
+            _frameCentre = bounds.center;
+            _cam.farClipPlane = Mathf.Max(20f, _frameDistance + radius + 1f);
+            PositionCamera();
+        }
+
+        public void SetPortrait(bool portrait)
+        {
+            _portrait = portrait;
+            ApplyFraming();
+        }
+
+        public void SetYaw(float degrees)
+        {
+            _yaw = degrees;
+            if (_avatar == null) return;
+            _avatar.transform.localRotation = Quaternion.Euler(0, _yaw, 0);
+            PositionCamera();
+        }
+
+        public void SetVisible(bool visible)
+        {
+            if (_cam != null) _cam.enabled = visible;
+        }
+
+        private void PositionCamera()
+        {
+            var centre = _avatar.transform.TransformPoint(_frameCentre);
+            _cam.transform.position = centre + Vector3.forward * _frameDistance;
+            _cam.transform.rotation = Quaternion.LookRotation(centre - _cam.transform.position, Vector3.up);
         }
 
         public void Spin(float pixels)
         {
             _yaw -= pixels * 0.5f;
-            if (_avatar != null) _avatar.transform.localRotation = Quaternion.Euler(0, _yaw, 0);
+            if (_avatar != null)
+            {
+                _avatar.transform.localRotation = Quaternion.Euler(0, _yaw, 0);
+                PositionCamera();
+            }
         }
 
         public void Dispose()
         {
+            if (_disposed) return;
+            _disposed = true;
+            RenderPipelineManager.beginCameraRendering -= BeginPreview;
+            RenderPipelineManager.endCameraRendering -= EndPreview;
+            if (_lightingOverride) EndPreview(default, _cam);
+            if (_cam != null)
+            {
+                _cam.enabled = false;
+                _cam.targetTexture = null;
+            }
+            if (Texture != null)
+            {
+                Texture.Release();
+                UnityEngine.Object.Destroy(Texture);
+            }
             if (_root != null) UnityEngine.Object.Destroy(_root);
-            if (Texture != null) Texture.Release();
         }
     }
 }

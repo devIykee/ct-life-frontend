@@ -38,7 +38,11 @@ namespace CTLife.App
             var session = Services.Register(new Session());
             var config = Services.Register(new ConfigStore());
             config.LoadLocal();
-            IRestClient rest = Services.Register<IRestClient>(new RestClient(session));
+            IRestClient transport = new RestClient(session);
+#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
+            if (LaunchArgs.Flag("review")) transport = new Review.ReviewTransport(config.Registries);
+#endif
+            IRestClient rest = Services.Register<IRestClient>(transport);
             var api = Services.Register(new Api(rest, config));
             Services.Register<IAuthService>(new AuthService(rest, session));
             Services.Register(new PlayerProfile(api));
@@ -56,11 +60,20 @@ namespace CTLife.App
 
         private void Start()
         {
+#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
+            if (LaunchArgs.Flag("review"))
+            {
+                gameObject.AddComponent<Review.FrontendReviewController>();
+                return;
+            }
+#endif
+#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
             if (runSpike || LaunchArgs.Flag("spike"))
             {
                 gameObject.AddComponent<SpikeController>();
                 return;
             }
+#endif
             gameObject.AddComponent<FlowController>();
         }
     }

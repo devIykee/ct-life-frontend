@@ -19,156 +19,258 @@ namespace CTLife.UI
     }
 
     /// <summary>
-    /// Character creator (feature #2): modular look from starter items in items.json, tribe pick (perks from
-    /// tribes.json), two traits, one dream, alias, and the 18+ confirmation. 3D preview via AvatarPreview.
+    /// An authored look, personality, then identity. Preview availability and permission to submit
+    /// are separate: local art does not establish that the backend accepts its proposed item IDs.
     /// </summary>
     public sealed class CharacterCreatorScreen : UiScreen
     {
-        private static readonly string[] SlotOrder = { "skin", "head", "hair", "top", "bottom", "shoes", "acc" };
-        private static readonly string[] SlotLabels = { "Skin", "Face", "Hair", "Top", "Bottom", "Shoes", "Extra" };
-
         private readonly Registries _reg;
         private readonly Action<CharacterDraft> _onSubmit;
         private readonly CharacterDraft _draft = new CharacterDraft();
-        private readonly Dictionary<string, List<ItemDef>> _bySlot = new Dictionary<string, List<ItemDef>>();
+        private readonly List<CreatorLookCatalog.Entry> _looks;
+        private readonly Func<string[], bool> _serverLookConfirmed;
+        private readonly bool _readOnlyReview;
+        private readonly VisualElement[] _pages = new VisualElement[3];
+        private readonly Button[] _tabs = new Button[3];
         private AvatarPreview _preview;
-        private Label _error;
-        private Button _submit;
-        private VisualElement _tribeRow, _traitRow, _dreamRow;
+        private ConfigStore _config;
+        private VisualElement _content, _tribeRow, _traitRow, _dreamRow;
+        private Label _error, _guidance, _traitCount, _lookName, _lookCount, _lookStatus, _identitySummary;
+        private Button _next, _back, _bodyFocus, _faceFocus;
+        private int _step, _lookIndex, _dragPointer = -1;
+        private bool _busy, _portrait, _reviewComplete;
 
-        public CharacterCreatorScreen(Registries reg, Action<CharacterDraft> onSubmit)
+        private CreatorLookCatalog.Entry SelectedLook => _looks.Count > 0 ? _looks[_lookIndex] : null;
+        private bool CanSubmitLook => SelectedLook != null && _serverLookConfirmed != null
+            && _serverLookConfirmed(_draft.look);
+
+        // Existing callers remain source-compatible. The capability checks the selected look
+        // against a live server payload; a bundled/merged registry cannot grant it by itself.
+        public CharacterCreatorScreen(Registries reg, Action<CharacterDraft> onSubmit,
+            Func<string[], bool> serverLookConfirmed = null, bool readOnlyReview = false)
         {
             _reg = reg;
             _onSubmit = onSubmit;
-            foreach (var slot in SlotOrder)
-            {
-                _bySlot[slot] = reg.Items.Values.Where(i => i.slot == slot && i.starter).OrderBy(i => i.id).ToList();
-                // contract-v1.0.0-rc1 items.json has no skin items, one head and no "none" accessory, but Look requires
-                // all seven slots. FE fallbacks keep the creator usable; [Unverified] that the server accepts them
-                // (raised in docs/progress/backend-dev-feedback.md).
-                if (_bySlot[slot].Count == 0 || slot == "acc" || slot == "head")
-                    foreach (var (id, name) in FallbackItems(slot))
-                        if (_bySlot[slot].All(i => i.id != id))
-                            _bySlot[slot].Insert(0, new ItemDef { id = id, slot = slot, name = name, starter = true });
-            }
-            for (int s = 0; s < SlotOrder.Length; s++)
-            {
-                var list = _bySlot[SlotOrder[s]];
-                _draft.look[s] = list.Count > 0 ? list[UnityEngine.Random.Range(0, list.Count)].id : null;
-            }
-            if (_bySlot["acc"].Any(i => i.id == "acc_none")) _draft.look[6] = "acc_none";
+            _serverLookConfirmed = serverLookConfirmed;
+            _readOnlyReview = readOnlyReview;
+            _looks = CreatorLookCatalog.Available();
+            if (SelectedLook != null) Array.Copy(SelectedLook.look, _draft.look, _draft.look.Length);
         }
 
         protected override VisualElement Build()
         {
-            _preview = new AvatarPreview();
-            var previewEl = El.Div("ct-preview");
-            previewEl.style.backgroundImage = Background.FromRenderTexture(_preview.Texture);
-            previewEl.RegisterCallback<PointerMoveEvent>(e => { if (e.pressedButtons != 0) _preview.Spin(e.deltaPosition.x); });
-            _preview.SetLook(_draft.look);
+            _pages[0] = BuildLookPage();
+            _pages[1] = BuildPersonalityPage();
+            _pages[2] = BuildIdentityPage();
+            _content = El.Div("ct-creator-content", _pages);
 
-            var slots = El.Div("ct-col");
-            for (int s = 0; s < SlotOrder.Length; s++) slots.Add(SlotPicker(s));
-
-            var alias = new TextField("Alias") { maxLength = 20 };
-            alias.AddToClassList("ct-field");
-            alias.RegisterValueChangedCallback(e => { _draft.alias = e.newValue.Trim(); Validate(); });
-
-            _tribeRow = El.Div("ct-chips");
-            foreach (var t in _reg.TribeOrder) _tribeRow.Add(Chip(t.name, () => { _draft.tribeId = t.id; Refresh(); }, t.id, "tribe", PerkText(t)));
-            _traitRow = El.Div("ct-chips");
-            foreach (var t in _reg.Traits) _traitRow.Add(Chip(t.name, () => ToggleTrait(t.id), t.id, "trait"));
-            _dreamRow = El.Div("ct-chips");
-            foreach (var d in _reg.Dreams) _dreamRow.Add(Chip(d.name, () => { _draft.dreamId = d.id; Refresh(); }, d.id, "dream"));
-
-            var age = new Toggle("I am 18 or older");
-            age.AddToClassList("ct-toggle");
-            age.RegisterValueChangedCallback(e => { _draft.ageConfirmed = e.newValue; Validate(); });
-
+            var steps = El.Div("ct-creator-steps");
+            for (int i = 0; i < _tabs.Length; i++)
+            {
+                int index = i;
+                _tabs[i] = El.Btn(Strings.F("creator.step", i + 1, Strings.T("creator.step." + i)),
+                    () => ShowStep(index), "ct-creator-tab");
+                steps.Add(_tabs[i]);
+            }
             _error = El.Text("", "ct-error");
-            _submit = El.Btn("Be born", () => _onSubmit?.Invoke(_draft), "ct-btn ct-btn-primary ct-btn-big");
-
-            var scroll = new ScrollView(ScrollViewMode.Vertical);
-            scroll.AddToClassList("ct-scroll");
-            scroll.Add(El.Text("Who are you on CT?", "ct-h1"));
-            scroll.Add(alias);
-            scroll.Add(El.Text("Look", "ct-h2"));
-            scroll.Add(slots);
-            scroll.Add(El.Text("Tribe", "ct-h2"));
-            scroll.Add(_tribeRow);
-            scroll.Add(El.Text("Two traits", "ct-h2"));
-            scroll.Add(_traitRow);
-            scroll.Add(El.Text("Dream", "ct-h2"));
-            scroll.Add(_dreamRow);
-            scroll.Add(age);
-            scroll.Add(_error);
-            scroll.Add(_submit);
-
-            var root = El.Div("ct-creator", previewEl, scroll);
+            _guidance = El.Text("", "ct-small ct-muted ct-center");
+            _back = El.Btn(Strings.T("common.back"), () => ShowStep(_step - 1), "ct-btn ct-btn-ghost ct-creator-back");
+            _next = El.Btn("", Advance, "ct-btn ct-btn-primary ct-btn-big ct-grow");
+            var footer = El.Div("ct-creator-footer", _error, _guidance, El.Div("ct-row ct-creator-actions", _back, _next));
+            var header = El.Div("ct-creator-header", El.Div("ct-row", El.Brand(true), El.Div("ct-grow"),
+                El.Text(Strings.T("creator.title"), "ct-creator-title")), steps);
+            var root = El.Div("ct-creator", header, _content, footer);
+            RefreshLook();
             Refresh();
+            ShowStep(0);
             return root;
         }
 
-        /// <summary>FE defaults matching the art kit (art/processed/characters: skin_tone1..6, male/female base bodies).</summary>
-        private static IEnumerable<(string, string)> FallbackItems(string slot)
+        private VisualElement BuildLookPage()
         {
-            switch (slot)
+            _preview = new AvatarPreview();
+            var surface = El.Div("ct-creator-model");
+            surface.style.backgroundImage = Background.FromRenderTexture(_preview.Texture);
+            surface.RegisterCallback<PointerDownEvent>(e =>
             {
-                case "skin":
-                    for (int i = 6; i >= 1; i--) yield return ("skin_tone" + i, "Skin tone " + i);
-                    break;
-                case "head":
-                    yield return ("head_female", "Face B");
-                    yield return ("head_male", "Face A");
-                    break;
-                case "acc":
-                    yield return ("acc_none", "None");
-                    break;
+                if (e.target != surface || _dragPointer >= 0 || e.button != 0 || SelectedLook == null) return;
+                _dragPointer = e.pointerId;
+                surface.CapturePointer(e.pointerId);
+                e.StopPropagation();
+            });
+            surface.RegisterCallback<PointerMoveEvent>(e =>
+            {
+                if (_dragPointer != e.pointerId) return;
+                _preview.Spin(e.deltaPosition.x);
+                e.StopPropagation();
+            });
+            void Release(int pointer)
+            {
+                if (_dragPointer != pointer) return;
+                _dragPointer = -1;
+                surface.ReleasePointer(pointer);
             }
+            surface.RegisterCallback<PointerUpEvent>(e => Release(e.pointerId));
+            surface.RegisterCallback<PointerCancelEvent>(e => Release(e.pointerId));
+            surface.RegisterCallback<PointerCaptureOutEvent>(_ => _dragPointer = -1);
+
+            var hint = El.PassThrough(El.Text(Strings.T("creator.preview"), "ct-preview-hint"));
+            surface.Add(hint);
+            if (SelectedLook == null)
+            {
+                hint.Show(false);
+                surface.Add(El.PassThrough(El.Div("ct-creator-missing", El.Text(Strings.T("creator.lookMissing"), "ct-h2 ct-center"),
+                    El.Text(Strings.T("creator.lookMissingDetail"), "ct-small ct-muted ct-center"))));
+            }
+            _bodyFocus = El.DockButton("body", Strings.T("creator.fullBody"), () => FocusPreview(false), "ct-creator-focus");
+            _faceFocus = El.DockButton("face", Strings.T("creator.face"), () => FocusPreview(true), "ct-creator-focus");
+            var focus = El.Div("ct-creator-focus-row", _bodyFocus, _faceFocus);
+            focus.SetEnabled(SelectedLook != null);
+            _lookName = El.Text("", "ct-creator-look-name");
+            _lookCount = El.Text("", "ct-small ct-muted");
+            _lookStatus = El.Text("", "ct-small ct-muted ct-center ct-creator-look-status");
+            var previous = El.IconButton("back", Strings.T("creator.previousLook"), () => BrowseLook(-1));
+            var next = El.IconButton("next", Strings.T("creator.nextLook"), () => BrowseLook(1));
+            // A single authored look is not a carousel. Controls appear as distinct assets are supplied.
+            previous.Show(_looks.Count > 1);
+            next.Show(_looks.Count > 1);
+            var selector = El.Div("ct-creator-look-selector", previous,
+                El.Div("ct-grow ct-creator-look-copy", _lookName, _lookCount), next);
+            surface.Add(focus);
+            return El.Div("ct-creator-look-page", surface, El.Div("ct-creator-look-details", selector, _lookStatus));
+        }
+
+        private VisualElement BuildPersonalityPage()
+        {
+            _tribeRow = El.Div("ct-chips");
+            foreach (var t in _reg.TribeOrder)
+                _tribeRow.Add(Chip(t.name, () => { _draft.tribeId = t.id; Refresh(); }, t.id, "tribe", PerkText(t)));
+            _traitRow = El.Div("ct-chips");
+            foreach (var t in _reg.Traits) _traitRow.Add(Chip(t.name, () => ToggleTrait(t.id), t.id, "trait"));
+            _dreamRow = El.Div("ct-chips");
+            foreach (var d in _reg.Dreams)
+                _dreamRow.Add(Chip(d.name, () => { _draft.dreamId = d.id; Refresh(); }, d.id, "dream"));
+            _traitCount = El.Text("", "ct-selection-count");
+            var scroll = El.VerticalScroll("ct-scroll ct-creator-scroll");
+            scroll.Add(El.Div("ct-creator-section", El.Section("01", Strings.T("creator.tribe"), Strings.T("creator.tribeDetail")), _tribeRow));
+            scroll.Add(El.Div("ct-creator-section", El.Section("02", Strings.T("creator.traits"), Strings.T("creator.traitsDetail")), _traitCount, _traitRow));
+            scroll.Add(El.Div("ct-creator-section", El.Section("03", Strings.T("creator.dream"), Strings.T("creator.dreamDetail")), _dreamRow));
+            return scroll;
+        }
+
+        private VisualElement BuildIdentityPage()
+        {
+            var alias = new TextField(Strings.T("creator.alias")) { maxLength = 20 };
+            alias.AddToClassList("ct-field");
+            alias.RegisterValueChangedCallback(e => { _draft.alias = e.newValue.Trim(); _reviewComplete = false; Validate(); });
+            var age = new Toggle(Strings.T("creator.age")).With("ct-toggle");
+            age.RegisterValueChangedCallback(e => { _draft.ageConfirmed = e.newValue; _reviewComplete = false; Validate(); });
+            _identitySummary = El.Text("", "ct-body");
+            var scroll = El.VerticalScroll("ct-scroll ct-creator-scroll");
+            scroll.Add(El.Div("ct-creator-section", El.Text(Strings.T("creator.identity"), "ct-h2"),
+                alias, El.Text(Strings.T("creator.aliasHelp"), "ct-small ct-muted"), age));
+            scroll.Add(El.Div("ct-card", El.Text(Strings.T("creator.yourStory"), "ct-eyebrow"), _identitySummary,
+                El.Text(Strings.T("creator.editHint"), "ct-small ct-muted")));
+            return scroll;
+        }
+
+        private void BrowseLook(int direction)
+        {
+            if (_busy || _looks.Count < 2) return;
+            _lookIndex = (_lookIndex + direction + _looks.Count) % _looks.Count;
+            _reviewComplete = false;
+            RefreshLook();
+            Refresh();
+        }
+
+        private void RefreshLook()
+        {
+            var look = SelectedLook;
+            _lookName.text = look == null ? Strings.T("creator.look") : Strings.T(look.labelKey);
+            _lookCount.text = _looks.Count > 1 ? Strings.F("creator.lookCount", _lookIndex + 1, _looks.Count) : Strings.T("creator.wholeLook");
+            _lookCount.Show(look != null);
+            if (look != null)
+            {
+                Array.Copy(look.look, _draft.look, _draft.look.Length);
+                _preview.SetLook(_draft.look);
+                _preview.SetYaw(look.previewYaw);
+                _preview.SetPortrait(_portrait);
+            }
+            RefreshAvailability();
+            FocusPreview(_portrait);
+        }
+
+        protected override void OnShown()
+        {
+            if (_config == null && Services.TryGet<ConfigStore>(out var config))
+            {
+                _config = config;
+                _config.Changed += RefreshAvailability;
+            }
+            RefreshAvailability();
+        }
+
+        private void RefreshAvailability()
+        {
+            if (_lookStatus != null)
+                _lookStatus.text = SelectedLook == null ? "" : Strings.T(CanSubmitLook ? "creator.lookReady" : "creator.lookPreviewOnly");
+            Validate();
+        }
+
+        private void FocusPreview(bool portrait)
+        {
+            _portrait = portrait;
+            _bodyFocus.EnableInClassList("ct-creator-focus-on", !portrait);
+            _faceFocus.EnableInClassList("ct-creator-focus-on", portrait);
+            _preview.SetPortrait(portrait);
+        }
+
+        private void ShowStep(int step)
+        {
+            if (_busy) return;
+            _step = Mathf.Clamp(step, 0, _pages.Length - 1);
+            for (int i = 0; i < _pages.Length; i++)
+            {
+                _pages[i].Show(i == _step);
+                _tabs[i].EnableInClassList("ct-creator-tab-on", i == _step);
+            }
+            _preview.SetVisible(_step == 0);
+            Validate();
+        }
+
+        private void Advance()
+        {
+            if (_busy) return;
+            if (_step < 2) { ShowStep(_step + 1); return; }
+            if (DraftProblem() != null) return;
+            if (_readOnlyReview)
+            {
+                // A local visual review must never call character creation with proposed item IDs.
+                _reviewComplete = true;
+                Validate();
+            }
+            else if (CanSubmitLook) _onSubmit?.Invoke(_draft);
         }
 
         private static string PerkText(TribeDef t) => t.perkText ?? t.perkKind switch
         {
-            "launch_preview_ms" => $"Sees launches {t.perkValue / 1000:0}s early",
-            "leverage_bonus_x" => $"Leverage cap +{t.perkValue:0}x",
-            "prediction_fee_discount_bps" => $"Prediction fee −{t.perkValue / 100:0}%",
-            "farm_yield_bonus_bps" => $"Farm yield +{t.perkValue / 100:0}%",
-            "call_reach_multiplier" => $"Calls reach {t.perkValue:0}x followers",
-            "project_cost_discount_bps" => $"Launch cost −{t.perkValue / 100:0}%",
-            "hidden_from_rich_list" => "Hidden from the rich list",
-            _ => t.perkKind,
+            "launch_preview_ms" => Strings.F("creator.perk.launch", t.perkValue / 1000),
+            "leverage_bonus_x" => Strings.F("creator.perk.leverage", t.perkValue),
+            "prediction_fee_discount_bps" => Strings.F("creator.perk.prediction", t.perkValue / 100),
+            "farm_yield_bonus_bps" => Strings.F("creator.perk.farm", t.perkValue / 100),
+            "call_reach_multiplier" => Strings.F("creator.perk.reach", t.perkValue),
+            "project_cost_discount_bps" => Strings.F("creator.perk.launchCost", t.perkValue / 100),
+            "hidden_from_rich_list" => Strings.T("creator.perk.hidden"),
+            _ => null,
         };
-
-        private VisualElement SlotPicker(int slotIndex)
-        {
-            var slot = SlotOrder[slotIndex];
-            var label = El.Text(Name(_draft.look[slotIndex]), "ct-slot-value");
-            void Step(int d)
-            {
-                var list = _bySlot[slot];
-                if (list.Count == 0) return;
-                int i = list.FindIndex(x => x.id == _draft.look[slotIndex]);
-                i = ((i < 0 ? 0 : i) + d + list.Count) % list.Count;
-                _draft.look[slotIndex] = list[i].id;
-                label.text = list[i].name;
-                _preview.SetLook(_draft.look);
-            }
-            return El.Div("ct-slot",
-                El.Text(SlotLabels[slotIndex], "ct-slot-label"),
-                El.Btn("‹", () => Step(-1), "ct-btn ct-btn-icon", "sfx_ui_toggle"),
-                label,
-                El.Btn("›", () => Step(1), "ct-btn ct-btn-icon", "sfx_ui_toggle"));
-        }
-
-        private string Name(string itemId) => itemId != null && _reg.Items.TryGetValue(itemId, out var d) ? d.name : "—";
 
         private VisualElement Chip(string text, Action onClick, string id, string group, string sub = null)
         {
-            var b = El.Btn(text, onClick, "ct-chip", "sfx_ui_toggle");
-            b.userData = group + ":" + id;
-            if (sub != null) b.tooltip = sub;
-            if (sub != null) b.Add(El.Text(sub, "ct-chip-sub"));
-            return b;
+            var button = El.Btn("", onClick, "ct-chip", "sfx_ui_toggle");
+            button.Add(El.Text(text, "ct-chip-title"));
+            button.userData = group + ":" + id;
+            if (!string.IsNullOrEmpty(sub)) button.Add(El.Text(sub, "ct-chip-sub"));
+            return button;
         }
 
         private void ToggleTrait(string id)
@@ -184,45 +286,76 @@ namespace CTLife.UI
 
         private void Refresh()
         {
+            _reviewComplete = false;
             Mark(_tribeRow, "tribe", id => id == _draft.tribeId);
             Mark(_traitRow, "trait", id => _draft.traitIds.Contains(id));
             Mark(_dreamRow, "dream", id => id == _draft.dreamId);
+            if (_traitCount != null) _traitCount.text = Strings.F("creator.traitsCount", _draft.traitIds.Count);
+            if (_identitySummary != null)
+            {
+                var names = new List<string>();
+                if (SelectedLook != null) names.Add(Strings.T(SelectedLook.labelKey));
+                var tribe = _reg.TribeOrder.FirstOrDefault(t => t.id == _draft.tribeId);
+                if (tribe != null) names.Add(tribe.name);
+                names.AddRange(_reg.Traits.Where(t => _draft.traitIds.Contains(t.id)).Select(t => t.name));
+                var dream = _reg.Dreams.FirstOrDefault(d => d.id == _draft.dreamId);
+                if (dream != null) names.Add(dream.name);
+                _identitySummary.text = names.Count > 0 ? string.Join(" · ", names) : Strings.T("creator.storyEmpty");
+            }
             Validate();
         }
 
         private static void Mark(VisualElement row, string group, Func<string, bool> selected)
         {
             if (row == null) return;
-            foreach (var c in row.Children())
+            foreach (var child in row.Children())
             {
-                var tag = c.userData as string;
-                if (tag == null || !tag.StartsWith(group + ":")) continue;
-                c.EnableInClassList("ct-chip-on", selected(tag.Substring(group.Length + 1)));
+                var tag = child.userData as string;
+                if (tag != null && tag.StartsWith(group + ":")) child.EnableInClassList("ct-chip-on", selected(tag.Substring(group.Length + 1)));
             }
+        }
+
+        private string PersonalityProblem()
+        {
+            if (_draft.tribeId == null) return Strings.T("creator.needTribe");
+            if (_draft.traitIds.Count != 2) return Strings.T("creator.needTraits");
+            return _draft.dreamId == null ? Strings.T("creator.needDream") : null;
+        }
+
+        private string DraftProblem()
+        {
+            if (SelectedLook == null) return Strings.T("creator.needLook");
+            if (PersonalityProblem() is string personality) return personality;
+            if (_draft.alias.Length < 3) return Strings.T("creator.needAlias");
+            return !_draft.ageConfirmed ? Strings.T("creator.needAge") : null;
         }
 
         private void Validate()
         {
-            if (_submit == null) return;
-            string problem = null;
-            if (_draft.alias.Length < 3) problem = "Alias needs 3+ characters";
-            else if (_draft.tribeId == null) problem = "Pick a tribe";
-            else if (_draft.traitIds.Count != 2) problem = "Pick two traits";
-            else if (_draft.dreamId == null) problem = "Pick a dream";
-            else if (!_draft.ageConfirmed) problem = "Confirm you are 18+";
-            _submit.SetEnabled(problem == null);
-            _submit.text = problem ?? "Be born";
+            if (_next == null) return;
+            _back.Show(_step > 0);
+            _back.SetEnabled(!_busy);
+            foreach (var tab in _tabs) tab?.SetEnabled(!_busy);
+            _content?.SetEnabled(!_busy);
+            string problem = _step == 0 ? (SelectedLook == null ? Strings.T("creator.needLook") : null)
+                : _step == 1 ? PersonalityProblem() : DraftProblem();
+            if (_step == 2 && !_readOnlyReview && !CanSubmitLook) problem = Strings.T("creator.lookNotAvailable");
+            _next.SetEnabled(!_busy && problem == null && !_reviewComplete);
+            _next.text = Strings.T(_busy ? "creator.saving" : _step == 0 ? "creator.toPersonality" : _step == 1 ? "creator.toIdentity"
+                : _readOnlyReview ? (_reviewComplete ? "creator.previewComplete" : "creator.finishPreview") : "creator.submit");
+            _guidance.text = problem ?? Strings.T(_step == 0 ? "creator.lookGuidance" : _step == 1 ? "creator.personalityReady"
+                : _readOnlyReview ? (_reviewComplete ? "creator.previewSavedNothing" : "creator.previewNotice") : "creator.ready");
+            _guidance.Show(problem != null || _step == 2);
+            _error.Show(!string.IsNullOrEmpty(_error.text));
         }
 
-        public void ShowError(string text)
-        {
-            if (_error != null) _error.text = text;
-        }
-
-        public void SetBusy(bool busy) => _submit?.SetEnabled(!busy);
+        public void ShowError(string text) { if (_error != null) { _error.text = text; _error.Show(!string.IsNullOrEmpty(text)); } }
+        public void SetBusy(bool busy) { _busy = busy; Validate(); }
 
         public override void Close()
         {
+            if (_config != null) _config.Changed -= RefreshAvailability;
+            _config = null;
             base.Close();
             _preview?.Dispose();
             _preview = null;
