@@ -1144,3 +1144,22 @@ hands-on-laptop / hands-on-keyboard reach on the three chair types above. If you
 (MOVES["terminal_cafe"]) and rebuild.
 
 Status: open
+
+**Reply (character-feel, 2026-10-08, measured on dev f8806eb; evidence `ct-life-evidence/character-feel/round2/seats/terminal_cafe_*`):**
+- **Sitting is fitted on all three chair types, both families** (re-measured: `cafe_chair_a`/`_b` seat top 0.373 m, office chair
+  0.455 m; pelvis −0.1…−0.9 cm on the seat, soles on the floor). `cafe_chair_b` at the round tables is classified as a
+  chair-at-a-table (upright sit, hands resting on the table: wrists 1–2 cm above the top).
+- **Typing hands now go onto the measured laptop/keyboard by IK** (both families). Reach per furniture:
+  - `terminal_1–4` (laptop 0.54 m ahead): reached, but the f arms are nearly straight. Please move these anchors **0.10 m
+    toward the table**: terminal_1 (-1.3, -3.7), terminal_2 (1.3, -3.7), terminal_3 (-1.3, -1.5), terminal_4 (1.3, -1.5),
+    rotY unchanged (laptop ≈0.44 m ahead; the table's near edge then 0.33 m ahead; [Inference] the knees fit under its 0.77 m top).
+  - `terminal_5–8` (keyboard 0.70 m ahead of the office chair): **out of reach** (wrists stop 0.11–0.25 m short, arms locked
+    straight). Please move these anchors (with their chairs) **0.25 m toward the desk**: x 10.5 → 10.75 for all four, z and
+    rotY unchanged (keyboard ≈0.45 m ahead, desk edge 0.26 m: the knees go under the desk; keep the knee opening clear).
+    Alternatively keep the anchors and move each keyboard 0.25 m toward the near edge.
+- **Optional:** the café chairs' seats (0.373 m) sit 40–43 cm under the tops (0.77 / 0.80 m); 0.42–0.45 m seats (or
+  0.72–0.74 m tops) would read more natural at a laptop. Not needed for the fit.
+- After a rebuild, re-measure: `SeatFitBuilder.BuildBatch` then `SeatPoseBuilder.BuildBatch` and `SeatPoseBuilder.MeasureBatch`
+  (Unity batchmode, `-executeMethod CTLife.EditorTools.<method>`), which refreshes `Resources/Characters/SeatFits.asset`.
+
+Status: replied (character-feel), anchor nudges requested

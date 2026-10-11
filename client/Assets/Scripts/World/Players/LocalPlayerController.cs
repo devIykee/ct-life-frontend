@@ -74,7 +74,7 @@ namespace CTLife.World
         private bool _stunned;
         /// <summary>Show falls to the room through the existing `emote` message (react_liquidated is a registry anim).</summary>
         public static bool BroadcastFalls = true;
-        public const float StaggerSpeed = 2.4f, FallSpeed = 3.4f;
+        public const float StaggerSpeed = 2.4f, FallSpeed = 3.4f, TripHeight = 0.45f;
         public CharacterBody Body => _body;
         public bool Stunned => _stunned;
 
@@ -746,6 +746,8 @@ namespace CTLife.World
                 me.Stagger(-hit.normal);
                 return;
             }
+            // A kerb-high edge (just above the step height) catches the feet: stumble and recover, at walking or running pace.
+            if (hit.speed >= StaggerSpeed && hit.obstacleHeight < TripHeight) { me.Trip(forward); return; }
             if (hit.speed >= FallSpeed)
             {
                 bool low = hit.obstacleHeight < 0.9f; // trip over a bench/planter edge; bounce off a wall/counter

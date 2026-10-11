@@ -16,9 +16,13 @@ MonoBehaviour:
   - controller: {fileID: 22100000, guid: fe7a8e60a4b134f24b6d65e7f6238391, type: 2}
     walk: 1
     run: 4.467464
+    walkSoleLift: 0
+    runSoleLift: 0.011845182
   - controller: {fileID: 22100000, guid: 53b72f24bf4a54138b69dd37d543fe2e, type: 2}
     walk: 1
     run: 4.9088845
+    walkSoleLift: 0
+    runSoleLift: 0.03132528
   lengths:
   - state: act_sit_down
     seconds: 1.3000001
@@ -64,6 +68,20 @@ MonoBehaviour:
     seconds: 0.9333334
   - state: idle_rekt
     seconds: 1.3333334
+  - state: fe_cafe_social_v1
+    seconds: 1.6666667
+  - state: fe_cafe_typing_v1
+    seconds: 1.2
+  - state: fe_cafe_work_exit_v1
+    seconds: 1.0333334
+  - state: fe_cafe_work_exit_idle_v1
+    seconds: 6.0000005
+  - state: act_get_up_front
+    seconds: 4.533334
+  - state: react_trip
+    seconds: 1.5000001
+  - state: loco_run_stop
+    seconds: 1.6000001
   defaultWalk: 1
   defaultRun: 4.6881742
   poses:
@@ -71,6 +89,10 @@ MonoBehaviour:
     hipsStart: {x: 0.0020198906, y: 0.20556219, z: -0.16875497}
     hipsEnd: {x: -0.0047455365, y: 0.92182386, z: -0.0302068}
     headStart: {x: 0.026775338, y: 0.25569385, z: -0.7981945}
+  - state: act_get_up_front
+    hipsStart: {x: -0.00477944, y: 0.13709933, z: 0.085151315}
+    hipsEnd: {x: 0.075891376, y: 1.0091265, z: 1.0627142}
+    headStart: {x: -0.011179039, y: 0.15344614, z: -0.5357653}
   - state: react_fall
     hipsStart: {x: 0.0031788955, y: 0.9219151, z: -0.030421972}
     hipsEnd: {x: 0.12747969, y: 0.22804362, z: -0.41577315}
@@ -79,3 +101,11 @@ MonoBehaviour:
     hipsStart: {x: 0.010564165, y: 0.71589607, z: -0.13642341}
     hipsEnd: {x: 0.013342479, y: 0.19075072, z: -0.17220576}
     headStart: {x: -0.021113152, y: 0.65564126, z: 0.37905473}
+  - state: react_trip
+    hipsStart: {x: -0.015899014, y: 0.9794998, z: 0.007194996}
+    hipsEnd: {x: -0.029874597, y: 1.0072395, z: 0.118836045}
+    headStart: {x: 0.010526869, y: 1.6032736, z: -0.029958367}
+  - state: loco_run_stop
+    hipsStart: {x: -0.017792607, y: 0.89643806, z: -0.0033535957}
+    hipsEnd: {x: -0.0025589433, y: 0.99369866, z: 0.013669252}
+    headStart: {x: -0.023404531, y: 1.5116215, z: 0.02968669}

@@ -23,6 +23,9 @@ namespace CTLife.World
             [Tooltip("Family override controller (Snow m / Rain f); matches the registry entry's controller.")]
             public RuntimeAnimatorController controller;
             public float walk = 1f, run = 5.8f;
+            [Tooltip("Planted-sole height above the ground in the walk / run-band clips on this family (m; measured by " +
+                     "CharacterFeelController): CharacterIK lowers planted feet by it (the cast-wide run correction).")]
+            public float walkSoleLift, runSoleLift;
         }
 
         public List<Family> families = new List<Family>();
@@ -63,6 +66,14 @@ namespace CTLife.World
         }
 
         /// <summary>Native (walk, run) ground speeds for the controller an actor plays.</summary>
+        public (float walk, float run) SoleLiftFor(RuntimeAnimatorController controller)
+        {
+            if (controller != null)
+                foreach (var f in families)
+                    if (f != null && f.controller == controller) return (f.walkSoleLift, f.runSoleLift);
+            return (0f, 0f);
+        }
+
         public (float walk, float run) NativeFor(RuntimeAnimatorController controller)
         {
             if (controller != null)

@@ -89,6 +89,21 @@ namespace CTLife.World
         private float _pendingOverlayAt = -1f;
         private string _pendingOverlay;
         private SeatPresenter _seat;
+        // Seat fit (SeatPlacement): the seated model offset ramps to its target through sit-down / stand-up.
+        private static readonly int SeatHeightParam = Animator.StringToHash("seatHeight");
+        private Vector3 _seatTarget, _seatApplied, _modelBaseLocal;
+        private bool _hasModelBase;
+        public Vector3 SeatOffset => _seatApplied;
+        /// <summary>
+        /// Keep the visual model where it is while the root jumps by <paramref name="worldDelta"/> (it eases back onto the
+        /// root with the seat-offset ramp, τ 0.3 s): a hand-back that cannot put the root exactly under the body.
+        /// </summary>
+        public void CarryModelOffset(Vector3 worldDelta) => _seatApplied += transform.InverseTransformVector(worldDelta);
+
+        /// <summary>The seat fit of the current seated state (invalid when not on a measured seat).</summary>
+        public SeatPlacement.Result SeatFit { get; private set; }
+        /// <summary>Seated and settled: the model rests at its fitted offset (no sit/stand transition or offset ramp).</summary>
+        public bool SeatFitSettled => SeatFit.valid && !SeatPresentationActive && (_seatApplied - _seatTarget).sqrMagnitude < 1e-6f;
         // Speed-matched locomotion (LocomotionTuning) and presentation-only idle life.
         private static readonly int LocoRateParam = Animator.StringToHash("locoRate");
         private RuntimeAnimatorController _rateFor;
@@ -124,6 +139,7 @@ namespace CTLife.World
             Voice.maxDistance = 8f; // Build Spec: hear players within 8 m, quieter with distance.
             Voice.dopplerLevel = 0f;
             _seat = new SeatPresenter(this);
+            if (animator != null && animator.transform.parent == transform) { _modelBaseLocal = animator.transform.localPosition; _hasModelBase = true; }
             _lastYaw = transform.eulerAngles.y;
             _nextIdleVariation = Time.time + Random.Range(7f, 15f);
         }
@@ -180,7 +196,12 @@ namespace CTLife.World
         {
             _runCorrection?.AfterAnimation();
             _seatExit?.ApplyPose();
+            // Ramp the seat fit (τ 0.3 s): lands as the sit-down clip settles; eases out through the stand-up.
+            _seatApplied = Vector3.Lerp(_seatApplied, _seatTarget, 1f - Mathf.Exp(-Time.deltaTime / 0.3f));
+            if (_seat != null) _seat.Offset = _seatApplied;
             _seat?.Apply();
+            if (_hasModelBase && !SeatExitActive && !SeatTransitionActive && Animator != null)
+                Animator.transform.localPosition = _modelBaseLocal + _seatApplied;
             if (SeatExitActive && _exitSettleEnabled && _exitSettleContact != null && _exitSettleContact.Active)
             {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
@@ -220,7 +241,7 @@ namespace CTLife.World
             if (profile == null || Animator == null || _seatMotionProfile != null ||
                 !profile.TryGetController(Animator, out var controller)) return;
             var baseline = Animator.runtimeAnimatorController;
-            Animator.runtimeAnimatorController = controller;
+            if (controller != baseline) Animator.runtimeAnimatorController = controller; // cast looks keep the shared one
             if (!Animator.HasState(0, AnimationLibrary.Hash(CafeSeatMotionProfile.SocialState)) ||
                 !Animator.HasState(0, AnimationLibrary.Hash(CafeSeatMotionProfile.TypingState)))
             {
@@ -234,7 +255,8 @@ namespace CTLife.World
         public bool BeginSeatExitPresentation(string spotId, Vector3 seatedPosition, Quaternion seatedRotation)
         {
             if (_seatExit == null || !_seatMotionProfile.TryGetExit(_baseAnim, spotId, Animator, out var route, out var motion)) return false;
-            return _seatExit.Begin(seatedPosition, seatedRotation, route, motion);
+            // Start from where the body actually sits (the fitted pose's measured offset on this look).
+            return _seatExit.Begin(seatedPosition + seatedRotation * _seatApplied, seatedRotation, route, motion);
         }
 
         public void CancelSeatExitPresentation(bool restoreAnimation = true)
@@ -255,8 +277,10 @@ namespace CTLife.World
 #endif
             if (_exitSettleEnabled && _exitSettleContact == null)
             {
+                // The sole settle is inspected on the original three-skin Snow body only; the cast looks (one skin per LOD,
+                // optimized bones) take the same authored exit without that 1.5 cm sole correction instead of no exit.
                 try { _exitSettleContact = new CafeExitSettleContact(Animator, GetComponentsInChildren<SkinnedMeshRenderer>(true)); }
-                catch (System.ArgumentException) { return false; } // This profile must carry the inspected three-skin body.
+                catch (System.ArgumentException) { _exitSettleEnabled = false; }
             }
             if (_workExitGoals == null) _workExitGoals = Animator.gameObject.GetComponent<CafeWorkExitGoals>();
             if (_workExitGoals == null) _workExitGoals = Animator.gameObject.AddComponent<CafeWorkExitGoals>();
@@ -310,6 +334,20 @@ namespace CTLife.World
         {
             if (string.IsNullOrEmpty(animId)) animId = "loco_idle";
             string state = _seatMotionProfile != null ? _seatMotionProfile.ResolveState(animId, spotId) : animId;
+            // Measured seat: the pose for its kind (or the fitted café state), its blend height and the body offset.
+            if (!state.StartsWith("loco_", System.StringComparison.Ordinal) && !string.IsNullOrEmpty(spotId))
+            {
+                var place = SeatPlacement.Resolve(Animator, animId, spotId, state != animId ? state : null);
+                if (place.valid)
+                {
+                    if (Animator.HasState(0, AnimationLibrary.Hash(place.state))) state = place.state;
+                    _seatTarget = place.offset;
+                    Animator.SetFloat(SeatHeightParam, place.seatHeight);
+                }
+                else _seatTarget = Vector3.zero;
+                SeatFit = place;
+            }
+            else { _seatTarget = Vector3.zero; SeatFit = default; }
             if (Suppressed) { _baseAnim = animId; _baseState = state; _baseSpot = spotId; return; } // replayed after the get-up
             // Store the canonical server action and latest seat even when two seats share a state.
             // Repeated updates must not restart the loop; an emote returns to this exact context.
@@ -332,6 +370,12 @@ namespace CTLife.World
                 _exitDeferredOverlay = null;
             }
             if (RouteFittedTypingTransition(state)) return;
+            if (state == "loco_idle" && _runStopPendingAt >= 0f)
+            {
+                bool due = Time.time - _runStopPendingAt < 0.3f;
+                _runStopPendingAt = -1f;
+                if (due && RunStopAllowed()) { PlayOneShot("loco_run_stop"); return; } // returns to this idle when it ends
+            }
             // loco_walk and loco_run play the same speed-blended Locomotion tree: switching between them must not
             // restart its cycle (a crossfade restarts the target at phase 0 and freezes the legs near the crossover).
             if (SameLocomotionTree(state)) return;
@@ -427,6 +471,7 @@ namespace CTLife.World
             if (SeatExitActive) metresPerSecond = _seatExit.Speed;
             else if (SeatTransitionActive) metresPerSecond = _seat.Speed;
             if (Time.time < _turnShuffleUntil && metresPerSecond < TurnShuffleSpeed) metresPerSecond = TurnShuffleSpeed;
+            RunStop(metresPerSecond);
             _speed = metresPerSecond;
             if (Animator != null && Animator.runtimeAnimatorController != null)
             {
@@ -445,6 +490,29 @@ namespace CTLife.World
         }
 
         private static readonly int WalkHash = Animator.StringToHash("loco_walk"), RunHash = Animator.StringToHash("loco_run");
+        private static readonly int RunStopHash = Animator.StringToHash("loco_run_stop");
+        private const float RunStopFrom = 3.4f;
+        private float _lastRunAt = -1f;
+
+        private float _runStopPendingAt = -1f;
+
+        /// <summary>
+        /// A run that ends within ~0.45 s plays the decelerating stop steps once (CMU JogStop), then the idle. Owners set
+        /// the speed and the idle base in either order: whichever comes second starts the stop.
+        /// </summary>
+        private void RunStop(float metresPerSecond)
+        {
+            if (metresPerSecond >= RunStopFrom) { _lastRunAt = Time.time; return; }
+            if (_lastRunAt < 0f || metresPerSecond > 0.15f) return;
+            bool recent = Time.time - _lastRunAt < 0.45f;
+            _lastRunAt = -1f;
+            if (!recent || !RunStopAllowed()) return;
+            if (_baseState == "loco_idle") PlayOneShot("loco_run_stop");
+            else _runStopPendingAt = Time.time; // SetBase("loco_idle") follows this frame
+        }
+
+        private bool RunStopAllowed() => !Suppressed && !SeatPresentationActive && _overlayAnim == null && !Culled && Animator != null &&
+                                         Animator.runtimeAnimatorController != null && Animator.HasState(0, RunStopHash);
 
         private bool SameLocomotionTree(string state)
         {
