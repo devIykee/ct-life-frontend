@@ -22,12 +22,18 @@ namespace CTLife.UI.Map
         public bool IsHome => !string.IsNullOrEmpty(HomeId);
     }
 
-    /// <summary>Where an area sits on CT Island: atlas = Origin + R(rotation) * local * Scale.</summary>
+    /// <summary>
+    /// Where an area sits on CT Island: atlas = Origin + R(rotation) * local * Scale, rotation counter-clockwise about the venue
+    /// root (Origin). atlas.json v2 (World lane, 2026-10-17) names the venue yaw <c>rotationDeg</c> (clockwise seen from above,
+    /// Unity's +Y, the root's eulerAngles.y) and keeps the legacy <c>rotation</c> = -rotationDeg; both give the same placement.
+    /// </summary>
     public sealed class MapPlacement
     {
         public string AreaId, Plot;
         public Vector2 Origin;
         public float RotationDeg, Scale = 1f;
+        /// <summary>v2 convenience: where the area centre lands on the island (derived by the math; tests check they agree).</summary>
+        public Vector2? Center;
     }
 
     public sealed class MapPlot
@@ -149,7 +155,8 @@ namespace CTLife.UI.Map
             foreach (var p in (JArray)o["areas"] ?? new JArray())
             {
                 var pl = new MapPlacement { AreaId = (string)p["id"], Plot = (string)p["plot"], Origin = V(p["origin"]),
-                    RotationDeg = (float?)p["rotation"] ?? 0f, Scale = (float?)p["scale"] ?? 1f };
+                    RotationDeg = p["rotationDeg"] != null ? -(float)p["rotationDeg"] : (float?)p["rotation"] ?? 0f, Scale = (float?)p["scale"] ?? 1f,
+                    Center = p["center"] is JArray c && c.Count >= 2 ? V(c) : (Vector2?)null };
                 at.Placements[pl.AreaId] = pl;
             }
             return at;

@@ -448,7 +448,7 @@ namespace CTLife.EditorTools
                     new Bounds(at + Vector3.up * height, new Vector3(4f, 3f, 4f)), Vector3.zero, Quaternion.identity);
                 navInst = NavMesh.AddNavMeshData(data);
                 var (view, local, _) = Player(st, at + Vector3.up * height, 0f);
-                local.GetComponent<NavMeshAgent>().Warp(at + Vector3.up * height);
+                local.SnapTo(at + Vector3.up * height, 0f);
                 Zoom(st.rig, st.rig.minDistance + 1f);
                 await Seconds(1f);
                 await Snap("ledge", st.rig.Camera, ui: false);
@@ -468,7 +468,7 @@ namespace CTLife.EditorTools
                 o["went_airborne"] = airborne;
                 o["landed_height_m"] = Math.Round(landedHeight, 2);
                 o["reaction"] = landedHeight > CharacterBody.HardLanding + 1f ? "knockdown" : landedHeight > CharacterBody.HardLanding ? "react_roll" : "jump_land";
-                o["on_navmesh_after"] = local.GetComponent<NavMeshAgent>().isOnNavMesh;
+                o["grounded_after"] = local.Body.Grounded;
                 if (!airborne) Failures.Add("p2/ledge: the player did not step off the ledge");
                 Flush("ledge", o);
             }

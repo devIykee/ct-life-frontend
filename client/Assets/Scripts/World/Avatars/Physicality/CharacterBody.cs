@@ -1,235 +1,214 @@
 using System;
 using UnityEngine;
-using UnityEngine.AI;
 
 namespace CTLife.World
 {
     /// <summary>
-    /// The local player's physical body: a CharacterController that collides with every solid collider (chairs, tables,
-    /// benches, plants, people) while the NavMeshAgent keeps the walkable-area authority and path following.
-    /// - Direct control: the controller moves (slides along props, climbs ≤0.3 m steps); the agent follows via
-    ///   nextPosition (updatePosition off), so the server-facing position stays on the NavMesh.
-    /// - Airborne: no ground under the feet (stepping off a ledge, a drop): gravity, then a landing reaction scaled by the
-    ///   fall height, then the agent re-binds where it lands.
-    /// - Impacts: running into something solid is reported (approach speed, obstacle height) for stumbles/falls.
+    /// When a body is really falling, as opposed to stepping down a kerb or a stair (Feel lane F1, 2026-10-17: "the way the
+    /// model is just falling anyhow can be very annoying"). A fall starts only after the feet have had no ground for longer
+    /// than <see cref="CoyoteTime"/> AND are more than <see cref="FallDrop"/> below the last ground; anything shorter is a
+    /// step. Pure state, EditMode-tested.
     /// </summary>
-    [RequireComponent(typeof(NavMeshAgent))]
+    public struct FallTracker
+    {
+        public const float CoyoteTime = 0.2f, FallDrop = 0.5f;
+        public float UngroundedFor, LastGroundY, PeakY;
+        public bool Falling, Airborne;
+
+        /// <summary>One step. Returns the fall height when the body touches down after a real fall, else -1.</summary>
+        public float Step(bool grounded, float feetY, float dt)
+        {
+            if (grounded)
+            {
+                float landed = Falling ? Mathf.Max(0f, PeakY - feetY) : -1f;
+                UngroundedFor = 0f; LastGroundY = feetY; PeakY = feetY; Falling = false; Airborne = false;
+                return landed;
+            }
+            if (!Airborne) { Airborne = true; PeakY = LastGroundY; }
+            UngroundedFor += dt;
+            PeakY = Mathf.Max(PeakY, feetY);
+            if (!Falling && UngroundedFor > CoyoteTime && LastGroundY - feetY > FallDrop) Falling = true;
+            return -1f;
+        }
+    }
+
+    /// <summary>
+    /// The local player's body (Feel lane F1): a CharacterController on whatever solid collision the world has, with no
+    /// NavMesh anywhere in it. Kerbs and stairs are stepped (0.32 m up, snapped down within 0.45 m), slopes up to 45°
+    /// are walkable, a real drop falls with gravity (<see cref="FallTracker"/>), and walking into walls, kerbs or props
+    /// only slides along them: nothing static trips or knocks the player down any more. People it walks into are
+    /// reported (<see cref="BumpedPerson"/>) so the owner can nudge them.
+    /// </summary>
+    [DisallowMultipleComponent]
     public sealed class CharacterBody : MonoBehaviour
     {
-        public const float Radius = 0.28f, Height = 1.72f, StepOffset = 0.3f;
-        public const float LedgeDrop = 0.45f;      // a drop deeper than this beyond a NavMesh edge is a ledge
-        public const float HardLanding = 1.6f;     // falls from higher than this land hard
+        public const float Radius = 0.28f, Height = 1.72f, StepOffset = 0.32f, SlopeLimit = 45f, SkinWidth = 0.04f;
+        /// <summary>Ground this far below the feet keeps the body grounded (it is pulled down onto it: stairs, kerb drops).</summary>
+        public const float SnapDistance = 0.45f;
+        /// <summary>Step-down pull (m/s): a 0.3 m kerb takes three frames, not one.</summary>
+        public const float SnapSpeed = 6f;
+        /// <summary>Landings from higher than this roll; from higher than <see cref="KnockdownLanding"/> they knock down.</summary>
+        public const float HardLanding = 2.5f, KnockdownLanding = 7f;
+        /// <summary>Mid-air steering (1/s, exponential toward the stick).</summary>
+        public const float AirControl = 1.5f;
+        private const float TerminalSpeed = 30f;
 
-        public struct ImpactInfo
-        {
-            public Vector3 normal, point;
-            public float speed;        // m/s into the obstacle
-            public float obstacleHeight;
-            public Collider collider;
-            public AvatarView other;   // a person we ran into, if any
-        }
-
-        public event Action<ImpactInfo> Impact;
-        /// <summary>Fall height (m) when the body lands after being airborne.</summary>
+        /// <summary>Fall height (m) when the body lands after a real fall.</summary>
         public event Action<float> Landed;
+        /// <summary>Walked into a person (them, approach speed m/s).</summary>
+        public event Action<AvatarView, float> BumpedPerson;
 
         public CharacterController Controller { get; private set; }
-        public bool Direct { get; private set; }
-        public bool Airborne { get; private set; }
+        public bool Ready => Controller != null;
+        /// <summary>Seated, engaged or knocked down: no collision, no gravity; the owner places the root.</summary>
+        public bool Suspended { get; private set; }
+        public bool Grounded { get; private set; } = true;
+        /// <summary>A real fall in progress (the owner shows the fall pose).</summary>
+        public bool Airborne => _fall.Falling;
         public float AirborneSince { get; private set; }
-
-        private NavMeshAgent _agent;
-        private Vector3 _lastVelocity, _airVelocity;
-        private float _vertical, _peakY, _nextImpactAt;
-
-        public bool Ready => Controller != null && _agent != null;
-        /// <summary>Real horizontal velocity of the last direct move (displacement over that frame's delta time).</summary>
+        public Vector3 GroundNormal { get; private set; } = Vector3.up;
+        /// <summary>Real horizontal velocity of the last move (displacement over that frame's delta time).</summary>
         public Vector3 Velocity { get; private set; }
         public int VelocityFrame { get; private set; } = -1;
 
+        /// <summary>What the body stands on and collides with: the world, never people, ragdolls or vehicle-only blockers.</summary>
+        public static int Mask => CharacterLayers.BodyMask;
+
+        private FallTracker _fall;
+        private float _vy, _nextBumpAt;
+        private Vector3 _air, _lastIntent;
+        private static bool _layerRules;
+
         private void Awake()
         {
-            _agent = GetComponent<NavMeshAgent>();
             Controller = GetComponent<CharacterController>();
             if (Controller == null) Controller = gameObject.AddComponent<CharacterController>();
             Controller.radius = Radius;
             Controller.height = Height;
-            Controller.center = new Vector3(0f, Height * 0.5f + 0.02f, 0f);
+            Controller.center = new Vector3(0f, Height * 0.5f + SkinWidth, 0f);
             Controller.stepOffset = StepOffset;
-            Controller.slopeLimit = 50f;
-            Controller.skinWidth = 0.03f;
+            Controller.slopeLimit = SlopeLimit;
+            Controller.skinWidth = SkinWidth;
             Controller.minMoveDistance = 0f;
-            Controller.enabled = false; // only while this body moves (direct control / airborne)
             gameObject.layer = CharacterLayers.Characters;
-        }
-
-        /// <summary>Direct control starts: the controller moves the actor, the agent follows.</summary>
-        public void BeginDirect()
-        {
-            if (!Ready || Direct || Airborne) return;
-            Direct = true;
-            _agent.updatePosition = false;
-            Controller.enabled = true;
-            _vertical = 0f;
-        }
-
-        /// <summary>Direct control ends: hand the position back to the agent without a jump.</summary>
-        public void EndDirect()
-        {
-            if (!Direct) return;
-            Direct = false;
-            Controller.enabled = false;
-            if (_agent != null && _agent.isActiveAndEnabled && _agent.isOnNavMesh)
+            if (!_layerRules)
             {
-                _agent.nextPosition = transform.position;
-                _agent.updatePosition = true;
+                // World v2 contract: doorway blockers stop vehicles, not people.
+                Physics.IgnoreLayerCollision(CharacterLayers.Characters, CharacterLayers.VehicleBlocker, true);
+                Physics.IgnoreLayerCollision(CharacterLayers.Characters, CharacterLayers.TapTarget, true);
+                _layerRules = true;
             }
-            else if (_agent != null) _agent.updatePosition = true;
+            _fall.LastGroundY = _fall.PeakY = transform.position.y;
         }
 
-        /// <summary>One frame of direct movement (velocity already constrained to the walkable area).</summary>
-        public void MoveDirect(Vector3 velocity, float dt)
+        public void Suspend(bool suspended)
         {
-            if (!Direct) BeginDirect();
-            if (!Direct) return;
-            _lastVelocity = velocity;
+            Suspended = suspended;
+            if (Controller != null) Controller.enabled = !suspended;
+            _vy = 0f; _air = Vector3.zero;
+            _fall = new FallTracker { LastGroundY = transform.position.y, PeakY = transform.position.y };
+            Velocity = Vector3.zero;
+            Grounded = true;
+        }
+
+        /// <summary>Place the body (spawn, correction, stand-up, get-up): on the ground under the point when there is one.</summary>
+        public void Teleport(Vector3 position, Quaternion rotation)
+        {
+            bool enabled = Controller != null && Controller.enabled;
+            if (Controller != null) Controller.enabled = false;
+            if (GroundAt(position, out float y)) position.y = y;
+            transform.SetPositionAndRotation(position, rotation);
+            if (Controller != null) Controller.enabled = enabled && !Suspended;
+            _vy = 0f; _air = Vector3.zero;
+            _fall = new FallTracker { LastGroundY = position.y, PeakY = position.y };
+            Grounded = true;
+            Velocity = Vector3.zero;
+        }
+
+        /// <summary>The walkable ground at a point (from 1.2 m above it down to 3 m below).</summary>
+        public static bool GroundAt(Vector3 p, out float y)
+        {
+            y = p.y;
+            if (!Physics.Raycast(p + Vector3.up * 1.2f, Vector3.down, out var hit, 4.2f, Mask, QueryTriggerInteraction.Ignore) || hit.normal.y < 0.5f)
+                return false;
+            y = hit.point.y;
+            return true;
+        }
+
+        /// <summary>One frame: horizontal intent (m/s), gravity, kerb/stair step-down and real falls.</summary>
+        public void Move(Vector3 intent, float dt)
+        {
+            if (Suspended || Controller == null || dt <= 0f) return;
+            if (!Controller.enabled) Controller.enabled = true;
+            intent.y = 0f;
+            _lastIntent = intent;
             var before = transform.position;
-            _vertical = Controller.isGrounded ? -1.5f : _vertical + Physics.gravity.y * dt;
-            Controller.Move(velocity * dt + Vector3.up * (_vertical * dt));
-            if (_agent.isActiveAndEnabled && _agent.isOnNavMesh)
+            bool probe = Probe(out float gap, out var normal);
+            bool walkable = probe && normal.y >= Mathf.Cos(SlopeLimit * Mathf.Deg2Rad);
+            bool grounded = _vy <= 0.5f && ((Controller.isGrounded && (!probe || gap <= SnapDistance)) || (Grounded && walkable && gap <= SnapDistance));
+            Vector3 motion;
+            if (grounded)
             {
-                _agent.nextPosition = transform.position;
-                // The agent clamps to the NavMesh; never let the body drift off the walkable area sideways.
-                var nav = _agent.nextPosition;
-                var p = transform.position;
-                if (new Vector2(nav.x - p.x, nav.z - p.z).sqrMagnitude > 0.0025f)
-                {
-                    Controller.enabled = false;
-                    transform.position = new Vector3(nav.x, p.y, nav.z);
-                    Controller.enabled = true;
-                }
+                _vy = -2f;
+                _air = intent;
+                GroundNormal = walkable ? normal : Vector3.up;
+                motion = intent * dt;
+                // Stay on the stairs and kerbs going down instead of walking off them into the air.
+                float pull = probe && gap > SkinWidth ? Mathf.Min(gap, SnapSpeed * dt) : 0f;
+                motion.y = -Mathf.Max(pull, 2f * dt);
             }
+            else
+            {
+                _vy = Mathf.Max(_vy + Physics.gravity.y * dt, -TerminalSpeed);
+                _air = Vector3.Lerp(_air, intent, 1f - Mathf.Exp(-AirControl * dt));
+                motion = _air * dt + Vector3.up * (_vy * dt);
+                GroundNormal = Vector3.up;
+            }
+            var flags = Controller.Move(motion);
+            if ((flags & CollisionFlags.Above) != 0 && _vy > 0f) _vy = 0f;
+            bool now = grounded || Controller.isGrounded;
+            bool wasFalling = _fall.Falling;
+            float landed = _fall.Step(now, transform.position.y, dt);
+            if (_fall.Falling && !wasFalling) AirborneSince = Time.time;
+            Grounded = now;
             var moved = transform.position - before; moved.y = 0f;
-            Velocity = dt > 1e-5f ? moved / dt : Vector3.zero;
+            Velocity = moved / dt;
             VelocityFrame = Time.frameCount;
+            if (landed >= 0f) Landed?.Invoke(landed);
         }
 
-        /// <summary>
-        /// Is there a drop beyond this NavMesh edge (no wall, ground at least <see cref="LedgeDrop"/> lower)? Then the
-        /// body may step off it.
-        /// </summary>
-        public bool IsLedge(Vector3 edgePoint, Vector3 direction, out float drop) => IsLedge(edgePoint, direction, out drop, out _);
-
-        /// <summary>
-        /// Marches outward from the NavMesh edge (which sits an agent radius inside the real rim) to the first point with
-        /// ground at least <see cref="LedgeDrop"/> lower and nothing solid at body height; that point is where to step.
-        /// </summary>
-        public bool IsLedge(Vector3 edgePoint, Vector3 direction, out float drop, out Vector3 stepTo)
+        private bool Probe(out float gap, out Vector3 normal)
         {
-            drop = 0f; stepTo = edgePoint;
-            direction.y = 0f;
-            if (direction.sqrMagnitude < 1e-4f) return false;
-            direction.Normalize();
-            float feet = transform.position.y;
-            for (float d = 0.2f; d <= 1.2f; d += 0.1f)
+            var origin = transform.position + Vector3.up * (Radius + 0.1f);
+            if (Physics.SphereCast(origin, Radius * 0.85f, Vector3.down, out var hit, 0.25f + SnapDistance, Mask, QueryTriggerInteraction.Ignore))
             {
-                var beyond = edgePoint + direction * d;
-                // Something solid at body height (a wall, railing, counter) is not a ledge.
-                if (Physics.CheckCapsule(beyond + Vector3.up * (StepOffset + Radius), beyond + Vector3.up * (Height - Radius), Radius * 0.9f,
-                        CharacterLayers.WorldMask, QueryTriggerInteraction.Ignore)) return false;
-                if (!Physics.Raycast(beyond + Vector3.up * 0.2f, Vector3.down, out var hit, 6f, CharacterLayers.WorldMask, QueryTriggerInteraction.Ignore))
-                    return false; // a void: never step into it
-                drop = feet - hit.point.y;
-                if (drop >= LedgeDrop) { stepTo = beyond + direction * (Radius + 0.12f); _ledgeDirection = direction; return true; }
-                if (drop < -0.05f) return false; // rising ground beyond: not a ledge
+                gap = Mathf.Max(0f, transform.position.y - hit.point.y);
+                normal = hit.normal;
+                return true;
             }
+            gap = float.MaxValue;
+            normal = Vector3.up;
             return false;
-        }
-
-        /// <summary>Leave the NavMesh and fall (ledge, drop, knock off a stage).</summary>
-        public void BeginAirborne(Vector3 velocity, Vector3? stepOffTo = null)
-        {
-            if (!Ready || Airborne) return;
-            if (Direct) { Direct = false; }
-            Airborne = true;
-            AirborneSince = Time.time;
-            _airVelocity = new Vector3(velocity.x, Mathf.Max(0f, velocity.y), velocity.z);
-            _peakY = transform.position.y;
-            _stepOff = stepOffTo;
-            if (_stepOff.HasValue)
-            {
-                // Carry the body over the rim at walking pace before gravity takes it (no landing on the ledge itself).
-                var flat = new Vector3(_airVelocity.x, 0f, _airVelocity.z);
-                if (flat.magnitude < 1.4f) { flat = (_stepOff.Value - transform.position); flat.y = 0f; flat = flat.normalized * 1.4f; }
-                _airVelocity = new Vector3(flat.x, 0f, flat.z);
-            }
-            if (_agent.isActiveAndEnabled) _agent.enabled = false;
-            Controller.enabled = true;
-        }
-
-        private Vector3? _stepOff;
-        private Vector3 _ledgeDirection;
-
-        private void Update()
-        {
-            if (!Airborne) return;
-            float dt = Time.deltaTime;
-            if (_stepOff.HasValue)
-            {
-                var to = _stepOff.Value - transform.position; to.y = 0f;
-                if (to.magnitude > 0.05f && Vector3.Dot(to, new Vector3(_airVelocity.x, 0f, _airVelocity.z)) > 0f && Time.time - AirborneSince < 1f)
-                {
-                    Controller.Move(new Vector3(_airVelocity.x, 0f, _airVelocity.z) * dt);
-                    return;
-                }
-                _stepOff = null; // over the rim: fall
-            }
-            _airVelocity += Physics.gravity * dt;
-            _airVelocity.x = Mathf.MoveTowards(_airVelocity.x, 0f, 1.2f * dt);
-            _airVelocity.z = Mathf.MoveTowards(_airVelocity.z, 0f, 1.2f * dt);
-            var flags = Controller.Move(_airVelocity * dt);
-            _peakY = Mathf.Max(_peakY, transform.position.y);
-            if ((flags & CollisionFlags.Below) != 0 && _airVelocity.y < 0f)
-            {
-                // Ground under the body centre = landed; only the capsule's edge on a rim = slide off it.
-                if (Physics.Raycast(transform.position + Vector3.up * 0.3f, Vector3.down, 0.5f, CharacterLayers.WorldMask, QueryTriggerInteraction.Ignore)) Land();
-                else
-                {
-                    var off = _ledgeDirection.sqrMagnitude > 0.01f ? _ledgeDirection : new Vector3(_airVelocity.x, 0f, _airVelocity.z).normalized;
-                    _airVelocity.x = off.x * 1.2f; _airVelocity.z = off.z * 1.2f;
-                }
-            }
-            else if (Time.time - AirborneSince > 6f) Land(); // safety: never fall forever
-        }
-
-        private void Land()
-        {
-            Airborne = false;
-            float height = Mathf.Max(0f, _peakY - transform.position.y);
-            Controller.enabled = false;
-            _agent.enabled = true;
-            if (NavMesh.SamplePosition(transform.position, out var hit, 1.5f, NavMesh.AllAreas)) _agent.Warp(hit.position);
-            _agent.updatePosition = true;
-            Landed?.Invoke(height);
         }
 
         private void OnControllerColliderHit(ControllerColliderHit hit)
         {
-            if (Airborne || hit.collider == null || hit.collider.isTrigger || hit.normal.y > 0.55f) return;
-            if (hit.collider.transform.IsChildOf(transform)) return;
-            var flat = new Vector3(_lastVelocity.x, 0f, _lastVelocity.z);
+            if (hit.collider == null || hit.collider.isTrigger || hit.normal.y > 0.7f) return; // the ground: nothing to report
+            if (hit.collider.GetComponentInParent<SpotAnchor>() != null)
+            {
+                // A seat's tap box that streamed in unmarked: step through it from now on (taps still find it).
+                hit.collider.gameObject.layer = CharacterLayers.TapTarget;
+                return;
+            }
+            if (Time.time < _nextBumpAt) return;
+            var other = hit.collider.GetComponentInParent<AvatarView>();
+            if (other == null || other.transform == transform) return;
             var n = new Vector3(hit.normal.x, 0f, hit.normal.z);
             if (n.sqrMagnitude < 1e-4f) return;
-            n.Normalize();
-            float into = Vector3.Dot(flat, -n);
-            if (into < 1.5f || Time.time < _nextImpactAt) return;
-            _nextImpactAt = Time.time + 0.6f;
-            Impact?.Invoke(new ImpactInfo
-            {
-                normal = n, point = hit.point, speed = into, collider = hit.collider,
-                obstacleHeight = hit.collider.bounds.max.y - transform.position.y,
-                other = hit.collider.GetComponentInParent<AvatarView>(),
-            });
+            float into = Vector3.Dot(_lastIntent, -n.normalized);
+            if (into < 1f) return;
+            _nextBumpAt = Time.time + 0.6f;
+            BumpedPerson?.Invoke(other, into);
         }
     }
 }

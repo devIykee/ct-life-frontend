@@ -55,6 +55,19 @@
    "fbx_reimport_rest_err_mm": 0.0003,
    "standing_ankle_height_m": 0.057,
    "rest_root_height_m": 0.85
+  },
+  "141": {
+   "bvh": "art/processed/animations/mocap/cmu_141_rest.bvh",
+   "fbx": "art/processed/animations/mocap/cmu_141_rest.fbx",
+   "fbx_bytes": 186764,
+   "sheet": "/Users/mac/Documents/codes/projects/ct-life-evidence/character-feel/round2/mocap/cmu_141_rest.png",
+   "take": "cmu_141_rest",
+   "armature_object": "cmu_141",
+   "bones": 31,
+   "bvh_selfcheck_max_err_mm": 0.0014,
+   "fbx_reimport_rest_err_mm": 0.0005,
+   "standing_ankle_height_m": 0.041,
+   "rest_root_height_m": 0.832
   }
  },
  "clips": [
@@ -1867,6 +1880,453 @@
    },
    "turn_direction": "left",
    "turn_direction_basis": "sign of the pelvis heading change about +Y in the right-handed Y-up source frame (the CMU character's left side is +X when it faces +Z), positive = counter-clockwise seen from above = turning to its left"
+  },
+  {
+   "id": "wave_hello",
+   "source_take": {
+    "subject": "141",
+    "take": "141_16",
+    "cmu_title": "Wave Hello",
+    "asf": "art/raw/animations/cmu_mocap/141/141.asf",
+    "amc": "art/raw/animations/cmu_mocap/141/141_16.amc"
+   },
+   "source_frame_window_120hz": [
+    1,
+    241
+   ],
+   "output": {
+    "frames": 61,
+    "fps": 30.0,
+    "duration_s": 2.0,
+    "src_frames_used": "every 4th AMC frame from 1 to 241"
+   },
+   "files": {
+    "bvh": "art/processed/animations/mocap/wave_hello.bvh",
+    "fbx": "art/processed/animations/mocap/wave_hello.fbx",
+    "fbx_bytes": 232524,
+    "contact_sheet": "/Users/mac/Documents/codes/projects/ct-life-evidence/character-feel/round2/mocap/wave_hello.png"
+   },
+   "net_root_translation_m": 0.014,
+   "yaw_change_deg": -8.1,
+   "hips_height_start_m": 0.884,
+   "hips_height_end_m": 0.885,
+   "alignment": {
+    "yaw_deg_applied": 135.8913,
+    "xz_offset_subtracted_m": [
+     0.56533,
+     0.25374
+    ],
+    "mode": "start",
+    "meaning": "clip rigidly moved so the root is at x=z=0 on the first frame and the pelvis faces +Z on the first frame"
+   },
+   "summary": {
+    "net_root_translation_m": 0.014,
+    "net_root_translation_xz_m": [
+     0.013,
+     -0.004
+    ],
+    "yaw_change_deg": -8.1,
+    "hips_height_start_m": 0.884,
+    "hips_height_end_m": 0.885,
+    "hips_height_min_m": 0.884,
+    "speed_start_mps": 0.11,
+    "speed_end_mps": 0.09,
+    "speed_max_mps": 0.73,
+    "torso_pitch_start_deg": 8.7,
+    "torso_pitch_end_deg": 13.2,
+    "torso_pitch_max_deg": 13.9,
+    "chest_forward_y_start": 0.13,
+    "chest_forward_y_end": 0.19,
+    "feet_ankle_height_max_m": 0.124
+   },
+   "evidence": {
+    "rule": "fixed window 0-2.0 s: right hand up from 0.2 s, waving above the shoulder, down by 1.8 s",
+    "hips_speed_max_mps": 0.73,
+    "torso_pitch_max_deg": 13.9
+   },
+   "trace_every_0.1s": {
+    "frame": [
+     1,
+     13,
+     25,
+     37,
+     49,
+     61,
+     73,
+     85,
+     97,
+     109,
+     121,
+     133,
+     145,
+     157,
+     169,
+     181,
+     193,
+     205,
+     217,
+     229,
+     241
+    ],
+    "hips_y": [
+     0.88,
+     0.88,
+     0.89,
+     0.9,
+     0.9,
+     0.9,
+     0.9,
+     0.9,
+     0.89,
+     0.9,
+     0.9,
+     0.9,
+     0.9,
+     0.9,
+     0.9,
+     0.9,
+     0.89,
+     0.89,
+     0.89,
+     0.89,
+     0.89
+    ],
+    "speed": [
+     0.11,
+     0.35,
+     0.69,
+     0.68,
+     0.53,
+     0.37,
+     0.21,
+     0.08,
+     0.06,
+     0.11,
+     0.17,
+     0.23,
+     0.32,
+     0.39,
+     0.46,
+     0.54,
+     0.44,
+     0.24,
+     0.1,
+     0.1,
+     0.09
+    ],
+    "yaw": [
+     0.0,
+     -2.0,
+     -4.0,
+     -4.0,
+     -6.0,
+     -6.0,
+     -8.0,
+     -7.0,
+     -7.0,
+     -6.0,
+     -5.0,
+     -2.0,
+     -1.0,
+     2.0,
+     0.0,
+     0.0,
+     1.0,
+     -1.0,
+     -5.0,
+     -7.0,
+     -8.0
+    ],
+    "torso_pitch": [
+     9.0,
+     8.0,
+     10.0,
+     12.0,
+     13.0,
+     13.0,
+     13.0,
+     13.0,
+     14.0,
+     12.0,
+     11.0,
+     10.0,
+     11.0,
+     12.0,
+     12.0,
+     12.0,
+     12.0,
+     12.0,
+     13.0,
+     13.0,
+     13.0
+    ],
+    "chest_fwd_y": [
+     0.13,
+     0.14,
+     0.18,
+     0.21,
+     0.23,
+     0.22,
+     0.22,
+     0.22,
+     0.23,
+     0.21,
+     0.18,
+     0.17,
+     0.18,
+     0.19,
+     0.21,
+     0.2,
+     0.2,
+     0.21,
+     0.22,
+     0.21,
+     0.19
+    ],
+    "min_ankle_y": [
+     0.04,
+     0.05,
+     0.04,
+     0.05,
+     0.06,
+     0.07,
+     0.08,
+     0.08,
+     0.07,
+     0.07,
+     0.07,
+     0.07,
+     0.06,
+     0.06,
+     0.05,
+     0.04,
+     0.04,
+     0.04,
+     0.04,
+     0.04,
+     0.04
+    ]
+   },
+   "checks": {
+    "bvh_fk_vs_asf_max_err_mm": 0.0021,
+    "fbx_reimport_vs_bvh_fk_max_err_mm": 0.029,
+    "fbx_reimport_rest_pose_err_mm": 0.0005,
+    "fbx_actions": [
+     "cmu_141|wave_hello"
+    ],
+    "fbx_frame_range": [
+     0.0,
+     60.0
+    ],
+    "fbx_missing_bones": [],
+    "fbx_extra_bones": []
+   }
+  },
+  {
+   "id": "shrug",
+   "source_take": {
+    "subject": "141",
+    "take": "141_21",
+    "cmu_title": "Shrug",
+    "asf": "art/raw/animations/cmu_mocap/141/141.asf",
+    "amc": "art/raw/animations/cmu_mocap/141/141_21.amc"
+   },
+   "source_frame_window_120hz": [
+    43,
+    223
+   ],
+   "output": {
+    "frames": 46,
+    "fps": 30.0,
+    "duration_s": 1.5,
+    "src_frames_used": "every 4th AMC frame from 43 to 223"
+   },
+   "files": {
+    "bvh": "art/processed/animations/mocap/shrug.bvh",
+    "fbx": "art/processed/animations/mocap/shrug.fbx",
+    "fbx_bytes": 218204,
+    "contact_sheet": "/Users/mac/Documents/codes/projects/ct-life-evidence/character-feel/round2/mocap/shrug.png"
+   },
+   "net_root_translation_m": 0.01,
+   "yaw_change_deg": 4.2,
+   "hips_height_start_m": 0.884,
+   "hips_height_end_m": 0.883,
+   "alignment": {
+    "yaw_deg_applied": 179.3254,
+    "xz_offset_subtracted_m": [
+     -1.82078,
+     0.18828
+    ],
+    "mode": "start",
+    "meaning": "clip rigidly moved so the root is at x=z=0 on the first frame and the pelvis faces +Z on the first frame"
+   },
+   "summary": {
+    "net_root_translation_m": 0.01,
+    "net_root_translation_xz_m": [
+     -0.007,
+     0.007
+    ],
+    "yaw_change_deg": 4.2,
+    "hips_height_start_m": 0.884,
+    "hips_height_end_m": 0.883,
+    "hips_height_min_m": 0.882,
+    "speed_start_mps": 0.06,
+    "speed_end_mps": 0.03,
+    "speed_max_mps": 0.08,
+    "torso_pitch_start_deg": 12.4,
+    "torso_pitch_end_deg": 15.5,
+    "torso_pitch_max_deg": 17.7,
+    "chest_forward_y_start": 0.2,
+    "chest_forward_y_end": 0.24,
+    "feet_ankle_height_max_m": 0.141
+   },
+   "evidence": {
+    "rule": "fixed window 0.35-1.85 s: both forearms lift with the shoulders at 0.8-1.0 s and settle",
+    "hips_speed_max_mps": 0.08,
+    "torso_pitch_max_deg": 17.7
+   },
+   "trace_every_0.1s": {
+    "frame": [
+     43,
+     55,
+     67,
+     79,
+     91,
+     103,
+     115,
+     127,
+     139,
+     151,
+     163,
+     175,
+     187,
+     199,
+     211,
+     223
+    ],
+    "hips_y": [
+     0.88,
+     0.88,
+     0.89,
+     0.9,
+     0.9,
+     0.91,
+     0.91,
+     0.89,
+     0.89,
+     0.88,
+     0.88,
+     0.89,
+     0.88,
+     0.88,
+     0.88,
+     0.88
+    ],
+    "speed": [
+     0.06,
+     0.05,
+     0.06,
+     0.06,
+     0.05,
+     0.02,
+     0.03,
+     0.08,
+     0.01,
+     0.04,
+     0.04,
+     0.06,
+     0.07,
+     0.04,
+     0.01,
+     0.03
+    ],
+    "yaw": [
+     0.0,
+     1.0,
+     1.0,
+     2.0,
+     3.0,
+     3.0,
+     4.0,
+     3.0,
+     4.0,
+     2.0,
+     -1.0,
+     0.0,
+     1.0,
+     3.0,
+     4.0,
+     4.0
+    ],
+    "torso_pitch": [
+     12.0,
+     13.0,
+     12.0,
+     14.0,
+     15.0,
+     17.0,
+     18.0,
+     16.0,
+     15.0,
+     15.0,
+     15.0,
+     16.0,
+     15.0,
+     15.0,
+     15.0,
+     15.0
+    ],
+    "chest_fwd_y": [
+     0.2,
+     0.21,
+     0.2,
+     0.22,
+     0.25,
+     0.29,
+     0.29,
+     0.25,
+     0.24,
+     0.23,
+     0.25,
+     0.25,
+     0.24,
+     0.24,
+     0.24,
+     0.24
+    ],
+    "min_ankle_y": [
+     0.05,
+     0.05,
+     0.05,
+     0.06,
+     0.07,
+     0.07,
+     0.08,
+     0.06,
+     0.05,
+     0.05,
+     0.04,
+     0.05,
+     0.05,
+     0.05,
+     0.05,
+     0.05
+    ]
+   },
+   "checks": {
+    "bvh_fk_vs_asf_max_err_mm": 0.002,
+    "fbx_reimport_vs_bvh_fk_max_err_mm": 0.0036,
+    "fbx_reimport_rest_pose_err_mm": 0.0005,
+    "fbx_actions": [
+     "cmu_141|shrug"
+    ],
+    "fbx_frame_range": [
+     0.0,
+     45.0
+    ],
+    "fbx_missing_bones": [],
+    "fbx_extra_bones": []
+   }
   }
  ],
  "not_produced": {

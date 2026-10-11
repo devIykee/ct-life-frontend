@@ -144,7 +144,7 @@ namespace CTLife.UI.Map
             if (tex != null) layers.Add(new MapSurface.Layer { Texture = tex, AtlasRect = atlas.Rect, Alpha = 1f, Grid = 32 });
             foreach (var p in atlas.Placements.Values)
                 if (MapCatalog.Areas.TryGetValue(p.AreaId, out var a))
-                    layers.Add(new MapSurface.Layer { Texture = MapCatalog.Texture(a.Texture), AtlasRect = MapSurface.AreaAtlasRect(a, p), Alpha = 1f, Grid = 8 });
+                    layers.Add(MapSurface.AreaLayer(a, p, MapCatalog.Texture(a.Texture), 8));
             _surface.SetLayers(layers);
         }
 
@@ -171,7 +171,7 @@ namespace CTLife.UI.Map
                 pill.clicked += () => Select(id, fly: true);
                 _labels.Add(pill);
                 var r = MapSurface.AreaAtlasRect(a, p);
-                _pins.Add(new Pin { E = pill, Atlas = new Vector2(r.center.x, r.yMax - 1f), Min = VenueLabelsFrom, Max = 99f, Priority = 1 });
+                _pins.Add(new Pin { E = pill, Atlas = MapSurface.AreaNorthEdge(a, p) - new Vector2(0f, 1f), Min = VenueLabelsFrom, Max = 99f, Priority = 1 });
                 // Zoomed out, each venue shows its landmark icon instead of a name (tap = the same card).
                 var mark = new Button(() => Select(id, fly: true)) { name = "map-landmark-" + a.Id, tooltip = Title(a) };
                 mark.AddToClassList("map-landmark");
@@ -389,7 +389,7 @@ namespace CTLife.UI.Map
         {
             var at = _view.Unproject(local);
             foreach (var p in MapCatalog.Atlas.Placements.Values)
-                if (MapCatalog.Areas.TryGetValue(p.AreaId, out var a) && MapSurface.AreaAtlasRect(a, p).Contains(at)) { Select(a.Id, fly: _view.PixelsPerMeter < 8f); return; }
+                if (MapCatalog.Areas.TryGetValue(p.AreaId, out var a) && MapSurface.AreaContains(a, p, at)) { Select(a.Id, fly: _view.PixelsPerMeter < 8f); return; }
             var plot = MapCatalog.Atlas.Plots.FirstOrDefault(pl => Mathf.Abs(at.x - pl.Center.x) < MapCatalog.Atlas.PlotSize / 2f && Mathf.Abs(at.y - pl.Center.y) < MapCatalog.Atlas.PlotSize / 2f);
             if (plot != null) SelectPlot(plot.Id);
             else HideCard();
@@ -446,7 +446,7 @@ namespace CTLife.UI.Map
             var p = MapCatalog.PlacementOf(a);
             if (p == null) return;
             _selected = areaId;
-            var r = MapSurface.AreaAtlasRect(a, p);
+            var r = MapSurface.AreaAtlasBounds(a, p);   // a turned venue frames by its bounds
             if (fly) FlyTo(r.center, Mathf.Min(_view.Viewport.y * 0.55f / r.height, 14f));
             var s = VenueSession.Current;
             bool here = s != null && MapCatalog.ForVisit(s.VenueId, s.HomeId) == a;

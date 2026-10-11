@@ -7,7 +7,12 @@ using UnityEngine.UIElements;
 
 namespace CTLife.UI
 {
-    /// <summary>Touch/mouse direct locomotion. All visual sizes and colors belong to the shared stylesheet.</summary>
+    /// <summary>
+    /// Touch/mouse direct locomotion. Analog mode is a floating stick (Feel lane F1, GTA mobile): the base appears where the
+    /// thumb lands anywhere on the left of the screen and follows a thumb that drifts past it; a small push walks, a bigger
+    /// one jogs, the stick at its edge sprints. A quick tap there still reaches the world (a seat, a person). Arrow mode
+    /// keeps its fixed pad. All visual sizes and colors belong to the shared stylesheet.
+    /// </summary>
     public sealed class MovementControls : IDisposable
     {
         private sealed class HeldArrow
@@ -27,6 +32,16 @@ namespace CTLife.UI
         private Vector2 _analogInput;
         private int _analogPointer = -1, _epoch;
         private bool _enabled = true, _blocked, _disposed;
+        // Floating stick: base centre in zone-local pixels, where the thumb went down, and whether it ever moved.
+        private Vector2 _center, _downAt;
+        private float _downTime;
+        private bool _moved, _placed;
+        /// <summary>The thumb past this many stick radii drags the base along (it never runs out under the thumb).</summary>
+        public const float FollowAt = 1.4f;
+        /// <summary>A touch shorter and smaller than this on the stick area is a world tap.</summary>
+        public const float TapSeconds = 0.3f, TapPixels = 12f;
+        /// <summary>Where the resting base sits (centre, from the zone's bottom-left), panel pixels.</summary>
+        public static readonly Vector2 RestCenter = new Vector2(200f, 190f);
 
 
 #if UNITY_EDITOR && !CTLIFE_PROD
@@ -92,6 +107,7 @@ namespace CTLife.UI
             _hint.pickingMode = PickingMode.Ignore;
             Element = El.Div("ct-move-controls", _zone, _arrows, _hint);
             Element.pickingMode = PickingMode.Ignore;
+            _zone.RegisterCallback<GeometryChangedEvent>(_ => { if (_analogPointer < 0) Rest(); });
 #if UNITY_EDITOR && !CTLIFE_PROD
             _zone.RegisterCallback<PointerCaptureEvent>(e => ReviewTrace("analog-captured", null, e.pointerId));
 #endif
@@ -243,6 +259,9 @@ namespace CTLife.UI
             _analogPointer = e.pointerId;
             _zone.CapturePointer(e.pointerId);
             Element.AddToClassList("ct-move-active");
+            // The base jumps under the thumb (kept fully inside the stick area).
+            _downAt = e.position; _downTime = Time.unscaledTime; _moved = false;
+            PlaceBase(ClampInside(_zone.WorldToLocal(e.position)));
             SetAnalog(e.position);
 #if UNITY_EDITOR && !CTLIFE_PROD
             ReviewTrace("analog-capture-requested", e);
@@ -260,15 +279,63 @@ namespace CTLife.UI
             e.StopPropagation();
         }
 
+        private float StickRadius => Mathf.Max(1f, _ring.layout.width * 0.5f);
+
         private void SetAnalog(Vector2 panelPosition)
         {
-            var local = _ring.WorldToLocal(panelPosition) - _ring.contentRect.center;
-            float radius = Mathf.Max(1f, (_ring.contentRect.width - _thumb.layout.width) * 0.5f);
-            var delta = Vector2.ClampMagnitude(local, radius);
-            _analogInput = new Vector2(delta.x, -delta.y) / radius;
-            _thumb.style.translate = new Translate(delta.x, delta.y);
+            if ((panelPosition - _downAt).sqrMagnitude > TapPixels * TapPixels) _moved = true;
+            var p = _zone.WorldToLocal(panelPosition);
+            float radius = StickRadius;
+            var (center, input, knob) = FloatingStick(_center, p, radius, FollowAt);
+            if (center != _center) PlaceBase(center);
+            _analogInput = input;
+            _thumb.style.translate = new Translate(knob.x, knob.y);
             FeedInput();
         }
+
+        /// <summary>
+        /// The floating stick for a thumb at <paramref name="thumb"/> (zone pixels, y down): the base (dragged along once the
+        /// thumb is more than <paramref name="followAt"/> radii out), the input (x right, y up, magnitude 1 at the edge, so
+        /// the edge is the sprint zone) and the knob's offset from the base. Pure, EditMode-tested.
+        /// </summary>
+        public static (Vector2 center, Vector2 input, Vector2 knob) FloatingStick(Vector2 center, Vector2 thumb, float radius, float followAt)
+        {
+            var delta = thumb - center;
+            float reach = radius * followAt;
+            if (delta.magnitude > reach) { center += delta.normalized * (delta.magnitude - reach); delta = thumb - center; }
+            var knob = Vector2.ClampMagnitude(delta, radius);
+            return (center, new Vector2(knob.x, -knob.y) / radius, knob);
+        }
+
+        private Vector2 ClampInside(Vector2 p)
+        {
+            float r = StickRadius;
+            var size = _zone.layout.size;
+            if (float.IsNaN(size.x) || size.x < 2f * r) return p;
+            return new Vector2(Mathf.Clamp(p.x, r, size.x - r), Mathf.Clamp(p.y, r, size.y - r));
+        }
+
+        private void PlaceBase(Vector2 center)
+        {
+            _center = center;
+            float r = StickRadius;
+            _ring.style.left = center.x - r;
+            _ring.style.top = center.y - r;
+            _hint.style.left = center.x - 160f;
+            _hint.style.top = center.y - r - 52f;
+            _placed = true;
+        }
+
+        /// <summary>The base waits at its resting place, bottom-left (the stick's affordance when no thumb is down).</summary>
+        private void Rest()
+        {
+            var size = _zone.layout.size;
+            if (float.IsNaN(size.y) || size.y <= 0f) return;
+            PlaceBase(new Vector2(RestCenter.x, size.y - RestCenter.y));
+        }
+
+        /// <summary>The resting stick's own rectangle (what in-world prompts must not cover; the whole left area is input).</summary>
+        public VisualElement Footprint => _ring;
 
         private void ReleaseAnalog(int pointerId)
         {
@@ -276,12 +343,16 @@ namespace CTLife.UI
             ReviewTrace("analog-release-request", null, pointerId);
 #endif
             if (pointerId != _analogPointer) return;
+            bool tap = !_moved && Time.unscaledTime - _downTime < TapSeconds;
             _analogPointer = -1;
             _analogInput = Vector2.zero;
             _thumb.style.translate = new Translate(0f, 0f);
             Element.RemoveFromClassList("ct-move-active");
+            Element.RemoveFromClassList("ct-move-sprint");
             if (_zone.HasPointerCapture(pointerId)) _zone.ReleasePointer(pointerId);
             FeedInput();
+            Rest();
+            if (tap) ForwardTap(_downAt);
 #if UNITY_EDITOR && !CTLIFE_PROD
             ReviewTrace("analog-released", null, pointerId);
 #endif
@@ -319,6 +390,16 @@ namespace CTLife.UI
             }
             _player.SetMoveInput(input);
             if (_analogPointer < 0 && _heldArrows.Count == 0) _player = null;
+        }
+
+        /// <summary>A quick tap on the stick area is a tap on the world under it (seats, people), as anywhere else.</summary>
+        private void ForwardTap(Vector2 panelPosition)
+        {
+            var root = _ui != null ? _ui.Root : Element.panel?.visualTree;
+            if (root == null) return;
+            var size = root.layout.size;
+            if (size.x <= 0f || size.y <= 0f) return;
+            WorldInput.Tap(new Vector2(panelPosition.x / size.x * Screen.width, (1f - panelPosition.y / size.y) * Screen.height));
         }
 
         private void OtherUiPressed(PointerDownEvent e)
@@ -377,8 +458,10 @@ namespace CTLife.UI
             }
 #endif
             bool running = _player != null && _player.IsRunning;
+            bool sprint = _player != null && _player.Gait == Gait.Sprint;
             Element.EnableInClassList("ct-move-running", running);
-            _hint.text = Strings.T(running ? "controls.run" : "controls.walk");
+            Element.EnableInClassList("ct-move-sprint", sprint);
+            _hint.text = Strings.T(sprint ? "controls.sprint" : running ? "controls.run" : "controls.walk");
         }
 
         private void RefreshMode()
@@ -418,6 +501,8 @@ namespace CTLife.UI
             _thumb.style.translate = new Translate(0f, 0f);
             Element.RemoveFromClassList("ct-move-active");
             Element.RemoveFromClassList("ct-move-running");
+            Element.RemoveFromClassList("ct-move-sprint");
+            if (_placed) Rest();
             if (player != null)
             {
                 if (allMovement) player.CancelMovement();

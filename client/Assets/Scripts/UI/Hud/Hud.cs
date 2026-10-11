@@ -125,10 +125,12 @@ namespace CTLife.UI
                 HudAction("emotes", Strings.T("hud.emote"), () => { CollapseNeeds(); _chat.Hide(); _emotes.Toggle(); }, "smiling"), _mic);
             social.pickingMode = PickingMode.Ignore;
             El.PassThrough(_needs);
-            _root = El.Div("ct-hud hud-arena", plate, top, _needs, _movement.Element, _emotes.Element, _chat.Element, social, personal, _interact.Element);
+            // The stick's touch area is the whole lower-left of the screen (a floating stick), so it goes first: every
+            // other control sits above it and keeps its taps.
+            _root = El.Div("ct-hud hud-arena", _movement.Element, plate, top, _needs, _emotes.Element, _chat.Element, social, personal, _interact.Element);
             _root.pickingMode = PickingMode.Ignore;
             OnboardingFrame.AddSheet(_root, "UI/map");
-            _interact.SetObstacles(plate, top, _needs, _movement.Element, social, personal, _chat.Element, _emotes.Element);
+            _interact.SetObstacles(plate, top, _needs, _movement.Footprint, social, personal, _chat.Element, _emotes.Element);
             if (Services.TryGet<WalletBalanceService>(out var wallet)) { _wallet = wallet; _wallet.Changed += RefreshWallet; RefreshWallet(); }
 
             _subs.On<ProfileChangedSignal>(_ => RefreshProfile());
@@ -169,7 +171,7 @@ namespace CTLife.UI
         /// <summary>The phone action carries the Duo's total unread count (red badge, cleared when read).</summary>
         private Button PhoneAction()
         {
-            var button = HudAction("phone", Strings.T("phone.ctos"), () => OpenUtility(OpenPhone), "smartphone", primary: true);
+            var button = HudAction("phone", Strings.T("lobby.duo"), () => OpenUtility(OpenPhone), "smartphone", primary: true); // the device is the Solana Duo (as in the lobby)
             _phoneBadge = Duo.Badge(DuoNotificationCenter.TotalBadge, "ct-hud-badge");
             _phoneBadge.name = "hud-phone-badge";
             button.Add(_phoneBadge);
