@@ -16,19 +16,25 @@ namespace CTLife.Careers
     /// apply (skill gates from config, enforced by the server), paid shifts, practice for every career game, and side
     /// gigs (GET /gigs, POST /gigs/{id}/run, Phase 4). Every amount shown is a server or config value.
     /// Replaces CTLife.UI.JobsApp through PhoneCatalog's jobsOverride (hook in docs/progress/requests.md).
+    /// Duo layout (board #7): segmented Careers / Side gigs, a featured card for the best-paying job you can do now,
+    /// App-Store rows with an icon tile and a Work / Apply / Lv pill, details in a sheet.
     /// </summary>
     public sealed class CareersApp : PhoneApp, IDisposable
     {
         public const int GigsPhase = 4;
+        private static readonly string[] Tints = { "blue", "orange", "purple", "teal", "pink", "indigo", "green", "red" };
 
         public override string Id => "jobs";
         public override string Title => CareersStrings.T("app.title");
         public override string Color => "#0fb9b1";
+        public override DuoChrome Chrome => DuoChrome.Plain;
 
         private readonly GigLedger _gigs = new GigLedger();
         private readonly HashSet<string> _gigInFlight = new HashSet<string>();
         private VisualElement _page, _content;
-        private Button _tabCareers, _tabGigs;
+        private DuoSegmented _tabs;
+        private Label _held;
+        private DuoSheet _details;
         private bool _showGigs;
         private int _version;
         private CancellationTokenSource _viewCts;
@@ -43,17 +49,22 @@ namespace CTLife.Careers
         public override VisualElement Open()
         {
             Closed();
-            _tabCareers = CUi.B(CareersStrings.T("tab.careers"), () => { _showGigs = false; Load(); }, "ctc-btn ctc-tab");
-            _tabGigs = CUi.B(CareersStrings.T("tab.gigs"), () => { _showGigs = true; Load(); }, "ctc-btn ctc-tab");
-            _tabCareers.name = "careers-tab-careers";
-            _tabGigs.name = "careers-tab-gigs";
-            _content = CUi.Div("ctc-col");
-            var scroll = El.VerticalScroll("ct-app-page");
-            scroll.Add(CUi.Div("ctc-tabs", _tabCareers, _tabGigs));
-            scroll.Add(_content);
-            CUi.Sheet(scroll);
-            _page = scroll;
-            var page = scroll;
+            var page = new DuoPage(Title);
+            page.name = "careers-page";
+            page.AddToClassList("duo-jobs");
+            CUi.Sheet(page);
+            page.Nav.AddLeft(DuoGlyph.Kind.Back, Strings.T("common.back"), () => Phone?.Back(), "careers-back");
+            _held = El.Text("", "duo-nav-note");
+            _held.name = "careers-held";
+            page.Nav.Right.Add(_held);
+            _tabs = new DuoSegmented(new[] { CareersStrings.T("tab.careers"), CareersStrings.T("tab.gigs") }, _showGigs ? 1 : 0,
+                i => { _showGigs = i == 1; Load(); });
+            _tabs.Options[0].name = "careers-tab-careers";
+            _tabs.Options[1].name = "careers-tab-gigs";
+            _content = El.Div("duo-jobs-content");
+            page.Body.Add(El.Div("duo-jobs-tabs", _tabs));
+            page.Body.Add(_content);
+            _page = page;
             page.RegisterCallback<DetachFromPanelEvent>(e => { if (ReferenceEquals(e.target, page) && ReferenceEquals(_page, page)) Closed(); });
             Load();
             return page;
@@ -65,6 +76,8 @@ namespace CTLife.Careers
             _viewCts?.Cancel();
             _viewCts = null;
             StopGigTick();
+            _details?.Close();
+            _details = null;
             _page = null;
         }
 
@@ -141,17 +154,23 @@ namespace CTLife.Careers
         private void Load()
         {
             if (_page == null) return;
-            CUi.Mark(_tabCareers, "ctc-selected", !_showGigs);
-            CUi.Mark(_tabGigs, "ctc-selected", _showGigs);
+            _tabs.Select(_showGigs ? 1 : 0, false);
             StopGigTick();
             if (_showGigs) LoadGigs(); else LoadCareers();
         }
 
-        private void Message(string text, string cls, Action retry = null)
+        private void Message(string text, bool error = false, Action retry = null)
         {
             _content.Clear();
-            _content.Add(CUi.L(text, cls));
-            if (retry != null) _content.Add(CUi.B(CareersStrings.T("retry"), retry, "ctc-btn ctc-btn-primary"));
+            _content.Add(error ? Duo.Notice(text, Duo.Tone.Danger) : Duo.Footnote(text));
+            if (retry != null) _content.Add(El.Div("duo-topup-actions", Duo.Pill(CareersStrings.T("retry"), retry, Duo.PillKind.Primary)));
+        }
+
+        private static string Tint(string id)
+        {
+            uint h = 2166136261;
+            foreach (char ch in id ?? "") h = (h ^ ch) * 16777619;
+            return Tints[h % (uint)Tints.Length];
         }
 
         // ------------------------------------------------------------------ careers list
@@ -159,22 +178,31 @@ namespace CTLife.Careers
         private async void LoadCareers()
         {
             var ct = BeginView(out int version);
-            Message(CareersStrings.T("loading"), "ctc-muted");
+            Message(CareersStrings.T("loading"));
             try
             {
                 var rows = await Deadline.Run(c => Api.Careers(c), ct, 30000);
                 if (!Owns(version)) return;
                 var cards = JobBoard.Build(ConfigCareers(), rows, Skill, Phases.Live, HeldCareer);
                 _content.Clear();
-                if (cards.Count == 0) { Message(CareersStrings.T("empty"), "ctc-muted"); return; }
-                _content.Add(CUi.L(CareersStrings.T("payNote"), "ctc-muted"));
-                foreach (var card in cards) _content.Add(CareerRowView(card));
+                var held = cards.FirstOrDefault(c => c.Status == CareerStatus.Hired);
+                _held.text = held != null ? CareersStrings.F("heldLine", held.Level, CareerFlavor.LevelTitle(held.Id, held.Level) ?? held.Name) : "";
+                if (cards.Count == 0) { Message(CareersStrings.T("empty")); return; }
+                // Featured: the best-paying job you can do right now (hired or hiring), from server/config pay.
+                var best = cards.Where(c => (c.Status == CareerStatus.Hired || c.Status == CareerStatus.CanApply) && c.PayCents > 0)
+                    .OrderByDescending(c => c.PayCents).FirstOrDefault();
+                if (best != null) _content.Add(Featured(best));
+                var list = El.Div("duo-list duo-jobs-list");
+                foreach (var card in cards) list.Add(CareerRowView(card));
+                Duo.MarkLast(list);
+                _content.Add(list);
+                _content.Add(Duo.Footnote(CareersStrings.T("payNote")));
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested) { }
             catch (Exception e)
             {
                 Log.Exception("careers", e);
-                if (Owns(version)) Message(e is TimeoutException ? CareersStrings.T("timeout") : Deadline.Describe(e), "ctc-error", LoadCareers);
+                if (Owns(version)) Message(e is TimeoutException ? CareersStrings.T("timeout") : Deadline.Describe(e), true, LoadCareers);
             }
         }
 
@@ -191,48 +219,73 @@ namespace CTLife.Careers
         }
 
         private static string PayLine(CareerCard c) =>
-            c.PayCents > 0 ? CareersStrings.F("pay", CareersWire.Cash(c.PayCents), c.ShiftSec) : CareersStrings.T("payUnknown");
+            c.PayCents > 0 ? CareersStrings.F("rowPay", CareersWire.Cash(c.PayCents), c.ShiftSec) : CareersStrings.T("payUnknown");
+
+        private VisualElement Featured(CareerCard c)
+        {
+            var card = El.Div("duo-feature");
+            card.name = "careers-featured";
+            var sheen = El.Div("duo-feature-sheen");
+            sheen.style.backgroundImage = Background.FromTexture2D(Duo.Sheen);
+            card.Add(El.PassThrough(sheen));
+            card.Add(El.PassThrough(El.Div("duo-feature-art", new UiIcon("jobs"))));
+            card.Add(El.Text(CareersStrings.T("best").ToUpperInvariant(), "duo-feature-kicker"));
+            card.Add(El.Text(c.Name, "duo-feature-title"));
+            card.Add(El.Text(PayLine(c), "duo-feature-meta"));
+            var action = PrimaryAction(c);
+            if (action != null)
+            {
+                action.AddToClassList("duo-feature-pill");
+                card.Add(El.Div("duo-feature-actions", action));
+            }
+            return card;
+        }
 
         private VisualElement CareerRowView(CareerCard c)
         {
             string title = CareerFlavor.LevelTitle(c.Id, c.Level) ?? "";
-            var row = CUi.Div("ctc-card ctc-career " + (c.Status == CareerStatus.Hired ? "ctc-hired" : ""),
-                PhonePresentation.Status(StatusText(c), CareerTone(c.Status)),
-                CUi.L(c.Name, "ctc-card-title"),
-                CUi.L(CareersStrings.F("level", c.Level, title) + " · " + CareersStrings.F("xp", c.Xp), "ctc-muted"),
-                CUi.L(PayLine(c), "ct-duo-pay-line"));
-            var blurb = CareerFlavor.Blurb(c.Id);
-            if (blurb != null) row.Add(CUi.L(blurb, "ctc-muted"));
-            var actions = CUi.Div("ctc-actions");
-            var primary = PrimaryAction(c);
-            if (primary != null) actions.Add(primary);
-            var details = CUi.B(CareersStrings.T("details"), () => ShowDetails(c), "ctc-btn");
-            details.name = "careers-details-" + c.Id;
-            actions.Add(details);
-            row.Add(actions);
+            var row = new DuoRow(() => ShowDetails(c)).Leading(El.PassThrough(El.Div("duo-app-tile duo-tint-" + Tint(c.Id), new UiIcon("jobs"))))
+                .Title(c.Name, "duo-row-title-strong")
+                .Subtitle(PayLine(c) + " · " + CareersStrings.F("level", c.Level, title), twoLines: true);
+            row.name = "careers-details-" + c.Id;
+            row.EnableInClassList("duo-row-hired", c.Status == CareerStatus.Hired);
+            row.Trailing(TrailingPill(c));
             return row;
         }
 
-        private static PhonePresentation.Tone CareerTone(CareerStatus status) => status switch
+        /// <summary>Work (your job), Apply (hiring), or a quiet locked pill (skill level or phase gate).</summary>
+        private VisualElement TrailingPill(CareerCard c)
         {
-            CareerStatus.Hired => PhonePresentation.Tone.Success,
-            CareerStatus.CanApply => PhonePresentation.Tone.Info,
-            CareerStatus.SkillGated => PhonePresentation.Tone.Warning,
-            _ => PhonePresentation.Tone.Neutral,
-        };
+            var primary = PrimaryAction(c);
+            if (primary != null) return primary;
+            if (c.Status == CareerStatus.SkillGated)
+            {
+                var gated = Duo.Pill(CareersStrings.F("pill.level", c.BlockingGate.Level), () => ShowDetails(c), Duo.PillKind.Locked);
+                gated.tooltip = StatusText(c);
+                return gated;
+            }
+            if (c.Status == CareerStatus.PhaseLocked)
+            {
+                var soon = Duo.Pill(CareersStrings.T("pill.soon"), () => ShowDetails(c), Duo.PillKind.Locked);
+                soon.tooltip = StatusText(c);
+                return soon;
+            }
+            return null;
+        }
 
         private Button PrimaryAction(CareerCard c)
         {
             if (c.Status == CareerStatus.Hired)
             {
-                var work = CUi.B(CareersStrings.T(_shiftRunning ? "busy" : "work"), () => RunShift(c), "ctc-btn ctc-btn-primary");
+                var work = Duo.Pill(CareersStrings.T(_shiftRunning ? "pill.busy" : "pill.work"), () => RunShift(c), Duo.PillKind.Primary);
                 work.name = "careers-work-" + c.Id;
+                work.tooltip = CareersStrings.T(_shiftRunning ? "busy" : "work");
                 work.SetEnabled(!_shiftRunning && CTLife.Core.Features.IsAvailable(CTLife.Core.Features.LedgerFreeze));
                 return work;
             }
             if (c.Status == CareerStatus.CanApply)
             {
-                var apply = CUi.B(CareersStrings.T("apply"), () => Apply(c), "ctc-btn ctc-btn-primary");
+                var apply = Duo.Pill(CareersStrings.T("apply"), () => Apply(c));
                 apply.name = "careers-apply-" + c.Id;
                 apply.SetEnabled(!_shiftRunning);
                 return apply;
@@ -240,52 +293,63 @@ namespace CTLife.Careers
             return null;
         }
 
-        // ------------------------------------------------------------------ details
+        // ------------------------------------------------------------------ details (sheet)
 
         private void ShowDetails(CareerCard c)
         {
             if (_page == null) return;
-            _version++;
-            _content.Clear();
-            _content.Add(CUi.B(CareersStrings.T("back"), LoadCareers, "ctc-btn ctc-btn-small"));
-            _content.Add(CUi.L(c.Name, "ctc-title"));
+            _details?.Close();
             var venue = CareerFlavor.Venue(c.Id);
-            if (venue != null) _content.Add(CUi.L(CareersStrings.F("venue", venue), "ctc-muted"));
+            var sheet = new DuoSheet(c.Name, venue != null ? CareersStrings.F("venue", venue) : null);
+            sheet.name = "careers-details-sheet";
+            var body = El.Div("duo-jobs-details");
             var blurb = CareerFlavor.Blurb(c.Id);
-            if (blurb != null) _content.Add(CUi.L(blurb, "ctc-body-text"));
-            _content.Add(PhonePresentation.Status(StatusText(c), CareerTone(c.Status)));
+            if (blurb != null) body.Add(El.Text(blurb, "duo-sheet-body-text"));
+            body.Add(Duo.Notice(StatusText(c), c.Status == CareerStatus.SkillGated ? Duo.Tone.Warning : c.Status == CareerStatus.Hired ? Duo.Tone.Info : Duo.Tone.Neutral));
             var primary = PrimaryAction(c);
-            if (primary != null) _content.Add(CUi.Div("ctc-actions", primary));
+            if (primary != null) body.Add(El.Div("duo-topup-actions", primary));
 
             if (c.Def != null && c.Def.Levels.Count > 0)
             {
-                _content.Add(CUi.L(CareersStrings.T("ladder"), "ctc-section"));
+                body.Add(Duo.GroupHeader(CareersStrings.T("ladder")));
+                var ladder = El.Div("duo-list");
                 foreach (var lv in c.Def.Levels)
                 {
-                    string text = CareersStrings.F("ladderRow", lv.Level, CareerFlavor.LevelTitle(c.Id, lv.Level) ?? "", CareersWire.Cash(lv.PayCents), lv.ShiftSec, lv.Xp);
-                    var line = CUi.Div("ctc-ladder" + (lv.Level == c.Level ? " ctc-selected" : ""), CUi.L(text + (lv.Level == c.Level ? " · " + CareersStrings.T("ladderNow") : ""), "ctc-body-text"));
-                    _content.Add(line);
+                    var row = new DuoRow().Title("L" + lv.Level + " · " + (CareerFlavor.LevelTitle(c.Id, lv.Level) ?? ""), lv.Level == c.Level ? "duo-row-title-strong" : null)
+                        .Subtitle(CareersStrings.F("ladderPay", CareersWire.Cash(lv.PayCents), lv.ShiftSec, lv.Xp));
+                    if (lv.Level == c.Level) row.Value(CareersStrings.T("ladderNow"), "duo-value-positive");
+                    ladder.Add(row);
                 }
-                _content.Add(CUi.L(c.IsTopLevel ? CareersStrings.T("topLevel") : c.Next != null ? CareersStrings.F("next", CareersWire.Cash(c.Next.PayCents)) : "", "ctc-muted"));
-                _content.Add(CUi.L(CareersStrings.T("promotionNote"), "ctc-muted"));
+                Duo.MarkLast(ladder);
+                body.Add(ladder);
+                body.Add(Duo.Footnote((c.IsTopLevel ? CareersStrings.T("topLevel") : c.Next != null ? CareersStrings.F("next", CareersWire.Cash(c.Next.PayCents)) : "")
+                    + " " + CareersStrings.T("promotionNote"), "duo-topup-note"));
             }
 
-            _content.Add(CUi.L(CareersStrings.T("games"), "ctc-section"));
+            body.Add(Duo.GroupHeader(CareersStrings.T("games")));
             var assigned = new HashSet<string>(c.Current?.MiniGameIds ?? new List<string>());
             if (!string.IsNullOrEmpty(c.Row?.MiniGameId)) assigned.Add(c.Row.MiniGameId);
             bool canPractice = PracticeAllowed(c);
+            var games = El.Div("duo-list");
             foreach (var spec in GameCatalog.Instance.ForCareer(c.Id))
             {
-                var card = CUi.Div("ctc-card ctc-game",
-                    CUi.L(spec.Title, "ctc-card-title"), CUi.L(spec.Tagline, "ctc-body-text"),
-                    CUi.L(assigned.Contains(spec.Id) ? CareersStrings.T("gameAssigned") : spec.InContract ? "" : CareersStrings.T("gameProposed"), "ctc-muted"));
                 var s = spec;
-                var practice = CUi.B(CareersStrings.T("practice"), () => Practice(c, s), "ctc-btn");
+                var practice = Duo.Pill(CareersStrings.T("practice"), () => Practice(c, s));
                 practice.name = "careers-practice-" + spec.Id;
                 practice.SetEnabled(canPractice && !_shiftRunning && !MiniGameRunner.Busy);
-                card.Add(CUi.Div("ctc-actions", practice));
-                _content.Add(card);
+                string note = assigned.Contains(spec.Id) ? CareersStrings.T("gameAssigned") : spec.InContract ? "" : CareersStrings.T("gameProposed");
+                games.Add(new DuoRow().Title(spec.Title, "duo-row-title-strong")
+                    .Subtitle(spec.Tagline + (note.Length > 0 ? " · " + note : ""), twoLines: true).Trailing(practice));
             }
+            Duo.MarkLast(games);
+            body.Add(games);
+            var scroll = El.VerticalScroll("duo-sheet-scroll");
+            scroll.Add(body);
+            sheet.AddContent(scroll);
+            sheet.AddSecondary(CareersStrings.T("back"));
+            _details = sheet;
+            sheet.Closed += () => { if (_details == sheet) _details = null; };
+            sheet.Show(_page);
         }
 
         /// <summary>Practice never touches the server. Production builds respect the phase gate; dev builds allow
@@ -318,6 +382,7 @@ namespace CTLife.Careers
                 Log.Exception("careers-apply", e);
                 CUi.Toast(CareersStrings.F("applyFailed", Deadline.Describe(e)), ToastKind.Bad);
             }
+            _details?.Close();
             if (Owns(version)) LoadCareers();
         }
 
@@ -325,6 +390,7 @@ namespace CTLife.Careers
         {
             if (_shiftRunning || MiniGameRunner.Busy) return;
             _shiftRunning = true;
+            _details?.Close();
             using var scope = SessionScope();
             var ct = scope.Token;
             ShiftRunner runner = null;
@@ -353,6 +419,7 @@ namespace CTLife.Careers
         {
             if (_shiftRunning || MiniGameRunner.Busy) return;
             int version = ++_version;
+            _details?.Close();
             using var scope = SessionScope();
             var ct = scope.Token;
             var reg = Services.TryGet<ConfigStore>(out var config) && config.Registries.MiniGames.TryGetValue(spec.Id, out var def) ? def : null;
@@ -379,50 +446,53 @@ namespace CTLife.Careers
         private async void LoadGigs()
         {
             var ct = BeginView(out int version);
-            if (!Phases.IsOpen(GigsPhase)) { Message(CareersStrings.F("gigs.phase", GigsPhase), "ctc-muted"); return; }
+            if (!Phases.IsOpen(GigsPhase)) { Message(CareersStrings.F("gigs.phase", GigsPhase)); return; }
             if (_gigsUser != UserId) { _gigsUser = UserId; }
-            Message(CareersStrings.T("gigs.loading"), "ctc-muted");
+            Message(CareersStrings.T("gigs.loading"));
             try
             {
                 var rows = await Deadline.Run(c => Api.Gigs(c), ct, 30000);
                 if (!Owns(version)) return;
                 _content.Clear();
                 _gigRows.Clear();
-                if (rows.Count == 0) { Message(CareersStrings.T("gigs.empty"), "ctc-muted"); return; }
-                _content.Add(CUi.L(CareersStrings.T("gigs.note"), "ctc-muted"));
-                foreach (var g in rows) _content.Add(GigRowView(g));
+                if (rows.Count == 0) { Message(CareersStrings.T("gigs.empty")); return; }
+                var list = El.Div("duo-list duo-jobs-list");
+                foreach (var g in rows) list.Add(GigRowView(g));
+                Duo.MarkLast(list);
+                _content.Add(list);
+                _content.Add(Duo.Footnote(CareersStrings.T("gigs.note")));
                 StartGigTick();
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested) { }
             catch (Exception e)
             {
                 Log.Exception("careers-gigs", e);
-                if (Owns(version)) Message(Deadline.Describe(e), "ctc-error", LoadGigs);
+                if (Owns(version)) Message(Deadline.Describe(e), true, LoadGigs);
             }
         }
 
         private VisualElement GigRowView(GigRow g)
         {
-            var result = CUi.L("", "ctc-status");
-            CUi.Show(result, false);
-            var cooldown = CUi.L("", "ctc-muted");
+            var result = El.Text("", "duo-gig-result");
+            result.Show(false);
+            var cooldown = El.Text("", "duo-gig-cooldown");
             Button run = null;
-            run = CUi.B(CareersStrings.T("gigs.run"), () => RunGig(g, run, result), "ctc-btn ctc-btn-primary");
+            run = Duo.Pill(CareersStrings.T("gigs.run"), () => RunGig(g, run, result), Duo.PillKind.Primary);
             run.name = "careers-gig-" + g.Id;
             var meta = new List<string>();
             var pay = g.PayText();
             if (pay != null) meta.Add(CareersStrings.F("gigs.pay", pay));
             if (g.DurationSec.HasValue && g.DurationSec > 0) meta.Add(CareersStrings.F("gigs.duration", g.DurationSec));
             if (g.CooldownSec.HasValue && g.CooldownSec > 0) meta.Add(CareersStrings.F("gigs.every", CareersStrings.Duration(g.CooldownSec.Value)));
-            var card = CUi.Div("ctc-card ctc-gig", CUi.L(g.Name, "ctc-card-title"));
-            var tagline = CareerFlavor.GigTagline(g.Id);
-            if (tagline != null) card.Add(CUi.L(tagline, "ctc-body-text"));
-            if (!string.IsNullOrEmpty(g.Description)) card.Add(CUi.L(g.Description, "ctc-muted"));
-            card.Add(CUi.L(string.Join(" · ", meta), "ctc-muted"));
-            card.Add(CUi.Div("ctc-actions", run, cooldown));
-            card.Add(result);
+            var tagline = CareerFlavor.GigTagline(g.Id) ?? g.Description;
+            var row = new DuoRow().Leading(El.PassThrough(El.Div("duo-app-tile duo-tint-" + Tint(g.Id), new UiIcon("projects"))))
+                .Title(g.Name, "duo-row-title-strong")
+                .Subtitle(string.Join(" · ", meta) + (string.IsNullOrEmpty(tagline) ? "" : "\n" + tagline), twoLines: true)
+                .Trailing(El.Div("duo-gig-action", run, cooldown));
+            row.name = "careers-gig-row-" + g.Id;
+            row.TextColumn.Add(result);
             _gigRows.Add((g.Id, run, cooldown, g.CooldownSec));
-            return card;
+            return row;
         }
 
         private async void RunGig(GigRow g, Button button, Label result)
@@ -488,6 +558,7 @@ namespace CTLife.Careers
                     double left = _gigs.SecondsLeft(gigId, now);
                     string text = left > 0 ? CareersStrings.F("gigs.cooldown", CareersStrings.Duration(left)) : "";
                     if (cooldown.text != text) cooldown.text = text;
+                    cooldown.Show(text.Length > 0);
                     bool ready = left <= 0 && !_gigInFlight.Contains(gigId);
                     if (ready != button.enabledSelf) button.SetEnabled(ready);
                 }

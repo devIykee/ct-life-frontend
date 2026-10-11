@@ -10,6 +10,9 @@ namespace CTLife.Careers
         {
             // jobs app
             ["app.title"] = "Jobs", ["tab.careers"] = "Careers", ["tab.gigs"] = "Side gigs",
+            ["pill.work"] = "Work", ["pill.busy"] = "Busy", ["pill.level"] = "Lv {0}", ["pill.soon"] = "Soon",
+            ["best"] = "Best pay right now", ["rowPay"] = "Up to {0} a shift · {1}s", ["heldLine"] = "Level {0} · {1}",
+            ["ladderPay"] = "Up to {0} · {1}s · {2} XP",
             ["loading"] = "Checking the jobs board…", ["empty"] = "No careers are on the board right now.",
             ["retry"] = "Try again", ["back"] = "Back to jobs", ["timeout"] = "The jobs board didn't answer in time.",
             ["status.hired"] = "Your job", ["status.apply"] = "Hiring", ["status.gated"] = "Needs {0} {1} (you: {2})",
