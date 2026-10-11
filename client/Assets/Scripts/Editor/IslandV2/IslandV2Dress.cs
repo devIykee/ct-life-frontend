@@ -75,8 +75,57 @@ namespace CTLife.EditorTools.IslandV2
                 });
                 boxes++;
             }
-            receipt["dressInstances"] = n; receipt["dressBuildings"] = boxes; receipt["dressTrunks"] = trunks;
+            int boards = 0;
+            if (doc["billboards"] is JArray bbs)
+                foreach (var b in bbs) { cells.At(IslandV2Paths.V3(b["p"])).Billboards.Add((JObject)b); boards++; }
+            receipt["dressInstances"] = n; receipt["dressBuildings"] = boxes; receipt["dressTrunks"] = trunks; receipt["dressBillboards"] = boards;
             receipt["dressStats"] = doc["stats"];
+        }
+
+        private static readonly Dictionary<string, Material> ScreenMats = new Dictionary<string, Material>();
+
+        /// <summary>
+        /// A live billboard (dress.json billboards): the venue kit's billboard frame as a real renderer whose panel
+        /// submesh gets a Screen_bb_island_* material (an idle house-ad texture), an IslandScreen for LiveSurfaces, and
+        /// a box collider for the posts or the roof stand.
+        /// </summary>
+        public static GameObject Billboard(JObject b, Transform parent, int layer)
+        {
+            var model = (string)b["model"];
+            var fbx = "Assets/Art/props/" + model + ".fbx";
+            var meshes = AssetDatabase.LoadAllAssetsAtPath(fbx).OfType<Mesh>().ToArray();
+            var mesh = meshes.FirstOrDefault(m => m.name.EndsWith("_LOD0")) ?? meshes.FirstOrDefault();
+            if (mesh == null) { Debug.LogWarning("CTLIFE [islandv2] billboard model missing " + fbx); return null; }
+            var go = new GameObject("billboard_" + (string)b["screen"]) { layer = layer };
+            go.transform.SetParent(parent, false);
+            float sc = (float)b["scale"];
+            go.transform.SetPositionAndRotation(IslandV2Paths.V3(b["p"]), Quaternion.Euler(0f, (float)b["yaw"], 0f));
+            go.transform.localScale = Vector3.one * sc;
+            go.AddComponent<MeshFilter>().sharedMesh = mesh;
+            var mr = go.AddComponent<MeshRenderer>();
+            var frame = IslandV2Kit.KitMaterial("M_ctl_palette", "large_prop", model);
+            var idle = (string)b["idle"] ?? "bb_01";
+            if (!ScreenMats.TryGetValue(idle, out var screen) || screen == null)
+            {
+                var path = IslandV2Kit.KitDir + "/Materials/Screen_bb_island_" + idle + ".mat";
+                screen = AssetDatabase.LoadAssetAtPath<Material>(path);
+                if (screen == null) { screen = new Material(Shader.Find("Universal Render Pipeline/Unlit")) { name = "Screen_bb_island_" + idle }; AssetDatabase.CreateAsset(screen, path); }
+                var tex = AssetDatabase.FindAssets("Screen_" + idle + "_idle t:Texture2D").Select(AssetDatabase.GUIDToAssetPath).Select(AssetDatabase.LoadAssetAtPath<Texture2D>).FirstOrDefault(t => t != null);
+                if (tex != null) screen.SetTexture("_BaseMap", tex);
+                screen.enableInstancing = true;
+                EditorUtility.SetDirty(screen);
+                ScreenMats[idle] = screen;
+            }
+            mr.sharedMaterials = mesh.subMeshCount > 1 ? new[] { frame, screen } : new[] { screen };
+            mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
+            mr.lightProbeUsage = UnityEngine.Rendering.LightProbeUsage.Off;
+            mr.reflectionProbeUsage = UnityEngine.Rendering.ReflectionProbeUsage.Off;
+            go.AddComponent<IslandScreen>().screen = mr;
+            var bc = go.AddComponent<BoxCollider>();
+            var bb = mesh.bounds;
+            bc.center = new Vector3(bb.center.x, bb.size.y * 0.25f, bb.center.z);
+            bc.size = new Vector3(bb.size.x * 0.9f, bb.size.y * 0.5f, Mathf.Max(bb.size.z, 0.6f));
+            return go;
         }
 
         /// <summary>Kenney car kit models used as parked decor (Feel's drivable cars are separate).</summary>

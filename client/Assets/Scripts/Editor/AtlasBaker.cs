@@ -78,7 +78,42 @@ namespace CTLife.EditorTools
             if (Application.isBatchMode) EditorApplication.Exit(fatal == null ? 0 : 1);
         }
 
+        /// <summary>
+        /// CT Island v2 (World lane, 2026-10-17): the atlas is painted from the island data by tools/world/islandgen/atlas.py
+        /// (atlas.json version 2, venues at their real positions and yaws). Bake() runs that tool when it exists, so
+        /// MapBaker's area re-bakes keep the v2 placements; the v1 plot-grid bake below is only the fallback.
+        /// </summary>
         public static void Bake()
+        {
+            var tool = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "..", "tools", "world", "islandgen", "atlas.py"));
+            if (File.Exists(tool))
+            {
+                if (RunV2(tool)) { AssetDatabase.Refresh(); return; }
+                Debug.LogWarning("CTLIFE [atlasbake] the v2 atlas tool failed; atlas.json left as it was (run it by hand: " + tool + ")");
+                return;
+            }
+            BakeV1();
+        }
+
+        private static bool RunV2(string tool)
+        {
+            var repo = Path.GetFullPath(Path.Combine(Application.dataPath, "..", ".."));
+            foreach (var uv in new[] { "/opt/homebrew/bin/uv", "/usr/local/bin/uv", Path.Combine(Environment.GetEnvironmentVariable("HOME") ?? "", ".local", "bin", "uv") })
+            {
+                if (!File.Exists(uv)) continue;
+                var psi = new System.Diagnostics.ProcessStartInfo(uv,
+                    "run --no-project --with pillow==12.3.0 --with scipy==1.18.1 --with numpy==2.4.2 python -I \"" + tool + "\"")
+                { WorkingDirectory = repo, UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true };
+                using var p = System.Diagnostics.Process.Start(psi);
+                string output = p.StandardOutput.ReadToEnd() + p.StandardError.ReadToEnd();
+                p.WaitForExit(300000);
+                Debug.Log("CTLIFE [atlasbake] v2: " + output.Trim());
+                return p.ExitCode == 0;
+            }
+            return false;
+        }
+
+        public static void BakeV1()
         {
             var areasDoc = JObject.Parse(File.ReadAllText(MapBaker.AreasJson));
             var areas = ((JArray)areasDoc["areas"]).ToDictionary(a => (string)a["id"], a => (JObject)a);

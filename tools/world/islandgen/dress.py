@@ -167,6 +167,7 @@ class Dress:
         self.boxes = []                # building colliders [cx, cy, cz, w, h, d, yaw]
         self.signals = []              # traffic light heads
         self.power = []                # power line pole runs
+        self.billboards = []           # live ad boards
         self.stats = {}
         self.segs = {s['id']: s for s in self.roads['segments']}
         self.districts = [(d['id'], np.array(d['poly'], float)) for d in self.plan['districts']]
@@ -487,6 +488,82 @@ class Dress:
                 self.add('street_lamp_double', q[0], float(self.g.y([q[0]], [q[1]])[0]) + 0.08, q[1], 0.0)
         self.stats['plaza_props'] = n
 
+    def place_billboards(self):
+        """Roadside billboards on the coast highway and the country avenues (facing oncoming drivers), rooftop boards on
+        tall downtown buildings near the avenues, and the Timeline screens landmark. The Unity builder gives each a live
+        screen panel (Screen_bb_island_*), which LiveSurfaces rotates with house ads and live creatives."""
+        boards = []
+        idle = ['bb_01', 'bb_02', 'bb_studio']
+        k = 0
+        for s in self.roads['segments']:
+            if not (s['base'] == 'highway' or s['route'] in ('farm_road', 'hills_drive', 'genesis_w', 'breakpoint_way', 'harbour_road')):
+                continue
+            if s['kind'] in ('bridge', 'tunnel'):
+                continue
+            p, y, tan, rn = self.frame(s['samples'])
+            if len(p) < 8:
+                continue
+            sl = G.arc_lengths(p)
+            pos = 90.0 + RNG.uniform(0, 60)
+            side = 1.0 if RNG.random() < 0.5 else -1.0
+            while pos < sl[-1] - 40:
+                kk = min(max(int(np.searchsorted(sl, pos)), 1), len(p) - 1)
+                edge = (s['widthRight'] if side > 0 else s['widthLeft']) + s['sidewalk'] + RNG.uniform(5.0, 8.0)
+                q = p[kk] + rn[kk] * side * edge
+                # traffic on this side drives along +tan (right side, forward lanes) or -tan (left side): face it
+                travel = tan[kk] * (1.0 if side > 0 else -1.0)
+                face = math.degrees(math.atan2(-travel[0], -travel[1])) + side * 18.0     # turned a little towards the road
+                if self.occ.rect_free(q[0], q[1], 10.0, 3.0, face, margin=0.5, allow=(Occupancy.FREE, Occupancy.FIELD)):
+                    yq = float(self.g.y([q[0]], [q[1]])[0])
+                    boards.append(dict(kind='roadside', model='billboard_large', p=[round(float(q[0]), 2), round(yq, 2), round(float(q[1]), 2)],
+                                       yaw=round(face % 360, 1), scale=1.35, screen=f'island_{k:02d}', idle=idle[k % 3]))
+                    self.occ.rect(q[0], q[1], 10.0, 3.0, face, Occupancy.PROP)
+                    k += 1
+                    side = -side
+                pos += RNG.uniform(200, 280)
+        # rooftops: tall downtown buildings next to the avenues, the board facing the avenue
+        avenues = [s for s in self.roads['segments'] if s['base'] == 'avenue' and self.district_at(*np.array(s['samples'][len(s['samples']) // 2])[[0, 2]]) == 'timeline']
+        roof = 0
+        order = RNG.permutation(len(self.boxes))
+        for i in order:
+            cx, cy, cz, w, hh, d, yaw = self.boxes[i]
+            if hh < 16 or roof >= 7 or math.hypot(cx, cz) > 230:
+                continue
+            best = None
+            for s in avenues:
+                P = np.array([[q[0], q[2]] for q in s['samples']])
+                dd = np.linalg.norm(P - np.array([cx, cz]), axis=1)
+                j = int(np.argmin(dd))
+                if dd[j] < 40 and (best is None or dd[j] < best[0]):
+                    best = (dd[j], P[j])
+            if best is None:
+                continue
+            to = best[1] - np.array([cx, cz])
+            face = math.degrees(math.atan2(to[0], to[1]))
+            face = yaw + round((face - yaw) / 90.0) * 90.0                     # square to the building
+            boards.append(dict(kind='rooftop', model='billboard_rooftop', p=[cx, round(cy + hh / 2, 2), cz], yaw=round(face % 360, 1),
+                               scale=1.7, screen=f'island_{k:02d}', idle=idle[k % 3]))
+            k += 1
+            roof += 1
+        # the Timeline screens landmark: three big boards on the park's south edge, facing the plaza across Genesis Avenue
+        lm = next((l for l in L.LANDMARKS if l['id'] == 'timeline_screens'), None)
+        if lm:
+            P = np.array(L.dt_block_poly(*L.DT_PARK[1]), float)
+            a, b = P[0], P[1]                                                  # the park block's south edge
+            t = (b - a) / np.linalg.norm(b - a)
+            n = np.array([-t[1], t[0]])                                        # into the park
+            face = math.degrees(math.atan2(-n[0], -n[1]))                       # looking south, at the plaza
+            for j, u in enumerate((0.3, 0.5, 0.7)):
+                q = a + (b - a) * u + n * 9.0
+                yq = float(self.g.y([q[0]], [q[1]])[0])
+                boards.append(dict(kind='landmark', model='billboard_large', p=[round(float(q[0]), 2), round(yq, 2), round(float(q[1]), 2)],
+                                   yaw=round((face + (j - 1) * 12.0) % 360, 1), scale=1.6 if j == 1 else 1.35,
+                                   screen=f'island_{k:02d}', idle=idle[j]))
+                k += 1
+        self.billboards = boards
+        self.stats['billboards'] = len(boards)
+        log(f'billboards: {len(boards)} ({sum(b["kind"] == "roadside" for b in boards)} roadside, {roof} rooftop)')
+
     # -------------------------------------------------------------- street furniture
     def town(self, x, z):
         return self.district_at(x, z) in ('timeline', 'trenches', 'dubai_marina', 'boardwalk', 'residences', 'builder_hills')
@@ -798,7 +875,7 @@ class Dress:
         doc = dict(version=1, generated=time.strftime('%Y-%m-%d'), stats=self.stats,
                    record='x, y, z, yaw (deg), scale xz, scale y, tint r, g, b, a',
                    instances=[dict(proto=p, n=len(self.inst[p]), d=[c for r in self.inst[p] for c in r]) for p in protos],
-                   buildingBoxes=self.boxes, signals=self.signals, power=self.power)
+                   buildingBoxes=self.boxes, signals=self.signals, power=self.power, billboards=self.billboards)
         txt = json.dumps(doc, separators=(',', ':'))
         open(path, 'w').write(txt)
         log(f'wrote {path} ({len(txt) / 1e6:.1f} MB, {sum(len(v) for v in self.inst.values())} instances of {len(protos)} models)')
@@ -812,6 +889,7 @@ def main():
     d.infill_blocks()
     d.place_promenade()
     d.place_plaza()
+    d.place_billboards()
     d.place_street()
     d.place_power()
     d.place_vegetation()

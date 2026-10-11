@@ -447,6 +447,12 @@ namespace CTLife.EditorTools.IslandV2
                 foreach (var car in parkedCars) car.set = set;
                 renderers++;
             }
+            if (g.Billboards.Count > 0)
+            {
+                var bbRoot = new GameObject("Billboards") { layer = Layers.Prop };
+                bbRoot.transform.SetParent(root.transform, false);
+                foreach (var bj in g.Billboards) if (IslandV2Dress.Billboard(bj, bbRoot.transform, Layers.Prop) != null) { renderers++; colliders++; }
+            }
             if (g.Capsules.Count > 0)
             {
                 foreach (var byLayer in g.Capsules.GroupBy(c => c.Layer))
@@ -598,8 +604,12 @@ namespace CTLife.EditorTools.IslandV2
             atm.skybox = Skybox();
             root.AddComponent<IslandRenderSettings>();
             root.AddComponent<IslandInstanceRenderer>();
-            var volume = tlPrefab.GetComponentInChildren<Volume>(true);
-            if (volume != null) { var v = Object.Instantiate(volume.gameObject, root.transform); v.name = "Look"; }
+            // the island's own look (golden hour grade, bloom, vignette; cool shadows, warm highlights)
+            var lookGo = new GameObject("Look");
+            lookGo.transform.SetParent(root.transform, false);
+            var vol = lookGo.AddComponent<Volume>();
+            vol.isGlobal = true; vol.priority = 5f; vol.weight = 1f;
+            vol.sharedProfile = LookProfile();
             // save meshes, then the prefab
             if (AssetDatabase.LoadAssetAtPath<Object>(basePath) != null) AssetDatabase.DeleteAsset(basePath);
             if (meshes.Count > 0)
@@ -646,6 +656,30 @@ namespace CTLife.EditorTools.IslandV2
                 b.Add(c + new Vector3(Mathf.Cos(a) * r, y, Mathf.Sin(a) * r), Vector3.up, Vector2.zero);
             }
             for (int i = 0; i < S; i++) b.Tri(ci, b0 + i, b0 + i + 1);
+        }
+
+        private static VolumeProfile LookProfile()
+        {
+            var path = IslandV2Paths.Root + "/IslandLook.asset";
+            var old = AssetDatabase.LoadAssetAtPath<VolumeProfile>(path);
+            if (old != null) AssetDatabase.DeleteAsset(path);
+            var profile = ScriptableObject.CreateInstance<VolumeProfile>();
+            profile.name = "IslandLook";
+            AssetDatabase.CreateAsset(profile, path);
+            var tm = profile.Add<Tonemapping>(true); tm.mode.Override(TonemappingMode.Neutral);
+            var wb = profile.Add<WhiteBalance>(true); wb.temperature.Override(6f); wb.tint.Override(2f);
+            var ca = profile.Add<ColorAdjustments>(true);
+            ca.postExposure.Override(0.08f); ca.contrast.Override(12f); ca.saturation.Override(14f); ca.colorFilter.Override(new Color(1f, 0.975f, 0.94f));
+            var st = profile.Add<SplitToning>(true);
+            st.shadows.Override(new Color(0.42f, 0.48f, 0.62f)); st.highlights.Override(new Color(0.64f, 0.56f, 0.44f)); st.balance.Override(-12f);
+            var bl = profile.Add<Bloom>(true);
+            bl.threshold.Override(1.0f); bl.intensity.Override(0.28f); bl.scatter.Override(0.6f); bl.highQualityFiltering.Override(false);
+            bl.downscale.Override(BloomDownscaleMode.Quarter);
+            var vg = profile.Add<Vignette>(true); vg.intensity.Override(0.18f); vg.smoothness.Override(0.42f);
+            foreach (var c in profile.components) { c.name = c.GetType().Name; AssetDatabase.AddObjectToAsset(c, profile); }
+            EditorUtility.SetDirty(profile);
+            AssetDatabase.SaveAssetIfDirty(profile);
+            return profile;
         }
 
         private static Material Skybox()

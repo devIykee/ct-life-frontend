@@ -48,13 +48,7 @@ namespace CTLife.EditorTools.IslandV2
             new View("farm", new Vector3(520f, 40f, -60f), new Vector3(640f, 8f, 110f), 55f),
             new View("builder_hills", new Vector3(240f, 60f, 140f), new Vector3(380f, 20f, 320f), 55f),
             new View("breakpoint", new Vector3(-150f, 40f, 170f), new Vector3(-300f, 10f, 290f), 55f),
-            new View("dbg_sw_8", new Vector3(-100f, 8f, -120f), new Vector3(-100f, 0f, -96f), 55f),
-            new View("dbg_sw_40", new Vector3(-100f, 40f, -150f), new Vector3(-100f, 0f, -96f), 55f),
-            new View("dbg_sw_120", new Vector3(-100f, 120f, -260f), new Vector3(-100f, 0f, -96f), 55f),
-            new View("dbg_a1", new Vector3(230f, 170f, -300f), new Vector3(0f, 0f, 10f), 55f),
-            new View("dbg_a2", new Vector3(0f, 170f, -300f), new Vector3(0f, 0f, 10f), 50f),
-            new View("dbg_a3", new Vector3(-100f, 120f, -260f), new Vector3(0f, 0f, 10f), 50f),
-            new View("dbg_a4", new Vector3(230f, 170f, -300f), new Vector3(-100f, 0f, -96f), 50f),
+            new View("timeline_screens", new Vector3(-6f, 6f, -10f), new Vector3(-14f, 8f, 70f), 55f),
         };
 
         public static void Run()

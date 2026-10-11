@@ -167,6 +167,9 @@ namespace CTLife.EditorTools.IslandV2
 
         private static readonly Dictionary<string, Material> Cache = new Dictionary<string, Material>();
 
+        /// <summary>The kit material for an FBX material name and a kind (billboard frames, other one-off props).</summary>
+        public static Material KitMaterial(string fbxMaterial, string kind, string id) => Material(fbxMaterial, kind, id);
+
         /// <summary>One kit material per (texture, role): palette (tintable facades), foliage (wind, cut-out), plain.</summary>
         private static Material Material(string fbxMaterial, string kind, string id)
         {

@@ -18,6 +18,8 @@ namespace CTLife.EditorTools.IslandV2
         public readonly List<IslandV2Dress.Inst> Instances = new List<IslandV2Dress.Inst>();
         /// <summary>Vertical capsules (tree trunks, lamp posts): all on one GameObject per layer.</summary>
         public readonly List<CapsuleCol> Capsules = new List<CapsuleCol>();
+        /// <summary>Live billboards (dress.json) built as real renderers in the cell.</summary>
+        public readonly List<Newtonsoft.Json.Linq.JObject> Billboards = new List<Newtonsoft.Json.Linq.JObject>();
 
         public struct CapsuleCol { public Vector3 Center; public float Radius, Height; public int Layer; }
         public struct BoxCol { public Vector3 Center; public Quaternion Rotation; public Vector3 Size; public int Layer; public string Name; }

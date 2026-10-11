@@ -42,8 +42,24 @@ def px(x, z):
     return ((x - VIEW[0]) * PPM, (VIEW[3] - z) * PPM)
 
 
-def plan_image(h, land, net, venues, homes, river, forest, path, landmarks=None, helipads=None):
-    W, H = int((VIEW[2] - VIEW[0]) * PPM), int((VIEW[3] - VIEW[1]) * PPM)
+def plan_image(h, land, net, venues, homes, river, forest, path, landmarks=None, helipads=None, view=None, ppm=None,
+               annotate=True, buildings=None, size=None):
+    """annotate=False: the map atlas (no labels, venue frames, legend); buildings: dress.json building boxes drawn as
+    roofs with a soft drop shadow; view/ppm/size: the area and resolution (defaults: the plan image)."""
+    global VIEW, PPM
+    saved = (VIEW, PPM)
+    if view is not None:
+        VIEW = view
+    if ppm is not None:
+        PPM = ppm
+    try:
+        return _plan_image(h, land, net, venues, homes, river, forest, path, landmarks, helipads, annotate, buildings, size)
+    finally:
+        VIEW, PPM = saved
+
+
+def _plan_image(h, land, net, venues, homes, river, forest, path, landmarks, helipads, annotate, buildings, size):
+    W, H = size or (int((VIEW[2] - VIEW[0]) * PPM), int((VIEW[3] - VIEW[1]) * PPM))
     xs = VIEW[0] + (np.arange(W) + 0.5) / PPM
     zs = VIEW[3] - (np.arange(H) + 0.5) / PPM
     XX, ZZ = np.meshgrid(xs, zs)
@@ -225,6 +241,24 @@ def plan_image(h, land, net, venues, homes, river, forest, path, landmarks=None,
         else:
             for k in range(0, len(pts) - 1, 3):
                 d.line([pts[k], pts[min(k + 1, len(pts) - 1)]], fill=(240, 240, 235, 230), width=1)
+    # buildings (dress.json): a soft shadow to the south-east, then the roof
+    if buildings:
+        sh = Image.new('RGBA', img.size, (0, 0, 0, 0))
+        sd_ = ImageDraw.Draw(sh, 'RGBA')
+        for cx, cy, cz, w, hgt, dep, yaw in buildings:
+            off = min(hgt * 0.35, 14.0)
+            r = G.oriented_rect(cx + off * 0.7, cz - off * 0.7, w, dep, yaw)
+            sd_.polygon([px(x, z) for x, z in r], fill=(20, 24, 30, 90))
+        img.alpha_composite(sh.filter(ImageFilter.GaussianBlur(1.2 * PPM)))
+        d = ImageDraw.Draw(img, 'RGBA')
+        for cx, cy, cz, w, hgt, dep, yaw in buildings:
+            k = min(1.0, hgt / 40.0)
+            roof = (int(214 - 40 * k), int(206 - 36 * k), int(196 - 26 * k), 255)
+            r = G.oriented_rect(cx, cz, w, dep, yaw)
+            d.polygon([px(x, z) for x, z in r], fill=roof, outline=(120, 112, 104, 255))
+    if not annotate:
+        img.convert('RGB').save(path, optimize=True)
+        return img
     # venues: oriented frames with door ticks and numbers
     fnt, fnt_b, fnt_big = font(15), font(15, True), font(24, True)
     pal = {'timeline': (237, 128, 74), 'trenches': (170, 118, 86), 'dubai_marina': (92, 170, 214), 'boardwalk': (240, 196, 92),
