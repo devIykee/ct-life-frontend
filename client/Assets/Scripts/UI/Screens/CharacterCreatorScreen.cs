@@ -860,7 +860,9 @@ namespace CTLife.UI
             _done = new LippedButton(Strings.T("ob.name.done"), EndTyping, LippedButton.Tone.Green, LippedButton.Size.Medium);
             _done.AddToClassList("ob-done");
             var fieldRow = El.Div("ob-field-row", _alias, _done);
-            return Page(Strings.T("ob.name.title"), Strings.T("ob.name.sub"), fieldRow, _aliasStatus);
+            var page = Page(Strings.T("ob.name.title"), "", fieldRow, _aliasStatus);
+            page.Q(className: "ob-sub")?.RemoveFromHierarchy();
+            return page;
         }
 
         /// <summary>
@@ -884,7 +886,7 @@ namespace CTLife.UI
         private void RefreshAliasStatus(bool react)
         {
             var state = CreatorFlow.CheckAlias(_draft.alias);
-            _aliasStatus.text = Strings.T(state == AliasState.Ok ? "ob.name.ok" : state == AliasState.TooShort ? "ob.name.short" : "ob.name.rule");
+            _aliasStatus.text = Strings.T("ob.name.rule");
             _aliasStatus.EnableInClassList("ob-alias-status--ok", state == AliasState.Ok);
             _aliasStatus.EnableInClassList("ob-alias-status--warn", state == AliasState.TooShort || state == AliasState.TooLong);
             _alias.EnableInClassList("ob-field--ok", state == AliasState.Ok);
@@ -937,8 +939,7 @@ namespace CTLife.UI
         {
             _cardPortrait = El.Div("ob-card-portrait");
             _cardPortrait.style.backgroundImage = Background.FromRenderTexture(_preview.Texture);
-            var portraitHit = CardHit("ob-card-portrait-hit", CreatorStep.Look,
-                El.Div("ob-card-art-field"), _cardPortrait);
+            var portraitHit = CardHit("ob-card-portrait-hit", CreatorStep.Look, _cardPortrait);
 
             _cardName = El.Text("", "ob-card-name");
             _cardName.RegisterCallback<GeometryChangedEvent>(_ => FitCardName());
@@ -962,6 +963,8 @@ namespace CTLife.UI
             info.pickingMode = PickingMode.Ignore;
             var edition = El.Text(Strings.T("ob.card.brand"), "ob-card-edition");
             _idCard = El.Div("ob-idcard", El.Div("ob-card-body", portraitHit, info), edition);
+            if (OnboardingArt.PlayerCardSurface != null)
+                _idCard.style.backgroundImage = new StyleBackground(OnboardingArt.PlayerCardSurface);
             El.PassThrough(edition);
 
             _ageRow = new CheckRow(Strings.T("ob.confirm.age"), ToggleAge);
@@ -1205,6 +1208,9 @@ namespace CTLife.UI
             if (!_busy) _frame.Cta.SetEnabled(problem == null && !_reviewComplete);
             string hint = problem != null ? Strings.T(problem)
                 : confirm && _readOnlyReview ? Strings.T(_reviewComplete ? "creator.previewSavedNothing" : "creator.previewNotice") : "";
+            // These requirements are already visible in the choices, alias helper and age checkbox.
+            // Keep the validation/CTA gate without repeating the instruction in the footer.
+            if (problem == "ob.hint.dream" || problem == "ob.hint.name" || problem == "ob.hint.age") hint = "";
             _frame.SetHint(hint);
             _frame.Back.SetEnabled(!_busy);
         }

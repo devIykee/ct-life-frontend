@@ -16,17 +16,17 @@ namespace CTLife.UI
     /// The roll delegate returns null when the server shows the roll already happened (409 or reconciled /me).
     ///
     /// After the creator selections, centred painted cards automatically shuffle and reveal the server's result.
-    /// The winning illustration settles at the left; its origin and starting resources are revealed beside it.
+    /// The winning face expands into one illustrated landscape card with live origin and starting resources.
     /// The result remains visible while the coordinator commits the character; a failed commit can retry without rolling.
     ///
-    /// The face-down cards retain their rarity ribbon and the existing draw/flip. The result uses one compact
-    /// illustrated card, with readable name, story and resource values on the surrounding onboarding background.
+    /// The face-down cards retain their rarity ribbon and the existing draw/flip. The result keeps its
+    /// artwork, name, story and resource values inside the same collectible surface.
     /// </summary>
     public sealed class LotteryScreen : UiScreen
     {
         private const float CardW = 440f, CardH = 605f, CardGap = 96f, SeekerCardW = 360f;
-        private const float WideW = 1880f, WideH = 660f, WideTop = -8f;
-        private const float ResultArtW = 480f, ResultArtH = 660f;
+        private const float WideW = 1520f, WideH = 760f, WideTop = -22f;
+        private const float ResultArtW = 590f, ResultArtH = 760f;
 
         private readonly Func<Task<PostLotteryRoll200Response>> _roll;
         private readonly Action<PostLotteryRoll200Response> _onDone;
@@ -47,10 +47,11 @@ namespace CTLife.UI
         private sealed class Card
         {
             public string id;
-            public VisualElement root, glow, portrait, art, fallback, ribbon, info, stats, debtCell;
+            public VisualElement root, surface, glow, portrait, art, fallback, ribbon, info, stats, debtCell;
             public Label odds, rarity, chance, name, line, alias, perk, cash, home, debt;
             public float homeX;
             public bool wide;
+            public bool hasSurface;
         }
 
         public LotteryScreen(bool isSeeker, Func<Task<PostLotteryRoll200Response>> roll, Action<PostLotteryRoll200Response> onDone,
@@ -140,7 +141,12 @@ namespace CTLife.UI
             c.ribbon.pickingMode = PickingMode.Ignore;
             c.info = BuildInfo(c, id, rarity, pct);
             c.info.style.display = DisplayStyle.None;
-            c.root = El.Div("ob-card " + RarityClass(id), c.glow, c.portrait, c.info, c.ribbon);
+            c.surface = El.Div("ob-origin-surface", El.Text(Strings.T("ob.card.brand"), "ob-origin-brand"));
+            var surfaceArt = OnboardingArt.OriginSurface(id);
+            c.hasSurface = surfaceArt != null;
+            if (c.hasSurface) c.surface.style.backgroundImage = new StyleBackground(surfaceArt);
+            c.surface.style.display = DisplayStyle.None;
+            c.root = El.Div("ob-card " + RarityClass(id), c.surface, c.glow, c.portrait, c.info, c.ribbon);
             c.root.name = "card_" + id;
             c.root.style.width = width;
             c.root.style.height = width * CardH / CardW;
@@ -169,7 +175,7 @@ namespace CTLife.UI
             return card;
         }
 
-        /// <summary>The result details stand beside the illustration, without a containing panel.</summary>
+        /// <summary>Live result details occupy the illustrated card's reserved information area.</summary>
         private static VisualElement BuildInfo(Card c, string id, string rarity, int pct)
         {
             c.rarity = El.Text(rarity, "ob-origin-rarity");
@@ -192,7 +198,8 @@ namespace CTLife.UI
             c.debtCell = El.Div("ob-origin-stat ob-origin-stat--debt", El.Text(Strings.T("ob.lottery.stat.debt"), "ob-origin-label"), c.debt);
             c.stats = El.Div("ob-origin-stats", cashCell, homeCell, c.debtCell);
             var note = El.Text(Strings.T("ob.lottery.note"), "ob-origin-note");
-            var info = El.Div("ob-origin-info", El.Div("ob-origin-head", top, c.alias, c.name, c.line, c.perk), El.Div("ob-origin-benefits", c.stats, note));
+            var info = El.Div("ob-origin-info", El.Div("ob-origin-head", top, c.alias, c.name, c.line), c.perk,
+                El.Div("ob-origin-benefits", c.stats, note));
             info.pickingMode = PickingMode.Ignore;
             return info;
         }
@@ -209,6 +216,8 @@ namespace CTLife.UI
             c.root.style.scale = new Scale(new Vector2(s, s));
             c.portrait.style.width = Mathf.Lerp(w0, ResultArtW, t);
             c.portrait.style.height = Mathf.Lerp(h0, ResultArtH, t);
+            c.surface.style.opacity = t;
+            c.portrait.style.opacity = c.hasSurface ? 1f - t : 1f;
             float info = Mathf.Clamp01((t - 0.72f) / 0.28f); // after the card is wide enough for the name
             c.info.style.opacity = info;
             c.info.style.translate = new Translate((1f - info) * 48f, 0f);
@@ -219,6 +228,7 @@ namespace CTLife.UI
         {
             c.wide = true;
             c.root.AddToClassList("ob-card--wide");
+            c.surface.style.display = c.hasSurface ? DisplayStyle.Flex : DisplayStyle.None;
             c.ribbon.style.display = DisplayStyle.None;
             c.portrait.style.flexGrow = 0f;
             c.portrait.style.flexShrink = 0f;

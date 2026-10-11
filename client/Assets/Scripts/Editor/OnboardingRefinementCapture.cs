@@ -124,6 +124,10 @@ namespace CTLife.EditorTools
             expect(screen.Step == CreatorStep.Dream, "Rain reaches the actual dream screen");
             await Freeze(preview, animator, "loco_idle", .3f, wait);
             await shot("03-rain-dream", .5f);
+            expect(string.IsNullOrEmpty(Field<OnboardingFrame>(screen, "_frame").HintText),
+                "dream screen omits the duplicate footer instruction");
+            expect(!screen.Element.Q<UI.Kit.LippedButton>("ob-cta").enabledInHierarchy,
+                "dream selection is still required before continuing");
             screen.Close();
         }
 
@@ -159,7 +163,17 @@ namespace CTLife.EditorTools
                 var longest = reg.Dreams.OrderByDescending(item => item.name?.Length ?? 0).First();
                 screen.PickForAutomation(reg.Dreams.IndexOf(longest));
                 screen.PressCta(); await wait(.2f);
+                if (fixture.head == "head_rain")
+                {
+                    await shot("08-rain-name-empty", .5f);
+                    CheckName(screen, "", expect, records, "08-rain-name-empty");
+                }
                 screen.TypeAlias(fixture.alias);
+                if (fixture.head == "head_rain")
+                {
+                    await shot("09-rain-name-valid", .7f);
+                    CheckName(screen, fixture.alias, expect, records, "09-rain-name-valid");
+                }
                 screen.PressCta();
                 await wait(.8f);
                 expect(screen.Step == CreatorStep.Confirm, fixture.head + " reaches the real player confirmation");
@@ -300,6 +314,27 @@ namespace CTLife.EditorTools
                 ["note"] = "Viewport coordinates are recorded for crop diagnosis; intentional screen-edge bleed is judged from the actual PNG." });
         }
 
+        private static void CheckName(CharacterCreatorScreen screen, string alias, Action<bool, string> expect,
+            JArray records, string name)
+        {
+            var field = Field<TextField>(screen, "_alias");
+            var helper = Field<Label>(screen, "_aliasStatus");
+            var page = Field<VisualElement[]>(screen, "_pages")[(int)CreatorStep.Name];
+            var cta = screen.Element.Q<UI.Kit.LippedButton>("ob-cta");
+            bool valid = CreatorFlow.CheckAlias(alias) == AliasState.Ok;
+            expect(screen.Step == CreatorStep.Name && field.value == alias, name + " captures the real alias input state");
+            expect(helper.text == Strings.T("ob.name.rule") && helper.resolvedStyle.display != DisplayStyle.None &&
+                helper.worldBound.width > 0 && Contains(screen.Element.worldBound, helper.worldBound),
+                name + " keeps the 3–20 character helper visible");
+            expect(page.Q(className: "ob-sub") == null, name + " removes the redundant name subtitle");
+            expect(string.IsNullOrEmpty(Field<OnboardingFrame>(screen, "_frame").HintText),
+                name + " omits the duplicate name footer instruction");
+            expect(cta.enabledInHierarchy == valid && screen.Flow.CanAdvance == valid,
+                name + " keeps the actual alias validation and continuation gate");
+            records.Add(new JObject { ["capture"] = name, ["alias"] = field.value, ["helper"] = helper.text,
+                ["helperBounds"] = Bounds(helper.worldBound), ["ctaEnabled"] = cta.enabledInHierarchy });
+        }
+
         private static void CheckPlayerCard(CharacterCreatorScreen screen, Action<bool, string> expect, JArray records,
             string name, string alias, string dream)
         {
@@ -310,6 +345,7 @@ namespace CTLife.EditorTools
             var dreamLabel = Field<Label>(screen, "_cardDream");
             var traits = Field<VisualElement>(screen, "_cardTraits");
             var cta = root.Q<UI.Kit.LippedButton>("ob-cta");
+            CheckSurface(card, OnboardingArt.PlayerCardSurface, name, expect, records);
             expect(screen.Origin == null && origin.resolvedStyle.display == DisplayStyle.None, name + " does not invent an origin before the draw");
             expect(nameLabel.text == alias && dreamLabel.text == dream, name + " shows the actual selected alias and dream");
             expect(nameLabel.resolvedStyle.fontSize >= 44f, name + " alias fitting preserves a readable 44-unit minimum");
@@ -319,6 +355,8 @@ namespace CTLife.EditorTools
             expect(!card.worldBound.Overlaps(cta.worldBound) && !screen.AgeRow.worldBound.Overlaps(cta.worldBound),
                 name + " card and age confirmation do not cover the primary action");
             expect(!cta.enabledInHierarchy, name + " continuation still requires explicit age confirmation");
+            expect(string.IsNullOrEmpty(Field<OnboardingFrame>(screen, "_frame").HintText),
+                name + " omits the duplicate age footer instruction");
             CheckLabel(nameLabel, card, name, expect, records);
             CheckLabel(dreamLabel, card, name, expect, records);
             foreach (var label in traits.Query<Label>().ToList()) CheckLabel(label, card, name, expect, records);
@@ -332,6 +370,8 @@ namespace CTLife.EditorTools
             var home = winner.Q<Label>("origin-home");
             var debt = winner.Q<Label>("origin-debt");
             var cta = screen.Element.Q<UI.Kit.LippedButton>("ob-cta");
+            CheckSurface(winner.Q(className: "ob-origin-surface"), OnboardingArt.OriginSurface(LotteryModel.OutcomeId(result.Outcome)),
+                name, expect, records);
             expect(screen.Revealed && winner.resolvedStyle.display != DisplayStyle.None, name + " presents the actual returned outcome");
             expect(cash.text == LotteryModel.CashWhole(result.CashCents), name + " preserves returned starting cash");
             expect(result.DebtCents > 0 ? debt.text == LotteryModel.CashWhole(result.DebtCents) && debt.parent.resolvedStyle.display != DisplayStyle.None
@@ -343,6 +383,19 @@ namespace CTLife.EditorTools
             records.Add(new JObject { ["capture"] = name, ["origin"] = LotteryModel.OutcomeId(result.Outcome),
                 ["cash"] = cash.text, ["home"] = home.text, ["debt"] = debt.text,
                 ["resultBounds"] = Bounds(winner.worldBound), ["ctaBounds"] = Bounds(cta.worldBound) });
+        }
+
+        private static void CheckSurface(VisualElement surface, Texture2D expected, string capture,
+            Action<bool, string> expect, JArray records)
+        {
+            var actual = surface?.resolvedStyle.backgroundImage.texture;
+            bool loaded = expected != null && actual == expected;
+            expect(loaded, capture + " displays its actual authored card surface");
+            expect(surface != null && surface.resolvedStyle.display != DisplayStyle.None && surface.worldBound.width > 0,
+                capture + " keeps the card surface visible");
+            records.Add(new JObject { ["capture"] = capture, ["surfaceLoaded"] = loaded,
+                ["surfaceTexture"] = actual != null ? actual.name : null,
+                ["surfaceTextureSize"] = actual != null ? new JArray(actual.width, actual.height) : null });
         }
 
         private static void CheckLabel(Label label, VisualElement container, string capture, Action<bool, string> expect, JArray records)

@@ -24,6 +24,11 @@ later explicit user decisions, including the art direction below, supersede olde
 - Offer authored character browsing and supported outfits, skin tones and garment colors. Do not force gender onto unspecified creatures/robots or claim unsupported material regions work.
 - Nonhuman staking unlocks (ORE/SKR) remain a proposal until the token, threshold and live verification work. See `docs/research/character-podium-and-likeness-20261011.md`.
 
+## Onboarding copy and card correction (user decision, 2026-10-12)
+- Do not repeat the screen question, name-length range or age checkbox as another footer instruction. Keep real validation and failure messages; the name helper stays “3–20 characters”.
+- Generate the player and origin card surfaces from researched game-card references, then populate real names, choices, odds and benefits in code. The artwork and information belong inside one coherent collectible card.
+- Review character eyes in actual animated close portraits as well as full-body views. Clothing opacity checks do not establish that pupils have complete geometry.
+
 ## Current priorities (user decision, 2026-10-07) — read first
 - **No deadline.** Ignore CLOCK IN and every hackathon date in older docs. Do not plan around it.
 - **Everything must work first.** Build the whole game robustly and properly, phase by phase:
