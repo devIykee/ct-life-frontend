@@ -25,6 +25,10 @@ namespace CTLife.UI
         public VisualElement ModalLayer { get; private set; }
         public VisualElement ToastLayer { get; private set; }
 
+#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
+        private Dev.QaUiSnapshotExporter _qaUi;
+        private void OnDisable() => _qaUi?.Stop();
+#endif
         private UIDocument _doc;
         private PanelSettings _ownedPanelSettings;
         private VisualElement _screenBackdrop;
@@ -163,6 +167,10 @@ namespace CTLife.UI
         private void LateUpdate()
         {
             ApplySafeArea();
+#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
+            if (_qaUi == null && LaunchArgs.Flag("qaUi")) _qaUi = new Dev.QaUiSnapshotExporter();
+            _qaUi?.Tick(Root);
+#endif
             for (int i = 0; i < _updaters.Count; i++)
             {
                 try { _updaters[i](); } catch (Exception e) { Log.Exception("ui", e); }

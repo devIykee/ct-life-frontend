@@ -23,8 +23,8 @@ namespace CTLife.Core
     /// One environment's endpoints. Assets live in Resources/Env (created by CT Life → Project Setup); the build
     /// selects one with `-ctlifeEnv local|staging|prod` (see Editor/BuildScript.cs).
     /// Phones reach the Mac's localhost through `adb reverse tcp:PORT tcp:PORT`, so mock/local keep localhost.
-    /// Staging and prod hosts are not issued yet: their URLs are placeholders ending in `.invalid`, and
-    /// <see cref="PlaceholderProblem"/> makes the build refuse them until real values are filled in.
+    /// Staging uses the confirmed Railway hosts on devnet. Prod hosts remain placeholders ending in `.invalid`;
+    /// <see cref="PlaceholderProblem"/> makes the build refuse unconfigured endpoints.
     /// </summary>
     [CreateAssetMenu(menuName = "CT Life/Env Config", fileName = "EnvConfig")]
     public sealed class EnvConfig : ScriptableObject
@@ -33,11 +33,11 @@ namespace CTLife.Core
 
         /// <summary>
         /// The app's one identity: the dApp identity the MWA wallet shows AND the SIWS domain/uri the server must issue
-        /// (domain = this URI's authority). A placeholder until the real domain is bought (user decision 2026-10-08:
-        /// no .dev; a .fun or gaming TLD later). Switching domains is this one line; env assets leave
-        /// walletIdentityUri empty. tools/backend-local/up.sh reads this line to set the local server's SIWS_DOMAIN/URI.
+        /// (domain = this URI's authority). The deployed challenge uses https://ctlife.fun/ including the trailing slash.
+        /// Env assets leave walletIdentityUri empty so MWA and SIWS use the same app-wide identity.
+        /// tools/backend-local/up.sh reads this line to set the local server's SIWS_DOMAIN/URI.
         /// </summary>
-        public const string AppIdentityUri = "https://ctlife.invalid/";
+        public const string AppIdentityUri = "https://ctlife.fun/";
 
         public EnvId id = EnvId.Mock;
 
@@ -100,10 +100,9 @@ namespace CTLife.Core
                     c.liveKitUrlOverride = "ws://localhost:7880";
                     break;
                 case EnvId.Staging:
-                    // REST from the contract's `servers`; realtime not issued yet (Railway URLs are set at deploy).
-                    // Not hosted and no domain yet (no .dev): placeholders until Railway URLs and the domain exist.
-                    c.restBaseUrl = "https://staging-api" + PlaceholderHost + "/v1";
-                    c.realtimeUrl = "wss://staging-realtime" + PlaceholderHost;
+                    // Confirmed deployment: Railway's service names include "production", but SIWS uses devnet.
+                    c.restBaseUrl = "https://ctlife-api-production.up.railway.app/v1";
+                    c.realtimeUrl = "wss://ctlife-realtime-production.up.railway.app";
                     c.cluster = SolanaCluster.Devnet;
                     c.allowDevAuth = false;
                     c.livePhase = 1;
