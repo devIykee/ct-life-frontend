@@ -61,19 +61,23 @@ namespace CTLife.Economy.Tests
             else Services.Register(service);
         }
 
+        private VisualElement _container;
+
         private void Open(string type, object arg)
         {
             var t = typeof(MoneyHub).Assembly.GetType("CTLife.Economy." + type, true);
             _view = Activator.CreateInstance(t, Instance, null, new[] { (object)_hub, arg }, null);
             _root = (ScrollView)t.BaseType.GetField("Root", Instance).GetValue(_view);
+            _container = (VisualElement)t.GetProperty("Container", Instance).GetValue(_view);
             _window = ScriptableObject.CreateInstance<MarketReadTestWindow>();
             _window.Show();
-            _window.rootVisualElement.Add(_root);
+            _window.rootVisualElement.Add(_container);
             Assert.That(_root.panel, Is.Not.Null);
         }
 
         private string[] Labels() => _root.Query<Label>().ToList().Select(l => l.text).ToArray();
-        private Button OpenButton() => _root.Query<Button>().ToList().Single(b => b.text == MoneyStrings.T("perps.open"));
+        // Duo layout: orders start from the glass Long/Short bar (the sheet's Open button follows the same gate).
+        private Button OpenButton() => _container.Q<Button>("perps-long");
 
         [Test]
         public void PerpSuccessfulEmptyPageEndsLoadingAndDisablesOrders()
@@ -107,7 +111,7 @@ namespace CTLife.Economy.Tests
             _hub.Market.Remember(new MarketCoin { CoinId = "fixture-coin", Ticker = "TEST", Stage = "new", PriceMicros = 1 });
             Open("PerpPitView", "trade");
             Assert.That(OpenButton().enabledSelf, Is.False);
-            var coin = _root.Query<Button>().ToList().Single(b => b.text.StartsWith("$TEST"));
+            var coin = _root.Q<Button>("perps-coin-fixture-coin");
             using (var evt = NavigationSubmitEvent.GetPooled()) { evt.target = coin; coin.SendEvent(evt); }
             Assert.That(OpenButton().enabledSelf, Is.True);
             Assert.That(_rest.Writes, Is.Zero);
@@ -160,7 +164,7 @@ namespace CTLife.Economy.Tests
         {
             _hub.Market.Remember(new MarketCoin { CoinId = "fixture-coin", Ticker = "TEST", Stage = "new", PriceMicros = 1 });
             Open("PerpPitView", "trade");
-            var coin = _root.Query<Button>().ToList().Single(b => b.text.StartsWith("$TEST"));
+            var coin = _root.Q<Button>("perps-coin-fixture-coin");
             using (var evt = NavigationSubmitEvent.GetPooled()) { evt.target = coin; coin.SendEvent(evt); }
             Assert.That(OpenButton().enabledSelf, Is.True);
             _hub.Market.Pump(new string[] { null }, CancellationToken.None);

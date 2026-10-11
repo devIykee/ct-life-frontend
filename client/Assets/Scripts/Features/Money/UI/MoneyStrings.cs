@@ -209,6 +209,19 @@ namespace CTLife.Economy
 
             // ---- perps (#16, #17)
             ["perps.title"] = "Perp Pit",
+            ["perps.asset"] = "${0}-PERP · {1}× max",
+            ["perps.assetNoCap"] = "${0}-PERP",
+            ["perps.change5m"] = "5m",
+            ["perps.noHistory"] = "No price history for this coin yet.",
+            ["perps.position"] = "Your position",
+            ["perps.noPosition"] = "No open position on ${0}.",
+            ["perps.markets"] = "Markets",
+            ["perps.pickHint"] = "Pick a coin below to see its price and trade it.",
+            ["perps.side"] = "Side",
+            ["perps.size"] = "Size",
+            ["perps.newPosition"] = "New position",
+            ["perps.available"] = "Available Cash {0}",
+            ["perps.positionTitle"] = "${0} · {1} {2}x",
             ["perps.tab.trade"] = "Trade",
             ["perps.tab.open"] = "Open",
             ["perps.tab.history"] = "History",
@@ -242,6 +255,7 @@ namespace CTLife.Economy
 
             // ---- predictions (#19)
             ["predict.title"] = "Prediction Pit",
+            ["predict.homeLabel"] = "Predict",
             ["predict.empty"] = "No open markets right now.",
             ["predict.closes"] = "Closes in {0}",
             ["predict.closed"] = "Closed",
