@@ -1,0 +1,25 @@
+/* Phase 3 social apps (Spaces Studio, Calls, Messages, Timeline). Functional layout only on top of ctlife.uss;
+   visual polish is deferred to the user's taste (AGENTS-BRIEF, priorities 2026-10-07). */
+.ct-social-row { flex-direction: row; flex-wrap: wrap; align-items: center; }
+.ct-social-row > .ct-btn { margin: 8px 12px 8px 0; }
+.ct-social-card > * { flex-shrink: 0; }
+.ct-social-notice { font-size: 28px; white-space: normal; padding: 20px 24px; margin: 12px 0; border-left-width: 6px; border-left-color: var(--ct-deep); background-color: var(--ct-bg); color: var(--ct-ink); }
+.ct-social-warn { border-left-color: var(--ct-gold); background-color: rgb(255, 246, 214); }
+.ct-social-error { border-left-color: var(--ct-red); background-color: rgb(253, 232, 235); }
+.ct-social-person { flex-direction: row; align-items: center; padding: 14px 0; border-bottom-width: 1px; border-bottom-color: var(--ct-line); }
+.ct-social-person > .ct-grow > .ct-h2 { white-space: normal; }
+.ct-social-speaking { color: var(--ct-green); font-size: 26px; }
+.ct-social-badge { font-size: 22px; padding: 4px 12px; margin-right: 8px; border-radius: 10px; background-color: var(--ct-surface); color: var(--ct-ink); }
+.ct-social-text { font-size: 28px; white-space: normal; }
+.ct-social-msg { padding: 14px 18px; margin: 6px 0; border-radius: 16px; background-color: var(--ct-surface); max-width: 85%; }
+.ct-social-msg-me { align-self: flex-end; background-color: rgb(221, 240, 255); }
+.ct-social-msg-them { align-self: flex-start; }
+.ct-social-tiles { flex-direction: row; flex-wrap: wrap; margin: 8px -4px; }
+.ct-social-tile { width: 48%; height: 260px; margin: 1%; border-radius: 14px; background-color: rgb(24, 26, 32); overflow: hidden; justify-content: flex-end; }
+.ct-social-tile-video { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+.ct-social-tile-label { font-size: 24px; color: rgb(255, 255, 255); background-color: rgba(0, 0, 0, 0.45); padding: 6px 12px; white-space: normal; }
+.ct-social-tile-speaking { border-width: 4px; border-color: var(--ct-green); }
+.ct-social-ring { padding: 28px; }
+.ct-social-chip-bar { position: absolute; top: 12px; left: 30%; right: 30%; align-items: center; }
+.ct-social-input { margin: 8px 0; }
+.ct-social-input .unity-text-field__input { white-space: normal; min-height: 80px; }

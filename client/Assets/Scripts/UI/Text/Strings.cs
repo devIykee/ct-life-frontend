@@ -1,0 +1,366 @@
+using System.Collections.Generic;
+using System.Globalization;
+using CTLife.Core;
+
+namespace CTLife.UI
+{
+    /// <summary>
+    /// Player-facing words. toasts.json is "BE (FE writes the words)", so every toast id's text lives here, with
+    /// {param} slots filled from the toast params. Money params ending in Cents are formatted as Cash.
+    /// </summary>
+    public static class Strings
+    {
+        public const string Brand = "CT LIFE";
+
+        private static readonly Dictionary<string, string> Copy = new Dictionary<string, string>
+        {
+            ["credits.title"] = "Credits & licenses",
+            ["credits.snow"] = "Character art · Snow",
+            ["credits.snowSummary"] = "Snow Rig (CC) Blender Foundation | studio.blender.org. Adapted proportions, rig and texture atlas. CC-BY 4.0.",
+            ["credits.rain"] = "Character art · Rain",
+            ["credits.rainSummary"] = "Rain Rig (CC) Blender Foundation | studio.blender.org. Adapted proportions, rig and texture atlas. CC-BY 4.0.",
+            ["credits.vincent"] = "Character art · Vincent",
+            ["credits.vincentSummary"] = "Vincent (CC) Blender Foundation | studio.blender.org. Adapted proportions, rig, facial shapes and texture atlas. CC-BY 4.0.",
+            ["credits.manrope"] = "Typography · Manrope",
+            ["credits.manropeSummary"] = "The Manrope Project Authors. SIL Open Font License 1.1.",
+            ["credits.lilita"] = "Display typography · Lilita One",
+            ["credits.lilitaSummary"] = "Juan Montoreano. SIL Open Font License 1.1.",
+            ["credits.music"] = "Music & sound credits",
+            ["credits.musicSummary"] = "Music and sound effects by Kevin MacLeod, spuispuin, Gregor Quendel and others. Read the credits, source links and licence details for the music and sound used in CT Life.",
+            ["credits.models"] = "3D model credits",
+            ["credits.modelsSummary"] = "Character models by their Sketchfab authors and others, under CC-BY 4.0. Every model, its author, link and changes: read the full notice.",
+            ["credits.section.models"] = "3D MODELS", ["credits.section.audio"] = "MUSIC & SOUND", ["credits.section.type"] = "TYPE & ICONS",
+            ["credits.phosphor"] = "Icons · Phosphor",
+            ["credits.phosphorSummary"] = "Phosphor Icons. MIT license. Fill and bold icons adapted to raster images.",
+            ["credits.source"] = "Visit original source",
+            ["credits.read"] = "Read notice & license",
+            ["credits.missing"] = "This notice could not be loaded.",
+            ["welcome.eyebrow"] = "Life on the timeline",
+            ["welcome.title"] = "A life of your own.",
+            ["welcome.body"] = "Find your people. Make your name.",
+            ["welcome.note"] = "Big dreams. Fictional coins. Real company.",
+            ["welcome.wallet"] = "Sign in with Solana",
+            ["welcome.walletNote"] = "Approve a sign-in request in your wallet to continue.",
+            ["welcome.walletAndroid"] = "Open CT Life on Android to sign in with your wallet.",
+            ["welcome.age"] = "18+ only. Cash is game money and cannot be withdrawn.",
+            ["welcome.unavailable"] = "Sign-in is taking a breather. Please try again shortly.",
+            ["welcome.busy"] = "Opening your wallet…", ["welcome.play"] = "PLAY", ["welcome.anotherWallet"] = "Use another wallet",
+            ["splash.gm"] = "gm. Your city is waking up.",
+            ["connection.title"] = "Can't reach CT Life",
+            ["connection.body"] = "Check your connection, then try again. Nothing you did was lost.",
+            ["common.offline"] = "No connection",
+            ["hud.you"] = "You",
+            ["splash.tagline"] = "A little chaos. A life of your own.",
+            ["update.title"] = "A new chapter is here",
+            ["update.body"] = "Update CT Life in the Solana dApp Store to return to the city.",
+            ["update.version"] = "Your version: {0} · Latest required: {1}",
+            ["creator.title"] = "Character studio",
+            ["creator.intro"] = "A look, a little personality, and a big dream.",
+            ["creator.previousLook"] = "Previous look", ["creator.nextLook"] = "Next look",
+            ["creator.look.breeze"] = "Breeze",
+            ["creator.look.weekender"] = "Weekender",
+            ["creator.look.everyday"] = "Everyday",
+            ["creator.lookMissing"] = "No character preview available",
+            ["creator.lookNotAvailable"] = "This look isn't available to use yet. Your choices haven't been saved.",
+            ["creator.needLook"] = "A character look is needed before you can enter the city.",
+            ["creator.previewNotice"] = "This is a preview. Your choices won't be saved.",
+            ["creator.previewSavedNothing"] = "Preview complete. No character has been created.",
+            ["creator.perk.launch"] = "Sees launches {0:0}s early",
+            ["creator.perk.leverage"] = "Leverage cap +{0:0}x",
+            ["creator.perk.prediction"] = "Prediction fee −{0:0}%",
+            ["creator.perk.farm"] = "Farm yield +{0:0}%",
+            ["creator.perk.reach"] = "Calls reach {0:0}x followers",
+            ["creator.perk.launchCost"] = "Launch cost −{0:0}%",
+            ["creator.perk.hidden"] = "Hidden from the rich list",
+            ["creator.look"] = "Your look",
+            ["slot.skin"] = "Skin tone", ["slot.head"] = "Face", ["slot.hair"] = "Hair",
+            ["slot.top"] = "Top", ["slot.bottom"] = "Bottom", ["slot.shoes"] = "Shoes", ["slot.acc"] = "Extra",
+            ["slot.previous"] = "Previous {0}", ["slot.next"] = "Next {0}",
+            ["slot.skinTone"] = "Tone {0}", ["slot.faceA"] = "Face A", ["slot.faceB"] = "Face B", ["slot.none"] = "None",
+            ["common.close"] = "Close", ["common.back"] = "Back", ["common.cancel"] = "Cancel",
+            ["common.loading"] = "One moment…", ["common.unavailable"] = "Unavailable", ["common.soon"] = "Coming soon",
+            ["common.empty"] = "Nothing here just yet.", ["common.retry"] = "Try again",
+            ["common.error"] = "Something went wrong. Please try again.",
+            ["hud.cash"] = "Game cash", ["hud.online"] = "{0:N0} in the city", ["hud.mood"] = "Market {0}",
+            ["hud.lobby"] = "Lobby",
+            ["lobby.enter"] = "ENTER THE CITY",
+            ["lobby.enterBusy"] = "OPENING THE CITY…",
+            ["lobby.noDream"] = "A story to write",
+            ["lobby.noHome"] = "Your place in the city",
+            ["lobby.noTribe"] = "City resident",
+            ["lobby.map"] = "Explore",
+            ["lobby.jobs"] = "Jobs",
+            ["lobby.bank"] = "Bank",
+            ["lobby.profile"] = "Me",
+            ["lobby.phone"] = "Phone",
+            ["controls.title"] = "Movement",
+            ["controls.analog"] = "Analog stick",
+            ["controls.arrows"] = "Arrow buttons",
+            ["controls.analogHelp"] = "Drag to walk. Pull farther to run.",
+            ["controls.arrowsHelp"] = "Hold an arrow to walk. Drag past it to run.",
+            ["controls.walk"] = "Walk", ["controls.run"] = "Run",
+            ["controls.up"] = "Move forward", ["controls.down"] = "Move backward",
+            ["controls.left"] = "Move left", ["controls.right"] = "Move right",
+            ["hud.onlineWaiting"] = "City · -",
+            ["hud.moodWaiting"] = "Market · -", ["hud.needs"] = "Your needs",
+            ["hud.needsToggle"] = "Self-care", ["hud.needsGood"] = "Feeling good",
+            ["hud.needsLow"] = "{0} · {1}", ["hud.needsShow"] = "Show your needs", ["hud.needsHide"] = "Hide your needs",
+            ["hud.chat"] = "Chat", ["hud.emote"] = "Emotes", ["hud.micOff"] = "Mic off", ["hud.micOn"] = "Mic on",
+            ["hud.voiceUnavailable"] = "Voice off", ["hud.voiceError"] = "Voice is temporarily unavailable.",
+            ["hud.voiceHere"] = "Voice isn't available here yet.", ["hud.map"] = "Explore", ["hud.phone"] = "Phone",
+            // Context interactions (character-feel): verbs on the CTA, then what the player can do while engaged.
+            ["interact.sit"] = "Sit", ["interact.sitBench"] = "Sit on the bench", ["interact.sitSofa"] = "Sit on the sofa",
+            ["interact.sitStage"] = "Take a stage seat", ["interact.terminal"] = "Use terminal", ["interact.mic"] = "Take the mic",
+            ["interact.counter"] = "Lean on the counter", ["interact.door"] = "Leave", ["interact.use"] = "Use",
+            ["interact.cancel"] = "Cancel", ["interact.stand"] = "Stand up", ["interact.stepAway"] = "Step away",
+            ["interact.wave"] = "Wave", ["interact.hype"] = "Hype the room",
+            ["interact.cantReach"] = "Can't get there from here.", ["interact.noResponse"] = "The room didn't answer. Try again.",
+            ["hud.chatPrompt"] = "Say something to the room", ["hud.say"] = "Say it", ["hud.wait"] = "Give it {0:0.0}s, then try again.",
+            ["hud.emotesTitle"] = "A whole mood", ["hud.emotesEmpty"] = "Your emotes are on their way.",
+            ["phone.title"] = "Phone", ["phone.eyebrow"] = "Your city",
+            ["phone.greeting"] = "gm, {0}", ["phone.greetingDefault"] = "gm, neighbour",
+            ["phone.subtitle"] = "Make a move. Find your people.", ["phone.apps"] = "Your apps",
+            ["phone.later"] = "On the way", ["phone.soon"] = "{0} is coming to the city soon.",
+            ["phone.unavailable"] = "{0} is taking a breather. Try again soon.",
+            ["phone.error"] = "This app couldn't open. Head back and try again.",
+            ["phone.home"] = "Your apps", ["phone.close"] = "Put phone away",
+            ["map.title"] = "Where to next?", ["map.eyebrow"] = "EXPLORE CT CITY",
+            ["map.body"] = "Good company, bad takes, and a few new beginnings.",
+            ["map.openCount"] = "{0} places to drop into", ["map.openCountOne"] = "1 place to drop into", ["map.open"] = "Drop in", ["map.club"] = "Club",
+            ["map.closed"] = "Opening soon", ["map.empty"] = "The city map is loading. Try again in a moment.",
+            ["district.timeline"] = "The conversation starts here.",
+            ["district.trenches"] = "Big conviction. Bigger plot twists.",
+            ["district.builder_hills"] = "Make something worth talking about.",
+            ["district.airdrop_farm"] = "A little patience. A little possibility.",
+            ["district.dubai_marina"] = "Dress up. Dream big. Stay awhile.",
+            ["lottery.eyebrow"] = "EVERY STORY STARTS SOMEWHERE",
+            ["lottery.title"] = "Your origin story",
+            ["lottery.body"] = "Where you start is luck. Where you go is yours.",
+            ["lottery.insider"] = "Insider Baby",
+            ["lottery.exit"] = "Exit Liquidity Baby",
+            ["lottery.seeker"] = "Seeker Baby",
+            // Onboarding (first-time flow, redesign 2026-10-08: docs/progress/onboarding-ui.md). Short, second person, live CT
+            // terms only (docs/research/ct-now-2026-10.md); button copy in caps without punctuation. The character speaks in
+            // the first person (ob.say.*).
+            ["ob.next"] = "NEXT", ["ob.done"] = "DONE", ["ob.saving"] = "SAVING…",
+            ["ob.lottery.cta"] = "DISCOVER MY BEGINNING", ["ob.lottery.retry"] = "TRY AGAIN", ["ob.lottery.next"] = "MAKE MY CHARACTER",
+            ["ob.lottery.drawing"] = "Shuffling your fate…", ["ob.lottery.slow"] = "Still rolling. Hang on.",
+            ["ob.lottery.odds"] = "{0}% chance",
+            ["ob.lottery.ribbon"] = "{0} · {1}%",
+            ["ob.lottery.rarity.insider"] = "RARE", ["ob.lottery.rarity.exit"] = "COMMON", ["ob.lottery.rarity.seeker"] = "SEEKER ONLY",
+            ["ob.lottery.stat.cash"] = "STARTING CASH", ["ob.lottery.stat.home"] = "HOME", ["ob.lottery.stat.debt"] = "TO PAY BACK",
+            ["ob.lottery.cash"] = "{0} Cash", ["ob.lottery.home"] = "Home: {0}", ["ob.lottery.debt"] = "{0} to pay back",
+            ["ob.lottery.note"] = "Cash is game money. It can't be withdrawn.",
+            ["ob.lottery.insider.line"] = "Born on the right side of the group chat.",
+            ["ob.lottery.seeker.line"] = "Born with the right phone in hand.",
+            ["ob.lottery.exit.line"] = "Cooked on day one. Not your fault.",
+            ["ob.lottery.exit.line2"] = "Everyone gets a comeback arc. Yours starts now.",
+            ["ob.look.title"] = "Pick your character", ["ob.look.sub"] = "Tap one to try it on.",
+            ["ob.look.count"] = "{0} of {1}", ["ob.look.full"] = "FULL BODY", ["ob.look.face"] = "FACE", ["ob.look.drag"] = "Drag to turn",
+            ["ob.look.previewTag"] = "PREVIEW ONLY",
+            ["ob.tribe.title"] = "Find your people", ["ob.tribe.sub"] = "One tribe. One perk.",
+            ["ob.traits.title"] = "Pick two traits", ["ob.traits.sub"] = "Your habits. They change how you play.",
+            ["ob.dream.title"] = "What's the dream?", ["ob.dream.sub"] = "Where you're headed.",
+            ["ob.name.title"] = "What does CT call you?", ["ob.name.sub"] = "Make it one they remember.",
+            ["ob.name.placeholder"] = "Your alias", ["ob.name.done"] = "DONE",
+            ["ob.name.rule"] = "3–20 characters", ["ob.name.short"] = "At least 3 characters", ["ob.name.ok"] = "Looks good",
+            ["ob.confirm.title"] = "Meet {0}", ["ob.confirm.sub"] = "Tap anything to change it.",
+            ["ob.confirm.age"] = "I'm 18 or older", ["ob.card.band"] = "CT LIFE · PLAYER CARD",
+            ["ob.custom.title"] = "Make it yours", ["ob.custom.sub"] = "Pick a category, then a style.",
+            ["ob.custom.empty"] = "Nothing to change here yet.", ["ob.say.custom"] = "Let's switch it up.",
+            ["ob.cat.character"] = "Character", ["ob.cat.skintone"] = "Skin tone", ["ob.cat.hair"] = "Hair",
+            ["ob.cat.haircolor"] = "Hair colour", ["ob.cat.top"] = "Top", ["ob.cat.bottom"] = "Bottom", ["ob.cat.shoes"] = "Shoes",
+            ["ob.cat.accessories"] = "Accessories", ["ob.cat.colors"] = "Colours",
+            ["ob.confirm.cta"] = "START MY STORY", ["ob.confirm.note"] = "Cash is game money. It can't be withdrawn.",
+            ["ob.preview.finish"] = "FINISH PREVIEW", ["ob.preview.done"] = "PREVIEW DONE",
+            ["ob.sum.origin"] = "ORIGIN", ["ob.sum.look"] = "LOOK", ["ob.sum.tribe"] = "TRIBE", ["ob.sum.traits"] = "TRAITS",
+            ["ob.sum.dream"] = "DREAM", ["ob.sum.name"] = "NAME",
+            ["ob.hint.tribe"] = "Pick a tribe", ["ob.hint.traits2"] = "Pick 2 traits", ["ob.hint.traits1"] = "Pick 1 more",
+            ["ob.hint.dream"] = "Pick a dream", ["ob.hint.name"] = "Name needs 3+ characters", ["ob.hint.age"] = "Confirm you're 18+",
+            ["ob.celebrate.title"] = "Welcome to CT, {0}!", ["ob.celebrate.sub"] = "gm. The timeline is waiting.",
+            ["ob.celebrate.cta"] = "ENTER THE CITY",
+            // Trait display names (ids are the contract: iron_will, sleuth stay). Plain words, no invented jargon.
+            ["ob.trait.fast_talker"] = "Fast Talker", ["ob.trait.deep_pockets"] = "Deep Pockets", ["ob.trait.iron_will"] = "Diamond Hands",
+            ["ob.trait.early_bird"] = "Early Bird", ["ob.trait.sleuth"] = "Tipster", ["ob.trait.rug_veteran"] = "Rug Veteran",
+            ["ob.say.look"] = "gm. Which fit is me?",
+            ["ob.say.lookPick.0"] = "Fresh fit.", ["ob.say.lookPick.1"] = "Clean.", ["ob.say.lookPick.2"] = "Okay, I see me.",
+            ["ob.say.tribe"] = "Who are my people?", ["ob.say.tribePick"] = "My people.",
+            ["ob.tribe.say.trencher"] = "Living in the trenches.", ["ob.tribe.say.perp_degen"] = "Max long, no fear.",
+            ["ob.tribe.say.prediction_shark"] = "I already know the outcome.", ["ob.tribe.say.airdrop_farmer"] = "Points are my love language.",
+            ["ob.tribe.say.caller"] = "Drop the CA. I bring the vibes.", ["ob.tribe.say.builder"] = "Shipping while you scroll.",
+            ["ob.tribe.say.anon"] = "You never saw me.",
+            ["ob.say.traits"] = "Two habits. Choose wisely.", ["ob.say.traitOne"] = "One more.", ["ob.say.traitTwo"] = "That tracks.",
+            ["ob.say.traitSwap"] = "Only two. Swapped one out.",
+            ["ob.say.dream"] = "Where am I headed?", ["ob.say.dreamPick"] = "That's the dream.",
+            ["ob.say.name"] = "What does CT call me?", ["ob.say.nameOk"] = "{0}. Has a ring to it.",
+            ["ob.say.confirm"] = "This is me. Let's go.", ["ob.say.error"] = "That didn't land. Try again?",
+            ["ob.say.celebrate"] = "We're so back.",
+            // Home / lobby (redesign 2026-10-09: docs/progress/home-ui.md). Short, CT-native, live terms only; the character
+            // speaks in the first person (home.say.*).
+            ["home.greet"] = "gm, {0}.", ["home.greet.first"] = "Welcome to CT, {0}.",
+            ["home.sub.first"] = "First move: step into the city.", ["home.sub.noMood"] = "The city's waking up.",
+            ["home.sub.up"] = "Market {0} today. We're so back.", ["home.sub.down"] = "Market {0} today. It's so over. Or is it?",
+            ["home.sub.flat"] = "Market {0} today. Quiet. Good day to build.",
+            ["home.cash"] = "CASH", ["home.debt"] = "TO PAY BACK", ["home.energy"] = "ENERGY", ["home.sanity"] = "SANITY",
+            ["home.explain.cash"] = "Game Cash", ["home.explain.cashBody"] = "Spend it in the city. It's game money and can't be withdrawn.",
+            ["home.explain.debt"] = "Your starting debt", ["home.explain.debtBody"] = "{0} left to pay back.",
+            ["home.explain.debtWeekly"] = "{0} is due each week.",
+            ["home.explain.energy"] = "Energy", ["home.explain.energyBody"] = "{0}/100. It drains as you play. Sleep to refill it.",
+            ["home.explain.sanity"] = "Sanity", ["home.explain.sanityBody"] = "{0}/100. The timeline wears it down. Touch grass to get it back.",
+            ["home.explain.market"] = "Market Mood", ["home.explain.marketBody"] = "{0} in the last 24h. The city moves with it.",
+            ["home.action.bank"] = "OPEN BANK", ["home.action.home"] = "OPEN HOME",
+            ["home.dream"] = "THE DREAM", ["home.home"] = "HOME", ["home.dream.of"] = "{0} of {1}",
+            ["home.today.market"] = "MARKET", ["home.today.clue"] = "TODAY'S CLUE", ["home.today.offline"] = "OFFLINE",
+            ["home.today.offlineValue"] = "Reconnecting…",
+            ["home.error.travel"] = "Couldn't reach the city. Check your signal and try again.",
+            ["home.say.first"] = "gm! First day. Let's go.", ["home.say.back"] = "gm. Missed me?",
+            ["home.say.up"] = "We're so back.", ["home.say.down"] = "It's so over. Or is it?",
+            ["home.say.tired"] = "I'm cooked. Need sleep.", ["home.say.stressed"] = "Too much timeline. Need some grass.",
+            ["home.say.error"] = "Signal's cooked. Try again?",
+            ["home.say.tap.0"] = "Let's get it.", ["home.say.tap.1"] = "City's waiting.", ["home.say.tap.2"] = "Still here? Same.",
+            // Creator look names for the cast looks (player-facing; the catalog's labels are authoring notes).
+            ["cast.player_m_trencher"] = "Trencher", ["cast.player_f_trencher"] = "Trencher",
+            ["cast.player_m_perp"] = "Perp Degen", ["cast.player_f_perp"] = "Perp Degen",
+            ["cast.player_m_shark"] = "Prediction Shark", ["cast.player_f_shark"] = "Prediction Shark",
+            ["cast.player_m_farmer"] = "Airdrop Farmer", ["cast.player_f_farmer"] = "Airdrop Farmer",
+            ["cast.player_m_kol"] = "Caller", ["cast.player_f_kol"] = "Caller",
+            ["cast.player_m_builder"] = "Builder", ["cast.player_f_builder"] = "Builder",
+            ["cast.player_m_anon"] = "Anon", ["cast.player_f_anon"] = "Anon",
+            ["cast.player_m_tradfi"] = "TradFi Suit", ["cast.player_m_coat"] = "Camel Coat", ["cast.player_f_coat"] = "Red Coat",
+            ["cast.player_m_skr"] = ".skr Tee", ["cast.player_f_blazer"] = "Blazer",
+            ["cast.player_m_lagos_kaftan"] = "Kaftan & Fila", ["cast.player_f_lagos_ankara"] = "Ankara & Gele",
+            ["cast.player_f_lagos_kaftan"] = "Ankara Kaftan",
+            ["app.map"] = "Map", ["app.bank"] = "Bank", ["app.richlist"] = "Rich List", ["app.home"] = "Home",
+            ["app.profile"] = "Profile", ["app.settings"] = "Settings", ["app.jobs"] = "Jobs",
+            ["bank.title"] = "A little room to dream", ["bank.balance"] = "YOUR CASH",
+            ["bank.debt"] = "To pay back: {0}\n$120 is repaid each week.", ["bank.noDebt"] = "No debt. A fresh start.",
+            ["bank.note"] = "Cash stays in CT Life. It can't be withdrawn.", ["bank.topup"] = "Cash top-ups are coming soon.",
+            ["rich.title"] = "The city is watching", ["rich.netWorth"] = "Net worth", ["rich.weekly"] = "This week's PnL",
+            ["rich.you"] = "Your place: #{0} · {1}", ["rich.empty"] = "A fresh leaderboard. Your story belongs here.",
+            ["home.title"] = "A moment for yourself", ["home.fallback"] = "Your place", ["home.done"] = "That's better.",
+            ["home.eat"] = "Grab a bite", ["home.sleep"] = "Get some rest", ["home.shower"] = "Freshen up", ["home.touch_grass"] = "Touch grass",
+            ["profile.wallet"] = "Wallet · {0}", ["profile.miner"] = "Miner tier · {0}", ["profile.skills"] = "What you're good at",
+            ["settings.master"] = "Master volume", ["settings.music"] = "Music", ["settings.sound"] = "Sound effects",
+            ["settings.voice"] = "Voices", ["settings.ambience"] = "Ambience", ["settings.signout"] = "Sign out",
+            ["settings.version"] = "CT Life {0}", ["settings.note"] = "Set the mood. Make the city your own.",
+            ["busy.title"] = "A full house", ["busy.body"] = "The city is busy. We'll keep trying for you.",
+            ["busy.retry"] = "Trying again in {0}s", ["busy.retrying"] = "Trying again…",
+            ["profile.npc"] = "CITY LOCAL", ["profile.player"] = "Player", ["profile.block"] = "Block", ["profile.report"] = "Report",
+            ["profile.blocked"] = "Player blocked.", ["profile.reportTitle"] = "Report {0}",
+            ["profile.reportWhy"] = "What happened?", ["profile.reportThanks"] = "Report sent. Thanks for letting us know.",
+            ["profile.netWorth"] = "{0} · Net worth {1}", ["profile.dropWallet"] = "Drop wallet",
+            ["profile.hire"] = "Hire for a project", ["profile.hireCopied"] = "Player id copied. Paste it into a project's Hire form.",
+            ["profile.giveaway"] = "“Like, RT, drop your wallets, join my TG”",
+            ["report.spam"] = "Spam", ["report.scam"] = "Scam", ["report.harassment"] = "Harassment",
+            ["report.impersonation"] = "Impersonation", ["report.nsfw"] = "Sexual or graphic content",
+            ["report.target.user"] = "player", ["report.target.message"] = "message", ["report.target.space"] = "Space",
+            ["report.target.call"] = "call", ["report.target.post"] = "post", ["report.target.ad"] = "advert",
+            ["report.target.other"] = "content", ["report.other"] = "Other concern",
+            ["rekt.title"] = "REKT", ["rekt.body"] = "Liquidated. It's so over.", ["rekt.coin"] = "Coin {0}",
+            ["rekt.share"] = "Share · soon", ["rekt.shareUnavailable"] = "Card sharing isn't available yet.",
+            ["rekt.dismiss"] = "We're so back",
+        };
+
+        public static string T(string key) => Copy.TryGetValue(key, out var text) ? text : key;
+        public static string F(string key, params object[] args) => string.Format(CultureInfo.CurrentCulture, T(key), args);
+        public static string ReadableId(string id) => string.IsNullOrEmpty(id) ? "-" : CultureInfo.CurrentCulture.TextInfo.ToTitleCase(id.Replace('_', ' '));
+        public static string DistrictDetail(string id) => Copy.TryGetValue("district." + id, out var text) ? text : "";
+        public static string ReportReason(string id, string configuredName) => Copy.TryGetValue("report." + id, out var text)
+            ? text : !string.IsNullOrEmpty(configuredName) && configuredName != id ? configuredName : T("report.other");
+        public static string ReportTarget(string id) => Copy.TryGetValue("report.target." + id, out var text) ? text : T("report.target.other");
+
+        private static readonly Dictionary<string, string> ItemNames = new Dictionary<string, string>
+        {
+            ["top_hoodie_black"] = "Black hoodie", ["top_hoodie_white"] = "White hoodie", ["top_suit_black"] = "Black suit",
+            ["acc_hard_hat"] = "Hard hat", ["acc_aviators"] = "Aviator shades",
+            ["hair_mohawk_pink"] = "Pink mohawk", ["hair_villa_blonde"] = "Blonde hair", ["head_skull_visor"] = "Skull visor",
+            ["bottom_jeans_indigo"] = "Indigo jeans", ["bottom_cargo_olive"] = "Olive cargos",
+            ["shoes_sneakers_white"] = "White sneakers", ["shoes_boots_black"] = "Black boots",
+        };
+
+        public static string ItemName(string id, string configuredName = null)
+        {
+            if (!string.IsNullOrEmpty(configuredName) && configuredName != id) return configuredName;
+            if (!string.IsNullOrEmpty(id) && ItemNames.TryGetValue(id, out var name)) return name;
+            int separator = id?.IndexOf('_') ?? -1;
+            return ReadableId(separator >= 0 ? id.Substring(separator + 1) : id);
+        }
+
+        private static readonly Dictionary<string, string> Toasts = new Dictionary<string, string>
+        {
+            ["toast_drained"] = "You got drained. -{amountCents}. Never drop your wallet.",
+            ["toast_payment_confirmed"] = "Payment confirmed: +{cashCents} Cash",
+            ["toast_promoted"] = "Promoted! {careerId} level {level}",
+            ["toast_shift_paid"] = "Shift paid: +{payCents} · +{xp} XP",
+            ["toast_rent_paid"] = "Rent paid: {rentCents}",
+            ["toast_rent_missed"] = "Rent missed: {rentCents}. Landlord is not amused.",
+            ["toast_debt_payment"] = "Debt payment {amountCents}. {remainingCents} to go.",
+            ["toast_debt_missed"] = "Debt payment missed. Penalty {penaltyCents}.",
+            ["toast_tax_paid"] = "Taxes paid: {taxCents}",
+            ["toast_tip_received"] = "{fromAlias} tipped you {cashCents}",
+            ["toast_needs_low"] = "Your {needId} is low ({value})",
+            ["toast_spot_taken"] = "Someone is already there",
+            ["toast_space_promoted"] = "You're a speaker now",
+            ["toast_ad_approved"] = "Your ad on {slotId} is live",
+            ["toast_ad_rejected"] = "Your ad on {slotId} was rejected",
+        };
+
+        private static readonly Dictionary<string, string> Errors = new Dictionary<string, string>
+        {
+            ["NETWORK_ERROR"] = "No connection. Check your network and try again.",
+            ["INSUFFICIENT_CASH"] = "Not enough Cash.",
+            ["ALIAS_TAKEN"] = "That alias is taken.",
+            ["ALREADY_ROLLED"] = "You were already born. No re-rolls.",
+            ["NONCE_INVALID"] = "Sign-in expired. Try again.",
+            ["SIGNATURE_INVALID"] = "The wallet signature didn't check out. Try again.",
+            ["TOKEN_EXPIRED"] = "Session expired. Sign in again.",
+            ["SGT_ALREADY_LINKED"] = "This Seeker is already linked to another account.",
+            ["CLIENT_OUTDATED"] = "Update required.",
+            ["RATE_LIMITED"] = "Slow down a little.",
+            ["VENUE_FULL"] = "This venue is full. Try again in a moment.",
+            ["SPOT_TAKEN"] = "Someone is already there.",
+            ["BLOCKED"] = "You can't interact with this player.",
+            ["SHIFT_NOT_FINISHED"] = "Shift isn't over yet.",
+            ["LEVERAGE_NOT_ALLOWED"] = "Your Trading skill doesn't allow that leverage yet.",
+            ["SLIPPAGE_EXCEEDED"] = "Price moved too much. Try again.",
+            ["TOPUP_CAP_REACHED"] = "Daily top-up cap reached.",
+        };
+
+        public static string Toast(string id, IReadOnlyDictionary<string, string> p)
+        {
+            if (string.IsNullOrEmpty(id)) return "";
+            if (!Toasts.TryGetValue(id, out var t) && CTLife.Core.Services.TryGet<ConfigStore>(out var cfg) &&
+                cfg.Registries.ToastTextIds.TryGetValue(id, out var mapped))
+                Toasts.TryGetValue(mapped, out t);
+            if (t == null)
+            {
+                Log.UnknownId("toasts", id);
+                return id;
+            }
+            if (p == null) return t;
+            foreach (var kv in p)
+            {
+                var v = kv.Value ?? "";
+                if (kv.Key.EndsWith("Cents") && Money.TryParseCents(v, out var cents)) v = Money.Cash(cents);
+                t = t.Replace("{" + kv.Key + "}", v);
+            }
+            return t;
+        }
+
+        public static string Error(string code, string serverMessage = null)
+        {
+            if (code != null && Errors.TryGetValue(code, out var m)) return m;
+            return T("common.error");
+        }
+
+        public static string NeedName(string needId) => needId switch
+        {
+            "energy" => "Energy",
+            "hunger" => "Hunger",
+            "fun" => "Fun",
+            "hygiene" => "Hygiene",
+            "sanity" => "Sanity",
+            _ => needId,
+        };
+    }
+}
