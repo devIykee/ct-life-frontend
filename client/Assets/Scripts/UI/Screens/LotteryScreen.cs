@@ -20,19 +20,28 @@ namespace CTLife.UI
     /// 0.07 → 0.35 s curve, minimum 2.2 s, waits for the server), the winner flips; Insider/Seeker get a coin burst and the moon
     /// horn, Exit Liquidity gets a soft "bonk", a muted shower and a second, supportive line. Then the result (Cash, home,
     /// debt) and the CTA into the creator. No guide character: the cards carry the moment.
+    ///
+    /// Round 3 (user review 2026-10-10, trading-card references): the face-down cards carry a rarity ribbon (RARE · 20%,
+    /// COMMON · 80%); the winner flips, comes to the centre and unfolds into a landscape origin card: the painted art in a
+    /// window on the left, rarity, name, the story line and a stat band (starting Cash, home, debt) on the card itself.
     /// </summary>
     public sealed class LotteryScreen : UiScreen
     {
-        private const float CardW = 400f, CardH = 550f, CardGap = 84f, SeekerCardW = 330f;
+        private const float CardW = 440f, CardH = 605f, CardGap = 96f, SeekerCardW = 360f;
+        // The table spans the content; face-down cards sit right of the intro copy, the unfolded card is centred.
+        private const float DrawShiftX = 440f, WideW = 1880f, WideH = 660f, WideTop = -8f, WidePad = 22f, WideBorder = 10f;
+        private static readonly Color WideBody = new Color32(42, 15, 50, 255);
 
         private readonly Func<Task<PostLotteryRoll200Response>> _roll;
         private readonly Action<PostLotteryRoll200Response> _onDone;
         private readonly bool _isSeeker;
         private readonly List<Card> _cards = new List<Card>();
         private OnboardingFrame _frame;
-        private VisualElement _table, _intro, _result, _debtTag;
-        private Label _eyebrow, _title, _line, _line2, _resultName, _cash, _home, _debt, _error, _note;
+        private VisualElement _table, _intro;
+        private Label _eyebrow, _title, _line, _error, _note;
         private PostLotteryRoll200Response _rollResult;
+        private Card _shown;
+        private float _drawShift = DrawShiftX;
         private IVisualElementScheduledItem _idle;
         private bool _rolling, _rollDone, _revealed;
         private float _idleStart;
@@ -40,9 +49,10 @@ namespace CTLife.UI
         private sealed class Card
         {
             public string id;
-            public VisualElement root, glow, art, fallback;
-            public Label odds;
+            public VisualElement root, glow, art, fallback, ribbon, info, stats, debtCell;
+            public Label odds, rarity, chance, name, line, cash, home, debt;
             public float homeX;
+            public bool wide;
         }
 
         public LotteryScreen(bool isSeeker, Func<Task<PostLotteryRoll200Response>> roll, Action<PostLotteryRoll200Response> onDone)
@@ -71,19 +81,10 @@ namespace CTLife.UI
             _line = El.Text(Strings.T("lottery.body"), "ob-line");
             _intro = El.Div("ob-lottery-intro", _eyebrow, _title, _line);
 
-            _resultName = El.Text("", "ob-result-name");
-            _cash = El.Text("", "ob-result-cash");
-            _home = El.Text("", "ob-result-home");
-            _debt = El.Text("", "ob-debt-text");
-            _debtTag = El.Div("ob-debt-tag", _debt);
-            _line2 = El.Text("", "ob-line ob-line--second");
-            _result = El.Div("ob-lottery-result", _resultName, _cash, _home, _debtTag, _line2);
-            _result.style.display = DisplayStyle.None;
-
             _error = El.Text("", "ob-error");
             _error.style.display = DisplayStyle.None;
             _note = El.Text(Strings.T("ob.lottery.note"), "ob-note");
-            var left = El.Div("ob-lottery-left", _intro, _result, _error);
+            var left = El.Div("ob-lottery-left", _intro, _error);
             left.pickingMode = PickingMode.Ignore;
 
             _table = El.Div("ob-lottery-table");
@@ -92,11 +93,12 @@ namespace CTLife.UI
             Dictionary<string, int> odds = null;
             if (Services.TryGet<ConfigStore>(out var config)) odds = LotteryModel.Odds(config.Config("lottery"), ids);
             float w = ids.Count > 2 ? SeekerCardW : CardW;
+            _drawShift = ids.Count > 2 ? DrawShiftX - 70f : DrawShiftX; // three cards: keep the right card off the screen edge
             float total = ids.Count * w + (ids.Count - 1) * CardGap;
             for (int i = 0; i < ids.Count; i++)
             {
                 var card = MakeCard(ids[i], w, odds);
-                card.homeX = -total / 2f + i * (w + CardGap);
+                card.homeX = _drawShift - total / 2f + i * (w + CardGap);
                 card.root.style.left = new Length(50f, LengthUnit.Percent);
                 card.root.style.marginLeft = card.homeX;
                 _cards.Add(card);
@@ -124,14 +126,101 @@ namespace CTLife.UI
             c.fallback = El.Text(Strings.T(LotteryModel.NameKey(id)), "ob-card-fallback");
             c.fallback.style.display = DisplayStyle.None;
             c.art.Add(c.fallback);
-            c.odds = El.Text(odds != null && odds.TryGetValue(id, out var pct) ? Strings.F("ob.lottery.odds", pct) : "", "ob-card-odds");
-            c.odds.style.display = string.IsNullOrEmpty(c.odds.text) ? DisplayStyle.None : DisplayStyle.Flex;
-            c.root = El.Div("ob-card", c.glow, c.art, c.odds);
+            int pct = -1;
+            if (odds != null && odds.TryGetValue(id, out var p)) pct = p;
+            string rarity = Strings.T(RarityKey(id));
+            c.odds = El.Text(pct >= 0 ? Strings.F("ob.lottery.ribbon", rarity, pct) : rarity, "ob-card-odds");
+            c.ribbon = El.Div("ob-card-ribbon", c.odds);
+            c.ribbon.pickingMode = PickingMode.Ignore;
+            c.info = BuildInfo(c, id, rarity, pct);
+            c.info.style.display = DisplayStyle.None;
+            c.root = El.Div("ob-card " + RarityClass(id), c.glow, c.art, c.info, c.ribbon);
             c.root.name = "card_" + id;
             c.root.style.width = width;
             c.root.style.height = width * CardH / CardW;
             El.PassThrough(c.root);
             return c;
+        }
+
+        private static string RarityKey(string id) =>
+            id == LotteryModel.Insider ? "ob.lottery.rarity.insider" : id == LotteryModel.Seeker ? "ob.lottery.rarity.seeker" : "ob.lottery.rarity.exit";
+
+        private static string RarityClass(string id) =>
+            id == LotteryModel.Insider ? "ob-card--rare" : id == LotteryModel.Seeker ? "ob-card--seeker" : "ob-card--common";
+
+        /// <summary>The right half of the unfolded origin card: rarity and odds, the name, the story line, the stat band.</summary>
+        private static VisualElement BuildInfo(Card c, string id, string rarity, int pct)
+        {
+            c.rarity = El.Text(rarity, "ob-origin-rarity");
+            c.chance = El.Text(pct >= 0 ? Strings.F("ob.lottery.odds", pct) : "", "ob-origin-chance");
+            var top = El.Div("ob-origin-top", c.rarity, c.chance);
+            c.name = El.Text(Strings.T(LotteryModel.NameKey(id)), "ob-origin-name");
+            c.line = El.Text("", "ob-origin-line");
+            c.cash = El.Text("", "ob-origin-value ob-origin-value--cash");
+            c.home = El.Text("", "ob-origin-value ob-origin-value--home");
+            c.debt = El.Text("", "ob-origin-value ob-origin-value--debt");
+            var cashCell = El.Div("ob-origin-stat", El.Text(Strings.T("ob.lottery.stat.cash"), "ob-origin-label"), c.cash);
+            var homeCell = El.Div("ob-origin-stat ob-origin-stat--sep", El.Text(Strings.T("ob.lottery.stat.home"), "ob-origin-label"), c.home);
+            c.debtCell = El.Div("ob-origin-stat ob-origin-stat--sep", El.Text(Strings.T("ob.lottery.stat.debt"), "ob-origin-label"), c.debt);
+            c.stats = El.Div("ob-origin-stats", cashCell, homeCell, c.debtCell);
+            var info = El.Div("ob-origin-info", El.Div("ob-origin-head", top, c.name, c.line), c.stats);
+            info.pickingMode = PickingMode.Ignore;
+            return info;
+        }
+
+        private static float WideArtWidth() => (WideH - 2f * (WidePad + WideBorder)) * CardW / CardH;
+
+        /// <summary>One frame of the unfold, t 0 → 1: the face-up card grows into the landscape origin card.</summary>
+        private static void SetWide(Card c, float t, float w0, float h0, float top0, float ml0, float s0)
+        {
+            float w = Mathf.Lerp(w0, WideW, t), h = Mathf.Lerp(h0, WideH, t);
+            c.root.style.width = w;
+            c.root.style.height = h;
+            c.root.style.marginLeft = Mathf.Lerp(ml0, -WideW / 2f, t);
+            c.root.style.top = Mathf.Lerp(top0, WideTop, t);
+            float s = Mathf.Lerp(s0, 1f, t);
+            c.root.style.scale = new Scale(new Vector2(s, s));
+            float pad = WidePad * t, border = WideBorder * t;
+            c.root.style.paddingLeft = pad; c.root.style.paddingRight = pad; c.root.style.paddingTop = pad; c.root.style.paddingBottom = pad;
+            c.root.style.borderLeftWidth = border; c.root.style.borderRightWidth = border;
+            c.root.style.borderTopWidth = border; c.root.style.borderBottomWidth = border;
+            var body = WideBody; body.a = Mathf.Clamp01(t * 4f);
+            c.root.style.backgroundColor = body;
+            c.art.style.width = Mathf.Lerp(w0, WideArtWidth(), t);
+            float info = Mathf.Clamp01((t - 0.72f) / 0.28f); // after the card is wide enough for the name
+            c.info.style.opacity = info;
+            c.info.style.translate = new Translate((1f - info) * 48f, 0f);
+            c.glow.style.opacity = Mathf.Lerp(0.9f, 0f, Mathf.Clamp01(t * 2f));
+        }
+
+        private static void BeginWide(Card c)
+        {
+            c.wide = true;
+            c.root.AddToClassList("ob-card--wide");
+            c.ribbon.style.display = DisplayStyle.None;
+            c.art.style.flexGrow = 0f;
+            c.art.style.flexShrink = 0f;
+            c.info.style.display = DisplayStyle.Flex;
+        }
+
+        /// <summary>The flipped card comes to the centre and unfolds sideways into the landscape origin card.</summary>
+        private async Task Unfold(Card c)
+        {
+            float w0 = c.root.resolvedStyle.width, h0 = c.root.resolvedStyle.height, top0 = c.root.resolvedStyle.top;
+            float ml0 = c.root.style.marginLeft.value.value;
+            float s0 = c.root.resolvedStyle.scale.value.x;
+            BeginWide(c);
+            SetWide(c, 0f, w0, h0, top0, ml0, s0);
+            Kit.Cues.Play(Kit.Cues.SfxSelect, 0.5f);
+            await Tween.Run(_table, 0.5f, t => SetWide(c, t, w0, h0, top0, ml0, s0), Ease.OutCubic).Completion;
+        }
+
+        /// <summary>The unfolded card without animation (reduced motion, instant results).</summary>
+        private static void MakeWide(Card c)
+        {
+            if (c.wide) return;
+            BeginWide(c);
+            SetWide(c, 1f, CardW, CardH, 14f, -CardW / 2f, 1f);
         }
 
         protected override void OnShown() => OnboardingAudio.StartTheme();
@@ -261,14 +350,14 @@ namespace CTLife.UI
                 {
                     for (int k = 0; k < _cards.Count; k++)
                     {
-                        float target = (k - (_cards.Count - 1) / 2f) * 18f - w / 2f;
+                        float target = _drawShift + (k - (_cards.Count - 1) / 2f) * 18f - w / 2f;
                         _cards[k].root.style.marginLeft = Mathf.Lerp(starts[k], target, t);
                         _cards[k].root.style.rotate = new Rotate(new Angle((k - 1) * 6f * t));
                     }
                 }, Ease.InCubic).Completion;
                 // Deal each card to another card's slot; two passes read as a shuffle.
                 var order = Enumerable.Range(0, _cards.Count).Select(k => (k + 1 + pass) % _cards.Count).ToArray();
-                var gathered = _cards.Select((c, k) => (k - (_cards.Count - 1) / 2f) * 18f - w / 2f).ToArray();
+                var gathered = _cards.Select((c, k) => _drawShift + (k - (_cards.Count - 1) / 2f) * 18f - w / 2f).ToArray();
                 await Tween.Run(_table, 0.26f, t =>
                 {
                     for (int k = 0; k < _cards.Count; k++)
@@ -302,7 +391,7 @@ namespace CTLife.UI
                 foreach (var c in losers) c.root.style.display = DisplayStyle.None;
                 winner.odds.style.display = DisplayStyle.None;
                 SetFront(winner, front, id);
-                winner.root.style.marginLeft = -winner.root.resolvedStyle.width / 2f;
+                MakeWide(winner);
                 Kit.Motion.Fade(winner.root, 0f, 1f, 0.2f);
                 Kit.Cues.Play(Kit.Cues.Origin(id));
                 if (good) DeviceFeel.Confirm(); else DeviceFeel.Reject();
@@ -345,6 +434,12 @@ namespace CTLife.UI
                 winner.art.style.unityBackgroundImageTintColor = Color.Lerp(new Color(0.55f, 0.5f, 0.6f), Color.white, Mathf.Clamp01(t * 1.4f));
             }, Ease.OutBack).Completion;
 
+            await Kit.Motion.Delay(0.12f);
+            FillCard(winner, r, id);
+            Kit.Motion.Fade(_intro, 1f, 0f, 0.18f); // the card unfolds over the copy column
+            await Unfold(winner);
+            if (Element?.panel == null) return;
+
             var centre = CardCentreInBurst(winner);
             Phase?.Invoke("landed");
             if (good)
@@ -377,7 +472,7 @@ namespace CTLife.UI
 
         private Vector2 CardCentreInBurst(Card c)
         {
-            var b = c.root.worldBound;
+            var b = c.art.worldBound;
             var local = _frame.Burst.WorldToLocal(b.center);
             return local;
         }
@@ -404,25 +499,11 @@ namespace CTLife.UI
             _revealed = true;
             _frame.Progress.Set(1);
             _intro.style.display = DisplayStyle.None;
-            _result.style.display = DisplayStyle.Flex;
-            _resultName.text = Strings.T(LotteryModel.NameKey(id));
-            _line2.text = Strings.T("ob.lottery." + (id == LotteryModel.Exit ? "exit" : id) + ".line");
-            string home = "";
-            if (Services.TryGet<ConfigStore>(out var config))
-                home = config.Registries.Homes.FirstOrDefault(h => h.id == r.HomeId)?.name;
-            if (string.IsNullOrEmpty(home)) home = Strings.ReadableId(r.HomeId);
-            _home.text = Strings.F("ob.lottery.home", home);
-            _debt.text = r.DebtCents > 0 ? Strings.F("ob.lottery.debt", LotteryModel.CashWhole(r.DebtCents)) : "";
-            _debtTag.style.display = r.DebtCents > 0 ? DisplayStyle.Flex : DisplayStyle.None;
-            CountUp(r.CashCents, animate);
-            if (animate)
-            {
-                Kit.Motion.Enter(_resultName, -48f, 0f);
-                Kit.Motion.Enter(_cash, -48f, 0f, 0.4f);
-                Kit.Motion.Enter(_home, -48f, 0f, 0.46f);
-                if (r.DebtCents > 0) Kit.Motion.Enter(_debtTag, -48f, 0f, 0.52f);
-                Kit.Motion.Enter(_line2, 0f, 24f, 0.5f);
-            }
+            var c = _cards.FirstOrDefault(x => x.id == id) ?? _cards[0];
+            MakeWide(c);
+            _shown = c;
+            FillCard(c, r, id);
+            CountUp(c.cash, r.CashCents, animate);
             if (id == LotteryModel.Exit)
             {
                 // Spec C1: the debt outcome must not feel like a punishment. A second, supportive line 1.2 s later.
@@ -434,12 +515,27 @@ namespace CTLife.UI
             _frame.Cta.schedule.Execute(() => _frame.ShowCta(true, animate)).StartingIn(animate ? 400 : 0);
         }
 
+        /// <summary>Writes the outcome onto the card (story line, home, debt); Cash shows $0 until it counts up.</summary>
+        private static void FillCard(Card c, PostLotteryRoll200Response r, string id)
+        {
+            c.line.text = Strings.T("ob.lottery." + (id == LotteryModel.Exit ? "exit" : id) + ".line");
+            string home = "";
+            if (Services.TryGet<ConfigStore>(out var config))
+                home = config.Registries.Homes.FirstOrDefault(h => h.id == r.HomeId)?.name;
+            if (string.IsNullOrEmpty(home)) home = Strings.ReadableId(r.HomeId);
+            c.home.text = home;
+            c.debt.text = r.DebtCents > 0 ? LotteryModel.CashWhole(r.DebtCents) : "";
+            c.debtCell.style.display = r.DebtCents > 0 ? DisplayStyle.Flex : DisplayStyle.None;
+            c.cash.text = LotteryModel.CashWhole(0);
+        }
+
         private async Task SecondLine()
         {
             await Kit.Motion.Delay(DeviceFeel.ReducedMotion ? 0f : 1.2f);
             if (Element?.panel == null) return;
-            _line2.text = Strings.T("ob.lottery.exit.line") + "\n" + Strings.T("ob.lottery.exit.line2");
-            Kit.Motion.Pop(_line2, 1.03f, 0.2f);
+            if (_shown == null) return;
+            _shown.line.text = Strings.T("ob.lottery.exit.line") + "\n" + Strings.T("ob.lottery.exit.line2");
+            Kit.Motion.Pop(_shown.line, 1.03f, 0.2f);
             DeviceFeel.Tick();
         }
 
@@ -453,15 +549,15 @@ namespace CTLife.UI
         }
 
         /// <summary>Cash counts up over 600 ms. The labels are built once up front, so the ticks assign, not format.</summary>
-        private void CountUp(long cents, bool animate)
+        private static void CountUp(Label label, long cents, bool animate)
         {
-            string final = Strings.F("ob.lottery.cash", LotteryModel.CashWhole(cents));
-            if (!animate || DeviceFeel.ReducedMotion || cents <= 0) { _cash.text = final; return; }
+            string final = LotteryModel.CashWhole(cents);
+            if (!animate || DeviceFeel.ReducedMotion || cents <= 0) { label.text = final; return; }
             const int steps = 12;
             var labels = new string[steps + 1];
-            for (int i = 0; i < steps; i++) labels[i] = Strings.F("ob.lottery.cash", LotteryModel.CashWhole(cents * i / steps / 100 * 100));
+            for (int i = 0; i < steps; i++) labels[i] = LotteryModel.CashWhole(cents * i / steps / 100 * 100);
             labels[steps] = final;
-            Tween.Run(_cash, 0.6f, t => _cash.text = labels[Mathf.Clamp(Mathf.FloorToInt(t * steps), 0, steps)], Ease.OutCubic);
+            Tween.Run(label, 0.6f, t => label.text = labels[Mathf.Clamp(Mathf.FloorToInt(t * steps), 0, steps)], Ease.OutCubic);
         }
 
 #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD

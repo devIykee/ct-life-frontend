@@ -135,6 +135,10 @@ namespace CTLife.EditorTools
                 {
                     await OnboardingCaptureR2.Run(Shot, Wait, Expect, Step, Receipt);
                 }
+                else if (Set == "lottery")
+                {
+                    await Lottery(); // the origin cards only (fast iteration on the lottery screens)
+                }
                 else if (Set == "home")
                 {
                     await OnboardingCaptureHome.Run(Shot, Wait, Expect, Step);
@@ -272,7 +276,7 @@ namespace CTLife.EditorTools
             await Shot("03-lottery-drawing", 0.1f);
             LogCards(screen.Element);
             await Until(() => phase == "reveal", 12f, "lottery reveal");
-            await Strip("flip-insider", 40, 0.04f, 0.3f);
+            await Strip("flip-insider", 80, 0.04f, 0.3f); // flip + unfold
             LogCards(screen.Element);
             await Until(() => screen.Revealed, 10f, "insider result");
             await Shot("04-lottery-insider-result", 1.4f);
