@@ -28,7 +28,7 @@ namespace CTLife.UI
         }
     }
 
-    /// <summary>Travel (feature #4).</summary>
+    /// <summary>Travel (feature #4). Duo layout: districts as sections, venues as rows with a Go pill (open) or a quiet tag.</summary>
     public sealed class MapApp : PhoneApp
     {
         private readonly Action<string> _travel;
@@ -36,15 +36,62 @@ namespace CTLife.UI
         public override string Id => "map";
         public override string Title => Strings.T("app.map");
         public override string Color => "#20bf6b";
+        public override DuoChrome Chrome => DuoChrome.Plain;
+
+        private static readonly string[] Tints = { "teal", "orange", "indigo", "green", "purple", "pink", "blue" };
 
         public override VisualElement Open()
         {
             var reg = Services.Get<ConfigStore>().Registries;
-            return CityMapScreen.BuildGuide(reg, Phone.CurrentPhase, id =>
+            var page = new DuoPage(Title);
+            page.name = "map-page";
+            page.AddToClassList("duo-map");
+            page.Nav.AddLeft(DuoGlyph.Kind.Back, Strings.T("common.back"), () => Phone?.Back(), "map-back");
+            var available = CityMapScreen.AvailableVenues(reg, Phone.CurrentPhase);
+            int openCount = available.Count;
+            var hero = Duo.Hero(Strings.T("map.eyebrow"), openCount.ToString(System.Globalization.CultureInfo.InvariantCulture), null, null,
+                openCount == 1 ? Strings.T("map.openCountOne") : Strings.F("map.openCount", openCount));
+            hero.name = "map-hero";
+            page.Body.Add(hero);
+            page.Body.Add(El.Text(Strings.T("map.body"), "duo-comp-note"));
+            int d = 0;
+            foreach (var district in reg.Districts)
             {
-                Phone.Close();
-                _travel?.Invoke(id);
-            });
+                var venues = reg.VenueOrder.Where(v => v.districtId == district.Key).ToList();
+                if (venues.Count == 0) continue;
+                string tint = Tints[d++ % Tints.Length];
+                var header = Duo.SectionHeader(district.Value);
+                header.name = "map-district-" + district.Key;
+                page.Body.Add(header);
+                page.Body.Add(El.Text(Strings.DistrictDetail(district.Key), "duo-comp-note duo-map-district-note"));
+                var list = El.Div("duo-list");
+                foreach (var v in venues)
+                {
+                    bool open = available.Contains(v.id);
+                    var id = v.id;
+                    Action go = () => { Phone.Close(); _travel?.Invoke(id); };
+                    var row = new DuoRow(open ? go : null).Leading(Duo.IconSquare(CityMapScreen.DistrictIconFor(district.Key), open ? tint : "gray"))
+                        .Title(v.name, "duo-row-title-strong").Subtitle(Strings.T(open ? (v.isClub ? "map.club" : "map.openRow") : "map.closed"));
+                    row.name = "map-venue-" + v.id;
+                    if (open)
+                    {
+                        var pill = Duo.Pill(Strings.T("map.go"), go, Duo.PillKind.Primary);
+                        pill.name = "map-go-" + v.id;
+                        pill.tooltip = Strings.T("map.open");
+                        row.Trailing(pill);
+                    }
+                    else
+                    {
+                        row.AddToClassList("duo-row-static");
+                        row.Trailing(El.Text(Strings.T("map.soonTag"), "duo-tag"));
+                    }
+                    list.Add(row);
+                }
+                Duo.MarkLast(list);
+                page.Body.Add(list);
+            }
+            if (reg.VenueOrder.Count == 0) page.Body.Add(Duo.Empty(Strings.T("map.empty")));
+            return page;
         }
     }
 
@@ -67,94 +114,131 @@ namespace CTLife.UI
         }
     }
 
-    /// <summary>Net Worth and Weekly PnL boards (feature #11).</summary>
+    /// <summary>
+    /// Net Worth and Weekly PnL boards (feature #11). Duo layout (spec "Rich List / League"): segmented boards, a podium for
+    /// the top three, rank rows with the value trailing, your own line pinned at the bottom in glass. Server ranks only.
+    /// </summary>
     public sealed class RichListApp : PhoneApp
     {
         public override string Id => "richlist";
         public override string Title => Strings.T("app.richlist");
         public override string Color => "#8854d0";
+        public override DuoChrome Chrome => DuoChrome.Plain;
         private int _requestVersion;
+        private DuoPage _page;
+        private VisualElement _list;
 
         public override VisualElement Open()
         {
-            var list = El.Div("ct-col");
-            var tabs = El.Div("ct-app-tabs");
-            var page = AppUi.Page(El.Text(Strings.T("rich.title"), "ct-h1"), tabs, list);
-            void Load(string board)
-            {
-                list.Clear();
-                list.Add(El.Text(Strings.T("common.loading"), "ct-small ct-muted"));
-                foreach (var tab in tabs.Children()) tab.EnableInClassList("ct-chip-on", tab.name == board);
-                Fetch(board, list, ++_requestVersion);
-            }
-            var net = El.Btn(Strings.T("rich.netWorth"), () => Load("net_worth"), "ct-chip");
-            net.name = "net_worth";
-            var weekly = El.Btn(Strings.T("rich.weekly"), () => Load("weekly_pnl"), "ct-chip");
-            weekly.name = "weekly_pnl";
-            tabs.Add(net);
-            tabs.Add(weekly);
+            _page = new DuoPage(Title);
+            _page.name = "richlist-page";
+            _page.AddToClassList("duo-richlist");
+            _page.Nav.AddLeft(DuoGlyph.Kind.Back, Strings.T("common.back"), () => Phone?.Back(), "richlist-back");
+            string[] boards = { "net_worth", "weekly_pnl" };
+            var tabs = new DuoSegmented(new[] { Strings.T("rich.netWorth"), Strings.T("rich.weekly") }, 0, i => Load(boards[i]));
+            tabs.Options[0].name = "net_worth";
+            tabs.Options[1].name = "weekly_pnl";
+            _list = El.Div("duo-richlist-body");
+            _page.Body.Add(El.Div("duo-comp-tabs", tabs));
+            _page.Body.Add(El.Text(Strings.T("rich.title"), "duo-comp-note"));
+            _page.Body.Add(_list);
             Load("net_worth");
-            return page;
+            return _page;
+        }
+
+        private void Load(string board)
+        {
+            _list.Clear();
+            DuoBoard.Unpin(_page);
+            _list.Add(El.Text(Strings.T("common.loading"), "duo-comp-note"));
+            Fetch(board, _list, _page, ++_requestVersion);
         }
 
         public override void Closed() => _requestVersion++;
 
-        private async void Fetch(string board, VisualElement list, int version)
+        private async void Fetch(string board, VisualElement list, DuoPage page, int version)
         {
             try
             {
                 var lb = await Services.Get<Api>().Leaderboard(board);
                 if (version != _requestVersion) return;
                 list.Clear();
-                foreach (var e in lb.Entries ?? new List<BoardEntry>())
-                    list.Add(El.Div("ct-lb-row", El.Text("#" + e.Rank, "ct-lb-rank"), El.Text(e.Alias, "ct-lb-name"), El.Text(Money.Cash(e.Value, true), "ct-lb-value")));
-                if (lb.Entries == null || lb.Entries.Count == 0) list.Add(El.Text(Strings.T("rich.empty"), "ct-body ct-muted"));
-                if (lb.Me != null) list.Add(El.Text(Strings.F("rich.you", lb.Me.Rank, Money.Cash(lb.Me.Value, true)), "ct-body"));
+                bool signed = board == "weekly_pnl";
+                Guid? me = lb.Me?.UserId;
+                var entries = (lb.Entries ?? new List<BoardEntry>())
+                    .Select(e => new DuoRank(e.Rank, e.Alias, e.UserId.ToString(), Money.Cash(e.Value, signed), me.HasValue && e.UserId == me.Value)).ToList();
+                if (entries.Count == 0) list.Add(Duo.Empty(Strings.T("rich.empty")));
+                else list.Add(DuoBoard.Board(entries, "richlist-board"));
+                if (lb.Me != null && lb.Me.Rank > 0)
+                    DuoBoard.PinMe(page, new DuoRank(lb.Me.Rank, lb.Me.Alias, lb.Me.UserId.ToString(), Money.Cash(lb.Me.Value, signed), true), Strings.T("rich.youRow"));
             }
             catch (Exception e)
             {
                 if (version != _requestVersion) return;
                 list.Clear();
-                list.Add(El.Text(AppUi.Err(e), "ct-error"));
+                list.Add(Duo.Notice(AppUi.Err(e), Duo.Tone.Danger));
             }
         }
     }
 
+    /// <summary>Who you are in the city: avatar header, real tags (miner tier, Seeker), wallet, and skills as small bars.</summary>
     public sealed class ProfileApp : PhoneApp
     {
         public override string Id => "profile";
         public override string Title => Strings.T("app.profile");
         public override string Color => "#2d98da";
+        public override DuoChrome Chrome => DuoChrome.Plain;
 
         public override VisualElement Open()
         {
             var p = Services.Get<PlayerProfile>();
             var me = p.Me;
             var reg = Services.Get<ConfigStore>().Registries;
-            var identity = El.Div("ct-account-identity",
-                El.Div("ct-account-avatar", new UiIcon("profile")),
-                El.Div("ct-grow", El.Text(p.Alias, "ct-account-name"),
-                    El.Text(reg.Tribe(me?.Character?.TribeId)?.name ?? "", "ct-account-subtitle")));
-            var badges = El.Div("ct-account-badges",
-                PhonePresentation.Status(Strings.F("profile.miner", Strings.ReadableId(me?.MinerTier.ToString())), PhonePresentation.Tone.Accent));
-            if (me?.User?.IsSeeker == true) badges.Add(PhonePresentation.Status(Strings.T("profile.seeker"), PhonePresentation.Tone.Success));
-            var page = AppUi.Page(El.Div("ct-account-card", identity, badges,
-                El.Text(Strings.F("profile.wallet", Short(me?.User?.Wallet)) + (string.IsNullOrEmpty(me?.User?.SkrName) ? "" : " · " + me.User.SkrName), "ct-account-wallet")));
-            page.AddToClassList("ct-account-page");
+            var page = new DuoPage(Title, largeTitle: false);
+            page.name = "profile-page";
+            page.AddToClassList("duo-profile");
+            page.Nav.AddLeft(DuoGlyph.Kind.Back, Strings.T("common.back"), () => Phone?.Back(), "profile-back");
+
+            var head = El.Div("duo-profile-head", Duo.Avatar(p.Alias, me?.User != null ? me.User.Id.ToString() : p.Alias, "duo-avatar-profile"),
+                El.Text(p.Alias, "duo-profile-name"));
+            var tribe = reg.Tribe(me?.Character?.TribeId)?.name;
+            if (!string.IsNullOrEmpty(tribe)) head.Add(El.Text(tribe, "duo-profile-subtitle"));
+            var tags = El.Div("duo-profile-tags", El.Text(Strings.F("profile.miner", Strings.ReadableId(me?.MinerTier.ToString())), "duo-tag duo-tag-blue"));
+            if (me?.User?.IsSeeker == true) tags.Add(El.Text(Strings.T("profile.seeker"), "duo-tag duo-tag-green"));
+            head.Add(tags);
+            page.Body.Add(head);
+
+            var wallet = new DuoRow().Leading(Duo.IconSquare("wallet", "graphite")).Title(Strings.T("profile.walletRow"))
+                .Value(string.IsNullOrEmpty(me?.User?.Wallet) ? Strings.T("profile.noWallet") : Short(me.User.Wallet));
+            wallet.AddToClassList("duo-row-static");
+            wallet.name = "profile-wallet";
+            var rows = El.Div("duo-list", wallet);
+            if (!string.IsNullOrEmpty(me?.User?.SkrName))
+            {
+                var skr = new DuoRow().Leading(Duo.IconSquare("profile", "purple")).Title(Strings.T("profile.skrName")).Value(me.User.SkrName);
+                skr.AddToClassList("duo-row-static");
+                rows.Add(skr);
+            }
+            Duo.MarkLast(rows);
+            page.Body.Add(rows);
+
             if (me?.Skills != null)
             {
                 var s = me.Skills;
-                page.Add(El.Text(Strings.T("profile.skills"), "ct-h2"));
-                var skills = El.Div("ct-account-card");
+                page.Body.Add(Duo.SectionHeader(Strings.T("profile.skills")));
+                var skills = El.Div("duo-list duo-profile-skills");
+                skills.name = "profile-skills";
                 foreach (var (name, v) in new[] { ("clout", s.Clout), ("coding", s.Coding), ("trading", s.Trading), ("writing", s.Writing), ("design", s.Design), ("security", s.Security) })
                 {
-                    var fill = El.Div("ct-account-skill-fill");
+                    var fill = El.Div("duo-meter-fill");
                     fill.style.width = Length.Percent(UnityEngine.Mathf.Clamp(v, 0, 10) * 10f);
-                    skills.Add(El.Div("ct-account-skill", El.Div("ct-account-skill-heading",
-                        El.Text(Strings.T("profile.skill." + name), "ct-body ct-grow"), El.Text(v + "/10", "ct-account-skill-value")),
-                        El.Div("ct-account-skill-track", fill)));
+                    var row = new DuoRow().Title(Strings.T("profile.skill." + name)).Value(v + "/10");
+                    row.TextColumn.Add(El.Div("duo-meter", fill));
+                    row.AddToClassList("duo-row-static");
+                    skills.Add(row);
                 }
-                page.Add(skills);
+                Duo.MarkLast(skills);
+                page.Body.Add(skills);
             }
             return page;
         }

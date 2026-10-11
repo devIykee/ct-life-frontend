@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System;
 using System.Linq;
 using CTLife.Core;
@@ -36,10 +37,7 @@ namespace CTLife.UI
             // The rc1 registry lists planned venues without scene keys or phases. A listed ID
             // alone must not advertise an empty greybox as a destination. Later streamed venues
             // need a confirmed content-catalog entry before they become available in this guide.
-            var available = reg.VenueOrder.Where(v => v.phase <= phase &&
-                (VenueContent.Has(v.id) ||
-                 (!string.IsNullOrEmpty(v.sceneKey) && Application.CanStreamedLevelBeLoaded(v.sceneKey))))
-                .Select(v => v.id).ToHashSet();
+            var available = AvailableVenues(reg, phase);
             int openCount = available.Count;
             scroll.Add(El.Div("ct-map-intro", El.Text(Strings.T("map.body"), "ct-body ct-muted"),
                 El.Text(openCount == 1 ? Strings.T("map.openCountOne") : Strings.F("map.openCount", openCount), "ct-map-count")));
@@ -69,6 +67,15 @@ namespace CTLife.UI
             if (onClose != null) header.Add(El.IconButton("close", Strings.T("common.close"), onClose, "ct-btn ct-btn-icon ct-btn-ghost"));
             return El.Div("ct-map", header, scroll);
         }
+
+        /// <summary>Venues the player can travel to now: in phase and with content (bundled or a streamable scene).</summary>
+        internal static HashSet<string> AvailableVenues(Registries reg, int phase) =>
+            reg.VenueOrder.Where(v => v.phase <= phase &&
+                (VenueContent.Has(v.id) ||
+                 (!string.IsNullOrEmpty(v.sceneKey) && Application.CanStreamedLevelBeLoaded(v.sceneKey))))
+                .Select(v => v.id).ToHashSet();
+
+        internal static string DistrictIconFor(string id) => DistrictIcon(id);
 
         private static string DistrictIcon(string id) => id switch
         {
