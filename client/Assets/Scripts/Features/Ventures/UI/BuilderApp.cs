@@ -47,11 +47,12 @@ namespace CTLife.Ventures
             private string _fund = "", _hirePlayer = "", _hireRole = ProjectKinds.HireRoles[0], _hireSalary = "", _launchTicker = "";
             private string _note = "";
 
-            public BuilderView(VenturesHub hub) : base(hub)
+            public BuilderView(VenturesHub hub) : base(hub, VStrings.T("builder.title"))
             {
-                Root.Add(VUi.H1(VStrings.T("builder.title")));
-                Root.Add(VUi.Small(VStrings.T("builder.hint")));
-                Root.Add(_body);
+                Page.name = "builder-page";
+                Page.AddToClassList("duo-builder");
+                Body.Add(VUi.Small(VStrings.T("builder.hint")));
+                Body.Add(_body);
                 Hub.HireOffered += OnHireOffer;
                 Hub.ProjectEvented += OnProjectEvent;
                 _launch.Changed += RequestRender;
@@ -96,8 +97,11 @@ namespace CTLife.Ventures
                 if (!Alive) return;
                 _dirty = false;
                 _body.Clear();
+                Page.Title?.Show(_hqId == null);
+                if (_hqId == null) Page.Nav.SetTitle(VStrings.T("builder.title"));
+                else Page.Nav.SetCollapsed(true, instant: true);
                 if (_hqId != null) { RenderHq(); return; }
-                var tabs = PhonePresentation.Segment();
+                var tabs = VUi.ChipRow();
                 void Add(Tab t, string key) => tabs.Add(VUi.Chip(VStrings.T(key), () => { _tab = t; _note = ""; OnTab(t); Render(); }, _tab == t));
                 Add(Tab.Mine, "builder.tab.mine");
                 Add(Tab.Hiring, "builder.tab.hiring");
@@ -134,8 +138,11 @@ namespace CTLife.Ventures
             {
                 if (_listErrors.TryGetValue(scope, out var err)) { _body.Add(ErrorCard(err, "builder.loadFailed", () => LoadList(scope))); return; }
                 if (!_lists.TryGetValue(scope, out var page)) { _body.Add(VUi.Small(VStrings.T("common.loading"))); return; }
-                if (page.Items.Count == 0) _body.Add(VUi.Text(VStrings.T(emptyKey)));
-                foreach (var p in page.Items) _body.Add(ProjectCard(p));
+                if (page.Items.Count == 0) _body.Add(Duo.Empty(VStrings.T(emptyKey)));
+                var list = El.Div("duo-list");
+                foreach (var p in page.Items) list.Add(ProjectRow(p));
+                Duo.MarkLast(list);
+                _body.Add(list);
                 if (page.Skipped > 0) _body.Add(VUi.Small(VStrings.F("common.skipped", page.Skipped)));
                 if (!string.IsNullOrEmpty(page.NextCursor))
                     _body.Add(VUi.Btn(VStrings.T("common.more"), () =>
@@ -145,19 +152,28 @@ namespace CTLife.Ventures
                             page.NextCursor = more.NextCursor;
                             page.Skipped += more.Skipped;
                             RequestRender();
-                        }, e => { _note = e.Message; RequestRender(); }, false), "ct-btn"));
+                        }, e => { _note = e.Message; RequestRender(); }, false), VUi.Plain));
             }
 
-            private VisualElement ProjectCard(ProjectSummary p)
+            private VisualElement ProjectRow(ProjectSummary p)
             {
-                var card = VUi.Card(PhonePresentation.Status(VStrings.ProjectStatus(p.Status), ProjectTone(p.Status)),
-                    VUi.Text(VStrings.Kind(p.Kind), "ct-duo-card-kicker"), VUi.Text(p.Name, "ct-duo-card-title"));
-                card.Add(PhonePresentation.Metric(VStrings.T("hq.treasury"), Money.Cash(p.TreasuryCents), "bank", PhonePresentation.Tone.Neutral));
-                card.Add(VUi.Small(VStrings.F("project.card.people", p.MemberCount)));
-                if (!string.IsNullOrEmpty(p.OwnerAlias)) card.Add(VUi.Small(VStrings.F("project.by", p.OwnerAlias)));
-                if (p.OpenRoles.Count > 0) card.Add(VUi.Small(VStrings.F("project.card.open", string.Join(", ", p.OpenRoles.Select(VStrings.Role)))));
-                card.Add(PhonePresentation.Footer(VUi.Btn(VStrings.T("project.open"), () => OpenHq(p.ProjectId), "ct-btn")));
-                return card;
+                var lines = new List<string> { VStrings.Kind(p.Kind) + " · " + Money.Cash(p.TreasuryCents) + " · " + VStrings.F("project.card.people", p.MemberCount) };
+                if (p.OpenRoles.Count > 0) lines.Add(VStrings.F("project.card.open", string.Join(", ", p.OpenRoles.Select(VStrings.Role))));
+                else if (!string.IsNullOrEmpty(p.OwnerAlias)) lines.Add(VStrings.F("project.by", p.OwnerAlias));
+                var row = new DuoRow(() => OpenHq(p.ProjectId)).Leading(El.PassThrough(El.Div("duo-app-tile duo-tint-" + KindTint(p.Kind), new UiIcon("projects"))))
+                    .Title(p.Name, "duo-row-title-strong").Subtitle(string.Join("\n", lines), twoLines: true);
+                row.name = "builder-project-" + p.ProjectId;
+                row.Trailing(VUi.Status(VStrings.ProjectStatus(p.Status), ProjectTone(p.Status)));
+                row.Chevron();
+                return row;
+            }
+
+            private static string KindTint(string kind)
+            {
+                uint h = 2166136261;
+                foreach (char ch in kind ?? "") h = (h ^ ch) * 16777619;
+                string[] tints = { "indigo", "teal", "orange", "pink", "purple", "blue" };
+                return tints[h % (uint)tints.Length];
             }
 
             private static PhonePresentation.Tone ProjectTone(string status) => status switch
@@ -173,7 +189,7 @@ namespace CTLife.Ventures
 
             private void RenderHiring()
             {
-                _body.Add(VUi.Row(VUi.Chip(VStrings.T("builder.scope.hiring"), () => { _hiringScope = "hiring"; LoadList("hiring"); Render(); }, _hiringScope == "hiring"),
+                _body.Add(VUi.ChipRow(VUi.Chip(VStrings.T("builder.scope.hiring"), () => { _hiringScope = "hiring"; LoadList("hiring"); Render(); }, _hiringScope == "hiring"),
                     VUi.Chip(VStrings.T("builder.scope.all"), () => { _hiringScope = "all"; LoadList("all"); Render(); }, _hiringScope == "all")));
                 _body.Add(VUi.Small(VStrings.T("builder.hiring.note")));
                 RenderList(_hiringScope, "builder.hiring.empty");
@@ -189,11 +205,11 @@ namespace CTLife.Ventures
 
             private void RenderOffers()
             {
-                _body.Add(VUi.H2(VStrings.T("offers.title")));
+                _body.Add(Duo.SectionHeader(VStrings.T("offers.title")));
                 if (_offersError != null) { _body.Add(ErrorCard(_offersError, "builder.loadFailed", LoadOffers)); return; }
                 if (_offers == null) { LoadOffers(); _body.Add(VUi.Small(VStrings.T("common.loading"))); return; }
                 var shown = _offers.Items.Where(o => o.Status == "pending" || o.Status == null || o.Status == "").ToList();
-                if (shown.Count == 0) _body.Add(VUi.Text(VStrings.T("offers.empty")));
+                if (shown.Count == 0) _body.Add(Duo.Empty(VStrings.T("offers.empty")));
                 foreach (var o in shown) _body.Add(OfferCard(o));
                 var old = _offers.Items.Except(shown).Take(5).ToList();
                 foreach (var o in old)
@@ -210,11 +226,11 @@ namespace CTLife.Ventures
                 foreach (var f in new[] { accept, decline }) if (f.Error != null) card.Add(VUi.Error(f.Error.Message));
                 bool expired = o.ExpiresAtMs > 0 && o.ExpiresAtMs <= Hub.NowMs;
                 var a = VUi.Btn(VStrings.T("offers.accept"), () => Answer(o, true));
-                var d = VUi.Btn(VStrings.T("offers.decline"), () => Answer(o, false), "ct-btn");
+                var d = VUi.Btn(VStrings.T("offers.decline"), () => Answer(o, false), VUi.Plain);
                 bool sending = accept.Stage == WriteStage.Sending || decline.Stage == WriteStage.Sending;
                 a.SetEnabled(!sending && !expired);
                 d.SetEnabled(!sending);
-                card.Add(PhonePresentation.Footer(a, d));
+                card.Add(VUi.Row(a, d));
                 if (expired) card.Add(VUi.Small(VStrings.T("time.expired")));
                 return card;
             }
@@ -321,17 +337,24 @@ namespace CTLife.Ventures
                 Render();
             }
 
+            protected override bool Back()
+            {
+                if (_hqId == null) return false;
+                CloseHq();
+                return true;
+            }
+
             private void RenderHq()
             {
-                _body.Add(VUi.Btn(VStrings.T("common.back"), CloseHq, "ct-btn"));
                 if (_detailError != null) { _body.Add(ErrorCard(_detailError, "hq.loadFailed", () => LoadDetail(_hqId))); return; }
                 if (_detail == null) { _body.Add(VUi.Small(VStrings.T("common.loading"))); return; }
                 var p = _detail.Project;
                 var standing = ProjectRules.StandingOf(_detail, Hub.UserId);
-                var card = VUi.Card(PhonePresentation.Status(VStrings.ProjectStatus(p.Status), ProjectTone(p.Status)),
-                    VUi.Text(VStrings.Kind(p.Kind), "ct-duo-card-kicker"), VUi.Text(p.Name, "ct-duo-card-title"));
-                card.Add(PhonePresentation.Metric(VStrings.T("hq.treasury"), Money.Cash(p.TreasuryCents), "bank", PhonePresentation.Tone.Neutral,
-                    VStrings.F("project.card.people", p.MemberCount)));
+                Page.Nav.SetTitle(p.Name);
+                var card = VUi.Card(Duo.LargeTitle(p.Name), VUi.Status(VStrings.Kind(p.Kind) + " · " + VStrings.ProjectStatus(p.Status), ProjectTone(p.Status)));
+                card.name = "builder-hq";
+                // Hero: the project's treasury (server value).
+                card.Add(Duo.Hero(VStrings.T("hq.treasury"), Money.Cash(p.TreasuryCents), null, null, VStrings.F("project.card.people", p.MemberCount)));
                 if (!string.IsNullOrEmpty(p.OwnerAlias)) card.Add(VUi.Small(VStrings.F("project.by", p.OwnerAlias)));
                 if (_detail.PayrollCentsPerWeek > 0) card.Add(VUi.Small(VStrings.F("hq.payroll", Money.Cash(_detail.PayrollCentsPerWeek))));
                 if (_detail.NextPayrollAtMs.HasValue) card.Add(VUi.Small(VStrings.F("hq.nextPayroll", VUi.When(_detail.NextPayrollAtMs.Value))));
@@ -363,7 +386,7 @@ namespace CTLife.Ventures
                         var member = m;
                         var f = Flow("hq:fire:" + m.UserId);
                         if (f.Error != null) card.Add(VUi.Error(f.Error.Message));
-                        var fire = VUi.Btn(VStrings.T("hq.fire"), () => Fire(member), "ct-btn ct-btn-danger");
+                        var fire = VUi.Btn(VStrings.T("hq.fire"), () => Fire(member), VUi.Danger);
                         fire.SetEnabled(f.Stage != WriteStage.Sending);
                         card.Add(fire);
                     }
@@ -501,13 +524,13 @@ namespace CTLife.Ventures
                 {
                     case LaunchStage.Confirm:
                         card.Add(VUi.Text(VStrings.F("launch.confirming", ProjectRules.CleanTicker(_launchTicker), Money.Cash(_launch.ConfirmedCostCents))));
-                        card.Add(VUi.Row(VUi.Btn(VStrings.F("launch.confirm", Money.Cash(_launch.ConfirmedCostCents)), Launch), VUi.Btn(VStrings.T("common.cancel"), _launch.Cancel, "ct-btn")));
+                        card.Add(VUi.Row(VUi.Btn(VStrings.F("launch.confirm", Money.Cash(_launch.ConfirmedCostCents)), Launch), VUi.Btn(VStrings.T("common.cancel"), _launch.Cancel, VUi.Plain)));
                         break;
                     case LaunchStage.Sending: card.Add(VUi.Text(VStrings.T("launch.sending"))); break;
                     case LaunchStage.Done: card.Add(VUi.Text(VStrings.T("launch.done"))); break;
                     default:
                     {
-                        var quote = VUi.Btn(VStrings.T("launch.quote"), LoadQuote, "ct-btn");
+                        var quote = VUi.Btn(VStrings.T("launch.quote"), LoadQuote, VUi.Plain);
                         quote.SetEnabled(!_quoteLoading);
                         card.Add(quote);
                         if (q != null)
@@ -596,7 +619,7 @@ namespace CTLife.Ventures
                 if (e.IsUnavailable) { card.Add(VUi.Text(VStrings.T("common.notAvailable"))); return card; }
                 card.Add(VUi.Error(VStrings.T(headKey)));
                 card.Add(VUi.Small(e.Message));
-                card.Add(VUi.Btn(VStrings.T("common.retry"), retry, "ct-btn"));
+                card.Add(VUi.Btn(VStrings.T("common.retry"), retry, VUi.Plain));
                 return card;
             }
 

@@ -195,6 +195,13 @@ namespace CTLife.Ventures
             ["offers.line.hired"] = "We're hiring.",
 
             // ---- VC Row
+            ["vc.review"] = "Review",
+            ["vc.expiredTag"] = "Expired",
+            ["vc.offer.short"] = "{0} for {1}",
+            ["vc.investRow"] = "Investment",
+            ["vc.equityRow"] = "Equity",
+            ["vc.impliedRow"] = "Implied valuation",
+            ["vc.unlockRow"] = "Unlocks",
             ["vc.title"] = "VC Row",
             ["vc.hint"] = "Fleece vests, big smiles. A VC puts money in your treasury for equity, then may dump at unlock. The server decides when. Taking VC money is your call.",
             ["vc.tab.offers"] = "Term sheets", ["vc.tab.deals"] = "Deals board",

@@ -42,11 +42,20 @@ namespace CTLife.Ventures
             private Page<VcDeal> _deals;
             private string _note = "";
 
-            public VcRowView(VenturesHub hub) : base(hub)
+            public VcRowView(VenturesHub hub) : base(hub, VStrings.T("vc.title"))
             {
-                Root.Add(VUi.H1(VStrings.T("vc.title")));
-                Root.Add(VUi.Small(VStrings.T("vc.hint")));
-                Root.Add(_body);
+                Page.name = "vc-page";
+                Page.AddToClassList("duo-vc");
+                var seg = new DuoSegmented(new[] { VStrings.T("vc.tab.offers"), VStrings.T("vc.tab.deals") }, 0, i =>
+                {
+                    _tab = i == 0 ? Tab.Offers : Tab.Deals;
+                    if (_tab == Tab.Offers) LoadOffers(); else LoadDeals();
+                    Render();
+                });
+                seg.name = "vc-tabs";
+                Body.Add(El.Div("duo-comp-tabs", seg));
+                Body.Add(VUi.Small(VStrings.T("vc.hint")));
+                Body.Add(_body);
                 Hub.VcOffered += OnVcOffered;
                 Hub.VcDumped += OnVcDumped;
                 LoadOffers();
@@ -67,9 +76,7 @@ namespace CTLife.Ventures
             {
                 if (!Alive) return;
                 _body.Clear();
-                _body.Add(VUi.Row(VUi.Chip(VStrings.T("vc.tab.offers"), () => { _tab = Tab.Offers; LoadOffers(); Render(); }, _tab == Tab.Offers),
-                    VUi.Chip(VStrings.T("vc.tab.deals"), () => { _tab = Tab.Deals; LoadDeals(); Render(); }, _tab == Tab.Deals)));
-                if (!string.IsNullOrEmpty(_note)) _body.Add(VUi.Text(_note));
+                if (!string.IsNullOrEmpty(_note)) _body.Add(Duo.Notice(_note, Duo.Tone.Info));
                 if (_tab == Tab.Offers) RenderOffers(); else RenderDeals();
             }
 
@@ -102,37 +109,67 @@ namespace CTLife.Ventures
             {
                 if (_offersError != null) { _body.Add(ErrorCard(_offersError, "vc.loadFailed", LoadOffers)); return; }
                 if (_offers == null) { _body.Add(VUi.Small(VStrings.T("common.loading"))); return; }
-                if (_projectCount == 0) { _body.Add(VUi.Text(VStrings.T("vc.noProjects"))); return; }
-                if (_offers.Count == 0) _body.Add(VUi.Text(VStrings.T("vc.offers.empty")));
-                foreach (var row in _offers) _body.Add(OfferCard(row));
+                if (_projectCount == 0) { _body.Add(Duo.Empty(VStrings.T("vc.noProjects"))); return; }
+                if (_offers.Count == 0) _body.Add(Duo.Empty(VStrings.T("vc.offers.empty")));
+                var list = El.Div("duo-list");
+                foreach (var row in _offers) list.Add(OfferRowView(row));
+                Duo.MarkLast(list);
+                _body.Add(list);
             }
 
-            private VisualElement OfferCard(OfferRow row)
+            private VisualElement OfferRowView(OfferRow row)
             {
                 var o = row.Offer;
-                var card = VUi.Card(VUi.H2(VStrings.F("vc.offer.line", VStrings.VcName(o.VcArchetypeId), Money.Cash(o.InvestCents), ProjectRules.EquityText(o.EquityBps))));
-                card.Add(VUi.Small(VStrings.F("vc.offer.project", row.Project.Name)));
+                var lines = new List<string> { VStrings.F("vc.offer.project", row.Project.Name) };
                 var implied = ProjectRules.ImpliedValuationCents(o.InvestCents, o.EquityBps);
-                if (implied.HasValue) card.Add(VUi.Small(VStrings.F("vc.offer.implied", Money.Cash(implied.Value, true))));
-                if (o.UnlockAtMs > 0) card.Add(VUi.Small(VStrings.F("vc.offer.unlock", VUi.When(o.UnlockAtMs))));
+                if (implied.HasValue) lines.Add(VStrings.F("vc.offer.implied", Money.Cash(implied.Value, true)));
                 bool actionable = o.IsActionable(Hub.NowMs);
-                if (o.Status == "pending" && !actionable) card.Add(VUi.Small(VStrings.T("vc.expired")));
-                else if (o.Status != "pending") card.Add(VUi.Text(VStrings.F("vc.status", VStrings.Has("vc.status." + o.Status) ? VStrings.T("vc.status." + o.Status) : VWire.Readable(o.Status)), "ct-badge"));
+                var r = new DuoRow(() => OfferSheet(row)).Leading(Duo.Avatar(VStrings.VcName(o.VcArchetypeId), o.VcArchetypeId, "duo-avatar-m"))
+                    .Title(VStrings.F("vc.offer.short", Money.Cash(o.InvestCents), ProjectRules.EquityText(o.EquityBps)), "duo-row-title-strong")
+                    .Subtitle(VStrings.VcName(o.VcArchetypeId) + " · " + string.Join(" · ", lines), twoLines: true);
+                r.name = "vc-offer-" + o.OfferId;
+                if (actionable) r.TextColumn.Add(El.Text(VStrings.F("vc.offer.expires", VUi.Until(o.ExpiresAtMs, Hub.NowMs)), "duo-row-subtitle duo-comp-status"));
                 if (actionable)
                 {
-                    card.Add(VUi.Small(VStrings.F("vc.offer.expires", VUi.Until(o.ExpiresAtMs, Hub.NowMs))));
-                    card.Add(VUi.Small(VStrings.T("vc.offer.risk")));
+                    var review = Duo.Pill(VStrings.T("vc.review"), () => OfferSheet(row), Duo.PillKind.Primary);
+                    review.name = "vc-review-" + o.OfferId;
+                    r.Trailing(review);
+                }
+                else if (o.Status == "pending") r.Trailing(VUi.Status(VStrings.T("vc.expiredTag"), PhonePresentation.Tone.Neutral));
+                else r.Trailing(VUi.Status(VStrings.Has("vc.status." + o.Status) ? VStrings.T("vc.status." + o.Status) : VWire.Readable(o.Status),
+                    o.Status == "accepted" ? PhonePresentation.Tone.Success : PhonePresentation.Tone.Neutral));
+                return r;
+            }
+
+            /// <summary>The term sheet: amounts, implied valuation, unlock, the risk line, Accept / Decline.</summary>
+            private void OfferSheet(OfferRow row)
+            {
+                var o = row.Offer;
+                var sheet = new DuoSheet(VStrings.F("vc.offer.line", VStrings.VcName(o.VcArchetypeId), Money.Cash(o.InvestCents), ProjectRules.EquityText(o.EquityBps)),
+                    VStrings.F("vc.offer.project", row.Project.Name));
+                sheet.name = "vc-offer-sheet";
+                sheet.AddContent(VUi.Pair(VStrings.T("vc.investRow"), Money.Cash(o.InvestCents)));
+                sheet.AddContent(VUi.Pair(VStrings.T("vc.equityRow"), ProjectRules.EquityText(o.EquityBps)));
+                var implied = ProjectRules.ImpliedValuationCents(o.InvestCents, o.EquityBps);
+                if (implied.HasValue) sheet.AddContent(VUi.Pair(VStrings.T("vc.impliedRow"), Money.Cash(implied.Value, true)));
+                if (o.UnlockAtMs > 0) sheet.AddContent(VUi.Pair(VStrings.T("vc.unlockRow"), VUi.When(o.UnlockAtMs)));
+                bool actionable = o.IsActionable(Hub.NowMs);
+                if (actionable)
+                {
+                    sheet.AddContent(VUi.Small(VStrings.F("vc.offer.expires", VUi.Until(o.ExpiresAtMs, Hub.NowMs))));
+                    sheet.AddContent(Duo.Notice(VStrings.T("vc.offer.risk"), Duo.Tone.Warning));
                     var accept = Flow("accept:" + o.OfferId);
                     var decline = Flow("decline:" + o.OfferId);
-                    foreach (var f in new[] { accept, decline }) if (f.Error != null) card.Add(VUi.Error(f.Error.Message));
+                    foreach (var f in new[] { accept, decline }) if (f.Error != null) sheet.AddContent(Duo.Notice(f.Error.Message, Duo.Tone.Danger));
                     bool sending = accept.Stage == WriteStage.Sending || decline.Stage == WriteStage.Sending;
-                    var a = VUi.Btn(VStrings.T("vc.accept"), () => Answer(o, true));
-                    var d = VUi.Btn(VStrings.T("vc.decline"), () => Answer(o, false), "ct-btn");
-                    a.SetEnabled(!sending);
-                    d.SetEnabled(!sending);
-                    card.Add(VUi.Row(a, d));
+                    if (!sending)
+                    {
+                        sheet.AddPrimary(VStrings.T("vc.accept"), () => Answer(o, true), name: "vc-accept");
+                        sheet.AddPrimary(VStrings.T("vc.decline"), () => Answer(o, false), destructive: true, name: "vc-decline");
+                    }
                 }
-                return card;
+                sheet.AddSecondary(VStrings.T("common.close"));
+                ShowSheet(sheet);
             }
 
             private void Answer(VcOffer o, bool accept)
@@ -163,16 +200,20 @@ namespace CTLife.Ventures
             {
                 if (_dealsError != null) { _body.Add(ErrorCard(_dealsError, "vc.deals.loadFailed", LoadDeals)); return; }
                 if (_deals == null) { LoadDeals(); _body.Add(VUi.Small(VStrings.T("common.loading"))); return; }
-                if (_deals.Items.Count == 0) _body.Add(VUi.Text(VStrings.T("vc.deals.empty")));
+                if (_deals.Items.Count == 0) _body.Add(Duo.Empty(VStrings.T("vc.deals.empty")));
+                var list = El.Div("duo-list");
                 foreach (var d in _deals.Items)
                 {
                     var status = VStrings.Has("vc.deal.status." + d.Status) ? VStrings.T("vc.deal.status." + d.Status) : VWire.Readable(d.Status);
-                    var card = VUi.Card(VUi.H2(d.ProjectName),
-                        VUi.Text(VStrings.F("vc.deal.line", VStrings.VcName(d.VcArchetypeId), Money.Cash(d.InvestCents), ProjectRules.EquityText(d.EquityBps))),
-                        d.Status == "dumped" ? VUi.Error(status) : VUi.Small(status));
-                    if (d.AtMs > 0) card.Add(VUi.Small(VUi.When(d.AtMs)));
-                    _body.Add(card);
+                    var r = new DuoRow().Leading(Duo.Avatar(VStrings.VcName(d.VcArchetypeId), d.VcArchetypeId, "duo-avatar-m")).Title(d.ProjectName, "duo-row-title-strong")
+                        .Subtitle(VStrings.F("vc.deal.line", VStrings.VcName(d.VcArchetypeId), Money.Cash(d.InvestCents), ProjectRules.EquityText(d.EquityBps))
+                            + (d.AtMs > 0 ? "\n" + VUi.When(d.AtMs) : ""), twoLines: true);
+                    r.AddToClassList("duo-row-static");
+                    r.Trailing(VUi.Status(status, d.Status == "dumped" ? PhonePresentation.Tone.Danger : PhonePresentation.Tone.Neutral));
+                    list.Add(r);
                 }
+                Duo.MarkLast(list);
+                _body.Add(list);
                 if (_deals.Skipped > 0) _body.Add(VUi.Small(VStrings.F("common.skipped", _deals.Skipped)));
                 if (!string.IsNullOrEmpty(_deals.NextCursor))
                     _body.Add(VUi.Btn(VStrings.T("common.more"), () =>
@@ -182,16 +223,14 @@ namespace CTLife.Ventures
                             _deals.NextCursor = more.NextCursor;
                             _deals.Skipped += more.Skipped;
                             Render();
-                        }, e => { _note = e.Message; Render(); }, false), "ct-btn"));
+                        }, e => { _note = e.Message; Render(); }, false), VUi.Plain));
             }
 
             private VisualElement ErrorCard(VError e, string headKey, Action retry)
             {
-                var card = VUi.Card();
-                if (e.IsUnavailable) { card.Add(VUi.Text(VStrings.T("common.notAvailable"))); return card; }
-                card.Add(VUi.Error(VStrings.T(headKey)));
-                card.Add(VUi.Small(e.Message));
-                card.Add(VUi.Btn(VStrings.T("common.retry"), retry, "ct-btn"));
+                if (e.IsUnavailable) return Duo.Empty(VStrings.T("common.notAvailable"));
+                var card = VUi.Card(Duo.Notice(VStrings.T(headKey) + " " + e.Message, Duo.Tone.Danger));
+                card.Add(VUi.Row(VUi.Btn(VStrings.T("common.retry"), retry, VUi.Plain)));
                 return card;
             }
 

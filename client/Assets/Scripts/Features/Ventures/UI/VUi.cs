@@ -9,50 +9,85 @@ using UnityEngine.UIElements;
 
 namespace CTLife.Ventures
 {
-    /// <summary>Small UI Toolkit builders on CTLife.UI's El and the existing ct-* classes. Functional, not styled: the visual theme is chosen separately.</summary>
+    /// <summary>
+    /// UI Toolkit builders for the Ventures phone screens on the Duo kit: sections on the canvas, capsule buttons, filter chips,
+    /// kit field, status tags (real states only). Every label is plain text.
+    /// </summary>
     internal static class VUi
     {
-        public static ScrollView Page() => El.VerticalScroll("ct-app-page");
+        public const string Primary = "primary", Plain = "plain", Danger = "danger";
+
+        public static ScrollView Page() => El.VerticalScroll();
 
         /// <summary>Every label goes through El.Text with rich text off: names, aliases and server strings are untrusted.</summary>
-        public static Label Text(string text, string cls = "ct-body")
+        public static Label Text(string text, string cls = "duo-comp-text")
         {
             var l = El.Text(text ?? "", cls);
             l.enableRichText = false;
             return l;
         }
 
-        public static Label H1(string text) => Text(text, "ct-h1");
-        public static Label H2(string text) => Text(text, "ct-h2");
-        public static Label Small(string text) => Text(text, "ct-small ct-muted");
-        public static Label Error(string text) => Text(text, "ct-error");
+        public static Label H2(string text) => Text(text, "duo-comp-h2");
+        public static Label Small(string text) => Text(text, "duo-comp-note");
+        public static Label Error(string text) => Text(text, "duo-comp-error");
+        public static Label Label(string text) => Text((text ?? "").ToUpperInvariant(), "duo-comp-label");
 
-        public static VisualElement Card(params VisualElement[] children) => El.Div("ct-card", children);
+        /// <summary>A section on the canvas (no box).</summary>
+        public static VisualElement Card(params VisualElement[] children) => El.Div("duo-comp-section", children);
 
-        public static VisualElement Row(params VisualElement[] children)
+        public static VisualElement Row(params VisualElement[] children) => El.Div("duo-comp-actions", children);
+
+        public static VisualElement ChipRow(params VisualElement[] children) => El.Div("duo-chip-row", children);
+
+        public static VisualElement Pair(string key, string value) =>
+            El.Div("duo-comp-pair", Text(key, "duo-comp-pair-key"), Text(value, "duo-comp-pair-value"));
+
+        public static Button Btn(string text, Action onClick, string kind = Primary)
         {
-            var r = El.Div("ct-row", children);
-            r.style.flexDirection = FlexDirection.Row;
-            r.style.alignItems = Align.Center;
-            r.style.flexWrap = Wrap.Wrap;
-            return r;
+            var b = El.Btn(text, onClick, "duo-comp-btn" + (kind == Plain ? "" : kind == Danger ? " duo-comp-btn-danger" : " duo-comp-btn-primary"));
+            b.enableRichText = false;
+            return b;
         }
-
-        public static Button Btn(string text, Action onClick, string cls = "ct-btn ct-btn-primary") => El.Btn(text, onClick, cls);
 
         public static Button Chip(string text, Action onClick, bool on)
         {
-            var b = PhonePresentation.SizeToText(El.Btn(text, onClick, "ct-chip"));
-            b.EnableInClassList("ct-chip-on", on);
+            var b = El.Btn(text, onClick, "duo-chip");
+            b.enableRichText = false;
+            b.EnableInClassList("duo-chip-on", on);
             return b;
         }
 
         public static TextField Field(string label, string value, Action<string> changed, int maxLength = 200)
         {
-            var f = new TextField(label) { value = value ?? "", isDelayed = false, maxLength = maxLength };
-            f.AddToClassList("ct-field");
+            var f = new TextField { value = value ?? "", isDelayed = false, maxLength = maxLength };
+            f.AddToClassList("duo-field");
+            f.textEdition.placeholder = label ?? "";
+            f.tooltip = label;
             f.RegisterValueChangedCallback(e => changed?.Invoke(e.newValue));
             return f;
+        }
+
+        /// <summary>Status tag (reference 2) for a real server state.</summary>
+        public static VisualElement Status(string text, PhonePresentation.Tone tone = PhonePresentation.Tone.Neutral)
+        {
+            string t = tone switch
+            {
+                PhonePresentation.Tone.Success => "green",
+                PhonePresentation.Tone.Warning => "orange",
+                PhonePresentation.Tone.Danger => "red",
+                PhonePresentation.Tone.Info => "blue",
+                PhonePresentation.Tone.Accent => "blue",
+                _ => "gray",
+            };
+            return El.Div("duo-comp-tags", Text(text, "duo-tag duo-tag-" + t));
+        }
+
+        /// <summary>A number with its label as a key/value row (no tile).</summary>
+        public static VisualElement Metric(string label, string value, string icon, PhonePresentation.Tone tone = PhonePresentation.Tone.Info, string detail = null)
+        {
+            var row = Pair(label, value ?? "—");
+            if (!string.IsNullOrEmpty(detail)) row.Add(Text(detail, "duo-comp-pair-detail"));
+            return row;
         }
 
         public static string When(long epochMs)
@@ -85,6 +120,11 @@ namespace CTLife.Ventures
     internal abstract class VView : IDisposable
     {
         public readonly ScrollView Root;
+        /// <summary>The Duo frame (nav + large title) the phone shows; content goes into <see cref="Body"/>.</summary>
+        public readonly DuoPage Page;
+        protected VisualElement Body => Page.Body;
+        internal PhoneShell Shell;
+        private DuoSheet _sheet;
         protected readonly VenturesHub Hub;
         private readonly CancellationTokenSource _life = new CancellationTokenSource();
         private readonly Session _session;
@@ -94,10 +134,13 @@ namespace CTLife.Ventures
         protected bool Disposed { get; private set; }
         protected CancellationToken Life => _life.Token;
 
-        protected VView(VenturesHub hub)
+        protected VView(VenturesHub hub, string title)
         {
             Hub = hub;
             Root = VUi.Page();
+            Page = new DuoPage(Root, title);
+            Page.AddToClassList("duo-comp");
+            Page.Nav.AddLeft(DuoGlyph.Kind.Back, Strings.T("common.back"), () => { if (!Back()) Shell?.Back(); }, "ventures-back");
             _session = Services.Get<Session>();
             _user = _session.UserId;
             _session.Changed += SessionChanged;
@@ -119,6 +162,18 @@ namespace CTLife.Ventures
         }
 
         protected virtual void Tick() { }
+
+        /// <summary>Nav back inside the screen (booking → slots). False lets the phone go back.</summary>
+        protected virtual bool Back() => false;
+
+        protected DuoSheet ShowSheet(DuoSheet sheet)
+        {
+            _sheet?.Close();
+            _sheet = sheet;
+            sheet.Scrolling();
+            sheet.Closed += () => { if (_sheet == sheet) _sheet = null; };
+            return sheet.Show(Page);
+        }
 
         /// <summary>Runs async work bound to this view. Callbacks run only while the view is alive.</summary>
         protected async void Run<T>(Func<CancellationToken, Task<T>> work, Action<T> done, Action<VError> fail, bool write)
@@ -146,6 +201,7 @@ namespace CTLife.Ventures
         {
             if (Disposed) return;
             Disposed = true;
+            _sheet?.Close();
             _life.Cancel();
             _tick?.Pause();
             Subs.Dispose();
@@ -167,12 +223,14 @@ namespace CTLife.Ventures
         }
 
         internal VenturesHub Hub => _hub == null || _hub.Disposed ? (_hub = VenturesHub.Acquire()) : _hub;
+        public override DuoChrome Chrome => DuoChrome.Plain;
 
         public override VisualElement Open()
         {
             Closed();
             _view = CreateView(Hub);
-            return _view.Root;
+            _view.Shell = Phone;
+            return _view.Page;
         }
 
         internal abstract VView CreateView(VenturesHub hub);
