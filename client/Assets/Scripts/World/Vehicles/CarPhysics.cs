@@ -340,7 +340,7 @@ namespace CTLife.World.Vehicles
                 _passed.Add((c, Time.time + 2.5f));
                 var view = c.GetComponentInParent<AvatarView>();
                 if (view == null) continue;
-                bool npc = view.GetComponent<NpcController>() != null;
+                bool npc = view.GetComponent<NpcController>() != null || view.GetComponent<CTLife.World.Pedestrians.Pedestrian>() != null;
                 if (!npc && !view.isLocal) continue;
                 var vel = velocity;
                 Knockdown.For(view).Fall(vel * 0.75f + Vector3.up * Mathf.Min(4f, speed * 0.25f), vel * (8f + speed));
