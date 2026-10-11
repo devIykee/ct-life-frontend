@@ -137,6 +137,22 @@ namespace CTLife.UI
             return true;
         }
 
+        /// <summary>Bumped when a visible banner's text changes in place (the layer re-renders).</summary>
+        public int Revision { get; private set; }
+
+        /// <summary>Updates a live banner's title (a sender name that resolved after it was posted).</summary>
+        public bool Retitle(int id, string title)
+        {
+            var n = _stack.Find(x => x.Id == id);
+            if (n == null || string.IsNullOrWhiteSpace(title) || n.Title == title) return false;
+            n.Title = title;
+            Revision++;
+            Changed?.Invoke();
+            return true;
+        }
+
+        public bool Contains(int id) => _stack.Exists(x => x.Id == id);
+
         public bool Dismiss(int id, float now)
         {
             int index = _stack.FindIndex(x => x.Id == id);
@@ -214,7 +230,12 @@ namespace CTLife.UI
             }
         }
 
-        public static DuoPostResult Post(DuoNotification n) => Queue.Post(n, UnityEngine.Time.unscaledTime);
+        public static DuoPostResult Post(DuoNotification n)
+        {
+            var result = Queue.Post(n, UnityEngine.Time.unscaledTime);
+            Log.Info("notify", (n?.AppId ?? "?") + " banner: " + result + " (stack " + Queue.Stack.Count + ")"); // no message text in logs
+            return result;
+        }
         public static void SetBadge(string appId, int count) => Queue.SetBadge(appId, count);
         public static int Badge(string appId) => Queue.Badge(appId);
         public static int TotalBadge => Queue.TotalBadge;

@@ -188,6 +188,21 @@ namespace CTLife.Tests
         }
 
         [Test]
+        public void Queue_RetitleUpdatesALiveBanner()
+        {
+            var q = new DuoNotificationQueue(new DuoNotificationSettings());
+            q.Post(Dm("a"), 0f);
+            int changes = 0, rev = q.Revision;
+            q.Changed += () => changes++;
+            Assert.IsTrue(q.Retitle(q.Top.Id, "kemi.sol"));
+            Assert.AreEqual("kemi.sol", q.Top.Title);
+            Assert.AreEqual(rev + 1, q.Revision);
+            Assert.AreEqual(1, changes);
+            Assert.IsFalse(q.Retitle(q.Top.Id, "kemi.sol"), "same title is no change");
+            Assert.IsFalse(q.Retitle(9999, "x"));
+        }
+
+        [Test]
         public void Queue_RejectsEmptyNotifications()
         {
             var q = new DuoNotificationQueue(new DuoNotificationSettings());

@@ -255,13 +255,31 @@ namespace CTLife.SocialFeatures
                 // sender or a message request (badge only: requests are read in the inbox under the scam warning);
                 // a scam-flagged text shows its hint instead. The center also suppresses it while the Duo shows this
                 // chat or the inbox, and under Do Not Disturb.
-                var banner = DmBannerPolicy.For(from, _hub.Names.Name(from), m.text, Hidden(from), IsRequest(entry));
+                var name = !string.IsNullOrWhiteSpace(entry?.Alias) ? entry.Alias : _hub.Names.Name(from);
+                var banner = DmBannerPolicy.For(from, name, m.text, Hidden(from), IsRequest(entry));
+                if (!banner.Show) Log.Info("notify", "messages banner withheld (request, blocked or unsafe id); badge only");
                 if (banner.Show)
-                    DuoNotificationCenter.Post(new DuoNotification
+                {
+                    var n = new DuoNotification
                     {
                         AppId = MessagesApp.AppId, ThreadKey = from, Title = banner.Title, Body = banner.Body,
                         Open = () => MessagesApp.OpenFromNotification(from),
-                    });
+                    };
+                    var posted = DuoNotificationCenter.Post(n);
+                    // The sender's alias may still be loading ("Player 01a142"): retitle the live banner when it lands.
+                    if ((posted == DuoPostResult.Shown || posted == DuoPostResult.Replaced) && name == NameCache.Short(from))
+                    {
+                        Action retitle = null;
+                        retitle = () =>
+                        {
+                            var queue = DuoNotificationCenter.Queue;
+                            var resolved = _hub.Names.Name(from);
+                            if (!queue.Contains(n.Id) || resolved != NameCache.Short(from)) _hub.Names.Changed -= retitle;
+                            if (queue.Contains(n.Id) && resolved != NameCache.Short(from)) queue.Retitle(n.Id, resolved);
+                        };
+                        _hub.Names.Changed += retitle;
+                    }
+                }
             }
             Notify();
         }

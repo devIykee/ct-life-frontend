@@ -18,7 +18,7 @@ namespace CTLife.UI
         private readonly DuoNotificationQueue _queue;
         private readonly IVisualElementScheduledItem _tick;
         private VisualElement _front, _peek;
-        private int _frontId, _peekId;
+        private int _frontId, _peekId, _revision;
         private Tween _enter;
         private int _pointer = -1;
         private Vector2 _start;
@@ -44,9 +44,9 @@ namespace CTLife.UI
             if (_disposed) return;
             var stack = _queue.Stack;
             int front = stack.Count > 0 ? stack[0].Id : 0, peek = stack.Count > 1 ? stack[1].Id : 0;
-            if (front == _frontId && peek == _peekId) return;
+            if (front == _frontId && peek == _peekId && _queue.Revision == _revision) return;
             bool newFront = front != 0 && front != _frontId;
-            _frontId = front; _peekId = peek;
+            _frontId = front; _peekId = peek; _revision = _queue.Revision;
             _enter?.Cancel();
             _front?.RemoveFromHierarchy(); _peek?.RemoveFromHierarchy();
             _front = _peek = null;
