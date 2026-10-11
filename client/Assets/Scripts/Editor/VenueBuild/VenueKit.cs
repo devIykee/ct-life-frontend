@@ -58,6 +58,18 @@ namespace CTLife.EditorTools.VenueBuild
         /// </summary>
         public bool Backdrop;
 
+        /// <summary>
+        /// Round 6: alpha-cut foliage textures of sourced models (flowers, leaves, grass, bushes) are packed into one
+        /// per-venue atlas and merged into a single renderer, so real modelled plants cost one draw for the whole venue
+        /// instead of one per material per 10 m cell. Opt-in per venue builder; submeshes whose UVs leave 0..1 keep
+        /// their own material.
+        /// </summary>
+        public bool FoliageAtlas;
+        private readonly VenueMeshAcc _foliage = new VenueMeshAcc();
+        private readonly Dictionary<string, Rect> _foliageRects = new Dictionary<string, Rect>();
+        private readonly Dictionary<(Mesh, int), bool> _uvInside = new Dictionary<(Mesh, int), bool>();
+        private Material _foliageMaterial;
+
         /// <summary>Collect placements, colliders and NavMesh sources only (collision pass): no asset is written.</summary>
         public bool DryRun;
 
@@ -820,6 +832,7 @@ namespace CTLife.EditorTools.VenueBuild
             var usedMaterials = new HashSet<Material>();
 
             // Sourced models: per 10 m cell, per material, LOD0 + LOD1 merged into one LODGroup per cell.
+            if (FoliageAtlas) BuildFoliageAtlas();
             var cells = new Dictionary<Vector3Int, Dictionary<(Material, int), VenueMeshAcc>>();
             foreach (var p in _placements)
             {
@@ -874,6 +887,11 @@ namespace CTLife.EditorTools.VenueBuild
             }
 
             if (!_glow.Empty) { Emit("Glow_VB_Glow", _glow, VenuePalette.Glow, statics); renderers++; lod0 += _glow.Triangles; usedMaterials.Add(VenuePalette.Glow); }
+            if (!_foliage.Empty)
+            {
+                Emit("Foliage_VB_" + Spec.id, _foliage, _foliageMaterial, statics);
+                renderers++; lod0 += _foliage.Triangles; usedMaterials.Add(_foliageMaterial);
+            }
             if (!_signs.Empty)
             {
                 Emit("Signs_" + Spec.id, _signs, SignMaterial(), statics);
@@ -954,6 +972,13 @@ namespace CTLife.EditorTools.VenueBuild
                 var mats = renderer.sharedMaterials;
                 for (int s = 0; s < mesh.subMeshCount && s < mats.Length; s++)
                 {
+                    // Foliage atlas first (no shared material asset is created for atlas-routed foliage).
+                    if (p.recolor == null && _foliageRects.Count > 0 && _foliageRects.TryGetValue(MaterialName(mats[s]), out var leafRect) &&
+                        UvInside(mesh, s))
+                    {
+                        if (lod == 0) _foliage.AppendSubmesh(mesh, s, local, leafRect, _meshCache);
+                        continue;
+                    }
                     var material = Resolve(mats[s], p.id, out var route, p.screen);
                     if (p.recolor != null && route != Route.Screen && route != Route.Glow) route = Route.Palette;
                     switch (route)
@@ -982,6 +1007,99 @@ namespace CTLife.EditorTools.VenueBuild
                     }
                 }
             }
+        }
+
+        private static string MaterialName(Material m)
+        {
+            if (m == null) return "";
+            string name = m.name.Replace(" (Instance)", "");
+            int dot = name.LastIndexOf('.');
+            if (dot >= 0 && int.TryParse(name.Substring(dot + 1), out _)) name = name.Substring(0, dot);
+            return name;
+        }
+
+        private static bool IsFoliageName(string name)
+        {
+            string lower = name.ToLowerInvariant();
+            return new[] { "leaves", "leaf_", "flowers", "grass", "bush" }.Any(lower.Contains);
+        }
+
+        private bool UvInside(Mesh mesh, int submesh)
+        {
+            if (_uvInside.TryGetValue((mesh, submesh), out bool inside)) return inside;
+            var data = VenueMeshAcc.MeshCache.Get(mesh, _meshCache);
+            inside = true;
+            foreach (int i in data.Submeshes[submesh])
+            {
+                if (i >= data.Uv.Length) { inside = false; break; }
+                var uv = data.Uv[i];
+                if (uv.x < -0.03f || uv.x > 1.03f || uv.y < -0.03f || uv.y > 1.03f) { inside = false; break; }
+            }
+            return _uvInside[(mesh, submesh)] = inside;
+        }
+
+        /// <summary>Pack every foliage texture used by this venue's placements into one atlas + alpha-clip material.</summary>
+        private void BuildFoliageAtlas()
+        {
+            var names = new SortedDictionary<string, string>(StringComparer.Ordinal); // material name -> texture asset path
+            foreach (var p in _placements)
+            {
+                if (p.recolor != null) continue;
+                foreach (var r in LoadModel(p.id).GetComponentsInChildren<MeshRenderer>(true))
+                    foreach (var m in r.sharedMaterials)
+                    {
+                        if (m == null) continue;
+                        string name = MaterialName(m);
+                        if (!name.StartsWith("M_") || !IsFoliageName(name) || names.ContainsKey(name)) continue;
+                        string stem = name.Substring(2);
+                        var textures = _manifest[p.id]?["textures"] as JArray;
+                        var texPath = textures?.Values<string>().FirstOrDefault(t => Path.GetFileNameWithoutExtension(t) == stem);
+                        string path = texPath != null ? "Assets/Art/" + texPath : "Assets/Art/environment/_shared/textures/" + stem + ".png";
+                        if (File.Exists(path)) names[name] = path;
+                    }
+            }
+            if (names.Count == 0) return;
+            var sources = names.Select(kv =>
+            {
+                var t = new Texture2D(2, 2, TextureFormat.RGBA32, true);
+                t.LoadImage(File.ReadAllBytes(kv.Value));
+                return t;
+            }).ToArray();
+            var atlas = new Texture2D(2, 2, TextureFormat.RGBA32, true);
+            var rects = atlas.PackTextures(sources, 6, 1024, false); // 1024 max: alpha foliage reads fine at ~400 px per source on a phone
+            // Inset each rect by half a texel so bilinear filtering never samples the neighbour.
+            int i = 0;
+            foreach (var name in names.Keys)
+            {
+                var r = rects[i++];
+                float ix = 0.5f / atlas.width, iy = 0.5f / atlas.height;
+                _foliageRects[name] = new Rect(r.xMin + ix, r.yMin + iy, r.width - 2 * ix, r.height - 2 * iy);
+            }
+            foreach (var t in sources) Object.DestroyImmediate(t);
+            string size = atlas.width + "x" + atlas.height;
+            var texture = SaveTexture(Spec.id + "_Foliage", atlas, false);
+            string matPath = Spec.Folder + "/Materials/" + Spec.id + "_Foliage.mat";
+            Directory.CreateDirectory(Spec.Folder + "/Materials");
+            var shader = Shader.Find("Universal Render Pipeline/Simple Lit");
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(matPath);
+            if (mat == null) { mat = new Material(shader); AssetDatabase.CreateAsset(mat, matPath); }
+            mat.shader = shader;
+            mat.name = Spec.id + "_Foliage";
+            mat.SetTexture("_BaseMap", texture);
+            mat.SetColor("_BaseColor", Color.white);
+            if (mat.HasProperty("_Smoothness")) mat.SetFloat("_Smoothness", 0.1f);
+            if (mat.HasProperty("_SpecularHighlights")) mat.SetFloat("_SpecularHighlights", 0f);
+            mat.SetFloat("_AlphaClip", 1f);
+            mat.SetFloat("_Cutoff", 0.45f);
+            mat.SetFloat("_Cull", (float)CullMode.Off);
+            mat.EnableKeyword("_ALPHATEST_ON");
+            mat.SetOverrideTag("RenderType", "TransparentCutout");
+            mat.renderQueue = (int)RenderQueue.AlphaTest;
+            mat.enableInstancing = true;
+            EditorUtility.SetDirty(mat);
+            _writtenAssets.Add(matPath);
+            _foliageMaterial = mat;
+            Notes.Add($"foliage atlas {size} from {names.Count} textures");
         }
 
         private static string GlowDefault(Material source)

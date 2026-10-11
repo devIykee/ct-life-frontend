@@ -39,7 +39,8 @@ palette = json.load(open(PAL_JSON)) if os.path.exists(PAL_JSON) else {'colors': 
 
 def swatch(rgb):
     """sRGB 0..1 triple -> palette index (quantised to 1/64 to merge near-identical colours)."""
-    q = [round(c * 63) / 63 for c in rgb]
+    n = CURRENT.get('quant') or 63   # per-item coarser quantisation for forced gradient maps (round 6)
+    q = [round(c * n) / n for c in rgb]
     key = '%02x%02x%02x' % tuple(int(round(c * 255)) for c in q)
     if key not in palette['colors']:
         if len(palette['colors']) >= PAL_N * PAL_N:
@@ -115,6 +116,12 @@ def base_color_source(mat):
     if n and n.type == 'TEX_IMAGE' and n.image:
         return ('texture', n.image)
     return ('color', [lin2srgb(x) for x in inp.default_value[:3]])
+
+
+def has_cutout(img):
+    """Alpha-cut foliage textures stay textures even when an item forces palette colours (round 6)."""
+    a = image_array(img) if img is not None else None
+    return a is not None and a.shape[2] == 4 and float((a[::4, ::4, 3] < 0.5).mean()) > 0.02
 
 
 def is_palette_texture(img):
@@ -210,7 +217,7 @@ def palettise(o):
         elif kind == 'vcol' and col is not None:
             c = sum((Vector(l[col][:3]) for l in f.loops), Vector()) / len(f.loops)
             rgb = [lin2srgb(x) for x in c]
-        elif kind == 'texture' and is_palette_texture(data):
+        elif kind == 'texture' and ((CURRENT.get('force_palette') and not has_cutout(data)) or is_palette_texture(data)):
             a = image_array(data)
             uv = sum((l[uvl].uv for l in f.loops), Vector((0, 0))) / len(f.loops)
             h, w = a.shape[:2]
@@ -349,12 +356,33 @@ SCALES = {}
 CURRENT = {'recolor': None}
 
 
+def _in(x, rng):
+    lo, hi = rng
+    return (lo <= x <= hi) if lo <= hi else (x >= lo or x <= hi)   # hue ranges may wrap (e.g. (0.95, 0.05))
+
+
 def apply_recolor(rgb, mode):
-    """'steel': Kenney's signature lavender/purple -> blue-grey steel (keeps orange/yellow accents, ORE-like)."""
-    if not mode:
-        return rgb
+    """'steel': Kenney's signature lavender/purple -> blue-grey steel (keeps orange/yellow accents, ORE-like).
+    A list of rules {'h': (lo, hi), 's': (lo, hi), 'v': (lo, hi), 'to': 'rrggbb'} (round 6): the first rule whose HSV
+    ranges (all optional, hue may wrap) contain the source colour replaces it with 'to', so one source model can ship as
+    café-coloured variants (wood, cushion, metal) through the shared palette. Colours no rule matches are kept.
+    CTL_LOG_COLORS=1 prints every distinct source colour per item (to write the rules)."""
     import colorsys
     h, s_, v = colorsys.rgb_to_hsv(*[max(0.0, min(1.0, float(c))) for c in rgb])
+    if os.environ.get('CTL_LOG_COLORS'):
+        key = '%02x%02x%02x' % tuple(int(round(max(0.0, min(1.0, c)) * 255)) for c in rgb)
+        seen = CURRENT.setdefault('logged', set())
+        if key not in seen:
+            seen.add(key)
+            log('colour', CURRENT.get('id'), key, 'h=%.2f s=%.2f v=%.2f' % (h, s_, v))
+    if not mode:
+        return rgb
+    if isinstance(mode, (list, tuple)):
+        for r in mode:
+            if _in(h, r.get('h', (0.0, 1.0))) and _in(s_, r.get('s', (0.0, 1.0))) and _in(v, r.get('v', (0.0, 1.0))):
+                t = r['to']
+                return [int(t[i:i + 2], 16) / 255 for i in (0, 2, 4)]
+        return rgb
     if mode == 'steel' and 0.55 <= h <= 0.84 and s_ > 0.12:
         t = (0.56, 0.6, 0.66)
         k = 0.55 + 0.6 * v
@@ -405,6 +433,10 @@ def make_blossom_texture():
 def process(item):
     bpy.ops.wm.read_factory_settings(use_empty=True)
     CURRENT['recolor'] = item.get('recolor')
+    CURRENT['id'] = item['id']
+    CURRENT['force_palette'] = item.get('force_palette')   # KayKit/Kenney gradient maps -> flat palette colours
+    CURRENT['quant'] = item.get('quant')
+    CURRENT['logged'] = set()
     _img_cache.clear()
     path = resolve(item['src'])
     objs = import_any(path)
@@ -454,8 +486,19 @@ def process(item):
     pivot = Vector(((mn.x + mx.x) / 2, (mn.y + mx.y) / 2, mn.z))
     o.data.transform(Matrix.Translation(-pivot))
     o.location = (0, 0, 0)
+    sm = item.get('smooth', False)
     for p in o.data.polygons:
-        p.use_smooth = item.get('smooth', False)
+        p.use_smooth = bool(sm)
+    if not isinstance(sm, bool) and sm:
+        # 'smooth': <degrees> (round 6): smooth shading with hard edges above the angle (cushions stay soft, frames crisp)
+        bm = bmesh.new()
+        bm.from_mesh(o.data)
+        lim = math.radians(float(sm))
+        for e in bm.edges:
+            if len(e.link_faces) == 2:
+                e.smooth = e.calc_face_angle(0.0) <= lim
+        bm.to_mesh(o.data)
+        bm.free()
     kept = palettise(o)
     dst_dir = os.path.join(OUT, item['dir'])
     os.makedirs(dst_dir, exist_ok=True)
@@ -483,6 +526,15 @@ def process(item):
         o.data.materials.clear()
         for m in mats_u:
             o.data.materials.append(m)
+    if item.get('decimate'):
+        # round 6: lighter LOD0 for foliage placed by the hundred (flower beds); LOD1/LOD2 derive from it
+        m_ = o.modifiers.new('Pre', 'DECIMATE')
+        m_.ratio = item['decimate']
+        m_.use_collapse_triangulate = True
+        bpy.ops.object.select_all(action='DESELECT')
+        o.select_set(True)
+        bpy.context.view_layer.objects.active = o
+        bpy.ops.object.modifier_apply(modifier='Pre')
     lods = make_lods(o, item)
     fbx = os.path.join(dst_dir, item['id'] + '.fbx')
     export(lods, fbx)
