@@ -1,0 +1,51 @@
+{
+  "status": "frozen_staged_only_native_unrun",
+  "files": [
+    {
+      "source": "art/direction-20261006/terminal-cafe-visual-20261007/revision-5/TerminalCafeVisualCandidate5.cs",
+      "destination": "client/Assets/Scripts/Editor/TerminalCafeVisualCandidate5.cs",
+      "sha256": "d07259fb51969666d65301fe127064679d6271bf53c1205180e99be363a0fb53",
+      "expected_destination": "absent; preserve failed Art4 and accepted Art3"
+    },
+    {
+      "source": "art/direction-20261006/terminal-cafe-visual-20261007/revision-5/CafeArtRoomReview5.cs",
+      "destination": "client/Assets/Scripts/Editor/CafeArtRoomReview5.cs",
+      "sha256": "809507398e0392f233e5e0bd083a54ef8f3b17083b71fd07cd162f09c1188409",
+      "expected_destination": "absent; preserve failed Art4 and accepted Art3"
+    }
+  ],
+  "compile_exit": 0,
+  "compile_warning": "Existing CS1701 Newtonsoft/netstandard standalone reference warning",
+  "build": "CTLife.EditorTools.TerminalCafeVisualCandidate5.BuildCandidate",
+  "bake": "CTLife.EditorTools.TerminalCafeVisualCandidate5.BakeCandidate",
+  "review": "CTLife.EditorTools.CafeArtRoomReview5.Launch",
+  "prefab": "Assets/Art/Candidates/TerminalCafe20261007Art5/TerminalCafeArt5.prefab",
+  "dependencies": [
+    {
+      "path": "client/Assets/Art/Candidates/TerminalCafe20261007Art3/TerminalCafeArt3.prefab",
+      "sha256": "80ee1475262cbbbf69cfaaddcf5d0705d93a65f27446b6c843d2d2bfee7a2065"
+    },
+    {
+      "path": "client/Assets/Art/Candidates/TerminalCafe20261007Art3/BakeReceipt.json",
+      "sha256": "4985c199eb696b19927b0651ee1e865b0d4c3d87b997bb4335eaf663813e8bfb"
+    },
+    {
+      "path": "client/Assets/Art/Candidates/TerminalCafe20261007Art3/StageReceipt.json",
+      "sha256": "ad7dc264deb159d00bd1507555ec2a87a458fcc751ba27e31a61f5aedf82155f"
+    },
+    {
+      "path": "client/Assets/Art/Candidates/TerminalCafe20261007Art3/Meshes/Navigation.asset",
+      "sha256": "b9033beff4817f674d75775fc9c961cd957bcca68548fa748fb33cd15c8d0318"
+    }
+  ],
+  "requires_graphics_for_review": true,
+  "review_args": [
+    "-openfile",
+    "/Users/mac/Documents/codes/projects/ct-life/client/Assets/Scenes/Bootstrap.unity",
+    "-ctlife-cafeArtOutput",
+    "/tmp/ct-cafe-art5-room-native-20261007",
+    "-ctlife-cafeArtExit",
+    "1"
+  ],
+  "revision_reason": "Exact saved BaseMap identity replaces incorrect transient material-name inference; unchanged physical repair and geometry gates."
+}

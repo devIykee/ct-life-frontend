@@ -1,0 +1,37 @@
+--- art/direction-20261006/revision-b2/CityDirectionCandidateB2.cs
++++ art/direction-20261006/revision-b2/lamp-amendment/CityDirectionCandidateB2Lamp.cs
+@@ -20,10 +20,10 @@
+     /// overwrite original assets or imply that the illustrated activity pockets are live services.
+     /// Stage and bake in separate coordinator-owned batch processes; verify external hashes after exit.
+     /// </summary>
+-    public static class CityDirectionCandidateB2
++    public static class CityDirectionCandidateB2Lamp
+     {
+-        public const string Output = "Assets/Art/Candidates/CityDirection20261006B2";
+-        public const string PrefabPath = Output + "/TimelineStreetB2.prefab";
++        public const string Output = "Assets/Art/Candidates/CityDirection20261006B2Lamp";
++        public const string PrefabPath = Output + "/TimelineStreetB2Lamp.prefab";
+         private const string Canonical = "Assets/Art/Generated/Venues/TimelineSquare.prefab";
+         private const string Snapshot = "Assets/Resources/Contract/config_snapshot.json";
+         private const string Manifest = "Assets/Art/environment/manifest.json";
+@@ -86,8 +86,8 @@
+                 // Move tall entry gardens outside the active bench sightlines; new low gardens frame the arrival route.
+                 Garden(new Vector2(-12, -7), new Vector2(-15.7f, -11.3f), "tree_blossom_4");
+                 Garden(new Vector2(12, -7), new Vector2(12.2f, -8.5f), "tree_blossom_1");
+-                Move("street_lamp_single", new Vector2(-17, -11), new Vector2(-3.7f, -11.5f));
+-                Move("street_lamp_single", new Vector2(17, -11), new Vector2(3.7f, -11.5f));
++                Move("street_lamp_single", new Vector2(-17, -11), new Vector2(-12.2f, -10.4f));
++                Move("street_lamp_single", new Vector2(17, -11), new Vector2(9.8f, -8.5f));
+                 // Move the display clear of the new east frontage; its existing viewpoint still faces toward it.
+                 Move("billboard_large", new Vector2(16.8f, -5), new Vector2(17.5f, 0.4f));
+                 Move("ad_kiosk", new Vector2(-6.6f, -11.8f), new Vector2(-1.8f, -3.9f));
+@@ -146,6 +146,9 @@
+                 foreach (var p in new[] { new Vector2(-15.7f,-11.3f), new Vector2(12.2f,-8.5f), new Vector2(-13.8f,1.7f),
+                     new Vector2(14,3), new Vector2(-8.2f,11.4f), new Vector2(8.5f,11.6f), new Vector2(-18.5f,11.4f), new Vector2(18.6f,11.4f) })
+                     Solid(new Bounds(new Vector3(p.x, 1, p.y), new Vector3(2.1f, 2, 2.1f)));
++                // Conservative footprint rounded up from the measured 0.531493 m source lamp bounds.
++                Solid(new Bounds(new Vector3(-12.2f, 1.2f, -10.4f), new Vector3(.532f, 2.4f, .532f)));
++                Solid(new Bounds(new Vector3(9.8f, 1.2f, -8.5f), new Vector3(.532f, 2.4f, .532f)));
+                 Solid(new Bounds(new Vector3(0, 1, 7.5f), new Vector3(4.5f, 2, 4.5f)));
+                 Solid(new Bounds(new Vector3(-1.8f, 1, -3.9f), new Vector3(1.5f, 2, .6f)));
+                 Solid(new Bounds(new Vector3(2.2f, 1, -3.9f), new Vector3(.8f, 2, .9f)));

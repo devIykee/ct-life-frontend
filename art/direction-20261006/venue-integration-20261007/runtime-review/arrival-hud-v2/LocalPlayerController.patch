@@ -1,0 +1,35 @@
+--- a/client/Assets/Scripts/World/Players/LocalPlayerController.cs
++++ b/client/Assets/Scripts/World/Players/LocalPlayerController.cs
+@@ -231,7 +231,14 @@
+             if (AtDestination())
+             {
+                 _agent.isStopped = true;
+-                return ArriveAtDestination();
++                bool arrived = ArriveAtDestination();
++                if (!arrived)
++                {
++                    // This immediate request returned false; do not retain a queued seat intent.
++                    _hasDestination = false;
++                    _pendingSpot = null;
++                }
++                return arrived;
+             }
+             _agent.isStopped = false;
+             // Native controls after seat Warp/re-enable rejected SetPath for complete paths in
+@@ -485,12 +492,13 @@
+ 
+         private bool ArriveAtDestination()
+         {
+-            _hasDestination = false;
+-            var spot = _pendingSpot;
+-            _pendingSpot = null; // Consume once, including a direct already-at-approach arrival.
+             if (!AtDestination()) return false;
+             var check = new NavMeshPath();
+             if (!_agent.CalculatePath(_destination, check) || check.status != NavMeshPathStatus.PathComplete) return false;
++            // An early or unvalidated arrival must leave the accepted request available to retry.
++            _hasDestination = false;
++            var spot = _pendingSpot;
++            _pendingSpot = null; // Consume only a validated arrival, including an immediate one.
+             if (spot == null) return true;
+             RememberStandingPose(_agent.nextPosition, transform.eulerAngles.y);
+             _releasedSpots.Remove(SpotKey(spot));

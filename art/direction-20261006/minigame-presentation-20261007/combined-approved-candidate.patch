@@ -1,0 +1,361 @@
+--- a/client/Assets/Scripts/UI/Phone/Apps/ClipCut.cs
++++ b/client/Assets/Scripts/UI/Phone/Apps/ClipCut.cs
+@@ -23,11 +23,14 @@
+             if(ui==null)throw new InvalidOperationException("Clip Cut requires the game UI.");
+             if(_active!=null)throw new InvalidOperationException("A Clip Cut is already running.");
+             var sheet=Resources.Load<StyleSheet>("UI/clip-cut");if(sheet==null)throw new InvalidOperationException("Clip Cut stylesheet is missing.");
++            var storyboards=ClipCutStoryboard.Load();
+             var round=new ClipCutRound(Time.realtimeSinceStartupAsDouble,seed);
+             var completion=new TaskCompletionSource<ClipCutResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+             bool closed=false,moveIn=true,previewing=false;int rendered=-1;double previewStart=0;
+             VisualElement root=null,paused=null;Action tick=null;Button setIn=null,setOut=null,reset=null,cut=null,next=null,pause=null,preview=null;
+-            var frames=new Button[8];var markers=new Label[8];
++            var frames=new Button[8];var markers=new Label[8];var kinds=new Label[8];
++            var monitor=new Image { name="clip-monitor", scaleMode=ScaleMode.ScaleToFit, pickingMode=PickingMode.Ignore };monitor.AddToClassList("ct-clip-monitor-image");
++            int shownStory=-1,shownFrame=-1;
+             Label Copy(string key,string classes)=>ModDesk.Plain(ClipCutStrings.T(key),classes);
+             var timer=ModDesk.Plain("","ct-desk-timer");var score=ModDesk.Plain("","ct-clip-score");var title=ModDesk.Plain("","ct-clip-reel-title");var counter=ModDesk.Plain("","ct-clip-counter");
+             var range=ModDesk.Plain("","ct-clip-range");var kept=ModDesk.Plain("","ct-clip-kept");var instruction=Copy("placingIn","ct-clip-instruction");
+@@ -65,9 +68,12 @@
+                         if(changed){previewing=false;Sound();Render();}
+                     },"ct-btn ct-clip-frame",sfx:null);button.name="clip-frame-"+i;if(i==7)button.AddToClassList("ct-clip-last");
+                     markers[i]=ModDesk.Plain("","ct-clip-marker");
+-                    var holes=El.Div("ct-clip-holes");for(int h=0;h<4;h++)holes.Add(El.Div("ct-clip-hole"));
+-                    var face=El.Div("ct-clip-frame-face",holes,El.Div("ct-clip-frame-meta",ModDesk.Plain(ClipCutStrings.F("frame",i+1),"ct-clip-frame-number"),markers[i]),
+-                        ModDesk.Plain(ClipCutStrings.Kind(reel.Kind(i)),"ct-clip-frame-kind"),ModDesk.Plain(ClipCutStrings.Frame(reel,i),"ct-clip-frame-copy"));
++                    var thumbnail=new Image { name="clip-thumbnail-"+i,scaleMode=ScaleMode.ScaleToFit,pickingMode=PickingMode.Ignore };thumbnail.AddToClassList("ct-clip-thumbnail");
++                    ClipCutStoryboard.Show(thumbnail,storyboards[reel.Story],reel.Story,i);
++                    button.tooltip=ClipCutStrings.F("frameCaption",i+1,ClipCutStrings.Frame(reel,i));
++                    kinds[i]=ModDesk.Plain(ClipCutStrings.Kind(reel.Kind(i)),"ct-clip-frame-kind");
++                    var face=El.Div("ct-clip-frame-face",El.Div("ct-clip-frame-meta",ModDesk.Plain(ClipCutStrings.F("frame",i+1),"ct-clip-frame-number"),markers[i]),
++                        thumbnail,ModDesk.Plain(ClipCutStrings.Frame(reel,i),"ct-clip-frame-copy"),kinds[i]);
+                     button.Add(El.PassThrough(face));frames[i]=button;strip.Add(button);
+                 }
+                 void Mode(bool value){if(closed||cancellation.IsCancellationRequested||round.Index!=expected||round.Paused||round.Cut||round.Finished)return;moveIn=value;Sound();Render();}
+@@ -97,10 +103,10 @@
+             paused=El.Div("ct-clip-paused",El.Div("ct-clip-pause-panel",Copy("paused","ct-desk-title"),Copy("pauseDetail","ct-clip-pause-copy"),El.Div("ct-clip-controls",resume,pauseEnd)));paused.name="clip-paused";
+             root=El.Div("ct-desk-overlay ct-clip-overlay",El.Div("ct-desk-panel ct-clip-panel",
+                 El.Div("ct-desk-header",El.Div("ct-desk-heading",Copy("title","ct-clip-title")),score,timer),El.Div("ct-desk-progress",progress),
+-                El.Div("ct-clip-meta",title,counter),Copy("brief","ct-clip-brief"),strip,
+-                El.Div("ct-clip-handles",setIn,setOut,El.Div("ct-clip-range-info",range,kept,instruction)),
+-                El.Div("ct-clip-preview",El.Div("ct-clip-preview-copy-area",Copy("previewLabel","ct-clip-preview-label"),previewFrame,previewCopy),preview),feedback,
+-                El.Div("ct-clip-controls",reset,pause,end,El.Div("ct-clip-spacer"),cut,next),Copy(review?"review":"practice","ct-clip-footnote"),paused));
++                El.Div("ct-clip-bench",El.Div("ct-clip-monitor",monitor),
++                    El.Div("ct-clip-preview-copy-area",counter,title,previewFrame,previewCopy,El.Div("ct-clip-spacer"),feedback)),strip,
++                El.Div("ct-clip-handles",setIn,setOut,El.Div("ct-clip-range-info",Copy("brief","ct-clip-brief"),range,kept,instruction)),
++                El.Div("ct-clip-controls",reset,preview,pause,end,El.Div("ct-clip-spacer"),cut,next),Copy(review?"review":"practice","ct-clip-footnote"),paused));
+             root.name="clip-cut-game";ModDesk.ApplySheet(root);root.styleSheets.Add(sheet);
+             void Render()
+             {
+@@ -109,8 +115,13 @@
+                 title.text=ClipCutStrings.Title(reel);counter.text=ClipCutStrings.F("reel",round.Index+1);range.text=ClipCutStrings.F("range",round.In+1,round.Out+1);kept.text=ClipCutStrings.F("kept",round.Kept);
+                 instruction.text=round.Cut?ClipCutStrings.F("answer",reel.Setup+1,reel.Payoff+1):ClipCutStrings.T(moveIn?"placingIn":"placingOut");
+                 progress.style.width=Length.Percent((float)(round.Remaining*100/ClipCutRound.Duration));
+-                int cursor=previewing?round.In+(int)((round.Elapsed-previewStart)/.65)%round.Kept:round.In;
+-                previewFrame.text=ClipCutStrings.F("previewFrame",cursor+1,ClipCutStrings.Kind(reel.Kind(cursor)));previewCopy.text=ClipCutStrings.Frame(reel,cursor);
++                int cursor=previewing?round.In+(int)((round.Elapsed-previewStart)/.65)%round.Kept:(moveIn?round.In:round.Out);
++                previewFrame.text=round.Cut?ClipCutStrings.F("previewFrame",cursor+1,ClipCutStrings.Kind(reel.Kind(cursor))):ClipCutStrings.F("previewNumber",cursor+1);previewCopy.text=ClipCutStrings.Frame(reel,cursor);
++                if(shownStory!=reel.Story||shownFrame!=cursor)
++                {
++                    ClipCutStoryboard.Show(monitor,storyboards[reel.Story],reel.Story,cursor);
++                    monitor.tooltip=ClipCutStrings.F("frameCaption",cursor+1,ClipCutStrings.Frame(reel,cursor));shownStory=reel.Story;shownFrame=cursor;
++                }
+                 preview.text=ClipCutStrings.T(previewing?"stop":"preview");preview.SetEnabled(!round.Paused&&!round.Finished);
+                 string reason=round.In>reel.Setup?ClipCutStrings.T("missingSetup"):round.Out<reel.Payoff?ClipCutStrings.T("missingPayoff"):ClipCutStrings.T("extra");
+                 feedback.text=!round.Cut?"":round.CleanCut?ClipCutStrings.T("clean"):ClipCutStrings.T("wrong")+" · "+reason;
+@@ -121,6 +132,7 @@
+                 cut.Show(!round.Cut);cut.SetEnabled(!round.Paused&&!round.Finished);next.Show(round.Cut&&!round.AllCut);next.SetEnabled(!round.Paused&&!round.Finished);
+                 for(int i=0;i<8;i++)
+                 {
++                    kinds[i].Show(round.Cut);
+                     bool included=i>=round.In&&i<=round.Out;frames[i].EnableInClassList("ct-clip-included",included);frames[i].EnableInClassList("ct-clip-excluded",!included);
+                     frames[i].EnableInClassList("ct-clip-previewing",previewing&&cursor==i);frames[i].EnableInClassList("ct-clip-boundary",i==round.In||i==round.Out);
+                     markers[i].text=i==round.In&&i==round.Out?ClipCutStrings.T("both"):i==round.In?ClipCutStrings.T("in"):i==round.Out?ClipCutStrings.T("out"):"";
+--- a/client/Assets/Scripts/UI/Text/ClipCutStrings.cs
++++ b/client/Assets/Scripts/UI/Text/ClipCutStrings.cs
+@@ -7,14 +7,15 @@
+         private static readonly Dictionary<string,string> En=new Dictionary<string,string>
+         {
+             ["title"]="Clip Cut",["score"]="{0} / 100",["timer"]="{0}s",["reel"]="REEL {0} / 5",
+-            ["brief"]="Keep Setup through Payoff. Trim the dead air and side tracks.",
++            ["brief"]="Keep the whole joke. Trim the waiting and side tracks.",
+             ["moveIn"]="Move IN",["moveOut"]="Move OUT",["placingIn"]="Tap a frame to place IN.",["placingOut"]="Tap a frame to place OUT.",
+             ["range"]="IN {0:00}  —  OUT {1:00}",["kept"]="{0} / 8 frames kept",["frame"]="{0:00}",["in"]="IN",["out"]="OUT",["both"]="IN / OUT",
+             ["setup"]="Setup",["beat"]="Beat",["payoff"]="Payoff",["deadair"]="Dead air",["sidetrack"]="Side track",
++            ["frameCaption"]="Frame {0:00}: {1}",["previewNumber"]="FRAME {0:00}",
+             ["preview"]="Preview cut",["stop"]="Stop preview",["previewLabel"]="STORYBOARD PREVIEW",["previewFrame"]="Frame {0:00} · {1}",
+             ["reset"]="Reset trim",["cut"]="Cut reel",["next"]="Next reel",["clean"]="Clean cut · +20 points",
+             ["wrong"]="Cut saved · 0 points",["missingSetup"]="The setup was trimmed out.",["missingPayoff"]="The payoff was trimmed out.",
+-            ["extra"]="Extra frames remain outside Setup → Payoff.",["answer"]="Keep frames {0:00}–{1:00}.",
++            ["extra"]="The cut includes waiting or a side track.",["answer"]="Keep frames {0:00}–{1:00}.",
+             ["pause"]="Pause",["resume"]="Resume",["end"]="End practice",["paused"]="Edit on hold",["pauseDetail"]="The practice clock and storyboard preview are paused. Resume when you’re ready.",
+             ["practice"]="LOCAL PRACTICE · ORIGINAL STORYBOARDS · NO POSTING OR PAYOUT",["review"]="REVIEW · SCRIPTED INPUT · ORIGINAL STORYBOARDS · NO PAYOUT",
+             ["again"]="Play again",["back"]="Back to city",["complete"]="Practice complete",["summary"]="Clean cuts: {0} / 5 · Reels cut: {1}\nOriginal storyboards only. Nothing was posted.",
+--- /dev/null
++++ b/client/Assets/Scripts/UI/Phone/Apps/ClipCutStoryboard.cs
+@@ -0,0 +1,53 @@
++using System;
++using UnityEngine;
++using UnityEngine.UIElements;
++
++namespace CTLife.UI
++{
++    /// <summary>Original still storyboards. Rectangles are measured source pixels, not assumed equal tiles.</summary>
++    internal static class ClipCutStoryboard
++    {
++        private static readonly Vector2Int[] Sizes =
++        {
++            new Vector2Int(836,1881),new Vector2Int(1144,1375),new Vector2Int(1145,1374),
++            new Vector2Int(1374,1145),new Vector2Int(1385,1136)
++        };
++        // Source rectangles use top-left coordinates. Small insets exclude generated divider strokes.
++        private static readonly Rect[][] Frames =
++        {
++            PairRows(836,new[]{0,470,941,1411},new[]{463,933,1403,1881},new[]{416,416,416,416},new[]{419,419,419,419}),
++            PairRows(1144,new[]{0,343,689,1033},new[]{334,680,1023,1375},new[]{570,570,570,570},new[]{574,574,574,574}),
++            PairRows(1145,new[]{0,346,690,1033},new[]{338,680,1024,1374},new[]{568,568,568,568},new[]{575,575,575,575}),
++            PairRows(1374,new[]{0,290,576,861},new[]{281,569,853,1145},new[]{682,682,682,682},new[]{692,692,692,692}),
++            PairRows(1385,new[]{0,280,562,823},new[]{270,553,813,1136},new[]{687,686,685,684},new[]{697,696,695,694})
++        };
++        private static Rect[] PairRows(int width,int[] tops,int[] bottoms,int[] leftEnds,int[] rightStarts)
++        {
++            var result=new Rect[8];
++            for(int row=0;row<4;row++)
++            {
++                result[row*2]=new Rect(2,tops[row]+2,leftEnds[row]-4,bottoms[row]-tops[row]-4);
++                result[row*2+1]=new Rect(rightStarts[row]+2,tops[row]+2,width-rightStarts[row]-4,bottoms[row]-tops[row]-4);
++            }
++            return result;
++        }
++        internal static Texture2D[] Load()
++        {
++            var result=new Texture2D[Sizes.Length];
++            for(int story=0;story<result.Length;story++)
++            {
++                var texture=Resources.Load<Texture2D>("UI/ClipCut/story-"+story);
++                if(texture==null||texture.width!=Sizes[story].x||texture.height!=Sizes[story].y)
++                    throw new InvalidOperationException("Clip Cut storyboard missing or imported at an unexpected size: "+story);
++                result[story]=texture;
++            }
++            return result;
++        }
++        internal static void Show(Image image,Texture2D texture,int story,int frame)
++        {
++            if(story<0||story>=Frames.Length||frame<0||frame>=8)throw new ArgumentOutOfRangeException(nameof(frame));
++            image.image=texture;image.sourceRect=Frames[story][frame];image.scaleMode=ScaleMode.ScaleToFit;
++            image.MarkDirtyRepaint();
++        }
++    }
++}
+--- a/client/Assets/Resources/UI/clip-cut.uss
++++ b/client/Assets/Resources/UI/clip-cut.uss
+@@ -6,12 +6,19 @@
+ .ct-clip-panel .ct-desk-timer { background-color: var(--ct-accent); color: var(--ct-ink); font-size: 36px; white-space: nowrap; flex-shrink: 0; padding: 12px 24px; border-radius: 20px; }
+ .ct-clip-panel .ct-desk-progress { height: 6px; margin-bottom: 8px; background-color: var(--ct-deep); }
+ .ct-clip-panel .ct-desk-progress-fill { background-color: var(--ct-game-cyan); }
+-.ct-clip-meta { flex-direction: row; align-items: center; justify-content: space-between; margin-bottom: 4px; flex-shrink: 0; }
+-.ct-clip-reel-title { color: var(--ct-card); font-size: 30px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); white-space: nowrap; flex-shrink: 0; }
+-.ct-clip-counter { color: var(--ct-game-blue-light); font-size: 20px; letter-spacing: 2px; white-space: nowrap; flex-shrink: 0; }
+-.ct-clip-brief { color: var(--ct-game-blue-light); font-size: 24px; white-space: nowrap; flex-shrink: 0; margin-bottom: 8px; }
+-.ct-clip-strip { flex-direction: row; flex-grow: 1; flex-shrink: 0; min-height: 220px; padding: 12px; background-color: var(--ct-game-outline); border-width: 2px; border-bottom-width: 8px; border-color: var(--ct-control-ring-active); border-radius: 20px; margin-bottom: 8px; }
+-.ct-clip-frame { flex-grow: 1; flex-basis: 0; min-width: 124px; min-height: 196px; align-self: stretch; margin: 0 8px 0 0; padding: 12px; background-color: var(--ct-deep); border-width: 2px; border-color: var(--ct-control-ring-active); border-radius: 12px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-text-outline-width: 0; }
++/* The monitor and thumbnails use ScaleToFit with measured atlas source rectangles. */
++.ct-clip-bench { flex-direction: row; flex-grow: 1; flex-shrink: 1; min-height: 284px; margin-bottom: 8px; }
++.ct-clip-monitor { flex-basis: 62%; flex-grow: 1; flex-shrink: 1; min-width: 0; min-height: 0; overflow: hidden; background-color: var(--ct-game-outline); border-radius: 12px; border-width: 2px; border-color: var(--ct-control-ring-active); }
++.ct-clip-monitor-image { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
++.ct-clip-preview-copy-area { flex-basis: 38%; flex-shrink: 1; min-width: 0; padding: 12px 0 12px 24px; }
++.ct-clip-reel-title { color: var(--ct-card); font-size: 36px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); white-space: nowrap; flex-shrink: 0; margin-bottom: 12px; }
++.ct-clip-counter { color: var(--ct-game-blue-light); font-size: 20px; letter-spacing: 2px; white-space: nowrap; flex-shrink: 0; margin-bottom: 4px; }
++.ct-clip-preview-frame { color: var(--ct-game-cyan); font-size: 22px; white-space: nowrap; flex-shrink: 0; margin-bottom: 4px; }
++.ct-clip-preview-copy { color: var(--ct-card); font-size: 32px; white-space: normal; flex-shrink: 0; }
++.ct-clip-feedback { color: var(--ct-game-green); font-size: 24px; white-space: normal; flex-shrink: 0; min-height: 34px; margin-top: 8px; }
++.ct-clip-mistake { color: var(--ct-game-coral); }
++.ct-clip-strip { flex-direction: row; flex-shrink: 0; height: 232px; padding: 8px; background-color: var(--ct-game-outline); border-width: 2px; border-color: var(--ct-control-ring-active); border-radius: 12px; margin-bottom: 8px; }
++.ct-clip-frame { flex-grow: 1; flex-basis: 0; min-width: 124px; min-height: 124px; align-self: stretch; margin: 0 8px 0 0; padding: 8px; background-color: var(--ct-deep); border-width: 2px; border-color: var(--ct-control-ring-active); border-radius: 12px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-text-outline-width: 0; }
+ .ct-clip-last { margin-right: 0; }
+ .ct-clip-frame > .ct-button-depth, .ct-clip-frame > .ct-button-glint { display: none; }
+ .ct-clip-frame:hover { background-color: var(--ct-deep); border-color: var(--ct-card); }
+@@ -21,25 +28,18 @@
+ .ct-clip-frame.ct-clip-excluded { opacity: .6; background-color: var(--ct-ink); }
+ .ct-clip-frame.ct-clip-boundary { border-color: var(--ct-accent); }
+ .ct-clip-frame.ct-clip-previewing { background-color: var(--ct-game-blue); border-color: var(--ct-game-cyan); }
+-.ct-clip-frame-face { align-self: stretch; flex-grow: 1; }
+-.ct-clip-holes { flex-direction: row; justify-content: space-between; margin-bottom: 12px; }
+-.ct-clip-hole { width: 16px; height: 8px; border-radius: 4px; background-color: var(--ct-game-outline); }
+-.ct-clip-frame-meta { flex-direction: row; justify-content: space-between; align-items: center; margin-bottom: 8px; }
++.ct-clip-frame-face { align-self: stretch; flex-grow: 1; min-height: 0; }
++.ct-clip-frame-meta { flex-direction: row; justify-content: space-between; align-items: center; margin-bottom: 4px; flex-shrink: 0; }
+ .ct-clip-frame-number { font-size: 18px; color: var(--ct-game-blue-light); white-space: nowrap; flex-shrink: 0; }
+ .ct-clip-marker { font-size: 18px; color: var(--ct-accent); white-space: nowrap; flex-shrink: 0; }
+-.ct-clip-frame-kind { color: var(--ct-game-cyan); font-size: 18px; white-space: nowrap; flex-shrink: 0; margin-bottom: 8px; -unity-text-align: middle-left; }
++.ct-clip-thumbnail { flex-grow: 1; flex-shrink: 1; min-height: 64px; background-color: var(--ct-game-outline); margin-bottom: 4px; }
++.ct-clip-frame-kind { color: var(--ct-game-cyan); font-size: 18px; white-space: nowrap; flex-shrink: 0; margin-top: 4px; -unity-text-align: middle-left; }
+ .ct-clip-frame-copy { color: var(--ct-card); font-size: 22px; white-space: normal; flex-shrink: 0; -unity-text-align: upper-left; }
+ .ct-clip-handles { flex-direction: row; align-items: center; flex-shrink: 0; margin-bottom: 8px; }
+ .ct-clip-range-info { flex-grow: 1; min-width: 0; margin-left: 16px; align-items: flex-end; }
++.ct-clip-brief { color: var(--ct-card); font-size: 24px; white-space: nowrap; flex-shrink: 0; margin-bottom: 4px; }
+ .ct-clip-range { color: var(--ct-accent); font-size: 28px; white-space: nowrap; flex-shrink: 0; align-self: stretch; -unity-text-align: middle-right; }
+ .ct-clip-kept, .ct-clip-instruction { color: var(--ct-game-blue-light); font-size: 20px; white-space: nowrap; flex-shrink: 0; align-self: stretch; -unity-text-align: middle-right; }
+-.ct-clip-preview { min-height: 156px; flex-direction: row; align-items: center; flex-shrink: 0; border-left-width: 4px; border-left-color: var(--ct-game-cyan); padding: 12px 20px; background-color: var(--ct-game-outline); border-radius: 12px; margin-bottom: 8px; }
+-.ct-clip-preview-copy-area { flex-grow: 1; min-width: 0; }
+-.ct-clip-preview-label { color: var(--ct-game-blue-light); font-size: 18px; letter-spacing: 2px; white-space: nowrap; flex-shrink: 0; }
+-.ct-clip-preview-frame { color: var(--ct-game-cyan); font-size: 22px; white-space: nowrap; flex-shrink: 0; margin: 4px 0; }
+-.ct-clip-preview-copy { color: var(--ct-card); font-size: 30px; white-space: normal; flex-shrink: 0; }
+-.ct-clip-feedback { color: var(--ct-game-green); font-size: 24px; white-space: nowrap; flex-shrink: 0; min-height: 34px; margin-bottom: 8px; }
+-.ct-clip-mistake { color: var(--ct-game-coral); }
+ .ct-clip-controls { flex-direction: row; align-items: center; flex-shrink: 0; }
+ .ct-clip-spacer { flex-grow: 1; }
+ .ct-clip-control { min-width: 240px; min-height: 124px; flex-shrink: 0; margin: 0 16px 0 0; padding: 16px 24px; border-width: 2px; border-color: var(--ct-control-ring-active); border-radius: 20px; background-color: var(--ct-deep); color: var(--ct-card); font-size: 26px; white-space: nowrap; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-text-outline-width: 0; }
+@@ -54,7 +54,7 @@
+ .ct-clip-primary { min-width: 360px; margin-right: 0; background-color: var(--ct-accent); border-color: var(--ct-accent); color: var(--ct-ink); }
+ .ct-clip-primary:hover { background-color: var(--ct-accent-hover); }
+ .ct-clip-end { min-width: 320px; }
+-.ct-clip-preview-button { min-width: 360px; margin-left: 24px; margin-right: 0; }
++.ct-clip-preview-button { min-width: 320px; }
+ .ct-clip-footnote { color: var(--ct-line); font-size: 18px; white-space: nowrap; flex-shrink: 0; -unity-text-align: middle-center; margin-top: 8px; }
+ .ct-clip-paused { position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: var(--ct-scrim); border-radius: 24px; align-items: center; justify-content: center; }
+ .ct-clip-pause-panel { width: 1040px; padding: 40px; background-color: var(--ct-ink); border-width: 2px; border-color: var(--ct-control-ring-active); border-radius: 24px; }
+--- a/client/Assets/Scripts/App/Review/ClipCutPresentationReview.cs
++++ b/client/Assets/Scripts/App/Review/ClipCutPresentationReview.cs
+@@ -18,11 +18,13 @@
+         [Serializable] private sealed class Receipt
+         {
+             public bool pass;
++            public string revision="visual-editing-bench-v1-post-cut-reveal";
++            public System.Collections.Generic.List<string> imageWitnesses=new System.Collections.Generic.List<string>();
+             public int score, cuts, clean;
+             public double wallSeconds, pausedSeconds;
+             public string failure;
+             public List<string> checks = new List<string>(), captures = new List<string>();
+-            public string limits = "Native local original storyboard trimming layout/callback review. Main scripted run disables OS focus observation and separately invokes real focus/pause handlers. Programmatic NavigationSubmit invokes actual buttons; physical Android touches/background delivery, fun/retention and paid routing remain unverified. No API, mic, real account action or payout.";
++            public string limits = "Native local generated storyboard art, measured atlas crop, hidden-before-Cut semantic labels, layout and callback review. Images are original fictional scenes based on credited Snow/Rain references. Main scripted run disables OS focus observation and separately invokes real focus/pause handlers. Programmatic NavigationSubmit invokes actual buttons; physical Android touches/background delivery, fun/retention and paid routing remain unverified. No API, mic, real account action or payout.";
+         }
+         public static async Task Run(PhoneShell phone, PracticeJobsApp practice, string directory, CancellationToken owner)
+         {
+@@ -90,7 +92,7 @@
+                 {
+                     var reel=deck.Current;Need(seen.Add(reel.Story),"Repeated authored reel");
+                     Need(root.Q<Label>(className:"ct-clip-reel-title").text==ClipCutStrings.Title(reel),"Native reel differs from seeded sequence");
+-                    Inspect(root);await Capture(directory,"reel-"+reelIndex+"-open",receipt,ct);
++                    Inspect(root);InspectStory(root,reel,false,receipt);await Capture(directory,"reel-"+reelIndex+"-open",receipt,ct);
+                     if(reelIndex==0)
+                     {
+                         await Move(root,false,2,ct);await Move(root,true,6,ct);
+@@ -125,7 +127,7 @@
+                     string expected=reelIndex==2?ClipCutStrings.T("wrong")+" · "+ClipCutStrings.T("extra"):ClipCutStrings.T("clean");
+                     Need(root.Q<Label>(className:"ct-clip-feedback").text==expected,"Cut outcome or extra-frame explanation missing");
+                     Need(root.Q<Label>(className:"ct-clip-instruction").text==ClipCutStrings.F("answer",first+1,last+1),"Submitted reel does not show concise bounds");
+-                    Inspect(root);await Capture(directory,"reel-"+reelIndex+"-cut",receipt,ct);
++                    Inspect(root);InspectStory(root,reel,true,receipt);await Capture(directory,"reel-"+reelIndex+"-cut",receipt,ct);
+                     await Activate(root,"clip-next",ct);deck.Submit(reelIndex,0);deck.Next(reelIndex,0);
+                 }
+                 Need(play.IsCompleted&&seen.Count==5,"All reels did not settle");var result=await play;
+@@ -146,6 +148,28 @@
+                 throw;
+             }
+             finally{File.WriteAllText(Path.Combine(directory,"clip-cut-review.json"),JsonUtility.ToJson(receipt,true));}
++        }
++        private static void InspectStory(VisualElement root,ClipReel reel,bool revealed,Receipt receipt)
++        {
++            var atlasNames=new HashSet<string>();var rects=new List<Rect>();
++            for(int i=0;i<8;i++)
++            {
++                var button=root.Q<Button>("clip-frame-"+i);var image=button.Q<Image>("clip-thumbnail-"+i);
++                Need(image!=null&&image.image is Texture2D&&image.scaleMode==ScaleMode.ScaleToFit,"Missing or stretched original frame "+i);
++                Need(image.image.name=="story-"+reel.Story,"Image belongs to a different reel");
++                var r=image.sourceRect;Need(r.width>100&&r.height>100&&r.xMin>=0&&r.yMin>=0&&r.xMax<=image.image.width&&r.yMax<=image.image.height,"Invalid source rectangle");
++                foreach(var previous in rects)Need(!previous.Overlaps(r),"Storyboard rectangles overlap");rects.Add(r);atlasNames.Add(image.image.name);
++                Need(Visible(button.Q<Label>(className:"ct-clip-frame-kind"))==revealed,"Answer label revealed at the wrong time");
++                Need(button.Q<Label>(className:"ct-clip-frame-copy").text==ClipCutStrings.Frame(reel,i),"Localized narrative caption missing");
++                Need(button.tooltip==ClipCutStrings.F("frameCaption",i+1,ClipCutStrings.Frame(reel,i)),"Accessible narrative tooltip missing");
++                Within(image.worldBound,button.LocalToWorld(button.contentRect),"Thumbnail escapes hit region");
++                receipt.imageWitnesses.Add(reel.Story+":"+i+" rect="+r+" texture="+image.image.width+"x"+image.image.height+" reveal="+revealed);
++            }
++            Need(atlasNames.Count==1,"Film strip loaded unrelated atlases");
++            var monitor=root.Q<Image>("clip-monitor");Need(monitor!=null&&monitor.image!=null&&monitor.scaleMode==ScaleMode.ScaleToFit,"Scene monitor missing or stretched");
++            Need(rects.Contains(monitor.sourceRect),"Monitor frame is not one of the measured source shots");
++            Need(monitor.worldBound.height>=200&&monitor.worldBound.width>=400,"Scene monitor is not readable at this layout");
++            if(!revealed)Need(root.Q<Label>(className:"ct-clip-preview-frame").text==ClipCutStrings.F("previewNumber",rects.IndexOf(monitor.sourceRect)+1),"Monitor leaks semantic answer before Cut");
+         }
+         private static async Task Move(VisualElement root,bool start,int frame,CancellationToken ct)
+         {
+--- /dev/null
++++ b/client/Assets/Scripts/Editor/ClipCutStoryboardImport.cs
+@@ -0,0 +1,61 @@
++#if UNITY_EDITOR
++using System;
++using System.IO;
++using System.Linq;
++using System.Security.Cryptography;
++using UnityEditor;
++using UnityEngine;
++
++namespace CTLife.EditorTools
++{
++    /// <summary>Imports five original storyboard atlases only. Does not save scenes or unrelated assets.</summary>
++    public static class ClipCutStoryboardImport
++    {
++        private const string Source="art/direction-20261006/minigame-presentation-20261007/art";
++        private const string Output="Assets/Resources/UI/ClipCut";
++        private static readonly string[] Hashes={
++            "a6ffee4d85820e253618e26ef97bf06540aab4926e97d5e2f05824919501503a",
++            "f328c320f0200bf4edd50f8e6d82602efa93044c42f6bcf369d0f3420e8e4e36",
++            "6a5164446ae06e15fc2a0cf4ad131648780830d455f4cef5554555840431b450",
++            "25e1caf12ac7c737ad341a89216f6279d4414a6b55c14d5d56adcb0fe8d7228e",
++            "ff066e4431f367e7afab353763f4a45237ae84975138852d51eecd30b7d65128"};
++        private static readonly int[] Widths={836,1144,1145,1374,1385},Heights={1881,1375,1374,1145,1136};
++        [Serializable] private sealed class Row{public string path,sha256,format;public int width,height;public long runtimeBytes;}
++        [Serializable] private sealed class Receipt{public string status="imported_not_visual_or_device_accepted";public Row[] atlases;}
++        public static void Import()
++        {
++            if(EditorApplication.isPlayingOrWillChangePlaymode)throw new InvalidOperationException("Import requires Edit mode.");
++            string project=Directory.GetParent(Application.dataPath).FullName,repo=Directory.GetParent(project).FullName;
++            var sources=Enumerable.Range(0,5).Select(i=>Path.Combine(repo,Source,"story-"+i+"-atlas-v1.png")).ToArray();
++            for(int i=0;i<5;i++)
++            {
++                Require(Hash(sources[i])==Hashes[i],"Storyboard source changed: "+i);
++                string target=Path.Combine(project,Output,"story-"+i+".png");
++                Require(!File.Exists(target)||Hash(target)==Hashes[i],"Existing storyboard differs; no overwrite: "+target);
++            }
++            Directory.CreateDirectory(Path.Combine(project,Output));var receipt=new Receipt{atlases=new Row[5]};
++            for(int i=0;i<5;i++)
++            {
++                string asset=Output+"/story-"+i+".png",target=Path.Combine(project,asset);
++                if(!File.Exists(target))File.Copy(sources[i],target,false);
++                AssetDatabase.ImportAsset(asset,ImportAssetOptions.ForceSynchronousImport);
++                var importer=(TextureImporter)AssetImporter.GetAtPath(asset);
++                importer.textureType=TextureImporterType.Default;importer.sRGBTexture=true;importer.alphaSource=TextureImporterAlphaSource.None;
++                importer.mipmapEnabled=false;importer.isReadable=false;importer.wrapMode=TextureWrapMode.Clamp;importer.filterMode=FilterMode.Bilinear;
++                importer.npotScale=TextureImporterNPOTScale.None;importer.maxTextureSize=2048;importer.textureCompression=TextureImporterCompression.Uncompressed;
++                // Keep the Editor reference exact; Android uses ASTC with native device visual review still required.
++                var android=importer.GetPlatformTextureSettings("Android");android.overridden=true;android.maxTextureSize=2048;android.format=TextureImporterFormat.ASTC_6x6;
++                importer.SetPlatformTextureSettings(android);importer.SaveAndReimport();
++                var texture=AssetDatabase.LoadAssetAtPath<Texture2D>(asset);
++                Require(texture!=null&&texture.width==Widths[i]&&texture.height==Heights[i],"Imported dimensions changed: "+asset);
++                Require(Hash(target)==Hashes[i],"Importer changed source PNG bytes: "+asset);
++                receipt.atlases[i]=new Row{path=asset,sha256=Hashes[i],width=texture.width,height=texture.height,format=texture.format.ToString(),runtimeBytes=UnityEngine.Profiling.Profiler.GetRuntimeMemorySizeLong(texture)};
++            }
++            File.WriteAllText(Path.Combine(repo,"art/direction-20261006/minigame-presentation-20261007/import-receipt.json"),JsonUtility.ToJson(receipt,true));
++            Debug.Log("[clip-storyboard-import] Five atlases imported; no scene/global asset save.");
++        }
++        private static string Hash(string path){using var sha=SHA256.Create();return BitConverter.ToString(sha.ComputeHash(File.ReadAllBytes(path))).Replace("-","").ToLowerInvariant();}
++        private static void Require(bool value,string message){if(!value)throw new InvalidDataException(message);}
++    }
++}
++#endif
+--- a/client/Assets/Resources/UI/Licenses/Snow.txt
++++ b/client/Assets/Resources/UI/Licenses/Snow.txt
+@@ -7,3 +7,5 @@
+ Modified for CT Life: adult proportions and orbital adjustment; simplified and grounded geometry; adapted Humanoid skeleton and remapped weights; merged skinned renderer; repacked texture atlas and PBR texture bakes; runtime materials and animation retargeting. The original source is Snow v4. Modifications were made in October 2026.
+ 
+ This attribution does not imply that Blender Foundation or Blender Studio endorses CT Life. The licensed character is supplied without warranties; the full CC-BY 4.0 notice is available alongside this credit.
++
++Clip Cut storyboards (October 2026): original fictional scenes generated using rendered references of the CT Life character derivative. Pose, expression, costume details, lighting and setting were reinterpreted for the two-dimensional storyboards. These are generated illustrations, not captured gameplay or third-party video. The Blender Foundation / Blender Studio does not endorse CT Life.
+--- a/client/Assets/Resources/UI/Licenses/Rain.txt
++++ b/client/Assets/Resources/UI/Licenses/Rain.txt
+@@ -9,3 +9,5 @@
+ This attribution does not imply that Blender Foundation or Blender Studio endorses CT Life. The licensed character is supplied without warranties; the full CC-BY 4.0 notice is available alongside this credit.
+ 
+ Skin-weight correction, 6 October 2026: stale source vertex groups whose bones do not exist are ignored, matching the original source rig; remaining anatomical weights are normalized. Geometry, UVs, textures and rest skeleton are unchanged.
++
++Clip Cut storyboards (October 2026): original fictional scenes generated using rendered references of the CT Life character derivative. Pose, expression, costume details, lighting and setting were reinterpreted for the two-dimensional storyboards. These are generated illustrations, not captured gameplay or third-party video. The Blender Foundation / Blender Studio does not endorse CT Life.

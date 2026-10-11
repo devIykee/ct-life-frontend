@@ -1,0 +1,78 @@
+--- a/client/Assets/Scripts/Editor/PlayableVenueIntegration.cs
++++ b/client/Assets/Scripts/Editor/PlayableVenueIntegration.cs
+@@ -74,6 +74,8 @@
+                 string expected = (string)file.Value;
+                 if (file.Name == "Assets/Scripts/World/Avatars/CafeWorkExitGoals.cs")
+                 { Need(expected == (string)clock["source_baseline_sha256"], "Clock proof does not derive from pinned source."); expected = (string)clock["candidate_sha256"]; }
++                if (file.Name == "Assets/Scripts/World/Players/LocalPlayerController.cs" && proof["arrival_amendment"] is JObject amendment)
++                    expected = AcceptedArrivalAmendment(amendment, expected);
+                 RequireHash(file.Name, expected);
+             }
+             foreach (var file in ((JObject)runtime["data_sources"]).Properties()) RequireHash(Path.Combine(Evidence, file.Name), (string)file.Value);
+@@ -102,6 +104,66 @@
+                 }
+             }
+             return proof;
++        }
++
++        private static string AcceptedArrivalAmendment(JObject amendment, string sourceBaseline)
++        {
++            const string path = "Assets/Scripts/World/Players/LocalPlayerController.cs";
++            const string baseline = "3c5dc287b4781d5c053ca46ab9f2699d6e40eae9c58a71e624e6ddde4df25a71";
++            const string candidate = "43a77d278475b2af00c1d03484f36e31c9aa3878a9b174a3e510f62b9281c932";
++            Need((string)amendment["revision"] == "validated-arrival-queue-v3" && (string)amendment["source"] == path &&
++                sourceBaseline == baseline && (string)amendment["baseline_sha256"] == baseline && (string)amendment["candidate_sha256"] == candidate,
++                "Only the exact reviewed arrival-consumption and latest-intent queue amendment is allowed.");
++            Need(File.Exists(Output + "/StageReceipt.json"), "Arrival amendment is for an existing persistent stage.");
++            RequireHash((string)amendment["baseline_source"]?["path"], baseline);
++            RequireHash((string)amendment["candidate_source"]?["path"], candidate);
++            RequireHash((string)amendment["review_helper_source"]?["path"], (string)amendment["review_helper_source"]?["sha256"]);
++            var review = PinnedJson(amendment["review_receipt"]);
++            var inputs = PinnedJson(amendment["review_input_manifest"]);
++            const string phonePath = "Assets/Scripts/UI/Phone/PhoneShell.cs";
++            const string phoneBaseline = "400abe1c991f615f787c5c5faf82d932d395cad2a1a18a5d40c7622bf6c9dc48";
++            const string phoneCandidate = "0f88f0acf1745a910e43a96e02fdabf7d0d0885c270657f702ca13f7d74010e7";
++            var phone = amendment["phone_hud_source"];
++            Need((string)phone?["baseline_sha256"] == phoneBaseline && (string)phone?["candidate_sha256"] == phoneCandidate &&
++                (string)inputs["runtime_files"]?[phonePath] == phoneCandidate, "Exact tested PhoneShell restoration source is required.");
++            RequireHash((string)phone?["baseline_source"], phoneBaseline);
++            RequireHash((string)phone?["candidate_source"], phoneCandidate);
++            RequireHash(phonePath, phoneCandidate);
++            Need((bool?)review["phone_hud_restoration_review"]?["pass"] == true &&
++                (bool?)review["phone_hud_restoration_review"]?["initial_normal_phone_restore"]?["pass"] == true &&
++                review["phone_hud_restoration_review"]?["cases"] is JArray phoneCases && phoneCases.Count == 5 &&
++                phoneCases.All(x => (bool?)x["pass"] == true) && new[] { "visible-close", "visible-reopen-close", "prior-explicit-none-close", "visible-dispose", "prior-explicit-none-dispose" }
++                    .All(label => phoneCases.Count(x => (string)x["label"] == label) == 1), "Actual phone restore/reopen/Dispose or prior-hidden controls failed.");
++            Need((string)review["revision"] == "saved-playable-venue-flow-arrival-queue-hud-v4" && (bool?)review["pass"] == true &&
++                (bool?)review["cleanup_complete"] == true && (bool?)review["services_restored"] == true && (bool?)review["catalog_memory_restored"] == true &&
++                (bool?)review["resolver_restored"] == true && (bool?)review["original_venue_reloaded"] == true && (bool?)review["hud_visibility_pass"] == true && (int?)review["errors"] == 0 &&
++                review["pinned_file_drift"] is JArray drift && drift.Count == 0 && review["cleanup_errors"] is JArray errors && errors.Count == 0,
++                "Corrected arrival needs the passing actual saved-room ownership review.");
++            Need((string)review["helper_sha256"] == (string)amendment["review_helper_source"]["sha256"] &&
++                (string)review["input_manifest_sha256"] == (string)amendment["review_input_manifest"]["sha256"] &&
++                (string)inputs["runtime_files"]?[path] == candidate &&
++                (string)review["stage_receipt_sha256"] == Hash(Output + "/StageReceipt.json") &&
++                (string)inputs["stage_receipt"]?["sha256"] == (string)review["stage_receipt_sha256"], "Arrival proof source/input/stage differs.");
++            Need((int?)review["completed_seat_cases"] == 16 && (int?)review["injected_fixture_seat_confirmations"] == 16 &&
++                review["seat_cases"] is JArray seats && seats.Count == 16 && seats.All(x => (bool?)x["pass"] == true) &&
++                (int?)review["visit_count"] == 10 && (int?)review["button_callbacks"] == 11 && (int?)review["public_join_attempts"] == 9 &&
++                (int?)review["private_join_attempts"] == 0 && (int?)review["transport_mutations"] == 0 && (int?)review["cancelled_joins"] == 1,
++                "Corrected source was not exercised through all saved-room Flow cases.");
++            var arrival = review["arrival_preservation_review"];
++            Need((bool?)arrival?["latest_update_submission"]?["pass"] == true &&
++                (int?)arrival?["latest_update_submission"]?["submission_count"] == 1 &&
++                (float?)arrival?["latest_update_submission"]?["movement_m"] > 1f,
++                "Same-frame latest destination must actually submit once and move in the saved room.");
++            Need((bool?)arrival?["pass"] == true && (bool?)arrival?["immediate_positive_control"] == true &&
++                arrival["trials"] is JArray trials && trials.Count(x => (bool?)x["retained_pending_request"] == true) == 3 &&
++                trials.Count(x => (bool?)x["actual_arrival_once"] == true && (bool?)x["duplicate_calls_emit_nothing"] == true) == 2 &&
++                trials.Count(x => (string)x["label"] == "cancel" && (bool?)x["pending_cleared"] == true && (bool?)x["no_dispatch"] == true) == 1,
++                "Observed consumption correction lacks actual retention/arrival/cancel/replacement controls.");
++            foreach (string id in new[] { "terminal_cafe", "spaces_studio" })
++                Need((string)review["prefabs"]?[id] == Hash(Output + "/" + id + ".prefab"), "Corrected runtime reviewed a different saved room.");
++            // Original motion receipts and stage proof stay byte-for-byte intact. All their other
++            // runtime/data/art pins are still checked by ReadProofs; only this exact source is amended.
++            return candidate;
+         }
+ 
+         private static void Stage()

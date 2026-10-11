@@ -1,0 +1,110 @@
+--- a/client/Assets/Scripts/App/Review/SavedVenueFlowReview.cs
++++ b/client/Assets/Scripts/App/Review/SavedVenueFlowReview.cs
+@@ -89,10 +89,10 @@
+             directory = Path.GetFullPath(directory); Directory.CreateDirectory(directory);
+             var receipt = new JObject
+             {
+-                ["revision"] = "saved-playable-venue-flow-v1", ["pass"] = false,
++                ["revision"] = "saved-playable-venue-flow-arrival-v2", ["pass"] = false,
+                 ["checks"] = new JArray(), ["visits"] = new JArray(), ["seat_cases"] = new JArray(),
+                 ["captures"] = new JArray(), ["cleanup_errors"] = new JArray(),
+-                ["limits"] = "Actual Flow EnterGame, MapApp/Home UI callbacks, VenueSession/Loader, persisted profiles/controllers/motions, two approaches per family per look, injected seat confirmations and real stand presentation. Public joins are counted failures and use Flow's existing offline fallback; no HTTP/RTC/mic/server success or economy mutation. Instant entry is the selected game interaction. No new full-pose, all-seat-exit, remote, device, touch or frame-rate acceptance. The deliberately early private arrival call is an isolated negative experiment, not a natural-race reproduction."
++                ["limits"] = "Actual Flow EnterGame, MapApp/Home UI callbacks, VenueSession/Loader, persisted profiles/controllers/motions, two approaches per family per look, injected seat confirmations and real stand presentation. Public joins are counted failures and use Flow's existing offline fallback; no HTTP/RTC/mic/server success or economy mutation. Instant entry is the selected game interaction. No new full-pose, all-seat-exit, remote, device, touch or frame-rate acceptance. Deliberate early private arrival calls test request retention, followed by real arrival, cancellation and newer-target controls. They are not a reproduction or diagnosis of the earlier intermittent natural failure."
+             };
+             using var deadline = CancellationTokenSource.CreateLinkedTokenSource(owner);
+             deadline.CancelAfter(TimeSpan.FromSeconds(600)); var ct = deadline.Token;
+@@ -166,7 +166,7 @@
+                     await TravelByMap("terminal_cafe");
+                     var local = VenueSession.Current.LocalPlayer;
+                     CheckSelectedLook(local, look, proof);
+-                    if (look == "snow") await EarlyArrivalNegative(local, "terminal_1", directory, receipt, ct);
++                    if (look == "snow") await ArrivalPreservationReview(local, directory, receipt, ct);
+                     await Capture(directory, look + "-cafe-arrival", receipt, ct);
+                     foreach (string spot in new[] { "terminal_1", "table_1" })
+                         for (int repeat = 0; repeat < 2; repeat++)
+@@ -411,25 +411,69 @@
+                 record["arrival_trace"] = label + "-arrival.json"; record["exit_trace"] = label + "-exit.json";
+             }
+         }
+-        private static async Task EarlyArrivalNegative(LocalPlayerController local, string spot, string directory, JObject receipt, CancellationToken ct)
+-        {
+-            int sits = 0; void Observe(string command) { if (command.StartsWith("sit:", StringComparison.Ordinal)) sits++; }
++        private static async Task ArrivalPreservationReview(LocalPlayerController local, string directory, JObject receipt, CancellationToken ct)
++        {
++            var venue = VenueSession.Current.Venue; var intents = new List<string>();
++            void Observe(string command) { if (command.StartsWith("sit:", StringComparison.Ordinal)) intents.Add(command); }
+             local.ReviewCommandObserved += Observe;
++            var evidence = new JObject { ["pass"] = false, ["trials"] = new JArray(),
++                ["scope"] = "Only real GoSit/CancelMovement/arrival plus deliberately early private ArriveAtDestination calls. No agent property injection. Observed consume-before-validation behavior is corrected; earlier intermittent failure's cause remains unknown." };
++            receipt["arrival_preservation_review"] = evidence;
++            string Wire(string spot) => "sit:" + venue.WireSpotId(spot);
++            JObject Early(string label)
++            {
++                double time = Time.realtimeSinceStartupAsDouble; var before = NavRow(local, time);
++                bool hasDestination = Field<bool>(local, "_hasDestination"); string pending = Field<string>(local, "_pendingSpot"); var destination = Field<Vector3>(local, "_destination");
++                Need(hasDestination && pending != null && (float)before["distance_to_destination"] > .3f, "Early control must be outside arrival radius: " + label);
++                int count = intents.Count; bool arrived = (bool)Invoke(local, "ArriveAtDestination");
++                var trial = new JObject { ["label"] = label, ["before"] = before, ["after"] = NavRow(local, time), ["returned"] = arrived };
++                ((JArray)evidence["trials"]).Add(trial);
++                Need(!arrived && intents.Count == count && Field<bool>(local, "_hasDestination") == hasDestination && Field<string>(local, "_pendingSpot") == pending && Field<Vector3>(local, "_destination") == destination,
++                    "Rejected early arrival consumed/replaced an accepted request: " + label);
++                trial["retained_pending_request"] = true; return trial;
++            }
++            async Task Arrival(string spot, string label, int before)
++            {
++                double began = Time.realtimeSinceStartupAsDouble; var rows = new JArray { NavRow(local, began) };
++                try
++                {
++                    while (intents.Count == before && Time.realtimeSinceStartupAsDouble - began < 18)
++                    { await Awaitable.NextFrameAsync(ct); rows.Add(NavRow(local, began)); }
++                    Need(intents.Count == before + 1 && intents.Last() == Wire(spot) && string.IsNullOrEmpty(local.SeatedSpot), "Actual retained/newest approach must dispatch exactly once: " + label);
++                    Need(!Field<bool>(local, "_hasDestination") && Field<string>(local, "_pendingSpot") == null, "Validated arrival did not consume its request.");
++                    Need(venue.TryGetSpotApproach(spot, out var approach) && Xz(local.GetComponent<NavMeshAgent>().nextPosition, approach) <= .1f, "Retained intent dispatched away from exact approach.");
++                    int once = intents.Count; Invoke(local, "ArriveAtDestination"); Invoke(local, "ArriveAtDestination"); await Frames(2, ct);
++                    Need(intents.Count == once, "Repeated valid arrival emitted a duplicate seat request.");
++                    ((JArray)evidence["trials"]).Add(new JObject { ["label"] = label, ["actual_arrival_once"] = true, ["duplicate_calls_emit_nothing"] = true, ["final"] = NavRow(local, began), ["trace"] = "arrival-control-" + label + ".json" });
++                }
++                finally { File.WriteAllText(Path.Combine(directory, "arrival-control-" + label + ".json"), rows.ToString(Formatting.Indented)); }
++            }
+             try
+             {
+-                Need(local.GoSit(spot), "Negative setup needs actual accepted far approach.");
+-                double start = Time.realtimeSinceStartupAsDouble; var before = NavRow(local, start);
+-                Need((bool)before["has_destination"] && !string.IsNullOrEmpty((string)before["pending_spot"]) && (float)before["distance_to_destination"] > 1f, "Early-arrival negative was not far/pending.");
+-                bool result = (bool)Invoke(local, "ArriveAtDestination"); var after = NavRow(local, start);
+-                bool consumed = !Field<bool>(local, "_hasDestination") && Field<string>(local, "_pendingSpot") == null;
+-                Need(!result && sits == 0 && consumed, "Expected source-pinned consume-before-validation negative changed; review the runtime before updating this experiment.");
+-                receipt["early_arrival_negative"] = new JObject { ["before"] = before, ["after"] = after, ["returned"] = result, ["sit_intents"] = sits,
+-                    ["pending_intent_consumed"] = consumed, ["invocation"] = "Deliberate private method call while >1m away; no agent properties injected",
+-                    ["interpretation"] = "Demonstrates the current early-call consumption behavior. Does not diagnose the earlier intermittent natural arrival failure or approve that behavior." };
+-                // Stop the diagnostic request using the real public cancellation path; actual cases reissue GoSit.
+-                local.CancelMovement(); await Frames(2, ct);
+-            }
+-            finally { local.ReviewCommandObserved -= Observe; }
++                Need(local.GoSit("terminal_1"), "Retained-request control could not start."); Early("retained-first");
++                await Arrival("terminal_1", "retained-first", 0);
++                Need(local.GoSit("terminal_2"), "Cancellation control could not start."); Early("before-cancel");
++                local.CancelMovement(); int afterCancel = intents.Count;
++                Need(!Field<bool>(local, "_hasDestination") && Field<string>(local, "_pendingSpot") == null, "Cancellation did not release queued intent.");
++                Invoke(local, "ArriveAtDestination"); await Frames(2, ct);
++                Need(intents.Count == afterCancel && string.IsNullOrEmpty(local.SeatedSpot), "Cancelled intent dispatched after early retry.");
++                ((JArray)evidence["trials"]).Add(new JObject { ["label"] = "cancel", ["pending_cleared"] = true, ["no_dispatch"] = true });
++                Need(local.GoSit("terminal_2") && local.GoSit("terminal_3"), "Newer-target control could not replace destination.");
++                Need(Field<string>(local, "_pendingSpot") == "terminal_3", "Newest spot does not own destination."); Early("newer-target");
++                await Arrival("terminal_3", "newer-target", afterCancel);
++                Need(!intents.Contains(Wire("terminal_2")), "Superseded/cancelled target dispatched.");
++                int immediate = intents.Count; Need(local.GoSit("terminal_3"), "Validated immediate-arrival branch rejected.");
++                Need(intents.Count == immediate + 1 && intents.Last() == Wire("terminal_3") && !Field<bool>(local, "_hasDestination") && Field<string>(local, "_pendingSpot") == null,
++                    "Immediate validated arrival did not dispatch once and consume fields.");
++                Invoke(local, "ArriveAtDestination"); await Frames(2, ct); Need(intents.Count == immediate + 1, "Immediate-arrival repeated callback duplicated claim.");
++                evidence["immediate_positive_control"] = true; evidence["pass"] = true;
++                evidence["not_exercised"] = "An immediate preflight PathComplete followed synchronously by a failed fresh path check requires an actual changed path; this fixture does not inject NavMesh state to fabricate that branch. Rejected-immediate cleanup is source-reviewed only.";
++            }
++            finally
++            {
++                evidence["observed_sit_intents"] = JArray.FromObject(intents);
++                local.CancelMovement(); local.ReviewCommandObserved -= Observe;
++            }
+         }
+         private static JObject NavRow(LocalPlayerController local, double start)
+         {

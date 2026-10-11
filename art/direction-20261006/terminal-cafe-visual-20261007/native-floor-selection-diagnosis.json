@@ -1,0 +1,27 @@
+{
+  "status": "actual_native_partial_mesh_diagnosis",
+  "cause": "Height tolerance selected both visible textured quad and underlying slab top. These are distinct surfaces1mm apart, not duplicate LODs or coincident/double-sided copies.",
+  "source_authoring": "env_custom.py floor_piece adds a tiled_quad at z0 plus a slab box whose top is\u2212.001. Import normalizes slab bottom; final tile translation puts textured top near0 and slab top\u2212.001.",
+  "rows": [
+    {
+      "mesh": "client/Assets/Art/Candidates/TerminalCafe20261007Art/Meshes/SocialFloor0.asset",
+      "sha256": "e9b90cc457123fd98b849c72f888742001af149960035d10576c75de3cfce526",
+      "vertices": 432,
+      "stride": 40,
+      "selected_triangles": 32,
+      "selected_area_m2": 64.0,
+      "selected_y_min": -7.450580596923828e-09,
+      "selected_y_max": -7.450580596923828e-09
+    },
+    {
+      "mesh": "client/Assets/Art/Candidates/TerminalCafe20261007Art/Meshes/SocialFloor1.asset",
+      "sha256": "2140fd740e631540d5e00ca4b7d6f5e5045719cd452f08fb06cec0473595fd7b",
+      "vertices": 2592,
+      "stride": 40,
+      "selected_triangles": 32,
+      "selected_area_m2": 64.0,
+      "selected_y_min": -0.0010000094771385193,
+      "selected_y_max": -0.0010000094771385193
+    }
+  ]
+}

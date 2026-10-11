@@ -1,0 +1,78 @@
+--- TerminalCafeCandidateB3Hits.cs
++++ TerminalCafeCandidateB3Tables.cs
+@@ -20,10 +20,10 @@
+     /// overwrite original assets or imply that the illustrated activity pockets are live services.
+     /// Stage and bake in separate coordinator-owned batch processes; verify external hashes after exit.
+     /// </summary>
+-    public static class TerminalCafeCandidateB3Hits
++    public static class TerminalCafeCandidateB3Tables
+     {
+-        public const string Output = "Assets/Art/Candidates/TerminalCafe20261006B3Hits";
+-        public const string PrefabPath = Output + "/TerminalCafeB3Hits.prefab";
++        public const string Output = "Assets/Art/Candidates/TerminalCafe20261006B3Tables";
++        public const string PrefabPath = Output + "/TerminalCafeB3Tables.prefab";
+         private const string Canonical = "Assets/Art/Generated/Venues/TimelineSquare.prefab";
+         private const string Snapshot = "Assets/Resources/Contract/config_snapshot.json";
+         private const string Manifest = "Assets/Art/environment/manifest.json";
+@@ -36,10 +36,10 @@
+         private static ProtectedFiles _protection;
+         private static int _joineryTriangles;
+ 
+-        [MenuItem("CT Life/Candidates/Stage Terminal Cafe B3 Hits")]
++        [MenuItem("CT Life/Candidates/Stage Terminal Cafe B3 Tables")]
+         public static void BuildCandidate() => Protected("stage", Stage);
+ 
+-        [MenuItem("CT Life/Candidates/Bake Terminal Cafe B3 Hits")]
++        [MenuItem("CT Life/Candidates/Bake Terminal Cafe B3 Tables")]
+         public static void BakeCandidate() => Protected("bake", () =>
+         {
+             var receipt = JObject.Parse(File.ReadAllText(Output + "/StageReceipt.json"));
+@@ -129,14 +129,15 @@
+                 foreach(var spot in seats)
+                 {
+                     if(!spot.hasPosition||Mathf.Abs(spot.rotY)>.001f)throw new InvalidDataException("Unexpected social seat orientation "+spot.id);
++                    // The social table and its three decorative objects move together by -.20m Z.
+                     // One shared physical chair for both looks. Native support target=.450m, fixed floor contact.
+                     // Pose contact remains a separate joint motion/art gate; no actor/wire-anchor offset.
+                     SeatFurniture[spot.id] = new List<GameObject> {
+                         Add("home_chair_1",spot.x,spot.z-.30f,yaw:180,scale:1.08f,heightScale:.450f/.428800762f,solid:true),
+-                        Add("home_table_roundsmall",spot.x,spot.z+1.20f,solid:true) };
+-                    Add("cup_coffee",spot.x-.22f,spot.z+.99f,y:.75f);
+-                    Add("croissant",spot.x+.17f,spot.z+1.17f,y:.75f);
+-                    Add("plant_small",spot.x,spot.z+1.48f,y:.75f,scale:.60f);
++                        Add("home_table_roundsmall",spot.x,spot.z+1.00f,solid:true) };
++                    Add("cup_coffee",spot.x-.22f,spot.z+.79f,y:.75f);
++                    Add("croissant",spot.x+.17f,spot.z+.97f,y:.75f);
++                    Add("plant_small",spot.x,spot.z+1.28f,y:.75f,scale:.60f);
+                 }
+                 // Workstations are individual furniture; tall greenery breaks up the rigid back rows.
+                 foreach(float z in new[]{4.0f,8.0f})foreach(float x in new[]{-5f,5f})
+@@ -243,9 +244,9 @@
+                     ["placements"]=Placements.DeepClone(),["source_lod0_triangles_manifest_estimate"]=Placements.Sum(p=>(int)p["lod0_triangles"]),
+                     ["interaction_tagged_spots"]=SeatFurniture.Count,["interaction_mesh_colliders"]=go.GetComponentsInChildren<MeshCollider>(true).Length,
+                     ["additional_joinery_triangles"]=_joineryTriangles,["static_mesh_renderers"]=go.GetComponentsInChildren<MeshRenderer>(true).Length,["baked_only_lights"]=6,
+-                    ["limitations"]="B3 SOCIAL + HIT GEOMETRY CANDIDATE ONLY. Tall navigation bounds never become invisible furniture colliders. Existing SpotAnchor ancestry tags real chair/table geometry; requires explicit-target WorldInput patch and native camera-ray review.  Shared social chair top .450m and center z=anchor-.30m require corrected per-look clips and native contact review. Workstation furniture remains B2 pending hand/foot solve. Chairs now exclude walking navigation; 12 authored approaches require native runtime seat review. Identity, menu and coffee screensavers are decorative artwork. Reading sofas add no claimed seats. No registry promotion, server change or performance acceptance."
++                    ["limitations"]="B3 SOCIAL TABLE COMPOSITION + HIT GEOMETRY CANDIDATE ONLY. Four social tables and their top decorations moved -.20m Z; all chairs, anchors, approaches and work furniture unchanged. Native placement/path/render checks remain required. Tall navigation bounds never become invisible furniture colliders. Existing SpotAnchor ancestry tags real chair/table geometry; requires explicit-target WorldInput patch and native camera-ray review.  Shared social chair top .450m and center z=anchor-.30m require corrected per-look clips and native contact review. Workstation furniture remains B2 pending hand/foot solve. Chairs now exclude walking navigation; 12 authored approaches require native runtime seat review. Identity, menu and coffee screensavers are decorative artwork. Reading sofas add no claimed seats. No registry promotion, server change or performance acceptance."
+                 }.ToString());
+-                Debug.Log("CTLIFE [terminal-cafe-b3-hits] 8 terminal stations and 4 social seats staged at exact contract anchors; bake required: "+PrefabPath);
++                Debug.Log("CTLIFE [terminal-cafe-b3-tables] 8 terminal stations and 4 social seats staged at exact contract anchors; bake required: "+PrefabPath);
+             }
+             finally { _root=null; EditorSceneManager.ClosePreviewScene(preview); Materials.Clear(); }
+         }
+@@ -582,6 +583,7 @@
+                 var sourceModels=JObject.Parse(File.ReadAllText(Manifest)).Properties().Select(p=>"Assets/Art/"+(string)p.Value["fbx"]).Where(File.Exists).ToArray();
+                 var paths=AssetDatabase.GetDependencies(sourceModels,true).Concat(AssetDatabase.GetDependencies(Canonical,true))
+                     .Concat(Directory.GetFiles("Assets/Art/Candidates/TerminalCafe20261006B3Social","*",SearchOption.AllDirectories))
++                    .Concat(Directory.Exists("Assets/Art/Candidates/TerminalCafe20261006B3Hits") ? Directory.GetFiles("Assets/Art/Candidates/TerminalCafe20261006B3Hits","*",SearchOption.AllDirectories) : Array.Empty<string>())
+                     .Concat(new[] { Canonical,Snapshot,Manifest,"Assets/Resources/World/VenueContentRegistry.asset","Packages/manifest.json","Packages/packages-lock.json" })
+                     .Concat(Directory.GetFiles("ProjectSettings","*",SearchOption.AllDirectories)).Where(File.Exists).Distinct().ToList();
+                 paths.AddRange(paths.Where(p => File.Exists(p + ".meta")).Select(p => p + ".meta").ToArray());
+@@ -623,7 +625,7 @@
+                     ["status"] = status, ["error"] = error, ["post_editor_exit_hash_check_required"] = true,
+                     ["files"] = new JArray(_hashes.Select(p => new JObject { ["path"] = p.Key,["sha256"] = p.Value }))
+                 }.ToString());
+-                Debug.Log("CTLIFE [terminal-cafe-b3-hits] protection receipt: " + Path.Combine(_backup,"transaction.json"));
++                Debug.Log("CTLIFE [terminal-cafe-b3-tables] protection receipt: " + Path.Combine(_backup,"transaction.json"));
+             }
+         }
+         private static string Hash(string path)

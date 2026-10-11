@@ -1,0 +1,30 @@
+{
+  "sources": {
+    "PhoneShell.cs": "0f88f0acf1745a910e43a96e02fdabf7d0d0885c270657f702ca13f7d74010e7",
+    "SavedVenueFlowReview.cs": "8c7ef897cedd7e52786b719fccdf26265135081b75a744c8b373b827ca719b71"
+  },
+  "runs": [
+    {
+      "mode": "candidate-ui",
+      "exit_code": 0,
+      "rsp": "/tmp/ct-hud-restoration-v4-compile/candidate-ui/compile.rsp",
+      "sole_output": "/tmp/ct-hud-restoration-v4-compile/candidate-ui/CTLife.UI.dll",
+      "log": "/tmp/ct-hud-restoration-v4-compile/candidate-ui/compile.log"
+    },
+    {
+      "mode": "reference-app",
+      "exit_code": 0,
+      "rsp": "/tmp/ct-hud-restoration-v4-compile/reference-app/compile.rsp",
+      "sole_output": "/tmp/ct-hud-restoration-v4-compile/reference-app/CTLife.App.dll",
+      "log": "/tmp/ct-hud-restoration-v4-compile/reference-app/compile.log"
+    },
+    {
+      "mode": "actual-app",
+      "exit_code": 0,
+      "rsp": "/tmp/ct-hud-restoration-v4-compile/actual-app/compile.rsp",
+      "sole_output": "/tmp/ct-hud-restoration-v4-compile/actual-app/CTLife.App.dll",
+      "log": "/tmp/ct-hud-restoration-v4-compile/actual-app/compile.log"
+    }
+  ],
+  "scope": "Private exact UI and App scopes; candidate UI dependency; inherited output flags removed; live queue source unchanged; no native."
+}

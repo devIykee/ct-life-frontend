@@ -1,0 +1,47 @@
+{
+  "status": "frozen_source_compiles_native_not_run",
+  "builder": {
+    "source": "SpacesStudioCandidateC.cs",
+    "sha256": "c26bfaf3d4ae70e2d2ef8c22194def10a7d35891f6f0abcb801ce318f2e1ad6f",
+    "method": "CTLife.EditorTools.SpacesStudioCandidateC.BuildCandidate",
+    "mode": "idle coordinator-owned batch process"
+  },
+  "review": {
+    "source": "SpacesStudioRoomReview.cs",
+    "sha256": "23dafb48a0c76707b7459d4d0c1da4118b5a5bcdd8f015ec93ad0b1cee82faea",
+    "method": "CTLife.EditorTools.SpacesStudioRoomReview.Launch",
+    "arguments": [
+      "-openfile",
+      "/Users/mac/Documents/codes/projects/ct-life/client/Assets/Scenes/Bootstrap.unity",
+      "-executeMethod",
+      "CTLife.EditorTools.SpacesStudioRoomReview.Launch",
+      "-ctlife-studioOutput",
+      "/tmp/ct-studio-c-room-native-20261006",
+      "-ctlife-studioExit",
+      "1"
+    ],
+    "launch_note": "GUI graphics; no -quit and do not combine -projectPath with -openfile. Existing unsaved scene guard retained.",
+    "compile_exit": 0,
+    "compile_warning": "CS1701 existing Newtonsoft/netstandard harness assumption",
+    "expected": {
+      "actual_representative_tap_walks": 5,
+      "actual_walk_legs_with_viewpoints_and_return": 11,
+      "representative_ids": [
+        "seat_18",
+        "seat_1",
+        "stage_1",
+        "stage_10",
+        "stage_host"
+      ],
+      "expected_pngs": 8,
+      "network_channel": "null",
+      "authoritative_seated_poses": "none",
+      "host_or_mic_permissions": "none",
+      "initial_physics_worldinput_rays": 31,
+      "total_ray_receipt_rows": 36
+    },
+    "protected_drift_must_be_empty": true
+  },
+  "unchanged_anchor_count": 34,
+  "no_live_assets_edits": true
+}

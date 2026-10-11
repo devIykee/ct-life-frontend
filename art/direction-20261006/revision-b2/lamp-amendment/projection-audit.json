@@ -1,0 +1,155 @@
+{
+  "status": "measured_source_geometry_projection_only_native_pending",
+  "source_sha256": "8d6b5c88b9acf998c9c3cbf0265eccbc8f14b492af9d1e60e70b62b58694c118",
+  "base_B2_sha256": "9df5f27e568813fa96d64fbaad9de534611b97d597de16739b98f6475a2143c9",
+  "camera_log": "/tmp/ct-city-b2-native-20261006.log",
+  "camera_position": [
+    1.65,
+    5.9,
+    -21.78
+  ],
+  "camera_rotation": [
+    27,
+    -12,
+    0
+  ],
+  "camera_fov": 42,
+  "source_bounds": "source-bounds.json",
+  "source_bound_policy": "Measured full LOD0 mesh extrema including base/pole/head; original scale1 yaw0 confirmed in native B2 prefab.",
+  "shop_frame_masks": [
+    {
+      "name": "Coffee",
+      "projected_frame_bounds": [
+        [
+          0.25775561875315417,
+          0.4074745426068858
+        ],
+        [
+          0.8433627091132616,
+          0.9263436332568573
+        ]
+      ]
+    },
+    {
+      "name": "Bakery",
+      "projected_frame_bounds": [
+        [
+          0.18709232999174763,
+          0.25236132310277126
+        ],
+        [
+          0.8149626220669216,
+          0.8992326789888188
+        ]
+      ]
+    },
+    {
+      "name": "Terminal",
+      "projected_frame_bounds": [
+        [
+          0.7180303669383525,
+          0.8591326545244237
+        ],
+        [
+          0.7836051602101834,
+          0.8561530634189005
+        ]
+      ]
+    }
+  ],
+  "lamp_comparison": [
+    {
+      "version": "captured_B2",
+      "position": [
+        -3.7,
+        0,
+        -11.5
+      ],
+      "projected_full_lamp_bounds": [
+        [
+          0.30890060703661104,
+          0.37294280748832165
+        ],
+        [
+          0.4651890665910226,
+          0.9627302769927168
+        ]
+      ],
+      "overlapping_shop_frames": [
+        "Coffee"
+      ],
+      "minimum_anchor_clearance_m": 3.485442873572903,
+      "nearest_anchor": "timeline_square.bench_4"
+    },
+    {
+      "version": "captured_B2",
+      "position": [
+        3.7,
+        0,
+        -11.5
+      ],
+      "projected_full_lamp_bounds": [
+        [
+          0.6997804863401809,
+          0.7834059644784581
+        ],
+        [
+          0.37796120258372545,
+          0.9338591484569635
+        ]
+      ],
+      "overlapping_shop_frames": [
+        "Terminal"
+      ],
+      "minimum_anchor_clearance_m": 3.485442873572903,
+      "nearest_anchor": "timeline_square.bench_5"
+    },
+    {
+      "version": "amended_B2Lamp",
+      "position": [
+        -12.2,
+        0,
+        -10.4
+      ],
+      "projected_full_lamp_bounds": [
+        [
+          -0.018409498445735695,
+          0.08544898437285553
+        ],
+        [
+          0.5840950447366381,
+          1.000591590902715
+        ]
+      ],
+      "overlapping_shop_frames": [],
+      "minimum_anchor_clearance_m": 7.795104686400125,
+      "nearest_anchor": "timeline_square.bench_4"
+    },
+    {
+      "version": "amended_B2Lamp",
+      "position": [
+        9.8,
+        0,
+        -8.5
+      ],
+      "projected_full_lamp_bounds": [
+        [
+          0.9732488644437505,
+          1.1118916554106337
+        ],
+        [
+          0.47156327820747584,
+          0.9648028893495524
+        ]
+      ],
+      "overlapping_shop_frames": [],
+      "minimum_anchor_clearance_m": 5.053817732667611,
+      "nearest_anchor": "timeline_square.bench_5"
+    }
+  ],
+  "limitations": [
+    "Full AABB is conservative; the game render remains the visual acceptance step.",
+    "This gate is the close arrival camera only. Native bench/movement paths and views remain required.",
+    "Peripheral lamps intentionally leave the hero sign area rather than splitting the central route."
+  ]
+}

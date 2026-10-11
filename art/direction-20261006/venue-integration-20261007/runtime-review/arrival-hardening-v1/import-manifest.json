@@ -1,0 +1,33 @@
+{
+  "revision": "arrival-consumption-hardening-import-v1",
+  "status": "frozen_private_compiles_pass_native_pending",
+  "files": [
+    {
+      "source": "art/direction-20261006/venue-integration-20261007/runtime-review/arrival-hardening-v1/LocalPlayerController.cs",
+      "destination": "client/Assets/Scripts/World/Players/LocalPlayerController.cs",
+      "baseline_sha256": "3c5dc287b4781d5c053ca46ab9f2699d6e40eae9c58a71e624e6ddde4df25a71",
+      "candidate_sha256": "09e740dc5f2a3f696e121a0d909c8d61554b29e698890556eb095c8270ec9447"
+    },
+    {
+      "source": "art/direction-20261006/venue-integration-20261007/runtime-review/arrival-hardening-v1/SavedVenueFlowReview.cs",
+      "destination": "client/Assets/Scripts/App/Review/SavedVenueFlowReview.cs",
+      "baseline_sha256": "7930d6dec6252a11473efd16bb8702c8689d8e162f08af768624f359842c73ca",
+      "candidate_sha256": "fdff003815154b2b3a29b98be58b75c711348dfa6135d10165d15018a0c8b235"
+    }
+  ],
+  "unchanged_hook_prerequisite": {
+    "path": "client/Assets/Scripts/App/Review/FrontendReviewController.cs",
+    "sha256": "a36e9ca4d2530ad18e05f538397780e48338f31211700237172674cf4f09e6c8"
+  },
+  "input_manifest": {
+    "path": "art/direction-20261006/venue-integration-20261007/runtime-review/arrival-hardening-v1/review-inputs.completed-v2.json",
+    "sha256": "6f06c42ac1b5740af13719bbe125802dcd9f723a6d909345da9a7263a0f776ae"
+  },
+  "compile_receipt": {
+    "path": "art/direction-20261006/venue-integration-20261007/runtime-review/arrival-hardening-v1/compile-receipt.json",
+    "sha256": "57eeb4b6352f6ca52b5da2a234e1819ac5de745758667c5a695c708df5b7f175"
+  },
+  "native_acceptance": null,
+  "peer_review": "requested, pending at freeze",
+  "no_live_or_native_actions": true
+}

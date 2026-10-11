@@ -1,0 +1,323 @@
+{
+  "status": "read_only_composition_proposal_not_implemented",
+  "reviewed_utc": "2026-10-07",
+  "source_pins": {
+    "docs/spec/contract.md": "2adc2fee54423c6e2d8ed3feb53cffca80abc1b90487a63a52fa094cc4ef86f0",
+    "contract/SOURCE.md": "0b0de678fd030ed2b4a61f3bb3a42ded6d2534a0b6f1b0a6c96090eae784d694",
+    "contract/ids/homes.json": "72bb80a2a833fff243451a2f7b21c6944c3caf7b17500c3ddaff18310aeba8c5",
+    "contract/ids/spots.json": "83fbc95d3985b1e0cfc74ce285e0ffb9aa64ec0af35c0b339c7d8a930af8b846",
+    "client/Assets/Resources/Contract/config_snapshot.json": "3a54ec2117e03fd3e456355e8fe407e5889d10790def5f4863d2163e970a9b56",
+    "client/Assets/Scripts/UI/Phone/Apps/HomeApp.cs": "b17eacf05d9aa4e4aa8c712b9d08f84d11da863ca26c654e1a083b3994b59c37",
+    "client/Assets/Scripts/World/Venue/VenueSession.cs": "19091e766cf7eb7b6a7398d8c2fe75c8548d5d96cb6b24bed287c42c0c7aed69",
+    "client/Assets/Scripts/World/Venue/VenueLoader.cs": "53460f9b08fe855dea9f126b6e251d50b2ac9bc37a703b2a600d98548ecee285",
+    "client/Assets/Scripts/App/FlowController.cs": "5c2024a108c0d21711e2ccd84d8ca79f654b4ecae293eb6846982efa74e44457",
+    "client/Assets/Scripts/Net/Realtime/RealtimeService.cs": "6714ebbee9cef559f986106bbb10e0da787122fdcea4b663813b04880776a63e",
+    "client/Assets/Resources/World/VenueContentRegistry.asset": "cdc14c6fc4077a62d8813062e74d0001021af8f50d206ba7bbd3665899055fa3"
+  },
+  "source_models": [
+    {
+      "id": "home_bed_single",
+      "quantity_proposed": 1,
+      "source": "quaternius/ultimate_home_interior::Bed_Single",
+      "fbx": "client/Assets/Art/environment/home/home_bed_single.fbx",
+      "sha256": "c694e51bbb62c210b695db5c31d44e6078e3bf2a8fb20e76b09fcb5f29b0799d",
+      "source_lod_tris": [
+        536,
+        268
+      ],
+      "authoring_size_m": [
+        1.055,
+        2.1,
+        0.722
+      ],
+      "materials": [
+        "M_ctl_palette"
+      ]
+    },
+    {
+      "id": "home_couch_medium1",
+      "quantity_proposed": 1,
+      "source": "quaternius/ultimate_home_interior::Couch_Medium1",
+      "fbx": "client/Assets/Art/environment/home/home_couch_medium1.fbx",
+      "sha256": "38b2c6b5072e082fd3d20b8abe66ba8672a2a4210878af498206f8c06434ae7a",
+      "source_lod_tris": [
+        1012,
+        506,
+        202
+      ],
+      "authoring_size_m": [
+        2.2,
+        1.034,
+        0.896
+      ],
+      "materials": [
+        "M_ctl_palette"
+      ]
+    },
+    {
+      "id": "home_desk",
+      "quantity_proposed": 1,
+      "source": "quaternius/ultimate_furniture::Desk",
+      "fbx": "client/Assets/Art/environment/home/home_desk.fbx",
+      "sha256": "124a8bd058652d2323119ca830662d12e91b6c35f1147fafce57bf247ed5f18e",
+      "source_lod_tris": [
+        2640,
+        1320,
+        527
+      ],
+      "authoring_size_m": [
+        1.501,
+        0.697,
+        0.76
+      ],
+      "materials": [
+        "M_ctl_palette"
+      ]
+    },
+    {
+      "id": "office_chair",
+      "quantity_proposed": 1,
+      "source": "quaternius/ultimate_furniture::OfficeChair",
+      "fbx": "client/Assets/Art/environment/perp_pit/office_chair.fbx",
+      "sha256": "ad079bb1d403d3f45dd6a8534fff6006ed976c5b18b17ea46780638a49cf3dbe",
+      "source_lod_tris": [
+        2116,
+        1058,
+        422
+      ],
+      "authoring_size_m": [
+        0.672,
+        0.752,
+        1.05
+      ],
+      "materials": [
+        "M_ctl_palette"
+      ]
+    },
+    {
+      "id": "home_kitchen_fridge",
+      "quantity_proposed": 1,
+      "source": "quaternius/ultimate_home_interior::Kitchen_Fridge",
+      "fbx": "client/Assets/Art/environment/home/home_kitchen_fridge.fbx",
+      "sha256": "3a9de6d7a8b5d820119eb4c620d0a002c2ec6c521302a051ca980d453efb3aa2",
+      "source_lod_tris": [
+        404,
+        202
+      ],
+      "authoring_size_m": [
+        0.745,
+        0.748,
+        1.9
+      ],
+      "materials": [
+        "M_ctl_palette"
+      ]
+    },
+    {
+      "id": "home_kitchen_sink",
+      "quantity_proposed": 1,
+      "source": "quaternius/ultimate_home_interior::Kitchen_Sink",
+      "fbx": "client/Assets/Art/environment/home/home_kitchen_sink.fbx",
+      "sha256": "c698cc1f3f98cd7fdaa284a8d6ee49bc76555fdc378495a15791bc31c099b539",
+      "source_lod_tris": [
+        444,
+        222
+      ],
+      "authoring_size_m": [
+        0.499,
+        0.553,
+        0.95
+      ],
+      "materials": [
+        "M_ctl_palette"
+      ]
+    },
+    {
+      "id": "home_kitchen_cabinet1",
+      "quantity_proposed": 3,
+      "source": "quaternius/ultimate_home_interior::Kitchen_Cabinet1",
+      "fbx": "client/Assets/Art/environment/home/home_kitchen_cabinet1.fbx",
+      "sha256": "43b2dc8260e6ed367cd6eb5ab9cc3a60b47163bb443748510a7e5789ba585028",
+      "source_lod_tris": [
+        68
+      ],
+      "authoring_size_m": [
+        0.613,
+        0.65,
+        0.95
+      ],
+      "materials": [
+        "M_ctl_palette"
+      ]
+    },
+    {
+      "id": "home_bathroom_shower1",
+      "quantity_proposed": 1,
+      "source": "quaternius/ultimate_home_interior::Bathroom_Shower1",
+      "fbx": "client/Assets/Art/environment/home/home_bathroom_shower1.fbx",
+      "sha256": "9326b73ec97a17e657b2ced1cb1f8e72ae32ba2b00f64d55095dbbc1cab49c0a",
+      "source_lod_tris": [
+        652,
+        326,
+        129
+      ],
+      "authoring_size_m": [
+        1.122,
+        1.12,
+        2.1
+      ],
+      "materials": [
+        "M_ctl_palette"
+      ]
+    },
+    {
+      "id": "home_bathroom_sink",
+      "quantity_proposed": 1,
+      "source": "quaternius/ultimate_home_interior::Bathroom_Sink",
+      "fbx": "client/Assets/Art/environment/home/home_bathroom_sink.fbx",
+      "sha256": "818eae38dd37f84e43e931210f2ac9a0f2100dcea789d36275b0428f2f3f0fdd",
+      "source_lod_tris": [
+        350,
+        175
+      ],
+      "authoring_size_m": [
+        0.864,
+        0.507,
+        0.9
+      ],
+      "materials": [
+        "M_ctl_palette"
+      ]
+    },
+    {
+      "id": "home_bathroom_toilet",
+      "quantity_proposed": 1,
+      "source": "quaternius/ultimate_home_interior::Bathroom_Toilet",
+      "fbx": "client/Assets/Art/environment/home/home_bathroom_toilet.fbx",
+      "sha256": "271ae03505c061fd014af9db651ce18c2bbfd0b1a069af92f9800b4622eec871",
+      "source_lod_tris": [
+        402,
+        200
+      ],
+      "authoring_size_m": [
+        0.504,
+        0.712,
+        0.8
+      ],
+      "materials": [
+        "M_ctl_palette"
+      ]
+    },
+    {
+      "id": "home_bookshelf",
+      "quantity_proposed": 1,
+      "source": "quaternius/ultimate_home_interior::Bookshelf",
+      "fbx": "client/Assets/Art/environment/home/home_bookshelf.fbx",
+      "sha256": "f7d3e77f6f0872bd3e35fd2d689ba6330e7ddbcc592e55e42cd3bd622dab61a8",
+      "source_lod_tris": [
+        120
+      ],
+      "authoring_size_m": [
+        0.993,
+        0.324,
+        1.9
+      ],
+      "materials": [
+        "M_ctl_palette"
+      ]
+    },
+    {
+      "id": "home_houseplant_1",
+      "quantity_proposed": 2,
+      "source": "quaternius/ultimate_home_interior::Houseplant_1",
+      "fbx": "client/Assets/Art/environment/home/home_houseplant_1.fbx",
+      "sha256": "0dcdd686ea1012238a0dfd947a697f868c0b3fc4226f061a56ec2439064fd816",
+      "source_lod_tris": [
+        245
+      ],
+      "authoring_size_m": [
+        1.179,
+        1.065,
+        1.1
+      ],
+      "materials": [
+        "M_ctl_palette"
+      ]
+    },
+    {
+      "id": "home_door_1",
+      "quantity_proposed": 1,
+      "source": "quaternius/ultimate_home_interior::Door_1",
+      "fbx": "client/Assets/Art/environment/home/home_door_1.fbx",
+      "sha256": "00e11889868be5fd2d14bbcd46a490c2671f1d9c623b6982a5ab07b8facdaa82",
+      "source_lod_tris": [
+        456,
+        228
+      ],
+      "authoring_size_m": [
+        0.87,
+        0.211,
+        2.1
+      ],
+      "materials": [
+        "M_ctl_palette"
+      ]
+    },
+    {
+      "id": "home_tv_modern",
+      "quantity_proposed": 1,
+      "source": "kenney/furniture-kit::televisionModern",
+      "fbx": "client/Assets/Art/environment/home/home_tv_modern.fbx",
+      "sha256": "2b4b640da9a94b6f1f1cc8fb3e94b64cfdf0d795bc849d8e88b19900b905f659",
+      "source_lod_tris": [
+        72
+      ],
+      "authoring_size_m": [
+        1.3,
+        0.244,
+        0.863
+      ],
+      "materials": [
+        "M_ctl_palette"
+      ]
+    },
+    {
+      "id": "home_light_floor1",
+      "quantity_proposed": 1,
+      "source": "quaternius/ultimate_home_interior::Light_Floor1",
+      "fbx": "client/Assets/Art/environment/home/home_light_floor1.fbx",
+      "sha256": "590bf1e5fef4bae7d5a3c0ad87c5363995fd3c97156eb5dda645fd64d121683c",
+      "source_lod_tris": [
+        226
+      ],
+      "authoring_size_m": [
+        0.298,
+        0.313,
+        1.7
+      ],
+      "materials": [
+        "M_ctl_palette"
+      ]
+    },
+    {
+      "id": "laptop",
+      "quantity_proposed": 1,
+      "source": "kenney/furniture-kit::laptop",
+      "fbx": "client/Assets/Art/environment/terminal_cafe/laptop.fbx",
+      "sha256": "a4700e83d96af5539aaadf09b8848788ca5067d6be38e9582a289f361fa45ad0",
+      "source_lod_tris": [
+        68
+      ],
+      "authoring_size_m": [
+        0.34,
+        0.309,
+        0.208
+      ],
+      "materials": [
+        "M_ctl_palette"
+      ]
+    }
+  ],
+  "proposed_source_lod0_triangles": 10192,
+  "scope": "Manifest dimensions use authoring axes; no Unity geometry/contact or actual scene was inspected. Counts exclude architecture, added original screen artwork and future fitted pose geometry. Existing asset bytes only; no downloads or live edits."
+}

@@ -1,0 +1,67 @@
+{
+  "status": "frozen_staged_only_native_unrun",
+  "files": [
+    {
+      "source": "art/direction-20261006/venue-expansion/revision-f4/SpacesStudioFloorCandidate4.cs",
+      "destination": "client/Assets/Scripts/Editor/SpacesStudioFloorCandidate4.cs",
+      "sha256": "02bb936ba28678090444ec7f1c1d820d8066ee0cb873efa9a8f3954f738f1b33",
+      "expected_destination": "absent; preserve all earlier helpers and candidates"
+    },
+    {
+      "source": "art/direction-20261006/venue-expansion/revision-f4/SpacesStudioFloorRoomReview4.cs",
+      "destination": "client/Assets/Scripts/Editor/SpacesStudioFloorRoomReview4.cs",
+      "sha256": "1c2c5e92dca1aae4f13eb51d108e36fa70d6ca940e19a0beddbe9c97f9458861",
+      "expected_destination": "absent; preserve all earlier helpers and candidates"
+    },
+    {
+      "source": "art/direction-20261006/venue-expansion/revision-f4/SpacesStudioFloorPopulationReview4.cs",
+      "destination": "client/Assets/Scripts/Editor/SpacesStudioFloorPopulationReview4.cs",
+      "sha256": "c53deea7fd4991564ae8085198537a5dcb04c467adc3ccde7daafe773ef55dc0",
+      "expected_destination": "absent; preserve all earlier helpers and candidates"
+    }
+  ],
+  "dependencies": [
+    {
+      "path": "client/Assets/Art/Candidates/SpacesStudio20261007F3/SpacesStudioF3.prefab",
+      "sha256": "dd6413805b84b07c9b59e24cd6f708f38c745bf82204a96d36b63667c8cac1b2"
+    },
+    {
+      "path": "client/Assets/Art/Candidates/SpacesStudio20261007F3/BakeReceipt.json",
+      "sha256": "263ab32d20ec843add77a3be10142a6e59fe3ce0a4b04a0db1d0c38102730ce3"
+    },
+    {
+      "path": "client/Assets/Art/Candidates/SpacesStudio20261007F3/StageReceipt.json",
+      "sha256": "040e66c7afba3f384efd66417fe9cc53691d6cac1b3da4359fb52485697f2a21"
+    }
+  ],
+  "compile_exit": 0,
+  "compile_warning": "Existing CS1701 Newtonsoft/netstandard standalone reference warning",
+  "compiler_output_audit": "All3 response files contain only their private /tmp out DLL; no refout/pdb/errorlog/generatedfilesout/nested response flags. Final compile occurred after root clean-reference release.",
+  "build": "CTLife.EditorTools.SpacesStudioFloorCandidate4.BuildCandidate",
+  "bake": "CTLife.EditorTools.SpacesStudioFloorCandidate4.BakeCandidate",
+  "room_review": "CTLife.EditorTools.SpacesStudioFloorRoomReview4.Launch",
+  "population_review": "CTLife.EditorTools.SpacesStudioFloorPopulationReview4.Launch",
+  "prefab": "Assets/Art/Candidates/SpacesStudio20261007F4/SpacesStudioF4.prefab",
+  "room_args": [
+    "-openfile",
+    "/Users/mac/Documents/codes/projects/ct-life/client/Assets/Scenes/Bootstrap.unity",
+    "-ctlife-studioOutput",
+    "/tmp/ct-studio-floor-f4-room-native-20261007",
+    "-ctlife-studioExit",
+    "1"
+  ],
+  "population_args": [
+    "-openfile",
+    "/Users/mac/Documents/codes/projects/ct-life/client/Assets/Scenes/Bootstrap.unity",
+    "-ctlife-studioPopulationOutput",
+    "/tmp/ct-studio-floor-f4-population-native-20261007",
+    "-ctlife-studioPopulationExit",
+    "1",
+    "-ctlife-studioPrefabHash",
+    "<exact saved F4 prefab hash>",
+    "-ctlife-studioBakeHash",
+    "<exact saved F4 bake receipt hash>"
+  ],
+  "requires_fresh_bake": true,
+  "proxy_scope": "Unchanged standing radius0.30 capsule, both per-observed-frame overlap and between-frame sweep; not full skinned character or device performance acceptance."
+}

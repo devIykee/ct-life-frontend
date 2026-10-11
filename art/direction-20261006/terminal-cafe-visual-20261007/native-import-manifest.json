@@ -1,0 +1,38 @@
+{
+  "status": "frozen_staged_only_native_art_pending",
+  "files": [
+    {
+      "source": "art/direction-20261006/terminal-cafe-visual-20261007/TerminalCafeVisualCandidate.cs",
+      "destination": "client/Assets/Scripts/Editor/TerminalCafeVisualCandidate.cs",
+      "sha256": "7ea6f44a1ddf95be623b42ff7548d392df6a886fdced501ecc497e46478172c3",
+      "expected_destination": "absent; unique art-only class"
+    },
+    {
+      "source": "art/direction-20261006/terminal-cafe-visual-20261007/CafeArtRoomReview.cs",
+      "destination": "client/Assets/Scripts/Editor/CafeArtRoomReview.cs",
+      "sha256": "00bdae1a4ddf467cb4b0f43885cd6012bdccf6a236a3e418174141fb78cb04f6",
+      "expected_destination": "absent; unique art-only class"
+    }
+  ],
+  "external_art_required": {
+    "art/direction-20261006/terminal-cafe-visual-20261007/Textures/Desktop01.png": "9de1e3cb6c360433a06943918e01af09e450fd0034178ddb3f56ecfa4fee3b25",
+    "art/direction-20261006/terminal-cafe-visual-20261007/Textures/Desktop02.png": "c0a3d1db6010866fe3cd3513a33ab6b20051846f004b9ae959cc869f7f1f3c04",
+    "art/direction-20261006/terminal-cafe-visual-20261007/Textures/Desktop03.png": "e204cdd83ebf00d227e9475254529108af9ceff79df439b5f717a0b16ef572b6",
+    "art/direction-20261006/terminal-cafe-visual-20261007/Textures/Desktop04.png": "a1fe44a57f3b5d2ca51bd90456f4cdd3357692f6220e50c61c0a1cae6a340914",
+    "art/direction-20261006/terminal-cafe-visual-20261007/Textures/Desktop05.png": "3418ed68186219f4b42b130a08dea653eea151e94430a759e85b8a4b5362149a",
+    "art/direction-20261006/terminal-cafe-visual-20261007/Textures/Desktop06.png": "a1d9772f67e2fa7c0c8396b6bce5da7ebf98cd2d45abdc22337ca4c91961c06d",
+    "art/direction-20261006/terminal-cafe-visual-20261007/Textures/Desktop07.png": "95bd850319dc26be27d42cf177737e40717d11736e3b2f103773772270c8051c",
+    "art/direction-20261006/terminal-cafe-visual-20261007/Textures/Desktop08.png": "d29dae8d4cb777e8c06477ea55a7127b3c1565fca73c11de80e2cdfbc09d4f3c",
+    "art/direction-20261006/terminal-cafe-visual-20261007/artwork-provenance.json": "52a8a148261031713a94109220e3553ee8d24f20da5068b0c6f111a746d99087"
+  },
+  "compile": {
+    "builder_exit": 0,
+    "review_exit": 0,
+    "warning": "existing CS1701 Newtonsoft/netstandard harness warning"
+  },
+  "build": "CTLife.EditorTools.TerminalCafeVisualCandidate.BuildCandidate",
+  "bake": "CTLife.EditorTools.TerminalCafeVisualCandidate.BakeCandidate",
+  "review": "CTLife.EditorTools.CafeArtRoomReview.Launch",
+  "prefab": "Assets/Art/Candidates/TerminalCafe20261007Art/TerminalCafeArt.prefab",
+  "scope": "Unregistered art-only clone; cannot attach motions or register itself; no fitted physical surface/anchor/NavMesh changes"
+}

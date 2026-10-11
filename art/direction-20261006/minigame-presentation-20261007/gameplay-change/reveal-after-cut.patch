@@ -1,0 +1,39 @@
+--- a/client/Assets/Scripts/UI/Phone/Apps/ClipCut.cs
++++ b/client/Assets/Scripts/UI/Phone/Apps/ClipCut.cs
+@@ -116,7 +116,7 @@
+                 instruction.text=round.Cut?ClipCutStrings.F("answer",reel.Setup+1,reel.Payoff+1):ClipCutStrings.T(moveIn?"placingIn":"placingOut");
+                 progress.style.width=Length.Percent((float)(round.Remaining*100/ClipCutRound.Duration));
+                 int cursor=previewing?round.In+(int)((round.Elapsed-previewStart)/.65)%round.Kept:(moveIn?round.In:round.Out);
+-                previewFrame.text=ClipCutStrings.F("previewFrame",cursor+1,ClipCutStrings.Kind(reel.Kind(cursor)));previewCopy.text=ClipCutStrings.Frame(reel,cursor);
++                previewFrame.text=round.Cut?ClipCutStrings.F("previewFrame",cursor+1,ClipCutStrings.Kind(reel.Kind(cursor))):ClipCutStrings.F("previewNumber",cursor+1);previewCopy.text=ClipCutStrings.Frame(reel,cursor);
+                 if(shownStory!=reel.Story||shownFrame!=cursor)
+                 {
+                     ClipCutStoryboard.Show(monitor,storyboards[reel.Story],reel.Story,cursor);
+@@ -132,6 +132,7 @@
+                 cut.Show(!round.Cut);cut.SetEnabled(!round.Paused&&!round.Finished);next.Show(round.Cut&&!round.AllCut);next.SetEnabled(!round.Paused&&!round.Finished);
+                 for(int i=0;i<8;i++)
+                 {
++                    kinds[i].Show(round.Cut);
+                     bool included=i>=round.In&&i<=round.Out;frames[i].EnableInClassList("ct-clip-included",included);frames[i].EnableInClassList("ct-clip-excluded",!included);
+                     frames[i].EnableInClassList("ct-clip-previewing",previewing&&cursor==i);frames[i].EnableInClassList("ct-clip-boundary",i==round.In||i==round.Out);
+                     markers[i].text=i==round.In&&i==round.Out?ClipCutStrings.T("both"):i==round.In?ClipCutStrings.T("in"):i==round.Out?ClipCutStrings.T("out"):"";
+--- a/client/Assets/Scripts/UI/Text/ClipCutStrings.cs
++++ b/client/Assets/Scripts/UI/Text/ClipCutStrings.cs
+@@ -7,7 +7,7 @@
+         private static readonly Dictionary<string,string> En=new Dictionary<string,string>
+         {
+             ["title"]="Clip Cut",["score"]="{0} / 100",["timer"]="{0}s",["reel"]="REEL {0} / 5",
+-            ["brief"]="Keep Setup through Payoff. Trim the dead air and side tracks.",
++            ["brief"]="Keep the whole joke. Trim the waiting and side tracks.",
+             ["moveIn"]="Move IN",["moveOut"]="Move OUT",["placingIn"]="Tap a frame to place IN.",["placingOut"]="Tap a frame to place OUT.",
+             ["range"]="IN {0:00}  —  OUT {1:00}",["kept"]="{0} / 8 frames kept",["frame"]="{0:00}",["in"]="IN",["out"]="OUT",["both"]="IN / OUT",
+             ["setup"]="Setup",["beat"]="Beat",["payoff"]="Payoff",["deadair"]="Dead air",["sidetrack"]="Side track",
+@@ -15,7 +15,7 @@
+             ["preview"]="Preview cut",["stop"]="Stop preview",["previewLabel"]="STORYBOARD PREVIEW",["previewFrame"]="Frame {0:00} · {1}",
+             ["reset"]="Reset trim",["cut"]="Cut reel",["next"]="Next reel",["clean"]="Clean cut · +20 points",
+             ["wrong"]="Cut saved · 0 points",["missingSetup"]="The setup was trimmed out.",["missingPayoff"]="The payoff was trimmed out.",
+-            ["extra"]="Extra frames remain outside Setup → Payoff.",["answer"]="Keep frames {0:00}–{1:00}.",
++            ["extra"]="The cut includes waiting or a side track.",["answer"]="Keep frames {0:00}–{1:00}.",
+             ["pause"]="Pause",["resume"]="Resume",["end"]="End practice",["paused"]="Edit on hold",["pauseDetail"]="The practice clock and storyboard preview are paused. Resume when you’re ready.",
+             ["practice"]="LOCAL PRACTICE · ORIGINAL STORYBOARDS · NO POSTING OR PAYOUT",["review"]="REVIEW · SCRIPTED INPUT · ORIGINAL STORYBOARDS · NO PAYOUT",
+             ["again"]="Play again",["back"]="Back to city",["complete"]="Practice complete",["summary"]="Clean cuts: {0} / 5 · Reels cut: {1}\nOriginal storyboards only. Nothing was posted.",

@@ -1,0 +1,30 @@
+{
+  "sources": {
+    "LocalPlayerController.cs": "43a77d278475b2af00c1d03484f36e31c9aa3878a9b174a3e510f62b9281c932",
+    "SavedVenueFlowReview.cs": "791278d22530c54004367b135ae6209dd9b714c89ce6851459bc2a0d8497b5f8"
+  },
+  "runs": [
+    {
+      "mode": "candidate-world",
+      "exit_code": 0,
+      "rsp": "/tmp/ct-arrival-queue-v3-compile/candidate-world/compile.rsp",
+      "sole_output": "/tmp/ct-arrival-queue-v3-compile/candidate-world/CTLife.World.dll",
+      "log": "/tmp/ct-arrival-queue-v3-compile/candidate-world/compile.log"
+    },
+    {
+      "mode": "reference-app",
+      "exit_code": 0,
+      "rsp": "/tmp/ct-arrival-queue-v3-compile/reference-app/compile.rsp",
+      "sole_output": "/tmp/ct-arrival-queue-v3-compile/reference-app/CTLife.App.dll",
+      "log": "/tmp/ct-arrival-queue-v3-compile/reference-app/compile.log"
+    },
+    {
+      "mode": "actual-app",
+      "exit_code": 0,
+      "rsp": "/tmp/ct-arrival-queue-v3-compile/actual-app/compile.rsp",
+      "sole_output": "/tmp/ct-arrival-queue-v3-compile/actual-app/CTLife.App.dll",
+      "log": "/tmp/ct-arrival-queue-v3-compile/actual-app/compile.log"
+    }
+  ],
+  "scope": "Private exact World and App scopes; inherited output flags removed; no native."
+}

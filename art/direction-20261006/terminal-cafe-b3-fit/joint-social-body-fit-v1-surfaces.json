@@ -1,0 +1,2005 @@
+{
+  "status": "sampled_native_body_fit_against_cpu_transformed_native_chair_not_final_acceptance",
+  "coordinate_frame": "immutable actor-root local metres",
+  "chair": "one shared home_chair_1, yaw180 centerZ-.30 topY.450; exact frozen target mesh",
+  "chair_support_triangles": 2,
+  "ray_grid_m": 0.006,
+  "limitations": [
+    "Chair is a transformed native B2 export; native B3 placement remains independently gated.",
+    "Eight phases per look and three body LODs, not continuous-time geometry.",
+    "Edge-triangle crossing of all chair triangles is checked; enclosed volumes and coplanar overlap are not proven absent.",
+    "Vertical surface gap and posterior region are geometric witnesses, not pressure/contact mechanics.",
+    "Native rendered furniture/body review and production-controller integration remain pending."
+  ],
+  "input_sha256": {
+    "art/direction-20261006/terminal-cafe-b3-fit/shared-social-chair-target.obj.gz": "89ba4a7e27ec5213c963afe3601c9a8044d2c76c8a27650f92ecf2f18894b922",
+    "art/character-candidates/motion-review-20261006/native-seated-body-fit-v1/Rain_SocialBodyFit-candidate-tier0-phase000.obj.gz": "226ff0a440e452a1d357e25f52ea59da3f22ac1446f43eddf4730a8a335051f4",
+    "art/character-candidates/motion-review-20261006/native-seated-body-fit-v1/Rain_SocialBodyFit-candidate-tier0-phase030.obj.gz": "9458be9d0121f10e58771664d98b56689d80cf9167ab2557372457b3b9d03db8",
+    "art/character-candidates/motion-review-20261006/native-seated-body-fit-v1/Rain_SocialBodyFit-candidate-tier0-phase060.obj.gz": "7e7dc34175c673816fe122a7daad250994b26136c16e0c4c295a621bdcd3f115",
+    "art/character-candidates/motion-review-20261006/native-seated-body-fit-v1/Rain_SocialBodyFit-candidate-tier0-phase090.obj.gz": "7019d6130258cd144c3dedab60afc04252bce0a6f5c356e587f724ab7f0bc562",
+    "art/character-candidates/motion-review-20261006/native-seated-body-fit-v1/Rain_SocialBodyFit-candidate-tier0-phase120.obj.gz": "532fb787c0c4cf00dfdf817c46eff8c9889ee48a5ef8c4c32970da87a5778721",
+    "art/character-candidates/motion-review-20261006/native-seated-body-fit-v1/Rain_SocialBodyFit-candidate-tier0-phase150.obj.gz": "7949289ee116f8eadb975fb2ca6f5468394e7ec99e72cea1a9d6897d3ed26b44",
+    "art/character-candidates/motion-review-20261006/native-seated-body-fit-v1/Rain_SocialBodyFit-candidate-tier0-phase180.obj.gz": "52ae16650636071130c574cf75159499bc9386c03ced0d8be51eac2449c037e4",
+    "art/character-candidates/motion-review-20261006/native-seated-body-fit-v1/Rain_SocialBodyFit-candidate-tier0-phase210.obj.gz": "3741570fc91c84708158032b63b20b5c7b21a2b2e7412f2ed341c9a630bf769a",
+    "art/character-candidates/motion-review-20261006/native-seated-body-fit-v1/Rain_SocialBodyFit-candidate-tier1-phase000.obj.gz": "622789175ac83139124042476b1a5278c759dd343f06428966f3b4d384a2c7bd",
+    "art/character-candidates/motion-review-20261006/native-seated-body-fit-v1/Rain_SocialBodyFit-candidate-tier1-phase030.obj.gz": "15db0ab111681c9778a90e770b6ad8bd5b320e4ab9cd8fa551257299ac387a07",
+    "art/character-candidates/motion-review-20261006/native-seated-body-fit-v1/Rain_SocialBodyFit-candidate-tier1-phase060.obj.gz": "a083d998fa3c14610cdfcbc12cc77ed9f81e9a49bae93a94adc4494da863cae5",
+    "art/character-candidates/motion-review-20261006/native-seated-body-fit-v1/Rain_SocialBodyFit-candidate-tier1-phase090.obj.gz": "acdf01afe3872635a71dd35eb9f1e15dc392428810a2565254d7febcf4bf3314",
+    "art/character-candidates/motion-review-20261006/native-seated-body-fit-v1/Rain_SocialBodyFit-candidate-tier1-phase120.obj.gz": "d4ee56c239fbfae6fdd96f379b0eb390bd238bee42444c458ca7735d9ee13c72",
+    "art/character-candidates/motion-review-20261006/native-seated-body-fit-v1/Rain_SocialBodyFit-candidate-tier1-phase150.obj.gz": "158e7eaad9c29c9ee3bd787c80bad732ff59be8b72fee54129d3a6d11f603ef8",
+    "art/character-candidates/motion-review-20261006/native-seated-body-fit-v1/Rain_SocialBodyFit-candidate-tier1-phase180.obj.gz": "dacd33420bb68172ce933a5f8bcc407878a6b58529442a8395926cb036b1af7d",
+    "art/character-candidates/motion-review-20261006/native-seated-body-fit-v1/Rain_SocialBodyFit-candidate-tier1-phase210.obj.gz": "a927a346678137db9f8a58dc294eeec6b14e25193c8e20634a41ab7529754977",
+    "art/character-candidates/motion-review-20261006/native-seated-body-fit-v1/Rain_SocialBodyFit-candidate-tier2-phase000.obj.gz": "4d31ca0a5ef251066fc94d637f780cf1b32c6d1b7c0acbe12e8fb5abab96189a",
+    "art/character-candidates/motion-review-20261006/native-seated-body-fit-v1/Rain_SocialBodyFit-candidate-tier2-phase030.obj.gz": "d216b45b41c3a58708aee098bdfc62a9c912da6e9a6a6d18a32f13b1b00d20e7",
+    "art/character-candidates/motion-review-20261006/native-seated-body-fit-v1/Rain_SocialBodyFit-candidate-tier2-phase060.obj.gz": "75fbadb86b3416fa306910f745b82fb2e69ea29c88f7eb01b406a6f4a7c9e2b0",
+    "art/character-candidates/motion-review-20261006/native-seated-body-fit-v1/Rain_SocialBodyFit-candidate-tier2-phase090.obj.gz": "8d5fc5385cbb89e7db3e459c1ae3e580beb41909677fafeb326f32cb4d066029",
+    "art/character-candidates/motion-review-20261006/native-seated-body-fit-v1/Rain_SocialBodyFit-candidate-tier2-phase120.obj.gz": "fd9efe2cb228931888b718c364bd662bd5f7aa0a1db9ba381da3d384c08b5ede",
+    "art/character-candidates/motion-review-20261006/native-seated-body-fit-v1/Rain_SocialBodyFit-candidate-tier2-phase150.obj.gz": "b2dc4ea48b395e0acdc8cf5b4acc2639bf5feb95743d26967791c96505f840a1",
+    "art/character-candidates/motion-review-20261006/native-seated-body-fit-v1/Rain_SocialBodyFit-candidate-tier2-phase180.obj.gz": "011f83a3747e48c8f9b0af2c57b604a0687bf29b2417cbadbd46e0c84485bd5b",
+    "art/character-candidates/motion-review-20261006/native-seated-body-fit-v1/Rain_SocialBodyFit-candidate-tier2-phase210.obj.gz": "670ea098cd1db8145b6bea339ca3748b9509177efb29ea308f955ff0b52e7c8b",
+    "art/character-candidates/motion-review-20261006/native-seated-body-fit-v1/Snow_SocialBodyFit-candidate-tier0-phase000.obj.gz": "4b464bf0b763467b8b97c144c8e491a0524499ad9b1029ad7ba3725fbc3a5a47",
+    "art/character-candidates/motion-review-20261006/native-seated-body-fit-v1/Snow_SocialBodyFit-candidate-tier0-phase030.obj.gz": "186f7044d2af471737807c1aba8e8a5500109cf19fec7aa44aa1dfae638810ae",
+    "art/character-candidates/motion-review-20261006/native-seated-body-fit-v1/Snow_SocialBodyFit-candidate-tier0-phase060.obj.gz": "6148420df463b507a50599aaa92fa1af1cfaeb13414b7ffda0b634716f17ae05",
+    "art/character-candidates/motion-review-20261006/native-seated-body-fit-v1/Snow_SocialBodyFit-candidate-tier0-phase090.obj.gz": "65e860b9cf0253c3aa5a1d3c50d998c40a20467f334b8bffcd96806ca5a69dca",
+    "art/character-candidates/motion-review-20261006/native-seated-body-fit-v1/Snow_SocialBodyFit-candidate-tier0-phase120.obj.gz": "be306bd945897d84ef841146d40d0b3b3569a0c77f12be02f27681d378bc9789",
+    "art/character-candidates/motion-review-20261006/native-seated-body-fit-v1/Snow_SocialBodyFit-candidate-tier0-phase150.obj.gz": "3566cb7dda4262663804785aacddfffe0a9c0fd21ac0e44eb5587a1bbb676fe1",
+    "art/character-candidates/motion-review-20261006/native-seated-body-fit-v1/Snow_SocialBodyFit-candidate-tier0-phase180.obj.gz": "f10a69b10d1086a43bd55635535cdc6a0962f4ed90312b43f907ab5904d610ee",
+    "art/character-candidates/motion-review-20261006/native-seated-body-fit-v1/Snow_SocialBodyFit-candidate-tier0-phase210.obj.gz": "045ef68ef3538e0bb31f611aae30c4fb197f99aec42f1a5f32da41282e751765",
+    "art/character-candidates/motion-review-20261006/native-seated-body-fit-v1/Snow_SocialBodyFit-candidate-tier1-phase000.obj.gz": "7277a49713900ad9060475cac0d9003c41f8c2370b1fab8e768efd913e469bce",
+    "art/character-candidates/motion-review-20261006/native-seated-body-fit-v1/Snow_SocialBodyFit-candidate-tier1-phase030.obj.gz": "99a07614cf0030df92b094e6793acdcd59181596382ce5040ba64da06da85810",
+    "art/character-candidates/motion-review-20261006/native-seated-body-fit-v1/Snow_SocialBodyFit-candidate-tier1-phase060.obj.gz": "a4109db3b00aa362a164c2d0d69a2cc86d7c425ed972371dc84e1915913966b9",
+    "art/character-candidates/motion-review-20261006/native-seated-body-fit-v1/Snow_SocialBodyFit-candidate-tier1-phase090.obj.gz": "81452b5c9e6ac1aad073f17e2b6b0bff5f1666417b13c8e699262755ee5e5ca3",
+    "art/character-candidates/motion-review-20261006/native-seated-body-fit-v1/Snow_SocialBodyFit-candidate-tier1-phase120.obj.gz": "0fb88e8878566bb560e22576d16f205c5f6844cd97f85c7d37e51b1144df6853",
+    "art/character-candidates/motion-review-20261006/native-seated-body-fit-v1/Snow_SocialBodyFit-candidate-tier1-phase150.obj.gz": "8ea5c679e4cb72d3fe6a640a00d0f750588d75b3bec04943847ce6c4aef9ba8a",
+    "art/character-candidates/motion-review-20261006/native-seated-body-fit-v1/Snow_SocialBodyFit-candidate-tier1-phase180.obj.gz": "0f96a97053262f49d1c5a35d7a4cee3a4ffc03f5dab55fbfbd3784485138ac0a",
+    "art/character-candidates/motion-review-20261006/native-seated-body-fit-v1/Snow_SocialBodyFit-candidate-tier1-phase210.obj.gz": "940bab1587c7d893685b0ef8fa47573a2f5aa4700f91c3012fa4c3c135c0e851",
+    "art/character-candidates/motion-review-20261006/native-seated-body-fit-v1/Snow_SocialBodyFit-candidate-tier2-phase000.obj.gz": "f9d640ea6bcb4f8c8477e2c5d48f1605d2776ba12e80c6a1287b9e7421d865f3",
+    "art/character-candidates/motion-review-20261006/native-seated-body-fit-v1/Snow_SocialBodyFit-candidate-tier2-phase030.obj.gz": "a926f04853c5b581eabf6d10eddfb83ee35fcdbba960befa250c017f820a2315",
+    "art/character-candidates/motion-review-20261006/native-seated-body-fit-v1/Snow_SocialBodyFit-candidate-tier2-phase060.obj.gz": "b1e1431e6f1f42386b43ca82e422efe887d8a089ed1f64c28b95e2cb6ed747d4",
+    "art/character-candidates/motion-review-20261006/native-seated-body-fit-v1/Snow_SocialBodyFit-candidate-tier2-phase090.obj.gz": "3317840531f08a4ae28c015476ebae440a89c39e74acee256e7f9f9ea0506d9f",
+    "art/character-candidates/motion-review-20261006/native-seated-body-fit-v1/Snow_SocialBodyFit-candidate-tier2-phase120.obj.gz": "c08e621886c3a3f2cd7954fcd69877125ca7125a6823a26b2692e2f1d26edc12",
+    "art/character-candidates/motion-review-20261006/native-seated-body-fit-v1/Snow_SocialBodyFit-candidate-tier2-phase150.obj.gz": "515f501849d292db7fff2089f1b26a08561624fe47d2de4a1145e657edce6d1d",
+    "art/character-candidates/motion-review-20261006/native-seated-body-fit-v1/Snow_SocialBodyFit-candidate-tier2-phase180.obj.gz": "1e9c5302ad23a7db4ef5b5cd035356efde694e68a200bacae2147702b4dcb7cc",
+    "art/character-candidates/motion-review-20261006/native-seated-body-fit-v1/Snow_SocialBodyFit-candidate-tier2-phase210.obj.gz": "2aec956eec6aad7da2b5d16598a46a18819fcf8cd8416ade92e7b8df2599158f"
+  },
+  "records": [
+    {
+      "look": "Rain",
+      "file": "Rain_SocialBodyFit-candidate-tier0-phase000.obj.gz",
+      "paired_rays": 2744,
+      "posterior_rays": 1770,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.0026521604442922286,
+        "1": 0.004445320881697722,
+        "5": 0.006804165931132889,
+        "25": 0.014815679253732034,
+        "50": 0.026675411095196222,
+        "75": 0.046620642064011175,
+        "95": 0.09714220767662458,
+        "99": 0.22495680276356422,
+        "100": 0.24883784733997383
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.0026521604442922286,
+        "1": 0.00400805168424979,
+        "5": 0.005852601143195396,
+        "25": 0.011421611443780122,
+        "50": 0.01997497490446823,
+        "75": 0.03646080016133925,
+        "95": 0.07723180073080735,
+        "99": 0.1413080463291569,
+        "100": 0.2476644042329244
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 50,
+      "contact_xz_min_m": [
+        -0.1029999999999999,
+        -0.2769999999999998
+      ],
+      "contact_xz_max_m": [
+        0.10700000000000029,
+        -0.23499999999999976
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.08499999999999988,
+        -0.2589999999999998
+      ]
+    },
+    {
+      "look": "Rain",
+      "file": "Rain_SocialBodyFit-candidate-tier0-phase030.obj.gz",
+      "paired_rays": 2751,
+      "posterior_rays": 1774,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.0031011330139675275,
+        "1": 0.004888597687840307,
+        "5": 0.007246599003192522,
+        "25": 0.015230707620228712,
+        "50": 0.02715099410001459,
+        "75": 0.04714349600507689,
+        "95": 0.09886433341957665,
+        "99": 0.23524389987995412,
+        "100": 0.24997879107280097
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.0031011330139675275,
+        "1": 0.004431137698133139,
+        "5": 0.006279818258139358,
+        "25": 0.011845992740955963,
+        "50": 0.02043307192253463,
+        "75": 0.03710228274053362,
+        "95": 0.07955075733858463,
+        "99": 0.18909172088387677,
+        "100": 0.24997879107280097
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 31,
+      "contact_xz_min_m": [
+        -0.09699999999999989,
+        -0.2709999999999998
+      ],
+      "contact_xz_max_m": [
+        -0.06699999999999987,
+        -0.23499999999999976
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.08499999999999988,
+        -0.2589999999999998
+      ]
+    },
+    {
+      "look": "Rain",
+      "file": "Rain_SocialBodyFit-candidate-tier0-phase060.obj.gz",
+      "paired_rays": 2758,
+      "posterior_rays": 1778,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.00403572627044857,
+        "1": 0.005800615305645776,
+        "5": 0.008175903764688252,
+        "25": 0.016112343588236475,
+        "50": 0.028007786749620484,
+        "75": 0.04792009306654607,
+        "95": 0.10140947212275724,
+        "99": 0.23550491428160697,
+        "100": 0.24994950470865868
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.00403572627044857,
+        "1": 0.005317273111912528,
+        "5": 0.007156526257003698,
+        "25": 0.012667322347389015,
+        "50": 0.021373230591643977,
+        "75": 0.03817081810398848,
+        "95": 0.08322167263666139,
+        "99": 0.20305824873687095,
+        "100": 0.24994950470865868
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 10,
+      "contact_xz_min_m": [
+        -0.09699999999999989,
+        -0.2649999999999998
+      ],
+      "contact_xz_max_m": [
+        -0.07899999999999988,
+        -0.24699999999999978
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.08499999999999988,
+        -0.2589999999999998
+      ]
+    },
+    {
+      "look": "Rain",
+      "file": "Rain_SocialBodyFit-candidate-tier0-phase090.obj.gz",
+      "paired_rays": 2766,
+      "posterior_rays": 1779,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.005092329970194376,
+        "1": 0.006819059358902019,
+        "5": 0.009153914972742455,
+        "25": 0.0171245723200789,
+        "50": 0.029105471638919023,
+        "75": 0.049049459614808874,
+        "95": 0.10255887355946224,
+        "99": 0.2338358470703459,
+        "100": 0.24874377850769774
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.005092329970194376,
+        "1": 0.006328239080902282,
+        "5": 0.00815363328116569,
+        "25": 0.013577210881685758,
+        "50": 0.022393314980833134,
+        "75": 0.03915712519127801,
+        "95": 0.08300387124313184,
+        "99": 0.19389730333328295,
+        "100": 0.24690513359026084
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 0,
+      "contact_xz_min_m": null,
+      "contact_xz_max_m": null,
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.08499999999999988,
+        -0.2589999999999998
+      ]
+    },
+    {
+      "look": "Rain",
+      "file": "Rain_SocialBodyFit-candidate-tier0-phase120.obj.gz",
+      "paired_rays": 2761,
+      "posterior_rays": 1777,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.005896707147976354,
+        "1": 0.007593843581604698,
+        "5": 0.009909050746111203,
+        "25": 0.01776425940847315,
+        "50": 0.029828668259803237,
+        "75": 0.04952919405787509,
+        "95": 0.10095422663615611,
+        "99": 0.2336546589358716,
+        "100": 0.24981856506666067
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.005896707147976354,
+        "1": 0.007098159171874032,
+        "5": 0.008935982447248325,
+        "25": 0.014283204328193133,
+        "50": 0.023256689783808293,
+        "75": 0.039769597473039264,
+        "95": 0.08182240542827057,
+        "99": 0.18310000337966992,
+        "100": 0.24981856506666067
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 0,
+      "contact_xz_min_m": null,
+      "contact_xz_max_m": null,
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.08499999999999988,
+        -0.2589999999999998
+      ]
+    },
+    {
+      "look": "Rain",
+      "file": "Rain_SocialBodyFit-candidate-tier0-phase150.obj.gz",
+      "paired_rays": 2762,
+      "posterior_rays": 1777,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.005941245686423291,
+        "1": 0.0076375777226628475,
+        "5": 0.009928378732307475,
+        "25": 0.0177836294338512,
+        "50": 0.02986953482616672,
+        "75": 0.04963267233614162,
+        "95": 0.1013467217443027,
+        "99": 0.2336608783083761,
+        "100": 0.24928918569243913
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.005941245686423291,
+        "1": 0.007134629742303493,
+        "5": 0.008995570850662927,
+        "25": 0.014324563526246559,
+        "50": 0.023287556442658452,
+        "75": 0.0398134923776689,
+        "95": 0.08245707994477842,
+        "99": 0.18199433891214906,
+        "100": 0.24877898202700177
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 0,
+      "contact_xz_min_m": null,
+      "contact_xz_max_m": null,
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.08499999999999988,
+        -0.2589999999999998
+      ]
+    },
+    {
+      "look": "Rain",
+      "file": "Rain_SocialBodyFit-candidate-tier0-phase180.obj.gz",
+      "paired_rays": 2756,
+      "posterior_rays": 1775,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.004770559319426548,
+        "1": 0.006537025321654666,
+        "5": 0.008838949569365581,
+        "25": 0.01675846069753817,
+        "50": 0.02869048646918962,
+        "75": 0.048528239575647725,
+        "95": 0.10283499779338663,
+        "99": 0.23301982069900565,
+        "100": 0.24991445861512535
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.004770559319426548,
+        "1": 0.006035966353854349,
+        "5": 0.007862945662742116,
+        "25": 0.01328180901205725,
+        "50": 0.022086698927417547,
+        "75": 0.038726267962476274,
+        "95": 0.0821948951835503,
+        "99": 0.19123338919928956,
+        "100": 0.24537927950317306
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 1,
+      "contact_xz_min_m": [
+        -0.08499999999999988,
+        -0.2589999999999998
+      ],
+      "contact_xz_max_m": [
+        -0.08499999999999988,
+        -0.2589999999999998
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.08499999999999988,
+        -0.2589999999999998
+      ]
+    },
+    {
+      "look": "Rain",
+      "file": "Rain_SocialBodyFit-candidate-tier0-phase210.obj.gz",
+      "paired_rays": 2753,
+      "posterior_rays": 1775,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.0034084796593371602,
+        "1": 0.005202429692751029,
+        "5": 0.007553075695441202,
+        "25": 0.015557451283872925,
+        "50": 0.027384590493235383,
+        "75": 0.04729480537050518,
+        "95": 0.10033504476104234,
+        "99": 0.23511413108135493,
+        "100": 0.24945863656560746
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.0034084796593371602,
+        "1": 0.004732770483218186,
+        "5": 0.006588114438439263,
+        "25": 0.012107171202652589,
+        "50": 0.020792300169916067,
+        "75": 0.037462047399809545,
+        "95": 0.08040855610916599,
+        "99": 0.19123385490357708,
+        "100": 0.2471363729218956
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 23,
+      "contact_xz_min_m": [
+        -0.09699999999999989,
+        -0.2709999999999998
+      ],
+      "contact_xz_max_m": [
+        -0.06699999999999987,
+        -0.24099999999999977
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.08499999999999988,
+        -0.2589999999999998
+      ]
+    },
+    {
+      "look": "Rain",
+      "file": "Rain_SocialBodyFit-candidate-tier1-phase000.obj.gz",
+      "paired_rays": 2725,
+      "posterior_rays": 1753,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.003296810226220026,
+        "1": 0.005311209588999986,
+        "5": 0.00785192253865089,
+        "25": 0.016985876029280533,
+        "50": 0.029745709696968936,
+        "75": 0.04834767710472365,
+        "95": 0.09907104311998227,
+        "99": 0.23116188452094244,
+        "100": 0.24862210435913396
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.003296810226220026,
+        "1": 0.004695885593719422,
+        "5": 0.006813341654006877,
+        "25": 0.013379754164447144,
+        "50": 0.021134343429243085,
+        "75": 0.03726525051481455,
+        "95": 0.08046297976674223,
+        "99": 0.14793364153682526,
+        "100": 0.24792874836721096
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 21,
+      "contact_xz_min_m": [
+        -0.09699999999999989,
+        -0.2709999999999998
+      ],
+      "contact_xz_max_m": [
+        -0.07299999999999987,
+        -0.23499999999999976
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.08499999999999988,
+        -0.2529999999999998
+      ]
+    },
+    {
+      "look": "Rain",
+      "file": "Rain_SocialBodyFit-candidate-tier1-phase030.obj.gz",
+      "paired_rays": 2731,
+      "posterior_rays": 1756,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.0037083795403792252,
+        "1": 0.005714649686647871,
+        "5": 0.008307945501413283,
+        "25": 0.017435545338768565,
+        "50": 0.030215773637191023,
+        "75": 0.048869456890852786,
+        "95": 0.0998486275662428,
+        "99": 0.2344046914762219,
+        "100": 0.24911837909948642
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.0037083795403792252,
+        "1": 0.005120414264599651,
+        "5": 0.0072329149007260285,
+        "25": 0.013740956744282204,
+        "50": 0.021687239013763182,
+        "75": 0.03794611803065931,
+        "95": 0.08156902039167127,
+        "99": 0.18976850505494186,
+        "100": 0.24649133095875697
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 16,
+      "contact_xz_min_m": [
+        -0.09699999999999989,
+        -0.2709999999999998
+      ],
+      "contact_xz_max_m": [
+        -0.07899999999999988,
+        -0.24099999999999977
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.08499999999999988,
+        -0.2589999999999998
+      ]
+    },
+    {
+      "look": "Rain",
+      "file": "Rain_SocialBodyFit-candidate-tier1-phase060.obj.gz",
+      "paired_rays": 2740,
+      "posterior_rays": 1760,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.0045695895765299754,
+        "1": 0.006573400028087995,
+        "5": 0.009261919662699517,
+        "25": 0.01835964231616384,
+        "50": 0.031126699789741197,
+        "75": 0.04997578879852624,
+        "95": 0.10287105056464657,
+        "99": 0.23566985462270312,
+        "100": 0.2496934296545778
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.0045695895765299754,
+        "1": 0.005996330055137197,
+        "5": 0.008148774294600153,
+        "25": 0.014579984701961271,
+        "50": 0.022634074569377438,
+        "75": 0.038807428427549515,
+        "95": 0.08269395811575014,
+        "99": 0.1978810258293593,
+        "100": 0.24835882116457703
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 4,
+      "contact_xz_min_m": [
+        -0.09099999999999989,
+        -0.2649999999999998
+      ],
+      "contact_xz_max_m": [
+        -0.08499999999999988,
+        -0.2529999999999998
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.08499999999999988,
+        -0.2589999999999998
+      ]
+    },
+    {
+      "look": "Rain",
+      "file": "Rain_SocialBodyFit-candidate-tier1-phase090.obj.gz",
+      "paired_rays": 2748,
+      "posterior_rays": 1763,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.005546628671373344,
+        "1": 0.007553005133410195,
+        "5": 0.01028153535054585,
+        "25": 0.019339043563445527,
+        "50": 0.032106753526722626,
+        "75": 0.05098927404014733,
+        "95": 0.10681513933230569,
+        "99": 0.23489498186433883,
+        "100": 0.24874377850769774
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.005546628671373344,
+        "1": 0.007009290883487677,
+        "5": 0.009149240243683665,
+        "25": 0.015520155430302246,
+        "50": 0.023703261533696007,
+        "75": 0.039983766211837746,
+        "95": 0.08368834849588708,
+        "99": 0.19483828475453052,
+        "100": 0.2467784791440853
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 0,
+      "contact_xz_min_m": null,
+      "contact_xz_max_m": null,
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.08499999999999988,
+        -0.2589999999999998
+      ]
+    },
+    {
+      "look": "Rain",
+      "file": "Rain_SocialBodyFit-candidate-tier1-phase120.obj.gz",
+      "paired_rays": 2743,
+      "posterior_rays": 1761,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.006292480793638866,
+        "1": 0.008299198034499349,
+        "5": 0.011004217403580768,
+        "25": 0.020072873727708745,
+        "50": 0.032708135131442384,
+        "75": 0.051535714572844366,
+        "95": 0.1033483667761676,
+        "99": 0.23383158700580692,
+        "100": 0.24981016022040436
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.006292480793638866,
+        "1": 0.007784232817281467,
+        "5": 0.009916411291777116,
+        "25": 0.01620817634388738,
+        "50": 0.024313050158549787,
+        "75": 0.04074856900115653,
+        "95": 0.08395484589409996,
+        "99": 0.1838380124073325,
+        "100": 0.24981016022040436
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 0,
+      "contact_xz_min_m": null,
+      "contact_xz_max_m": null,
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.08499999999999988,
+        -0.2589999999999998
+      ]
+    },
+    {
+      "look": "Rain",
+      "file": "Rain_SocialBodyFit-candidate-tier1-phase150.obj.gz",
+      "paired_rays": 2743,
+      "posterior_rays": 1760,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.006347676116157386,
+        "1": 0.008332623059694948,
+        "5": 0.011054238514611875,
+        "25": 0.020110525708716465,
+        "50": 0.03277586480021272,
+        "75": 0.05155386433069972,
+        "95": 0.10329548247942222,
+        "99": 0.23388625551509734,
+        "100": 0.24923280829940037
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.006347676116157386,
+        "1": 0.007823249911420194,
+        "5": 0.009945214995591636,
+        "25": 0.016224360067074256,
+        "50": 0.02437134072320407,
+        "75": 0.04077147525766395,
+        "95": 0.08427594534477205,
+        "99": 0.18253723085283796,
+        "100": 0.24873486575649384
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 0,
+      "contact_xz_min_m": null,
+      "contact_xz_max_m": null,
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.08499999999999988,
+        -0.2589999999999998
+      ]
+    },
+    {
+      "look": "Rain",
+      "file": "Rain_SocialBodyFit-candidate-tier1-phase180.obj.gz",
+      "paired_rays": 2739,
+      "posterior_rays": 1759,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.005294600837164265,
+        "1": 0.007260362274135282,
+        "5": 0.009979681767149234,
+        "25": 0.01900224821961824,
+        "50": 0.031729565691154316,
+        "75": 0.0504542326389113,
+        "95": 0.10564084908904736,
+        "99": 0.2350975418627986,
+        "100": 0.24991445861512535
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.005294600837164265,
+        "1": 0.0066828639160109145,
+        "5": 0.008855370031315197,
+        "25": 0.015167580779892276,
+        "50": 0.023373060358960918,
+        "75": 0.03963364045491452,
+        "95": 0.08389264748421493,
+        "99": 0.1993407564244639,
+        "100": 0.24907473862065133
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 0,
+      "contact_xz_min_m": null,
+      "contact_xz_max_m": null,
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.08499999999999988,
+        -0.2589999999999998
+      ]
+    },
+    {
+      "look": "Rain",
+      "file": "Rain_SocialBodyFit-candidate-tier1-phase210.obj.gz",
+      "paired_rays": 2734,
+      "posterior_rays": 1757,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.00401053655073097,
+        "1": 0.005983432681433076,
+        "5": 0.008648749766367748,
+        "25": 0.01775561818561988,
+        "50": 0.030475993303682003,
+        "75": 0.04907681510782354,
+        "95": 0.10189217239628191,
+        "99": 0.23557048394690547,
+        "100": 0.24979633508133625
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.00401053655073097,
+        "1": 0.005412281066184501,
+        "5": 0.007555625439608371,
+        "25": 0.01400778764866295,
+        "50": 0.022020298701291074,
+        "75": 0.038285222505439365,
+        "95": 0.08217304366237727,
+        "99": 0.19263549751683734,
+        "100": 0.24748170996647345
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 11,
+      "contact_xz_min_m": [
+        -0.09699999999999989,
+        -0.2709999999999998
+      ],
+      "contact_xz_max_m": [
+        -0.07899999999999988,
+        -0.24699999999999978
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.08499999999999988,
+        -0.2589999999999998
+      ]
+    },
+    {
+      "look": "Rain",
+      "file": "Rain_SocialBodyFit-candidate-tier2-phase000.obj.gz",
+      "paired_rays": 2724,
+      "posterior_rays": 1753,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.0036926051261394477,
+        "1": 0.005548281976919407,
+        "5": 0.008827150930723771,
+        "25": 0.01855763515906217,
+        "50": 0.031456330043361985,
+        "75": 0.049557270139992546,
+        "95": 0.10171840927405663,
+        "99": 0.23114530602171673,
+        "100": 0.24872461371625193
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.0036926051261394477,
+        "1": 0.00495942463615549,
+        "5": 0.007608710394560558,
+        "25": 0.014523050755378186,
+        "50": 0.022742278919324233,
+        "75": 0.03799548460609964,
+        "95": 0.0821700099679694,
+        "99": 0.14793364153682526,
+        "100": 0.24792874836721096
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 20,
+      "contact_xz_min_m": [
+        -0.1029999999999999,
+        -0.2769999999999998
+      ],
+      "contact_xz_max_m": [
+        -0.07299999999999987,
+        -0.23499999999999976
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.07899999999999988,
+        -0.2709999999999998
+      ]
+    },
+    {
+      "look": "Rain",
+      "file": "Rain_SocialBodyFit-candidate-tier2-phase030.obj.gz",
+      "paired_rays": 2730,
+      "posterior_rays": 1756,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.004166369018818672,
+        "1": 0.005966598466223276,
+        "5": 0.009236857390638398,
+        "25": 0.019050673638025276,
+        "50": 0.03198016213273411,
+        "75": 0.050008308522381195,
+        "95": 0.10505169453847597,
+        "99": 0.23521671792248075,
+        "100": 0.24911837909948642
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.004166369018818672,
+        "1": 0.005366180135660839,
+        "5": 0.008012824601701218,
+        "25": 0.014936783216523614,
+        "50": 0.02324827844783489,
+        "75": 0.03850343910270648,
+        "95": 0.08388595870953028,
+        "99": 0.19011250772439348,
+        "100": 0.24648804331058205
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 13,
+      "contact_xz_min_m": [
+        -0.1029999999999999,
+        -0.2769999999999998
+      ],
+      "contact_xz_max_m": [
+        -0.07899999999999988,
+        -0.24699999999999978
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.07899999999999988,
+        -0.2709999999999998
+      ]
+    },
+    {
+      "look": "Rain",
+      "file": "Rain_SocialBodyFit-candidate-tier2-phase060.obj.gz",
+      "paired_rays": 2739,
+      "posterior_rays": 1761,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.0051495618083737815,
+        "1": 0.006878895329104888,
+        "5": 0.01016700555452767,
+        "25": 0.01995461716890623,
+        "50": 0.03280068446041151,
+        "75": 0.05105557897884594,
+        "95": 0.10738598087224752,
+        "99": 0.2359597244803936,
+        "100": 0.2497077317754139
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.0051495618083737815,
+        "1": 0.006199480689549142,
+        "5": 0.008898689157189887,
+        "25": 0.015819435478780952,
+        "50": 0.02423217595103372,
+        "75": 0.03956042554724215,
+        "95": 0.08629599011106848,
+        "99": 0.19782388837428597,
+        "100": 0.24926612618862837
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 0,
+      "contact_xz_min_m": null,
+      "contact_xz_max_m": null,
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.07899999999999988,
+        -0.2709999999999998
+      ]
+    },
+    {
+      "look": "Rain",
+      "file": "Rain_SocialBodyFit-candidate-tier2-phase090.obj.gz",
+      "paired_rays": 2748,
+      "posterior_rays": 1763,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.0062465937649539005,
+        "1": 0.007837250487972685,
+        "5": 0.01114491896261835,
+        "25": 0.020936021751608094,
+        "50": 0.03372400211571669,
+        "75": 0.05203839282503778,
+        "95": 0.10887179347234748,
+        "99": 0.23488211868306255,
+        "100": 0.2485844629738287
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.0062465937649539005,
+        "1": 0.007210156915216849,
+        "5": 0.009879248715882066,
+        "25": 0.016802605577930507,
+        "50": 0.025212648452911157,
+        "75": 0.04059460435606746,
+        "95": 0.08760394081102982,
+        "99": 0.19483828475453052,
+        "100": 0.24745655035160402
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 0,
+      "contact_xz_min_m": null,
+      "contact_xz_max_m": null,
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.08499999999999988,
+        -0.2649999999999998
+      ]
+    },
+    {
+      "look": "Rain",
+      "file": "Rain_SocialBodyFit-candidate-tier2-phase120.obj.gz",
+      "paired_rays": 2743,
+      "posterior_rays": 1761,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.007052155206127508,
+        "1": 0.008531670311086023,
+        "5": 0.011842754807830019,
+        "25": 0.021660631433799954,
+        "50": 0.03438875767383315,
+        "75": 0.05251129503556545,
+        "95": 0.10542321406310869,
+        "99": 0.23383318192547145,
+        "100": 0.24981016022040436
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.007052155206127508,
+        "1": 0.007990381095850175,
+        "5": 0.010584689630884991,
+        "25": 0.017502380374263993,
+        "50": 0.025867795232193014,
+        "75": 0.0413206399928312,
+        "95": 0.0850510483706925,
+        "99": 0.1835349773499513,
+        "100": 0.24981016022040436
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 0,
+      "contact_xz_min_m": null,
+      "contact_xz_max_m": null,
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.08499999999999988,
+        -0.2649999999999998
+      ]
+    },
+    {
+      "look": "Rain",
+      "file": "Rain_SocialBodyFit-candidate-tier2-phase150.obj.gz",
+      "paired_rays": 2743,
+      "posterior_rays": 1760,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.007102639981535153,
+        "1": 0.008580711259923718,
+        "5": 0.011874327055461825,
+        "25": 0.021698193070343097,
+        "50": 0.03437968303870276,
+        "75": 0.052532507933390316,
+        "95": 0.10654912624252008,
+        "99": 0.23388781745346995,
+        "100": 0.24923280829940037
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.007102639981535153,
+        "1": 0.008025226258431897,
+        "5": 0.010623987792036712,
+        "25": 0.017546272474270944,
+        "50": 0.02593926286161649,
+        "75": 0.04131235259757278,
+        "95": 0.08548414697766557,
+        "99": 0.18219947376669232,
+        "100": 0.24873486575649384
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 0,
+      "contact_xz_min_m": null,
+      "contact_xz_max_m": null,
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.08499999999999988,
+        -0.2649999999999998
+      ]
+    },
+    {
+      "look": "Rain",
+      "file": "Rain_SocialBodyFit-candidate-tier2-phase180.obj.gz",
+      "paired_rays": 2737,
+      "posterior_rays": 1759,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.0059443561569098025,
+        "1": 0.0075112366420673335,
+        "5": 0.01082888282442177,
+        "25": 0.02063572753978249,
+        "50": 0.03332571070078805,
+        "75": 0.05142944957922613,
+        "95": 0.10796341923440969,
+        "99": 0.2351364605123166,
+        "100": 0.2498972699478454
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.0059443561569098025,
+        "1": 0.006891656822747559,
+        "5": 0.009540776805652573,
+        "25": 0.01645049520360481,
+        "50": 0.024826064418433824,
+        "75": 0.040202158416652645,
+        "95": 0.08685604225152012,
+        "99": 0.1993407564244639,
+        "100": 0.24904032713736224
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 0,
+      "contact_xz_min_m": null,
+      "contact_xz_max_m": null,
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.07899999999999988,
+        -0.2709999999999998
+      ]
+    },
+    {
+      "look": "Rain",
+      "file": "Rain_SocialBodyFit-candidate-tier2-phase210.obj.gz",
+      "paired_rays": 2733,
+      "posterior_rays": 1757,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.00449850781422656,
+        "1": 0.0062640381430285295,
+        "5": 0.009549289727759336,
+        "25": 0.019369665251062818,
+        "50": 0.03220660683219745,
+        "75": 0.05039350970592732,
+        "95": 0.10599683079330972,
+        "99": 0.23574758790648082,
+        "100": 0.24979633508133625
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.00449850781422656,
+        "1": 0.0056512328326186355,
+        "5": 0.008315725155102417,
+        "25": 0.015214816570554512,
+        "50": 0.023567782712478225,
+        "75": 0.03889935371992659,
+        "95": 0.08484522528679667,
+        "99": 0.19263549751683734,
+        "100": 0.24774344662445125
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 6,
+      "contact_xz_min_m": [
+        -0.09699999999999989,
+        -0.2709999999999998
+      ],
+      "contact_xz_max_m": [
+        -0.07899999999999988,
+        -0.2529999999999998
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.07899999999999988,
+        -0.2709999999999998
+      ]
+    },
+    {
+      "look": "Snow",
+      "file": "Snow_SocialBodyFit-candidate-tier0-phase000.obj.gz",
+      "paired_rays": 2874,
+      "posterior_rays": 1903,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.0031980525447023456,
+        "1": 0.004498891964275505,
+        "5": 0.006927096349590542,
+        "25": 0.01366354526462471,
+        "50": 0.027127532431498347,
+        "75": 0.0521152560797824,
+        "95": 0.18560194319489765,
+        "99": 0.23737355488850356,
+        "100": 0.2498860402829966
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.0031980525447023456,
+        "1": 0.004323365270821453,
+        "5": 0.006187537775423269,
+        "25": 0.010876254854559064,
+        "50": 0.023541703555500892,
+        "75": 0.04766252913722044,
+        "95": 0.11657552522619387,
+        "99": 0.18237963840961338,
+        "100": 0.2495507137276004
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 40,
+      "contact_xz_min_m": [
+        -0.1029999999999999,
+        -0.2889999999999998
+      ],
+      "contact_xz_max_m": [
+        0.10100000000000028,
+        -0.19899999999999973
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.09699999999999989,
+        -0.2829999999999998
+      ]
+    },
+    {
+      "look": "Snow",
+      "file": "Snow_SocialBodyFit-candidate-tier0-phase030.obj.gz",
+      "paired_rays": 2872,
+      "posterior_rays": 1903,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.0034299913626904543,
+        "1": 0.004845575630280263,
+        "5": 0.007199081768444896,
+        "25": 0.01392863667030586,
+        "50": 0.027361267975040515,
+        "75": 0.05239767309173393,
+        "95": 0.18502258551939638,
+        "99": 0.23741002282605433,
+        "100": 0.2491259113733657
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.0034299913626904543,
+        "1": 0.004492844108692143,
+        "5": 0.0064990121094534005,
+        "25": 0.011149921546350944,
+        "50": 0.02391471839714071,
+        "75": 0.04798793471344773,
+        "95": 0.1164702533098038,
+        "99": 0.18128863719964372,
+        "100": 0.24430616052977688
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 32,
+      "contact_xz_min_m": [
+        -0.1029999999999999,
+        -0.2829999999999998
+      ],
+      "contact_xz_max_m": [
+        0.10100000000000028,
+        -0.20499999999999974
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.09699999999999989,
+        -0.2829999999999998
+      ]
+    },
+    {
+      "look": "Snow",
+      "file": "Snow_SocialBodyFit-candidate-tier0-phase060.obj.gz",
+      "paired_rays": 2871,
+      "posterior_rays": 1905,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.003973588277559004,
+        "1": 0.005571511238855148,
+        "5": 0.007822256870563954,
+        "25": 0.014565099486252009,
+        "50": 0.027881384491685146,
+        "75": 0.05283407701949319,
+        "95": 0.18280454876402605,
+        "99": 0.23593784156524078,
+        "100": 0.24987270465538802
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.003973588277559004,
+        "1": 0.005248997787005436,
+        "5": 0.007185932217417234,
+        "25": 0.01182290449322082,
+        "50": 0.024559796175207926,
+        "75": 0.04880396409920312,
+        "95": 0.11755249224038648,
+        "99": 0.183892412382555,
+        "100": 0.2457388098673569
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 17,
+      "contact_xz_min_m": [
+        -0.09699999999999989,
+        -0.2829999999999998
+      ],
+      "contact_xz_max_m": [
+        0.10100000000000028,
+        -0.21099999999999974
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.09699999999999989,
+        -0.2829999999999998
+      ]
+    },
+    {
+      "look": "Snow",
+      "file": "Snow_SocialBodyFit-candidate-tier0-phase090.obj.gz",
+      "paired_rays": 2868,
+      "posterior_rays": 1907,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.004772801156684214,
+        "1": 0.006342530294194008,
+        "5": 0.008552577104541725,
+        "25": 0.015300925743087612,
+        "50": 0.028628631821144612,
+        "75": 0.05318985952780704,
+        "95": 0.18089272415334004,
+        "99": 0.23649316136534856,
+        "100": 0.24979582469124495
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.004772801156684214,
+        "1": 0.006105980630192618,
+        "5": 0.007917277291238123,
+        "25": 0.01256979912370107,
+        "50": 0.025215523721340394,
+        "75": 0.04957172369135815,
+        "95": 0.11862637568553898,
+        "99": 0.1845262354134814,
+        "100": 0.24728588846017902
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 6,
+      "contact_xz_min_m": [
+        -0.09699999999999989,
+        -0.2829999999999998
+      ],
+      "contact_xz_max_m": [
+        -0.06699999999999987,
+        -0.2829999999999998
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.08499999999999988,
+        -0.2829999999999998
+      ]
+    },
+    {
+      "look": "Snow",
+      "file": "Snow_SocialBodyFit-candidate-tier0-phase120.obj.gz",
+      "paired_rays": 2871,
+      "posterior_rays": 1911,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.005364441596880265,
+        "1": 0.00694936239027732,
+        "5": 0.009146998840018045,
+        "25": 0.015878456016970605,
+        "50": 0.029220942504236347,
+        "75": 0.054061771222755156,
+        "95": 0.1802511028474806,
+        "99": 0.23646466593430565,
+        "100": 0.24970095205272308
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.005364441596880265,
+        "1": 0.006618467311927917,
+        "5": 0.008463316433658857,
+        "25": 0.013149202613659372,
+        "50": 0.025974261946423827,
+        "75": 0.050217533972040984,
+        "95": 0.1191697824866079,
+        "99": 0.18779223346204119,
+        "100": 0.24835525402252728
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 0,
+      "contact_xz_min_m": null,
+      "contact_xz_max_m": null,
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.07299999999999987,
+        -0.2829999999999998
+      ]
+    },
+    {
+      "look": "Snow",
+      "file": "Snow_SocialBodyFit-candidate-tier0-phase150.obj.gz",
+      "paired_rays": 2871,
+      "posterior_rays": 1911,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.005406037249187201,
+        "1": 0.006957350056640671,
+        "5": 0.009138425997494898,
+        "25": 0.015867400576617258,
+        "50": 0.02921931462220706,
+        "75": 0.0540970478181195,
+        "95": 0.1802678908635065,
+        "99": 0.23713793593255061,
+        "100": 0.24988880733171803
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.005406037249187201,
+        "1": 0.006662769447723216,
+        "5": 0.008471970354702513,
+        "25": 0.013159301058750822,
+        "50": 0.02604443073063306,
+        "75": 0.050299582522702446,
+        "95": 0.11916361871265449,
+        "99": 0.1875006905157661,
+        "100": 0.2479573726481495
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 0,
+      "contact_xz_min_m": null,
+      "contact_xz_max_m": null,
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.07299999999999987,
+        -0.2829999999999998
+      ]
+    },
+    {
+      "look": "Snow",
+      "file": "Snow_SocialBodyFit-candidate-tier0-phase180.obj.gz",
+      "paired_rays": 2867,
+      "posterior_rays": 1905,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.004541749899501402,
+        "1": 0.006102436106271599,
+        "5": 0.0082572261702552,
+        "25": 0.014916058236769641,
+        "50": 0.028217099684536062,
+        "75": 0.05310714507813108,
+        "95": 0.18123700851391247,
+        "99": 0.23518711239551246,
+        "100": 0.2495078146252988
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.004541749899501402,
+        "1": 0.00582499858425499,
+        "5": 0.0075724839794741984,
+        "25": 0.012184072636724774,
+        "50": 0.025020590937057774,
+        "75": 0.04946954895337191,
+        "95": 0.11807288156656384,
+        "99": 0.18408724593796963,
+        "100": 0.24515207705665193
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 6,
+      "contact_xz_min_m": [
+        -0.09699999999999989,
+        -0.2829999999999998
+      ],
+      "contact_xz_max_m": [
+        -0.06699999999999987,
+        -0.2829999999999998
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.09099999999999989,
+        -0.2829999999999998
+      ]
+    },
+    {
+      "look": "Snow",
+      "file": "Snow_SocialBodyFit-candidate-tier0-phase210.obj.gz",
+      "paired_rays": 2872,
+      "posterior_rays": 1904,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.0036179796018230848,
+        "1": 0.005089822236216975,
+        "5": 0.007395464405753932,
+        "25": 0.014113335379543693,
+        "50": 0.027497170298437457,
+        "75": 0.0525165664104401,
+        "95": 0.18483811677726547,
+        "99": 0.23792653162178054,
+        "100": 0.24990070921189222
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.0036179796018230848,
+        "1": 0.004731267134354792,
+        "5": 0.006662787415916697,
+        "25": 0.011337425557511757,
+        "50": 0.024088124335767236,
+        "75": 0.04824184049617948,
+        "95": 0.11733325398787513,
+        "99": 0.1820623309798211,
+        "100": 0.24990070921189222
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 27,
+      "contact_xz_min_m": [
+        -0.1029999999999999,
+        -0.2829999999999998
+      ],
+      "contact_xz_max_m": [
+        0.10100000000000028,
+        -0.20499999999999974
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.09699999999999989,
+        -0.2829999999999998
+      ]
+    },
+    {
+      "look": "Snow",
+      "file": "Snow_SocialBodyFit-candidate-tier1-phase000.obj.gz",
+      "paired_rays": 2866,
+      "posterior_rays": 1895,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.004161463259746867,
+        "1": 0.0057431958580576314,
+        "5": 0.0077241309831543176,
+        "25": 0.014077244116984786,
+        "50": 0.027733071174960183,
+        "75": 0.053082571210115684,
+        "95": 0.18671073265940563,
+        "99": 0.23741634140550893,
+        "100": 0.2498860402829966
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.004161463259746867,
+        "1": 0.005228773985757779,
+        "5": 0.00700053661690529,
+        "25": 0.011235504113816436,
+        "50": 0.02402107145664545,
+        "75": 0.04883264061215792,
+        "95": 0.11797260150150246,
+        "99": 0.20073855525103926,
+        "100": 0.24568741993453336
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 16,
+      "contact_xz_min_m": [
+        -0.08499999999999988,
+        -0.23499999999999976
+      ],
+      "contact_xz_max_m": [
+        0.10100000000000028,
+        -0.19299999999999973
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.07899999999999988,
+        -0.23499999999999976
+      ]
+    },
+    {
+      "look": "Snow",
+      "file": "Snow_SocialBodyFit-candidate-tier1-phase030.obj.gz",
+      "paired_rays": 2865,
+      "posterior_rays": 1897,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.004414686870749862,
+        "1": 0.006046125725746625,
+        "5": 0.008018233092034699,
+        "25": 0.014333190168268173,
+        "50": 0.027950590978828238,
+        "75": 0.05329898050381526,
+        "95": 0.1854024318823053,
+        "99": 0.23768098375728175,
+        "100": 0.2491259113733657
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.004414686870749862,
+        "1": 0.005433762128789616,
+        "5": 0.007318270285761264,
+        "25": 0.011522371871116766,
+        "50": 0.024337489776163623,
+        "75": 0.04920968753449162,
+        "95": 0.11873257273715464,
+        "99": 0.201865628202315,
+        "100": 0.24641719235764525
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 5,
+      "contact_xz_min_m": [
+        -0.07899999999999988,
+        -0.23499999999999976
+      ],
+      "contact_xz_max_m": [
+        0.09500000000000028,
+        -0.21699999999999975
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        0.09500000000000028,
+        -0.22899999999999976
+      ]
+    },
+    {
+      "look": "Snow",
+      "file": "Snow_SocialBodyFit-candidate-tier1-phase060.obj.gz",
+      "paired_rays": 2865,
+      "posterior_rays": 1900,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.004962665569130165,
+        "1": 0.006698182716327499,
+        "5": 0.008617380699383326,
+        "25": 0.015007970046151953,
+        "50": 0.02856423166784844,
+        "75": 0.053776523881313876,
+        "95": 0.18462796970134823,
+        "99": 0.2373505471969297,
+        "100": 0.24987270465538802
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.004962665569130165,
+        "1": 0.006160576127154366,
+        "5": 0.008022423059545244,
+        "25": 0.0122173214013781,
+        "50": 0.025009145145087064,
+        "75": 0.04999467432579699,
+        "95": 0.11910650833182801,
+        "99": 0.20423346663713082,
+        "100": 0.2480087056517679
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 1,
+      "contact_xz_min_m": [
+        0.09500000000000028,
+        -0.22899999999999976
+      ],
+      "contact_xz_max_m": [
+        0.09500000000000028,
+        -0.22899999999999976
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        0.09500000000000028,
+        -0.22899999999999976
+      ]
+    },
+    {
+      "look": "Snow",
+      "file": "Snow_SocialBodyFit-candidate-tier1-phase090.obj.gz",
+      "paired_rays": 2866,
+      "posterior_rays": 1903,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.005795462623190417,
+        "1": 0.007465556993371888,
+        "5": 0.009432319883942317,
+        "25": 0.015792033170519804,
+        "50": 0.02924494454046453,
+        "75": 0.05431181775954309,
+        "95": 0.1818652569755821,
+        "99": 0.23772962485863158,
+        "100": 0.24979582469124495
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.005795462623190417,
+        "1": 0.0068279815768400275,
+        "5": 0.008839918986054258,
+        "25": 0.012954686616342304,
+        "50": 0.025661777008074704,
+        "75": 0.050634739070216345,
+        "95": 0.11930757405383573,
+        "99": 0.20644378822863466,
+        "100": 0.24973207189142888
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 0,
+      "contact_xz_min_m": null,
+      "contact_xz_max_m": null,
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        0.09500000000000028,
+        -0.22899999999999976
+      ]
+    },
+    {
+      "look": "Snow",
+      "file": "Snow_SocialBodyFit-candidate-tier1-phase120.obj.gz",
+      "paired_rays": 2867,
+      "posterior_rays": 1905,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.006433081021350817,
+        "1": 0.008005943049926962,
+        "5": 0.010015197425689631,
+        "25": 0.01635205624637906,
+        "50": 0.02977236101447417,
+        "75": 0.054757032844536535,
+        "95": 0.18121873302935676,
+        "99": 0.23660132616458235,
+        "100": 0.24970095205272308
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.006433081021350817,
+        "1": 0.007432116702350968,
+        "5": 0.009420940352022955,
+        "25": 0.013554378401492317,
+        "50": 0.026353746481201534,
+        "75": 0.051291359155654914,
+        "95": 0.1191816460399792,
+        "99": 0.19022396640544129,
+        "100": 0.2455429876954947
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 0,
+      "contact_xz_min_m": null,
+      "contact_xz_max_m": null,
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        0.09500000000000028,
+        -0.22899999999999976
+      ]
+    },
+    {
+      "look": "Snow",
+      "file": "Snow_SocialBodyFit-candidate-tier1-phase150.obj.gz",
+      "paired_rays": 2866,
+      "posterior_rays": 1903,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.006443436102941014,
+        "1": 0.008005521239425106,
+        "5": 0.0100172656471062,
+        "25": 0.01636146645927246,
+        "50": 0.029741541349679823,
+        "75": 0.0547996082276547,
+        "95": 0.1812280817745854,
+        "99": 0.2374983062400569,
+        "100": 0.24988880733171803
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.006443436102941014,
+        "1": 0.007429306593921967,
+        "5": 0.009426853333949242,
+        "25": 0.013551763451157994,
+        "50": 0.02639134850552055,
+        "75": 0.05122684764035562,
+        "95": 0.11868733072330218,
+        "99": 0.18995150145985232,
+        "100": 0.2450758754296824
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 0,
+      "contact_xz_min_m": null,
+      "contact_xz_max_m": null,
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        0.09500000000000028,
+        -0.22899999999999976
+      ]
+    },
+    {
+      "look": "Snow",
+      "file": "Snow_SocialBodyFit-candidate-tier1-phase180.obj.gz",
+      "paired_rays": 2863,
+      "posterior_rays": 1901,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.0054579407018104376,
+        "1": 0.007099602905206125,
+        "5": 0.009044228631056583,
+        "25": 0.01541415420616915,
+        "50": 0.02900376983931302,
+        "75": 0.05406572091731954,
+        "95": 0.18240616869215331,
+        "99": 0.23655906112420072,
+        "100": 0.2495078146252988
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.0054579407018104376,
+        "1": 0.006577060506557819,
+        "5": 0.008440811033386952,
+        "25": 0.012635029373566364,
+        "50": 0.025521414136036202,
+        "75": 0.05056176679879271,
+        "95": 0.12013984002099842,
+        "99": 0.2041246333435735,
+        "100": 0.24721293398841726
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 0,
+      "contact_xz_min_m": null,
+      "contact_xz_max_m": null,
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        0.09500000000000028,
+        -0.22899999999999976
+      ]
+    },
+    {
+      "look": "Snow",
+      "file": "Snow_SocialBodyFit-candidate-tier1-phase210.obj.gz",
+      "paired_rays": 2865,
+      "posterior_rays": 1897,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.004565442381879392,
+        "1": 0.006213848163711273,
+        "5": 0.00816554396878928,
+        "25": 0.014494752503090014,
+        "50": 0.028151222294206746,
+        "75": 0.05352516015177311,
+        "95": 0.18506787279766732,
+        "99": 0.2379278699503359,
+        "100": 0.24965435122556756
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.004565442381879392,
+        "1": 0.005627038026506683,
+        "5": 0.007516877580545534,
+        "25": 0.011722573143153003,
+        "50": 0.024531610233282264,
+        "75": 0.04950083343382078,
+        "95": 0.11891562010276317,
+        "99": 0.20187773939745293,
+        "100": 0.24612403983781816
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 3,
+      "contact_xz_min_m": [
+        -0.07899999999999988,
+        -0.23499999999999976
+      ],
+      "contact_xz_max_m": [
+        0.09500000000000028,
+        -0.22299999999999975
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        0.09500000000000028,
+        -0.22899999999999976
+      ]
+    },
+    {
+      "look": "Snow",
+      "file": "Snow_SocialBodyFit-candidate-tier2-phase000.obj.gz",
+      "paired_rays": 2860,
+      "posterior_rays": 1895,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.0032708321147758013,
+        "1": 0.005577031214991795,
+        "5": 0.008825616643570941,
+        "25": 0.01636515065548992,
+        "50": 0.031878235032839014,
+        "75": 0.05926896100651345,
+        "95": 0.18857317223870446,
+        "99": 0.23779479544976267,
+        "100": 0.24993815191268437
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.0032708321147758013,
+        "1": 0.004946963985816912,
+        "5": 0.007847021138677796,
+        "25": 0.01348461073942564,
+        "50": 0.02770631686223196,
+        "75": 0.05416991793354592,
+        "95": 0.12526305466606566,
+        "99": 0.19048260899353783,
+        "100": 0.24183176147565527
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 20,
+      "contact_xz_min_m": [
+        -0.09099999999999989,
+        -0.24099999999999977
+      ],
+      "contact_xz_max_m": [
+        0.10700000000000029,
+        -0.20499999999999974
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.08499999999999988,
+        -0.22899999999999976
+      ]
+    },
+    {
+      "look": "Snow",
+      "file": "Snow_SocialBodyFit-candidate-tier2-phase030.obj.gz",
+      "paired_rays": 2858,
+      "posterior_rays": 1897,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.003587332652376707,
+        "1": 0.005895665667294631,
+        "5": 0.00913988213162826,
+        "25": 0.016560096413581096,
+        "50": 0.032161174456418,
+        "75": 0.059417089042096374,
+        "95": 0.1876832870094809,
+        "99": 0.2379291378675227,
+        "100": 0.24928647792431313
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.003587332652376707,
+        "1": 0.005201523901886897,
+        "5": 0.0081537503617928,
+        "25": 0.013802515486692257,
+        "50": 0.028031593683199463,
+        "75": 0.05463737333736701,
+        "95": 0.12488439831504576,
+        "99": 0.19101409756244375,
+        "100": 0.2426968860082161
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 15,
+      "contact_xz_min_m": [
+        -0.09099999999999989,
+        -0.23499999999999976
+      ],
+      "contact_xz_max_m": [
+        0.10100000000000028,
+        -0.21099999999999974
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.08499999999999988,
+        -0.22899999999999976
+      ]
+    },
+    {
+      "look": "Snow",
+      "file": "Snow_SocialBodyFit-candidate-tier2-phase060.obj.gz",
+      "paired_rays": 2856,
+      "posterior_rays": 1898,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.004294822161482803,
+        "1": 0.0065930180680832725,
+        "5": 0.009750520483382999,
+        "25": 0.017231224763558345,
+        "50": 0.03281759660199077,
+        "75": 0.05994879673293907,
+        "95": 0.18587052429220513,
+        "99": 0.23815778125520742,
+        "100": 0.2499994612797659
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.004294822161482803,
+        "1": 0.00593764735969809,
+        "5": 0.00879139381980167,
+        "25": 0.014502356902237959,
+        "50": 0.028466905248349356,
+        "75": 0.05504429287450628,
+        "95": 0.1254167615714456,
+        "99": 0.18700968560548534,
+        "100": 0.24456793859146359
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 7,
+      "contact_xz_min_m": [
+        -0.08499999999999988,
+        -0.23499999999999976
+      ],
+      "contact_xz_max_m": [
+        0.10100000000000028,
+        -0.21699999999999975
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.08499999999999988,
+        -0.22899999999999976
+      ]
+    },
+    {
+      "look": "Snow",
+      "file": "Snow_SocialBodyFit-candidate-tier2-phase090.obj.gz",
+      "paired_rays": 2856,
+      "posterior_rays": 1903,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.005021064259596697,
+        "1": 0.007360018713661318,
+        "5": 0.010520562576576215,
+        "25": 0.01802427294020076,
+        "50": 0.03354034198511385,
+        "75": 0.060381148111368646,
+        "95": 0.18422385651147294,
+        "99": 0.23748804333456586,
+        "100": 0.24993215581239314
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.005021064259596697,
+        "1": 0.00668977916061466,
+        "5": 0.009519006232718596,
+        "25": 0.015331016294505395,
+        "50": 0.02914039558754511,
+        "75": 0.055689399668160416,
+        "95": 0.1287561300497368,
+        "99": 0.1909363977501526,
+        "100": 0.2466208411283734
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 0,
+      "contact_xz_min_m": null,
+      "contact_xz_max_m": null,
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.08499999999999988,
+        -0.23499999999999976
+      ]
+    },
+    {
+      "look": "Snow",
+      "file": "Snow_SocialBodyFit-candidate-tier2-phase120.obj.gz",
+      "paired_rays": 2856,
+      "posterior_rays": 1906,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.005434580398102684,
+        "1": 0.007963186138853301,
+        "5": 0.011133058017735328,
+        "25": 0.018623589928467646,
+        "50": 0.03404220920934778,
+        "75": 0.06064011473592042,
+        "95": 0.18327545594152078,
+        "99": 0.23604667265150645,
+        "100": 0.24915537677643124
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.005434580398102684,
+        "1": 0.007325042488913083,
+        "5": 0.010072112372531083,
+        "25": 0.015907957980715093,
+        "50": 0.02981408114066464,
+        "75": 0.05634740256538193,
+        "95": 0.12505272112689902,
+        "99": 0.18974905298473177,
+        "100": 0.24810214349995158
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 0,
+      "contact_xz_min_m": null,
+      "contact_xz_max_m": null,
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.08499999999999988,
+        -0.23499999999999976
+      ]
+    },
+    {
+      "look": "Snow",
+      "file": "Snow_SocialBodyFit-candidate-tier2-phase150.obj.gz",
+      "paired_rays": 2855,
+      "posterior_rays": 1905,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.005448678080800684,
+        "1": 0.007969842926578286,
+        "5": 0.011140960335428135,
+        "25": 0.018580447899792102,
+        "50": 0.034052483524565635,
+        "75": 0.06069184156250779,
+        "95": 0.1832062723397288,
+        "99": 0.2359436508095946,
+        "100": 0.2487718959603637
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.005448678080800684,
+        "1": 0.007319192920632378,
+        "5": 0.01008154155587746,
+        "25": 0.01591665894624572,
+        "50": 0.029838663452124603,
+        "75": 0.0563954899326638,
+        "95": 0.12458723535993636,
+        "99": 0.19019729078691514,
+        "100": 0.2476144778255301
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 0,
+      "contact_xz_min_m": null,
+      "contact_xz_max_m": null,
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.08499999999999988,
+        -0.23499999999999976
+      ]
+    },
+    {
+      "look": "Snow",
+      "file": "Snow_SocialBodyFit-candidate-tier2-phase180.obj.gz",
+      "paired_rays": 2853,
+      "posterior_rays": 1899,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.0047560938256517304,
+        "1": 0.007019395463857287,
+        "5": 0.010225281990663849,
+        "25": 0.017630701522777403,
+        "50": 0.0332275879722474,
+        "75": 0.06031715817835592,
+        "95": 0.18448396835441436,
+        "99": 0.2362902944202482,
+        "100": 0.24972278796156344
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.0047560938256517304,
+        "1": 0.006411846951421509,
+        "5": 0.009217589905897227,
+        "25": 0.015002584171337457,
+        "50": 0.028955526620946137,
+        "75": 0.05563123524067934,
+        "95": 0.12623913404190357,
+        "99": 0.18760609692761596,
+        "100": 0.24404481585786492
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 2,
+      "contact_xz_min_m": [
+        -0.08499999999999988,
+        -0.23499999999999976
+      ],
+      "contact_xz_max_m": [
+        -0.08499999999999988,
+        -0.22899999999999976
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.08499999999999988,
+        -0.22899999999999976
+      ]
+    },
+    {
+      "look": "Snow",
+      "file": "Snow_SocialBodyFit-candidate-tier2-phase210.obj.gz",
+      "paired_rays": 2858,
+      "posterior_rays": 1897,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.0037804994748625864,
+        "1": 0.006098569790905035,
+        "5": 0.009351727787643338,
+        "25": 0.016682609285432415,
+        "50": 0.0323188120776933,
+        "75": 0.059584345475451786,
+        "95": 0.18754587812739482,
+        "99": 0.238028945000623,
+        "100": 0.24982970159158235
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.0037804994748625864,
+        "1": 0.005389907673288718,
+        "5": 0.008340673807548549,
+        "25": 0.013983744984783164,
+        "50": 0.02816759343068148,
+        "75": 0.05484558566938741,
+        "95": 0.12507959732140575,
+        "99": 0.19130365692489298,
+        "100": 0.24252169271892482
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 13,
+      "contact_xz_min_m": [
+        -0.09099999999999989,
+        -0.23499999999999976
+      ],
+      "contact_xz_max_m": [
+        0.10100000000000028,
+        -0.21099999999999974
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.08499999999999988,
+        -0.22899999999999976
+      ]
+    }
+  ]
+}

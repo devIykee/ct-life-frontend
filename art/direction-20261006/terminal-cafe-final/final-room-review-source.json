@@ -1,0 +1,32 @@
+{
+  "source_sha256": "f61563e6eb875ec338ceb4baa897ce29d183ed5215c8b0c34adb2590e52de783",
+  "method": "CTLife.EditorTools.CafeFinalRoomReview.Launch",
+  "source_status": "frozen_compiled_native_pending",
+  "source_compile": "exit0 with actual Editor-reference RSP; existing CS1701 warning",
+  "arguments": [
+    "-openfile /Users/mac/Documents/codes/projects/ct-life/client/Assets/Scenes/Bootstrap.unity",
+    "-executeMethod CTLife.EditorTools.CafeFinalRoomReview.Launch",
+    "-ctlife-cafeFinalOutput /tmp/ct-cafe-final-room-native-20261006",
+    "-ctlife-cafeFinalExit 1"
+  ],
+  "launch_note": "Coordinator only, graphics GUI-capable process; no -quit because harness enters/exits Play and exits itself. Existing scene/unsaved guards unchanged. Do not run alongside another Unity.",
+  "prefab": "Assets/Art/Candidates/TerminalCafe20261006Final/TerminalCafeFinal.prefab",
+  "scope": [
+    "24 final source chair/table rays using actual CameraRig and WorldInput.Tap",
+    "24 identical preserved B3Social negative-control rays",
+    "actual Snow LocalPlayerController with null transport on exact saved final NavMesh",
+    "12 additional chair taps from reached camera-visible viewpoints invoke real public GoSit, walk and emit one exact unchanged wire intent each",
+    "25 actual walks: viewpoint and claim approach for12 spots, then return entrance",
+    "walking capsule proxy radius0.28m/centersegment rootY+.4..1.35 checks solids; not full body animation contact",
+    "up to6 full-room1600x900 spatial PNGs at arrival,midwalk,three seat approaches,return; unbaked lightmaps reported honestly"
+  ],
+  "not_covered": [
+    "UI touch target layout",
+    "server connection/seat ownership",
+    "on-server-seat enter/exit, bridge or standing restoration",
+    "full skinned character collision",
+    "final baked lighting or phone performance"
+  ],
+  "protection": "Restores prior saved scene setup and runtime runInBackground; unregisters saved NavMesh, restores lighting; hash-checks settings/packages/runtime/resources/final/prior candidates/character assets. No saves or registry changes.",
+  "deadline_seconds": 360
+}

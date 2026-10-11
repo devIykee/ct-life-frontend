@@ -1,0 +1,2023 @@
+{
+  "status": "sampled_native_body_fit_against_cpu_transformed_native_chair_not_final_acceptance",
+  "coordinate_frame": "immutable actor-root local metres",
+  "chair": "one shared office_chair, yaw180 centerZ-.31 scaleXYZ(1,1,.8), original height; curved frozen target mesh",
+  "chair_support_triangles": 31,
+  "ray_grid_m": 0.006,
+  "limitations": [
+    "Chair is a transformed native B2 export; native B3 placement remains independently gated.",
+    "Eight phases per look and three body LODs, not continuous-time geometry.",
+    "Edge-triangle crossing of all chair triangles is checked; enclosed volumes and coplanar overlap are not proven absent.",
+    "Vertical surface gap and posterior region are geometric witnesses, not pressure/contact mechanics.",
+    "Native rendered furniture/body review and production-controller integration remain pending."
+  ],
+  "input_sha256": {
+    "art/direction-20261006/terminal-cafe-b3-fit/adult_depth_48cm-office-target.obj.gz": "c9090cabcd8e3f77a27cfa512f638b764b352cc041b063d9f0b6700cb0310157",
+    "art/character-candidates/motion-review-20261006/native-typing-work-body-fit-v1/Rain_TypingWorkBodyFit-candidate-tier0-phase000.obj.gz": "48f17212aca465da285d29ae460da2981afcea2ebd22a85ebec47c5be90257de",
+    "art/character-candidates/motion-review-20261006/native-typing-work-body-fit-v1/Rain_TypingWorkBodyFit-candidate-tier0-phase030.obj.gz": "9ddade67aec278259bd029278582a8f8e35dcd5a89106912ba56cf8d1166d17c",
+    "art/character-candidates/motion-review-20261006/native-typing-work-body-fit-v1/Rain_TypingWorkBodyFit-candidate-tier0-phase060.obj.gz": "2b1cf636e71bbe95d33ae76ebab3e7236d6158c472f89f8885d027dc45560923",
+    "art/character-candidates/motion-review-20261006/native-typing-work-body-fit-v1/Rain_TypingWorkBodyFit-candidate-tier0-phase090.obj.gz": "fb7ccce0672e620288a9d33e19e80008601e21ba7876f4d11119eb3df3d4f423",
+    "art/character-candidates/motion-review-20261006/native-typing-work-body-fit-v1/Rain_TypingWorkBodyFit-candidate-tier0-phase120.obj.gz": "6877f910377f5472d20c8560912870fee8bdf927632bebc89556604c32b615f9",
+    "art/character-candidates/motion-review-20261006/native-typing-work-body-fit-v1/Rain_TypingWorkBodyFit-candidate-tier0-phase150.obj.gz": "6153b39b92d87cc014b8f24911e988fc35a02a2f69fb4760bc96c9fdc9d88e15",
+    "art/character-candidates/motion-review-20261006/native-typing-work-body-fit-v1/Rain_TypingWorkBodyFit-candidate-tier0-phase180.obj.gz": "067595f58086b62f47e44695b772f9c73822d324d37ec1e45d40c8763d2a61e4",
+    "art/character-candidates/motion-review-20261006/native-typing-work-body-fit-v1/Rain_TypingWorkBodyFit-candidate-tier0-phase210.obj.gz": "87a65db3c83bfe5b653273cb8ade2562c5992b293fd423ec8a723d51c88f7acc",
+    "art/character-candidates/motion-review-20261006/native-typing-work-body-fit-v1/Rain_TypingWorkBodyFit-candidate-tier1-phase000.obj.gz": "a223c2d594f06f3b75379b6ada670ce9f40e948ce6e16a245f4766b2fe889d3c",
+    "art/character-candidates/motion-review-20261006/native-typing-work-body-fit-v1/Rain_TypingWorkBodyFit-candidate-tier1-phase030.obj.gz": "0845e9790bd67243a520e608aadd26abd3aecbb9e04a4279d52ffdbae9c7fc69",
+    "art/character-candidates/motion-review-20261006/native-typing-work-body-fit-v1/Rain_TypingWorkBodyFit-candidate-tier1-phase060.obj.gz": "c8ff2bf3ecf4be3abab91d0509c8dc1aeaf8e83004cd8e6c0c1633de8db6cea4",
+    "art/character-candidates/motion-review-20261006/native-typing-work-body-fit-v1/Rain_TypingWorkBodyFit-candidate-tier1-phase090.obj.gz": "e69a49ee7dce52e94dff0bcec517cd37e133d3a096e282b71522b5d02c70a4c4",
+    "art/character-candidates/motion-review-20261006/native-typing-work-body-fit-v1/Rain_TypingWorkBodyFit-candidate-tier1-phase120.obj.gz": "04c29c471138ae0be7614856088ecddcf1d6255740f019a97a4b3593bfdfde55",
+    "art/character-candidates/motion-review-20261006/native-typing-work-body-fit-v1/Rain_TypingWorkBodyFit-candidate-tier1-phase150.obj.gz": "95c9e258b2b234a7c7afe4ebb5fc742ca98ea105e00ff9bdf298a007ebef995e",
+    "art/character-candidates/motion-review-20261006/native-typing-work-body-fit-v1/Rain_TypingWorkBodyFit-candidate-tier1-phase180.obj.gz": "0308c665bc7f998b75696cdd8a1b3b39c7cd24a4a803080ec9098b7b237391d5",
+    "art/character-candidates/motion-review-20261006/native-typing-work-body-fit-v1/Rain_TypingWorkBodyFit-candidate-tier1-phase210.obj.gz": "d1f828012724d7522cabdf39bcabfa74cc32524c8ae96c4134842a3f11fb7439",
+    "art/character-candidates/motion-review-20261006/native-typing-work-body-fit-v1/Rain_TypingWorkBodyFit-candidate-tier2-phase000.obj.gz": "a0fb42d63922edb53b53095061d5b3a27766dc5db54d62530477708412bf053d",
+    "art/character-candidates/motion-review-20261006/native-typing-work-body-fit-v1/Rain_TypingWorkBodyFit-candidate-tier2-phase030.obj.gz": "bac611a13b346462f119662d4ffd1ac352ca60cb34dc7353b2e745067c6a3cd6",
+    "art/character-candidates/motion-review-20261006/native-typing-work-body-fit-v1/Rain_TypingWorkBodyFit-candidate-tier2-phase060.obj.gz": "29381f593354a23df55e3f5c8f846bca0f8652aedcf67d0667fe2144f4edd0c7",
+    "art/character-candidates/motion-review-20261006/native-typing-work-body-fit-v1/Rain_TypingWorkBodyFit-candidate-tier2-phase090.obj.gz": "f1fff68e04ed7a5084ba6e6080fb1e8615ea9daa0bcf2116c53f14421b6fa5de",
+    "art/character-candidates/motion-review-20261006/native-typing-work-body-fit-v1/Rain_TypingWorkBodyFit-candidate-tier2-phase120.obj.gz": "d562f10023db3e7d5763d6855f1e20904c8a5ce846259379ae6b705e6b2d8b59",
+    "art/character-candidates/motion-review-20261006/native-typing-work-body-fit-v1/Rain_TypingWorkBodyFit-candidate-tier2-phase150.obj.gz": "7347fa3d8527c6ea8cc5955d72ce0e45383e5cf81b59aa1207a274da3411e3e7",
+    "art/character-candidates/motion-review-20261006/native-typing-work-body-fit-v1/Rain_TypingWorkBodyFit-candidate-tier2-phase180.obj.gz": "9dc929a684c177d9c439c6818331a9ed61b9270a7f8a2d80d940d5ee1f9d25e0",
+    "art/character-candidates/motion-review-20261006/native-typing-work-body-fit-v1/Rain_TypingWorkBodyFit-candidate-tier2-phase210.obj.gz": "131041935c80b324a5d15d18fbf4d56627b2d9c3c35e13201b896ead2dfac6e0",
+    "art/character-candidates/motion-review-20261006/native-typing-work-body-fit-v1/Snow_TypingWorkBodyFit-candidate-tier0-phase000.obj.gz": "18ccd92fa473b6e825d66d24de2fa8196fb26f7f015db8f7861e175062a6bfc1",
+    "art/character-candidates/motion-review-20261006/native-typing-work-body-fit-v1/Snow_TypingWorkBodyFit-candidate-tier0-phase030.obj.gz": "c7a3958f0467c400b891c1ac0dbe9404542cc0f46bae9b67c2c73afaa81c1b62",
+    "art/character-candidates/motion-review-20261006/native-typing-work-body-fit-v1/Snow_TypingWorkBodyFit-candidate-tier0-phase060.obj.gz": "06e359e839669e75aa39c3042e623de09abf0f3d907155a824b73e65ba357154",
+    "art/character-candidates/motion-review-20261006/native-typing-work-body-fit-v1/Snow_TypingWorkBodyFit-candidate-tier0-phase090.obj.gz": "571f4ccda9969678f2f657f0698ede8e1306021947d1b22d012e4becfa75e890",
+    "art/character-candidates/motion-review-20261006/native-typing-work-body-fit-v1/Snow_TypingWorkBodyFit-candidate-tier0-phase120.obj.gz": "70b1f63aa1cff9f3ad6c605fa0b780e6c107551651afc95ee248e22803e7aaa8",
+    "art/character-candidates/motion-review-20261006/native-typing-work-body-fit-v1/Snow_TypingWorkBodyFit-candidate-tier0-phase150.obj.gz": "38b739da14ac1bed3566654478848ee684a3a4555d3cd333a0bd28967d67435b",
+    "art/character-candidates/motion-review-20261006/native-typing-work-body-fit-v1/Snow_TypingWorkBodyFit-candidate-tier0-phase180.obj.gz": "6d0e784a3a2cc92fd78ec459a85069cb133094bf52454ecff905dfa2ca6041f6",
+    "art/character-candidates/motion-review-20261006/native-typing-work-body-fit-v1/Snow_TypingWorkBodyFit-candidate-tier0-phase210.obj.gz": "0f0a16f9741af59a76ae3c1babf6716d83080e5ce36d5baa11a209b675be1600",
+    "art/character-candidates/motion-review-20261006/native-typing-work-body-fit-v1/Snow_TypingWorkBodyFit-candidate-tier1-phase000.obj.gz": "12e52e189740e7d7c3033f80e087fb5d5c4209fbb9c631a1c2fbbfb294b37155",
+    "art/character-candidates/motion-review-20261006/native-typing-work-body-fit-v1/Snow_TypingWorkBodyFit-candidate-tier1-phase030.obj.gz": "a72c0b4c1b34bcb4caa374d51707add2712cb00242ba79f228bee4b7f82b2f66",
+    "art/character-candidates/motion-review-20261006/native-typing-work-body-fit-v1/Snow_TypingWorkBodyFit-candidate-tier1-phase060.obj.gz": "a6967315ae2ed64be08f203aac1845a753b445a975e1ca7c2105e25aec2f7d4f",
+    "art/character-candidates/motion-review-20261006/native-typing-work-body-fit-v1/Snow_TypingWorkBodyFit-candidate-tier1-phase090.obj.gz": "d36d5077b4395bd0950d7b09febcb75cf25c9aaefd70577b2620e5ed5562f639",
+    "art/character-candidates/motion-review-20261006/native-typing-work-body-fit-v1/Snow_TypingWorkBodyFit-candidate-tier1-phase120.obj.gz": "57db291fe6536e168c2c68ee0176e89b9239326474aa961cd36bbc650be0e819",
+    "art/character-candidates/motion-review-20261006/native-typing-work-body-fit-v1/Snow_TypingWorkBodyFit-candidate-tier1-phase150.obj.gz": "73a3e86ff0982acf178302e7c0f55c04e37077fb8abadfe8b1ce77ec4463c789",
+    "art/character-candidates/motion-review-20261006/native-typing-work-body-fit-v1/Snow_TypingWorkBodyFit-candidate-tier1-phase180.obj.gz": "0fb86507fc8a4b29c6d40d25977a5de7844d1a7896ff5212961dd6ac7832708d",
+    "art/character-candidates/motion-review-20261006/native-typing-work-body-fit-v1/Snow_TypingWorkBodyFit-candidate-tier1-phase210.obj.gz": "1d5868742aa5e45aadce3a40dd9b46389bc522e3a1f76951da68c3ef05d93bf8",
+    "art/character-candidates/motion-review-20261006/native-typing-work-body-fit-v1/Snow_TypingWorkBodyFit-candidate-tier2-phase000.obj.gz": "b91f581b4638e4b1d9ed8eb4bcf366b9139dc6b5615507a391a7458ebfdebf2d",
+    "art/character-candidates/motion-review-20261006/native-typing-work-body-fit-v1/Snow_TypingWorkBodyFit-candidate-tier2-phase030.obj.gz": "c2633f057e19e2e8b34edbadf1c3abdad34290237d28701dc1e4fb12cb3ef5fe",
+    "art/character-candidates/motion-review-20261006/native-typing-work-body-fit-v1/Snow_TypingWorkBodyFit-candidate-tier2-phase060.obj.gz": "4e30bc34bcf5f7df01ec10514b9ab50687a08cd3a91a7bef6e44e88b48501679",
+    "art/character-candidates/motion-review-20261006/native-typing-work-body-fit-v1/Snow_TypingWorkBodyFit-candidate-tier2-phase090.obj.gz": "58e5f798d4ae3d57a442f918eb61d683442c460b5c8d2a8d02aec91bebbedb11",
+    "art/character-candidates/motion-review-20261006/native-typing-work-body-fit-v1/Snow_TypingWorkBodyFit-candidate-tier2-phase120.obj.gz": "66a03811334d950df5ff47dd7c49d3bc5cc90d1f4b573e0a082a7cc75f1766fd",
+    "art/character-candidates/motion-review-20261006/native-typing-work-body-fit-v1/Snow_TypingWorkBodyFit-candidate-tier2-phase150.obj.gz": "5362b49b7d7077597de40200cbaf0470cd5b5acc7953a3cbcdf728df0e1d1b35",
+    "art/character-candidates/motion-review-20261006/native-typing-work-body-fit-v1/Snow_TypingWorkBodyFit-candidate-tier2-phase180.obj.gz": "4eb7c1800c6664e48b40806116639035c2f46abb1c710dccd70df20c43a6805a",
+    "art/character-candidates/motion-review-20261006/native-typing-work-body-fit-v1/Snow_TypingWorkBodyFit-candidate-tier2-phase210.obj.gz": "40b6578a7e4644f63e0e3685e980836d6cd8742754ff231092494e2135d8c0f3"
+  },
+  "records": [
+    {
+      "look": "Rain",
+      "file": "Rain_TypingWorkBodyFit-candidate-tier0-phase000.obj.gz",
+      "paired_rays": 2277,
+      "posterior_rays": 1765,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.004142693998961167,
+        "1": 0.005358536177716466,
+        "5": 0.007883932838745455,
+        "25": 0.016283637963707742,
+        "50": 0.02647293587296995,
+        "75": 0.046167128358060916,
+        "95": 0.08595714571168525,
+        "99": 0.16425548769439782,
+        "100": 0.24364931024684194
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.004142693998961167,
+        "1": 0.005094352992011122,
+        "5": 0.0075081979630978405,
+        "25": 0.014050985666318738,
+        "50": 0.02187263213395607,
+        "75": 0.03767525593034998,
+        "95": 0.08053047259747502,
+        "99": 0.20046417742196065,
+        "100": 0.24364931024684194
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 16,
+      "contact_xz_min_m": [
+        -0.09099999999999989,
+        -0.2649999999999998
+      ],
+      "contact_xz_max_m": [
+        -0.06699999999999987,
+        -0.24099999999999977
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.08499999999999988,
+        -0.2589999999999998
+      ]
+    },
+    {
+      "look": "Rain",
+      "file": "Rain_TypingWorkBodyFit-candidate-tier0-phase030.obj.gz",
+      "paired_rays": 2276,
+      "posterior_rays": 1764,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.0027350698093272507,
+        "1": 0.004026485383963371,
+        "5": 0.006541141534219849,
+        "25": 0.015021836549007753,
+        "50": 0.02520027420806653,
+        "75": 0.044811063356932565,
+        "95": 0.08484144225856999,
+        "99": 0.13859716480840129,
+        "100": 0.2386420627299245
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.0027350698093272507,
+        "1": 0.0037471948620765175,
+        "5": 0.006128390972648007,
+        "25": 0.01278099090884785,
+        "50": 0.020530377085703877,
+        "75": 0.03628080382447384,
+        "95": 0.07836449533289476,
+        "99": 0.18514807350096588,
+        "100": 0.2386420627299245
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 48,
+      "contact_xz_min_m": [
+        -0.09699999999999989,
+        -0.2769999999999998
+      ],
+      "contact_xz_max_m": [
+        -0.06099999999999986,
+        -0.22899999999999976
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.08499999999999988,
+        -0.2589999999999998
+      ]
+    },
+    {
+      "look": "Rain",
+      "file": "Rain_TypingWorkBodyFit-candidate-tier0-phase060.obj.gz",
+      "paired_rays": 2279,
+      "posterior_rays": 1767,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.003088299440959563,
+        "1": 0.004351556755474858,
+        "5": 0.006859175403025547,
+        "25": 0.01531616399307531,
+        "50": 0.025461035744069993,
+        "75": 0.04530144438691708,
+        "95": 0.08604545700197416,
+        "99": 0.16692730375704204,
+        "100": 0.24314277067512197
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.003088299440959563,
+        "1": 0.004074580831129264,
+        "5": 0.006480727366149913,
+        "25": 0.013064547308163948,
+        "50": 0.020869842852055176,
+        "75": 0.03670129127886876,
+        "95": 0.07975138645506025,
+        "99": 0.20273526770815226,
+        "100": 0.24314277067512197
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 36,
+      "contact_xz_min_m": [
+        -0.09699999999999989,
+        -0.2709999999999998
+      ],
+      "contact_xz_max_m": [
+        -0.06099999999999986,
+        -0.23499999999999976
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.08499999999999988,
+        -0.2589999999999998
+      ]
+    },
+    {
+      "look": "Rain",
+      "file": "Rain_TypingWorkBodyFit-candidate-tier0-phase090.obj.gz",
+      "paired_rays": 2279,
+      "posterior_rays": 1767,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.004111678825457321,
+        "1": 0.005324567978097406,
+        "5": 0.007843434117462156,
+        "25": 0.016233126308741685,
+        "50": 0.02641387773949344,
+        "75": 0.0461493805303439,
+        "95": 0.08721958767233656,
+        "99": 0.1975297539676221,
+        "100": 0.242783145228807
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.004111678825457321,
+        "1": 0.0050524335823304055,
+        "5": 0.007479434041245564,
+        "25": 0.01399862169925506,
+        "50": 0.021837505899415244,
+        "75": 0.03765428464630172,
+        "95": 0.08113628667121887,
+        "99": 0.21014721589397672,
+        "100": 0.242783145228807
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 17,
+      "contact_xz_min_m": [
+        -0.09099999999999989,
+        -0.2649999999999998
+      ],
+      "contact_xz_max_m": [
+        -0.06699999999999987,
+        -0.24099999999999977
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.08499999999999988,
+        -0.2589999999999998
+      ]
+    },
+    {
+      "look": "Rain",
+      "file": "Rain_TypingWorkBodyFit-candidate-tier0-phase120.obj.gz",
+      "paired_rays": 2274,
+      "posterior_rays": 1764,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.005158022302904963,
+        "1": 0.006336212632844484,
+        "5": 0.008877998598987613,
+        "25": 0.01718991601591778,
+        "50": 0.02730162454103016,
+        "75": 0.04703517410877604,
+        "95": 0.08640610401165166,
+        "99": 0.16284474869178647,
+        "100": 0.24014485500134708
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.005158022302904963,
+        "1": 0.00605933547935535,
+        "5": 0.008462743612805981,
+        "25": 0.014988045780997536,
+        "50": 0.022890449429070286,
+        "75": 0.038636705368819205,
+        "95": 0.08132461050331306,
+        "99": 0.19839112446351037,
+        "100": 0.24014485500134708
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 0,
+      "contact_xz_min_m": null,
+      "contact_xz_max_m": null,
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.08499999999999988,
+        -0.2589999999999998
+      ]
+    },
+    {
+      "look": "Rain",
+      "file": "Rain_TypingWorkBodyFit-candidate-tier0-phase150.obj.gz",
+      "paired_rays": 2274,
+      "posterior_rays": 1764,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.0058173530806227,
+        "1": 0.006976254454039806,
+        "5": 0.009503009009424376,
+        "25": 0.017806095939067387,
+        "50": 0.027833795667207867,
+        "75": 0.0476212629442712,
+        "95": 0.08599702568383284,
+        "99": 0.16149299841687423,
+        "100": 0.2411163352528668
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.0058173530806227,
+        "1": 0.006696021479136765,
+        "5": 0.00910543071538052,
+        "25": 0.015582999457234292,
+        "50": 0.023460336479138394,
+        "75": 0.039406590623785265,
+        "95": 0.08170343229013743,
+        "99": 0.19685456489806244,
+        "100": 0.2411163352528668
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 0,
+      "contact_xz_min_m": null,
+      "contact_xz_max_m": null,
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.08499999999999988,
+        -0.2589999999999998
+      ]
+    },
+    {
+      "look": "Rain",
+      "file": "Rain_TypingWorkBodyFit-candidate-tier0-phase180.obj.gz",
+      "paired_rays": 2274,
+      "posterior_rays": 1764,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.006174972650642041,
+        "1": 0.00732439447577873,
+        "5": 0.009845853966416653,
+        "25": 0.018105431010561515,
+        "50": 0.028122089953124207,
+        "75": 0.04796920630875463,
+        "95": 0.08627175355641334,
+        "99": 0.16080640345575872,
+        "100": 0.24157118808232714
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.006174972650642041,
+        "1": 0.00702971135133892,
+        "5": 0.009455631379174975,
+        "25": 0.015894962043482327,
+        "50": 0.023772101717741023,
+        "75": 0.039817195121805135,
+        "95": 0.08221030411371776,
+        "99": 0.196067516501577,
+        "100": 0.24157118808232714
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 0,
+      "contact_xz_min_m": null,
+      "contact_xz_max_m": null,
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.08499999999999988,
+        -0.2589999999999998
+      ]
+    },
+    {
+      "look": "Rain",
+      "file": "Rain_TypingWorkBodyFit-candidate-tier0-phase210.obj.gz",
+      "paired_rays": 2274,
+      "posterior_rays": 1764,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.006015147069736826,
+        "1": 0.007166777677745021,
+        "5": 0.009696070815635602,
+        "25": 0.017970882738027605,
+        "50": 0.02801770355636929,
+        "75": 0.0478686544927866,
+        "95": 0.08617948319218671,
+        "99": 0.16057276690356762,
+        "100": 0.24133539334146537
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.006015147069736826,
+        "1": 0.006877082408410108,
+        "5": 0.009308760133346286,
+        "25": 0.015758707721488685,
+        "50": 0.023657208647711314,
+        "75": 0.039604475713402504,
+        "95": 0.08201962119152759,
+        "99": 0.1960328144777996,
+        "100": 0.24133539334146537
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 0,
+      "contact_xz_min_m": null,
+      "contact_xz_max_m": null,
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.08499999999999988,
+        -0.2589999999999998
+      ]
+    },
+    {
+      "look": "Rain",
+      "file": "Rain_TypingWorkBodyFit-candidate-tier1-phase000.obj.gz",
+      "paired_rays": 2261,
+      "posterior_rays": 1751,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.004538627702804887,
+        "1": 0.006351082286173227,
+        "5": 0.009021466391003041,
+        "25": 0.017835836086331436,
+        "50": 0.0283442145032477,
+        "75": 0.04724736533764623,
+        "95": 0.08688080248687852,
+        "99": 0.1651806876534646,
+        "100": 0.24363321010136235
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.004538627702804887,
+        "1": 0.0061303593791308675,
+        "5": 0.008587862781731043,
+        "25": 0.015618315713242209,
+        "50": 0.023288599261892362,
+        "75": 0.038604807315548745,
+        "95": 0.08372531231059749,
+        "99": 0.2013860489409387,
+        "100": 0.24363321010136235
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 2,
+      "contact_xz_min_m": [
+        -0.08499999999999988,
+        -0.2589999999999998
+      ],
+      "contact_xz_max_m": [
+        -0.08499999999999988,
+        -0.2529999999999998
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.08499999999999988,
+        -0.2589999999999998
+      ]
+    },
+    {
+      "look": "Rain",
+      "file": "Rain_TypingWorkBodyFit-candidate-tier1-phase030.obj.gz",
+      "paired_rays": 2256,
+      "posterior_rays": 1747,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.0032011973096567337,
+        "1": 0.005022795470820388,
+        "5": 0.007642797852789263,
+        "25": 0.016537195735698076,
+        "50": 0.026991183897906,
+        "75": 0.045672526065518734,
+        "95": 0.08441363560057734,
+        "99": 0.15376110965819628,
+        "100": 0.23859658894350144
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.0032011973096567337,
+        "1": 0.004746166673316646,
+        "5": 0.007320232909488434,
+        "25": 0.014367387123688125,
+        "50": 0.02193262283334746,
+        "75": 0.03690681266137941,
+        "95": 0.08113353939997096,
+        "99": 0.189680257204684,
+        "100": 0.23859658894350144
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 23,
+      "contact_xz_min_m": [
+        -0.09699999999999989,
+        -0.2709999999999998
+      ],
+      "contact_xz_max_m": [
+        -0.07299999999999987,
+        -0.23499999999999976
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.08499999999999988,
+        -0.2589999999999998
+      ]
+    },
+    {
+      "look": "Rain",
+      "file": "Rain_TypingWorkBodyFit-candidate-tier1-phase060.obj.gz",
+      "paired_rays": 2260,
+      "posterior_rays": 1751,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.0035061378544677946,
+        "1": 0.005353649773869898,
+        "5": 0.007972220758930532,
+        "25": 0.0168554620984413,
+        "50": 0.027353265213576505,
+        "75": 0.046257927907041974,
+        "95": 0.08539980084002037,
+        "99": 0.16824947568169438,
+        "100": 0.2434488033565239
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.0035061378544677946,
+        "1": 0.005076498971819499,
+        "5": 0.007630683338217287,
+        "25": 0.014675640175626836,
+        "50": 0.022338512123079635,
+        "75": 0.0374711762664694,
+        "95": 0.08195800463845512,
+        "99": 0.20391472834536611,
+        "100": 0.2434488033565239
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 16,
+      "contact_xz_min_m": [
+        -0.09099999999999989,
+        -0.2649999999999998
+      ],
+      "contact_xz_max_m": [
+        -0.07299999999999987,
+        -0.23499999999999976
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.08499999999999988,
+        -0.2589999999999998
+      ]
+    },
+    {
+      "look": "Rain",
+      "file": "Rain_TypingWorkBodyFit-candidate-tier1-phase090.obj.gz",
+      "paired_rays": 2261,
+      "posterior_rays": 1752,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.004482704147126648,
+        "1": 0.006311302806072494,
+        "5": 0.008980895763155139,
+        "25": 0.01780156532870336,
+        "50": 0.0282804709673512,
+        "75": 0.04724542879952487,
+        "95": 0.08684283939194876,
+        "99": 0.1812091489850506,
+        "100": 0.2419519640190329
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.004482704147126648,
+        "1": 0.006071929565264536,
+        "5": 0.008548963754177385,
+        "25": 0.01557417778611428,
+        "50": 0.02326881333793701,
+        "75": 0.03862325792049613,
+        "95": 0.08357840613890592,
+        "99": 0.20542678971363504,
+        "100": 0.2419519640190329
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 2,
+      "contact_xz_min_m": [
+        -0.08499999999999988,
+        -0.2589999999999998
+      ],
+      "contact_xz_max_m": [
+        -0.08499999999999988,
+        -0.2529999999999998
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.08499999999999988,
+        -0.2589999999999998
+      ]
+    },
+    {
+      "look": "Rain",
+      "file": "Rain_TypingWorkBodyFit-candidate-tier1-phase120.obj.gz",
+      "paired_rays": 2259,
+      "posterior_rays": 1750,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.005483026054380058,
+        "1": 0.007287048190877399,
+        "5": 0.010017353948635005,
+        "25": 0.0188232010993378,
+        "50": 0.02923693794287885,
+        "75": 0.04802385330876782,
+        "95": 0.08754288078212392,
+        "99": 0.16352799417481362,
+        "100": 0.24014892808033272
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.005483026054380058,
+        "1": 0.007102586556631637,
+        "5": 0.009513449515229136,
+        "25": 0.016553642564137633,
+        "50": 0.02428406563183219,
+        "75": 0.03957708205814284,
+        "95": 0.08476922689384377,
+        "99": 0.19910685089212093,
+        "100": 0.24014892808033272
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 0,
+      "contact_xz_min_m": null,
+      "contact_xz_max_m": null,
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.08499999999999988,
+        -0.2589999999999998
+      ]
+    },
+    {
+      "look": "Rain",
+      "file": "Rain_TypingWorkBodyFit-candidate-tier1-phase150.obj.gz",
+      "paired_rays": 2259,
+      "posterior_rays": 1750,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.006101101615637705,
+        "1": 0.007914781017139664,
+        "5": 0.010663461582400979,
+        "25": 0.019512519733642902,
+        "50": 0.029853628461951665,
+        "75": 0.04856204012840509,
+        "95": 0.08757747790649531,
+        "99": 0.16209211512953903,
+        "100": 0.24123139918516534
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.006101101615637705,
+        "1": 0.0077427422903511125,
+        "5": 0.010162928607763608,
+        "25": 0.017167875376307887,
+        "50": 0.024935322174551355,
+        "75": 0.04018040605418899,
+        "95": 0.0852576133503575,
+        "99": 0.19743364875363476,
+        "100": 0.24123139918516534
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 0,
+      "contact_xz_min_m": null,
+      "contact_xz_max_m": null,
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.08499999999999988,
+        -0.2589999999999998
+      ]
+    },
+    {
+      "look": "Rain",
+      "file": "Rain_TypingWorkBodyFit-candidate-tier1-phase180.obj.gz",
+      "paired_rays": 2259,
+      "posterior_rays": 1750,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.0064243431576404,
+        "1": 0.00825884623046772,
+        "5": 0.011002464951809765,
+        "25": 0.019856480088924988,
+        "50": 0.03019308431095974,
+        "75": 0.04880656479381068,
+        "95": 0.0879991916655912,
+        "99": 0.16138047113385146,
+        "100": 0.24203284536404324
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.0064243431576404,
+        "1": 0.008095563271903415,
+        "5": 0.010516498301122548,
+        "25": 0.017494094426217036,
+        "50": 0.025255851952034558,
+        "75": 0.040491134785836214,
+        "95": 0.08573874066967777,
+        "99": 0.19657800964712918,
+        "100": 0.24203284536404324
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 0,
+      "contact_xz_min_m": null,
+      "contact_xz_max_m": null,
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.08499999999999988,
+        -0.2589999999999998
+      ]
+    },
+    {
+      "look": "Rain",
+      "file": "Rain_TypingWorkBodyFit-candidate-tier1-phase210.obj.gz",
+      "paired_rays": 2259,
+      "posterior_rays": 1750,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.006289820773484389,
+        "1": 0.008106583365532398,
+        "5": 0.01085134499159197,
+        "25": 0.019684604189655064,
+        "50": 0.030028911896163135,
+        "75": 0.048679250824669895,
+        "95": 0.08776867437726771,
+        "99": 0.16115105588810275,
+        "100": 0.24164975217782114
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.006289820773484389,
+        "1": 0.0079447555478599,
+        "5": 0.010364912161157192,
+        "25": 0.01736263502387389,
+        "50": 0.025117167531307327,
+        "75": 0.040397556924062605,
+        "95": 0.0856084546277106,
+        "99": 0.19655063586317448,
+        "100": 0.24164975217782114
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 0,
+      "contact_xz_min_m": null,
+      "contact_xz_max_m": null,
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.08499999999999988,
+        -0.2589999999999998
+      ]
+    },
+    {
+      "look": "Rain",
+      "file": "Rain_TypingWorkBodyFit-candidate-tier2-phase000.obj.gz",
+      "paired_rays": 2258,
+      "posterior_rays": 1751,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.005415205954734215,
+        "1": 0.0065193339446514694,
+        "5": 0.00986092518884861,
+        "25": 0.01914381803036634,
+        "50": 0.029881012514250127,
+        "75": 0.04864740024232027,
+        "95": 0.08801844590645115,
+        "99": 0.1654136370017669,
+        "100": 0.24365540819671866
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.005415205954734215,
+        "1": 0.006216607781293959,
+        "5": 0.00935109468819642,
+        "25": 0.016569845456874843,
+        "50": 0.024981806362041115,
+        "75": 0.0390086422022258,
+        "95": 0.08452359592066361,
+        "99": 0.20152381560576332,
+        "100": 0.24365540819671866
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 0,
+      "contact_xz_min_m": null,
+      "contact_xz_max_m": null,
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.08499999999999988,
+        -0.2649999999999998
+      ]
+    },
+    {
+      "look": "Rain",
+      "file": "Rain_TypingWorkBodyFit-candidate-tier2-phase030.obj.gz",
+      "paired_rays": 2254,
+      "posterior_rays": 1747,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.0039433137614848235,
+        "1": 0.005152723947034781,
+        "5": 0.008573918229038798,
+        "25": 0.01777222590338476,
+        "50": 0.028494597802203453,
+        "75": 0.047304294250840664,
+        "95": 0.08625428578610711,
+        "99": 0.153761858791656,
+        "100": 0.23892522293584884
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.0039433137614848235,
+        "1": 0.004908270640261615,
+        "5": 0.008027598454981017,
+        "25": 0.015261290472153494,
+        "50": 0.023481833993511336,
+        "75": 0.03739684900512388,
+        "95": 0.08198681015374057,
+        "99": 0.18969140293550515,
+        "100": 0.23892522293584884
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 19,
+      "contact_xz_min_m": [
+        -0.09699999999999989,
+        -0.2769999999999998
+      ],
+      "contact_xz_max_m": [
+        -0.07899999999999988,
+        -0.23499999999999976
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.07899999999999988,
+        -0.2709999999999998
+      ]
+    },
+    {
+      "look": "Rain",
+      "file": "Rain_TypingWorkBodyFit-candidate-tier2-phase060.obj.gz",
+      "paired_rays": 2258,
+      "posterior_rays": 1751,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.0043255194109166895,
+        "1": 0.005477723358989144,
+        "5": 0.008865259664144415,
+        "25": 0.01803934897026553,
+        "50": 0.02889249260381263,
+        "75": 0.04778936928174825,
+        "95": 0.08688468366850925,
+        "99": 0.16842696812397748,
+        "100": 0.2434488033565239
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.0043255194109166895,
+        "1": 0.005220430923883718,
+        "5": 0.008345317571768401,
+        "25": 0.015554976988729485,
+        "50": 0.023875858751372214,
+        "75": 0.03778539085834598,
+        "95": 0.08297455541404336,
+        "99": 0.20404167792047834,
+        "100": 0.2434488033565239
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 13,
+      "contact_xz_min_m": [
+        -0.09099999999999989,
+        -0.2769999999999998
+      ],
+      "contact_xz_max_m": [
+        -0.07899999999999988,
+        -0.24099999999999977
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.07899999999999988,
+        -0.2709999999999998
+      ]
+    },
+    {
+      "look": "Rain",
+      "file": "Rain_TypingWorkBodyFit-candidate-tier2-phase090.obj.gz",
+      "paired_rays": 2261,
+      "posterior_rays": 1754,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.005378422168861474,
+        "1": 0.00646588570721035,
+        "5": 0.009818181740735621,
+        "25": 0.019070536098681867,
+        "50": 0.02989779206879667,
+        "75": 0.04879326136301543,
+        "95": 0.08827095840622567,
+        "99": 0.19817837317623022,
+        "100": 0.2442093037508269
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.005378422168861474,
+        "1": 0.0061744324434392225,
+        "5": 0.009288645433395758,
+        "25": 0.01654611120741925,
+        "50": 0.02495263128216038,
+        "75": 0.03900037378393274,
+        "95": 0.085118295827755,
+        "99": 0.21121286083850388,
+        "100": 0.2442093037508269
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 0,
+      "contact_xz_min_m": null,
+      "contact_xz_max_m": null,
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.08499999999999988,
+        -0.2649999999999998
+      ]
+    },
+    {
+      "look": "Rain",
+      "file": "Rain_TypingWorkBodyFit-candidate-tier2-phase120.obj.gz",
+      "paired_rays": 2258,
+      "posterior_rays": 1751,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.006383717792417476,
+        "1": 0.007475172915648068,
+        "5": 0.010795216461207718,
+        "25": 0.02009328842721758,
+        "50": 0.030829631647457112,
+        "75": 0.04954080293461448,
+        "95": 0.0890876960615869,
+        "99": 0.16360033455403641,
+        "100": 0.24012592483529227
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.006383717792417476,
+        "1": 0.007143370017467926,
+        "5": 0.0102941213447231,
+        "25": 0.017552492372312573,
+        "50": 0.02591022999913195,
+        "75": 0.04003048115606933,
+        "95": 0.08556759419186022,
+        "99": 0.1992195463385567,
+        "100": 0.24012592483529227
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 0,
+      "contact_xz_min_m": null,
+      "contact_xz_max_m": null,
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.07899999999999988,
+        -0.2769999999999998
+      ]
+    },
+    {
+      "look": "Rain",
+      "file": "Rain_TypingWorkBodyFit-candidate-tier2-phase150.obj.gz",
+      "paired_rays": 2257,
+      "posterior_rays": 1750,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.0069520439750225815,
+        "1": 0.008090294076968468,
+        "5": 0.011440822932083372,
+        "25": 0.020641841376655812,
+        "50": 0.03145256232149035,
+        "75": 0.050141666263694484,
+        "95": 0.08961260775013528,
+        "99": 0.1622220743984711,
+        "100": 0.24137420799835596
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.0069520439750225815,
+        "1": 0.007750127300110166,
+        "5": 0.010910592069781528,
+        "25": 0.01824202935532658,
+        "50": 0.02656267377275265,
+        "75": 0.04059942802786011,
+        "95": 0.08592954129618376,
+        "99": 0.1975787436984777,
+        "100": 0.24137420799835596
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 0,
+      "contact_xz_min_m": null,
+      "contact_xz_max_m": null,
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.07899999999999988,
+        -0.2769999999999998
+      ]
+    },
+    {
+      "look": "Rain",
+      "file": "Rain_TypingWorkBodyFit-candidate-tier2-phase180.obj.gz",
+      "paired_rays": 2257,
+      "posterior_rays": 1750,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.007259149282814403,
+        "1": 0.008416522243488055,
+        "5": 0.011793642522120151,
+        "25": 0.020976585957630856,
+        "50": 0.03179969408273975,
+        "75": 0.05046707123535238,
+        "95": 0.08988558715685198,
+        "99": 0.16150502723991308,
+        "100": 0.24228664452526139
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.007259149282814403,
+        "1": 0.008078170675651197,
+        "5": 0.01122370193587041,
+        "25": 0.018588005820489903,
+        "50": 0.026937263229088126,
+        "75": 0.04094176055832664,
+        "95": 0.08632264506601765,
+        "99": 0.1967248424773019,
+        "100": 0.24228664452526139
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 0,
+      "contact_xz_min_m": null,
+      "contact_xz_max_m": null,
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.07899999999999988,
+        -0.2769999999999998
+      ]
+    },
+    {
+      "look": "Rain",
+      "file": "Rain_TypingWorkBodyFit-candidate-tier2-phase210.obj.gz",
+      "paired_rays": 2257,
+      "posterior_rays": 1750,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.00714660033040454,
+        "1": 0.008269651525720642,
+        "5": 0.011636232261225787,
+        "25": 0.020836577483211327,
+        "50": 0.03167868359077913,
+        "75": 0.050337332054969874,
+        "95": 0.08989636159598216,
+        "99": 0.16127618013212625,
+        "100": 0.24185594173288516
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.00714660033040454,
+        "1": 0.007931269559739199,
+        "5": 0.01107978974446623,
+        "25": 0.018423458886013697,
+        "50": 0.026786187944107004,
+        "75": 0.04081666660284372,
+        "95": 0.08625900971252942,
+        "99": 0.19669793541747274,
+        "100": 0.24185594173288516
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 0,
+      "contact_xz_min_m": null,
+      "contact_xz_max_m": null,
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.07899999999999988,
+        -0.2769999999999998
+      ]
+    },
+    {
+      "look": "Snow",
+      "file": "Snow_TypingWorkBodyFit-candidate-tier0-phase000.obj.gz",
+      "paired_rays": 2384,
+      "posterior_rays": 1920,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.003446090941025881,
+        "1": 0.005177464221199108,
+        "5": 0.007745104527233029,
+        "25": 0.015525770642851724,
+        "50": 0.02826177940776231,
+        "75": 0.04995688058489453,
+        "95": 0.11223246499942154,
+        "99": 0.17940810230593113,
+        "100": 0.2439156963075585
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.003446090941025881,
+        "1": 0.004937551341032663,
+        "5": 0.00711535958141897,
+        "25": 0.013374042522622948,
+        "50": 0.024154191986679563,
+        "75": 0.04694955819278211,
+        "95": 0.11038471963940454,
+        "99": 0.1842054173868251,
+        "100": 0.2439156963075585
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 21,
+      "contact_xz_min_m": [
+        -0.09099999999999989,
+        -0.2889999999999998
+      ],
+      "contact_xz_max_m": [
+        0.10100000000000028,
+        -0.22299999999999975
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.07899999999999988,
+        -0.23499999999999976
+      ]
+    },
+    {
+      "look": "Snow",
+      "file": "Snow_TypingWorkBodyFit-candidate-tier0-phase030.obj.gz",
+      "paired_rays": 2379,
+      "posterior_rays": 1918,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.0022482338456450424,
+        "1": 0.003990425618051133,
+        "5": 0.006642957188798204,
+        "25": 0.014507132198473244,
+        "50": 0.02719458496090854,
+        "75": 0.048980858944844635,
+        "95": 0.11114025978183839,
+        "99": 0.17754194141825294,
+        "100": 0.24292117864834584
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.0022482338456450424,
+        "1": 0.003849644752919477,
+        "5": 0.006086837582544877,
+        "25": 0.012254782951415216,
+        "50": 0.022971192838082938,
+        "75": 0.0454999277238116,
+        "95": 0.10923109134729786,
+        "99": 0.18283558204918632,
+        "100": 0.24292117864834584
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 59,
+      "contact_xz_min_m": [
+        -0.09699999999999989,
+        -0.2949999999999998
+      ],
+      "contact_xz_max_m": [
+        0.10100000000000028,
+        -0.21099999999999974
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.06699999999999987,
+        -0.2829999999999998
+      ]
+    },
+    {
+      "look": "Snow",
+      "file": "Snow_TypingWorkBodyFit-candidate-tier0-phase060.obj.gz",
+      "paired_rays": 2383,
+      "posterior_rays": 1919,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.002518551548576886,
+        "1": 0.0041926352963275884,
+        "5": 0.006762390867837093,
+        "25": 0.014680248487140363,
+        "50": 0.027265984922364983,
+        "75": 0.04909169554266607,
+        "95": 0.1116791091871082,
+        "99": 0.17823849213306597,
+        "100": 0.24340843811927781
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.002518551548576886,
+        "1": 0.003961843786851571,
+        "5": 0.0061921468831310335,
+        "25": 0.012490760817354757,
+        "50": 0.023143325356604905,
+        "75": 0.04574676337285835,
+        "95": 0.10924182644589604,
+        "99": 0.18302493889686725,
+        "100": 0.24340843811927781
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 57,
+      "contact_xz_min_m": [
+        -0.09699999999999989,
+        -0.2949999999999998
+      ],
+      "contact_xz_max_m": [
+        0.10100000000000028,
+        -0.21099999999999974
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.06699999999999987,
+        -0.2829999999999998
+      ]
+    },
+    {
+      "look": "Snow",
+      "file": "Snow_TypingWorkBodyFit-candidate-tier0-phase090.obj.gz",
+      "paired_rays": 2386,
+      "posterior_rays": 1921,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.0033424766621745206,
+        "1": 0.005078712214092446,
+        "5": 0.007634681844829419,
+        "25": 0.015437214810016156,
+        "50": 0.028133776631413865,
+        "75": 0.04986724446596731,
+        "95": 0.11215878902055114,
+        "99": 0.17917738826944504,
+        "100": 0.24423150748579914
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.0033424766621745206,
+        "1": 0.004853595775464748,
+        "5": 0.0069823426224961405,
+        "25": 0.01329130475927126,
+        "50": 0.02405793249445204,
+        "75": 0.0467895530973505,
+        "95": 0.10950878821710014,
+        "99": 0.18410424256729804,
+        "100": 0.24423150748579914
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 23,
+      "contact_xz_min_m": [
+        -0.09699999999999989,
+        -0.2889999999999998
+      ],
+      "contact_xz_max_m": [
+        0.10100000000000028,
+        -0.21699999999999975
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.07899999999999988,
+        -0.23499999999999976
+      ]
+    },
+    {
+      "look": "Snow",
+      "file": "Snow_TypingWorkBodyFit-candidate-tier0-phase120.obj.gz",
+      "paired_rays": 2385,
+      "posterior_rays": 1922,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.0042452322314202595,
+        "1": 0.005903420364941112,
+        "5": 0.008504050049617518,
+        "25": 0.016285477309367524,
+        "50": 0.029073554870076845,
+        "75": 0.05059853474882986,
+        "95": 0.11152073009779616,
+        "99": 0.18013097138954806,
+        "100": 0.24351053012348145
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.0042452322314202595,
+        "1": 0.005734999899516653,
+        "5": 0.007867168833033131,
+        "25": 0.01411139241873724,
+        "50": 0.024939633029740782,
+        "75": 0.04788359007360958,
+        "95": 0.10951788374983332,
+        "99": 0.1849726265787553,
+        "100": 0.24351053012348145
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 4,
+      "contact_xz_min_m": [
+        -0.07899999999999988,
+        -0.2889999999999998
+      ],
+      "contact_xz_max_m": [
+        -0.06699999999999987,
+        -0.23499999999999976
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.07899999999999988,
+        -0.23499999999999976
+      ]
+    },
+    {
+      "look": "Snow",
+      "file": "Snow_TypingWorkBodyFit-candidate-tier0-phase150.obj.gz",
+      "paired_rays": 2391,
+      "posterior_rays": 1928,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.004816897924479202,
+        "1": 0.006478170396957062,
+        "5": 0.009022055797180406,
+        "25": 0.01671725581956629,
+        "50": 0.02970802256640459,
+        "75": 0.05142141549721471,
+        "95": 0.11235867527559071,
+        "99": 0.18156598908772015,
+        "100": 0.24427566048317784
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.004816897924479202,
+        "1": 0.006214675915969976,
+        "5": 0.008328645901520534,
+        "25": 0.01464240944084437,
+        "50": 0.02549268728838533,
+        "75": 0.048562997828251006,
+        "95": 0.11122736982639439,
+        "99": 0.18581874515408858,
+        "100": 0.24427566048317784
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 2,
+      "contact_xz_min_m": [
+        -0.07899999999999988,
+        -0.2889999999999998
+      ],
+      "contact_xz_max_m": [
+        -0.06699999999999987,
+        -0.23499999999999976
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.07899999999999988,
+        -0.23499999999999976
+      ]
+    },
+    {
+      "look": "Snow",
+      "file": "Snow_TypingWorkBodyFit-candidate-tier0-phase180.obj.gz",
+      "paired_rays": 2393,
+      "posterior_rays": 1930,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.005123552708334478,
+        "1": 0.00681861310929911,
+        "5": 0.009263539128250087,
+        "25": 0.017047429393583613,
+        "50": 0.029968345841523136,
+        "75": 0.05170615514970944,
+        "95": 0.11326437556148891,
+        "99": 0.18320194584462962,
+        "100": 0.24477662667430322
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.005123552708334478,
+        "1": 0.006506862836322541,
+        "5": 0.008581893606126805,
+        "25": 0.014936511143865946,
+        "50": 0.025761191683680768,
+        "75": 0.04883041289402271,
+        "95": 0.1119347709439883,
+        "99": 0.18766241404278144,
+        "100": 0.24477662667430322
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 0,
+      "contact_xz_min_m": null,
+      "contact_xz_max_m": null,
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.07899999999999988,
+        -0.23499999999999976
+      ]
+    },
+    {
+      "look": "Snow",
+      "file": "Snow_TypingWorkBodyFit-candidate-tier0-phase210.obj.gz",
+      "paired_rays": 2392,
+      "posterior_rays": 1929,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.004960464615631155,
+        "1": 0.006653059364829195,
+        "5": 0.009144080929655919,
+        "25": 0.016871040174361293,
+        "50": 0.02983824085785361,
+        "75": 0.05163207469527094,
+        "95": 0.11320715661569287,
+        "99": 0.18260653332377833,
+        "100": 0.24436700356834262
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.004960464615631155,
+        "1": 0.006346216768552982,
+        "5": 0.00845163166191688,
+        "25": 0.01477428600345737,
+        "50": 0.025598036821412484,
+        "75": 0.04867302399609352,
+        "95": 0.11218688303173141,
+        "99": 0.18711518510232278,
+        "100": 0.24436700356834262
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 1,
+      "contact_xz_min_m": [
+        -0.07899999999999988,
+        -0.23499999999999976
+      ],
+      "contact_xz_max_m": [
+        -0.07899999999999988,
+        -0.23499999999999976
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.07899999999999988,
+        -0.23499999999999976
+      ]
+    },
+    {
+      "look": "Snow",
+      "file": "Snow_TypingWorkBodyFit-candidate-tier1-phase000.obj.gz",
+      "paired_rays": 2379,
+      "posterior_rays": 1915,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.004176881217395012,
+        "1": 0.005993344248785423,
+        "5": 0.00889584404008068,
+        "25": 0.015965136319340212,
+        "50": 0.029139362089695864,
+        "75": 0.05131834304406166,
+        "95": 0.11664160820461485,
+        "99": 0.18397672085069006,
+        "100": 0.24655299619277493
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.004176881217395012,
+        "1": 0.0058302987980571805,
+        "5": 0.008258731443051082,
+        "25": 0.01401555261257692,
+        "50": 0.024739416638451417,
+        "75": 0.04827403776478917,
+        "95": 0.11487333333084829,
+        "99": 0.18975038698204832,
+        "100": 0.24655299619277493
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 4,
+      "contact_xz_min_m": [
+        -0.08499999999999988,
+        -0.24099999999999977
+      ],
+      "contact_xz_max_m": [
+        -0.07899999999999988,
+        -0.22299999999999975
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.07899999999999988,
+        -0.24099999999999977
+      ]
+    },
+    {
+      "look": "Snow",
+      "file": "Snow_TypingWorkBodyFit-candidate-tier1-phase030.obj.gz",
+      "paired_rays": 2376,
+      "posterior_rays": 1913,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.0030983768914236154,
+        "1": 0.004922527842139937,
+        "5": 0.007852833719516492,
+        "25": 0.014886204292872962,
+        "50": 0.02800021927586102,
+        "75": 0.05031433319323293,
+        "95": 0.11501831499591122,
+        "99": 0.1812645166662089,
+        "100": 0.24538341048005297
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.0030983768914236154,
+        "1": 0.0047850752788624095,
+        "5": 0.0072064281751146216,
+        "25": 0.012906058210923332,
+        "50": 0.023632242740083853,
+        "75": 0.0471933514873869,
+        "95": 0.11395456929299463,
+        "99": 0.1878421482410868,
+        "100": 0.24538341048005297
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 26,
+      "contact_xz_min_m": [
+        -0.09099999999999989,
+        -0.24699999999999978
+      ],
+      "contact_xz_max_m": [
+        0.10100000000000028,
+        -0.21099999999999974
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.07899999999999988,
+        -0.24099999999999977
+      ]
+    },
+    {
+      "look": "Snow",
+      "file": "Snow_TypingWorkBodyFit-candidate-tier1-phase060.obj.gz",
+      "paired_rays": 2379,
+      "posterior_rays": 1915,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.00323834367799114,
+        "1": 0.005086495544237173,
+        "5": 0.007989100152145772,
+        "25": 0.015080012569557905,
+        "50": 0.028236867845205127,
+        "75": 0.05044050065048483,
+        "95": 0.11577467674414842,
+        "99": 0.18299375180470429,
+        "100": 0.2459641916401818
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.00323834367799114,
+        "1": 0.0049467601008573135,
+        "5": 0.007359372632373684,
+        "25": 0.013066532194131703,
+        "50": 0.02375965794978574,
+        "75": 0.047293315362196664,
+        "95": 0.1141286226019403,
+        "99": 0.18881381741749725,
+        "100": 0.2459641916401818
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 22,
+      "contact_xz_min_m": [
+        -0.09099999999999989,
+        -0.24699999999999978
+      ],
+      "contact_xz_max_m": [
+        0.10100000000000028,
+        -0.21099999999999974
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.07899999999999988,
+        -0.24099999999999977
+      ]
+    },
+    {
+      "look": "Snow",
+      "file": "Snow_TypingWorkBodyFit-candidate-tier1-phase090.obj.gz",
+      "paired_rays": 2379,
+      "posterior_rays": 1915,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.004063501510748524,
+        "1": 0.005904761704300248,
+        "5": 0.00880778083850699,
+        "25": 0.01587449045166439,
+        "50": 0.02902036757293175,
+        "75": 0.05118594329380838,
+        "95": 0.11680994051553137,
+        "99": 0.18248354357298485,
+        "100": 0.245428078783756
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.004063501510748524,
+        "1": 0.005746386476348258,
+        "5": 0.008161653469586477,
+        "25": 0.013910479117359709,
+        "50": 0.024512113425862403,
+        "75": 0.04813225455492265,
+        "95": 0.11483239341743787,
+        "99": 0.1873919104695714,
+        "100": 0.245428078783756
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 7,
+      "contact_xz_min_m": [
+        -0.08499999999999988,
+        -0.24099999999999977
+      ],
+      "contact_xz_max_m": [
+        -0.07299999999999987,
+        -0.21699999999999975
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.07899999999999988,
+        -0.24099999999999977
+      ]
+    },
+    {
+      "look": "Snow",
+      "file": "Snow_TypingWorkBodyFit-candidate-tier1-phase120.obj.gz",
+      "paired_rays": 2379,
+      "posterior_rays": 1916,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.0049216862803019845,
+        "1": 0.006674300707013589,
+        "5": 0.00962661401058006,
+        "25": 0.016711597288628505,
+        "50": 0.02981082953861397,
+        "75": 0.052145519227505654,
+        "95": 0.11629052514895358,
+        "99": 0.18344113423893518,
+        "100": 0.2449949327073262
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.0049216862803019845,
+        "1": 0.006556185190111338,
+        "5": 0.008928338108501799,
+        "25": 0.014771953227338236,
+        "50": 0.02549218357018221,
+        "75": 0.049181014138848206,
+        "95": 0.11534040610477021,
+        "99": 0.18812931168198682,
+        "100": 0.2449949327073262
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 1,
+      "contact_xz_min_m": [
+        -0.07899999999999988,
+        -0.24099999999999977
+      ],
+      "contact_xz_max_m": [
+        -0.07899999999999988,
+        -0.24099999999999977
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.07899999999999988,
+        -0.24099999999999977
+      ]
+    },
+    {
+      "look": "Snow",
+      "file": "Snow_TypingWorkBodyFit-candidate-tier1-phase150.obj.gz",
+      "paired_rays": 2381,
+      "posterior_rays": 1917,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.0054064975927707315,
+        "1": 0.007152009692087458,
+        "5": 0.010045746039931358,
+        "25": 0.017209896403931835,
+        "50": 0.030309574655364213,
+        "75": 0.05266188268385352,
+        "95": 0.11527303166888297,
+        "99": 0.18236034755525257,
+        "100": 0.2458262539537146
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.0054064975927707315,
+        "1": 0.007018556614228482,
+        "5": 0.009431124665900582,
+        "25": 0.0152730750668435,
+        "50": 0.02601540588667134,
+        "75": 0.049726793393857605,
+        "95": 0.11397052685715035,
+        "99": 0.18739847308414276,
+        "100": 0.2458262539537146
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 0,
+      "contact_xz_min_m": null,
+      "contact_xz_max_m": null,
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.07899999999999988,
+        -0.24099999999999977
+      ]
+    },
+    {
+      "look": "Snow",
+      "file": "Snow_TypingWorkBodyFit-candidate-tier1-phase180.obj.gz",
+      "paired_rays": 2382,
+      "posterior_rays": 1917,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.0056643127172014696,
+        "1": 0.007417395633504022,
+        "5": 0.010272627924191416,
+        "25": 0.017439871194630502,
+        "50": 0.030640024682889427,
+        "75": 0.052900436065446546,
+        "95": 0.11356949579025352,
+        "99": 0.18175421318593665,
+        "100": 0.24496097384994803
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.0056643127172014696,
+        "1": 0.007246405157019056,
+        "5": 0.009668097827688805,
+        "25": 0.015526187573250305,
+        "50": 0.026124722808813117,
+        "75": 0.049845697709197334,
+        "95": 0.11318577026243763,
+        "99": 0.18669813563268023,
+        "100": 0.24496097384994803
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 0,
+      "contact_xz_min_m": null,
+      "contact_xz_max_m": null,
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.07899999999999988,
+        -0.24099999999999977
+      ]
+    },
+    {
+      "look": "Snow",
+      "file": "Snow_TypingWorkBodyFit-candidate-tier1-phase210.obj.gz",
+      "paired_rays": 2381,
+      "posterior_rays": 1916,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.0055305616416607695,
+        "1": 0.007273640802081071,
+        "5": 0.010142090572938134,
+        "25": 0.01729077653288691,
+        "50": 0.030459620044512914,
+        "75": 0.0527147598448528,
+        "95": 0.11447825724730387,
+        "99": 0.18193174662090664,
+        "100": 0.24453494626005384
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.0055305616416607695,
+        "1": 0.007113448045862172,
+        "5": 0.009535177021276472,
+        "25": 0.015400308398880083,
+        "50": 0.026055563275015153,
+        "75": 0.049794622345108855,
+        "95": 0.11319937407953516,
+        "99": 0.18608840820847097,
+        "100": 0.24453494626005384
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 0,
+      "contact_xz_min_m": null,
+      "contact_xz_max_m": null,
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.07899999999999988,
+        -0.24099999999999977
+      ]
+    },
+    {
+      "look": "Snow",
+      "file": "Snow_TypingWorkBodyFit-candidate-tier2-phase000.obj.gz",
+      "paired_rays": 2367,
+      "posterior_rays": 1913,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.0034288396609698513,
+        "1": 0.0058244222315901074,
+        "5": 0.009748676743736496,
+        "25": 0.01799526621614192,
+        "50": 0.03281936367832938,
+        "75": 0.056732780373683483,
+        "95": 0.12229211950649886,
+        "99": 0.18600189024820543,
+        "100": 0.24558226711116043
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.0034288396609698513,
+        "1": 0.005588008502487447,
+        "5": 0.008954851033158419,
+        "25": 0.015714556274584512,
+        "50": 0.0284655574357901,
+        "75": 0.05322610994134386,
+        "95": 0.12156452412216243,
+        "99": 0.18765116148381963,
+        "100": 0.24558226711116043
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 11,
+      "contact_xz_min_m": [
+        -0.08499999999999988,
+        -0.24099999999999977
+      ],
+      "contact_xz_max_m": [
+        0.10100000000000028,
+        -0.21699999999999975
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.07899999999999988,
+        -0.23499999999999976
+      ]
+    },
+    {
+      "look": "Snow",
+      "file": "Snow_TypingWorkBodyFit-candidate-tier2-phase030.obj.gz",
+      "paired_rays": 2362,
+      "posterior_rays": 1910,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.00232073506931324,
+        "1": 0.00475633384634566,
+        "5": 0.008635855909266637,
+        "25": 0.016940978248733793,
+        "50": 0.03175677530965135,
+        "75": 0.055541276448458396,
+        "95": 0.12028630969539535,
+        "99": 0.18551339924487328,
+        "100": 0.246445820855148
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.00232073506931324,
+        "1": 0.004497506667059497,
+        "5": 0.007903729954826178,
+        "25": 0.014553379836159924,
+        "50": 0.02737214789025222,
+        "75": 0.05203585332152544,
+        "95": 0.11983182843048466,
+        "99": 0.18702786113914868,
+        "100": 0.246445820855148
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 28,
+      "contact_xz_min_m": [
+        -0.09099999999999989,
+        -0.24699999999999978
+      ],
+      "contact_xz_max_m": [
+        0.10100000000000028,
+        -0.21099999999999974
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.07899999999999988,
+        -0.23499999999999976
+      ]
+    },
+    {
+      "look": "Snow",
+      "file": "Snow_TypingWorkBodyFit-candidate-tier2-phase060.obj.gz",
+      "paired_rays": 2366,
+      "posterior_rays": 1913,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.0024992694392244053,
+        "1": 0.004921626028110232,
+        "5": 0.008754402358673988,
+        "25": 0.01707394123416349,
+        "50": 0.03191674014692175,
+        "75": 0.055787036888926333,
+        "95": 0.12096253444122246,
+        "99": 0.1859052663791136,
+        "100": 0.24499880843094185
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.0024992694392244053,
+        "1": 0.004671401295152726,
+        "5": 0.008032050833270722,
+        "25": 0.014745144975122693,
+        "50": 0.027612074916150475,
+        "75": 0.05228902357547366,
+        "95": 0.12064713393306317,
+        "99": 0.18693344095127043,
+        "100": 0.24499880843094185
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 28,
+      "contact_xz_min_m": [
+        -0.09099999999999989,
+        -0.24699999999999978
+      ],
+      "contact_xz_max_m": [
+        0.10100000000000028,
+        -0.21099999999999974
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.07899999999999988,
+        -0.23499999999999976
+      ]
+    },
+    {
+      "look": "Snow",
+      "file": "Snow_TypingWorkBodyFit-candidate-tier2-phase090.obj.gz",
+      "paired_rays": 2368,
+      "posterior_rays": 1914,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.0033377965696040346,
+        "1": 0.005704180664016809,
+        "5": 0.009616809686288528,
+        "25": 0.017871620386063408,
+        "50": 0.03276305492728637,
+        "75": 0.056651620758855895,
+        "95": 0.12189684328450093,
+        "99": 0.18658024615780644,
+        "100": 0.2459065545403491
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.0033377965696040346,
+        "1": 0.005465627991275496,
+        "5": 0.008829661391759374,
+        "25": 0.01560409853272765,
+        "50": 0.02837652973688151,
+        "75": 0.053175347526475875,
+        "95": 0.12142201339730194,
+        "99": 0.18742334540623778,
+        "100": 0.2459065545403491
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 11,
+      "contact_xz_min_m": [
+        -0.08499999999999988,
+        -0.24099999999999977
+      ],
+      "contact_xz_max_m": [
+        0.10100000000000028,
+        -0.21699999999999975
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.07899999999999988,
+        -0.23499999999999976
+      ]
+    },
+    {
+      "look": "Snow",
+      "file": "Snow_TypingWorkBodyFit-candidate-tier2-phase120.obj.gz",
+      "paired_rays": 2367,
+      "posterior_rays": 1914,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.004210765402371641,
+        "1": 0.006457519431178473,
+        "5": 0.010435264942804291,
+        "25": 0.018709171553938447,
+        "50": 0.03363032809306277,
+        "75": 0.05733522236029562,
+        "95": 0.1222334092622504,
+        "99": 0.18816886857995824,
+        "100": 0.2449949327073262
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.004210765402371641,
+        "1": 0.006330840908468224,
+        "5": 0.00967646030196904,
+        "25": 0.01646388717912728,
+        "50": 0.029241756564643784,
+        "75": 0.05383880416443754,
+        "95": 0.12061415629333981,
+        "99": 0.1882860335486159,
+        "100": 0.2449949327073262
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 8,
+      "contact_xz_min_m": [
+        -0.08499999999999988,
+        -0.24099999999999977
+      ],
+      "contact_xz_max_m": [
+        -0.07899999999999988,
+        -0.22299999999999975
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.07899999999999988,
+        -0.23499999999999976
+      ]
+    },
+    {
+      "look": "Snow",
+      "file": "Snow_TypingWorkBodyFit-candidate-tier2-phase150.obj.gz",
+      "paired_rays": 2370,
+      "posterior_rays": 1916,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.004715843019409083,
+        "1": 0.006948916448915691,
+        "5": 0.010907192895666792,
+        "25": 0.019172374318851854,
+        "50": 0.03406379962111955,
+        "75": 0.05778601635013765,
+        "95": 0.12249071907733561,
+        "99": 0.18659470215081173,
+        "100": 0.2458262539537146
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.004715843019409083,
+        "1": 0.0067670462597107265,
+        "5": 0.010171359727325524,
+        "25": 0.016974782779145714,
+        "50": 0.029742238455344405,
+        "75": 0.05443034682404636,
+        "95": 0.11924609918017458,
+        "99": 0.18936958040552662,
+        "100": 0.2458262539537146
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 4,
+      "contact_xz_min_m": [
+        -0.08499999999999988,
+        -0.24099999999999977
+      ],
+      "contact_xz_max_m": [
+        -0.07899999999999988,
+        -0.22299999999999975
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.07899999999999988,
+        -0.23499999999999976
+      ]
+    },
+    {
+      "look": "Snow",
+      "file": "Snow_TypingWorkBodyFit-candidate-tier2-phase180.obj.gz",
+      "paired_rays": 2372,
+      "posterior_rays": 1917,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.00498600836280183,
+        "1": 0.007221771834016412,
+        "5": 0.011151160213565655,
+        "25": 0.01945669708043203,
+        "50": 0.0343535767188603,
+        "75": 0.058201195759780486,
+        "95": 0.1226414525678617,
+        "99": 0.18674950914198885,
+        "100": 0.24496097384994803
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.00498600836280183,
+        "1": 0.006980608091036815,
+        "5": 0.01042368948951149,
+        "25": 0.017202810298803495,
+        "50": 0.03001164390860739,
+        "75": 0.054793625868568174,
+        "95": 0.11895709790104743,
+        "99": 0.1887522849976987,
+        "100": 0.24496097384994803
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 1,
+      "contact_xz_min_m": [
+        -0.07899999999999988,
+        -0.23499999999999976
+      ],
+      "contact_xz_max_m": [
+        -0.07899999999999988,
+        -0.23499999999999976
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.07899999999999988,
+        -0.23499999999999976
+      ]
+    },
+    {
+      "look": "Snow",
+      "file": "Snow_TypingWorkBodyFit-candidate-tier2-phase210.obj.gz",
+      "paired_rays": 2369,
+      "posterior_rays": 1915,
+      "whole_seat_gap_percentiles_m": {
+        "0": 0.004841216371515744,
+        "1": 0.0070723797796193285,
+        "5": 0.011014587801850351,
+        "25": 0.01928393768316622,
+        "50": 0.0341543263707606,
+        "75": 0.05791015114795928,
+        "95": 0.12254633944772987,
+        "99": 0.18613166237500284,
+        "100": 0.24453494626005384
+      },
+      "posterior_gap_percentiles_m": {
+        "0": 0.004841216371515744,
+        "1": 0.006860256156764114,
+        "5": 0.010281139310531923,
+        "25": 0.01708902842499843,
+        "50": 0.029869359525401762,
+        "75": 0.05454327754397095,
+        "95": 0.11891728304105478,
+        "99": 0.18867239132675825,
+        "100": 0.24453494626005384
+      },
+      "penetration_beyond_2mm_rays": 0,
+      "contact_within_5mm_rays": 4,
+      "contact_xz_min_m": [
+        -0.08499999999999988,
+        -0.24099999999999977
+      ],
+      "contact_xz_max_m": [
+        -0.07899999999999988,
+        -0.22299999999999975
+      ],
+      "intersecting_chair_triangles_all_heights": 0,
+      "lowest_gap_xz_m": [
+        -0.07899999999999988,
+        -0.23499999999999976
+      ]
+    }
+  ]
+}

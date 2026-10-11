@@ -1,0 +1,37 @@
+{
+  "status": "frozen_source_compiles_native_comparison_pending",
+  "files": {
+    "SpacesStudioCandidateD.cs": "5c7a76c4b89009dc21120397ced36f73ef60d2abf96438d7ed33744880130650",
+    "SpacesStudioRoomReviewD.cs": "aba5eeaeb597251ed34fb7091060a26dc68f90971391e0021bedebce3724b7d6"
+  },
+  "compile_exit": 0,
+  "warning": "CS1701 existing harness reference assumption only",
+  "methods": {
+    "stage": "CTLife.EditorTools.SpacesStudioCandidateD.BuildCandidate",
+    "review": "CTLife.EditorTools.SpacesStudioRoomReviewD.Launch"
+  },
+  "review_args": [
+    "-openfile",
+    "/Users/mac/Documents/codes/projects/ct-life/client/Assets/Scenes/Bootstrap.unity",
+    "-executeMethod",
+    "CTLife.EditorTools.SpacesStudioRoomReviewD.Launch",
+    "-ctlife-studioOutput",
+    "/tmp/ct-studio-d-room-native-20261006",
+    "-ctlife-studioExit",
+    "1"
+  ],
+  "baseline_source_sha256": "c26bfaf3d4ae70e2d2ef8c22194def10a7d35891f6f0abcb801ce318f2e1ad6f",
+  "baseline_navigation_sha256": "d45c18db55793fc84f7a1e19f1c3132a0871eeba2315e6ab64cd9065b53b9c8b",
+  "baseline_failure_sha256": "05e557b8f88ea4feb223c046a0d59aa1bdd551c5977f3ca8387a5910343a8d36",
+  "runtime_player_source_sha256": "f0a323875029ace070b4dd22e80c26712ded0a5641e7777ec1804e8d27c47a15",
+  "change": "Only candidate NavMesh bake radius .5->.3 to match actual runtime agent, plus paired diagnostics and stronger .3m walking proxy. No geometry/anchor/camera/material/profile changes.",
+  "native_chair_width_m": 0.9054346,
+  "speaker_row_pitch_m": 2,
+  "raw_row_gap_m": 1.0945654,
+  "center_corridor_after_radius_m": {
+    "default_0_5": 0.0945654,
+    "runtime_0_3": 0.4945654
+  },
+  "limitation": "Row-gap calculation suggests quantized corridor loss, but does not prove exact native failure location. Paired C vs D path diagnostics must establish routes, followed by actual walking/full-body review.",
+  "all_path_complete_required": true
+}

@@ -1,0 +1,36 @@
+{
+  "status": "frozen_staged_only_native_unrun",
+  "files": [
+    {
+      "source": "art/direction-20261006/terminal-cafe-visual-20261007/revision-3/TerminalCafeVisualCandidate3.cs",
+      "destination": "client/Assets/Scripts/Editor/TerminalCafeVisualCandidate3.cs",
+      "sha256": "55f8a29fbbe51259ed8390c5d49fc4a0db757ff6812bac55c908974c98e0434b",
+      "expected_destination": "absent; unique Art3 helper, preserve Art2"
+    },
+    {
+      "source": "art/direction-20261006/terminal-cafe-visual-20261007/revision-3/CafeArtRoomReview3.cs",
+      "destination": "client/Assets/Scripts/Editor/CafeArtRoomReview3.cs",
+      "sha256": "b18d012478e5c41a02c6e7985c8eb36b885d0a49c4e2f64ba8f13abba36a8c37",
+      "expected_destination": "absent; unique Art3 helper, preserve Art2"
+    }
+  ],
+  "compile_exit": 0,
+  "compile_warning": "existing CS1701 Newtonsoft/netstandard standalone reference warning",
+  "build": "CTLife.EditorTools.TerminalCafeVisualCandidate3.BuildCandidate",
+  "bake": "CTLife.EditorTools.TerminalCafeVisualCandidate3.BakeCandidate",
+  "review": "CTLife.EditorTools.CafeArtRoomReview3.Launch",
+  "review_args": [
+    "-openfile",
+    "/Users/mac/Documents/codes/projects/ct-life/client/Assets/Scenes/Bootstrap.unity",
+    "-ctlife-cafeArtOutput",
+    "/tmp/ct-cafe-art3-room-native-20261007",
+    "-ctlife-cafeArtExit",
+    "1"
+  ],
+  "dependencies": {
+    "unchanged_desktops": "art/direction-20261006/terminal-cafe-visual-20261007/artwork-provenance.json",
+    "quiet_weave_source": "art/direction-20261006/terminal-cafe-visual-20261007/revision-3/Textures/OriginalQuietWeave.png",
+    "quiet_weave_sha256": "8abf62a46d2db993e39188dafb451887c82a7ac31bb8ed2b77d4c278bc080935"
+  },
+  "candidate_prefab": "Assets/Art/Candidates/TerminalCafe20261007Art3/TerminalCafeArt3.prefab"
+}

@@ -1,0 +1,38 @@
+{
+  "revision": "phone-hud-restoration-v4",
+  "status": "frozen_private_compiles_pass_native_pending",
+  "files": [
+    {
+      "source": "art/direction-20261006/venue-integration-20261007/runtime-review/hud-restoration-v4/PhoneShell.cs",
+      "destination": "client/Assets/Scripts/UI/Phone/PhoneShell.cs",
+      "baseline_sha256": "400abe1c991f615f787c5c5faf82d932d395cad2a1a18a5d40c7622bf6c9dc48",
+      "candidate_sha256": "0f88f0acf1745a910e43a96e02fdabf7d0d0885c270657f702ca13f7d74010e7"
+    },
+    {
+      "source": "art/direction-20261006/venue-integration-20261007/runtime-review/hud-restoration-v4/SavedVenueFlowReview.cs",
+      "destination": "client/Assets/Scripts/App/Review/SavedVenueFlowReview.cs",
+      "baseline_sha256": "791278d22530c54004367b135ae6209dd9b714c89ce6851459bc2a0d8497b5f8",
+      "candidate_sha256": "8c7ef897cedd7e52786b719fccdf26265135081b75a744c8b373b827ca719b71"
+    }
+  ],
+  "unchanged_prerequisites": [
+    {
+      "path": "client/Assets/Scripts/World/Players/LocalPlayerController.cs",
+      "sha256": "43a77d278475b2af00c1d03484f36e31c9aa3878a9b174a3e510f62b9281c932"
+    },
+    {
+      "path": "client/Assets/Scripts/App/Review/FrontendReviewController.cs",
+      "sha256": "a36e9ca4d2530ad18e05f538397780e48338f31211700237172674cf4f09e6c8"
+    }
+  ],
+  "input_manifest": {
+    "path": "art/direction-20261006/venue-integration-20261007/runtime-review/hud-restoration-v4/review-inputs.completed-v4.json",
+    "sha256": "343190f489338706664975e79411a770c1dc67fdac6f2e9e1df3dca66b2f6d36"
+  },
+  "compile_receipt": {
+    "path": "art/direction-20261006/venue-integration-20261007/runtime-review/hud-restoration-v4/compile-receipt.json",
+    "sha256": "cc84454a16454f2c68ee57fcac911b3f4431023643051d3c7cefcd2924b3fef3"
+  },
+  "native_acceptance": null,
+  "evidence_boundary": "Observed Null inline restore left resolved None. Missing style-cache entry is an inference, not an instrumented cause. First actual capture precedes explicit-hidden negative controls."
+}

@@ -1,0 +1,72 @@
+{
+  "source_sha256": "c26bfaf3d4ae70e2d2ef8c22194def10a7d35891f6f0abcb801ce318f2e1ad6f",
+  "baseline_b_sha256": "077ab3b71de0f4df5a0072ec3a4584e09225e0ebe209129f90596455e7e14176",
+  "compile_exit": 0,
+  "compile_warning": "CS1701 Newtonsoft/netstandard harness assumption; no compile errors",
+  "compile_response_file": "/tmp/ct-cafe-hit-compile/StudioC.rsp",
+  "actual_editor_assembly_scope": "Core/World/UI/App, Addressables/URP and UnityEditor; no Net direct reference added",
+  "native_stage": "not_run",
+  "native_bake": "not_run",
+  "native_camera_or_path": "not_run",
+  "snapshot_sha256": "3a54ec2117e03fd3e456355e8fe407e5889d10790def5f4863d2163e970a9b56",
+  "positioned_anchors": 34,
+  "claimable_anchors": 31,
+  "source_furniture": "existing CC0 Kenney loungeChair at unchanged original scale; native seat/contact acceptance pending",
+  "new_packages": [],
+  "changes": [
+    "31 explicit frontend approach transforms beside 30 chairs and host podium",
+    "LOD0 mesh collision on physical furniture; tagged parent SpotAnchor for chairs/podium",
+    "source-bound NavMesh modifiers kept bake-only, no oversized runtime furniture boxes",
+    "mandatory PathComplete to authored approaches, .15m approach sample radius",
+    "two native chair OBJ witnesses in anchor coordinates for future adult body-contact review",
+    "all original candidate folders protected; no profile/registry mutation; source B preserved"
+  ],
+  "frozen_inputs": {
+    "client/Assets/Resources/Contract/config_snapshot.json": "3a54ec2117e03fd3e456355e8fe407e5889d10790def5f4863d2163e970a9b56",
+    "client/Assets/Art/environment/manifest.json": "81780c22b45e34336a52fa87a09395df594837150bc60d164f5490b00bd64fd8",
+    "art/direction-20261006/venue-expansion/anchor-contract.json": "039975a361b20c76dad4ca712499cbcfc205b9223b4fe9803d46e5bc7dea053c"
+  },
+  "camera_math": {
+    "status": "CPU projection of exact configured CameraRig formula, not native capture",
+    "distance": 11.6,
+    "pitch_degrees": 29,
+    "yaw_degrees": -12,
+    "fov_degrees": 45,
+    "aspect": 1.7777777777777777,
+    "feet_viewport_y": 0.3,
+    "look_ahead_m": 1.7907239380242648,
+    "camera_at_entrance": [
+      1.7370740390106079,
+      6.62379159485751,
+      -17.17229082632266
+    ],
+    "projected_witnesses": {
+      "entrance_feet": [
+        0.5,
+        0.30000000000000027,
+        10.518607174004051
+      ],
+      "host_head_y1.8": [
+        0.5992128371187238,
+        0.8938859069805031,
+        24.18957171514001
+      ],
+      "identity_center": [
+        0.6046957598684327,
+        0.9413306961376673,
+        25.592590135816156
+      ],
+      "audience_front_row_seat18": [
+        0.5128782334174092,
+        0.4421733384266592,
+        10.962026164887568
+      ]
+    }
+  },
+  "current_backend_spots_readonly": {
+    "sha256": "0e631a04a458a85ccd834f6005a10c9b9ee73118b45dead85d8d66ac677effe9",
+    "studio_matches_snapshot": true,
+    "spot_count": 34,
+    "action_mismatch": "Current venue.ts:260 maps all stage anchors to act_type; stage_host expects loco_idle, stage_1..10 expect act_sit."
+  }
+}

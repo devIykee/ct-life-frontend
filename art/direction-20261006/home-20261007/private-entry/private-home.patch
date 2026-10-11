@@ -1,0 +1,437 @@
+--- a/Assets/Scripts/World/Venue/VenueContentRegistry.cs
++++ b/Assets/Scripts/World/Venue/VenueContentRegistry.cs
+@@ -18,7 +18,25 @@
+             public VenueSceneRoot prefab;
+         }
+ 
++        [Serializable]
++        public sealed class HomeEntry
++        {
++            public string homeId;
++            public VenueSceneRoot prefab;
++        }
++
+         public List<Entry> venues = new List<Entry>();
++        // Private own-home art is deliberately separate from the public venue lookup.
++        public List<HomeEntry> homes = new List<HomeEntry>();
++
++        public VenueSceneRoot FindHome(string homeId)
++        {
++            // Only the inspected basement is enabled in this release. Never substitute it for another home.
++            if (homeId != "parents_basement") return null;
++            foreach (var entry in homes)
++                if (entry.homeId == homeId && entry.prefab != null && entry.prefab.venueId == "home") return entry.prefab;
++            return null;
++        }
+ 
+         public VenueSceneRoot Find(string venueId)
+         {
+--- a/Assets/Scripts/World/Venue/VenueLoader.cs
++++ b/Assets/Scripts/World/Venue/VenueLoader.cs
+@@ -39,23 +39,35 @@
+             public SceneReleaseException(IEnumerable<Exception> failures) : base("Venue scene release failed.", failures) { }
+         }
+ 
+-        public async Task<VenueSceneRoot> Load(string venueId, CancellationToken owner = default)
++        public Task<VenueSceneRoot> Load(string venueId, CancellationToken owner = default) => LoadCore(venueId, null, owner);
++
++        public Task<VenueSceneRoot> LoadPrivateHome(string homeId, CancellationToken owner = default)
++        {
++            owner.ThrowIfCancellationRequested();
++            var catalog = Resources.Load<VenueContentRegistry>("World/VenueContentRegistry");
++            var prefab = catalog != null ? catalog.FindHome(homeId) : null;
++            if (prefab == null || prefab.navigation == null || prefab.GetComponent<VenueLightmaps>() == null)
++                throw new InvalidOperationException("The selected private home has no inspected local content.");
++            return LoadCore("home", prefab, owner);
++        }
++
++        private async Task<VenueSceneRoot> LoadCore(string venueId, VenueSceneRoot privateHome, CancellationToken owner)
+         {
+             owner.ThrowIfCancellationRequested();
+             await Unload();
+             owner.ThrowIfCancellationRequested();
+             _returnScene = SceneManager.GetActiveScene();
+             var reg = Services.Get<ConfigStore>().Registries;
+-            var def = reg.Venue(venueId);
++            var def = privateHome != null ? null : reg.Venue(venueId);
+             var spots = reg.SpotsFor(venueId);
+             var key = def?.sceneKey;
+             VenueSceneRoot root = null;
+ 
+             // Local shipped content must not initialize Addressables or require a remote catalog/network.
+             var catalog = Resources.Load<VenueContentRegistry>("World/VenueContentRegistry");
+-            var prefab = catalog != null ? catalog.Find(venueId) : null;
++            var prefab = privateHome != null ? privateHome : catalog != null ? catalog.Find(venueId) : null;
+ #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
+-            if (LaunchArgs.Flag("review") && ReviewPrefabResolver != null)
++            if (privateHome == null && LaunchArgs.Flag("review") && ReviewPrefabResolver != null)
+                 prefab = ReviewPrefabResolver(venueId) ?? prefab;
+ #endif
+             if (prefab != null)
+--- a/Assets/Scripts/World/Venue/VenueSession.cs
++++ b/Assets/Scripts/World/Venue/VenueSession.cs
+@@ -20,6 +20,8 @@
+         public static VenueSession Current { get; private set; }
+ 
+         public string VenueId { get; private set; }
++        public string HomeId { get; private set; }
++        public bool IsOwnHome => !string.IsNullOrEmpty(HomeId);
+         public VenueSceneRoot Venue { get; private set; }
+         public VenueChannel Channel { get; private set; }
+         public LocalPlayerController LocalPlayer { get; private set; }
+@@ -51,7 +53,41 @@
+         private bool OwnsVisit => this != null && !_closing && !_cleaned && _visit != null && !_visit.IsCancellationRequested && ReferenceEquals(Current, this);
+         public bool IsActive => _ready && OwnsVisit;
+ 
+-        public static async Task<VenueSession> Enter(string venueId, bool joinRoom = true, bool voice = false, CancellationToken owner = default)
++        public static Task<VenueSession> Enter(string venueId, bool joinRoom = true, bool voice = false, CancellationToken owner = default)
++        {
++            if (venueId == "home" && joinRoom) throw new InvalidOperationException("Own Home is a local visit, not a public venue room.");
++            return EnterCore(venueId, joinRoom, voice, owner, null, null);
++        }
++
++        public static bool CanEnterOwnHome()
++        {
++            if (!Services.TryGet<Session>(out var session) || !session.IsSignedIn || string.IsNullOrEmpty(session.UserId) ||
++                !Services.TryGet<PlayerProfile>(out var profile) || profile.UserId != session.UserId || profile.Me == null)
++                return false;
++            var catalog = Resources.Load<VenueContentRegistry>("World/VenueContentRegistry");
++            var prefab = catalog != null ? catalog.FindHome(profile.Me.HomeId) : null;
++            var maps = prefab != null ? prefab.GetComponent<VenueLightmaps>() : null;
++            return prefab != null && prefab.navigation != null && maps != null && maps.colors != null && maps.colors.Length > 0 &&
++                maps.bindings != null && maps.bindings.Length > 0;
++        }
++
++        public static Task<VenueSession> EnterOwnHome(CancellationToken owner = default)
++        {
++            owner.ThrowIfCancellationRequested();
++            if (!CanEnterOwnHome()) throw new InvalidOperationException("Own Home is unavailable for the current profile.");
++            var profile = Services.Get<PlayerProfile>();
++            return EnterCore("home", false, false, owner, profile.Me.HomeId, profile.UserId);
++        }
++
++        private static void RequireHomeOwner(string homeId, string userId)
++        {
++            if (string.IsNullOrEmpty(homeId)) return;
++            var session = Services.Get<Session>(); var profile = Services.Get<PlayerProfile>();
++            if (!session.IsSignedIn || session.UserId != userId || profile.UserId != userId || profile.Me?.HomeId != homeId || !CanEnterOwnHome())
++                throw new OperationCanceledException("Own Home selection no longer belongs to this profile.");
++        }
++
++        private static async Task<VenueSession> EnterCore(string venueId, bool joinRoom, bool voice, CancellationToken owner, string homeId, string homeUserId)
+         {
+             owner.ThrowIfCancellationRequested();
+             var context = SynchronizationContext.Current;
+@@ -67,13 +103,16 @@
+             {
+                 await Transition.WaitAsync(request.Token); locked = true;
+                 request.Token.ThrowIfCancellationRequested();
++                RequireHomeOwner(homeId, homeUserId);
+                 var previous = Current;
+                 if (!ReferenceEquals(previous, null)) await previous.ExitCore();
+                 request.Token.ThrowIfCancellationRequested();
++                RequireHomeOwner(homeId, homeUserId);
+                 var go = new GameObject("VenueSession_" + venueId);
+                 DontDestroyOnLoad(go);
+                 session = go.AddComponent<VenueSession>();
+                 session._ownedObject = go; session._visit = request; session._visitToken = request.Token;
++                session.HomeId = homeId;
+                 Current = session;
+                 var captured = session;
+                 session._exitRegistration = request.Token.Register(() =>
+@@ -84,6 +123,7 @@
+                 session._destroyRegistration = session.destroyCancellationToken.Register(() => captured.RequestExit());
+                 await session.Begin(venueId, joinRoom, voice);
+                 request.Token.ThrowIfCancellationRequested();
++                RequireHomeOwner(homeId, homeUserId);
+                 session._ready = true;
+                 if (voice) _ = session.ConnectVoice();
+                 return session;
+@@ -118,7 +158,7 @@
+         {
+             VenueId = venueId;
+             _loader = new VenueLoader();
+-            Venue = await _loader.Load(venueId, LifetimeToken);
++            Venue = IsOwnHome ? await _loader.LoadPrivateHome(HomeId, LifetimeToken) : await _loader.Load(venueId, LifetimeToken);
+             LifetimeToken.ThrowIfCancellationRequested();
+             _avatarRoot = new GameObject("Avatars").transform;
+             _avatarRoot.SetParent(transform, false);
+@@ -384,7 +424,9 @@
+ 
+         private void OnSpotTapped(SpotAnchor spot)
+         {
+-            if (!OwnsVisit) return;
++            if (!OwnsVisit || IsOwnHome) return;
++            // Own Home currently supports exploration and the existing phone needs actions.
++            // A null channel is not authority to fabricate a seated furniture confirmation.
+             if (LocalPlayer != null) LocalPlayer.GoSit(spot.spotId);
+         }
+ 
+--- a/Assets/Scripts/App/FlowController.cs
++++ b/Assets/Scripts/App/FlowController.cs
+@@ -21,6 +21,7 @@
+     public sealed class FlowController : MonoBehaviour
+     {
+         public const string StartVenue = "timeline_square";
++        private string _homeReturnVenueId;
+ 
+         private readonly List<IDisposable> _overlays = new List<IDisposable>();
+         private Hud _hud;
+@@ -232,6 +233,7 @@
+         {
+             var game = _gameplay;
+             _gameplay = null;
++            _homeReturnVenueId = null;
+             var screen = _gameplayScreen;
+             _gameplayScreen = null;
+             // Invalidate callbacks before cancelling. Room leases release only their captured channel.
+@@ -336,7 +338,11 @@
+             var ui = UiRoot.Instance;
+             _phone?.Dispose();
+             _phone = new PhoneShell(ui.PhoneLayer);
+-            PhoneCatalog.Register(_phone, id => RunGameAction(game, () => Travel(game, id)), () => RunGameAction(game, SignOut));
++            PhoneCatalog.Register(_phone, id => RunGameAction(game, () => Travel(game, id)), () => RunGameAction(game, SignOut),
++                homeOverride: new HomeApp(() => RunGameAction(game, () => EnterOwnHome(game)),
++                    () => RunGameAction(game, () => ReturnFromHome(game)),
++                    () => GameAlive(game) && !_travelling && VenueSession.CanEnterOwnHome(),
++                    () => GameAlive(game) && VenueSession.Current != null && VenueSession.Current.IsOwnHome));
+ 
+             _hud?.Element.RemoveFromHierarchy();
+             _hud?.Dispose();
+@@ -359,7 +365,9 @@
+         private async Task EnterCityFromLobby(FlowLifetime game)
+         {
+             if (!GameAlive(game) || _travelling) return;
+-            if (VenueSession.Current == null)
++            if (VenueSession.Current != null && VenueSession.Current.IsOwnHome)
++                await ReturnFromHome(game);
++            else if (VenueSession.Current == null)
+                 await Travel(game, LaunchArgs.Get("venue", StartVenue));
+             else
+             {
+@@ -377,11 +385,62 @@
+             _hud?.Show(true);
+         }
+ 
++        private async Task EnterOwnHome(FlowLifetime game)
++        {
++            if (!GameAlive(game) || _travelling || !VenueSession.CanEnterOwnHome()) return;
++            if (VenueSession.Current != null && VenueSession.Current.IsOwnHome) { _phone?.Close(); CloseLobby(); return; }
++            _travelling = true; _travelGameplay = game;
++            _phone?.Close();
++            var current = VenueSession.Current;
++            var reg = Services.Get<ConfigStore>().Registries;
++            var returnVenue = current != null && reg.Venue(current.VenueId) != null ? current.VenueId : StartVenue;
++            var lobby = _lobby; lobby?.SetBusy(true); lobby?.Element.SetEnabled(false);
++            try
++            {
++                var home = await game.Wait(VenueSession.EnterOwnHome(game.Token));
++                game.ThrowIfClosed();
++                if (!ReferenceEquals(VenueSession.Current, home) || !home.IsActive || !home.IsOwnHome) return;
++                _homeReturnVenueId = returnVenue;
++                CloseLobby();
++            }
++            catch (OperationCanceledException) { }
++            catch (Exception error)
++            {
++                if (GameAlive(game))
++                {
++                    Log.Warn("home", "Private Home entry failed: " + error.GetType().Name);
++                    Bus.Publish(ToastSignal.Text(HomeStrings.T("entryFailed"), ToastKind.Bad));
++                }
++            }
++            finally
++            {
++                if (ReferenceEquals(_travelGameplay, game)) { _travelGameplay = null; _travelling = false; }
++                if (GameAlive(game))
++                {
++                    lobby?.SetBusy(false); lobby?.Element.SetEnabled(true);
++                    // An entry failure may occur after the previous visit has been fully released.
++                    // Reopen the existing dashboard owner; do not revive an obsolete scene/channel.
++                    if (VenueSession.Current == null) ShowLobby();
++                }
++            }
++        }
++
++        private Task ReturnFromHome(FlowLifetime game)
++        {
++            if (!GameAlive(game) || _travelling) return Task.CompletedTask;
++            var id = _homeReturnVenueId;
++            if (string.IsNullOrEmpty(id) || Services.Get<ConfigStore>().Registries.Venue(id) == null) id = StartVenue;
++            return Travel(game, id);
++        }
++
+         private async Task Travel(FlowLifetime game, string venueId)
+         {
+             if (!GameAlive(game) || _travelling) return;
++            if (venueId == "home") return; // Private Home has a separate Me.homeId-selected entry.
++            bool leavingOwnHome = VenueSession.Current != null && VenueSession.Current.IsOwnHome;
+             _travelling = true;
+             _travelGameplay = game;
++            _phone?.Close();
+             var lobby = _lobby;
+             _lobby?.SetBusy(true);
+             _lobby?.Element.SetEnabled(false);
+@@ -396,6 +455,7 @@
+                     Bus.Publish(ToastSignal.Text("Realtime is offline. You're alone here for now.", ToastKind.Bad));
+                     await game.Wait(VenueSession.Enter(venueId, joinRoom: false, owner: game.Token));
+                 }
++                _homeReturnVenueId = null;
+                 CloseLobby();
+             }
+             catch (OperationCanceledException) when (!GameAlive(game)) { }
+@@ -411,6 +471,7 @@
+             finally
+             {
+                 if (ReferenceEquals(_travelGameplay, game)) { _travelGameplay = null; _travelling = false; }
++                if (GameAlive(game) && leavingOwnHome && VenueSession.Current == null) ShowLobby();
+             }
+         }
+ 
+--- a/Assets/Scripts/App/PhoneCatalog.cs
++++ b/Assets/Scripts/App/PhoneCatalog.cs
+@@ -7,13 +7,13 @@
+     /// <summary>One phone catalog shared by the live flow and development presentation review.</summary>
+     public static class PhoneCatalog
+     {
+-        public static void Register(PhoneShell phone, Action<string> travel, Action signOut, PhoneApp jobsOverride = null)
++        public static void Register(PhoneShell phone, Action<string> travel, Action signOut, PhoneApp jobsOverride = null, HomeApp homeOverride = null)
+         {
+             phone.Register(new MapApp(travel));
+             phone.Register(jobsOverride ?? new JobsApp());
+             phone.Register(new BankApp());
+             phone.Register(new RichListApp());
+-            phone.Register(new HomeApp());
++            phone.Register(homeOverride ?? new HomeApp());
+             phone.Register(new ProfileApp());
+             phone.Register(new SettingsApp(signOut));
+             phone.Register(new ComingApp("pulse", "Pulse", 2, "#20bf6b", Features.Markets));
+--- a/Assets/Scripts/UI/Phone/Apps/HomeApp.cs
++++ b/Assets/Scripts/UI/Phone/Apps/HomeApp.cs
+@@ -21,7 +21,14 @@
+             public PlayerProfile Profile;
+             public string UserId;
+             public Action SessionChanged;
++            public Button Visit;
++            public bool Returning;
+         }
++
++        private readonly Action _enterHome, _returnToCity;
++        private readonly Func<bool> _canEnterHome, _atOwnHome;
++        public HomeApp(Action enterHome = null, Action returnToCity = null, Func<bool> canEnterHome = null, Func<bool> atOwnHome = null)
++        { _enterHome = enterHome; _returnToCity = returnToCity; _canEnterHome = canEnterHome; _atOwnHome = atOwnHome; }
+ 
+         private View _view;
+         private CancellationTokenSource _request;
+@@ -37,18 +44,26 @@
+             var home = config.Registries.Homes.FirstOrDefault(h => h.id == profile.Me?.HomeId)?.name;
+             var page = AppUi.Page(El.Text(Strings.T("home.title"), "ct-h1"),
+                 El.Text(home ?? Strings.T("home.fallback"), "ct-body ct-muted"));
+-            if (!HomeActions.TryRead(config.Config("needs"), out var actions, out var reason))
+-            {
+-                Log.Warn("home", "Needs configuration unavailable: " + reason);
+-                page.Add(El.Text(HomeStrings.T("unavailable"), "ct-error"));
+-                return page;
+-            }
+             var view = new View { Page = page, Status = El.Text("", "ct-small"), Session = Services.Get<Session>(),
+                 Profile = profile, UserId = Services.Get<Session>().UserId };
+             _view = view;
+             view.SessionChanged = () => { if (!Owns(view)) CloseView(view); };
+             view.Session.Changed += view.SessionChanged;
+             page.RegisterCallback<DetachFromPanelEvent>(e => { if (ReferenceEquals(e.target, page)) CloseView(view); });
++            if (_enterHome != null && _returnToCity != null)
++            {
++                view.Returning = _atOwnHome?.Invoke() == true;
++                view.Visit = El.Btn(HomeStrings.T(view.Returning ? "returnCity" : "enterHome"), () => Visit(view), "ct-btn ct-btn-primary");
++                view.Visit.name = view.Returning ? "home-return-city" : "home-enter-own";
++                page.Add(El.Div("ct-card", view.Visit,
++                    El.Text(HomeStrings.T(view.Returning || _canEnterHome?.Invoke() == true ? "explore" : "roomUnavailable"), "ct-small ct-muted")));
++            }
++            if (!HomeActions.TryRead(config.Config("needs"), out var actions, out var reason))
++            {
++                Log.Warn("home", "Needs configuration unavailable: " + reason);
++                page.Add(El.Text(HomeStrings.T("unavailable"), "ct-error"));
++                page.Add(view.Status); SetControls(); return page;
++            }
+             foreach (var definition in actions)
+             {
+                 string id = definition.Id;
+@@ -71,6 +86,7 @@
+             _view = null; // invalidate before cancellation or detach callbacks can run
+             view.Session.Changed -= view.SessionChanged;
+             foreach (var button in view.Buttons) button.SetEnabled(false);
++            view.Visit?.SetEnabled(false);
+             view.Lifetime.Cancel();
+             view.Lifetime.Dispose();
+         }
+@@ -86,6 +102,17 @@
+             if (view == null) return;
+             bool ready = Owns(view) && _request == null;
+             foreach (var button in view.Buttons) button.SetEnabled(ready);
++            view.Visit?.SetEnabled(ready && (view.Returning ? _atOwnHome?.Invoke() == true : _canEnterHome?.Invoke() == true));
++        }
++
++        private void Visit(View view)
++        {
++            if (!Owns(view) || _request != null) return;
++            bool available = view.Returning ? _atOwnHome?.Invoke() == true : _canEnterHome?.Invoke() == true;
++            if (!available) { SetControls(); return; }
++            // The flow takes the shared travel gate and then closes the phone. Its owner is the
++            // gameplay generation, not the view token which closing this page immediately cancels.
++            (view.Returning ? _returnToCity : _enterHome)?.Invoke();
+         }
+ 
+         // UI callback: all request faults are handled here; the phone shell cannot catch async-void faults.
+--- a/Assets/Scripts/UI/Phone/Apps/HomeStrings.cs
++++ b/Assets/Scripts/UI/Phone/Apps/HomeStrings.cs
+@@ -2,11 +2,16 @@
+ 
+ namespace CTLife.UI
+ {
+-    internal static class HomeStrings
++    public static class HomeStrings
+     {
+         private static readonly IReadOnlyDictionary<string, string> English = new Dictionary<string, string>
+         {
+             ["unavailable"] = "Home actions aren't ready. Close and reopen Home to check again.",
++            ["enterHome"] = "Go home",
++            ["returnCity"] = "Return to city",
++            ["explore"] = "Take a look around. Home actions stay on your phone.",
++            ["roomUnavailable"] = "Your home isn't available to explore yet. You can still use Home actions.",
++            ["entryFailed"] = "Couldn't open your home. Try again from Home.",
+             ["working"] = "Taking a moment…",
+             ["unconfirmed"] = "That action wasn't confirmed. Your needs may have changed.",
+         };
+--- a/Assets/Scripts/UI/Hud/Hud.cs
++++ b/Assets/Scripts/UI/Hud/Hud.cs
+@@ -92,7 +92,11 @@
+             _subs.On<VenueChangedSignal>(s =>
+             {
+                 var reg = Services.Get<ConfigStore>().Registries;
+-                _venue.text = s.venueId != null ? reg.Venue(s.venueId)?.name ?? s.venueId : "";
++                var visit = VenueSession.Current;
++                _venue.text = visit != null && visit.IsOwnHome
++                    ? reg.Homes.FirstOrDefault(h => h.id == visit.HomeId)?.name ?? Strings.T("app.home")
++                    : s.venueId != null ? reg.Venue(s.venueId)?.name ?? s.venueId : "";
++                RefreshDegraded();
+             });
+             RefreshProfile();
+             RefreshDegraded();
+@@ -108,7 +112,7 @@
+         private void RefreshDegraded()
+         {
+             bool voice = Features.IsAvailable(Features.Voice);
+-            _mic.SetEnabled(voice && !_micPending && !_disposed);
++            _mic.SetEnabled(voice && !(VenueSession.Current?.IsOwnHome ?? false) && !_micPending && !_disposed);
+             bool on = voice && Services.TryGet<VoiceService>(out var service) && service.MicOn;
+             _micLabel.text = Strings.T(!voice ? "hud.voiceUnavailable" : on ? "hud.micOn" : "hud.micOff");
+             _mic.EnableInClassList("ct-btn-live", on);
+--- a/Assets/Resources/World/VenueContentRegistry.asset
++++ b/Assets/Resources/World/VenueContentRegistry.asset
+@@ -15,3 +15,6 @@
+   venues:
+   - venueId: timeline_square
+     prefab: {fileID: 708502821618719898, guid: c1ca18ff3e7c949a2b41479cc7f0a180, type: 3}
++  homes:
++  - homeId: parents_basement
++    prefab: {fileID: 1720862576313872493, guid: cc9a94719ceaa4e238fbfc2666160416, type: 3}

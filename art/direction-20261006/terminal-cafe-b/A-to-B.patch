@@ -1,0 +1,361 @@
+--- client/Assets/Scripts/Editor/TerminalCafeCandidate.cs
++++ art/direction-20261006/terminal-cafe-b/TerminalCafeCandidateB.cs
+@@ -20,10 +20,10 @@
+     /// overwrite original assets or imply that the illustrated activity pockets are live services.
+     /// Stage and bake in separate coordinator-owned batch processes; verify external hashes after exit.
+     /// </summary>
+-    public static class TerminalCafeCandidate
++    public static class TerminalCafeCandidateB
+     {
+-        public const string Output = "Assets/Art/Candidates/TerminalCafe20261006";
+-        public const string PrefabPath = Output + "/TerminalCafe.prefab";
++        public const string Output = "Assets/Art/Candidates/TerminalCafe20261006B";
++        public const string PrefabPath = Output + "/TerminalCafeB.prefab";
+         private const string Canonical = "Assets/Art/Generated/Venues/TimelineSquare.prefab";
+         private const string Snapshot = "Assets/Resources/Contract/config_snapshot.json";
+         private const string Manifest = "Assets/Art/environment/manifest.json";
+@@ -33,11 +33,12 @@
+         private static JObject _manifest;
+         private static Transform _root;
+         private static ProtectedFiles _protection;
+-
+-        [MenuItem("CT Life/Candidates/Stage Terminal Cafe")]
++        private static int _joineryTriangles;
++
++        [MenuItem("CT Life/Candidates/Stage Terminal Cafe B")]
+         public static void BuildCandidate() => Protected("stage", Stage);
+ 
+-        [MenuItem("CT Life/Candidates/Bake Terminal Cafe")]
++        [MenuItem("CT Life/Candidates/Bake Terminal Cafe B")]
+         public static void BakeCandidate() => Protected("bake", () =>
+         {
+             var receipt = JObject.Parse(File.ReadAllText(Output + "/StageReceipt.json"));
+@@ -58,9 +59,10 @@
+         {
+             foreach (string sub in new[] { "Materials", "Meshes", "Textures" }) Directory.CreateDirectory(Output + "/" + sub);
+             AssetDatabase.Refresh();
+-            _manifest = JObject.Parse(File.ReadAllText(Manifest)); Materials.Clear(); Solids.Clear(); Placements.Clear();
++            _manifest = JObject.Parse(File.ReadAllText(Manifest)); Materials.Clear(); Solids.Clear(); Placements.Clear(); _joineryTriangles=0;
+             var data = JObject.Parse(File.ReadAllText(Snapshot));
+-            var spots = Registries.Parse(data["ids"],data["config"]).SpotsFor("terminal_cafe");
++            var registries = Registries.Parse(data["ids"],data["config"]);
++            var spots = registries.SpotsFor("terminal_cafe");
+             if (spots == null || spots.Entrance == null || spots.walkable.Count != 1) throw new InvalidDataException("Positioned cafe contract required.");
+             var room = spots.walkable[0];
+             if (room.x0 != -12 || room.x1 != 12 || room.z0 != -9 || room.z1 != 9)
+@@ -75,101 +77,126 @@
+                 UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(go,preview);
+                 _root = go.transform;
+                 var venue = go.AddComponent<VenueSceneRoot>();
+-                venue.venueId = "terminal_cafe"; venue.districtId = "timeline";
++                venue.venueId = "terminal_cafe";
++                if (!registries.Venues.TryGetValue(venue.venueId, out var definition)) throw new InvalidDataException("Cafe catalog identity missing.");
++                venue.districtId = definition.districtId;
+                 venue.cameraBounds = new Rect(-12,-9,24,18);
+-                venue.cameraDistance = 15.8f; venue.cameraPitch = 39f; venue.cameraYaw = -12f;
+-                venue.cameraFieldOfView = 45f; venue.cameraTargetViewportY = .38f; venue.cameraFocusHeight = 1;
+-                go.AddComponent<VenueContentLighting>();
++                venue.cameraDistance = 10.8f; venue.cameraPitch = 30f; venue.cameraYaw = -12f;
++                venue.cameraFieldOfView = 45f; venue.cameraTargetViewportY = .30f; venue.cameraFocusHeight = 1;
++                var lighting = go.AddComponent<VenueContentLighting>();
++                lighting.sunIntensity=.72f;lighting.sunColor=new Color(1,.91f,.81f);lighting.sunAngles=new Vector3(42,-25,0);
++                lighting.sky=new Color(.54f,.63f,.68f);lighting.equator=new Color(.55f,.53f,.47f);lighting.ground=new Color(.28f,.24f,.20f);
+                 var floor = Group("Wood floor and tiled coffee apron");
+                 for (int x = -11; x < 12; x += 2) for (int z = -8; z < 9; z += 2)
+-                    Add(x <= -9 && z < 0 ? "floor_tiles_2m" : "floor_wood_2m",x,z,y:-.101f,parent:floor);
++                    Add(x <= -9 && z < 0 ? "floor_concrete_2m" : "floor_wood_2m",x,z,y:-.101f,parent:floor);
+                 var ground = new GameObject("Contract floor collision"); ground.transform.SetParent(_root,false);
+                 ground.transform.localPosition = new Vector3(0,-.1f,0); ground.AddComponent<BoxCollider>().size = new Vector3(24,.2f,18);
+ 
+                 var walls = Group("Brick display wall and open window wall");
+-                for (int x = -11; x < 12; x += 2) Add("wall_brick_solid_2m",x,9.1f,parent:walls,heightScale:1.5f);
++                for (int x = -11; x < 12; x += 2) Add("wall_plaster_solid_2m",x,9.1f,parent:walls,heightScale:1.35f);
+                 for (int z = -8; z < 9; z += 2)
+                 {
+-                    var window = Add(z % 4 == 0 ? "wall_brick_window_2m" : "wall_brick_solid_2m",-12.1f,z,yaw:-90,parent:walls,heightScale:1.5f);
++                    var window = Add(z % 4 == 0 ? "wall_plaster_window_2m" : "wall_plaster_solid_2m",-12.1f,z,yaw:-90,parent:walls,heightScale:1.35f);
+                     if (z % 4 == 0) OpenWindowGlass(window);
+-                    Add("wall_brick_solid_2m",12.1f,z,yaw:90,parent:walls,heightScale:.21f);
++                    Add("wall_plaster_solid_2m",12.1f,z,yaw:90,parent:walls,heightScale:z>=0?1.35f:.21f);
+                 }
+                 // Cutaway front keeps the actor readable and leaves a four-metre entrance passage.
+                 for (int x = -11; x < 12; x += 2) if (Mathf.Abs(x) >= 3)
+-                    Add("wall_brick_solid_2m",x,-9.1f,parent:walls,heightScale:.14f);
++                    Add("wall_plaster_solid_2m",x,-9.1f,parent:walls,heightScale:.14f);
+                 CombineStatic(floor,"CafeFloor"); CombineStatic(walls,"CafeWalls");
+ 
+                 // All eight claimed terminal anchors are seated typing stations, not standing kiosk art.
+                 var terminalRows = new JArray();
+-                string[] charts = { "cafe_chart_pump","cafe_chart_dump","cafe_chart_crab","kiosk_chart" };
++                string[] charts = { "IdlePanel" };
+                 int index = 0;
+                 foreach (var spot in terminals.OrderBy(s => s.id))
+                 {
+                     if (!spot.hasPosition || Mathf.Abs(spot.rotY) > .001f || spot.anim != "act_type")
+                         throw new InvalidDataException("Cafe station layout expects positioned north-facing act_type anchors: " + spot.id);
+-                    Add("desk_medium_scifi",spot.x,spot.z+.86f,solid:true);
++                    Add("home_desk",spot.x,spot.z+.86f,solid:true);
+                     Add("office_chair",spot.x,spot.z-.10f,yaw:180);
+                     Add("monitor_triple",spot.x,spot.z+1.03f,y:.76f,screen:charts[index%charts.Length]);
+-                    Add("laptop",spot.x-.56f,spot.z+.69f,y:.76f,yaw:14);
+-                    Add("cup_coffee",spot.x+.82f,spot.z+.68f,y:.76f);
+-                    Add("desk_lamp",spot.x-.91f,spot.z+1.0f,y:.76f);
++                    Add("laptop",spot.x-.40f,spot.z+.69f,y:.76f,yaw:14);
++                    Add("cup_coffee",spot.x+.60f,spot.z+.68f,y:.76f);
++                    Add("desk_lamp",spot.x-.60f,spot.z+1.0f,y:.76f);
+                     terminalRows.Add(new JObject { ["spot"]=spot.id,["x"]=spot.x,["z"]=spot.z,["yaw_radians"]=spot.rotY,["animation"]=spot.anim });
+                     index++;
+                 }
+-                // Four server-owned social seats with table settings; this leaves a continuous center aisle.
+-                foreach (var spot in seats)
+-                {
+-                    if (!spot.hasPosition || Mathf.Abs(spot.rotY) > .001f) throw new InvalidDataException("Unexpected social seat orientation " + spot.id);
+-                    Add("cafe_chair_a",spot.x,spot.z-.10f,yaw:180);
+-                    Add("cafe_table_round",spot.x,spot.z+.86f,solid:true);
+-                    Add("cup_coffee",spot.x-.23f,spot.z+.78f,y:.76f);
+-                    Add("croissant",spot.x+.15f,spot.z+.85f,y:.76f);
+-                    Add("plant_small",spot.x,spot.z+1.10f,y:.76f,scale:.6f);
+-                }
+-
+-                // Bar runs along the left foreground wall, beside the existing barista/counter anchor.
+-                for (int z = -6; z <= -2; z++) Add("bar_counter",-8.9f,z,yaw:90,solid:true);
+-                Add("coffee_machine",-8.9f,-5.9f,y:.95f,yaw:90);
+-                Add("cash_register",-8.9f,-2.2f,y:.95f,yaw:90);
+-                Add("display_bread",-8.9f,-4.2f,y:.95f,yaw:90);
+-                Add("cafe_fridge",-11.25f,-2.2f,yaw:90,solid:true);
+-                Add("cafe_shelf",-11.7f,-5.4f,y:1.7f,yaw:90);
+-                Add("cup_coffee",-11.62f,-5.3f,y:2.4f);
+-                Add("billboard_wall",-11.91f,-5.1f,y:2.75f,yaw:90,scale:.65f,screen:"sign_gm_coffee");
+-
+-                // Graphic hierarchy: a large Pulse wall, one venue sign, then workstation-scale charts.
+-                Add("wall_screen_large",0,8.99f,y:.83f,scale:1.40f,screen:"cafe_pulse");
+-                Add("billboard_wall",8.0f,8.98f,y:2.8f,scale:.93f,screen:"neon_terminal_cafe");
+-                Add("billboard_wall",-8.0f,8.98f,y:2.8f,scale:.67f,screen:"neon_wagmi");
+-                foreach (float x in new[] { -7f, 0f, 7f })
+-                {
+-                    Add("home_light_chandelier",x,-.9f,y:3.7f,scale:.85f);
+-                    var lamp = new GameObject("Baked cafe pendant"); lamp.transform.SetParent(_root,false);
+-                    lamp.transform.localPosition = new Vector3(x,3.65f,-.9f);
+-                    var light = lamp.AddComponent<Light>(); light.type = LightType.Point;
+-                    light.lightmapBakeType = LightmapBakeType.Baked;
+-                    light.color = new Color(1f,.88f,.73f); light.intensity = 2.2f; light.range = 7f;
+-                    light.shadows = LightShadows.Soft;
+-                }
+-                Add("houseplant_tall",-10.6f,7.4f,scale:1.05f,solid:true);
+-                Add("houseplant_tall",10.6f,7.4f,scale:1.05f,solid:true);
+-                Add("houseplant_tall",-11.15f,-7.6f,scale:.9f,solid:true);
+-                Add("houseplant_tall",10.8f,-7.4f,scale:.9f,solid:true);
+-                Add("home_rug_rectangle_stripes_a",8.6f,-5.9f,scale:1.45f);
+-                Add("lounge_sofa",9.8f,-5.7f,yaw:-90,solid:true);
+-                Add("home_table_roundsmall",8.2f,-5.7f,scale:.8f,solid:true);
+-                Add("cup_coffee",8.2f,-5.7f,y:.6f);
+-                Add("floor_lamp",10.7f,-3.6f,solid:true);
+-                // Outside the left windows: a framed garden, not an unexplained clear-color void.
+-                for (int z = -6; z <= 6; z += 6)
+-                {
+-                    Add("planter_sidewalk",-14.2f,z,solid:false);
++                // Pair the fixed terminals into four coherent work counters; the 3.5 m center lane stays open.
++                var joinery=Group("Walnut work counters and architectural reveals");
++                foreach(float z in new[]{3.86f,7.86f})foreach(float x in new[]{-5f,5f})
++                {
++                    Block("Desk bridge",new Vector3(x,.72f,z),new Vector3(3.50f,.08f,.697f),"Walnut",new Color(.39f,.29f,.20f),joinery,true);
++                    Block("Cable shelf",new Vector3(x,.22f,z+.26f),new Vector3(3.50f,.12f,.14f),"Charcoal",new Color(.12f,.16f,.16f),joinery);
++                }
++                // All four exact social anchors face paired communal tables, using the same adult-scale home furniture family.
++                foreach(var spot in seats)
++                {
++                    if(!spot.hasPosition||Mathf.Abs(spot.rotY)>.001f)throw new InvalidDataException("Unexpected social seat orientation "+spot.id);
++                    Add("home_chair_1",spot.x,spot.z-.10f,yaw:180,scale:1.08f);
++                    NeutralSurface(Add("home_table_medium",spot.x,spot.z+1.28f,solid:true),"SocialWalnut",new Color(.39f,.29f,.20f));
++                    Add("cup_coffee",spot.x-.23f,spot.z+1.0f,y:.76f);
++                    Add("croissant",spot.x+.16f,spot.z+1.16f,y:.76f);
++                }
++                foreach(float x in new[]{-4f,4f})
++                {
++                    Block("Communal table bridge",new Vector3(x,.72f,-2.72f),new Vector3(2.48f,.08f,1.52f),"Walnut",new Color(.39f,.29f,.20f),joinery,true);
++                    Add("plant_small",x,-2.3f,y:.76f,scale:.7f);
++                    Add("desk_lamp",x,-2.83f,y:.76f);
++                }
++                // Sage cabinetry and stone worktop replace the oversized orange restaurant display.
++                for(int i=0;i<9;i++)Add("home_kitchen_cabinet1",-8.9f,-7.15f+i*.61f,yaw:90,solid:true);
++                Block("Coffee counter worktop",new Vector3(-8.9f,.98f,-4.71f),new Vector3(.78f,.06f,5.55f),"WarmStone",new Color(.76f,.74f,.66f),joinery);
++                Add("coffee_machine",-8.9f,-5.9f,y:1.01f,yaw:90);
++                Add("cash_register",-8.9f,-2.3f,y:1.01f,yaw:90);
++                foreach(float z in new[]{-4.6f,-4.3f,-4.0f})Add("croissant",-8.85f,z,y:1.01f,yaw:90);
++                Add("home_kitchen_fridge",-11.35f,-2.2f,yaw:90,solid:true);
++                Add("home_shelf_b_large_decorated",-11.85f,-5.3f,y:1.8f,yaw:-90);
++                Fascia("Counter",-11.83f,3.4f,-5.0f,-90,3.5f,"sign_terminal_cafe");
++
++                // Lower wall joinery and repeated window reveals give this large contract room a clear interior envelope.
++                foreach(float x in new[]{-11.92f,11.92f})
++                    Block("Side skirting",new Vector3(x,.14f,0),new Vector3(.08f,.28f,18),"Charcoal",new Color(.12f,.16f,.16f),joinery);
++                Block("Rear picture rail",new Vector3(0,3.7f,8.98f),new Vector3(24,.08f,.08f),"Brass",new Color(.58f,.44f,.25f),joinery);
++                for(int i=0;i<5;i++)Block("Window timber mullion",new Vector3(-11.93f,2.025f,-8+i*4),new Vector3(.08f,4.05f,.06f),"Walnut",new Color(.39f,.29f,.20f),joinery);
++                foreach(float x in new[]{-5f,5f})
++                {
++                    Block("Terminal carpet field",new Vector3(x,.003f,5.25f),new Vector3(8,.006f,7.25f),"PetrolCarpet",new Color(.24f,.32f,.31f),joinery);
++                    Add("home_light_chandelier",x,-.4f,y:3.55f,scale:.65f);
++                    BakedPoint("Cafe pendant",new Vector3(x,3.45f,-.4f),new Color(1,.83f,.63f),2.2f,9);
++                }
++                CombineStatic(joinery,"CafeJoinery");
++                Add("wall_screen_large",0,9.00f,y:.65f,scale:1.08f,screen:"IdlePanel");
++                Fascia("RoomIdentity",0,3.32f,8.98f,0,4.2f,"sign_terminal_cafe");
++                foreach(float x in new[]{-10.65f,10.65f})
++                {
++                    Add("home_bookshelf",x,1.0f,yaw:x<0?90:-90,solid:true);
++                    Add("houseplant_tall",x,7.6f,scale:.95f,solid:true);
++                }
++                // Near-entry reading pocket is visible at human scale; no bright pink/yellow furniture palette.
++                Add("home_couch_medium1",9.4f,-5.9f,yaw:-90,solid:true);
++                Add("home_table_roundsmall",7.85f,-5.9f,scale:.75f,solid:true);
++                Add("cup_coffee",7.85f,-5.9f,y:.5625f);
++                Add("home_light_floor1",10.7f,-7.5f,solid:true);
++                Add("houseplant_tall",11,-3.4f,scale:.9f,solid:true);
++                BakedPoint("Reading lamp",new Vector3(10.7f,1.7f,-7.5f),new Color(1,.79f,.56f),1.7f,5.5f);
++                BakedPoint("Counter practical",new Vector3(-9.0f,3.4f,-4.8f),new Color(1,.83f,.62f),2.0f,7);
++                BakedSpot("Window fill",new Vector3(-11.5f,3.4f,-1),new Vector3(0,.5f,0),new Color(.65f,.78f,1),2.1f,22,95);
++
++                // A grounded street threshold/window garden surrounds the cutaway; only the unchanged contract floor is navigable.
++                var outside=Group("Grounded cafe threshold and window garden");
++                for(int x=-17;x<=17;x+=2)for(int z=-16;z<=10;z+=2)
++                    if(x < -12 || x > 12 || z < -9 || z > 9)Add("floor_concrete_2m",x,z,y:-.105f,parent:outside);
++                CombineStatic(outside,"CafeSurroundings");
++                foreach(float z in new[]{-6f,1f,7f})
++                {
++                    Add("planter_sidewalk",-14.2f,z);
+                     Add("tree_blossom_4",-14.2f,z,y:.28f,scale:.72f);
+                 }
+-                var outside = Group("Window garden paving");
+-                for (int x = -17; x <= -13; x += 2) for (int z = -10; z <= 10; z += 2)
+-                    Add("plaza_hexpaving_2m",x,z,y:-.101f,parent:outside);
+-                CombineStatic(outside,"CafeWindowGarden");
++                Add("planter_sidewalk",-5.5f,-11.0f,yaw:90);
++                Add("planter_sidewalk",5.5f,-11.0f,yaw:90);
++                Add("bush_large_flowers",-5.5f,-11.0f,y:.35f,scale:.55f);
++                Add("bush_large_flowers",5.5f,-11.0f,y:.35f,scale:.55f);
+ 
+                 var anchors = Group("Exact contract anchors");
+                 foreach (var spot in spots.spots.Values.Distinct().Where(s=>s.hasPosition))
+@@ -191,12 +218,89 @@
+                     ["status"]="staged_unbaked_not_published",["prefab"]=PrefabPath,["snapshot_sha256"]=Hash(Snapshot),
+                     ["positioned_anchors"]=Anchors(go).Count,["navigation"]=navigation,["terminal_stations"]=terminalRows,
+                     ["placements"]=Placements.DeepClone(),["source_lod0_triangles_manifest_estimate"]=Placements.Sum(p=>(int)p["lod0_triangles"]),
+-                    ["static_mesh_renderers"]=go.GetComponentsInChildren<MeshRenderer>(true).Length,["baked_only_pendant_lights"]=3,
++                    ["additional_joinery_triangles"]=_joineryTriangles,["static_mesh_renderers"]=go.GetComponentsInChildren<MeshRenderer>(true).Length,["baked_only_lights"]=5,
+                     ["limitations"]="Seats require native animation/clearance checks. Charts are artwork, not live market data. No registry promotion, server change or performance acceptance."
+                 }.ToString());
+-                Debug.Log("CTLIFE [terminal-cafe] 8 terminal stations and 4 social seats staged at exact contract anchors; bake required: "+PrefabPath);
++                Debug.Log("CTLIFE [terminal-cafe-b] 8 terminal stations and 4 social seats staged at exact contract anchors; bake required: "+PrefabPath);
+             }
+             finally { _root=null; EditorSceneManager.ClosePreviewScene(preview); Materials.Clear(); }
++        }
++        private static void Fascia(string name, float x, float y, float z, float yaw, float width, string screen)
++        {
++            float height = width / 6f;
++            var group = new GameObject("Fascia_" + name);
++            group.transform.SetParent(_root, false);
++            group.transform.localPosition = new Vector3(x,y,z);
++            group.transform.localRotation = Quaternion.Euler(0,yaw,0);
++            var frame = GameObject.CreatePrimitive(PrimitiveType.Cube);
++            frame.name = "Frame"; frame.transform.SetParent(group.transform, false);
++            frame.transform.localPosition = new Vector3(0,height*.5f,0);
++            frame.transform.localScale = new Vector3(width+.12f,height+.12f,.14f);
++            Object.DestroyImmediate(frame.GetComponent<Collider>());
++            frame.GetComponent<MeshFilter>().sharedMesh = Save(Object.Instantiate(frame.GetComponent<MeshFilter>().sharedMesh), Output + "/Meshes/" + name + "_FasciaFrame.asset");
++            const string materialKey = "FasciaCharcoal";
++            if (!Materials.TryGetValue(materialKey, out var trim))
++            {
++                var shader = Shader.Find("Universal Render Pipeline/Simple Lit");
++                if (shader == null) throw new InvalidDataException("Required fascia shader missing.");
++                trim = new Material(shader) { name = materialKey, enableInstancing = true };
++                trim.SetColor("_BaseColor",new Color(.085f,.11f,.13f)); trim.SetFloat("_Smoothness",.12f);
++                Materials[materialKey] = trim = Save(trim,Output + "/Materials/" + materialKey + ".mat");
++            }
++            frame.GetComponent<MeshRenderer>().sharedMaterial = trim;
++            var mesh = new Mesh { name = name + "_FasciaFace" };
++            mesh.vertices = new[] { new Vector3(-width*.5f,0,-.081f), new Vector3(-width*.5f,height,-.081f),
++                new Vector3(width*.5f,height,-.081f), new Vector3(width*.5f,0,-.081f) };
++            mesh.triangles = new[] {0,1,2,0,2,3}; mesh.uv = new[] {Vector2.zero,Vector2.up,Vector2.one,Vector2.right};
++            mesh.RecalculateNormals(); mesh.RecalculateBounds();
++            var face = new GameObject("Identity face"); face.transform.SetParent(group.transform,false);
++            face.AddComponent<MeshFilter>().sharedMesh = Save(mesh,Output + "/Meshes/" + mesh.name + ".asset");
++            face.AddComponent<MeshRenderer>().sharedMaterial = Resolve("KEEP_screen",_manifest["billboard_wall"],screen);
++            foreach (var renderer in group.GetComponentsInChildren<MeshRenderer>())
++            {
++                renderer.gameObject.isStatic = true; renderer.shadowCastingMode = ShadowCastingMode.Off;
++                renderer.receiveShadows = false; renderer.lightProbeUsage = LightProbeUsage.Off;
++                renderer.reflectionProbeUsage = ReflectionProbeUsage.Off;
++            }
++            Placements.Add(new JObject { ["id"] = "authored_fascia_" + name, ["x"] = x, ["y"] = y, ["z"] = z,
++                ["yaw"] = yaw, ["width"] = width, ["height"] = height, ["screen"] = screen, ["solid"] = false,
++                ["source"] = "project-authored shallow fascia trim and existing 6:1 shop graphic", ["lod0_triangles"] = 14 });
++        }
++
++        private static GameObject Block(string name,Vector3 position,Vector3 size,string key,Color color,Transform parent,bool solid=false)
++        {
++            var go=GameObject.CreatePrimitive(PrimitiveType.Cube);go.name=name;go.transform.SetParent(parent,false);
++            go.transform.localPosition=position;go.transform.localScale=size;go.isStatic=true;Object.DestroyImmediate(go.GetComponent<Collider>());
++            if(!Materials.TryGetValue(key,out var material))
++            {
++                material=new Material(Shader.Find("Universal Render Pipeline/Simple Lit")){name=key,enableInstancing=true};
++                material.SetColor("_BaseColor",color);material.SetFloat("_Smoothness",.08f);Materials[key]=material=Save(material,Output+"/Materials/"+key+".mat");
++            }
++            go.GetComponent<MeshRenderer>().sharedMaterial=material; _joineryTriangles+=12;
++            if(solid)Solid(new Bounds(new Vector3(position.x,1.2f,position.z),new Vector3(size.x,2.4f,size.z)));
++            return go;
++        }
++        private static void NeutralSurface(GameObject item,string key,Color color)
++        {
++            if(!Materials.TryGetValue(key,out var material))
++            {
++                material=new Material(Shader.Find("Universal Render Pipeline/Simple Lit")){name=key,enableInstancing=true};
++                material.SetColor("_BaseColor",color);material.SetFloat("_Smoothness",.10f);Materials[key]=material=Save(material,Output+"/Materials/"+key+".mat");
++            }
++            foreach(var renderer in item.GetComponentsInChildren<MeshRenderer>())renderer.sharedMaterials=renderer.sharedMaterials.Select(_=>material).ToArray();
++        }
++        private static void BakedPoint(string name,Vector3 position,Color color,float intensity,float range)
++        {
++            var go=new GameObject(name);go.transform.SetParent(_root,false);go.transform.localPosition=position;
++            var light=go.AddComponent<Light>();light.type=LightType.Point;light.lightmapBakeType=LightmapBakeType.Baked;
++            light.color=color;light.intensity=intensity;light.range=range;light.shadows=LightShadows.Soft;
++        }
++        private static void BakedSpot(string name,Vector3 position,Vector3 target,Color color,float intensity,float range,float angle)
++        {
++            var go=new GameObject(name);go.transform.SetParent(_root,false);go.transform.localPosition=position;
++            go.transform.rotation=Quaternion.LookRotation(target-position,Vector3.up);
++            var light=go.AddComponent<Light>();light.type=LightType.Spot;light.lightmapBakeType=LightmapBakeType.Baked;
++            light.color=color;light.intensity=intensity;light.range=range;light.spotAngle=angle;light.shadows=LightShadows.Soft;
+         }
+         private static Transform Group(string name)
+         {
+@@ -339,7 +443,7 @@
+         private static Texture2D Screen(string id)
+         {
+             string path = Output + "/Textures/" + id + ".png";
+-            string source = Path.GetFullPath(Path.Combine(Application.dataPath, "../../art/lookdev/tex", id + ".png"));
++            string source = Path.GetFullPath(Path.Combine(Application.dataPath, id == "IdlePanel" ? "../../art/direction-20261006/venue-expansion/Textures" : "../../art/lookdev/tex", id + ".png"));
+             File.Copy(source, path, true);
+             AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceSynchronousImport);
+             var importer = AssetImporter.GetAtPath(path) as TextureImporter;
+@@ -436,8 +540,10 @@
+             private readonly string _backup;
+             public ProtectedFiles(string phase)
+             {
+-                _backup = Path.Combine(Path.GetTempPath(),"ctlife-terminal-cafe-" + phase + "-" + Guid.NewGuid().ToString("N"));
+-                var paths = AssetDatabase.GetDependencies(Canonical,true).Concat(new[] { Canonical,Snapshot,Manifest,"Assets/Resources/World/VenueContentRegistry.asset" })
++                _backup = Path.Combine(Path.GetTempPath(),"ctlife-terminal-cafe-b-" + phase + "-" + Guid.NewGuid().ToString("N"));
++                var sourceModels=JObject.Parse(File.ReadAllText(Manifest)).Properties().Select(p=>"Assets/Art/"+(string)p.Value["fbx"]).Where(File.Exists).ToArray();
++                var paths=AssetDatabase.GetDependencies(sourceModels,true).Concat(AssetDatabase.GetDependencies(Canonical,true))
++                    .Concat(new[] { Canonical,Snapshot,Manifest,"Assets/Resources/World/VenueContentRegistry.asset","Packages/manifest.json","Packages/packages-lock.json" })
+                     .Concat(Directory.GetFiles("ProjectSettings","*",SearchOption.AllDirectories)).Where(File.Exists).Distinct().ToList();
+                 paths.AddRange(paths.Where(p => File.Exists(p + ".meta")).Select(p => p + ".meta").ToArray());
+                 foreach (string path in paths.Distinct())
+@@ -478,7 +584,7 @@
+                     ["status"] = status, ["error"] = error, ["post_editor_exit_hash_check_required"] = true,
+                     ["files"] = new JArray(_hashes.Select(p => new JObject { ["path"] = p.Key,["sha256"] = p.Value }))
+                 }.ToString());
+-                Debug.Log("CTLIFE [terminal-cafe] protection receipt: " + Path.Combine(_backup,"transaction.json"));
++                Debug.Log("CTLIFE [terminal-cafe-b] protection receipt: " + Path.Combine(_backup,"transaction.json"));
+             }
+         }
+         private static string Hash(string path)

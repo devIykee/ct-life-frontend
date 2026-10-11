@@ -1,0 +1,257 @@
+--- VenueExpansionCandidate.cs
++++ VenueExpansionCandidateB.cs
+@@ -16,25 +16,25 @@
+ namespace CTLife.EditorTools
+ {
+     /// <summary>Staged outside Assets. Root may import after stability gates; these never publish a venue.</summary>
+-    public static class SpacesStudioCandidate
++    public static class SpacesStudioCandidateB
+     {
+-        public const string PrefabPath = "Assets/Art/Candidates/SpacesStudio20261006/SpacesStudio.prefab";
+-        public static void BuildCandidate() => VenueExpansionCandidate.Build("spaces_studio");
+-        public static void BakeCandidate() => VenueExpansionCandidate.Bake("spaces_studio");
++        public const string PrefabPath = "Assets/Art/Candidates/SpacesStudio20261006B/SpacesStudioB.prefab";
++        public static void BuildCandidate() => VenueExpansionCandidateB.Build("spaces_studio");
++        public static void BakeCandidate() => VenueExpansionCandidateB.Bake("spaces_studio");
+     }
+-    public static class PerpPitCandidate
++    public static class PerpPitCandidateB
+     {
+-        public const string PrefabPath = "Assets/Art/Candidates/PerpPit20261006/PerpPit.prefab";
+-        public static void BuildCandidate() => VenueExpansionCandidate.Build("perp_pit");
+-        public static void BakeCandidate() => VenueExpansionCandidate.Bake("perp_pit");
++        public const string PrefabPath = "Assets/Art/Candidates/PerpPit20261006B/PerpPitB.prefab";
++        public static void BuildCandidate() => VenueExpansionCandidateB.Build("perp_pit");
++        public static void BakeCandidate() => VenueExpansionCandidateB.Bake("perp_pit");
+     }
+-    internal static class VenueExpansionCandidate
++    internal static class VenueExpansionCandidateB
+     {
+         private static string VenueId;
+         private static bool IsStudio => VenueId == "spaces_studio";
+         private static float HalfWidth => IsStudio ? 12 : 14;
+-        private static string Output => "Assets/Art/Candidates/"+(IsStudio ? "SpacesStudio20261006" : "PerpPit20261006");
+-        private static string PrefabPath => IsStudio ? SpacesStudioCandidate.PrefabPath : PerpPitCandidate.PrefabPath;
++        private static string Output => "Assets/Art/Candidates/"+(IsStudio ? "SpacesStudio20261006B" : "PerpPit20261006B");
++        private static string PrefabPath => IsStudio ? SpacesStudioCandidateB.PrefabPath : PerpPitCandidateB.PrefabPath;
+         private static string ProposalRoot => Path.GetFullPath(Path.Combine(Application.dataPath,"../../art/direction-20261006/venue-expansion"));
+         private const string Canonical = "Assets/Art/Generated/Venues/TimelineSquare.prefab";
+         private const string Snapshot = "Assets/Resources/Contract/config_snapshot.json";
+@@ -42,6 +42,8 @@
+         private static readonly Dictionary<string, Material> Materials = new Dictionary<string, Material>();
+         private static readonly List<Bounds> Solids = new List<Bounds>();
+         private static readonly JArray Placements = new JArray();
++        private static readonly JArray ChairBackChecks = new JArray();
++        private static readonly Dictionary<string,Mesh> UpholsteryMeshes = new Dictionary<string,Mesh>();
+         private static JObject _manifest;
+         private static Transform _root;
+         private static ProtectedFiles _protection;
+@@ -94,20 +96,21 @@
+             var spots=ReadImmutableSpots();
+             foreach (string sub in new[]{"Materials","Meshes","Textures"}) Directory.CreateDirectory(Output+"/"+sub);
+             AssetDatabase.Refresh();
+-            _manifest=JObject.Parse(File.ReadAllText(Manifest)); Materials.Clear(); Solids.Clear(); Placements.Clear();
++            _manifest=JObject.Parse(File.ReadAllText(Manifest)); Materials.Clear(); Solids.Clear(); Placements.Clear();ChairBackChecks.Clear();UpholsteryMeshes.Clear();
+             _bakedLights=0; _detailTriangles=0;
+             var preview=EditorSceneManager.NewPreviewScene();
+             try
+             {
+                 var go=new GameObject(IsStudio?"Spaces Studio - isolated broadcast salon":"Perp Pit - isolated trading floor");
+                 UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(go,preview); _root=go.transform;
+-                var venue=go.AddComponent<VenueSceneRoot>(); venue.venueId=VenueId; venue.districtId=IsStudio?"timeline":"trenches";
++                var venue=go.AddComponent<VenueSceneRoot>(); venue.venueId=VenueId; var catalog=JObject.Parse(File.ReadAllText(Snapshot));
++                venue.districtId=Registries.Parse(catalog["ids"],catalog["config"]).Venues[VenueId].districtId;
+                 venue.cameraBounds=new Rect(-HalfWidth,-10,HalfWidth*2,20);
+-                venue.cameraDistance=IsStudio?12.5f:13.2f; venue.cameraPitch=31; venue.cameraYaw=-10;
+-                venue.cameraFieldOfView=45; venue.cameraTargetViewportY=.38f; venue.cameraFocusHeight=1;
++                venue.cameraDistance=IsStudio?11.6f:12.2f; venue.cameraPitch=29; venue.cameraYaw=-12;
++                venue.cameraFieldOfView=45; venue.cameraTargetViewportY=.30f; venue.cameraFocusHeight=1;
+                 var lighting=go.AddComponent<VenueContentLighting>();
+                 lighting.sunColor=IsStudio?new Color(1,.92f,.82f):new Color(.91f,.96f,1);
+-                lighting.sunIntensity=IsStudio?.92f:.8f; lighting.sunAngles=new Vector3(36,-65,0);
++                lighting.sunIntensity=IsStudio?.78f:.8f; lighting.sunAngles=new Vector3(36,-65,0);
+                 lighting.sky=new Color(.43f,.57f,.65f); lighting.equator=new Color(.42f,.44f,.43f); lighting.ground=new Color(.19f,.21f,.21f);
+                 lighting.haze=new Color(.36f,.45f,.47f);
+                 BuildShell();
+@@ -132,7 +135,7 @@
+                 File.WriteAllText(Output+"/StageReceipt.json",new JObject
+                 {
+                     ["status"]="staged_unbaked_not_published",["venue_id"]=VenueId,["prefab"]=PrefabPath,["snapshot_sha256"]=Hash(Snapshot),
+-                    ["positioned_anchors"]=Anchors(go).Count,["navigation"]=nav,["placements"]=Placements.DeepClone(),
++                    ["positioned_anchors"]=Anchors(go).Count,["native_chair_back_checks"]=ChairBackChecks.DeepClone(),["navigation"]=nav,["placements"]=Placements.DeepClone(),
+                     ["source_lod0_triangles_manifest_estimate"]=Placements.Sum(p=>(int)p["lod0_triangles"]),["additional_trim_triangles"]=_detailTriangles,
+                     ["static_mesh_renderers"]=go.GetComponentsInChildren<MeshRenderer>(true).Length,["baked_only_lights"]=_bakedLights,
+                     ["limitations"]="Unpublished art. Chair orientation/animation, landscape framing, real room occupancy, voice permission and device performance require validation. No financial or host-role behavior enabled."
+@@ -145,7 +148,10 @@
+         {
+             var floor=Group("Continuous floor with deliberate activity insets");
+             for(int x=(int)-HalfWidth+1;x<HalfWidth;x+=2)for(int z=-9;z<10;z+=2)
+-                Add(IsStudio?"floor_wood_2m":"floor_concrete_2m",x,z,y:-.101f,parent:floor);
++            {
++                var tile=Add(IsStudio?"floor_wood_2m":"floor_concrete_2m",x,z,y:-.101f,parent:floor);
++                if(!IsStudio)SolidSurface(tile,"PitSlate",new Color(.27f,.30f,.31f));
++            }
+             CombineStatic(floor,"Floor");
+             var ground=new GameObject("Contract floor collision");ground.transform.SetParent(_root,false);
+             ground.transform.localPosition=new Vector3(0,-.1f,0);ground.AddComponent<BoxCollider>().size=new Vector3(HalfWidth*2,.2f,20);
+@@ -163,9 +169,16 @@
+             Solid(new Bounds(new Vector3(-HalfWidth-.3f,1.2f,0),new Vector3(.3f,2.4f,20)));
+             Solid(new Bounds(new Vector3(HalfWidth+.3f,1.2f,0),new Vector3(.3f,2.4f,20)));
+             // Recessed garden outside open glass gives the side wall a destination and depth.
+-            var outside=Group("Window recess paving");
+-            for(int z=-9;z<10;z+=2)for(int x=0;x<2;x++)Add("floor_concrete_2m",-HalfWidth-1-x*2,z,y:-.101f,parent:outside);
+-            CombineStatic(outside,"WindowRecess");
++            var outside=Group("Continuous city threshold and window recess");
++            for(int x=(int)-HalfWidth-5;x<=HalfWidth+5;x+=2)for(int z=-17;z<=13;z+=2)
++                if(x < -HalfWidth || x > HalfWidth || z < -10 || z > 10)
++                    Add("plaza_hexpaving_2m",x,z,y:-.101f,parent:outside);
++            CombineStatic(outside,"CityThreshold");
++            foreach(float x in new[]{-6f,6f})
++            {
++                Add("planter_sidewalk",x,-12.4f,yaw:90);
++                Add("bush_large_flowers",x,-12.4f,y:.35f,scale:.6f);
++            }
+             foreach(float z in new[]{-5f,2f,8f})
+             {
+                 Add("planter_sidewalk",-HalfWidth-2.3f,z,yaw:90);
+@@ -192,12 +205,13 @@
+                 if(spot.id.EndsWith("stage_host",StringComparison.Ordinal))continue;
+                 bool audience=spot.kind=="seat";
+                 var chair=Add("lounge_chair",spot.x,spot.z,yaw:spot.rotY*Mathf.Rad2Deg+180);
+-                Surface(chair,audience?"AudiencePetrol":"SpeakerLinen",audience?new Color(.20f,.39f,.40f):new Color(.76f,.69f,.56f));
++                Upholstery(chair,audience?"AudiencePetrol":"SpeakerLinen",audience?new Color(.20f,.32f,.36f):new Color(.72f,.66f,.55f));
++                CheckNativeChairBack(chair,spot);
+                 // Occupied seats intentionally have no blocking nav volume: server snaps feet to this exact anchor.
+             }
+-            Add("podium",0,7.30f,yaw:180,solid:true,screen:"StudioIdentity");
++            Add("podium",0,7.30f,yaw:180,solid:true,screen:"StudioMark");
+             Add("mic_stand",.48f,7.4f,yaw:180);
+-            Add("wall_screen_large",0,10.00f,y:1.15f,scale:1.32f,screen:"StudioIdentity");
++            Panel("StudioHeader",new Vector3(0,1.7f,9.98f),8.4f,1.4f,"StudioHeader");
+             for(int i=0;i<2;i++)
+             {
+                 float x=i==0?-10.75f:10.75f;
+@@ -212,11 +226,12 @@
+             var wayfinding=Group("Flush entry and aisle reveals");
+             foreach(float x in new[]{-1.5f,1.5f})Block("Entry fork",new Vector3(x,.002f,-6.7f),new Vector3(.04f,.004f,4.1f),"Brass",new Color(.57f,.43f,.24f),wayfinding);
+             CombineStatic(wayfinding,"StudioAisleReveals");
+-            SideLounge(-10.2f,-4,90); SideLounge(10.2f,-4,-90);
++            SideLounge(-9.4f,-5.1f,90); SideLounge(9.4f,-5.1f,-90);
++            foreach(float x in new[]{-10.4f,10.4f})Add("home_houseplant_1",x,-1.3f,scale:1.0f,solid:true);
+             foreach(float x in new[]{-10.3f,10.3f})
+             {
+-                Add("floor_lamp",x,-6.2f,solid:true);
+-                BakedPoint("Audience floor lamp",new Vector3(x,1.8f,-6.2f),new Color(1,.77f,.52f),1.8f,6);
++                Add("home_light_floor1",x,-6.8f,solid:true);
++                BakedPoint("Audience floor lamp",new Vector3(x,1.7f,-6.8f),new Color(1,.77f,.52f),1.8f,6);
+             }
+             BakedSpot("Cool window fill",new Vector3(-10.8f,3.7f,-.5f),new Vector3(0,.5f,0),new Color(.58f,.77f,1),2.4f,18,95);
+         }
+@@ -254,7 +269,8 @@
+                 segment.transform.localRotation=Quaternion.Euler(0,-a*Mathf.Rad2Deg+90,0);
+             }
+             CombineStatic(graphic,"PitWitnessCircle");
+-            SideLounge(-10.3f,-4,90);SideLounge(10.3f,-4,-90);
++            SideLounge(-7.4f,-5.7f,90);SideLounge(7.4f,-5.7f,-90);
++            foreach(float x in new[]{-10.2f,10.2f})Add("houseplant_tall",x,-5.7f,solid:true);
+             foreach(float x in new[]{-9f,0f,9f})
+             {
+                 Add("home_light_chandelier",x,1.2f,y:3.8f,scale:.65f);
+@@ -265,9 +281,10 @@
+         }
+         private static void SideLounge(float x,float z,float yaw)
+         {
+-            var sofa=Add("lounge_sofa",x,z,yaw:yaw,solid:true);Surface(sofa,"SideLounge",new Color(.36f,.40f,.34f));
+-            Add("home_table_roundsmall",x,z+1.8f,scale:.7f,solid:true);
+-            Add("cup_coffee",x,z+1.8f,y:.525f);
++            Add("home_couch_medium1",x,z,yaw:yaw,solid:true);
++            float tableX=x+(x<0?1.5f:-1.5f);
++            Add("home_table_roundsmall",tableX,z,scale:.7f,solid:true);
++            Add("cup_coffee",tableX,z,y:.525f);
+         }
+         private static GameObject Block(string name,Vector3 position,Vector3 size,string materialKey,Color color,Transform parent)
+         {
+@@ -280,6 +297,73 @@
+                 Materials[materialKey]=material=Save(material,Output+"/Materials/"+materialKey+".mat");
+             }
+             go.GetComponent<MeshRenderer>().sharedMaterial=material;_detailTriangles+=12;return go;
++        }
++        private static Material PlainMaterial(string key,Color color)
++        {
++            if(Materials.TryGetValue(key,out var cached))return cached;
++            var material=new Material(Shader.Find("Universal Render Pipeline/Simple Lit")){name=key,enableInstancing=true};
++            material.SetColor("_BaseColor",color);material.SetFloat("_Smoothness",.08f);
++            return Materials[key]=Save(material,Output+"/Materials/"+key+".mat");
++        }
++        private static void SolidSurface(GameObject item,string key,Color color)
++        {
++            var material=PlainMaterial(key,color);
++            foreach(var renderer in item.GetComponentsInChildren<MeshRenderer>(true))
++                renderer.sharedMaterials=renderer.sharedMaterials.Select(_=>material).ToArray();
++        }
++        private static void Upholstery(GameObject item,string key,Color color)
++        {
++            // Split source triangles only by native height. Geometry/UVs remain unchanged;
++            // a pink source atlas is not multiplied and mislabeled as petrol fabric.
++            var fabric=PlainMaterial(key,color);
++            var feet=PlainMaterial("ChairWalnutFeet",new Color(.28f,.20f,.13f));
++            foreach(var filter in item.GetComponentsInChildren<MeshFilter>(true))
++            {
++                var original=filter.sharedMesh;
++                string meshKey=key+"_"+original.name;
++                if(!UpholsteryMeshes.TryGetValue(meshKey,out var mesh))
++                {
++                    var vertices=original.vertices.Select(filter.transform.TransformPoint).ToArray();
++                    float low=vertices.Min(v=>v.y),cut=low+.14f;
++                    var upper=new List<int>();var lower=new List<int>();var triangles=original.triangles;
++                    for(int i=0;i<triangles.Length;i+=3)
++                    {
++                        var target=vertices[triangles[i]].y<=cut && vertices[triangles[i+1]].y<=cut && vertices[triangles[i+2]].y<=cut?lower:upper;
++                        target.Add(triangles[i]);target.Add(triangles[i+1]);target.Add(triangles[i+2]);
++                    }
++                    if(upper.Count==0 || lower.Count==0)throw new InvalidDataException("Source chair no longer has the reviewed upholstery/foot split: "+original.name);
++                    mesh=Readable(original);mesh.name=meshKey;mesh.subMeshCount=2;
++                    mesh.SetTriangles(upper,0);mesh.SetTriangles(lower,1);
++                    UpholsteryMeshes[meshKey]=mesh=Save(mesh,Output+"/Meshes/"+meshKey+".asset");
++                }
++                filter.sharedMesh=mesh;filter.GetComponent<MeshRenderer>().sharedMaterials=new[]{fabric,feet};
++            }
++        }
++        private static void CheckNativeChairBack(GameObject chair,SpotDef spot)
++        {
++            var vertices=chair.GetComponentsInChildren<MeshFilter>(true).Where(f=>!f.name.Contains("_LOD")||f.name.Contains("_LOD0"))
++                .SelectMany(f=>f.sharedMesh.vertices.Select(f.transform.TransformPoint)).ToArray();
++            float low=vertices.Min(v=>v.y),high=vertices.Max(v=>v.y);
++            var back=vertices.Where(v=>v.y>low+(high-low)*.8f).ToArray();
++            Vector3 facing=Quaternion.Euler(0,spot.rotY*Mathf.Rad2Deg,0)*Vector3.forward;
++            float distance=back.Average(v=>Vector3.Dot(v-chair.transform.position,facing));
++            ChairBackChecks.Add(new JObject { ["spot"]=spot.id,["chair_yaw_degrees"]=chair.transform.eulerAngles.y,
++                ["high_back_mean_along_avatar_forward_m"]=distance,["status"]=distance<-.05f?"back_behind_avatar_requires_pose_review":"orientation_rejected" });
++            if(distance>=-.05f)throw new InvalidDataException("Native studio chair back is not behind its actor forward: "+spot.id);
++        }
++        private static void Panel(string name,Vector3 position,float width,float height,string texture)
++        {
++            var group=Group("Identity_"+name);group.localPosition=position;
++            var frame=Block("Identity frame",new Vector3(0,height*.5f,0),new Vector3(width+.12f,height+.12f,.14f),"IdentityFrame",new Color(.09f,.13f,.14f),group);
++            frame.GetComponent<MeshFilter>().sharedMesh=Save(Object.Instantiate(frame.GetComponent<MeshFilter>().sharedMesh),Output+"/Meshes/"+name+"_frame.asset");
++            var mesh=new Mesh{name=name+"_face"};mesh.vertices=new[]{new Vector3(-width*.5f,0,-.081f),new Vector3(-width*.5f,height,-.081f),new Vector3(width*.5f,height,-.081f),new Vector3(width*.5f,0,-.081f)};
++            mesh.uv=new[]{Vector2.zero,Vector2.up,Vector2.one,Vector2.right};mesh.triangles=new[]{0,1,2,0,2,3};mesh.RecalculateNormals();mesh.RecalculateBounds();
++            var face=new GameObject("Identity face");face.transform.SetParent(group,false);face.isStatic=true;
++            face.AddComponent<MeshFilter>().sharedMesh=Save(mesh,Output+"/Meshes/"+name+"_face.asset");
++            var renderer=face.AddComponent<MeshRenderer>();renderer.sharedMaterial=Resolve("KEEP_screen",_manifest["wall_screen_large"],texture);renderer.shadowCastingMode=ShadowCastingMode.Off;
++            _detailTriangles+=2;
++            Placements.Add(new JObject { ["id"]="authored_panel_"+name,["x"]=position.x,["y"]=position.y,["z"]=position.z,
++                ["width"]=width,["height"]=height,["screen"]=texture,["source"]="project-authored frame and original texture; no live activity claim",["lod0_triangles"]=0 });
+         }
+         private static void Surface(GameObject item,string key,Color tint)
+         {
+@@ -443,7 +527,8 @@
+         private static Texture2D Screen(string id)
+         {
+             string path = Output + "/Textures/" + id + ".png";
+-            string source = Path.GetFullPath(Path.Combine(ProposalRoot, "Textures", id + ".png"));
++            string source = Path.GetFullPath(Path.Combine(ProposalRoot, "revision-b/Textures", id + ".png"));
++            if(!File.Exists(source))source=Path.GetFullPath(Path.Combine(ProposalRoot,"Textures",id+".png"));
+             File.Copy(source, path, true);
+             AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceSynchronousImport);
+             var importer = AssetImporter.GetAtPath(path) as TextureImporter;
