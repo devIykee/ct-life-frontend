@@ -68,3 +68,9 @@ Priority is to resolve Spaces authorization, spot pricing, real-payment reconcil
 The Seeker's development build and the hosted services are separate environments. Current hosted `/config` has no `livePhase`; the staging client defaults to phase 1. Raising that default on the client would not complete missing backend features. Publish a deliberate server phase/capability policy only when its feature acceptance passes.
 
 The preserved old local service's readiness reports a Helius authorization failure; the hosted service's readiness passed. Credentials were not printed, copied into the repository or sent in the handoff.
+
+## Handoff and source control
+
+- Client repairs, regression tests and four reports pushed to `Immadominion/ct-life` branch `dev`, commit `9bca3a1801868839c71c592994b04605fc9f7134`; remote HEAD verified.
+- Sent Iyke 🦀 the prioritized requirements and report link on Telegram at 05:58 on 12 October; sent `ctlife-backend-handoff-20261012.zip` at 05:59 and verified both outgoing messages. The 47.4 KiB archive contains the four reports, README, four local probes and four current receipts. It contains no environment file or retained auth tokens. Money probe copies have portable dependency/output paths and passed syntax checks; their original versions produced the recorded receipts.
+- Requested the fixing commit/deployment revision and feature receipts. No reply or completed server repair is claimed. Temporary isolated API/realtime processes were stopped after verification; original local services/data and the isolated reproducible database were retained.
