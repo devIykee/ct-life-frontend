@@ -88,8 +88,10 @@ namespace CTLife.EditorTools.IslandV2
             int venues = 0;
             var entries = AssetDatabase.FindAssets("t:VenueContentEntry").Select(g => AssetDatabase.LoadAssetAtPath<VenueContentEntry>(AssetDatabase.GUIDToAssetPath(g)))
                 .Where(e => e != null && !e.isHome && e.prefab != null).ToList();
+            bool noVenues = Environment.GetCommandLineArgs().Contains("-ctlife-novenues");
             foreach (var v in world.venues)
             {
+                if (noVenues) break;
                 var e = entries.FirstOrDefault(x => x.contentId == v.venueId);
                 if (e == null) continue;
                 var go = (GameObject)PrefabUtility.InstantiatePrefab(e.prefab.gameObject);
@@ -200,6 +202,30 @@ namespace CTLife.EditorTools.IslandV2
                     Render(cam, rt, Path.Combine(outDir, name + ".png"));
                     shots.Add(name);
                 }
+            }
+            if (Environment.GetCommandLineArgs().Contains("-ctlife-shots"))
+            {
+                // W4: the authored demo shots (Resources/World/Island/demo_route.json), with a 1.8 m stand-in for the player
+                var stand = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+                Object.DestroyImmediate(stand.GetComponent<Collider>());
+                stand.transform.localScale = new Vector3(0.55f, 0.9f, 0.55f);
+                var standMat = new Material(Shader.Find("Universal Render Pipeline/Lit")) { color = new Color(0.85f, 0.35f, 0.25f) };
+                stand.GetComponent<MeshRenderer>().sharedMaterial = standMat;
+                Physics.SyncTransforms();
+                foreach (var w in IslandWaypoints.Load())
+                {
+                    float gy = h.Sample(w.x, w.z);
+                    if (Physics.Raycast(new Vector3(w.x, 209f, w.z), Vector3.down, out var hit, 400f,   // below the 214 m flight ceiling collider
+                         (1 << Layers.Ground) | (1 << Layers.Road))) gy = hit.point.y;
+                    var feet = new Vector3(w.x, w.y ?? gy, w.z);
+                    stand.transform.position = feet + Vector3.up * 0.9f;
+                    var (pos, rot, fov) = IslandWaypoints.CameraPose(w, feet);
+                    cam.orthographic = false; cam.fieldOfView = fov;
+                    cam.transform.SetPositionAndRotation(pos, rot);
+                    Render(cam, rt, Path.Combine(outDir, $"shot-{w.shot}-{w.id}.png"));
+                    shots.Add("shot-" + w.id);
+                }
+                Object.DestroyImmediate(stand);
             }
             if (only == null || only.Contains("topdown"))
             {

@@ -13,6 +13,8 @@ Shader "CT Life/World/Toon"
         _Spec("Specular (strength, power)", Vector) = (0, 32, 0, 0)
         [HDR] _Emission("Emission", Color) = (0, 0, 0, 0)
         _Fade("Dither fade", Range(0, 1)) = 0
+        _Cutoff("Alpha cut-out (0 = opaque)", Range(0, 1)) = 0
+        _TileVar("Paving variety (cells per m, cell tone, grime, 0)", Vector) = (0, 0, 0, 0)
         [Toggle(_WORLDUV)] _UseWorldUV("World UV", Float) = 0
         [Enum(UnityEngine.Rendering.CullMode)] _Cull("Cull", Float) = 2
     }
@@ -25,9 +27,9 @@ Shader "CT Life/World/Toon"
         CBUFFER_START(UnityPerMaterial)
             float4 _BaseMap_ST;
             half4 _BaseColor, _Emission;
-            float4 _Spec;
+            float4 _Spec, _TileVar;
             float _WorldScale;
-            half _Toon, _Fade;
+            half _Toon, _Fade, _Cutoff;
         CBUFFER_END
 
         struct Attributes { float4 positionOS : POSITION; float3 normalOS : NORMAL; float2 uv : TEXCOORD0; half4 color : COLOR; UNITY_VERTEX_INPUT_INSTANCE_ID };
@@ -71,7 +73,22 @@ Shader "CT Life/World/Toon"
                 uv = (an.y > an.x && an.y > an.z ? input.positionWS.xz : (an.x > an.z ? input.positionWS.zy : input.positionWS.xy)) * _WorldScale;
             #endif
             half4 tex = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, uv);
+            if (_Cutoff > 0.0) clip(tex.a - _Cutoff);          // W4 wall ivy and window decals
             half3 albedo = tex.rgb * _BaseColor.rgb * input.color.rgb;
+            if (_TileVar.x > 0.0)
+            {
+                // W4 eye-level variety: each paving cell / kerb stone a slightly different tone, plus soft grime patches
+                float2 cellId = floor(input.positionWS.xz * _TileVar.x);
+                half hsh = frac(sin(dot(cellId, float2(127.1, 311.7))) * 43758.5453);
+                half hsh2 = frac(sin(dot(cellId, float2(269.5, 183.3))) * 43758.5453);
+                albedo *= half3(1, 1, 1) + (hsh - 0.5h) * _TileVar.y * half3(1.0h, 0.92h, 0.8h) + (hsh2 - 0.5h) * _TileVar.y * 0.35h * half3(0.6h, 0.2h, -0.4h);
+                float2 g = input.positionWS.xz * 0.23;
+                float2 gi = floor(g), gf = frac(g); gf = gf * gf * (3.0 - 2.0 * gf);
+                float n00 = frac(sin(dot(gi, float2(12.9898, 78.233))) * 43758.5453), n10 = frac(sin(dot(gi + float2(1, 0), float2(12.9898, 78.233))) * 43758.5453);
+                float n01 = frac(sin(dot(gi + float2(0, 1), float2(12.9898, 78.233))) * 43758.5453), n11 = frac(sin(dot(gi + float2(1, 1), float2(12.9898, 78.233))) * 43758.5453);
+                half grime = (half)lerp(lerp(n00, n10, gf.x), lerp(n01, n11, gf.x), gf.y);
+                albedo *= 1.0h - _TileVar.z * smoothstep(0.5h, 0.95h, grime) * half3(1.0h, 1.0h, 0.9h);
+            }
             half ao = input.color.a;
             half3 c = CTWorldLight(albedo, input.positionWS, n, ao, _Toon) * lerp(0.75h, 1.0h, ao);
             if (_Spec.x > 0.0)

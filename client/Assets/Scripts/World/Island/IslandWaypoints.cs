@@ -22,7 +22,11 @@ namespace CTLife.World
     {
         public const string ResourcePath = "World/Island/demo_route";
 
-        public sealed class Waypoint { public int shot; public string id, title; public float x, z, yaw; public float? y; }
+        public sealed class Waypoint
+        {
+            public int shot; public string id, title; public float x, z, yaw; public float? y;
+            public Vector3 subject; public float camDist = 4.5f, camSide, camHeight = 2f, fov = 52f;
+        }
 
         public static List<Waypoint> Load()
         {
@@ -32,6 +36,9 @@ namespace CTLife.World
             {
                 shot = (int)w["shot"], id = (string)w["id"], title = (string)w["title"], x = (float)w["x"], z = (float)w["z"], yaw = (float)w["yaw"],
                 y = w["y"] == null || w["y"].Type == JTokenType.Null ? (float?)null : (float)w["y"],
+                subject = w["subject"] is JArray sj ? new Vector3((float)sj[0], (float)sj[1], (float)sj[2]) : new Vector3((float)w["x"], 2f, (float)w["z"]),
+                camDist = (float?)w["camera"]?["dist"] ?? 4.5f, camSide = (float?)w["camera"]?["side"] ?? 0f,
+                camHeight = (float?)w["camera"]?["height"] ?? 2f, fov = (float?)w["camera"]?["fov"] ?? 52f,
             }).ToList();
         }
 
@@ -50,6 +57,19 @@ namespace CTLife.World
             return picked;
         }
 
+        /// <summary>
+        /// The shot's camera: 'camDist' m behind the player on the line to the subject, 'camSide' m to the right,
+        /// 'camHeight' m above the feet, aimed at the subject (shared by the device shot hold and the editor capture).
+        /// </summary>
+        public static (Vector3 pos, Quaternion rot, float fov) CameraPose(Waypoint w, Vector3 feet)
+        {
+            var flat = new Vector3(w.subject.x - feet.x, 0f, w.subject.z - feet.z);
+            var fwd = flat.sqrMagnitude > 0.01f ? flat.normalized : Quaternion.Euler(0f, w.yaw, 0f) * Vector3.forward;
+            var right = Vector3.Cross(Vector3.up, fwd);
+            var pos = feet - fwd * w.camDist + right * w.camSide + Vector3.up * w.camHeight;
+            return (pos, Quaternion.LookRotation(w.subject - pos, Vector3.up), w.fov);
+        }
+
         public static async Task Jump(VenueSession s, Waypoint w, CancellationToken ct)
         {
             float ground = IslandStreamer.GroundHeight(w.x, w.z);
@@ -60,6 +80,67 @@ namespace CTLife.World
             s.LocalPlayer.SnapTo(p, w.yaw * Mathf.Deg2Rad);
             CameraRig.Instance?.SnapToTarget();
             Log.Info("island", $"waypoint {w.shot} {w.id} at ({w.x:0}, {w.z:0}) y {p.y:0.0}");
+        }
+
+        /// <summary>
+        /// `islandShot=&lt;shot|id&gt;`: the player on the shot's spot and the camera on its authored pose, held there until the
+        /// player moves a step (then Feel's camera rig takes over from the same heading), so each demo shot is one tap.
+        /// </summary>
+        public static async Task Shot(VenueSession s, string arg, CancellationToken ct)
+        {
+            var list = Select(Load(), arg);
+            if (list.Count == 0) { Log.Warn("island", "islandShot: no shot " + arg); return; }
+            bool tour = list.Count > 1;                    // `all` or a list: each shot held 8 s (screenshots, frame rate)
+            foreach (var w in list)
+            {
+                await Jump(s, w, ct);
+                await Awaitable.WaitForSecondsAsync(0.4f, ct);
+                var rig = CameraRig.Instance;
+                if (rig == null || rig.Camera == null || s.LocalPlayer == null) return;
+                var hold = rig.gameObject.GetComponent<ShotHold>() ?? rig.gameObject.AddComponent<ShotHold>();
+                hold.Begin(rig, s.LocalPlayer.transform, w);
+                Log.Info("island", $"islandShot {w.shot} {w.id}: camera held (fov {w.fov:0})");
+                if (!tour) return;
+                await Awaitable.WaitForSecondsAsync(8f, ct);
+                hold.Stop();
+            }
+            Log.Info("island", "islandShot tour done");
+        }
+
+        /// <summary>Holds the camera on a shot pose; hands back to the rig once the player walks off the spot.</summary>
+        public sealed class ShotHold : MonoBehaviour
+        {
+            private CameraRig _rig; private Transform _player; private Waypoint _w; private Vector3 _spot; private float _oldFov;
+
+            public void Begin(CameraRig rig, Transform player, Waypoint w)
+            {
+                _rig = rig; _player = player; _w = w; _spot = player.position; _oldFov = rig.Camera.fieldOfView;
+                rig.enabled = false;
+                enabled = true;
+            }
+
+            private void LateUpdate()
+            {
+                if (_rig == null || _player == null) { enabled = false; return; }
+                var (pos, rot, fov) = CameraPose(_w, _spot);
+                var cam = _rig.Camera.transform;
+                cam.SetPositionAndRotation(pos, rot);
+                _rig.Camera.fieldOfView = fov;
+                var moved = _player.position - _spot; moved.y = 0f;
+                if (moved.magnitude > 1.0f) Release();
+            }
+
+            public void Stop() { if (enabled) Release(); }
+
+            private void Release()
+            {
+                _rig.Camera.fieldOfView = _oldFov;
+                _rig.yaw = _rig.Camera.transform.eulerAngles.y;
+                _rig.enabled = true;
+                _rig.SnapToTarget();
+                enabled = false;
+                Log.Info("island", $"islandShot {_w.id}: camera back to the rig");
+            }
         }
 
         public static async Task Run(VenueSession s, string arg, Func<bool> alive, CancellationToken ct)

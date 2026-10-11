@@ -23,6 +23,8 @@ namespace CTLife.World
             public Material material;
             [Tooltip("Material per submesh (a tree's bark and leaves); falls back to material.")]
             public Material[] materials = Array.Empty<Material>();
+            [Tooltip("Per-LOD material override (the far billboard LOD of a tree draws with its own baked texture); null entries use materials.")]
+            public Material[] lodMaterials = Array.Empty<Material>();
             [Tooltip("Casts realtime shadows from LODs whose end distance is within this range (0 = never).")]
             public float shadowRange = 60f;
             public int layer;

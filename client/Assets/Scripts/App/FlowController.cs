@@ -515,6 +515,42 @@ namespace CTLife.App
                     if (s == null || !s.IsIsland) { Log.Warn("island", "islandWaypoints: not on CT Island"); return; }
                     await IslandWaypoints.Run(s, LaunchArgs.Get("islandWaypoints"), () => GameAlive(game), game.Token);
                 });
+                // Frame-rate bisection (dev builds only, World W4): `islandSkip=tree,grass` stops drawing those instance kinds,
+                // `islandDistance=0.7` scales every kit LOD and cull distance.
+                if (LaunchArgs.Get("islandSkip") is string skip && skip.Length > 0)
+                    foreach (var k in skip.Split(',')) IslandInstanceRenderer.SkipKinds.Add(k.Trim());
+                // `islandRenderScale=0.7` pins the URP render scale (test harness; PerfManager's policy is untouched otherwise);
+                // islandSkip also takes `shadows` (sun shadows off) and `post` (island look volume off). World/Island/IslandPerfHarness.
+                if (LaunchArgs.Get("islandRenderScale") is string || IslandInstanceRenderer.SkipKinds.Contains("shadows") || IslandInstanceRenderer.SkipKinds.Contains("post"))
+                    RunGameAction(game, async () =>
+                    {
+                        for (int i = 0; i < 240 && GameAlive(game); i++)
+                        {
+                            IslandPerfHarness.Apply(LaunchArgs.Get("islandRenderScale"));
+                            await Awaitable.WaitForSecondsAsync(1f, game.Token);
+                        }
+                    });
+                if (LaunchArgs.Get("islandDistance") is string dist && float.TryParse(dist, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var dscale))
+                    RunGameAction(game, async () =>
+                    {
+                        for (int i = 0; i < 120 && GameAlive(game); i++)
+                        {
+                            foreach (var r in FindObjectsByType<IslandInstanceRenderer>(FindObjectsSortMode.None)) r.distanceScale = dscale;
+                            await Awaitable.WaitForSecondsAsync(1f, game.Token);
+                        }
+                    });
+                // Demo shots (dev builds only, World W4): `islandShot=<shot|id>` stands the player on the shot's spot and holds the
+                // camera on its authored pose until the player moves (docs/design/demo-route.md).
+                if (!string.IsNullOrEmpty(LaunchArgs.Get("islandShot"))) RunGameAction(game, async () =>
+                {
+                    float deadline = Time.realtimeSinceStartup + 90f;
+                    while (GameAlive(game) && (VenueSession.Current == null || !VenueSession.Current.IsActive) && Time.realtimeSinceStartup < deadline)
+                        await Awaitable.WaitForSecondsAsync(0.5f, game.Token);
+                    await Awaitable.WaitForSecondsAsync(3f, game.Token);
+                    var s = VenueSession.Current;
+                    if (s == null || !s.IsIsland) { Log.Warn("island", "islandShot: not on CT Island"); return; }
+                    await IslandWaypoints.Shot(s, LaunchArgs.Get("islandShot"), game.Token);
+                });
                 // Device feature pass (dev builds only): `integration=1 [peer=<userId>]`. The editor driver calls it directly.
                 if (LaunchArgs.Flag("integration") && !Application.isEditor) RunGameAction(game, async () =>
                 {

@@ -18,6 +18,7 @@ namespace CTLife.EditorTools.IslandV2
     public static class IslandV2Dress
     {
         public const string ShopSigns = "shop_signs";
+        public const string WallDecor = "wall_decor", BusAds = "bus_ads", Glass = "glass", TreePit = "tree_pit";
         public static IslandKit Kit;
         public static int[] CarProtos = Array.Empty<int>();
         /// <summary>Share of street bays with a decor car, by district (downtown busier than the hills).</summary>
@@ -124,6 +125,7 @@ namespace CTLife.EditorTools.IslandV2
                     signs++;
                 }
             receipt["dressShopSigns"] = signs;
+            BuildW4(doc, cells, h, receipt);
             receipt["dressInstances"] = n; receipt["dressBuildings"] = boxes; receipt["dressTrunks"] = trunks; receipt["dressBillboards"] = boards;
             receipt["dressStats"] = doc["stats"];
         }
@@ -177,6 +179,156 @@ namespace CTLife.EditorTools.IslandV2
 
         /// <summary>Kenney car kit models used as parked decor (Feel's drivable cars are separate).</summary>
         public static readonly string[] CarModels = { "car_sedan", "car_sedan_sports", "car_hatchback_sports", "car_suv", "car_suv_luxury", "car_taxi", "car_van", "car_delivery", "car_police" };
+
+        // ------------------------------------------------------------------ W4 eye-level dressing
+
+        /// <summary>A two-sided textured panel: centre c, facing n, 'right' along its width, uv rect (u0, v0)-(u1, v1).</summary>
+        private static void Panel(MeshBuilder b, Vector3 c, Vector3 n, Vector3 right, float hw, float hh, Vector4 uv, bool twoSided = true, float lift = 0.02f)
+        {
+            void Face(Vector3 nn, Vector3 rr)
+            {
+                var q = c + nn * lift;
+                int bl = b.Add(q - rr * hw - Vector3.up * hh, nn, new Vector2(uv.x, uv.y)), tl = b.Add(q - rr * hw + Vector3.up * hh, nn, new Vector2(uv.x, uv.w));
+                int tr = b.Add(q + rr * hw + Vector3.up * hh, nn, new Vector2(uv.z, uv.w)), br = b.Add(q + rr * hw - Vector3.up * hh, nn, new Vector2(uv.z, uv.y));
+                b.Tri(bl, tl, tr); b.Tri(bl, tr, br);
+            }
+            Face(n, right);
+            if (twoSided) Face(-n, -right);
+        }
+
+        /// <summary>Atlas cell in pixels (top-left origin) to a uv rect (u0, v0, u1, v1).</summary>
+        private static Vector4 Cell(float px, float py, float w, float hgt, float size) =>
+            new Vector4(px / size, 1f - (py + hgt) / size, (px + w) / size, 1f - py / size);
+
+        private static void BuildW4(JObject doc, CellSet cells, IslandHeightfield h, JObject receipt)
+        {
+            // street tree pits: a sunk square of soil with a steel edge round the trunk
+            int pits = 0;
+            if (doc["treePits"] is JArray tps)
+                foreach (JArray t in tps)
+                {
+                    var c = new Vector3((float)t[0], (float)t[1], (float)t[2]);
+                    var rot = Quaternion.Euler(0f, (float)t[3], 0f);
+                    var cell = cells.At(c);
+                    Vector3 R = rot * Vector3.right, F = rot * Vector3.forward;
+                    const float hs = 0.75f;
+                    cell.V(TreePit).FlatQuad(c - R * hs - F * hs + Vector3.up * 0.16f, c - R * hs + F * hs + Vector3.up * 0.16f,
+                                             c + R * hs + F * hs + Vector3.up * 0.16f, c + R * hs - F * hs + Vector3.up * 0.16f);
+                    var rail = cell.V(Mat.Rail);
+                    for (int k = 0; k < 4; k++)
+                    {
+                        var q = Quaternion.AngleAxis(90f * k, Vector3.up);
+                        rail.Box(c + q * (F * hs) + Vector3.up * 0.17f, q * R, Vector3.up, q * F, new Vector3(hs + 0.05f, 0.025f, 0.05f));
+                    }
+                    pits++;
+                }
+            // bus shelters: back glass, a lit two-sided ad panel on the downstream end, roof, posts and a bench
+            int shelters = 0;
+            if (doc["busShelters"] is JArray bss)
+                foreach (JArray t in bss)
+                {
+                    var c = new Vector3((float)t[0], (float)t[1], (float)t[2]);
+                    var rot = Quaternion.Euler(0f, (float)t[3], 0f);
+                    int ad = (int)t[4];
+                    var cell = cells.At(c);
+                    Vector3 R = rot * Vector3.right, F = rot * Vector3.forward, U = Vector3.up;   // F: towards the road
+                    var rail = cell.V(Mat.Rail);
+                    var glass = cell.V(Glass);
+                    const float hw = 2.2f, d = 0.75f, top = 2.6f;
+                    foreach (var sx in new[] { -hw, hw })
+                        foreach (var sz in new[] { -d, d })
+                            rail.Box(c + R * sx + F * sz + U * (top / 2f), R, U, F, new Vector3(0.05f, top / 2f, 0.05f));
+                    rail.Box(c + U * (top + 0.06f), R, U, F, new Vector3(hw + 0.15f, 0.06f, d + 0.25f));                    // roof
+                    glass.Box(c - F * d + U * 1.35f, R, U, F, new Vector3(hw - 0.05f, 1.05f, 0.02f));                         // back pane
+                    glass.Box(c - R * hw + U * 1.35f, R, U, F, new Vector3(0.02f, 1.05f, d - 0.05f));                         // side pane
+                    rail.Box(c + R * hw + U * 1.35f, R, U, F, new Vector3(0.06f, 1.1f, d - 0.02f));                          // ad frame
+                    float u0 = (ad % 4) * 0.25f, v1 = ad < 4 ? 1f : 0.5f;
+                    Panel(cell.V(BusAds), c + R * hw + U * 1.35f, R, F, d - 0.1f, 1.0f, new Vector4(u0, v1 - 0.5f, u0 + 0.25f, v1), true, 0.07f);
+                    cell.V(Mat.Timber).Box(c - F * (d - 0.32f) + U * 0.46f, R, U, F, new Vector3(hw - 0.5f, 0.04f, 0.22f));    // bench
+                    cell.Boxes.Add(new CellGeo.BoxCol { Center = c - F * d + U * 1.3f, Rotation = rot, Size = new Vector3(hw * 2f, 2.6f, 0.2f), Layer = Layers.Prop, Name = "bus_shelter" });
+                    shelters++;
+                }
+            // hero plazas: paving draped on the ground with a raised stone edging ring
+            int plazas = 0;
+            if (doc["heroPlazas"] is JArray hps)
+                foreach (JArray t in hps)
+                {
+                    var c = new Vector3((float)t[0], (float)t[1], (float)t[2]);
+                    float r = (float)t[3];
+                    var cell = cells.At(c);
+                    var pave = cell.V(Mat.Plaza);
+                    var edge = cell.V(Mat.Kerb);
+                    const int S = 40, RINGS = 5;
+                    Vector3 P(float rr, float a) { float x = c.x + Mathf.Cos(a) * rr, z = c.z + Mathf.Sin(a) * rr; return new Vector3(x, h.Sample(x, z) + 0.06f, z); }
+                    int ci = pave.Add(new Vector3(c.x, h.Sample(c.x, c.z) + 0.06f, c.z), Vector3.up, Vector2.zero);
+                    int prev0 = -1;
+                    for (int ring = 1; ring <= RINGS; ring++)
+                    {
+                        float rr = r * ring / RINGS;
+                        int b0 = pave.Count;
+                        for (int i = 0; i <= S; i++) pave.Add(P(rr, -i / (float)S * Mathf.PI * 2f), Vector3.up, Vector2.zero);
+                        for (int i = 0; i < S; i++)
+                        {
+                            if (ring == 1) pave.Tri(ci, b0 + i, b0 + i + 1);
+                            else pave.Quad(prev0 + i, b0 + i, b0 + i + 1, prev0 + i + 1);
+                        }
+                        prev0 = b0;
+                    }
+                    for (int i = 0; i < S; i++)
+                    {
+                        float a0 = -i / (float)S * Mathf.PI * 2f, a1 = -(i + 1) / (float)S * Mathf.PI * 2f;
+                        Vector3 i0 = P(r, a0), i1 = P(r, a1), o0 = P(r + 0.3f, a0), o1 = P(r + 0.3f, a1);
+                        var up = Vector3.up * 0.12f;
+                        edge.FlatQuad(i0 + up, o0 + up, o1 + up, i1 + up);
+                        edge.FlatQuad(o0 + up, o0 - Vector3.up * 0.15f, o1 - Vector3.up * 0.15f, o1 + up);
+                        edge.FlatQuad(i1 + up, i1 - Vector3.up * 0.02f, i0 - Vector3.up * 0.02f, i0 + up);
+                    }
+                    plazas++;
+                }
+            // exposed side and back walls: painted windows per floor, a mural, or ivy (atlas Textures/wall_decor.png)
+            int walls = 0, quads = 0;
+            if (doc["wallDecor"] is JArray wds)
+                foreach (JArray t in wds)
+                {
+                    var c = new Vector3((float)t[0], (float)t[1], (float)t[2]);
+                    var n = Quaternion.Euler(0f, (float)t[3], 0f) * Vector3.forward;
+                    float len = (float)t[4], ht = (float)t[5];
+                    int kind = (int)t[6], v = (int)t[7];
+                    var right = Vector3.Cross(Vector3.up, -n);                // the viewer's right, looking at the wall
+                    var b = cells.At(c).V(WallDecor);
+                    if (kind == 0)
+                    {
+                        int floors = Mathf.Max(1, Mathf.RoundToInt((ht - 0.9f) / 3.7f));
+                        float fh = (ht - 0.9f) / floors;
+                        int cols = Mathf.Max(1, Mathf.FloorToInt((len - 1.4f) / 2.8f));
+                        float span = cols * 2.8f;
+                        var uv = Cell(1024 + (v % 4) * 256, 512 + (v / 4) * 256, 256, 256, 2048f);
+                        for (int f = 0; f < floors; f++)
+                            for (int k = 0; k < cols; k++)
+                            {
+                                float x = -span / 2f + 1.4f + k * 2.8f;
+                                Panel(b, c + right * x + Vector3.up * (0.9f + f * fh + fh * 0.5f), n, right, 0.85f, 0.85f, uv, false, 0.06f);
+                                quads++;
+                            }
+                    }
+                    else if (kind == 1)
+                    {
+                        float side = Mathf.Min(len - 1.2f, ht - 2.2f, 14f);
+                        if (side < 3f) continue;
+                        Panel(b, c + Vector3.up * (1.2f + side / 2f), n, right, side / 2f, side / 2f, Cell(v * 512, 0, 512, 512, 2048f), false, 0.06f);
+                        quads++;
+                    }
+                    else
+                    {
+                        float side = Mathf.Min(len - 0.4f, 9f, ht * 0.9f);
+                        Panel(b, c + Vector3.up * (side / 2f), n, right, side / 2f, side / 2f, Cell(v * 512, 512, 512, 512, 2048f), false, 0.07f);
+                        quads++;
+                    }
+                    walls++;
+                }
+            receipt["dressTreePits"] = pits; receipt["dressBusShelters"] = shelters; receipt["dressHeroPlazas"] = plazas;
+            receipt["dressDecorWalls"] = walls; receipt["dressDecorQuads"] = quads;
+        }
 
         public static uint Pack(float r, float g, float b, float a) =>
             (uint)Mathf.RoundToInt(Mathf.Clamp01(r) * 255f) | ((uint)Mathf.RoundToInt(Mathf.Clamp01(g) * 255f) << 8) |

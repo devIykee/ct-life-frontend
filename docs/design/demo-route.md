@@ -17,7 +17,9 @@ adb shell am start -n <package>/<activity> --es islandDemo 1 --es venue timeline
   - each venue gets its own NPCs locally
 - `islandTour=a,b,c` fast-travels between doors, for frame-rate passes.
 - `vehicleDemo=sports,heli` drives and flies the fleet by itself. Use it for driving and flying clips and their fps.
-- `islandWaypoints=<shot>` (W3) teleports the player to that shot's standing spot and leaves them there, so each shot can be started from its exact place, for example `-e islandWaypoints 4`. `islandWaypoints=all` (or a list such as `2,5,6`) visits every spot for 10 s each, which works as a streaming and frame-rate pass. The spots come from `tools/world/islandgen/waypoints.py`, which writes `client/Assets/Resources/World/Island/demo_route.json`; road spots are snapped to the nearest sidewalk.
+- `islandShot=<shot|id>` (W4) is the one-tap set-up for filming a shot. It stands the player on the shot's spot and holds the camera on the shot's authored pose (position, aim and FOV) until the player walks off. Then Feel's camera rig takes over from the same heading. `islandShot=all` (or a list) holds each shot for 8 s, for screenshots and frame rate.
+- `islandWaypoints=<shot>|all` (W3) teleports only, with the normal follow camera.
+- Frame-rate bisection, dev builds only: `islandSkip=tree,grass,shadows,post` and `islandRenderScale=0.7` (pins Feel's cool-device render scale).
 
 ## Shots
 
@@ -32,22 +34,24 @@ adb shell am start -n <package>/<activity> --es islandDemo 1 --es venue timeline
 | 7 | 62–72 s | Builder Hills (300–450, 250–370), then Airdrop Farm (520–750, -150–220) | Descend over the Superteam builder HQ and the hills homes to the field patchwork, power lines and Sybil Barn. | fly |
 | 8 | 72–82 s | Breakpoint Park convention centre (-217, 295) | Land at the park helipad (-300, 214), walk up to the convention centre door, and the walls dissolve as the player steps inside. | on foot |
 
-## Waypoints (`islandWaypoints`)
+## Shot set-ups (`islandShot`, `islandWaypoints`)
 
-| Shot | Id | Spot (x, z) | Facing (deg from north) |
-|---|---|---|---|
-| 1 | `timeline_plaza` | (0, 6) | 353 |
-| 2 | `consensus_boulevard` | (96, 95) | 65 |
-| 3 | `ocean_drive` | (-177, -214) | 91 |
-| 4 | `marina_promenade` | (374, -283) | 94 |
-| 5 | `marina_helipad` | (640, -262) | 314 |
-| 6 | `lodge_helipad` | (-226, 428) | 28 |
-| 7 | `builder_hills` | (380, 359) | 42 |
-| 8 | `breakpoint_helipad` | (-300, 214) | 46 |
+The camera sits `dist` m behind the player on the line to the subject, `side` m to the right and `height` m above the feet, aimed at the subject. Source: `tools/world/islandgen/waypoints.py`.
+
+| Shot | Id | Player (x, z) | Hero subject (x, y, z) | Camera dist / side / height, FOV |
+|---|---|---|---|---|
+| 1 | `timeline_plaza` | (0, 6) | (-5, 8, 49) | 5.6 / 1.5 / 2.4 m, 56 deg |
+| 2 | `consensus_boulevard` | (82, 86) | (10, 22, 8) | 4.6 / 1.4 / 1.8 m, 56 deg |
+| 3 | `ocean_drive` | (-136, -225) | (60, 6, -225) | 4.4 / 1.2 / 2.1 m, 54 deg |
+| 4 | `marina` | (618, -412) | (505, 10, -300) | 4.6 / 1.3 / 2.4 m, 52 deg |
+| 5 | `marina_helipad` | (652, -250) | (600, 0, -330) | 6.0 / -1.6 / 3.6 m, 58 deg |
+| 6 | `mtndao_lodge` | (-232, 426) | (-300, 60, 396) | 7.5 / 1.8 / 3.0 m, 62 deg |
+| 7 | `builder_hills` | (360, 358) | (392, 42, 372) | 7.0 / 1.6 / 1.3 m, 64 deg |
+| 8 | `breakpoint` | (-276, 278) | (-262, 7, 315) | 5.0 / 1.6 / 1.9 m, 56 deg |
 
 ## Notes for the shoot
 
 - The light is fixed at golden hour, sun at 30° elevation from the south-west. The best direction for long shots is towards the north-east, where the range has its sun-side rim and the haze turns blue.
 - On foot, keep the camera at the default follow distance; inside venues the shell walls fade.
-- Frame-rate targets: about 60 fps on foot and at least 30 fps driving and flying. W3 Seeker pass (2026-10-18, thermal state 2, which caps the target at 30): 30.1 fps at all eight waypoints. Check `CTLIFE [fps]` and `CTLIFE [vehicles] demo` lines in logcat.
+- Frame-rate targets: about 60 fps on foot and at least 30 fps driving and flying. W3 Seeker pass (2026-10-18, thermal state 2, which caps the target at 30): 30.1 fps at all eight waypoints. W4 pass (2026-10-18, `islandShot=all`, render scale pinned at 0.7, Feel's cool-device setting): 29.5–30.2 fps at every shot. The first launch after a fresh install runs at 12–15 fps for about a minute while the shaders and pipelines compile, so film from the second launch on. Check `CTLIFE [fps]` and `CTLIFE [vehicles] demo` lines in logcat.
 - Avoid the far west cliffs in shot 5 if the frame rate drops. They are the forest's densest view.
