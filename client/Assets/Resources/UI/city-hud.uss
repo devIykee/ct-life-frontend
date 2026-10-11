@@ -4,7 +4,9 @@
 .ct-hud .ct-hud-top { left: 32px; right: 32px; top: 28px; }
 .ct-hud-location { flex-shrink: 1; min-width: 0; max-width: 620px; }
 .ct-hud .ct-venue-name { margin: 0; padding: 12px 22px; max-width: 620px; font-size: 36px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); border-radius: 20px; background-color: var(--ct-scrim); }
-.ct-hud-presence { flex-direction: row; margin-top: 8px; flex-wrap: wrap; }
+/* One line, always: a wrapped second chip (Market %) fell under the Explore/Lobby dock, which sits at a fixed top. */
+.ct-hud-presence { flex-direction: row; margin-top: 8px; flex-wrap: nowrap; }
+.ct-hud-presence > .ct-pill { flex-shrink: 0; }
 .ct-hud .ct-pill { font-size: 22px; padding: 7px 14px; border-width: 0; border-radius: 12px; margin-right: 8px; }
 .ct-hud .ct-cash-card { padding: 12px 20px; border-width: 0; border-radius: 20px; flex-shrink: 0; margin-left: 20px; }
 .ct-hud .ct-cash-card .ct-icon { width: 42px; height: 42px; margin-right: 14px; }

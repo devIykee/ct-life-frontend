@@ -1,4 +1,4 @@
-READY TO COMMIT (tags, launch log, tap focus on dev 40cc7b4): client/Assets/Scripts/UI/Overlays/TagPlanner.cs (+.meta), client/Assets/Tests/EditMode/TagPlannerTests.cs (+.meta), client/Assets/Scripts/UI/Overlays/WorldLabels.cs, client/Assets/Scripts/UI/UiIcon.cs, client/Assets/Resources/UI/ctlife.uss, client/Assets/Scripts/App/FlowController.cs, client/Assets/Scripts/App/GameBootstrap.cs, client/Assets/Scripts/UI/WorldInputLayer.cs, client/Assets/Scripts/World/Input/WorldInput.cs, client/Assets/Scripts/World/Interaction/InteractionFinder.cs, client/Assets/Scripts/World/Venue/VenueSession.cs, client/Assets/Scripts/Editor/SpotTapAudit.cs (+.meta), docs/progress/{integration,requests}.md. NOT mine, leave out: client/Assets/Art/characters/cast/materials/snow_everyday.mat. Commit message: "fix: world taps were swallowed (seats, stage, avatars untappable); tap resolver for solid furniture; name-tag declutter; no stack traces on info/warning logs". Checks: compile_check dev/release/editor 0 errors; EditMode 1340/1340; Seeker verified (../ct-life-evidence/device-round-20261008c/).
+READY TO COMMIT (HUD chips on dev 6aa8bb3): client/Assets/Resources/UI/city-hud.uss, docs/progress/integration.md. NOT mine, leave out: client/Assets/Art/characters/cast/materials/snow_everyday.mat. Commit message: "fix(hud): presence chips stay on one line, never under the Explore/Lobby dock". Seeker: ../ct-life-evidence/device-round-20261008c/4-hud-chips-three-venues.png.
 
 # Integration lead log
 
@@ -694,6 +694,14 @@ Evidence: `../ct-life-evidence/device-round-20261008c/`.
   nothing over your character.
 
 **EditMode: 1340/1340.** Compile clean on all three passes.
+
+**HUD chips (2026-10-08).**
+- The presence row ("1 in the city" + "Market ±x%") had `flex-wrap: wrap`. When the two chips were wider than the venue
+  title, the Market chip wrapped to a second line. The Explore/Lobby dock sits at a fixed top (176 units in landscape), so
+  that second line was underneath it ("Ma… +1.9%" peeking out).
+- Fix (`city-hud.uss`): the row no longer wraps and the chips don't shrink. The location block now ends at ~150 units,
+  above the dock. No other styling changed.
+- Seeker, all three venues: `../ct-life-evidence/device-round-20261008c/4-hud-chips-three-venues.png`.
 
 ## Status
 
