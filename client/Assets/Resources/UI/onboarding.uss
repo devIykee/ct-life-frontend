@@ -42,12 +42,13 @@
 
 /* ------------------------------------------------------------------ lottery */
 
-.ob-lottery-left { position: absolute; left: 0; top: 190px; width: 960px; bottom: 90px; }
-/* The table spans the content: face-down cards sit right of the copy (DrawShiftX), the unfolded card is centred. */
+/* Both the automatic draw and the unfolded card are centred in the same content box. */
 .ob-lottery-table { position: absolute; left: 0; right: 0; top: 150px; height: 760px; }
-.ob-lottery .ob-title { margin-top: 6px; }
-.ob-lottery-intro > .ob-line { max-width: 640px; }
-.ob-lottery > .ob-content > .ob-note { position: absolute; left: 0; bottom: 0; }
+.ob-lottery-status { position: absolute; left: 0; right: 660px; bottom: 0; }
+.ob-lottery-status > .ob-line, .ob-lottery-status > .ob-error { margin: 0; }
+.ob-lottery-status--recorded { right: 0; top: 240px; bottom: 180px; align-items: center; justify-content: center; }
+.ob-lottery-status--recorded > .ob-error { margin-top: 32px; max-width: 1600px; -unity-text-align: middle-center; }
+.ob-lottery-recorded { font-size: 70px; -unity-text-align: middle-center; }
 
 .ob-card { position: absolute; top: 14px; transition-property: scale; transition-duration: 0.12s; transition-timing-function: ease-out; }
 .ob-card--hot { scale: 1.05 1.05; }
@@ -81,7 +82,8 @@
 .ob-origin-info { flex-grow: 1; flex-shrink: 1; margin-left: 50px; padding: 18px 20px 0 0; justify-content: space-between; overflow: hidden; }
 .ob-origin-head { flex-shrink: 1; }
 .ob-origin-top { flex-direction: row; align-items: center; }
-.ob-origin-rarity, .ob-origin-chance, .ob-origin-name, .ob-origin-line, .ob-origin-label, .ob-origin-value {
+.ob-origin-rarity, .ob-origin-chance, .ob-origin-name, .ob-origin-line, .ob-origin-label, .ob-origin-value,
+.ob-origin-alias, .ob-origin-perk, .ob-origin-note {
     -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); color: rgb(255, 255, 255); margin: 0; padding: 0;
     -unity-text-outline-width: 0; white-space: nowrap;
 }
@@ -92,19 +94,24 @@
 .ob-card--rare .ob-origin-rarity { background-color: rgb(255, 200, 60); }
 .ob-card--seeker .ob-origin-rarity { background-color: rgb(186, 132, 255); }
 .ob-origin-chance { font-size: 38px; color: rgb(206, 186, 236); margin-left: 24px; }
+.ob-origin-alias { font-size: 32px; color: rgb(206, 186, 236); margin-top: 12px; }
 .ob-origin-name {
-    font-size: 104px; margin-top: 16px; -unity-text-outline-width: 6px; -unity-text-outline-color: rgb(22, 6, 28);
+    font-size: 92px; margin-top: 10px; -unity-text-outline-width: 6px; -unity-text-outline-color: rgb(22, 6, 28);
     text-shadow: 0 7px 1px rgb(22, 6, 28);
 }
-.ob-origin-line { font-size: 46px; color: rgb(236, 226, 255); margin-top: 10px; white-space: normal; }
-.ob-origin-stats { flex-direction: row; background-color: rgb(26, 8, 32); border-radius: 34px; padding: 24px 6px 26px 6px; }
-.ob-origin-stat { flex-grow: 1; flex-basis: 0; padding: 0 34px; justify-content: center; }
+.ob-origin-line { font-size: 40px; color: rgb(236, 226, 255); margin-top: 8px; white-space: normal; }
+.ob-origin-perk { font-size: 34px; color: rgb(236, 226, 255); margin-top: 12px; white-space: normal; }
+.ob-origin-benefits { flex-shrink: 0; }
+.ob-origin-stats { flex-direction: row; padding-top: 24px; border-top-width: 3px; border-color: rgb(76, 40, 88); }
+.ob-origin-stat { flex-grow: 1; flex-basis: 0; padding: 0 30px; justify-content: flex-start; }
+.ob-origin-stat--cash { padding-left: 0; }
 .ob-origin-stat--sep { border-left-width: 4px; border-color: rgb(76, 40, 88); }
 .ob-origin-label { font-size: 30px; letter-spacing: 3px; color: rgb(190, 166, 216); }
-.ob-origin-value { font-size: 72px; margin-top: 6px; }
+.ob-origin-value { font-size: 64px; margin-top: 6px; }
 .ob-origin-value--cash { color: rgb(20, 241, 149); }
 .ob-origin-value--debt { color: rgb(255, 166, 80); }
-.ob-origin-value--home { font-size: 50px; white-space: normal; }
+.ob-origin-value--home { font-size: 44px; white-space: normal; }
+.ob-origin-note { font-size: 30px; color: rgb(190, 166, 216); margin-top: 16px; white-space: normal; }
 
 /* ------------------------------------------------------------------ creator: the character */
 

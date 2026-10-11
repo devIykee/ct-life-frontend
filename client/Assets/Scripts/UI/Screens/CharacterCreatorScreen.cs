@@ -61,7 +61,7 @@ namespace CTLife.UI
         private SpeechBubble _bubble;
         private VisualElement _content, _stage, _model, _lookControls, _dim, _celebrate, _traitDots, _modelGrid, _rail, _optionGrid;
         private ScrollView _railScroll;
-        private VisualElement _idCard, _cardPortrait, _cardTribeBadge, _cardOriginArt, _cardTraits, _cardDreamIcon;
+        private VisualElement _idCard, _cardPortrait, _cardTribeBadge, _cardOriginRow, _cardOriginArt, _cardTraits, _cardDreamIcon;
         private Label _lookName, _lookCount, _lookTag, _dragHint, _error, _aliasStatus, _confirmTitle, _celebrateTitle;
         private Label _cardName, _cardTribe, _cardOrigin, _cardDream, _optionsEmpty;
         private TextField _alias;
@@ -80,7 +80,7 @@ namespace CTLife.UI
             !_localArt.ContainsKey(SelectedLook.id) && _serverLookConfirmed != null && _serverLookConfirmed(_draft.look);
         private string LookKey => SelectedLook?.id;
 
-        /// <summary>The lottery result for the summary card. Set by the caller, or read from the signed-in profile when shown.</summary>
+        /// <summary>An exact lottery receipt supplied by a review caller. Unknown origins stay hidden.</summary>
         public OriginSummary Origin { get; set; }
 
         // Existing callers remain source-compatible. The capability checks the selected look
@@ -530,8 +530,6 @@ namespace CTLife.UI
                 _config = config;
                 _config.Changed += RefreshAvailability;
             }
-            if (Origin == null && Services.TryGet<PlayerProfile>(out var profile) && profile.Me != null)
-                Origin = OriginSummary.From(profile.CashCents, profile.DebtCents, profile.Me.HomeId, _config?.Config("lottery"));
             RefreshOrigin();
             RefreshAvailability();
         }
@@ -553,7 +551,7 @@ namespace CTLife.UI
             {
                 var tribe = t;
                 var badge = OnboardingArt.TribeBadge(t.id);
-                var card = new ChoiceCard(t.id, t.name, PerkText(t), _ => PickTribe(tribe), ChoiceCard.Layout.Vertical,
+                var card = new ChoiceCard(t.id, t.name, OnboardingCopy.TribePerk(t), _ => PickTribe(tribe), ChoiceCard.Layout.Vertical,
                     badge, badge == null ? OnboardingCopy.TribeIcon(t.id) : null, "green");
                 card.AddToClassList("ob-tribe-card");
                 _tribeCards.Add(card);
@@ -571,18 +569,6 @@ namespace CTLife.UI
             React(OnboardingCopy.TribeLine(t.id), OnboardingCopy.TribeEmotes(t));
             Save();
         }
-
-        private static string PerkText(TribeDef t) => t.perkText ?? t.perkKind switch
-        {
-            "launch_preview_ms" => Strings.F("creator.perk.launch", t.perkValue / 1000),
-            "leverage_bonus_x" => Strings.F("creator.perk.leverage", t.perkValue),
-            "prediction_fee_discount_bps" => Strings.F("creator.perk.prediction", t.perkValue / 100),
-            "farm_yield_bonus_bps" => Strings.F("creator.perk.farm", t.perkValue / 100),
-            "call_reach_multiplier" => Strings.F("creator.perk.reach", t.perkValue),
-            "project_cost_discount_bps" => Strings.F("creator.perk.launchCost", t.perkValue / 100),
-            "hidden_from_rich_list" => Strings.T("creator.perk.hidden"),
-            _ => null,
-        };
 
         // ------------------------------------------------------------------ step 3: traits
 
@@ -762,13 +748,13 @@ namespace CTLife.UI
 
             _cardOriginArt = El.Div("ob-card-origin-art");
             _cardOrigin = El.Text("", "ob-card-value");
-            var originRow = El.Div("ob-card-row ob-card-row--static", Caption("ob.sum.origin"), El.Div("ob-card-line", _cardOriginArt, _cardOrigin));
+            _cardOriginRow = El.Div("ob-card-row ob-card-row--static", Caption("ob.sum.origin"), El.Div("ob-card-line", _cardOriginArt, _cardOrigin));
             _cardDreamIcon = new IconBadge("dream", "gold");
             _cardDream = El.Text("", "ob-card-value");
             var dreamHit = CardHit("ob-card-row", CreatorStep.Dream, Caption("ob.sum.dream"), El.Div("ob-card-line", _cardDreamIcon, _cardDream));
             _cardTraits = El.Div("ob-card-line ob-card-traits");
             var traitsHit = CardHit("ob-card-row", CreatorStep.Traits, Caption("ob.sum.traits"), _cardTraits);
-            var info = El.Div("ob-card-info", header, originRow, dreamHit, traitsHit);
+            var info = El.Div("ob-card-info", header, _cardOriginRow, dreamHit, traitsHit);
             info.pickingMode = PickingMode.Ignore;
             var band = El.Div("ob-card-band", El.Text(Strings.T("ob.card.band"), "ob-card-band-text"), El.Text(Strings.T("ob.confirm.sub"), "ob-card-band-hint"));
             var shine = El.Div("ob-card-holo");
@@ -844,6 +830,7 @@ namespace CTLife.UI
         private void RefreshOrigin(bool refreshCard = true)
         {
             if (_cardOrigin == null) return;
+            _cardOriginRow.style.display = Origin == null ? DisplayStyle.None : DisplayStyle.Flex;
             if (Origin == null)
             {
                 _cardOrigin.text = "—";
@@ -1031,6 +1018,21 @@ namespace CTLife.UI
         {
             if (!_built || _store == null || _celebrated != null || !PreviewReady) return;
             _store.Save(_flow, LookKey, _preview?.Yaw ?? 180f, _portrait, _spec);
+        }
+
+        /// <summary>Keep selections durable before the draw replaces this screen.</summary>
+        public void FlushDraft()
+        {
+            Save();
+            CreatorDraftStore.Flush();
+        }
+
+        /// <summary>A server correction in this interaction keeps consent; it is never restored from storage.</summary>
+        public void RestoreSessionConsent()
+        {
+            _flow.SetAge(true);
+            _ageRow.SetChecked(true);
+            Validate();
         }
 
         private void OnPaused(bool paused)

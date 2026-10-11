@@ -143,8 +143,9 @@ namespace CTLife.UI
             // terms only (docs/research/ct-now-2026-10.md); button copy in caps without punctuation. The character speaks in
             // the first person (ob.say.*).
             ["ob.next"] = "NEXT", ["ob.done"] = "DONE", ["ob.saving"] = "SAVING…",
-            ["ob.lottery.cta"] = "DISCOVER MY BEGINNING", ["ob.lottery.retry"] = "TRY AGAIN", ["ob.lottery.next"] = "MAKE MY CHARACTER",
-            ["ob.lottery.drawing"] = "Shuffling your fate…", ["ob.lottery.slow"] = "Still rolling. Hang on.",
+            ["ob.lottery.cta"] = "DISCOVER MY BEGINNING", ["ob.lottery.retry"] = "TRY AGAIN", ["ob.lottery.next"] = "CONTINUE",
+            ["ob.lottery.continue"] = "CONTINUE", ["ob.lottery.recorded"] = "Your start is saved.",
+            ["ob.lottery.drawing"] = "Rolling…", ["ob.lottery.slow"] = "Still rolling…",
             ["ob.lottery.odds"] = "{0}% chance",
             ["ob.lottery.ribbon"] = "{0} · {1}%",
             ["ob.lottery.rarity.insider"] = "RARE", ["ob.lottery.rarity.exit"] = "COMMON", ["ob.lottery.rarity.seeker"] = "SEEKER ONLY",
@@ -171,7 +172,8 @@ namespace CTLife.UI
             ["ob.cat.character"] = "Character", ["ob.cat.skintone"] = "Skin tone", ["ob.cat.hair"] = "Hair",
             ["ob.cat.haircolor"] = "Hair colour", ["ob.cat.top"] = "Top", ["ob.cat.bottom"] = "Bottom", ["ob.cat.shoes"] = "Shoes",
             ["ob.cat.accessories"] = "Accessories", ["ob.cat.colors"] = "Colours",
-            ["ob.confirm.cta"] = "START MY STORY", ["ob.confirm.note"] = "Cash is game money. It can't be withdrawn.",
+            ["ob.confirm.cta"] = "CONTINUE", ["ob.confirm.note"] = "Cash is game money. It can't be withdrawn.",
+            ["ob.save.unconfirmed"] = "Couldn't confirm your character. Please try again.",
             ["ob.preview.finish"] = "FINISH PREVIEW", ["ob.preview.done"] = "PREVIEW DONE",
             ["ob.sum.origin"] = "ORIGIN", ["ob.sum.look"] = "LOOK", ["ob.sum.tribe"] = "TRIBE", ["ob.sum.traits"] = "TRAITS",
             ["ob.sum.dream"] = "DREAM", ["ob.sum.name"] = "NAME",

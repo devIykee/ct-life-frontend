@@ -138,8 +138,8 @@ namespace CTLife.UI
             return removed;
         }
 
-        /// <summary>Filled progress segments while on `step`: the lottery plus every step before it (Look and Customize share one).</summary>
-        public static int ProgressFor(CreatorStep step) => step <= CreatorStep.Customize ? 1 : (int)step;
+        /// <summary>Completed selections before `step`; Look and Customize share one, and the lottery comes last.</summary>
+        public static int ProgressFor(CreatorStep step) => step <= CreatorStep.Customize ? 0 : (int)step - 1;
 
         /// <summary>Drops selections that are not in the current registries (a restored draft from an older config).</summary>
         public void Sanitize(ICollection<string> tribes, ICollection<string> traits, ICollection<string> dreams)

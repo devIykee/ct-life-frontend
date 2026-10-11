@@ -22,7 +22,7 @@
   <img src="docs/media/readme/readme-origin.webp" alt="Seeker gameplay: the Exit Liquidity Baby origin starts with $300 in game Cash, a basement home and $720 to pay back" width="100%" />
 </p>
 
-Insider Baby or Exit Liquidity Baby? Roll your origin, pick your tribe, and choose the dream you’re chasing. Starting in your parents’ basement is part of the lore.
+Pick your character, tribe, and dream. Then the cards reveal your start: Insider Baby or Exit Liquidity Baby. Starting in your parents’ basement is part of the lore.
 
 ## Meet at Terminal Café
 

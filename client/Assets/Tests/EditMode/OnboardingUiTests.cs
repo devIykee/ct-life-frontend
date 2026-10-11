@@ -145,11 +145,11 @@ namespace CTLife.Tests
         }
 
         [Test]
-        public void Progress_CountsTheLotteryAsStepOne()
+        public void Progress_ReservesTheLotteryForTheFinalStep()
         {
             Assert.AreEqual(7, CreatorFlow.ProgressSegments);
-            Assert.AreEqual(1, CreatorFlow.ProgressFor(CreatorStep.Look));
-            Assert.AreEqual(6, CreatorFlow.ProgressFor(CreatorStep.Confirm));
+            Assert.AreEqual(0, CreatorFlow.ProgressFor(CreatorStep.Look));
+            Assert.AreEqual(5, CreatorFlow.ProgressFor(CreatorStep.Confirm));
         }
 
         [Test]

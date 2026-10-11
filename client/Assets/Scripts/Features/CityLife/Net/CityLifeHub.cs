@@ -176,6 +176,14 @@ namespace CTLife.CityLife
 
         private void CheckRent(Me me)
         {
+            // Birth-lottery debt is the opening balance, not a missed rent payment. Overlays subscribe before the
+            // creator finishes, so ignore those readings and establish a new baseline after character creation.
+            if (!Onboarding.HasCharacter(me))
+            {
+                _lastRent = null;
+                _lastDebt = -1;
+                return;
+            }
             if (Homes.Count == 0) return;
             var view = RentFor(me);
             var msg = RentLedger.Transition(_lastRent, view, _lastDebt, me.DebtCents);

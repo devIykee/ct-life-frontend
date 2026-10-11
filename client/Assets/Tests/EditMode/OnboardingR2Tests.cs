@@ -158,8 +158,8 @@ namespace CTLife.Tests
             Assert.IsTrue(f.Next());
             Assert.AreEqual(CreatorStep.Tribe, f.Step);
             Assert.AreEqual(CreatorFlow.ProgressFor(CreatorStep.Look), CreatorFlow.ProgressFor(CreatorStep.Customize));
-            Assert.AreEqual(2, CreatorFlow.ProgressFor(CreatorStep.Tribe));
-            Assert.AreEqual(6, CreatorFlow.ProgressFor(CreatorStep.Confirm));
+            Assert.AreEqual(1, CreatorFlow.ProgressFor(CreatorStep.Tribe));
+            Assert.AreEqual(5, CreatorFlow.ProgressFor(CreatorStep.Confirm));
             var g = new CreatorFlow(new CharacterDraft()) { HasLook = true, CustomizeAvailable = false };
             g.Restore(CreatorStep.Customize, CreatorStep.Customize);
             Assert.AreEqual(CreatorStep.Look, g.Step, "a restored Customize step without data falls back to Look");

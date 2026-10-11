@@ -155,6 +155,18 @@ namespace CTLife.UI
             "caller" => "ads", "builder" => "terminal", "anon" => "face", _ => "contacts",
         };
 
+        public static string TribePerk(TribeDef t) => t.perkText ?? t.perkKind switch
+        {
+            "launch_preview_ms" => Strings.F("creator.perk.launch", t.perkValue / 1000),
+            "leverage_bonus_x" => Strings.F("creator.perk.leverage", t.perkValue),
+            "prediction_fee_discount_bps" => Strings.F("creator.perk.prediction", t.perkValue / 100),
+            "farm_yield_bonus_bps" => Strings.F("creator.perk.farm", t.perkValue / 100),
+            "call_reach_multiplier" => Strings.F("creator.perk.reach", t.perkValue),
+            "project_cost_discount_bps" => Strings.F("creator.perk.launchCost", t.perkValue / 100),
+            "hidden_from_rich_list" => Strings.T("creator.perk.hidden"),
+            _ => null,
+        };
+
         /// <summary>The character's line when this tribe is picked (first person, live CT terms: spec C2).</summary>
         public static string TribeLine(string id)
         {
