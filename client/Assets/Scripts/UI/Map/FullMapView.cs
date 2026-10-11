@@ -44,6 +44,7 @@ namespace CTLife.UI.Map
         private readonly List<MapMarker> _live = new List<MapMarker>();
         private readonly List<VisualElement> _livePool = new List<VisualElement>();
         private string _selected;
+        private bool _relayoutQueued;
 
         public MapView View => _view;
         public string Selected => _selected;
@@ -157,18 +158,26 @@ namespace CTLife.UI.Map
                 var id = plot.Id;
                 pill.clicked += () => SelectPlot(id);
                 _labels.Add(pill);
-                _pins.Add(new Pin { E = pill, Atlas = plot.Center, Min = 0f, Max = plot.Reserved ? 99f : VenueLabelsFrom, Priority = plot.Reserved ? 2 : 0, Centered = true });
+                // District names ride the plot's north edge so the venue landmarks inside stay visible.
+                var anchor = plot.Reserved ? plot.Center : plot.Center + new Vector2(0f, MapCatalog.Atlas.PlotSize / 2f + 6f); // on the street above the plot
+                _pins.Add(new Pin { E = pill, Atlas = anchor, Min = 0f, Max = plot.Reserved ? 99f : VenueLabelsFrom, Priority = plot.Reserved ? 2 : 0, Centered = true });
             }
             foreach (var p in atlas.Placements.Values)
             {
                 if (!MapCatalog.Areas.TryGetValue(p.AreaId, out var a)) continue;
-                var pill = Pill(Title(a), a.IsHome ? "home-page" : "place-marker", "map-pill--venue");
+                var pill = Pill(Title(a), MapMarkers.Landmark(a.Id), "map-pill--venue");
                 pill.name = "map-venue-" + a.Id;
                 var id = a.Id;
                 pill.clicked += () => Select(id, fly: true);
                 _labels.Add(pill);
                 var r = MapSurface.AreaAtlasRect(a, p);
                 _pins.Add(new Pin { E = pill, Atlas = new Vector2(r.center.x, r.yMax - 1f), Min = VenueLabelsFrom, Max = 99f, Priority = 1 });
+                // Zoomed out, each venue shows its landmark icon instead of a name (tap = the same card).
+                var mark = new Button(() => Select(id, fly: true)) { name = "map-landmark-" + a.Id, tooltip = Title(a) };
+                mark.AddToClassList("map-landmark");
+                mark.Add(LobbyArt.Icon(MapMarkers.Landmark(a.Id), "map-landmark-icon"));
+                _labels.Add(mark);
+                _pins.Add(new Pin { E = mark, Atlas = r.center, Min = 0f, Max = VenueLabelsFrom, Priority = 1, Centered = true });
                 // The door of every venue (registry spots) once you are close enough to read it.
                 if (!a.IsHome && MapMarkers.RegistryDoor(a.VenueId, p, out var door))
                 {
@@ -229,6 +238,7 @@ namespace CTLife.UI.Map
             // Place pins, then declutter greedily by priority (districts, venues, reserved lots, doors): a label that would
             // overlap one already shown is hidden, so names never pile up.
             _shown.Clear();
+            bool unmeasured = false;
             // Controls and the card are occupied space: labels never slide under them.
             foreach (var c in new[] { _side, _card, _closeButton, _top.childCount > 0 ? _top.ElementAt(0) : null })
                 if (c != null && c.resolvedStyle.display != DisplayStyle.None && c.worldBound.width > 1f)
@@ -241,6 +251,7 @@ namespace CTLife.UI.Map
                 if (on && inside)
                 {
                     if (pin.E.layout.width > 1f) pin.Size = pin.E.layout.size; // hidden pins keep their last measured size
+                    else unmeasured = true;
                     var size = pin.Size;
                     if (size.x > 1f)
                     {
@@ -253,6 +264,8 @@ namespace CTLife.UI.Map
                 pin.E.style.display = on && inside ? DisplayStyle.Flex : DisplayStyle.None;
                 if (on && inside) { pin.E.style.left = px.x; pin.E.style.top = px.y; } // USS translate centres each pin on its anchor
             }
+            // Newly shown labels have no size until layout runs: declutter again once they are measured.
+            if (unmeasured && !_relayoutQueued) { _relayoutQueued = true; schedule.Execute(() => { _relayoutQueued = false; ApplyView(); }).StartingIn(16); }
             float t = Mathf.InverseLerp(Mathf.Log(_minPpm), Mathf.Log(_maxPpm), Mathf.Log(_view.PixelsPerMeter));
             _railThumb.style.top = Length.Percent((1f - t) * 100f);
             PlaceLive();
