@@ -28,11 +28,30 @@ QA = {Path(r["file"]).name: r for k in qa for r in qa[k]}
 IN_CONTRACT = {"sfx_buy", "sfx_sell", "sfx_liquidation", "sfx_rug", "sfx_call_ring"}  # contract.md §2 examples
 CONTRACT_VENUES = {"timeline_square", "spaces_studio", "terminal_cafe", "perp_pit", "rekt_clinic", "ore_refinery"}
 
+# Informational mirror of the authoritative Android import policy in
+# client/Assets/Scripts/Audio/Logic/ImportPolicy.cs (applied by CTLife.Audio.Editor/AudioImportPostprocessor).
+# Sources are authored mono where it matters, so nothing is force-downmixed (Unity's downmix also peak-normalises).
 UNITY = {
-    "short": {"loadType": "DecompressOnLoad", "compressionFormat": "ADPCM", "preloadAudioData": True},
-    "stinger": {"loadType": "CompressedInMemory", "compressionFormat": "Vorbis", "quality": 0.7, "preloadAudioData": True},
-    "loop": {"loadType": "Streaming", "compressionFormat": "Vorbis", "quality": 0.6, "preloadAudioData": False},
-    "music": {"loadType": "Streaming", "compressionFormat": "Vorbis", "quality": 0.7, "preloadAudioData": False},
+    "short": {"loadType": "DecompressOnLoad", "compressionFormat": "Vorbis", "quality": 0.6, "preloadAudioData": True},
+    "stinger": {"loadType": "CompressedInMemory", "compressionFormat": "Vorbis", "quality": 0.6, "preloadAudioData": True},
+    "loop": {"loadType": "Streaming", "compressionFormat": "Vorbis", "quality": 0.35, "preloadAudioData": False, "loadInBackground": True},
+    "music": {"loadType": "Streaming", "compressionFormat": "Vorbis", "quality": 0.45, "preloadAudioData": False, "loadInBackground": True},
+    "music_layer": {"loadType": "CompressedInMemory", "compressionFormat": "Vorbis", "quality": 0.45, "preloadAudioData": False, "loadInBackground": True},
+    "footstep": {"loadType": "DecompressOnLoad", "compressionFormat": "Vorbis", "quality": 0.5, "sampleRateOverride": 32000, "preloadAudioData": True},
+    "babble": {"loadType": "DecompressOnLoad", "compressionFormat": "Vorbis", "quality": 0.5, "sampleRateOverride": 24000, "preloadAudioData": True},
+}
+
+# Client-only cues (sfx-map ids the server never references): research-led CT-native additions, 2026-10-08.
+CLIENT_ONLY = {"sfx_news_flash", "sfx_gm", "sfx_cash_in", "sfx_rekt_phonk"}
+
+# Footstep floor defaults per venue (CTLife.Audio SurfaceResolver.VenueDefaults mirrors these; the map wins at runtime).
+# [Inference] from each venue's theme in the spec; scenes refine patches with FootstepSurface components or material names.
+SURFACES = {
+    "timeline_square": "concrete", "terminal_cafe": "wood", "spaces_studio": "carpet", "perp_pit": "metal_grate",
+    "rekt_clinic": "neon_tile", "ore_refinery": "metal_grate", "launchpad_tower": "neon_tile", "prediction_pit": "concrete",
+    "builder_hills": "grass", "audit_row": "concrete", "vc_row": "wood", "ratio_arena": "concrete", "airdrop_farm": "grass",
+    "dubai_marina": "wood", "cabal_lounge": "carpet", "discord_heights": "neon_tile", "club_liquidity": "neon_tile",
+    "parents_basement": "carpet",
 }
 
 
@@ -50,7 +69,7 @@ def lin(db_: float) -> float:
     return round(10 ** (db_ / 20), 3)
 
 
-JITTER = {"ui": 0.0, "phone": 0.0, "voice_room": 0.0, "stinger": 0.0, "trading": 0.02, "ore": 0.04}
+JITTER = {"ui": 0.0, "phone": 0.0, "voice_room": 0.0, "stinger": 0.0, "trading": 0.02, "ore": 0.04, "news": 0.0, "social": 0.0}
 
 ids: dict = {}          # flat index: prefixed id -> "section.key" (also used for LICENSES.md usage)
 sections = {"sfx": {}, "footsteps": {}, "ambience": {}, "music": {}, "babble": {}}
@@ -62,7 +81,7 @@ for id_, m in sfx.items():
         "files": [rel(f) for f in files], "volume": lin(m["volume_db"]), "pitchJitter": JITTER.get(m["category"], 0.0),
         "category": m["category"], "volume_db": m["volume_db"], "channels": m["channels"], "loop": m["loop"],
         "duration_s": q.get("dur"), "true_peak_dbtp": q.get("TP"), "ducks_music": m["category"] == "stinger",
-        "status": "in_contract" if id_ in IN_CONTRACT else "proposed", "desc": m["desc"],
+        "status": "in_contract" if id_ in IN_CONTRACT else ("client_only_cue" if id_ in CLIENT_ONLY else "proposed"), "desc": m["desc"],
         "sources": m["sources"] or ["own work (synthesised, tools/gen_sfx.py)"],
         "unity_import": UNITY["stinger" if m["category"] == "stinger" or (q.get("dur") or 0) > 2.5 else "short"],
     }
@@ -76,7 +95,7 @@ for id_, m in foot.items():
         "category": "footstep", "volume_db": -14, "channels": 1, "status": "proposed",
         "desc": f"Single footsteps on {surface.replace('_', ' ')}; pick at random, never the same twice in a row, "
                 "volume +-2 dB, one per foot plant (anim event).",
-        "sources": m["sources"], "unity_import": UNITY["short"] | {"forceToMono": True},
+        "sources": m["sources"], "unity_import": UNITY["footstep"],
     }
     sections["footsteps"][surface] = e
     ids[id_] = {"section": "footsteps", "key": surface, "sources": e["sources"]}
@@ -110,7 +129,7 @@ for id_, m in amb.items():
 MUS_KEY = {"timeline_square": ("timeline", "Timeline Square / Timeline District"), "trenches": ("trenches", "The Trenches"),
            "perp_pit": ("perp_pit", "Perp Pit (venue-specific, spec tempo table)"), "airdrop_farm": ("airdrop_farm", "Airdrop Farm"),
            "builder_hills": ("builder_hills", "Builder Hills"), "dubai_marina": ("dubai_marina", "Dubai Marina"),
-           "club": ("clubs", "Clubs and parties")}
+           "club": ("clubs", "Clubs and parties (Afropiano: log drum, shakers, 3-2 clave, talking drum, highlife guitar)")}
 for d, m in mus.items():
     key, label = MUS_KEY[d]
     full = m["files"]["full"]
@@ -121,7 +140,7 @@ for d, m in mus.items():
         "full_mix_preview": rel(full), "loop": True, "loop_samples": m["loop_samples"], "sample_rate": m["sr"],
         "loop_seconds": m["loop_seconds"], "full_mix_lufs": q.get("I"), "full_mix_true_peak_dbtp": q.get("TP"),
         "status": "proposed", "sources": ["own work (composed and synthesised, tools/gen_music.py)"],
-        "unity_import": UNITY["music"],
+        "unity_import": UNITY["music_layer"],
     }
     sections["music"][key] = e
     ids[f"mus_{d}"] = {"section": "music", "key": key, "sources": e["sources"]}
@@ -139,6 +158,12 @@ for key, entry in (json.loads(sfx_curation_path.read_text()) if sfx_curation_pat
     sections["sfx"][key] = entry
     ids[key] = {"section": "sfx", "key": key, "sources": entry["sources"]}
 
+# Archetype signature cues: docs/research/ct-now-2026-10.json `archetypes.*.babble_sound` ([Inference] in the dossier),
+# only where an existing cue matches the described sound. BabblePlayer plays it quietly, max once per 30 s per NPC.
+SIGNATURES = {"town_crier": "sfx_news_flash",        # "Siren whoop + clipped syllables"
+              "giveaway_guy": "sfx_take_profit",     # "Cash-register ding"
+              "engagement_farmer": "sfx_new_coin"}   # "Pop"
+
 for name, b in babble["banks"].items():
     key = "default" if name == "generic" else name
     letters = {k: rel(v) for k, v in sorted(b["files"].items())}
@@ -147,7 +172,8 @@ for name, b in babble["banks"].items():
         "volume": lin(b["volume_db"]), "volume_db": b["volume_db"], "chars_per_second": b["chars_per_second"],
         "pitch_jitter_semitones": b["pitch_jitter_semitones"], "npc_pitch_range_semitones": b["npc_pitch_range_semitones"],
         "syllable_ms": b["syllable_ms"], "archetype_status": b["phase"], "status": "proposed",
-        "sources": ["own work (formant synthesis, tools/gen_babble.py)"], "unity_import": UNITY["short"],
+        **({"signature": SIGNATURES[key]} if key in SIGNATURES else {}),
+        "sources": ["own work (formant synthesis, tools/gen_babble.py)"], "unity_import": UNITY["babble"],
     }
     sections["babble"][key] = e
     ids[f"babble_{name}"] = {"section": "babble", "key": key, "sources": e["sources"]}
@@ -169,8 +195,11 @@ out = {
         "set have identical sample length. market_mood rules: audio/README.md.",
         "Entries with full_mix use a complete licensed composition, not stems; music-curation.json owns these overrides.",
         "Babble: files are ordered a..z (letters map); play rules in audio/BABBLE.md and audio/unity/BabblePlayer.cs.",
+        "Full-mix music entries may carry stems.tension (the key/tempo-neutral red-market bed); runtime contract: audio/RUNTIME_API.md.",
+        "Only files referenced here ship: tools/ship_audio.py syncs them into client/Assets/Resources/Audio and prunes the rest.",
     ],
     "index": {k: f"{v['section']}.{v['key']}" for k, v in sorted(ids.items())},
+    "surfaces": {"_note": "Footstep floor default per venue id (CTLife.Audio SurfaceResolver).", "venues": dict(sorted(SURFACES.items()))},
     **{k: dict(sorted(v.items())) for k, v in sections.items()},
 }
 (ROOT / "sfx-map.json").write_text(json.dumps(out, indent=2, ensure_ascii=False) + "\n")
@@ -198,6 +227,10 @@ lines = [
     "- All NPC babble (`processed/babble/*`, 31 banks x 26 syllables) — `tools/gen_babble.py`.",
     "- Synthesised SFX layers (UI, trading, phone, voice rooms, stingers, ORE) — `tools/gen_sfx.py`.",
     "- Synthetic layers in ambience (hum, room tone, monitor beeps, club-through-wall) — `tools/gen_ambience.py`.",
+    "- Club music (Afropiano stems: log drum, shakers, 3-2 clave, talking-drum glides, highlife-style guitar, synth air horn) "
+    "— `tools/gen_music.py` `club()`; red-market tension bed for the licensed tracks — `tools/gen_mood_bed.py`.",
+    "- CT-native cues `sfx_news_flash`, `sfx_gm`, `sfx_cash_in`, `sfx_rekt_phonk` and the revised `sfx_buy`/`sfx_sell`/`sfx_graduation`/"
+    "`sfx_sunday_unlock` — `tools/gen_sfx.py` (no sampled meme audio; research notes in docs/progress/audio-integration.md).",
     "",
     "## Kenney (kenney.nl) — CC0 1.0",
     "",
@@ -252,6 +285,9 @@ if curated_music:
         uses = ", ".join(key for key, other in curated_music.items() if other["full_mix"] == entry["full_mix"])
         lines.append(f"| {entry['title']} | {entry['artist']} | {entry['source_url']} | {entry['license']} | "
                      f"{entry.get('date_downloaded', '2026-10-05')} | {uses}; {entry['processing']} |")
+    lines.append("| Disco con Tutti | Kevin MacLeod | https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200091 | "
+                 "CC-BY-4.0 | 2026-10-06 | Not shipped since 2026-10-08: clubs use the own-work Afropiano stems (spec: Amapiano / "
+                 "Afrobeats). File kept in `archive/processed/music/licensed/` for an easy revert. |")
     lines.append("| Funkorama | Kevin MacLeod | https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100474 | "
                  "CC-BY-4.0 | 2026-10-05 | Downloaded candidate only, not shipped; source MP3 decoder overread warnings. |")
     lines += ["", "Required attribution ships in `processed/Music-Credits.txt` and the app's Settings → Credits & licenses. "

@@ -492,13 +492,21 @@ def dubai_marina() -> Track:
 
 
 def club() -> Track:
-    """Amapiano / Afrobeats, 112 BPM, C major (ii-V-I-vi). Log-drum bass, shakers, jazzy piano, flute."""
+    """Clubs and parties (spec: Amapiano / Afrobeats, 112 BPM). Afropiano groove with Nigerian flavour, own synthesis:
+    - log-drum bassline (Wikipedia "Amapiano": "a wide percussive bassline"), shakers, jazzy piano (pad stem);
+    - Afrobeats 3-2 clave on a woodblock (Wikipedia "Afrobeats": 3-2 / 2-3 clave), kick on every beat with rim/clap
+      on 2 and 4 (Native Instruments amapiano guide, 4 Sep 2025: kick every beat, shakers, ~110s BPM);
+    - dundun talking-drum glide fills every 4 bars (Wikipedia "Talking drum": pitch glides within a beat);
+    - lead stem: interlocking highlife-style guitar plucks + a flute/whistle answer + one DJ air-horn drop per loop
+      (lead only enters when the market is green: "we're so back").
+    C major ii-V-I-vi. Docs: docs/progress/audio-integration.md "Sound culture research"."""
     tr = Track("club", 112, swing=0.54)
     prog = [(50, "m9"), (55, "13"), (48, "maj9"), (57, "m9")]
     log_pats = [
         [(0, 0), (0.75, 0), (1.5, 7), (2.25, 0), (2.75, 12), (3.5, 10)],
         [(0, 0), (0.5, 0), (1.25, 0), (2.0, 7), (2.75, 0), (3.25, 5), (3.75, 7)],
     ]
+    clave = [[0, 6, 12], [4, 8]]                       # 3-2 son clave over two bars (16th positions)
     for bar in range(16):
         root, q = prog[bar % 4]
         b0 = bar * 4
@@ -512,38 +520,52 @@ def club() -> Track:
         for b, iv in pat:
             tr.add("bass", ins.log_drum(mtof(bn + iv), 0.45), b0 + b, 0.6, human=0.002)
         k = ins.kick(0.4, f0=52, punch=0.8, click=0.15, drive=1.3, decay=0.3)
-        tr.kick_at(k, b0, 0.8)
-        tr.kick_at(k, b0 + 2, 0.7)
-        if bar % 2:
-            tr.kick_at(k, b0 + 3.5, 0.45)
+        for beat in range(4):
+            tr.kick_at(k, b0 + beat, 0.75 if beat % 2 == 0 else 0.6)
         sn = dsp.layer(ins.rim(0.08, 1500) * 0.6, ins.clap(0.25, 0.1) * 0.6)
-        tr.add("drums", sn, b0 + 1, 0.45)
-        tr.add("drums", sn, b0 + 3, 0.45)
-        for s in range(16):
-            acc = 1.0 if s % 4 == 2 else (0.75 if s % 2 else 0.45)
-            tr.add("drums", ins.shaker(0.08, acc), b0 + s / 4, 0.16, pan=0.3)
-        for s in (0, 3, 6, 8, 11, 14):  # tresillo-ish woodblock
-            tr.add("drums", ins.rim(0.05, 2200), b0 + s / 4, 0.14, pan=-0.4)
-        for b, f in ((1.5, 220), (1.75, 180), (3.5, 220)):
-            tr.add("drums", ins.tom(f, 0.25), b0 + b, 0.18, pan=-0.25)
-        tr.add("drums", ins.hat(open_=True, tone=8500), b0 + 1.5, 0.14, pan=0.2)
-        tr.add("drums", ins.hat(open_=True, tone=8500), b0 + 3.5, 0.14, pan=0.2)
+        tr.add("drums", sn, b0 + 1, 0.42)
+        tr.add("drums", sn, b0 + 3, 0.42)
+        for s16 in range(16):
+            acc = 1.0 if s16 % 4 == 2 else (0.75 if s16 % 2 else 0.45)
+            tr.add("drums", ins.shaker(0.08, acc), b0 + s16 / 4, 0.16, pan=0.3)
+        for s16 in clave[bar % 2]:
+            tr.add("drums", ins.rim(0.05, 2200), b0 + s16 / 4, 0.17, pan=-0.4)
+        tr.add("drums", ins.hat(open_=True, tone=8500), b0 + 1.5, 0.12, pan=0.2)
+        tr.add("drums", ins.hat(open_=True, tone=8500), b0 + 3.5, 0.12, pan=0.2)
+        if bar % 4 == 3:
+            # dundun "speech" fill: low-high-glide answer on beat 4
+            tr.add("drums", ins.talking_drum(150, 0.22, glide=1.3), b0 + 3.0, 0.32, pan=-0.2)
+            tr.add("drums", ins.talking_drum(190, 0.2, glide=1.25), b0 + 3.25, 0.28, pan=-0.2)
+            tr.add("drums", ins.talking_drum(160, 0.4, glide=1.55, squeeze_at=0.05, release_at=0.22), b0 + 3.5, 0.36, pan=-0.2)
+        elif bar % 2 == 1:
+            tr.add("drums", ins.talking_drum(175, 0.3, glide=1.4, squeeze_at=0.06), b0 + 2.75, 0.22, pan=-0.25)
     tr.sidechain("pad", 0.25, 0.2)
-    mel = [(0.5, 76, 0.5), (1, 79, 1), (2.5, 77, 0.5), (3, 76, 0.75), (4, 74, 1.5), (6, 72, 0.5), (6.5, 74, 1),
-           (8.5, 76, 0.5), (9, 79, 0.75), (10, 81, 1.5), (12, 79, 0.5), (12.5, 77, 0.5), (13, 76, 2)]
+    # Lead: highlife-style interlocking guitar (two plucked lines) on bars 0-7 and 8-15, flute answer, one air horn.
+    # Two interlocking guitar lines drawn from each bar's chord tones (always consonant with the ii-V-I-vi).
+    gtr_a = [(0, 0), (0.5, 1), (1, 2), (1.75, 1), (2.5, 3), (3, 2)]
+    gtr_b = [(0.25, 0), (0.75, 1), (1.5, 2), (2.25, 1), (3.25, 0), (3.75, 1)]
+    for bar in range(16):
+        root, q = prog[bar % 4]
+        hi = voicing(root, q, lo=72, hi=88)
+        lo_ = voicing(root, q, lo=64, hi=76)
+        for b, k_ in gtr_a:
+            tr.add("lead", ins.pluck_ks(mtof(hi[k_ % len(hi)]), tr.beats(0.5), bright=0.7), bar * 4 + b, 0.16, pan=0.35)
+        for b, k_ in gtr_b:
+            tr.add("lead", ins.pluck_ks(mtof(lo_[k_ % len(lo_)]), tr.beats(0.4), bright=0.5), bar * 4 + b, 0.11, pan=-0.35)
+    mel = [(0.5, 76, 0.5), (1, 79, 1), (2.5, 77, 0.5), (3, 76, 0.75), (4, 74, 1.5), (6, 72, 0.5), (6.5, 74, 1)]
     for rep in (1, 3):
         for b, n, d in mel:
-            tr.add("lead", ins.whistle(mtof(n), tr.beats(d), vib=0.5), rep * 16 + b, 0.22, pan=-0.1)
-    for rep in (0, 2):
-        for i, n in enumerate([72, 76, 79, 84, 79, 76]):
-            tr.add("lead", ins.marimba(mtof(n), 0.4), rep * 16 + 12 + i * 0.5, 0.2, pan=0.25)
-    tr.fx_delay("lead", 0.75, fb=0.3, wet=0.25)
-    tr.fx_reverb("lead", 0.25, 2.0)
+            tr.add("lead", ins.whistle(mtof(n), tr.beats(d), vib=0.5), rep * 16 + 8 + b, 0.18, pan=-0.1)
+    horn = dsp.widen(ins.air_horn(0.28), 0.4)
+    horn2 = dsp.widen(ins.air_horn(0.6, bend=0.08), 0.4)
+    tr.add("lead", horn, 8 * 4, 0.10, human=0)
+    tr.add("lead", horn2, 8 * 4 + 0.5, 0.10, human=0)
+    tr.fx_delay("lead", 0.75, fb=0.3, wet=0.22)
+    tr.fx_reverb("lead", 0.22, 1.8)
     tr.fx_reverb("pad", 0.2, 1.8)
     tr.fx_reverb("drums", 0.06, 0.8, hp=500)
     tension(tr, 57)
     return tr
-
 
 DISTRICTS = {
     "timeline_square": timeline_square, "trenches": trenches, "perp_pit": perp_pit, "airdrop_farm": airdrop_farm,
@@ -618,7 +640,10 @@ def render(name: str) -> dict:
     for s, x in list(stems.items()) + [("full", full)]:
         wav = tmp / f"mus_{name}_{s}.wav"
         export_wav(wav, x * g_lin, peak_db=None, gain_db=0, loop=True)
-        ogg = OUT / "music" / f"mus_{name}_{s}.ogg"
+        # Stems ship (music/stems/<set>/ → imported Compressed In Memory); the full preview is a reference only and
+        # stays in build/ so it never reaches the APK.
+        ogg = (OUT / "music" / "stems" / name / f"mus_{name}_{s}.ogg") if s != "full" else (BUILD / "music" / f"mus_{name}_full_preview.ogg")
+        ogg.parent.mkdir(parents=True, exist_ok=True)
         encode_ogg(wav, ogg, OGG_Q)
         out["files"][s] = str(ogg.relative_to(OUT.parent))
     print(f"{name:16} {tr.bpm:5.0f} BPM  loop {tr.L / SR:6.2f}s  mix gain {20 * np.log10(g_lin):+.1f} dB  TP {true_peak_db(full * g_lin):.1f}")

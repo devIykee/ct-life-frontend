@@ -27,7 +27,11 @@
       "preloadAudioData": false,
       "loadInBackground": true
     },
-    "date_downloaded": "2026-10-05"
+    "date_downloaded": "2026-10-05",
+    "stems": {
+      "tension": "music/mood/mus_mood_tension_bed.ogg"
+    },
+    "mood_rule": "full_mix stays intact (green = neutral = the track); red low-passes it 20 kHz -> 2.5 kHz (mood 0..-0.5) -> 900 Hz (-1) and fades in stems.tension (key/tempo-neutral bed, tools/gen_mood_bed.py)"
   },
   "lobby": {
     "id": "mus_lobby",
@@ -57,7 +61,11 @@
       "preloadAudioData": false,
       "loadInBackground": true
     },
-    "date_downloaded": "2026-10-05"
+    "date_downloaded": "2026-10-05",
+    "stems": {
+      "tension": "music/mood/mus_mood_tension_bed.ogg"
+    },
+    "mood_rule": "full_mix stays intact (green = neutral = the track); red low-passes it 20 kHz -> 2.5 kHz (mood 0..-0.5) -> 900 Hz (-1) and fades in stems.tension (key/tempo-neutral bed, tools/gen_mood_bed.py)"
   },
   "trenches": {
     "id": "mus_trenches",
@@ -89,7 +97,11 @@
       "quality": 0.45,
       "preloadAudioData": false,
       "loadInBackground": true
-    }
+    },
+    "stems": {
+      "tension": "music/mood/mus_mood_tension_bed.ogg"
+    },
+    "mood_rule": "full_mix stays intact (green = neutral = the track); red low-passes it 20 kHz -> 2.5 kHz (mood 0..-0.5) -> 900 Hz (-1) and fades in stems.tension (key/tempo-neutral bed, tools/gen_mood_bed.py)"
   },
   "perp_pit": {
     "id": "mus_perp_pit",
@@ -121,7 +133,11 @@
       "quality": 0.45,
       "preloadAudioData": false,
       "loadInBackground": true
-    }
+    },
+    "stems": {
+      "tension": "music/mood/mus_mood_tension_bed.ogg"
+    },
+    "mood_rule": "full_mix stays intact (green = neutral = the track); red low-passes it 20 kHz -> 2.5 kHz (mood 0..-0.5) -> 900 Hz (-1) and fades in stems.tension (key/tempo-neutral bed, tools/gen_mood_bed.py)"
   },
   "builder_hills": {
     "id": "mus_builder_hills",
@@ -153,7 +169,11 @@
       "quality": 0.45,
       "preloadAudioData": false,
       "loadInBackground": true
-    }
+    },
+    "stems": {
+      "tension": "music/mood/mus_mood_tension_bed.ogg"
+    },
+    "mood_rule": "full_mix stays intact (green = neutral = the track); red low-passes it 20 kHz -> 2.5 kHz (mood 0..-0.5) -> 900 Hz (-1) and fades in stems.tension (key/tempo-neutral bed, tools/gen_mood_bed.py)"
   },
   "dubai_marina": {
     "id": "mus_dubai_marina",
@@ -185,39 +205,11 @@
       "quality": 0.45,
       "preloadAudioData": false,
       "loadInBackground": true
-    }
-  },
-  "clubs": {
-    "id": "mus_club",
-    "bpm": 115.0,
-    "district": "Clubs and parties",
-    "full_mix": "music/licensed/mus_clubs_disco_con_tutti.ogg",
-    "volume": 1.0,
-    "loop": true,
-    "loop_kind": "complete_composition_with_original_ending_and_intro",
-    "duration_seconds": 236.352,
-    "sample_rate": 48000,
-    "channels": 2,
-    "title": "Disco con Tutti",
-    "artist": "Kevin MacLeod",
-    "license": "CC-BY-4.0",
-    "license_url": "https://creativecommons.org/licenses/by/4.0/",
-    "source_url": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200091",
-    "source_file": "raw/incompetech/Disco con Tutti.mp3",
-    "download_url": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Disco%20con%20Tutti.mp3",
-    "processing": "Constant -5.58000dB gain, 48kHz stereo Vorbis q6; no tempo or arrangement change",
-    "selection_rationale": "funk/disco horns for social energy; based on composer metadata, not audition approval",
-    "sources": [
-      "raw/incompetech/Disco con Tutti.mp3"
-    ],
-    "date_downloaded": "2026-10-06",
-    "unity_import": {
-      "loadType": "Streaming",
-      "compressionFormat": "Vorbis",
-      "quality": 0.45,
-      "preloadAudioData": false,
-      "loadInBackground": true
-    }
+    },
+    "stems": {
+      "tension": "music/mood/mus_mood_tension_bed.ogg"
+    },
+    "mood_rule": "full_mix stays intact (green = neutral = the track); red low-passes it 20 kHz -> 2.5 kHz (mood 0..-0.5) -> 900 Hz (-1) and fades in stems.tension (key/tempo-neutral bed, tools/gen_mood_bed.py)"
   },
   "airdrop_farm": {
     "id": "mus_airdrop_farm",
@@ -249,12 +241,16 @@
       "quality": 0.45,
       "preloadAudioData": false,
       "loadInBackground": true
-    }
+    },
+    "stems": {
+      "tension": "music/mood/mus_mood_tension_bed.ogg"
+    },
+    "mood_rule": "full_mix stays intact (green = neutral = the track); red low-passes it 20 kHz -> 2.5 kHz (mood 0..-0.5) -> 900 Hz (-1) and fades in stems.tension (key/tempo-neutral bed, tools/gen_mood_bed.py)"
   },
   "terminal_cafe": {
     "id": "mus_terminal_cafe",
     "bpm": 129.0,
-    "district": "Terminal Caf\u00e9",
+    "district": "Terminal Café",
     "full_mix": "music/licensed/mus_terminal_cafe_airport_lounge.ogg",
     "volume": 1.0,
     "loop": true,
@@ -282,6 +278,10 @@
       "preloadAudioData": false,
       "loadInBackground": true
     },
-    "status": "FE-only music selection proposal; not a server SFX/contract id"
+    "status": "FE-only music selection proposal; not a server SFX/contract id",
+    "stems": {
+      "tension": "music/mood/mus_mood_tension_bed.ogg"
+    },
+    "mood_rule": "full_mix stays intact (green = neutral = the track); red low-passes it 20 kHz -> 2.5 kHz (mood 0..-0.5) -> 900 Hz (-1) and fades in stems.tension (key/tempo-neutral bed, tools/gen_mood_bed.py)"
   }
 }

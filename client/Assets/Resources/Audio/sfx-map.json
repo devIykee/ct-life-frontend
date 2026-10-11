@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated": "2026-10-06",
+  "generated": "2026-10-08",
   "paths_relative_to": "audio/processed/",
   "_notes": [
     "Shape follows the unity -> audio request (docs/progress/requests.md); extra keys are informational.",
@@ -10,7 +10,9 @@
     "Ambience loops: -24 LUFS integrated, true peak <= -3 dBTP (Spaces Studio room tone -36 LUFS).",
     "Music: each set's full mix (pad+bass+drums+lead) is -17 LUFS integrated, true peak <= -2 dBTP; all stems of a set have identical sample length. market_mood rules: audio/README.md.",
     "Entries with full_mix use a complete licensed composition, not stems; music-curation.json owns these overrides.",
-    "Babble: files are ordered a..z (letters map); play rules in audio/BABBLE.md and audio/unity/BabblePlayer.cs."
+    "Babble: files are ordered a..z (letters map); play rules in audio/BABBLE.md and audio/unity/BabblePlayer.cs.",
+    "Full-mix music entries may carry stems.tension (the key/tempo-neutral red-market bed); runtime contract: audio/RUNTIME_API.md.",
+    "Only files referenced here ship: tools/ship_audio.py syncs them into client/Assets/Resources/Audio and prunes the rest."
   ],
   "index": {
     "amb_airdrop_farm": "ambience.airdrop_farm",
@@ -72,16 +74,20 @@
     "sfx_call_connect": "sfx.sfx_call_connect",
     "sfx_call_end": "sfx.sfx_call_end",
     "sfx_call_ring": "sfx.sfx_call_ring",
+    "sfx_cash_in": "sfx.sfx_cash_in",
     "sfx_dm_ping": "sfx.sfx_dm_ping",
+    "sfx_gm": "sfx.sfx_gm",
     "sfx_graduation": "sfx.sfx_graduation",
     "sfx_liquidation": "sfx.sfx_liquidation",
     "sfx_mention": "sfx.sfx_mention",
     "sfx_moon_horn": "sfx.sfx_moon_horn",
     "sfx_new_coin": "sfx.sfx_new_coin",
+    "sfx_news_flash": "sfx.sfx_news_flash",
     "sfx_ore_clink": "sfx.sfx_ore_clink",
     "sfx_ore_furnace_whoosh": "sfx.sfx_ore_furnace_whoosh",
     "sfx_pnl_card_flip": "sfx.sfx_pnl_card_flip",
     "sfx_rank_up": "sfx.sfx_rank_up",
+    "sfx_rekt_phonk": "sfx.sfx_rekt_phonk",
     "sfx_rug": "sfx.sfx_rug",
     "sfx_sell": "sfx.sfx_sell",
     "sfx_space_started": "sfx.sfx_space_started",
@@ -101,6 +107,29 @@
     "sfx_vr_raise_hand": "sfx.sfx_vr_raise_hand",
     "sfx_whale_horn": "sfx.sfx_whale_horn"
   },
+  "surfaces": {
+    "_note": "Footstep floor default per venue id (CTLife.Audio SurfaceResolver).",
+    "venues": {
+      "airdrop_farm": "grass",
+      "audit_row": "concrete",
+      "builder_hills": "grass",
+      "cabal_lounge": "carpet",
+      "club_liquidity": "neon_tile",
+      "discord_heights": "neon_tile",
+      "dubai_marina": "wood",
+      "launchpad_tower": "neon_tile",
+      "ore_refinery": "metal_grate",
+      "parents_basement": "carpet",
+      "perp_pit": "metal_grate",
+      "prediction_pit": "concrete",
+      "ratio_arena": "concrete",
+      "rekt_clinic": "neon_tile",
+      "spaces_studio": "carpet",
+      "terminal_cafe": "wood",
+      "timeline_square": "concrete",
+      "vc_row": "wood"
+    }
+  },
   "sfx": {
     "sfx_buy": {
       "files": [
@@ -112,17 +141,18 @@
       "volume_db": -8,
       "channels": 1,
       "loop": false,
-      "duration_s": 0.844,
+      "duration_s": 0.407,
       "true_peak_dbtp": -1.0,
       "ducks_music": false,
       "status": "in_contract",
-      "desc": "Buy filled: rising chime arpeggio + coin",
+      "desc": "Buy filled: terminal up-ping (fifth up) + key tick + coin glint",
       "sources": [
         "own work (synthesised, tools/gen_sfx.py)"
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
         "preloadAudioData": true
       }
     },
@@ -146,7 +176,8 @@
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
         "preloadAudioData": true
       }
     },
@@ -170,7 +201,8 @@
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
         "preloadAudioData": true
       }
     },
@@ -195,7 +227,32 @@
       "unity_import": {
         "loadType": "CompressedInMemory",
         "compressionFormat": "Vorbis",
-        "quality": 0.7,
+        "quality": 0.6,
+        "preloadAudioData": true
+      }
+    },
+    "sfx_cash_in": {
+      "files": [
+        "sfx/sfx_cash_in.wav"
+      ],
+      "volume": 0.447,
+      "pitchJitter": 0.02,
+      "category": "trading",
+      "volume_db": -7,
+      "channels": 1,
+      "loop": false,
+      "duration_s": 1.047,
+      "true_peak_dbtp": -1.0,
+      "ducks_music": false,
+      "status": "client_only_cue",
+      "desc": "Cash credited (top-up confirmed): money-spray flutter + register ka-ching + talking-drum glide",
+      "sources": [
+        "own work (synthesised, tools/gen_sfx.py)"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
         "preloadAudioData": true
       }
     },
@@ -219,7 +276,33 @@
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
+        "preloadAudioData": true
+      }
+    },
+    "sfx_gm": {
+      "files": [
+        "sfx/sfx_gm.wav"
+      ],
+      "volume": 0.2,
+      "pitchJitter": 0.0,
+      "category": "social",
+      "volume_db": -14,
+      "channels": 1,
+      "loop": false,
+      "duration_s": 0.954,
+      "true_peak_dbtp": -1.0,
+      "ducks_music": false,
+      "status": "client_only_cue",
+      "desc": "gm ritual: soft sunrise pentatonic chime when a room says 'gm'",
+      "sources": [
+        "own work (synthesised, tools/gen_sfx.py)"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
         "preloadAudioData": true
       }
     },
@@ -233,18 +316,18 @@
       "volume_db": -3,
       "channels": 2,
       "loop": false,
-      "duration_s": 3.44,
-      "true_peak_dbtp": -1.0,
+      "duration_s": 3.168,
+      "true_peak_dbtp": -1.6,
       "ducks_music": true,
       "status": "proposed",
-      "desc": "Coin graduation fanfare: synth brass + timpani roll + crash",
+      "desc": "Coin graduation: bonding curve fills to 100% (accelerating rising ticks + riser), brass hit, migration whoosh L->R",
       "sources": [
         "own work (synthesised, tools/gen_sfx.py)"
       ],
       "unity_import": {
         "loadType": "CompressedInMemory",
         "compressionFormat": "Vorbis",
-        "quality": 0.7,
+        "quality": 0.6,
         "preloadAudioData": true
       }
     },
@@ -270,7 +353,7 @@
       "unity_import": {
         "loadType": "CompressedInMemory",
         "compressionFormat": "Vorbis",
-        "quality": 0.7,
+        "quality": 0.6,
         "preloadAudioData": true
       }
     },
@@ -294,7 +377,8 @@
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
         "preloadAudioData": true
       }
     },
@@ -319,7 +403,7 @@
       "unity_import": {
         "loadType": "CompressedInMemory",
         "compressionFormat": "Vorbis",
-        "quality": 0.7,
+        "quality": 0.6,
         "preloadAudioData": true
       }
     },
@@ -343,7 +427,33 @@
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
+        "preloadAudioData": true
+      }
+    },
+    "sfx_news_flash": {
+      "files": [
+        "sfx/sfx_news_flash.wav"
+      ],
+      "volume": 0.224,
+      "pitchJitter": 0.0,
+      "category": "news",
+      "volume_db": -13,
+      "channels": 1,
+      "loop": false,
+      "duration_s": 0.79,
+      "true_peak_dbtp": -1.0,
+      "ducks_music": false,
+      "status": "client_only_cue",
+      "desc": "JUST IN / BREAKING wire alert: two-tone siren chirp + teletype ticks (news-bot posts are CT's heartbeat)",
+      "sources": [
+        "own work (synthesised, tools/gen_sfx.py)"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
         "preloadAudioData": true
       }
     },
@@ -375,7 +485,8 @@
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
         "preloadAudioData": true
       }
     },
@@ -401,7 +512,8 @@
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
         "preloadAudioData": true
       }
     },
@@ -425,7 +537,8 @@
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
         "preloadAudioData": true
       }
     },
@@ -450,7 +563,32 @@
       "unity_import": {
         "loadType": "CompressedInMemory",
         "compressionFormat": "Vorbis",
-        "quality": 0.7,
+        "quality": 0.6,
+        "preloadAudioData": true
+      }
+    },
+    "sfx_rekt_phonk": {
+      "files": [
+        "sfx/sfx_rekt_phonk.wav"
+      ],
+      "volume": 0.891,
+      "pitchJitter": 0.0,
+      "category": "stinger",
+      "volume_db": -1,
+      "channels": 2,
+      "loop": false,
+      "duration_s": 4.15,
+      "true_peak_dbtp": -1.7,
+      "ducks_music": true,
+      "status": "client_only_cue",
+      "desc": "REKT replay tag: 2-bar phonk (pitched cowbell riff, sliding 808, triplet hats) for the shared REKT clip",
+      "sources": [
+        "own work (synthesised, tools/gen_sfx.py)"
+      ],
+      "unity_import": {
+        "loadType": "CompressedInMemory",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
         "preloadAudioData": true
       }
     },
@@ -475,7 +613,7 @@
       "unity_import": {
         "loadType": "CompressedInMemory",
         "compressionFormat": "Vorbis",
-        "quality": 0.7,
+        "quality": 0.6,
         "preloadAudioData": true
       }
     },
@@ -489,17 +627,18 @@
       "volume_db": -8,
       "channels": 1,
       "loop": false,
-      "duration_s": 0.69,
+      "duration_s": 0.436,
       "true_peak_dbtp": -1.0,
       "ducks_music": false,
       "status": "in_contract",
-      "desc": "Sell filled: paper swish + falling two-note chime",
+      "desc": "Sell filled: terminal down-ping (fourth down) + short paper swipe",
       "sources": [
         "own work (synthesised, tools/gen_sfx.py)"
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
         "preloadAudioData": true
       }
     },
@@ -523,7 +662,8 @@
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
         "preloadAudioData": true
       }
     },
@@ -537,18 +677,18 @@
       "volume_db": -4,
       "channels": 2,
       "loop": false,
-      "duration_s": 5.222,
-      "true_peak_dbtp": -1.0,
+      "duration_s": 4.37,
+      "true_peak_dbtp": -1.3,
       "ducks_music": true,
       "status": "proposed",
-      "desc": "Sunday Unlock bell: two deep bell strikes",
+      "desc": "Sunday Unlock: trading-floor opening bell (electric clapper), padlock unlock clack, one deep bell strike",
       "sources": [
-        "raw/freesound/857938.ogg"
+        "own work (synthesised, tools/gen_sfx.py)"
       ],
       "unity_import": {
         "loadType": "CompressedInMemory",
         "compressionFormat": "Vorbis",
-        "quality": 0.7,
+        "quality": 0.6,
         "preloadAudioData": true
       }
     },
@@ -572,7 +712,8 @@
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
         "preloadAudioData": true
       }
     },
@@ -596,7 +737,8 @@
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
         "preloadAudioData": true
       }
     },
@@ -625,7 +767,6 @@
         "loadType": "DecompressOnLoad",
         "compressionFormat": "Vorbis",
         "quality": 0.6,
-        "forceToMono": true,
         "preloadAudioData": true
       }
     },
@@ -649,7 +790,8 @@
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
         "preloadAudioData": true
       }
     },
@@ -678,7 +820,6 @@
         "loadType": "DecompressOnLoad",
         "compressionFormat": "Vorbis",
         "quality": 0.6,
-        "forceToMono": true,
         "preloadAudioData": true
       }
     },
@@ -707,7 +848,6 @@
         "loadType": "DecompressOnLoad",
         "compressionFormat": "Vorbis",
         "quality": 0.6,
-        "forceToMono": true,
         "preloadAudioData": true
       }
     },
@@ -736,7 +876,6 @@
         "loadType": "DecompressOnLoad",
         "compressionFormat": "Vorbis",
         "quality": 0.6,
-        "forceToMono": true,
         "preloadAudioData": true
       }
     },
@@ -765,7 +904,6 @@
         "loadType": "DecompressOnLoad",
         "compressionFormat": "Vorbis",
         "quality": 0.6,
-        "forceToMono": true,
         "preloadAudioData": true
       }
     },
@@ -794,7 +932,6 @@
         "loadType": "DecompressOnLoad",
         "compressionFormat": "Vorbis",
         "quality": 0.6,
-        "forceToMono": true,
         "preloadAudioData": true
       }
     },
@@ -818,7 +955,8 @@
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
         "preloadAudioData": true
       }
     },
@@ -842,7 +980,8 @@
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
         "preloadAudioData": true
       }
     },
@@ -866,7 +1005,8 @@
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
         "preloadAudioData": true
       }
     },
@@ -890,7 +1030,8 @@
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
         "preloadAudioData": true
       }
     },
@@ -915,7 +1056,7 @@
       "unity_import": {
         "loadType": "CompressedInMemory",
         "compressionFormat": "Vorbis",
-        "quality": 0.7,
+        "quality": 0.6,
         "preloadAudioData": true
       }
     }
@@ -946,9 +1087,10 @@
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
-        "preloadAudioData": true,
-        "forceToMono": true
+        "compressionFormat": "Vorbis",
+        "quality": 0.5,
+        "sampleRateOverride": 32000,
+        "preloadAudioData": true
       }
     },
     "concrete": {
@@ -976,9 +1118,10 @@
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
-        "preloadAudioData": true,
-        "forceToMono": true
+        "compressionFormat": "Vorbis",
+        "quality": 0.5,
+        "sampleRateOverride": 32000,
+        "preloadAudioData": true
       }
     },
     "grass": {
@@ -1006,9 +1149,10 @@
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
-        "preloadAudioData": true,
-        "forceToMono": true
+        "compressionFormat": "Vorbis",
+        "quality": 0.5,
+        "sampleRateOverride": 32000,
+        "preloadAudioData": true
       }
     },
     "metal_grate": {
@@ -1037,9 +1181,10 @@
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
-        "preloadAudioData": true,
-        "forceToMono": true
+        "compressionFormat": "Vorbis",
+        "quality": 0.5,
+        "sampleRateOverride": 32000,
+        "preloadAudioData": true
       }
     },
     "neon_tile": {
@@ -1067,9 +1212,10 @@
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
-        "preloadAudioData": true,
-        "forceToMono": true
+        "compressionFormat": "Vorbis",
+        "quality": 0.5,
+        "sampleRateOverride": 32000,
+        "preloadAudioData": true
       }
     },
     "wood": {
@@ -1097,9 +1243,10 @@
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
-        "preloadAudioData": true,
-        "forceToMono": true
+        "compressionFormat": "Vorbis",
+        "quality": 0.5,
+        "sampleRateOverride": 32000,
+        "preloadAudioData": true
       }
     }
   },
@@ -1126,8 +1273,9 @@
       "unity_import": {
         "loadType": "Streaming",
         "compressionFormat": "Vorbis",
-        "quality": 0.6,
-        "preloadAudioData": false
+        "quality": 0.35,
+        "preloadAudioData": false,
+        "loadInBackground": true
       }
     },
     "club_doors": {
@@ -1142,7 +1290,7 @@
       "loop_end_sample": 1645714,
       "duration_s": 34.286,
       "loudness_lufs": -24.0,
-      "true_peak_dbtp": -6.4,
+      "true_peak_dbtp": -8.1,
       "status": "proposed",
       "desc": "Outside a club: bass muffled behind closed doors + crowd (built from mus_club). Not a venue id; play it near club entrances.",
       "sources": [
@@ -1151,8 +1299,9 @@
       "unity_import": {
         "loadType": "Streaming",
         "compressionFormat": "Vorbis",
-        "quality": 0.6,
-        "preloadAudioData": false
+        "quality": 0.35,
+        "preloadAudioData": false,
+        "loadInBackground": true
       }
     },
     "dubai_marina": {
@@ -1178,8 +1327,9 @@
       "unity_import": {
         "loadType": "Streaming",
         "compressionFormat": "Vorbis",
-        "quality": 0.6,
-        "preloadAudioData": false
+        "quality": 0.35,
+        "preloadAudioData": false,
+        "loadInBackground": true
       }
     },
     "ore_refinery": {
@@ -1205,8 +1355,9 @@
       "unity_import": {
         "loadType": "Streaming",
         "compressionFormat": "Vorbis",
-        "quality": 0.6,
-        "preloadAudioData": false
+        "quality": 0.35,
+        "preloadAudioData": false,
+        "loadInBackground": true
       }
     },
     "perp_pit": {
@@ -1232,8 +1383,9 @@
       "unity_import": {
         "loadType": "Streaming",
         "compressionFormat": "Vorbis",
-        "quality": 0.6,
-        "preloadAudioData": false
+        "quality": 0.35,
+        "preloadAudioData": false,
+        "loadInBackground": true
       }
     },
     "rekt_clinic": {
@@ -1257,8 +1409,9 @@
       "unity_import": {
         "loadType": "Streaming",
         "compressionFormat": "Vorbis",
-        "quality": 0.6,
-        "preloadAudioData": false
+        "quality": 0.35,
+        "preloadAudioData": false,
+        "loadInBackground": true
       }
     },
     "spaces_studio": {
@@ -1282,8 +1435,9 @@
       "unity_import": {
         "loadType": "Streaming",
         "compressionFormat": "Vorbis",
-        "quality": 0.6,
-        "preloadAudioData": false
+        "quality": 0.35,
+        "preloadAudioData": false,
+        "loadInBackground": true
       }
     },
     "terminal_cafe": {
@@ -1310,8 +1464,9 @@
       "unity_import": {
         "loadType": "Streaming",
         "compressionFormat": "Vorbis",
-        "quality": 0.6,
-        "preloadAudioData": false
+        "quality": 0.35,
+        "preloadAudioData": false,
+        "loadInBackground": true
       }
     },
     "timeline_square": {
@@ -1336,8 +1491,9 @@
       "unity_import": {
         "loadType": "Streaming",
         "compressionFormat": "Vorbis",
-        "quality": 0.6,
-        "preloadAudioData": false
+        "quality": 0.35,
+        "preloadAudioData": false,
+        "loadInBackground": true
       }
     }
   },
@@ -1372,7 +1528,11 @@
         "quality": 0.45,
         "preloadAudioData": false,
         "loadInBackground": true
-      }
+      },
+      "stems": {
+        "tension": "music/mood/mus_mood_tension_bed.ogg"
+      },
+      "mood_rule": "full_mix stays intact (green = neutral = the track); red low-passes it 20 kHz -> 2.5 kHz (mood 0..-0.5) -> 900 Hz (-1) and fades in stems.tension (key/tempo-neutral bed, tools/gen_mood_bed.py)"
     },
     "builder_hills": {
       "id": "mus_builder_hills",
@@ -1404,34 +1564,38 @@
         "quality": 0.45,
         "preloadAudioData": false,
         "loadInBackground": true
-      }
+      },
+      "stems": {
+        "tension": "music/mood/mus_mood_tension_bed.ogg"
+      },
+      "mood_rule": "full_mix stays intact (green = neutral = the track); red low-passes it 20 kHz -> 2.5 kHz (mood 0..-0.5) -> 900 Hz (-1) and fades in stems.tension (key/tempo-neutral bed, tools/gen_mood_bed.py)"
     },
     "clubs": {
       "id": "mus_club",
-      "bpm": 115.0,
-      "district": "Clubs and parties",
-      "full_mix": "music/licensed/mus_clubs_disco_con_tutti.ogg",
-      "volume": 1.0,
+      "bpm": 112,
+      "bars": 16,
+      "time_signature": "4/4",
+      "district": "Clubs and parties (Afropiano: log drum, shakers, 3-2 clave, talking drum, highlife guitar)",
+      "stems": {
+        "pad": "music/stems/club/mus_club_pad.ogg",
+        "bass": "music/stems/club/mus_club_bass.ogg",
+        "drums": "music/stems/club/mus_club_drums.ogg",
+        "lead": "music/stems/club/mus_club_lead.ogg",
+        "tension": "music/stems/club/mus_club_tension.ogg"
+      },
+      "full_mix_preview": "build/music/mus_club_full_preview.ogg",
       "loop": true,
-      "loop_kind": "complete_composition_with_original_ending_and_intro",
-      "duration_seconds": 236.352,
+      "loop_samples": 1645714,
       "sample_rate": 48000,
-      "channels": 2,
-      "title": "Disco con Tutti",
-      "artist": "Kevin MacLeod",
-      "license": "CC-BY-4.0",
-      "license_url": "https://creativecommons.org/licenses/by/4.0/",
-      "source_url": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200091",
-      "source_file": "raw/incompetech/Disco con Tutti.mp3",
-      "download_url": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Disco%20con%20Tutti.mp3",
-      "processing": "Constant -5.58000dB gain, 48kHz stereo Vorbis q6; no tempo or arrangement change",
-      "selection_rationale": "funk/disco horns for social energy; based on composer metadata, not audition approval",
+      "loop_seconds": 34.2857,
+      "full_mix_lufs": null,
+      "full_mix_true_peak_dbtp": null,
+      "status": "proposed",
       "sources": [
-        "raw/incompetech/Disco con Tutti.mp3"
+        "own work (composed and synthesised, tools/gen_music.py)"
       ],
-      "date_downloaded": "2026-10-06",
       "unity_import": {
-        "loadType": "Streaming",
+        "loadType": "CompressedInMemory",
         "compressionFormat": "Vorbis",
         "quality": 0.45,
         "preloadAudioData": false,
@@ -1468,7 +1632,11 @@
         "quality": 0.45,
         "preloadAudioData": false,
         "loadInBackground": true
-      }
+      },
+      "stems": {
+        "tension": "music/mood/mus_mood_tension_bed.ogg"
+      },
+      "mood_rule": "full_mix stays intact (green = neutral = the track); red low-passes it 20 kHz -> 2.5 kHz (mood 0..-0.5) -> 900 Hz (-1) and fades in stems.tension (key/tempo-neutral bed, tools/gen_mood_bed.py)"
     },
     "lobby": {
       "id": "mus_lobby",
@@ -1498,7 +1666,11 @@
         "preloadAudioData": false,
         "loadInBackground": true
       },
-      "date_downloaded": "2026-10-05"
+      "date_downloaded": "2026-10-05",
+      "stems": {
+        "tension": "music/mood/mus_mood_tension_bed.ogg"
+      },
+      "mood_rule": "full_mix stays intact (green = neutral = the track); red low-passes it 20 kHz -> 2.5 kHz (mood 0..-0.5) -> 900 Hz (-1) and fades in stems.tension (key/tempo-neutral bed, tools/gen_mood_bed.py)"
     },
     "perp_pit": {
       "id": "mus_perp_pit",
@@ -1530,7 +1702,11 @@
         "quality": 0.45,
         "preloadAudioData": false,
         "loadInBackground": true
-      }
+      },
+      "stems": {
+        "tension": "music/mood/mus_mood_tension_bed.ogg"
+      },
+      "mood_rule": "full_mix stays intact (green = neutral = the track); red low-passes it 20 kHz -> 2.5 kHz (mood 0..-0.5) -> 900 Hz (-1) and fades in stems.tension (key/tempo-neutral bed, tools/gen_mood_bed.py)"
     },
     "terminal_cafe": {
       "id": "mus_terminal_cafe",
@@ -1563,7 +1739,11 @@
         "preloadAudioData": false,
         "loadInBackground": true
       },
-      "status": "FE-only music selection proposal; not a server SFX/contract id"
+      "status": "FE-only music selection proposal; not a server SFX/contract id",
+      "stems": {
+        "tension": "music/mood/mus_mood_tension_bed.ogg"
+      },
+      "mood_rule": "full_mix stays intact (green = neutral = the track); red low-passes it 20 kHz -> 2.5 kHz (mood 0..-0.5) -> 900 Hz (-1) and fades in stems.tension (key/tempo-neutral bed, tools/gen_mood_bed.py)"
     },
     "timeline": {
       "id": "mus_timeline_square",
@@ -1593,7 +1773,11 @@
         "preloadAudioData": false,
         "loadInBackground": true
       },
-      "date_downloaded": "2026-10-05"
+      "date_downloaded": "2026-10-05",
+      "stems": {
+        "tension": "music/mood/mus_mood_tension_bed.ogg"
+      },
+      "mood_rule": "full_mix stays intact (green = neutral = the track); red low-passes it 20 kHz -> 2.5 kHz (mood 0..-0.5) -> 900 Hz (-1) and fades in stems.tension (key/tempo-neutral bed, tools/gen_mood_bed.py)"
     },
     "trenches": {
       "id": "mus_trenches",
@@ -1625,7 +1809,11 @@
         "quality": 0.45,
         "preloadAudioData": false,
         "loadInBackground": true
-      }
+      },
+      "stems": {
+        "tension": "music/mood/mus_mood_tension_bed.ogg"
+      },
+      "mood_rule": "full_mix stays intact (green = neutral = the track); red low-passes it 20 kHz -> 2.5 kHz (mood 0..-0.5) -> 900 Hz (-1) and fades in stems.tension (key/tempo-neutral bed, tools/gen_mood_bed.py)"
     }
   },
   "babble": {
@@ -1706,7 +1894,9 @@
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
+        "compressionFormat": "Vorbis",
+        "quality": 0.5,
+        "sampleRateOverride": 24000,
         "preloadAudioData": true
       }
     },
@@ -1787,7 +1977,9 @@
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
+        "compressionFormat": "Vorbis",
+        "quality": 0.5,
+        "sampleRateOverride": 24000,
         "preloadAudioData": true
       }
     },
@@ -1868,7 +2060,9 @@
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
+        "compressionFormat": "Vorbis",
+        "quality": 0.5,
+        "sampleRateOverride": 24000,
         "preloadAudioData": true
       }
     },
@@ -1949,7 +2143,9 @@
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
+        "compressionFormat": "Vorbis",
+        "quality": 0.5,
+        "sampleRateOverride": 24000,
         "preloadAudioData": true
       }
     },
@@ -2030,7 +2226,9 @@
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
+        "compressionFormat": "Vorbis",
+        "quality": 0.5,
+        "sampleRateOverride": 24000,
         "preloadAudioData": true
       }
     },
@@ -2111,7 +2309,9 @@
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
+        "compressionFormat": "Vorbis",
+        "quality": 0.5,
+        "sampleRateOverride": 24000,
         "preloadAudioData": true
       }
     },
@@ -2192,7 +2392,9 @@
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
+        "compressionFormat": "Vorbis",
+        "quality": 0.5,
+        "sampleRateOverride": 24000,
         "preloadAudioData": true
       }
     },
@@ -2273,7 +2475,9 @@
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
+        "compressionFormat": "Vorbis",
+        "quality": 0.5,
+        "sampleRateOverride": 24000,
         "preloadAudioData": true
       }
     },
@@ -2354,7 +2558,9 @@
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
+        "compressionFormat": "Vorbis",
+        "quality": 0.5,
+        "sampleRateOverride": 24000,
         "preloadAudioData": true
       }
     },
@@ -2435,7 +2641,9 @@
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
+        "compressionFormat": "Vorbis",
+        "quality": 0.5,
+        "sampleRateOverride": 24000,
         "preloadAudioData": true
       }
     },
@@ -2516,7 +2724,9 @@
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
+        "compressionFormat": "Vorbis",
+        "quality": 0.5,
+        "sampleRateOverride": 24000,
         "preloadAudioData": true
       }
     },
@@ -2592,12 +2802,15 @@
       ],
       "archetype_status": "phase 2 (in contract/ids/archetypes.json)",
       "status": "proposed",
+      "signature": "sfx_new_coin",
       "sources": [
         "own work (formant synthesis, tools/gen_babble.py)"
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
+        "compressionFormat": "Vorbis",
+        "quality": 0.5,
+        "sampleRateOverride": 24000,
         "preloadAudioData": true
       }
     },
@@ -2678,7 +2891,9 @@
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
+        "compressionFormat": "Vorbis",
+        "quality": 0.5,
+        "sampleRateOverride": 24000,
         "preloadAudioData": true
       }
     },
@@ -2759,7 +2974,9 @@
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
+        "compressionFormat": "Vorbis",
+        "quality": 0.5,
+        "sampleRateOverride": 24000,
         "preloadAudioData": true
       }
     },
@@ -2835,12 +3052,15 @@
       ],
       "archetype_status": "phase 1 (in contract/ids/archetypes.json)",
       "status": "proposed",
+      "signature": "sfx_take_profit",
       "sources": [
         "own work (formant synthesis, tools/gen_babble.py)"
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
+        "compressionFormat": "Vorbis",
+        "quality": 0.5,
+        "sampleRateOverride": 24000,
         "preloadAudioData": true
       }
     },
@@ -2921,7 +3141,9 @@
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
+        "compressionFormat": "Vorbis",
+        "quality": 0.5,
+        "sampleRateOverride": 24000,
         "preloadAudioData": true
       }
     },
@@ -3002,7 +3224,9 @@
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
+        "compressionFormat": "Vorbis",
+        "quality": 0.5,
+        "sampleRateOverride": 24000,
         "preloadAudioData": true
       }
     },
@@ -3083,7 +3307,9 @@
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
+        "compressionFormat": "Vorbis",
+        "quality": 0.5,
+        "sampleRateOverride": 24000,
         "preloadAudioData": true
       }
     },
@@ -3164,7 +3390,9 @@
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
+        "compressionFormat": "Vorbis",
+        "quality": 0.5,
+        "sampleRateOverride": 24000,
         "preloadAudioData": true
       }
     },
@@ -3245,7 +3473,9 @@
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
+        "compressionFormat": "Vorbis",
+        "quality": 0.5,
+        "sampleRateOverride": 24000,
         "preloadAudioData": true
       }
     },
@@ -3326,7 +3556,9 @@
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
+        "compressionFormat": "Vorbis",
+        "quality": 0.5,
+        "sampleRateOverride": 24000,
         "preloadAudioData": true
       }
     },
@@ -3407,7 +3639,9 @@
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
+        "compressionFormat": "Vorbis",
+        "quality": 0.5,
+        "sampleRateOverride": 24000,
         "preloadAudioData": true
       }
     },
@@ -3488,7 +3722,9 @@
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
+        "compressionFormat": "Vorbis",
+        "quality": 0.5,
+        "sampleRateOverride": 24000,
         "preloadAudioData": true
       }
     },
@@ -3569,7 +3805,9 @@
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
+        "compressionFormat": "Vorbis",
+        "quality": 0.5,
+        "sampleRateOverride": 24000,
         "preloadAudioData": true
       }
     },
@@ -3650,7 +3888,9 @@
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
+        "compressionFormat": "Vorbis",
+        "quality": 0.5,
+        "sampleRateOverride": 24000,
         "preloadAudioData": true
       }
     },
@@ -3731,7 +3971,9 @@
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
+        "compressionFormat": "Vorbis",
+        "quality": 0.5,
+        "sampleRateOverride": 24000,
         "preloadAudioData": true
       }
     },
@@ -3812,7 +4054,9 @@
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
+        "compressionFormat": "Vorbis",
+        "quality": 0.5,
+        "sampleRateOverride": 24000,
         "preloadAudioData": true
       }
     },
@@ -3893,7 +4137,9 @@
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
+        "compressionFormat": "Vorbis",
+        "quality": 0.5,
+        "sampleRateOverride": 24000,
         "preloadAudioData": true
       }
     },
@@ -3969,12 +4215,15 @@
       ],
       "archetype_status": "phase 1 (in contract/ids/archetypes.json)",
       "status": "proposed",
+      "signature": "sfx_news_flash",
       "sources": [
         "own work (formant synthesis, tools/gen_babble.py)"
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
+        "compressionFormat": "Vorbis",
+        "quality": 0.5,
+        "sampleRateOverride": 24000,
         "preloadAudioData": true
       }
     },
@@ -4055,7 +4304,9 @@
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
+        "compressionFormat": "Vorbis",
+        "quality": 0.5,
+        "sampleRateOverride": 24000,
         "preloadAudioData": true
       }
     },
@@ -4136,7 +4387,9 @@
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
-        "compressionFormat": "ADPCM",
+        "compressionFormat": "Vorbis",
+        "quality": 0.5,
+        "sampleRateOverride": 24000,
         "preloadAudioData": true
       }
     }

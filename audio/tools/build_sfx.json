@@ -136,11 +136,11 @@
     "channels": 1,
     "volume_db": -8,
     "loop": false,
-    "desc": "Buy filled: rising chime arpeggio + coin",
+    "desc": "Buy filled: terminal up-ping (fifth up) + key tick + coin glint",
     "files": [
       {
         "path": "processed/sfx/sfx_buy.wav",
-        "samples": 40531,
+        "samples": 19518,
         "sr": 48000,
         "channels": 1
       }
@@ -152,11 +152,11 @@
     "channels": 1,
     "volume_db": -8,
     "loop": false,
-    "desc": "Sell filled: paper swish + falling two-note chime",
+    "desc": "Sell filled: terminal down-ping (fourth down) + short paper swipe",
     "files": [
       {
         "path": "processed/sfx/sfx_sell.wav",
-        "samples": 33109,
+        "samples": 20946,
         "sr": 48000,
         "channels": 1
       }
@@ -273,11 +273,11 @@
     "channels": 2,
     "volume_db": -3,
     "loop": false,
-    "desc": "Coin graduation fanfare: synth brass + timpani roll + crash",
+    "desc": "Coin graduation: bonding curve fills to 100% (accelerating rising ticks + riser), brass hit, migration whoosh L->R",
     "files": [
       {
         "path": "processed/sfx/sfx_graduation.wav",
-        "samples": 165137,
+        "samples": 152074,
         "sr": 48000,
         "channels": 2
       }
@@ -323,18 +323,16 @@
     "channels": 2,
     "volume_db": -4,
     "loop": false,
-    "desc": "Sunday Unlock bell: two deep bell strikes",
+    "desc": "Sunday Unlock: trading-floor opening bell (electric clapper), padlock unlock clack, one deep bell strike",
     "files": [
       {
         "path": "processed/sfx/sfx_sunday_unlock.wav",
-        "samples": 250667,
+        "samples": 209737,
         "sr": 48000,
         "channels": 2
       }
     ],
-    "sources": [
-      "raw/freesound/857938.ogg"
-    ]
+    "sources": []
   },
   "sfx_dm_ping": {
     "category": "phone",
@@ -566,5 +564,69 @@
       "raw/kenney/impact-sounds/Audio/impactMining_003.ogg",
       "raw/kenney/impact-sounds/Audio/impactMining_004.ogg"
     ]
+  },
+  "sfx_news_flash": {
+    "category": "news",
+    "channels": 1,
+    "volume_db": -13,
+    "loop": false,
+    "desc": "JUST IN / BREAKING wire alert: two-tone siren chirp + teletype ticks (news-bot posts are CT's heartbeat)",
+    "files": [
+      {
+        "path": "processed/sfx/sfx_news_flash.wav",
+        "samples": 37911,
+        "sr": 48000,
+        "channels": 1
+      }
+    ],
+    "sources": []
+  },
+  "sfx_gm": {
+    "category": "social",
+    "channels": 1,
+    "volume_db": -14,
+    "loop": false,
+    "desc": "gm ritual: soft sunrise pentatonic chime when a room says 'gm'",
+    "files": [
+      {
+        "path": "processed/sfx/sfx_gm.wav",
+        "samples": 45778,
+        "sr": 48000,
+        "channels": 1
+      }
+    ],
+    "sources": []
+  },
+  "sfx_cash_in": {
+    "category": "trading",
+    "channels": 1,
+    "volume_db": -7,
+    "loop": false,
+    "desc": "Cash credited (top-up confirmed): money-spray flutter + register ka-ching + talking-drum glide",
+    "files": [
+      {
+        "path": "processed/sfx/sfx_cash_in.wav",
+        "samples": 50278,
+        "sr": 48000,
+        "channels": 1
+      }
+    ],
+    "sources": []
+  },
+  "sfx_rekt_phonk": {
+    "category": "stinger",
+    "channels": 2,
+    "volume_db": -1,
+    "loop": false,
+    "desc": "REKT replay tag: 2-bar phonk (pitched cowbell riff, sliding 808, triplet hats) for the shared REKT clip",
+    "files": [
+      {
+        "path": "processed/sfx/sfx_rekt_phonk.wav",
+        "samples": 199177,
+        "sr": 48000,
+        "channels": 2
+      }
+    ],
+    "sources": []
   }
 }

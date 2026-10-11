@@ -11,6 +11,10 @@ namespace CTLife.Audio
         public float volume = 1f;
         public float pitchJitter = 0.03f;
         public string category;
+        /// <summary>Seamless loop (e.g. `sfx_call_ring`): play through <see cref="Sfx.StartLoop"/>, not as a one-shot.</summary>
+        public bool loop;
+        /// <summary>Stingers duck the music for their length (map `ducks_music`, or category "stinger").</summary>
+        public bool ducksMusic;
         /// <summary>The raw entry, for set-specific fields (babble: chars_per_second, npc_pitch_range_semitones…).</summary>
         public JToken raw;
     }
@@ -19,16 +23,20 @@ namespace CTLife.Audio
     {
         public string districtId;
         public float bpm;
-        /// <summary>A licensed complete composition. Empty selects the original adaptive-stem mode.</summary>
+        /// <summary>A licensed complete composition. Empty selects the adaptive-stem mode.</summary>
         public string fullMix;
         public float volume = 1f;
+        /// <summary>pad/bass/drums/lead/tension. With a full mix only `tension` is used (the red-market layer).</summary>
         public readonly Dictionary<string, string> stems = new Dictionary<string, string>();
+        public bool HasStems => stems.ContainsKey("pad") || stems.ContainsKey("bass") || stems.ContainsKey("drums") || stems.ContainsKey("lead");
+        public bool FullMixMode => !string.IsNullOrEmpty(fullMix) && !HasStems;
     }
 
     /// <summary>
-    /// Parses audio/sfx-map.json (written by the audio agent, copied into Resources/Audio by the editor sync).
-    /// Paths are relative to audio/processed without changing folders, e.g. "sfx/sfx_buy_01.ogg".
-    /// Accepted shapes per sfx id: a string path, `{file}`, or `{files[], volume, pitchJitter, category}`.
+    /// Parses audio/sfx-map.json (written by the audio lane, copied into Resources/Audio by the content sync).
+    /// Paths are relative to audio/processed without changing folders, e.g. "sfx/sfx_buy.wav".
+    /// Accepted shapes per sfx id: a string path, `{file}`, or `{files[], volume, pitchJitter, category, loop, ducks_music}`.
+    /// Optional `surfaces.venues` maps venue ids to footstep surfaces (overrides <see cref="SurfaceResolver.VenueDefaults"/>).
     /// </summary>
     public sealed class SfxMap
     {
@@ -37,6 +45,7 @@ namespace CTLife.Audio
         public readonly Dictionary<string, SfxEntry> Babble = new Dictionary<string, SfxEntry>();
         public readonly Dictionary<string, SfxEntry> Footsteps = new Dictionary<string, SfxEntry>();
         public readonly Dictionary<string, MusicEntry> Music = new Dictionary<string, MusicEntry>();
+        public readonly Dictionary<string, string> VenueSurfaces = new Dictionary<string, string>();
 
         public static SfxMap Parse(string json)
         {
@@ -52,6 +61,7 @@ namespace CTLife.Audio
                 Log.Warn("audio", "sfx-map.json is not valid JSON: " + e.Message);
                 return map;
             }
+            if (!(root is JObject)) return map;
 
             // Either {"sfx": {...}, "music": {...}} or a flat {id: entry} object.
             var sfx = root["sfx"] as JObject ?? (root["music"] == null ? root as JObject : null);
@@ -64,6 +74,7 @@ namespace CTLife.Audio
             {
                 foreach (var p in music.Properties())
                 {
+                    if (p.Name.StartsWith("$") || p.Name.StartsWith("_") || !(p.Value is JObject)) continue;
                     var m = new MusicEntry
                     {
                         districtId = p.Name,
@@ -72,10 +83,14 @@ namespace CTLife.Audio
                         volume = UnityEngine.Mathf.Clamp01(p.Value.Float("volume", 1f)),
                     };
                     if (p.Value["stems"] is JObject stems)
-                        foreach (var s in stems.Properties()) m.stems[s.Name] = s.Value.ToString();
-                    map.Music[p.Name] = m;
+                        foreach (var s in stems.Properties())
+                            if (s.Value.Type == JTokenType.String && s.Value.ToString().Length > 0) m.stems[s.Name] = s.Value.ToString();
+                    if (!string.IsNullOrEmpty(m.fullMix) || m.stems.Count > 0) map.Music[p.Name] = m;
                 }
             }
+            if (root["surfaces"]?["venues"] is JObject surfaces)
+                foreach (var p in surfaces.Properties())
+                    if (p.Value.Type == JTokenType.String && SurfaceResolver.IsKnown(p.Value.ToString())) map.VenueSurfaces[p.Name] = p.Value.ToString();
             return map;
         }
 
@@ -92,10 +107,13 @@ namespace CTLife.Audio
                 {
                     if (o["file"] != null) e.files.Add(o["file"].ToString());
                     if (o["files"] is JArray arr) foreach (var f in arr) e.files.Add(f.ToString());
-                    e.volume = o.Float("volume", 1f);
-                    e.pitchJitter = o.Float("pitchJitter", 0.03f);
+                    e.volume = UnityEngine.Mathf.Clamp(o.Float("volume", 1f), 0f, 2f);
+                    e.pitchJitter = UnityEngine.Mathf.Clamp(o.Float("pitchJitter", 0.03f), 0f, 0.5f);
                     e.category = o.Str("category");
+                    e.loop = o.Bool("loop");
+                    e.ducksMusic = o.Bool("ducks_music") || e.category == "stinger";
                 }
+                e.files.RemoveAll(string.IsNullOrEmpty);
                 if (e.files.Count > 0) into[e.id] = e;
             }
         }

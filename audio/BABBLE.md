@@ -5,8 +5,9 @@ syllables, one per letter: `processed/babble/babble_<archetype>_<a..z>.wav` (48 
 all syllables at the same RMS, true peak <= -1.5 dBTP). Per-bank numbers are in
 `processed/babble/babble-banks.json` and in `sfx-map.json` under `babble.<archetype>` (`files` ordered a..z, plus a `letters` map).
 
-Reference code: `unity/BabblePlayer.cs` (compiles against Unity 6000.3.25f1's engine assemblies; not yet
-run inside the game). Python twin for auditioning: `tools/babble_preview.py <archetype> "<line>" [npcId]`.
+Shipping code: `client/Assets/Scripts/Audio/Logic/BabbleScheduler.cs` (these rules as a pure, unit-tested function)
+and `client/Assets/Scripts/Audio/BabblePlayer.cs` (playback). `unity/BabblePlayer.cs` is the original reference.
+Python twin for auditioning: `tools/babble_preview.py <archetype> "<line>" [npcId]`.
 
 ## Rules
 
@@ -29,6 +30,10 @@ run inside the game). Python twin for auditioning: `tools/babble_preview.py <arc
    DSP clock. Syllables may overlap slightly; do not cut the previous one (cutting clicks).
 7. **Volume:** `volume_db` from the bank (−4 to −12 dB). Babble goes on the SFX bus, not the music bus.
 8. **Fallbacks:** unknown archetype → the `default` bank (files `babble_generic_*`). Missing clip → skip that syllable, never crash.
+9. **Rate limits** (`BabbleBudget`): at most 3 NPCs babbling near the listener (nearest win; a nearer new line cuts the
+   farthest talker), one line per NPC per 1.5 s, silent beyond 15 m (linear roll-off from 2 m). The speech bubble and
+   the returned line length are unaffected; only the sound is skipped.
+10. **Endings with the cap:** the `?`/`!` contour applies to the last syllables actually played (after the 3 s cap).
 
 ## Banks
 

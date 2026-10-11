@@ -406,3 +406,69 @@ def sparkle(dur: float = 0.6, n_notes: int = 7, base: float = 2000.0, spread: fl
         e = min(n, s + len(c))
         out[s:e] += c[: e - s]
     return out
+
+
+# ================================================================ CT-native additions (2026-10-08, audio integration lane)
+# Research notes and sources: docs/progress/audio-integration.md "Sound culture research".
+
+def talking_drum(f0: float, dur: float = 0.35, glide: float = 1.45, squeeze_at: float = 0.04, release_at: float | None = None,
+                 drive: float = 1.3) -> np.ndarray:
+    """Yoruba dùndún-style talking drum: a membrane hit whose pitch glides as the player squeezes the tension cords
+    (Wikipedia "Talking drum": pitch changes within a single beat, "a warbling note", "like a human humming").
+    `glide` is the squeezed pitch ratio; `release_at` (s) lets the pitch fall back for the "gùn-gun" speech contour."""
+    n = ns(dur)
+    t = np.arange(n) / SR
+    up = 1 / (1 + np.exp(-(t - squeeze_at) / 0.012))
+    ratio = 1 + (glide - 1) * up
+    if release_at is not None:
+        down = 1 / (1 + np.exp(-(t - release_at) / 0.02))
+        ratio = ratio - (glide - 1) * 0.8 * down
+    f = f0 * ratio * (1 + 0.25 * np.exp(-t / 0.008))
+    ph = 2 * np.pi * np.cumsum(f) / SR
+    body = np.sin(ph) + 0.35 * np.sin(1.52 * ph + 0.4) + 0.12 * np.sin(2.3 * ph)
+    body = sat(body * drive, drive) * env_exp(n, dur * 0.85, attack=0.0015)
+    slap = filt(noise(n=ns(0.015)), "bp", 1800, q=1.2) * 0.5
+    body[: len(slap)] += slap
+    return body * 0.8
+
+
+def paper_flutter(dur: float = 0.09, centre: float = 3800.0, flap_hz: float = 45.0, seed: int = 0) -> np.ndarray:
+    """One banknote fluttering past (owambe "spraying"): band-passed noise with a fast irregular flap."""
+    rng = np.random.default_rng(seed)
+    n = ns(dur)
+    t = np.arange(n) / SR
+    x = filt(noise(n=n), "bp", centre * rng.uniform(0.8, 1.25), q=1.4)
+    flap = 0.5 + 0.5 * np.sign(np.sin(2 * np.pi * flap_hz * rng.uniform(0.8, 1.3) * t + rng.uniform(0, 6)))
+    flap = filt(flap, "lp", 400)
+    return x * flap * env_adsr(n, 0.004, 0.02, 0.6, dur * 0.4) * 1.8
+
+
+def air_horn(dur: float, bend: float = 0.0) -> np.ndarray:
+    """Synth DJ air horn (stacked saws, honky mid boost). Own synthesis; no sampled horn."""
+    n = ns(dur)
+    t = np.arange(n) / SR
+    benv = 1 + bend * np.clip((t - 0.1) / max(dur - 0.1, 1e-3), 0, 1) ** 2
+    x = np.zeros(n)
+    for f, a in [(466.0, 1.0), (587.0, 0.8), (698.0, 0.6), (233.0, 0.5)]:
+        x += a * osc("saw", f * benv * (1 + 0.004 * np.sin(2 * np.pi * 6 * t)), n=n)
+    x = dsp.eq(x, "peak", 1500, 6, q=1.2)
+    x = filt(x, "lp", 5000)
+    x = sat(x * 1.5, 2.0)
+    return x * env_adsr(n, 0.01, 0.05, 1.0, 0.06)
+
+
+def terminal_ping(freq: float, dur: float = 0.22, bright: float = 1.0) -> np.ndarray:
+    """Clean trading-terminal ping: sine + light FM, very fast attack, short exponential tail."""
+    n = ns(dur)
+    t = np.arange(n) / SR
+    idx = 0.9 * bright * np.exp(-t / 0.03)
+    x = np.sin(2 * np.pi * freq * t + idx * np.sin(2 * np.pi * freq * 2 * t))
+    x += 0.18 * np.sin(2 * np.pi * freq * 3 * t) * np.exp(-t / 0.02)
+    return x * env_exp(n, dur, attack=0.0008)
+
+
+def tick(dur: float = 0.012, f: float = 5200.0) -> np.ndarray:
+    """Teletype / key tick."""
+    n = ns(dur)
+    x = filt(noise(n=n), "bp", f, q=2.0) * env_exp(n, dur * 0.6, attack=0.0003) * 2.0
+    return x

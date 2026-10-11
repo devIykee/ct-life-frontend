@@ -17,6 +17,14 @@ namespace CTLife.Audio
         public static Coroutine Speak(MonoBehaviour host, AudioSource source, string text, string archetypeId, float basePitch)
         {
             if (host == null || source == null || string.IsNullOrEmpty(text)) return null;
+            var am = AudioManager.Instance;
+            if (am != null)
+            {
+                // Same rate limits as the bank player: earshot, ≤ 3 talkers, one line per speaker per 1.5 s.
+                var id = "synth:" + host.GetInstanceID();
+                var d = am.BabbleBudget.Request(id, Vector3.Distance(am.ListenerPosition, source.transform.position), 1.2f, Time.unscaledTimeAsDouble);
+                if (d.Verdict == BabbleBudget.Verdict.Deny) return null;
+            }
             return host.StartCoroutine(SpeakRoutine(source, text, archetypeId, basePitch));
         }
 
@@ -38,7 +46,7 @@ namespace CTLife.Audio
                 if (files != null && files.Count > 0) clip = am.Clip(files[rng.Next(files.Count)]);
                 if (clip == null) clip = SynthSyllable(rng.Next(4));
                 source.pitch = basePitch * (0.92f + (float)rng.NextDouble() * 0.16f);
-                source.PlayOneShot(clip, am != null ? am.sfxVolume * 0.6f : 0.6f);
+                source.PlayOneShot(clip, am != null ? am.SfxGain * 0.6f : 0.6f);
                 yield return new WaitForSeconds(0.075f + (float)rng.NextDouble() * 0.03f);
             }
             source.pitch = 1f;

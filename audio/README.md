@@ -4,13 +4,17 @@ Everything here is CC0 or our own work (see `LICENSES.md`). IDs → files: `sfx-
 
 ```
 audio/
-  processed/sfx/        one-shots + footsteps (48 kHz 16-bit WAV; UI/phone/trading/footsteps mono, stingers stereo)
-  processed/ambience/   venue loops (48 kHz 16-bit stereo WAV, seamless)
-  processed/music/      district stems (Ogg Vorbis q4, 48 kHz stereo, seamless, sample-locked)
-  processed/babble/     NPC syllable banks + babble-banks.json
-  unity/BabblePlayer.cs reference babble player (FE copies into client/)
-  tools/                every generator, the fetcher and the QA script
-  raw/                  third-party downloads (gitignored; rebuild with tools/fetch_sources.py)
+  processed/sfx/            one-shots + footsteps (48 kHz 16-bit WAV; UI/phone/trading/footsteps mono, stingers stereo)
+  processed/ambience/       venue loops (48 kHz 16-bit stereo WAV, seamless)
+  processed/music/licensed/ complete CC-BY district tracks (Ogg Vorbis, stereo)
+  processed/music/stems/    adaptive stem sets, sample-locked (today: club/ — Afropiano, own work)
+  processed/music/mood/     red-market tension bed for the full-mix sets (key/tempo-neutral, own work)
+  processed/babble/         NPC syllable banks + babble-banks.json (tool input, not shipped)
+  archive/processed/        files no longer referenced by sfx-map.json (kept for history / easy revert; never shipped)
+  RUNTIME_API.md            the client audio API every lane calls (CTLife.Audio)
+  unity/BabblePlayer.cs     original reference player (the shipping one is client/Assets/Scripts/Audio/BabblePlayer.cs)
+  tools/                    every generator, the fetcher, QA, map builder and ship_audio.py
+  raw/                      third-party downloads (gitignored; rebuild with tools/fetch_sources.py)
 ```
 
 ## Rebuild from scratch
@@ -22,11 +26,13 @@ cd tools
 ../.venv/bin/python fetch_sources.py     # Kenney zips + freesound CC0 previews -> raw/, provenance -> sources.json
 ../.venv/bin/python gen_sfx.py           # processed/sfx/sfx_*.wav
 ../.venv/bin/python gen_footsteps.py     # processed/sfx/foot_*.wav
-../.venv/bin/python gen_music.py         # processed/music/mus_*.ogg   (~10 s per district)
-../.venv/bin/python gen_ambience.py      # processed/ambience/amb_*.wav (needs gen_music for the club)
+../.venv/bin/python gen_music.py club    # processed/music/stems/club/mus_club_*.ogg (16 bars, 112 BPM); preview in build/
+../.venv/bin/python gen_mood_bed.py      # processed/music/mood/mus_mood_tension_bed.ogg (24 s seamless)
+../.venv/bin/python gen_ambience.py      # processed/ambience/amb_*.wav (needs gen_music for the club; `amb_club_doors` alone re-renders one)
 ../.venv/bin/python gen_babble.py        # processed/babble/*
 ../.venv/bin/python check_audio.py       # loudness / true peak / loop seams -> qa_report.json
 ../.venv/bin/python build_map.py         # sfx-map.json + LICENSES.md
+python3 ship_audio.py --archive --sync   # only map-referenced files reach client/Assets/Resources/Audio; prints footprint
 ```
 Needs ffmpeg with libvorbis and soxr (checked with Homebrew ffmpeg 8.0). The first run on macOS can stall
 for minutes while the OS scans scipy's native libraries; later runs take seconds.
@@ -42,24 +48,29 @@ for minutes while the OS scans scipy's native libraries; later runs take seconds
 
 ## Adaptive music (`market_mood` −1 … +1)
 
-Each district `mus_<district>` has five stems with **identical sample length**; start them together on the same
-DSP time (FMOD: one event, five synced tracks; Unity: `PlayScheduled` with the same dspTime) and loop them.
-Suggested mapping of the spec's rule ("green brings in drums and lead; red low-passes the mix and adds a tension
-layer"):
+Implemented in `client/Assets/Scripts/Audio/Logic/MoodMix.cs` (unit-tested) and `MusicDirector.cs`; contract in
+`RUNTIME_API.md` §4. Two kinds of set:
 
-| mood | pad | bass | drums | lead | tension | music bus low-pass |
+- **Stem set** (`stems.pad/bass/drums/lead/tension`, identical sample length, started on one DSP tick):
+
+| mood | pad | bass | drums | lead | tension | music low-pass |
 | --- | --- | --- | --- | --- | --- | --- |
-| +1.0 … +0.5 | 0 dB | 0 dB | 0 dB | 0 dB | off | open |
-| +0.5 … 0 | 0 dB | 0 dB | fades in from 0 | off → fades in after +0.5 | off | open |
-| 0 … −0.5 | 0 dB | 0 dB | off | off | fades in | 20 kHz → 2.5 kHz |
-| −0.5 … −1 | 0 dB | 0 dB | off | off | 0 dB | 2.5 kHz → 900 Hz |
+| +1.0 … +0.5 | on | on | on | on | off | open |
+| +0.5 … 0 | on | on | fades out 0.5 → 0 | fades out 0.5 → 0.35 | off | open |
+| 0 … −0.5 | on | on | off | off | fades in | 20 kHz → 2.5 kHz |
+| −0.5 … −1 | on | on | off | off | on | 2.5 kHz → 900 Hz |
 
-Fade over ~2 bars; switch on bar lines (bpm and bars are in `sfx-map.json`). Duck the music bus 6 dB under
-LiveKit voice and under every `stinger`. `full_mix_preview` files are a non-adaptive fallback and a reference.
-Clubs use `mus_club`; outside a club play `amb_club_doors` (the same groove through a wall).
+- **Full-mix set** (`full_mix` + `stems.tension`): the licensed arrangement stays intact (green = neutral = the track);
+  red applies the same low-pass and fades in the tension bed.
 
-## Unity import (Android) suggestions
+Changes latch on bar lines (bpm in the map) and fade over two bars (2–8 s). Music ducks 6 dB under voice / Space
+speakers and 9 dB under every `stinger` (deepest wins). Clubs use `clubs`; outside a club play `amb_club_doors` (the
+same groove through a wall).
 
-`sfx-map.json` → `unity_import` per ID. Short UI/phone/footsteps/babble: Decompress On Load + ADPCM,
-footsteps Force To Mono. Stingers: Compressed In Memory + Vorbis. Ambience and music: Streaming + Vorbis.
-If the project uses FMOD Studio (spec), import the same files into FMOD and let it compress per platform.
+## Unity import (Android)
+
+Authoritative policy: `client/Assets/Scripts/Audio/Logic/ImportPolicy.cs`, applied by
+`CTLife.Audio.Editor/AudioImportPostprocessor`. Music Streaming Vorbis 0.45; stems/beds Compressed In Memory 0.45;
+ambience Streaming 0.35; stingers Compressed In Memory 0.6; footsteps Decompress On Load 0.5 at 32 kHz; babble
+Decompress On Load 0.5 at 24 kHz; other one-shots Decompress On Load 0.6. No Force To Mono: sources are authored mono,
+and Unity's downmix also peak-normalises. `sfx-map.json` `unity_import` fields mirror this for information only.

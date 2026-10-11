@@ -53,7 +53,8 @@ def main(folders: list[str]) -> None:
     folders = folders or ["sfx", "ambience", "music", "babble"]
     old = json.loads(REPORT.read_text()) if REPORT.exists() else {}
     for fo in folders:
-        files = sorted((OUT / fo).glob("*.wav")) + sorted((OUT / fo).glob("*.ogg"))
+        # Recursive: music lives in licensed/, stems/<set>/ and mood/ subfolders.
+        files = sorted((OUT / fo).rglob("*.wav")) + sorted((OUT / fo).rglob("*.ogg"))
         loop = fo in ("ambience", "music")
         with ThreadPoolExecutor(8) as ex:
             res = list(ex.map(lambda f: check(f, loop or "call_ring" in f.name), files))

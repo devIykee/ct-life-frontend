@@ -167,7 +167,12 @@ def recipes() -> dict:
     studio = room_tone(L, 300) + np.concatenate([hum(L, 120.0, 0.02), hum(ns(XF), 120.0, 0.02)])
     out["amb_spaces_studio"] = finish("amb_spaces_studio", studio, L, target=-36.0)
 
-    # Club bass behind closed doors: our own club mix through a wall + crowd outside
+    club_doors(out)
+    return out
+
+
+def club_doors(out: dict) -> None:
+    """Club bass behind closed doors: our own club mix (gen_music.club) through a wall + crowd outside."""
     import gen_music
     tr = gen_music.club()
     mix = sum(tr.buf[s] for s in gen_music.MIX_STEMS)
@@ -179,12 +184,18 @@ def recipes() -> dict:
     crowd = layer_src("amb_club_doors", 640630, CL + ns(XF), -7.0, lp=3500)
     crowd = dsp.crossfade_loop(crowd, CL, ns(XF))
     out["amb_club_doors"] = finish("amb_club_doors", wall + crowd, CL)
-    return out
 
 
 def main(only: list[str]) -> None:
-    rep = recipes()
     p = Path(__file__).with_name("build_ambience.json")
+    if only == ["amb_club_doors"]:
+        # Re-render just the club-through-the-wall loop (after the club music changes) and keep every other report row.
+        rep = json.loads(p.read_text()) if p.exists() else {}
+        out: dict = {}
+        club_doors(out)
+        rep.update(out)
+    else:
+        rep = recipes()
     p.write_text(json.dumps(rep, indent=2))
 
 

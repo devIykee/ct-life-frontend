@@ -5,42 +5,57 @@ using UnityEngine;
 namespace CTLife.Audio
 {
     /// <summary>
-    /// Adaptive district music (Build Spec "Adaptive music"): four stems (pad, bass, drums, lead) plus an optional
-    /// tension layer. `market_mood` runs −1 (red) to +1 (green): green brings in drums and lead, red low-passes the
-    /// mix and adds tension. Stems start sample-aligned with PlayScheduled. Licensed full compositions use a
-    /// separate single-source mode: no pretend stems and no mood low-pass removing their bright arrangement.
+    /// Adaptive venue/district music (Build Spec "Adaptive music"). A set is either five sample-locked stems (pad,
+    /// bass, drums, lead, tension) or a complete licensed composition plus an optional key/tempo-neutral tension bed.
+    /// `market_mood` (−1 red … +1 green) drives <see cref="MoodController"/>: green brings in drums and lead, red
+    /// low-passes the mix and adds tension; changes latch on bar lines and fade over two bars. Stems start together
+    /// with PlayScheduled on one DSP tick once every clip has loaded, and a drift guard re-locks them if a device ever
+    /// slips. Venue changes crossfade between two banks (1.2 s). Spaces Studio is voice only (no music).
+    /// The music bus follows the Music setting and the AudioManager duck (voice −6 dB, stingers −9 dB).
     /// </summary>
     public sealed class MusicDirector : MonoBehaviour
     {
-        private static readonly string[] StemNames = { "pad", "bass", "drums", "lead", "tension" };
-
-        private AudioManager _audio;
+        public static readonly string[] StemNames = { "pad", "bass", "drums", "lead", "tension" };
+        public const int OwnedSourceCount = 2 * (1 + 5);
         private const float CrossfadeSeconds = 1.2f;
+        private const double ScheduleLead = 0.15;
+        private const double LoadTimeout = 3.0;
+        private const int DriftToleranceSamples = 1024;
+
         [System.Serializable]
         private sealed class Bank
         {
             public readonly Dictionary<string, AudioSource> stems = new Dictionary<string, AudioSource>();
             public readonly Dictionary<string, AudioLowPassFilter> filters = new Dictionary<string, AudioLowPassFilter>();
+            public AudioLowPassFilter fullMixFilter;
             public string key;
             public AudioSource fullMix;
             public string fullMixPath;
             public float gain = 1f;
             public float weight;
+            public float bpm = 100f;
+            public bool fullMixMode;
             public double startDsp;
+            public bool pendingStart;
+            public double pendingSince;
             public bool resumeAfterEnable, resumeScheduled;
         }
+
+        private AudioManager _audio;
         [SerializeField, HideInInspector] private Bank[] _banks = { new Bank(), new Bank() };
-        private readonly Dictionary<string, float> _stemGains = new Dictionary<string, float>();
+        private readonly MoodController _mood = new MoodController();
         [System.NonSerialized] private bool _runtimeReady;
         private int _targetBank = -1;
         private string _district;
-        private float _mood;      // −1..1
-        private float _smoothedMood;
+        private double _nextDriftCheck;
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-        private int _reviewTransitions;
+        private int _reviewTransitions, _reviewResyncs;
 #endif
 
-        public float Mood => _mood;
+        /// <summary>The requested market mood (−1..1); the audible mix follows it on the next bar line.</summary>
+        public float Mood => _mood.TargetMood;
+        public MoodLayers Layers => _mood.Current;
+        public string CurrentKey => _district;
 
         private void OnEnable()
         {
@@ -56,30 +71,23 @@ namespace CTLife.Audio
             if (_runtimeReady) return;
             _audio = audio;
             if (_banks == null || _banks.Length != 2) _banks = new[] { new Bank(), new Bank() };
-            foreach (var n in StemNames) _stemGains[n] = n == "pad" || n == "bass" ? 1f : 0f;
             for (int i = 0; i < _banks.Length; i++)
             {
                 var bank = _banks[i] ?? (_banks[i] = new Bank());
                 bank.stems.Clear();
                 bank.filters.Clear();
                 bank.fullMix = Source("music_" + i + "_full_mix");
+                bank.fullMixFilter = Filter(bank.fullMix);
                 foreach (var n in StemNames)
                 {
                     var source = Source("music_" + i + "_" + n);
                     bank.stems[n] = source;
-                    var filter = source.GetComponent<AudioLowPassFilter>();
-                    if (filter == null) filter = source.gameObject.AddComponent<AudioLowPassFilter>();
-                    bank.filters[n] = filter;
+                    bank.filters[n] = Filter(source);
                 }
                 if (bank.resumeAfterEnable)
                 {
                     // Pause/UnPause retains the native playhead. A still-scheduled bank is scheduled together again.
-                    if (bank.resumeScheduled)
-                    {
-                        bank.startDsp = AudioSettings.dspTime + 0.2;
-                        if (bank.fullMix.clip != null) bank.fullMix.PlayScheduled(bank.startDsp);
-                        foreach (var source in bank.stems.Values) if (source.clip != null) source.PlayScheduled(bank.startDsp);
-                    }
+                    if (bank.resumeScheduled || bank.pendingStart) bank.pendingStart = true;
                     else
                     {
                         if (bank.fullMix.clip != null) bank.fullMix.UnPause();
@@ -107,16 +115,30 @@ namespace CTLife.Audio
             source.loop = true;
             source.playOnAwake = false;
             source.spatialBlend = 0f;
+            source.priority = 0; // music is never virtualised away by one-shots
             if (restoreActive) go.SetActive(true);
             return source;
         }
 
-        /// <summary>Market Mood bps (real SOL 24h change) → −1..1. ±5% saturates.</summary>
-        public void SetMood(int bps) => _mood = Mathf.Clamp(bps / 500f, -1f, 1f);
+        private static AudioLowPassFilter Filter(AudioSource source)
+        {
+            var filter = source.GetComponent<AudioLowPassFilter>();
+            if (filter == null) filter = source.gameObject.AddComponent<AudioLowPassFilter>();
+            filter.lowpassResonanceQ = 1f;
+            return filter;
+        }
 
-        /// <summary>Venue-specific set first (audio: Perp Pit has its own), else the district's, else clubs for club venues.</summary>
+        /// <summary>Market Mood bps (real SOL 24h change) → −1..1. ±5% saturates.</summary>
+        public void SetMood(int bps) => _mood.SetMood(MoodMix.FromBps(bps));
+
+        /// <summary>Market mood −1 (red) … +1 (green).</summary>
+        public void SetMood(float mood) => _mood.SetMood(mood);
+
+        /// <summary>Venue-specific set first (Perp Pit has its own), else clubs for club venues, else the district's.</summary>
         public void SetMusic(string venueId, string districtId, bool isClub = false)
         {
+            if (_audio == null) return;
+            _audio.NoteVenue(venueId, isClub);
             // Build Spec "Sound design", district tempo table: Spaces Studio = None / Voice only.
             // Its location in the Timeline district must not select that district's music fallback.
             if (venueId == "spaces_studio") { SetDistrict(null); return; }
@@ -127,9 +149,10 @@ namespace CTLife.Audio
             SetDistrict(key);
         }
 
+        /// <summary>Select a music set by its sfx-map key (district id, venue id, "clubs", "lobby"); null stops.</summary>
         public void SetDistrict(string districtId)
         {
-            if (districtId == _district) return;
+            if (_audio == null || districtId == _district) return;
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             _reviewTransitions++;
 #endif
@@ -137,12 +160,11 @@ namespace CTLife.Audio
             _targetBank = -1;
             if (districtId == null || !_audio.Map.Music.TryGetValue(districtId, out var set)) return;
 
-            // Returning to a still-fading set reverses the fade without restarting its stems.
+            // Returning to a still-fading set reverses the fade without restarting it. Lobby and Timeline share one
+            // full composition; entering the city keeps its musical phase.
             for (int i = 0; i < _banks.Length; i++)
-                if (_banks[i].key == districtId || (!string.IsNullOrEmpty(set.fullMix) &&
-                    _banks[i].fullMixPath == set.fullMix && _banks[i].fullMix.clip != null))
+                if (_banks[i].key == districtId || (set.FullMixMode && _banks[i].fullMixPath == set.fullMix && _banks[i].fullMix.clip != null))
                 {
-                    // Lobby and Timeline share one full composition; entering the city keeps its musical phase.
                     _banks[i].key = districtId;
                     _banks[i].gain = set.volume;
                     _targetBank = i;
@@ -153,63 +175,115 @@ namespace CTLife.Audio
             Clear(bank);
             bank.key = districtId;
             bank.gain = set.volume;
-            if (!string.IsNullOrEmpty(set.fullMix))
+            bank.bpm = set.bpm > 1f ? set.bpm : 100f;
+            bank.fullMixMode = set.FullMixMode;
+            if (set.FullMixMode)
             {
                 bank.fullMixPath = set.fullMix;
                 bank.fullMix.clip = _audio.Clip(set.fullMix);
                 bank.fullMix.volume = 0f;
             }
-            else
+            foreach (var n in StemNames)
             {
-                foreach (var n in StemNames)
-                {
-                    if (!set.stems.TryGetValue(n, out var path)) continue;
-                    var clip = _audio.Clip(path);
-                    if (clip == null) continue;
-                    var s = bank.stems[n];
-                    s.clip = clip;
-                    s.volume = 0f;
-                }
+                // Full-mix sets only take the red-market tension bed from `stems`.
+                if (set.FullMixMode && n != "tension") continue;
+                if (!set.stems.TryGetValue(n, out var path)) continue;
+                var clip = _audio.Clip(path);
+                if (clip == null) continue;
+                var s = bank.stems[n];
+                s.clip = clip;
+                s.volume = 0f;
             }
-            // Load every clip before picking the shared DSP start; disk loads cannot desynchronise stems.
-            bank.startDsp = AudioSettings.dspTime + 0.2;
-            if (bank.fullMix.clip != null) bank.fullMix.PlayScheduled(bank.startDsp);
-            foreach (var s in bank.stems.Values) if (s.clip != null) s.PlayScheduled(bank.startDsp);
-            Log.Info("audio", $"Music: {districtId} @ {set.bpm} BPM ({(string.IsNullOrEmpty(set.fullMix) ? "adaptive stems" : "full mix: " + set.fullMix)})");
+            // Start only when every clip is decoded/ready, all on one DSP tick: disk or decode latency on one stem
+            // cannot desynchronise the set.
+            bank.pendingStart = true;
+            bank.pendingSince = AudioSettings.dspTime;
+            foreach (var s in Sources(bank)) if (s.clip != null && s.clip.loadState == AudioDataLoadState.Unloaded) s.clip.LoadAudioData();
+            _mood.Restart(false);
+            Log.Info("audio", $"Music: {districtId} @ {set.bpm} BPM ({(set.FullMixMode ? "full mix: " + set.fullMix : "adaptive stems")})");
+        }
+
+        private static IEnumerable<AudioSource> Sources(Bank bank)
+        {
+            yield return bank.fullMix;
+            foreach (var s in bank.stems.Values) yield return s;
+        }
+
+        private void TryStart(Bank bank, double now)
+        {
+            bool ready = true;
+            foreach (var s in Sources(bank))
+                if (s.clip != null && s.clip.loadState == AudioDataLoadState.Loading) ready = false;
+            if (!ready && now - bank.pendingSince < LoadTimeout) return;
+            bank.pendingStart = false;
+            bank.startDsp = now + ScheduleLead;
+            foreach (var s in Sources(bank))
+                if (s.clip != null && s.clip.loadState != AudioDataLoadState.Failed) s.PlayScheduled(bank.startDsp);
         }
 
         private void Update()
         {
-            _smoothedMood = Mathf.MoveTowards(_smoothedMood, _mood, Time.unscaledDeltaTime * 0.25f);
-            float m = _smoothedMood;
-            float master = _audio.musicVolume * Mathf.Pow(10f, _audio.MusicDuckDb / 20f);
+            if (_audio == null) return;
+            double now = AudioSettings.dspTime;
+            float dt = Time.unscaledDeltaTime;
+            foreach (var bank in _banks) if (bank.key != null && bank.pendingStart) TryStart(bank, now);
 
-            SetStemGain("pad", 1f);
-            SetStemGain("bass", 1f);
-            SetStemGain("drums", Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(-0.1f, 0.3f, m)));
-            SetStemGain("lead", Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.3f, 0.7f, m)));
-            SetStemGain("tension", Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0f, -0.6f, m)));
-
-            // Red low-passes the mix: 22 kHz at mood ≥ 0 down to 1.2 kHz at −1.
-            float cutoff = m >= 0f ? 22000f : Mathf.Lerp(22000f, 1200f, Mathf.Pow(-m, 0.7f));
-            bool targetReady = _targetBank < 0 || AudioSettings.dspTime >= _banks[_targetBank].startDsp;
+            var target = _targetBank >= 0 ? _banks[_targetBank] : null;
+            var layers = target != null && !target.pendingStart
+                ? _mood.Tick(now, target.startDsp, target.bpm, dt)
+                : _mood.Tick(now, now, 120, dt);
+            float bus = _audio.BusGain(AudioBus.Music) * AudioMath.DbToLinear(_audio.MusicDuckDb);
+            bool targetReady = target == null || (!target.pendingStart && now >= target.startDsp);
+            bool filter = layers.FilterActive;
+            float cutoff = Mathf.Clamp(layers.CutoffHz, 10f, 22000f);
             for (int i = 0; i < _banks.Length; i++)
             {
                 var bank = _banks[i];
                 if (bank.key == null) continue;
-                if (targetReady) bank.weight = Mathf.MoveTowards(bank.weight, i == _targetBank ? 1f : 0f, Time.unscaledDeltaTime / CrossfadeSeconds);
-                bank.fullMix.volume = master * bank.gain * bank.weight;
+                if (targetReady) bank.weight = Mathf.MoveTowards(bank.weight, i == _targetBank ? 1f : 0f, dt / CrossfadeSeconds);
+                float g = bus * bank.gain * bank.weight;
+                bank.fullMix.volume = bank.fullMixMode ? g : 0f;
+                SetFilter(bank.fullMixFilter, filter, cutoff);
                 foreach (var n in StemNames)
                 {
-                    bank.stems[n].volume = _stemGains[n] * master * bank.gain * bank.weight;
-                    bank.filters[n].cutoffFrequency = cutoff;
+                    float layer = n == "tension" ? layers.Tension : bank.fullMixMode ? 0f : layers.Gain(n);
+                    bank.stems[n].volume = layer * g;
+                    SetFilter(bank.filters[n], filter, cutoff);
                 }
                 if (i != _targetBank && bank.weight <= 0f) Clear(bank);
             }
+            if (target != null && !target.fullMixMode && now >= _nextDriftCheck) { _nextDriftCheck = now + 1.0; LockStems(target, now); }
         }
 
-        private void SetStemGain(string n, float target) =>
-            _stemGains[n] = Mathf.MoveTowards(_stemGains[n], target, Time.unscaledDeltaTime * 0.5f);
+        private static void SetFilter(AudioLowPassFilter f, bool active, float cutoff)
+        {
+            if (f == null) return;
+            if (f.enabled != active) f.enabled = active;
+            if (active) f.cutoffFrequency = cutoff;
+        }
+
+        /// <summary>Re-lock any stem that drifted more than ~21 ms from the first playing stem (seamless-loop guard).</summary>
+        private void LockStems(Bank bank, double now)
+        {
+            if (now < bank.startDsp + 0.5) return;
+            AudioSource reference = null;
+            foreach (var n in StemNames)
+            {
+                var s = bank.stems[n];
+                if (s.clip == null || !s.isPlaying) continue;
+                if (reference == null) { reference = s; continue; }
+                int length = s.clip.samples;
+                if (length <= 0 || length != reference.clip.samples) continue;
+                int diff = Mathf.Abs(s.timeSamples - reference.timeSamples);
+                diff = Mathf.Min(diff, length - diff);
+                if (diff <= DriftToleranceSamples) continue;
+                s.timeSamples = reference.timeSamples;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                _reviewResyncs++;
+#endif
+                Log.Warn("audio", $"Music stem {n} drifted {diff} samples in {bank.key}; re-locked.");
+            }
+        }
 
         private static void Clear(Bank bank)
         {
@@ -218,6 +292,8 @@ namespace CTLife.Audio
             foreach (var source in bank.stems.Values) { source.Stop(); source.clip = null; }
             bank.key = null;
             bank.weight = 0f;
+            bank.pendingStart = false;
+            bank.fullMixMode = false;
         }
 
         private void OnDisable()
@@ -225,7 +301,7 @@ namespace CTLife.Audio
             foreach (var bank in _banks)
             {
                 bank.resumeAfterEnable = bank.key != null;
-                bank.resumeScheduled = bank.resumeAfterEnable && bank.startDsp > AudioSettings.dspTime;
+                bank.resumeScheduled = bank.resumeAfterEnable && (bank.pendingStart || bank.startDsp > AudioSettings.dspTime);
                 if (bank.fullMix != null) bank.fullMix.Pause();
                 foreach (var source in bank.stems.Values) if (source != null) source.Pause();
             }
@@ -237,17 +313,17 @@ namespace CTLife.Audio
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
         public void ReviewValidateRuntime()
         {
-            if (!_runtimeReady || _audio == null || _banks.Length != 2 || _stemGains.Count != StemNames.Length)
+            if (!_runtimeReady || _audio == null || _banks.Length != 2)
                 throw new System.InvalidOperationException("Music runtime was not restored.");
             foreach (var bank in _banks)
             {
-                if (bank.fullMix == null || bank.stems.Count != StemNames.Length || bank.filters.Count != StemNames.Length)
+                if (bank.fullMix == null || bank.fullMixFilter == null || bank.stems.Count != StemNames.Length || bank.filters.Count != StemNames.Length)
                     throw new System.InvalidOperationException("Music bank bindings were not restored.");
                 foreach (var name in StemNames)
                     if (bank.stems[name] == null || bank.filters[name] == null)
                         throw new System.InvalidOperationException("Music stem source/filter was not restored.");
             }
-            if (_targetBank >= 0 && AudioSettings.dspTime > _banks[_targetBank].startDsp + 0.5)
+            if (_targetBank >= 0 && !_banks[_targetBank].pendingStart && AudioSettings.dspTime > _banks[_targetBank].startDsp + 0.5)
             {
                 var target = _banks[_targetBank];
                 if (target.fullMix.clip != null && !target.fullMix.isPlaying)
@@ -262,18 +338,18 @@ namespace CTLife.Audio
         {
             int activeBanks = 0;
             foreach (var bank in _banks) if (bank.key != null) activeBanks++;
+            var l = _mood.Current;
             var result = new System.Text.StringBuilder();
-            result.Append($"musicReady={_runtimeReady} musicActiveBanks={activeBanks} musicTarget={_district ?? "none"} musicTargetBank={_targetBank} musicTransitions={_reviewTransitions}");
+            result.Append($"musicActiveBanks={activeBanks} musicTarget={_district ?? "none"} musicTargetBank={_targetBank} musicTransitions={_reviewTransitions} resyncs={_reviewResyncs}");
+            result.Append(System.FormattableString.Invariant(
+                $" mood={_mood.TargetMood:0.00}/{_mood.AppliedMood:0.00} layers=[pad={l.Pad:0.00},bass={l.Bass:0.00},drums={l.Drums:0.00},lead={l.Lead:0.00},tension={l.Tension:0.00},lp={l.CutoffHz:0}]"));
             for (int i = 0; i < _banks.Length; i++)
             {
                 var bank = _banks[i];
                 int playing = 0, clips = 0;
-                if (bank.fullMix.isPlaying) playing++;
-                if (bank.fullMix.clip != null) clips++;
-                foreach (var source in bank.stems.Values)
-                { if (source.isPlaying) playing++; if (source.clip != null) clips++; }
+                foreach (var source in Sources(bank)) { if (source.isPlaying) playing++; if (source.clip != null) clips++; }
                 result.Append(System.FormattableString.Invariant(
-                    $" music{i}=[key={bank.key ?? "none"},mode={(bank.fullMix.clip != null ? "full_mix" : "stems")},weight={bank.weight:0.000},playing={playing},clips={clips},fullMixGain={bank.fullMix.volume:0.000},startIn={bank.startDsp - AudioSettings.dspTime:0.000}]"));
+                    $" music{i}=[key={bank.key ?? "none"},mode={(bank.fullMixMode ? "full_mix" : "stems")},weight={bank.weight:0.000},playing={playing},clips={clips},pending={bank.pendingStart},startIn={bank.startDsp - AudioSettings.dspTime:0.000}]"));
             }
             return result.ToString();
         }

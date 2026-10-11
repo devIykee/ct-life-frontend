@@ -1,6 +1,6 @@
-// CT Life NPC babble player. Based on the audio agent's reference (audio/unity/BabblePlayer.cs).
-// Rules: audio/BABBLE.md. Python twin used to audition lines: audio/tools/babble_preview.py.
-// Unity 6000.3 APIs used: AudioSource.PlayScheduled, AudioSettings.dspTime, AudioSource.pitch.
+// CT Life NPC babble player (rules: audio/BABBLE.md; schedule: Logic/BabbleScheduler.cs; Python twin used to audition
+// lines: audio/tools/babble_preview.py). Unity 6000.3 APIs used: AudioSource.PlayScheduled, AudioSettings.dspTime,
+// AudioSource.pitch.
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -17,136 +17,139 @@ namespace CTLife.Audio
         public float npcPitchMinSemitones = -2f;    // npc_pitch_range_semitones[0]
         public float npcPitchMaxSemitones = 2f;     // npc_pitch_range_semitones[1]
         public float volumeDb = -6f;                // volume_db
+        [Tooltip("Optional sfx id played (quietly, at most once per SignatureInterval per NPC) as the line starts")]
+        public string signatureSfx;                 // babble.<archetype>.signature in sfx-map.json
+
+        public BabbleVoice Voice => new BabbleVoice
+        {
+            CharsPerSecond = charsPerSecond, PitchJitterSemitones = pitchJitterSemitones,
+            NpcPitchMinSemitones = npcPitchMinSemitones, NpcPitchMaxSemitones = npcPitchMaxSemitones, VolumeDb = volumeDb,
+        };
     }
 
+    /// <summary>
+    /// Babbles NPC lines with the archetype's syllable bank: per-NPC pitch, one syllable per character, 4 round-robin
+    /// 3D voices scheduled ~0.12 s ahead on the DSP clock (overlaps allowed, never cut). Rate limits and earshot come
+    /// from <see cref="AudioManager.BabbleBudget"/> (≤ 3 talkers near the listener, nearest win; 1 line / NPC / 1.5 s;
+    /// silent beyond 15 m with linear distance roll-off). Babble is on the SFX bus. Voices are created on first use.
+    /// </summary>
     public class BabblePlayer : MonoBehaviour
     {
         public BabbleBank bank;
         public string npcId = "npc_0001";
         [Tooltip("TALK state lasts 3 s (spec, NPCs and AI)")]
-        public float maxSeconds = 3f;
+        public float maxSeconds = BabbleScheduler.MaxSeconds;
         [Tooltip("How far ahead syllables are handed to the audio thread")]
         public float scheduleAhead = 0.12f;
 
-        const int VoiceCount = 4;                    // round-robin voices: syllables may overlap a little
-        readonly AudioSource[] voices = new AudioSource[VoiceCount];
-        readonly float[] voiceGains = new float[VoiceCount];
-        readonly List<Syllable> queue = new List<Syllable>();
-        int nextVoice;
-        double lineStartDsp;
+        private const int VoiceCount = 4;           // round-robin voices: syllables may overlap a little
+        /// <summary>Archetype signature sounds (research dossier `babble_sound`, [Inference]) are a garnish: rare and quiet.</summary>
+        public const float SignatureInterval = 30f, SignatureVolume = 0.5f;
+        private double _lastSignature = double.NegativeInfinity;
+        private const float MinDistance = 2f;
+        private readonly AudioSource[] _voices = new AudioSource[VoiceCount];
+        private readonly float[] _voiceGains = new float[VoiceCount];
+        private List<BabbleSyllable> _queue = new List<BabbleSyllable>();
+        private int _next, _nextVoice;
+        private double _lineStartDsp;
+        private bool _voicesReady;
 
-        struct Syllable { public float time; public int letter; public float semitones; public float gain; }
-
-        static readonly Dictionary<char, char> Digits = new Dictionary<char, char>
-        { {'0','o'},{'1','w'},{'2','t'},{'3','r'},{'4','f'},{'5','f'},{'6','s'},{'7','s'},{'8','e'},{'9','n'} };
-        static readonly Dictionary<char, char> Symbols = new Dictionary<char, char>
-        { {'$','s'},{'@','a'},{'#','h'},{'%','p'},{'&','n'},{'+','p'} };
-        static readonly Dictionary<char, float> Pauses = new Dictionary<char, float>
-        { {' ',1f},{',',2f},{';',2f},{':',2f},{'.',3f},{'!',3f},{'?',3f},{'\n',3f},{'-',1f},{'/',1f} };
-
-        void Awake()
+        private void EnsureVoices()
         {
+            if (_voicesReady) return;
             for (int i = 0; i < VoiceCount; i++)
             {
                 var go = new GameObject("babble_voice_" + i);
                 go.transform.SetParent(transform, false);
+                go.transform.localPosition = new Vector3(0f, 1.6f, 0f);   // roughly mouth height
                 var s = go.AddComponent<AudioSource>();
                 s.playOnAwake = false;
                 s.spatialBlend = 1f;                  // 3D: heard from the NPC
-                s.rolloffMode = AudioRolloffMode.Logarithmic;
-                s.minDistance = 2f;
-                s.maxDistance = 15f;
+                s.rolloffMode = AudioRolloffMode.Linear;
+                s.minDistance = MinDistance;
+                s.maxDistance = BabbleBudget.MaxDistance;
                 s.dopplerLevel = 0f;
-                voices[i] = s;
+                _voices[i] = s;
             }
+            _voicesReady = true;
         }
 
-        /// <summary>Babble a line. Returns its length in seconds (use it for the speech bubble / mouth flap).</summary>
+        /// <summary>
+        /// Babble a line. Returns its length in seconds (use it for the speech bubble / mouth flap) even when the budget
+        /// keeps it silent (too far, too many talkers, too soon).
+        /// </summary>
         public float Say(string text)
         {
             StopTalking();
             if (bank == null || string.IsNullOrEmpty(text)) return 0f;
-            float step = 1f / Mathf.Max(1f, bank.charsPerSecond);
-            float npcOffset = Mathf.Lerp(bank.npcPitchMinSemitones, bank.npcPitchMaxSemitones, (Crc32(npcId) % 1000) / 999f);
-            var rng = new System.Random((int)Crc32(npcId + text));
-            string trimmed = text.TrimEnd();
-            bool endQuestion = trimmed.EndsWith("?");
-            bool endExclaim = trimmed.EndsWith("!");
-
-            var letterIdx = new List<int>();
-            for (int i = 0; i < text.Length; i++)
-                if (char.IsLetterOrDigit(text[i]) || Symbols.ContainsKey(text[i])) letterIdx.Add(i);
-
-            float t = 0f;
-            for (int i = 0; i < text.Length && t <= maxSeconds; i++)
+            var syllables = BabbleScheduler.Schedule(text, npcId, bank.Voice, maxSeconds);
+            float duration = BabbleScheduler.Duration(syllables);
+            if (syllables.Count == 0) return 0f;
+            var audio = AudioManager.Instance;
+            if (audio != null)
             {
-                char ch = text[i];
-                char c = char.ToLowerInvariant(ch);
-                char letter = '\0';
-                if (c >= 'a' && c <= 'z') letter = c;
-                else if (Digits.TryGetValue(c, out var d)) letter = d;
-                else if (Symbols.TryGetValue(c, out var sy)) letter = sy;
-
-                if (letter == '\0')
-                {
-                    t += step * (Pauses.TryGetValue(c, out var p) ? p : 0.5f);
-                    continue;
-                }
-                float semis = npcOffset + (float)(rng.NextDouble() * 2.0 - 1.0) * bank.pitchJitterSemitones;
-                float gain = 1f;
-                if (char.IsUpper(ch)) { semis += 1.5f; gain = 1.12f; }       // CAPS = shouting
-                int fromEnd = letterIdx.Count - 1 - letterIdx.IndexOf(i);
-                if (endQuestion && fromEnd < 4) semis += (4 - fromEnd);       // questions rise at the end
-                if (endExclaim && fromEnd < 3) { semis += 1f; gain *= 1.12f; }
-                queue.Add(new Syllable { time = t, letter = letter - 'a', semitones = semis, gain = gain });
-                t += step;
+                float distance = Vector3.Distance(audio.ListenerPosition, transform.position);
+                var decision = audio.BabbleBudget.Request(npcId, distance, duration, Time.unscaledTimeAsDouble);
+                if (decision.Verdict == BabbleBudget.Verdict.Deny) return duration;
+                if (decision.Verdict == BabbleBudget.Verdict.AllowPreempt) Preempt(decision.Preempt);
+                if (audio.SfxGain <= 0f) return duration;
             }
-            lineStartDsp = AudioSettings.dspTime + scheduleAhead;
-            return queue.Count > 0 ? queue[queue.Count - 1].time + 0.2f : 0f;
+            if (audio != null && !string.IsNullOrEmpty(bank.signatureSfx) && Time.unscaledTimeAsDouble - _lastSignature >= SignatureInterval)
+            {
+                _lastSignature = Time.unscaledTimeAsDouble;
+                audio.PlayAt(bank.signatureSfx, transform.position + Vector3.up * 1.6f, SignatureVolume);
+            }
+            EnsureVoices();
+            _queue = syllables;
+            _next = 0;
+            _lineStartDsp = AudioSettings.dspTime + scheduleAhead;
+            Active[npcId ?? ""] = this;
+            return duration;
         }
 
-        public void StopTalking()
+        private static readonly Dictionary<string, BabblePlayer> Active = new Dictionary<string, BabblePlayer>();
+
+        private static void Preempt(string otherNpc)
         {
-            queue.Clear();
-            foreach (var v in voices) if (v != null) v.Stop();
+            if (otherNpc != null && Active.TryGetValue(otherNpc, out var other) && other != null) other.StopTalking(fromBudget: true);
         }
 
-        void OnDisable() => StopTalking();
+        public void StopTalking() => StopTalking(false);
 
-        void Update()
+        private void StopTalking(bool fromBudget)
         {
-            float master = AudioManager.Instance != null ? AudioManager.Instance.sfxVolume : 1f;
+            _queue.Clear();
+            _next = 0;
+            if (_voicesReady) foreach (var v in _voices) if (v != null) v.Stop();
+            if (npcId != null && Active.TryGetValue(npcId, out var me) && me == this) Active.Remove(npcId);
+            if (!fromBudget) AudioManager.Instance?.BabbleBudget.Stopped(npcId);
+        }
+
+        private void OnDisable() => StopTalking();
+
+        private void Update()
+        {
+            if (!_voicesReady) return;
+            float master = AudioManager.Instance != null ? AudioManager.Instance.SfxGain : 1f;
             // Also update the last scheduled syllables after the queue is empty, so mute applies immediately.
-            for (int i = 0; i < VoiceCount; i++) voices[i].volume = voiceGains[i] * master;
-            if (queue.Count == 0) return;
+            for (int i = 0; i < VoiceCount; i++) _voices[i].volume = _voiceGains[i] * master;
+            if (_next >= _queue.Count || bank == null) return;
             double now = AudioSettings.dspTime;
-            float baseVol = Mathf.Pow(10f, bank.volumeDb / 20f);
-            // hand over every syllable that starts within the look-ahead window
-            while (queue.Count > 0 && lineStartDsp + queue[0].time < now + scheduleAhead)
+            float baseVol = AudioMath.DbToLinear(bank.volumeDb);
+            // Hand over every syllable that starts within the look-ahead window.
+            while (_next < _queue.Count && _lineStartDsp + _queue[_next].Time < now + scheduleAhead)
             {
-                var s = queue[0];
-                queue.RemoveAt(0);
-                var clip = (s.letter >= 0 && s.letter < bank.letters.Length) ? bank.letters[s.letter] : null;
+                var s = _queue[_next++];
+                var clip = s.Letter >= 0 && s.Letter < bank.letters.Length ? bank.letters[s.Letter] : null;
                 if (clip == null) continue;                       // missing clip: skip, never crash
-                var v = voices[nextVoice];
-                voiceGains[nextVoice] = Mathf.Clamp01(baseVol * s.gain);
-                v.volume = voiceGains[nextVoice] * master;
-                nextVoice = (nextVoice + 1) % VoiceCount;
+                var v = _voices[_nextVoice];
+                _voiceGains[_nextVoice] = Mathf.Clamp01(baseVol * s.Gain);
+                v.volume = _voiceGains[_nextVoice] * master;
+                _nextVoice = (_nextVoice + 1) % VoiceCount;
                 v.clip = clip;
-                v.pitch = Mathf.Pow(2f, s.semitones / 12f);       // resample: pitch and speed together
-                v.PlayScheduled(System.Math.Max(now, lineStartDsp + s.time));
+                v.pitch = AudioMath.SemitonesToPitch(s.Semitones); // resample: pitch and speed together
+                v.PlayScheduled(System.Math.Max(now, _lineStartDsp + s.Time));
             }
-        }
-
-        static uint Crc32(string s)
-        {
-            uint crc = 0xFFFFFFFFu;
-            foreach (byte b in System.Text.Encoding.UTF8.GetBytes(s))
-            {
-                crc ^= b;
-                for (int k = 0; k < 8; k++) crc = (crc & 1) != 0 ? (crc >> 1) ^ 0xEDB88320u : crc >> 1;
-            }
-            return ~crc;
         }
     }
 }
