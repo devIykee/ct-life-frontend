@@ -1,17 +1,53 @@
-READY TO COMMIT: audio/ client/Assets/Resources/Audio/ client/Assets/Scripts/Audio/ docs/progress/audio-integration.md docs/progress/requests.md — "feat(audio): CT Life main theme for title + onboarding, origin stingers, creator jingle, audible UI cues"
+COMMITTED on branch `feat/audio-real` (worktree `../ct-life-audio`, off `dev` 30f11f91) — "feat(audio): real recordings replace every synthesized onboarding cue, the title theme, the club music and the red-market layer". Not merged.
 
-Exact paths (git status, 2026-10-09):
-- `audio/` — modified `LICENSES.md`, `README.md`, `RUNTIME_API.md`, `sfx-curation.json`, `sfx-map.json`, `processed/Music-Credits.txt`,
-  `processed/sfx/licensed/sfx_ui_{tap,toast,toggle_on,toggle_off,success,error}_kenney.wav` (re-mastered, same Kenney sources),
-  `tools/{build_map,curate_ui_sounds,gen_sfx,instruments,ship_audio}.py`, `tools/{build_sfx,qa_report}.json`;
-  new `processed/music/title/mus_title.ogg`, `processed/sfx/sfx_{origin_insider,origin_exit_liquidity,creator_complete,ui_next,card_shuffle}.wav`,
-  `sources/kenney-ui-metrics-20261009.json`, `tools/{gen_title,theme,mix_audit}.py`, `tools/build_title.json`. No deletions.
-- `client/Assets/Resources/Audio/` — modified `sfx-map.json`, `Music-Credits.txt`, the six `sfx/licensed/sfx_ui_*_kenney.wav`;
-  new `music/title/mus_title.ogg`, `sfx/sfx_{origin_insider,origin_exit_liquidity,creator_complete,ui_next,card_shuffle}.wav`
-  (Unity creates their `.meta` and the `music/title` folder `.meta` on import; commit those with this). No deletions.
-- `client/Assets/Scripts/Audio/` — modified `AudioApi.cs`, `AudioManager.cs`, `MusicDirector.cs`, `SfxMap.cs`,
-  `Logic/{CueRules,ImportPolicy,MixModel,MoodMix}.cs`, `Tests/{BabbleAndImportTests,MixAndCueTests,MoodMixTests}.cs`. No new or deleted files.
-- `docs/progress/requests.md` — new section "2026-10-09 audio-integration -> UI lane / integration lead".
+## 2026-10-09 (b) — real recordings instead of synthesis (coordinator job)
+
+User: "please don't synthesize. that would most likely sound fake, let's use real stuff as much as we can please".
+Every cue id and file path is unchanged (and every existing `.meta` GUID kept), so the UI wiring on
+`feat/onboarding-r2` needs no change. No synthesis, no AI generators: `tools/curate_real_audio.py` downloads each source
+(no account), checks its SHA-256, and only trims, fades, crossfades a loop point, applies constant gain and resamples.
+
+| Cue (path) | Source | Author | Licence | Page (licence read 2026-10-09) |
+| --- | --- | --- | --- | --- |
+| `mus_title` (`music/title/mus_title.ogg`) | "Glitter Blast" — ukulele, flutes, glockenspiel, 100 BPM; bars 31–63 as a seamless 76.8 s loop | Kevin MacLeod | CC BY 4.0 | https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1900001 (licence: https://incompetech.com/music/royalty-free/licenses/) |
+| `sfx_origin_insider` | "Won!" orchestral winning jingle, tail faded by 2.6 s | spuispuin | CC BY 4.0 | https://opengameart.org/content/won-orchestral-winning-jingle |
+| `sfx_origin_exit_liquidity` | Music Jingles `jingles_SAX01` (falling sax "wah", 0.8 s) | Kenney | CC0 | https://kenney.nl/assets/music-jingles |
+| `sfx_creator_complete` | Win Jingle, `WinSteelDrums` (2.45 s) | Fupi | CC0 | https://opengameart.org/content/win-jingle |
+| `sfx_ui_next` | Pop Sounds `pop5` (recorded on an iPhone, per the page) | cogitollc | CC0 | https://opengameart.org/content/pop-sounds |
+| `sfx_card_shuffle` | Playing Card Sounds `shuffleandbridge` (riffle + bridge, the silent gap cut) | BMacZero | CC0 | https://opengameart.org/content/playing-card-sounds |
+| red-market layer (`music/mood/mus_mood_tension_bed.ogg`, every `stems.tension`) | Thunder / lightning ambience field recording, 24 s loop | Gregor Quendel | CC BY 4.0 | https://opengameart.org/content/thunder-lightning-ambience-field-recording |
+| clubs (`music/licensed/mus_clubs_disco_con_tutti.ogg`, restored byte-identical with its old GUID) | "Disco con Tutti" | Kevin MacLeod | CC BY 4.0 | https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200091 |
+| `amb_club_doors` | Disco con Tutti through a closed door + the existing CC0 crowd layer | — | CC BY 4.0 + CC0 | (as above) |
+
+Credits: `audio/LICENSES.md` (new table with page, licence, date checked, SHA-256), `audio/sources/real-audio-20261009.json`,
+and the in-game `processed/Music-Credits.txt` (Settings → Credits) with rows for Glitter Blast, Disco con Tutti, "Won!" and
+the thunder recording, plus thanks for the CC0 authors. The UI string `credits.musicSummary` still says "Music by Kevin
+MacLeod … CC-BY 4.0"; the detail text below it covers the new CC BY sound credits (UI lane may want to widen the summary).
+
+Removed (they would overwrite the real files): `tools/gen_title.py`, `tools/theme.py`, `tools/gen_mood_bed.py`, their build
+reports, the five onboarding recipes in `gen_sfx.py`, the synthesized club-door render in `gen_ambience.py`, and the
+synthesized club stems from the shipping set (moved to `audio/archive/processed/music/stems/club/`).
+
+Checks: `mix_audit.py` — every onboarding cue clears the new title in the 1–6 kHz band (+8.5…+31 dB; Glitter Blast has
+less presence-band energy than the synthesized theme, so margins grew) and every peak is ≤ −1 dBFS; title −17.0 LUFS,
+−1.5 dBTP (constant gain, held by the true-peak ceiling); loop wrap onset strength 0.87 vs 0.49–0.92 at the loop's own
+downbeats (no seam spike). Audio tests 142/142. No C# changed. Footprint estimate 22.9–24.0 MB (+0.6 MB: the full club
+track replaces 34 s stems). Preview reel (88 s, no clipping, peak −4 dBFS):
+`/Users/mac/Documents/codes/projects/ct-life-evidence/audio/real-audio-preview-20261009.m4a` + cue sheet `.txt` beside it.
+
+Could not source without a login: a real Amapiano / Afrobeats club track. Free Music Archive has CC BY 4.0 candidates, but
+its download redirects to `/login`: "Amapiano Beats With Log Drum Groove" and "Afrobeat" by Alex Morgan
+(https://freemusicarchive.org/music/alex-morgan/emotional-piano-vol-1/amapiano-beats-with-log-drum-groove/,
+https://freemusicarchive.org/music/alex-morgan/pop-afro-party-instrumentals/afrobeat-1/). [Unverified] whether those are
+human-made: the catalogue's naming suggests it could be generated; check before using. Freesound (login) was not used.
+
+Still synthesized (outside this brief): 22 SFX are pure synthesis (`sfx_buy`, `sell`, `take_profit`, `new_coin`, `cash_in`,
+`call_ring/connect/end`, `dm_ping`, `mention`, `gm`, `graduation`, `rank_up`, `news_flash`, `rekt_phonk`, `space_started`,
+`sunday_unlock`, `vr_join/leave/promoted/raise_hand`), 9 mix synthesis with recordings (`liquidation`, `rug`, `moon_horn`,
+`whale_horn`, `pnl_card_flip`, `ui_open/close`, `ore_clink/furnace`), the 31 NPC babble banks (formant synthesis) and some
+ambience layers (hum, monitor beeps). Next candidate pass: Kenney/OpenGameArt CC0 recordings for these.
+
+Not heard by anyone: selection used the composers' catalogue metadata and measured pitch contour, length and loudness.
 
 ## 2026-10-09 — title / onboarding audio (coordinator job)
 

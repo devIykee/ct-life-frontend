@@ -102,21 +102,22 @@ A trading/stinger/phone/voice-room/ORE/news cue masks a `sfx_ui_toast` tick star
 | `sfx_ore_furnace_whoosh` | ORE round rolls over / furnace flash | **requested** (Money, WorldLife) |
 | `sfx_news_flash` (client-only) | "JUST IN" news card / Town Crier | Town Crier babble signature; incident card default **requested** (UI) |
 | `sfx_rekt_phonk` (client-only stinger) | REKT clip replay / share (phonk-edit culture) | **requested** (Money REKT card share) |
-| `sfx_origin_insider` (stinger; `sfx_origin_seeker` is an alias) | origin reveal: Insider / Seeker — brass fanfare of the theme hook | **requested** (UI: `"sfx_origin_" + outcomeId`) |
-| `sfx_origin_exit_liquidity` (stinger) | origin reveal: Exit Liquidity — cartoon bonk, deflate, hopeful hook tag | **requested** (UI) |
-| `sfx_creator_complete` (stinger) | end of character creation — hook fanfare (~1.2 s) + ring-out | **requested** (UI) |
-| `sfx_ui_next` | onboarding step complete — rising two-note chime (D6→G6) | **requested** (UI `Kit.Cues.SfxStep`) |
-| `sfx_card_shuffle` | origin draw — two card riffles (Kenney CC0) | **requested** (UI `LotteryScreen.Shuffle`) |
+| `sfx_origin_insider` (stinger; `sfx_origin_seeker` is an alias) | origin reveal: Insider / Seeker — orchestral winning jingle (spuispuin, CC BY 4.0) | **requested** (UI: `"sfx_origin_" + outcomeId`) |
+| `sfx_origin_exit_liquidity` (stinger) | origin reveal: Exit Liquidity — comic falling sax "wah" (Kenney Music Jingles, CC0) | **requested** (UI) |
+| `sfx_creator_complete` (stinger) | end of character creation — steel-drum win jingle, ~2.5 s (Fupi, CC0) | **requested** (UI) |
+| `sfx_ui_next` | onboarding step complete — a soft recorded pop (cogitollc, CC0) | **requested** (UI `Kit.Cues.SfxStep`) |
+| `sfx_card_shuffle` | origin draw — a real riffle + bridge (BMacZero, CC0) | **requested** (UI `LotteryScreen.Shuffle`) |
 | `sfx_gm` (client-only) | someone says "gm" in the venue | audio bus subscription (`said`) |
 
 Exact diffs for every **requested** row: `docs/progress/requests.md` → "2026-10-08 audio-integration -> …".
 
 ## 4. Music
 
-- `title` (`mus_title`, CT Life main theme): 32 bars, G major, 112 BPM, 68.6 s seamless loop, own work. Title screen and
-  onboarding. `mood_reactive: false`: plays the plain track whatever the market does; the remembered mood fades in over
-  two bars once a reactive set (lobby, venues) takes over. The origin stingers and the creator jingle quote its hook in
-  the same key, so they sit over the ducked loop.
+- `title` (`mus_title`): "Glitter Blast" by Kevin MacLeod (CC BY 4.0) — ukulele, flutes, glockenspiel, 100 BPM — cut to a
+  seamless 32-bar loop (76.8 s). Title screen and onboarding. `mood_reactive: false`: plays the plain track whatever the
+  market does; the remembered mood fades in over two bars once a reactive set (lobby, venues) takes over.
+- All music is human-composed (Kevin MacLeod, CC BY 4.0). The red-market `stems.tension` layer is a 24 s loop of a real
+  thunderstorm field recording (Gregor Quendel, CC BY 4.0). Nothing in the music path is synthesized (2026-10-09).
 
 - A set is either five sample-locked stems (`pad`, `bass`, `drums`, `lead`, `tension`; today: `clubs`) or a complete
   licensed composition plus `stems.tension` (a key/tempo-neutral red-market bed; today: every other set).
@@ -172,6 +173,8 @@ call-site volume, the margin over `mus_title` in the 1–6 kHz band (targets +6 
 
 ## Changelog
 
+- 2026-10-09 (b) — same ids and paths, real recordings: title = Glitter Blast loop, onboarding stingers/pop/shuffle from
+  OpenGameArt and Kenney, clubs back on Disco con Tutti, tension layer = thunder field recording (no synthesis).
 - 2026-10-09 — `Music.PlayTitle()`, `Music.Title/Lobby`, `SetDistrict` accepts ids, `mood_reactive: false` sets;
   `Sfx.PlayPitched`; ids `sfx_origin_insider` (+ alias `sfx_origin_seeker`), `sfx_origin_exit_liquidity`,
   `sfx_creator_complete`, `sfx_ui_next`, `sfx_card_shuffle`; UI cue levels re-mastered; music default 0.85.

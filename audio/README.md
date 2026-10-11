@@ -6,10 +6,10 @@ Everything here is CC0 or our own work (see `LICENSES.md`). IDs → files: `sfx-
 audio/
   processed/sfx/            one-shots + footsteps (48 kHz 16-bit WAV; UI/phone/trading/footsteps mono, stingers stereo)
   processed/ambience/       venue loops (48 kHz 16-bit stereo WAV, seamless)
-  processed/music/title/    CT Life main theme mus_title (own work; tools/gen_title.py, motif in tools/theme.py)
+  processed/music/title/    mus_title: Glitter Blast (Kevin MacLeod, CC BY 4.0) cut to a seamless loop — tools/curate_real_audio.py
   processed/music/licensed/ complete CC-BY district tracks (Ogg Vorbis, stereo)
-  processed/music/stems/    adaptive stem sets, sample-locked (today: club/ — Afropiano, own work)
-  processed/music/mood/     red-market tension bed for the full-mix sets (key/tempo-neutral, own work)
+  processed/music/stems/    adaptive stem sets, sample-locked (none ship today; the synthesized club stems are archived)
+  processed/music/mood/     red-market tension layer: thunderstorm field recording loop (Gregor Quendel, CC BY 4.0)
   processed/babble/         NPC syllable banks + babble-banks.json (tool input, not shipped)
   archive/processed/        files no longer referenced by sfx-map.json (kept for history / easy revert; never shipped)
   RUNTIME_API.md            the client audio API every lane calls (CTLife.Audio)
@@ -27,9 +27,8 @@ cd tools
 ../.venv/bin/python fetch_sources.py     # Kenney zips + freesound CC0 previews -> raw/, provenance -> sources.json
 ../.venv/bin/python gen_sfx.py           # processed/sfx/sfx_*.wav
 ../.venv/bin/python gen_footsteps.py     # processed/sfx/foot_*.wav
-../.venv/bin/python gen_music.py club    # processed/music/stems/club/mus_club_*.ogg (16 bars, 112 BPM); preview in build/
-../.venv/bin/python gen_mood_bed.py      # processed/music/mood/mus_mood_tension_bed.ogg (24 s seamless)
-../.venv/bin/python gen_title.py         # processed/music/title/mus_title.ogg (68.6 s seamless main theme)
+../.venv/bin/python curate_real_audio.py # human-made sources (downloads, SHA-256 check): title loop, onboarding stingers,
+                                         # pop, card shuffle, thunder tension layer, club track + club-door ambience
 ../.venv/bin/python curate_ui_sounds.py  # Kenney UI cues → processed/sfx/licensed/ (peak −1 dBFS, audited gains)
 ../.venv/bin/python gen_ambience.py      # processed/ambience/amb_*.wav (needs gen_music for the club; `amb_club_doors` alone re-renders one)
 ../.venv/bin/python gen_babble.py        # processed/babble/*
