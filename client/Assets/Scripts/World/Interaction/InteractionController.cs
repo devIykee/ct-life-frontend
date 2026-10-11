@@ -82,6 +82,8 @@ namespace CTLife.World
         private InteractionHighlight _highlight;
         private float _nextScan, _nextOccupancy;
         private double _walkIssuedAt;
+        private Vehicles.Vehicle _vehicleOffer;
+        private string VehicleTarget => _vehicleOffer != null ? "vehicle:" + _vehicleOffer.GetInstanceID() : null;
         private bool _wasDirect;
         private string _lastPromptKey;
 
@@ -141,6 +143,14 @@ namespace CTLife.World
         /// <summary>A rendered button may outlive its offered target by one frame; never act on another object.</summary>
         public void Perform(string actionId, string expectedTargetId)
         {
+            if (actionId == "drive")
+            {
+                if (Current == this && _vehicleOffer != null && expectedTargetId == VehicleTarget && Vehicles.VehicleSystem.Current != null)
+                    Vehicles.VehicleSystem.Current.Enter(_vehicleOffer);
+                _vehicleOffer = null;
+                Publish(force: true);
+                return;
+            }
             if (Current != this || !Machine.AcceptsPrompt(actionId, expectedTargetId, Offered)) return;
             if (actionId == "use")
             {
@@ -193,9 +203,15 @@ namespace CTLife.World
                 _nextScan = Time.unscaledTime + 0.1f;
                 if (_focused != null && (!_occupancy.IsFree(_focused, Me) || InteractionFinder.Flat(transform.position, _focused.approach) > InteractionFinder.FocusRange)) _focused = null;
                 var fwd = transform.forward;
-                Offered = Machine.Phase == InteractionPhase.Idle && !_view.SeatPresentationActive
+                Offered = Machine.Phase == InteractionPhase.Idle && !_view.SeatPresentationActive && !_local.InVehicle
                     ? InteractionFinder.Best(transform.position, fwd, _catalog, it => _occupancy.IsFree(it, Me), Offered, _focused)
                     : null;
+                // Feel lane F2: a free vehicle beside the player offers Drive / Ride / Fly unless a seat is nearer.
+                var vehicles = Vehicles.VehicleSystem.Current;
+                var offer = Machine.Phase == InteractionPhase.Idle && vehicles != null && !_local.InVehicle && vehicles.Driving == null ? vehicles.Offered : null;
+                if (offer != null && Offered != null &&
+                    InteractionFinder.Flat(transform.position, Offered.approach) < InteractionFinder.Flat(transform.position, offer.EntryPoint)) offer = null;
+                _vehicleOffer = offer;
                 Publish(force: false);
             }
             UpdateHighlight();
@@ -285,7 +301,7 @@ namespace CTLife.World
         private void Publish(bool force)
         {
             var actions = Machine.Actions(Offered);
-            var key = Machine.Phase + "|" + string.Join(",", actions) + "|" + (Offered != null ? Offered.id : "");
+            var key = Machine.Phase + "|" + string.Join(",", actions) + "|" + (Offered != null ? Offered.id : "") + "|" + VehicleTarget;
             if (!force && key == _lastPromptKey) return;
             _lastPromptKey = key;
             Bus.Publish(GetPrompt());
@@ -294,6 +310,17 @@ namespace CTLife.World
         /// <summary>Initial state for a HUD attached after the latest change signal.</summary>
         public InteractionPromptSignal GetPrompt()
         {
+            if (_vehicleOffer != null && Machine.Phase == InteractionPhase.Idle)
+            {
+                var (key, icon) = Vehicles.VehicleSystem.Verb(_vehicleOffer);
+                var at = _vehicleOffer.EntryPoint + Vector3.up * 1.25f;
+                return new InteractionPromptSignal
+                {
+                    actions = new List<InteractionAction> { new InteractionAction("drive", key, icon, true) },
+                    targetId = VehicleTarget, owner = this,
+                    anchor = new InteractionPromptAnchor(at - _vehicleOffer.transform.position, _vehicleOffer.transform, true),
+                };
+            }
             var target = Machine.Phase == InteractionPhase.Idle ? Offered : Machine.Target;
             return new InteractionPromptSignal
             {
