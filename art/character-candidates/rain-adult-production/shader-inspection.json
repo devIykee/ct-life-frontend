@@ -1,0 +1,1007 @@
+{
+  "MAT-rain.eyes": {
+    "name": "Shader Nodetree",
+    "nodes": [
+      {
+        "name": "Frame.002",
+        "type": "FRAME",
+        "image": null,
+        "inputs": {},
+        "group": null
+      },
+      {
+        "name": "Frame.003",
+        "type": "FRAME",
+        "image": null,
+        "inputs": {},
+        "group": null
+      },
+      {
+        "name": "Frame.001",
+        "type": "FRAME",
+        "image": null,
+        "inputs": {},
+        "group": null
+      },
+      {
+        "name": "Frame",
+        "type": "FRAME",
+        "image": null,
+        "inputs": {},
+        "group": null
+      },
+      {
+        "name": "Reroute.001",
+        "type": "REROUTE",
+        "image": null,
+        "inputs": {
+          "Input": {
+            "linked": [
+              [
+                "ColorRamp.001",
+                "Color"
+              ]
+            ],
+            "value": "<bpy_float[4], NodeSocketColor.default_value>"
+          }
+        },
+        "group": null
+      },
+      {
+        "name": "Reroute.003",
+        "type": "REROUTE",
+        "image": null,
+        "inputs": {
+          "Input": {
+            "linked": [
+              [
+                "Mix",
+                "Result"
+              ]
+            ],
+            "value": "<bpy_float[4], NodeSocketColor.default_value>"
+          }
+        },
+        "group": null
+      },
+      {
+        "name": "Reroute",
+        "type": "REROUTE",
+        "image": null,
+        "inputs": {
+          "Input": {
+            "linked": [
+              [
+                "Bump.001",
+                "Normal"
+              ]
+            ],
+            "value": "<bpy_float[3], NodeSocketVector.default_value>"
+          }
+        },
+        "group": null
+      },
+      {
+        "name": "ColorRamp.003",
+        "type": "VALTORGB",
+        "image": null,
+        "inputs": {
+          "Factor": {
+            "linked": [
+              [
+                "Image Texture.001",
+                "Color"
+              ]
+            ],
+            "value": "0.5"
+          }
+        },
+        "group": null
+      },
+      {
+        "name": "Bump",
+        "type": "BUMP",
+        "image": null,
+        "inputs": {
+          "Strength": {
+            "linked": [],
+            "value": "0.05999999865889549"
+          },
+          "Distance": {
+            "linked": [],
+            "value": "1.0"
+          },
+          "Filter Width": {
+            "linked": [],
+            "value": "1.0"
+          },
+          "Height": {
+            "linked": [
+              [
+                "ColorRamp.003",
+                "Color"
+              ]
+            ],
+            "value": "1.0"
+          },
+          "Normal": {
+            "linked": [],
+            "value": "<bpy_float[3], NodeSocketVector.default_value>"
+          }
+        },
+        "group": null
+      },
+      {
+        "name": "Material Output",
+        "type": "OUTPUT_MATERIAL",
+        "image": null,
+        "inputs": {
+          "Surface": {
+            "linked": [
+              [
+                "Principled BSDF",
+                "BSDF"
+              ]
+            ],
+            "value": ""
+          },
+          "Volume": {
+            "linked": [],
+            "value": ""
+          },
+          "Displacement": {
+            "linked": [],
+            "value": "<bpy_float[3], NodeSocketVector.default_value>"
+          },
+          "Thickness": {
+            "linked": [],
+            "value": "0.0"
+          }
+        },
+        "group": null
+      },
+      {
+        "name": "Reroute.002",
+        "type": "REROUTE",
+        "image": null,
+        "inputs": {
+          "Input": {
+            "linked": [
+              [
+                "ColorRamp.004",
+                "Color"
+              ]
+            ],
+            "value": "<bpy_float[4], NodeSocketColor.default_value>"
+          }
+        },
+        "group": null
+      },
+      {
+        "name": "Image Texture.001",
+        "type": "TEX_IMAGE",
+        "image": "TEX-rain_eyes.png.000",
+        "inputs": {
+          "Vector": {
+            "linked": [
+              [
+                "Texture Coordinate",
+                "UV"
+              ]
+            ],
+            "value": "<bpy_float[3], NodeSocketVector.default_value>"
+          }
+        },
+        "group": null
+      },
+      {
+        "name": "Texture Coordinate",
+        "type": "TEX_COORD",
+        "image": null,
+        "inputs": {},
+        "group": null
+      },
+      {
+        "name": "Bump.001",
+        "type": "BUMP",
+        "image": null,
+        "inputs": {
+          "Strength": {
+            "linked": [],
+            "value": "0.3499999940395355"
+          },
+          "Distance": {
+            "linked": [],
+            "value": "1.0"
+          },
+          "Filter Width": {
+            "linked": [],
+            "value": "1.0"
+          },
+          "Height": {
+            "linked": [
+              [
+                "ColorRamp.005",
+                "Color"
+              ]
+            ],
+            "value": "1.0"
+          },
+          "Normal": {
+            "linked": [
+              [
+                "Bump",
+                "Normal"
+              ]
+            ],
+            "value": "<bpy_float[3], NodeSocketVector.default_value>"
+          }
+        },
+        "group": null
+      },
+      {
+        "name": "Mapping",
+        "type": "MAPPING",
+        "image": null,
+        "inputs": {
+          "Vector": {
+            "linked": [
+              [
+                "UV Map",
+                "UV"
+              ]
+            ],
+            "value": "<bpy_float[3], NodeSocketVector.default_value>"
+          },
+          "Location": {
+            "linked": [],
+            "value": "<Vector (-0.4500, -0.4560, 0.0000)>"
+          },
+          "Rotation": {
+            "linked": [],
+            "value": "<Euler (x=0.0000, y=0.0000, z=0.0000), order='XYZ'>"
+          },
+          "Scale": {
+            "linked": [],
+            "value": "<Vector (1.0000, 1.0000, 1.0000)>"
+          }
+        },
+        "group": null
+      },
+      {
+        "name": "UV Map",
+        "type": "UVMAP",
+        "image": null,
+        "inputs": {},
+        "group": null
+      },
+      {
+        "name": "Gradient Texture",
+        "type": "TEX_GRADIENT",
+        "image": null,
+        "inputs": {
+          "Vector": {
+            "linked": [
+              [
+                "Mapping",
+                "Vector"
+              ]
+            ],
+            "value": "<bpy_float[3], NodeSocketVector.default_value>"
+          }
+        },
+        "group": null
+      },
+      {
+        "name": "ColorRamp.005",
+        "type": "VALTORGB",
+        "image": null,
+        "inputs": {
+          "Factor": {
+            "linked": [
+              [
+                "Gradient Texture",
+                "Color"
+              ]
+            ],
+            "value": "0.5"
+          }
+        },
+        "group": null
+      },
+      {
+        "name": "Mapping.001",
+        "type": "MAPPING",
+        "image": null,
+        "inputs": {
+          "Vector": {
+            "linked": [
+              [
+                "UV Map.001",
+                "UV"
+              ]
+            ],
+            "value": "<bpy_float[3], NodeSocketVector.default_value>"
+          },
+          "Location": {
+            "linked": [],
+            "value": "<Vector (-0.4500, -0.4560, 0.0000)>"
+          },
+          "Rotation": {
+            "linked": [],
+            "value": "<Euler (x=0.0000, y=0.0000, z=0.0000), order='XYZ'>"
+          },
+          "Scale": {
+            "linked": [],
+            "value": "<Vector (1.0000, 1.0000, 1.0000)>"
+          }
+        },
+        "group": null
+      },
+      {
+        "name": "UV Map.001",
+        "type": "UVMAP",
+        "image": null,
+        "inputs": {},
+        "group": null
+      },
+      {
+        "name": "Gradient Texture.001",
+        "type": "TEX_GRADIENT",
+        "image": null,
+        "inputs": {
+          "Vector": {
+            "linked": [
+              [
+                "Mapping.001",
+                "Vector"
+              ]
+            ],
+            "value": "<bpy_float[3], NodeSocketVector.default_value>"
+          }
+        },
+        "group": null
+      },
+      {
+        "name": "Mix",
+        "type": "MIX",
+        "image": null,
+        "inputs": {
+          "Factor": {
+            "linked": [],
+            "value": "<bpy_float[3], NodeSocketVectorFactor.default_value>"
+          },
+          "A": {
+            "linked": [],
+            "value": "<Euler (x=0.0000, y=0.0000, z=0.0000), order='XYZ'>"
+          },
+          "B": {
+            "linked": [],
+            "value": "<Euler (x=0.0000, y=0.0000, z=0.0000), order='XYZ'>"
+          }
+        },
+        "group": null
+      },
+      {
+        "name": "RGB Curves",
+        "type": "CURVE_RGB",
+        "image": null,
+        "inputs": {
+          "Factor": {
+            "linked": [],
+            "value": "1.0"
+          },
+          "Color": {
+            "linked": [
+              [
+                "Image Texture.001",
+                "Color"
+              ]
+            ],
+            "value": "<bpy_float[4], NodeSocketColor.default_value>"
+          }
+        },
+        "group": null
+      },
+      {
+        "name": "Attribute",
+        "type": "ATTRIBUTE",
+        "image": null,
+        "inputs": {},
+        "group": null
+      },
+      {
+        "name": "ColorRamp.007",
+        "type": "VALTORGB",
+        "image": null,
+        "inputs": {
+          "Factor": {
+            "linked": [
+              [
+                "Gradient Texture.001",
+                "Color"
+              ]
+            ],
+            "value": "0.5"
+          }
+        },
+        "group": null
+      },
+      {
+        "name": "Reroute.004",
+        "type": "REROUTE",
+        "image": null,
+        "inputs": {
+          "Input": {
+            "linked": [
+              [
+                "Reroute",
+                "Output"
+              ]
+            ],
+            "value": "<bpy_float[3], NodeSocketVector.default_value>"
+          }
+        },
+        "group": null
+      },
+      {
+        "name": "Principled BSDF",
+        "type": "BSDF_PRINCIPLED",
+        "image": null,
+        "inputs": {
+          "Base Color": {
+            "linked": [
+              [
+                "Reroute.003",
+                "Output"
+              ]
+            ],
+            "value": "<bpy_float[4], NodeSocketColor.default_value>"
+          },
+          "Metallic": {
+            "linked": [],
+            "value": "0.0"
+          },
+          "Roughness": {
+            "linked": [
+              [
+                "Reroute.005",
+                "Output"
+              ]
+            ],
+            "value": "0.4065573811531067"
+          },
+          "IOR": {
+            "linked": [],
+            "value": "1.4500000476837158"
+          },
+          "Alpha": {
+            "linked": [],
+            "value": "1.0"
+          },
+          "Normal": {
+            "linked": [
+              [
+                "Reroute.004",
+                "Output"
+              ]
+            ],
+            "value": "<bpy_float[3], NodeSocketVector.default_value>"
+          },
+          "Weight": {
+            "linked": [],
+            "value": "0.0"
+          },
+          "Diffuse Roughness": {
+            "linked": [],
+            "value": "0.0"
+          },
+          "Subsurface Weight": {
+            "linked": [],
+            "value": "0.0"
+          },
+          "Subsurface Radius": {
+            "linked": [],
+            "value": "<bpy_float[3], NodeSocketVector.default_value>"
+          },
+          "Subsurface Scale": {
+            "linked": [],
+            "value": "0.05000000074505806"
+          },
+          "Subsurface IOR": {
+            "linked": [],
+            "value": "1.399999976158142"
+          },
+          "Subsurface Anisotropy": {
+            "linked": [],
+            "value": "0.0"
+          },
+          "Specular IOR Level": {
+            "linked": [
+              [
+                "Reroute.006",
+                "Output"
+              ]
+            ],
+            "value": "0.0"
+          },
+          "Specular Tint": {
+            "linked": [
+              [
+                "Mix.002",
+                "Result"
+              ]
+            ],
+            "value": "<bpy_float[4], NodeSocketColor.default_value>"
+          },
+          "Anisotropic": {
+            "linked": [],
+            "value": "0.0"
+          },
+          "Anisotropic Rotation": {
+            "linked": [],
+            "value": "0.0"
+          },
+          "Tangent": {
+            "linked": [],
+            "value": "<bpy_float[3], NodeSocketVector.default_value>"
+          },
+          "Transmission Weight": {
+            "linked": [],
+            "value": "0.0"
+          },
+          "Coat Weight": {
+            "linked": [],
+            "value": "0.0"
+          },
+          "Coat Roughness": {
+            "linked": [],
+            "value": "0.029999999329447746"
+          },
+          "Coat IOR": {
+            "linked": [],
+            "value": "1.5"
+          },
+          "Coat Tint": {
+            "linked": [],
+            "value": "<bpy_float[4], NodeSocketColor.default_value>"
+          },
+          "Coat Normal": {
+            "linked": [],
+            "value": "<bpy_float[3], NodeSocketVector.default_value>"
+          },
+          "Sheen Weight": {
+            "linked": [],
+            "value": "0.20000000298023224"
+          },
+          "Sheen Roughness": {
+            "linked": [],
+            "value": "0.5"
+          },
+          "Sheen Tint": {
+            "linked": [],
+            "value": "<bpy_float[4], NodeSocketColor.default_value>"
+          },
+          "Emission Color": {
+            "linked": [],
+            "value": "<bpy_float[4], NodeSocketColor.default_value>"
+          },
+          "Emission Strength": {
+            "linked": [],
+            "value": "1.0"
+          },
+          "Thin Film Thickness": {
+            "linked": [],
+            "value": "0.0"
+          },
+          "Thin Film IOR": {
+            "linked": [],
+            "value": "1.3300000429153442"
+          }
+        },
+        "group": null
+      },
+      {
+        "name": "Reroute.005",
+        "type": "REROUTE",
+        "image": null,
+        "inputs": {
+          "Input": {
+            "linked": [
+              [
+                "Reroute.001",
+                "Output"
+              ]
+            ],
+            "value": "<bpy_float[4], NodeSocketColor.default_value>"
+          }
+        },
+        "group": null
+      },
+      {
+        "name": "Reroute.006",
+        "type": "REROUTE",
+        "image": null,
+        "inputs": {
+          "Input": {
+            "linked": [
+              [
+                "Reroute.002",
+                "Output"
+              ]
+            ],
+            "value": "<bpy_float[4], NodeSocketColor.default_value>"
+          }
+        },
+        "group": null
+      },
+      {
+        "name": "Mix.001",
+        "type": "MIX",
+        "image": null,
+        "inputs": {
+          "Factor": {
+            "linked": [],
+            "value": "<bpy_float[3], NodeSocketVectorFactor.default_value>"
+          },
+          "A": {
+            "linked": [],
+            "value": "<Euler (x=0.0000, y=0.0000, z=0.0000), order='XYZ'>"
+          },
+          "B": {
+            "linked": [],
+            "value": "<Euler (x=0.0000, y=0.0000, z=0.0000), order='XYZ'>"
+          }
+        },
+        "group": null
+      },
+      {
+        "name": "ColorRamp",
+        "type": "VALTORGB",
+        "image": null,
+        "inputs": {
+          "Factor": {
+            "linked": [
+              [
+                "Image Texture.001",
+                "Color"
+              ]
+            ],
+            "value": "0.5"
+          }
+        },
+        "group": null
+      },
+      {
+        "name": "ColorRamp.002",
+        "type": "VALTORGB",
+        "image": null,
+        "inputs": {
+          "Factor": {
+            "linked": [
+              [
+                "Vertex Color",
+                "Color"
+              ]
+            ],
+            "value": "0.5"
+          }
+        },
+        "group": null
+      },
+      {
+        "name": "ColorRamp.001",
+        "type": "VALTORGB",
+        "image": null,
+        "inputs": {
+          "Factor": {
+            "linked": [
+              [
+                "Mix.003",
+                "Result"
+              ]
+            ],
+            "value": "0.5"
+          }
+        },
+        "group": null
+      },
+      {
+        "name": "ColorRamp.004",
+        "type": "VALTORGB",
+        "image": null,
+        "inputs": {
+          "Factor": {
+            "linked": [
+              [
+                "Mix.003",
+                "Result"
+              ]
+            ],
+            "value": "0.5"
+          }
+        },
+        "group": null
+      },
+      {
+        "name": "Mix.003",
+        "type": "MIX",
+        "image": null,
+        "inputs": {
+          "Factor": {
+            "linked": [],
+            "value": "<bpy_float[3], NodeSocketVectorFactor.default_value>"
+          },
+          "A": {
+            "linked": [],
+            "value": "<Euler (x=0.0000, y=0.0000, z=0.0000), order='XYZ'>"
+          },
+          "B": {
+            "linked": [],
+            "value": "<Euler (x=0.0000, y=0.0000, z=0.0000), order='XYZ'>"
+          }
+        },
+        "group": null
+      },
+      {
+        "name": "Vertex Color",
+        "type": "VERTEX_COLOR",
+        "image": null,
+        "inputs": {},
+        "group": null
+      },
+      {
+        "name": "Mix.002",
+        "type": "MIX",
+        "image": null,
+        "inputs": {
+          "Factor": {
+            "linked": [],
+            "value": "<bpy_float[3], NodeSocketVectorFactor.default_value>"
+          },
+          "A": {
+            "linked": [],
+            "value": "<Euler (x=0.0000, y=0.0000, z=0.0000), order='XYZ'>"
+          },
+          "B": {
+            "linked": [],
+            "value": "<Euler (x=0.0000, y=0.0000, z=0.0000), order='XYZ'>"
+          }
+        },
+        "group": null
+      }
+    ]
+  },
+  "MAT-rain.scarf": {
+    "name": "Shader Nodetree",
+    "nodes": [
+      {
+        "name": "Mix",
+        "type": "MIX",
+        "image": null,
+        "inputs": {
+          "Factor": {
+            "linked": [],
+            "value": "<bpy_float[3], NodeSocketVectorFactor.default_value>"
+          },
+          "A": {
+            "linked": [],
+            "value": "<Euler (x=0.0000, y=0.0000, z=0.0000), order='XYZ'>"
+          },
+          "B": {
+            "linked": [],
+            "value": "<Euler (x=0.0000, y=0.0000, z=0.0000), order='XYZ'>"
+          }
+        },
+        "group": null
+      },
+      {
+        "name": "ColorRamp",
+        "type": "VALTORGB",
+        "image": null,
+        "inputs": {
+          "Factor": {
+            "linked": [
+              [
+                "Image Texture.001",
+                "Color"
+              ]
+            ],
+            "value": "0.5"
+          }
+        },
+        "group": null
+      },
+      {
+        "name": "Material Output",
+        "type": "OUTPUT_MATERIAL",
+        "image": null,
+        "inputs": {
+          "Surface": {
+            "linked": [
+              [
+                "Principled BSDF",
+                "BSDF"
+              ]
+            ],
+            "value": ""
+          },
+          "Volume": {
+            "linked": [],
+            "value": ""
+          },
+          "Displacement": {
+            "linked": [],
+            "value": "<bpy_float[3], NodeSocketVector.default_value>"
+          },
+          "Thickness": {
+            "linked": [],
+            "value": "0.0"
+          }
+        },
+        "group": null
+      },
+      {
+        "name": "Principled BSDF",
+        "type": "BSDF_PRINCIPLED",
+        "image": null,
+        "inputs": {
+          "Base Color": {
+            "linked": [
+              [
+                "Mix",
+                "Result"
+              ]
+            ],
+            "value": "<bpy_float[4], NodeSocketColor.default_value>"
+          },
+          "Metallic": {
+            "linked": [],
+            "value": "0.4000000059604645"
+          },
+          "Roughness": {
+            "linked": [
+              [
+                "ColorRamp",
+                "Color"
+              ]
+            ],
+            "value": "0.6499999761581421"
+          },
+          "IOR": {
+            "linked": [],
+            "value": "1.4500000476837158"
+          },
+          "Alpha": {
+            "linked": [],
+            "value": "1.0"
+          },
+          "Normal": {
+            "linked": [],
+            "value": "<bpy_float[3], NodeSocketVector.default_value>"
+          },
+          "Weight": {
+            "linked": [],
+            "value": "0.0"
+          },
+          "Diffuse Roughness": {
+            "linked": [],
+            "value": "0.0"
+          },
+          "Subsurface Weight": {
+            "linked": [],
+            "value": "0.0"
+          },
+          "Subsurface Radius": {
+            "linked": [],
+            "value": "<bpy_float[3], NodeSocketVector.default_value>"
+          },
+          "Subsurface Scale": {
+            "linked": [],
+            "value": "0.05000000074505806"
+          },
+          "Subsurface IOR": {
+            "linked": [],
+            "value": "1.399999976158142"
+          },
+          "Subsurface Anisotropy": {
+            "linked": [],
+            "value": "0.0"
+          },
+          "Specular IOR Level": {
+            "linked": [],
+            "value": "0.6000000238418579"
+          },
+          "Specular Tint": {
+            "linked": [],
+            "value": "<bpy_float[4], NodeSocketColor.default_value>"
+          },
+          "Anisotropic": {
+            "linked": [],
+            "value": "0.0"
+          },
+          "Anisotropic Rotation": {
+            "linked": [],
+            "value": "0.0"
+          },
+          "Tangent": {
+            "linked": [],
+            "value": "<bpy_float[3], NodeSocketVector.default_value>"
+          },
+          "Transmission Weight": {
+            "linked": [],
+            "value": "0.0"
+          },
+          "Coat Weight": {
+            "linked": [],
+            "value": "0.0"
+          },
+          "Coat Roughness": {
+            "linked": [],
+            "value": "0.029999999329447746"
+          },
+          "Coat IOR": {
+            "linked": [],
+            "value": "1.5"
+          },
+          "Coat Tint": {
+            "linked": [],
+            "value": "<bpy_float[4], NodeSocketColor.default_value>"
+          },
+          "Coat Normal": {
+            "linked": [],
+            "value": "<bpy_float[3], NodeSocketVector.default_value>"
+          },
+          "Sheen Weight": {
+            "linked": [],
+            "value": "0.0"
+          },
+          "Sheen Roughness": {
+            "linked": [],
+            "value": "0.5"
+          },
+          "Sheen Tint": {
+            "linked": [],
+            "value": "<bpy_float[4], NodeSocketColor.default_value>"
+          },
+          "Emission Color": {
+            "linked": [],
+            "value": "<bpy_float[4], NodeSocketColor.default_value>"
+          },
+          "Emission Strength": {
+            "linked": [],
+            "value": "1.0"
+          },
+          "Thin Film Thickness": {
+            "linked": [],
+            "value": "0.0"
+          },
+          "Thin Film IOR": {
+            "linked": [],
+            "value": "1.3300000429153442"
+          }
+        },
+        "group": null
+      },
+      {
+        "name": "Image Texture.001",
+        "type": "TEX_IMAGE",
+        "image": "TEX-rain_scarf_cavity.png",
+        "inputs": {
+          "Vector": {
+            "linked": [],
+            "value": "<bpy_float[3], NodeSocketVector.default_value>"
+          }
+        },
+        "group": null
+      },
+      {
+        "name": "Vertex Color",
+        "type": "VERTEX_COLOR",
+        "image": null,
+        "inputs": {},
+        "group": null
+      }
+    ]
+  }
+}

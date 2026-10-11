@@ -1,0 +1,253 @@
+{
+  "snow.skin": {
+    "outputs": [
+      {
+        "name": "Material Output.001",
+        "target": "ALL",
+        "active": true,
+        "surface": [
+          [
+            "Principled BSDF.001",
+            "BSDF_PRINCIPLED"
+          ]
+        ]
+      }
+    ],
+    "principled": [
+      {
+        "name": "Principled BSDF.001",
+        "base": [
+          [
+            "Mix",
+            "Result"
+          ]
+        ],
+        "normal": []
+      }
+    ]
+  },
+  "snow.hair": {
+    "outputs": [
+      {
+        "name": "Material Output",
+        "target": "CYCLES",
+        "active": false,
+        "surface": [
+          [
+            "Principled BSDF",
+            "BSDF_PRINCIPLED"
+          ]
+        ]
+      },
+      {
+        "name": "Material Output.001",
+        "target": "EEVEE",
+        "active": true,
+        "surface": [
+          [
+            "Principled BSDF.001",
+            "BSDF_PRINCIPLED"
+          ]
+        ]
+      }
+    ],
+    "principled": [
+      {
+        "name": "Principled BSDF",
+        "base": [
+          [
+            "Mix",
+            "Result"
+          ]
+        ],
+        "normal": []
+      },
+      {
+        "name": "Principled BSDF.001",
+        "base": [
+          [
+            "Mix.001",
+            "Result"
+          ]
+        ],
+        "normal": []
+      }
+    ]
+  },
+  "snow.eyes": {
+    "outputs": [
+      {
+        "name": "Material Output",
+        "target": "ALL",
+        "active": true,
+        "surface": [
+          [
+            "Principled BSDF",
+            "BSDF_PRINCIPLED"
+          ]
+        ]
+      }
+    ],
+    "principled": [
+      {
+        "name": "Principled BSDF",
+        "base": [
+          [
+            "Image Texture",
+            "Color"
+          ]
+        ],
+        "normal": [
+          [
+            "Normal Map",
+            "Normal"
+          ]
+        ]
+      }
+    ]
+  },
+  "snow.skin_darker": {
+    "outputs": [
+      {
+        "name": "Material Output.001",
+        "target": "ALL",
+        "active": true,
+        "surface": [
+          [
+            "Group",
+            "GROUP"
+          ]
+        ]
+      }
+    ],
+    "principled": []
+  },
+  "snow.skin_upper_lip": {
+    "outputs": [
+      {
+        "name": "Material Output.001",
+        "target": "ALL",
+        "active": true,
+        "surface": [
+          [
+            "Group",
+            "GROUP"
+          ]
+        ]
+      }
+    ],
+    "principled": []
+  },
+  "snow.skin_lower_lip": {
+    "outputs": [
+      {
+        "name": "Material Output.001",
+        "target": "ALL",
+        "active": true,
+        "surface": [
+          [
+            "Group",
+            "GROUP"
+          ]
+        ]
+      }
+    ],
+    "principled": []
+  },
+  "snow.pants": {
+    "outputs": [
+      {
+        "name": "Material Output.002",
+        "target": "ALL",
+        "active": true,
+        "surface": [
+          [
+            "Principled BSDF.002",
+            "BSDF_PRINCIPLED"
+          ]
+        ]
+      }
+    ],
+    "principled": [
+      {
+        "name": "Principled BSDF.002",
+        "base": [
+          [
+            "Image Texture",
+            "Color"
+          ]
+        ],
+        "normal": [
+          [
+            "Normal Map",
+            "Normal"
+          ]
+        ]
+      }
+    ]
+  },
+  "snow.shirt": {
+    "outputs": [
+      {
+        "name": "Material Output.001",
+        "target": "ALL",
+        "active": true,
+        "surface": [
+          [
+            "Principled BSDF.001",
+            "BSDF_PRINCIPLED"
+          ]
+        ]
+      }
+    ],
+    "principled": [
+      {
+        "name": "Principled BSDF.001",
+        "base": [
+          [
+            "Image Texture.004",
+            "Color"
+          ]
+        ],
+        "normal": [
+          [
+            "Normal Map",
+            "Normal"
+          ]
+        ]
+      }
+    ]
+  },
+  "snow.shoe": {
+    "outputs": [
+      {
+        "name": "Material Output",
+        "target": "ALL",
+        "active": true,
+        "surface": [
+          [
+            "Principled BSDF",
+            "BSDF_PRINCIPLED"
+          ]
+        ]
+      }
+    ],
+    "principled": [
+      {
+        "name": "Principled BSDF",
+        "base": [
+          [
+            "Image Texture",
+            "Color"
+          ]
+        ],
+        "normal": [
+          [
+            "Normal Map",
+            "Normal"
+          ]
+        ]
+      }
+    ]
+  }
+}

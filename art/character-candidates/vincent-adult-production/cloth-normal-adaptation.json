@@ -1,0 +1,15 @@
+{
+  "all_pass": true,
+  "reason": "Source cloth micro-bump aliases visibly when converted into a 2048 runtime atlas; actual normal-disabled comparison isolated it.",
+  "changed_materials": [
+    "BAKE_vincent_shirt",
+    "BAKE_vincent_pants"
+  ],
+  "portable_cloth_displacement_bump_scale_multiplier": 0.12,
+  "unchanged": "Base colour, metallic/smoothness, all source geometry/weights/morphs and non-cloth normal inputs.",
+  "normal_space": "Tangent +Y, non-colour data",
+  "raw_rgba16_readback_max_error": 5.960464477539063e-08,
+  "prior_normal_sha256": "c2b89193bb97e3ed43ff0c886265310512a6297fac56d76c6b1ea6d5c69117b1",
+  "corrected_normal_sha256": "2feb76f67ac063f5a97a2ccc06251c11969dd41390a64fb88ec5d874639b2a21",
+  "proof": "renders/creator_flatnormal_front.png isolates the former moire; final tier proof uses the attenuated map."
+}

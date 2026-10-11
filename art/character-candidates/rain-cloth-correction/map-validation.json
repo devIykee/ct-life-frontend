@@ -1,0 +1,55 @@
+{
+  "all_pass": true,
+  "checks": {
+    "2048_rgba16_channel_readback": true,
+    "scarf_metal_zero": true,
+    "scarf_smoothness_at_most_point4": true,
+    "outside_scarf_and_gutter_unchanged": true,
+    "green_blue_channels_unchanged": true,
+    "packed_alpha_does_not_change_rgb": true,
+    "all_six_original_import_files_unchanged": true
+  },
+  "file": "exports/RainAdult_MetallicSmoothness.png",
+  "sha256": "0f2453768d5928787833dd5f49b13d4d96343cc0b30ed52b140cbe16a6cfdb56",
+  "source_file_sha256": "a28ce22aa1f298e1d92c03f6b1375f2eeb501e2694f40f638280943106f96420",
+  "source_bundle_files": {
+    "RainAdult_BaseColor.png": "3ff8e45c8cef68e16e3e473a573ffe30f64441e1e3de96745c626f704ba6cb6b",
+    "RainAdult_Creator.fbx": "58adffe37196a8500ad4b9bc43fc2d1ca9dbf8355eecaf44fabb5810cd4f0996",
+    "RainAdult_LOD1.fbx": "354ea9811cb2a7e6dc6ed1208a1c7841f0d4f694f4f2b90e3748ae872e66728b",
+    "RainAdult_LOD2.fbx": "5f3ff61f6d274cda56ab15c065f003c57050e9991248f9aaeba2bcad1e854d7a",
+    "RainAdult_MetallicSmoothness.png": "a28ce22aa1f298e1d92c03f6b1375f2eeb501e2694f40f638280943106f96420",
+    "RainAdult_Normal.png": "9d435a959af5c8b9ca3f7decc53e0a80397d84ee06d73200fa54edff93e55d4b"
+  },
+  "method": "Scarf atlas surface plus eight-pixel gutter only; metal=0, smoothness=min(existing,.4). Explicit straight RGBA16 data writer bypasses Blender opacity conversion.",
+  "scarf_surface_pixels": 21556,
+  "surface_and_gutter_pixels": 36943,
+  "scarf_metal_before_min_median_max": [
+    0.4000000059604645,
+    1.0,
+    1.0
+  ],
+  "scarf_metal_after_min_median_max": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "scarf_smoothness_after_min_median_max": [
+    0.0,
+    0.3792019486427307,
+    0.4000000059604645
+  ],
+  "channel_probe_expected": [
+    0.4000000059604645,
+    1.0,
+    0.0,
+    0.25
+  ],
+  "channel_probe_readback": [
+    0.4000000059604645,
+    1.0,
+    0.0,
+    0.2500038146972656
+  ],
+  "maximum_quantized_readback_delta": 5.960464477539063e-08,
+  "scope": "One material data-map candidate. No rig, mesh, UV, base-colour, normal, LOD or idle changes. Unity/device visual review pending."
+}

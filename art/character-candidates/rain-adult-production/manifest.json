@@ -1,0 +1,235 @@
+{
+  "status": "Frozen 2026-10-06 after fresh Blender FBX and actual render review. Ready for coordinating-agent Unity import; device/animation/performance acceptance pending.",
+  "source": "Blender Studio Rain CC-BY4.0, adapted adult proportions. Raw source unchanged.",
+  "source_page": "https://studio.blender.org/characters/rain/v3/",
+  "attribution": "Rain Rig (CC) Blender Foundation | studio.blender.org",
+  "files": {
+    "fbx": "exports/RainAdult_Creator.fbx",
+    "base_color": "exports/RainAdult_BaseColor.png",
+    "normal": "exports/RainAdult_Normal.png",
+    "metallic_smoothness": "exports/RainAdult_MetallicSmoothness.png",
+    "lod1": "exports/RainAdult_LOD1.fbx",
+    "lod2": "exports/RainAdult_LOD2.fbx",
+    "frozen_gate": "bundle-ready.json"
+  },
+  "geometry": {
+    "mesh": "RainAdult_CreatorMesh",
+    "triangles": 76974,
+    "vertices": 40013,
+    "skinned_mesh_count": 1,
+    "material_slots": 1,
+    "bones": 55,
+    "max_influences": 4,
+    "bounds_blender_metres": [
+      [
+        -0.6982750296592712,
+        0.698275089263916
+      ],
+      [
+        -0.18652097880840302,
+        0.22246254980564117
+      ],
+      [
+        0.0,
+        1.6956230401992798
+      ]
+    ],
+    "height_metres": 1.6956230401992798,
+    "ground_offset_applied_m": -0.0,
+    "sole_blender_z_m": 0.0,
+    "object_scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "textures": {
+    "size": [
+      2048,
+      2048
+    ],
+    "base_color_space": "sRGB",
+    "normal_space": "Tangent/OpenGL +Y, import as Unity Normal Map",
+    "metallic_smoothness_space": "Linear; R=Metallic, A=1-Roughness, G=1, B=0",
+    "atlas_padding_px": 8,
+    "island_gap_target_px": 16,
+    "uv_layer": "AtlasUV / exported UV0"
+  },
+  "unity_material": {
+    "shader": "Universal Render Pipeline/Lit",
+    "name": "RainAdult_Atlas",
+    "base_tint": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "normal_scale": 1,
+    "metallic_map_multiplier": 1,
+    "smoothness_multiplier": 1,
+    "surface": "Opaque"
+  },
+  "unity_import": {
+    "avatar_setup": "CreateFromThisModel",
+    "mapping_file": "unity-humanoid-map.json",
+    "axis_forward": "-Z",
+    "axis_up": "Y",
+    "global_scale": 1,
+    "expected_sole_y_m": 0,
+    "animation_clips": []
+  },
+  "source_parts": [
+    {
+      "part": "body",
+      "part_id": 0,
+      "triangles": 12008,
+      "vertices": 6128,
+      "cleared_edit_hidden_faces": 0,
+      "cleared_edit_hidden_vertices": 0
+    },
+    {
+      "part": "eyebrows",
+      "part_id": 1,
+      "triangles": 520,
+      "vertices": 296,
+      "cleared_edit_hidden_faces": 0,
+      "cleared_edit_hidden_vertices": 0
+    },
+    {
+      "part": "eyelashes",
+      "part_id": 2,
+      "triangles": 472,
+      "vertices": 240,
+      "cleared_edit_hidden_faces": 0,
+      "cleared_edit_hidden_vertices": 0
+    },
+    {
+      "part": "eyes",
+      "part_id": 3,
+      "triangles": 2756,
+      "vertices": 1418,
+      "cleared_edit_hidden_faces": 0,
+      "cleared_edit_hidden_vertices": 0
+    },
+    {
+      "part": "gums_lower",
+      "part_id": 4,
+      "triangles": 5760,
+      "vertices": 3068,
+      "cleared_edit_hidden_faces": 0,
+      "cleared_edit_hidden_vertices": 0
+    },
+    {
+      "part": "gums_upper",
+      "part_id": 5,
+      "triangles": 5760,
+      "vertices": 3069,
+      "cleared_edit_hidden_faces": 0,
+      "cleared_edit_hidden_vertices": 0
+    },
+    {
+      "part": "hair_main",
+      "part_id": 6,
+      "triangles": 3933,
+      "vertices": 2202,
+      "cleared_edit_hidden_faces": 0,
+      "cleared_edit_hidden_vertices": 0
+    },
+    {
+      "part": "hair_ponytail",
+      "part_id": 7,
+      "triangles": 1138,
+      "vertices": 579,
+      "cleared_edit_hidden_faces": 0,
+      "cleared_edit_hidden_vertices": 0
+    },
+    {
+      "part": "hair_strand",
+      "part_id": 8,
+      "triangles": 786,
+      "vertices": 400,
+      "cleared_edit_hidden_faces": 0,
+      "cleared_edit_hidden_vertices": 0
+    },
+    {
+      "part": "hairband",
+      "part_id": 9,
+      "triangles": 960,
+      "vertices": 480,
+      "cleared_edit_hidden_faces": 0,
+      "cleared_edit_hidden_vertices": 0
+    },
+    {
+      "part": "head",
+      "part_id": 10,
+      "triangles": 12634,
+      "vertices": 6395,
+      "cleared_edit_hidden_faces": 0,
+      "cleared_edit_hidden_vertices": 0
+    },
+    {
+      "part": "jeans",
+      "part_id": 11,
+      "triangles": 8385,
+      "vertices": 4280,
+      "cleared_edit_hidden_faces": 0,
+      "cleared_edit_hidden_vertices": 0
+    },
+    {
+      "part": "scarf",
+      "part_id": 12,
+      "triangles": 2434,
+      "vertices": 1285,
+      "cleared_edit_hidden_faces": 0,
+      "cleared_edit_hidden_vertices": 0
+    },
+    {
+      "part": "shoes",
+      "part_id": 13,
+      "triangles": 12364,
+      "vertices": 6634,
+      "cleared_edit_hidden_faces": 0,
+      "cleared_edit_hidden_vertices": 0
+    },
+    {
+      "part": "tongue",
+      "part_id": 14,
+      "triangles": 528,
+      "vertices": 275,
+      "cleared_edit_hidden_faces": 0,
+      "cleared_edit_hidden_vertices": 0
+    },
+    {
+      "part": "top",
+      "part_id": 15,
+      "triangles": 6536,
+      "vertices": 3264,
+      "cleared_edit_hidden_faces": 0,
+      "cleared_edit_hidden_vertices": 0
+    }
+  ],
+  "atlas_validation": "atlas-uv-validation.json",
+  "limitations": [
+    "No production facial-expression, blink, gaze or garment-customization system. Jaw is an inactive placeholder.",
+    "The exported complete Breeze look is not a modular wardrobe or body/face editor.",
+    "41,416 / 34,817 triangle alternate tiers preserve reviewed anatomy; Seeker frame time and crowd capacity remain unmeasured.",
+    "Hair/scarf secondary motion is reduced to Head/body weighting. Source skin subsurface and hair anisotropy are reduced to ordinary atlas PBR.",
+    "Diagnostic Blender static poses are not gameplay animation acceptance. Shared Snow-native idle and body clips require Rain-specific Unity/device retarget, contact and transition review."
+  ],
+  "world_lods": {
+    "LOD1": {
+      "triangles": 41416,
+      "vertices": 22027,
+      "height_m": 1.6957367658615112,
+      "sole_z_m": 0.0,
+      "max_influences": 4
+    },
+    "LOD2": {
+      "triangles": 34817,
+      "vertices": 18695,
+      "height_m": 1.6957367658615112,
+      "sole_z_m": 0.0,
+      "max_influences": 4
+    }
+  }
+}

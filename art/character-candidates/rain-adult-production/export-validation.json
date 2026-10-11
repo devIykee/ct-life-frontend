@@ -1,0 +1,80 @@
+{
+  "all_pass": true,
+  "sha256": "58adffe37196a8500ad4b9bc43fc2d1ca9dbf8355eecaf44fabb5810cd4f0996",
+  "checks": {
+    "one_skinned_mesh": true,
+    "one_material": true,
+    "55_bones": true,
+    "bone_names_match": true,
+    "triangles_match": true,
+    "sole_z_zero": true,
+    "height_matches_manifest": true,
+    "one_atlas_uv": true,
+    "uvs_inside_atlas": true,
+    "max_four_influences": true,
+    "normalized_weights": true,
+    "Tpose_geometry_within_1e_5m": true,
+    "PhoneGrip_geometry_within_1e_5m": true,
+    "OpenWave_geometry_within_1e_5m": true,
+    "RainAdult_BaseColor_2048": true,
+    "RainAdult_MetallicSmoothness_2048": true,
+    "RainAdult_Normal_2048": true
+  },
+  "posed_geometry_deltas": {
+    "Tpose": {
+      "max_m": 4.692239485848404e-07,
+      "rms_m": 2.754792373094701e-07
+    },
+    "PhoneGrip": {
+      "max_m": 1.19840910883795e-06,
+      "rms_m": 3.6033167639703874e-07
+    },
+    "OpenWave": {
+      "max_m": 7.890583333391987e-07,
+      "rms_m": 2.8360107154819395e-07
+    }
+  },
+  "imported_bounds_blender_m": [
+    [
+      -0.698275089263916,
+      0.6982751488685608
+    ],
+    [
+      -0.18652097880840302,
+      0.22246286273002625
+    ],
+    [
+      -8.980577170802917e-09,
+      1.6956230401992798
+    ]
+  ],
+  "fbx_bytes": 2837564,
+  "triangles": 76974,
+  "textures": {
+    "RainAdult_BaseColor.png": {
+      "width": 2048,
+      "height": 2048,
+      "bit_depth": 16,
+      "png_color_type": 6,
+      "bytes": 6902455,
+      "sha256": "3ff8e45c8cef68e16e3e473a573ffe30f64441e1e3de96745c626f704ba6cb6b"
+    },
+    "RainAdult_MetallicSmoothness.png": {
+      "width": 2048,
+      "height": 2048,
+      "bit_depth": 16,
+      "png_color_type": 6,
+      "bytes": 4370548,
+      "sha256": "a28ce22aa1f298e1d92c03f6b1375f2eeb501e2694f40f638280943106f96420"
+    },
+    "RainAdult_Normal.png": {
+      "width": 2048,
+      "height": 2048,
+      "bit_depth": 16,
+      "png_color_type": 6,
+      "bytes": 8154484,
+      "sha256": "9d435a959af5c8b9ca3f7decc53e0a80397d84ee06d73200fa54edff93e55d4b"
+    }
+  },
+  "scope": "Blender fresh FBX import/rest-and-gesture geometry; Unity Humanoid/material/device verification belongs to coordinating agent."
+}

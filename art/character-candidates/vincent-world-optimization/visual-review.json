@@ -1,0 +1,39 @@
+{
+  "status": "Frozen source candidate for native review; near/far quality and performance not finally accepted.",
+  "comparison_columns": [
+    "Creator76,772",
+    "Previous far42,630",
+    "WorldNear16,557",
+    "WorldFar6,801"
+  ],
+  "inspected": [
+    "city-160px.png",
+    "far-64px.png",
+    "distant-32px.png",
+    "scrutiny-front.png",
+    "scrutiny-back.png",
+    "stress.png",
+    "shoe-normal.png",
+    "shoe-flatnormal.png",
+    "shoe-albedo.png",
+    "belt-normal.png",
+    "belt-flatnormal.png",
+    "belt-albedo.png"
+  ],
+  "findings": {
+    "same_size": "Distinct face, glasses, hair silhouette, garment colours and digit silhouettes remain readable at the tested160px near/64px far sizes. Blender studio evidence, not actual city rendering.",
+    "shoe_edge": "Dark edging persists with normal map disabled and disappears under unlit albedo. Unlit surface remains continuous in this view. This isolates coarse geometric/vertex-normal lighting, not a normal-map artefact or demonstrated open material boundary. Near acceptance pending native view.",
+    "belt": "Near buckle reflection is coarser with the normal map disabled too; unlit near belt is continuous. Far belt edge and buckle are visibly coarse/scalloped at enlarged scrutiny; far is not suitable for creator use.",
+    "deformation": "Inspected bent knee, raised arm and curled digits in source stress sheet. No native animation/foot-contact acceptance implied.",
+    "normal_image_reload": "Former wholesale black patches were caused by an unpersisted GENERATED normal-image datablock in the authoring scene. Both final materials now reference reloaded FILE PNGs; resource audit verifies data after reopening.",
+    "material_boundaries": "Shared source material-border vertices locked during independent reduction; retained source positions, UV samples and skin attributes. Earlier shoe-border openings corrected before final packing.",
+    "duplicate_faces": "Removed26 near/40 far duplicate index faces before atlas packing, so fresh FBX topology/UV signatures match."
+  },
+  "remaining": [
+    "Native Unity material/normal/tangent/ASTC views and actual locomotion samples.",
+    "Review near shoe/buckle reflections under actual game lighting.",
+    "Measure near/far LOD transition at actual city footprint and lodBias.",
+    "Crowd/device thermal performance;62 all-far instances alone total421,662 triangles.",
+    "Far has no facial morphs/teeth; use creator/near for conversations and close views."
+  ]
+}

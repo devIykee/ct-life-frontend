@@ -1,0 +1,323 @@
+{
+  "scope": "Isolated world meshes; hand-authored stress poses, not native shared animation; no crowd/thermal acceptance.",
+  "tiers": {
+    "WorldNear": {
+      "retained_vertex_skinning_vs_full4weight_source": {
+        "rest": {
+          "maximum_m": 0.0,
+          "p95_m": 0.0,
+          "p99_m": 0.0,
+          "over5mm_vertices": 0
+        },
+        "relaxed": {
+          "maximum_m": 0.0,
+          "p95_m": 0.0,
+          "p99_m": 0.0,
+          "over5mm_vertices": 0
+        },
+        "wave": {
+          "maximum_m": 0.0,
+          "p95_m": 0.0,
+          "p99_m": 0.0,
+          "over5mm_vertices": 0
+        },
+        "walk": {
+          "maximum_m": 0.0,
+          "p95_m": 0.0,
+          "p99_m": 0.0,
+          "over5mm_vertices": 0
+        },
+        "run": {
+          "maximum_m": 0.0,
+          "p95_m": 0.0,
+          "p99_m": 0.0,
+          "over5mm_vertices": 0
+        },
+        "sit": {
+          "maximum_m": 0.0,
+          "p95_m": 0.0,
+          "p99_m": 0.0,
+          "over5mm_vertices": 0
+        },
+        "fist": {
+          "maximum_m": 0.0,
+          "p95_m": 0.0,
+          "p99_m": 0.0,
+          "over5mm_vertices": 0
+        },
+        "head_only": {
+          "maximum_m": 0.0,
+          "p95_m": 0.0,
+          "p99_m": 0.0,
+          "over5mm_vertices": 0
+        }
+      },
+      "checks": {
+        "one_mesh_material": true,
+        "55_same_named_bones": true,
+        "same_parents": true,
+        "source_rest_joint_positions_under10micrometres": true,
+        "shared_world_rest_bind": true,
+        "same_rest_bind_as_frozen_creator_fbx": true,
+        "rest_and_uv_signature_match": true,
+        "roundtrip_surface_under20micrometres": true,
+        "explicit_morph_set": true,
+        "all_morph_defaults_zero": true,
+        "near_morphs_have_actual_surface_deformation": true,
+        "all30_digits_weighted": true,
+        "weights_normalized_within_limit": true,
+        "no_head_weight_below1_3m": true,
+        "source_sole_within1mm": true,
+        "zero_atlas_interior_overlap": true,
+        "tri_count_matches": true
+      },
+      "triangles": 16557,
+      "fresh_fbx_vertices": 13727,
+      "rest_matrix_max_delta": 5.561113357543945e-05,
+      "shared_matrix_delta": 0,
+      "sample_roundtrip_max_delta_m": {
+        "rest": 6.603858651033079e-07,
+        "relaxed": 6.603858651033079e-07,
+        "wave": 8.384846523767919e-07,
+        "walk": 9.011892529997567e-07,
+        "run": 8.861180731400964e-07,
+        "sit": 8.244261948675558e-07,
+        "fist": 7.535867325714207e-07,
+        "head_only": 6.622325940952578e-07,
+        "BlinkLeft": 6.603858651033079e-07,
+        "BlinkRight": 6.603858651033079e-07,
+        "Smile": 6.603858651033079e-07,
+        "BrowUp": 6.603858651033079e-07,
+        "MouthOpen": 6.603858651033079e-07
+      },
+      "morph_default_weights": {
+        "BlinkLeft": 0.0,
+        "BlinkRight": 0.0,
+        "Smile": 0.0,
+        "BrowUp": 0.0,
+        "MouthOpen": 0.0
+      },
+      "morph_surface_delta_max_m": {
+        "BlinkLeft": 0.025038159719993076,
+        "BlinkRight": 0.02525958002628703,
+        "Smile": 0.023252300731807667,
+        "BrowUp": 0.0167175226054678,
+        "MouthOpen": 0.028278075742485802
+      },
+      "digit_weighted_vertices": {
+        "Thumb1.L": 127,
+        "Thumb2.L": 103,
+        "Thumb3.L": 87,
+        "Index1.L": 101,
+        "Index2.L": 37,
+        "Index3.L": 70,
+        "Middle1.L": 107,
+        "Middle2.L": 38,
+        "Middle3.L": 62,
+        "Ring1.L": 91,
+        "Ring2.L": 42,
+        "Ring3.L": 69,
+        "Pinky1.L": 93,
+        "Pinky2.L": 39,
+        "Pinky3.L": 63,
+        "Thumb1.R": 138,
+        "Thumb2.R": 93,
+        "Thumb3.R": 88,
+        "Index1.R": 112,
+        "Index2.R": 46,
+        "Index3.R": 67,
+        "Middle1.R": 91,
+        "Middle2.R": 33,
+        "Middle3.R": 56,
+        "Ring1.R": 92,
+        "Ring2.R": 41,
+        "Ring3.R": 67,
+        "Pinky1.R": 83,
+        "Pinky2.R": 34,
+        "Pinky3.R": 51
+      },
+      "uv_audit": {
+        "raster_resolution": [
+          2048,
+          2048
+        ],
+        "strict_interior_barycentric_margin": 0.0001,
+        "overlapping_interior_samples": 0,
+        "overlap_samples_by_source_part_pair": {},
+        "overlapping_triangle_pairs": {},
+        "coverage_pixels": 1414921,
+        "coverage_fraction": 0.3373434543609619,
+        "degenerate_uv_triangles": 6,
+        "uv_min": [
+          0.0,
+          0.0
+        ],
+        "uv_max": [
+          0.9996805191040039,
+          0.9996795058250427
+        ],
+        "hidden_faces": 0,
+        "hidden_vertices": 0,
+        "limitation": "Raster test checks texel centres, not a mathematical proof against subpixel overlap."
+      },
+      "sole_z_m": 7.75182998040691e-05,
+      "sha256": "e4c3f25cb4b4a794c397294a32de090c53c6c4a6766b8ec265012f47d88081d2"
+    },
+    "WorldFar": {
+      "retained_vertex_skinning_vs_full4weight_source": {
+        "rest": {
+          "maximum_m": 1.1957253400760915e-07,
+          "p95_m": 0.0,
+          "p99_m": 3.725290298461914e-09,
+          "over5mm_vertices": 0
+        },
+        "relaxed": {
+          "maximum_m": 0.011361008501309902,
+          "p95_m": 1.5861587598916692e-10,
+          "p99_m": 0.00016996690611436265,
+          "over5mm_vertices": 6
+        },
+        "wave": {
+          "maximum_m": 0.006861568918958516,
+          "p95_m": 4.5606896037467485e-11,
+          "p99_m": 0.00010267153040193957,
+          "over5mm_vertices": 4
+        },
+        "walk": {
+          "maximum_m": 0.011361008501309902,
+          "p95_m": 1.5861587598916692e-10,
+          "p99_m": 0.00016996690611436265,
+          "over5mm_vertices": 6
+        },
+        "run": {
+          "maximum_m": 0.011361008501309902,
+          "p95_m": 2.3283064365386963e-10,
+          "p99_m": 0.0002868214302129993,
+          "over5mm_vertices": 6
+        },
+        "sit": {
+          "maximum_m": 0.011361008501309902,
+          "p95_m": 1.5861587598916692e-10,
+          "p99_m": 0.00016996690611436265,
+          "over5mm_vertices": 6
+        },
+        "fist": {
+          "maximum_m": 0.002202312983633506,
+          "p95_m": 0.0,
+          "p99_m": 7.450580596923828e-09,
+          "over5mm_vertices": 0
+        },
+        "head_only": {
+          "maximum_m": 1.1957253400760915e-07,
+          "p95_m": 0.0,
+          "p99_m": 3.725290298461914e-09,
+          "over5mm_vertices": 0
+        }
+      },
+      "checks": {
+        "one_mesh_material": true,
+        "55_same_named_bones": true,
+        "same_parents": true,
+        "source_rest_joint_positions_under10micrometres": true,
+        "shared_world_rest_bind": true,
+        "same_rest_bind_as_frozen_creator_fbx": true,
+        "rest_and_uv_signature_match": true,
+        "roundtrip_surface_under20micrometres": true,
+        "explicit_morph_set": true,
+        "all_morph_defaults_zero": true,
+        "near_morphs_have_actual_surface_deformation": true,
+        "all30_digits_weighted": true,
+        "weights_normalized_within_limit": true,
+        "no_head_weight_below1_3m": true,
+        "source_sole_within1mm": true,
+        "zero_atlas_interior_overlap": true,
+        "tri_count_matches": true
+      },
+      "triangles": 6801,
+      "fresh_fbx_vertices": 5198,
+      "rest_matrix_max_delta": 5.561113357543945e-05,
+      "shared_matrix_delta": 0.0,
+      "sample_roundtrip_max_delta_m": {
+        "rest": 6.603858651033079e-07,
+        "relaxed": 6.603858651033079e-07,
+        "wave": 8.372066986339632e-07,
+        "walk": 9.011892529997567e-07,
+        "run": 8.861180731400964e-07,
+        "sit": 8.186489708350564e-07,
+        "fist": 7.546816505055176e-07,
+        "head_only": 6.619286523346091e-07
+      },
+      "morph_default_weights": {},
+      "morph_surface_delta_max_m": {},
+      "digit_weighted_vertices": {
+        "Thumb1.L": 24,
+        "Thumb2.L": 19,
+        "Thumb3.L": 17,
+        "Index1.L": 27,
+        "Index2.L": 10,
+        "Index3.L": 15,
+        "Middle1.L": 25,
+        "Middle2.L": 10,
+        "Middle3.L": 15,
+        "Ring1.L": 16,
+        "Ring2.L": 11,
+        "Ring3.L": 17,
+        "Pinky1.L": 23,
+        "Pinky2.L": 15,
+        "Pinky3.L": 11,
+        "Thumb1.R": 23,
+        "Thumb2.R": 22,
+        "Thumb3.R": 21,
+        "Index1.R": 30,
+        "Index2.R": 17,
+        "Index3.R": 16,
+        "Middle1.R": 32,
+        "Middle2.R": 16,
+        "Middle3.R": 16,
+        "Ring1.R": 20,
+        "Ring2.R": 10,
+        "Ring3.R": 14,
+        "Pinky1.R": 23,
+        "Pinky2.R": 14,
+        "Pinky3.R": 14
+      },
+      "uv_audit": {
+        "raster_resolution": [
+          2048,
+          2048
+        ],
+        "strict_interior_barycentric_margin": 0.0001,
+        "overlapping_interior_samples": 0,
+        "overlap_samples_by_source_part_pair": {},
+        "overlapping_triangle_pairs": {},
+        "coverage_pixels": 1198799,
+        "coverage_fraction": 0.285815954208374,
+        "degenerate_uv_triangles": 3,
+        "uv_min": [
+          0.0,
+          0.0
+        ],
+        "uv_max": [
+          0.9994186162948608,
+          0.9994186162948608
+        ],
+        "hidden_faces": 0,
+        "hidden_vertices": 0,
+        "limitation": "Raster test checks texel centres, not a mathematical proof against subpixel overlap."
+      },
+      "sole_z_m": 0.000981707707978785,
+      "sha256": "598ce99f356ab73fad8e1cbf5b6e5be6da0199650a55182343a1a3ba15cc1caa"
+    }
+  },
+  "files": {
+    "VincentAdult_WorldNear.fbx": "e4c3f25cb4b4a794c397294a32de090c53c6c4a6766b8ec265012f47d88081d2",
+    "VincentAdult_WorldFar_BaseColor.png": "d274ec68adf69a5b371c2b8f77402b8b26e20fba6a9da81acb167754f7ffe81c",
+    "VincentAdult_WorldNear_Normal.png": "f9ea8b4e6c614ecee2391e6a744af7191e33df0b6fbb805654e9d6b2f667f155",
+    "VincentAdult_WorldFar_MetallicSmoothness.png": "18a3cccb1aaf334b286020bc594b5bff6852687400ce360a9a97c8cf200f5811",
+    "VincentAdult_WorldFar_Normal.png": "bede4bb5e15fdb6ce53fc7a773a2807ca30184ffef5b8965447aa684ac9e92c2",
+    "VincentAdult_WorldNear_BaseColor.png": "bd568d9b404cbaeb9473529093015f5e4365c236f6c6108b156a6fe8216ae106",
+    "VincentAdult_WorldNear_MetallicSmoothness.png": "522a33fb49667803ed5e0641959f6f182398a8043c53b6052141cf8654f7dfa0",
+    "VincentAdult_WorldFar.fbx": "598ce99f356ab73fad8e1cbf5b6e5be6da0199650a55182343a1a3ba15cc1caa"
+  },
+  "all_pass": true
+}
