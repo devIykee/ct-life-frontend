@@ -261,5 +261,3 @@ Print text and marks are original parody (e.g. COIN2050, CHECKPOINT, POMP, WOTCH
 | Name | Source URL | Licence | Author | Date | Used for |
 | --- | --- | --- | --- | --- | --- |
 | CT Life "CT" mark (`art/branding/logo/`) | Generated in the user's Codex chat (built-in image generation), 2026-10-06 | Owned by the project (generated for CT Life) | CT Life | 2026-10-06 | Logo, app icon, splash, in-app brand mark |
-| DynaPuff (variable) | https://fonts.google.com/specimen/DynaPuff | SIL OFL 1.1 (`art/branding/logo/fonts/DynaPuff-OFL.txt`) | The DynaPuff Project Authors (github.com/googlefonts/dynapuff) | 2026-10-06 (copied from the landing-page draft) | Logo wordmark, display type |
-| Chakra Petch Medium | https://fonts.google.com/specimen/Chakra+Petch | SIL OFL 1.1 (`art/branding/logo/fonts/ChakraPetch-OFL.txt`) | The Chakra Petch Project Authors (github.com/m4rc1e/Chakra-Petch) | 2026-10-06 (copied from the landing-page draft) | Supporting type |
