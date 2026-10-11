@@ -216,7 +216,7 @@ namespace CTLife.EditorTools
                             p.SetMoveInput(strength > 0f ? Stick(dir, strength) : Vector2.zero);
                             if (orbit != default) rig.Orbit(orbit / 60f);
                             await Awaitable.NextFrameAsync();
-                            if ((n++ & 1) == 0) await shot($"controls-clip-{n / 2:0000}", 0f);
+                            if ((n++ & 1) == 0) OnboardingCapture.FilmFrame($"controls-clip-{n / 2:0000}");   // no extra frames: real-time timing
                         }
                     }
                     await Film(0.6f, east, 0f);
@@ -293,7 +293,7 @@ namespace CTLife.EditorTools
         private static Vector3 Flat(Vector3 v) { v.y = 0f; return v; }
 
         /// <summary>The course, relative to <paramref name="o"/> (x east, z north, platform top at o.y).</summary>
-        private static GameObject BuildCourse(Vector3 o)
+        internal static GameObject BuildCourse(Vector3 o)
         {
             var root = new GameObject("controls-course");
             var mat = new Material(Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard")) { color = new Color(0.78f, 0.8f, 0.84f) };
