@@ -173,6 +173,9 @@ call-site volume, the margin over `mus_title` in the 1–6 kHz band (targets +6 
 
 ## Changelog
 
+- 2026-10-09 (c) — same ids, paths and GUIDs: 29 more SFX rebuilt from recordings (Kenney RPG/Casino/Impact/Music
+  Jingles, cogitollc pops, Fupi, existing CC0 freesound layers); ambience without synthetic layers. Synthesized only:
+  `sfx_rekt_phonk` and the NPC babble banks.
 - 2026-10-09 (b) — same ids and paths, real recordings: title = Glitter Blast loop, onboarding stingers/pop/shuffle from
   OpenGameArt and Kenney, clubs back on Disco con Tutti, tension layer = thunder field recording (no synthesis).
 - 2026-10-09 — `Music.PlayTitle()`, `Music.Title/Lobby`, `SetDistrict` accepts ids, `mood_reactive: false` sets;

@@ -1,4 +1,18 @@
-COMMITTED on branch `feat/audio-real` (worktree `../ct-life-audio`, off `dev` 30f11f91) — "feat(audio): real recordings replace every synthesized onboarding cue, the title theme, the club music and the red-market layer". Not merged.
+COMMITTED on branch `feat/audio-real-2` (worktree `../ct-life-audio`, off `dev` d5cb824f). Not merged.
+
+## 2026-10-09 (c) — pass 2: the remaining synthesized SFX → recordings
+
+29 cues rebuilt by `tools/curate_real_audio.py` (rows `PASS2`/`MULTI`) from recordings only — mixing, trimming, fades,
+constant gain; ids, paths and GUIDs unchanged. Packs (licence read once each): Kenney RPG Audio, Casino Audio, Impact
+Sounds, Music Jingles (CC0, `License.txt` in each zip); cogitollc Pop Sounds and Fupi Win Jingle (CC0, OpenGameArt, read in
+pass 1); CC0 freesound layers already in the build (fog horn, glass break, zipper, air horn, flamethrowers; public previews,
+deeds checked 2026-10-05). No new CC BY items. Gains re-matched to each old cue's 400 ms max loudness (capped 0 dB);
+`mix_audit.py` passes for every onboarding cue (cash-in now +8.9 dB); audio tests 142/142; reel peak −1.0 dBFS:
+`ct-life-evidence/audio/real-audio-pass2-preview-20261009.m4a` + `.txt` cue sheet. Ambience: synthetic hum, room tone and
+heart-monitor beeps removed (clinic and studio now use low-passed recordings).
+Kept synthesized: `sfx_rekt_phonk` (no CC0 phonk on OpenGameArt; the genre's 808/cowbell timbre is synthetic and the cue is
+not wired yet) and the 31 NPC babble banks (no CC0 voice pack with per-letter syllables for 31 distinct voices; the
+pitched-blip babble is the intended style).
 
 ## 2026-10-09 (b) — real recordings instead of synthesis (coordinator job)
 

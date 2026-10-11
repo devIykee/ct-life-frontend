@@ -684,11 +684,17 @@ def rekt_phonk():
 # recordings (user: "please don't synthesize"): tools/curate_real_audio.py builds them. No recipes here, so a full
 # gen_sfx.py run can never overwrite them.
 
+# Ids now built from real recordings (tools/curate_real_audio.py, pass 2, 2026-10-09). Only sfx_rekt_phonk stays synthesized.
+RECORDED = {"sfx_buy", "sfx_sell", "sfx_take_profit", "sfx_cash_in", "sfx_new_coin", "sfx_dm_ping", "sfx_mention", "sfx_gm", "sfx_call_ring", "sfx_call_connect", "sfx_call_end", "sfx_rank_up", "sfx_graduation", "sfx_news_flash", "sfx_liquidation", "sfx_rug", "sfx_moon_horn", "sfx_space_started", "sfx_sunday_unlock", "sfx_vr_join", "sfx_vr_leave", "sfx_vr_raise_hand", "sfx_vr_promoted", "sfx_ui_open", "sfx_ui_close", "sfx_whale_horn", "sfx_pnl_card_flip", "sfx_ore_clink", "sfx_ore_furnace_whoosh"}
+
+
 def main(only: list[str] | None = None) -> dict:
     report = {}
     for id_, meta in REGISTRY.items():
         if only and id_ not in only:
             continue
+        if id_ in RECORDED:
+            continue  # built from recordings by tools/curate_real_audio.py (user: no synthesis); recipe kept for history only
         res = meta["fn"]()
         files = []
         variants = res if isinstance(res, list) else [res]

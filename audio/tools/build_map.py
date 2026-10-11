@@ -155,19 +155,52 @@ REAL_SFX = {  # id: (category, volume_db, description) — gains from tools/mix_
     "sfx_creator_complete": ("stinger", -3, "Character creation done: steel-drum win jingle (about 2.5 s)"),
     "sfx_ui_next": ("ui", -2, "Onboarding step complete: a soft recorded pop"),
     "sfx_card_shuffle": ("card", -6, "Origin draw: a real card riffle and bridge"),
+    # pass 2 (2026-10-09): every remaining synthesized SFX; gains re-matched to the old cue loudness (400 ms max), capped at 0 dB
+    "sfx_buy": ("trading", -10.5, "Buy filled"),
+    "sfx_sell": ("trading", -13, "Sell filled"),
+    "sfx_take_profit": ("trading", -11, "Take-profit hit"),
+    "sfx_cash_in": ("trading", 0, "Cash credited (top-up confirmed)"),
+    "sfx_new_coin": ("trading", -14, "New coin listed"),
+    "sfx_dm_ping": ("phone", -10, "DM received"),
+    "sfx_mention": ("phone", -9, "@mention"),
+    "sfx_gm": ("social", -14, "gm ritual"),
+    "sfx_call_ring": ("phone", -8, "Incoming call ringtone, seamless 3.0 s loop"),
+    "sfx_call_connect": ("phone", -10, "Call connected"),
+    "sfx_call_end": ("phone", -6, "Call ended"),
+    "sfx_rank_up": ("stinger", -5, "Rank up"),
+    "sfx_graduation": ("stinger", -6.5, "Coin graduation"),
+    "sfx_news_flash": ("news", -4.5, "JUST IN / BREAKING wire alert"),
+    "sfx_liquidation": ("stinger", 0, "Liquidation"),
+    "sfx_rug": ("stinger", 0, "Rug pull"),
+    "sfx_moon_horn": ("stinger", -1.5, "Moon horn"),
+    "sfx_space_started": ("phone", -14.5, "A Space went live"),
+    "sfx_sunday_unlock": ("stinger", 0, "Sunday Unlock"),
+    "sfx_vr_join": ("voice_room", -14.5, "Someone joined the room"),
+    "sfx_vr_leave": ("voice_room", -15, "Someone left the room"),
+    "sfx_vr_raise_hand": ("voice_room", -6.5, "Hand raised"),
+    "sfx_vr_promoted": ("voice_room", -10.5, "Promoted to speaker"),
+    "sfx_ui_open": ("ui", -7, "Panel / phone opens (Kenney maximize_003 + soft swish)"),
+    "sfx_ui_close": ("ui", 0, "Panel / phone closes (Kenney minimize_003)"),
+    "sfx_whale_horn": ("trading", -3, "Whale alert"),
+    "sfx_pnl_card_flip": ("trading", -1, "PnL card flip"),
+    "sfx_ore_clink": ("ore", -15.5, "Ore nuggets clink (5 variations, synth + Kenney impactMining layer)"),
+    "sfx_ore_furnace_whoosh": ("ore", -10.5, "Refinery furnace flares"),
 }
 for id_, (cat, vdb, desc) in REAL_SFX.items():
     r = real.get(id_)
     if not r:
         continue
-    srec = real_src.get(r["source"], {})
-    lic = srec.get("licence", ["?", ""])
+    infos = r.get("files") or [r]
+    keys = r.get("sources") or [r["source"]]
+    recs = [real_src.get(k, {}) for k in keys]
+    lics = sorted({x.get("licence", ["?"])[0] for x in recs})
     e = {
-        "files": [rel(r["path"])], "volume": lin(vdb), "pitchJitter": 0.0, "category": cat, "volume_db": vdb,
-        "channels": r["channels"], "loop": False, "duration_s": round(r["samples"] / r["sr"], 3), "true_peak_dbtp": -1.0,
-        "ducks_music": cat == "stinger", "status": "client_only_cue", "desc": desc,
-        "sources": [f"{srec.get('title')} — {srec.get('author')}"], "license": lic[0], "license_url": lic[1],
-        "source_page": srec.get("page"), "license_checked": srec.get("checked"), "processing": r["edit"],
+        "files": [rel(i["path"]) for i in infos], "volume": lin(vdb), "pitchJitter": 0.0, "category": cat, "volume_db": vdb,
+        "channels": infos[0]["channels"], "loop": id_ == "sfx_call_ring", "duration_s": round(infos[0]["samples"] / infos[0]["sr"], 3),
+        "true_peak_dbtp": -1.0, "ducks_music": cat == "stinger", "status": "recorded", "desc": desc,
+        "sources": [f"{x.get('title')} — {x.get('author')}" for x in recs], "license": "+".join(lics),
+        "license_url": recs[0].get("licence", ["", ""])[1], "source_page": recs[0].get("page"),
+        "source_pages": [x.get("page") for x in recs], "license_checked": recs[0].get("checked"), "processing": r["edit"],
         "unity_import": UNITY["stinger" if cat == "stinger" else "short"],
     }
     sections["sfx"][id_] = e
@@ -253,8 +286,8 @@ lines = [
     "- Original synthesized district stems/previews (`processed/music/mus_*.ogg`) — `tools/gen_music.py`. "
     "Licensed full compositions in `processed/music/licensed/` are excluded from this dedication.",
     "- All NPC babble (`processed/babble/*`, 31 banks x 26 syllables) — `tools/gen_babble.py`.",
-    "- Synthesised SFX layers (UI, trading, phone, voice rooms, stingers, ORE) — `tools/gen_sfx.py`.",
-    "- Synthetic layers in ambience (hum, room tone, monitor beeps, club-through-wall) — `tools/gen_ambience.py`.",
+    "- `sfx_rekt_phonk` (the only synthesized SFX left, 2026-10-09) — `tools/gen_sfx.py`. Every other SFX and every "
+    "ambience layer is a recording (tables below and `tools/curate_real_audio.py`).",
     "- CT-native cues `sfx_news_flash`, `sfx_gm`, `sfx_cash_in`, `sfx_rekt_phonk` and the revised `sfx_buy`/`sfx_sell`/`sfx_graduation`/"
     "`sfx_sunday_unlock` — `tools/gen_sfx.py` (no sampled meme audio; research notes in docs/progress/audio-integration.md).",
     "",
@@ -324,7 +357,8 @@ if real_src:
               "| Source | Author | Page | Licence | Checked | Used in | SHA-256 (download) |", "| --- | --- | --- | --- | --- | --- | --- |"]
     used = {}
     for k, v in real.items():
-        used.setdefault(v.get("source", ""), []).append(k)
+        for src_key in (v.get("sources") or [v.get("source", "")]):
+            used.setdefault(src_key, []).append(k)
     used["thunder"] = used.get("thunder", []) + ["music.*.stems.tension"]
     for key, v in real_src.items():
         lic = v["licence"][0]

@@ -119,8 +119,7 @@ def recipes() -> dict:
 
     out["amb_timeline_square"] = finish("amb_timeline_square", (
         layer_src("amb_timeline_square", 640625, LX, 0.0)
-        + layer_src("amb_timeline_square", 757838, LX, -4.0)
-        + room_tone(L, 250) * dsp.db(-8) * 0.05), L)
+        + layer_src("amb_timeline_square", 757838, LX, -4.0)), L)
 
     out["amb_terminal_cafe"] = finish("amb_terminal_cafe", (
         layer_src("amb_terminal_cafe", 437461, LX, -1.0)
@@ -140,31 +139,23 @@ def recipes() -> dict:
     refinery = (layer_src("amb_ore_refinery", 478118, LX, -2.0, hp=30)
                 + layer_src("amb_ore_refinery", 415156, LX, -3.0, hp=30)
                 + layer_src("amb_ore_refinery", 450126, LX, -7.0, hp=30))
-    refinery += np.concatenate([hum(L, 60.0, 1.0), hum(ns(XF), 60.0, 1.0)]) * dsp.db(-24 - 10 - lufs(hum(L, 60.0, 1.0)))
     out["amb_ore_refinery"] = finish("amb_ore_refinery", refinery, L)
 
-    # Perp Pit trading floor: louder crowd + keyboards + low server hum
+    # Perp Pit trading floor: louder crowd + keyboards (recordings only since 2026-10-09; the synthesized server hum is gone)
     pit = (layer_src("amb_perp_pit", 757838, LX, 0.0)
            + layer_src("amb_perp_pit", 640630, LX, -2.0)
            + layer_src("amb_perp_pit", 546167, LX, -6.0, pan=-0.3, hp=150))
-    pit += np.concatenate([hum(L, 50.0, 1.0), hum(ns(XF), 50.0, 1.0)]) * dsp.db(-24 - 14 - lufs(hum(L, 50.0, 1.0)))
     out["amb_perp_pit"] = finish("amb_perp_pit", pit, L)
 
-    # Rekt Clinic: quiet ward room tone + heart-monitor beeps (synth) + muffled chatter
-    clinic = room_tone(L, 500) * 0.3
-    clinic = clinic * dsp.db(-24 - 6 - lufs(clinic))
-    beeps = np.zeros((L, 2))
-    beep = ins.fm_bell(960, 0.18, ratio=1.0, index=0.1, decay=0.15)
-    for k in range(int(30.0 / 0.9)):
-        dsp.mix_into(beeps, dsp.pan(beep, 0.35), ns(k * 0.9 + 0.2), 1.0, wrap=True)
-    beeps = beeps * dsp.db(-24 - 3 - lufs(beeps))
-    chatter = layer_src("amb_rekt_clinic", 437461, LX, -9.0, lp=900)
-    clinic_l = np.concatenate([clinic, clinic[: ns(XF)]])[:LX] + chatter
-    loop = dsp.crossfade_loop(clinic_l, L, ns(XF)) + beeps   # beeps are already circular
-    out["amb_rekt_clinic"] = finish("amb_rekt_clinic", loop, L)
+    # Rekt Clinic: muffled ward chatter over a ventilation drone (a refinery machine recording low-passed to an HVAC hum).
+    # Recordings only (2026-10-09): the synthesized room tone and heart-monitor beeps are gone; no CC0 recorded monitor
+    # beep was found in the packs checked.
+    clinic = (layer_src("amb_rekt_clinic", 437461, LX, -9.0, lp=900)
+              + layer_src("amb_rekt_clinic", 415156, LX, -10.0, lp=300, hp=40))
+    out["amb_rekt_clinic"] = finish("amb_rekt_clinic", clinic, L)
 
-    # Spaces Studio: near-silent treated room (voice-only venue)
-    studio = room_tone(L, 300) + np.concatenate([hum(L, 120.0, 0.02), hum(ns(XF), 120.0, 0.02)])
+    # Spaces Studio: near-silent treated room (voice-only venue): the café recording low-passed to a faint room murmur.
+    studio = layer_src("amb_spaces_studio", 437461, LX, -12.0, lp=300, hp=60)
     out["amb_spaces_studio"] = finish("amb_spaces_studio", studio, L, target=-36.0)
 
     # amb_club_doors: the licensed club track through a door — tools/curate_real_audio.py (no synthesized music).

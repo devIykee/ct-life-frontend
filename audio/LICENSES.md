@@ -9,8 +9,7 @@ Synthesised in Python (numpy/scipy) by the scripts in `audio/tools/`; no samples
 
 - Original synthesized district stems/previews (`processed/music/mus_*.ogg`) — `tools/gen_music.py`. Licensed full compositions in `processed/music/licensed/` are excluded from this dedication.
 - All NPC babble (`processed/babble/*`, 31 banks x 26 syllables) — `tools/gen_babble.py`.
-- Synthesised SFX layers (UI, trading, phone, voice rooms, stingers, ORE) — `tools/gen_sfx.py`.
-- Synthetic layers in ambience (hum, room tone, monitor beeps, club-through-wall) — `tools/gen_ambience.py`.
+- `sfx_rekt_phonk` (the only synthesized SFX left, 2026-10-09) — `tools/gen_sfx.py`. Every other SFX and every ambience layer is a recording (tables below and `tools/curate_real_audio.py`).
 - CT-native cues `sfx_news_flash`, `sfx_gm`, `sfx_cash_in`, `sfx_rekt_phonk` and the revised `sfx_buy`/`sfx_sell`/`sfx_graduation`/`sfx_sunday_unlock` — `tools/gen_sfx.py` (no sampled meme audio; research notes in docs/progress/audio-integration.md).
 
 ## Kenney (kenney.nl) — CC0 1.0
@@ -19,9 +18,9 @@ Licence evidence: each zip contains `License.txt`: "License: (Creative Commons Z
 
 | Pack | Page | Download | Licence | Author | Date downloaded | Files used → where |
 | --- | --- | --- | --- | --- | --- | --- |
-| Kenney Impact Sounds | https://kenney.nl/assets/impact-sounds | [zip](https://kenney.nl/media/pages/assets/impact-sounds/87b4ddecda-1677589768/kenney_impact-sounds.zip) | CC0 1.0 | Kenney | 2026-10-05 | `footstep_carpet_000.ogg` → foot_carpet<br>`footstep_carpet_001.ogg` → foot_carpet<br>`footstep_carpet_002.ogg` → foot_carpet<br>`footstep_carpet_003.ogg` → foot_carpet<br>`footstep_carpet_004.ogg` → foot_carpet<br>`footstep_concrete_000.ogg` → foot_concrete<br>`footstep_concrete_001.ogg` → foot_concrete<br>`footstep_concrete_002.ogg` → foot_concrete<br>`footstep_concrete_003.ogg` → foot_concrete<br>`footstep_concrete_004.ogg` → foot_concrete<br>`footstep_grass_000.ogg` → foot_grass<br>`footstep_grass_001.ogg` → foot_grass<br>`footstep_grass_002.ogg` → foot_grass<br>`footstep_grass_003.ogg` → foot_grass<br>`footstep_grass_004.ogg` → foot_grass<br>`footstep_wood_000.ogg` → foot_wood<br>`footstep_wood_001.ogg` → foot_wood<br>`footstep_wood_002.ogg` → foot_wood<br>`footstep_wood_003.ogg` → foot_wood<br>`footstep_wood_004.ogg` → foot_wood<br>`impactGlass_heavy_002.ogg` → sfx_liquidation<br>`impactMining_000.ogg` → sfx_ore_clink<br>`impactMining_001.ogg` → sfx_ore_clink<br>`impactMining_002.ogg` → sfx_ore_clink<br>`impactMining_003.ogg` → sfx_ore_clink<br>`impactMining_004.ogg` → sfx_ore_clink |
-| Kenney Interface Sounds | https://kenney.nl/assets/interface-sounds | [zip](https://kenney.nl/media/pages/assets/interface-sounds/fa43c1dd4d-1677589452/kenney_interface-sounds.zip) | CC0 1.0 | Kenney | 2026-10-05 | `click_003.ogg` → sfx_ui_tap<br>`confirmation_001.ogg` → sfx_ui_success<br>`error_001.ogg` → sfx_ui_error<br>`maximize_003.ogg` → sfx_ui_open<br>`minimize_003.ogg` → sfx_ui_close<br>`tick_002.ogg` → sfx_ui_toast<br>`toggle_001.ogg` → sfx_ui_toggle_on<br>`toggle_002.ogg` → sfx_ui_toggle_off |
-| Kenney Casino Audio | https://kenney.nl/assets/casino-audio | [zip](https://kenney.nl/media/pages/assets/casino-audio/2472606a04-1721639069/kenney_casino-audio.zip) | CC0 1.0 | Kenney | 2026-10-05 | `card-place-1.ogg` → sfx_pnl_card_flip |
+| Kenney Impact Sounds | https://kenney.nl/assets/impact-sounds | [zip](https://kenney.nl/media/pages/assets/impact-sounds/87b4ddecda-1677589768/kenney_impact-sounds.zip) | CC0 1.0 | Kenney | 2026-10-05 | `footstep_carpet_000.ogg` → foot_carpet<br>`footstep_carpet_001.ogg` → foot_carpet<br>`footstep_carpet_002.ogg` → foot_carpet<br>`footstep_carpet_003.ogg` → foot_carpet<br>`footstep_carpet_004.ogg` → foot_carpet<br>`footstep_concrete_000.ogg` → foot_concrete<br>`footstep_concrete_001.ogg` → foot_concrete<br>`footstep_concrete_002.ogg` → foot_concrete<br>`footstep_concrete_003.ogg` → foot_concrete<br>`footstep_concrete_004.ogg` → foot_concrete<br>`footstep_grass_000.ogg` → foot_grass<br>`footstep_grass_001.ogg` → foot_grass<br>`footstep_grass_002.ogg` → foot_grass<br>`footstep_grass_003.ogg` → foot_grass<br>`footstep_grass_004.ogg` → foot_grass<br>`footstep_wood_000.ogg` → foot_wood<br>`footstep_wood_001.ogg` → foot_wood<br>`footstep_wood_002.ogg` → foot_wood<br>`footstep_wood_003.ogg` → foot_wood<br>`footstep_wood_004.ogg` → foot_wood |
+| Kenney Interface Sounds | https://kenney.nl/assets/interface-sounds | [zip](https://kenney.nl/media/pages/assets/interface-sounds/fa43c1dd4d-1677589452/kenney_interface-sounds.zip) | CC0 1.0 | Kenney | 2026-10-05 | `click_003.ogg` → sfx_ui_tap<br>`confirmation_001.ogg` → sfx_ui_success<br>`error_001.ogg` → sfx_ui_error<br>`tick_002.ogg` → sfx_ui_toast<br>`toggle_001.ogg` → sfx_ui_toggle_on<br>`toggle_002.ogg` → sfx_ui_toggle_off |
+| Kenney Casino Audio | https://kenney.nl/assets/casino-audio | [zip](https://kenney.nl/media/pages/assets/casino-audio/2472606a04-1721639069/kenney_casino-audio.zip) | CC0 1.0 | Kenney | 2026-10-05 | downloaded, not used in the current build |
 | Kenney Ui Audio | https://kenney.nl/assets/ui-audio | [zip](https://kenney.nl/media/pages/assets/ui-audio/490d233f68-1677590494/kenney_ui-audio.zip) | CC0 1.0 | Kenney | 2026-10-05 | downloaded, not used in the current build |
 | Kenney Rpg Audio | https://kenney.nl/assets/rpg-audio | [zip](https://kenney.nl/media/pages/assets/rpg-audio/8e99002d76-1677590336/kenney_rpg-audio.zip) | CC0 1.0 | Kenney | 2026-10-05 | downloaded, not used in the current build |
 | Kenney Digital Audio | https://kenney.nl/assets/digital-audio | [zip](https://kenney.nl/media/pages/assets/digital-audio/216eac4753-1677590265/kenney_digital-audio.zip) | CC0 1.0 | Kenney | 2026-10-05 | downloaded, not used in the current build |
@@ -34,26 +33,26 @@ Found with the search filter `license:"Creative Commons 0"`; `tools/fetch_source
 
 | ID | Title | Author | Page | Licence | Date downloaded | Used in |
 | --- | --- | --- | --- | --- | --- | --- |
-| 131930 | Industrial Air Horn | mcpable | https://freesound.org/people/mcpable/sounds/131930/ | CC0 1.0 | 2026-10-05 | sfx_moon_horn |
+| 131930 | Industrial Air Horn | mcpable | https://freesound.org/people/mcpable/sounds/131930/ | CC0 1.0 | 2026-10-05 | downloaded, not used |
 | 170506 | Footsteps, Tile, Male Sneakers, Slow Pace.wav | SpliceSound | https://freesound.org/people/SpliceSound/sounds/170506/ | CC0 1.0 | 2026-10-05 | foot_neon_tile |
-| 181949 | Fog Horn | qubodup | https://freesound.org/people/qubodup/sounds/181949/ | CC0 1.0 | 2026-10-05 | sfx_whale_horn |
+| 181949 | Fog Horn | qubodup | https://freesound.org/people/qubodup/sounds/181949/ | CC0 1.0 | 2026-10-05 | downloaded, not used |
 | 218295 | 01-19 Footsteps, Tile, Female Heels, Scuffs.wav | SpliceSound | https://freesound.org/people/SpliceSound/sounds/218295/ | CC0 1.0 | 2026-10-05 | downloaded, not used |
-| 221528 | Glass Break | unfa | https://freesound.org/people/unfa/sounds/221528/ | CC0 1.0 | 2026-10-05 | sfx_liquidation |
+| 221528 | Glass Break | unfa | https://freesound.org/people/unfa/sounds/221528/ | CC0 1.0 | 2026-10-05 | downloaded, not used |
 | 328808 | Harbour_Seagulls_Day.WAV | ivolipa | https://freesound.org/people/ivolipa/sounds/328808/ | CC0 1.0 | 2026-10-05 | amb_dubai_marina |
 | 360633 | Stronger wind at a marina, rattling at masts and rigging of the yachts. | Pfannkuchn | https://freesound.org/people/Pfannkuchn/sounds/360633/ | CC0 1.0 | 2026-10-05 | amb_dubai_marina |
 | 378799 | BELL.wav | kgeshev | https://freesound.org/people/kgeshev/sounds/378799/ | CC0 1.0 | 2026-10-05 | downloaded, not used |
-| 415156 | furnace.wav | jimmyfisher | https://freesound.org/people/jimmyfisher/sounds/415156/ | CC0 1.0 | 2026-10-05 | amb_ore_refinery |
-| 437461 | QUIET CAFE, CHATTER, MILK FROTHING MACHINE, atmos atmosphere wildtrack ambience.mp3 | Anya_Media | https://freesound.org/people/Anya_Media/sounds/437461/ | CC0 1.0 | 2026-10-05 | amb_rekt_clinic, amb_terminal_cafe |
-| 447941 | Blast + Flamethrower cooldown | Breviceps | https://freesound.org/people/Breviceps/sounds/447941/ | CC0 1.0 | 2026-10-05 | sfx_ore_furnace_whoosh |
+| 415156 | furnace.wav | jimmyfisher | https://freesound.org/people/jimmyfisher/sounds/415156/ | CC0 1.0 | 2026-10-05 | amb_ore_refinery, amb_rekt_clinic |
+| 437461 | QUIET CAFE, CHATTER, MILK FROTHING MACHINE, atmos atmosphere wildtrack ambience.mp3 | Anya_Media | https://freesound.org/people/Anya_Media/sounds/437461/ | CC0 1.0 | 2026-10-05 | amb_rekt_clinic, amb_spaces_studio, amb_terminal_cafe |
+| 447941 | Blast + Flamethrower cooldown | Breviceps | https://freesound.org/people/Breviceps/sounds/447941/ | CC0 1.0 | 2026-10-05 | downloaded, not used |
 | 450126 | General Fusion industrial workshop factory ambience9 heavy machine hum, bg activity, distant warning alarm.wav | kyles | https://freesound.org/people/kyles/sounds/450126/ | CC0 1.0 | 2026-10-05 | amb_ore_refinery |
 | 450282 | Mechanical Keyboard Typing (Treble Version) | stu556 | https://freesound.org/people/stu556/sounds/450282/ | CC0 1.0 | 2026-10-05 | amb_terminal_cafe |
 | 457215 | Ocean_Gentle_Lapping_Waves_Under_Dock.wav | hdmcgehee | https://freesound.org/people/hdmcgehee/sounds/457215/ | CC0 1.0 | 2026-10-05 | amb_dubai_marina |
-| 459884 | Flamethrower | LilMati | https://freesound.org/people/LilMati/sounds/459884/ | CC0 1.0 | 2026-10-05 | sfx_ore_furnace_whoosh |
+| 459884 | Flamethrower | LilMati | https://freesound.org/people/LilMati/sounds/459884/ | CC0 1.0 | 2026-10-05 | downloaded, not used |
 | 478118 | Industrial-compressor.wav | Astounded | https://freesound.org/people/Astounded/sounds/478118/ | CC0 1.0 | 2026-10-05 | amb_ore_refinery |
 | 488050 | Ambience_Farm_Birds_02.wav | BenDrain | https://freesound.org/people/BenDrain/sounds/488050/ | CC0 1.0 | 2026-10-05 | amb_airdrop_farm |
 | 488064 | Ambience_Farm_01.wav | BenDrain | https://freesound.org/people/BenDrain/sounds/488064/ | CC0 1.0 | 2026-10-05 | amb_airdrop_farm |
 | 546167 | Keyboard Typing 10 (WhiteFox, Mechanical) | grcekh | https://freesound.org/people/grcekh/sounds/546167/ | CC0 1.0 | 2026-10-05 | amb_perp_pit, amb_terminal_cafe |
-| 555161 | zipper-01-01.flac | pbimal | https://freesound.org/people/pbimal/sounds/555161/ | CC0 1.0 | 2026-10-05 | sfx_rug |
+| 555161 | zipper-01-01.flac | pbimal | https://freesound.org/people/pbimal/sounds/555161/ | CC0 1.0 | 2026-10-05 | downloaded, not used |
 | 626952 | Typing on computer keyboard | AmaliaZeichnerin | https://freesound.org/people/AmaliaZeichnerin/sounds/626952/ | CC0 1.0 | 2026-10-05 | amb_terminal_cafe |
 | 636075 | Ship Horn - Fog Horn - Cruise Ship Grand Princess | coalcon | https://freesound.org/people/coalcon/sounds/636075/ | CC0 1.0 | 2026-10-05 | downloaded, not used |
 | 640625 | Crowd / Chatter / 20 people / Exterior / Square | tferrino | https://freesound.org/people/tferrino/sounds/640625/ | CC0 1.0 | 2026-10-05 | amb_timeline_square |
@@ -103,7 +102,17 @@ Replace every synthesized onboarding cue, the synthesized title theme, the synth
 | Glitter Blast | Kevin MacLeod | https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1900001 | CC-BY-4.0 | 2026-10-09 | mus_title | `6d24390bfe0dba51…` |
 | Won! (Orchestral winning jingle) | spuispuin | https://opengameart.org/content/won-orchestral-winning-jingle | CC-BY-4.0 | 2026-10-09 | sfx_origin_insider | `794b06cc8cc4d198…` |
 | Music Jingles (jingles_SAX01) | Kenney (Kenney Vleugels) | https://kenney.nl/assets/music-jingles | CC0-1.0 | 2026-10-09 | sfx_origin_exit_liquidity | `272b8160616d0f92…` |
-| Win Jingle (WinSteelDrums) | Fupi | https://opengameart.org/content/win-jingle | CC0-1.0 | 2026-10-09 | sfx_creator_complete | `fef26adc010e7e7d…` |
-| Pop Sounds (pop5) | cogitollc | https://opengameart.org/content/pop-sounds | CC0-1.0 | 2026-10-09 | sfx_ui_next | `0433b2f016b2521d…` |
+| Win Jingle (WinSteelDrums) | Fupi | https://opengameart.org/content/win-jingle | CC0-1.0 | 2026-10-09 | sfx_creator_complete, sfx_rank_up | `fef26adc010e7e7d…` |
+| Pop Sounds (pop1-pop7) | cogitollc | https://opengameart.org/content/pop-sounds | CC0-1.0 | 2026-10-09 | sfx_mention, sfx_new_coin, sfx_ui_next, sfx_vr_raise_hand | `0433b2f016b2521d…` |
 | Playing Card Sounds (shuffleandbridge) | BMacZero | https://opengameart.org/content/playing-card-sounds | CC0-1.0 | 2026-10-09 | sfx_card_shuffle | `7178fdd4b85875fc…` |
 | Thunder / Lightning Ambience (field recording) | Gregor Quendel | https://opengameart.org/content/thunder-lightning-ambience-field-recording | CC-BY-4.0 | 2026-10-09 | mus_mood_tension_bed, music.*.stems.tension | `996d34046faa8e3e…` |
+| RPG Audio | Kenney (Kenney Vleugels) | https://kenney.nl/assets/rpg-audio | CC0-1.0 | 2026-10-09 | sfx_buy, sfx_cash_in, sfx_rug, sfx_sunday_unlock | `…` |
+| Casino Audio | Kenney (Kenney Vleugels) | https://kenney.nl/assets/casino-audio | CC0-1.0 | 2026-10-09 | sfx_ore_clink, sfx_pnl_card_flip, sfx_sell, sfx_take_profit, sfx_ui_close, sfx_ui_open | `…` |
+| Impact Sounds | Kenney (Kenney Vleugels) | https://kenney.nl/assets/impact-sounds | CC0-1.0 | 2026-10-09 | sfx_liquidation, sfx_news_flash, sfx_ore_clink, sfx_sunday_unlock | `…` |
+| Music Jingles (Sax, Steel, Pizzicato, Hit sets) | Kenney (Kenney Vleugels) | https://kenney.nl/assets/music-jingles | CC0-1.0 | 2026-10-09 | sfx_buy, sfx_call_connect, sfx_call_end, sfx_call_ring, sfx_dm_ping, sfx_gm, sfx_graduation, sfx_new_coin, sfx_rug, sfx_sell, sfx_space_started, sfx_take_profit, sfx_vr_join, sfx_vr_leave, sfx_vr_promoted | `…` |
+| Fog Horn | qubodup | https://freesound.org/s/181949/ | CC0-1.0 | 2026-10-05 | sfx_whale_horn | `…` |
+| Glass Break | unfa | https://freesound.org/s/221528/ | CC0-1.0 | 2026-10-05 | sfx_liquidation | `…` |
+| zipper-01-01 | pbimal | https://freesound.org/s/555161/ | CC0-1.0 | 2026-10-05 | sfx_rug | `…` |
+| Industrial Air Horn | mcpable | https://freesound.org/s/131930/ | CC0-1.0 | 2026-10-05 | sfx_moon_horn | `…` |
+| Blast + Flamethrower cooldown | Breviceps | https://freesound.org/s/447941/ | CC0-1.0 | 2026-10-05 | sfx_ore_furnace_whoosh | `…` |
+| Flamethrower | LilMati | https://freesound.org/s/459884/ | CC0-1.0 | 2026-10-05 | sfx_ore_furnace_whoosh | `…` |
