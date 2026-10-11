@@ -15,9 +15,14 @@ namespace CTLife.UI
             return e;
         }
 
+        /// <summary>
+        /// Rich text is off: labels show player names, chat and server strings, and a tag such as
+        /// &lt;size=999&gt; or &lt;color&gt; in one would let a player restyle or spoof UI (toasts, sheets). No CT Life
+        /// copy uses markup; opt back in per label only for fully trusted text.
+        /// </summary>
         public static Label Text(string text, string cls = null)
         {
-            var l = new Label(text);
+            var l = new Label(text) { enableRichText = false };
             if (!string.IsNullOrEmpty(cls)) foreach (var c in cls.Split(' ')) l.AddToClassList(c);
             return l;
         }
@@ -45,7 +50,7 @@ namespace CTLife.UI
             {
                 if (!string.IsNullOrEmpty(sfx)) Bus.Publish(new SfxSignal(sfx));
                 onClick?.Invoke();
-            }) { text = text };
+            }) { text = text, enableRichText = false };
             if (!string.IsNullOrEmpty(cls)) foreach (var c in cls.Split(' ')) b.AddToClassList(c);
             // Decorative layers never participate in layout or pointer handling. Keeping the
             // real Button preserves keyboard, disabled, click and value-binding behavior.
