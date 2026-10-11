@@ -1,0 +1,192 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using CTLife.Core;
+using CTLife.World;
+using Newtonsoft.Json.Linq;
+using UnityEditor;
+using UnityEditor.SceneManagement;
+using UnityEngine;
+using UnityEngine.AI;
+using Object = UnityEngine.Object;
+
+namespace CTLife.EditorTools.VenueBuild
+{
+    /// <summary>
+    /// Reproducible venue pipeline (batchmode entry points):
+    ///   Build:  -executeMethod CTLife.EditorTools.VenueBuild.VenueBuildPipeline.Build  [-ctVenues perp_pit,rekt_clinic]
+    ///   Bake:   -executeMethod CTLife.EditorTools.VenueBuild.VenueBuildPipeline.Bake   (needs graphics: omit -nographics)
+    ///   Verify: -executeMethod CTLife.EditorTools.VenueBuild.VenueVerify.Verify        (needs graphics for captures)
+    ///   All:    -executeMethod CTLife.EditorTools.VenueBuild.VenueBuildPipeline.All
+    /// Outputs live only under Assets/World/Venues/{id}/. Receipts and previews go to -ctEvidence (outside the repo).
+    /// </summary>
+    public static class VenueBuildPipeline
+    {
+        public static string EvidenceDir => Arg("-ctEvidence") ?? "/Users/mac/Documents/codes/projects/ct-life-evidence/venues";
+
+        public static string Arg(string name)
+        {
+            var args = Environment.GetCommandLineArgs();
+            int i = Array.IndexOf(args, name);
+            return i >= 0 && i + 1 < args.Length ? args[i + 1] : null;
+        }
+
+        public static List<VenueSpec> Selected()
+        {
+            var filter = Arg("-ctVenues");
+            var all = VenueCatalog.All;
+            if (string.IsNullOrEmpty(filter) || filter == "all") return all;
+            var ids = filter.Split(',').Select(s => s.Trim()).Where(s => s.Length > 0).ToList();
+            var unknown = ids.Where(i => all.All(v => v.id != i)).ToList();
+            if (unknown.Count > 0) throw new ArgumentException("Unknown venue ids: " + string.Join(",", unknown));
+            return all.Where(v => ids.Contains(v.id)).ToList();
+        }
+
+        [MenuItem("CT Life/Venues/Build all venue dioramas")]
+        public static void Build() => Run("build", spec => BuildOne(spec));
+
+        [MenuItem("CT Life/Venues/Bake all venue dioramas")]
+        public static void Bake() => Run("bake", BakeOne);
+
+        public static void All() => Run("all", spec => { BuildOne(spec); BakeOne(spec); VenueVerify.VerifyOne(spec); });
+
+        private static void Run(string phase, Action<VenueSpec> step)
+        {
+            int failures = 0;
+            var summary = new JArray();
+            foreach (var spec in Selected())
+            {
+                var started = DateTime.UtcNow;
+                try
+                {
+                    step(spec);
+                    summary.Add(new JObject { ["id"] = spec.id, ["phase"] = phase, ["ok"] = true, ["seconds"] = (DateTime.UtcNow - started).TotalSeconds });
+                }
+                catch (Exception e)
+                {
+                    failures++;
+                    Debug.LogError($"CTLIFE [venues] {phase} {spec.id} FAILED: {e}");
+                    summary.Add(new JObject { ["id"] = spec.id, ["phase"] = phase, ["ok"] = false, ["error"] = e.Message });
+                }
+            }
+            Directory.CreateDirectory(EvidenceDir);
+            File.WriteAllText(Path.Combine(EvidenceDir, "last-" + phase + ".json"), summary.ToString());
+            Debug.Log($"CTLIFE [venues] {phase} finished: {summary.Count - failures} ok, {failures} failed.");
+            if (Application.isBatchMode && failures > 0) EditorApplication.Exit(1);
+        }
+
+        public static VB.Result BuildOne(VenueSpec spec)
+        {
+            if (EditorApplication.isPlayingOrWillChangePlaymode) throw new InvalidOperationException("Build venues outside Play mode.");
+            VenuePalette.Reset();
+            VenueSpotsFile.Reset();
+            VenuePalette.EnsureTexture();
+            var spots = VenueSpotsFile.Load(spec.spotsKey);
+            var scene = EditorSceneManager.NewPreviewScene();
+            VB.Result result;
+            var vb = new VB(spec);
+            try
+            {
+                vb.Begin(scene, spots);
+                spec.build(vb);
+                result = vb.Finish();
+            }
+            finally
+            {
+                EditorSceneManager.ClosePreviewScene(scene);
+            }
+            SaveFolder(spec.Folder);
+            SaveFolder(VenuePalette.SharedRoot);
+            var nav = ValidateBuild(spec, result.prefab.GetComponent<VenueSceneRoot>(), spots);
+            var receipt = new JObject
+            {
+                ["id"] = spec.id, ["venueId"] = spec.venueId, ["spotsKey"] = spec.spotsKey, ["homeId"] = spec.homeId, ["title"] = spec.title,
+                ["district"] = spec.district, ["identity"] = spec.identity, ["prefab"] = spec.PrefabPath,
+                ["prefabGuid"] = AssetDatabase.AssetPathToGUID(spec.PrefabPath),
+                ["sourcedInstances"] = result.sourcedInstances, ["staticRenderers"] = result.staticRenderers,
+                ["lod0Triangles"] = result.lod0Triangles, ["materials"] = result.materials, ["hooks"] = new JArray(vb.Hooks),
+                ["sources"] = JObject.FromObject(result.sources), ["notes"] = new JArray(vb.Notes.Distinct()), ["navigation"] = nav,
+                ["builtUtc"] = DateTime.UtcNow.ToString("o"),
+            };
+            Directory.CreateDirectory(Path.Combine(EvidenceDir, "receipts"));
+            File.WriteAllText(Path.Combine(EvidenceDir, "receipts", spec.id + "-build.json"), receipt.ToString());
+            Debug.Log($"CTLIFE [venues] built {spec.id}: {result.sourcedInstances} sourced instances, {result.staticRenderers} static renderers, " +
+                      $"{result.lod0Triangles:N0} LOD0 tris, {result.materials} materials, {vb.Hooks.Count} hooks. Notes: {string.Join("; ", vb.Notes.Distinct())}");
+            return result;
+        }
+
+        internal static void SaveFolder(string folder)
+        {
+            foreach (var guid in AssetDatabase.FindAssets("", new[] { folder }))
+            {
+                var asset = AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(guid));
+                if (asset != null) AssetDatabase.SaveAssetIfDirty(asset);
+            }
+        }
+
+        /// <summary>Anchors unchanged, every positioned spot on the NavMesh and reachable from the entrance.</summary>
+        internal static JArray ValidateBuild(VenueSpec spec, VenueSceneRoot venue, VenueSpots spots)
+        {
+            var report = new JArray();
+            var anchors = venue.GetComponentsInChildren<SpotAnchor>(true);
+            foreach (var s in spots.spots.Values.Distinct().Where(s => s.hasPosition))
+            {
+                var a = anchors.FirstOrDefault(x => x.spotId == s.id);
+                if (a == null || Vector3.Distance(a.transform.position, new Vector3(s.x, 0, s.z)) > 0.001f ||
+                    Mathf.Abs(Mathf.DeltaAngle(a.transform.eulerAngles.y, s.rotY * Mathf.Rad2Deg)) > 0.05f)
+                    throw new InvalidDataException(spec.id + ": anchor moved or missing for " + s.id);
+            }
+            foreach (var r in venue.GetComponentsInChildren<MeshRenderer>(true))
+                foreach (var m in r.sharedMaterials)
+                    if (m == null || m.shader == null || m.shader.name.Contains("InternalError"))
+                        throw new InvalidDataException(spec.id + ": missing material on " + r.name);
+            if (venue.navigation == null) throw new InvalidDataException(spec.id + ": no navigation.");
+            var instance = NavMesh.AddNavMeshData(venue.navigation);
+            try
+            {
+                var entrance = spots.Entrance ?? throw new InvalidDataException(spec.id + ": no entrance spot.");
+                if (!NavMesh.SamplePosition(new Vector3(entrance.x, 0, entrance.z), out var start, 0.75f, NavMesh.AllAreas))
+                    throw new InvalidDataException(spec.id + ": entrance is off the NavMesh.");
+                foreach (var s in spots.spots.Values.Distinct().Where(s => s.hasPosition).OrderBy(s => s.id, StringComparer.Ordinal))
+                {
+                    var p = new Vector3(s.x, 0, s.z);
+                    bool on = NavMesh.SamplePosition(p, out var hit, 0.75f, NavMesh.AllAreas);
+                    var path = new NavMeshPath();
+                    bool reach = on && NavMesh.CalculatePath(start.position, hit.position, NavMesh.AllAreas, path) && path.status == NavMeshPathStatus.PathComplete;
+                    var approach = anchors.First(x => x.spotId == s.id).approach;
+                    bool approachOk = true;
+                    if (approach != null)
+                    {
+                        var ap = new NavMeshPath();
+                        approachOk = NavMesh.SamplePosition(approach.position, out var ah, 0.3f, NavMesh.AllAreas) &&
+                                     NavMesh.CalculatePath(start.position, ah.position, NavMesh.AllAreas, ap) && ap.status == NavMeshPathStatus.PathComplete;
+                    }
+                    report.Add(new JObject
+                    {
+                        ["spot"] = s.id, ["kind"] = s.kind, ["onNavMesh"] = on, ["offset"] = on ? Math.Round(Vector3.Distance(new Vector3(hit.position.x, 0, hit.position.z), p), 3) : -1,
+                        ["reachable"] = reach, ["approach"] = approach != null ? (approachOk ? "reachable" : "UNREACHABLE") : "none",
+                    });
+                    if (!reach) throw new InvalidDataException($"{spec.id}: spot {s.id} unreachable from the entrance (onNavMesh={on}).");
+                    if (!approachOk) throw new InvalidDataException($"{spec.id}: approach for {s.id} unreachable.");
+                }
+            }
+            finally
+            {
+                if (instance.valid) NavMesh.RemoveNavMeshData(instance);
+            }
+            return report;
+        }
+
+        /// <summary>
+        /// Static lighting via the project's existing VenueLightingBuilder (ProgressiveGPU on Apple silicon; graphics
+        /// required). Baked-only lights are removed from the prefab afterwards: their light is in the lightmaps, and an
+        /// unbaked prefab light would otherwise render as a realtime light at runtime.
+        /// </summary>
+        public static void BakeOne(VenueSpec spec)
+        {
+            VenueBake.Bake(spec);
+            Debug.Log("CTLIFE [venues] baked " + spec.id);
+        }
+    }
+}
