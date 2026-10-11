@@ -1,0 +1,102 @@
+/* Mini-game chrome on the Duo kit tokens (wave 3): the full-screen hosts for the career games (ModDesk, ClipCut, RaidRouter,
+   EarningsDesk, LiveCues, ReceiptMatch, RoleLock, RunwayPlan, ThreadWorkshop, the shift card) and the Careers engine host.
+   Only chrome and type change: header, timer, progress, buttons, briefing / pause / results cards. Boards and gameplay
+   elements keep their own sheets. Every rule is scoped under .duo-game (set on the overlay root) so it wins over the older
+   per-game sheets whatever their load order. Values are the kit's (Inter, iOS system colours), sized for full screen. */
+
+.duo-game {
+    --g-label: #000000; --g-label2: rgba(60,60,67,0.62); --g-sep: rgba(60,60,67,0.16); --g-fill: rgba(120,120,128,0.12);
+    --g-blue: #0a7cff; --g-green: #30c75e; --g-green-ink: #1f9d47; --g-red: #ff3b30; --g-orange: #ff9500; --g-grouped: #f2f2f7;
+}
+.duo-game.duo-chrome Label, .duo-game.duo-chrome Button, .duo-game.duo-chrome TextField { -unity-font-definition: url("Fonts/Phone/Inter-Medium.ttf"); -unity-text-outline-width: 0; }
+
+/* ---------- overlay + panel ---------- */
+.duo-game.duo-chrome.ct-desk-overlay, .duo-game.duo-chrome.ctc-overlay { background-color: rgba(0,0,0,0.42); }
+.duo-game.duo-chrome .ct-desk-panel, .duo-game.duo-chrome .ctc-panel { border-width: 0; border-radius: 44px; background-color: #ffffff; }
+.duo-game.duo-chrome .ct-router-panel { border-width: 0; border-radius: 44px; }
+
+/* ---------- header (nav) ---------- */
+.duo-game.duo-chrome .ct-desk-eyebrow, .duo-game.duo-chrome .ctc-eyebrow {
+    color: var(--g-label2); font-size: 22px; letter-spacing: 0.6px; -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf");
+}
+.duo-game.duo-chrome .ct-router-panel .ct-desk-eyebrow { color: rgba(235,235,245,0.6); }
+.duo-game.duo-chrome .ct-desk-title, .duo-game.duo-chrome .ctc-title, .duo-game.duo-chrome .ct-router-title, .duo-game.duo-chrome .ct-shift-heading {
+    -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); letter-spacing: -1px;
+}
+.duo-game.duo-chrome .ct-desk-title, .duo-game.duo-chrome .ctc-title, .duo-game.duo-chrome .ct-shift-heading { color: var(--g-label); }
+.duo-game.duo-chrome .ct-desk-context, .duo-game.duo-chrome .ctc-context, .duo-game.duo-chrome .ct-desk-footnote, .duo-game.duo-chrome .ct-desk-rules, .duo-game.duo-chrome .ctc-muted { color: var(--g-label2); }
+/* Timer: a grey capsule with a bold count; red when the round is nearly out. */
+.duo-game.duo-chrome .ct-desk-timer, .duo-game.duo-chrome .ctc-timer {
+    background-color: var(--g-fill); color: var(--g-label); border-radius: 40px; padding: 16px 30px;
+    -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); letter-spacing: -0.5px;
+}
+.duo-game.duo-chrome .ct-router-panel .ct-desk-timer { background-color: rgba(255,255,255,0.14); color: #ffffff; }
+.duo-game.duo-chrome .ctc-timer.ctc-urgent, .duo-game.duo-chrome .ct-desk-timer.ct-router-urgent { background-color: var(--g-red); color: #ffffff; }
+.duo-game.duo-chrome .ctc-score, .duo-game.duo-chrome .ct-desk-tally { color: var(--g-label); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); }
+.duo-game.duo-chrome .ct-desk-progress, .duo-game.duo-chrome .ctc-progress { height: 8px; border-radius: 4px; background-color: var(--g-fill); }
+.duo-game.duo-chrome .ct-desk-progress-fill, .duo-game.duo-chrome .ctc-progress-fill { background-color: var(--g-blue); border-radius: 4px; }
+.duo-game.duo-chrome .ct-router-panel .ct-desk-progress { background-color: rgba(255,255,255,0.14); }
+
+/* ---------- buttons: capsules (primary blue, plain grey with blue label, destructive red) ---------- */
+.duo-game.duo-chrome .ct-button-depth, .duo-game.duo-chrome .ct-button-glint { display: none; }
+.duo-game.duo-chrome .ctc-btn, .duo-game.duo-chrome .ct-desk-next {
+    border-width: 0; border-radius: 60px; background-color: var(--g-fill); color: var(--g-blue);
+    -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); font-size: 32px; padding: 20px 40px;
+}
+.duo-game.duo-chrome .ctc-btn:hover, .duo-game.duo-chrome .ct-desk-next:hover { background-color: var(--g-fill); }
+.duo-game.duo-chrome .ctc-btn:active, .duo-game.duo-chrome .ct-desk-next:active { opacity: 0.7; scale: 1 1; }
+.duo-game.duo-chrome .ctc-btn:focus, .duo-game.duo-chrome .ct-desk-next:focus { border-width: 3px; border-color: var(--g-blue); }
+.duo-game.duo-chrome .ctc-btn-primary, .duo-game.duo-chrome .ctc-btn-primary:hover, .duo-game.duo-chrome .ct-desk-next.ct-btn-primary, .duo-game.duo-chrome .ct-desk-next.ct-btn-primary:hover {
+    background-color: var(--g-blue); color: #ffffff;
+}
+.duo-game.duo-chrome .ctc-btn-danger, .duo-game.duo-chrome .ctc-btn-danger:hover { background-color: rgba(255,59,48,0.12); color: var(--g-red); }
+.duo-game.duo-chrome .ctc-btn-small { font-size: 26px; padding: 12px 28px; }
+/* Answer choices: large dark capsules (two-up), the board's primary tap target. */
+.duo-game.duo-chrome .ct-desk-choice, .duo-game.duo-chrome .ctc-choice {
+    border-width: 0; border-radius: 44px; background-color: #1c1c1e; color: #ffffff; -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf");
+}
+.duo-game.duo-chrome .ct-desk-choice:hover, .duo-game.duo-chrome .ct-desk-choice:focus, .duo-game.duo-chrome .ctc-choice:hover { background-color: #2c2c2e; color: #ffffff; }
+.duo-game.duo-chrome .ct-desk-choice:focus, .duo-game.duo-chrome .ctc-choice:focus { border-width: 3px; border-color: var(--g-blue); }
+.duo-game.duo-chrome .ctc-choice:disabled { opacity: 0.4; }
+
+/* ---------- briefing, message, feedback, pause, results ---------- */
+.duo-game.duo-chrome .ct-desk-message-card, .duo-game.duo-chrome .ctc-card { border-width: 0; border-radius: 36px; background-color: var(--g-grouped); }
+.duo-game.duo-chrome .ct-desk-author, .duo-game.duo-chrome .ctc-card-title, .duo-game.duo-chrome .ctc-h { color: var(--g-label); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); }
+.duo-game.duo-chrome .ct-desk-message, .duo-game.duo-chrome .ctc-body-text, .duo-game.duo-chrome .ctc-tagline, .duo-game.duo-chrome .ctc-rule { color: var(--g-label); }
+.duo-game.duo-chrome .ct-desk-case-number, .duo-game.duo-chrome .ctc-section { color: var(--g-label2); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); letter-spacing: 0.6px; }
+.duo-game.duo-chrome .ct-desk-feedback, .duo-game.duo-chrome .ctc-feedback { border-width: 0; border-radius: 28px; background-color: var(--g-fill); }
+.duo-game.duo-chrome .ct-desk-feedback-correct, .duo-game.duo-chrome .ctc-good { background-color: rgba(48,199,94,0.14); }
+.duo-game.duo-chrome .ct-desk-feedback-incorrect, .duo-game.duo-chrome .ctc-bad { background-color: rgba(255,59,48,0.10); border-left-width: 0; }
+.duo-game.duo-chrome .ct-desk-feedback-title, .duo-game.duo-chrome .ctc-feedback-head { color: var(--g-label); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); }
+.duo-game.duo-chrome .ctc-chip { border-radius: 30px; background-color: var(--g-fill); }
+.duo-game.duo-chrome .ctc-tell { border-radius: 30px; background-color: var(--g-red); }
+.duo-game.duo-chrome .ctc-selected { border-color: var(--g-blue); background-color: rgba(10,124,255,0.08); }
+/* Results read like the kit's sheet: a big bold score, the grade, stats as grey capsules. */
+.duo-game.duo-chrome .ctc-results { border-radius: 44px; background-color: #ffffff; border-width: 1px; border-color: var(--g-sep); padding: 40px 44px; }
+.duo-game.duo-chrome .ctc-big, .duo-game.duo-chrome .ct-shift-pay { color: var(--g-label); -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); letter-spacing: -2px; }
+.duo-game.duo-chrome .ctc-stat { border-radius: 28px; background-color: var(--g-fill); }
+.duo-game.duo-chrome .ctc-stat-label { color: var(--g-label2); }
+.duo-game.duo-chrome .ctc-stat-value { color: var(--g-label); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); }
+.duo-game.duo-chrome .ct-shift-xp { color: var(--g-green-ink); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); }
+.duo-game.duo-chrome .ct-shift-copy { color: var(--g-label2); }
+.duo-game.duo-chrome .ctc-meter { border-width: 0; border-radius: 36px; background-color: var(--g-fill); }
+.duo-game.duo-chrome .ctc-meter-band { background-color: rgba(48,199,94,0.2); }
+.duo-game.duo-chrome .ctc-meter-fill { background-color: var(--g-blue); }
+.duo-game.duo-chrome .ctc-meter-marker { background-color: var(--g-label); }
+.duo-game.duo-chrome .ctc-line, .duo-game.duo-chrome .ctc-slot-option { border-width: 0; border-radius: 24px; background-color: var(--g-grouped); }
+.duo-game.duo-chrome .ctc-paired { border-width: 3px; border-color: var(--g-blue); }
+.duo-game.duo-chrome .ctc-bar { background-color: var(--g-blue); }
+.duo-game.duo-chrome .ctc-chart { border-radius: 24px; background-color: var(--g-grouped); }
+
+/* Dark-board games (Raid Router, Role Lock, Clip Cut, Runway Plan): the kit's dark material, light chrome text. */
+.duo-game.duo-chrome .ct-router-panel, .duo-game.duo-chrome .ct-role-panel, .duo-game.duo-chrome .ct-clip-panel, .duo-game.duo-chrome .ct-runway-panel,
+.duo-game.duo-chrome .ct-clip-pause-panel, .duo-game.duo-chrome .ct-runway-pause-panel, .duo-game.duo-chrome .ct-role-pause-panel { background-color: #1c1c1e; }
+.duo-game.duo-chrome .ct-router-panel .ct-desk-title, .duo-game.duo-chrome .ct-role-panel .ct-desk-title, .duo-game.duo-chrome .ct-clip-panel .ct-desk-title,
+.duo-game.duo-chrome .ct-runway-panel .ct-desk-title, .duo-game.duo-chrome .ct-router-title,
+.duo-game.duo-chrome .ct-clip-pause-panel .ct-desk-title, .duo-game.duo-chrome .ct-runway-pause-panel .ct-desk-title, .duo-game.duo-chrome .ct-role-pause-panel .ct-desk-title { color: #ffffff; }
+.duo-game.duo-chrome .ct-role-panel .ct-desk-eyebrow, .duo-game.duo-chrome .ct-clip-panel .ct-desk-eyebrow, .duo-game.duo-chrome .ct-runway-panel .ct-desk-eyebrow { color: rgba(235,235,245,0.6); }
+.duo-game.duo-chrome .ct-role-panel .ct-desk-timer, .duo-game.duo-chrome .ct-clip-panel .ct-desk-timer, .duo-game.duo-chrome .ct-runway-panel .ct-desk-timer { background-color: rgba(255,255,255,0.14); color: #ffffff; }
+.duo-game.duo-chrome .ct-role-panel .ct-desk-progress, .duo-game.duo-chrome .ct-clip-panel .ct-desk-progress, .duo-game.duo-chrome .ct-runway-panel .ct-desk-progress { background-color: rgba(255,255,255,0.14); }
+/* Capsule buttons keep a readable width (El.Btn's decorative children stop intrinsic text measuring). */
+.duo-game.duo-chrome .ctc-btn { min-width: 260px; }
+.duo-game.duo-chrome .ctc-btn-small { min-width: 180px; }

@@ -96,6 +96,7 @@ namespace CTLife.Careers
                 _root.name = "careers-minigame";
                 _root.pickingMode = PickingMode.Position;
                 CUi.Sheet(_root);
+                ModDesk.DuoGameChrome(_root);
                 _tick = Tick;
                 _root.RegisterCallback<DetachFromPanelEvent>(e => { if (ReferenceEquals(e.target, _root)) Close(cancelled: true, detach: false); });
                 _ctReg = ct.Register(() => Close(cancelled: true));

@@ -180,6 +180,17 @@ namespace CTLife.UI
             var sheet = Resources.Load<StyleSheet>("UI/mod-desk");
             if (sheet != null) root.styleSheets.Add(sheet);
             else Log.Warn("ui", "Missing UI/mod-desk stylesheet");
+            DuoGameChrome(root);
+        }
+
+        /// <summary>Duo kit chrome for a full-screen game host (header, timer, buttons, cards); gameplay sheets unchanged.</summary>
+        public static void DuoGameChrome(VisualElement root)
+        {
+            var duo = Resources.Load<StyleSheet>("UI/duo-games");
+            if (duo != null) root.styleSheets.Add(duo);
+            else Log.Warn("ui", "Missing UI/duo-games stylesheet");
+            root.AddToClassList("duo-game");
+            root.AddToClassList("duo-chrome");
         }
     }
 

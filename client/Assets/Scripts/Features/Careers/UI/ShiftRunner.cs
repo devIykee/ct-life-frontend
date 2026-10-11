@@ -79,6 +79,7 @@ namespace CTLife.Careers
             _root = CUi.Div("ctc-overlay", CUi.Div("ctc-panel ctc-shift-panel", CUi.L(card.Name, "ctc-title"), scroll));
             _root.name = "careers-shift";
             CUi.Sheet(_root);
+            ModDesk.DuoGameChrome(_root);
             _ui.ModalLayer.Add(_root);
         }
 
