@@ -27,7 +27,7 @@ namespace CTLife.UI
             var art = OnboardingArt.Backdrop;
             if (art != null) _bg.style.backgroundImage = new StyleBackground(art);
 
-            Back = new Kit.LippedButton("", () => onBack?.Invoke(), Kit.LippedButton.Tone.Cream, Kit.LippedButton.Size.Round).WithIcon("back");
+            Back = new Kit.LippedButton("", () => onBack?.Invoke(), Kit.LippedButton.Tone.White, Kit.LippedButton.Size.Round).WithIconArt("back", "back");
             Back.name = "ob-back";
             Back.tooltip = Strings.T("common.back");
             Progress = new Kit.ProgressBar(CreatorFlow.ProgressSegments);

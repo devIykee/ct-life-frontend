@@ -37,6 +37,8 @@ namespace CTLife.UI
         private string _idleState;
 
         public RenderTexture Texture { get; }
+        /// <summary>Editor tools (portrait bake) render it on demand.</summary>
+        public Camera Camera => _cam;
         public float Yaw => _yaw;
         public bool Portrait => _portrait;
 
@@ -109,6 +111,70 @@ namespace CTLife.UI
             if (!string.IsNullOrEmpty(_idleState)) _avatar.SetBase(_idleState);
         }
 
+        /// <summary>Strict whole-look replacement for creator transactions; other SetLook callers keep their legacy route.</summary>
+        public bool TrySetExactLook(string[] look, out ModularAvatarFailure failure)
+        {
+            if (_disposed || !CustomizerModel.ResolvesLook(look))
+            { failure = new ModularAvatarFailure(ModularAvatarError.InvalidRequest, "No exact whole-look preview is available."); return false; }
+            AvatarView candidate = null;
+            var childrenBefore = new System.Collections.Generic.HashSet<Transform>();
+            foreach (Transform child in _root.transform) childrenBefore.Add(child);
+            try { candidate = AvatarFactory.Create("preview", (string[])look.Clone(), false, null, _root.transform, forPreview: true); }
+            catch (Exception e)
+            {
+                // Factory's legacy path is not transactional. Its new children are private to this preview;
+                // remove a partially created actor while retaining every pre-existing child.
+                foreach (Transform child in _root.transform)
+                    if (!childrenBefore.Contains(child)) { child.gameObject.SetActive(false); UnityEngine.Object.Destroy(child.gameObject); }
+                failure = new ModularAvatarFailure(ModularAvatarError.AssemblyFailed, e.Message); return false;
+            }
+            return TryCommit(candidate, out failure);
+        }
+
+        /// <summary>False keeps the old actor, camera framing and selection available; no fallback renderer is used.</summary>
+        public bool TrySetModular(ExactModularCatalog catalog, ModularAvatarRequest request, out ModularAvatarFailure failure)
+        {
+            if (_disposed) { failure = new ModularAvatarFailure(ModularAvatarError.InvalidRequest, "Preview is disposed."); return false; }
+            if (!ExactModularAvatar.TryCreate("preview", catalog, request, _root.transform, true, out var candidate, out failure)) return false;
+            return TryCommit(candidate, out failure);
+        }
+
+        private bool TryCommit(AvatarView candidate, out ModularAvatarFailure failure)
+        {
+            var previous = _avatar;
+            var body = _bodyBounds; var portrait = _portraitBounds; var centre = _frameCentre; float distance = _frameDistance;
+            var cameraPosition = _cam.transform.position; var cameraRotation = _cam.transform.rotation; float far = _cam.farClipPlane;
+            try
+            {
+                if (candidate == null || candidate.Animator == null) throw new InvalidOperationException("Preview candidate has no Animator.");
+                candidate.transform.localPosition = Vector3.zero;
+                candidate.transform.localRotation = Quaternion.Euler(0, _yaw, 0);
+                foreach (var child in candidate.GetComponentsInChildren<Transform>(true)) child.gameObject.layer = PreviewLayer;
+                AvatarView.All.Remove(candidate);
+                if (_transparent)
+                {
+                    var blob = candidate.transform.Find("blob_shadow");
+                    if (blob != null) blob.gameObject.SetActive(false);
+                }
+                var animator = candidate.Animator;
+                animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
+                animator.Rebind();
+                string idle = string.IsNullOrEmpty(_idleState) ? "loco_idle" : _idleState;
+                if (!animator.HasState(0, AnimationLibrary.Hash(idle))) throw new InvalidOperationException("Preview idle state is missing.");
+                animator.Play(idle, 0, 0); animator.Update(0);
+                _avatar = candidate; FrameAvatar();
+            }
+            catch (Exception e)
+            {
+                _avatar = previous; _bodyBounds = body; _portraitBounds = portrait; _frameCentre = centre; _frameDistance = distance;
+                _cam.transform.SetPositionAndRotation(cameraPosition, cameraRotation); _cam.farClipPlane = far;
+                if (candidate != null) { candidate.gameObject.SetActive(false); UnityEngine.Object.Destroy(candidate.gameObject); }
+                failure = new ModularAvatarFailure(ModularAvatarError.AssemblyFailed, e.Message); return false;
+            }
+            if (previous != null) { previous.gameObject.SetActive(false); UnityEngine.Object.Destroy(previous.gameObject); }
+            failure = default; return true;
+        }
+
         /// <summary>
         /// The resting pose: "loco_idle" for the full body, "idle_fidget_foldarms" (arms folded) for the face shot, so the
         /// bind-pose-like idle arms never jut into the portrait (device QA 2026-10-08). Emotes return to it when they end.
@@ -175,6 +241,8 @@ namespace CTLife.UI
             var bounds = new Bounds();
             bool measured = false;
             Mesh baked = null;
+            try
+            {
             foreach (var renderer in _avatar.GetComponentsInChildren<Renderer>(true))
             {
                 if (!renderer.enabled || !renderer.gameObject.activeInHierarchy || renderer is SpriteRenderer) continue;
@@ -207,7 +275,8 @@ namespace CTLife.UI
                             else bounds.Encapsulate(point);
                         }
             }
-            if (baked != null) UnityEngine.Object.Destroy(baked);
+            }
+            finally { if (baked != null) UnityEngine.Object.Destroy(baked); }
             if (!measured) bounds = new Bounds(new Vector3(0, 0.9f, 0), new Vector3(0.8f, 1.8f, 0.6f));
 
             _bodyBounds = bounds;

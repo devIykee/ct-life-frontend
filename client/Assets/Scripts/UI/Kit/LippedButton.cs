@@ -7,12 +7,12 @@ namespace CTLife.UI.Kit
     /// <summary>
     /// The game button: the approved painted squircle body (Resources/UI/Title/btn-*-blank-sq.png, 9-sliced exactly like the
     /// title screen) standing on a solid plum lip. Pressing moves the face down by the lip's depth so the lip disappears
-    /// (60 ms in, 140 ms ease-out-back out: kit.uss). Disabled: a flat cream face, pressed in, with a muted label.
+    /// (60 ms in, 140 ms ease-out-back out: kit.uss). Disabled: a flat pale face, pressed in, with a muted label.
     /// It is a real Button, so focus, disabled state and click semantics are UI Toolkit's own. Styles: Resources/UI/kit.uss.
     /// </summary>
     public sealed class LippedButton : Button
     {
-        public enum Tone { Green, Purple, Cream }
+        public enum Tone { Green, Purple, White }
         public enum Size { Large, Medium, Square, Round }
 
         private readonly VisualElement _face, _shine;
@@ -49,7 +49,7 @@ namespace CTLife.UI.Kit
             Add(_face);
             _idleText = text;
 
-            if (tone != Tone.Cream)
+            if (tone != Tone.White)
             {
                 var clip = new VisualElement { pickingMode = PickingMode.Ignore };
                 clip.AddToClassList("kit-btn__shine-clip");
@@ -75,6 +75,19 @@ namespace CTLife.UI.Kit
                 _label.text = value;
                 _label.style.display = string.IsNullOrEmpty(value) ? DisplayStyle.None : DisplayStyle.Flex;
             }
+        }
+
+        /// <summary>
+        /// Round/square icon buttons: when the glossy art for `art` exists (<see cref="KitIcons"/>), the art IS the button (its own rim
+        /// and gloss; no lip, it sinks and shrinks on press). Otherwise the drawn face with <see cref="WithIcon"/> as before.
+        /// </summary>
+        public LippedButton WithIconArt(string art, string fallbackKind)
+        {
+            var tex = KitIcons.Load(art);
+            if (tex == null) return WithIcon(fallbackKind);
+            AddToClassList("kit-btn--art");
+            _face.style.backgroundImage = new StyleBackground(tex);
+            return this;
         }
 
         /// <summary>Adds an icon (UiIcon kind) to the face, with a plum drop under it so it reads on the painted body.</summary>

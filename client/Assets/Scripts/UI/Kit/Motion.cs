@@ -153,12 +153,18 @@ namespace CTLife.UI.Kit
     /// <summary>
     /// Every onboarding sound and haptic, named in one place so QA can see them together (spec section C4). Sounds go through
     /// the Bus (SfxSignal), so the audio settings and cooldowns apply; haptics honour the phone's touch-feedback setting.
+    /// Call volumes are the audio lane's audited ones (mix_audit.py, 2026-10-09: actions clear the title music by ≥ 6 dB, ticks
+    /// by ≥ 3 dB): Select 0.8, Deselect 0.6, Hop 0.45, Step 0.55, Nope 0.6, shuffle 0.5, coins 0.7. Re-run the audit if changed.
     /// </summary>
     public static class Cues
     {
         public const string SfxTap = "sfx_ui_tap", SfxSelect = "sfx_ui_toggle_on", SfxDeselect = "sfx_ui_toggle_off",
-            SfxError = "sfx_ui_error", SfxStep = "sfx_ui_success", SfxHop = "sfx_ui_toggle_on", SfxFlip = "sfx_pnl_card_flip",
-            SfxGood = "sfx_moon_horn", SfxDebt = "sfx_rug", SfxCoins = "sfx_cash_in", SfxCelebrate = "sfx_graduation";
+            SfxError = "sfx_ui_error", SfxStep = "sfx_ui_next", SfxHop = "sfx_ui_toggle_on", SfxFlip = "sfx_pnl_card_flip",
+            SfxGood = "sfx_origin_insider", SfxDebt = "sfx_origin_exit_liquidity", SfxCoins = "sfx_cash_in",
+            SfxCelebrate = "sfx_creator_complete", SfxShuffle = "sfx_card_shuffle";
+
+        /// <summary>The origin stinger for an outcome id: `sfx_origin_insider`, `_exit_liquidity`, `_seeker` (→ Insider fanfare).</summary>
+        public static string Origin(string outcomeId) => "sfx_origin_" + outcomeId;
 
         public static void Play(string sfx, float volume = 1f)
         {
@@ -171,8 +177,12 @@ namespace CTLife.UI.Kit
         /// <summary>A selection pushed out (third trait): low tick, no haptic.</summary>
         public static void Deselect() => Play(SfxDeselect, 0.6f);
 
-        /// <summary>The draw spotlight hopping: quiet tick + the lightest haptic.</summary>
-        public static void Hop() { Play(SfxHop, 0.45f); DeviceFeel.ClockTick(); }
+        /// <summary>The draw spotlight hopping: a tick rising a semitone per hop (capped at +6, spec C1) + the lightest haptic.</summary>
+        public static void Hop(int n = 0)
+        {
+            CTLife.Audio.Sfx.PlayPitched(SfxHop, Mathf.Clamp(n, 0, 6), 0.45f);
+            DeviceFeel.ClockTick();
+        }
 
         /// <summary>A step completed (NEXT on an answered step).</summary>
         public static void Step() { Play(SfxStep, 0.55f); DeviceFeel.Confirm(); }

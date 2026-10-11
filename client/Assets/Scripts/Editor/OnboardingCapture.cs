@@ -58,7 +58,7 @@ namespace CTLife.EditorTools
         private static string Set => Arg("-ctlife-captureSet") ?? "onboarding";
 
         private static string DefaultOut() => Path.GetFullPath(Path.Combine(Application.dataPath,
-            Set == "home" ? "../../../ct-life-evidence/home-ui" : "../../../ct-life-evidence/onboarding-ui"));
+            Set == "home" ? "../../../ct-life-evidence/home-ui" : Set == "r2" ? "../../../ct-life-evidence/onboarding-r2" : "../../../ct-life-evidence/onboarding-ui"));
 
         public static void Launch()
         {
@@ -76,11 +76,24 @@ namespace CTLife.EditorTools
             EditorApplication.update -= WaitForEditor;
             try
             {
-                if (!File.Exists(Path.GetFullPath(OnboardingArtImporter.BackdropPath))) OnboardingArtImporter.BuildBackdrop();
-                AssetDatabase.Refresh();
+                if (Set == "localart")
+                {
+                    CreatorLocalArtCapture.Preflight();
+                    if (!File.Exists(Path.GetFullPath(OnboardingArtImporter.BackdropPath))) throw new InvalidOperationException("Existing onboarding backdrop is required; local-art proof does not reauthor it.");
+                }
+                else
+                {
+                    if (!File.Exists(Path.GetFullPath(OnboardingArtImporter.BackdropPath))) OnboardingArtImporter.BuildBackdrop();
+                    AssetDatabase.Refresh();
+                }
             }
-            catch (Exception e) { Failures.Add("backdrop: " + e.Message); Debug.LogException(e); }
-            EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+            catch (Exception e)
+            {
+                Failures.Add("backdrop/preflight: " + e.Message); Debug.LogException(e);
+                if (Set == "localart") { Finish(e.Message); return; }
+            }
+            // Local-art proof preflight requires an already-empty fresh batch scene; it discards no scene.
+            if (Set != "localart") EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             EditorApplication.playModeStateChanged += OnPlayMode;
             EditorApplication.EnterPlaymode();
         }
@@ -114,7 +127,15 @@ namespace CTLife.EditorTools
             {
                 Directory.CreateDirectory(_out);
                 await Setup();
-                if (Set == "home")
+                if (Set == "localart")
+                {
+                    await CreatorLocalArtCapture.Run(Shot, Wait, Expect, Step, Receipt);
+                }
+                else if (Set == "r2")
+                {
+                    await OnboardingCaptureR2.Run(Shot, Wait, Expect, Step, Receipt);
+                }
+                else if (Set == "home")
                 {
                     await OnboardingCaptureHome.Run(Shot, Wait, Expect, Step);
                     await LookOrderShots();
@@ -491,7 +512,7 @@ namespace CTLife.EditorTools
             var disabled = new UI.Kit.LippedButton("DISABLED", null); disabled.SetEnabled(false); r1.Add(Gap(disabled));
             var busy = new UI.Kit.LippedButton("SAVE", null); busy.SetBusy(true, "SAVING…"); r1.Add(Gap(busy));
             r1.Add(Gap(new UI.Kit.LippedButton("PURPLE", null, UI.Kit.LippedButton.Tone.Purple, UI.Kit.LippedButton.Size.Medium)));
-            r1.Add(Gap(new UI.Kit.LippedButton("CREAM", null, UI.Kit.LippedButton.Tone.Cream, UI.Kit.LippedButton.Size.Medium)));
+            r1.Add(Gap(new UI.Kit.LippedButton("WHITE", null, UI.Kit.LippedButton.Tone.White, UI.Kit.LippedButton.Size.Medium)));
             r1.Add(Gap(new UI.Kit.LippedButton("", null, UI.Kit.LippedButton.Tone.Green, UI.Kit.LippedButton.Size.Square).WithIcon("next")));
 
             var r2 = Row();

@@ -6,7 +6,7 @@ using UnityEngine.UIElements;
 namespace CTLife.UI.Kit
 {
     /// <summary>
-    /// A big tappable choice: cream face with the plum outline, standing on a lip, with an icon (a painted badge texture or
+    /// A big tappable choice: white face with the plum outline, standing on a lip, with an icon (a painted badge texture or
     /// an icon disc), a Lilita title and an optional one-line perk/effect. The whole card is the tap target (a real Button).
     /// States: default, selected (green tint, green lip, check badge, 1.04 pop), disabled, error (red outline + shake).
     /// State is always shown by more than colour: the check badge, the lip and the pop. Styles: Resources/UI/kit.uss.

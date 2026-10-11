@@ -3,8 +3,12 @@ using System.Collections.Generic;
 
 namespace CTLife.UI
 {
-    /// <summary>The creator's steps, one decision each (spec C2). The lottery is step 1 of 7 on the progress bar.</summary>
-    public enum CreatorStep { Look = 0, Tribe = 1, Traits = 2, Dream = 3, Name = 4, Confirm = 5 }
+    /// <summary>
+    /// The creator's steps, one decision each (spec C2). Look is the Character (base model) pick; Customize edits it with the
+    /// category rail and is skipped when the model offers nothing to customize. The lottery is step 1 of 7 on the progress
+    /// bar; Look and Customize share one segment.
+    /// </summary>
+    public enum CreatorStep { Look = 0, Customize = 1, Tribe = 2, Traits = 3, Dream = 4, Name = 5, Confirm = 6 }
 
     public enum AliasState { Empty, TooShort, TooLong, Ok }
 
@@ -18,7 +22,7 @@ namespace CTLife.UI
     public sealed class CreatorFlow
     {
         public const int MinAlias = 3, MaxAlias = 20;
-        public const int StepCount = 6;
+        public const int StepCount = 7;
         /// <summary>Segments on the progress bar: the lottery plus the six creator steps.</summary>
         public const int ProgressSegments = 7;
 
@@ -28,6 +32,8 @@ namespace CTLife.UI
         public CreatorStep Furthest { get; private set; }
         public bool HasLook;
         public bool LookSubmittable;
+        /// <summary>True when the current base model has at least one customizer category (else Customize is skipped).</summary>
+        public bool CustomizeAvailable;
         public bool ReadOnlyReview;
 
         public CreatorFlow(CharacterDraft draft) => Draft = draft ?? new CharacterDraft();
@@ -46,6 +52,7 @@ namespace CTLife.UI
             switch (step)
             {
                 case CreatorStep.Look: return HasLook ? null : "creator.needLook";
+                case CreatorStep.Customize: return null;
                 case CreatorStep.Tribe: return string.IsNullOrEmpty(Draft.tribeId) ? "ob.hint.tribe" : null;
                 case CreatorStep.Traits:
                     return Draft.traitIds.Count == 2 ? null : Draft.traitIds.Count == 1 ? "ob.hint.traits1" : "ob.hint.traits2";
@@ -75,6 +82,7 @@ namespace CTLife.UI
         {
             if (Step == CreatorStep.Confirm || !CanAdvance) return false;
             Step++;
+            if (Step == CreatorStep.Customize && !CustomizeAvailable) Step++;
             if (Step > Furthest) Furthest = Step;
             return true;
         }
@@ -83,6 +91,7 @@ namespace CTLife.UI
         {
             if (Step == CreatorStep.Look) return false;
             Step--;
+            if (Step == CreatorStep.Customize && !CustomizeAvailable) Step--;
             return true;
         }
 
@@ -90,6 +99,7 @@ namespace CTLife.UI
         public bool JumpTo(CreatorStep step)
         {
             if (step > Furthest || step < CreatorStep.Look) return false;
+            if (step == CreatorStep.Customize && !CustomizeAvailable) return false;
             Step = step;
             return true;
         }
@@ -101,6 +111,7 @@ namespace CTLife.UI
             Furthest = furthest > limit ? limit : furthest;
             if (step > Furthest) step = Furthest;
             Step = step < CreatorStep.Look ? CreatorStep.Look : step;
+            if (Step == CreatorStep.Customize && !CustomizeAvailable) Step = CreatorStep.Look;
             if (Step > Furthest) Furthest = Step;
         }
 
@@ -127,8 +138,8 @@ namespace CTLife.UI
             return removed;
         }
 
-        /// <summary>Filled progress segments while on `step`: the lottery plus every step before it.</summary>
-        public static int ProgressFor(CreatorStep step) => 1 + (int)step;
+        /// <summary>Filled progress segments while on `step`: the lottery plus every step before it (Look and Customize share one).</summary>
+        public static int ProgressFor(CreatorStep step) => step <= CreatorStep.Customize ? 1 : (int)step;
 
         /// <summary>Drops selections that are not in the current registries (a restored draft from an older config).</summary>
         public void Sanitize(ICollection<string> tribes, ICollection<string> traits, ICollection<string> dreams)

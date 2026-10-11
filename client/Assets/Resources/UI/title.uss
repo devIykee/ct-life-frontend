@@ -1,5 +1,5 @@
 /* Title screen (SignInScreen), approved art direction 2026-10-08. Landscape, inside the safe area; the art bleeds to the edges.
-   Palette from the painted labels: cream text rgb(255, 246, 228) with a dark-plum outline rgb(58, 20, 64). */
+   Palette: white text rgb(255, 255, 255) (was cream until 2026-10-09: user direction) with a dark-plum outline rgb(58, 20, 64). */
 
 .ct-title { background-color: rgba(0, 0, 0, 0); overflow: visible; }
 
@@ -29,7 +29,7 @@
     width: 36%; height: 150px; margin: 0; padding: 0 40px 12px 40px; /* the painted rim is thicker at the bottom: lift the label */
     border-radius: 33px; border-width: 6px; border-bottom-width: 12px; border-color: rgb(58, 20, 64); /* squircle: ~22% of the height */
     -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 60px; -unity-text-align: middle-center; white-space: nowrap;
-    color: rgb(255, 246, 228); -unity-text-outline-width: 4px; -unity-text-outline-color: rgb(58, 20, 64);
+    color: rgb(255, 255, 255); -unity-text-outline-width: 4px; -unity-text-outline-color: rgb(58, 20, 64);
     text-shadow: 0 5px 1px rgb(58, 20, 64); /* the painted labels have a solid plum drop under the letters */
     overflow: hidden;
     transition-property: scale, background-color, -unity-background-image-tint-color;
@@ -59,7 +59,7 @@
 }
 
 /* Bottom copy, read the way mobile games do it: no plate, no gradient band. The text carries itself: Lilita One (the button
-   font), solid cream fill, a thick dark-plum outline and a soft dark drop shadow (user direction 2026-10-08). On the
+   font), solid white fill, a thick dark-plum outline and a soft dark drop shadow (user direction 2026-10-08). On the
    Seeker the outlines are 3.3-3.9 px. */
 
 /* "Use another wallet": the same outlined game text, underlined (rich text <u>), 28 → 41 px (+30%, then +15% so it holds its
@@ -69,7 +69,7 @@
     margin: 0; padding: 0 26px; min-height: 130px; min-width: 130px;
     background-color: rgba(0, 0, 0, 0); border-width: 0;
     -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 41px; white-space: nowrap; -unity-text-align: middle-center;
-    color: rgb(255, 246, 228); -unity-text-outline-width: 3px; -unity-text-outline-color: rgb(58, 20, 64);
+    color: rgb(255, 255, 255); -unity-text-outline-width: 3px; -unity-text-outline-color: rgb(58, 20, 64);
     text-shadow: 0 3px 5px rgba(26, 8, 32, 0.85);
     transition-property: scale; transition-duration: 0.08s; transition-timing-function: ease-out;
 }
@@ -78,7 +78,7 @@
 
 .ct-title-error {
     font-size: 32px; white-space: normal; max-width: 56%; margin-top: 0; padding: 0 12px;
-    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); color: rgb(255, 246, 228); -unity-text-align: middle-center;
+    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); color: rgb(255, 255, 255); -unity-text-align: middle-center;
     -unity-text-outline-width: 3px; -unity-text-outline-color: rgb(58, 20, 64); text-shadow: 0 3px 5px rgba(26, 8, 32, 0.85);
 }
 
@@ -86,6 +86,6 @@
 .ct-title-legal-row { position: absolute; left: 0; right: 0; bottom: 10px; align-items: center; }
 .ct-title-legal {
     font-size: 31px; white-space: nowrap; letter-spacing: 0.5px;
-    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); color: rgb(255, 246, 228); -unity-text-align: middle-center;
+    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); color: rgb(255, 255, 255); -unity-text-align: middle-center;
     -unity-text-outline-width: 3px; -unity-text-outline-color: rgb(58, 20, 64); text-shadow: 0 3px 5px rgba(26, 8, 32, 0.85);
 }

@@ -5,7 +5,7 @@ using UnityEngine.UIElements;
 namespace CTLife.UI.Kit
 {
     /// <summary>
-    /// A status chip for the top bar: a badge, a small caption and a big value, optionally a mini bar, on a cream body with
+    /// A status chip for the top bar: a badge, a small caption and a big value, optionally a mini bar, on a white body with
     /// the plum outline and a lip. Tones: normal, warn (amber), bad (red-orange), debt (orange). State is never colour
     /// alone: warn/bad add a "!" pip. Tapping it calls <c>onTap</c> (the home screen opens an explainer). Styles: kit.uss.
     /// </summary>
@@ -19,7 +19,7 @@ namespace CTLife.UI.Kit
 
         public string Id { get; }
 
-        public StatChip(string id, string iconKind, string badgeTone, string caption, Action<StatChip> onTap, bool withBar = false)
+        public StatChip(string id, string iconKind, string badgeTone, string caption, Action<StatChip> onTap, bool withBar = false, string art = null)
         {
             Id = id;
             enableRichText = false;
@@ -35,7 +35,7 @@ namespace CTLife.UI.Kit
             lip.AddToClassList("kit-chip__lip");
             var face = new VisualElement { pickingMode = PickingMode.Ignore };
             face.AddToClassList("kit-chip__face");
-            face.Add(new IconBadge(iconKind, badgeTone));
+            face.Add(new IconBadge(iconKind, badgeTone, KitIcons.Load(art ?? id)));
             var copy = new VisualElement { pickingMode = PickingMode.Ignore };
             copy.AddToClassList("kit-chip__copy");
             _caption = new Label(caption) { enableRichText = false, pickingMode = PickingMode.Ignore };
@@ -150,6 +150,53 @@ namespace CTLife.UI.Kit
         {
             style.display = DisplayStyle.None;
             _onAction = null;
+        }
+    }
+}
+
+namespace CTLife.UI.Kit
+{
+    /// <summary>
+    /// A plain checkbox with its text beside it (the 18+ line: user review 2026-10-09 asked for a normal checkbox, not a
+    /// toggle card). The whole row is the tap target (≥ 130 units = 48 dp tall). Checked: Solana green box, plum tick.
+    /// </summary>
+    public sealed class CheckRow : Button
+    {
+        private readonly UnityEngine.UIElements.VisualElement _box;
+        private readonly System.Action _toggle;
+
+        public bool Checked { get; private set; }
+
+        public CheckRow(string text, System.Action onToggle)
+        {
+            enableRichText = false;
+            this.text = "";
+            AddToClassList("kit-check");
+            _toggle = onToggle;
+            clicked += () => _toggle?.Invoke();
+            _box = new UnityEngine.UIElements.VisualElement { pickingMode = UnityEngine.UIElements.PickingMode.Ignore };
+            _box.AddToClassList("kit-check__box");
+            var tick = new UnityEngine.UIElements.VisualElement { pickingMode = UnityEngine.UIElements.PickingMode.Ignore };
+            tick.AddToClassList("kit-check__tick");
+            _box.Add(tick);
+            var label = new UnityEngine.UIElements.Label(text) { enableRichText = false, pickingMode = UnityEngine.UIElements.PickingMode.Ignore };
+            label.AddToClassList("kit-check__label");
+            Add(_box);
+            Add(label);
+            RegisterCallback<UnityEngine.UIElements.PointerDownEvent>(_ => { if (enabledInHierarchy) DeviceFeel.Tick(); }, UnityEngine.UIElements.TrickleDown.TrickleDown);
+        }
+
+        public void SetChecked(bool on)
+        {
+            bool changed = on != Checked;
+            Checked = on;
+            EnableInClassList("kit-check--on", on);
+            if (changed && on) Motion.Pop(_box, 1.12f, 0.18f);
+        }
+
+        public void Press()
+        {
+            if (enabledInHierarchy) _toggle?.Invoke();
         }
     }
 }

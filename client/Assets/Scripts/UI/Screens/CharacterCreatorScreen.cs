@@ -1,3 +1,4 @@
+using CTLife.World;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,31 +40,45 @@ namespace CTLife.UI
         private readonly Action<CharacterDraft> _onSubmit;
         private readonly CharacterDraft _draft = new CharacterDraft();
         private readonly CreatorFlow _flow;
-        private readonly List<CreatorLookCatalog.Entry> _looks;
+        private List<BaseModel> _models;
+        private CustomizerCatalog _customizer;
+        private Func<AvatarSpec, bool> _resolves;
+        private readonly Dictionary<string, CreatorLocalArtBinding> _localArt = new Dictionary<string, CreatorLocalArtBinding>(StringComparer.Ordinal);
+        private string _presentedSpecKey;
+        private bool PreviewReady => _spec != null && _presentedSpecKey == _spec.Key();
+        /// <summary>What the player built (base + parts + tints + accessories); _draft.look is its contract form.</summary>
+        private AvatarSpec _spec;
         private readonly Func<string[], bool> _serverLookConfirmed;
         private readonly bool _readOnlyReview;
         private readonly VisualElement[] _pages = new VisualElement[CreatorFlow.StepCount];
         private readonly List<ChoiceCard> _tribeCards = new List<ChoiceCard>(), _traitCards = new List<ChoiceCard>(), _dreamCards = new List<ChoiceCard>();
-        private readonly List<ChoiceCard> _summary = new List<ChoiceCard>();
+        private readonly List<ChoiceCard> _modelCards = new List<ChoiceCard>(), _optionCards = new List<ChoiceCard>();
+        private readonly List<Button> _railButtons = new List<Button>();
         private CreatorDraftStore _store;
         private OnboardingFrame _frame;
         private AvatarPreview _preview;
         private ConfigStore _config;
         private SpeechBubble _bubble;
-        private VisualElement _content, _stage, _model, _lookControls, _dim, _celebrate, _traitDots, _summaryGrid, _originHost;
+        private VisualElement _content, _stage, _model, _lookControls, _dim, _celebrate, _traitDots, _modelGrid, _rail, _optionGrid;
+        private ScrollView _railScroll;
+        private VisualElement _idCard, _cardPortrait, _cardTribeBadge, _cardOriginArt, _cardTraits, _cardDreamIcon;
         private Label _lookName, _lookCount, _lookTag, _dragHint, _error, _aliasStatus, _confirmTitle, _celebrateTitle;
+        private Label _cardName, _cardTribe, _cardOrigin, _cardDream, _optionsEmpty;
         private TextField _alias;
-        private ChoiceCard _ageCard;
+        private CheckRow _ageRow;
         private LippedButton _bodyFocus, _faceFocus, _done, _enterCity;
+        private LookCategory _category = LookCategory.SkinTone;
         private IVisualElementScheduledItem _sway, _keyboardPoll, _nameLine;
         private TaskCompletionSource<bool> _celebrated;
         private int _lookIndex, _dragPointer = -1, _lookChanges, _keyboardMissing;
         private bool _busy, _portrait, _reviewComplete, _touched, _typing, _returnToConfirm, _built;
         private float _swayStart, _swayBase, _lastReaction = -10f, _focusAt;
 
-        private CreatorLookCatalog.Entry SelectedLook => _looks.Count > 0 ? _looks[_lookIndex] : null;
-        private bool CanSubmitLook => SelectedLook != null && _serverLookConfirmed != null && _serverLookConfirmed(_draft.look);
-        private string LookKey => SelectedLook == null ? null : string.Join("|", SelectedLook.look);
+        /// <summary>The current base model (Character step). Its look may have been customized since: see _draft.look.</summary>
+        private BaseModel SelectedLook => _models.Count > 0 ? _models[_lookIndex] : null;
+        private bool CanSubmitLook => SelectedLook != null && PreviewReady && !(_spec?.IsModular ?? false) &&
+            !_localArt.ContainsKey(SelectedLook.id) && _serverLookConfirmed != null && _serverLookConfirmed(_draft.look);
+        private string LookKey => SelectedLook?.id;
 
         /// <summary>The lottery result for the summary card. Set by the caller, or read from the signed-in profile when shown.</summary>
         public OriginSummary Origin { get; set; }
@@ -78,10 +93,84 @@ namespace CTLife.UI
             _serverLookConfirmed = serverLookConfirmed;
             _readOnlyReview = readOnlyReview;
             _flow = new CreatorFlow(_draft) { ReadOnlyReview = readOnlyReview };
-            // Interleaved by skin-tone band and body family, starting differently per install (CreatorLookOrder).
-            _looks = CreatorLookOrder.ForCreator(CreatorLookCatalog.Available(), CreatorLookOrder.InstallSeed());
-            Log.Info("creator", _looks.Count + " looks available");
-            if (SelectedLook != null) Array.Copy(SelectedLook.look, _draft.look, _draft.look.Length);
+            _customizer = CustomizerCatalog.Load();
+            _resolves = ResolvesSpec;
+            BuildModels();
+        }
+
+        /// <summary>
+        /// Base models in creator order (interleaved by skin-tone band and body family, seeded per install: CreatorLookOrder),
+        /// each with the customizer options its art supports (CustomizerCatalog, optional) and its baked portrait.
+        /// </summary>
+        private void BuildModels()
+        {
+            var ordered = CreatorLookOrder.ForCreator(CreatorLookCatalog.Available(), CreatorLookOrder.InstallSeed());
+            _models = CustomizerModel.Build(ordered, _customizer, CustomizerModel.Portrait);
+            foreach (var binding in _localArt.Values)
+            {
+                if (_models.Any(m => m.id == binding.Model.id)) throw new InvalidOperationException("Local art collides with a shipped creator model.");
+                _models.Add(binding.Model);
+            }
+            Log.Info("creator", _models.Count + " base models available");
+            _lookIndex = 0;
+            SetSpec(SelectedLook == null ? null : DefaultSpec(SelectedLook));
+        }
+
+        /// <summary>Sets the spec and its contract look (the server payload: seven Look ids).</summary>
+        private void SetSpec(AvatarSpec spec)
+        {
+            _spec = spec;
+            // Unregistered local selections are stored in the full local spec only, never as invented wire IDs.
+            if (spec == null || spec.IsModular || _localArt.ContainsKey(spec.baseId)) { Array.Clear(_draft.look, 0, _draft.look.Length); return; }
+            var look = CustomizerModel.ToContract(spec);
+            Array.Copy(look, _draft.look, _draft.look.Length);
+        }
+
+        /// <summary>
+        /// Captures and tests (before Show): a customizer catalog and resolver other than the shipped ones, e.g. a demo
+        /// catalog for a model with options. Production uses Resources/UI/CustomizerCatalog and exact art resolution.
+        /// </summary>
+        public void ConfigureCustomizer(CustomizerCatalog catalog, Func<AvatarSpec, bool> resolves)
+        {
+            _customizer = catalog;
+            _resolves = resolves ?? ResolvesSpec;
+            BuildModels();
+        }
+
+        /// <summary>Explicit pre-Show local art. No registry/resource mutation, backend aliases or submission capability.</summary>
+        public void ConfigureLocalArt(IEnumerable<CreatorLocalArtBinding> bindings)
+        {
+            if (_preview != null || _built) throw new InvalidOperationException("Configure local art before showing the creator.");
+            var next = (bindings ?? throw new ArgumentNullException(nameof(bindings))).ToArray();
+            if (next.Any(b => b == null) || next.Select(b => b.Model.id).Distinct(StringComparer.Ordinal).Count() != next.Length)
+                throw new ArgumentException("Local art bindings must have unique complete bases.");
+            foreach (var b in next)
+                if (!b.Resolves(b.DefaultSpec()) || _models.Any(m => !_localArt.ContainsKey(m.id) && m.id == b.Model.id))
+                    throw new ArgumentException("Local art no longer resolves or collides with a shipped model.");
+            _localArt.Clear(); foreach (var b in next) _localArt.Add(b.Model.id, b);
+            _resolves = ResolvesSpec; BuildModels();
+        }
+
+        private CustomizerCatalog OptionsFor(BaseModel model) => model != null && _localArt.TryGetValue(model.id, out var b) ? b.Options : _customizer;
+        private AvatarSpec DefaultSpec(BaseModel model) => model != null && _localArt.TryGetValue(model.id, out var b) ?
+            b.DefaultSpec() : CustomizerModel.DefaultSpec(model, _customizer);
+        private bool ResolvesSpec(AvatarSpec spec) => spec != null && (_localArt.TryGetValue(spec.baseId, out var b) ?
+            b.Resolves(spec) : CustomizerModel.Resolves(spec, _models?.FirstOrDefault(m => m.id == spec.baseId)));
+
+        private bool TryPresent(BaseModel model, AvatarSpec spec)
+        {
+            var failure = new ModularAvatarFailure(ModularAvatarError.InvalidRequest, "No exact preview selection.");
+            bool shown = false;
+            if (model == null || spec == null || spec.baseId != model.id) return false;
+            if (_localArt.TryGetValue(model.id, out var binding))
+                shown = spec.legacyLook == null && ExactCustomizerSelection.TryApply(_preview, binding.Art, spec, out _, out failure);
+            else shown = !spec.IsModular && _preview.TrySetExactLook(CustomizerModel.ToContract(spec), out failure);
+            if (!shown)
+            {
+                Log.Warn("creator", "Preview selection rejected for " + model.id + ": " + failure);
+                ShowError(Strings.T("common.unavailable")); return false;
+            }
+            _presentedSpecKey = spec.Key(); return true;
         }
 
         public CreatorStep Step => _flow.Step;
@@ -105,6 +194,7 @@ namespace CTLife.UI
             var right = El.Div("ob-right");
             right.pickingMode = PickingMode.Ignore;
             _pages[(int)CreatorStep.Look] = BuildLookPage();
+            _pages[(int)CreatorStep.Customize] = BuildCustomizePage();
             _pages[(int)CreatorStep.Tribe] = BuildTribePage();
             _pages[(int)CreatorStep.Traits] = BuildTraitsPage();
             _pages[(int)CreatorStep.Dream] = BuildDreamPage();
@@ -217,91 +307,224 @@ namespace CTLife.UI
 
         private void BuildLookControls()
         {
-            var prev = new LippedButton("", () => BrowseLook(-1), LippedButton.Tone.Green, LippedButton.Size.Square).WithIcon("back");
-            prev.tooltip = Strings.T("creator.previousLook");
-            prev.AddToClassList("ob-arrow");
-            prev.AddToClassList("ob-arrow--prev");
-            var next = new LippedButton("", () => BrowseLook(1), LippedButton.Tone.Green, LippedButton.Size.Square).WithIcon("next");
-            next.tooltip = Strings.T("creator.nextLook");
-            next.AddToClassList("ob-arrow");
-            next.AddToClassList("ob-arrow--next");
-            // A single authored look is not a carousel. Controls appear as distinct assets are supplied.
-            prev.Show(_looks.Count > 1);
-            next.Show(_looks.Count > 1);
             _lookName = El.Text("", "ob-look-name");
             _lookCount = El.Text("", "ob-look-count");
             _lookTag = El.Text(Strings.T("ob.look.previewTag"), "ob-tag");
             var label = El.Div("ob-look-label", _lookName, _lookCount, _lookTag);
             label.pickingMode = PickingMode.Ignore;
-            _lookControls = El.Div("ob-look-controls", prev, next, label);
+            // Zoom: full body / face, as two round buttons on the preview.
+            _bodyFocus = new LippedButton("", () => FocusPreview(false), LippedButton.Tone.White, LippedButton.Size.Round).WithIcon("body");
+            _bodyFocus.tooltip = Strings.T("ob.look.full");
+            _faceFocus = new LippedButton("", () => FocusPreview(true), LippedButton.Tone.White, LippedButton.Size.Round).WithIcon("face");
+            _faceFocus.tooltip = Strings.T("ob.look.face");
+            _bodyFocus.AddToClassList("ob-zoom");
+            _faceFocus.AddToClassList("ob-zoom");
+            var zoom = El.Div("ob-zoom-col", _bodyFocus, _faceFocus);
+            zoom.pickingMode = PickingMode.Ignore;
+            zoom.SetEnabled(SelectedLook != null);
+            _lookControls = El.Div("ob-look-controls", label, zoom);
             _lookControls.pickingMode = PickingMode.Ignore;
             _content.Add(_lookControls);
         }
 
+        /// <summary>
+        /// Step 1, Character: the base models as a portrait grid (baked portraits; a named disc while a portrait is missing).
+        /// Tapping one puts it on the big preview. The grid scrolls when there are more models than fit.
+        /// </summary>
         private VisualElement BuildLookPage()
         {
-            _bodyFocus = new LippedButton(Strings.T("ob.look.full"), () => FocusPreview(false), LippedButton.Tone.Purple, LippedButton.Size.Medium);
-            _faceFocus = new LippedButton(Strings.T("ob.look.face"), () => FocusPreview(true), LippedButton.Tone.Purple, LippedButton.Size.Medium);
-            _bodyFocus.AddToClassList("ob-seg");
-            _faceFocus.AddToClassList("ob-seg");
-            var toggle = El.Div("ob-seg-row", _bodyFocus, _faceFocus);
-            toggle.SetEnabled(SelectedLook != null);
-            return Page(Strings.T("ob.look.title"), Strings.T("ob.look.sub"), toggle);
+            for (int i = 0; i < _models.Count; i++)
+            {
+                int index = i;
+                var m = _models[i];
+                var card = new ChoiceCard(m.id, m.label, null, _ => PickModel(index), ChoiceCard.Layout.Vertical,
+                    m.portrait, m.portrait == null ? (m.family == 'f' ? "profile" : "body") : null, m.family == 'f' ? "purple" : "green");
+                card.AddToClassList("ob-model-card");
+                _modelCards.Add(card);
+            }
+            var scroll = El.VerticalScroll("ob-model-scroll");
+            // Portrait tiles, not cards (user review 2026-10-10): six across, two rows visible, and the scroll ends above
+            // the CTA so the roster never touches NEXT.
+            _modelGrid = ChoiceGrid.Build(_modelCards.Cast<VisualElement>().ToList(), 6, 236f, 2f, 16f);
+            scroll.Add(_modelGrid);
+            return Page(Strings.T("ob.look.title"), Strings.T("ob.look.sub"), scroll);
+        }
+
+        private void PickModel(int index)
+        {
+            if (_busy || index < 0 || index >= _models.Count || index == _lookIndex) return;
+            var model = _models[index]; var next = DefaultSpec(model);
+            if (!TryPresent(model, next)) return;
+            _lookIndex = index; SetSpec(next);
+            _reviewComplete = false;
+            Cues.Select(); FirstTouch();
+            RefreshLook(true); RefreshModelCards(SelectedLook.id);
+            _lookChanges++;
+            React(OnboardingCopy.Variant("ob.say.lookPick", _lookChanges, 3), "emote_thumbs_up", "emote_nod");
+            Save(); Validate();
+        }
+
+        private void RefreshModelCards(string popId = null)
+        {
+            var current = SelectedLook?.id;
+            foreach (var c in _modelCards) c.SetSelected(c.Id == current, c.Id == popId);
+        }
+
+        // ------------------------------------------------------------------ step 2: customize
+
+        /// <summary>
+        /// Step 2, Customize: a category rail (only the categories this model has art for) and that category's options
+        /// (swatches, thumbnails or names). Every option patches the seven contract Look ids. Skipped when a model has none.
+        /// </summary>
+        private VisualElement BuildCustomizePage()
+        {
+            _rail = El.Div("ob-rail");
+            _rail.pickingMode = PickingMode.Ignore;
+            _railScroll = El.VerticalScroll("ob-rail-scroll");
+            _railScroll.verticalScrollerVisibility = ScrollerVisibility.Auto;
+            _railScroll.Add(_rail);
+            _optionGrid = El.Div("ob-options");
+            _optionGrid.pickingMode = PickingMode.Ignore;
+            _optionsEmpty = El.Text(Strings.T("ob.custom.empty"), "ob-line");
+            var scroll = El.VerticalScroll("ob-option-scroll");
+            scroll.verticalScrollerVisibility = ScrollerVisibility.Auto;
+            scroll.Add(_optionGrid);
+            var body = El.Div("ob-custom-body", _railScroll, El.Div("ob-custom-options", scroll, _optionsEmpty));
+            body.pickingMode = PickingMode.Ignore;
+            return Page(Strings.T("ob.custom.title"), Strings.T("ob.custom.sub"), body);
+        }
+
+        private List<LookCategory> VisibleCategories() =>
+            CustomizerModel.Visible(SelectedLook, _spec, OptionsFor(SelectedLook), _resolves);
+
+        private void RefreshCustomizeAvailability() => _flow.CustomizeAvailable = VisibleCategories().Count > 0;
+
+        private void BuildRail()
+        {
+            _rail.Clear();
+            _railButtons.Clear();
+            var visible = VisibleCategories();
+            if (!visible.Contains(_category) && visible.Count > 0) _category = visible[0];
+            foreach (var c in visible)
+            {
+                var cat = c;
+                var b = new Button(() => { if (_busy) return; Cues.Select(); _category = cat; BuildRail(); }) { text = "", enableRichText = false };
+                b.AddToClassList("ob-rail-item");
+                b.EnableInClassList("ob-rail-item--on", c == _category);
+                b.Add(new IconBadge(CustomizerModel.CategoryIcon(c), c == _category ? "purple" : "plum"));
+                var l = El.Text(Strings.T(CustomizerModel.CategoryKey(c)), "ob-rail-label");
+                l.pickingMode = PickingMode.Ignore;
+                b.Add(l);
+                b.userData = c;
+                // Rebuilding the rail must keep its selected category visible, including a restored or keyboard choice.
+                // Wait for its real layout; the last categories can sit below this landscape viewport.
+                b.RegisterCallback<GeometryChangedEvent>(e =>
+                {
+                    if (_category == cat && e.newRect.height > 0f && b.panel != null) _railScroll.ScrollTo(b);
+                });
+                _railButtons.Add(b);
+                _rail.Add(b);
+            }
+            BuildOptions();
+        }
+
+        private void BuildOptions()
+        {
+            _optionGrid.Clear();
+            _optionCards.Clear();
+            var options = CustomizerModel.Options(SelectedLook, _category, _spec, OptionsFor(SelectedLook), _resolves);
+            _optionsEmpty.style.display = options.Count == 0 ? DisplayStyle.Flex : DisplayStyle.None;
+            foreach (var o in options)
+            {
+                var opt = o;
+                var label = Strings.T(o.label ?? "") is string t && t != o.label ? t : o.label;
+                var card = new ChoiceCard(o.Id, label, null, _ => PickOption(opt), ChoiceCard.Layout.Vertical, o.thumb, null);
+                card.AddToClassList("ob-option-card");
+                if (o.thumb == null && o.hasSwatch)
+                {
+                    var sw = El.Div("ob-swatch");
+                    sw.style.backgroundColor = o.swatch;
+                    sw.pickingMode = PickingMode.Ignore;
+                    card.Face.Insert(0, sw);
+                }
+                card.SetSelected(o.IsCurrent(_spec));
+                _optionCards.Add(card);
+            }
+            var grid = ChoiceGrid.Build(_optionCards.Cast<VisualElement>().ToList(), 5, 236f, 1.4f, 22f);
+            while (grid.childCount > 0) _optionGrid.Add(grid[0]);
+            _optionGrid.AddToClassList("kit-grid");
+        }
+
+        private void PickOption(CustomizerOption option)
+        {
+            if (_busy || option == null || _spec == null) return;
+            var next = option.ApplyTo(_spec);
+            if (next.Key() == _spec.Key()) return;
+            if (!TryPresent(SelectedLook, next)) return;
+            SetSpec(next); Cues.Select(); _reviewComplete = false;
+            ApplyFraming();
+            foreach (var c in _optionCards) c.SetSelected(c.Id == option.Id, c.Id == option.Id);
+            React(OnboardingCopy.Variant("ob.say.lookPick", ++_lookChanges, 3), "emote_thumbs_up", "emote_nod");
+            RefreshAvailability();
+            Save();
         }
 
         private void BrowseLook(int direction)
         {
-            if (_busy || _looks.Count < 2) return;
-            _lookIndex = (_lookIndex + direction + _looks.Count) % _looks.Count;
-            _reviewComplete = false;
-            FirstTouch();
-            RefreshLook(true);
-            _lookChanges++;
-            React(OnboardingCopy.Variant("ob.say.lookPick", _lookChanges, 3), "emote_thumbs_up", "emote_nod");
-            Save();
-            Validate();
+            if (_models.Count < 2) return;
+            PickModel((_lookIndex + direction + _models.Count) % _models.Count);
         }
 
         private void RefreshLook(bool animate)
         {
             var look = SelectedLook;
-            _lookName.text = look == null ? Strings.T("creator.look") : look.Display;
-            _lookCount.text = _looks.Count > 1 ? Strings.F("ob.look.count", _lookIndex + 1, _looks.Count) : "";
+            _lookName.text = look == null ? Strings.T("creator.look") : look.label;
+            _lookCount.text = _models.Count > 1 ? Strings.F("ob.look.count", _lookIndex + 1, _models.Count) : "";
             if (look != null)
             {
-                Array.Copy(look.look, _draft.look, _draft.look.Length);
+                var next = _spec != null && _spec.baseId == look.id ? _spec : DefaultSpec(look);
                 float yaw = _touched ? _preview.Yaw : look.previewYaw;
+                if (_presentedSpecKey != next.Key())
+                {
+                    if (!TryPresent(look, next)) { RefreshAvailability(); return; }
+                    SetSpec(next);
+                }
                 _preview.SetIdle(_portrait ? FaceIdle : FullIdle);
-                _preview.SetLook(_draft.look);
-                _preview.SetYaw(yaw);
-                _preview.SetPortrait(_portrait);
+                _preview.SetYaw(yaw); _preview.SetPortrait(_portrait);
                 if (animate) Motion.Fade(_model, 0.35f, 1f, 0.18f);
             }
             RefreshAvailability();
+            RefreshCustomizeAvailability();
             FocusPreview(_portrait, false);
         }
+
+
 
         private void FocusPreview(bool portrait, bool user = true)
         {
             _portrait = portrait;
             _bodyFocus.EnableInClassList("ob-seg--on", !portrait);
             _faceFocus.EnableInClassList("ob-seg--on", portrait);
-            _stage.EnableInClassList("ob-stage--face", portrait && _flow.Step == CreatorStep.Look);
+            _stage.EnableInClassList("ob-stage--face", portrait && OnLookSteps);
             ApplyFraming();
             if (user) { Cues.Select(); Save(); }
         }
+
+        private bool OnLookSteps => _flow.Step == CreatorStep.Look || _flow.Step == CreatorStep.Customize;
 
         /// <summary>Face framing on the Look step (when chosen) and while typing the name; full body everywhere else.</summary>
         private void ApplyFraming()
         {
             if (_preview == null) return;
-            bool face = _typing || (_portrait && _flow.Step == CreatorStep.Look);
+            // The player card (Confirm) shows an ID-photo crop: head and shoulders; the celebration goes back to full body.
+            bool face = _typing || (_portrait && OnLookSteps) || (_flow.Step == CreatorStep.Confirm && _celebrated == null);
             _preview.SetIdle(face ? FaceIdle : FullIdle);
             _preview.SetPortrait(face);
         }
 
         protected override void OnShown()
         {
+            OnboardingAudio.StartTheme();
             if (_config == null && Services.TryGet<ConfigStore>(out var config))
             {
                 _config = config;
@@ -315,7 +538,7 @@ namespace CTLife.UI
 
         private void RefreshAvailability()
         {
-            _flow.HasLook = SelectedLook != null;
+            _flow.HasLook = SelectedLook != null && PreviewReady;
             _flow.LookSubmittable = CanSubmitLook;
             // Spec C2: a preview-only tag on development builds only; players see a problem only if submit cannot happen.
             if (_lookTag != null) _lookTag.style.display = SelectedLook != null && !CanSubmitLook && Debug.isDebugBuild ? DisplayStyle.Flex : DisplayStyle.None;
@@ -368,13 +591,14 @@ namespace CTLife.UI
             foreach (var t in _reg.Traits)
             {
                 var trait = t;
-                var card = new ChoiceCard(t.id, t.name, OnboardingCopy.TraitEffect(t), _ => PickTrait(trait), ChoiceCard.Layout.Horizontal,
-                    null, OnboardingCopy.TraitIcon(t.id), "purple");
+                var card = new ChoiceCard(t.id, OnboardingCopy.TraitName(t), OnboardingCopy.TraitEffect(t), _ => PickTrait(trait), ChoiceCard.Layout.Horizontal,
+                    KitIcons.Load(OnboardingCopy.TraitArt(t.id)), OnboardingCopy.TraitIcon(t.id), "purple");
+                card.AddToClassList("ob-trait-card");
                 _traitCards.Add(card);
             }
             _traitDots = El.Div("ob-dots", El.Div("ob-dot"), El.Div("ob-dot"));
             _traitDots.pickingMode = PickingMode.Ignore;
-            var grid = ChoiceGrid.Build(_traitCards.Cast<VisualElement>().ToList(), 3, 210f);
+            var grid = ChoiceGrid.Build(_traitCards.Cast<VisualElement>().ToList(), 3, 236f);
             var page = Page(Strings.T("ob.traits.title"), Strings.T("ob.traits.sub"), grid);
             page.Q(className: "ob-title-row").Insert(1, _traitDots);
             return page;
@@ -517,33 +741,64 @@ namespace CTLife.UI
 
         // ------------------------------------------------------------------ step 6: confirm
 
+        /// <summary>
+        /// Step 7, Confirm: ONE player card, "a look of yourself" (user review 2026-10-09: the stacked containers read as a
+        /// form). Trading/ID-card style: the live character on the left, the name, tribe badge, origin, dream and the two
+        /// traits as icons on the right; every part taps back to its step. Under it: the 18+ checkbox with its text beside
+        /// it, and the Game Cash line.
+        /// </summary>
         private VisualElement BuildConfirmPage()
         {
-            _originHost = El.Div("ob-origin-host");
-            _originHost.pickingMode = PickingMode.Ignore;
-            AddSummary(CreatorStep.Look, "ob.sum.look", null, "body");
-            AddSummary(CreatorStep.Tribe, "ob.sum.tribe", null, "contacts");
-            AddSummary(CreatorStep.Traits, "ob.sum.traits", null, "emote");
-            AddSummary(CreatorStep.Dream, "ob.sum.dream", null, "dream");
-            AddSummary(CreatorStep.Name, "ob.sum.name", null, "profile");
-            _ageCard = new ChoiceCard("age", Strings.T("ob.confirm.age"), Strings.T("ob.confirm.ageSub"), _ => ToggleAge(),
-                ChoiceCard.Layout.Horizontal, null, "checkbox");
-            _ageCard.AddToClassList("ob-age-card");
-            _summaryGrid = El.Div("ob-summary kit-grid");
-            _summaryGrid.pickingMode = PickingMode.Ignore;
-            var note = El.Text(Strings.T("ob.confirm.note"), "ob-note ob-note--inline");
-            var page = Page(Strings.T("ob.confirm.title"), Strings.T("ob.confirm.sub"), _summaryGrid, _ageCard, note);
+            _cardPortrait = El.Div("ob-card-portrait");
+            _cardPortrait.style.backgroundImage = Background.FromRenderTexture(_preview.Texture);
+            var portraitHit = CardHit("ob-card-portrait-hit", CreatorStep.Look, _cardPortrait);
+
+            _cardName = El.Text("", "ob-card-name");
+            var nameHit = CardHit("ob-card-row--name", CreatorStep.Name, _cardName);
+            _cardTribeBadge = El.Div("ob-card-tribe-badge");
+            _cardTribe = El.Text("", "ob-card-tribe");
+            var tribeHit = CardHit("ob-card-row--tribe", CreatorStep.Tribe, _cardTribeBadge, _cardTribe);
+            var header = El.Div("ob-card-header", nameHit, tribeHit);
+
+            _cardOriginArt = El.Div("ob-card-origin-art");
+            _cardOrigin = El.Text("", "ob-card-value");
+            var originRow = El.Div("ob-card-row ob-card-row--static", Caption("ob.sum.origin"), El.Div("ob-card-line", _cardOriginArt, _cardOrigin));
+            _cardDreamIcon = new IconBadge("dream", "gold");
+            _cardDream = El.Text("", "ob-card-value");
+            var dreamHit = CardHit("ob-card-row", CreatorStep.Dream, Caption("ob.sum.dream"), El.Div("ob-card-line", _cardDreamIcon, _cardDream));
+            _cardTraits = El.Div("ob-card-line ob-card-traits");
+            var traitsHit = CardHit("ob-card-row", CreatorStep.Traits, Caption("ob.sum.traits"), _cardTraits);
+            var info = El.Div("ob-card-info", header, originRow, dreamHit, traitsHit);
+            info.pickingMode = PickingMode.Ignore;
+            var band = El.Div("ob-card-band", El.Text(Strings.T("ob.card.band"), "ob-card-band-text"), El.Text(Strings.T("ob.confirm.sub"), "ob-card-band-hint"));
+            var shine = El.Div("ob-card-holo");
+            _idCard = El.Div("ob-idcard", band, El.Div("ob-card-body", portraitHit, info), shine);
+            El.PassThrough(band);
+            El.PassThrough(shine);
+
+            _ageRow = new CheckRow(Strings.T("ob.confirm.age"), ToggleAge);
+            _ageRow.AddToClassList("ob-age-row");
+            var note = El.Text(Strings.T("ob.confirm.note"), "ob-note ob-note--card");
+            var page = Page(Strings.T("ob.confirm.title"), Strings.T("ob.confirm.sub"), _idCard, El.Div("ob-card-foot", _ageRow, note));
             _confirmTitle = page.Q<Label>(className: "ob-title");
             return page;
         }
 
-        private void AddSummary(CreatorStep step, string captionKey, Texture2D badge, string icon)
+        private static Label Caption(string key)
         {
-            var card = new ChoiceCard(step.ToString(), "", null, _ => EditFromSummary(step), ChoiceCard.Layout.Horizontal,
-                badge, icon, "purple", Strings.T(captionKey));
-            card.AddToClassList("ob-summary-card");
-            card.userData = step;
-            _summary.Add(card);
+            var l = El.Text(Strings.T(key), "ob-card-caption");
+            l.pickingMode = PickingMode.Ignore;
+            return l;
+        }
+
+        /// <summary>A tappable part of the card that jumps back to `step` (contents never steal the tap).</summary>
+        private Button CardHit(string classes, CreatorStep step, params VisualElement[] children)
+        {
+            var b = new Button(() => { Cues.Play(Cues.SfxTap); EditFromSummary(step); }) { text = "", enableRichText = false };
+            foreach (var c in classes.Split(' ')) b.AddToClassList(c);
+            b.AddToClassList("ob-card-hit");
+            foreach (var c in children) { El.PassThrough(c); b.Add(c); }
+            return b;
         }
 
         private void EditFromSummary(CreatorStep step)
@@ -557,75 +812,54 @@ namespace CTLife.UI
         {
             if (_busy) return;
             _flow.SetAge(!_draft.ageConfirmed);
-            _ageCard.SetSelected(_draft.ageConfirmed, true);
+            _ageRow.SetChecked(_draft.ageConfirmed);
             if (_draft.ageConfirmed) Cues.Select(); else Cues.Deselect();
             _reviewComplete = false;
             Validate();
         }
 
-        /// <summary>Summary values (after any change) and the origin chip, built from the current draft.</summary>
+        /// <summary>The card's values from the current draft (after any change).</summary>
         private void RefreshSummary()
         {
-            if (_summaryGrid == null) return;
-            foreach (var c in _summary)
+            if (_idCard == null) return;
+            _cardName.text = string.IsNullOrEmpty(_draft.alias) ? "—" : _draft.alias;
+            var tribe = _reg.TribeOrder.FirstOrDefault(t => t.id == _draft.tribeId);
+            _cardTribe.text = tribe?.name?.ToUpperInvariant() ?? "—";
+            var badge = OnboardingArt.TribeBadge(_draft.tribeId);
+            _cardTribeBadge.style.backgroundImage = badge != null ? new StyleBackground(badge) : new StyleBackground(StyleKeyword.None);
+            _cardTribeBadge.style.display = badge != null ? DisplayStyle.Flex : DisplayStyle.None;
+            _cardDream.text = _reg.Dreams.FirstOrDefault(d => d.id == _draft.dreamId)?.name ?? "—";
+            _cardTraits.Clear();
+            foreach (var t in _reg.Traits.Where(t => _draft.traitIds.Contains(t.id)))
             {
-                var step = (CreatorStep)c.userData;
-                c.Title = step switch
-                {
-                    CreatorStep.Look => SelectedLook?.Display ?? Strings.T("creator.look"),
-                    CreatorStep.Tribe => _reg.TribeOrder.FirstOrDefault(t => t.id == _draft.tribeId)?.name ?? "—",
-                    CreatorStep.Traits => string.Join(" · ", _reg.Traits.Where(t => _draft.traitIds.Contains(t.id)).Select(t => t.name)),
-                    CreatorStep.Dream => _reg.Dreams.FirstOrDefault(d => d.id == _draft.dreamId)?.name ?? "—",
-                    _ => string.IsNullOrEmpty(_draft.alias) ? "—" : _draft.alias,
-                };
+                var chip = El.Div("ob-card-trait", new IconBadge(OnboardingCopy.TraitIcon(t.id), "purple", KitIcons.Load(OnboardingCopy.TraitArt(t.id))),
+                    El.Text(OnboardingCopy.TraitName(t), "ob-card-value ob-card-value--trait"));
+                El.PassThrough(chip);
+                _cardTraits.Add(chip);
             }
             if (_confirmTitle != null) _confirmTitle.text = Strings.F("ob.confirm.title", string.IsNullOrEmpty(_draft.alias) ? "you" : _draft.alias);
-            // Tribe chip: show the picked tribe's own badge.
-            var tribeCard = _summary.FirstOrDefault(c => (CreatorStep)c.userData == CreatorStep.Tribe);
-            if (tribeCard != null)
+            RefreshOrigin(false);
+        }
+
+        private void RefreshOrigin(bool refreshCard = true)
+        {
+            if (_cardOrigin == null) return;
+            if (Origin == null)
             {
-                var badge = OnboardingArt.TribeBadge(_draft.tribeId);
-                var art = tribeCard.Face.Q(className: "kit-card__badge");
-                if (art == null)
-                {
-                    art = El.Div("kit-card__badge");
-                    art.pickingMode = PickingMode.Ignore;
-                    tribeCard.Face.Insert(0, art);
-                }
-                if (badge != null) art.style.backgroundImage = new StyleBackground(badge);
-                art.style.display = badge != null ? DisplayStyle.Flex : DisplayStyle.None;
-                var disc = tribeCard.Face.Q(className: "kit-card__disc");
-                if (disc != null) disc.style.display = badge != null ? DisplayStyle.None : DisplayStyle.Flex;
+                _cardOrigin.text = "—";
+                _cardOriginArt.style.display = DisplayStyle.None;
             }
-            RebuildSummaryGrid();
-        }
-
-        private void RebuildSummaryGrid()
-        {
-            _summaryGrid.Clear();
-            var items = new List<VisualElement>();
-            if (_originHost.childCount > 0) items.Add(_originHost);
-            items.AddRange(_summary);
-            var grid = ChoiceGrid.Build(items, 3, 182f, 1.4f, 18f);
-            while (grid.childCount > 0) _summaryGrid.Add(grid[0]);
-        }
-
-        private void RefreshOrigin()
-        {
-            if (_originHost == null) return;
-            _originHost.Clear();
-            if (Origin == null) { RefreshSummary(); return; }
-            var name = Strings.T(LotteryModel.NameKey(Origin.outcomeId));
-            string sub = Strings.F("ob.lottery.cash", LotteryModel.CashWhole(Origin.cashCents));
-            if (Origin.debtCents > 0) sub += " · " + Strings.F("ob.lottery.debt", LotteryModel.CashWhole(Origin.debtCents));
-            var card = new ChoiceCard("origin", name, sub, null, ChoiceCard.Layout.Horizontal,
-                OnboardingArt.CardFront(Origin.outcomeId), "cash", "gold", Strings.T("ob.sum.origin"));
-            card.AddToClassList("ob-summary-card");
-            card.AddToClassList("ob-origin-card");
-            card.pickingMode = PickingMode.Ignore;
-            card.focusable = false;
-            _originHost.Add(card);
-            RefreshSummary();
+            else
+            {
+                var name = Strings.T(LotteryModel.NameKey(Origin.outcomeId));
+                string text = name + " · " + Strings.F("ob.lottery.cash", LotteryModel.CashWhole(Origin.cashCents));
+                if (Origin.debtCents > 0) text += " · " + Strings.F("ob.lottery.debt", LotteryModel.CashWhole(Origin.debtCents));
+                _cardOrigin.text = text;
+                var art = OnboardingArt.CardFront(Origin.outcomeId);
+                _cardOriginArt.style.backgroundImage = art != null ? new StyleBackground(art) : new StyleBackground(StyleKeyword.None);
+                _cardOriginArt.style.display = art != null ? DisplayStyle.Flex : DisplayStyle.None;
+            }
+            if (refreshCard) RefreshSummary();
         }
 
         // ------------------------------------------------------------------ steps
@@ -649,15 +883,19 @@ namespace CTLife.UI
             if (!instant) Motion.Enter(page, direction >= 0 ? 72f : -72f, 0f);
             else { page.style.opacity = 1f; page.style.translate = new Translate(0f, 0f); }
 
-            _frame.Root.EnableInClassList("ob-mode-look", step == CreatorStep.Look);
-            _frame.Root.EnableInClassList("ob-mode-side", step != CreatorStep.Look);
+            bool look = step == CreatorStep.Look || step == CreatorStep.Customize;
+            _frame.Root.EnableInClassList("ob-mode-look", look);
+            _frame.Root.EnableInClassList("ob-mode-custom", step == CreatorStep.Customize);
+            _frame.Root.EnableInClassList("ob-mode-confirm", step == CreatorStep.Confirm);
+            _frame.Root.EnableInClassList("ob-mode-side", !look && step != CreatorStep.Confirm);
             _frame.Progress.Set(CreatorFlow.ProgressFor(step), !instant);
             _frame.Back.style.visibility = step == CreatorStep.Look ? Visibility.Hidden : Visibility.Visible;
-            _lookControls.style.display = step == CreatorStep.Look ? DisplayStyle.Flex : DisplayStyle.None;
-            _dragHint.style.display = step == CreatorStep.Look && !_touched && SelectedLook != null ? DisplayStyle.Flex : DisplayStyle.None;
-            _stage.EnableInClassList("ob-stage--face", _portrait && step == CreatorStep.Look);
+            _lookControls.style.display = look ? DisplayStyle.Flex : DisplayStyle.None;
+            _dragHint.style.display = look && !_touched && SelectedLook != null ? DisplayStyle.Flex : DisplayStyle.None;
+            _stage.EnableInClassList("ob-stage--face", _portrait && look);
             ApplyFraming();
-            if (step == CreatorStep.Look) StartSway();
+            if (step == CreatorStep.Look) { StartSway(); RefreshModelCards(); }
+            if (step == CreatorStep.Customize) BuildRail();
             if (step == CreatorStep.Confirm) { _returnToConfirm = false; RefreshSummary(); }
             if (step == CreatorStep.Name)
             {
@@ -668,7 +906,7 @@ namespace CTLife.UI
                     .EnableInClassList("unity-base-text-field__input--placeholder", string.IsNullOrEmpty(_draft.alias));
                 RefreshAliasStatus(false);
             }
-            _ageCard.SetSelected(_draft.ageConfirmed);
+            _ageRow.SetChecked(_draft.ageConfirmed);
             Validate();
             SayArrival(step);
             Save();
@@ -679,6 +917,7 @@ namespace CTLife.UI
             switch (step)
             {
                 case CreatorStep.Look: React(Strings.T("ob.say.look"), "emote_wave"); break;
+                case CreatorStep.Customize: React(Strings.T("ob.say.custom"), "emote_point"); break;
                 case CreatorStep.Tribe:
                     if (_draft.tribeId != null) React(OnboardingCopy.TribeLine(_draft.tribeId));
                     else React(Strings.T("ob.say.tribe"), "emote_shrug");
@@ -746,7 +985,7 @@ namespace CTLife.UI
         private void Validate()
         {
             if (!_built && _frame == null) return;
-            _flow.HasLook = SelectedLook != null;
+            _flow.HasLook = SelectedLook != null && PreviewReady;
             _flow.LookSubmittable = CanSubmitLook;
             var problem = _flow.CurrentProblem;
             bool confirm = _flow.Step == CreatorStep.Confirm;
@@ -769,24 +1008,29 @@ namespace CTLife.UI
             if (saved == null) return;
             CreatorDraftStore.Apply(saved, _flow);
             _flow.Sanitize(_reg.TribeOrder.Select(t => t.id).ToList(), _reg.Traits.Select(t => t.id).ToList(), _reg.Dreams.Select(d => d.id).ToList());
-            if (!string.IsNullOrEmpty(saved.lookKey))
-            {
-                int index = _looks.FindIndex(l => string.Join("|", l.look) == saved.lookKey);
-                if (index >= 0) _lookIndex = index;
-            }
+            int targetIndex = string.IsNullOrEmpty(saved.lookKey) ? _lookIndex : _models.FindIndex(m => m.id == saved.lookKey);
             _portrait = saved.portrait;
-            _touched = true; // a returning player has already seen the sway; keep their angle (RefreshLook builds the model)
-            if (SelectedLook != null) Array.Copy(SelectedLook.look, _draft.look, _draft.look.Length);
+            _touched = true;
+            if (targetIndex >= 0)
+            {
+                var model = _models[targetIndex];
+                bool custom = saved.spec != null && saved.spec.baseId == model.id && ResolvesSpec(saved.spec);
+                var next = custom ? saved.spec : DefaultSpec(model);
+                if (TryPresent(model, next)) { _lookIndex = targetIndex; SetSpec(next); }
+                if (saved.spec != null && !custom) ShowError(Strings.T("common.unavailable"));
+            }
+            else ShowError(Strings.T("common.unavailable"));
             _preview.SetYaw(saved.yaw);
-            _flow.HasLook = SelectedLook != null;
+            _flow.HasLook = SelectedLook != null && PreviewReady;
+            RefreshCustomizeAvailability();
             _flow.Restore(saved.step, saved.furthest);
             Log.Info("creator", "Restored the unfinished character at step " + _flow.Step);
         }
 
         private void Save()
         {
-            if (!_built || _store == null || _celebrated != null) return;
-            _store.Save(_flow, LookKey, _preview?.Yaw ?? 180f, _portrait);
+            if (!_built || _store == null || _celebrated != null || !PreviewReady) return;
+            _store.Save(_flow, LookKey, _preview?.Yaw ?? 180f, _portrait, _spec);
         }
 
         private void OnPaused(bool paused)
@@ -822,6 +1066,7 @@ namespace CTLife.UI
             _busy = true;
             if (_typing) SetTyping(false);
             _frame.Root.AddToClassList("ob-mode-celebrate");
+            _frame.Root.RemoveFromClassList("ob-mode-confirm");
             _stage.AddToClassList("ob-stage--celebrate");
             _frame.ShowCta(false, false);
             _frame.Back.style.visibility = Visibility.Hidden;
@@ -868,8 +1113,9 @@ namespace CTLife.UI
         {
             var list = _flow.Step == CreatorStep.Tribe ? _tribeCards : _flow.Step == CreatorStep.Traits ? _traitCards : _flow.Step == CreatorStep.Dream ? _dreamCards : null;
             if (list != null && index >= 0 && index < list.Count) list[index].Press();
-            if (_flow.Step == CreatorStep.Confirm && index == 0) _ageCard.Press();
-            if (_flow.Step == CreatorStep.Look) BrowseLook(index >= 0 ? 1 : -1);
+            if (_flow.Step == CreatorStep.Confirm && index == 0) _ageRow.Press();
+            if (_flow.Step == CreatorStep.Look) PickModel(index);
+            if (_flow.Step == CreatorStep.Customize && index >= 0 && index < _optionCards.Count) _optionCards[index].Press();
         }
 
         /// <summary>Captures: types into the alias field (fires the same change path as the keyboard).</summary>
@@ -881,7 +1127,15 @@ namespace CTLife.UI
         /// <summary>Captures and checks: jump to a step already reached.</summary>
         public void JumpForAutomation(CreatorStep step) { if (_flow.JumpTo(step)) ShowStep(step, 1); }
 
-        public ChoiceCard AgeCard => _ageCard;
+        public CheckRow AgeRow => _ageRow;
+
+        /// <summary>Captures: selects a customizer category by rail position.</summary>
+        public void SelectCategoryForAutomation(int railIndex)
+        {
+            if (railIndex < 0 || railIndex >= _railButtons.Count) return;
+            _category = (LookCategory)_railButtons[railIndex].userData;
+            BuildRail();
+        }
 
 #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
         /// <summary>
@@ -895,10 +1149,8 @@ namespace CTLife.UI
             var want = LaunchArgs.Get("look");
             if (!string.IsNullOrEmpty(want))
             {
-                int index = -1;
-                for (int i = 0; i < _looks.Count; i++)
-                    if (_looks[i].look != null && Array.IndexOf(_looks[i].look, "head_" + want) >= 0) { index = i; break; }
-                if (index >= 0 && index != _lookIndex) { _lookIndex = index; RefreshLook(false); }
+                int index = _models.FindIndex(m => m.look != null && Array.IndexOf(m.look, "head_" + want) >= 0);
+                if (index >= 0 && index != _lookIndex) PickModel(index);
                 if (index < 0) Log.Warn("creator", "look " + want + " is not in the creator");
             }
             _draft.tribeId = _reg.TribeOrder.FirstOrDefault()?.id;

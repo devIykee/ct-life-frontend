@@ -212,7 +212,8 @@ namespace CTLife.Tests
             Assert.IsNull(CreatorDraftStore.Parse(null));
             Assert.IsNull(CreatorDraftStore.Parse("{not json"));
             Assert.IsNull(CreatorDraftStore.Parse("{\"v\":0,\"step\":3}"));
-            var s = CreatorDraftStore.Parse("{\"v\":1,\"step\":99,\"furthest\":-4}");
+            Assert.IsNull(CreatorDraftStore.Parse("{\"v\":1,\"step\":3}"), "a v1 draft (before Customize) starts fresh");
+            var s = CreatorDraftStore.Parse("{\"v\":2,\"step\":99,\"furthest\":-4}");
             Assert.AreEqual(CreatorStep.Confirm, s.step);
             Assert.AreEqual(CreatorStep.Look, s.furthest);
         }

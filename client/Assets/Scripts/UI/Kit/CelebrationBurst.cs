@@ -20,11 +20,11 @@ namespace CTLife.UI.Kit
             public bool alive;
         }
 
-        // Palette from the identity (spec C1): plum, cream, gold, green, purple. Plus a dusty plum-grey for the debt shower.
+        // Palette from the identity: plum, white, gold, Solana green, purple. Plus a dusty plum-grey for the debt shower.
         private static readonly Color[] Festive =
         {
-            new Color32(58, 20, 64, 255), new Color32(255, 246, 228, 255), new Color32(255, 200, 60, 255),
-            new Color32(92, 196, 74, 255), new Color32(146, 88, 220, 255),
+            new Color32(58, 20, 64, 255), new Color32(255, 255, 255, 255), new Color32(255, 200, 60, 255),
+            new Color32(20, 241, 149, 255), new Color32(146, 88, 220, 255),
         };
         private static readonly Color[] Muted = { new Color32(122, 98, 128, 255), new Color32(170, 152, 176, 255), new Color32(96, 78, 104, 255) };
 
@@ -103,7 +103,7 @@ namespace CTLife.UI.Kit
             Run();
         }
 
-        /// <summary>A soft cloud puff at `origin`: a few cream-grey circles that swell and fade (the debt "bonk").</summary>
+        /// <summary>A soft cloud puff at `origin`: a few white-grey circles that swell and fade (the debt "bonk").</summary>
         public void Puff(Vector2 origin)
         {
             if (DeviceFeel.ReducedMotion) return;

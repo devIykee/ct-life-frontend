@@ -6,7 +6,7 @@ namespace CTLife.UI.Kit
 {
     /// <summary>
     /// A round badge built like the painted tribe medallions: a thick plum rim, a coloured field with a soft top-left bevel
-    /// highlight and a darker bottom inset, and a cream glyph with a plum drop. Drawn in USS (no texture), so any UiIcon kind
+    /// highlight and a darker bottom inset, and a white glyph with a plum drop. Drawn in USS (no texture), so any UiIcon kind
     /// becomes a badge at no APK cost. Tones: green, purple, gold, coral, cyan, orange, plum. Styles: Resources/UI/kit.uss.
     /// </summary>
     public sealed class IconBadge : VisualElement
@@ -21,6 +21,14 @@ namespace CTLife.UI.Kit
                 // A painted badge (e.g. a tribe medallion) replaces the drawn one entirely.
                 AddToClassList("kit-badge--painted");
                 style.backgroundImage = new StyleBackground(painted);
+                // Inline, so no context rule can draw behind the art: the tone fill (.kit-badge--cyan etc. comes later
+                // in kit.uss than --painted) and chip/card borders (.kit-chip .kit-badge, .ob-card-trait > .kit-badge)
+                // otherwise turned every glossy icon into a disc on a coloured square (device 2026-10-10).
+                style.backgroundColor = Color.clear;
+                style.borderTopWidth = 0;
+                style.borderRightWidth = 0;
+                style.borderBottomWidth = 0;
+                style.borderLeftWidth = 0;
                 return;
             }
             var inset = new VisualElement { pickingMode = PickingMode.Ignore };
@@ -47,7 +55,8 @@ namespace CTLife.UI.Kit
     {
         private readonly Action _activate;
 
-        public IconTile(string iconKind, string label, string tone, Action onClick, string sfx = Cues.SfxTap)
+        /// <param name="art">Glossy icon name (<see cref="KitIcons"/>); the drawn badge is the fallback while it is missing.</param>
+        public IconTile(string iconKind, string label, string tone, Action onClick, string sfx = Cues.SfxTap, string art = null)
         {
             enableRichText = false;
             text = "";
@@ -61,7 +70,7 @@ namespace CTLife.UI.Kit
             clicked += _activate;
             var face = new VisualElement { pickingMode = PickingMode.Ignore };
             face.AddToClassList("kit-tile__face");
-            face.Add(new IconBadge(iconKind, tone));
+            face.Add(new IconBadge(iconKind, tone, KitIcons.Load(art)));
             var l = new Label(label) { enableRichText = false, pickingMode = PickingMode.Ignore };
             l.AddToClassList("kit-tile__label");
             face.Add(l);

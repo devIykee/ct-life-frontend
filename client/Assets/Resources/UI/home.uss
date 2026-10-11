@@ -1,5 +1,5 @@
 /* Home / lobby (DashboardScreen), redesign 2026-10-09: docs/progress/home-ui.md. Same identity as the title and onboarding:
-   the painted town (pre-blurred), Lilita One in cream with a thick plum outline, no plates behind text, the kit's lipped
+   the painted town (pre-blurred), Lilita One in white with a thick plum outline, no plates behind text, the kit's lipped
    bodies. Landscape panel 2400 x 1080 units (Seeker: 1 unit = 1.112 px, 48 dp = 130 units). Content box: 72 units in from
    the sides, 22 from the top, 30 from the bottom. Zones: status chips + settings across the top, icon tiles down the left,
    the character centre-left, greeting / today / cards on the right, ENTER THE CITY bottom-right. */
@@ -26,7 +26,7 @@
 .home-stage { position: absolute; left: 230px; top: 150px; width: 720px; height: 878px; }
 .home-stage-glow {
     position: absolute; left: -36%; right: -36%; top: -10%; bottom: -4%; opacity: 0.8;
-    -unity-background-scale-mode: stretch-to-fill; -unity-background-image-tint-color: rgb(255, 236, 190);
+    -unity-background-scale-mode: stretch-to-fill; -unity-background-image-tint-color: rgb(255, 250, 240);
 }
 .home-stage-shadow { position: absolute; left: 31%; right: 31%; bottom: 2.5%; height: 4.5%; border-radius: 40px; background-color: rgba(58, 20, 64, 0.42); }
 .home-stage-model { position: absolute; left: 0; top: 0; right: 0; bottom: 0; -unity-background-scale-mode: scale-to-fit; }
@@ -37,7 +37,7 @@
 .home-eyebrow-row { flex-direction: row; align-items: center; height: 64px; }
 .home-tribe-mark { width: 64px; height: 64px; margin-right: 14px; -unity-background-scale-mode: scale-to-fit; }
 .home-eyebrow, .home-greeting, .home-sub, .home-today-caption, .home-today-value, .home-error {
-    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); color: rgb(255, 246, 228); margin: 0; padding: 0;
+    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); color: rgb(255, 255, 255); margin: 0; padding: 0;
     -unity-text-outline-color: rgb(58, 20, 64); white-space: normal;
 }
 .home-eyebrow { font-size: 40px; letter-spacing: 4px; -unity-text-outline-width: 3px; text-shadow: 0 3px 4px rgba(26, 8, 32, 0.85); }
@@ -56,7 +56,7 @@
 .home-today-caption { font-size: 38px; letter-spacing: 2px; color: rgb(214, 196, 222); -unity-text-outline-width: 0; }
 .home-today-value { font-size: 48px; -unity-text-outline-width: 3px; white-space: nowrap; }
 .home-today-value--clue { font-size: 40px; white-space: normal; max-width: 520px; }
-.home-today--up .home-today-value { color: rgb(170, 246, 140); }
+.home-today--up .home-today-value { color: rgb(124, 255, 196); }
 .home-today--down .home-today-value { color: rgb(255, 170, 160); }
 .home-today--offline { background-color: rgba(120, 30, 50, 0.85); }
 
@@ -74,7 +74,7 @@
     height: 26px; margin-top: 8px; border-radius: 13px; background-color: rgba(58, 20, 64, 0.22); border-width: 3px;
     border-color: rgb(58, 20, 64); overflow: hidden;
 }
-.home-dream-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; border-radius: 10px; background-color: rgb(92, 196, 74); }
+.home-dream-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; border-radius: 10px; background-color: rgb(20, 241, 149); }
 
 /* ENTER THE CITY: the one dominant action */
 .home-cta-zone { position: absolute; right: 0; bottom: 0; flex-direction: row; align-items: center; }
