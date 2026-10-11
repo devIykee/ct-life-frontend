@@ -1,4 +1,4 @@
-READY TO COMMIT (job 2: dev error overlay): client/Assets/Scripts/Solana/MwaWallet.cs, client/Assets/Scripts/App/GameBootstrap.cs, client/Assets/Scripts/App/FlowController.cs (dev-only logerror extra), client/Assets/Scripts/Core/Env/LaunchArgs.cs, client/Assets/Tests/EditMode/MwaWalletTests.cs + .meta (NEW), client/Assets/Tests/EditMode/CTLife.Tests.EditMode.asmdef (+CTLife.Solana), client/Tools~/compile_check.py (EditMode test refs read from the asmdef), docs/progress/integration.md (v6 sign-in notes + section "First-time flow capture, and the dev error overlay"). NOT included: client/Assets/Scripts/UI/Screens/SignInScreen.cs (bleed fix, unverified on device; see the section). Commit message: "mwa: no SDK focus reconnect while SIWS is in flight (hide the cached key during sign-in; test pins the SDK key); dev builds keep the developer console closed on errors (logcat unchanged); dev logerror extra". Checks: compile_check dev/release/editor compile; EditMode 1363/1363; on the Seeker: logerror → logcat only, no overlay; real Seed Vault SIWS on this build → no OperationInFlightException.
+READY TO COMMIT (item 1: NPC spawn + speech bubbles): client/Assets/Scripts/World/Npcs/NpcSpawnPlanner.cs + .meta (NEW), client/Assets/Scripts/World/Npcs/NpcController.cs, client/Assets/Scripts/World/Venue/VenueSceneRoot.cs, client/Assets/Scripts/Features/WorldLife/Runtime/NpcPresenter.cs (respawn fallback only), client/Assets/Scripts/UI/Overlays/BubbleStacker.cs + .meta (NEW), client/Assets/Scripts/UI/Overlays/WorldLabels.cs, client/Assets/Tests/EditMode/NpcSpawnAndBubbleTests.cs + .meta (NEW), docs/progress/backend-dev-feedback.md (item 93), docs/progress/integration.md (section "NPC spawn, speech bubbles, Solana SDK splash size"). Commit message: "npc: spot-less NPCs get their own home spot away from the player spawn and the camera centre line; speech bubbles stack instead of overlapping; feedback 93 (NPCs have no starting spot)". Checks: compile_check dev/release/editor compile; EditMode 1370/1370; editor integration 13/13 with NPC spawn positions logged. Device visual check pending (phone unauthorized). Item 2: nothing to commit (measured ~10 KB in the APK). NOT included: client/Assets/Scripts/UI/Screens/SignInScreen.cs (item 3, waiting for the phone).
 
 # Integration lead log
 
@@ -1073,6 +1073,64 @@ world rects. With the phone held the other way (ROTATION_270, camera cutout on t
 short of the right edge and the panel's light background showed (`devconsole-check-after-error.png`, right edge). It
 compiles, but the device check was interrupted when the user took the phone. It needs one look on the Seeker in that
 orientation.
+
+## 2026-10-08: NPC spawn, speech bubbles, Solana SDK splash size
+
+### 1. NPCs no longer spawn on the player; bubbles never overlap
+
+- **Cause.** The venue room creates every NPC `idle` with no `spotId` (backend item 93; sampled every 5 s for 30 s in
+  `../ct-life-evidence/npc-spawn/npc-states-timeline.txt`). `NpcController.Init` then placed it at the venue entrance,
+  which is the player's spawn. `NpcPresenter.Respawn` did the same for unresolved spots.
+- **Fix.** `NpcSpawnPlanner` (pure) gives each spot-less NPC a home:
+  - an `npc` / `standing` / `stand` spot of the venue, at least 2.5 m from the entrance;
+  - never on the camera's centre line (the 3 m-wide, 12 m-long strip straight ahead of the spawn);
+  - stable per NPC id (FNV hash), and two NPCs never share one;
+  - if no spot is free, a ring beside the entrance (2.5 m, 3.5 m… to alternating sides).
+- **Wiring.** `VenueSceneRoot.NpcHome(npcId)` owns the claims, `NpcController` releases its claim on destroy, and both
+  spawn and respawn use it. Server spots still win: an NPC whose state has a resolvable spot goes there.
+- **Bubbles.** `BubbleStacker` (pure): the bubble lowest on screen keeps its place, and any bubble that would overlap a
+  placed one moves up just above it with a 6 px gap. `WorldLabels` resolves all visible bubbles each frame.
+- **Verified in the editor integration** (13/13, `../ct-life-evidence/npc-spawn/editor-20261008-201515/`), from
+  `npc-nav Init` lines in its log:
+
+  | NPC | Server state at join | Spawned at |
+  | --- | --- | --- |
+  | town_crier | idle, no spot | (8, 8.6) crier_2 |
+  | reply_guy | follow | (-9.6, 6.2) pixel_wall |
+  | spaces_host | idle | (0, 11) crier_3 |
+  | Terminal Café wallet_tracker | idle | (-5.3, 4.5) counter |
+  | giveaway_guy | server spot `square_center` | (0, -7) |
+  | doomposter | server spot `venue_exit` | (0, -11.9), hidden (leaving) |
+
+  Previously all of them were at the spawn (0, -10.9).
+- Tests: `NpcSpawnPlannerTests` (4) and `BubbleStackerTests` (3). EditMode **1370/1370**.
+- **On the Seeker: pending.** The phone came back as `unauthorized` (the USB debugging prompt is waiting on the phone).
+
+### 2. Solana SDK `background.png`: not worth excluding (measured)
+
+The 5.9 MiB is its raw, uncompressed size: an RGBA32 930×1667 sprite from the SDK's package `Resources`. It is mostly
+flat colour, so in the APK the entry deflates to **10.5 KB**:
+
+```
+6202036  Defl:N    10490  assets/bin/Data/399578e5d51c3434aa6fc117817073b4   (the texture's guid)
+```
+
+That is from `unzip -v` on the release APK, saved in `../ct-life-evidence/apk-size/apk-entry-sdk-background.txt`. It is
+never loaded on Android: the only reader is the SDK's editor-only WebGL template exporter (`#if UNITY_WEBGL &&
+UNITY_EDITOR`), so it costs no RAM. Excluding it would save about 10 KB.
+
+The release APK is **146.2 MiB (153,260,657 bytes)** before; there is no after, because nothing is changed. I tried an
+Android-only 32 px import override through the title-art postprocessor plus a pre-build reimport. The build kept the old
+import, and making it stick would need a postprocessor version bump that reimports every texture (~4,000 in the project
+and the packages). That is not worth 10 KB, so it was reverted.
+
+Note for size work: `Builds/*.apk.sizes.txt` and Unity's build report list raw sizes. Textures that compress well in the
+zip look much bigger there than they are. ASTC title art barely compresses: `title-bg` is 2.95 MB raw and 2.75 MB in the
+APK.
+
+### 3. Title art bleed in reverse landscape: still unverified
+
+The `SignInScreen.Bleed` fix is in the tree, not committed. The phone is `unauthorized` over USB right now.
 
 ## Status
 

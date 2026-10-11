@@ -28,6 +28,8 @@ namespace CTLife.UI
         private readonly Dictionary<AvatarView, (VisualElement root, Label text, VisualElement icon)> _tags =
             new Dictionary<AvatarView, (VisualElement, Label, VisualElement)>();
         private readonly List<(Transform anchor, VisualElement el, float until)> _bubbles = new List<(Transform, VisualElement, float)>();
+        private readonly List<VisualElement> _bubbleShown = new List<VisualElement>();
+        private readonly List<Rect> _bubbleWanted = new List<Rect>(), _bubblePlaced = new List<Rect>();
         private readonly Subscriptions _subs = new Subscriptions();
         private readonly List<AvatarView> _stale = new List<AvatarView>();
         private readonly List<AvatarView> _avatars = new List<AvatarView>();
@@ -142,14 +144,25 @@ namespace CTLife.UI
             for (int i = _bubbles.Count - 1; i >= 0; i--)
             {
                 var (anchor, el, until) = _bubbles[i];
-                if (anchor == null || Time.unscaledTime > until) { el.RemoveFromHierarchy(); _bubbles.RemoveAt(i); continue; }
+                if (anchor == null || Time.unscaledTime > until) { el.RemoveFromHierarchy(); _bubbles.RemoveAt(i); }
+            }
+            // Each bubble wants to sit above its speaker; BubbleStacker moves overlapping ones up so none hides another.
+            _bubbleShown.Clear();
+            _bubbleWanted.Clear();
+            foreach (var (anchor, el, _) in _bubbles)
+            {
                 if (ui.WorldToPanel(cam, anchor.position + Vector3.up * 0.35f, out var p))
                 {
                     el.style.display = DisplayStyle.Flex;
-                    el.style.translate = new Translate(p.x - W(el) * 0.5f, p.y - H(el) - 28f);
+                    float w = W(el), h = H(el);
+                    _bubbleShown.Add(el);
+                    _bubbleWanted.Add(new Rect(p.x - w * 0.5f, p.y - h - 28f, w, h));
                 }
                 else el.style.display = DisplayStyle.None;
             }
+            BubbleStacker.Resolve(_bubbleWanted, _bubblePlaced);
+            for (int i = 0; i < _bubbleShown.Count; i++)
+                _bubbleShown[i].style.translate = new Translate(_bubblePlaced[i].x, _bubblePlaced[i].y);
         }
 
         private (VisualElement root, Label text, VisualElement icon) NewTag()

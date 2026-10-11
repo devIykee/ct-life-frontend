@@ -636,6 +636,17 @@ reaches them; anything not listed was either fixed or not re-checked yet (marked
     already has the roll. This matters for any database that has users before the migration runs (the hosted one, if
     any). Client side we now treat "has a character" as rolled whatever the flag says (contract order).
 
+93. **NPCs have no starting spot.** Every venue NPC is created `idle` with `spotId: ""`
+    (`server/realtime/rooms/venue.ts` ~429: `new NpcState()` with only `archetypeId` set). The client therefore has to invent where each one stands; it used the
+    entrance, which is also the player's spawn, so five Timeline Square NPCs stood on every arriving player (seen on the
+    Seeker in the first-time flow, 2026-10-08). Repro: join `timeline_square` in a fresh room and read `npcs` at once:
+    all five `idle@-` (`../ct-life-evidence/npc-spawn/npc-states-timeline.txt`, sampled every 5 s for 30 s). Later
+    targets also use ids that are not spots of that venue: Timeline's `spaces_host` → `talk@spaces_studio` (a venue id),
+    and `doomposter` → `leave@venue_exit` (spots.json has `exit` and `entrance`). Expected: give each NPC a home `spotId`
+    from its venue's spots.json (`npc`/`standing`/`stand` kinds) when the room creates it, and only send spot ids of the
+    current venue. The client now places spot-less NPCs on their own home spots, away from the spawn, so this is not
+    blocking.
+
 Fixed and verified live on 7243073 (no action): B0 SIWS verify (local ed25519 round trip: base64 → 200, text → 401;
 and a real Seed Vault sign-in on the Seeker: challenge for `ctlife.invalid`, signed as issued, `POST /auth/verify` → 200
 on the first try);

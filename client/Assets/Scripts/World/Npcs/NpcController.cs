@@ -79,7 +79,8 @@ namespace CTLife.World
             _validatedPath = new NavMeshPath();
             // Binding starts when the component is added. Place the actor first, rather than
             // creating an agent at the prefab origin and assuming a same-frame Warp has bound it.
-            Vector3 spawn = venue.EntrancePosition;
+            // No server spot yet: the NPC's own home spot, not the entrance (the entrance is the player's spawn).
+            Vector3 spawn = venue.NpcHome(npcId);
             var spawnState = Rewrite(state);
             if (!string.IsNullOrEmpty(spawnState.spotId) && venue.TryGetSpot(spawnState.spotId, out var sp, out _)) spawn = sp;
             bool sampledSpawn = NavMesh.SamplePosition(spawn, out var hit, 3f, NavMesh.AllAreas);
@@ -99,6 +100,11 @@ namespace CTLife.World
 #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
             Log.Info("npc-nav", $"Init sampledSpawn={sampledSpawn}; requested={spawn:F3}; {ReviewSnapshot()}");
 #endif
+        }
+
+        private void OnDestroy()
+        {
+            if (_venue != null) _venue.ReleaseNpcHome(NpcId);
         }
 
         /// <summary>Called on every NpcState change.</summary>

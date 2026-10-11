@@ -110,6 +110,8 @@ namespace CTLife.World
 
         public Vector3 ToWorld(float x, float z) => transform.TransformPoint(new Vector3(x, 0f, z));
 
+        public Vector3 ToWorld(Vector2 local) => ToWorld(local.x, local.y);
+
         public Vector2 ToLocal(Vector3 world)
         {
             var l = transform.InverseTransformPoint(world);
@@ -125,5 +127,50 @@ namespace CTLife.World
 
         /// <summary>Spot anchors for the spots.json exporter and NPC fallbacks.</summary>
         public IEnumerable<SpotAnchor> Anchors => _anchors.Values;
+
+        // NPC homes (NpcSpawnPlanner): npcId → spot id, or a ring slot when no spot is free.
+        private readonly Dictionary<string, string> _npcHomeSpot = new Dictionary<string, string>();
+        private readonly Dictionary<string, int> _npcHomeRing = new Dictionary<string, int>();
+
+        /// <summary>
+        /// Where an NPC stands while the server has given it no spot: its own NPC/standing spot, away from the player's
+        /// spawn and off the camera's centre line (see <see cref="NpcSpawnPlanner"/>). Stable per NPC until released.
+        /// </summary>
+        public Vector3 NpcHome(string npcId)
+        {
+            npcId ??= "";
+            if (_npcHomeSpot.TryGetValue(npcId, out var claimed) && TryGetSpot(claimed, out var claimedPos, out _)) return claimedPos;
+            TryGetSpot("entrance", out var entranceWorld, out var entranceRot);
+            var entrance = ToLocal(entranceWorld);
+            var forward = NpcSpawnPlanner.Forward(entranceRot);
+            if (_npcHomeRing.TryGetValue(npcId, out var ring)) return ToWorld(NpcSpawnPlanner.Ring(ring, entrance, forward));
+
+            var candidates = new List<(string id, Vector2 pos)>();
+            if (_registrySpots != null)
+                foreach (var kv in _registrySpots.spots)
+                {
+                    if (kv.Value == null || !NpcSpawnPlanner.IsHomeKind(kv.Value.kind)) continue;
+                    if (TryGetSpot(kv.Key, out var world, out _)) candidates.Add((kv.Key, ToLocal(world)));
+                }
+            var taken = new HashSet<string>(_npcHomeSpot.Values);
+            var pick = NpcSpawnPlanner.Pick(npcId, candidates, entrance, forward, taken);
+            if (pick != null && TryGetSpot(pick, out var pos, out _))
+            {
+                _npcHomeSpot[npcId] = pick;
+                return pos;
+            }
+            int slot = 0;
+            var used = new HashSet<int>(_npcHomeRing.Values);
+            while (used.Contains(slot)) slot++;
+            _npcHomeRing[npcId] = slot;
+            return ToWorld(NpcSpawnPlanner.Ring(slot, entrance, forward));
+        }
+
+        public void ReleaseNpcHome(string npcId)
+        {
+            if (npcId == null) return;
+            _npcHomeSpot.Remove(npcId);
+            _npcHomeRing.Remove(npcId);
+        }
     }
 }

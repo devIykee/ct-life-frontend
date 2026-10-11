@@ -208,7 +208,8 @@ namespace CTLife.WorldLife
             var root = VenueSession.Current != null ? VenueSession.Current.Venue : null;
             if (root == null) return;
             Vector3 pos;
-            if (!(beat.Spot.Kind == SpotKind.Local && root.TryGetSpot(beat.Spot.SpotId, out pos, out _))) pos = root.EntrancePosition;
+            // An unresolved spot falls back to the NPC's home spot, not the entrance (which is the player's spawn).
+            if (!(beat.Spot.Kind == SpotKind.Local && root.TryGetSpot(beat.Spot.SpotId, out pos, out _))) pos = root.NpcHome(npc.NpcId);
             var agent = npc.GetComponent<NavMeshAgent>();
             if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh && NavMesh.SamplePosition(pos, out var hit, 1f, agent.areaMask))
                 agent.Warp(hit.position);
