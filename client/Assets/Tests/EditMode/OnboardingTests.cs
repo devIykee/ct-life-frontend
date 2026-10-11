@@ -76,6 +76,16 @@ namespace CTLife.Tests
         }
 
         [Test]
+        public void CharacterBeatsAStaleFalseFlag()
+        {
+            // Backend 7243073: users created before the lottery_rolled_at migration read lotteryRolled:false with a
+            // character, and rolling again is a 500. A returning player must go straight in.
+            var me = NewMe(alias: "anon", cash: 30000, debt: 72000, flags: new Dictionary<string, object> { ["lotteryRolled"] = false, ["hasCharacter"] = true });
+            Assert.IsFalse(Onboarding.NeedsLottery(me));
+            Assert.IsFalse(Onboarding.NeedsCharacter(me));
+        }
+
+        [Test]
         public void ExplicitFlagWins()
         {
             Assert.IsTrue(Onboarding.NeedsLottery(NewMe(cash: 500, flags: new Dictionary<string, object> { ["lotteryRolled"] = false })));

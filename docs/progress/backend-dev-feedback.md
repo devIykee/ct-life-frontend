@@ -625,7 +625,20 @@ reaches them; anything not listed was either fixed or not re-checked yet (marked
 91. **B10, venue room routing: fixed.** `define('venue').filterBy(['venueId'])` is in; two café joins share one room and
     Timeline Square gets its own (verified with bots and the editor run). The client's wrong-room guard is removed.
 
-Fixed and verified live on 7243073 (no action): B0 SIWS verify (local ed25519 round trip: base64 → 200, text → 401);
+92. **Newly broken for existing players: the lottery comes back.** Migration `1700000070000_add_lottery_rolled` adds
+    `users.lottery_rolled_at` without a backfill, and `GET /me` derives `flags.lotteryRolled` from it. Every user created
+    before the migration reads `{lotteryRolled:false, hasCharacter:true}` (locally 330 of 347 users with a character).
+    Rolling then fails: `POST /v1/lottery/roll` → `500 INTERNAL_ERROR` (api log: `duplicate key value violates unique
+    constraint "ledger_entries_idempotency_ref_key"`), Cash unchanged. Seen on the Seeker: a real Seed Vault sign-in of
+    an existing player landed on "Your origin story". Expected: a backfill in the migration
+    (`UPDATE users SET lottery_rolled_at = COALESCE(<first lottery ledger entry time>, created_at) WHERE id IN (SELECT
+    user_id FROM characters) OR <has a lottery ledger entry>`), and `409 ALREADY_ROLLED` instead of 500 when the ledger
+    already has the roll. This matters for any database that has users before the migration runs (the hosted one, if
+    any). Client side we now treat "has a character" as rolled whatever the flag says (contract order).
+
+Fixed and verified live on 7243073 (no action): B0 SIWS verify (local ed25519 round trip: base64 → 200, text → 401;
+and a real Seed Vault sign-in on the Seeker: challenge for `ctlife.invalid`, signed as issued, `POST /auth/verify` → 200
+on the first try);
 B6/#43 verify checks every SIWS field against the nonce and domain (source; the round trip passes); #59 alphanumeric nonce; #46 base64 `signedMessage`;
 #47 rooms serve `contract/realtime/states.ts` (venue, city, market checked field by field); #39 filterBy; #32/#33
 realtime starts and syncs with your own tsconfig; #34 workers start; #41 `flags.lotteryRolled`, second roll → 409

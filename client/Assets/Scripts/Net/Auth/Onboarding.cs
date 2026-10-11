@@ -7,17 +7,19 @@ namespace CTLife.Net
     /// Server-driven onboarding decisions (pure; unit-tested in Tests/EditMode).
     ///
     /// Order: birth lottery, then character creator. The contract says the roll "is forced before the character is
-    /// created"; backend main treats "has a character" as already rolled, so rolling after creation always returns
-    /// 409 and the player keeps $0 (feedback item 41). `Me.flags` has no `lotteryRolled` on that server, so a roll is
-    /// also inferred from a non-zero balance: the lottery is the only path to Cash or debt before a character exists.
+    /// created", so a character always means rolled, whatever the flag says: backend 7243073 added
+    /// `flags.lotteryRolled` from a new column without backfilling existing users, so every player created before that
+    /// migration reads `lotteryRolled:false` with a character, and their roll is a 500 (feedback item 92). Without a
+    /// character the flag wins; a server without the flag (9f3e5ef) is read from the balance instead: the lottery is
+    /// the only path to Cash or debt before a character exists.
     /// </summary>
     public static class Onboarding
     {
         public static bool LotteryRolled(Me me)
         {
             if (me == null) return false;
-            if (me.Flags != null && me.Flags.TryGetValue("lotteryRolled", out var flag) && flag is bool rolled) return rolled;
             if (HasCharacter(me)) return true;
+            if (me.Flags != null && me.Flags.TryGetValue("lotteryRolled", out var flag) && flag is bool rolled) return rolled;
             return me.CashCents != 0 || me.DebtCents != 0;
         }
 
