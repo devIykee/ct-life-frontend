@@ -145,12 +145,16 @@ namespace CTLife.World
             var forward = NpcSpawnPlanner.Forward(entranceRot);
             if (_npcHomeRing.TryGetValue(npcId, out var ring)) return ToWorld(NpcSpawnPlanner.Ring(ring, entrance, forward));
 
+            // The registry indexes every spot twice (local `crier_2` and wire `timeline_square.crier_2`, same SpotDef), so
+            // candidates are keyed by the local id; otherwise two NPCs could claim one spot under its two names (seen on the
+            // Seeker 2026-10-08: town_crier and doomposter both at crier_2).
             var candidates = new List<(string id, Vector2 pos)>();
+            var seen = new HashSet<string>();
             if (_registrySpots != null)
-                foreach (var kv in _registrySpots.spots)
+                foreach (var def in _registrySpots.spots.Values)
                 {
-                    if (kv.Value == null || !NpcSpawnPlanner.IsHomeKind(kv.Value.kind)) continue;
-                    if (TryGetSpot(kv.Key, out var world, out _)) candidates.Add((kv.Key, ToLocal(world)));
+                    if (def == null || !NpcSpawnPlanner.IsHomeKind(def.kind) || !seen.Add(def.id)) continue;
+                    if (TryGetSpot(def.id, out var world, out _)) candidates.Add((def.id, ToLocal(world)));
                 }
             var taken = new HashSet<string>(_npcHomeSpot.Values);
             var pick = NpcSpawnPlanner.Pick(npcId, candidates, entrance, forward, taken);

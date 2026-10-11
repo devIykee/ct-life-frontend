@@ -62,6 +62,41 @@ namespace CTLife.Tests
         }
     }
 
+    public class VenueNpcHomeTests
+    {
+        [Test]
+        public void SpotsIndexedUnderTwoNamesAreClaimedOnce()
+        {
+            // Registries index each spot under its local and its wire id (same SpotDef), as the live registry does.
+            var spots = new CTLife.Core.VenueSpots();
+            void Add(string id, string kind, float x, float z)
+            {
+                var def = new CTLife.Core.SpotDef { id = id, wireId = "timeline_square." + id, kind = kind, x = x, z = z, hasPosition = true };
+                spots.spots[id] = def;
+                spots.spots[def.wireId] = def;
+            }
+            Add("entrance", "exit", 0f, -10.9f);
+            Add("crier_1", "standing", -8f, 8.6f);
+            Add("crier_2", "standing", 8f, 8.6f);
+            Add("crier_3", "standing", 0f, 11f);
+            Add("pixel_wall", "stand", -9.6f, 6.2f);
+            Add("billboard_view", "stand", 6.2f, -9.6f);
+            var go = new GameObject("venue-test");
+            try
+            {
+                var root = go.AddComponent<VenueSceneRoot>();
+                root.venueId = "timeline_square";
+                root.Init(spots);
+                var homes = new HashSet<Vector3>();
+                foreach (var npc in new[] { "npc-0-town_crier", "npc-1-giveaway_guy", "npc-2-reply_guy", "npc-3-doomposter", "npc-4-spaces_host" })
+                    Assert.IsTrue(homes.Add(root.NpcHome(npc)), npc + " shares a home");
+                var sixth = root.NpcHome("npc-5-extra");
+                Assert.IsFalse(homes.Contains(sixth), "a sixth NPC goes to the ring, not onto a claimed spot");
+            }
+            finally { Object.DestroyImmediate(go); }
+        }
+    }
+
     public class BubbleStackerTests
     {
         private readonly List<Rect> _placed = new List<Rect>();
