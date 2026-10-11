@@ -1,4 +1,4 @@
-READY TO COMMIT (title screen v5): client/Assets/Resources/UI/Title/btn-purple-blank-sq.png + .meta (NEW), client/Assets/Resources/UI/Title/btn-purple-blank.png + .meta (DELETED), client/Assets/Resources/UI/title.uss, client/Assets/Scripts/UI/Screens/SignInScreen.cs, art/LICENSES.md, docs/progress/integration.md (section "Title screen v5"). Commit message: "title v5: purple squircle body (pill art gone), Use another wallet +15% with the legal line's outline, button shine clipped to the squircle body". Checks: compile_check dev compiles; TitleButtonArtTests 2/2; EditMode 1362/1362 (no ignored left).
+READY TO COMMIT (title screen v6): client/Assets/Resources/UI/title.uss, docs/progress/integration.md (section "Title screen v6"). Commit message: "title v6: button slot 3.7% lower, fully on the cobblestones (>= 19 px above the legal line through the bob); errors show above the button". Checks: USS only (no code change); device capture v6-signin.png; gap measured on device.
 
 # Integration lead log
 
@@ -963,6 +963,18 @@ Evidence: `../ct-life-evidence/title-screen/v5-signin.png`, `v5-play.png` (Seeke
 - The dev MWA error overlay does not appear on either variant (no wallet operation runs on the title screen).
 
 Checks: compile_check dev compiles; `TitleButtonArtTests` 2/2 pass; EditMode 1362/1362.
+
+## 2026-10-08: Title screen v6 (button slot lower)
+
+User tweak: the main button (and PLAY, which shares its slot, plus "Use another wallet" beside it) sits ~4% of the screen
+height lower, fully on the open cobblestones. `.ct-title-actions` bottom: 9.1% → 5.4% (3.7%). At exactly 4% the gap to the
+legal line dropped to 15 px at the low point of the button's idle bob. Measured on the Seeker across the bob (8 captures):
+the rim-to-legal-text gap is 19-30 px (≥ 16), and the button top sits ~55 px below the group's shoes. The legal line is
+unchanged (pinned at the bottom, same style). Errors now show above the button instead of under it (no room under it any
+more). USS only.
+
+Evidence: `../ct-life-evidence/title-screen/v6-signin.png`, `v6-signin_s.png`, `v6-signin-bottom.png`. The app was left
+open on the sign-in screen (`-e fresh 1`, no autologin) for the user's fingerprint sign-in.
 
 ## Status
 

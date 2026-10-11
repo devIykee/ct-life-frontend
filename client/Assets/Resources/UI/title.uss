@@ -11,12 +11,14 @@
 }
 .ct-title-bg.ct-title-zoom { scale: 1.04 1.04; }
 
-/* The button sits in the open cobblestones of the lower third. Seeker (2670x1200, 1.112 px per unit, 480 dpi = 3 px/dp):
-   its top edge is at ~926 px, below the group's shoes (905-915 px across the Ken Burns drift), and its bottom ~120 px above
-   the screen edge, which holds the legal line. "Use another wallet" sits beside PLAY, centred on the button body, where its
-   48 dp hit area (130 units) fits without touching PLAY or the legal line. */
-.ct-title-actions { position: absolute; left: 0; right: 0; bottom: 9.1%; align-items: center; }
-.ct-title-under { position: absolute; top: 100%; left: 0; right: 0; align-items: center; padding-top: 4px; }
+/* The button sits fully on the open cobblestones of the lower third, ~4% of the screen height lower than v5 (user tweak;
+   3.7% exactly, so the gap holds through the button's ±5-unit idle bob). Seeker (2670x1200, 1.112 px per unit, 480 dpi =
+   3 px/dp): top edge ~970 px, well clear of the group's shoes (905-915 px across the Ken Burns drift), and at least 16 px
+   between the button rim and the legal line pinned at the bottom (measured across the bob on the device).
+   "Use another wallet" sits beside PLAY, centred on the button body, where its 48 dp hit area (130 units) fits without
+   touching PLAY or the legal line. Errors show above the button: there is no room under it any more. */
+.ct-title-actions { position: absolute; left: 0; right: 0; bottom: 5.4%; align-items: center; }
+.ct-title-under { position: absolute; bottom: 100%; left: 0; right: 0; align-items: center; padding-bottom: 6px; }
 .ct-title-side {
     position: absolute; left: 68%; right: 0; top: 0; bottom: 0;
     padding-left: 12px; padding-bottom: 12px; /* the painted rim is thicker at the bottom: centre on the body */
