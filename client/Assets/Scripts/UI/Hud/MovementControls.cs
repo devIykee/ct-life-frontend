@@ -343,11 +343,17 @@ namespace CTLife.UI
             return false;
         }
 
+        /// <summary>
+        /// A visible child that takes input (a sheet, card, backdrop, phone, screen) blocks movement. A click-through container
+        /// (`pickingMode = Ignore`, e.g. the Social lane's always-present `ct-social-chip-bar` on the modal layer) does not:
+        /// it used to hide the stick and block all thumb movement on device (found 2026-10-08).
+        /// </summary>
         private static bool HasOverlay(VisualElement layer)
         {
             if (layer == null || layer.resolvedStyle.display == DisplayStyle.None) return false;
             foreach (var child in layer.Children())
-                if (child.resolvedStyle.display != DisplayStyle.None && child.resolvedStyle.visibility == Visibility.Visible) return true;
+                if (child.pickingMode == PickingMode.Position && child.resolvedStyle.display != DisplayStyle.None
+                    && child.resolvedStyle.visibility == Visibility.Visible) return true;
             return false;
         }
 

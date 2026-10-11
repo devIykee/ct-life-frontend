@@ -1,4 +1,4 @@
-READY TO COMMIT (title screen buttons on dev 6b69ae7): client/Assets/Resources/UI/Title/btn-green-blank.png (+.meta), client/Assets/Resources/UI/Title/btn-purple-blank.png (+.meta), client/Assets/Scripts/UI/Screens/SignInScreen.cs, client/Assets/Resources/UI/title.uss, docs/progress/integration.md. NOT mine, leave out: client/Assets/Art/characters/cast/materials/snow_everyday.mat. Commit message: "feat(title): painted button bodies, 9-slice that keeps the rounded ends, button below the group's feet". Checks: compile_check dev/release 0 errors; release APK 149.56 MiB; dev APK installed on the Seeker. Screenshots NOT taken: the MTN carrier dialog still holds focus after 30 min.
+READY TO COMMIT (title polish + device round on dev 9f23592): client/Assets/Scripts/UI/Screens/SignInScreen.cs, client/Assets/Resources/UI/title.uss, client/Assets/Scripts/UI/Hud/MovementControls.cs, client/Assets/Scripts/World/Players/LocalPlayerController.cs, docs/progress/integration.md. NOT mine, leave out: client/Assets/Art/characters/cast/materials/snow_everyday.mat (feel lane). Commit message: "fix: on-screen stick no longer blocked by the social chip bar; a seat claim no longer stands the player back up; title spacing + legal scrim". Checks: compile_check dev/release/editor 0 errors; EditMode 1333/1333; Seeker: stick, Sit/Stand up and knockdown verified on device. Evidence: ../ct-life-evidence/device-round-20261008b/ and ../ct-life-evidence/title-screen/title-{signin,play}-device.png.
 
 # Integration lead log
 
@@ -546,6 +546,89 @@ bodies around 900×260 would be about 0.47 MB.
 - **Seeker:** the dev APK with the buttons is installed. The screenshots were **not taken**: I polled `mCurrentFocus`
   every 20 s for 30 min and the "MTN - NG Message" dialog still holds focus (no touch on the phone for 53 min). Unity does
   not start without window focus. The three commands in the section above are ready to run.
+
+**Polish (2026-10-08, third pass), Seeker captures replaced.**
+- Files: `../ct-life-evidence/title-screen/title-signin-device.png` and `title-play-device.png` (adb screencap).
+- **Button:** 36% × 150 units (1.1 px per unit on the Seeker), bottom at 9.1%, label 60 (PLAY 76).
+  - Its top edge sits at ~926 px, below the group's shoes, which reach 905–915 px across the Ken Burns drift. The shoes go
+    lower than the ~72% estimate.
+- **Spacing:** "Use another wallet" sits 9 px under the button. The legal line is pinned 8 units above the bottom of the
+  safe area, with ~25 px of air between the two.
+- **Legal line:** 24 units, solid cream, Manrope Semibold, 1.5 px dark-plum outline and shadow.
+- **Scrim:** a full-bleed scrim over the bottom 10%, a transparent → dark-plum ramp texture made at runtime (no build
+  cost). Bottom rows measure ~75–95 brightness against ~140 above.
+- **`shot` option:** it works. The file lands in `/sdcard/Android/data/com.ctlife.app/files/` (Unity's persistentDataPath
+  on this build), not the internal `files/` I had pulled from.
+
+## 2026-10-08: Device round on dev 9f23592 (T-pose fix, character feel, venues round 4)
+
+Seeker, dev APK env=local, dev account. Evidence: `../ct-life-evidence/device-round-20261008b/`. The earlier pass on
+b4eaa8b is archived in `prev-b4eaa8b/`.
+
+**Two blocking bugs found on device and fixed (client core).**
+1. **No thumb movement at all on device.**
+   - The Social lane's always-present `ct-social-chip-bar` (a click-through container, `pickingMode = Ignore`, on the
+     modal layer) made `MovementControls.HasOverlay` treat the modal layer as an open overlay. The stick was hidden and
+     movement was blocked in every venue. Earlier device passes only used automation, so they never showed it.
+   - Fix: only a child that takes input (`pickingMode = Position`: sheets, cards, backdrops, phone, screens) blocks
+     movement. Real overlays all set Position or keep the default.
+   - The stick now shows ("Walk" / "Run") and moves the player.
+2. **Sit stood the player straight back up** (~1.5 s; recording `b-sit-attempt.mp4`).
+   - `RequestSeat` sent `sit` but kept sending `move` updates while the claim was in flight. The venue room applies them
+     in order, and its move handler stands a seated player up ("If seated, stand up", `venue.ts`).
+   - Fix (`LocalPlayerController.SendSit`): flush the last position first, then send no `move` while a claim is pending.
+     Stick input already cancels a claim, so moves resume as soon as the player moves.
+   - The cause is confirmed by the fix's result: the seat now holds. The server log was not readable (the
+     `realtime.log` file was deleted while still open).
+
+**(a) T-pose: none.** The player, server NPCs and the 30-bot crowd stand in natural poses in Timeline Square v3, Terminal
+Café and Spaces Studio v4 (`venue-*.png`). In the pre-fix build the player and NPCs were in T-pose
+(`../ct-life-evidence/perf-venues-20261008/*.png`).
+
+**(b) CTA flow.**
+- Café: walking up to a table offers **Sit** (yellow pill + floor ring) → tap → walks to the approach and sits →
+  **Stand up** → stands, and "Sit" is offered again.
+  - Files: `b-1-cta-sit-offered.png`, `b-2-seated.png`, `b-3-stood-up.png`, `b-sit-stand.mp4`.
+- **Spaces Studio "Take the mic": not verified on device.** The host spot (`spaces_studio.stage_host`, 0,8) is 17 m from
+  the entrance, behind the amphitheatre tiers. The stick took the player onto the first tier only. Taps on the
+  stage/desk did not focus it (a tap must land within 0.9 m of the spot). Taps on the café chairs did not focus a seat
+  either, so the venue lane should check that the seat/stage anchors line up with the visible furniture in round 4. A
+  dev hook to focus a spot by id would make this testable.
+- Note: at spawn the café NPC "Wallet Tracker" and the Timeline "Town Crier"/"Spaces Host (alt)" name tags overlap.
+
+**(c) Sprint into a prop: pass.** Full stick ("Run") into a café table: trip at ~2.0 s, ragdoll on the floor 2.3–3.7 s,
+get-up 4.0–4.7 s, control back at ~5 s. Files: `c-1-running.png`, `c-2-knocked-down.png`, `c-3-getting-up.png`,
+`c-4-back-up.png`, `c-sprint-knockdown.mp4`.
+
+**(d) Look on device (interim; Timeline Square round 5 is in progress).** Files: `venue-timeline_square.png` (v3 with
+the crowd), `venue-terminal_cafe.png`, `venue-spaces_studio.png` (v4 amphitheatre, stage, city-view terrace).
+
+**(e) Perf.** Normal = the Seeker's own thermal state, where the game caps at 30. Lifted = `cmd thermalservice
+override-status 0`, restored after; only windows at the 60 target are counted.
+
+| Venue | avatars | phase | fps (median, min) | p99 ms | draws | triangles | CPU main ms | GPU ms |
+|---|---|---|---|---|---|---|---|---|
+| Timeline Square v3, 30-bot crowd | 35 | normal | 30.2 (30.2) | 33.3 | 85 | 213k | 15.0 | 22.7 |
+| same | 35 | lifted | **60.3 (57.9)** | 16.6 | 106 | 204k | 11.3 | 14.4 |
+| Terminal Café | 2 | normal / lifted | 30.2 / **60.3 (59.1)** | 16.6 | 54 | 80k | 10.8 | 14.0 |
+| Spaces Studio v4 | 1 | normal / lifted | 30.2 / **60.1 (59.7)** | 16.6 | 50 | 96k | 8.2 | 14.1 |
+
+- **Compared with this morning:**
+  - Timeline crowd: 253 → ~85–106 draws at the same triangle count.
+  - Café: 35 → 54 draws, GPU 11.6 → 14.0 ms (look-dev with post-processing on).
+  - Studio: 25 → 50 draws, 30k → 96k triangles.
+- All hold 60 fps with the cap lifted, with GPU at 14–15 ms of the 16.6 ms budget.
+- The adb server was restarted ~5 times during the run (Android Studio is open). `adb_reverse_watchdog.sh` re-applied the
+  port reverses; one Timeline lifted window was lost and re-measured.
+
+**(f) Release APK: 141.0 MiB** (was 149.56 before venues round 3's mesh compression; round 4 is the same size).
+
+**EditMode: 1333/1333** (9 assemblies). `editmode-results.xml`.
+
+**Still open:**
+- [Unverified] Every launch logs an async exception stack (`Task.TrySetException`) without its message.
+- The venue isolation backend item #39 is still open; the café got its own room this time only because no other venue
+  room was open.
 
 ## Status
 

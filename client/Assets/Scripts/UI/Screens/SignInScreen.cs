@@ -16,7 +16,8 @@ namespace CTLife.UI
         private readonly Action _onWallet, _onPlay, _onAnotherWallet;
         private readonly bool _walletAvailable;
         private bool _returning;
-        private VisualElement _root, _bg, _actions;
+        private VisualElement _root, _bg, _scrim, _actions;
+        private static Texture2D _scrimTex;
         private Button _walletBtn, _playBtn;
         private Label _another, _error;
         private IVisualElementScheduledItem _idle;
@@ -63,7 +64,11 @@ namespace CTLife.UI
 
             var legal = El.Text(Strings.T("welcome.age"), "ct-title-legal");
             legal.pickingMode = PickingMode.Ignore;
-            _root = El.Div("ct-title", _bg, _actions, legal);
+            // A soft dark gradient along the bottom keeps the legal line readable over the light cobblestones.
+            _scrim = El.Div("ct-title-scrim");
+            _scrim.pickingMode = PickingMode.Ignore;
+            _scrim.style.backgroundImage = new StyleBackground(ScrimTexture());
+            _root = El.Div("ct-title", _bg, _scrim, _actions, legal);
             var sheet = Resources.Load<StyleSheet>("UI/title");
             if (sheet != null) _root.styleSheets.Add(sheet);
             else Log.Warn("ui", "Missing UI/title stylesheet");
@@ -129,6 +134,27 @@ namespace CTLife.UI
             _bg.style.top = -s.top;
             _bg.style.right = -s.right;
             _bg.style.bottom = -s.bottom;
+            _scrim.style.left = -s.left;
+            _scrim.style.right = -s.right;
+            _scrim.style.bottom = -s.bottom;
+        }
+
+        /// <summary>A 1×64 vertical ramp (transparent → dark plum), made once at runtime: no texture in the build.</summary>
+        private static Texture2D ScrimTexture()
+        {
+            if (_scrimTex != null) return _scrimTex;
+            const int h = 64;
+            _scrimTex = new Texture2D(1, h, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear, name = "TitleScrim" };
+            var px = new Color32[h];
+            for (int y = 0; y < h; y++)
+            {
+                float t = y / (h - 1f);        // row 0 is the bottom of the texture
+                float a = Mathf.Pow(1f - t, 1.3f); // dense at the screen edge, fading out upwards
+                px[y] = new Color32(26, 8, 32, (byte)Mathf.RoundToInt(a * 185f));
+            }
+            _scrimTex.SetPixels32(px);
+            _scrimTex.Apply(false, true);
+            return _scrimTex;
         }
 
         /// <summary>

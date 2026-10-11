@@ -11,15 +11,16 @@
 }
 .ct-title-bg.ct-title-zoom { scale: 1.04 1.04; }
 
-/* The button sits in the open cobblestones of the lower third: its top edge (~75% of the height) clears the group's feet
-   (~72%, ~73% at the Ken Burns peak); its centre is ~84%. */
-.ct-title-actions { position: absolute; left: 0; right: 0; bottom: 7.5%; align-items: center; }
-.ct-title-under { position: absolute; top: 100%; left: 0; right: 0; align-items: center; padding-top: 6px; }
+/* The button sits in the open cobblestones of the lower third. Seeker (2670x1200, ~1.1 px per unit): its top edge is at
+   ~926 px, below the group's shoes (905-915 px across the Ken Burns drift); "Use another wallet" sits 9 px under it, then
+   ~19 px of air above the legal line, which keeps its own bottom margin inside the scrim. */
+.ct-title-actions { position: absolute; left: 0; right: 0; bottom: 9.1%; align-items: center; }
+.ct-title-under { position: absolute; top: 100%; left: 0; right: 0; align-items: center; padding-top: 8px; }
 
 .ct-title-btn {
-    width: 37%; height: 186px; margin: 0; padding: 0 40px 14px 40px; /* the painted rim is thicker at the bottom: lift the label */
+    width: 36%; height: 150px; margin: 0; padding: 0 40px 12px 40px; /* the painted rim is thicker at the bottom: lift the label */
     border-radius: 46px; border-width: 6px; border-bottom-width: 12px; border-color: rgb(58, 20, 64);
-    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 66px; -unity-text-align: middle-center; white-space: nowrap;
+    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 60px; -unity-text-align: middle-center; white-space: nowrap;
     color: rgb(255, 246, 228); -unity-text-outline-width: 4px; -unity-text-outline-color: rgb(58, 20, 64);
     text-shadow: 0 5px 1px rgb(58, 20, 64); /* the painted labels have a solid plum drop under the letters */
     overflow: hidden;
@@ -34,7 +35,7 @@
 .ct-title-btn-green, .ct-title-btn-green:hover, .ct-title-btn-green:focus { background-color: rgb(92, 196, 74); }
 .ct-title-btn-green:active { background-color: rgb(70, 158, 56); }
 .ct-title-btn-purple, .ct-title-btn-purple:hover, .ct-title-btn-purple:focus { background-color: rgb(146, 88, 220); }
-.ct-title-btn-purple { font-size: 84px; letter-spacing: 3px; }
+.ct-title-btn-purple { font-size: 76px; letter-spacing: 3px; }
 .ct-title-btn-purple:active { background-color: rgb(114, 64, 182); }
 .ct-title-btn-art, .ct-title-btn-art:hover, .ct-title-btn-art:focus, .ct-title-btn-art:active {
     background-color: rgba(0, 0, 0, 0); border-width: 0; border-radius: 0;
@@ -46,9 +47,9 @@
 }
 
 .ct-title-link {
-    font-size: 30px; -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); color: rgb(255, 246, 228);
+    font-size: 28px; -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); color: rgb(255, 246, 228);
     -unity-text-outline-width: 2px; -unity-text-outline-color: rgb(58, 20, 64); text-shadow: 0 2px 2px rgba(40, 8, 44, 0.6);
-    padding: 4px 20px;
+    padding: 0 20px;
 }
 .ct-title-link:disabled { opacity: 0.6; }
 
@@ -58,8 +59,13 @@
     margin-top: 4px;
 }
 
+/* Bottom ~8% of the screen, full bleed: a transparent → dark-plum ramp behind the legal line. */
+.ct-title-scrim { position: absolute; left: 0; right: 0; bottom: 0; height: 10%; -unity-background-scale-mode: stretch-to-fill; }
+
 .ct-title-legal {
-    position: absolute; left: 0; right: 0; bottom: 6px;
-    font-size: 22px; color: rgba(255, 246, 228, 0.94); -unity-text-align: middle-center;
-    text-shadow: 0 2px 4px rgba(20, 6, 24, 0.85);
+    position: absolute; left: 0; right: 0; bottom: 8px;
+    font-size: 24px; color: rgb(255, 246, 228); -unity-text-align: middle-center;
+    -unity-font-definition: url("Fonts/Manrope-Semibold.ttf");
+    -unity-text-outline-width: 1.5px; -unity-text-outline-color: rgb(58, 20, 64);
+    text-shadow: 0 2px 2px rgba(40, 8, 44, 0.9);
 }

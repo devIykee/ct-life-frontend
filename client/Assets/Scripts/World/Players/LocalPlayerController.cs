@@ -434,8 +434,29 @@ namespace CTLife.World
             _requestedSpot = spotId;
             var wire = _venue != null ? _venue.WireSpotId(spotId) : spotId;
             ObserveReviewCommand("sit:" + wire);
-            _channel.Sit(wire);
+            SendSit(wire);
             return true;
+        }
+
+        /// <summary>
+        /// Claims a spot. The venue room stands a seated player up on any later `move` ("If seated, stand up"), so the last
+        /// position goes out first and no `move` is sent while the claim is in flight (Update). Without this the player sat
+        /// and stood straight back up on the Seeker (2026-10-08). Stick input cancels the claim and moves resume.
+        /// </summary>
+        private void SendSit(string wireSpotId)
+        {
+            if (_dirty && _venue != null && _channel != null)
+            {
+                var local = _venue.ToLocal(transform.position);
+                float yaw = transform.eulerAngles.y;
+                if (_channel.Move(local.x, local.y, Mathf.Repeat(yaw, 360f) * Mathf.Deg2Rad))
+                {
+                    _lastSentPos = transform.position;
+                    _lastSentRot = yaw;
+                    _dirty = false;
+                }
+            }
+            _channel.Sit(wireSpotId);
         }
 
         /// <summary>
@@ -546,7 +567,7 @@ namespace CTLife.World
             {
                 ObserveReviewCommand("move");
             }
-            if (_dirty && _venue != null && _channel != null)
+            if (_dirty && _venue != null && _channel != null && string.IsNullOrEmpty(_requestedSpot))
             {
                 var local = _venue.ToLocal(pos);
                 if (_channel.Move(local.x, local.y, Mathf.Repeat(yaw, 360f) * Mathf.Deg2Rad))
@@ -627,7 +648,7 @@ namespace CTLife.World
             if (_channel != null && _channel.IsJoined)
             {
                 _requestedSpot = spot;
-                _channel.Sit(_venue != null ? _venue.WireSpotId(spot) : spot);
+                SendSit(_venue != null ? _venue.WireSpotId(spot) : spot);
             }
             return true;
         }
