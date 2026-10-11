@@ -4,6 +4,26 @@ Read this first, then the spec in `docs/spec/build-spec.md` and `docs/spec/contr
 (exported from the Claude Doc "CT Life — Build Spec"). The spec is the product baseline;
 later explicit user decisions, including the art direction below, supersede older wording.
 
+## Character selection correction (user decision, 2026-10-11)
+- A character is a distinct person or creature. Clothing, hair, accessories and recolours of the same source model are
+  options within that character, never extra people in the roster. Preserve their existing saved look IDs.
+- Continue the character screen now: expand the actual playable cast using the user's earlier Sketchfab references and
+  Claude/Hermes source work. Do not count research links, unimported exports or duplicated heads as playable characters.
+- Put the optional paid **Make it look like me** entry on this screen, after wallet connection. Human choices should
+  resemble the player naturally; nonhuman choices should interpret their likeness cartoonishly. The user explicitly
+  authorizes backend work for this feature in the separate backend checkout, superseding the older blanket restriction
+  below for this scope. Later on 2026-10-11 the user also authorized deployment and Telegram coordination with backend
+  developer Iyke 🦀, and selected 3 USDC per creation. This does not authorize charging the user's wallet during testing.
+- Verify a photo-to-3D provider with real samples and current documentation. Keep provider credentials server-side.
+  Distinguish working generation from an availability screen or unconfigured backend. See
+  `docs/research/paid-character-likeness-20261011.md` for the evaluated provider and unresolved gates.
+
+## Character screen refinement (user decision, 2026-10-11)
+- Research the supplied podium reference and game UI before changing this screen. Avoid excessive glossy/neumorphic controls and preserve other screens for gradual user-led changes.
+- Use 2D illustrations for roster choices, actual selected 3D character on a podium, and enough framing space for raised hands. Paid likeness is a small edit control beside the character, not a large CTA.
+- Offer authored character browsing and supported outfits, skin tones and garment colors. Do not force gender onto unspecified creatures/robots or claim unsupported material regions work.
+- Nonhuman staking unlocks (ORE/SKR) remain a proposal until the token, threshold and live verification work. See `docs/research/character-podium-and-likeness-20261011.md`.
+
 ## Current priorities (user decision, 2026-10-07) — read first
 - **No deadline.** Ignore CLOCK IN and every hackathon date in older docs. Do not plan around it.
 - **Everything must work first.** Build the whole game robustly and properly, phase by phase:

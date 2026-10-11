@@ -27,7 +27,8 @@ namespace CTLife.UI
             var art = OnboardingArt.Backdrop;
             if (art != null) _bg.style.backgroundImage = new StyleBackground(art);
 
-            Back = new Kit.LippedButton("", () => onBack?.Invoke(), Kit.LippedButton.Tone.White, Kit.LippedButton.Size.Round).WithIconArt("back", "back");
+            Back = new Kit.LippedButton("", () => onBack?.Invoke(), Kit.LippedButton.Tone.White, Kit.LippedButton.Size.Round).WithIcon("back");
+            Back.AddToClassList("ob-flat-button");
             Back.name = "ob-back";
             Back.tooltip = Strings.T("common.back");
             Progress = new Kit.ProgressBar(CreatorFlow.ProgressSegments);
@@ -39,6 +40,8 @@ namespace CTLife.UI
 
             Cta = new Kit.LippedButton(ctaText, () => onCta?.Invoke(), Kit.LippedButton.Tone.Green, Kit.LippedButton.Size.Large);
             Cta.name = "ob-cta";
+            Cta.AddToClassList("ob-flat-button");
+            Cta.Face.style.backgroundImage = new StyleBackground(StyleKeyword.None);
             _hint = El.Text("", "ob-hint");
             _hint.pickingMode = PickingMode.Ignore;
             // A tap on the disabled CTA explains itself: the hint shakes, with an error blip and a reject haptic. Disabled

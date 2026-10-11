@@ -16,6 +16,55 @@ namespace CTLife.Tests
     public class QaUiSnapshotTreeTests
     {
         [Test]
+        public void AudioSnapshotDoesNotReadClipTimeForEmptyPooledSources()
+        {
+            var root = new GameObject("qa-audio-pool-test");
+            var clip = AudioClip.Create("qa-audio-clip", 8000, 1, 8000, false);
+            var warnings = new System.Collections.Generic.List<string>();
+            var invalidTimeWarning = new System.Text.RegularExpressions.Regex(
+                @"Attempting to get\s+`?time`?\s+on an audio source.*not a clip",
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            void OnLog(string message, string stack, LogType kind)
+            {
+                if (invalidTimeWarning.IsMatch(message)) warnings.Add(message);
+            }
+            try
+            {
+                var empty = root.AddComponent<AudioSource>();
+                var withClip = root.AddComponent<AudioSource>();
+                withClip.clip = clip;
+                Application.logMessageReceived += OnLog;
+                // Calibrate against the old invalid getter so this regression cannot silently pass
+                // because Unity's warning wording/format differs from the test's matcher.
+                LogAssert.Expect(LogType.Warning, invalidTimeWarning);
+                _ = empty.time;
+                Assert.That(warnings.Count, Is.EqualTo(1), "The warning observer must detect the old unguarded read.");
+                warnings.Clear();
+                var capture = typeof(QaUiSnapshotExporter).GetMethod("CaptureAudio", BindingFlags.Static | BindingFlags.NonPublic);
+                Assert.IsNotNull(capture);
+                for (int sample = 0; sample < 2; sample++)
+                {
+                    var snapshot = new QaUiSnapshot();
+                    capture.Invoke(null, new object[] { snapshot });
+                    var idle = snapshot.audio.Single(a => a.id == empty.GetInstanceID());
+                    Assert.That(idle.clip, Is.Empty);
+                    Assert.That(idle.time, Is.Zero);
+                    Assert.That(idle.length, Is.Zero);
+                    var recorded = snapshot.audio.Single(a => a.id == withClip.GetInstanceID());
+                    Assert.That(recorded.clip, Is.EqualTo(clip.name));
+                    Assert.That(recorded.length, Is.EqualTo(1f).Within(.001f));
+                }
+                Assert.That(warnings, Is.Empty, "Read-only QA telemetry must not flood logs for unassigned pooled sources.");
+            }
+            finally
+            {
+                Application.logMessageReceived -= OnLog;
+                Object.DestroyImmediate(root);
+                Object.DestroyImmediate(clip);
+            }
+        }
+
+        [Test]
         public void HierarchyIncludesCustomTilesAndRedactsInputDescendants()
         {
             var root = new VisualElement();

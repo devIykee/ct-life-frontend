@@ -25,6 +25,7 @@ namespace CTLife.Net
         }
 
         public IRestClient Rest => _rest;
+        public string LastLikenessJobId { get; private set; }
         public PerpsApi Perps => new PerpsApi(_rest);
         public SpacesApi Spaces => new SpacesApi(_rest);
 
@@ -48,6 +49,7 @@ namespace CTLife.Net
         public async Task<Me> GetMe(CancellationToken ct = default)
         {
             var raw = await _rest.Get<JToken>("/me", ct);
+            LastLikenessJobId = (raw?["character"] as JObject)?.Value<string>("likenessJobId");
             try { return MeCompat.Normalize(raw).ToObject<Me>(Newtonsoft.Json.JsonSerializer.Create(Json.Settings)); }
             catch (Exception e) { throw new ApiException(200, "DECODE_FAILED", "GET /me: " + e.Message); }
         }
@@ -57,9 +59,9 @@ namespace CTLife.Net
         /// that would serialize as a string (openapi-generator 7.25.0 bug; see client/Tools~/patch_rest_codegen.py).
         /// </summary>
         public Task<Character> CreateCharacter(string alias, string[] look, IList<string> traitIds, string dreamId, string tribeId,
-            bool ageConfirmed, CancellationToken ct = default, string idempotencyKey = null)
+            bool ageConfirmed, CancellationToken ct = default, string idempotencyKey = null, string likenessJobId = null)
         {
-            var body = OnboardingRequest.CharacterBody(alias, look, traitIds, dreamId, tribeId, ageConfirmed);
+            var body = OnboardingRequest.CharacterBody(alias, look, traitIds, dreamId, tribeId, ageConfirmed, likenessJobId);
             return _rest.Post<Character>("/characters", body, idempotencyKey: idempotencyKey, ct: ct);
         }
 

@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Threading;
+using CTLife.World.Likeness;
 using CTLife.Core;
 using CTLife.Net;
 using CTLife.UI.Kit;
@@ -16,6 +18,7 @@ namespace CTLife.UI
     public sealed class CharacterDraft
     {
         public string alias = "";
+        public string likenessJobId;
         public readonly string[] look = new string[7]; // [skinTone, headId, hairId, topId, bottomId, shoesId, accId]
         public string tribeId;
         public readonly List<string> traitIds = new List<string>();
@@ -45,7 +48,9 @@ namespace CTLife.UI
         private Func<AvatarSpec, bool> _resolves;
         private readonly Dictionary<string, CreatorLocalArtBinding> _localArt = new Dictionary<string, CreatorLocalArtBinding>(StringComparer.Ordinal);
         private string _presentedSpecKey;
-        private bool PreviewReady => _spec != null && _presentedSpecKey == _spec.Key();
+        private string PresentedKey(AvatarSpec spec) => spec?.Key() + (string.IsNullOrEmpty(_draft.likenessJobId) ? "" : "|personal:" + _draft.likenessJobId);
+        private bool PreviewReady => _spec != null && _presentedSpecKey == PresentedKey(_spec);
+        private readonly CancellationTokenSource _lifetime = new CancellationTokenSource();
         /// <summary>What the player built (base + parts + tints + accessories); _draft.look is its contract form.</summary>
         private AvatarSpec _spec;
         private readonly Func<string[], bool> _serverLookConfirmed;
@@ -58,15 +63,21 @@ namespace CTLife.UI
         private OnboardingFrame _frame;
         private AvatarPreview _preview;
         private ConfigStore _config;
+        private CharacterLikenessPanel _likeness;
         private SpeechBubble _bubble;
-        private VisualElement _content, _stage, _model, _lookControls, _dim, _celebrate, _traitDots, _modelGrid, _rail, _optionGrid;
-        private ScrollView _railScroll;
+        private VisualElement _content, _stage, _model, _lookControls, _dim, _celebrate, _traitDots, _modelGrid, _rail, _optionGrid, _customBody, _personalNote;
+        private ScrollView _railScroll, _modelScroll;
+        private CharacterBrowse _browse = CharacterBrowse.All;
+        private readonly Dictionary<CharacterBrowse, Button> _browseButtons = new Dictionary<CharacterBrowse, Button>();
+        private readonly Dictionary<string, AvatarSpec> _sessionLooks = new Dictionary<string, AvatarSpec>();
         private VisualElement _idCard, _cardPortrait, _cardTribeBadge, _cardOriginRow, _cardOriginArt, _cardTraits, _cardDreamIcon;
         private Label _lookName, _lookCount, _lookTag, _dragHint, _error, _aliasStatus, _confirmTitle, _celebrateTitle;
         private Label _cardName, _cardTribe, _cardOrigin, _cardDream, _optionsEmpty;
         private TextField _alias;
         private CheckRow _ageRow;
-        private LippedButton _bodyFocus, _faceFocus, _done, _enterCity;
+        private Button _customizeTag;
+        private Label _optionSelection;
+        private LippedButton _done, _enterCity;
         private LookCategory _category = LookCategory.SkinTone;
         private IVisualElementScheduledItem _sway, _keyboardPoll, _nameLine;
         private TaskCompletionSource<bool> _celebrated;
@@ -99,13 +110,13 @@ namespace CTLife.UI
         }
 
         /// <summary>
-        /// Base models in creator order (interleaved by skin-tone band and body family, seeded per install: CreatorLookOrder),
+        /// Distinct identities in a stable per-install shuffled order (CreatorLookOrder),
         /// each with the customizer options its art supports (CustomizerCatalog, optional) and its baked portrait.
         /// </summary>
         private void BuildModels()
         {
-            var ordered = CreatorLookOrder.ForCreator(CreatorLookCatalog.Available(), CreatorLookOrder.InstallSeed());
-            _models = CustomizerModel.Build(ordered, _customizer, CustomizerModel.Portrait);
+            _models = CreatorLookOrder.ForModels(CustomizerModel.Build(CreatorLookCatalog.Available(), _customizer,
+                CustomizerModel.Illustration), CreatorLookOrder.InstallSeed());
             foreach (var binding in _localArt.Values)
             {
                 if (_models.Any(m => m.id == binding.Model.id)) throw new InvalidOperationException("Local art collides with a shipped creator model.");
@@ -162,6 +173,12 @@ namespace CTLife.UI
             var failure = new ModularAvatarFailure(ModularAvatarError.InvalidRequest, "No exact preview selection.");
             bool shown = false;
             if (model == null || spec == null || spec.baseId != model.id) return false;
+            if (!_localArt.ContainsKey(model.id) && !CustomizerModel.Resolves(spec, model)) return false;
+            if (!string.IsNullOrEmpty(_draft.likenessJobId))
+            {
+                if (!_preview.TrySetLikeness(_draft.likenessJobId, out failure)) return false;
+                _presentedSpecKey = PresentedKey(spec); _model.style.opacity = 1f; return true;
+            }
             if (_localArt.TryGetValue(model.id, out var binding))
                 shown = spec.legacyLook == null && ExactCustomizerSelection.TryApply(_preview, binding.Art, spec, out _, out failure);
             else shown = !spec.IsModular && _preview.TrySetExactLook(CustomizerModel.ToContract(spec), out failure);
@@ -170,7 +187,7 @@ namespace CTLife.UI
                 Log.Warn("creator", "Preview selection rejected for " + model.id + ": " + failure);
                 ShowError(Strings.T("common.unavailable")); return false;
             }
-            _presentedSpecKey = spec.Key(); return true;
+            _presentedSpecKey = PresentedKey(spec); _model.style.opacity = 1f; return true;
         }
 
         public CreatorStep Step => _flow.Step;
@@ -183,8 +200,10 @@ namespace CTLife.UI
             var saved = _store.Load();
 
             _frame = new OnboardingFrame("ob-creator", GoBack, Advance, Strings.T("ob.next"));
-            _frame.Cta.EnableShine();
             _content = _frame.Content;
+            // The expanded preview can reach into the header; navigation must receive taps above it.
+            // Keep the modal overlay above both so an open likeness sheet still blocks Back.
+            _frame.TopBar.PlaceInFront(_content);
 
             _dim = El.Div("ob-dim");
             _dim.pickingMode = PickingMode.Ignore;
@@ -225,22 +244,18 @@ namespace CTLife.UI
 
         private void BuildStage()
         {
-            _preview = new AvatarPreview(720, 1080, transparent: true);
-            var glow = El.Div("ob-stage-glow");
-            glow.style.backgroundImage = new StyleBackground(OnboardingArt.Glow);
-            var shadow = El.Div("ob-stage-shadow");
+            _preview = new AvatarPreview(1080, 1080, transparent: true);
+            _preview.SetPodium(true);
             _model = El.Div("ob-stage-model");
             _model.style.backgroundImage = Background.FromRenderTexture(_preview.Texture);
             _dragHint = El.Text(Strings.T("ob.look.drag"), "ob-drag-hint");
             _dragHint.pickingMode = PickingMode.Ignore;
-            _stage = El.Div("ob-stage", glow, shadow, _model, _dragHint);
+            _stage = El.Div("ob-stage", _model, _dragHint);
             _stage.pickingMode = PickingMode.Ignore;
-            glow.pickingMode = PickingMode.Ignore;
-            shadow.pickingMode = PickingMode.Ignore;
 
             _model.RegisterCallback<PointerDownEvent>(e =>
             {
-                if (_dragPointer >= 0 || e.button != 0 || SelectedLook == null || _busy) return;
+                if (!OnLookSteps || _dragPointer >= 0 || e.button != 0 || SelectedLook == null || _busy) return;
                 _dragPointer = e.pointerId;
                 _model.CapturePointer(e.pointerId);
                 FirstTouch();
@@ -312,19 +327,17 @@ namespace CTLife.UI
             _lookTag = El.Text(Strings.T("ob.look.previewTag"), "ob-tag");
             var label = El.Div("ob-look-label", _lookName, _lookCount, _lookTag);
             label.pickingMode = PickingMode.Ignore;
-            // Zoom: full body / face, as two round buttons on the preview.
-            _bodyFocus = new LippedButton("", () => FocusPreview(false), LippedButton.Tone.White, LippedButton.Size.Round).WithIcon("body");
-            _bodyFocus.tooltip = Strings.T("ob.look.full");
-            _faceFocus = new LippedButton("", () => FocusPreview(true), LippedButton.Tone.White, LippedButton.Size.Round).WithIcon("face");
-            _faceFocus.tooltip = Strings.T("ob.look.face");
-            _bodyFocus.AddToClassList("ob-zoom");
-            _faceFocus.AddToClassList("ob-zoom");
-            var zoom = El.Div("ob-zoom-col", _bodyFocus, _faceFocus);
-            zoom.pickingMode = PickingMode.Ignore;
-            zoom.SetEnabled(SelectedLook != null);
-            _lookControls = El.Div("ob-look-controls", label, zoom);
+            _lookControls = El.Div("ob-look-controls", label);
             _lookControls.pickingMode = PickingMode.Ignore;
             _content.Add(_lookControls);
+        }
+
+        private static Button PreviewButton(string icon, string label, Action action)
+        {
+            var button = new Button(action) { tooltip = label, enableRichText = false };
+            button.AddToClassList("ob-preview-tool");
+            button.Add(new UiIcon(icon));
+            return button;
         }
 
         /// <summary>
@@ -342,26 +355,78 @@ namespace CTLife.UI
                 card.AddToClassList("ob-model-card");
                 _modelCards.Add(card);
             }
-            var scroll = El.VerticalScroll("ob-model-scroll");
-            // Portrait tiles, not cards (user review 2026-10-10): six across, two rows visible, and the scroll ends above
-            // the CTA so the roster never touches NEXT.
-            _modelGrid = ChoiceGrid.Build(_modelCards.Cast<VisualElement>().ToList(), 6, 236f, 2f, 16f);
-            scroll.Add(_modelGrid);
-            return Page(Strings.T("ob.look.title"), Strings.T("ob.look.sub"), scroll);
+            var filters = El.Div("ob-character-filters");
+            foreach (CharacterBrowse browse in Enum.GetValues(typeof(CharacterBrowse)))
+            {
+                var value = browse;
+                var button = new Button(() => { _browse = value; RefreshRoster(); Cues.Select(); })
+                    { text = Strings.T("ob.browse." + browse.ToString().ToLowerInvariant()), enableRichText = false,
+                        name = "ob-browse-" + browse.ToString().ToLowerInvariant() };
+                button.AddToClassList("ob-character-filter");
+                _browseButtons.Add(browse, button); filters.Add(button);
+            }
+            _modelScroll = El.VerticalScroll("ob-model-scroll");
+            RefreshRoster();
+            return Page(Strings.T("ob.look.title"), Strings.T("ob.look.sub"), filters, _modelScroll);
+        }
+
+        private void RefreshRoster()
+        {
+            if (_modelScroll == null) return;
+            _modelScroll.Clear();
+            var visible = _modelCards.Where((card, i) => CustomizerModel.MatchesBrowse(_models[i], _browse)).Cast<VisualElement>().ToList();
+            _modelGrid = ChoiceGrid.Build(visible, 5, 240f, 2f, 20f);
+            _modelScroll.Add(_modelGrid);
+            foreach (var pair in _browseButtons) pair.Value.EnableInClassList("ob-character-filter--on", pair.Key == _browse);
+        }
+
+        private void OpenLikeness()
+        {
+            if (_busy || !IsHuman || _flow.Step != CreatorStep.Customize) return;
+            _likeness?.Close();
+            _likeness = new CharacterLikenessPanel(SelectedLook.id, SelectedLook.label, SelectedLook.species);
+            _likeness.Accepted += manifest =>
+            {
+                if (_preview == null || _spec == null || manifest.modelId != SelectedLook.id) return;
+                if (!_preview.TrySetLikeness(manifest.jobId, out _)) { ShowError(Strings.T("likeness.badModel")); return; }
+                _sessionLooks[SelectedLook.id] = _spec.Clone();
+                SetSpec(DefaultSpec(SelectedLook));
+                _draft.likenessJobId = manifest.jobId;
+                _presentedSpecKey = PresentedKey(_spec);
+                _model.style.opacity = 1f;
+                ApplyFraming(); RefreshPersonalControls(); RefreshAvailability(); FlushDraft();
+            };
+            _likeness.Closed += () =>
+            {
+                _content.SetEnabled(true); _frame.TopBar.SetEnabled(true); _frame.CtaZone.SetEnabled(true);
+                _preview?.SetVisible(true);
+                _content.Q<Button>("ob-likeness-open")?.Focus();
+            };
+            _likeness.Show(_frame.Overlay);
+            _preview.SetVisible(false);
+            _content.SetEnabled(false); _frame.TopBar.SetEnabled(false); _frame.CtaZone.SetEnabled(false);
         }
 
         private void PickModel(int index)
         {
             if (_busy || index < 0 || index >= _models.Count || index == _lookIndex) return;
-            var model = _models[index]; var next = DefaultSpec(model);
-            if (!TryPresent(model, next)) return;
+            var model = _models[index];
+            var next = _sessionLooks.TryGetValue(model.id, out var previous) ? previous.Clone() : DefaultSpec(model);
+            string personal = _draft.likenessJobId;
+            _draft.likenessJobId = null;
+            if (!TryPresent(model, next)) { _draft.likenessJobId = personal; return; }
+            if (SelectedLook != null && _spec != null) _sessionLooks[SelectedLook.id] = _spec.Clone();
             _lookIndex = index; SetSpec(next);
+            // Source models have different forward axes. A new person starts at their authored front angle;
+            // retaining the previous person's absolute turn can otherwise show the back of the next character.
+            _preview.SetYaw(model.previewYaw);
             _reviewComplete = false;
             Cues.Select(); FirstTouch();
             RefreshLook(true); RefreshModelCards(SelectedLook.id);
             _lookChanges++;
             React(OnboardingCopy.Variant("ob.say.lookPick", _lookChanges, 3), "emote_thumbs_up", "emote_nod");
-            Save(); Validate();
+            // Character choices must survive an abrupt process exit, not only a clean background callback.
+            FlushDraft(); Validate();
         }
 
         private void RefreshModelCards(string popId = null)
@@ -380,8 +445,10 @@ namespace CTLife.UI
         {
             _rail = El.Div("ob-rail");
             _rail.pickingMode = PickingMode.Ignore;
-            _railScroll = El.VerticalScroll("ob-rail-scroll");
-            _railScroll.verticalScrollerVisibility = ScrollerVisibility.Auto;
+            _railScroll = new ScrollView(ScrollViewMode.Horizontal);
+            _railScroll.AddToClassList("ob-rail-scroll");
+            _railScroll.horizontalScrollerVisibility = ScrollerVisibility.Hidden;
+            _railScroll.verticalScrollerVisibility = ScrollerVisibility.Hidden;
             _railScroll.Add(_rail);
             _optionGrid = El.Div("ob-options");
             _optionGrid.pickingMode = PickingMode.Ignore;
@@ -389,15 +456,53 @@ namespace CTLife.UI
             var scroll = El.VerticalScroll("ob-option-scroll");
             scroll.verticalScrollerVisibility = ScrollerVisibility.Auto;
             scroll.Add(_optionGrid);
-            var body = El.Div("ob-custom-body", _railScroll, El.Div("ob-custom-options", scroll, _optionsEmpty));
-            body.pickingMode = PickingMode.Ignore;
-            return Page(Strings.T("ob.custom.title"), Strings.T("ob.custom.sub"), body);
+            _optionSelection = El.Text("", "ob-option-selection");
+            _customBody = El.Div("ob-custom-body", _railScroll, El.Div("ob-custom-options", _optionSelection, scroll, _optionsEmpty));
+            _customBody.pickingMode = PickingMode.Ignore;
+            var restoreStock = new Button(() =>
+            {
+                if (_busy || SelectedLook == null) return;
+                var previous = _draft.likenessJobId;
+                var next = _sessionLooks.TryGetValue(SelectedLook.id, out var stored) ? stored.Clone() : DefaultSpec(SelectedLook);
+                _draft.likenessJobId = null;
+                if (!TryPresent(SelectedLook, next)) { _draft.likenessJobId = previous; return; }
+                SetSpec(next); ApplyFraming(); BuildRail(); RefreshPersonalControls(); RefreshAvailability(); FlushDraft();
+            }) { text = Strings.T("likeness.returnStock"), name = "likeness-return-stock" };
+            restoreStock.AddToClassList("ob-stock-return");
+            _personalNote = El.Div("ob-personal-note", El.Text(Strings.T("likeness.equipped"), "ob-personal-title"),
+                El.Text(Strings.T("likeness.equippedBody"), "ob-personal-body"), restoreStock);
+            _customizeTag = new Button(OpenLikeness) { name = "ob-likeness-open", tooltip = Strings.T("ob.likeness.open") };
+            _customizeTag.AddToClassList("ob-customize-tag");
+            _customizeTag.Add(El.Text(Strings.T("ob.likeness.customize"), "ob-customize-label"));
+            var arrow = El.Text("↗", "ob-customize-arrow");
+            arrow.pickingMode = PickingMode.Ignore;
+            _customizeTag.Add(arrow);
+            float started = Motion.Now;
+            _customizeTag.schedule.Execute(() =>
+            {
+                if (DeviceFeel.ReducedMotion || _flow.Step != CreatorStep.Customize) { arrow.style.translate = new Translate(0, 0); return; }
+                float p = (Motion.Now - started) % 4f;
+                float shift = p < 1.2f ? 5f * Mathf.Sin(p / 1.2f * Mathf.PI) : 0f;
+                arrow.style.translate = new Translate(shift, -shift);
+            }).Every(50);
+            var page = Page(Strings.T("ob.custom.title"), "", _customBody, _personalNote);
+            page.Q(className: "ob-title-row").Add(_customizeTag);
+            return page;
+        }
+
+        private bool IsHuman => SelectedLook != null && (string.IsNullOrEmpty(SelectedLook.species) || SelectedLook.species == "human");
+
+        private void RefreshPersonalControls()
+        {
+            bool personal = !string.IsNullOrEmpty(_draft.likenessJobId);
+            _customBody.style.display = personal ? DisplayStyle.None : DisplayStyle.Flex;
+            _personalNote.style.display = personal ? DisplayStyle.Flex : DisplayStyle.None;
         }
 
         private List<LookCategory> VisibleCategories() =>
             CustomizerModel.Visible(SelectedLook, _spec, OptionsFor(SelectedLook), _resolves);
 
-        private void RefreshCustomizeAvailability() => _flow.CustomizeAvailable = VisibleCategories().Count > 0;
+        private void RefreshCustomizeAvailability() => _flow.CustomizeAvailable = IsHuman || VisibleCategories().Count > 0;
 
         private void BuildRail()
         {
@@ -411,7 +516,6 @@ namespace CTLife.UI
                 var b = new Button(() => { if (_busy) return; Cues.Select(); _category = cat; BuildRail(); }) { text = "", enableRichText = false };
                 b.AddToClassList("ob-rail-item");
                 b.EnableInClassList("ob-rail-item--on", c == _category);
-                b.Add(new IconBadge(CustomizerModel.CategoryIcon(c), c == _category ? "purple" : "plum"));
                 var l = El.Text(Strings.T(CustomizerModel.CategoryKey(c)), "ob-rail-label");
                 l.pickingMode = PickingMode.Ignore;
                 b.Add(l);
@@ -433,6 +537,14 @@ namespace CTLife.UI
             _optionGrid.Clear();
             _optionCards.Clear();
             var options = CustomizerModel.Options(SelectedLook, _category, _spec, OptionsFor(SelectedLook), _resolves);
+            bool palette = options.Count > 0 && options.All(o => o.kind == OptionKind.Palette || o.kind == OptionKind.Tint);
+            int columns = palette ? 9 : 5;
+            float cellHeight = palette ? 136f : 220f;
+            int rows = Mathf.Max(1, Mathf.CeilToInt(options.Count / (float)columns));
+            float gridHeight = Mathf.Min(414f, rows * cellHeight + (rows - 1) * 22f + 8f);
+            _customBody.style.height = 226f + gridHeight;
+            _customBody.Q<ScrollView>(className: "ob-option-scroll").style.height = gridHeight;
+            _optionGrid.EnableInClassList("ob-options--palette", palette);
             _optionsEmpty.style.display = options.Count == 0 ? DisplayStyle.Flex : DisplayStyle.None;
             foreach (var o in options)
             {
@@ -440,33 +552,64 @@ namespace CTLife.UI
                 var label = Strings.T(o.label ?? "") is string t && t != o.label ? t : o.label;
                 var card = new ChoiceCard(o.Id, label, null, _ => PickOption(opt), ChoiceCard.Layout.Vertical, o.thumb, null);
                 card.AddToClassList("ob-option-card");
+                card.tooltip = label;
+                if (palette) card.AddToClassList("ob-option-card--swatch");
+                if (palette && !o.hasSwatch)
+                {
+                    var reset = El.Div("ob-swatch-reset", new UiIcon("rotate"));
+                    reset.pickingMode = PickingMode.Ignore;
+                    card.Face.Insert(0, reset);
+                    card.Q(className: "kit-card__copy").style.display = DisplayStyle.None;
+                }
                 if (o.thumb == null && o.hasSwatch)
                 {
                     var sw = El.Div("ob-swatch");
                     sw.style.backgroundColor = o.swatch;
                     sw.pickingMode = PickingMode.Ignore;
                     card.Face.Insert(0, sw);
+                    if (palette) card.Q(className: "kit-card__copy").style.display = DisplayStyle.None;
                 }
                 card.SetSelected(o.IsCurrent(_spec));
+                if (o.IsCurrent(_spec)) _optionSelection.text = label;
                 _optionCards.Add(card);
             }
-            var grid = ChoiceGrid.Build(_optionCards.Cast<VisualElement>().ToList(), 5, 236f, 1.4f, 22f);
-            while (grid.childCount > 0) _optionGrid.Add(grid[0]);
-            _optionGrid.AddToClassList("kit-grid");
+            // Explicit rows avoid percentage wrapping against ScrollView's wider intrinsic content size on Android.
+            _optionGrid.style.flexDirection = FlexDirection.Column;
+            for (int start = 0; start < _optionCards.Count; start += columns)
+            {
+                var row = new VisualElement { pickingMode = PickingMode.Ignore };
+                row.style.flexDirection = FlexDirection.Row;
+                row.style.height = cellHeight;
+                row.style.flexShrink = 0;
+                row.style.marginBottom = start + columns < _optionCards.Count ? 22f : 0f;
+                for (int i = start; i < Mathf.Min(start + columns, _optionCards.Count); i++)
+                {
+                    var card = _optionCards[i];
+                    card.style.width = Length.Percent((100f - 1.4f * (columns - 1)) / columns);
+                    card.style.height = cellHeight;
+                    card.style.flexShrink = 0;
+                    card.style.marginRight = i == start + columns - 1 ? new Length(0f) : Length.Percent(1.4f);
+                    row.Add(card);
+                }
+                _optionGrid.Add(row);
+            }
         }
 
         private void PickOption(CustomizerOption option)
         {
-            if (_busy || option == null || _spec == null) return;
+            if (_busy || option == null || _spec == null || !string.IsNullOrEmpty(_draft.likenessJobId)) return;
             var next = option.ApplyTo(_spec);
-            if (next.Key() == _spec.Key()) return;
-            if (!TryPresent(SelectedLook, next)) return;
+            if (next.Key() == _spec.Key() && string.IsNullOrEmpty(_draft.likenessJobId)) return;
+            string personal = _draft.likenessJobId;
+            _draft.likenessJobId = null;
+            if (!TryPresent(SelectedLook, next)) { _draft.likenessJobId = personal; return; }
             SetSpec(next); Cues.Select(); _reviewComplete = false;
             ApplyFraming();
             foreach (var c in _optionCards) c.SetSelected(c.Id == option.Id, c.Id == option.Id);
+            _optionSelection.text = Strings.T(option.label ?? "");
             React(OnboardingCopy.Variant("ob.say.lookPick", ++_lookChanges, 3), "emote_thumbs_up", "emote_nod");
             RefreshAvailability();
-            Save();
+            FlushDraft();
         }
 
         private void BrowseLook(int direction)
@@ -484,14 +627,14 @@ namespace CTLife.UI
             {
                 var next = _spec != null && _spec.baseId == look.id ? _spec : DefaultSpec(look);
                 float yaw = _touched ? _preview.Yaw : look.previewYaw;
-                if (_presentedSpecKey != next.Key())
+                if (_presentedSpecKey != PresentedKey(next))
                 {
                     if (!TryPresent(look, next)) { RefreshAvailability(); return; }
                     SetSpec(next);
                 }
                 _preview.SetIdle(_portrait ? FaceIdle : FullIdle);
                 _preview.SetYaw(yaw); _preview.SetPortrait(_portrait);
-                if (animate) Motion.Fade(_model, 0.35f, 1f, 0.18f);
+                _model.style.opacity = 1f;
             }
             RefreshAvailability();
             RefreshCustomizeAvailability();
@@ -503,23 +646,24 @@ namespace CTLife.UI
         private void FocusPreview(bool portrait, bool user = true)
         {
             _portrait = portrait;
-            _bodyFocus.EnableInClassList("ob-seg--on", !portrait);
-            _faceFocus.EnableInClassList("ob-seg--on", portrait);
-            _stage.EnableInClassList("ob-stage--face", portrait && OnLookSteps);
             ApplyFraming();
             if (user) { Cues.Select(); Save(); }
         }
 
         private bool OnLookSteps => _flow.Step == CreatorStep.Look || _flow.Step == CreatorStep.Customize;
 
-        /// <summary>Face framing on the Look step (when chosen) and while typing the name; full body everywhere else.</summary>
+        /// <summary>Full-body wardrobe stage, then a fixed portrait for the player's questions.</summary>
         private void ApplyFraming()
         {
             if (_preview == null) return;
             // The player card (Confirm) shows an ID-photo crop: head and shoulders; the celebration goes back to full body.
-            bool face = _typing || (_portrait && OnLookSteps) || (_flow.Step == CreatorStep.Confirm && _celebrated == null);
+            bool face = _typing || (!OnLookSteps && _celebrated == null);
+            _portrait = face;
+            _preview.SetPodium(!face);
             _preview.SetIdle(face ? FaceIdle : FullIdle);
             _preview.SetPortrait(face);
+            _model.pickingMode = OnLookSteps ? PickingMode.Position : PickingMode.Ignore;
+            if (face && SelectedLook != null) _preview.SetYaw(SelectedLook.previewYaw);
         }
 
         protected override void OnShown()
@@ -532,6 +676,25 @@ namespace CTLife.UI
             }
             RefreshOrigin();
             RefreshAvailability();
+            if (!string.IsNullOrEmpty(_draft.likenessJobId) && !PreviewReady) _ = RestorePersonalPreview();
+        }
+
+        private async Task RestorePersonalPreview()
+        {
+            string job = _draft.likenessJobId;
+            _model.style.opacity = 0f;
+            try
+            {
+                await LikenessAvatarCache.PrepareOwned(job, _lifetime.Token);
+                if (_lifetime.IsCancellationRequested || _draft.likenessJobId != job) return;
+                if (!TryPresent(SelectedLook, _spec)) throw new InvalidOperationException("Personal preview unavailable");
+                ApplyFraming(); RefreshAvailability();
+            }
+            catch (OperationCanceledException) { }
+            catch (Exception)
+            {
+                if (_preview != null && _draft.likenessJobId == job) { ShowError(Strings.T("likeness.badModel")); RefreshAvailability(); }
+            }
         }
 
         private void RefreshAvailability()
@@ -556,7 +719,7 @@ namespace CTLife.UI
                 card.AddToClassList("ob-tribe-card");
                 _tribeCards.Add(card);
             }
-            var grid = ChoiceGrid.Build(_tribeCards.Cast<VisualElement>().ToList(), 4, 370f, 1.4f, 18f);
+            var grid = ChoiceGrid.Build(_tribeCards.Cast<VisualElement>().ToList(), 4, 270f, 1.4f, 18f);
             return Page(Strings.T("ob.tribe.title"), Strings.T("ob.tribe.sub"), grid);
         }
 
@@ -864,6 +1027,7 @@ namespace CTLife.UI
         private void ShowStep(CreatorStep step, int direction, bool instant = false)
         {
             if (_busy) return;
+            _likeness?.Close();
             if (_typing) EndTyping();
             for (int i = 0; i < _pages.Length; i++) _pages[i].style.display = i == (int)step ? DisplayStyle.Flex : DisplayStyle.None;
             var page = _pages[(int)step];
@@ -879,10 +1043,10 @@ namespace CTLife.UI
             _frame.Back.style.visibility = step == CreatorStep.Look ? Visibility.Hidden : Visibility.Visible;
             _lookControls.style.display = look ? DisplayStyle.Flex : DisplayStyle.None;
             _dragHint.style.display = look && !_touched && SelectedLook != null ? DisplayStyle.Flex : DisplayStyle.None;
-            _stage.EnableInClassList("ob-stage--face", _portrait && look);
+            _customizeTag.style.display = step == CreatorStep.Customize && IsHuman ? DisplayStyle.Flex : DisplayStyle.None;
             ApplyFraming();
             if (step == CreatorStep.Look) { StartSway(); RefreshModelCards(); }
-            if (step == CreatorStep.Customize) BuildRail();
+            if (step == CreatorStep.Customize) { BuildRail(); RefreshPersonalControls(); }
             if (step == CreatorStep.Confirm) { _returnToConfirm = false; RefreshSummary(); }
             if (step == CreatorStep.Name)
             {
@@ -996,14 +1160,19 @@ namespace CTLife.UI
             CreatorDraftStore.Apply(saved, _flow);
             _flow.Sanitize(_reg.TribeOrder.Select(t => t.id).ToList(), _reg.Traits.Select(t => t.id).ToList(), _reg.Dreams.Select(d => d.id).ToList());
             int targetIndex = string.IsNullOrEmpty(saved.lookKey) ? _lookIndex : _models.FindIndex(m => m.id == saved.lookKey);
+            // Previous versions saved each outfit as a separate base. Restore that exact outfit under its person.
+            var savedLook = saved.spec?.legacyLook ?? saved.look;
+            if (targetIndex < 0 && savedLook != null) targetIndex = _models.FindIndex(m => m.OwnsLook(savedLook));
             _portrait = saved.portrait;
             _touched = true;
             if (targetIndex >= 0)
             {
                 var model = _models[targetIndex];
-                bool custom = saved.spec != null && saved.spec.baseId == model.id && ResolvesSpec(saved.spec);
-                var next = custom ? saved.spec : DefaultSpec(model);
-                if (TryPresent(model, next)) { _lookIndex = targetIndex; SetSpec(next); }
+                var restored = CustomizerModel.RestoreSpec(model, saved.spec, saved.look, OptionsFor(model));
+                bool custom = restored != null && restored.baseId == model.id && ResolvesSpec(restored);
+                var next = custom ? restored : DefaultSpec(model);
+                if (!string.IsNullOrEmpty(_draft.likenessJobId)) { _lookIndex = targetIndex; SetSpec(next); _model.style.opacity = 0f; }
+                else if (TryPresent(model, next)) { _lookIndex = targetIndex; SetSpec(next); }
                 if (saved.spec != null && !custom) ShowError(Strings.T("common.unavailable"));
             }
             else ShowError(Strings.T("common.unavailable"));
@@ -1189,6 +1358,8 @@ namespace CTLife.UI
 
         public override void Close()
         {
+            _lifetime.Cancel();
+            _likeness?.Close();
             Runner.ApplicationPaused -= OnPaused;
             if (_config != null) _config.Changed -= RefreshAvailability;
             _config = null;

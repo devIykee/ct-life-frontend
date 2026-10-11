@@ -182,13 +182,18 @@ namespace CTLife.UI.Dev
         private static void CaptureAudio(QaUiSnapshot snapshot)
         {
             foreach (var source in UnityEngine.Object.FindObjectsByType<AudioSource>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                // Empty pooled sources and AudioRandomContainer resources have no clip playback time.
+                // Unity 6.3 logs a warning on every invalid time read, including this twice-per-second probe.
+                var clip = source.resource as AudioClip;
                 snapshot.audio.Add(new QaUiAudio
                 {
                     id = source.GetInstanceID(), playing = source.isPlaying, enabled = source.isActiveAndEnabled,
                     mute = source.mute, loop = source.loop, volume = source.volume, pitch = source.pitch,
-                    time = source.time, clip = QaUiText.Safe(source.clip != null ? source.clip.name : "", false),
-                    length = source.clip != null ? source.clip.length : 0
+                    time = clip != null ? source.time : 0, clip = QaUiText.Safe(clip != null ? clip.name : "", false),
+                    length = clip != null ? clip.length : 0
                 });
+            }
         }
     }
 }

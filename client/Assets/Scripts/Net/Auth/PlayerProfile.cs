@@ -11,6 +11,7 @@ namespace CTLife.Net
         private readonly Api _api;
 
         public Me Me { get; private set; }
+        public string LikenessJobId { get; private set; }
 
         public PlayerProfile(Api api)
         {
@@ -29,6 +30,11 @@ namespace CTLife.Net
             var current = await _api.GetMe(ct);
             ct.ThrowIfCancellationRequested();
             Me = current;
+            LikenessJobId = _api.LastLikenessJobId;
+#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
+            Log.Info("appearance", "Profile refreshed: " + (HasCharacter ? "character present, " : "no character, ") +
+                (string.IsNullOrEmpty(LikenessJobId) ? "stock appearance." : "personal appearance."));
+#endif
             Bus.Publish(new ProfileChangedSignal());
             return Me;
         }

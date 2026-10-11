@@ -214,6 +214,27 @@ namespace CTLife.UI
         private void LoadCharacter(PlayerProfile profile)
         {
             if (_preview == null) return;
+            string personalJob = profile?.LikenessJobId;
+            if (!string.IsNullOrEmpty(personalJob))
+            {
+                string personalKey = "personal:" + personalJob;
+                if (_lookKey == personalKey) return;
+                _preview.SetIdle("loco_idle");
+                if (!_preview.TrySetLikeness(personalJob, out var failure))
+                {
+                    // EnterGame prepares the equipped asset before opening home. If that preparation is lost,
+                    // do not present the stock look stored alongside it as the player's personal character.
+                    _preview.SetVisible(false);
+                    _lookKey = null;
+                    ShowError(Strings.T("likeness.badModel"));
+                    Log.Warn("home", "Equipped personal character could not be presented: " + failure);
+                    return;
+                }
+                _preview.SetYaw(0f); // Normalized +Z faces the preview camera at +Z.
+                _preview.SetVisible(true);
+                _lookKey = personalKey;
+                return;
+            }
             string[] look = profile?.LookArray();
             bool complete = look != null && look.Length == 7 && Array.TrueForAll(look, id => !string.IsNullOrEmpty(id));
             if (!complete) look = CreatorLookCatalog.FallbackLook(profile?.UserId ?? profile?.Alias);
@@ -223,6 +244,7 @@ namespace CTLife.UI
             _preview.SetIdle("loco_idle");
             _preview.SetLook(look);
             _preview.SetYaw(CreatorLookCatalog.PreviewYawFor(look));
+            _preview.SetVisible(true);
         }
 
         /// <summary>A slow Ken Burns drift on the painting (as on the title), off under reduced motion.</summary>

@@ -19,9 +19,27 @@ namespace CTLife.UI
             public string labelKey;
             /// <summary>Literal label (cast looks from the manifest) used when labelKey has no string.</summary>
             public string label;
+            /// <summary>Stable person/creature identity. Several authored outfits may belong to this same identity.</summary>
+            public string identityId;
+            public string identityLabelKey;
+            public string species = "human";
             public string[] look = new string[7];
             public string Display => Strings.T(labelKey) != labelKey ? Strings.T(labelKey) : (string.IsNullOrEmpty(label) ? labelKey : label);
             public float previewYaw = 180f;
+            public string IdentityId => string.IsNullOrEmpty(identityId) ? LegacyIdentity(look) : identityId;
+            public string IdentityDisplay => !string.IsNullOrEmpty(identityLabelKey) && Strings.T(identityLabelKey) != identityLabelKey ? Strings.T(identityLabelKey) :
+                IdentityId == "head_snow" ? Strings.T("ob.character.snow") :
+                IdentityId == "head_rain" ? Strings.T("ob.character.rain") : Display;
+        }
+
+        // These are the two documented source meshes of the original cast, not a heuristic for future characters.
+        // Keep old saved look IDs valid; grouping changes presentation, not the backend's seven-ID outfit contract.
+        public static string LegacyIdentity(string[] look)
+        {
+            var head = look != null && look.Length > 1 ? look[1] : null;
+            if (head == "head_snow" || (head?.StartsWith("head_player_m_", StringComparison.Ordinal) ?? false)) return "head_snow";
+            if (head == "head_rain" || (head?.StartsWith("head_player_f_", StringComparison.Ordinal) ?? false)) return "head_rain";
+            return head ?? (look == null ? null : string.Join("|", look));
         }
 
         public List<Entry> looks = new List<Entry>();
@@ -58,7 +76,10 @@ namespace CTLife.UI
             var registry = CharacterRegistry.Instance;
             if (catalog == null || catalog.looks == null || registry == null) return result;
             var seen = new HashSet<GameObject>();
-            foreach (var choice in catalog.looks)
+            var choices = new List<Entry>(catalog.looks);
+            var additions = Resources.Load<CreatorLookCatalog>("UI/CreatorLookAdditions");
+            if (additions?.looks != null) choices.AddRange(additions.looks);
+            foreach (var choice in choices)
             {
                 if (choice?.look == null || choice.look.Length != Slots.Length || string.IsNullOrWhiteSpace(choice.labelKey)) continue;
                 if (Strings.T(choice.labelKey) == choice.labelKey && string.IsNullOrWhiteSpace(choice.label)) continue;

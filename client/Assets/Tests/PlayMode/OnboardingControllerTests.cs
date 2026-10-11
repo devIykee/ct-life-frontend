@@ -68,9 +68,11 @@ namespace CTLife.Tests
             Services.Register(new Session()); // no SetTokens: do not overwrite the user's saved session
             Services.Register<IRealtimeService>(_realtime);
             _ui = UiRoot.Create();
-            _target = new RenderTexture(1335, 600, 0);
+            _target = new RenderTexture(1335, 600, 24, RenderTextureFormat.ARGB32, RenderTextureReadWrite.sRGB);
             _target.Create();
             _ui.GetComponent<UIDocument>().panelSettings.targetTexture = _target;
+            _ui.GetComponent<UIDocument>().panelSettings.clearColor = true;
+            _ui.GetComponent<UIDocument>().panelSettings.colorClearValue = Color.black;
             _flowObject = new GameObject("OnboardingControllerTest");
             _flow = _flowObject.AddComponent<FlowController>(); // actual Awake creates the owned lifetime
             _flow.enabled = false; // never execute broad startup/overlay/auth work
@@ -112,6 +114,111 @@ namespace CTLife.Tests
         }
 
         [UnityTest]
+        public IEnumerator CreatorUsesAutomaticFramingAndOpaqueInteractiveWardrobeOnly()
+        {
+            StartFlow();
+            yield return Until(() => Current is CharacterCreatorScreen);
+            var creator = (CharacterCreatorScreen)Current;
+            var models = (List<BaseModel>)typeof(CharacterCreatorScreen).GetField("_models", Private).GetValue(creator);
+            creator.PickForAutomation(models.FindIndex(m => m.id == "head_rain"));
+            yield return null;
+            yield return null;
+            yield return new WaitForSecondsRealtime(.8f);
+            CaptureReviewFrame("01-pick-character");
+            var renderer = (AvatarPreview)typeof(CharacterCreatorScreen).GetField("_preview", Private).GetValue(creator);
+            var surface = creator.Element.Q<VisualElement>(className: "ob-stage-model");
+            Assert.IsFalse(renderer.Portrait);
+            Assert.IsTrue(renderer.Podium);
+            Assert.AreEqual(PickingMode.Position, surface.pickingMode);
+            Assert.That(surface.style.opacity.value, Is.EqualTo(1f), "Model selection must not fade the transparent render texture.");
+            Assert.IsNull(creator.Element.Q(className: "ob-zoom"));
+            Assert.That(creator.Element.Q<Button>("ob-likeness-open").resolvedStyle.display, Is.EqualTo(DisplayStyle.None));
+            creator.PressCta();
+            yield return Until(() => creator.Step == CreatorStep.Customize);
+            yield return null;
+            yield return null;
+            yield return new WaitForSecondsRealtime(.8f);
+            CaptureReviewFrame("02-make-it-yours");
+            Assert.IsTrue(renderer.Podium);
+            Assert.IsFalse(renderer.Portrait);
+            Assert.That(creator.Element.Q<Button>("ob-likeness-open").resolvedStyle.display, Is.EqualTo(DisplayStyle.Flex));
+            creator.PressCta();
+            yield return Until(() => creator.Step == CreatorStep.Tribe);
+            yield return null;
+            yield return null;
+            yield return new WaitForSecondsRealtime(.8f);
+            CaptureReviewFrame("03-find-your-people");
+            Assert.IsTrue(renderer.Portrait);
+            Assert.IsFalse(renderer.Podium);
+            Assert.AreEqual(PickingMode.Ignore, surface.pickingMode);
+            Assert.AreEqual(0, _rest.Posts.Count);
+        }
+
+        private void CaptureReviewFrame(string name)
+        {
+            var directory = Environment.GetEnvironmentVariable("CTLIFE_ONBOARDING_CAPTURE_OUT");
+            if (string.IsNullOrEmpty(directory)) return;
+            System.IO.Directory.CreateDirectory(directory);
+            var previous = RenderTexture.active;
+            var image = new Texture2D(_target.width, _target.height, TextureFormat.RGBA32, false);
+            try
+            {
+                typeof(VisualElement).Assembly.GetType("UnityEngine.UIElements.UIElementsRuntimeUtility")?
+                    .GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+                    .FirstOrDefault(m => m.Name == "RenderOffscreenPanels" && m.GetParameters().Length == 0)?.Invoke(null, null);
+                RenderTexture.active = _target;
+                image.ReadPixels(new Rect(0, 0, _target.width, _target.height), 0, 0); image.Apply();
+                System.IO.File.WriteAllBytes(System.IO.Path.Combine(directory, name + ".png"), image.EncodeToPNG());
+            }
+            finally { RenderTexture.active = previous; UnityEngine.Object.Destroy(image); }
+        }
+
+        [UnityTest]
+        public IEnumerator CreatorBackWinsPickingOverTheEnlargedPreviewWhileOverlayStaysAboveIt()
+        {
+            StartFlow();
+            yield return Until(() => Current is CharacterCreatorScreen);
+            var creator = (CharacterCreatorScreen)Current;
+            var models = (List<BaseModel>)typeof(CharacterCreatorScreen).GetField("_models", Private).GetValue(creator);
+            int snow = models.FindIndex(m => m.id == "head_snow");
+            Assert.GreaterOrEqual(snow, 0, "Use the real shipped body with authored outfit options.");
+            creator.PickForAutomation(snow);
+            creator.PressCta();
+            yield return Until(() => creator.Step == CreatorStep.Customize);
+            var frame = (OnboardingFrame)typeof(CharacterCreatorScreen).GetField("_frame", Private).GetValue(creator);
+            var preview = creator.Element.Q<VisualElement>(className: "ob-stage-model");
+            Assert.IsNotNull(preview);
+            yield return Until(() => frame.Back.panel != null && frame.Back.worldBound.width > 0 && preview.worldBound.width > 0);
+            // Let layout and picking caches observe the step's real USS geometry.
+            yield return null;
+            yield return null;
+            var point = frame.Back.worldBound.center;
+            Assert.IsTrue(preview.worldBound.Contains(point),
+                "Exercise the observed overlap: the enlarged turntable extends behind Back in Customize.");
+            Assert.Greater(frame.Root.IndexOf(frame.TopBar), frame.Root.IndexOf(frame.Content));
+            Assert.Less(frame.Root.IndexOf(frame.TopBar), frame.Root.IndexOf(frame.Overlay),
+                "Moving chrome above the preview must not put it over modal content.");
+            var picked = frame.Back.panel.Pick(point);
+            Assert.IsTrue(picked == frame.Back || frame.Back.Contains(picked),
+                "Back centre must hit the button, not the avatar drag surface. Picked: " + picked?.name);
+
+            var shield = new VisualElement { name = "test-modal-input-shield", pickingMode = PickingMode.Position };
+            shield.style.position = UnityEngine.UIElements.Position.Absolute;
+            shield.style.left = shield.style.right = shield.style.top = shield.style.bottom = 0;
+            frame.Overlay.Add(shield);
+            try
+            {
+                yield return null;
+                yield return null;
+                Assert.AreSame(shield, frame.Back.panel.Pick(point), "An active overlay must still intercept this touch.");
+            }
+            finally { shield.RemoveFromHierarchy(); }
+            frame.Back.Press();
+            Assert.AreEqual(CreatorStep.Look, creator.Step);
+            Assert.AreEqual(0, _rest.Posts.Count, "Navigation must not roll or create a character.");
+        }
+
+        [UnityTest]
         public IEnumerator FreshPlayerChoosesBeforeAutomaticRollAndCreatesOnlyAfterResultContinue()
         {
             StartFlow();
@@ -143,6 +250,35 @@ namespace CTLife.Tests
             Assert.AreEqual(1, _rest.CreateCount);
             Assert.That(_rest.Events.Last(), Is.EqualTo("GET /me"), "The lost write must be reconciled from /me.");
             Assert.AreEqual("flowlost", _profile.Me.Character.Alias);
+            AssertReceipt();
+        }
+
+        [UnityTest]
+        public IEnumerator ExistingDifferentCharacterDoesNotReconcileAFailedCreate() =>
+            DifferentSavedCharacterRetainsDraft(CreateFailure.DifferentExistingCharacter);
+
+        [UnityTest]
+        public IEnumerator SuccessfulResponseWithDifferentSavedCharacterDoesNotCompleteOnboarding() =>
+            DifferentSavedCharacterRetainsDraft(CreateFailure.MismatchedSuccess);
+
+        private IEnumerator DifferentSavedCharacterRetainsDraft(CreateFailure failure)
+        {
+            _rest.Failure = failure;
+            StartFlow();
+            yield return Until(() => Current is CharacterCreatorScreen);
+            Assert.IsTrue(((CharacterCreatorScreen)Current).AutoSubmitForAutomation("intendedcharacter"));
+            yield return Result();
+            var result = Current;
+            Continue();
+            yield return null;
+            Assert.AreEqual(1, _rest.CreateCount);
+            Assert.AreEqual(0, _realtime.CityAttempts, "An unrelated existing character is not evidence that this request committed.");
+            Assert.AreSame(result, Current, "Keep the player's result and saved draft available for resolution.");
+            Assert.IsTrue(Cta.enabledInHierarchy);
+            Assert.AreEqual("intendedcharacter", new CreatorDraftStore(_account).Load()?.alias);
+            var message = result.Element.Q<Label>(className: "ob-error");
+            Assert.That(message.text, Is.EqualTo(Strings.T("ob.save.characterMismatch")));
+            Assert.That(message.resolvedStyle.display, Is.EqualTo(DisplayStyle.Flex));
             AssertReceipt();
         }
 
@@ -242,7 +378,7 @@ namespace CTLife.Tests
         private static Dictionary<Type, object> ServiceMap() => (Dictionary<Type, object>)typeof(Services)
             .GetField("_map", BindingFlags.Static | BindingFlags.NonPublic).GetValue(null);
 
-        private enum CreateFailure { None, LostCommittedResponse, Validation, NetworkBeforeCommit }
+        private enum CreateFailure { None, LostCommittedResponse, Validation, NetworkBeforeCommit, DifferentExistingCharacter, MismatchedSuccess }
         private sealed class PostRecord { public string Path, Key, Body; }
         private sealed class ControlledRest : IRestClient
         {
@@ -292,6 +428,16 @@ namespace CTLife.Tests
                 }
                 if (path == "/characters")
                 {
+                    if (CreateCount == 1 && (Failure == CreateFailure.DifferentExistingCharacter || Failure == CreateFailure.MismatchedSuccess))
+                    {
+                        var previous = JObject.Parse((string)body);
+                        previous["alias"] = "earliercharacter";
+                        previous.Remove("likenessJobId");
+                        Commit(previous);
+                        if (Failure == CreateFailure.DifferentExistingCharacter)
+                            return Task.FromException<T>(new ApiException(409, "ALREADY_CREATED", "A character already exists."));
+                        return Task.FromResult((T)(object)Core.Json.Deserialize<Character>(_me["character"].ToString()));
+                    }
                     if (CreateCount == 1 && Failure == CreateFailure.Validation)
                         return Task.FromException<T>(new ApiException(409, "ALIAS_TAKEN", "Choose another alias."));
                     if (CreateCount == 1 && Failure == CreateFailure.NetworkBeforeCommit)

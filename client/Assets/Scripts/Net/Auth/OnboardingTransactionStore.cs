@@ -66,9 +66,9 @@ namespace CTLife.Net
         /// hash is stored. A changed alias, trait order, or other selection produces a new key rather than replaying an
         /// earlier character body. Do not call this until unresolved writes have been reconciled through /me.
         /// </summary>
-        public string CharacterKey(string alias, string[] look, IList<string> traitIds, string dreamId, string tribeId)
+        public string CharacterKey(string alias, string[] look, IList<string> traitIds, string dreamId, string tribeId, string likenessJobId = null)
         {
-            var body = OnboardingRequest.CharacterBody(alias, look, traitIds, dreamId, tribeId, true);
+            var body = OnboardingRequest.CharacterBody(alias, look, traitIds, dreamId, tribeId, true, likenessJobId);
             string signature;
             using (var sha = SHA256.Create())
                 signature = BitConverter.ToString(sha.ComputeHash(Encoding.UTF8.GetBytes(body))).Replace("-", "").ToLowerInvariant();
@@ -150,11 +150,11 @@ namespace CTLife.Net
     public static class OnboardingRequest
     {
         public static string CharacterBody(string alias, string[] look, IList<string> traitIds, string dreamId, string tribeId,
-            bool ageConfirmed)
+            bool ageConfirmed, string likenessJobId = null)
         {
             if (look == null || look.Length != 7) throw new ArgumentException("A look has seven IDs", nameof(look));
             if (traitIds == null) throw new ArgumentNullException(nameof(traitIds));
-            return new JObject
+            var body = new JObject
             {
                 ["alias"] = alias,
                 ["look"] = new JObject
@@ -164,7 +164,9 @@ namespace CTLife.Net
                 },
                 ["traitIds"] = new JArray(traitIds), ["dreamId"] = dreamId, ["tribeId"] = tribeId,
                 ["ageConfirmed"] = ageConfirmed,
-            }.ToString(Formatting.None);
+            };
+            if (!string.IsNullOrEmpty(likenessJobId)) body["likenessJobId"] = LikenessClient.Id(likenessJobId);
+            return body.ToString(Formatting.None);
         }
     }
 }

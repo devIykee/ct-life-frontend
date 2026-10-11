@@ -8,7 +8,7 @@ using UnityEngine;
 namespace CTLife.UI
 {
     /// <summary>The customizer's categories, in rail order. Character is the base model (its own step); the rest edit it.</summary>
-    public enum LookCategory { Character, SkinTone, Hair, HairColor, Top, Bottom, Shoes, Accessories, Colors }
+    public enum LookCategory { Character, SkinTone, Hair, HairColor, Top, Bottom, Shoes, Accessories, Colors, Outfit }
 
     /// <summary>Swappable modular parts (one per slot) on a shared rig.</summary>
     public enum PartSlot { Head, Hair, Top, Bottom, Shoes }
@@ -19,7 +19,8 @@ namespace CTLife.UI
     /// <summary>Accessory sockets on the shared rig (each holds at most one accessory).</summary>
     public enum AccessorySocket { Head, Face, Neck, Back, Shoulder, Hands }
 
-    public enum OptionKind { Part, Tint, Accessory }
+    public enum OptionKind { Part, Tint, Accessory, Outfit, Palette, HairStyle }
+    public enum CharacterBrowse { All, Men, Women, Others }
 
     /// <summary>
     /// What the player built: a base model plus per-slot parts, per-region tints and per-socket accessories. Today's cast
@@ -135,12 +136,30 @@ namespace CTLife.UI
         public bool hasSwatch;
         public Color swatch = Color.white;
         public Texture2D thumb;
+        public string[] authoredLook;
 
         public string Id => kind + ":" + key + ":" + (value ?? "none");
 
         public AvatarSpec ApplyTo(AvatarSpec spec)
         {
             var next = spec.Clone();
+            if (kind == OptionKind.HairStyle)
+            {
+                if (CharacterPaletteResolver.TryChangeHairStyle(next.legacyLook, value, out var changed)) next.legacyLook = changed;
+                return next;
+            }
+            if (kind == OptionKind.Palette)
+            {
+                if (CharacterPaletteResolver.TryChange(next.legacyLook, key, value, out var changed)) next.legacyLook = changed;
+                return next;
+            }
+            if (kind == OptionKind.Outfit)
+            {
+                next.legacyLook = CharacterPaletteResolver.TryChangeOutfit(next.legacyLook, authoredLook, out var changedOutfit)
+                    ? changedOutfit : (string[])authoredLook?.Clone();
+                next.parts.Clear(); next.tints.Clear(); next.accessories.Clear();
+                return next;
+            }
             var map = kind == OptionKind.Part ? next.parts : kind == OptionKind.Tint ? next.tints : next.accessories;
             if (string.IsNullOrEmpty(value)) map.Remove(key);
             else map[key] = value;
@@ -149,6 +168,17 @@ namespace CTLife.UI
 
         public bool IsCurrent(AvatarSpec spec)
         {
+            if (kind == OptionKind.HairStyle)
+                return spec?.legacyLook != null && CharacterPaletteResolver.TryChangeHairStyle(spec.legacyLook, value, out var changedHair) &&
+                    changedHair.SequenceEqual(spec.legacyLook);
+            if (kind == OptionKind.Palette)
+            {
+                return spec?.legacyLook != null && CharacterPaletteResolver.TryChange(spec.legacyLook, key, value, out var changed) &&
+                    changed.SequenceEqual(spec.legacyLook);
+            }
+            if (kind == OptionKind.Outfit) return authoredLook != null && spec?.legacyLook != null &&
+                (authoredLook.SequenceEqual(spec.legacyLook) || CharacterPaletteResolver.TryResolve(spec.legacyLook, out var selection) &&
+                    authoredLook.SequenceEqual(selection.IdentityLook));
             var map = kind == OptionKind.Part ? spec.parts : kind == OptionKind.Tint ? spec.tints : spec.accessories;
             map.TryGetValue(key, out var v);
             return string.IsNullOrEmpty(value) ? string.IsNullOrEmpty(v) : v == value;
@@ -158,12 +188,16 @@ namespace CTLife.UI
     /// <summary>One base model in the Character step.</summary>
     public sealed class BaseModel
     {
-        public string id, label;
+        public string id, label, species;
         public char family;
         public string[] look;
         public float previewYaw;
         public Texture2D portrait;
         public CustomizerCatalog.Base data;
+        public readonly List<CreatorLookCatalog.Entry> outfits = new List<CreatorLookCatalog.Entry>();
+        public bool OwnsLook(string[] candidate) => candidate != null && (outfits.Any(e => e.look.SequenceEqual(candidate)) ||
+            candidate.Length == 7 && CharacterPaletteResolver.TryResolve(candidate, out var palette) &&
+            outfits.Any(e => e.look.SequenceEqual(palette.IdentityLook)));
     }
 
     /// <summary>
@@ -176,7 +210,7 @@ namespace CTLife.UI
     {
         public static readonly LookCategory[] RailOrder =
         {
-            LookCategory.SkinTone, LookCategory.Hair, LookCategory.HairColor, LookCategory.Top, LookCategory.Bottom,
+            LookCategory.Outfit, LookCategory.SkinTone, LookCategory.Hair, LookCategory.HairColor, LookCategory.Top, LookCategory.Bottom,
             LookCategory.Shoes, LookCategory.Accessories, LookCategory.Colors,
         };
 
@@ -195,11 +229,21 @@ namespace CTLife.UI
             foreach (var e in looks)
             {
                 if (e?.look == null) continue;
+                var identity = e.IdentityId;
+                var existing = result.FirstOrDefault(m => m.id == identity);
+                if (existing != null)
+                {
+                    if (!existing.OwnsLook(e.look)) existing.outfits.Add(e);
+                    // The source character is the default, independently of outfit ordering.
+                    if (BaseId(e.look) == identity) { existing.look = (string[])e.look.Clone(); existing.previewYaw = e.previewYaw; }
+                    continue;
+                }
                 var m = new BaseModel
                 {
-                    id = BaseId(e.look), label = e.Display, look = (string[])e.look.Clone(), previewYaw = e.previewYaw,
+                    id = identity, label = e.IdentityDisplay, species = e.species, look = (string[])e.look.Clone(), previewYaw = e.previewYaw,
                     family = CreatorLookOrder.FamilyOf(e.look.Length > 1 ? e.look[1] : null),
                 };
+                m.outfits.Add(e);
                 m.portrait = portraits?.Invoke(m.id);
                 m.data = catalog?.bases?.FirstOrDefault(b => b != null && b.id == m.id);
                 result.Add(m);
@@ -222,10 +266,51 @@ namespace CTLife.UI
             return s;
         }
 
+        /// <summary>Migrates an outfit-as-person draft without changing any authored look ID or granting foreign art.</summary>
+        public static AvatarSpec RestoreSpec(BaseModel model, AvatarSpec saved, string[] legacyLook, CustomizerCatalog catalog = null)
+        {
+            if (model == null) return null;
+            if (saved != null && saved.IsModular) return saved.baseId == model.id ? saved.Clone() : null;
+            var look = saved?.legacyLook ?? legacyLook;
+            if (look == null || !model.OwnsLook(look)) return null;
+            return new AvatarSpec { baseId = model.id, legacyLook = (string[])look.Clone() };
+        }
+
         /// <summary>The model's options in one category (before the art check).</summary>
         public static List<CustomizerOption> AllOptions(BaseModel m, LookCategory category, CustomizerCatalog catalog)
         {
             var list = new List<CustomizerOption>();
+            var palettes = CharacterPaletteCatalog.Load();
+            if (m != null && palettes?.FindBase(m.id) != null)
+            {
+                if (category == LookCategory.Hair)
+                {
+                    foreach (var style in palettes.FindBase(m.id).hairStyles)
+                        list.Add(new CustomizerOption { category = category, kind = OptionKind.HairStyle,
+                            key = m.id, value = style.id, label = style.labelKey, thumb = style.thumbnail });
+                    return list;
+                }
+                string region = category switch { LookCategory.SkinTone => "skin", LookCategory.HairColor => "hair",
+                    LookCategory.Top => "top", LookCategory.Bottom => "bottom", LookCategory.Shoes => "shoes", _ => null };
+                if (region != null)
+                {
+                    list.Add(new CustomizerOption { category = category, kind = OptionKind.Palette, key = region,
+                        value = null, label = "ob.color.original" });
+                    foreach (var sw in palettes.PaletteFor(region).swatches)
+                        list.Add(new CustomizerOption { category = category, kind = OptionKind.Palette, key = region,
+                            value = sw.id, label = "ob.color." + sw.id, hasSwatch = true, swatch = sw.color });
+                    return list;
+                }
+            }
+            if (category == LookCategory.Outfit)
+            {
+                if (m == null || m.outfits.Count < 2) return list;
+                foreach (var outfit in m.outfits)
+                    list.Add(new CustomizerOption { category = category, kind = OptionKind.Outfit, key = m.id,
+                        value = string.Join("|", outfit.look), label = outfit.Display,
+                        thumb = Portrait(BaseId(outfit.look)), authoredLook = (string[])outfit.look.Clone() });
+                return list;
+            }
             var d = m?.data;
             if (d == null) return list;
             void Parts(PartSlot slot)
@@ -321,14 +406,33 @@ namespace CTLife.UI
         }
 
         /// <summary>Whole authored looks require their exact registry entry. Local modular art uses an explicit binding.</summary>
-        public static bool Resolves(AvatarSpec s, BaseModel m) => s != null && !s.IsModular && ResolvesLook(ToContract(s));
+        public static bool Resolves(AvatarSpec s, BaseModel m) => s != null && m != null && s.baseId == m.id && !s.IsModular &&
+            (m.outfits.Count == 0 || m.OwnsLook(ToContract(s))) && ResolvesLook(ToContract(s));
 
         public static bool ResolvesLook(string[] look)
         {
             if (look == null || look.Length != 7) return false;
             var entry = CharacterRegistry.Instance?.ForLook(look);
-            return entry?.prefab != null && entry.key == string.Join("|", look);
+            return entry?.prefab != null && entry.key == string.Join("|", look) || CharacterPaletteResolver.TryResolve(look, out _);
         }
+
+        // These are authored character categories, not gender guessed from a photo. Unspecified masked characters,
+        // the robot and creatures remain available under All/Others without forcing a male/female assignment.
+        public static bool MatchesBrowse(BaseModel model, CharacterBrowse browse)
+        {
+            if (model == null) return false;
+            if (browse == CharacterBrowse.All) return true;
+            var group = model.id switch
+            {
+                "head_snow" or "head_ubc_m" => CharacterBrowse.Men,
+                "head_rain" or "head_ubc_f" or "head_hero_assassin" => CharacterBrowse.Women,
+                _ => CharacterBrowse.Others,
+            };
+            return group == browse;
+        }
+
+        public static Texture2D Illustration(string baseId) => string.IsNullOrEmpty(baseId) ? null :
+            Resources.Load<Texture2D>("UI/Customizer/Illustrations/" + Safe(baseId));
 
         /// <summary>Baked base-model portraits (Resources/UI/Customizer/Portraits/&lt;baseId&gt;.png), null while missing.</summary>
         public static Texture2D Portrait(string baseId) =>
@@ -346,7 +450,7 @@ namespace CTLife.UI
         public static string CategoryIcon(LookCategory c) => c switch
         {
             LookCategory.SkinTone => "face", LookCategory.Hair => "emote", LookCategory.HairColor => "dream",
-            LookCategory.Top => "shop", LookCategory.Bottom => "shop", LookCategory.Shoes => "stand",
+            LookCategory.Outfit => "shop", LookCategory.Top => "shop", LookCategory.Bottom => "shop", LookCategory.Shoes => "stand",
             LookCategory.Accessories => "npc", LookCategory.Colors => "dream", _ => "body",
         };
     }

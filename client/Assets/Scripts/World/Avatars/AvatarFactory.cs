@@ -1,5 +1,8 @@
+using System;
 using System.Collections.Generic;
+using CTLife.World.Likeness;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace CTLife.World
 {
@@ -8,8 +11,64 @@ namespace CTLife.World
     {
         private static Sprite _blob;
 
-        public static AvatarView Create(string name, string[] look, bool isNpc, string archetypeId = null, Transform parent = null, bool forPreview = false)
-            => CreateResolved(name, look, isNpc, archetypeId, parent, forPreview, null);
+        public static AvatarView Create(string name, string[] look, bool isNpc, string archetypeId = null, Transform parent = null,
+            bool forPreview = false, string likenessJobId = null)
+        {
+            if (!isNpc && !string.IsNullOrEmpty(likenessJobId))
+            {
+                if (TryCreateLikeness(name, likenessJobId, parent, forPreview, out var personal, out var error)) return personal;
+                throw new InvalidOperationException(error);
+            }
+            return CreateResolved(name, look, isNpc, archetypeId, parent, forPreview, null);
+        }
+
+        /// <summary>Only a prepared accepted asset can become a playable actor. Failure never substitutes a stock body.</summary>
+        public static bool TryCreateLikeness(string name, string jobId, Transform parent, bool forPreview,
+            out AvatarView view, out string error)
+        {
+            view = null; error = null;
+            var root = new GameObject(name);
+            if (parent != null) root.transform.SetParent(parent, false);
+            LikenessAvatarLease lease = null;
+            try
+            {
+                if (string.IsNullOrEmpty(jobId) || !LikenessAvatarCache.TryInstantiate(jobId, root.transform, out lease))
+                    throw new InvalidOperationException("The accepted personal character is not prepared.");
+                var animator = lease.Animator;
+                if (animator == null || animator.avatar == null || !animator.avatar.isHuman || !animator.avatar.isValid)
+                    throw new InvalidOperationException("The personal character has no valid Humanoid rig.");
+                if (animator.transform.parent != root.transform)
+                    throw new InvalidOperationException("The personal character must keep its animated visual root below the actor.");
+                var controller = CharacterRegistry.Instance?.controller ?? ItemCatalog.AvatarController;
+                if (controller == null) throw new InvalidOperationException("The character animation controller is unavailable.");
+                animator.runtimeAnimatorController = controller;
+                animator.applyRootMotion = false;
+                animator.cullingMode = forPreview ? AnimatorCullingMode.AlwaysAnimate : AnimatorCullingMode.CullCompletely;
+                animator.Rebind(); animator.Update(0f);
+                if (!animator.HasState(0, Animator.StringToHash("loco_idle")))
+                    throw new InvalidOperationException("The personal character cannot play the shared idle.");
+                animator.Play("loco_idle", 0, 0); animator.Update(0f);
+                if (!forPreview) animator.gameObject.AddComponent<CharacterIK>();
+                var body = LargestSkinnedRenderer(root);
+                if (body == null) throw new InvalidOperationException("The personal character has no skinned surface.");
+                foreach (var skin in root.GetComponentsInChildren<SkinnedMeshRenderer>(true)) skin.updateWhenOffscreen = forPreview;
+                float height = MeasureHeight(root, lease.Manifest.heightMeters);
+                var collider = root.AddComponent<CapsuleCollider>();
+                collider.center = new Vector3(0f, height * .5f, 0f);
+                collider.height = height; collider.radius = .35f; collider.isTrigger = true;
+                AddBlobShadow(root.transform);
+                view = root.AddComponent<AvatarView>();
+                view.displayName = name; view.BabblePitch = 1f;
+                view.Init(animator, null, body, null, height);
+                return true;
+            }
+            catch (Exception e)
+            {
+                lease?.Dispose();
+                root.SetActive(false); UnityEngine.Object.Destroy(root);
+                view = null; error = e.Message; return false;
+            }
+        }
 
         /// <summary>Server role/identity selects only explicitly curated FE presentation. Missing bindings keep the legacy route.</summary>
         public static AvatarView CreateNpc(string name, string npcId, string archetypeId, Transform parent = null,
@@ -41,7 +100,9 @@ namespace CTLife.World
             var resolvedLook = isNpc ? NpcLook(archetypeId) : look;
             float height = 1.75f;
             var reg = CharacterRegistry.Instance;
-            var entry = selectedEntry ?? (reg == null ? null : isNpc ? reg.ForArchetype(archetypeId) : reg.ForLook(look));
+            CharacterPaletteSelection paletteSelection = null;
+            if (!isNpc && selectedEntry == null) CharacterPaletteResolver.TryResolve(look, out paletteSelection);
+            var entry = selectedEntry ?? paletteSelection?.Entry ?? (reg == null ? null : isNpc ? reg.ForArchetype(archetypeId) : reg.ForLook(look));
 
             if (entry?.prefab != null)
             {
@@ -110,6 +171,8 @@ namespace CTLife.World
                 proc.Bind(bones);
             }
 
+            try { CharacterPaletteResolver.Apply(go, paletteSelection); }
+            catch { go.SetActive(false); Object.Destroy(go); throw; }
             var col = go.AddComponent<CapsuleCollider>();
             col.center = new Vector3(0, 0.9f, 0);
             col.height = 1.8f;

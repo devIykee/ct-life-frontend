@@ -6,12 +6,11 @@ using UnityEngine;
 namespace CTLife.UI
 {
     /// <summary>
-    /// The order the creator shows its looks in (user feedback 2026-10-09: every first character was dark-skinned, which read as
-    /// one region's game; CT Life is global). Consecutive looks alternate skin-tone band (light, medium, deep) and body family
-    /// (m, f) wherever the catalog allows, and the starting band, family and look rotate with a per-install seed, so first
-    /// impressions vary across players. Presentation only: the authored catalog order is unchanged, because
-    /// <see cref="CreatorLookCatalog.FallbackLook"/> must pick the same look for a remote player on every device.
-    /// EditMode tests: HomeUiTests.
+    /// Creator presentation ordering. ForModels shuffles whole identities from a canonical identity-ID order, using the
+    /// install seed. Outfit counts, clothing IDs and inferred demographics do not influence the character roster.
+    /// Arrange/ForCreator retain the earlier authored-look ordering for existing callers and tests. None of these helpers
+    /// changes the source catalog used by <see cref="CreatorLookCatalog.FallbackLook"/> for remote players.
+    /// EditMode tests: CharacterIdentityTests and HomeUiTests.
     /// </summary>
     public static class CreatorLookOrder
     {
@@ -31,13 +30,35 @@ namespace CTLife.UI
             }
         }
 
-        /// <summary>Body family from the head id: player_m_* / Snow → m, player_f_* / Rain → f, else x.</summary>
+        /// <summary>Legacy authoring-family metadata, including the two known UBC sources; never used to group identities.</summary>
         public static char FamilyOf(string headId)
         {
             var h = headId ?? "";
-            if (h.Contains("_m_") || h == "head_snow") return 'm';
-            if (h.Contains("_f_") || h == "head_rain") return 'f';
+            if (h.Contains("_m_") || h == "head_snow" || h == "head_ubc_m") return 'm';
+            if (h.Contains("_f_") || h == "head_rain" || h == "head_ubc_f") return 'f';
             return 'x';
+        }
+
+        /// <summary>
+        /// Orders the already-grouped roster (unique identity IDs), preserving each model and its outfits by reference.
+        /// Canonical ordinal sorting makes the result independent of catalog order. The explicit seeded shuffle stays
+        /// reproducible across runtimes without using string hashes, outfit metadata or System.Random's implementation.
+        /// </summary>
+        public static List<BaseModel> ForModels(List<BaseModel> models, int seed)
+        {
+            var result = models == null ? new List<BaseModel>() : new List<BaseModel>(models);
+            result.Sort((a, b) => StringComparer.Ordinal.Compare(a?.id, b?.id));
+            uint state = (uint)(seed & 0x7fffffff) ^ 0x9e3779b9u;
+            for (int i = result.Count - 1; i > 0; i--)
+            {
+                // Xorshift32; the high-bit salt keeps the normalized install seed away from the zero state.
+                state ^= state << 13;
+                state ^= state >> 17;
+                state ^= state << 5;
+                int j = (int)(state % (uint)(i + 1));
+                var model = result[i]; result[i] = result[j]; result[j] = model;
+            }
+            return result;
         }
 
         /// <summary>Interleaves `looks` (each a 7-id look array) by band and family. Returns indices into `looks`.</summary>
@@ -114,7 +135,7 @@ namespace CTLife.UI
             PlayerPrefs.Save();
         }
 
-        /// <summary>The catalog's entries in creator order for this install.</summary>
+        /// <summary>Legacy ordering of individual authored looks; the character roster uses ForModels after grouping.</summary>
         public static List<CreatorLookCatalog.Entry> ForCreator(List<CreatorLookCatalog.Entry> available, int seed)
         {
             var arrays = available.ConvertAll(e => e.look);

@@ -353,6 +353,10 @@ namespace CTLife.App
                 // Choices come first on screen; the lottery write still precedes character creation on the server.
                 _firstLobby = Onboarding.NeedsCharacter(profile.Me);
                 if (Onboarding.NeedsCharacter(profile.Me)) await game.Wait(CreateCharacter(game));
+                // An equipped personal character must be restored before entering the world. A failed asset load
+                // goes through the existing connection/retry flow; it is never silently replaced by a stock body.
+                if (!string.IsNullOrEmpty(profile.LikenessJobId))
+                    await game.Wait(CTLife.World.Likeness.LikenessAvatarCache.PrepareOwned(profile.LikenessJobId, game.Token));
 
                 var rt = Services.Get<IRealtimeService>();
                 try
@@ -508,15 +512,19 @@ namespace CTLife.App
                     lottery.SetBusy(true);
                     try
                     {
+                        bool SavedSelectionMatches() => Onboarding.CharacterCreationMatches(profile.Me, draft.alias,
+                            draft.look, draft.traitIds, draft.dreamId, draft.tribeId, draft.likenessJobId, profile.LikenessJobId);
                         if (result != null) profile.ApplyLottery(result);
                         try
                         {
                             await game.Wait(api.CreateCharacter(draft.alias, draft.look, draft.traitIds, draft.dreamId,
                                 draft.tribeId, draft.ageConfirmed,
-                                idempotencyKey: journal.CharacterKey(draft.alias, draft.look, draft.traitIds, draft.dreamId, draft.tribeId)));
+                                idempotencyKey: journal.CharacterKey(draft.alias, draft.look, draft.traitIds, draft.dreamId, draft.tribeId, draft.likenessJobId),
+                                likenessJobId: draft.likenessJobId));
                             await game.Wait(profile.Refresh(game.Token));
-                            if (!Onboarding.CharacterCreationRecorded(profile.Me))
-                                throw new InvalidOperationException(Strings.T("ob.save.unconfirmed"));
+                            if (!SavedSelectionMatches())
+                                throw new InvalidOperationException(Strings.T(Onboarding.CharacterCreationRecorded(profile.Me)
+                                    ? "ob.save.characterMismatch" : "ob.save.unconfirmed"));
                         }
                         catch (Exception write) when (!(write is OperationCanceledException))
                         {
@@ -527,6 +535,8 @@ namespace CTLife.App
                             catch (Exception refresh) when (!(refresh is OperationCanceledException))
                             { Log.Warn("creator", "Creation reconciliation failed: " + refresh.Message); }
                             if (!Onboarding.CharacterCreationRecorded(refreshed)) throw;
+                            if (!SavedSelectionMatches())
+                                throw new InvalidOperationException(Strings.T("ob.save.characterMismatch"));
                             Log.Info("creator", "Character creation confirmed from refreshed profile after " + write.GetType().Name);
                         }
                         if (!Owns(game, lottery)) return;

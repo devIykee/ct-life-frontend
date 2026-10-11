@@ -97,3 +97,10 @@ Funky Chunk by Kevin MacLeod (incompetech.com), CC-BY 4.0. Level-adjusted and co
 Font, icon, character and music notices are available offline from Phone → Settings → Credits & licenses. Download sources at the pinned commits and preserve licenses. For SVGs, replace `currentColor` with `#ffffff`, then render using `sharp(Buffer.from(svg), {density:192}).resize(192,192).png()`. Copy static upstream TTFs without modification.
 
 Unity API references: https://docs.unity3d.com/6000.3/Documentation/Manual/UIE-USS-Properties-Reference.html ; installed 6000.3.25f1 UIElements reference confirms font definition and text-outline APIs.
+
+## Unity glTFast 6.20.0
+
+Unity glTFast copyright © 2023 Unity Technologies and the Unity glTFast authors.
+Apache License 2.0. Runtime import of private personal-character GLB assets.
+Source: https://github.com/Unity-Technologies/com.unity.cloud.gltfast
+Full licence included in `UI/Licenses/glTFast.txt`.

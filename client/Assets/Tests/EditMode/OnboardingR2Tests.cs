@@ -74,7 +74,7 @@ namespace CTLife.Tests
         {
             var models = CustomizerModel.Build(new[] { Entry("head_player_f_kol"), Entry("head_snow") }, null);
             Assert.AreEqual(2, models.Count);
-            Assert.AreEqual("head_player_f_kol", models[0].id);
+            Assert.AreEqual("head_rain", models[0].id, "an outfit is grouped under its source character");
             Assert.AreEqual('f', models[0].family);
             Assert.AreEqual('m', models[1].family);
             var spec = CustomizerModel.DefaultSpec(models[0]);

@@ -1,0 +1,30 @@
+/* Isolated likeness review surface: matte white, no lipped buttons or animated effects. */
+.lk-overlay { position:absolute; left:0; right:0; top:0; bottom:0; background-color:rgba(25,20,32,0.58); align-items:center; justify-content:center; }
+.lk-sheet { width:2020px; height:930px; padding:40px 48px; border-radius:32px; background-color:rgb(255,255,255); }
+.lk-header { flex-direction:row; align-items:center; justify-content:space-between; margin-bottom:28px; }
+.lk-title { -unity-font-definition:url("Fonts/LilitaOne-Regular.ttf"); font-size:60px; color:rgb(58,20,64); margin:0; padding:0; }
+.lk-columns { flex-direction:row; flex-grow:1; min-height:0; }
+.lk-media { width:760px; margin-right:50px; align-items:center; }
+.lk-picture { width:700px; height:600px; background-color:rgb(244,243,245); border-radius:22px; -unity-background-scale-mode:scale-to-fit; justify-content:center; align-items:center; }
+.lk-picture .lk-photo-hint { font-size:32px; -unity-text-align:middle-center; color:rgb(105,94,110); white-space:normal; }
+.lk-details { flex-grow:1; flex-shrink:1; min-width:0; min-height:0; }
+.lk-copy-scroll { flex-grow:1; flex-shrink:1; min-height:0; }
+.lk-body, .lk-price, .lk-status, .lk-retention, .lk-consent, .lk-button, .lk-photo-hint { -unity-font-definition:url("Fonts/Manrope-Semibold.ttf"); color:rgb(58,20,64); -unity-text-outline-width:0; text-shadow:0 0 0 rgba(0,0,0,0); }
+.lk-body { font-size:36px; white-space:normal; margin:0 0 24px 0; }
+.lk-price { font-size:30px; white-space:normal; padding:20px; border-radius:14px; background-color:rgb(245,242,247); margin:0 0 20px 0; }
+.lk-consent { min-height:74px; font-size:30px; white-space:normal; margin:0 0 16px 0; }
+.lk-consent .unity-toggle__input { margin:0; padding:0; align-items:flex-start; }
+.lk-consent .unity-toggle__checkmark { width:46px; height:46px; min-width:46px; margin:6px 20px 0 0; border-width:2px; border-color:rgb(146,88,220); border-radius:8px; }
+.lk-consent .unity-toggle__text { white-space:normal; flex-shrink:1; }
+.lk-retention { font-size:25px; color:rgb(105,94,110); white-space:normal; margin:0 0 6px 0; }
+.lk-status { font-size:30px; white-space:normal; color:rgb(94,60,103); margin:18px 0; }
+.lk-actions { flex-direction:row; flex-wrap:wrap; margin-top:auto; }
+.lk-button { height:104px; font-size:32px; margin:0 16px 12px 0; padding:16px 28px; border-width:0; border-radius:18px; white-space:normal; -unity-text-align:middle-center; }
+.lk-primary { background-color:rgb(58,20,64); color:rgb(255,255,255); min-width:380px; }
+.lk-secondary { background-color:rgb(244,241,247); color:rgb(58,20,64); }
+.lk-primary:disabled, .lk-secondary:disabled { background-color:rgb(234,232,236); color:rgb(145,137,150); }
+.lk-primary:active { background-color:rgb(84,38,92); }
+.lk-secondary:active { background-color:rgb(232,220,246); }
+.lk-media > .lk-button { height:90px; min-width:320px; margin-top:18px; }
+.lk-link { background-color:rgba(0,0,0,0); color:rgb(110,58,170); padding:0; font-size:26px; height:62px; margin:0 24px 0 0; }
+.lk-close { background-color:rgb(244,243,245); height:84px; font-size:28px; margin:0; min-width:160px; }

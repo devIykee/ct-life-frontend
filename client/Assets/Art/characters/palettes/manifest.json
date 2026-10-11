@@ -1,0 +1,194 @@
+{
+  "source": "Hermes v3 preserved tint masks; no source texture or mesh edits",
+  "palettes": {
+    "skin": [
+      {
+        "id": "skin_01",
+        "name": "porcelain",
+        "hex": "#f7d7c3",
+        "lab": [
+          88.0,
+          8.0,
+          14.0
+        ]
+      },
+      {
+        "id": "skin_02",
+        "name": "fair",
+        "hex": "#e7bfa5",
+        "lab": [
+          80.1,
+          10.7,
+          18.3
+        ]
+      },
+      {
+        "id": "skin_03",
+        "name": "light",
+        "hex": "#d6a88a",
+        "lab": [
+          72.2,
+          12.9,
+          21.9
+        ]
+      },
+      {
+        "id": "skin_04",
+        "name": "light_medium",
+        "hex": "#c49373",
+        "lab": [
+          64.7,
+          14.3,
+          24.0
+        ]
+      },
+      {
+        "id": "skin_05",
+        "name": "medium",
+        "hex": "#b18060",
+        "lab": [
+          57.8,
+          14.9,
+          25.0
+        ]
+      },
+      {
+        "id": "skin_06",
+        "name": "tan",
+        "hex": "#a07051",
+        "lab": [
+          51.4,
+          15.1,
+          24.7
+        ]
+      },
+      {
+        "id": "skin_07",
+        "name": "brown",
+        "hex": "#8e6145",
+        "lab": [
+          45.3,
+          15.0,
+          23.4
+        ]
+      },
+      {
+        "id": "skin_08",
+        "name": "dark_brown",
+        "hex": "#7b5239",
+        "lab": [
+          38.7,
+          14.3,
+          21.6
+        ]
+      },
+      {
+        "id": "skin_09",
+        "name": "deep",
+        "hex": "#66422d",
+        "lab": [
+          31.6,
+          12.9,
+          19.1
+        ]
+      },
+      {
+        "id": "skin_10",
+        "name": "very_deep",
+        "hex": "#4f3222",
+        "lab": [
+          24.0,
+          11.0,
+          16.0
+        ]
+      }
+    ],
+    "skin_method": "Equal CIEDE2000 steps along a CIELAB skin locus (L* 88 -> 24); sRGB D65.",
+    "hair": {
+      "black": "#1b1512",
+      "dark_brown": "#3a2519",
+      "brown": "#5e3b24",
+      "auburn": "#7a3420",
+      "ginger": "#b05a2a",
+      "blonde": "#c9a463",
+      "platinum": "#e3dccb",
+      "grey": "#8d8a86",
+      "pink": "#e05aa8",
+      "blue": "#3a6fd8",
+      "green": "#36a36a",
+      "purple": "#7a4dd1"
+    },
+    "cloth": {
+      "black": "#1c1d22",
+      "charcoal": "#3a3d44",
+      "white": "#f2f2ee",
+      "navy": "#1f2c4a",
+      "denim": "#3b5a8a",
+      "khaki": "#b9a27a",
+      "olive": "#4b5320",
+      "red": "#c8102e",
+      "orange": "#ff7a1a",
+      "gold": "#e0a72e",
+      "green": "#2e8b57",
+      "teal": "#1aa6a6",
+      "purple": "#6b3fd1",
+      "pink": "#ff4fa3",
+      "sol_purple": "#8a4dff",
+      "sol_green": "#2ee6a6"
+    },
+    "hat": {
+      "yellow": "#e8b81c",
+      "orange": "#f07a22",
+      "black": "#1c1d22",
+      "white": "#f0f0ea",
+      "red": "#c8102e",
+      "sol_purple": "#8a4dff",
+      "teal": "#1aa6a6",
+      "khaki": "#b9a27a",
+      "grey": "#6b6e74"
+    },
+    "brows": "derived from hair: same hue, linear luminance min(0.55 x hair, 0.075), 60 % saturation (v3_common.brow_color)"
+  },
+  "models": [
+    {
+      "id": "ubc_m",
+      "tint_reference": {
+        "skin": "#a26643",
+        "hair": "#392418",
+        "top": "#aba9a6",
+        "bottom": "#9f9d9a",
+        "shoes": "#d5d2d0",
+        "accent": "#7a4a44",
+        "brows": "#261a15"
+      },
+      "files": {
+        "mask0": "ubc_m_TintMask0.png",
+        "mask1": "ubc_m_TintMask1.png"
+      },
+      "source_hashes": {
+        "mask0": "52a225137a3d5409bf913d32af1602de8273a2ffa12ef2448e1e9ca7eca258ca",
+        "mask1": "4946e8afb3c822172196bad8cc1837006a7292dbcd3a8f1cd8b69fbf8a821cd6"
+      }
+    },
+    {
+      "id": "ubc_f",
+      "tint_reference": {
+        "skin": "#976742",
+        "hair": "#1b1512",
+        "top": "#aaa8a6",
+        "bottom": "#9f9d9a",
+        "shoes": "#d5d2d0",
+        "accent": "#7a4842",
+        "brows": "#191414"
+      },
+      "files": {
+        "mask0": "ubc_f_TintMask0.png",
+        "mask1": "ubc_f_TintMask1.png"
+      },
+      "source_hashes": {
+        "mask0": "c9763441d128cae5a7c8fff0528e64608d1bf4d800ce0af9ea8d9c40a7a90842",
+        "mask1": "67189714d05c30469541e5ee7a94e619e2a1f1bbb65de07e00975dbef573ecf6"
+      }
+    }
+  ]
+}

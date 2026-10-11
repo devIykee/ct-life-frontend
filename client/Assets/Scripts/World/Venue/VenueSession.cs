@@ -287,7 +287,11 @@ namespace CTLife.World
             var look = state != null ? ToArray(state.look) : profile?.LookArray();
             var name = !string.IsNullOrEmpty(state?.name) ? state.name : profile?.Alias ?? "you";
             if (look == null || look.Length != 7 || string.IsNullOrEmpty(look[1])) look = profile?.LookArray();
-            var view = AvatarFactory.Create(name, look, false, null, _avatarRoot);
+            var view = AvatarFactory.Create(name, look, false, null, _avatarRoot, likenessJobId: profile?.LikenessJobId);
+#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
+            Log.Info("appearance", "Local player spawned with " +
+                (string.IsNullOrEmpty(profile?.LikenessJobId) ? "stock" : "personal") + " profile appearance.");
+#endif
             // The session's own user id: a server that does not verify the JWT reports a placeholder (item 38).
             view.userId = Services.Get<Session>().UserId ?? state?.userId;
             view.sessionId = Channel?.SessionId;
