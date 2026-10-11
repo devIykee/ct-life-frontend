@@ -388,5 +388,29 @@ namespace CTLife.Tests
             Assert.IsNull(page.Q(className: "duo-board-pin"));
             Assert.IsFalse(page.ClassListContains("duo-has-pin"));
         }
+
+        [Test]
+        public void PinShowsOnlyWhenYourRowIsOutOfViewAndNeverOverThePodium()
+        {
+            var viewport = new Rect(0, 0, 900, 1000);
+            var pin = new Rect(26, 860, 848, 116);              // the docked band at the bottom
+            var podiumTop = new Rect(30, 200, 840, 420);         // podium high on the page: clear of the band
+            var podiumLow = new Rect(30, 600, 840, 420);         // podium reaching into the band (short screen / XXL)
+            // Your row visible above the band: hide.
+            Assert.IsFalse(DuoBoard.PinVisible(viewport, pin, new Rect(0, 700, 900, 100), podiumTop));
+            // Your row scrolled off the top, or below the fold, or tucked under the band: show.
+            Assert.IsTrue(DuoBoard.PinVisible(viewport, pin, new Rect(0, -300, 900, 100), podiumTop));
+            Assert.IsTrue(DuoBoard.PinVisible(viewport, pin, new Rect(0, 1400, 900, 100), null));
+            Assert.IsTrue(DuoBoard.PinVisible(viewport, pin, new Rect(0, 880, 900, 100), podiumTop));
+            // Your row not on the page at all (server sent only "me"): show.
+            Assert.IsTrue(DuoBoard.PinVisible(viewport, pin, null, null));
+            // The podium reaches into the band: never cover it, even when your row is out of view.
+            Assert.IsFalse(DuoBoard.PinVisible(viewport, pin, null, podiumLow));
+            Assert.IsFalse(DuoBoard.PinVisible(viewport, pin, new Rect(0, 1400, 900, 100), podiumLow));
+            // Podium scrolled away above the viewport: show again.
+            Assert.IsTrue(DuoBoard.PinVisible(viewport, pin, null, new Rect(30, -900, 840, 420)));
+            // Your podium spot visible counts as your row being visible.
+            Assert.IsFalse(DuoBoard.PinVisible(viewport, pin, new Rect(300, 220, 300, 300), podiumTop));
+        }
 }
 }

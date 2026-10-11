@@ -599,7 +599,8 @@
 .ct-phone .duo-rank-lead .duo-rank-number { width: 64px; font-size: var(--duo-subhead); color: var(--duo-label2); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); -unity-text-align: middle-left; margin: 0 8px 0 0; padding: 0; }
 .ct-phone .duo-row .duo-rank-value { color: var(--duo-label); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); }
 .ct-phone .duo-rank-me .duo-rank-number { color: var(--duo-blue); }
-.ct-phone .duo-board-pin { position: absolute; left: 26px; right: 26px; bottom: 24px; flex-shrink: 0; }
+.ct-phone .duo-board-pin { position: absolute; left: 26px; right: 26px; bottom: 24px; flex-shrink: 0; transition-property: opacity, translate; transition-duration: 0.18s; }
+.ct-phone .duo-board-pin-hidden { opacity: 0; translate: 0 40px; }
 .ct-phone .duo-board-pin-face {
     border-radius: 58px; padding: 0 14px 0 26px; background-color: rgba(255,255,255,0.97); border-width: 1px; border-color: rgba(0,0,0,0.05);
 }

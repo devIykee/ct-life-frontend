@@ -274,6 +274,24 @@ namespace CTLife.EditorTools
                             await wait(1.2f);
                         }
                         await shot("duo-wave3-" + id + "-" + tag, 0.5f);
+                        if (id == "richlist" || id == "league")
+                        {
+                            // Halfway down: podium gone, your row (#6) not yet in view → the pin shows; at the end your row is visible → hidden.
+                            var sc = Layer().Q<ScrollView>(className: "duo-scroll");
+                            var pinEl = Layer().Q("duo-board-pin");
+                            var podium = Layer().Q("duo-podium");
+                            if (sc != null && podium != null)
+                            {
+                                sc.scrollOffset = new Vector2(0, podium.layout.yMax + 40);
+                                await shot("duo-wave4-" + id + "-scrolled-" + tag, 0.6f);
+                                report["pin-" + id + "-scrolled-" + tag] = pinEl != null && !pinEl.ClassListContains("duo-board-pin-hidden");
+                                sc.scrollOffset = new Vector2(0, 99999);
+                                await shot("duo-wave4-" + id + "-end-" + tag, 0.6f);
+                                report["pin-" + id + "-end-" + tag] = pinEl != null && !pinEl.ClassListContains("duo-board-pin-hidden");
+                                sc.scrollOffset = Vector2.zero;
+                                await wait(0.4f);
+                            }
+                        }
                         // Sweep: none of the old box styles inside the open app.
                         var body = Layer().Q(className: "ct-phone-body");
                         var found = new JArray();
@@ -292,6 +310,7 @@ namespace CTLife.EditorTools
                             case "richlist":
                                 expect(Layer().Q("duo-podium") != null, "Rich List podium from the top 3");
                                 expect(Layer().Q("duo-board-pin") != null, "Rich List pins your own row");
+                                expect(Layer().Q("duo-board-pin")?.ClassListContains("duo-board-pin-hidden") == true, "the pin stays hidden while the podium reaches its band");
                                 break;
                             case "league":
                                 expect(Layer().Q("league-hero") != null, "League hero rank");
