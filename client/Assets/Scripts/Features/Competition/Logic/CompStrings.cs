@@ -288,6 +288,7 @@ namespace CTLife.Competition
             ["gate.netWorth"] = "Needs {0} net worth. You have {1}.",
             ["gate.invite"] = "Members and invited guests only.",
             ["gate.sybil"] = "Closed while you're in the Sybil Barn.",
+            ["gate.notJailed"] = "Only players caught in a sybil sweep end up here.",
             ["gate.denied"] = "Closed to you right now.",
             ["gate.shortfall"] = "{0} to go.",
             ["gate.yourNetWorth"] = "Your net worth",

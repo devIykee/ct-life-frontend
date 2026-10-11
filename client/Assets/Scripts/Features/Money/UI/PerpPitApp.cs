@@ -50,7 +50,7 @@ namespace CTLife.Economy
         private bool _opening;
         private readonly RetainedWrite _openWrite = new RetainedWrite();
         private VisualElement _tradeControls, _tradeStatus, _coinList;
-        private double _coinListRenderedAt;
+        private Button _openButton;
 
         // Lists
         private Rows<PerpRow> _open, _history;
@@ -106,7 +106,7 @@ namespace CTLife.Economy
 
         private void MarketChanged()
         {
-            if (_tabs.Current == "trade" && Now - _coinListRenderedAt > 2) RenderCoinList();
+            if (_tabs.Current == "trade") RenderCoinList();
         }
 
         private void OnLiquidated(LiquidatedMessage m)
@@ -173,15 +173,16 @@ namespace CTLife.Economy
         private void RenderCoinList()
         {
             if (_coinList == null) return;
-            _coinListRenderedAt = Now;
             _coinList.Clear();
             var coins = Hub.Market.List(null).OrderByDescending(c => c.McapCents).Take(16).ToList();
-            if (coins.Count == 0) _coinList.Add(MoneyUi.Small(Hub.Market.LastError != null ? MoneyStrings.T(Hub.Market.LastError) : MoneyStrings.T("common.loading")));
+            if (coins.Count == 0) _coinList.Add(MoneyUi.Small(Hub.Market.LastError != null ? MoneyStrings.T(Hub.Market.LastError) :
+                MoneyStrings.T(double.IsNaN(Hub.Market.Age(null)) ? "common.loading" : "perps.coinsEmpty")));
             foreach (var c in coins)
             {
                 var coin = c;
                 _coinList.Add(MoneyUi.Chip("$" + c.Ticker + "  " + MoneyFormat.Micros(c.PriceMicros), () => { _coinId = coin.CoinId; RenderCoinList(); }, c.CoinId == _coinId));
             }
+            _openButton?.SetEnabled(!_opening && MarketsOn && coins.Any(c => c.CoinId == _coinId));
         }
 
         private void RenderTradeControls()
@@ -210,8 +211,8 @@ namespace CTLife.Economy
                 quick.Add(MoneyUi.Chip("$" + d, () => { _marginInput = d; field.SetValueWithoutNotify(d); }, false));
             }
             _tradeControls.Add(quick);
-            var open = MoneyUi.Btn(MoneyStrings.T(_opening ? "perps.opening" : "perps.open"), OpenPerp);
-            open.SetEnabled(!_opening && MarketsOn);
+            var open = _openButton = MoneyUi.Btn(MoneyStrings.T(_opening ? "perps.opening" : "perps.open"), OpenPerp);
+            open.SetEnabled(!_opening && MarketsOn && Hub.Market.List(null).Any(c => c.CoinId == _coinId));
             _tradeControls.Add(open);
         }
 

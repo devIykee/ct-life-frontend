@@ -1,6 +1,6 @@
 # End-to-end tests (e2e)
 
-One command checks that the whole app works against the real backend, on the editor and on the Seeker:
+This command runs a **limited smoke/integration suite**, not exhaustive game E2E. It does not exercise every button, option, audio output, backend mutation or failure path. A passing suite must not be reported as "the whole app works": 
 
 ```bash
 tools/backend-local/up.sh                 # if the local backend is not running yet (the runner also starts it)

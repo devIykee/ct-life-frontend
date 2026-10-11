@@ -11,8 +11,15 @@ using UnityEngine;
 
 namespace CTLife.Net
 {
+    /// <summary>The venue microphone as the HUD sees it: VoiceService in the game, a fake in EditMode tests.</summary>
+    public interface IVenueMic
+    {
+        bool MicOn { get; }
+        Task<bool> SetMic(bool on, CancellationToken owner, CancellationToken gesture);
+    }
+
     /// <summary>One captured proximity-voice connection per venue visit; microphone requires an explicit gesture.</summary>
-    public sealed class VoiceService
+    public sealed class VoiceService : IVenueMic
     {
         public const float HearingRadius = 8f;
         public const int MaxSubscribed = 6;

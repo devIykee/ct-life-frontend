@@ -65,10 +65,63 @@ namespace CTLife.Tests
             }
         }
 
-        [Test]
-        public void ShippingEnvironmentsRefusePlaceholders()
+        [TestCase(false)]
+        [TestCase(true)]
+        public void StagingUsesConfirmedRailwayConfiguration(bool useBuildAsset)
         {
-            Assert.IsNotNull(EnvConfig.CreateDefault(EnvId.Staging).PlaceholderProblem());
+            EnvConfig c;
+            if (useBuildAsset)
+            {
+                // BuildScript reads this selection; runtime resolves the same Resources assets.
+                var selection = UnityEditor.AssetDatabase.LoadAssetAtPath<EnvSelection>(
+                    "Assets/Resources/Env/EnvSelection.asset");
+                Assert.IsNotNull(selection);
+                c = selection.Find(EnvId.Staging);
+                Assert.IsNotNull(c, "the build must have a staging configuration");
+                Assert.AreSame(UnityEngine.Resources.Load<EnvConfig>("Env/EnvConfig_Staging"), c);
+            }
+            else c = EnvConfig.CreateDefault(EnvId.Staging);
+
+            try
+            {
+                Assert.AreEqual(EnvId.Staging, c.id);
+                Assert.AreEqual("https://ctlife-api-production.up.railway.app/v1", c.restBaseUrl);
+                Assert.AreEqual("wss://ctlife-realtime-production.up.railway.app", c.realtimeUrl);
+                Assert.AreEqual(SolanaCluster.Devnet, c.cluster);
+                Assert.IsFalse(c.allowDevAuth);
+                Assert.AreEqual("https://ctlife.fun/", c.IdentityUri);
+                Assert.AreEqual("ctlife.fun", c.SiwsDomain);
+                Assert.IsEmpty(c.walletIdentityUri, "use the app-wide identity");
+                Assert.IsEmpty(c.liveKitUrlOverride, "RTC must use the backend-issued endpoint");
+                Assert.IsEmpty(c.liveKitDevToken, "never ship a pre-minted token");
+                Assert.IsNull(c.PlaceholderProblem(), "staging must pass the build's endpoint guard");
+            }
+            finally
+            {
+                if (!useBuildAsset) UnityEngine.Object.DestroyImmediate(c);
+            }
+        }
+
+        [TestCase(EnvId.Staging)]
+        [TestCase(EnvId.Prod)]
+        public void ShippingEnvironmentsRefusePlaceholderEndpoints(EnvId id)
+        {
+            var c = EnvConfig.CreateDefault(id);
+            try
+            {
+                c.restBaseUrl = "https://api.invalid/v1";
+                c.realtimeUrl = "wss://realtime.example.com";
+                Assert.AreEqual("restBaseUrl is a placeholder", c.PlaceholderProblem());
+                c.restBaseUrl = "https://api.example.com/v1";
+                c.realtimeUrl = "wss://realtime.invalid";
+                Assert.AreEqual("realtimeUrl is a placeholder", c.PlaceholderProblem());
+            }
+            finally { UnityEngine.Object.DestroyImmediate(c); }
+        }
+
+        [Test]
+        public void ProductionRemainsBlockedUntilItsHostsAreConfirmed()
+        {
             Assert.IsNotNull(EnvConfig.CreateDefault(EnvId.Prod).PlaceholderProblem());
             var real = EnvConfig.CreateDefault(EnvId.Prod);
             real.restBaseUrl = "https://api.example.com/v1";
@@ -83,7 +136,7 @@ namespace CTLife.Tests
         [Test]
         public void IdentityAndSiwsDomainComeFromOneValue()
         {
-            // User decision 2026-10-08: one identity value (no .dev), so switching to the real domain is one line.
+            // The deployed SIWS challenge and MWA identity share the purchased domain, including the URI's trailing slash.
             foreach (EnvId id in System.Enum.GetValues(typeof(EnvId)))
             {
                 var asset = UnityEngine.Resources.Load<EnvConfig>("Env/EnvConfig_" + id);
@@ -93,8 +146,8 @@ namespace CTLife.Tests
                 StringAssert.DoesNotContain(".dev/", asset.restBaseUrl + "/", asset.name);
             }
             var c = EnvConfig.CreateDefault(EnvId.Local);
-            Assert.AreEqual("https://ctlife.invalid/", c.IdentityUri);
-            Assert.AreEqual("ctlife.invalid", c.SiwsDomain);
+            Assert.AreEqual("https://ctlife.fun/", c.IdentityUri);
+            Assert.AreEqual("ctlife.fun", c.SiwsDomain);
             c.walletIdentityUri = "https://ctlife.example:8443/";
             Assert.AreEqual("ctlife.example:8443", c.SiwsDomain);
         }

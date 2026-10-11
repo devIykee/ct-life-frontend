@@ -149,8 +149,10 @@ namespace CTLife.Competition
                     return a.RequiredNetWorthCents.HasValue
                         ? CompStrings.F("gate.netWorth", Money.Cash(a.RequiredNetWorthCents.Value), Money.Cash(a.NetWorthCents))
                         : CompStrings.T("err.netWorth");
-                case "INVITE_REQUIRED": return CompStrings.T("gate.invite");
+                case "INVITE_REQUIRED":
+                case "NOT_A_MEMBER": return CompStrings.T("gate.invite"); // The server's code for cabal_lounge (venues-gating.ts).
                 case "SYBIL_JAILED": return CompStrings.T("gate.sybil");
+                case "NOT_JAILED": return CompStrings.T("gate.notJailed"); // The server's code for sybil_barn.
                 default: return CompStrings.T("gate.denied");
             }
         }
