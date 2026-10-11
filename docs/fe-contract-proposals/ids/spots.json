@@ -1,8 +1,8 @@
 {
   "_owner": "FE",
   "_provisional": true,
-  "version": "1.0.0-rc1+fe.1",
-  "_note": "FE-owned registry (contract section 2). Proposed as an ADDITIVE replacement of contract/ids/spots.json: every id in contract-v1.0.0-rc1 is kept unchanged; new ids are appended. Never renamed. Spot ids are global (venueId.spotId), as the rc1 venue room expects for `sit`. Each spot carries its venue-local position (x, z metres; rotY radians; x right, z forward) and, if claimable with `sit`, the clip the server should set (`anim`: act_sit / act_type); FE walkable rectangles match the venue scenes. Kinds kept from rc1 where the id existed.",
+  "version": "1.0.0-rc1+fe.2",
+  "_note": "FE-owned registry (contract section 2). Proposed as an ADDITIVE replacement of contract/ids/spots.json: every id in contract-v1.0.0-rc1 is kept unchanged; new ids are appended. Never renamed. Spot ids are global (venueId.spotId), as the rc1 venue room expects for `sit`. Each spot carries its venue-local position (x, z metres; rotY radians; x right, z forward) and, if claimable with `sit`, the clip the server should set (`anim`: act_sit / act_type); FE walkable rectangles match the venue scenes. Kinds kept from rc1 where the id existed. fe.2 (venue builder, 2026-10-08): additive spots for the venue dioramas; new sets checker_kiosk, yacht_club, penthouse_row.",
   "units": "metres, radians; venue-local; x right, z forward",
   "venues": {
     "timeline_square": {
@@ -1118,6 +1118,38 @@
           "x": 6,
           "z": 4,
           "rotY": 0
+        },
+        {
+          "id": "discord_heights.sofa_1",
+          "kind": "seat",
+          "x": -4.6,
+          "z": -3.0,
+          "rotY": 0,
+          "anim": "act_sit"
+        },
+        {
+          "id": "discord_heights.sofa_2",
+          "kind": "seat",
+          "x": -3.4,
+          "z": -3.0,
+          "rotY": 0,
+          "anim": "act_sit"
+        },
+        {
+          "id": "discord_heights.sofa_3",
+          "kind": "seat",
+          "x": 3.4,
+          "z": -3.0,
+          "rotY": 0,
+          "anim": "act_sit"
+        },
+        {
+          "id": "discord_heights.sofa_4",
+          "kind": "seat",
+          "x": 4.6,
+          "z": -3.0,
+          "rotY": 0,
+          "anim": "act_sit"
         }
       ]
     },
@@ -1179,6 +1211,38 @@
           "x": 6,
           "z": 4,
           "rotY": 0
+        },
+        {
+          "id": "audit_row.audit_desk_1",
+          "kind": "terminal",
+          "x": -7.5,
+          "z": 7.6,
+          "rotY": 0,
+          "anim": "act_type"
+        },
+        {
+          "id": "audit_row.audit_desk_2",
+          "kind": "terminal",
+          "x": -2.5,
+          "z": 7.6,
+          "rotY": 0,
+          "anim": "act_type"
+        },
+        {
+          "id": "audit_row.audit_desk_3",
+          "kind": "terminal",
+          "x": 2.5,
+          "z": 7.6,
+          "rotY": 0,
+          "anim": "act_type"
+        },
+        {
+          "id": "audit_row.audit_desk_4",
+          "kind": "terminal",
+          "x": 7.5,
+          "z": 7.6,
+          "rotY": 0,
+          "anim": "act_type"
         }
       ]
     },
@@ -1362,6 +1426,62 @@
           "x": 6,
           "z": 4,
           "rotY": 0
+        },
+        {
+          "id": "vc_row.pitch_1",
+          "kind": "seat",
+          "x": -2,
+          "z": 6.6,
+          "rotY": 0,
+          "anim": "act_sit"
+        },
+        {
+          "id": "vc_row.pitch_2",
+          "kind": "seat",
+          "x": 0,
+          "z": 6.6,
+          "rotY": 0,
+          "anim": "act_sit"
+        },
+        {
+          "id": "vc_row.pitch_3",
+          "kind": "seat",
+          "x": 2,
+          "z": 6.6,
+          "rotY": 0,
+          "anim": "act_sit"
+        },
+        {
+          "id": "vc_row.pitch_4",
+          "kind": "seat",
+          "x": -2,
+          "z": 8.6,
+          "rotY": 3.142,
+          "anim": "act_sit"
+        },
+        {
+          "id": "vc_row.pitch_5",
+          "kind": "seat",
+          "x": 0,
+          "z": 8.6,
+          "rotY": 3.142,
+          "anim": "act_sit"
+        },
+        {
+          "id": "vc_row.pitch_6",
+          "kind": "seat",
+          "x": 2,
+          "z": 8.6,
+          "rotY": 3.142,
+          "anim": "act_sit"
+        },
+        {
+          "id": "vc_row.partner_desk",
+          "kind": "terminal",
+          "x": -9,
+          "z": -4,
+          "rotY": 0,
+          "anim": "act_type"
         }
       ]
     },
@@ -1423,6 +1543,86 @@
           "x": 6,
           "z": 4,
           "rotY": 0
+        },
+        {
+          "id": "hackathon_house.desk_1",
+          "kind": "terminal",
+          "x": -6,
+          "z": -2.75,
+          "rotY": 0,
+          "anim": "act_type"
+        },
+        {
+          "id": "hackathon_house.desk_2",
+          "kind": "terminal",
+          "x": -2,
+          "z": -2.75,
+          "rotY": 0,
+          "anim": "act_type"
+        },
+        {
+          "id": "hackathon_house.desk_3",
+          "kind": "terminal",
+          "x": 2,
+          "z": -2.75,
+          "rotY": 0,
+          "anim": "act_type"
+        },
+        {
+          "id": "hackathon_house.desk_4",
+          "kind": "terminal",
+          "x": 6,
+          "z": -2.75,
+          "rotY": 0,
+          "anim": "act_type"
+        },
+        {
+          "id": "hackathon_house.desk_5",
+          "kind": "terminal",
+          "x": -6,
+          "z": -0.25,
+          "rotY": 3.142,
+          "anim": "act_type"
+        },
+        {
+          "id": "hackathon_house.desk_6",
+          "kind": "terminal",
+          "x": -2,
+          "z": -0.25,
+          "rotY": 3.142,
+          "anim": "act_type"
+        },
+        {
+          "id": "hackathon_house.desk_7",
+          "kind": "terminal",
+          "x": 2,
+          "z": -0.25,
+          "rotY": 3.142,
+          "anim": "act_type"
+        },
+        {
+          "id": "hackathon_house.desk_8",
+          "kind": "terminal",
+          "x": 6,
+          "z": -0.25,
+          "rotY": 3.142,
+          "anim": "act_type"
+        },
+        {
+          "id": "hackathon_house.couch_1",
+          "kind": "seat",
+          "x": -9.5,
+          "z": 6.2,
+          "rotY": 0,
+          "anim": "act_sit"
+        },
+        {
+          "id": "hackathon_house.couch_2",
+          "kind": "seat",
+          "x": -8.0,
+          "z": 6.2,
+          "rotY": 0,
+          "anim": "act_sit"
         }
       ]
     },
@@ -1484,6 +1684,124 @@
           "x": 6,
           "z": 4,
           "rotY": 0
+        },
+        {
+          "id": "conference_hall.stage_speaker",
+          "kind": "stage",
+          "x": 0,
+          "z": 8,
+          "rotY": 3.142,
+          "anim": "loco_idle"
+        },
+        {
+          "id": "conference_hall.seat_1",
+          "kind": "seat",
+          "x": -7.5,
+          "z": 0.0,
+          "rotY": 0,
+          "anim": "act_sit"
+        },
+        {
+          "id": "conference_hall.seat_2",
+          "kind": "seat",
+          "x": -5,
+          "z": 0.0,
+          "rotY": 0,
+          "anim": "act_sit"
+        },
+        {
+          "id": "conference_hall.seat_3",
+          "kind": "seat",
+          "x": -2.5,
+          "z": 0.0,
+          "rotY": 0,
+          "anim": "act_sit"
+        },
+        {
+          "id": "conference_hall.seat_4",
+          "kind": "seat",
+          "x": 2.5,
+          "z": 0.0,
+          "rotY": 0,
+          "anim": "act_sit"
+        },
+        {
+          "id": "conference_hall.seat_5",
+          "kind": "seat",
+          "x": 5,
+          "z": 0.0,
+          "rotY": 0,
+          "anim": "act_sit"
+        },
+        {
+          "id": "conference_hall.seat_6",
+          "kind": "seat",
+          "x": 7.5,
+          "z": 0.0,
+          "rotY": 0,
+          "anim": "act_sit"
+        },
+        {
+          "id": "conference_hall.seat_7",
+          "kind": "seat",
+          "x": -7.5,
+          "z": -2.5,
+          "rotY": 0,
+          "anim": "act_sit"
+        },
+        {
+          "id": "conference_hall.seat_8",
+          "kind": "seat",
+          "x": -5,
+          "z": -2.5,
+          "rotY": 0,
+          "anim": "act_sit"
+        },
+        {
+          "id": "conference_hall.seat_9",
+          "kind": "seat",
+          "x": -2.5,
+          "z": -2.5,
+          "rotY": 0,
+          "anim": "act_sit"
+        },
+        {
+          "id": "conference_hall.seat_10",
+          "kind": "seat",
+          "x": 2.5,
+          "z": -2.5,
+          "rotY": 0,
+          "anim": "act_sit"
+        },
+        {
+          "id": "conference_hall.seat_11",
+          "kind": "seat",
+          "x": 5,
+          "z": -2.5,
+          "rotY": 0,
+          "anim": "act_sit"
+        },
+        {
+          "id": "conference_hall.seat_12",
+          "kind": "seat",
+          "x": 7.5,
+          "z": -2.5,
+          "rotY": 0,
+          "anim": "act_sit"
+        },
+        {
+          "id": "conference_hall.booth_1",
+          "kind": "npc",
+          "x": -10.6,
+          "z": -5,
+          "rotY": 1.571
+        },
+        {
+          "id": "conference_hall.booth_2",
+          "kind": "npc",
+          "x": 10.6,
+          "z": -5,
+          "rotY": -1.571
         }
       ]
     },
@@ -1545,6 +1863,84 @@
           "x": 6,
           "z": 4,
           "rotY": 0
+        },
+        {
+          "id": "ratio_arena.corner_red",
+          "kind": "stand",
+          "x": -2.5,
+          "z": 0,
+          "rotY": 1.571
+        },
+        {
+          "id": "ratio_arena.corner_blue",
+          "kind": "stand",
+          "x": 2.5,
+          "z": 0,
+          "rotY": -1.571
+        },
+        {
+          "id": "ratio_arena.bleacher_1",
+          "kind": "seat",
+          "x": -7,
+          "z": 8.0,
+          "rotY": 3.142,
+          "anim": "act_sit"
+        },
+        {
+          "id": "ratio_arena.bleacher_2",
+          "kind": "seat",
+          "x": -5,
+          "z": 8.0,
+          "rotY": 3.142,
+          "anim": "act_sit"
+        },
+        {
+          "id": "ratio_arena.bleacher_3",
+          "kind": "seat",
+          "x": -3,
+          "z": 8.0,
+          "rotY": 3.142,
+          "anim": "act_sit"
+        },
+        {
+          "id": "ratio_arena.bleacher_4",
+          "kind": "seat",
+          "x": -1,
+          "z": 8.0,
+          "rotY": 3.142,
+          "anim": "act_sit"
+        },
+        {
+          "id": "ratio_arena.bleacher_5",
+          "kind": "seat",
+          "x": 1,
+          "z": 8.0,
+          "rotY": 3.142,
+          "anim": "act_sit"
+        },
+        {
+          "id": "ratio_arena.bleacher_6",
+          "kind": "seat",
+          "x": 3,
+          "z": 8.0,
+          "rotY": 3.142,
+          "anim": "act_sit"
+        },
+        {
+          "id": "ratio_arena.bleacher_7",
+          "kind": "seat",
+          "x": 5,
+          "z": 8.0,
+          "rotY": 3.142,
+          "anim": "act_sit"
+        },
+        {
+          "id": "ratio_arena.bleacher_8",
+          "kind": "seat",
+          "x": 7,
+          "z": 8.0,
+          "rotY": 3.142,
+          "anim": "act_sit"
         }
       ]
     },
@@ -1606,6 +2002,22 @@
           "x": 6,
           "z": 4,
           "rotY": 0
+        },
+        {
+          "id": "airdrop_fields.bench_1",
+          "kind": "seat",
+          "x": -8,
+          "z": -5,
+          "rotY": 1.571,
+          "anim": "act_sit"
+        },
+        {
+          "id": "airdrop_fields.bench_2",
+          "kind": "seat",
+          "x": 8,
+          "z": -5,
+          "rotY": -1.571,
+          "anim": "act_sit"
         }
       ]
     },
@@ -1667,6 +2079,22 @@
           "x": 6,
           "z": 4,
           "rotY": 0
+        },
+        {
+          "id": "sybil_barn.hay_1",
+          "kind": "seat",
+          "x": -9,
+          "z": -3,
+          "rotY": 1.571,
+          "anim": "act_sit"
+        },
+        {
+          "id": "sybil_barn.hay_2",
+          "kind": "seat",
+          "x": 9,
+          "z": -3,
+          "rotY": -1.571,
+          "anim": "act_sit"
         }
       ]
     },
@@ -1789,6 +2217,54 @@
           "x": 6,
           "z": 4,
           "rotY": 0
+        },
+        {
+          "id": "cabal_lounge.booth_1",
+          "kind": "seat",
+          "x": -7.4,
+          "z": 8.2,
+          "rotY": 3.142,
+          "anim": "act_sit"
+        },
+        {
+          "id": "cabal_lounge.booth_2",
+          "kind": "seat",
+          "x": -5.6,
+          "z": 8.2,
+          "rotY": 3.142,
+          "anim": "act_sit"
+        },
+        {
+          "id": "cabal_lounge.booth_3",
+          "kind": "seat",
+          "x": -0.9,
+          "z": 8.2,
+          "rotY": 3.142,
+          "anim": "act_sit"
+        },
+        {
+          "id": "cabal_lounge.booth_4",
+          "kind": "seat",
+          "x": 0.9,
+          "z": 8.2,
+          "rotY": 3.142,
+          "anim": "act_sit"
+        },
+        {
+          "id": "cabal_lounge.booth_5",
+          "kind": "seat",
+          "x": 5.6,
+          "z": 8.2,
+          "rotY": 3.142,
+          "anim": "act_sit"
+        },
+        {
+          "id": "cabal_lounge.booth_6",
+          "kind": "seat",
+          "x": 7.4,
+          "z": 8.2,
+          "rotY": 3.142,
+          "anim": "act_sit"
         }
       ]
     },
@@ -1850,6 +2326,52 @@
           "x": 6,
           "z": 4,
           "rotY": 0
+        },
+        {
+          "id": "ct_jail.bunk_1",
+          "kind": "seat",
+          "x": -10.2,
+          "z": 8.6,
+          "rotY": 3.142,
+          "anim": "act_sit"
+        },
+        {
+          "id": "ct_jail.bunk_2",
+          "kind": "seat",
+          "x": -4.2,
+          "z": 8.6,
+          "rotY": 3.142,
+          "anim": "act_sit"
+        },
+        {
+          "id": "ct_jail.bunk_3",
+          "kind": "seat",
+          "x": 1.8,
+          "z": 8.6,
+          "rotY": 3.142,
+          "anim": "act_sit"
+        },
+        {
+          "id": "ct_jail.bunk_4",
+          "kind": "seat",
+          "x": 7.8,
+          "z": 8.6,
+          "rotY": 3.142,
+          "anim": "act_sit"
+        },
+        {
+          "id": "ct_jail.kyc_desk",
+          "kind": "npc",
+          "x": -9,
+          "z": -5,
+          "rotY": 1.571
+        },
+        {
+          "id": "ct_jail.mugshot",
+          "kind": "stand",
+          "x": 7,
+          "z": -6,
+          "rotY": 3.142
         }
       ]
     },
@@ -1907,6 +2429,319 @@
           "z": 2,
           "rotY": 0,
           "anim": "act_sit"
+        }
+      ]
+    },
+    "checker_kiosk": {
+      "walkable": [
+        {
+          "x0": -8,
+          "z0": -6,
+          "x1": 8,
+          "z1": 6
+        }
+      ],
+      "spots": [
+        {
+          "id": "checker_kiosk.entrance",
+          "kind": "exit",
+          "x": 0,
+          "z": -5,
+          "rotY": 0
+        },
+        {
+          "id": "checker_kiosk.exit",
+          "kind": "exit",
+          "x": 0,
+          "z": -6,
+          "rotY": 3.142
+        },
+        {
+          "id": "checker_kiosk.center",
+          "kind": "stand",
+          "x": 0,
+          "z": 0,
+          "rotY": 0.0
+        },
+        {
+          "id": "checker_kiosk.kiosk_1",
+          "kind": "stand",
+          "x": -4,
+          "z": 3.4,
+          "rotY": 0.0
+        },
+        {
+          "id": "checker_kiosk.kiosk_2",
+          "kind": "stand",
+          "x": 0,
+          "z": 3.4,
+          "rotY": 0.0
+        },
+        {
+          "id": "checker_kiosk.kiosk_3",
+          "kind": "stand",
+          "x": 4,
+          "z": 3.4,
+          "rotY": 0.0
+        },
+        {
+          "id": "checker_kiosk.bench_1",
+          "kind": "seat",
+          "x": -6,
+          "z": -2,
+          "rotY": 1.571,
+          "anim": "act_sit"
+        },
+        {
+          "id": "checker_kiosk.bench_2",
+          "kind": "seat",
+          "x": 6,
+          "z": -2,
+          "rotY": -1.571,
+          "anim": "act_sit"
+        },
+        {
+          "id": "checker_kiosk.attendant",
+          "kind": "npc",
+          "x": 6.5,
+          "z": 3.5,
+          "rotY": -1.571
+        }
+      ]
+    },
+    "yacht_club": {
+      "walkable": [
+        {
+          "x0": -12,
+          "z0": -8,
+          "x1": 12,
+          "z1": 8
+        }
+      ],
+      "spots": [
+        {
+          "id": "yacht_club.entrance",
+          "kind": "exit",
+          "x": 0,
+          "z": -7,
+          "rotY": 0
+        },
+        {
+          "id": "yacht_club.exit",
+          "kind": "exit",
+          "x": 0,
+          "z": -8,
+          "rotY": 3.142
+        },
+        {
+          "id": "yacht_club.center",
+          "kind": "stand",
+          "x": 0,
+          "z": 0,
+          "rotY": 0.0
+        },
+        {
+          "id": "yacht_club.lounger_1",
+          "kind": "seat",
+          "x": -9,
+          "z": 5.4,
+          "rotY": 0,
+          "anim": "act_sit"
+        },
+        {
+          "id": "yacht_club.lounger_2",
+          "kind": "seat",
+          "x": -6,
+          "z": 5.4,
+          "rotY": 0,
+          "anim": "act_sit"
+        },
+        {
+          "id": "yacht_club.lounger_3",
+          "kind": "seat",
+          "x": -3,
+          "z": 5.4,
+          "rotY": 0,
+          "anim": "act_sit"
+        },
+        {
+          "id": "yacht_club.lounger_4",
+          "kind": "seat",
+          "x": 3,
+          "z": 5.4,
+          "rotY": 0,
+          "anim": "act_sit"
+        },
+        {
+          "id": "yacht_club.lounger_5",
+          "kind": "seat",
+          "x": 6,
+          "z": 5.4,
+          "rotY": 0,
+          "anim": "act_sit"
+        },
+        {
+          "id": "yacht_club.lounger_6",
+          "kind": "seat",
+          "x": 9,
+          "z": 5.4,
+          "rotY": 0,
+          "anim": "act_sit"
+        },
+        {
+          "id": "yacht_club.bar_1",
+          "kind": "seat",
+          "x": -9.0,
+          "z": -4,
+          "rotY": -1.571,
+          "anim": "act_sit"
+        },
+        {
+          "id": "yacht_club.bar_2",
+          "kind": "seat",
+          "x": -9.0,
+          "z": -2.5,
+          "rotY": -1.571,
+          "anim": "act_sit"
+        },
+        {
+          "id": "yacht_club.bar_3",
+          "kind": "seat",
+          "x": -9.0,
+          "z": -1,
+          "rotY": -1.571,
+          "anim": "act_sit"
+        },
+        {
+          "id": "yacht_club.bar_4",
+          "kind": "seat",
+          "x": -9.0,
+          "z": 0.5,
+          "rotY": -1.571,
+          "anim": "act_sit"
+        },
+        {
+          "id": "yacht_club.bartender",
+          "kind": "npc",
+          "x": -11.3,
+          "z": -1.75,
+          "rotY": 1.571
+        },
+        {
+          "id": "yacht_club.gangway",
+          "kind": "stand",
+          "x": 0,
+          "z": 7.3,
+          "rotY": 0.0
+        }
+      ]
+    },
+    "penthouse_row": {
+      "walkable": [
+        {
+          "x0": -12,
+          "z0": -9,
+          "x1": 12,
+          "z1": 9
+        }
+      ],
+      "spots": [
+        {
+          "id": "penthouse_row.entrance",
+          "kind": "exit",
+          "x": 0,
+          "z": -8,
+          "rotY": 0
+        },
+        {
+          "id": "penthouse_row.exit",
+          "kind": "exit",
+          "x": 0,
+          "z": -9,
+          "rotY": 3.142
+        },
+        {
+          "id": "penthouse_row.center",
+          "kind": "stand",
+          "x": 0,
+          "z": 0,
+          "rotY": 0.0
+        },
+        {
+          "id": "penthouse_row.door_1",
+          "kind": "stand",
+          "x": -7,
+          "z": 8.2,
+          "rotY": 0.0
+        },
+        {
+          "id": "penthouse_row.door_2",
+          "kind": "stand",
+          "x": 0,
+          "z": 8.2,
+          "rotY": 0.0
+        },
+        {
+          "id": "penthouse_row.door_3",
+          "kind": "stand",
+          "x": 7,
+          "z": 8.2,
+          "rotY": 0.0
+        },
+        {
+          "id": "penthouse_row.lounger_1",
+          "kind": "seat",
+          "x": 3.4,
+          "z": -4.6,
+          "rotY": 1.571,
+          "anim": "act_sit"
+        },
+        {
+          "id": "penthouse_row.lounger_2",
+          "kind": "seat",
+          "x": 3.4,
+          "z": -3.0,
+          "rotY": 1.571,
+          "anim": "act_sit"
+        },
+        {
+          "id": "penthouse_row.lounger_3",
+          "kind": "seat",
+          "x": 3.4,
+          "z": -1.4,
+          "rotY": 1.571,
+          "anim": "act_sit"
+        },
+        {
+          "id": "penthouse_row.lounger_4",
+          "kind": "seat",
+          "x": 3.4,
+          "z": 0.2,
+          "rotY": 1.571,
+          "anim": "act_sit"
+        },
+        {
+          "id": "penthouse_row.sofa_1",
+          "kind": "seat",
+          "x": -9.6,
+          "z": -3.0,
+          "rotY": 1.571,
+          "anim": "act_sit"
+        },
+        {
+          "id": "penthouse_row.sofa_2",
+          "kind": "seat",
+          "x": -9.6,
+          "z": -1.2,
+          "rotY": 1.571,
+          "anim": "act_sit"
+        },
+        {
+          "id": "penthouse_row.concierge",
+          "kind": "npc",
+          "x": -5,
+          "z": -5.4,
+          "rotY": 3.142
         }
       ]
     }
