@@ -1,4 +1,214 @@
-READY TO COMMIT: client/Assets/Scripts/Editor/VenueBuild/VenueRepack.cs client/Assets/Scripts/Editor/VenueBuild/VenueRepack.cs.meta client/Assets/Scripts/Editor/VenueBuild/VenueBake.cs client/Assets/Scripts/Editor/VenueBuild/VenueBuildPipeline.cs client/Assets/Scripts/Editor/VenueBuild/VenueCatalog.cs client/Assets/Scripts/Editor/VenueBuild/VenueMeshAcc.cs client/Assets/Scripts/Editor/VenueBuild/VenueSpec.cs client/Assets/Scripts/Editor/VenueBuild/VenueVerify.cs client/Assets/World/Venues/timeline_square client/Assets/World/Venues/timeline_square.meta client/Assets/World/Venues/terminal_cafe client/Assets/World/Venues/terminal_cafe.meta client/Assets/World/Venues/spaces_studio client/Assets/World/Venues/spaces_studio.meta client/Assets/Venues/VenueContentRegistry.asset client/Assets/Resources/World/VenueContent/venue_timeline_square.asset client/Assets/Resources/World/VenueContent/venue_terminal_cafe.asset client/Assets/Resources/World/VenueContent/venue_spaces_studio.asset docs/progress/venues.md — perf(venues): repack Timeline Square, Terminal Café and Spaces Studio through the venue pipeline (181/194/116 → 28/25/17 draws)
+READY TO COMMIT — merge in this order, back to back. Every builder script rides in step 1 (they depend on each other); steps 2–4 are data. Use `git add -A` on these paths (steps 3 and 4 also delete old studio / Timeline / café files). The `client/Assets/Art/` re-saves are Unity import churn: discard them. Re-run of all three rebuilt venues: `VenueBuildPipeline.All -ctVenues spaces_studio,timeline_square,terminal_cafe -ctEntranceCaptures`.
+READY TO COMMIT (1/3 collision + shared builder scripts): client/Assets/Scripts/Editor/VenueBuild/VenueCollision.cs client/Assets/Scripts/Editor/VenueBuild/VenueCollision.cs.meta client/Assets/Scripts/Editor/VenueBuild/VenueCollisionPass.cs client/Assets/Scripts/Editor/VenueBuild/VenueCollisionPass.cs.meta client/Assets/Scripts/Editor/VenueBuild/VenueMeshCompression.cs client/Assets/Scripts/Editor/VenueBuild/VenueMeshCompression.cs.meta client/Assets/Scripts/Editor/VenueBuild/VenueLookdev.cs client/Assets/Scripts/Editor/VenueBuild/VenueLookdev.cs.meta client/Assets/Scripts/Editor/VenueBuild/VenueSeatMotion.cs client/Assets/Scripts/Editor/VenueBuild/VenueSeatMotion.cs.meta client/Assets/Scripts/Editor/VenueBuild/VenueDump.cs client/Assets/Scripts/Editor/VenueBuild/VenueDump.cs.meta client/Assets/Scripts/Editor/VenueBuild/Venues_Spaces.cs client/Assets/Scripts/Editor/VenueBuild/Venues_Spaces.cs.meta client/Assets/Scripts/Editor/VenueBuild/Venues_TimelineSquare.cs client/Assets/Scripts/Editor/VenueBuild/Venues_TimelineSquare.cs.meta client/Assets/Scripts/Editor/VenueBuild/Venues_CafeDress.cs client/Assets/Scripts/Editor/VenueBuild/Venues_CafeDress.cs.meta client/Assets/Scripts/Editor/VenueBuild/VenueBuildPipeline.cs client/Assets/Scripts/Editor/VenueBuild/VenueKit.cs client/Assets/Scripts/Editor/VenueBuild/VenueMeshAcc.cs client/Assets/Scripts/Editor/VenueBuild/VenueProps.cs client/Assets/Scripts/Editor/VenueBuild/VenueRepack.cs client/Assets/Scripts/Editor/VenueBuild/VenueSpec.cs client/Assets/Scripts/Editor/VenueBuild/VenueVerify.cs client/Assets/Scripts/Editor/VenueBuild/VenueBake.cs client/Assets/Scripts/Editor/VenueBuild/VenuePalette.cs client/Assets/Scripts/World/Venue/VenueLook.cs client/Assets/Scripts/World/Venue/VenueLook.cs.meta client/Assets/Settings/CTLife_URP_Renderer.asset 'client/Assets/World/Venues/*/*.prefab' 'client/Assets/World/Venues/*/*_NavMesh.asset' ':(exclude)client/Assets/World/Venues/spaces_studio' ':(exclude)client/Assets/World/Venues/timeline_square' ':(exclude)client/Assets/World/Venues/terminal_cafe' — fix(venues): prop colliders and walk-around NavMesh for all venues with a build gate; builder support for look-dev (grade volume, probes, reflections), curved decks, live screens, lit decals, seat-motion binding
+READY TO COMMIT (APK mesh compression): 'client/Assets/World/Venues/*/Lighting/Meshes/*.asset' 'client/Assets/World/Venues/*/Meshes/*.asset' ':(exclude)client/Assets/World/Venues/spaces_studio' ':(exclude)client/Assets/World/Venues/timeline_square' ':(exclude)client/Assets/World/Venues/terminal_cafe' — perf(venues): mesh compression on the venue meshes (bundle 71.6 → 34.5 MiB raw, 31.3 → 19.9 MiB LZ4)
+READY TO COMMIT (2/3 Spaces Studio): client/Assets/World/Venues/spaces_studio client/Assets/World/Venues/_Shared/Textures/VenueBlockPalette.png client/Assets/Scripts/Editor/VenueBuild/VenueCatalog.cs docs/fe-contract-proposals/ids/spots.json tools/venues/make_venue_signs.py tools/venues/propose_spots.py — feat(venues): Spaces Studio v4 built to the in-game concept (curved amphitheatre, talk-show stage, green-room lounge, terrace), spots.json fe.4
+READY TO COMMIT (3/3 look-dev Timeline Square + Terminal Café): client/Assets/World/Venues/timeline_square client/Assets/World/Venues/terminal_cafe art/LICENSES.md docs/progress/venues.md — feat(venues): Timeline Square v2 to the key art (golden-hour square, fountain, 15 Tier A community eggs, live screens) and a Terminal Café look-dev pass
+
+## 2026-10-08 round 3, task 3: look-dev, Timeline Square v2 and Terminal Café
+
+**Evidence** (`ct-life-evidence/venues/round3/`):
+- `timeline_square-before-after-concept.png`: before, after (entrance and centre spots, game camera), the in-game concept
+  and the title art.
+- `timeline_square-eggs-views.png`: five game-camera views at named spots, showing the eggs.
+- `terminal_cafe-before-after.png`.
+- Single shots `*-after-game*.png` and `*-after-overview.png`.
+
+**Look-dev, shared by the three venues:**
+- **Grade:** a global Volume per venue with Neutral tonemapping, colour adjustments, white balance, threshold bloom
+  (emissive lights only, high-quality filtering off) and a light vignette. `VenueLook` turns post-processing on for the
+  gameplay camera; `VenueLook.PostProcessingEnabled` is the Settings switch.
+- **Probes:** baked light probes for characters (Timeline 510, café 160, studio 180) and a baked reflection cubemap.
+- **Lightmaps:** baked AO is on (it already was).
+- **Sky:** the clear colour matches each painted sky.
+- **Renderer:** the URP renderer needed its `postProcessData` set (it was empty).
+
+**Timeline Square v2 (layout build; the old repack source is unused):**
+- **Square:** painted seamless cobbles; a three-tier fountain on a round raised deck with flower troughs; six park
+  benches with flower pots; lantern posts; citrus trees in stone planters.
+- **West:** blue café with a striped awning and terrace, the Pixel Wall house, a bakery with a red awning and a
+  balcony, a vine-covered corner house.
+- **North:** two rows carrying billboards `bb_01` / `bb_02`, a street with steps up to the town hall and its Timeline
+  screen, the clock tower.
+- **East:** toyshop, parcels shop, market building.
+- **South:** a stone wall with iron railings and flower troughs.
+- **Background:** a hill town, cypresses, the Colosseum-style hall, a golden-hour sky with sea and hills.
+- **Light:** golden-hour sun from the south-west and warm lanterns. The camera is 14.5 m / 33° (was the 11.5 / 31
+  default) so the plaza and its facades read.
+- **Live surfaces** (WorldLife `LiveSurfaces`, `Screen_*` materials with their own idle textures via the new
+  `VB.LiveScreen`): `timeline_screen`, `pixel_wall` (gets the `pixel_tile_*` slots) and `bb_01` / `bb_02` (get
+  `billboard_01/02`). Only the Timeline screen existed before.
+- **15 Tier A eggs**, our own drawings with no logos or letters, placed as in the title art:
+  - **Café:** Jupiter-style astronaut cat napping on the café sill; WIF-style tan dog in a pink knit hat under a café
+    table; Seeker-style three-lens phone and coffee on that table.
+  - **West side:** Phantom-style purple ghost (scarf, round cheeks) peeking from a lamp post; Popcat-style O-mouth cat
+    with a doughnut on a string in the bakery window.
+  - **South-west corner:** ORE 5×5 copper tiles with pickaxe and wheelbarrow, behind an iron fence.
+  - **East side:** Claynosaurz-style clay dino in the toyshop window; Mad Lads-style red burst poster; Helius-style
+    orange orb lamp over parcels.
+  - **Square, east and front:** BONK-style yellow/orange stall with a red "!" pennant and a mouthless dog balloon;
+    Pudgy-style igloo shaved-ice cart with a blue penguin plush and a wizard-hat penguin; pump.fun-style capsule
+    machine (green/white capsules).
+  - **Sky and background:** Superteam-style bunting (two strings: purple/yellow pennants and country flags); the
+    Solana gradient as a sky wash only; the Colosseum-style arched hall with a burgundy banner.
+- **Spots (`spots.json` fe.4):**
+  - `center` → (0, −5.6) and `square_center` → (0, −7.0), off the fountain.
+  - The six benches now face the fountain. rc1 rotY values were 30–150° off, inconsistently.
+  - Everything else is unchanged.
+
+**Terminal Café look-dev (still a repack of the authored prefab):**
+- **Why it stays a repack:** the character-feel lane fitted the typing and social sit motions to this furniture
+  (`CafeSeatMotionProfile`).
+- **New `VenueSpec.dress` hook:** adds dressing to the source instance before the merge, atlas and bake.
+- **Light:** the desk lamps are lit, glass table lamps sit on the social tables, and brass wall sconces carry baked
+  warm lights.
+- **Dressing:** a deep-green wainscot with an oak rail; plants, lounge bookshelves, framed pictures, cake, doughnuts
+  and mugs on the counter, and a back-bar shelf.
+- **Removed:** the two floating chandeliers (their baked sun shadows read as floor stains); their lights stay.
+- **Gate:** parity against the authored source is OK. Anchors, approaches, the profile and the source colliders are
+  unchanged (`receipts/terminal_cafe-parity.json`).
+
+**Budgets (batchmode estimates, Android quality level, LOD bias 0.7):**
+
+| Venue | Gameplay draws (max) | Gameplay tris | Whole venue | Lightmaps |
+| --- | --- | --- | --- | --- |
+| Timeline Square | 10 | 87k | 13 draws / 87k | 2 × 1024² |
+| Spaces Studio | 23 | 69k | 40 draws / 94k | 2 × 512² |
+| Terminal Café | 25 | 68k | 25 draws / 80k | 2 × 512² |
+
+All spots are reachable and the collision gate passes everywhere.
+
+**APK** [Inference, not an APK build]: source folder size changed as follows.
+- **Timeline:** 54.5 → 24.4 MB. The repack's four atlases are gone (they were unreferenced and are deleted).
+- **Café:** 26.5 → 18.6 MB.
+- **Studio:** 14.1 → 19.1 MB.
+- **Net:** about −33 MB of source assets. No APK was built in this lane.
+
+**Not matched yet:**
+- The painted concepts' surface detail and their people. In-game, the crowd supplies the people.
+- **Café:** no in-game concept exists, so it was graded and dressed toward the key-art warmth only. The authored
+  shell (beige walls, open top) is unchanged.
+
+## 2026-10-08 round 3, task 2: Spaces Studio v4 (to `ingame-spaces-concept-v1.png`)
+
+**Before/after/concept:** `ct-life-evidence/venues/round3/spaces_studio-before-after-concept.png` (before = dev build,
+after = batchmode game camera at the entrance and at the centre spot, baked + graded; then the concept). Single shots:
+`round3/spaces_studio-after-game.png`, `-after-game-center.png`, `-after-overview.png`.
+
+**Why it read as a café:** 20 seats in a 5 × 4 grid and 10 stage stools in a line. The layout now follows the concept:
+- **Stage:** a round two-step stage (honey/walnut wood, oak nosings, amber LED strips under both nosings with soft
+  baked spill), a cream woven rug, four tan armchairs in a talk-show semicircle with coloured cushions and boom mic
+  stands, a low round table, and the host desk (sun lamp, mixer, laptop, plant, boom mic).
+- **North wall:** the teal LED waveform (live hook `Hook_SpacesWaveform`), fluted purple/teal acoustic panels, walnut
+  slats, spot cans, speakers on tripods, the red on-air lamp (live hook `Hook_OnAirLamp`, idle dim), a truss with six
+  warm spots.
+- **Audience:** bean bags on two floor arcs and square poufs on two curved wooden risers with amber LED nosing, rugs,
+  drink tables, floor cushions.
+- **West:** green-room lounge (teal sofa with pillows, record player, headphone shelf, slatted partition, rug, lamp)
+  beside the backstage block: rainbow neon arch over the door (Colosseum-style arch), a lanyard frame (three big
+  conference lanyards) and a lanyard poster wall (Breakpoint-style). Backstage room behind the door (couch, coat
+  rail, vanity mirror, fridge, plants).
+- **East:** open glazing onto the terrace (cushioned benches, lanterns, string lights, planters, palms) with one
+  multi-country flag bunting (Superteam-style), the evening city and a painted sky with a mountain range.
+- **Branded nods (our own drawings, no logos or letters):** Solflare-style sun lamp on the host desk, Seeker-style
+  three-lens phones on the pod mic stands and the host desk.
+- **Added:** a sponsor screen `Screen_bb_studio` on the backstage block. It is a LiveSurfaces billboard, so the
+  contract's studio ad slot `billboard_03` now has a surface; it shows the stage feed when idle.
+
+**Spots (`spots.json` fe.4, positions/rotY only; ids, kinds and anims unchanged):**
+- `seat_1..20` sit on four arcs (r 8.2 / 10.2 / 12.2 / 14.2 m) round the stage centre (0, 6.2), facing it.
+- `stage_4..7` form a shallow talk-show arc facing the room (rc1 x kept, turned 8–15° inwards, z 5.2–5.75);
+  `stage_1..3` / `8..10` are pods hugging the stage (r 5.65 m).
+- **Fitted seat motion kept:** the dev studio carried the character-feel lane's `CafeSeatMotionProfile`, so v4 binds it
+  again. `VenueSeatMotion` copies the animator bindings from the authored source and regenerates the 30 exit routes
+  from the new approaches. Each approach is a 0.95 m side step, right of `seat_*` and left of `stage_*`, matching the
+  fitted exit motions; the build fails if a route would be rejected at runtime.
+- [Inference] The fitted social sit pose was made for chair-height seats. Bean bags (seat about 0.35 m) and bar stools
+  (0.75 m) may need a refit by the feel lane.
+- `greenroom_1/2` are new (lounge sofa).
+- `stage_host`, `entrance`, `exit` and `center` are unchanged.
+- **Heights:** stage seats sit at y 0.22, `seat_11..15` at 0.12, `seat_16..20` at 0.24.
+- **Merge note:** dev's fe.3 (builder_hills) is kept. My worktree was fast-forwarded to dev 981f134f before
+  writing fe.4.
+
+**Builder additions (shared, used again for Timeline Square):**
+- `VB.Arc` and `VB.WalkableArc`: curved blocks and walkable decks.
+- `Sign(..., lit: true)` / `FloorSign(..., lit: true)`: printed decor that is lit and lightmapped instead of unlit.
+- `VB.LiveScreen`: a `Screen_<id>` material with its own idle texture, for WorldLife LiveSurfaces.
+- `BoxRot`, `CylinderRot`, `Triangle`, and smoother `Blob` options.
+- Entrance and centre gameplay captures at the concepts' 1870×841.
+- Palette: appended `rose`, `dustpink`, `tan`, `honey`, `sage`. Existing swatches are unchanged.
+
+**Numbers** (final build, log `logs/70-studio-timeline.log`):
+- **Gameplay views:** 23 draws max, 68.8k tris (entrance), 19 draws / 53k (centre).
+- **Whole venue:** 40 draws / 94k tris at LOD0.
+- **Bake:** 2 lightmaps (512²), 180 light probes, baked reflection cubemap.
+- **Gates:** 36/36 spots reachable. Collision gate: 86 props, 35 seats, 51 obstacles.
+
+**Not matched yet:**
+- The concept's painterly surface detail (fabric folds, wood grain).
+- The camera-facing city view: the gameplay camera looks north, so the terrace is at the right edge of the frame.
+
+## 2026-10-08 round 3: APK, venue mesh compression
+
+`VenueMeshCompression.Run` sets Unity mesh compression to **Low** on every venue mesh asset (764 meshes in 25 venues).
+`VenueBake` applies the same level to new UV2 copies.
+- **What it does:** the vertex data is quantised on disk and decompressed on load
+  ([Unity manual](https://docs.unity3d.com/6000.3/Documentation/Manual/types-of-mesh-data-compression.html)).
+- **Why Low:** Low keeps UV precision high for lightmap UV2 and atlas UVs. Medium would cut UVs to about 10 bits.
+
+**Measured** with `VenueMeshCompression.Measure` (a throwaway asset bundle of the meshes, StandaloneOSX target).
+These are not APK numbers:
+
+| Mesh set | Raw | LZ4 |
+| --- | --- | --- |
+| 3 repacked venues | 33.0 → 15.9 MiB | 15.1 → 9.6 MiB |
+| All 25 venues | 71.6 → 34.5 MiB | 31.3 → 19.9 MiB |
+
+The 33.0 MiB raw figure matches the lead's 32.9 MB for the repacked venues.
+
+**Visual check:** the Timeline Square and Perp Pit previews are pixel-identical to the uncompressed ones; 2 of 518k
+pixels differ by more than 24/255. No re-bake was needed.
+
+## 2026-10-08 round 3, task 1: prop collision (all 25 venues)
+
+**Problem.** Characters walked through chairs, tables, benches and plants. Movement uses a `NavMeshAgent`, so props had
+to be both physical colliders and holes in the NavMesh; most props were only render geometry.
+
+**What changed.** `VenueCollision.cs` defines the rules and the gate:
+- **Which objects are props:** every floor-standing model whose footprint touches the walkable area, and registered
+  procedural pieces (figures, stanchions, hay bales, rocket).
+- **Colliders:** each prop gets a `BoxCollider` fitted to its oriented bounds:
+  - Trees and poles (parasols, lamps, mic/IV/light stands): trunk or pole only.
+  - Overhead and table-top items are skipped.
+  - Props are collided up to 2.2 m.
+- **NavMesh:**
+  - Non-seat props also become not-walkable NavMesh volumes. Obstacles now extend 0.5 m below the floor so they
+    always carve.
+  - Seat furniture (a claimable spot inside its footprint) gets a collider only, so seat anchors and approach points
+    are unchanged and still reachable.
+- **Build gate:** the build fails if any prop has no collider (under 60% footprint coverage) or a non-seat prop is
+  still on the NavMesh. The gate runs in full builds and repacks.
+
+**Applying it to existing prefabs.** `VenueCollisionPass.Run` patches the baked prefabs without touching meshes or
+lightmaps:
+- **Layout venues:** the venue script reruns in a `DryRun` mode to recover its props. The prefab's Colliders group
+  and NavMesh are then regenerated.
+- **Repacked venues** (Timeline Square, Terminal Café, Spaces Studio): props come from the source prefab's manifest
+  model instances. A "Prop colliders" group is added, and the NavMesh is rebuilt from:
+  - the walkable rectangles,
+  - the existing solid colliders,
+  - prop obstacles.
+
+**Results.**
+- **Gate:** all 25 venues pass, and every spot stays reachable. Receipts are `receipts/<id>-collision.json`.
+- **Prop counts:** Timeline 79 props (73 obstacles), Café 50, Studio 46, Sybil Barn 43, Rekt Clinic 33, the rest 6–20.
+- **Parity:** the repacked venues still match their sources (anchors, approaches, `CafeSeatMotionProfile`, live
+  surfaces).
+- **Bugs found and fixed along the way:**
+  - Obstacle boxes whose bottom sat exactly on the floor did not carve.
+  - Parasol canopies blocked Yacht Club's `gangway`.
+
+Run: `Unity -batchmode -nographics -quit -projectPath client -executeMethod CTLife.EditorTools.VenueBuild.VenueCollisionPass.Run [-ctVenues ids]`.
 
 ## 2026-10-08 draw-call pass: Timeline Square, Terminal Café, Spaces Studio
 
