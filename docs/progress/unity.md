@@ -45,6 +45,26 @@ Owner folders: `client/` (Unity project root), repo-root `.mcp.json`, FE-owned r
   (asset created via CreateInstance + serialized renderer list instead); `Shader.Find`/`LoadAssetAtPath` return null for
   URP shaders during these runs (runtime materials now ship as `Resources/Materials/*.mat` wired to URP Simple Lit by GUID).
 
+## ENGINE SPIKE on the Seeker — 2026-10-05 19:05 (dev APK, IL2CPP ARM64, Vulkan, URP render scale 0.7)
+
+| Metric | Result |
+| --- | --- |
+| Device | Seeker (SM02G40619141343), Android 16 / API 36, 1200×2670, battery 9% charging, thermal status 0 |
+| APK | `client/Builds/ctlife-dev.apk` 76 MB (development build), launch TotalTime 861 ms |
+| **62 animated humanoids** (procedural 30-bone placeholders, 3 LODs, AvatarLod 12/24/rest) + greybox Timeline Square + UI Toolkit HUD/name tags | **60.3 fps average every 5 s window for 150 s; p99 frame 16.6 ms; 1% low 60.1**; one 5-s window had a single ~33 ms hitch (min 30.1, 1% low 36.1). Thermal stayed 0 (CPU/GPU 54.7 °C cached). |
+| Colyseus join | **Skipped** — no realtime server exists any more (backend deleted locally; his stack not running here). Spike logs `Colyseus: FAILED no token` and enters the venue offline. |
+| LiveKit join | **Not yet** — Docker Desktop started but the daemon answers HTTP 500 / hangs, so `livekit-server --dev` isn't up; LiveKit ships no macOS binary. Retry pending. |
+| SIWS screen | Present ("Sign in with Solana" button). Wallet signing needs the user's fingerprint and `GET /auth/challenge` needs a backend; not automated. |
+| Evidence | `docs/progress/screens/spike-render-20261005-190517.png` (+ `.logcat.txt`, `.gfxinfo.txt`). FPS = in-app FrameTiming meter (`CTLIFE [fps]` lines); `dumpsys gfxinfo` has no frame stats for Unity's SurfaceView (thermal/battery captured there). |
+
+Bugs found on device and fixed for the next build: IL2CPP engine stripping removed `SphereCollider`
+(`GameObject.CreatePrimitive(Sphere)` in the greybox trees) → preserved in `link.xml`. Build blockers fixed on the way:
+Solana SDK requires a custom `mainTemplate.gradle` (now copied by ProjectSetup); vendored Colyseus had a dangling
+`Runtime/Example/Schema` symlink (removed); URP default renderer reference was lost in batchmode (now written by GUID and
+verified); Addressables content build skipped while there are no entries. A runaway 6.4 GB build log (URP spamming
+"Default Renderer is missing" per shader variant) was killed and deleted; builds now run with a log-size watchdog.
+Repeat: `client/Tools~/seeker_run.sh spike 150 -e spike 1 [-e livekitUrl ws://localhost:7880 -e livekitToken $(python3 client/Tools~/livekit_dev_token.py)]`.
+
 ## Pinned versions (verified 2026-10-05)
 
 Sources: the editor's own package manifest

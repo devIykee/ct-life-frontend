@@ -174,3 +174,42 @@ Cull Completely, part merge into one SkinnedMeshRenderer per avatar (your manife
 Status: done (assets, 2026-10-05) — added `act_host_mic`, `act_listen_nod`, `emote_moon_jump`, `react_sad` (hand-keyed, CC0) and
 `art/processed/animations/clip_map.json` mapping every id in contract/ids/anims.json (46/46) to a clip FBX, using your aliases.
 
+
+## 2026-10-05 audio -> unity: `audio/sfx-map.json` is written in your shape (answer) + 27 new sfx ids to add
+
+`audio/sfx-map.json` now follows your request: top-level `sfx`, `footsteps`, `ambience`, `music`, `babble`, paths
+relative to `audio/processed/`, `files`/`file`, linear `volume`, `pitchJitter`, `category` (`stinger` = duck). Extra keys
+are informational (`volume_db`, `loop_samples`, `unity_import`, `sources`, ...). A flat `index` maps every prefixed id
+(`sfx_`, `foot_`, `amb_`, `mus_`, `babble_`) to `section.key`. Files are `.wav` (sfx, footsteps, ambience, babble) and
+`.ogg` (music); no two files share a name, so `Resources.Load` without extension is unambiguous.
+
+Please add these ids to `contract/ids/sfx.json` (FE-owned; I did not touch it):
+`sfx_call_connect`, `sfx_call_end`, `sfx_dm_ping`, `sfx_graduation`, `sfx_mention`, `sfx_moon_horn`, `sfx_new_coin`,
+`sfx_ore_clink`, `sfx_ore_furnace_whoosh`, `sfx_pnl_card_flip`, `sfx_rank_up`, `sfx_space_started`, `sfx_sunday_unlock`,
+`sfx_take_profit`, `sfx_ui_close`, `sfx_ui_error`, `sfx_ui_open`, `sfx_ui_success`, `sfx_ui_tap`, `sfx_ui_toast`,
+`sfx_ui_toggle_off`, `sfx_ui_toggle_on`, `sfx_vr_join`, `sfx_vr_leave`, `sfx_vr_promoted`, `sfx_vr_raise_hand`,
+`sfx_whale_horn`.
+
+Notes for `MusicDirector` / `AudioManager` / `Babble`:
+- `music` keys: `timeline`, `trenches`, `builder_hills`, `airdrop_farm`, `dubai_marina` (your district ids) plus
+  `perp_pit` (the spec tempo table gives Perp Pit its own 128 BPM techno; your fallback table puts perp_pit in
+  `trenches`, so please look up the venue id first, then the district) and `clubs`. No `spaces` set: the spec says
+  Spaces Studio is voice only; play `ambience.spaces_studio` (very quiet room tone) and stop music there.
+- `sfx_call_ring` is a seamless 3.0 s loop (`loop: true`): loop it until answered instead of one-shot.
+- `ambience.club_doors` is not a venue id: play it near club entrances / outside clubs.
+- Babble: each bank's `files` are 26 syllables ordered a..z (`letters` map too). Picking at random works, but
+  `audio/BABBLE.md` + `audio/unity/BabblePlayer.cs` (compiles against 6000.3.25f1 assemblies) map letters to syllables,
+  pitch per NPC via crc32(npcId), raise questions and shout CAPS. Bank speeds/jitter are in each entry. Syllables are
+  45-190 ms (the slow, sad voices are longer than your 60-120 ms guess).
+- Footstep variants: pick without repeating the last one.
+
+Status: open
+
+## 2026-10-05 audio -> backend: two NPC archetype ids from the spec are missing from archetypes.json
+
+Babble banks exist for all 28 ids in `contract/ids/archetypes.json`. The spec's NPC table also has **Laser-Eyes Maxi**
+and **Chain Tribalists (pair)**; I made banks named `laser_eyes_maxi` and `chain_tribalist`. If you add them, those
+names need no file renames; if you choose other ids, tell me and I will rename. Also: `spaces_host` appears twice in
+archetypes.json (phase 1 and phase 2).
+
+Status: open
