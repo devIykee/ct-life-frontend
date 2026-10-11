@@ -1,4 +1,4 @@
-READY TO COMMIT (3 commits; integration.md section "Onboarding UI on the Seeker" goes with the first). [1] full-bleed backgrounds in reverse landscape: client/Assets/Scripts/UI/SafeAreaBleed.cs + .meta (NEW), client/Assets/Scripts/UI/Screens/SignInScreen.cs, client/Assets/Scripts/UI/Screens/Onboarding/OnboardingFrame.cs, docs/progress/integration.md. Message: "ui: one safe-area bleed helper for the title and onboarding backgrounds (measured from world rects; fixes the right-edge strip with the camera cutout on the right)". [2] name step: client/Assets/Scripts/UI/SoftKeyboard.cs + .meta (NEW), client/Assets/Scripts/UI/Screens/CharacterCreatorScreen.cs. Message: "creator: DONE closes the Android soft keyboard (UI Toolkit left it up; InputMethodManager fallback); a restored name no longer renders as a placeholder". [3] NPC homes: client/Assets/Scripts/World/Venue/VenueSceneRoot.cs, client/Assets/Tests/EditMode/NpcSpawnAndBubbleTests.cs. Message: "npc: home spots de-duplicated by local id (each spot is indexed under two names)". Checks: compile_check dev/release/editor compile; EditMode 1393/1393; all four fixes verified on the Seeker (see the section). Do not commit website/ or docs/design/website-campaign-20261008.md (another session).
+READY TO COMMIT (doc only): docs/progress/integration.md (note under "Onboarding UI on the Seeker": the $2,500 frame was the count-up mid-way; the server pays 300000 and the label lands on $3,000). Message: "docs: lottery count-up check ($2,500 was a mid-count frame)". No code change.
 
 # Integration lead log
 
@@ -1199,6 +1199,14 @@ Recordings: `rec-card-flip.mp4` (Insider), `rec-card-flip-exit.mp4` (Exit Liquid
    `VenueNpcHomeTests.SpotsIndexedUnderTwoNamesAreClaimedOnce`. On device the five NPCs are on five spots (46).
 
 Checks: compile_check dev/release/editor compile; EditMode **1393/1393**.
+
+**Follow-up: "$2,500 Cash" in 03.** That frame caught the 600 ms count-up mid-way; it is not a short payout.
+- The server credited 300000 cents for that wallet: `ledger_entries` `cash +300000 lottery_payout`, matching
+  `economy.json` (Insider $3,000).
+- The recording steps $750 → $1,750 → $2,250 → $2,750 → **$3,000** and stays there (`strip-cash-countup.png`, frames at
+  0.1 s from `rec-card-flip.mp4`). 04, taken 4 s later, shows $3,000.
+- `Tween.Finish` always applies the final step (the exact `$3,000` label), so the count-up cannot stop short while the
+  screen is up. No code change.
 
 ## Status
 
