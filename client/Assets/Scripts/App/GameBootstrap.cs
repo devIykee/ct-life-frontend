@@ -36,6 +36,12 @@ namespace CTLife.App
             // (2026-10-08). Errors, asserts and exceptions keep their stacks.
             Application.SetStackTraceLogType(LogType.Log, StackTraceLogType.None);
             Application.SetStackTraceLogType(LogType.Warning, StackTraceLogType.None);
+#if DEVELOPMENT_BUILD && !UNITY_EDITOR
+            // Development builds pop Unity's on-screen developer console over the game on any logged error (it covered
+            // half the lobby on 2026-10-08). Errors still reach logcat; only the overlay is off.
+            Debug.developerConsoleEnabled = false;
+            Debug.developerConsoleVisible = false;
+#endif
             Log.Info("boot", $"CT Life {Semver.ClientVersion} (contract {Semver.ContractVersion}) on {SystemInfo.deviceModel}, {SystemInfo.graphicsDeviceType}, {SystemInfo.graphicsDeviceName}");
             var session = Services.Register(new Session());
             var config = Services.Register(new ConfigStore());

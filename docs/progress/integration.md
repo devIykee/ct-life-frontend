@@ -1,4 +1,4 @@
-READY TO COMMIT (title screen v6): client/Assets/Resources/UI/title.uss, docs/progress/integration.md (section "Title screen v6"). Commit message: "title v6: button slot 3.7% lower, fully on the cobblestones (>= 19 px above the legal line through the bob); errors show above the button". Checks: USS only (no code change); device capture v6-signin.png; gap measured on device.
+READY TO COMMIT (job 2: dev error overlay): client/Assets/Scripts/Solana/MwaWallet.cs, client/Assets/Scripts/App/GameBootstrap.cs, client/Assets/Scripts/App/FlowController.cs (dev-only logerror extra), client/Assets/Scripts/Core/Env/LaunchArgs.cs, client/Assets/Tests/EditMode/MwaWalletTests.cs + .meta (NEW), client/Assets/Tests/EditMode/CTLife.Tests.EditMode.asmdef (+CTLife.Solana), client/Tools~/compile_check.py (EditMode test refs read from the asmdef), docs/progress/integration.md (v6 sign-in notes + section "First-time flow capture, and the dev error overlay"). NOT included: client/Assets/Scripts/UI/Screens/SignInScreen.cs (bleed fix, unverified on device; see the section). Commit message: "mwa: no SDK focus reconnect while SIWS is in flight (hide the cached key during sign-in; test pins the SDK key); dev builds keep the developer console closed on errors (logcat unchanged); dev logerror extra". Checks: compile_check dev/release/editor compile; EditMode 1363/1363; on the Seeker: logerror → logcat only, no overlay; real Seed Vault SIWS on this build → no OperationInFlightException.
 
 # Integration lead log
 
@@ -975,6 +975,104 @@ more). USS only.
 
 Evidence: `../ct-life-evidence/title-screen/v6-signin.png`, `v6-signin_s.png`, `v6-signin-bottom.png`. The app was left
 open on the sign-in screen (`-e fresh 1`, no autologin) for the user's fingerprint sign-in.
+
+User sign-in afterwards: Seed Vault → `POST /auth/verify` 200 (557 ms), existing character, and the app went straight to
+the lobby ("Your next chapter / Make your next move", Enter the City), not the lottery: the returning-player fix (df3eaee)
+works on the device. City and market rooms joined. Captures `v6-after-signin-1.png` (+8 s) and `-2.png` (+20 s).
+- The dev-build log overlay with the Solana SDK's `OperationInFlightException` (MWA reconnect on focus) covers the left
+  half of the lobby. It is a dev-build-only overlay; sign-in still completes.
+- Energy shows 0/100. The server stores 50, last action 03:06 UTC, and `/me` applies the hourly decay, so ~12 h later 0
+  is the server's value, not a display bug.
+
+## 2026-10-08: First-time flow capture, and the dev error overlay (job 2)
+
+### First-time flow on the Seeker (dev build, brand-new dev account)
+
+Account: dev auth with a fresh random wallet (`../ct-life-evidence/first-time-flow/wallet.txt`). The server saw a new
+user with no character; alias `newbie1746`. Every screen was stepped by hand (adb taps), nothing auto-advanced. Captures
+01-12 come from the first run. A network drop stopped that run at the dream step, and on resume the creator had gone back
+to step 1. So 13-25 come from a relaunch with the same wallet: the lottery was already rolled, so it went straight to
+the creator, and the same choices were made again. The phone was in the other landscape orientation for the second run,
+so the layout sits inside the safe area on the other side.
+
+| File | Screen |
+| --- | --- |
+| 01-title-signin.png | Title, "Sign in with Solana" |
+| 02-origin-story-before-roll.png | "Your origin story": Insider Baby / Exit Liquidity Baby, "Discover my beginning" |
+| 03-origin-story-rolling.png | Rolling ("Your story is unfolding…") |
+| 04-origin-story-after-roll.png | Result: Exit Liquidity Baby, $300 Cash, $720 to pay back, "Enter CT City" |
+| 05-creator-1-look.png | Creator 1 Look: "Everyday", 1 of 24 |
+| 06-creator-1-look-next.png | Next look: "Breeze", 2 of 24 |
+| 07-creator-1-look-face.png | Face view |
+| 08-creator-2-personality-tribe.png | 2 Personality: tribes (7, each with a perk) |
+| 09-creator-2-tribe-chosen.png | Builder chosen |
+| 10-creator-2-traits.png | Traits (6) |
+| 11-creator-2-traits-chosen.png | Fast Talker + Sleuth |
+| 12-creator-2-dream.png | Dreams (8) |
+| 13-creator-2-dream-chosen.png | "Build a project" chosen |
+| 14-creator-3-identity.png | 3 Identity: alias, "I am 18 or older" |
+| 15-creator-3-alias-keyboard.png | Alias field tapped: the keyboard covers the screen |
+| 16-creator-3-alias-typed.png | Typing: no visible text anywhere |
+| 17-creator-3-alias-entered.png | Keyboard closed: alias shown in the field |
+| 18-creator-3-age-confirmed.png | Age box ticked |
+| 19-creator-3-story-summary.png | Summary: "Breeze · Builder · Fast Talker · Sleuth · Build a project", "Start my story" |
+| 20-lobby-first-arrival-1s.png, 21-lobby-first-arrival-7s.png | First arrival: lobby ("Make your next move", $300.00, Energy 50/100, Enter the City) |
+| 22-first-venue-arrival-2s.png, 23-…-12s.png, 24-…-20s.png | "Enter the City": Timeline Square on arrival |
+| 25-first-venue-player-walked.png | After walking forward: the player (Breeze) separates from the NPC group |
+
+Findings for review (as seen; not changed):
+1. **Lottery result layout:** after the roll, "One beginning, just for you. All rewards are game Cash." runs through the
+   bottom of the Exit Liquidity card (04).
+2. **Alias typing is blind:** the soft keyboard covers the whole screen, including the alias field, and there is no input
+   line above it, so the player cannot see what they type until they close the keyboard (15, 16).
+3. **Traits have no descriptions:** tribes show their perk, but traits are names only (10).
+4. **Age checkbox placement:** the box sits mid-screen, far from its label (14).
+5. **Debt not shown on the lobby:** it shows $300.00 but not the $720 to pay back that the lottery just announced (21).
+6. **NPCs spawn on the player:** all five Timeline Square NPCs start at the venue spawn (logcat `npc-nav ...
+   requested=(0, 0, -10.9)`, the same point as the player's spawn), so on arrival an NPC stands on the new player and
+   hides them. Two NPC speech bubbles overlap (22-24). The red-jacket figure there is an NPC, not the player: once the
+   player walks forward, Breeze shows correctly (25). The room sends the player's look correctly
+   (`["skin_tone3","head_rain",…]`).
+7. **Face view:** the face framing shows the A-pose arms jutting into the frame (07).
+8. **Resume loses creator progress:** after the app went to the background and back, the creator was on step 1 with
+   the model turned away, and the step 2-3 choices were not shown (`zz-resume-check.png`).
+
+### Job 2: the dev error overlay over the lobby
+
+Cause, in Solana.Unity-SDK @ bd0d30f (`SolanaMobileWalletAdapter`):
+- The SDK's lifecycle hook calls `HandleApplicationFocus` on every focus change. When a public key and auth token are
+  cached and `Account` is null, it runs a silent `ReconnectWallet` → `Login`.
+- Our SIWS goes through `LoginWithSignIn`, which holds the SDK's single-flight gate but sets neither `Account` nor
+  `_loginInProgress` until it finishes. The wallet hands focus back before that.
+- So the reconnect hits the gate and logs `[MWA] ReconnectWallet failed: OperationInFlightException` with
+  `Debug.LogError`, and the development console pops up over the game.
+
+Fixes:
+- **No reconnect while signing in.** `MwaWallet.SignIn` hides the SDK's cached public key
+  (`solana_sdk.mwa.public_key`) for the duration of the sign-in. The hook returns early without it, and the sign-in path
+  never reads it. A successful sign-in writes the new key; a failed one puts the old key back. No SDK change.
+  `MwaWalletTests.SdkPublicKeyPrefKeyStillMatches` reads the SDK's private constant by reflection, so an SDK update that
+  renames it fails the test instead of silently disabling the guard.
+- **No auto-opening console.** `GameBootstrap.Boot` sets `Debug.developerConsoleEnabled = false` and
+  `Debug.developerConsoleVisible = false` in development player builds. Errors still go to logcat.
+- **Dev check extra.** A dev-only launch extra `logerror=1` logs one error on the title screen.
+
+Verified on the Seeker:
+- **Console stays closed:** with `logerror=1` the error is in logcat (`E Unity : CTLIFE [dev] developer console check`)
+  and nothing opens on screen (`devconsole-check-after-error.png`).
+- **No reconnect error:** the user signed in with Seed Vault on this build at 19:59 (real SIWS, wallet 3hqi…,
+  `/auth/verify` 200). The wallet's cached MWA key and token were present, the same precondition that produced the error
+  twice before. The full logcat (`job2-real-siws-logcat.txt`) has no `OperationInFlightException`, `ReconnectWallet` or
+  `HandleApplicationFocus` line. The only error is the deliberate `logerror` one.
+- At 19:59:54 the app's data was cleared from Android Settings (`am_clear_app_data_caller`, system uid), which was not
+  from this lane. So the device holds no session now. A backup of the earlier SIWS session's PlayerPrefs is in
+  `~/.ctlife-local/device-backup/` (outside the repos): restore on request, or delete.
+
+Also in the tree, **not verified, not in the READY line:** `SignInScreen.Bleed` now measures the safe-area insets from
+world rects. With the phone held the other way (ROTATION_270, camera cutout on the right) the title art stopped ~48 px
+short of the right edge and the panel's light background showed (`devconsole-check-after-error.png`, right edge). It
+compiles, but the device check was interrupted when the user took the phone. It needs one look on the Seeker in that
+orientation.
 
 ## Status
 

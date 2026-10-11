@@ -24,6 +24,12 @@ namespace CTLife.Solana
         private readonly string _iconUri;
         private Web3 _web3;
 
+        /// <summary>
+        /// PlayerPrefs key where Solana.Unity-SDK @ bd0d30f caches the authorized public key
+        /// (`SolanaMobileWalletAdapter.PrefKeyPublicKey`, private const; `MwaWalletTests` checks it still matches).
+        /// </summary>
+        public const string SdkCachedPublicKeyPref = "solana_sdk.mwa.public_key";
+
         public MwaWallet(string identityName = "CT Life", string identityUri = CTLife.Core.EnvConfig.AppIdentityUri, string iconUri = "/favicon.ico")
         {
             // The identity is EnvConfig.AppIdentityUri (placeholder until the domain is bought); the SIWS domain is its authority.
@@ -86,6 +92,14 @@ namespace CTLife.Solana
                 ExpirationTime = r.expirationTime,
             };
             (Account account, SignInResult result) res;
+            // The SDK's own focus hook (SolanaMobileWalletAdapter.HandleApplicationFocus) runs a silent ReconnectWallet
+            // whenever the app regains focus with a cached public key + auth token and no Account. During LoginWithSignIn
+            // the wallet hands focus back before the sign-in has finished, so that reconnect hits the SDK's single-flight
+            // gate and logs OperationInFlightException as an error (seen 2026-10-08 after a real Seed Vault sign-in).
+            // The hook returns early when no public key is cached, and the sign-in path never reads it, so the key is
+            // hidden for the duration of the sign-in: success writes the new one, failure puts the old one back.
+            var hiddenKey = PlayerPrefs.GetString(SdkCachedPublicKeyPref, "");
+            if (hiddenKey.Length > 0) { PlayerPrefs.DeleteKey(SdkCachedPublicKeyPref); PlayerPrefs.Save(); }
             try
             {
                 res = await web3.LoginWalletAdapter(payload);
@@ -99,6 +113,14 @@ namespace CTLife.Solana
                                 e.Message.IndexOf("cancel", StringComparison.OrdinalIgnoreCase) >= 0 &&
                                 e.Message.IndexOf("timeout", StringComparison.OrdinalIgnoreCase) < 0;
                 throw new WalletException("Wallet sign-in failed: " + e.Message, declined, e);
+            }
+            finally
+            {
+                if (hiddenKey.Length > 0 && !PlayerPrefs.HasKey(SdkCachedPublicKeyPref))
+                {
+                    PlayerPrefs.SetString(SdkCachedPublicKeyPref, hiddenKey);
+                    PlayerPrefs.Save();
+                }
             }
             ct.ThrowIfCancellationRequested();
             if (res.account == null || res.result == null) throw new WalletException("Wallet returned no account.");

@@ -290,6 +290,9 @@ namespace CTLife.App
 #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
             // Explicit development automation only. No guest/demo route is exposed in the product UI.
             if (!returning && LaunchArgs.Get("autologin") == "dev" && auth.DevAuthAllowed) Dev();
+            // Dev check: `logerror=1` logs one error on the title screen, to confirm the developer console overlay stays
+            // closed in development builds (GameBootstrap) while the error still reaches logcat.
+            if (LaunchArgs.Flag("logerror")) Log.Error("dev", "developer console check (launch extra logerror)");
             // Evidence capture: `shot=<name>` saves the app's own frame (no system dialogs on top) to files/<name>.png.
             if (LaunchArgs.Get("shot") is string shot && System.Text.RegularExpressions.Regex.IsMatch(shot, "^[a-z0-9-]{1,40}$"))
                 screen.Element?.schedule.Execute(() => { ScreenCapture.CaptureScreenshot(shot + ".png"); Log.Info("flow", "Saved screenshot " + shot); }).StartingIn(5000);

@@ -311,8 +311,10 @@ def units(editor):
                           editor=True, override=True))
             tests = ASSETS / "Tests/EditMode"
             if tests.exists():
-                u.append(Unit("CTLife.Tests.EditMode", [tests], refs=["CTLife.Core", "CTLife.Net", "CTLife.Generated", "CTLife.World", "CTLife.UI",
-                                                                      "CTLife.Editor", "ColyseusSDK"],
+                # References from the asmdef itself (minus the test runners), like the feature test assemblies below.
+                emeta = json.loads((tests / "CTLife.Tests.EditMode.asmdef").read_text(encoding="utf-8-sig"))
+                erefs = [r for r in emeta.get("references", []) if not r.startswith(("UnityEngine.TestRunner", "UnityEditor.TestRunner"))]
+                u.append(Unit("CTLife.Tests.EditMode", [tests], refs=erefs,
                               dlls=[newtonsoft, str(nunit[-1])], editor=True, override=True))
             for tasm in sorted((ASSETS / S_ / "Features").glob("*/Tests/*.asmdef")):
                 meta = json.loads(tasm.read_text(encoding="utf-8-sig"))
