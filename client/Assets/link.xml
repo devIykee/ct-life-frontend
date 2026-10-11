@@ -1,0 +1,18 @@
+<!--
+  IL2CPP managed-code stripping guards. These assemblies are used through reflection (Newtonsoft on the
+  generated REST models; Colyseus schema decoding and msgpack on the generated realtime classes; Solana SDK RPC
+  models; LiveKit protobuf). Stripping level is Low (ProjectSetup); this file keeps them safe at higher levels too.
+-->
+<linker>
+  <assembly fullname="CTLife.Generated" preserve="all" />
+  <assembly fullname="CTLife.Core" preserve="all" />
+  <assembly fullname="Newtonsoft.Json" preserve="all" />
+  <assembly fullname="ColyseusSDK" preserve="all" />
+  <assembly fullname="colyseus.nativewebsocket" preserve="all" />
+  <assembly fullname="com.solana.unity_sdk" preserve="all" />
+  <assembly fullname="Solana.Unity.Rpc" preserve="all" />
+  <assembly fullname="Solana.Unity.Wallet" preserve="all" />
+  <assembly fullname="Solana.Unity.Programs" preserve="all" />
+  <assembly fullname="LiveKit" preserve="all" />
+  <assembly fullname="Google.Protobuf" preserve="all" />
+</linker>

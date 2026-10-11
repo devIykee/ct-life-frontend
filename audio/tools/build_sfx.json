@@ -1,0 +1,570 @@
+{
+  "sfx_ui_tap": {
+    "category": "ui",
+    "channels": 1,
+    "volume_db": -12,
+    "loop": false,
+    "desc": "Soft button tap",
+    "files": [
+      {
+        "path": "processed/sfx/sfx_ui_tap.wav",
+        "samples": 2655,
+        "sr": 48000,
+        "channels": 1
+      }
+    ],
+    "sources": []
+  },
+  "sfx_ui_toggle_on": {
+    "category": "ui",
+    "channels": 1,
+    "volume_db": -12,
+    "loop": false,
+    "desc": "Toggle switched on (rising)",
+    "files": [
+      {
+        "path": "processed/sfx/sfx_ui_toggle_on.wav",
+        "samples": 6536,
+        "sr": 48000,
+        "channels": 1
+      }
+    ],
+    "sources": []
+  },
+  "sfx_ui_toggle_off": {
+    "category": "ui",
+    "channels": 1,
+    "volume_db": -12,
+    "loop": false,
+    "desc": "Toggle switched off (falling)",
+    "files": [
+      {
+        "path": "processed/sfx/sfx_ui_toggle_off.wav",
+        "samples": 6514,
+        "sr": 48000,
+        "channels": 1
+      }
+    ],
+    "sources": []
+  },
+  "sfx_ui_error": {
+    "category": "ui",
+    "channels": 1,
+    "volume_db": -10,
+    "loop": false,
+    "desc": "Error / not allowed: two low buzzy notes",
+    "files": [
+      {
+        "path": "processed/sfx/sfx_ui_error.wav",
+        "samples": 26965,
+        "sr": 48000,
+        "channels": 1
+      }
+    ],
+    "sources": []
+  },
+  "sfx_ui_success": {
+    "category": "ui",
+    "channels": 1,
+    "volume_db": -10,
+    "loop": false,
+    "desc": "Success: bright rising two-note chime",
+    "files": [
+      {
+        "path": "processed/sfx/sfx_ui_success.wav",
+        "samples": 33356,
+        "sr": 48000,
+        "channels": 1
+      }
+    ],
+    "sources": []
+  },
+  "sfx_ui_toast": {
+    "category": "ui",
+    "channels": 1,
+    "volume_db": -12,
+    "loop": false,
+    "desc": "Toast / banner appears: soft marimba plink",
+    "files": [
+      {
+        "path": "processed/sfx/sfx_ui_toast.wav",
+        "samples": 24064,
+        "sr": 48000,
+        "channels": 1
+      }
+    ],
+    "sources": []
+  },
+  "sfx_ui_open": {
+    "category": "ui",
+    "channels": 1,
+    "volume_db": -14,
+    "loop": false,
+    "desc": "Panel / phone opens (Kenney maximize_003 + soft swish)",
+    "files": [
+      {
+        "path": "processed/sfx/sfx_ui_open.wav",
+        "samples": 11129,
+        "sr": 48000,
+        "channels": 1
+      }
+    ],
+    "sources": [
+      "raw/kenney/interface-sounds/Audio/maximize_003.ogg"
+    ]
+  },
+  "sfx_ui_close": {
+    "category": "ui",
+    "channels": 1,
+    "volume_db": -14,
+    "loop": false,
+    "desc": "Panel / phone closes (Kenney minimize_003)",
+    "files": [
+      {
+        "path": "processed/sfx/sfx_ui_close.wav",
+        "samples": 10169,
+        "sr": 48000,
+        "channels": 1
+      }
+    ],
+    "sources": [
+      "raw/kenney/interface-sounds/Audio/minimize_003.ogg"
+    ]
+  },
+  "sfx_buy": {
+    "category": "trading",
+    "channels": 1,
+    "volume_db": -8,
+    "loop": false,
+    "desc": "Buy filled: rising chime arpeggio + coin",
+    "files": [
+      {
+        "path": "processed/sfx/sfx_buy.wav",
+        "samples": 40531,
+        "sr": 48000,
+        "channels": 1
+      }
+    ],
+    "sources": []
+  },
+  "sfx_sell": {
+    "category": "trading",
+    "channels": 1,
+    "volume_db": -8,
+    "loop": false,
+    "desc": "Sell filled: paper swish + falling two-note chime",
+    "files": [
+      {
+        "path": "processed/sfx/sfx_sell.wav",
+        "samples": 33109,
+        "sr": 48000,
+        "channels": 1
+      }
+    ],
+    "sources": []
+  },
+  "sfx_take_profit": {
+    "category": "trading",
+    "channels": 1,
+    "volume_db": -6,
+    "loop": false,
+    "desc": "Take-profit hit: ka-ching register bell + coins + chord",
+    "files": [
+      {
+        "path": "processed/sfx/sfx_take_profit.wav",
+        "samples": 51050,
+        "sr": 48000,
+        "channels": 1
+      }
+    ],
+    "sources": []
+  },
+  "sfx_new_coin": {
+    "category": "trading",
+    "channels": 1,
+    "volume_db": -8,
+    "loop": false,
+    "desc": "New coin listed: bubble pop + twinkle",
+    "files": [
+      {
+        "path": "processed/sfx/sfx_new_coin.wav",
+        "samples": 25626,
+        "sr": 48000,
+        "channels": 1
+      }
+    ],
+    "sources": []
+  },
+  "sfx_whale_horn": {
+    "category": "trading",
+    "channels": 1,
+    "volume_db": -6,
+    "loop": false,
+    "desc": "Whale alert: deep ship horn (synth + CC0 fog horn layer)",
+    "files": [
+      {
+        "path": "processed/sfx/sfx_whale_horn.wav",
+        "samples": 171638,
+        "sr": 48000,
+        "channels": 1
+      }
+    ],
+    "sources": [
+      "raw/freesound/181949.ogg"
+    ]
+  },
+  "sfx_pnl_card_flip": {
+    "category": "trading",
+    "channels": 1,
+    "volume_db": -8,
+    "loop": false,
+    "desc": "PnL card flip: swish + card snap (Kenney card-place-1)",
+    "files": [
+      {
+        "path": "processed/sfx/sfx_pnl_card_flip.wav",
+        "samples": 33600,
+        "sr": 48000,
+        "channels": 1
+      }
+    ],
+    "sources": [
+      "raw/kenney/casino-audio/Audio/card-place-1.ogg"
+    ]
+  },
+  "sfx_liquidation": {
+    "category": "stinger",
+    "channels": 2,
+    "volume_db": -3,
+    "loop": false,
+    "desc": "Liquidation: alarm, then glass break, then falling whoosh + thud",
+    "files": [
+      {
+        "path": "processed/sfx/sfx_liquidation.wav",
+        "samples": 184853,
+        "sr": 48000,
+        "channels": 2
+      }
+    ],
+    "sources": [
+      "raw/freesound/221528.ogg",
+      "raw/kenney/impact-sounds/Audio/impactGlass_heavy_002.ogg"
+    ]
+  },
+  "sfx_rug": {
+    "category": "stinger",
+    "channels": 2,
+    "volume_db": -3,
+    "loop": false,
+    "desc": "Rug pull: carpet zip, then 808 bass drop",
+    "files": [
+      {
+        "path": "processed/sfx/sfx_rug.wav",
+        "samples": 123004,
+        "sr": 48000,
+        "channels": 2
+      }
+    ],
+    "sources": [
+      "raw/freesound/555161.ogg"
+    ]
+  },
+  "sfx_graduation": {
+    "category": "stinger",
+    "channels": 2,
+    "volume_db": -3,
+    "loop": false,
+    "desc": "Coin graduation fanfare: synth brass + timpani roll + crash",
+    "files": [
+      {
+        "path": "processed/sfx/sfx_graduation.wav",
+        "samples": 165137,
+        "sr": 48000,
+        "channels": 2
+      }
+    ],
+    "sources": []
+  },
+  "sfx_moon_horn": {
+    "category": "stinger",
+    "channels": 2,
+    "volume_db": -4,
+    "loop": false,
+    "desc": "Moon horn: three air-horn blasts, last one bends up",
+    "files": [
+      {
+        "path": "processed/sfx/sfx_moon_horn.wav",
+        "samples": 140028,
+        "sr": 48000,
+        "channels": 2
+      }
+    ],
+    "sources": [
+      "raw/freesound/131930.ogg"
+    ]
+  },
+  "sfx_rank_up": {
+    "category": "stinger",
+    "channels": 2,
+    "volume_db": -5,
+    "loop": false,
+    "desc": "Rank up: fast rising chime arpeggio + shimmer chord",
+    "files": [
+      {
+        "path": "processed/sfx/sfx_rank_up.wav",
+        "samples": 104843,
+        "sr": 48000,
+        "channels": 2
+      }
+    ],
+    "sources": []
+  },
+  "sfx_sunday_unlock": {
+    "category": "stinger",
+    "channels": 2,
+    "volume_db": -4,
+    "loop": false,
+    "desc": "Sunday Unlock bell: two deep bell strikes",
+    "files": [
+      {
+        "path": "processed/sfx/sfx_sunday_unlock.wav",
+        "samples": 250667,
+        "sr": 48000,
+        "channels": 2
+      }
+    ],
+    "sources": [
+      "raw/freesound/857938.ogg"
+    ]
+  },
+  "sfx_dm_ping": {
+    "category": "phone",
+    "channels": 1,
+    "volume_db": -10,
+    "loop": false,
+    "desc": "DM received: two soft pings",
+    "files": [
+      {
+        "path": "processed/sfx/sfx_dm_ping.wav",
+        "samples": 25709,
+        "sr": 48000,
+        "channels": 1
+      }
+    ],
+    "sources": []
+  },
+  "sfx_mention": {
+    "category": "phone",
+    "channels": 1,
+    "volume_db": -9,
+    "loop": false,
+    "desc": "@mention: three quick rising ticks",
+    "files": [
+      {
+        "path": "processed/sfx/sfx_mention.wav",
+        "samples": 27236,
+        "sr": 48000,
+        "channels": 1
+      }
+    ],
+    "sources": []
+  },
+  "sfx_call_ring": {
+    "category": "phone",
+    "channels": 1,
+    "volume_db": -6,
+    "loop": true,
+    "desc": "Incoming call ringtone, seamless 3.0 s loop",
+    "files": [
+      {
+        "path": "processed/sfx/sfx_call_ring.wav",
+        "samples": 144000,
+        "sr": 48000,
+        "channels": 1
+      }
+    ],
+    "sources": []
+  },
+  "sfx_call_connect": {
+    "category": "phone",
+    "channels": 1,
+    "volume_db": -10,
+    "loop": false,
+    "desc": "Call connected: rising bloop + chime",
+    "files": [
+      {
+        "path": "processed/sfx/sfx_call_connect.wav",
+        "samples": 25796,
+        "sr": 48000,
+        "channels": 1
+      }
+    ],
+    "sources": []
+  },
+  "sfx_call_end": {
+    "category": "phone",
+    "channels": 1,
+    "volume_db": -10,
+    "loop": false,
+    "desc": "Call ended: three falling beeps",
+    "files": [
+      {
+        "path": "processed/sfx/sfx_call_end.wav",
+        "samples": 17711,
+        "sr": 48000,
+        "channels": 1
+      }
+    ],
+    "sources": []
+  },
+  "sfx_space_started": {
+    "category": "phone",
+    "channels": 1,
+    "volume_db": -8,
+    "loop": false,
+    "desc": "A Space went live: pad swell into an on-air chime",
+    "files": [
+      {
+        "path": "processed/sfx/sfx_space_started.wav",
+        "samples": 76068,
+        "sr": 48000,
+        "channels": 1
+      }
+    ],
+    "sources": []
+  },
+  "sfx_vr_join": {
+    "category": "voice_room",
+    "channels": 1,
+    "volume_db": -12,
+    "loop": false,
+    "desc": "Someone joined the room: rising bloop",
+    "files": [
+      {
+        "path": "processed/sfx/sfx_vr_join.wav",
+        "samples": 20709,
+        "sr": 48000,
+        "channels": 1
+      }
+    ],
+    "sources": []
+  },
+  "sfx_vr_leave": {
+    "category": "voice_room",
+    "channels": 1,
+    "volume_db": -12,
+    "loop": false,
+    "desc": "Someone left the room: falling bloop",
+    "files": [
+      {
+        "path": "processed/sfx/sfx_vr_leave.wav",
+        "samples": 22314,
+        "sr": 48000,
+        "channels": 1
+      }
+    ],
+    "sources": []
+  },
+  "sfx_vr_raise_hand": {
+    "category": "voice_room",
+    "channels": 1,
+    "volume_db": -10,
+    "loop": false,
+    "desc": "Hand raised: pop + two-note ping",
+    "files": [
+      {
+        "path": "processed/sfx/sfx_vr_raise_hand.wav",
+        "samples": 23571,
+        "sr": 48000,
+        "channels": 1
+      }
+    ],
+    "sources": []
+  },
+  "sfx_vr_promoted": {
+    "category": "voice_room",
+    "channels": 1,
+    "volume_db": -8,
+    "loop": false,
+    "desc": "Promoted to speaker: little three-note fanfare",
+    "files": [
+      {
+        "path": "processed/sfx/sfx_vr_promoted.wav",
+        "samples": 55465,
+        "sr": 48000,
+        "channels": 1
+      }
+    ],
+    "sources": []
+  },
+  "sfx_ore_furnace_whoosh": {
+    "category": "ore",
+    "channels": 1,
+    "volume_db": -6,
+    "loop": false,
+    "desc": "Refinery furnace flares: fire whoosh + rumble (2 variations)",
+    "files": [
+      {
+        "path": "processed/sfx/sfx_ore_furnace_whoosh_01.wav",
+        "samples": 105600,
+        "sr": 48000,
+        "channels": 1
+      },
+      {
+        "path": "processed/sfx/sfx_ore_furnace_whoosh_02.wav",
+        "samples": 124800,
+        "sr": 48000,
+        "channels": 1
+      }
+    ],
+    "sources": [
+      "raw/freesound/447941.ogg",
+      "raw/freesound/459884.ogg"
+    ]
+  },
+  "sfx_ore_clink": {
+    "category": "ore",
+    "channels": 1,
+    "volume_db": -10,
+    "loop": false,
+    "desc": "Ore nuggets clink (5 variations, synth + Kenney impactMining layer)",
+    "files": [
+      {
+        "path": "processed/sfx/sfx_ore_clink_01.wav",
+        "samples": 24000,
+        "sr": 48000,
+        "channels": 1
+      },
+      {
+        "path": "processed/sfx/sfx_ore_clink_02.wav",
+        "samples": 24000,
+        "sr": 48000,
+        "channels": 1
+      },
+      {
+        "path": "processed/sfx/sfx_ore_clink_03.wav",
+        "samples": 24000,
+        "sr": 48000,
+        "channels": 1
+      },
+      {
+        "path": "processed/sfx/sfx_ore_clink_04.wav",
+        "samples": 24000,
+        "sr": 48000,
+        "channels": 1
+      },
+      {
+        "path": "processed/sfx/sfx_ore_clink_05.wav",
+        "samples": 24000,
+        "sr": 48000,
+        "channels": 1
+      }
+    ],
+    "sources": [
+      "raw/kenney/impact-sounds/Audio/impactMining_000.ogg",
+      "raw/kenney/impact-sounds/Audio/impactMining_001.ogg",
+      "raw/kenney/impact-sounds/Audio/impactMining_002.ogg",
+      "raw/kenney/impact-sounds/Audio/impactMining_003.ogg",
+      "raw/kenney/impact-sounds/Audio/impactMining_004.ogg"
+    ]
+  }
+}

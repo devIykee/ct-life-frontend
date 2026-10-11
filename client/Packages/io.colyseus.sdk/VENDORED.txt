@@ -1,0 +1,13 @@
+Colyseus Unity SDK 0.18.8, vendored (embedded package) by the CT Life Unity agent on 2026-10-05.
+Source: https://github.com/colyseus/colyseus-unity-sdk.git branch `upm` @ 7306c8ee4be7e78984baf0837df5ea8125154820
+("Update upm to output generated at 05fc089" = tag 0.18.8). Licence: MIT (LICENSE in this folder).
+
+Only change: Runtime/ColyseusSDK.asmdef and Runtime/WebSocket/colyseus.nativewebsocket.asmdef set
+"overrideReferences": true, "precompiledReferences": [].
+Why: Solana.Unity-SDK (bd0d30f) ships Packages/NativeWebSocket.dll, auto-referenced on every platform. It defines
+NativeWebSocket.WebSocket, which Colyseus also compiles from source, so ColyseusSDK fails with CS0433
+(reproduced with client/Tools~/compile_check.py). Overriding references stops the auto-reference.
+To update: re-export the new upm commit here and re-apply the two asmdef edits.
+
+Second change: removed Runtime/Example (it only held a symlink `Schema -> ../../../../nuget/tests/Schema` that dangles
+outside the SDK's dev repo and fails Unity's build with "does not exist in SourceAssetDB"; Example~ is unaffected).

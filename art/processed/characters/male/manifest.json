@@ -1,0 +1,1300 @@
+{
+ "sex": "male",
+ "skeleton": {
+  "rig_object": "CTL_Rig_male",
+  "bones": [
+   "root",
+   "pelvis",
+   "spine_01",
+   "spine_02",
+   "spine_03",
+   "clavicle_l",
+   "upperarm_l",
+   "lowerarm_l",
+   "hand_l",
+   "index_01_l",
+   "thumb_01_l",
+   "clavicle_r",
+   "upperarm_r",
+   "lowerarm_r",
+   "hand_r",
+   "index_01_r",
+   "thumb_01_r",
+   "neck_01",
+   "Head",
+   "jaw",
+   "eye_l",
+   "eye_r",
+   "thigh_l",
+   "calf_l",
+   "foot_l",
+   "ball_l",
+   "thigh_r",
+   "calf_r",
+   "foot_r",
+   "ball_r"
+  ],
+  "parents": {
+   "root": null,
+   "pelvis": "root",
+   "spine_01": "pelvis",
+   "spine_02": "spine_01",
+   "spine_03": "spine_02",
+   "clavicle_l": "spine_03",
+   "upperarm_l": "clavicle_l",
+   "lowerarm_l": "upperarm_l",
+   "hand_l": "lowerarm_l",
+   "index_01_l": "hand_l",
+   "thumb_01_l": "hand_l",
+   "clavicle_r": "spine_03",
+   "upperarm_r": "clavicle_r",
+   "lowerarm_r": "upperarm_r",
+   "hand_r": "lowerarm_r",
+   "index_01_r": "hand_r",
+   "thumb_01_r": "hand_r",
+   "neck_01": "spine_03",
+   "Head": "neck_01",
+   "jaw": "Head",
+   "eye_l": "Head",
+   "eye_r": "Head",
+   "thigh_l": "pelvis",
+   "calf_l": "thigh_l",
+   "foot_l": "calf_l",
+   "ball_l": "foot_l",
+   "thigh_r": "pelvis",
+   "calf_r": "thigh_r",
+   "foot_r": "calf_r",
+   "ball_r": "foot_r"
+  }
+ },
+ "conventions": {
+  "units": "metres (FBX exported with FBX_SCALE_ALL; import at scale 1)",
+  "axes": "Blender -Y front / Z up exported as -Z forward, Y up: tick Bake Axis Conversion in Unity",
+  "rest_pose": "T-pose",
+  "max_influences": {
+   "LOD0": 4,
+   "LOD1": 4,
+   "LOD2": 2
+  },
+  "lod_naming": "<name>_LOD0/1/2 inside one FBX (Unity builds the LODGroup)",
+  "textures": "one tile per part (UV 0-1); pack per avatar at runtime into one atlas -> one material"
+ },
+ "parts": {
+  "baseball_cap": {
+   "slot": "hat",
+   "fbx": "parts/baseball_cap.fbx",
+   "tris": [
+    500,
+    280,
+    108
+   ],
+   "textures": {
+    "navy": "textures/baseball_cap__navy.png",
+    "black": "textures/baseball_cap__black.png",
+    "red": "textures/baseball_cap__red.png",
+    "white": "textures/baseball_cap__white.png",
+    "green": "textures/baseball_cap__green.png"
+   },
+   "default": "navy",
+   "tile": 256,
+   "hides_regions": [],
+   "hair_mode": "short",
+   "source": "ctlife:procedural",
+   "emissive_variants": [],
+   "license": "CC0"
+  },
+  "binoculars": {
+   "slot": "neck",
+   "fbx": "parts/binoculars.fbx",
+   "tris": [
+    148,
+    148,
+    60
+   ],
+   "textures": {
+    "default": "textures/binoculars__default.png"
+   },
+   "default": "default",
+   "tile": 256,
+   "hides_regions": [],
+   "hair_mode": null,
+   "source": "ctlife:procedural",
+   "emissive_variants": [],
+   "license": "CC0"
+  },
+  "boots_black": {
+   "slot": "shoes",
+   "fbx": "parts/boots_black.fbx",
+   "tris": [
+    500,
+    280,
+    110
+   ],
+   "textures": {
+    "default": "textures/boots_black__default.png"
+   },
+   "default": "default",
+   "tile": 256,
+   "hides_regions": [],
+   "hair_mode": null,
+   "source": "mpfb:clothes/shoes03/shoes03.mhclo",
+   "emissive_variants": [],
+   "license": "CC0"
+  },
+  "cargo": {
+   "slot": "bottom",
+   "fbx": "parts/cargo.fbx",
+   "tris": [
+    392,
+    392,
+    238
+   ],
+   "textures": {
+    "olive": "textures/cargo__olive.png",
+    "khaki": "textures/cargo__khaki.png",
+    "black": "textures/cargo__black.png"
+   },
+   "default": "olive",
+   "tile": 512,
+   "hides_regions": [
+    "calf_l",
+    "calf_r",
+    "thigh_l",
+    "thigh_r",
+    "thighup_l",
+    "thighup_r"
+   ],
+   "hair_mode": null,
+   "source": "mpfb:clothes/cortu_cargo_pants/cortu_cargo_pants.mhclo",
+   "emissive_variants": [],
+   "license": "CC0"
+  },
+  "casual_denim": {
+   "slot": "outfit",
+   "fbx": "parts/casual_denim.fbx",
+   "tris": [
+    2400,
+    1299,
+    519
+   ],
+   "textures": {
+    "default": "textures/casual_denim__default.png"
+   },
+   "default": "default",
+   "tile": 512,
+   "hides_regions": [
+    "calf_l",
+    "calf_r",
+    "shoulder_l",
+    "shoulder_r",
+    "thigh_l",
+    "thigh_r",
+    "upperarm_l",
+    "upperarm_r"
+   ],
+   "hair_mode": null,
+   "source": "mpfb:clothes/male_casualsuit01/male_casualsuit01.mhclo",
+   "emissive_variants": [],
+   "license": "CC0"
+  },
+  "casual_jacket": {
+   "slot": "outfit",
+   "fbx": "parts/casual_jacket.fbx",
+   "tris": [
+    2400,
+    1299,
+    519
+   ],
+   "textures": {
+    "default": "textures/casual_jacket__default.png"
+   },
+   "default": "default",
+   "tile": 512,
+   "hides_regions": [
+    "calf_l",
+    "calf_r",
+    "forearm_l",
+    "forearm_r",
+    "shoulder_l",
+    "shoulder_r",
+    "thigh_l",
+    "thigh_r",
+    "upperarm_l",
+    "upperarm_r"
+   ],
+   "hair_mode": null,
+   "source": "mpfb:clothes/male_casualsuit05/male_casualsuit05.mhclo",
+   "emissive_variants": [],
+   "license": "CC0"
+  },
+  "casual_long": {
+   "slot": "outfit",
+   "fbx": "parts/casual_long.fbx",
+   "tris": [
+    2400,
+    1300,
+    520
+   ],
+   "textures": {
+    "default": "textures/casual_long__default.png"
+   },
+   "default": "default",
+   "tile": 512,
+   "hides_regions": [
+    "belly",
+    "calf_l",
+    "calf_r",
+    "forearm_l",
+    "forearm_r",
+    "shoulder_l",
+    "shoulder_r",
+    "thigh_l",
+    "thigh_r",
+    "upperarm_l",
+    "upperarm_r"
+   ],
+   "hair_mode": null,
+   "source": "mpfb:clothes/male_casualsuit02/male_casualsuit02.mhclo",
+   "emissive_variants": [],
+   "license": "CC0"
+  },
+  "casual_stripe": {
+   "slot": "outfit",
+   "fbx": "parts/casual_stripe.fbx",
+   "tris": [
+    2400,
+    1300,
+    520
+   ],
+   "textures": {
+    "default": "textures/casual_stripe__default.png"
+   },
+   "default": "default",
+   "tile": 512,
+   "hides_regions": [
+    "belly",
+    "calf_l",
+    "calf_r",
+    "shoulder_l",
+    "shoulder_r",
+    "thigh_l",
+    "thigh_r",
+    "upperarm_l",
+    "upperarm_r"
+   ],
+   "hair_mode": null,
+   "source": "mpfb:clothes/male_casualsuit03/male_casualsuit03.mhclo",
+   "emissive_variants": [],
+   "license": "CC0"
+  },
+  "casual_white": {
+   "slot": "outfit",
+   "fbx": "parts/casual_white.fbx",
+   "tris": [
+    2399,
+    1300,
+    520
+   ],
+   "textures": {
+    "default": "textures/casual_white__default.png"
+   },
+   "default": "default",
+   "tile": 512,
+   "hides_regions": [
+    "belly",
+    "calf_l",
+    "calf_r",
+    "thigh_l",
+    "thigh_r"
+   ],
+   "hair_mode": null,
+   "source": "mpfb:clothes/male_casualsuit06/male_casualsuit06.mhclo",
+   "emissive_variants": [],
+   "license": "CC0"
+  },
+  "dress_shoes": {
+   "slot": "shoes",
+   "fbx": "parts/dress_shoes.fbx",
+   "tris": [
+    500,
+    278,
+    110
+   ],
+   "textures": {
+    "default": "textures/dress_shoes__default.png"
+   },
+   "default": "default",
+   "tile": 256,
+   "hides_regions": [],
+   "hair_mode": null,
+   "source": "mpfb:clothes/shoes01/shoes01.mhclo",
+   "emissive_variants": [],
+   "license": "CC0"
+  },
+  "fedora": {
+   "slot": "hat",
+   "fbx": "parts/fedora.fbx",
+   "tris": [
+    499,
+    280,
+    110
+   ],
+   "textures": {
+    "default": "textures/fedora__default.png"
+   },
+   "default": "default",
+   "tile": 256,
+   "hides_regions": [],
+   "hair_mode": "short",
+   "source": "mpfb:clothes/fedora01/fedora01.mhclo",
+   "emissive_variants": [],
+   "license": "CC0"
+  },
+  "fleece_vest": {
+   "slot": "outer",
+   "fbx": "parts/fleece_vest.fbx",
+   "tris": [
+    884,
+    800,
+    320
+   ],
+   "textures": {
+    "navy": "textures/fleece_vest__navy.png",
+    "grey": "textures/fleece_vest__grey.png",
+    "black": "textures/fleece_vest__black.png",
+    "olive": "textures/fleece_vest__olive.png"
+   },
+   "default": "navy",
+   "tile": 512,
+   "hides_regions": [],
+   "hair_mode": null,
+   "source": "ctlife:procedural",
+   "emissive_variants": [],
+   "license": "CC0"
+  },
+  "fox_mask": {
+   "slot": "face",
+   "fbx": "parts/fox_mask.fbx",
+   "tris": [
+    400,
+    200,
+    90
+   ],
+   "textures": {
+    "default": "textures/fox_mask__default.png"
+   },
+   "default": "default",
+   "tile": 256,
+   "hides_regions": [],
+   "hair_mode": null,
+   "source": "ctlife:procedural",
+   "emissive_variants": [],
+   "license": "CC0"
+  },
+  "gold_chain": {
+   "slot": "neck",
+   "fbx": "parts/gold_chain.fbx",
+   "tris": [
+    260,
+    148,
+    58
+   ],
+   "textures": {
+    "gold": "textures/gold_chain__gold.png",
+    "silver": "textures/gold_chain__silver.png"
+   },
+   "default": "gold",
+   "tile": 256,
+   "hides_regions": [],
+   "hair_mode": null,
+   "source": "ctlife:procedural",
+   "emissive_variants": [],
+   "license": "CC0"
+  },
+  "hair_afro": {
+   "slot": "hair",
+   "fbx": "parts/hair_afro.fbx",
+   "tris": [
+    1198,
+    649,
+    260
+   ],
+   "textures": {
+    "black": "textures/hair_afro__black.png",
+    "brown": "textures/hair_afro__brown.png",
+    "chestnut": "textures/hair_afro__chestnut.png",
+    "blonde": "textures/hair_afro__blonde.png",
+    "auburn": "textures/hair_afro__auburn.png",
+    "grey": "textures/hair_afro__grey.png",
+    "pink": "textures/hair_afro__pink.png",
+    "blue": "textures/hair_afro__blue.png"
+   },
+   "default": "black",
+   "tile": 256,
+   "hides_regions": [],
+   "hair_mode": null,
+   "source": "mpfb:hair/afro01/afro01.mhclo",
+   "emissive_variants": [],
+   "license": "CC0"
+  },
+  "hair_beard": {
+   "slot": "facial_hair",
+   "fbx": "parts/hair_beard.fbx",
+   "tris": [
+    598,
+    319,
+    129
+   ],
+   "textures": {
+    "black": "textures/hair_beard__black.png",
+    "brown": "textures/hair_beard__brown.png",
+    "chestnut": "textures/hair_beard__chestnut.png",
+    "blonde": "textures/hair_beard__blonde.png",
+    "auburn": "textures/hair_beard__auburn.png",
+    "grey": "textures/hair_beard__grey.png",
+    "pink": "textures/hair_beard__pink.png",
+    "blue": "textures/hair_beard__blue.png"
+   },
+   "default": "black",
+   "tile": 256,
+   "hides_regions": [],
+   "hair_mode": null,
+   "source": "quaternius:UBC/Hairstyles/Hair_Beard",
+   "emissive_variants": [],
+   "license": "CC0"
+  },
+  "hair_buzzed": {
+   "slot": "hair",
+   "fbx": "parts/hair_buzzed.fbx",
+   "tris": [
+    830,
+    650,
+    260
+   ],
+   "textures": {
+    "black": "textures/hair_buzzed__black.png",
+    "brown": "textures/hair_buzzed__brown.png",
+    "chestnut": "textures/hair_buzzed__chestnut.png",
+    "blonde": "textures/hair_buzzed__blonde.png",
+    "auburn": "textures/hair_buzzed__auburn.png",
+    "grey": "textures/hair_buzzed__grey.png",
+    "pink": "textures/hair_buzzed__pink.png",
+    "blue": "textures/hair_buzzed__blue.png"
+   },
+   "default": "black",
+   "tile": 256,
+   "hides_regions": [],
+   "hair_mode": null,
+   "source": "quaternius:UBC/Hairstyles/Hair_Buzzed",
+   "emissive_variants": [],
+   "license": "CC0"
+  },
+  "hair_parted": {
+   "slot": "hair",
+   "fbx": "parts/hair_parted.fbx",
+   "tris": [
+    1200,
+    650,
+    259
+   ],
+   "textures": {
+    "black": "textures/hair_parted__black.png",
+    "brown": "textures/hair_parted__brown.png",
+    "chestnut": "textures/hair_parted__chestnut.png",
+    "blonde": "textures/hair_parted__blonde.png",
+    "auburn": "textures/hair_parted__auburn.png",
+    "grey": "textures/hair_parted__grey.png",
+    "pink": "textures/hair_parted__pink.png",
+    "blue": "textures/hair_parted__blue.png"
+   },
+   "default": "black",
+   "tile": 256,
+   "hides_regions": [],
+   "hair_mode": null,
+   "source": "quaternius:UBC/Hairstyles/Hair_SimpleParted",
+   "emissive_variants": [],
+   "license": "CC0"
+  },
+  "hair_short_crop": {
+   "slot": "hair",
+   "fbx": "parts/hair_short_crop.fbx",
+   "tris": [
+    1199,
+    650,
+    260
+   ],
+   "textures": {
+    "black": "textures/hair_short_crop__black.png",
+    "brown": "textures/hair_short_crop__brown.png",
+    "chestnut": "textures/hair_short_crop__chestnut.png",
+    "blonde": "textures/hair_short_crop__blonde.png",
+    "auburn": "textures/hair_short_crop__auburn.png",
+    "grey": "textures/hair_short_crop__grey.png",
+    "pink": "textures/hair_short_crop__pink.png",
+    "blue": "textures/hair_short_crop__blue.png"
+   },
+   "default": "black",
+   "tile": 256,
+   "hides_regions": [],
+   "hair_mode": null,
+   "source": "mpfb:hair/short02/short02.mhclo",
+   "emissive_variants": [],
+   "license": "CC0"
+  },
+  "hard_hat": {
+   "slot": "hat",
+   "fbx": "parts/hard_hat.fbx",
+   "tris": [
+    500,
+    280,
+    110
+   ],
+   "textures": {
+    "yellow": "textures/hard_hat__yellow.png",
+    "orange": "textures/hard_hat__orange.png",
+    "white": "textures/hard_hat__white.png"
+   },
+   "default": "yellow",
+   "tile": 256,
+   "hides_regions": [],
+   "hair_mode": "hide",
+   "source": "ctlife:procedural",
+   "emissive_variants": [],
+   "license": "CC0"
+  },
+  "headset": {
+   "slot": "acc",
+   "fbx": "parts/headset.fbx",
+   "tris": [
+    332,
+    200,
+    80
+   ],
+   "textures": {
+    "black": "textures/headset__black.png",
+    "white": "textures/headset__white.png"
+   },
+   "default": "black",
+   "tile": 256,
+   "hides_regions": [],
+   "hair_mode": null,
+   "source": "ctlife:procedural",
+   "emissive_variants": [],
+   "license": "CC0"
+  },
+  "hood": {
+   "slot": "top_addon",
+   "fbx": "parts/hood.fbx",
+   "tris": [
+    400,
+    220,
+    100
+   ],
+   "textures": {
+    "black": "textures/hood__black.png",
+    "grey": "textures/hood__grey.png",
+    "orange": "textures/hood__orange.png",
+    "pink": "textures/hood__pink.png",
+    "green": "textures/hood__green.png",
+    "purple": "textures/hood__purple.png"
+   },
+   "default": "black",
+   "tile": 256,
+   "hides_regions": [],
+   "hair_mode": null,
+   "source": "ctlife:procedural",
+   "emissive_variants": [],
+   "license": "CC0"
+  },
+  "hoodie": {
+   "slot": "top",
+   "fbx": "parts/hoodie.fbx",
+   "tris": [
+    1400,
+    800,
+    320
+   ],
+   "textures": {
+    "black": "textures/hoodie__black.png",
+    "grey": "textures/hoodie__grey.png",
+    "orange": "textures/hoodie__orange.png",
+    "pink": "textures/hoodie__pink.png",
+    "green": "textures/hoodie__green.png",
+    "purple": "textures/hoodie__purple.png"
+   },
+   "default": "black",
+   "tile": 512,
+   "hides_regions": [
+    "belly",
+    "shoulder_l",
+    "shoulder_r",
+    "upperarm_l",
+    "upperarm_r"
+   ],
+   "hair_mode": null,
+   "source": "mpfb:clothes/toigo_fisherman_sweater/toigo_fisherman_sweater.mhclo",
+   "emissive_variants": [],
+   "license": "CC0"
+  },
+  "lanyard": {
+   "slot": "neck",
+   "fbx": "parts/lanyard.fbx",
+   "tris": [
+    260,
+    150,
+    60
+   ],
+   "textures": {
+    "red": "textures/lanyard__red.png",
+    "blue": "textures/lanyard__blue.png"
+   },
+   "default": "red",
+   "tile": 256,
+   "hides_regions": [],
+   "hair_mode": null,
+   "source": "ctlife:procedural",
+   "emissive_variants": [],
+   "license": "CC0"
+  },
+  "megaphone": {
+   "slot": "held",
+   "fbx": "parts/megaphone.fbx",
+   "tris": [
+    224,
+    220,
+    100
+   ],
+   "textures": {
+    "default": "textures/megaphone__default.png"
+   },
+   "default": "default",
+   "tile": 256,
+   "hides_regions": [],
+   "hair_mode": null,
+   "source": "ctlife:procedural",
+   "emissive_variants": [],
+   "license": "CC0"
+  },
+  "nerd_glasses": {
+   "slot": "glasses",
+   "fbx": "parts/nerd_glasses.fbx",
+   "tris": [
+    298,
+    160,
+    74
+   ],
+   "textures": {
+    "default": "textures/nerd_glasses__default.png"
+   },
+   "default": "default",
+   "tile": 256,
+   "hides_regions": [],
+   "hair_mode": null,
+   "source": "mpfb:clothes/spamrakuen_tbm_glasses_frames_01/spamrakuen_tbm_glasses_frames_01.mhclo",
+   "emissive_variants": [],
+   "license": "CC0"
+  },
+  "newsboy_cap": {
+   "slot": "hat",
+   "fbx": "parts/newsboy_cap.fbx",
+   "tris": [
+    499,
+    279,
+    109
+   ],
+   "textures": {
+    "default": "textures/newsboy_cap__default.png"
+   },
+   "default": "default",
+   "tile": 256,
+   "hides_regions": [],
+   "hair_mode": "short",
+   "source": "mpfb:clothes/jujube_newsboy_cap/jujube_newsboy_cap.mhclo",
+   "emissive_variants": [],
+   "license": "CC0"
+  },
+  "ore_backpack": {
+   "slot": "back",
+   "fbx": "parts/ore_backpack.fbx",
+   "tris": [
+    114,
+    114,
+    110
+   ],
+   "textures": {
+    "default": "textures/ore_backpack__default.png"
+   },
+   "default": "default",
+   "tile": 256,
+   "hides_regions": [],
+   "hair_mode": null,
+   "source": "ctlife:procedural",
+   "emissive_variants": [
+    "default"
+   ],
+   "license": "CC0"
+  },
+  "overalls": {
+   "slot": "outfit",
+   "fbx": "parts/overalls.fbx",
+   "tris": [
+    2400,
+    1299,
+    519
+   ],
+   "textures": {
+    "default": "textures/overalls__default.png"
+   },
+   "default": "default",
+   "tile": 512,
+   "hides_regions": [
+    "belly",
+    "calf_l",
+    "calf_r",
+    "shoulder_l",
+    "shoulder_r",
+    "thigh_l",
+    "thigh_r"
+   ],
+   "hair_mode": null,
+   "source": "mpfb:clothes/male_worksuit01/male_worksuit01.mhclo",
+   "emissive_variants": [],
+   "license": "CC0"
+  },
+  "phone": {
+   "slot": "held",
+   "fbx": "parts/phone.fbx",
+   "tris": [
+    44,
+    44,
+    44
+   ],
+   "textures": {
+    "black": "textures/phone__black.png",
+    "white": "textures/phone__white.png",
+    "gold": "textures/phone__gold.png"
+   },
+   "default": "black",
+   "tile": 256,
+   "hides_regions": [],
+   "hair_mode": null,
+   "source": "ctlife:procedural",
+   "emissive_variants": [
+    "black",
+    "white",
+    "gold"
+   ],
+   "license": "CC0"
+  },
+  "polo": {
+   "slot": "top",
+   "fbx": "parts/polo.fbx",
+   "tris": [
+    1399,
+    800,
+    320
+   ],
+   "textures": {
+    "grey": "textures/polo__grey.png",
+    "skyblue": "textures/polo__skyblue.png",
+    "linen": "textures/polo__linen.png",
+    "navy": "textures/polo__navy.png",
+    "pink": "textures/polo__pink.png"
+   },
+   "default": "grey",
+   "tile": 512,
+   "hides_regions": [
+    "belly"
+   ],
+   "hair_mode": null,
+   "source": "mpfb:clothes/namuhekam_male_polo_shirt/namuhekam_male_polo_shirt.mhclo",
+   "emissive_variants": [],
+   "license": "CC0"
+  },
+  "ring_light": {
+   "slot": "held",
+   "fbx": "parts/ring_light.fbx",
+   "tris": [
+    400,
+    220,
+    100
+   ],
+   "textures": {
+    "default": "textures/ring_light__default.png"
+   },
+   "default": "default",
+   "tile": 256,
+   "hides_regions": [],
+   "hair_mode": null,
+   "source": "ctlife:procedural",
+   "emissive_variants": [
+    "default"
+   ],
+   "license": "CC0"
+  },
+  "round_shades": {
+   "slot": "glasses",
+   "fbx": "parts/round_shades.fbx",
+   "tris": [
+    297,
+    158,
+    101
+   ],
+   "textures": {
+    "default": "textures/round_shades__default.png"
+   },
+   "default": "default",
+   "tile": 256,
+   "hides_regions": [],
+   "hair_mode": null,
+   "source": "mpfb:clothes/toigo_round_glasses_leopard/toigo_round_glasses_leopard.mhclo",
+   "emissive_variants": [],
+   "license": "CC0"
+  },
+  "shades": {
+   "slot": "glasses",
+   "fbx": "parts/shades.fbx",
+   "tris": [
+    60,
+    60,
+    60
+   ],
+   "textures": {
+    "black": "textures/shades__black.png",
+    "laser": "textures/shades__laser.png"
+   },
+   "default": "black",
+   "tile": 256,
+   "hides_regions": [],
+   "hair_mode": null,
+   "source": "ctlife:procedural",
+   "emissive_variants": [
+    "laser"
+   ],
+   "license": "CC0"
+  },
+  "shorts": {
+   "slot": "bottom",
+   "fbx": "parts/shorts.fbx",
+   "tris": [
+    500,
+    500,
+    238
+   ],
+   "textures": {
+    "denim": "textures/shorts__denim.png",
+    "beige": "textures/shorts__beige.png",
+    "black": "textures/shorts__black.png"
+   },
+   "default": "denim",
+   "tile": 512,
+   "hides_regions": [],
+   "hair_mode": null,
+   "source": "mpfb:clothes/cortu_jeans_shorts/cortu_jeans_shorts.mhclo",
+   "emissive_variants": [],
+   "license": "CC0"
+  },
+  "siren_hat": {
+   "slot": "hat",
+   "fbx": "parts/siren_hat.fbx",
+   "tris": [
+    288,
+    280,
+    110
+   ],
+   "textures": {
+    "default": "textures/siren_hat__default.png"
+   },
+   "default": "default",
+   "tile": 256,
+   "hides_regions": [],
+   "hair_mode": "short",
+   "source": "ctlife:procedural",
+   "emissive_variants": [],
+   "license": "CC0"
+  },
+  "slacks": {
+   "slot": "bottom",
+   "fbx": "parts/slacks.fbx",
+   "tris": [
+    999,
+    599,
+    237
+   ],
+   "textures": {
+    "charcoal": "textures/slacks__charcoal.png",
+    "khaki": "textures/slacks__khaki.png",
+    "navy": "textures/slacks__navy.png",
+    "scrubs": "textures/slacks__scrubs.png",
+    "cream": "textures/slacks__cream.png"
+   },
+   "default": "charcoal",
+   "tile": 512,
+   "hides_regions": [
+    "calf_l",
+    "calf_r",
+    "thigh_l",
+    "thigh_r"
+   ],
+   "hair_mode": null,
+   "source": "mpfb:clothes/toigo_wool_pants/toigo_wool_pants.mhclo",
+   "emissive_variants": [],
+   "license": "CC0"
+  },
+  "sneakers_blue": {
+   "slot": "shoes",
+   "fbx": "parts/sneakers_blue.fbx",
+   "tris": [
+    496,
+    280,
+    110
+   ],
+   "textures": {
+    "default": "textures/sneakers_blue__default.png"
+   },
+   "default": "default",
+   "tile": 256,
+   "hides_regions": [
+    "foot_l",
+    "foot_r"
+   ],
+   "hair_mode": null,
+   "source": "mpfb:clothes/shoes06/shoes06.mhclo",
+   "emissive_variants": [],
+   "license": "CC0"
+  },
+  "sneakers_grey": {
+   "slot": "shoes",
+   "fbx": "parts/sneakers_grey.fbx",
+   "tris": [
+    496,
+    280,
+    110
+   ],
+   "textures": {
+    "default": "textures/sneakers_grey__default.png"
+   },
+   "default": "default",
+   "tile": 256,
+   "hides_regions": [
+    "foot_l",
+    "foot_r"
+   ],
+   "hair_mode": null,
+   "source": "mpfb:clothes/shoes02/shoes02.mhclo",
+   "emissive_variants": [],
+   "license": "CC0"
+  },
+  "sneakers_white": {
+   "slot": "shoes",
+   "fbx": "parts/sneakers_white.fbx",
+   "tris": [
+    496,
+    280,
+    110
+   ],
+   "textures": {
+    "default": "textures/sneakers_white__default.png"
+   },
+   "default": "default",
+   "tile": 256,
+   "hides_regions": [
+    "foot_l",
+    "foot_r"
+   ],
+   "hair_mode": null,
+   "source": "mpfb:clothes/shoes05/shoes05.mhclo",
+   "emissive_variants": [],
+   "license": "CC0"
+  },
+  "straw_hat": {
+   "slot": "hat",
+   "fbx": "parts/straw_hat.fbx",
+   "tris": [
+    216,
+    216,
+    108
+   ],
+   "textures": {
+    "default": "textures/straw_hat__default.png"
+   },
+   "default": "default",
+   "tile": 256,
+   "hides_regions": [],
+   "hair_mode": "short",
+   "source": "ctlife:procedural",
+   "emissive_variants": [],
+   "license": "CC0"
+  },
+  "suit": {
+   "slot": "outfit",
+   "fbx": "parts/suit.fbx",
+   "tris": [
+    2399,
+    1300,
+    520
+   ],
+   "textures": {
+    "default": "textures/suit__default.png"
+   },
+   "default": "default",
+   "tile": 512,
+   "hides_regions": [
+    "belly",
+    "calf_l",
+    "calf_r",
+    "chest",
+    "forearm_l",
+    "forearm_r",
+    "hips",
+    "shoulder_l",
+    "shoulder_r",
+    "thigh_l",
+    "thigh_r",
+    "thighup_l",
+    "thighup_r",
+    "upperarm_l",
+    "upperarm_r"
+   ],
+   "hair_mode": null,
+   "source": "mpfb:clothes/toigo_male_suit_tie_and_jacket/toigo_male_suit_tie_and_jacket.mhclo",
+   "emissive_variants": [],
+   "license": "CC0"
+  },
+  "sweater": {
+   "slot": "top",
+   "fbx": "parts/sweater.fbx",
+   "tris": [
+    1400,
+    800,
+    320
+   ],
+   "textures": {
+    "red": "textures/sweater__red.png",
+    "cream": "textures/sweater__cream.png",
+    "forest": "textures/sweater__forest.png"
+   },
+   "default": "red",
+   "tile": 512,
+   "hides_regions": [
+    "belly",
+    "shoulder_l",
+    "shoulder_r",
+    "upperarm_l",
+    "upperarm_r"
+   ],
+   "hair_mode": null,
+   "source": "mpfb:clothes/toigo_fisherman_sweater/toigo_fisherman_sweater.mhclo",
+   "emissive_variants": [],
+   "license": "CC0"
+  },
+  "tee": {
+   "slot": "top",
+   "fbx": "parts/tee.fbx",
+   "tris": [
+    1399,
+    799,
+    320
+   ],
+   "textures": {
+    "white": "textures/tee__white.png",
+    "black": "textures/tee__black.png",
+    "blurple": "textures/tee__blurple.png",
+    "rekt": "textures/tee__rekt.png",
+    "startup": "textures/tee__startup.png",
+    "green": "textures/tee__green.png",
+    "orange": "textures/tee__orange.png",
+    "pink": "textures/tee__pink.png"
+   },
+   "default": "white",
+   "tile": 512,
+   "hides_regions": [
+    "belly"
+   ],
+   "hair_mode": null,
+   "source": "mpfb:clothes/elvs_crude_t-shirt_male/elvs_crude_t-shirt_male.mhclo",
+   "emissive_variants": [],
+   "license": "CC0"
+  },
+  "trench_coat": {
+   "slot": "outer",
+   "fbx": "parts/trench_coat.fbx",
+   "tris": [
+    1500,
+    800,
+    320
+   ],
+   "textures": {
+    "tan": "textures/trench_coat__tan.png",
+    "charcoal": "textures/trench_coat__charcoal.png"
+   },
+   "default": "tan",
+   "tile": 512,
+   "hides_regions": [
+    "shoulder_l",
+    "shoulder_r",
+    "upperarm_l",
+    "upperarm_r"
+   ],
+   "hair_mode": null,
+   "source": "ctlife:procedural",
+   "emissive_variants": [],
+   "license": "CC0"
+  }
+ },
+ "body": {
+  "fbx": "body/ctl_male_body.fbx",
+  "regions": [
+   "head",
+   "neck",
+   "chest",
+   "belly",
+   "hips",
+   "shoulder_l",
+   "upperarm_l",
+   "forearm_l",
+   "hand_l",
+   "thighup_l",
+   "thigh_l",
+   "calf_l",
+   "foot_l",
+   "shoulder_r",
+   "upperarm_r",
+   "forearm_r",
+   "hand_r",
+   "thighup_r",
+   "thigh_r",
+   "calf_r",
+   "foot_r"
+  ],
+  "tris_per_region": {
+   "head": [
+    944,
+    399,
+    194
+   ],
+   "neck": [
+    92,
+    51,
+    28
+   ],
+   "chest": [
+    248,
+    151,
+    86
+   ],
+   "belly": [
+    92,
+    50,
+    36
+   ],
+   "hips": [
+    64,
+    58,
+    37
+   ],
+   "shoulder_l": [
+    32,
+    26,
+    16
+   ],
+   "upperarm_l": [
+    16,
+    16,
+    11
+   ],
+   "forearm_l": [
+    32,
+    22,
+    16
+   ],
+   "hand_l": [
+    232,
+    188,
+    99
+   ],
+   "thighup_l": [
+    42,
+    30,
+    13
+   ],
+   "thigh_l": [
+    48,
+    36,
+    26
+   ],
+   "calf_l": [
+    48,
+    41,
+    27
+   ],
+   "foot_l": [
+    84,
+    69,
+    39
+   ],
+   "shoulder_r": [
+    32,
+    26,
+    17
+   ],
+   "upperarm_r": [
+    16,
+    16,
+    10
+   ],
+   "forearm_r": [
+    32,
+    22,
+    15
+   ],
+   "hand_r": [
+    234,
+    190,
+    98
+   ],
+   "thighup_r": [
+    42,
+    30,
+    13
+   ],
+   "thigh_r": [
+    48,
+    36,
+    26
+   ],
+   "calf_r": [
+    48,
+    41,
+    31
+   ],
+   "foot_r": [
+    84,
+    69,
+    39
+   ]
+  },
+  "tris_total": [
+   2510,
+   1567,
+   877
+  ],
+  "eyes_tris": 172,
+  "skin_textures": {
+   "tone1": "textures/skin_tone1.png",
+   "tone2": "textures/skin_tone2.png",
+   "tone3": "textures/skin_tone3.png",
+   "tone4": "textures/skin_tone4.png",
+   "tone5": "textures/skin_tone5.png",
+   "tone6": "textures/skin_tone6.png"
+  },
+  "eye_textures": {
+   "brown": "textures/eyes_brown.png",
+   "darkbrown": "textures/eyes_darkbrown.png",
+   "blue": "textures/eyes_blue.png",
+   "green": "textures/eyes_green.png",
+   "grey": "textures/eyes_grey.png"
+  },
+  "source": "MPFB 2.0.17 / MakeHuman system assets (CC0): proxy male1591/male1591.proxy"
+ }
+}
