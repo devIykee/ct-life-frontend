@@ -212,7 +212,8 @@ namespace CTLife.Ventures.Tests
     public sealed class WriteFlowTests
     {
         private int _n;
-        private WriteFlow Make() => new WriteFlow(() => "k" + (++_n));
+        // NUnit reuses one fixture instance across its tests, so the key counter restarts per flow.
+        private WriteFlow Make() { _n = 0; return new WriteFlow(() => "k" + (++_n)); }
 
         [Test]
         public void Success_RetiresTheKey()

@@ -153,14 +153,15 @@ namespace CTLife.App
                 // Development automation: `fresh=1` ignores a stored session so onboarding runs for a new account.
                 if (LaunchArgs.Flag("fresh") && !_freshApplied) { _freshApplied = true; session.Clear(); }
 #endif
-                if (!session.IsSignedIn)
+                bool signedIn = session.IsSignedIn;
+                if (!signedIn)
                 {
                     splash.SetStatus("Signing in…");
-                    bool resumed = await _owner.Wait(Services.Get<IAuthService>().TryResume(_owner.Token));
-                    CloseFlow(splash);
-                    if (!resumed) await _owner.Wait(SignIn());
+                    signedIn = await _owner.Wait(Services.Get<IAuthService>().TryResume(_owner.Token));
                 }
                 CloseFlow(splash);
+                // The title screen: "Sign in with Solana" for a new player, "PLAY" for a valid saved session.
+                if (!signedIn || !SkipTitleForAutomation()) await _owner.Wait(SignIn(returning: signedIn));
                 await _owner.Wait(EnterGame());
             }
             finally { CloseFlow(splash); }
@@ -181,7 +182,22 @@ namespace CTLife.App
             return _owner.Wait(tcs.Task);
         }
 
-        private Task SignIn()
+        /// <summary>Development automation (launch extras) continues a saved session without waiting for PLAY.</summary>
+        private static bool SkipTitleForAutomation()
+        {
+#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
+            return LaunchArgs.Get("autologin") != null || LaunchArgs.Flag("autoenter") || LaunchArgs.Flag("integration")
+                || !string.IsNullOrEmpty(LaunchArgs.Get("app"));
+#else
+            return false;
+#endif
+        }
+
+        /// <summary>
+        /// The title screen. `returning`: a valid session exists, so it shows PLAY (continue) and "Use another wallet" (sign out,
+        /// then the sign-in button). Completes once the player is signed in and continues.
+        /// </summary>
+        private Task SignIn(bool returning = false)
         {
             var tcs = new TaskCompletionSource<bool>();
             var auth = Services.Get<IAuthService>();
@@ -248,11 +264,35 @@ namespace CTLife.App
             }
 #endif
 
-            screen = new SignInScreen(Wallet, wallet.IsAvailable);
+            void Play()
+            {
+                if (pending || !Owns(screen)) return;
+                CloseFlow(screen);
+                tcs.TrySetResult(true);
+            }
+
+            async void AnotherWallet()
+            {
+                if (pending || !Owns(screen)) return;
+                pending = true;
+                screen.SetSwitching(true);
+                try { await _owner.Wait(auth.SignOut(wallet)); }
+                catch (OperationCanceledException) when (!Alive) { return; }
+                catch (Exception e) { Log.Warn("flow", "Sign-out for another wallet: " + e.Message); }
+                finally { pending = false; }
+                if (!Owns(screen)) return;
+                screen.SetSwitching(false);
+                screen.SetReturning(false);
+            }
+
+            screen = new SignInScreen(Wallet, wallet.IsAvailable, returning, Play, AnotherWallet);
             ShowFlow(screen);
 #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
             // Explicit development automation only. No guest/demo route is exposed in the product UI.
-            if (LaunchArgs.Get("autologin") == "dev" && auth.DevAuthAllowed) Dev();
+            if (!returning && LaunchArgs.Get("autologin") == "dev" && auth.DevAuthAllowed) Dev();
+            // Evidence capture: `shot=<name>` saves the app's own frame (no system dialogs on top) to files/<name>.png.
+            if (LaunchArgs.Get("shot") is string shot && System.Text.RegularExpressions.Regex.IsMatch(shot, "^[a-z0-9-]{1,40}$"))
+                screen.Element?.schedule.Execute(() => { ScreenCapture.CaptureScreenshot(shot + ".png"); Log.Info("flow", "Saved screenshot " + shot); }).StartingIn(5000);
 #endif
             return _owner.Wait(tcs.Task);
         }

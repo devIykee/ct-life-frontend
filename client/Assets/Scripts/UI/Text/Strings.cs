@@ -41,7 +41,7 @@ namespace CTLife.UI
             ["welcome.walletAndroid"] = "Open CT Life on Android to sign in with your wallet.",
             ["welcome.age"] = "18+ only. Cash is game money and cannot be withdrawn.",
             ["welcome.unavailable"] = "Sign-in is taking a breather. Please try again shortly.",
-            ["welcome.busy"] = "Opening your wallet…",
+            ["welcome.busy"] = "Opening your wallet…", ["welcome.play"] = "PLAY", ["welcome.anotherWallet"] = "Use another wallet",
             ["splash.gm"] = "gm. Your city is waking up.",
             ["connection.title"] = "Can't reach CT Life",
             ["connection.body"] = "Check your connection, then try again. Nothing you did was lost.",

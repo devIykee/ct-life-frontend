@@ -262,6 +262,12 @@ Print text and marks are original parody (e.g. COIN2050, CHECKPOINT, POMP, WOTCH
 | --- | --- | --- | --- | --- | --- |
 | CT Life "CT" mark (`art/branding/logo/`) | Generated in the user's Codex chat (built-in image generation), 2026-10-06 | Owned by the project (generated for CT Life) | CT Life | 2026-10-06 | Logo, app icon, splash, in-app brand mark |
 
+## Title screen (2026-10-08)
+
+| Name | Source URL | Licence | Author | Date | Used for |
+| --- | --- | --- | --- | --- | --- |
+| Title background "town square with eggs" v2 (`client/Assets/Resources/UI/Title/title-bg.png`, 1870×841, sha256 aa12b9bd…49d64d105; source `ct-life-evidence/art-direction/out/title-bg-eggs-v2.png`) | Generated for CT Life in the Codex art thread (built-in image generation) | Owned by the project (generated for CT Life) | CT Life | 2026-10-08 | Sign-in / title screen background |
+
 <!-- BEGIN animation-sources-20261008 -->
 ## Source animation clips (2026-10-08, raw only, not yet imported into Unity)
 

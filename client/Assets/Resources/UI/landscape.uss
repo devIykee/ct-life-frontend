@@ -2,7 +2,6 @@
    Preserve portrait fallback; existing tokens and native controls remain shared. */
 .ct-lobby-main { flex-grow: 1; min-height: 0; }
 .ct-lobby-top, .ct-lobby-aside { flex-shrink: 0; }
-.ct-welcome-layout { flex-grow: 1; min-height: 0; }
 
 .ct-landscape .ct-lobby { background-color: var(--ct-ink); }
 .ct-landscape .ct-backdrop-lobby { background-color: var(--ct-ink); }
@@ -41,19 +40,6 @@
 .ct-landscape .ct-lobby .ct-pressable > .ct-button-glint { display: none; }
 
 /* Wallet entry: the action stays visible while the portrait/copy may scroll. */
-.ct-landscape .ct-signin { padding: 32px 56px; background-color: var(--ct-card); }
-.ct-landscape .ct-signin .ct-brand-wordmark { color: var(--ct-ink); -unity-text-outline-width: 0; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); }
-.ct-landscape .ct-welcome-layout { flex-direction: row; margin-top: 24px; }
-.ct-landscape .ct-welcome-scroll { flex-basis: 0; flex-grow: 1; margin: 0 48px 0 0; }
-.ct-landscape .ct-welcome-hero { flex-direction: row; padding-top: 0; min-height: 620px; }
-.ct-landscape .ct-welcome-copy { width: 48%; justify-content: center; padding-right: 24px; }
-.ct-landscape .ct-welcome-title { font-size: 68px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); }
-.ct-landscape .ct-welcome-body { font-size: 29px; }
-.ct-landscape .ct-welcome-portrait { min-height: 620px; height: auto; margin: 0; border-width: 0; }
-.ct-landscape .ct-welcome-actions { width: 640px; justify-content: center; padding: 24px; }
-.ct-landscape .ct-welcome-actions .ct-btn { font-size: 34px; border-width: 0; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); }
-.ct-landscape .ct-welcome-actions .ct-button-depth, .ct-landscape .ct-welcome-actions .ct-button-glint { display: none; }
-.ct-landscape .ct-welcome-actions .ct-small, .ct-landscape .ct-welcome-actions .ct-legal { font-size: 26px; }
 
 /* Creator: character and wardrobe details share the horizontal view. */
 .ct-landscape .ct-creator-header { padding: 20px 48px 0 48px; }

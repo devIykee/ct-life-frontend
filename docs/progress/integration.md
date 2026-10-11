@@ -1,4 +1,4 @@
-READY TO COMMIT (Phase 5/6 wiring on dev 059d16f): client/Assets/Scripts/App/{CTLife.App.asmdef,PhoneCatalog.cs,FlowController.cs,Dev/FeatureProbe.cs}, client/Assets/Scripts/Net/Realtime/{Channels.cs,RawRoomMessages.cs,RawRoomMessages.cs.meta}, client/Assets/Scripts/Core/{Data/ConfigStore.cs,Env/LaunchArgs.cs}, client/Assets/Scripts/UI/{Overlays/ProfileCard.cs,Phone/Apps/CoreApps.cs,Text/Strings.cs}, client/Assets/Scripts/Features/WorldLife/Runtime/{LiveSurfaces.cs,WorldLifeHub.cs}, client/Assets/Scripts/Features/Competition/{Logic/CompErrors.cs,Tests/RuleTests.cs}, client/Assets/Scripts/Features/Ventures/{Logic/VErrors.cs,Tests/WireAndErrorTests.cs}, client/Assets/Tests/Integration/IntegrationRun.cs, client/Assets/Resources/Contract/config_snapshot.json, docs/fe-contract-proposals/ids/spots.json, docs/progress/{integration,backend-dev-feedback,requests}.md. NOT mine, leave out: client/Assets/Art/characters/cast/materials/snow_everyday.mat (Unity filled _MainTex on import). Commit message: "integration: wire Phase 5 ventures and Phase 6 competition; missing routes say Not available yet". Checks: compile_check dev/release/editor 0 errors; lane runners Competition 225/225, Ventures 283/283; editor integration 13/13 core + Phase 5/6 rows; Seeker smoke 7/9 apps.
+READY TO COMMIT (title screen on dev 981f134): client/Assets/Scripts/UI/Screens/SignInScreen.cs, client/Assets/Scripts/UI/DeviceFeel.cs (+.meta), client/Assets/Scripts/Editor/TitleArtImporter.cs (+.meta), client/Assets/Resources/UI/title.uss (+.meta), client/Assets/Resources/UI/Title.meta, client/Assets/Resources/UI/Title/title-bg.png (+.meta), client/Assets/Resources/UI/{ctlife.uss,landscape.uss}, client/Assets/Scripts/App/FlowController.cs, client/Assets/Scripts/Core/Env/LaunchArgs.cs, client/Assets/Scripts/UI/Text/Strings.cs, client/Assets/Scripts/Features/Ventures/Tests/WireAndErrorTests.cs, art/LICENSES.md, docs/progress/integration.md. NOT mine, leave out: client/Assets/Art/characters/cast/materials/snow_everyday.mat. Commit message: "feat(ui): title screen sign-in (approved art), PLAY for returning players". Checks: compile_check dev/release/editor 0 errors; EditMode 1301/1301 (9 assemblies; first run 1300/1301, a Ventures test-isolation bug fixed); release APK 149.5 MiB. Seeker screenshots PENDING (MTN dialog holds focus).
 
 # Integration lead log
 
@@ -478,6 +478,59 @@ the city (`seeker_launch.sh -e autoenter 1 -e app beef`).
 - Evidence: `../ct-life-evidence/phase56-20261008/app-*.png`.
 
 **Backend:** items #77–#81 added to `backend-dev-feedback.md` (verified live; lanes' unprobed rows stay in their logs).
+
+## 2026-10-08: Title screen (approved art direction)
+
+`SignInScreen` is now a game title screen. Styles: `Resources/UI/title.uss`. Art: `Resources/UI/Title/`.
+- **Background:** full-bleed `title-bg.png`, the approved native 1870×841 `title-bg-eggs-v2.png` (sha256 matches its
+  manifest).
+  - Cover-fit and centred, so 16:9 screens crop the sides.
+  - It extends under the safe-area insets: the screen sets negative offsets equal to the safe-area layer's insets.
+  - Import (`Editor/TitleArtImporter.cs`, applied on every import): no mipmaps, Android max 2048, ASTC 6x6; the button
+    bodies get ASTC 4x4 with alpha.
+  - Licence: `art/LICENSES.md` "Title screen".
+- **Removed:** El.Brand, the eyebrow/title/body copy and the AvatarPreview portrait, plus their old `.ct-welcome*` /
+  `.ct-signin` styles.
+- **Button:** one big centred button, 38% of the width and 168 px tall, bottom edge at 9% (the open cobblestones under the
+  group's feet).
+  - Lilita One, cream `rgb(255,246,228)` with a 3 px dark-plum outline `rgb(58,20,64)` and a small shadow.
+  - Press: scale 0.96 plus a darker tint over 80 ms, a haptic tick (Android `performHapticFeedback(VIRTUAL_KEY)`, which
+    honours the phone's touch-feedback setting) and the tap sound.
+  - Idle: a 5 px bob (2.6 s) and a shine sweep every 4.5 s.
+  - Busy: "Opening your wallet…" and disabled. The existing enable rule is kept (`Features.Login` and `walletAvailable`).
+- **Error line:** under the button, shown only when there is text (cream, outlined). If the wallet or login is
+  unavailable, the existing messages appear there.
+- **Legal line:** small, bottom centre, cream with a soft shadow.
+- **Returning players.** If a valid session exists (stored, or resumed from the refresh token) the same screen shows the
+  purple **PLAY** button, which continues into the game as before.
+  - The small underlined "Use another wallet" link signs out (`IAuthService.SignOut`) and swaps to the sign-in button.
+  - The automation extras (`autologin`, `autoenter`, `integration`, `app`) skip the PLAY gate in dev builds only, so the
+    scripts and the editor integration still run unattended.
+- **Ken Burns:** scale 1.00 → 1.04 over 25 s, ease in-out, ping-pong (USS transition).
+  - The project has no reduced-motion setting. Motion (drift, bob, shine) is off when Android's "Remove animations" is on
+    (`ANIMATOR_DURATION_SCALE` = 0, `DeviceFeel.ReducedMotion`).
+- **Buttons are placeholders:** `btn-green-blank.png` / `btn-purple-blank.png` were not in `art-direction/out/` yet.
+  - The current bodies are styled in USS (green/purple pill, plum outline, thicker bottom edge).
+  - When the files are copied to `Resources/UI/Title/`, `ApplyButtonArt` uses them automatically, 9-sliced, with the
+    label still drawn by Unity.
+- **Dev-only evidence extra:** `shot=<name>` saves the app's own frame to `files/<name>.png`, so system dialogs don't
+  appear in it. Pull it with `adb exec-out run-as com.ctlife.app cat files/<name>.png`.
+
+**Release APK: 149.5 MiB** (budget 150; was 148.4). The background is 0.69 MB in the build. [Inference] The rest is the
+Phase 5/6 code merged since then. **Headroom is 0.5 MiB:** the painted buttons at ASTC 4x4 may not fit. Two ASTC 4x4
+bodies around 900×260 would be about 0.47 MB.
+
+**EditMode:** **1301/1301** passed (9 assemblies: the 7 from before plus Ventures and Competition). The first run was 1300/1301: `WriteFlowTests.Success_RetiresTheKey` (Ventures lane) kept its key counter across tests because NUnit reuses the fixture instance; `Make()` now resets it. That was a test-only fix. Results: `../ct-life-evidence/title-screen/editmode-results-2.xml`.
+
+**Seeker screenshots: blocked.**
+- An "MTN - NG Message: Connection problem or invalid MMI code [OK]" carrier dialog holds window focus. Unity on Android
+  waits for focus before it loads the first scene (its log shows `HasWindow = 1, HasFocus = 0`), so the app never draws
+  the title.
+- Not touched, as instructed. Once it is dismissed:
+  - (a) Fresh: `seeker_launch.sh -e fresh 1 -e shot title-signin` → `files/title-signin.png`
+  - Then `seeker_launch.sh -e autologin dev` to sign the dev account back in.
+  - (b) Returning: `seeker_launch.sh -e shot title-play` → `files/title-play.png`
+- Target: `../ct-life-evidence/title-screen/`.
 
 ## Status
 
