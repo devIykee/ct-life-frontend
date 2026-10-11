@@ -67,7 +67,20 @@ namespace CTLife.World
         private string _exitDeferredOverlay;
         private float _exitDeferredOverlayAt;
         public bool SeatExitActive => _seatExit != null && _seatExit.Active;
-        public Vector3 PresentationPosition => SeatExitActive ? _seatExit.Position : transform.position;
+        /// <summary>Sit-down / stand-up presentation (SeatPresenter) for any look and any seat.</summary>
+        public bool SeatTransitionActive => _seat != null && _seat.Active;
+        /// <summary>Either seat presentation owns the visual model (input is queued until it ends).</summary>
+        public bool SeatPresentationActive => SeatExitActive || SeatTransitionActive;
+        /// <summary>A knockdown owns the Animator (ragdoll/fall/get-up): base, one-shot and LOD requests wait.</summary>
+        public bool Suppressed { get; set; }
+
+        /// <summary>Plays the latest base action again (after a knockdown, or a re-initialized Animator).</summary>
+        public void RestoreBaseAnimation()
+        {
+            if (Animator != null && Animator.runtimeAnimatorController != null) { _rateFor = null; SetSpeed(_speed); }
+            ReplayBase();
+        }
+        public Vector3 PresentationPosition => SeatExitActive ? _seatExit.Position : SeatTransitionActive ? _seat.Position : transform.position;
         public string SeatExitStage => _seatExit != null ? _seatExit.Stage : "None";
         private string _seatBridgeTarget;
         private bool _seatBridgeEntering;
@@ -75,6 +88,16 @@ namespace CTLife.World
         private float _overlayEndsAt;
         private float _pendingOverlayAt = -1f;
         private string _pendingOverlay;
+        private SeatPresenter _seat;
+        // Speed-matched locomotion (LocomotionTuning) and presentation-only idle life.
+        private static readonly int LocoRateParam = Animator.StringToHash("locoRate");
+        private RuntimeAnimatorController _rateFor;
+        private bool _hasLocoRate;
+        private float _walkNative = 1f, _runNative = 5.7f;
+        private float _speed;
+        private float _nextIdleVariation;
+        private float _lastYaw, _turnShuffleUntil;
+        private static readonly string[] IdleVariations = { "idle_fidget_lookaround", "idle_fidget_stretch", "idle_fidget_foldarms" };
 
         public void Init(Animator animator, ProceduralAnimator procedural, SkinnedMeshRenderer body, Mesh[] lods, float height)
         {
@@ -100,6 +123,55 @@ namespace CTLife.World
             Voice.minDistance = 1.5f;
             Voice.maxDistance = 8f; // Build Spec: hear players within 8 m, quieter with distance.
             Voice.dopplerLevel = 0f;
+            _seat = new SeatPresenter(this);
+            _lastYaw = transform.eulerAngles.y;
+            _nextIdleVariation = Time.time + Random.Range(7f, 15f);
+        }
+
+        /// <summary>
+        /// Sit down onto a confirmed seat from where the actor stands now: step/turn onto the seat root, then the measured
+        /// sit-down clip, then the seat's loop (the base anim set meanwhile). False when this look cannot present it.
+        /// </summary>
+        public bool BeginSeatEnter(Vector3 fromPosition, Quaternion fromRotation, Vector3 seatPosition, Quaternion seatRotation,
+            string transitionState = "act_sit_down")
+        {
+            if (_seat == null || Animator == null || SeatExitActive) return false;
+            if (transitionState != null && !Animator.HasState(0, AnimationLibrary.Hash(transitionState))) return false;
+            float clip = transitionState == null ? 0f : LocomotionTuning.Instance != null ? LocomotionTuning.Instance.LengthOf(transitionState, 1.3f) : 1.3f;
+            if (!_seat.BeginEnter(fromPosition, fromRotation, seatPosition, seatRotation, clip)) return false;
+            _enterState = transitionState;
+            _overlayAnim = null; _pendingOverlay = null; _seatBridgeTarget = null;
+            if (_seat.Current == SeatPresenter.Stage.Align) AnimationLibrary.TryPlay(Animator, "loco_walk", 0.15f);
+            else if (transitionState != null) AnimationLibrary.TryPlay(Animator, transitionState, 0.15f);
+            return true;
+        }
+        private string _enterState = "act_sit_down";
+
+        /// <summary>Stand up from a seat: the measured stand-up clip at the seat, then a step to the standing point.</summary>
+        public bool BeginSeatLeave(Vector3 seatPosition, Quaternion seatRotation, Vector3 standPosition, Quaternion standRotation,
+            string transitionState = "act_stand_up")
+        {
+            if (_seat == null || Animator == null || SeatExitActive) return false;
+            if (transitionState != null && !Animator.HasState(0, AnimationLibrary.Hash(transitionState))) return false;
+            float clip = transitionState == null ? 0f : LocomotionTuning.Instance != null ? LocomotionTuning.Instance.LengthOf(transitionState, 1.0f) : 1.0f;
+            if (!_seat.BeginLeave(seatPosition, seatRotation, standPosition, standRotation, clip)) return false;
+            _overlayAnim = null; _pendingOverlay = null; _seatBridgeTarget = null;
+            if (transitionState != null) AnimationLibrary.TryPlay(Animator, transitionState, 0.12f);
+            else AnimationLibrary.TryPlay(Animator, "loco_walk", 0.15f);
+            return true;
+        }
+
+        public void CancelSeatTransition()
+        {
+            if (!SeatTransitionActive) return;
+            _seat.Cancel();
+            ReplayBase();
+        }
+
+        private void ReplayBase()
+        {
+            var action = _baseAnim; var spot = _baseSpot; _baseAnim = null;
+            SetBase(action, spot);
         }
 
         private void OnEnable() { HasLodAssignment = false; All.Add(this); }
@@ -108,6 +180,7 @@ namespace CTLife.World
         {
             _runCorrection?.AfterAnimation();
             _seatExit?.ApplyPose();
+            _seat?.Apply();
             if (SeatExitActive && _exitSettleEnabled && _exitSettleContact != null && _exitSettleContact.Active)
             {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
@@ -237,12 +310,21 @@ namespace CTLife.World
         {
             if (string.IsNullOrEmpty(animId)) animId = "loco_idle";
             string state = _seatMotionProfile != null ? _seatMotionProfile.ResolveState(animId, spotId) : animId;
+            if (Suppressed) { _baseAnim = animId; _baseState = state; _baseSpot = spotId; return; } // replayed after the get-up
             // Store the canonical server action and latest seat even when two seats share a state.
             // Repeated updates must not restart the loop; an emote returns to this exact context.
             _baseSpot = spotId;
             if (animId == _baseAnim && state == _baseState) return;
             _baseAnim = animId;
             _baseState = state;
+            if (SeatTransitionActive)
+            {
+                // Sitting down defers the seat loop; standing up defers locomotion. Anything else (a server stand while
+                // sitting down, a new seat while standing up) ends the presentation and plays now.
+                bool loco = state.StartsWith("loco_", System.StringComparison.Ordinal);
+                if (_seat.Entering ? !loco : loco) return;
+                _seat.Cancel();
+            }
             if (SeatExitActive)
             {
                 if (state.StartsWith("loco_", System.StringComparison.Ordinal)) return;
@@ -250,6 +332,9 @@ namespace CTLife.World
                 _exitDeferredOverlay = null;
             }
             if (RouteFittedTypingTransition(state)) return;
+            // loco_walk and loco_run play the same speed-blended Locomotion tree: switching between them must not
+            // restart its cycle (a crossfade restarts the target at phase 0 and freezes the legs near the crossover).
+            if (SameLocomotionTree(state)) return;
             if (AnimationLibrary.TryPlay(Animator, state, 0.2f)) return;
             if (state != animId && AnimationLibrary.TryPlay(Animator, animId, 0.2f)) return;
             if (Procedural != null)
@@ -340,14 +425,52 @@ namespace CTLife.World
         public void SetSpeed(float metresPerSecond)
         {
             if (SeatExitActive) metresPerSecond = _seatExit.Speed;
-            if (Animator != null && Animator.runtimeAnimatorController != null) Animator.SetFloat(AnimationLibrary.SpeedParam, metresPerSecond);
+            else if (SeatTransitionActive) metresPerSecond = _seat.Speed;
+            if (Time.time < _turnShuffleUntil && metresPerSecond < TurnShuffleSpeed) metresPerSecond = TurnShuffleSpeed;
+            _speed = metresPerSecond;
+            if (Animator != null && Animator.runtimeAnimatorController != null)
+            {
+                if (_rateFor != Animator.runtimeAnimatorController) ResolveLocoRate();
+                if (_hasLocoRate)
+                {
+                    // Per-frame displacement speed is noisy; damp what the blend sees (0.1 s), then match the cadence to it.
+                    Animator.SetFloat(AnimationLibrary.SpeedParam, metresPerSecond, 0.1f, Mathf.Max(Time.deltaTime, 1e-4f));
+                    float blended = Animator.GetFloat(AnimationLibrary.SpeedParam);
+                    // Feet planted: the Locomotion tree plays at speed / native ground speed (LocomotionTuning).
+                    Animator.SetFloat(LocoRateParam, LocomotionTuning.Rate(blended, _walkNative, _runNative));
+                }
+                else Animator.SetFloat(AnimationLibrary.SpeedParam, metresPerSecond);
+            }
             if (Procedural != null) Procedural.SetSpeed(metresPerSecond);
+        }
+
+        private static readonly int WalkHash = Animator.StringToHash("loco_walk"), RunHash = Animator.StringToHash("loco_run");
+
+        private bool SameLocomotionTree(string state)
+        {
+            if (!_hasLocoRate || Animator == null || !Animator.isActiveAndEnabled || (state != "loco_walk" && state != "loco_run")) return false;
+            var info = Animator.IsInTransition(0) ? Animator.GetNextAnimatorStateInfo(0) : Animator.GetCurrentAnimatorStateInfo(0);
+            return info.shortNameHash == WalkHash || info.shortNameHash == RunHash;
+        }
+
+        private void ResolveLocoRate()
+        {
+            _rateFor = Animator.runtimeAnimatorController;
+            _hasLocoRate = false;
+            foreach (var p in Animator.parameters) if (p.nameHash == LocoRateParam) { _hasLocoRate = true; break; }
+            var tuning = LocomotionTuning.Instance;
+            if (tuning != null) (_walkNative, _runNative) = tuning.NativeFor(_rateFor);
         }
 
         /// <summary>One-shot emote/react. startInSeconds lets emotes start at the server's `emoteAt`.</summary>
         public void PlayOneShot(string animId, float startInSeconds = 0f)
         {
-            if (string.IsNullOrEmpty(animId)) return;
+            if (string.IsNullOrEmpty(animId) || Suppressed) return;
+            if (SeatTransitionActive)
+            {
+                _pendingOverlay = animId; _pendingOverlayAt = Time.time + startInSeconds;
+                return; // played once the actor has sat down / stood up
+            }
             if (SeatExitActive)
             {
                 _exitDeferredOverlay = animId; _exitDeferredOverlayAt = Time.time + startInSeconds;
@@ -360,7 +483,8 @@ namespace CTLife.World
                 return;
             }
             var def = AnimationLibrary.Def(animId);
-            float duration = def != null ? def.durationMs / 1000f : 2f;
+            // Registry anims carry their duration; FE presentation states use their measured clip length.
+            float duration = def != null ? def.durationMs / 1000f : LocomotionTuning.Instance != null ? LocomotionTuning.Instance.LengthOf(animId, 2f) : 2f;
             // Late joiners: skip the part that already happened.
             if (startInSeconds < 0f) duration += startInSeconds;
             if (duration <= 0.05f) return;
@@ -382,7 +506,9 @@ namespace CTLife.World
             AdvanceSeatBridge();
             _seatExit?.Tick(Time.deltaTime);
             if (SeatExitActive) SetSpeed(_seatExit.Speed);
-            if (_pendingOverlay != null && Time.time >= _pendingOverlayAt)
+            TickSeatTransition();
+            TickIdleLife();
+            if (_pendingOverlay != null && Time.time >= _pendingOverlayAt && !SeatTransitionActive)
             {
                 var id = _pendingOverlay;
                 _pendingOverlay = null;
@@ -399,6 +525,51 @@ namespace CTLife.World
             }
         }
 
+        private void TickSeatTransition()
+        {
+            if (!SeatTransitionActive) return;
+            var began = _seat.Tick(Time.deltaTime);
+            if (began == SeatPresenter.Stage.SitDown && _enterState != null) AnimationLibrary.TryPlay(Animator, _enterState, 0.15f);
+            else if (began == SeatPresenter.Stage.Step) AnimationLibrary.TryPlay(Animator, "loco_walk", 0.18f);
+            if (SeatTransitionActive) SetSpeed(_seat.Speed);
+            else ReplayBase(); // finished: the deferred seat loop / locomotion takes over
+        }
+
+        private const float TurnShuffleSpeed = 0.7f;
+
+        /// <summary>
+        /// Presentation-only life: an occasional idle variation while standing idle (LOD0, not talking), and stepping
+        /// feet while turning on the spot (a quick yaw change at standstill shuffles at walk cadence instead of skating).
+        /// </summary>
+        private void TickIdleLife()
+        {
+            float yaw = transform.eulerAngles.y;
+            float dt = Mathf.Max(Time.deltaTime, 1e-4f);
+            float yawRate = Mathf.Abs(Mathf.DeltaAngle(_lastYaw, yaw)) / dt;
+            _lastYaw = yaw;
+            if (Animator == null || Animator.runtimeAnimatorController == null || Culled || SeatExitActive || SeatTransitionActive || Suppressed) return;
+            bool idleBase = _baseState == "loco_idle" && _overlayAnim == null;
+            if (idleBase && yawRate > 150f && _speed < TurnShuffleSpeed)
+            {
+                if (Time.time >= _turnShuffleUntil) AnimationLibrary.TryPlay(Animator, "loco_walk", 0.1f);
+                _turnShuffleUntil = Time.time + 0.18f;
+                SetSpeed(_speed);
+            }
+            else if (_turnShuffleUntil > 0f && Time.time >= _turnShuffleUntil)
+            {
+                _turnShuffleUntil = 0f;
+                if (idleBase) AnimationLibrary.TryPlay(Animator, "loco_idle", 0.2f);
+            }
+            if (!idleBase || Talking || LodTier > 0 || _speed > 0.1f || Time.time < _nextIdleVariation) return;
+            _nextIdleVariation = Time.time + Random.Range(9f, 18f);
+            var id = IdleVariations[Random.Range(0, IdleVariations.Length)];
+            if (!Animator.HasState(0, AnimationLibrary.Hash(id))) return;
+            float length = LocomotionTuning.Instance != null ? LocomotionTuning.Instance.LengthOf(id, 3f) : 3f;
+            _overlayAnim = id;
+            _overlayEndsAt = Time.time + Mathf.Min(length, 6f) - 0.25f;
+            AnimationLibrary.TryPlay(Animator, id, 0.35f);
+        }
+
         private LODGroup _lodGroup;
         private bool _lodGroupChecked;
 
@@ -407,6 +578,7 @@ namespace CTLife.World
             HasLodAssignment = true;
             LodTier = tier;
             Culled = culled;
+            if (culled && SeatTransitionActive) CancelSeatTransition(); // hidden actors take their final pose now
             for (int i = 0; i < _renderers.Length; i++)
                 if (_renderers[i] != null) _renderers[i].enabled = !culled && _rendererEnabledAtInit[i];
             if (PlaceholderLods != null && Body != null && tier < PlaceholderLods.Length && Body.sharedMesh != PlaceholderLods[tier])
@@ -421,7 +593,7 @@ namespace CTLife.World
                 Procedural.enabled = !culled;
                 Procedural.UpdateInterval = interval;
             }
-            if (Animator != null)
+            if (Animator != null && !Suppressed) // a ragdoll keeps its Animator off until the get-up
             {
                 Animator.cullingMode = AnimatorCullingMode.CullCompletely;
                 Animator.enabled = !culled;

@@ -1,12 +1,28 @@
 {
     "name": "CTLife.Editor",
     "rootNamespace": "CTLife.EditorTools",
-    "references": ["CTLife.Core", "CTLife.World", "CTLife.UI", "CTLife.App", "Unity.Addressables", "Unity.Addressables.Editor", "Unity.RenderPipelines.Universal.Runtime", "Unity.RenderPipelines.Core.Runtime"],
-    "includePlatforms": ["Editor"],
+    "references": [
+        "CTLife.Core",
+        "CTLife.Net",
+        "ColyseusSDK",
+        "CTLife.Generated",
+        "CTLife.World",
+        "CTLife.UI",
+        "CTLife.App",
+        "Unity.Addressables",
+        "Unity.Addressables.Editor",
+        "Unity.RenderPipelines.Universal.Runtime",
+        "Unity.RenderPipelines.Core.Runtime"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": true,
-    "precompiledReferences": ["Newtonsoft.Json.dll"],
+    "precompiledReferences": [
+        "Newtonsoft.Json.dll"
+    ],
     "autoReferenced": true,
     "defineConstraints": [],
     "versionDefines": [],

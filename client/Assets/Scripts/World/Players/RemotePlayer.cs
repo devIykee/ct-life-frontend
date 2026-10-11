@@ -39,6 +39,7 @@ namespace CTLife.World
             _venue = venue;
             _view = GetComponent<AvatarView>();
             CTLife.Audio.Footsteps.Attach(gameObject);
+            AvatarFactory.AddBodyCollider(gameObject);
             if (venue != null) _view.BindSeatMotionProfile(venue.GetComponent<CafeSeatMotionProfile>());
             State = state;
             var p = venue.ToWorld((float)state.x, (float)state.z);
@@ -60,7 +61,8 @@ namespace CTLife.World
             var p = _venue.ToWorld((float)s.x, (float)s.z);
             if (leavingSeat)
             {
-                _view.BeginSeatExitPresentation(previousSpot, seatedPosition, seatedRotation);
+                if (!_view.BeginSeatExitPresentation(previousSpot, seatedPosition, seatedRotation))
+                    _view.BeginSeatLeave(seatedPosition, seatedRotation, p, Quaternion.Euler(0, (float)s.rotY * Mathf.Rad2Deg, 0));
                 _exitedSeatAction = previousAction;
                 // A seat anchor→walking coordinate is a mode boundary, not a velocity sample to extrapolate.
                 _buffer.Clear(); _prevRenderPos = p; _speed = 0f;
@@ -81,6 +83,9 @@ namespace CTLife.World
 
             if (!string.IsNullOrEmpty(s.spotId) && _venue.TryGetSpot(s.spotId, out var seat, out var seatRot))
             {
+                // Arriving on a seat (not on join, not a seat-to-seat echo): sit down from where they stood.
+                if (!initial && string.IsNullOrEmpty(previousSpot))
+                    _view.BeginSeatEnter(_view.PresentationPosition, transform.rotation, seat, Quaternion.Euler(0, seatRot * Mathf.Rad2Deg, 0));
                 _buffer.Clear();
                 _buffer.Add(new Snap { t = Time.timeAsDouble, pos = seat, yaw = seatRot * Mathf.Rad2Deg });
             }
@@ -92,7 +97,7 @@ namespace CTLife.World
             else
             {
                 if (s.anim != _exitedSeatAction) _exitedSeatAction = null;
-                if (!string.IsNullOrEmpty(s.anim) && s.anim.StartsWith("act_"))
+                if (!string.IsNullOrEmpty(s.anim) && (s.anim.StartsWith("act_") || !string.IsNullOrEmpty(s.spotId)))
                     _view.SetBase(OccupiedSpotAnimation.Resolve(_venue, s.spotId, s.anim), s.spotId);
             }
 
@@ -147,7 +152,7 @@ namespace CTLife.World
             _view.SetSpeed(_speed);
 
             var anim = State?.anim;
-            if (string.IsNullOrEmpty(anim) || anim.StartsWith("loco_"))
+            if ((string.IsNullOrEmpty(anim) || anim.StartsWith("loco_")) && string.IsNullOrEmpty(State?.spotId))
                 _view.SetBase(_speed > 3.5f ? "loco_run" : _speed > 0.2f ? "loco_walk" : "loco_idle");
         }
     }

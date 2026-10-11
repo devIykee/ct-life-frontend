@@ -155,6 +155,13 @@ namespace CTLife.UI
             ["hud.chat"] = "Chat", ["hud.emote"] = "Emotes", ["hud.micOff"] = "Mic off", ["hud.micOn"] = "Mic on",
             ["hud.voiceUnavailable"] = "Voice off", ["hud.voiceError"] = "Voice is temporarily unavailable.",
             ["hud.voiceHere"] = "Voice isn't available here yet.", ["hud.map"] = "Explore", ["hud.phone"] = "Phone",
+            // Context interactions (character-feel): verbs on the CTA, then what the player can do while engaged.
+            ["interact.sit"] = "Sit", ["interact.sitBench"] = "Sit on the bench", ["interact.sitSofa"] = "Sit on the sofa",
+            ["interact.sitStage"] = "Take a stage seat", ["interact.terminal"] = "Use terminal", ["interact.mic"] = "Take the mic",
+            ["interact.counter"] = "Lean on the counter", ["interact.door"] = "Leave", ["interact.use"] = "Use",
+            ["interact.cancel"] = "Cancel", ["interact.stand"] = "Stand up", ["interact.stepAway"] = "Step away",
+            ["interact.wave"] = "Wave", ["interact.hype"] = "Hype the room",
+            ["interact.cantReach"] = "Can't get there from here.", ["interact.noResponse"] = "The room didn't answer. Try again.",
             ["hud.chatPrompt"] = "Say something to the room", ["hud.say"] = "Say it", ["hud.wait"] = "Give it {0:0.0}s, then try again.",
             ["hud.emotesTitle"] = "A whole mood", ["hud.emotesEmpty"] = "Your emotes are on their way.",
             ["phone.title"] = "Phone", ["phone.eyebrow"] = "Your city",

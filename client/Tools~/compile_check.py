@@ -295,7 +295,7 @@ def units(editor):
         for unit in u:
             unit.dlls = [newtonsoft_editor if d == newtonsoft else d for d in unit.dlls]
         u.append(Unit("Unity.Addressables.Editor", [pathlib.Path(__file__).parent / "compile_check_stubs/addressables_editor"], editor=True))
-        u.append(Unit("CTLife.Editor", [ASSETS / S_ / "Editor"], refs=["CTLife.Core", "CTLife.World", "CTLife.UI", "CTLife.App", "Unity.Addressables",
+        u.append(Unit("CTLife.Editor", [ASSETS / S_ / "Editor"], refs=["CTLife.Core", "CTLife.Net", "CTLife.Generated", "ColyseusSDK", "CTLife.World", "CTLife.UI", "CTLife.App", "Unity.Addressables",
                                                                        "Unity.Addressables.Editor", "Unity.RenderPipelines.Universal.Runtime"],
                       dlls=[newtonsoft], editor=True))
         # EditMode test assemblies (NUnit from the installed com.unity.ext.nunit; the test runner itself is not needed

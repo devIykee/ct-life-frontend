@@ -92,13 +92,15 @@ namespace CTLife.EditorTools
             if (map == null) return;
             const string ctrlPath = "Assets/Resources/Characters/AvatarController.controller";
             Directory.CreateDirectory(Path.GetDirectoryName(ctrlPath));
-            AssetDatabase.DeleteAsset(ctrlPath);
-            var ctrl = AnimatorController.CreateAnimatorControllerAtPath(ctrlPath);
-            ctrl.AddParameter("speed", AnimatorControllerParameterType.Float);
+            // Upsert, never recreate: the shipped controller carries hand-tuned states (Codex's native idle, walk/run
+            // rates, Foot IK) and the character-feel locomotion tree; rebuilding it from clip_map.json silently lost them.
+            var ctrl = AssetDatabase.LoadAssetAtPath<AnimatorController>(ctrlPath) ?? AnimatorController.CreateAnimatorControllerAtPath(ctrlPath);
+            if (!ctrl.parameters.Any(x => x.name == "speed")) ctrl.AddParameter("speed", AnimatorControllerParameterType.Float);
             var sm = ctrl.layers[0].stateMachine;
-            int added = 0, missing = 0;
+            int added = 0, kept = 0, missing = 0;
             foreach (var p in map.Properties())
             {
+                if (sm.states.Any(st => st.state.name == p.Name)) { kept++; continue; }
                 var file = p.Value["clip"]?.ToString();
                 var clip = file == null ? null : LoadClip("Assets/Art/animations/" + file);
                 if (clip == null) { missing++; continue; }
@@ -108,7 +110,8 @@ namespace CTLife.EditorTools
                 added++;
             }
             EditorUtility.SetDirty(ctrl);
-            Debug.Log($"CTLIFE [content] AvatarController: {added} states, {missing} clips missing");
+            Debug.Log($"CTLIFE [content] AvatarController: +{added} states, {kept} kept, {missing} clips missing");
+            CharacterFeelController.Apply();
         }
 
         /// <summary>
@@ -178,6 +181,8 @@ namespace CTLife.EditorTools
         private void OnPreprocessModel()
         {
             if (assetPath.StartsWith(AuthoredCharacterImport.Root)) return;
+            // The cast has its own importer (CastPostprocessor) and its own per-look Avatars; CTL settings must not leak in.
+            if (assetPath.StartsWith(CastImport.Root + "/", StringComparison.Ordinal)) return;
             var mi = (ModelImporter)assetImporter;
             if (assetPath.StartsWith(CharRoot) || assetPath.StartsWith(AnimRoot))
             {
@@ -194,14 +199,24 @@ namespace CTLife.EditorTools
                 mi.meshCompression = ModelImporterMeshCompression.Off;
                 // Parts are merged into one SkinnedMeshRenderer at runtime (CharacterAssembler reads vertices).
                 mi.isReadable = assetPath.StartsWith(CharRoot) && !assetPath.Contains("/npc/");
-                var source = SourceAvatar();
                 bool isBody = assetPath.Contains("/body/");
-                if (!isBody && source != null)
+                if (isBody) mi.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
+                else
                 {
-                    mi.avatarSetup = ModelImporterAvatarSetup.CopyFromOther;
-                    mi.sourceAvatar = source;
+                    // Declared dependency: this asset is reimported after the body Avatar is (re)imported. Before then
+                    // (fresh Library, arbitrary import order) the body may not be loadable; keep the stored setup rather
+                    // than silently switching clips/parts to an Avatar generated from their own skeleton.
+                    var bodyPath = BodyPath();
+                    if (bodyPath != null) context.DependsOnArtifact(bodyPath);
+                    var source = SourceAvatar();
+                    if (source != null)
+                    {
+                        mi.avatarSetup = ModelImporterAvatarSetup.CopyFromOther;
+                        mi.sourceAvatar = source;
+                    }
+                    else if (mi.avatarSetup == ModelImporterAvatarSetup.NoAvatar)
+                        mi.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
                 }
-                else mi.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
                 mi.importAnimation = assetPath.StartsWith(AnimRoot);
             }
             else if (assetPath.StartsWith(EnvRoots))
@@ -221,10 +236,15 @@ namespace CTLife.EditorTools
         /// <summary>Body avatar of the matching sex (male clips drive both through Humanoid retargeting).</summary>
         private Avatar SourceAvatar()
         {
+            var body = BodyPath();
+            return body == null ? null : AssetDatabase.LoadAllAssetsAtPath(body).OfType<Avatar>().FirstOrDefault();
+        }
+
+        private string BodyPath()
+        {
             var sex = assetPath.Contains("/female/") ? "female" : "male";
             var body = $"{CharRoot}{sex}/body/ctl_{sex}_body.fbx";
-            if (body == assetPath || !File.Exists(body)) return null;
-            return AssetDatabase.LoadAllAssetsAtPath(body).OfType<Avatar>().FirstOrDefault();
+            return body == assetPath || !File.Exists(body) ? null : body;
         }
 
         private void OnPreprocessAnimation()

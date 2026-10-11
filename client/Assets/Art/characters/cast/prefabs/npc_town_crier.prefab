@@ -77,8 +77,16 @@ PrefabInstance:
       value: npc_town_crier
       objectReference: {fileID: 0}
     - target: {fileID: 4742473837712756890, guid: 51a4ca28a37c949d9a08712b1c8b4e1b, type: 3}
+      propertyPath: m_Size
+      value: 2.1184328
+      objectReference: {fileID: 0}
+    - target: {fileID: 4742473837712756890, guid: 51a4ca28a37c949d9a08712b1c8b4e1b, type: 3}
+      propertyPath: m_LocalReferencePoint.x
+      value: -0.07288039
+      objectReference: {fileID: 0}
+    - target: {fileID: 4742473837712756890, guid: 51a4ca28a37c949d9a08712b1c8b4e1b, type: 3}
       propertyPath: m_LocalReferencePoint.y
-      value: 0.9072511
+      value: 0.90725166
       objectReference: {fileID: 0}
     - target: {fileID: 4742473837712756890, guid: 51a4ca28a37c949d9a08712b1c8b4e1b, type: 3}
       propertyPath: m_LocalReferencePoint.z
@@ -87,6 +95,14 @@ PrefabInstance:
     - target: {fileID: 4742473837712756890, guid: 51a4ca28a37c949d9a08712b1c8b4e1b, type: 3}
       propertyPath: m_LODs.Array.data[1].screenRelativeHeight
       value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5866666021909216657, guid: 51a4ca28a37c949d9a08712b1c8b4e1b, type: 3}
+      propertyPath: m_CullingMode
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5866666021909216657, guid: 51a4ca28a37c949d9a08712b1c8b4e1b, type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7524481488767015969, guid: 51a4ca28a37c949d9a08712b1c8b4e1b, type: 3}
       propertyPath: m_CastShadows
@@ -115,35 +131,5 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 51a4ca28a37c949d9a08712b1c8b4e1b, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 7832037219763866819}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 51a4ca28a37c949d9a08712b1c8b4e1b, type: 3}
---- !u!1 &2671308337942580955 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 51a4ca28a37c949d9a08712b1c8b4e1b, type: 3}
-  m_PrefabInstance: {fileID: 3013766965334799242}
-  m_PrefabAsset: {fileID: 0}
---- !u!95 &7832037219763866819
-Animator:
-  serializedVersion: 7
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2671308337942580955}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 0}
-  m_CullingMode: 2
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_AnimatePhysics: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0

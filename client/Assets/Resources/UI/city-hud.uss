@@ -64,3 +64,19 @@
 .ct-hud .ct-chat-line { white-space: normal; }
 /* Emotes: readable buttons (the picker wrapped one letter per line at ~20 dp). */
 .ct-hud .ct-emotes .ct-chips > .ct-chip { min-width: 30%; flex-basis: 30%; flex-grow: 1; min-height: 96px; align-items: center; white-space: normal; }
+
+/* Context interaction CTA (character-feel): above the right dock, under the thumb. Primary = brand yellow like Phone. */
+.ct-hud .ct-hud-interact { position: absolute; right: 24px; bottom: 236px; flex-direction: row-reverse; align-items: flex-end; }
+.ct-hud .ct-interact { flex-direction: row; align-items: center; height: 104px; min-height: 104px; margin: 0 6px; padding: 0 30px 0 22px; border-width: 2px; border-radius: 52px; border-color: var(--ct-line); background-color: var(--ct-scrim); color: var(--ct-card); }
+.ct-hud .ct-interact .ct-icon { width: 46px; height: 46px; margin-right: 14px; -unity-background-image-tint-color: var(--ct-card); }
+.ct-hud .ct-interact-label { font-size: 30px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); white-space: nowrap; }
+.ct-hud .ct-interact-primary { height: 120px; min-height: 120px; border-radius: 60px; padding: 0 40px 0 28px; background-color: var(--ct-accent); border-color: var(--ct-game-yellow-depth); color: var(--ct-ink); }
+.ct-hud .ct-interact-primary .ct-icon { width: 54px; height: 54px; -unity-background-image-tint-color: var(--ct-ink); }
+.ct-hud .ct-interact-primary .ct-interact-label { font-size: 34px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); }
+.ct-hud .ct-interact > .ct-button-depth, .ct-hud .ct-interact > .ct-button-glint { display: none; }
+.ct-hud .ct-interact-primary > .ct-button-depth { display: flex; height: 10px; }
+.ct-hud .ct-interact:hover { background-color: var(--ct-deep); }
+.ct-hud .ct-interact-primary:hover { background-color: var(--ct-accent-hover); }
+.ct-hud .ct-interact:active { scale: 0.96 0.96; }
+.ct-hud .ct-interact-busy .ct-interact { opacity: 0.9; }
+.ct-landscape .ct-hud .ct-hud-interact { right: 40px; bottom: 214px; }

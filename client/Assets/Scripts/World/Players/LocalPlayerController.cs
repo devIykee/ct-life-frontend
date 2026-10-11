@@ -14,7 +14,7 @@ namespace CTLife.World
     /// anim from speed: walk above 0.2, run above 3.5).
     /// </summary>
     [RequireComponent(typeof(AvatarView))]
-    public sealed class LocalPlayerController : MonoBehaviour
+    public sealed class LocalPlayerController : MonoBehaviour, IKnockdownOwner
     {
         public const float WalkSpeed = DirectMovementInput.WalkSpeed;
         public const float RunSpeed = DirectMovementInput.RunSpeed;
@@ -55,13 +55,28 @@ namespace CTLife.World
 #endif
 
         public Vector3 ActualVelocity { get; private set; }
-        public bool DirectInputActive => _directControl || (_view != null && _view.SeatExitActive && _moveInput.sqrMagnitude > DirectMovementInput.DeadZone * DirectMovementInput.DeadZone);
+        public bool DirectInputActive => _directControl || (_view != null && _view.SeatPresentationActive && _moveInput.sqrMagnitude > DirectMovementInput.DeadZone * DirectMovementInput.DeadZone);
         public bool IsRunning => _running;
         public int InputEpoch { get; private set; }
         private bool AgentReady => _agent != null && _agent.enabled && _agent.isOnNavMesh;
 
         public bool IsMoving => AgentReady && (ActualVelocity.sqrMagnitude > 0.01f || _agent.velocity.sqrMagnitude > 0.01f);
         public string SeatedSpot => _seatedSpot;
+        /// <summary>A walk is queued or in progress (path mode).</summary>
+        public bool HasDestination => _hasDestination || _pathSubmissionQueued;
+        /// <summary>The seat this client holds changed (spot id, or null when standing). Server-confirmed or local-only.</summary>
+        public event System.Action<string> SeatChanged;
+        /// <summary>The server rejected this client's latest `sit`.</summary>
+        public event System.Action SeatRejected;
+        private bool _seatLocalOnly;
+        // Physicality: the CharacterController body (direct control, ledges, impacts) and knockdowns.
+        private CharacterBody _body;
+        private bool _stunned;
+        /// <summary>Show falls to the room through the existing `emote` message (react_liquidated is a registry anim).</summary>
+        public static bool BroadcastFalls = true;
+        public const float StaggerSpeed = 2.4f, FallSpeed = 3.4f;
+        public CharacterBody Body => _body;
+        public bool Stunned => _stunned;
 
         public void Init(VenueSceneRoot venue, VenueChannel channel)
         {
@@ -84,6 +99,13 @@ namespace CTLife.World
             _agent.autoBraking = true;
             _agent.obstacleAvoidanceType = ObstacleAvoidanceType.LowQualityObstacleAvoidance;
             if (NavMesh.SamplePosition(transform.position, out var hit, 3f, NavMesh.AllAreas)) _agent.Warp(hit.position);
+            if (_body == null)
+            {
+                _body = GetComponent<CharacterBody>();
+                if (_body == null) _body = gameObject.AddComponent<CharacterBody>();
+                _body.Impact += OnImpact;
+                _body.Landed += OnLanded;
+            }
             RefreshGrounding(true);
             _lastSentPos = transform.position;
             _lastSentRot = transform.eulerAngles.y;
@@ -130,16 +152,17 @@ namespace CTLife.World
         public void SetMoveInput(Vector2 input)
         {
             if (_appPaused || !isActiveAndEnabled) return;
+            if (_stunned || (_body != null && _body.Airborne)) { _moveInput = Vector2.zero; return; } // down or falling: no steering
             if (float.IsNaN(input.x) || float.IsInfinity(input.x) || float.IsNaN(input.y) || float.IsInfinity(input.y))
                 input = Vector2.zero;
             input = Vector2.ClampMagnitude(input, 1f);
             if (input.magnitude <= DirectMovementInput.DeadZone)
             {
-                if (_directControl || (_view != null && _view.SeatExitActive)) StopDirectInput();
+                if (_directControl || (_view != null && _view.SeatPresentationActive)) StopDirectInput();
                 return;
             }
             StandIfSeated(); // A confirmed seat deliberately disables the agent.
-            if (_view != null && _view.SeatExitActive)
+            if (_view != null && _view.SeatPresentationActive)
             {
                 _moveInput = input; _inputAt = Time.unscaledTime;
                 _exitPathQueued = false; _exitThenSit = null;
@@ -157,6 +180,7 @@ namespace CTLife.World
                 _agent.speed = RunSpeed;
                 _agent.updateRotation = false;
                 _agent.isStopped = false;
+                _body?.BeginDirect();
             }
             _moveInput = input;
             _inputAt = Time.unscaledTime;
@@ -170,6 +194,7 @@ namespace CTLife.World
             _directSpeed = 0f;
             if (!_directControl) return;
             _directControl = false;
+            _body?.EndDirect();
             if (AgentReady)
             {
                 _agent.velocity = Vector3.zero;
@@ -216,7 +241,7 @@ namespace CTLife.World
             ObserveReviewCommand($"path-calculated:{calculated}; status={path.status}; corners={path.corners.Length}; " +
                 $"actor={transform.position:F6}; next={_agent.nextPosition:F6}; hit={hit.position:F6}; stopped={_agent.isStopped}");
             if (!calculated || path.status != NavMeshPathStatus.PathComplete) return false;
-            if (_view != null && _view.SeatExitActive)
+            if (_view != null && _view.SeatPresentationActive)
             {
                 StopDirectInput(); _exitPathQueued = true; _exitDestination = hit.position; _exitThenSit = thenSitAt;
                 _agent.isStopped = true;
@@ -277,12 +302,14 @@ namespace CTLife.World
             // instead of publishing an off-mesh anchor as a standing point. Travel destroys this object.
             var seatedPosition = transform.position; var seatedRotation = transform.rotation;
             if (!RestoreStandingPose()) return;
-            _seatExitWasActive = _view.BeginSeatExitPresentation(_seatedSpot, seatedPosition, seatedRotation);
+            _seatExitWasActive = BeginLeavePresentation(_seatedSpot, seatedPosition, seatedRotation);
             _releasedSpots.Add(SpotKey(_seatedSpot));
-            _seatedSpot = null;
+            bool localOnly = _seatLocalOnly;
+            _seatedSpot = null; _seatLocalOnly = false;
             ObserveReviewCommand("stand");
-            _channel?.Stand();
+            if (!localOnly) _channel?.Stand();
             _view.SetBase("loco_idle");
+            SeatChanged?.Invoke(null);
         }
 
         private void RememberStandingPose(Vector3 position, float yaw)
@@ -351,11 +378,13 @@ namespace CTLife.World
             if (string.IsNullOrEmpty(spotId))
             {
                 if (string.IsNullOrEmpty(_seatedSpot)) return;
+                if (_seatLocalOnly) return; // a local-only engagement is not the server's to end
                 var seatedPosition = transform.position; var seatedRotation = transform.rotation;
                 if (!RestoreStandingPose()) return;
-                _seatExitWasActive = _view.BeginSeatExitPresentation(_seatedSpot, seatedPosition, seatedRotation);
+                _seatExitWasActive = BeginLeavePresentation(_seatedSpot, seatedPosition, seatedRotation);
                 _seatedSpot = null;
                 _view.SetBase("loco_idle");
+                SeatChanged?.Invoke(null);
                 return; // An authoritative stand must not echo another Stand request.
             }
             if (_releasedSpots.Contains(SpotKey(spotId))) return;
@@ -366,16 +395,23 @@ namespace CTLife.World
                 else if (!_hasStandingPose) return;
             }
             _view.CancelSeatExitPresentation(false); _seatExitWasActive = false;
+            bool wasStanding = string.IsNullOrEmpty(_seatedSpot);
+            var fromPosition = _view.PresentationPosition; var fromRotation = transform.rotation;
             StopMovement();
             _requestedSpot = null;
-            _seatedSpot = spotId;
+            bool changed = _seatedSpot != spotId;
+            _seatedSpot = spotId; _seatLocalOnly = false;
             _dirty = false;
             if (_agent != null) _agent.enabled = false;
-            transform.SetPositionAndRotation(p, Quaternion.Euler(0, rot * Mathf.Rad2Deg, 0));
+            var seatRotation = Quaternion.Euler(0, rot * Mathf.Rad2Deg, 0);
+            transform.SetPositionAndRotation(p, seatRotation);
             _view.SetSpeed(0f);
+            // Sit down from where the player stands (approach point) instead of popping onto the seat.
+            if (wasStanding) _view.BeginSeatEnter(fromPosition, fromRotation, p, seatRotation);
             var presentation = OccupiedSpotAnimation.Resolve(_venue, spotId, anim);
             _view.SetBase(string.IsNullOrEmpty(presentation) ? "act_sit" : presentation, string.IsNullOrEmpty(presentation) ? null : spotId);
             ResetFootsteps();
+            if (changed) SeatChanged?.Invoke(spotId);
         }
 
         public void OnSeatRejected()
@@ -386,6 +422,51 @@ namespace CTLife.World
             _releasedSpots.Add(SpotKey(_requestedSpot));
             _requestedSpot = null;
             _pendingSpot = null;
+            SeatRejected?.Invoke();
+        }
+
+        /// <summary>Claim a spot from where the player stands now (the interaction system walked here first).</summary>
+        public bool RequestSeat(string spotId)
+        {
+            if (string.IsNullOrEmpty(spotId) || _channel == null || !_channel.IsJoined || !string.IsNullOrEmpty(_seatedSpot)) return false;
+            if (AgentReady) RememberStandingPose(_agent.nextPosition, transform.eulerAngles.y);
+            _releasedSpots.Remove(SpotKey(spotId));
+            _requestedSpot = spotId;
+            var wire = _venue != null ? _venue.WireSpotId(spotId) : spotId;
+            ObserveReviewCommand("sit:" + wire);
+            _channel.Sit(wire);
+            return true;
+        }
+
+        /// <summary>
+        /// Local-only engagement (no contract message, or no room): present the actor at a point, facing yaw, playing
+        /// <paramref name="anim"/>; the stick or "Step away" ends it. Never sent to the server.
+        /// </summary>
+        public bool EngageLocal(string key, Vector3 position, float yawDegrees, string anim, string transitionState)
+        {
+            if (string.IsNullOrEmpty(key) || !string.IsNullOrEmpty(_seatedSpot) || !AgentReady) return false;
+            RememberStandingPose(_agent.nextPosition, transform.eulerAngles.y);
+            var fromPosition = _view.PresentationPosition; var fromRotation = transform.rotation;
+            StopMovement();
+            _seatedSpot = key; _seatLocalOnly = true; _dirty = false;
+            _agent.enabled = false;
+            var rotation = Quaternion.Euler(0, yawDegrees, 0);
+            transform.SetPositionAndRotation(position, rotation);
+            _view.SetSpeed(0f);
+            _view.BeginSeatEnter(fromPosition, fromRotation, position, rotation, transitionState);
+            _view.SetBase(string.IsNullOrEmpty(anim) ? "loco_idle" : anim);
+            ResetFootsteps();
+            SeatChanged?.Invoke(key);
+            return true;
+        }
+
+        public bool SeatLocalOnly => _seatLocalOnly;
+
+        private bool BeginLeavePresentation(string spotId, Vector3 seatedPosition, Quaternion seatedRotation)
+        {
+            if (_view.BeginSeatExitPresentation(spotId, seatedPosition, seatedRotation)) return true; // Codex's fitted café exits
+            string clip = _seatLocalOnly ? null : "act_stand_up";
+            return _view.BeginSeatLeave(seatedPosition, seatedRotation, transform.position, transform.rotation, clip);
         }
 
         [System.Diagnostics.Conditional("UNITY_EDITOR")]
@@ -405,8 +486,10 @@ namespace CTLife.World
             // Local locomotion still animates when the venue is entered without realtime (offline/review).
             // Server-owned actions such as claiming a seat continue to require a connected channel.
             if (!string.IsNullOrEmpty(_seatedSpot)) { ResetFootsteps(); return; }
+            if (_body != null && _body.Airborne) { ResetFootsteps(); _view.SetSpeed(0f); _view.SetBase("jump_air"); return; }
+            if (_stunned) { ResetFootsteps(); return; }
             if (!AgentReady) { ResetFootsteps(); return; }
-            if (_view.SeatExitActive)
+            if (_view.SeatPresentationActive)
             {
                 _agent.isStopped = true; _agent.velocity = Vector3.zero;
                 ResetFootsteps();
@@ -432,6 +515,9 @@ namespace CTLife.World
             displacement.y = 0f;
             _lastMotionPosition = transform.position;
             ActualVelocity = Time.deltaTime > 0.00001f ? displacement / Time.deltaTime : Vector3.zero;
+            // Direct moves happen after this measurement (previous frame, its own delta time): use the body's exact
+            // velocity, or uneven frame times read as speed spikes, trip the warp guard and flicker idle/run.
+            if (_body != null && _body.Direct && _body.VelocityFrame >= Time.frameCount - 1) ActualVelocity = _body.Velocity;
             // Warps have their own reset path; exclude unexpected correction spikes from animation/audio speed.
             if (ActualVelocity.magnitude > RunSpeed + 1f) ActualVelocity = Vector3.zero;
             float speed = ActualVelocity.magnitude;
@@ -559,6 +645,15 @@ namespace CTLife.World
             var target = _agent.nextPosition + velocity * dt;
             if (_agent.Raycast(target, out var edge))
             {
+                // A drop beyond the edge (not a wall): step off it and fall with gravity.
+                if (_body != null && velocity.sqrMagnitude > 0.25f && _body.IsLedge(edge.position, velocity, out _, out var stepTo))
+                {
+                    var fall = velocity;
+                    StopDirectInput();
+                    _body.BeginAirborne(fall, stepTo);
+                    _view.SetBase("jump_air");
+                    return;
+                }
                 // Try moving along the edge instead of oscillating a path destination against a wall.
                 velocity = Vector3.ProjectOnPlane(velocity, edge.normal);
                 velocity.y = 0f;
@@ -570,8 +665,10 @@ namespace CTLife.World
             transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.LookRotation(facing), 720f * Time.deltaTime);
             // Turn before advancing, including when a wall changes the allowed direction into a slide.
             velocity *= Mathf.Clamp01(Vector3.Dot(transform.forward, facing));
-            // Unity's supported player-control path remains constrained to the existing baked NavMesh.
-            _agent.velocity = velocity;
+            // Unity's supported player-control path remains constrained to the existing baked NavMesh; the body collides
+            // with every solid collider on top of that (props that the NavMesh does not carve).
+            if (_body != null && _body.Ready) _body.MoveDirect(velocity, Time.deltaTime);
+            else _agent.velocity = velocity;
         }
 
         private void RefreshGrounding(bool force)
@@ -581,7 +678,7 @@ namespace CTLife.World
             // The baked navigation plane is voxelized (~8cm above the authored Timeline paving). Obtain the
             // independent collider height instead of changing shared meshes, authoritative XZ, or source clips.
             if (!NavMesh.SamplePosition(transform.position, out var nav, 0.75f, _agent.areaMask)) return;
-            int mask = _venue != null ? _venue.groundMask.value : ~0;
+            int mask = (_venue != null ? _venue.groundMask.value : ~0) & CharacterLayers.WorldMask;
             if (!Physics.Raycast(nav.position + Vector3.up * 0.35f, Vector3.down, out var floor, 0.85f,
                     mask, QueryTriggerInteraction.Ignore) || floor.normal.y < 0.7f) return;
             float offset = floor.point.y - nav.position.y;
@@ -592,6 +689,62 @@ namespace CTLife.World
             _groundFound = true;
 #endif
             _agent.baseOffset = offset;
+        }
+
+        // ------------------------------------------------------------------ physicality
+
+        void IKnockdownOwner.PlaceRoot(Vector3 position, Quaternion rotation)
+        {
+            if (AgentReady && NavMesh.SamplePosition(position, out var hit, 1.2f, _agent.areaMask)) _agent.Warp(hit.position);
+            else transform.position = position;
+            transform.rotation = rotation;
+            RefreshGrounding(true);
+            ResetFootsteps();
+            _dirty = true; // publish where the body ended up
+        }
+
+        void IKnockdownOwner.SetControl(bool enabled)
+        {
+            _stunned = !enabled;
+            if (_stunned) CancelMovement();
+            else { _locomotion = "loco_idle"; ResetFootsteps(); }
+        }
+
+        /// <summary>Running into something: a bump staggers, a sprint into it knocks the player down (trips over low props).</summary>
+        private void OnImpact(CharacterBody.ImpactInfo hit)
+        {
+            if (_stunned || !string.IsNullOrEmpty(_seatedSpot)) return;
+            var me = Knockdown.For(_view);
+            var forward = transform.forward;
+            if (hit.other != null && !hit.other.isLocal)
+            {
+                var them = Knockdown.For(hit.other);
+                bool npc = hit.other.GetComponent<NpcController>() != null;
+                if (hit.speed >= FallSpeed && npc) them.Fall(forward * hit.speed * 0.5f, forward * 120f);
+                else them.Stagger(forward);
+                me.Stagger(-hit.normal);
+                return;
+            }
+            if (hit.speed >= FallSpeed)
+            {
+                bool low = hit.obstacleHeight < 0.9f; // trip over a bench/planter edge; bounce off a wall/counter
+                var velocity = low ? forward * hit.speed : hit.normal * 1.2f + Vector3.up * 0.4f;
+                var impulse = low ? (forward * 90f + Vector3.down * 40f) : hit.normal * 160f;
+                me.Fall(velocity, impulse);
+                if (BroadcastFalls && _channel != null && _channel.IsJoined) _channel.Emote("react_liquidated");
+            }
+            else if (hit.speed >= StaggerSpeed) me.Stagger(hit.normal);
+        }
+
+        /// <summary>Landing from a drop: soft (absorb), hard (roll), or a fall that knocks the player down.</summary>
+        private void OnLanded(float height)
+        {
+            _locomotion = "loco_idle";
+            _view.SetBase("loco_idle");
+            if (height > CharacterBody.HardLanding + 1.0f) Knockdown.For(_view).Fall(Vector3.down * 2f, Vector3.zero);
+            else if (height > CharacterBody.HardLanding) _view.PlayOneShot("react_roll");
+            else if (height > 0.3f) _view.PlayOneShot("jump_land");
+            _dirty = true;
         }
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD

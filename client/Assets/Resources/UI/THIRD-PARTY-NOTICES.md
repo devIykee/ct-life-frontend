@@ -71,6 +71,12 @@ Pinned upstream commit: `2b75f3ad12b420c9504ef05df8d2564a28f8500e`. Source URLs,
 | dream | `Icons/star-four.png` | fill | https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/fill/star-four-fill.svg |
 | energy | `Icons/lightning.png` | fill | https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/fill/lightning-fill.svg |
 | lobby | `Icons/squares-four.png` | fill | https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/fill/squares-four-fill.svg |
+| seat | `Icons/armchair.png` | fill | https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/fill/armchair-fill.svg |
+| terminal | `Icons/desktop.png` | fill | https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/fill/desktop-fill.svg |
+| mic_stage | `Icons/microphone-stage.png` | fill | https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/fill/microphone-stage-fill.svg |
+| counter | `Icons/coffee.png` | fill | https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/fill/coffee-fill.svg |
+| door | `Icons/door-open.png` | fill | https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/fill/door-open-fill.svg |
+| stand | `Icons/person-simple-walk.png` | fill | https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/fill/person-simple-walk-fill.svg |
 
 The earlier regular `ranking` raster remains bundled as a sourced utility. Rich List uses `list-numbers`; both `richlist` and `rich_list` keys are supported.
 

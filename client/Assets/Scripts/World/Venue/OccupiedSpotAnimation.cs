@@ -9,6 +9,8 @@ namespace CTLife.World
         {
             if(venue==null||string.IsNullOrEmpty(serverSpotId)||string.IsNullOrEmpty(serverAnim))return serverAnim;
             var spot=venue.SpotDef(serverSpotId);
+            // The host's stage spot (standing anim) presents as holding the mic, on every client (a shared FE rule).
+            if(spot!=null&&spot.kind=="stage"&&spot.anim=="loco_idle"&&(serverAnim=="loco_idle"||serverAnim=="act_type"||serverAnim=="act_sit"))return "act_host_mic";
             // Local aliases are useful for navigation, but only the exact registry wire id is authority here.
             if(spot==null||!string.Equals(spot.wireId,serverSpotId,StringComparison.Ordinal)||string.IsNullOrEmpty(spot.anim))return serverAnim;
             string generic=spot.kind=="stage"?"act_type":"act_sit";

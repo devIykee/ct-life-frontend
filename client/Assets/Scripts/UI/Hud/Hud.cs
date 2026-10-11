@@ -28,6 +28,7 @@ namespace CTLife.UI
         private readonly ChatBar _chat;
         private readonly EmotePicker _emotes;
         private readonly MovementControls _movement;
+        private readonly InteractionPrompt _interact;
 
         public Action OpenPhone;
         public Action OpenMap;
@@ -60,6 +61,7 @@ namespace CTLife.UI
             _chat = new ChatBar();
             _emotes = new EmotePicker();
             _movement = new MovementControls();
+            _interact = new InteractionPrompt();
             _mic = El.DockButton("mic", Strings.T("hud.micOff"), ToggleMic);
             _micLabel = _mic.Q<Label>();
 
@@ -77,10 +79,11 @@ namespace CTLife.UI
                 El.DockButton("lobby", Strings.T("hud.lobby"), () => OpenHome?.Invoke()));
             // Movement owns the lower left. Social/utility actions stay on the right.
             social.pickingMode = personal.pickingMode = PickingMode.Ignore;
-            _root = El.Div("ct-hud", top, _needsToggle, _needs, _movement.Element, _emotes.Element, _chat.Element, social, personal);
+            _root = El.Div("ct-hud", top, _needsToggle, _needs, _movement.Element, _emotes.Element, _chat.Element, social, personal, _interact.Element);
             _root.pickingMode = PickingMode.Ignore;
 
             _subs.On<ProfileChangedSignal>(_ => RefreshProfile());
+            _subs.On<OpenMapRequestSignal>(_ => OpenMap?.Invoke()); // the door interaction
             _subs.On<DegradedChangedSignal>(_ => RefreshDegraded());
             _subs.On<OnlineCountSignal>(s => _online.text = Strings.F("hud.online", s.online));
             // The count only changes on joins/leaves; show the value the city room already has.
@@ -207,6 +210,7 @@ namespace CTLife.UI
             _life.Cancel(); _life.Dispose();
             _movement.Dispose();
             _chat.Dispose();
+            _interact.Dispose();
             _subs.Dispose();
         }
     }
