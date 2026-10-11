@@ -273,21 +273,7 @@ namespace CTLife.App
                 tcs.TrySetResult(true);
             }
 
-            async void AnotherWallet()
-            {
-                if (pending || !Owns(screen)) return;
-                pending = true;
-                screen.SetSwitching(true);
-                try { await _owner.Wait(auth.SignOut(wallet)); }
-                catch (OperationCanceledException) when (!Alive) { return; }
-                catch (Exception e) { Log.Warn("flow", "Sign-out for another wallet: " + e.Message); }
-                finally { pending = false; }
-                if (!Owns(screen)) return;
-                screen.SetSwitching(false);
-                screen.SetReturning(false);
-            }
-
-            screen = new SignInScreen(Wallet, wallet.IsAvailable, returning, Play, AnotherWallet);
+            screen = new SignInScreen(Wallet, wallet.IsAvailable, returning, Play);
             ShowFlow(screen);
 #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
             // Explicit development automation only. No guest/demo route is exposed in the product UI.
