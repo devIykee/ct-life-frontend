@@ -120,7 +120,7 @@ namespace CTLife.EditorTools.VenueBuild
             var expanded = new Rect(walk.xMin - 3f, walk.yMin - 3f, walk.width + 6f, walk.height + 6f);
             foreach (var r in root.GetComponentsInChildren<MeshRenderer>(true))
             {
-                bool backdrop = r.transform.GetComponentsInParent<Transform>(true).Any(t => t.name == "Backdrop" || t.name == "Hooks");
+                bool backdrop = r.transform.GetComponentsInParent<Transform>(true).Any(t => t.name == "Backdrop" || t.name == "Hooks" || t.name == "Unbaked");
                 var filter = r.GetComponent<MeshFilter>();
                 if (filter == null || filter.sharedMesh == null) continue;
                 bool display = r.sharedMaterials.All(m => m == null || m.shader.name.Contains("Unlit"));
@@ -135,6 +135,8 @@ namespace CTLife.EditorTools.VenueBuild
                 var c = r.bounds.center;
                 bool inside = expanded.Contains(new Vector2(c.x, c.z));
                 r.scaleInLightmap = !inside ? 0.25f : r.bounds.size.magnitude < 1.5f ? 0.5f : 1f;
+                // Lower LODs only show from far away: half density keeps the lightmap count down.
+                if (r.name.EndsWith("_LOD1", StringComparison.Ordinal)) r.scaleInLightmap *= 0.5f;
                 r.shadowCastingMode = ShadowCastingMode.TwoSided;
                 r.receiveShadows = true;
                 GameObjectUtility.SetStaticEditorFlags(r.gameObject, StaticEditorFlags.ContributeGI | StaticEditorFlags.BatchingStatic);

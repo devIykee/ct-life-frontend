@@ -70,35 +70,11 @@ namespace CTLife.EditorTools.VenueBuild
                 // Navigation from the saved prefab asset (not the build-time copy).
                 var navReport = VenueBuildPipeline.ValidateBuild(spec, venue, spots);
 
-                var cam = new GameObject("Verify camera").AddComponent<Camera>();
-                cam.clearFlags = CameraClearFlags.SolidColor;
-                cam.backgroundColor = new Color(0.81f, 0.83f, 0.80f);
-                cam.nearClipPlane = 0.3f;
-                cam.farClipPlane = 120f;
-                cam.aspect = 2670f / 1200f;
-                var views = new JArray();
-                int maxDraws = 0, maxTris = 0;
-                var hero = spots.spots.Values.Distinct().Where(s => s.hasPosition && s.kind != "exit")
-                    .OrderByDescending(s => s.z).FirstOrDefault();
-                var targets = new List<(string label, Vector3 p)>
-                {
-                    ("entrance", new Vector3(spots.Entrance.x, 0, spots.Entrance.z)),
-                    ("center", spots.spots.TryGetValue("center", out var c) ? new Vector3(c.x, 0, c.z) : Vector3.zero),
-                };
-                if (hero != null) targets.Add(("far_" + hero.id, new Vector3(hero.x, 0, hero.z)));
-                foreach (var (label, p) in targets)
-                {
-                    PlaceGameplayCamera(cam, venue, p);
-                    var est = Estimate(go, cam, lodBias);
-                    maxDraws = Mathf.Max(maxDraws, est.draws);
-                    maxTris = Mathf.Max(maxTris, est.tris);
-                    var stats = Render(cam, label == "entrance" ? Path.Combine(VenueBuildPipeline.EvidenceDir, "captures", spec.id + "-entrance.png") : null, 1068, 480);
-                    views.Add(new JObject
-                    {
-                        ["view"] = label, ["estimatedDraws"] = est.draws, ["estimatedTriangles"] = est.tris, ["materials"] = est.materials,
-                        ["visibleRenderers"] = est.renderers,
-                    });
-                }
+                var cam = NewCamera();
+                // Entrance gameplay captures are opt-in (-ctEntranceCaptures): the default is one preview per venue.
+                bool entranceCapture = Environment.GetCommandLineArgs().Contains("-ctEntranceCaptures");
+                var (views, maxDraws, maxTris) = MeasureViews(go, venue, spots, lodBias, cam,
+                    entranceCapture ? Path.Combine(VenueBuildPipeline.EvidenceDir, "captures", spec.id + "-entrance.png") : null);
                 // Overview preview: high three-quarter shot of the whole diorama.
                 PlaceOverview(cam, venue);
                 var overview = Estimate(go, cam, lodBias);
@@ -140,7 +116,47 @@ namespace CTLife.EditorTools.VenueBuild
             }
         }
 
-        private static int AndroidQualityLevel(out float lodBias)
+        internal static Camera NewCamera()
+        {
+            var cam = new GameObject("Verify camera").AddComponent<Camera>();
+            cam.clearFlags = CameraClearFlags.SolidColor;
+            cam.backgroundColor = new Color(0.81f, 0.83f, 0.80f);
+            cam.nearClipPlane = 0.3f;
+            cam.farClipPlane = 120f;
+            cam.aspect = 2670f / 1200f;
+            return cam;
+        }
+
+        /// <summary>Gameplay-camera draw/triangle estimates at the entrance, centre and farthest spot.</summary>
+        internal static (JArray views, int maxDraws, int maxTris) MeasureViews(GameObject go, VenueSceneRoot venue, CTLife.Core.VenueSpots spots,
+            float lodBias, Camera cam, string entranceCapturePath)
+        {
+            var views = new JArray();
+            int maxDraws = 0, maxTris = 0;
+            var hero = spots.spots.Values.Distinct().Where(s => s.hasPosition && s.kind != "exit").OrderByDescending(s => s.z).FirstOrDefault();
+            var targets = new List<(string label, Vector3 p)>
+            {
+                ("entrance", new Vector3(spots.Entrance.x, 0, spots.Entrance.z)),
+                ("center", spots.spots.TryGetValue("center", out var c) ? new Vector3(c.x, 0, c.z) : Vector3.zero),
+            };
+            if (hero != null) targets.Add(("far_" + hero.id, new Vector3(hero.x, 0, hero.z)));
+            foreach (var (label, p) in targets)
+            {
+                PlaceGameplayCamera(cam, venue, p);
+                var est = Estimate(go, cam, lodBias);
+                maxDraws = Mathf.Max(maxDraws, est.draws);
+                maxTris = Mathf.Max(maxTris, est.tris);
+                if (label == "entrance" && entranceCapturePath != null) Render(cam, entranceCapturePath, 1068, 480);
+                views.Add(new JObject
+                {
+                    ["view"] = label, ["estimatedDraws"] = est.draws, ["estimatedTriangles"] = est.tris, ["materials"] = est.materials,
+                    ["visibleRenderers"] = est.renderers,
+                });
+            }
+            return (views, maxDraws, maxTris);
+        }
+
+        internal static int AndroidQualityLevel(out float lodBias)
         {
             lodBias = QualitySettings.lodBias;
             try

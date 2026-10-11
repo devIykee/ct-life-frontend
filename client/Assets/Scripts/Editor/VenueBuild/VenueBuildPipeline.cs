@@ -79,6 +79,7 @@ namespace CTLife.EditorTools.VenueBuild
         public static VB.Result BuildOne(VenueSpec spec)
         {
             if (EditorApplication.isPlayingOrWillChangePlaymode) throw new InvalidOperationException("Build venues outside Play mode.");
+            if (!string.IsNullOrEmpty(spec.repackSource)) return VenueRepack.Repack(spec);
             VenuePalette.Reset();
             VenueSpotsFile.Reset();
             VenuePalette.EnsureTexture();
@@ -161,6 +162,9 @@ namespace CTLife.EditorTools.VenueBuild
                         var ap = new NavMeshPath();
                         approachOk = NavMesh.SamplePosition(approach.position, out var ah, 0.3f, NavMesh.AllAreas) &&
                                      NavMesh.CalculatePath(start.position, ah.position, NavMesh.AllAreas, ap) && ap.status == NavMeshPathStatus.PathComplete;
+                        // Seats tucked into furniture (Terminal Café, Spaces Studio) are reached through their approach point;
+                        // the player walks there and the server snaps the seated pose to the anchor.
+                        if (!reach && approachOk) reach = true;
                     }
                     report.Add(new JObject
                     {

@@ -25,6 +25,25 @@ namespace CTLife.EditorTools.VenueBuild
 
         public static List<VenueSpec> All => new List<VenueSpec>
         {
+            // Repacked pre-pipeline venues: same authored layout/anchors/components, merged + atlased + rebaked.
+            new VenueSpec
+            {
+                id = "timeline_square", venueId = "timeline_square", spotsKey = "timeline_square", title = "Timeline Square", district = "timeline",
+                identity = "Plaza with the Timeline screen, Pixel Wall, billboards and ad kiosk (live surfaces), blossom gardens, shopfront street, marina skyline.",
+                repackSource = "Assets/Art/Generated/Venues/TimelineStreet20261006.prefab", cellSize = 22f, lod0Threshold = 0.6f, farLod1Distance = 10f,
+            },
+            new VenueSpec
+            {
+                id = "terminal_cafe", venueId = "terminal_cafe", spotsKey = "terminal_cafe", title = "Terminal Café", district = "trenches",
+                identity = "Trading café: 8 terminals, social tables, coffee bar, pulse screen, brick and glass shell (seat motion profile kept).",
+                repackSource = "Assets/Art/Candidates/PlayableVenues20261007/terminal_cafe.prefab", cellSize = 12.5f, cellSizeZ = 6f, cellSplit = true, lod0Threshold = 0.65f,
+            },
+            new VenueSpec
+            {
+                id = "spaces_studio", venueId = "spaces_studio", spotsKey = "spaces_studio", title = "Spaces Studio", district = "timeline",
+                identity = "Broadcast salon: host podium, 10 speaker chairs, 20 audience chairs, identity wall, side lounges (seat motion profile kept).",
+                repackSource = "Assets/Art/Candidates/PlayableVenues20261007/spaces_studio.prefab", cellSize = 12.5f, cellSplit = true, lod0Threshold = 0.5f,
+            },
             // The Trenches
             V("perp_pit", "Perp Pit", "trenches",
                 "Perp-DEX trading floor: leverage board + 24h casualties board (live hooks), 8 terminals, liquidation witness circle, CROSS/ISOLATED lounges, lever-o-meter.",
