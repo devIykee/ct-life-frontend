@@ -34,6 +34,8 @@ namespace UnityEngine.Rendering
     public class FloatParameter : VolumeParameter<float> { public FloatParameter(float value, bool overrideState = false) { } }
     public class MinFloatParameter : FloatParameter { public MinFloatParameter(float value, float min, bool overrideState = false) : base(value, overrideState) { } }
     public class ClampedFloatParameter : FloatParameter { public ClampedFloatParameter(float value, float min, float max, bool overrideState = false) : base(value, overrideState) { } }
+    public class IntParameter : VolumeParameter<int> { public IntParameter(int value, bool overrideState = false) { } }
+    public class ClampedIntParameter : IntParameter { public ClampedIntParameter(int value, int min, int max, bool overrideState = false) : base(value, overrideState) { } }
     public class ColorParameter : VolumeParameter<Color> { public ColorParameter(Color value, bool hdr, bool showAlpha, bool showEyeDropper, bool overrideState = false) { } }
 }
 
@@ -64,7 +66,25 @@ namespace UnityEngine.Rendering.Universal
     }
     public sealed class Vignette : VolumeComponent
     {
+        public ColorParameter color = new ColorParameter(Color.black, false, false, true);
         public ClampedFloatParameter intensity = new ClampedFloatParameter(0f, 0f, 1f);
         public ClampedFloatParameter smoothness = new ClampedFloatParameter(0.2f, 0.01f, 1f);
+    }
+    // URP 17.3 Runtime/Overrides/SplitToning.cs l.107-119, DepthOfField.cs l.8, l.155-215.
+    public sealed class SplitToning : VolumeComponent
+    {
+        public ColorParameter shadows = new ColorParameter(Color.grey, false, false, true);
+        public ColorParameter highlights = new ColorParameter(Color.grey, false, false, true);
+        public ClampedFloatParameter balance = new ClampedFloatParameter(0f, -100f, 100f);
+    }
+    public enum DepthOfFieldMode { Off, Gaussian, Bokeh }
+    public sealed class DepthOfFieldModeParameter : VolumeParameter<DepthOfFieldMode> { public DepthOfFieldModeParameter(DepthOfFieldMode value, bool overrideState = false) { } }
+    public sealed class DepthOfField : VolumeComponent
+    {
+        public DepthOfFieldModeParameter mode = new DepthOfFieldModeParameter(DepthOfFieldMode.Off);
+        public MinFloatParameter focusDistance = new MinFloatParameter(10f, 0.1f);
+        public ClampedFloatParameter aperture = new ClampedFloatParameter(5.6f, 1f, 32f);
+        public ClampedFloatParameter focalLength = new ClampedFloatParameter(50f, 1f, 300f);
+        public ClampedIntParameter bladeCount = new ClampedIntParameter(5, 3, 9);
     }
 }
