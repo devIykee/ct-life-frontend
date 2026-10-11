@@ -108,7 +108,7 @@ namespace CTLife.EditorTools
             if (_driving) return;
             _driving = true;
             Step("drive");
-            _deadline = EditorApplication.timeSinceStartup + 600;
+            _deadline = EditorApplication.timeSinceStartup + (Arg("-ctlife-captureSet") == "r2seatsall" ? 1800 : 600);
             EditorApplication.update += Watchdog;
             string fatal = null;
             try
@@ -122,6 +122,11 @@ namespace CTLife.EditorTools
                 var set = Arg("-ctlife-captureSet") ?? "p1";
                 if (set == "p1" || set == "all") foreach (var venue in Venues) await CaptureVenue(venue);
                 if (set == "p2" || set == "all") await CaptureFeel();
+                if (set == "r2seats" || set == "r2") await CaptureSeats(false);
+                if (set == "r2seatsall") await CaptureSeats(true);
+                if (set == "r2clips" || set == "r2") await CaptureClips();
+                if (set == "r2perf" || set == "r2") await CapturePerf();
+                if (set == "r2run" || set == "r2") await CaptureRun();
             }
             catch (Exception e) { fatal = e.GetType().Name + ": " + e.Message; Debug.LogException(e); }
             Finish(fatal);
@@ -361,10 +366,18 @@ namespace CTLife.EditorTools
             {
                 body.BakeMesh(mesh, true);
                 var m = body.transform.localToWorldMatrix;
-                Vector3 min = Vector3.positiveInfinity, max = Vector3.negativeInfinity;
-                foreach (var p in mesh.vertices) { var w = m.MultiplyPoint3x4(p); min = Vector3.Min(min, w); max = Vector3.Max(max, w); }
-                var size = max - min;
-                return size.y > 0.01f ? Mathf.Max(size.x, size.z) / size.y : float.NaN;
+                // Lateral span (along the actor's right axis) / height: a T/bind pose spreads the arms sideways; a
+                // reclined seat pose (bean bag: head back, legs forward) is long front-to-back but not wide.
+                var right = owner != null ? owner.transform.right : Vector3.right;
+                float minX = float.MaxValue, maxX = float.MinValue, minY = float.MaxValue, maxY = float.MinValue;
+                foreach (var p in mesh.vertices)
+                {
+                    var w = m.MultiplyPoint3x4(p);
+                    float x = Vector3.Dot(w, right);
+                    minX = Mathf.Min(minX, x); maxX = Mathf.Max(maxX, x); minY = Mathf.Min(minY, w.y); maxY = Mathf.Max(maxY, w.y);
+                }
+                float height = maxY - minY;
+                return height > 0.01f ? (maxX - minX) / height : float.NaN;
             }
             finally { Object.Destroy(mesh); }
         }

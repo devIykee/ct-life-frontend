@@ -26,8 +26,8 @@ namespace CTLife.EditorTools
         public const float TPoseSpanRatio = 0.7f;
 
         /// <summary>
-        /// Samples the given controller states on an instance and returns, per state, the widest horizontal extent of the
-        /// skinned LOD0 surface divided by its height. Uses the shipped controller and the model's own Avatar.
+        /// Samples the given controller states on an instance and returns, per state, the lateral (left-right) extent of
+        /// the skinned LOD0 surface divided by its height. Uses the shipped controller and the model's own Avatar.
         /// </summary>
         public static Dictionary<string, float> PoseSpans(GameObject prefab, RuntimeAnimatorController controller, IEnumerable<string> states)
         {
@@ -59,7 +59,9 @@ namespace CTLife.EditorTools
                     foreach (var v in baked.vertices) { var w = m.MultiplyPoint3x4(v); min = Vector3.Min(min, w); max = Vector3.Max(max, w); }
                     // BakeMesh(useScale) already applies the renderer scale; use positions relative to the renderer pivot.
                     var size = max - min;
-                    result[state] = size.y > 0.01f ? Mathf.Max(size.x, size.z) / size.y : float.NaN;
+                    // Lateral (x: the instance faces +z) over height: a T/bind pose spreads the arms sideways, while a seated
+                    // pose can be long front-to-back (knees and feet forward on a low seat) without being wide.
+                    result[state] = size.y > 0.01f ? size.x / size.y : float.NaN;
                 }
             }
             finally { UnityEngine.Object.DestroyImmediate(go); UnityEngine.Object.DestroyImmediate(baked); }

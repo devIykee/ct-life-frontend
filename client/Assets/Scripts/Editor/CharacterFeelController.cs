@@ -41,7 +41,24 @@ namespace CTLife.EditorTools
             ("idle_fidget_foldarms", "idle_fidget_foldarms.fbx"), ("idle_fidget_talk", "idle_fidget_talk.fbx"),
             ("idle_lean_rail", "idle_lean_rail.fbx"), ("act_interact", "act_interact.fbx"), ("act_phone_hold", "act_phone_hold.fbx"),
             ("talk_host_with_mic", "talk_host_with_mic.fbx"), ("loco_jog", "loco_jog.fbx"), ("idle_rekt", "idle_rekt.fbx"),
+            // (Seated variants act_sit / act_sit_lounge / _beanbag / _stool are seatHeight blend trees owned by SeatPoseBuilder.)
+            // Codex's fitted café states (Snow clips here; RainController overrides them with Rain's own fits).
+            (CafeSeatMotionProfile.SocialState, SnowSocial), (CafeSeatMotionProfile.TypingState, SnowTyping),
+            (CafeSeatMotionProfile.WorkExitState, StandPrefix), (CafeSeatMotionProfile.WorkExitIdleState, SnowIdle),
+            // CMU mocap one-shots (MocapImport: free use, NSF acknowledgement in art/LICENSES.md).
+            ("act_get_up_front", "mocap/getup_face_down.fbx"), ("react_trip", "mocap/trip.fbx"), ("loco_run_stop", "mocap/jog_stop.fbx"),
         };
+
+        private const string Fits = "Assets/Art/characters/authored/MotionReview20261006/";
+        public const string SnowSocial = Fits + "SeatedBodyFitV1/Snow_SocialBodyFit_Candidate.anim";
+        public const string RainSocial = Fits + "SeatedBodyFitV1/Rain_SocialBodyFit_Candidate.anim";
+        public const string SnowTyping = Fits + "TypingOfflineBakeV1/Snow_TypingCombined_FK_Candidate.anim";
+        public const string RainTyping = Fits + "TypingOfflineBakeV1/Rain_TypingCombined_FK_Candidate.anim";
+        public const string StandPrefix = "Assets/Art/Candidates/PlayableVenues20261007/Motion/StandPrefix.anim";
+        public const string SnowIdle = "Assets/Art/characters/authored/SnowIdle/SnowAdult_RelaxedIdle.fbx";
+        /// <summary>Seated states whose feet CharacterIK plants (Humanoid Foot IK gives it goals that follow the feet).</summary>
+        /// (The seated blend trees and Codex's fitted states keep Foot IK off: their FK feet are the fitted contact.)
+        public static readonly string[] SeatedFootIk = { "act_type", "act_frantic_type", "act_sit_talk" };
 
         public static void ApplyBatch()
         {
@@ -66,7 +83,7 @@ namespace CTLife.EditorTools
 
         /// <summary>Codex's accepted shared walk reference (docs/progress/locomotion-quality-20261006.md): speed / 1.0 m/s.</summary>
         public const float WalkReference = 1.0f;
-        private const string FemaleReferencePrefab = "Assets/Art/characters/cast/prefabs/player_f_kol.prefab";
+        private const string FemaleReferencePrefab = "Assets/Art/characters/cast/prefabs/player_f_builder.prefab"; // trousered: soles, not a hem
 
         [MenuItem("CT Life/Characters/Apply character-feel controller")]
         public static JObject Apply()
@@ -166,18 +183,44 @@ namespace CTLife.EditorTools
                 st.motion = clip;
                 st.writeDefaultValues = true;
             }
+            foreach (var seated in SeatedFootIk)
+            {
+                var st = State(sm, seated);
+                if (st != null) st.iKOnFeet = true;
+            }
             EditorUtility.SetDirty(tree);
             EditorUtility.SetDirty(ctrl);
+            // Rain family: its own fitted café clips over Snow's.
+            var rainOverride = AssetDatabase.LoadAssetAtPath<AnimatorOverrideController>(CastImport.RainControllerPath);
+            if (rainOverride != null)
+            {
+                var pairs = new List<KeyValuePair<AnimationClip, AnimationClip>>(rainOverride.overridesCount);
+                rainOverride.GetOverrides(pairs);
+                var wanted = new Dictionary<AnimationClip, AnimationClip>
+                {
+                    [Clip(SnowSocial)] = Clip(RainSocial),
+                    [Clip(SnowTyping)] = Clip(RainTyping),
+                };
+                for (int i = 0; i < pairs.Count; i++)
+                    if (pairs[i].Key != null && wanted.TryGetValue(pairs[i].Key, out var rain) && rain != null)
+                        pairs[i] = new KeyValuePair<AnimationClip, AnimationClip>(pairs[i].Key, rain);
+                rainOverride.ApplyOverrides(pairs);
+                EditorUtility.SetDirty(rainOverride);
+            }
 
             // 5) Runtime tuning: natives per family controller (shared walk = Codex's reference).
             var tuning = AssetDatabase.LoadAssetAtPath<LocomotionTuning>(TuningPath);
             if (tuning == null) { tuning = ScriptableObject.CreateInstance<LocomotionTuning>(); AssetDatabase.CreateAsset(tuning, TuningPath); }
+            // Planted soles of the walk and the run band on each family's reference look (the generalized run correction).
+            float Lift(GameObject prefab, AnimationClip c, string label) { var v = ClipMeasure.PlantedSoleLift(prefab, c); measures[label] = Math.Round(v, 4); return v; }
+            float mWalkLift = Lift(male, Played(snowCtrl, walk), "m.walk.soleLift"), mRunLift = Lift(male, band, "m.runBand.soleLift");
+            float fWalkLift = Lift(female, Played(rainCtrl, walk), "f.walk.soleLift"), fRunLift = Lift(female, band, "f.runBand.soleLift");
             tuning.families = new List<LocomotionTuning.Family>
             {
                 // Walk: Codex's 1.0 m/s reference (fitted with the walk's Foot IK on). In motion it slides less than the
                 // static fit (0.895 m/s m-family): stance slide 0.23 vs 0.29 m/s at 2 m/s (gait_idle_turn capture).
-                new LocomotionTuning.Family { controller = snowCtrl, walk = WalkReference, run = mRun },
-                new LocomotionTuning.Family { controller = rainCtrl, walk = WalkReference, run = fRun },
+                new LocomotionTuning.Family { controller = snowCtrl, walk = WalkReference, run = mRun, walkSoleLift = Mathf.Max(0f, mWalkLift), runSoleLift = Mathf.Max(0f, mRunLift) },
+                new LocomotionTuning.Family { controller = rainCtrl, walk = WalkReference, run = fRun, walkSoleLift = Mathf.Max(0f, fWalkLift), runSoleLift = Mathf.Max(0f, fRunLift) },
             };
             tuning.lengths = new List<LocomotionTuning.StateLength>();
             foreach (var (state, file) in ExtraStates)
@@ -186,8 +229,9 @@ namespace CTLife.EditorTools
                 if (c != null) tuning.lengths.Add(new LocomotionTuning.StateLength { state = state, seconds = c.length });
             }
             tuning.poses = new List<LocomotionTuning.StatePose>();
-            foreach (var (state, file) in new[] { ("act_get_up", "act_get_up.fbx"), ("act_get_up_front", "act_get_up_front.fbx"),
-                         ("react_fall", "react_rug_pull_fall.fbx"), ("react_stagger", "react_stagger.fbx") })
+            foreach (var (state, file) in new[] { ("act_get_up", "act_get_up.fbx"), ("act_get_up_front", "mocap/getup_face_down.fbx"),
+                         ("react_fall", "react_rug_pull_fall.fbx"), ("react_stagger", "react_stagger.fbx"), ("react_trip", "mocap/trip.fbx"),
+                         ("loco_run_stop", "mocap/jog_stop.fbx") })
             {
                 var c = Clip(Anim + file);
                 if (c == null) continue;
@@ -210,8 +254,13 @@ namespace CTLife.EditorTools
 
         private static AnimatorState State(AnimatorStateMachine sm, string name) => sm.states.Select(s => s.state).FirstOrDefault(s => s.name == name);
 
-        public static AnimationClip Clip(string fbx) =>
-            AssetDatabase.LoadAllAssetsAtPath(fbx).OfType<AnimationClip>().FirstOrDefault(c => !c.name.StartsWith("__preview__", StringComparison.Ordinal));
+        public static AnimationClip Clip(string path)
+        {
+            // Entries may be absolute ("Assets/...") or relative to Assets/Art/animations/ (Anim + file; an absolute entry arrives as Anim + "Assets/...").
+            int abs = path.IndexOf("Assets/", 1, StringComparison.Ordinal);
+            if (abs > 0) path = path.Substring(abs);
+            return AssetDatabase.LoadAllAssetsAtPath(path).OfType<AnimationClip>().FirstOrDefault(c => !c.name.StartsWith("__preview__", StringComparison.Ordinal));
+        }
 
         private static string Arg(string name)
         {
@@ -224,11 +273,12 @@ namespace CTLife.EditorTools
     /// <summary>Samples Humanoid clips on a real character (de-optimized instance, PlayableGraph, edit mode).</summary>
     public static class ClipMeasure
     {
-        private sealed class Rig : IDisposable
+        /// <summary>A de-optimized instance of a look at the origin (scale 1) playing one clip; sampled in edit mode.</summary>
+        internal sealed class Rig : IDisposable
         {
             public GameObject go; public Animator animator; private AnimatorController _ctrl; private readonly float _length;
             public Transform hips, lFoot, rFoot;
-            public Rig(GameObject prefab, AnimationClip c)
+            public Rig(GameObject prefab, AnimationClip c, bool footIk = false)
             {
                 _length = Mathf.Max(0.0001f, c.length);
                 go = Object.Instantiate(prefab);
@@ -242,7 +292,7 @@ namespace CTLife.EditorTools
                 _ctrl.AddLayer("Base");
                 var st = _ctrl.layers[0].stateMachine.AddState("m");
                 st.motion = c;
-                st.iKOnFeet = false;
+                st.iKOnFeet = footIk;
                 animator.runtimeAnimatorController = _ctrl;
                 animator.Rebind();
                 hips = animator.GetBoneTransform(HumanBodyBones.Hips);
@@ -326,6 +376,33 @@ namespace CTLife.EditorTools
         }
 
         /// <summary>Root-space hips at the first/last frame and head at the first frame (aligning get-ups with bodies).</summary>
+        /// <summary>
+        /// Planted-sole lift of a locomotion loop on this look (m): over 60 phases with Foot IK (as it plays), the lowest
+        /// skinned vertex above the root plane; its 10th percentile is the stance contact (0 = the soles touch the ground).
+        /// </summary>
+        public static float PlantedSoleLift(GameObject prefab, AnimationClip c)
+        {
+            using var rig = new Rig(prefab, c, footIk: true);
+            var smr = rig.go.GetComponentsInChildren<SkinnedMeshRenderer>(true).OrderByDescending(r => r.sharedMesh != null ? r.sharedMesh.vertexCount : 0).First();
+            var mesh = new Mesh();
+            var lows = new List<float>();
+            try
+            {
+                for (int i = 0; i < 60; i++)
+                {
+                    rig.At(c.length * i / 60f);
+                    smr.BakeMesh(mesh, true);
+                    var m = smr.transform.localToWorldMatrix;
+                    float low = float.MaxValue;
+                    foreach (var v in mesh.vertices) low = Mathf.Min(low, m.MultiplyPoint3x4(v).y);
+                    lows.Add(low - rig.go.transform.position.y);
+                }
+            }
+            finally { Object.DestroyImmediate(mesh); }
+            lows.Sort();
+            return lows[lows.Count / 10];
+        }
+
         public static (Vector3 hipsStart, Vector3 hipsEnd, Vector3 headStart) Pose(GameObject prefab, AnimationClip c)
         {
             using var rig = new Rig(prefab, c);

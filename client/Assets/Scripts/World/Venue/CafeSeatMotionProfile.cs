@@ -71,20 +71,54 @@ namespace CTLife.World
             if (!isActiveAndEnabled || animator == null) return false;
             _venue = GetComponent<VenueSceneRoot>();
             if (_venue == null || _venue.IsGreybox || !SupportedVenue(_venue.venueId) || bindings == null) return false;
-            Binding match = null;
-            foreach (var binding in bindings)
-            {
-                if (binding == null || binding.baselineController == null || binding.ownAvatar == null || binding.cafeController == null) continue;
-                if (animator.runtimeAnimatorController != binding.baselineController || animator.avatar != binding.ownAvatar) continue;
-                if (match != null) return false; // Ambiguous authored binding must keep the baseline.
-                match = binding;
-            }
+            Binding match = FamilyBinding(animator, out bool exactAvatar);
             if (match == null) return false;
-            controller = match.cafeController;
-            return true;
+            // The shared controller carries the fitted states (CharacterFeelController): keep it, no swap (a swap to the
+            // standalone café controller would drop locomotion blending, IK and the newer states). The original
+            // Snow/Rain avatars with an older controller still get Codex's standalone controller.
+            controller = animator.HasState(0, AnimationLibrary.Hash(SocialState)) && animator.HasState(0, AnimationLibrary.Hash(TypingState))
+                ? animator.runtimeAnimatorController : exactAvatar ? match.cafeController : null;
+            return controller != null;
         }
 
         private static bool SupportedVenue(string id) => id == CafeId || id == StudioId;
+
+        /// <summary>
+        /// The binding for this actor's family. A binding's baseline controller is the family's motion controller
+        /// (SnowController / RainController), which every look of that family uses, so it matches cast looks as well as
+        /// the original Snow/Rain (whose exact Avatar is reported for the standalone-controller path).
+        /// </summary>
+        private Binding FamilyBinding(Animator animator, out bool exactAvatar)
+        {
+            exactAvatar = false;
+            if (animator == null || bindings == null) return null;
+            Binding match = null;
+            foreach (var binding in bindings)
+            {
+                if (binding == null || binding.baselineController == null) continue;
+                bool family = animator.runtimeAnimatorController == binding.baselineController || animator.runtimeAnimatorController == binding.cafeController;
+                if (!family) continue;
+                if (match != null) return null; // ambiguous
+                match = binding;
+                exactAvatar = binding.ownAvatar != null && animator.avatar == binding.ownAvatar;
+            }
+            return match;
+        }
+
+        /// <summary>
+        /// Codex fitted these states to the café's own furniture: the social sit to its ~0.45 m dining chairs, typing to its
+        /// office chairs at the terminals. Other seats (the Studio's bean bags, poufs, stools, armchairs) use the measured
+        /// seat-kind poses instead (SeatFitCatalog).
+        /// </summary>
+        private bool FittedFurniture(string local, bool social)
+        {
+            var catalog = SeatFitCatalog.Instance;
+            if (catalog == null || _venue == null) return true; // no measurements: keep the authored behaviour
+            if (!catalog.TryGet(_venue.venueId, local, out var seat)) return false;
+            float above = seat.seatTop - seat.floor;
+            return social ? seat.kind == SeatKind.Chair && Mathf.Abs(above - 0.45f) < 0.04f
+                          : seat.kind == SeatKind.Office && Mathf.Abs(above - 0.45f) < 0.04f;
+        }
         private static bool NumberedSpot(string id, string prefix, int maximum)
         {
             if (!id.StartsWith(prefix, StringComparison.Ordinal) ||
@@ -94,15 +128,7 @@ namespace CTLife.World
         private bool TryGetBoundMotion(Animator animator, string fitted, string id, out CafeWorkExitMotion motion)
         {
             motion = null;
-            if (animator == null || bindings == null) return false;
-            Binding match = null;
-            foreach (var binding in bindings)
-            {
-                if (binding == null || binding.ownAvatar != animator.avatar ||
-                    binding.cafeController != animator.runtimeAnimatorController) continue;
-                if (match != null) return false;
-                match = binding;
-            }
+            var match = FamilyBinding(animator, out _);
             if (match == null) return false;
             bool left = _venue.venueId == StudioId && NumberedSpot(id, "stage_", 10);
             motion = fitted == TypingState ? match.workExitMotion :
@@ -119,6 +145,7 @@ namespace CTLife.World
                 NumberedSpot(local, "seat_", 20) || NumberedSpot(local, "stage_", 10);
             bool typing = cafe && NumberedSpot(local, "terminal_", 8);
             if (!(social && authoritativeAction == "act_sit") && !(typing && authoritativeAction == "act_type")) return authoritativeAction;
+            if (!FittedFurniture(local, social)) return authoritativeAction;
             // A registry fallback alone cannot opt an unauthored spot into fitted furniture motion.
             foreach (var anchor in _venue.Anchors)
                 if (anchor != null && _venue.LocalSpotId(anchor.spotId) == local && anchor.anim == authoritativeAction)

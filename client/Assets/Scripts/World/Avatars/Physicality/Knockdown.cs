@@ -25,7 +25,8 @@ namespace CTLife.World
     {
         public enum Phase { None, Stagger, Falling, Rolling, Down, GettingUp }
         public const float RagdollRange = 14f, BlendTime = 0.45f;
-        private const string GetUp = "act_get_up", GetUpFront = "act_get_up_front", FallBack = "react_fall", Knockback = "react_stagger", Recoil = "react_hit_chest";
+        private const string GetUp = "act_get_up", GetUpFront = "act_get_up_front", FallBack = "react_fall", Knockback = "react_stagger", Recoil = "react_hit_chest",
+            TripState = "react_trip";
 
         public Phase Current { get; private set; }
         public bool Busy => Current != Phase.None;
@@ -62,6 +63,20 @@ namespace CTLife.World
             if (away.sqrMagnitude > 1e-4f) transform.rotation = Quaternion.LookRotation(new Vector3(-away.x, 0f, -away.z));
             _len = Length(Recoil, 0.55f) * 0.9f;
             AnimationLibrary.TryPlay(_view.Animator, Recoil, 0.08f);
+        }
+
+        /// <summary>
+        /// Catching a foot on something low while moving (a kerb, a bench foot): a stumble and recovery on the spot (CMU
+        /// StumbleWalk), facing the way the actor was going; falls back to the stagger without that clip.
+        /// </summary>
+        public void Trip(Vector3 forward)
+        {
+            if (Busy || _view == null || _view.Animator == null) return;
+            if (!_view.Animator.HasState(0, AnimationLibrary.Hash(TripState))) { Stagger(-forward); return; }
+            Begin(Phase.Stagger);
+            if (forward.sqrMagnitude > 1e-4f) transform.rotation = Quaternion.LookRotation(new Vector3(forward.x, 0f, forward.z));
+            _len = Length(TripState, 1.5f) * 0.9f;
+            AnimationLibrary.TryPlay(_view.Animator, TripState, 0.12f);
         }
 
         /// <summary>Knock the actor down. velocity = body velocity at impact; impulse at the chest (N·s).</summary>
@@ -138,7 +153,8 @@ namespace CTLife.World
                     if (_rig.Settled(dt, _t, 2f)) { Current = Phase.Down; _t = 0.5f; }
                     break;
                 case Phase.GettingUp:
-                    if (_t >= _len * 0.94f) End();
+                    // A travelling get-up runs to its last (standing) frame before the cut to idle; others hand over early.
+                    if (_t >= _len * (_getUpState == GetUpFront ? 0.99f : 0.94f)) End();
                     break;
             }
         }
@@ -209,6 +225,27 @@ namespace CTLife.World
 
         private void End()
         {
+            // A get-up that travels (the face-down one crawls ~1 m): stand the root under the body (its animated centre
+            // of mass from the last IK pass; works on optimized hierarchies) before the idle takes over, or it slides back.
+            var ik = Current == Phase.GettingUp && _view.Animator != null ? _view.Animator.GetComponent<CharacterIK>() : null;
+            if (ik != null && ik.BodyFrame >= Time.frameCount - 2)
+            {
+                var shift = ik.BodyPosition - transform.position; shift.y = 0f;
+                if (shift.sqrMagnitude > 0.05f * 0.05f)
+                {
+                    var root = transform.position + shift;
+                    if (Physics.Raycast(root + Vector3.up * 1f, Vector3.down, out var g, 3f, CharacterLayers.WorldMask, QueryTriggerInteraction.Ignore)) root.y = g.point.y;
+                    PlaceRoot(root, transform.rotation);
+                    // The owner may keep the root on the NavMesh (the body got up over a carved prop): the model stays
+                    // with the body and eases onto the root instead of jumping there.
+                    var missed = root - transform.position; missed.y = 0f;
+                    if (missed.sqrMagnitude > 0.03f * 0.03f) _view.CarryModelOffset(missed);
+                    // Cut to the idle under the new root in the same frame: a cross-fade would blend the get-up's
+                    // travelled hips (now ahead of the root) back over the idle and slide the body.
+                    var idle = AnimationLibrary.Hash("loco_idle");
+                    if (_view.Animator.HasState(0, idle)) { _view.Animator.Play(idle, 0, 0f); _view.Animator.Update(0f); }
+                }
+            }
             if (_rig != null) { _rig.Teardown(); _rig = null; }
             _blend = -1f; _bones = null; _snapshot = null;
             Current = Phase.None;

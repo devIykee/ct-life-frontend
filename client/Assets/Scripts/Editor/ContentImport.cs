@@ -172,6 +172,7 @@ namespace CTLife.EditorTools
     /// <summary>Import settings for CT Life content folders.</summary>
     public sealed class CTLifeImportPostprocessor : AssetPostprocessor
     {
+        public override uint GetVersion() => 2; // 1: one-shot transition clips (sit down, stand up, get up); 2: skips the mocap folder
         private const string CharRoot = "Assets/Art/characters/";
         private const string AnimRoot = "Assets/Art/animations/";
         private const string EnvRoots = "Assets/Art/";
@@ -183,6 +184,7 @@ namespace CTLife.EditorTools
             if (assetPath.StartsWith(AuthoredCharacterImport.Root)) return;
             // The cast has its own importer (CastPostprocessor) and its own per-look Avatars; CTL settings must not leak in.
             if (assetPath.StartsWith(CastImport.Root + "/", StringComparison.Ordinal)) return;
+            if (assetPath.StartsWith(MocapImport.Root + "/", StringComparison.Ordinal)) return; // own Avatars (MocapPostprocessor)
             var mi = (ModelImporter)assetImporter;
             if (assetPath.StartsWith(CharRoot) || assetPath.StartsWith(AnimRoot))
             {
@@ -249,7 +251,7 @@ namespace CTLife.EditorTools
 
         private void OnPreprocessAnimation()
         {
-            if (!assetPath.StartsWith(AnimRoot)) return;
+            if (!assetPath.StartsWith(AnimRoot) || assetPath.StartsWith(MocapImport.Root + "/", StringComparison.Ordinal)) return;
             var mi = (ModelImporter)assetImporter;
             var clips = mi.defaultClipAnimations;
             bool loop = ClipLoops(Path.GetFileName(assetPath));
@@ -279,13 +281,17 @@ namespace CTLife.EditorTools
                     foreach (var p in map.Properties())
                         if (p.Value["clip"] != null) _loopCache[p.Value["clip"].ToString()] = p.Value["loop"]?.Value<bool>() ?? false;
             }
-            return _loopCache.TryGetValue(fbxName, out var l) ? l : fbxName.StartsWith("loco_") || fbxName.StartsWith("act_");
+            if (_loopCache.TryGetValue(fbxName, out var l)) return l;
+            // Transitions are one-shots: a looping sit-down/stand-up/get-up wraps to its first frame while the next state
+            // cross-fades in (the body drops back towards the seat or floor for a moment).
+            if (fbxName.Contains("sit_down") || fbxName.Contains("stand_up") || fbxName.Contains("get_up")) return false;
+            return fbxName.StartsWith("loco_") || fbxName.StartsWith("act_");
         }
 
         /// <summary>Clip FBX carry a 1-triangle `_bind_proxy` mesh (bind pose carrier): strip it.</summary>
         private void OnPostprocessModel(GameObject root)
         {
-            if (!assetPath.StartsWith(AnimRoot)) return;
+            if (!assetPath.StartsWith(AnimRoot) || assetPath.StartsWith(MocapImport.Root + "/", StringComparison.Ordinal)) return;
             foreach (var t in root.GetComponentsInChildren<Transform>(true).Where(t => t.name.Contains("_bind_proxy")).ToList())
                 if (t != null && t != root.transform) UnityEngine.Object.DestroyImmediate(t.gameObject);
         }

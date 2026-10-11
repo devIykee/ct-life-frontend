@@ -1,6 +1,115 @@
 # Character feel (lane: character-feel, branch feat/character-feel)
 
-READY TO COMMIT (Priority 2, includes Priority 1; verified 2026-10-08): the exact 281 paths in
+READY TO COMMIT (round 2, verified 2026-10-08 on dev f8806eb incl. venues round 5): the exact 123 paths in
+`ct-life-evidence/character-feel/round2/r2-paths.txt` = every modified/untracked file in this worktree except `*.mat`.
+New: `client/Assets/Scripts/World/Avatars/{SeatFitCatalog,SeatPlacement}.cs`, `client/Assets/Scripts/Editor/{SeatFitBuilder,
+SeatPoseBuilder,MocapImport,CastWeightRepair,CharacterFeelCapture.R2}.cs`, `client/Assets/Tests/EditMode/SeatFitTests.cs`
+(all + `.meta`), `client/Assets/Resources/Characters/SeatFits.asset` (+`.meta`), `client/Assets/Art/animations/seated/`
+(28 `.anim` + metas, + `seated.meta`, 11 MB), `client/Assets/Art/animations/mocap/` (3 FBX + metas, + `mocap.meta`),
+`art/processed/animations/mocap/` (17 files), `tools/anim/` (4 scripts). Modified: AvatarView, CharacterIK, SeatPresenter,
+LocomotionTuning(.cs/.asset), Knockdown, LocalPlayerController, CafeSeatMotionProfile, AvatarController.controller,
+RainController.overrideController, CharacterFeelController, CharacterFeelCapture, ContentImport, CastValidation,
+`act_{sit_down,stand_up,get_up}.fbx.meta` (loopTime 0), art/LICENSES.md, docs/progress/requests.md (reply to the café v2
+request), this log — "feat(characters): fitted seats for every seat kind and both families, typing hands on the device,
+cast f-family skin weights, CMU get-up/trip/run-stop, cast-wide run sole correction". Do NOT commit `*.mat` (import
+re-serialization). Importer versions change (CTLifeImportPostprocessor 2, new CastWeightRepair / MocapPostprocessor): a
+checkout re-imports every model once (~1 min here, 834 assets).
+Verified: compile_check dev/editor/release 0 errors (only the pre-existing VenueVerify.cs warning); EditMode 1475/1475
+(20 new SeatFitTests); batchmode PlayMode captures `r2seats`, `r2seatsall` (100 seatings), `r2perf`, `r2clips`, `r2run`
+(the last two on dev 9f23592f: café-independent), and the round-1 regression `all` (0 T-posed actors, all 8 P2 scenarios ok).
+
+## Round 2 (2026-10-08): seats, clips, cast looks, budget
+
+Evidence: `ct-life-evidence/character-feel/round2/` — `seats/` (3/4 + side close-ups per seat kind × m / f trousers /
+f dress, `*_exit.png` stand-up strips), `r2seats-receipt.json`, `r2seatsall-receipt.json`, `clips/` + `r2clips-receipt.json`,
+`r2run-receipt.json`, `r2perf-receipt.json`, `regression/`, `seat-measure.json` (every seat, stool rung maps, work surfaces),
+`seat-pose-build.json`, `seat-pose-metrics.json`, `controller-apply.json`, `cast-weight-scan-{before,after}.json`,
+`looks-probe-*.json`, `mocap/` (Blender check renders), `editmode-results.xml`.
+
+### 1. Seats: every seat kind in Spaces Studio v4, the café and Timeline Square, both families
+- **Measured seats** (`SeatFitBuilder`, venue prefabs, render-mesh rays): 171 seats in 26 venues/homes classified Chair,
+  Office, Bench, Pouf, Lounge, BeanBag, Stool with seat top, backrest, plateau, floor and (stools) the footrest bar from
+  a rung map (Spaces stools: a 16 cm front bar at 0.25 m). Re-measured on round-4 venues (only bench_4 changed).
+- **Fitted poses** (`SeatPoseBuilder`): per kind a seat-height blend tree (act_sit / act_sit_lounge 16° / act_sit_beanbag
+  28° / act_sit_stool, feet together for the bar), each child solved per family in joint space so the soles land on the
+  support at that height (Foot IK off: edited muscle clips carry stale goals). Derived from the UAL CC0 sit (licence row).
+- **Placement at runtime** (`SeatPlacement` → AvatarView): the kind's state (or Codex's café fit), the blend height for
+  the look's scale and a model offset: hips on the seat top minus the soft sink (bean bag 16 cm, sofa 3.5, pouf 2),
+  lumbar 1.5 cm off the backrest, upholstered seats keep the calves in front of the front edge (deep poufs/sofas are sat
+  on forward), stool soles on the bar; the offset ramps through sit-down / stand-up. CharacterIK then re-targets the
+  pose's measured soles onto the real surface (rugs, stage trims, the stool bar) and lifts IK-goal seated states'
+  (Codex café, typing) soles that would sink.
+- **Result (production path, RemotePlayer + PlayerState, baked skin vs rendered seat):** 98 of 100 seatings (every seat
+  of the three venues, m and f) within: pelvis gap −0.9…−0.1 cm on hard seats / within the sink on soft ones (−2.1…−17.2 cm
+  for pouf…bean bag), soles −1.2…+0.7 cm, no backrest clipping. The 2 others are **timeline_square/bench_4**, where the round-4 gate railing runs through the bench's back
+  zone (venue item): the sitter is placed 6 cm forward and renders cleanly, the probes still read the railing.
+- **Root cause found on the way: the f family's shoes followed the head.** Every Rain-derived cast mesh (100 meshes: all
+  f players + Hero, rain_breeze, 17 f NPCs) had 30–50% Head weight on shoe/ankle/hip vertices — the stale
+  `DEF-COR-Hip_*/Ankle_*` groups the old conversion sent to Head, already fixed for Rain's own FBX in
+  `art/character-candidates/rain-weight-correction/` but re-inherited by the cast export. Seated (and walking) f shoes
+  smeared back under the knee, and the seat solve fitted those vertices (straight f legs). `CastWeightRepair` applies the
+  reviewed rule at import (no Head influence on a vertex that also carries pelvis/leg weight below the neck; renormalize;
+  bind poses matched to the rig in the source axis frame): 41 FBX repaired, scan 100 → 0 affected cast meshes.
+  **Cast lane:** fix it at the export (`cast_extract.py`: filter groups by existing deform bones, never fall back to Head);
+  the guard is then a no-op. `RainAdult_RelaxedIdle.fbx` (Codex idle source) still carries it; its mesh is not shown.
+- **Dress looks:** the f skirts/kaftans/coats (kol, coat, lagos_ankara, lagos_kaftan) are skinned to the pelvis, so the hem
+  hangs straight down through the seat when sitting. Placement uses the trousered f reference (same skeleton; the dress
+  look's hips land within 0.1 mm of the trousered twin). The hem itself is a cast weighting item (thighs, not pelvis);
+  the kol dress's back also sits 3.7 cm into the bench_1 backrest where the trousered looks clear it.
+- **Transitions:** sit-down, stand-up and get-up FBX looped (`act_` default), so the cross-fade into the next state showed
+  the clip's first frame: a 22 cm hip dip after every stand-up. Now one-shots (ContentImport rule + importer version).
+
+- **Terminal Café v2 (venues round 5, new furniture, same ids):** re-measured and re-fitted. `cafe_chair_a`/`_b` seats are
+  0.373 m (Codex's café fits were for 0.45 m chairs, so these use the fitted act_sit / act_type), the office chairs 0.455 m
+  (Codex's typing fit still applies). A seat pulled up to a table is classified as a chair (the round-table `cafe_chair_b`
+  read as a lounge chair), and the floor under the feet ignores the table's base plate. New: **typing hands on the device** —
+  the work surface and the laptop/keyboard on it are measured per seat and CharacterIK puts both wrists on it (2.5 cm above
+  the laptop at terminal_1–4, both families). The office keyboards (0.70 m ahead) are out of reach (wrists 0.11–0.25 m short,
+  arms straight): anchor nudges requested from the venue builder (requests.md: terminal_5–8 0.25 m, terminal_1–4 0.10 m
+  toward the desk). Table seats: hands rest on the table (wrists 1–2 cm above the top). Exits use the generic stand-up.
+
+### 2. Clips (CMU free-use mocap; licence + NSF acknowledgement rows in art/LICENSES.md)
+- `act_get_up_front` = CMU 140_02 "Get Up Face Down" (4.5 s, push-up, crawl, kneel, stand). Knockdown uses it when the
+  ragdoll rests face down (before: roll over first); the root is placed under the lying body at the start and under the
+  standing body at the end (its centre of mass from the IK pass; if the NavMesh owner keeps the root elsewhere, the model
+  eases onto it instead of jumping). Verified on both families (`clips/*_getup_*.png`, no hip jump > 10 cm per sample).
+- `react_trip` = CMU 104_13 "StumbleWalk" (1.5 s, on the spot): running into a kerb-high edge (< 0.45 m) trips instead
+  of a full knockdown; taller props still knock down / bounce as before.
+- `loco_run_stop` = CMU 104_09 "JogStop", decelerating steps only (0.8–2.4 s): a run that ends within 0.45 s plays it once,
+  for every actor (AvatarView.SetSpeed; independent of the order owners set speed and the idle base).
+- Import (`MocapImport`, menu CT Life > Characters > Import CMU mocap clips): each clip FBX gets its own Humanoid Avatar from
+  its ASF rest pose after Enforce T-Pose (legs splayed 20° in the ASF), all spine bones mapped (upperneck stays in between:
+  Unity reports a 12–26° in-between rotation mismatch, so the head lacks that neck segment's motion [Inference]).
+- **Not shipped:** a walk-stop and 90/180° pivots. No clean CC0/free take exists in the downloaded sets (the subagent's scan:
+  91_54/56 are hops, 13_26/27 turns are traffic gestures; no walk-stop). Turning in place keeps round 1's turn shuffle.
+
+### 3. Codex's café fits and run correction on the cast looks
+- Codex's fitted social/typing states are bound by family controller (SnowController / RainController), so every cast look
+  plays them on the café furniture they were fitted to (others get the measured kind poses); their exits now work on cast
+  looks too (the Snow exit's sole settle needs the original three-skin body; cast looks take the same exit without it).
+  On café v2 only the office terminals (0.455 m chairs) still match Codex's typing fit: pelvis −0.6…−0.8 cm, soles on the
+  floor (IK lift), wrists on the keyboard as far as it is reachable, and Codex's work exit plays and hands back to walking
+  for both families (`exit-terminal5/r2seats-receipt.json`; the strip's camera is blocked by the wall there).
+- **Run correction:** Codex's `SnowRunCorrection` profile was never in Resources (inactive in production) and its table is
+  for the UAL sprint on Snow, while the run band plays the UAL Jog on every look. Replaced by a cast-wide rule: the walk /
+  run-band planted-sole lift is measured per family offline (`LocomotionTuning.Family.{walk,run}SoleLift`: m 1.2 cm, f 3.1 cm
+  run; walks ≈ 0) and CharacterIK lowers planted feet by it. Running on flat ground (`r2run`): stance contact (p10 of the
+  lowest sole) m 1.6 → 0.3 cm, f 4.0 → 0.6–0.9 cm; brief toe dips at push-off now reach −2.5 cm (were −0.9 m / +1.3 f).
+
+### 4. Crowd budget
+`r2perf` (Spaces Studio, 35 actors, 11 at LOD0): 32 seated (fitted blends, offsets, seated foot IK) vs the same 35
+standing: main thread 1.86 vs 1.75 ms; `Animator.ProcessGraph` 0.15 vs 0.07 ms, `AnimationClipPlayable.EvaluateClip`
+0.05 vs 0.02 ms per frame (two-clip blends), `Animator.EvaluateIK` 0.08 vs 0.10 ms. [Inference] Editor batchmode on a desktop CPU, so these are
+relative costs; the device check is the integration lead's. Seated IK is LOD0-only (2 raycasts per foot per frame).
+
+### Open items
+- Cast lane: f-family Head weights at the source; dress hems weighted to the thighs.
+- Venues lane: timeline_square bench_4 vs the gate railing; café anchor nudges (requests.md), then re-run SeatFitBuilder /
+  SeatPoseBuilder (Build + Measure) to refresh SeatFits.asset.
+- Very high seats (0.72–0.80 m bar chairs without a footrest): f soles cannot reach (feet dangle by design).
+- The face-down get-up is chosen only when the ragdoll rests face down (physics: 2 of 5 sprints in the final capture).
+
+Round 1, merged on dev as 7618938 — was: READY TO COMMIT (Priority 2, includes Priority 1; verified 2026-10-08): the exact 281 paths in
 `ct-life-evidence/character-feel/p2-paths.txt` = every modified/untracked file in this worktree except `*.mat`
 (83 non-cast paths + the 99 cast `.fbx.meta` + 99 cast prefabs). New: `client/Assets/Scripts/World/Interaction/`
 (7 files + metas, + `Interaction.meta`), `client/Assets/Scripts/World/Avatars/Physicality/` (CharacterBody, Knockdown,
@@ -17,7 +126,7 @@ physical body, ragdoll falls, grounding IK, speed-matched gait". Do NOT commit `
 Verified: compile_check dev/editor/release 0 errors (only the pre-existing VenueVerify.cs warning); EditMode 940/940
 (31 InteractionTests + CastAnimatableTests); batchmode PlayMode capture `all` PASS, 0 T-posed actors.
 
-READY TO COMMIT (Priority 1 only, if merged before Priority 2; verified 2026-10-08 07:20): `client/Assets/Scripts/Editor/CastImport.cs`,
+Round 1, merged — was: READY TO COMMIT (Priority 1 only, if merged before Priority 2; verified 2026-10-08 07:20): `client/Assets/Scripts/Editor/CastImport.cs`,
 `client/Assets/Scripts/Editor/CastValidation.cs` (+`.meta`), `client/Assets/Scripts/Editor/CharacterFeelCapture.cs` (+`.meta`),
 `client/Assets/Scripts/Editor/ContentImport.cs`, `client/Assets/Scripts/Editor/BuildScript.cs`,
 `client/Assets/Scripts/Editor/CTLife.Editor.asmdef`, `client/Assets/Scripts/World/Avatars/AvatarFactory.cs`,

@@ -30,6 +30,8 @@ namespace CTLife.World
         public Vector3 Position { get; private set; }
         public Quaternion Rotation { get; private set; }
         public float Speed { get; private set; }
+        /// <summary>Seat fit offset (seat space) added to the model while presenting; AvatarView ramps it.</summary>
+        public Vector3 Offset { get; set; }
 
         private Vector3 _from, _to;
         private Quaternion _fromRot, _toRot;
@@ -128,7 +130,7 @@ namespace CTLife.World
         public void Apply()
         {
             if (!Active || _model == null) return;
-            _model.SetPositionAndRotation(Position, Rotation * _modelRotation);
+            _model.SetPositionAndRotation(Position + Rotation * Offset, Rotation * _modelRotation);
             if (_head != null) _head.position = Position + Rotation * _headLocal;
             if (_voice != null) _voice.position = Position + Rotation * _voiceLocal;
             if (_shadow != null) _shadow.SetPositionAndRotation(Position + Rotation * _shadowLocal, Rotation * _shadowRotation);
