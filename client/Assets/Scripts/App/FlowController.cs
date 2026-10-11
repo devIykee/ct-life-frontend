@@ -459,6 +459,9 @@ namespace CTLife.App
                         draft.tribeId, draft.ageConfirmed));
                     await game.Wait(Services.Get<PlayerProfile>().Refresh(game.Token));
                     if (!Owns(game, screen)) return;
+                    // The milestone beat (onboarding redesign): "Welcome to CT" until the player taps ENTER THE CITY.
+                    await game.Wait(screen.Celebrate());
+                    if (!Owns(game, screen)) return;
                     CloseFlow(screen);
                     tcs.TrySetResult(true);
                 }

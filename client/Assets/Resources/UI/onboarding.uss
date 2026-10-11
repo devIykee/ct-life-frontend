@@ -1,0 +1,203 @@
+/* First-time flow (LotteryScreen, CharacterCreatorScreen), redesign 2026-10-08. Spec: docs/research/duolingo-design-teardown.md.
+   Layout for the 2400 x 1080-unit landscape panel (Seeker 2670 x 1200). Content box: 72 units in from the sides (the safe
+   margin), 22 from the top, 30 from the bottom, so 2256 x 1028. Zones: the character on the left, one question and its
+   choices on the right, the CTA always bottom-right with its hint above it, the back button and progress bar on top.
+   Text sits straight on the blurred painting: cream Lilita with a thick plum outline and a drop, never a plate. */
+
+.ob-screen { background-color: rgba(0, 0, 0, 0); overflow: visible; }
+.ob-bg { position: absolute; left: 0; top: 0; right: 0; bottom: 0; -unity-background-scale-mode: scale-and-crop; }
+.ob-content { position: absolute; left: 72px; right: 72px; top: 22px; bottom: 30px; }
+.ob-overlay { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+
+.ob-topbar { position: absolute; left: 72px; right: 72px; top: 22px; height: 140px; flex-direction: row; align-items: center; }
+.ob-topbar > .kit-progress { margin-left: 40px; margin-top: -8px; }
+
+.ob-cta-zone { position: absolute; right: 72px; bottom: 30px; align-items: flex-end; }
+.ob-cta-zone--hidden { display: none; }
+.ob-hint {
+    display: none; margin: 0 6px 10px 0; padding: 0;
+    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 42px; -unity-text-align: middle-right; white-space: nowrap;
+    color: rgb(255, 246, 228); -unity-text-outline-width: 3px; -unity-text-outline-color: rgb(58, 20, 64);
+    text-shadow: 0 3px 4px rgba(26, 8, 32, 0.85);
+}
+.ob-hint--on { display: flex; }
+
+/* ------------------------------------------------------------------ type on the painting */
+
+.ob-eyebrow, .ob-title, .ob-sub, .ob-line, .ob-note, .ob-result-name, .ob-result-home, .ob-look-name, .ob-look-count,
+.ob-drag-hint, .ob-alias-status, .ob-celebrate-title, .ob-celebrate-sub, .ob-card-odds, .ob-card-fallback {
+    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); color: rgb(255, 246, 228); margin: 0; padding: 0;
+    -unity-text-outline-color: rgb(58, 20, 64); white-space: normal;
+}
+.ob-eyebrow { font-size: 40px; letter-spacing: 4px; -unity-text-outline-width: 3px; text-shadow: 0 3px 4px rgba(26, 8, 32, 0.85); }
+.ob-title { font-size: 84px; -unity-text-outline-width: 5px; text-shadow: 0 6px 1px rgb(58, 20, 64); }
+.ob-sub { font-size: 44px; -unity-text-outline-width: 3px; text-shadow: 0 3px 4px rgba(26, 8, 32, 0.85); margin-left: 28px; flex-shrink: 1; }
+.ob-line { font-size: 50px; -unity-text-outline-width: 4px; text-shadow: 0 4px 3px rgba(26, 8, 32, 0.85); margin-top: 14px; }
+.ob-note { font-size: 40px; -unity-text-outline-width: 3px; text-shadow: 0 3px 4px rgba(26, 8, 32, 0.85); }
+.ob-error {
+    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 44px; white-space: normal; margin: 18px 0 0 0;
+    color: rgb(255, 216, 216); -unity-text-outline-width: 4px; -unity-text-outline-color: rgb(110, 12, 36);
+    text-shadow: 0 3px 4px rgba(26, 8, 32, 0.85);
+}
+
+/* ------------------------------------------------------------------ lottery */
+
+.ob-lottery-left { position: absolute; left: 0; top: 190px; width: 960px; bottom: 90px; }
+.ob-lottery-table { position: absolute; left: 1000px; right: 0; top: 150px; height: 760px; }
+.ob-lottery .ob-title { margin-top: 6px; }
+.ob-lottery-intro > .ob-line { max-width: 640px; }
+.ob-lottery-result { flex-direction: column; align-items: flex-start; }
+.ob-result-name { font-size: 88px; -unity-text-outline-width: 5px; text-shadow: 0 6px 1px rgb(58, 20, 64); }
+.ob-result-cash {
+    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 124px; margin: 6px 0 0 0; padding: 0;
+    color: rgb(255, 212, 84); -unity-text-outline-width: 6px; -unity-text-outline-color: rgb(58, 20, 64);
+    text-shadow: 0 7px 1px rgb(58, 20, 64);
+}
+.ob-result-home { font-size: 54px; -unity-text-outline-width: 4px; text-shadow: 0 4px 3px rgba(26, 8, 32, 0.85); }
+.ob-debt-tag {
+    flex-direction: row; align-self: flex-start; margin-top: 22px; padding: 10px 30px 14px 30px;
+    background-color: rgb(255, 162, 76); border-width: 5px; border-color: rgb(58, 20, 64); border-radius: 34px;
+}
+.ob-debt-text { -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 48px; color: rgb(58, 20, 64); margin: 0; padding: 0; }
+.ob-line--second { margin-top: 28px; max-width: 900px; }
+.ob-lottery > .ob-content > .ob-note { position: absolute; left: 0; bottom: 0; }
+
+.ob-card { position: absolute; top: 40px; transition-property: scale; transition-duration: 0.12s; transition-timing-function: ease-out; }
+.ob-card--hot { scale: 1.05 1.05; }
+.ob-card-glow {
+    position: absolute; left: -240px; right: -240px; top: -240px; bottom: -240px; opacity: 0;
+    -unity-background-scale-mode: stretch-to-fill; -unity-background-image-tint-color: rgb(255, 206, 72);
+    transition-property: opacity; transition-duration: 0.1s;
+}
+.ob-card--hot > .ob-card-glow { opacity: 1; }
+.ob-card--face > .ob-card-glow { opacity: 0.9; }
+.ob-card-art { flex-grow: 1; -unity-background-scale-mode: scale-to-fit; align-items: center; justify-content: center; }
+.ob-card-art--plain {
+    background-color: rgb(110, 58, 170); border-width: 12px; border-color: rgb(58, 20, 64); border-radius: 46px;
+}
+.ob-card-fallback { font-size: 60px; -unity-text-align: middle-center; -unity-text-outline-width: 5px; padding: 0 30px; }
+.ob-card-odds {
+    position: absolute; left: -40px; right: -40px; bottom: -70px; font-size: 42px; -unity-text-align: middle-center;
+    -unity-text-outline-width: 3px; text-shadow: 0 3px 4px rgba(26, 8, 32, 0.85);
+}
+
+/* ------------------------------------------------------------------ creator: the character */
+
+.ob-dim { position: absolute; left: -200px; right: -200px; top: -200px; bottom: -200px; background-color: rgba(30, 10, 40, 0); }
+
+.ob-stage {
+    position: absolute; left: 0; top: 330px; width: 520px; height: 698px;
+    transition-property: left, top, width, height; transition-duration: 0.36s; transition-timing-function: ease-out-cubic;
+}
+.ob-mode-look .ob-stage { left: 200px; top: 150px; width: 760px; height: 770px; }
+.ob-screen.ob-typing .ob-stage { left: 0; top: 0; width: 340px; height: 330px; }
+.ob-screen.ob-mode-celebrate .ob-stage { left: 760px; top: 330px; width: 736px; height: 698px; }
+.ob-stage-glow {
+    position: absolute; left: -40%; right: -40%; top: -16%; bottom: -6%; opacity: 0.75;
+    -unity-background-scale-mode: stretch-to-fill; -unity-background-image-tint-color: rgb(255, 238, 196);
+}
+.ob-stage-shadow {
+    position: absolute; left: 30%; right: 30%; bottom: 3%; height: 5%; border-radius: 40px;
+    background-color: rgba(58, 20, 64, 0.42);
+}
+.ob-stage--face .ob-stage-shadow, .ob-typing .ob-stage-shadow { display: none; }
+.ob-stage-model { position: absolute; left: 0; top: 0; right: 0; bottom: 0; -unity-background-scale-mode: scale-to-fit; }
+.ob-drag-hint {
+    position: absolute; left: 0; right: 0; bottom: -6px; font-size: 40px; -unity-text-align: middle-center;
+    -unity-text-outline-width: 3px; text-shadow: 0 3px 4px rgba(26, 8, 32, 0.85);
+}
+.ob-mode-side .ob-drag-hint { display: none; }
+.ob-stage-missing { position: absolute; left: 0; right: 0; top: 40%; align-items: center; }
+
+.ob-bubble { left: 0; top: 150px; max-width: 520px; }
+.ob-mode-side .ob-bubble .kit-bubble__tail--bottom-left { left: 190px; }
+.ob-mode-look .ob-bubble { left: 700px; top: 110px; max-width: 560px; }
+.ob-screen.ob-mode-celebrate .ob-bubble { left: 1250px; top: 380px; max-width: 560px; }
+.ob-typing .ob-bubble { display: none; }
+
+/* Look step: big painted arrows either side, the look's name underneath. */
+.ob-look-controls { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+.ob-arrow { position: absolute; top: 460px; }
+.ob-arrow--prev { left: 110px; }
+.ob-arrow--next { left: 900px; }
+.ob-look-label { position: absolute; left: 200px; width: 760px; top: 930px; flex-direction: row; justify-content: center; align-items: center; }
+.ob-look-name { font-size: 66px; -unity-text-outline-width: 5px; text-shadow: 0 5px 1px rgb(58, 20, 64); white-space: nowrap; }
+.ob-look-count { font-size: 42px; -unity-text-outline-width: 3px; margin-left: 22px; white-space: nowrap; }
+.ob-tag {
+    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 38px; color: rgb(58, 20, 64); margin: 0 0 0 22px;
+    padding: 4px 16px 6px 16px; background-color: rgb(255, 212, 84); border-width: 4px; border-color: rgb(58, 20, 64); border-radius: 18px;
+}
+
+/* ------------------------------------------------------------------ creator: the question */
+
+.ob-right { position: absolute; left: 560px; right: 0; top: 160px; bottom: 0; }
+.ob-mode-look .ob-right { left: 1320px; }
+.ob-screen.ob-typing .ob-right { left: 380px; top: 0; }
+.ob-page { flex-direction: column; }
+.ob-title-row { flex-direction: row; align-items: flex-end; margin-bottom: 12px; }
+.ob-title-row > .ob-sub { margin-bottom: 10px; }
+.ob-mode-look .ob-title-row { flex-direction: column; align-items: flex-start; }
+.ob-mode-look .ob-title-row > .ob-sub { margin: 10px 0 0 0; }
+.ob-typing .ob-title-row { display: none; }
+
+.ob-seg-row { flex-direction: row; margin-top: 40px; }
+.ob-seg { margin-right: 22px; }
+.ob-seg.kit-btn--purple:enabled > .kit-btn__face { background-image: none; background-color: rgb(255, 246, 228); border-width: 6px; border-color: rgb(58, 20, 64); border-radius: 34px; }
+.ob-seg.kit-btn--purple > .kit-btn__lip { background-color: rgb(120, 86, 124); }
+.ob-seg .kit-btn__label { color: rgb(58, 20, 64); -unity-text-outline-width: 0; text-shadow: 0 0 0 rgba(0, 0, 0, 0); }
+.ob-seg.ob-seg--on.kit-btn--purple > .kit-btn__face { background-image: url("Title/btn-purple-blank-sq.png"); background-color: rgba(0, 0, 0, 0); border-width: 0; }
+.ob-seg.ob-seg--on.kit-btn--purple > .kit-btn__lip { background-color: rgb(52, 22, 84); }
+.ob-seg.ob-seg--on .kit-btn__label { color: rgb(255, 246, 228); -unity-text-outline-width: 3px; text-shadow: 0 3px 1px rgb(58, 20, 64); }
+
+.ob-dots { flex-direction: row; margin: 0 0 18px 26px; }
+.ob-dot { width: 44px; height: 44px; border-radius: 22px; margin-right: 12px; border-width: 5px; border-color: rgb(58, 20, 64); background-color: rgba(255, 246, 228, 0.55); }
+.ob-dot--on { background-color: rgb(92, 196, 74); }
+
+.ob-tribe-card .kit-card__badge { width: 108px; height: 108px; }
+.ob-tribe-card > .kit-card__face { padding-top: 14px; padding-bottom: 8px; }
+.ob-tribe-card .kit-card__title { font-size: 46px; margin-top: 4px; }
+.ob-dream-card > .kit-card__face { padding-top: 10px; padding-bottom: 10px; }
+.ob-dream-card .kit-card__title { font-size: 44px; }
+
+/* Name: one big field. While typing, the field and the character's face move into the strip above the keyboard. */
+.ob-field-row { flex-direction: row; align-items: center; margin-top: 20px; }
+.ob-field { flex-grow: 1; max-width: 1180px; height: 150px; margin: 0; }
+.ob-field > .unity-base-text-field__input {
+    margin: 0; padding: 0 40px; border-width: 6px; border-bottom-width: 14px; border-color: rgb(58, 20, 64); border-radius: 34px;
+    background-color: rgb(255, 246, 228); color: rgb(58, 20, 64);
+    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 72px; -unity-text-align: middle-left;
+}
+.ob-field--ok > .unity-base-text-field__input { border-color: rgb(46, 128, 44); }
+.ob-field .unity-base-text-field__input--placeholder { color: rgba(58, 20, 64, 0.45); }
+.ob-done { margin-left: 24px; display: none; }
+.ob-typing .ob-done { display: flex; }
+.ob-alias-status { font-size: 46px; -unity-text-outline-width: 3px; text-shadow: 0 3px 4px rgba(26, 8, 32, 0.85); margin-top: 22px; }
+.ob-alias-status--ok { color: rgb(204, 255, 170); }
+.ob-alias-status--warn { color: rgb(255, 214, 140); }
+.ob-typing .ob-topbar, .ob-typing .ob-cta-zone, .ob-typing .ob-creator-error { display: none; }
+.ob-typing .ob-field-row { margin-top: 0; }
+.ob-typing .ob-alias-status { margin-top: 14px; }
+
+/* Confirm: the summary chips (tap to change), the 18+ toggle card with its label, the money line. */
+.ob-summary { margin-top: 4px; }
+.ob-summary-card > .kit-card__face { padding: 8px 18px; }
+.ob-summary-card .kit-card__disc { width: 88px; height: 88px; border-radius: 44px; }
+.ob-summary-card .kit-card__icon { width: 48px; height: 48px; }
+.ob-summary-card .kit-card__badge { width: 96px; height: 96px; }
+.ob-summary-card .kit-card__title { font-size: 42px; }
+.ob-summary-card .kit-card__caption { font-size: 38px; }
+.ob-summary-card .kit-card__sub { font-size: 38px; }
+.ob-origin-host > .kit-card { flex-grow: 1; }
+.ob-origin-card .kit-card__badge { width: 92px; height: 120px; }
+.ob-age-card { width: 49%; height: 160px; margin-top: 18px; }
+.ob-age-card .kit-card__title { font-size: 50px; }
+.ob-note--inline { margin-top: 34px; }
+.ob-creator-error { position: absolute; left: 560px; right: 520px; bottom: 6px; }
+
+/* Celebration. */
+.ob-celebrate { position: absolute; left: 0; top: 0; right: 0; bottom: 0; align-items: center; }
+.ob-celebrate-title { margin-top: 186px; font-size: 104px; -unity-text-outline-width: 6px; text-shadow: 0 7px 1px rgb(58, 20, 64); -unity-text-align: upper-center; }
+.ob-celebrate-sub { margin-top: 6px; font-size: 50px; -unity-text-outline-width: 4px; text-shadow: 0 4px 3px rgba(26, 8, 32, 0.85); }
+.ob-enter-city { position: absolute; right: 72px; bottom: 30px; }
+.ob-mode-celebrate .ob-look-controls, .ob-mode-celebrate .ob-right, .ob-mode-celebrate .ob-creator-error { display: none; }
+.ob-cta-blocker { position: absolute; left: 0; right: 0; bottom: 0; height: 150px; }
