@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json.Linq;
@@ -131,6 +132,60 @@ namespace CTLife.WorldLife.Tests
             Assert.IsFalse(LiveAds.IsPngOrJpeg(new byte[] { (byte)'<', (byte)'h', (byte)'t', (byte)'m', (byte)'l', 0, 0, 0, 0 }));
             Assert.IsFalse(LiveAds.IsPngOrJpeg(null));
         }
+
+        private static byte[] Png(uint w, uint h) => new byte[]
+        {
+            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0, 0, 0, 13, (byte)'I', (byte)'H', (byte)'D', (byte)'R',
+            (byte)(w >> 24), (byte)(w >> 16), (byte)(w >> 8), (byte)w, (byte)(h >> 24), (byte)(h >> 16), (byte)(h >> 8), (byte)h,
+            8, 6, 0, 0, 0,
+        };
+
+        // SOI, APP0 (JFIF, 16 bytes), optional fill byte, SOF2 (progressive) 8-bit 3 components.
+        private static byte[] Jpeg(int w, int h, bool fill = false)
+        {
+            var b = new List<byte> { 0xFF, 0xD8, 0xFF, 0xE0, 0, 16, (byte)'J', (byte)'F', (byte)'I', (byte)'F', 0, 1, 1, 0, 0, 1, 0, 1, 0, 0 };
+            if (fill) b.Add(0xFF);
+            b.AddRange(new byte[] { 0xFF, 0xC2, 0, 17, 8, (byte)(h >> 8), (byte)h, (byte)(w >> 8), (byte)w, 3, 1, 0x22, 0, 2, 0x11, 1, 3, 0x11, 1 });
+            b.AddRange(new byte[] { 0xFF, 0xDA, 0, 8, 1, 1, 0, 0, 0x3F, 0 });
+            return b.ToArray();
+        }
+
+        [Test]
+        public void ReadsDeclaredSizeWithoutDecoding()
+        {
+            Assert.IsTrue(LiveAds.TryReadImageSize(Png(1200, 628), out int w, out int h));
+            Assert.AreEqual((1200, 628), (w, h));
+            Assert.IsTrue(LiveAds.TryReadImageSize(Jpeg(1080, 1920), out w, out h));
+            Assert.AreEqual((1080, 1920), (w, h));
+            Assert.IsTrue(LiveAds.TryReadImageSize(Jpeg(640, 480, fill: true), out w, out h));
+            Assert.AreEqual((640, 480), (w, h));
+        }
+
+        [Test]
+        public void RejectsMalformedHeaders()
+        {
+            Assert.IsFalse(LiveAds.TryReadImageSize(null, out _, out _));
+            Assert.IsFalse(LiveAds.TryReadImageSize(Png(0x80000000, 10), out _, out _), "negative width");
+            Assert.IsFalse(LiveAds.TryReadImageSize(Png(0, 10), out _, out _));
+            var noIhdr = Png(10, 10); noIhdr[12] = (byte)'X';
+            Assert.IsFalse(LiveAds.TryReadImageSize(noIhdr, out _, out _));
+            Assert.IsFalse(LiveAds.TryReadImageSize(Jpeg(640, 0), out _, out _), "DNL-deferred height");
+            var scanFirst = new List<byte> { 0xFF, 0xD8, 0xFF, 0xDA, 0, 8 }; scanFirst.AddRange(new byte[24]);
+            Assert.IsFalse(LiveAds.TryReadImageSize(scanFirst.ToArray(), out _, out _));
+            var truncated = Jpeg(640, 480); Array.Resize(ref truncated, 26);
+            Assert.IsFalse(LiveAds.TryReadImageSize(truncated, out _, out _));
+            var zeroLen = Jpeg(640, 480); zeroLen[5] = 0;
+            Assert.IsFalse(LiveAds.TryReadImageSize(zeroLen, out _, out _));
+        }
+
+        [TestCase(1024, 1024, true)]
+        [TestCase(4096, 2048, true)]
+        [TestCase(4097, 16, false)]
+        [TestCase(16, 4097, false)]
+        [TestCase(4096, 4096, false)]
+        [TestCase(30000, 30000, false)]
+        [TestCase(0, 10, false)]
+        public void DecodeSizeCap(int w, int h, bool ok) => Assert.AreEqual(ok, LiveAds.IsDecodeSizeOk(w, h));
 
         [TestCase(0, 60f)]
         [TestCase(1, 60f)]

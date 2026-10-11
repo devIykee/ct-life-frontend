@@ -11,12 +11,17 @@ namespace CTLife.WorldLife
     /// Downloads ad creatives (PNG/JPEG, contract cap 1 MB) into non-readable GPU textures, at most 1024 px on the long
     /// side (larger images are blitted down and the original freed), inside a fixed byte budget with LRU eviction.
     /// Textures on screen are pinned. Failed URLs are not retried for 10 minutes. One download at a time.
+    /// Hostile creatives are bounded at every step: the body is read into a fixed buffer that aborts past
+    /// <see cref="MaxBytes"/> (Content-Length or streamed), the declared size is read from the header and capped
+    /// (<see cref="LiveAds.IsDecodeSizeOk"/>) before LoadImage allocates, and the queue and failure list are capped.
     /// </summary>
     public sealed class AdImageCache : IDisposable
     {
         public const long BudgetBytes = 16L * 1024 * 1024;
         public const int MaxBytes = 1_536_000;
         public const int MaxSide = 1024;
+        public const int MaxQueued = 32;
+        public const int MaxFailed = 256;
         private const float FailRetrySeconds = 600f;
 
         private readonly TextureBudget<Texture> _budget = new TextureBudget<Texture>(BudgetBytes);
@@ -24,6 +29,8 @@ namespace CTLife.WorldLife
         private readonly Queue<string> _queue = new Queue<string>();
         private readonly HashSet<string> _queued = new HashSet<string>(StringComparer.Ordinal);
         private readonly List<Texture> _evicted = new List<Texture>();
+        private readonly List<string> _expired = new List<string>();
+        private readonly byte[] _body = new byte[MaxBytes];
         private bool _running;
         private bool _disposed;
 
@@ -36,6 +43,7 @@ namespace CTLife.WorldLife
         {
             if (_disposed || string.IsNullOrEmpty(url) || _queued.Contains(url) || TryGet(url, out _)) return;
             if (_failedUntil.TryGetValue(url, out var until) && Time.unscaledTime < until) return;
+            if (_queue.Count >= MaxQueued) return; // surfaces re-request when they rotate; house ads cover the gap
             _queue.Enqueue(url);
             _queued.Add(url);
             if (!_running) Runner.Run(Pump());
@@ -58,35 +66,47 @@ namespace CTLife.WorldLife
 
         private IEnumerator Download(string url)
         {
-            using (var req = UnityWebRequest.Get(url))
+            var body = new CappedBody(_body);
+            using (var req = new UnityWebRequest(url, UnityWebRequest.kHttpVerbGET, body, null))
             {
                 req.timeout = 20;
                 req.redirectLimit = 2;
                 var op = req.SendWebRequest();
                 while (!op.isDone)
                 {
-                    if (_disposed || req.downloadedBytes > (ulong)MaxBytes) { req.Abort(); break; }
+                    if (_disposed || body.Overflow) { req.Abort(); break; }
                     yield return null;
                 }
                 if (_disposed) yield break;
-                var bytes = req.result == UnityWebRequest.Result.Success ? req.downloadHandler?.data : null;
-                if (bytes == null || bytes.Length == 0 || bytes.Length > MaxBytes || !LiveAds.IsPngOrJpeg(bytes))
+                if (body.Overflow)
+                {
+                    Fail(url, "over " + MaxBytes + " bytes");
+                    yield break;
+                }
+                var bytes = req.result == UnityWebRequest.Result.Success ? body.Copy() : null;
+                if (bytes == null || bytes.Length == 0 || !LiveAds.IsPngOrJpeg(bytes))
                 {
                     Fail(url, req.result + " " + req.responseCode + (bytes != null ? " bytes=" + bytes.Length : ""));
                     yield break;
                 }
-                var tex = new Texture2D(2, 2, TextureFormat.RGBA32, true) { name = "ad_creative", wrapMode = TextureWrapMode.Clamp };
-                if (!tex.LoadImage(bytes, true))
+                if (!LiveAds.TryReadImageSize(bytes, out int w, out int h) || !LiveAds.IsDecodeSizeOk(w, h))
+                {
+                    Fail(url, "declared size " + w + "x" + h);
+                    yield break;
+                }
+                bool keepOriginal = w <= MaxSide && h <= MaxSide;
+                var tex = new Texture2D(2, 2, TextureFormat.RGBA32, keepOriginal) { name = "ad_creative", wrapMode = TextureWrapMode.Clamp };
+                if (!tex.LoadImage(bytes, true) || tex.width != w || tex.height != h)
                 {
                     UnityEngine.Object.Destroy(tex);
                     Fail(url, "decode");
                     yield break;
                 }
                 Texture shown = tex;
-                if (tex.width > MaxSide || tex.height > MaxSide)
+                if (!keepOriginal)
                 {
-                    float k = (float)MaxSide / Mathf.Max(tex.width, tex.height);
-                    var rt = new RenderTexture(Mathf.Max(1, (int)(tex.width * k)), Mathf.Max(1, (int)(tex.height * k)), 0,
+                    float k = (float)MaxSide / Mathf.Max(w, h);
+                    var rt = new RenderTexture(Mathf.Max(1, (int)(w * k)), Mathf.Max(1, (int)(h * k)), 0,
                         RenderTextureFormat.ARGB32, RenderTextureReadWrite.sRGB) { name = "ad_creative_scaled" };
                     rt.Create();
                     Graphics.Blit(tex, rt);
@@ -109,6 +129,14 @@ namespace CTLife.WorldLife
 
         private void Fail(string url, string why)
         {
+            if (_failedUntil.Count >= MaxFailed)
+            {
+                float now = Time.unscaledTime;
+                _expired.Clear();
+                foreach (var kv in _failedUntil) if (kv.Value <= now) _expired.Add(kv.Key);
+                foreach (var k in _expired) _failedUntil.Remove(k);
+                if (_failedUntil.Count >= MaxFailed) _failedUntil.Clear();
+            }
             _failedUntil[url] = Time.unscaledTime + FailRetrySeconds;
             Log.Warn("world-life", "Ad creative unavailable (" + why + "); house ad shown instead.");
         }
@@ -130,6 +158,42 @@ namespace CTLife.WorldLife
             _evicted.Clear();
             _queue.Clear();
             _queued.Clear();
+            _failedUntil.Clear();
+        }
+
+        /// <summary>
+        /// Copies the response into the cache's fixed <see cref="MaxBytes"/> buffer. Aborts the request (by returning
+        /// false) once the Content-Length header or the streamed body would exceed it, so memory never grows with the
+        /// server's response.
+        /// </summary>
+        private sealed class CappedBody : DownloadHandlerScript
+        {
+            private readonly byte[] _buf;
+            private int _len;
+            public bool Overflow { get; private set; }
+
+            public CappedBody(byte[] buffer) : base(new byte[16 * 1024]) { _buf = buffer; }
+
+            protected override void ReceiveContentLengthHeader(ulong contentLength)
+            {
+                if (contentLength > (ulong)_buf.Length) Overflow = true;
+            }
+
+            protected override bool ReceiveData(byte[] data, int dataLength)
+            {
+                if (Overflow || data == null || dataLength < 0) return false;
+                if (dataLength > _buf.Length - _len) { Overflow = true; return false; }
+                Buffer.BlockCopy(data, 0, _buf, _len, dataLength);
+                _len += dataLength;
+                return true;
+            }
+
+            public byte[] Copy()
+            {
+                var r = new byte[_len];
+                Buffer.BlockCopy(_buf, 0, r, 0, _len);
+                return r;
+            }
         }
     }
 }

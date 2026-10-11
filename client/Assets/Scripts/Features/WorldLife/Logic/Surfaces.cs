@@ -161,6 +161,55 @@ namespace CTLife.WorldLife
         public static bool IsPngOrJpeg(byte[] b) =>
             b != null && b.Length > 8 && (b[0] == 0x89 && b[1] == 0x50 && b[2] == 0x4E && b[3] == 0x47 || b[0] == 0xFF && b[1] == 0xD8 && b[2] == 0xFF);
 
+        /// <summary>
+        /// Largest creative we decode. The 1 MB byte cap does not bound decoded size: a small PNG can declare
+        /// 30000×30000 and make LoadImage allocate gigabytes. 8 Mpx is 32 MB as RGBA32.
+        /// </summary>
+        public const int MaxDecodeSide = 4096;
+        public const long MaxDecodePixels = 8L * 1024 * 1024;
+
+        public static bool IsDecodeSizeOk(int width, int height) =>
+            width > 0 && height > 0 && width <= MaxDecodeSide && height <= MaxDecodeSide && (long)width * height <= MaxDecodePixels;
+
+        /// <summary>
+        /// Declared width and height from the PNG IHDR chunk or the first JPEG SOFn frame header, without decoding
+        /// pixels. False when the header is missing, truncated or malformed (the caller then rejects the creative).
+        /// </summary>
+        public static bool TryReadImageSize(byte[] b, out int width, out int height)
+        {
+            width = height = 0;
+            if (b == null || b.Length < 24) return false;
+            if (b[0] == 0x89 && b[1] == 0x50 && b[2] == 0x4E && b[3] == 0x47)
+            {
+                // 8-byte signature, then IHDR: length (4), "IHDR" (4), width (4), height (4), all big-endian.
+                if (b[12] != (byte)'I' || b[13] != (byte)'H' || b[14] != (byte)'D' || b[15] != (byte)'R') return false;
+                width = b[16] << 24 | b[17] << 16 | b[18] << 8 | b[19];
+                height = b[20] << 24 | b[21] << 16 | b[22] << 8 | b[23];
+                return width > 0 && height > 0;
+            }
+            if (b[0] != 0xFF || b[1] != 0xD8) return false;
+            int i = 2;
+            while (i + 3 < b.Length)
+            {
+                if (b[i] != 0xFF) return false;
+                byte m = b[i + 1];
+                if (m == 0xFF) { i++; continue; }                                       // fill byte
+                if (m == 0x01 || m >= 0xD0 && m <= 0xD8) { i += 2; continue; }          // TEM, RSTn, SOI: no length
+                if (m == 0xD9 || m == 0xDA) return false;                               // EOI or scan data before a frame
+                int len = b[i + 2] << 8 | b[i + 3];
+                if (len < 2) return false;
+                if (m >= 0xC0 && m <= 0xCF && m != 0xC4 && m != 0xC8 && m != 0xCC)     // SOFn (not DHT, JPG, DAC)
+                {
+                    if (len < 7 || i + 8 >= b.Length) return false;
+                    height = b[i + 5] << 8 | b[i + 6];
+                    width = b[i + 7] << 8 | b[i + 8];
+                    return width > 0 && height > 0;
+                }
+                i += 2 + len;
+            }
+            return false;
+        }
+
         public static bool IsSafeId(string id)
         {
             if (string.IsNullOrEmpty(id) || id.Length > 64) return false;
