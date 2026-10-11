@@ -76,6 +76,27 @@ namespace CTLife.UI.Map
             _atlas = b != null ? ParseAtlas(b.text) : new MapAtlas { Min = new Vector2(-300, -300), Size = new Vector2(600, 600) };
         }
 
+        /// <summary>
+        /// Warm every map texture in the background (Resources.LoadAsync), so the first full-map open does not load ~25
+        /// textures in one frame (the Seeker showed one 12 fps window without it). Safe to call more than once.
+        /// </summary>
+        public static void Preload()
+        {
+            if (_preloading) return;
+            _preloading = true;
+            var paths = new List<string> { Atlas.Texture };
+            foreach (var a in Areas.Values) paths.Add(a.Texture);
+            foreach (var path in paths)
+            {
+                if (string.IsNullOrEmpty(path) || Textures.ContainsKey(path)) continue;
+                var p = path;
+                var req = Resources.LoadAsync<Texture2D>(p);
+                req.completed += _ => { if (req.asset is Texture2D t && !Textures.ContainsKey(p)) Textures[p] = t; };
+            }
+        }
+
+        private static bool _preloading;
+
         public static Texture2D Texture(string path)
         {
             if (string.IsNullOrEmpty(path)) return null;

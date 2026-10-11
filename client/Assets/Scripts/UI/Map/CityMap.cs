@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using CTLife.Core;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace CTLife.UI.Map
@@ -9,6 +10,7 @@ namespace CTLife.UI.Map
     public static class CityMap
     {
         public static FullMapView Current { get; private set; }
+        private static Camera _world;
 
         public static FullMapView Show(VisualElement layer, Action<string> travel, Action openHome, Func<HashSet<string>> available, Action closed)
         {
@@ -21,6 +23,9 @@ namespace CTLife.UI.Map
             host.Add(view);
             layer.Add(host);
             Current = view;
+            // The map is opaque and full-screen: stop drawing the 3D city under it (the Seeker held 30 fps with both).
+            _world = CTLife.World.CameraRig.Instance != null ? CTLife.World.CameraRig.Instance.Camera : null;
+            if (_world != null && _world.enabled) _world.enabled = false; else _world = null;
             return view;
         }
 
@@ -29,6 +34,8 @@ namespace CTLife.UI.Map
             if (Current == null) return;
             Current.parent?.RemoveFromHierarchy();
             Current = null;
+            if (_world != null) _world.enabled = true;
+            _world = null;
         }
 
         /// <summary>Venues that can be travelled to in this phase (shipped content), for hosts outside the UI assembly.</summary>

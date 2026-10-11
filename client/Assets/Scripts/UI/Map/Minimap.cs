@@ -67,7 +67,7 @@ namespace CTLife.UI.Map
             _north.AddToClassList("map-mini-north");
             Add(_north);
             RegisterCallback<ClickEvent>(_ => OpenFull?.Invoke());
-            RegisterCallback<AttachToPanelEvent>(_ => { _tick ??= schedule.Execute(Tick).Every(0); });
+            RegisterCallback<AttachToPanelEvent>(_ => { _tick ??= schedule.Execute(Tick).Every(0); schedule.Execute(MapCatalog.Preload).StartingIn(2500); });
             focusable = true;
             tooltip = Strings.T("hud.map");
         }

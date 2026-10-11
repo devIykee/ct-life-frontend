@@ -24,6 +24,8 @@
     background-color: rgb(255,255,255); border-width: 4px; border-color: rgb(42,11,74);
     -unity-background-scale-mode: scale-to-fit; padding: 0;
 }
+.map-marker--desk, .map-marker--mic { width: 30px; height: 30px; border-radius: 15px; border-width: 3px; opacity: 0.85; translate: 7px 7px; }
+.map-full .map-marker--desk, .map-full .map-marker--mic { translate: 0 0; }
 .map-marker--player, .map-marker--friend { width: 22px; height: 22px; border-radius: 11px; border-width: 3px; background-color: rgb(255,255,255); translate: 11px 11px; }
 .map-marker--friend { background-color: rgb(255,210,63); }
 .map-edge-arrow {
@@ -34,7 +36,7 @@
 
 /* ---------------------------------------------------------------- full map */
 .map-full { flex-grow: 1; position: absolute; left: 0; top: 0; right: 0; bottom: 0; overflow: hidden; background-color: rgb(63,143,198); }
-.map-viewport { position: absolute; left: 0; top: 0; right: 0; bottom: 0; overflow: hidden; }
+.map-viewport { position: absolute; left: 0; top: 0; right: 0; bottom: 0; overflow: hidden; background-color: rgb(63,143,198); }
 .map-full-me { position: absolute; left: 0; top: 0; width: 0; height: 0; overflow: visible; }
 .map-full-me-pulse {
     position: absolute; left: -36px; top: -36px; width: 72px; height: 72px; border-radius: 36px;
@@ -78,7 +80,7 @@
     background-color: rgba(255,255,255,0.86); border-color: rgba(255,255,255,0.95);
 }
 .map-control--arena, .map-control--arena:hover, .map-control--arena:active, .map-control--arena:focus {
-    background-color: rgba(20,6,44,0.86); border-color: rgb(42,11,74);
+    background-color: rgb(34,14,64); border-color: rgb(42,11,74);
 }
 .map-control:active { scale: 0.94 0.94; }
 .map-control-icon { width: 48px; height: 48px; -unity-background-scale-mode: scale-to-fit; }
@@ -133,7 +135,8 @@
 .duo-map-app .map-top { padding-left: 120px; padding-right: 120px; }
 
 /* In-city full-screen host. */
-.map-city-layer { position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: rgba(20,6,44,0.6); }
+.map-city-layer { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+.map-full--city { overflow: visible; }
 
 /* Inside the phone the viewport is narrow: a wider card and smaller type. */
 .map-full--duo .map-card { width: 92%; min-height: 120px; padding: 14px 16px 14px 18px; }

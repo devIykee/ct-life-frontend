@@ -27,7 +27,8 @@ namespace CTLife.UI.Map
         public const float Tilt = 0.5f;         // ~29 degrees
 
         private readonly Look _look;
-        private readonly VisualElement _viewport, _labels, _markers, _me, _meCone, _card, _railThumb, _rail, _results;
+        private readonly VisualElement _viewport, _labels, _markers, _me, _meCone, _card, _railThumb, _rail, _results, _side, _top;
+        private VisualElement _closeButton;
         private readonly MapSurface _surface;
         private MapView _view;
         private bool _ready;
@@ -74,6 +75,9 @@ namespace CTLife.UI.Map
             _viewport.Add(_me);
             _viewport.Add(_labels);
             Add(_viewport);
+            // In the city the map fills the whole screen: the painted island bleeds under the cutout like the lobby art,
+            // while the controls stay inside the safe area.
+            if (look == Look.City) SafeAreaBleed.Attach(this, _viewport);
 
             // Controls: zoom rail (ref 6) with + / -, recentre; the search (Duo) or title + close (city).
             var plus = Control("map-zoom-in", "+", () => ZoomBy(1.7f));
@@ -87,12 +91,12 @@ namespace CTLife.UI.Map
             var zoom = new VisualElement().With("map-zoom");
             zoom.Add(plus); zoom.Add(_rail); zoom.Add(minus);
             var recentre = Control("map-recentre", null, Recentre, "center-direction");
-            var side = new VisualElement { pickingMode = PickingMode.Ignore }.With("map-side");
+            var side = _side = new VisualElement { pickingMode = PickingMode.Ignore }.With("map-side");
             side.Add(zoom);
             side.Add(recentre);
             Add(side);
 
-            var top = new VisualElement { pickingMode = PickingMode.Ignore }.With("map-top");
+            var top = _top = new VisualElement { pickingMode = PickingMode.Ignore }.With("map-top");
             if (look == Look.Duo)
             {
                 var search = new DuoSearchField(Strings.T("map.search"), Search);
@@ -110,6 +114,7 @@ namespace CTLife.UI.Map
                 var close = Control("map-close", null, () => Close?.Invoke(), "multiply");
                 close.AddToClassList("map-close");
                 Add(close);
+                _closeButton = close;
             }
             Add(top);
 
@@ -224,6 +229,10 @@ namespace CTLife.UI.Map
             // Place pins, then declutter greedily by priority (districts, venues, reserved lots, doors): a label that would
             // overlap one already shown is hidden, so names never pile up.
             _shown.Clear();
+            // Controls and the card are occupied space: labels never slide under them.
+            foreach (var c in new[] { _side, _card, _closeButton, _top.childCount > 0 ? _top.ElementAt(0) : null })
+                if (c != null && c.resolvedStyle.display != DisplayStyle.None && c.worldBound.width > 1f)
+                    _shown.Add(new Rect(c.worldBound.position - _viewport.worldBound.position, c.worldBound.size));
             foreach (var pin in _pins.OrderBy(p => p.Priority))
             {
                 bool on = _view.PixelsPerMeter >= pin.Min && _view.PixelsPerMeter < pin.Max;
@@ -473,9 +482,10 @@ namespace CTLife.UI.Map
             close.Add(LobbyArt.Icon("multiply", "map-card-close-icon"));
             _card.Add(close);
             _card.style.display = DisplayStyle.Flex;
+            _card.schedule.Execute(ApplyView).StartingIn(30);
         }
 
-        public void HideCard() { _card.style.display = DisplayStyle.None; _selected = null; }
+        public void HideCard() { _card.style.display = DisplayStyle.None; _selected = null; if (_ready) ApplyView(); }
 
         // ------------------------------------------------------------------ search (Duo)
 
