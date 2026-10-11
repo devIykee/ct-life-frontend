@@ -159,6 +159,10 @@ namespace CTLife.EditorTools
                     await DuoSocialCapture.Run(Shot, Wait, Expect, Step, Receipt);
                     await DuoInteriorChipCapture.Run(Shot, Wait, Expect, Step, Receipt);
                 }
+                else if (Set == "titlev2")
+                {
+                    await TitleV2Capture.Run(Shot, Wait, Expect, Step, Receipt);
+                }
                 else if (Set == "duoios3")
                 {
                     await DuoIos3Capture.Run(Shot, Wait, Expect, Step, Receipt);

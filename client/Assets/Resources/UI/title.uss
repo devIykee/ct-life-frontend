@@ -1,71 +1,104 @@
-/* Title screen (SignInScreen), approved art direction 2026-10-08. Landscape, inside the safe area; the art bleeds to the edges.
-   Palette: white text rgb(255, 255, 255) (was cream until 2026-10-09: user direction) with a dark-plum outline rgb(58, 20, 64). */
+/* Title screen (SignInScreen), approved 2026-10-16: mock ct-life-evidence/title-keyart-20261016/blender/title-final-B-v3.png
+   (source compose.html, layout v3; 1 CSS px there = 2 device px on the 2670x1200 Seeker = 1.80 panel units, since the panel
+   is 2400 units wide). Values below are the mock's device px divided by 1.1125. */
 
-.ct-title { background-color: rgba(0, 0, 0, 0); overflow: visible; }
+.ct-title { background-color: rgb(20, 12, 30); overflow: hidden; }
 
 .ct-title-bg {
     position: absolute; left: 0; top: 0; right: 0; bottom: 0;
-    background-image: url("Title/title-bg.png");
-    -unity-background-scale-mode: scale-and-crop; /* cover, centred: 16:9 screens crop the sides */
-    transition-property: scale; transition-duration: 25s; transition-timing-function: ease-in-out;
+    background-image: url("Title/title-keyart-b.png");
+    /* Cover, centred. The two characters sit at ~22% and ~80% of the 2.22:1 art, so a 16:9 screen (crop 10% a side)
+       still frames both; a wider screen crops top and bottom only. */
+    -unity-background-scale-mode: scale-and-crop;
+    transition-property: scale; transition-duration: 20s; transition-timing-function: ease-in-out;
 }
-.ct-title-bg.ct-title-zoom { scale: 1.04 1.04; }
+.ct-title-bg.ct-title-zoom { scale: 1.015 1.015; } /* Ken Burns: 1.5% */
 
-/* The button sits fully on the open cobblestones of the lower third, ~4% of the screen height lower than v5 (user tweak;
-   3.7% exactly, so the gap holds through the button's ±5-unit idle bob). Seeker (2670x1200, 1.112 px per unit, 480 dpi =
-   3 px/dp): top edge ~970 px, well clear of the group's shoes (905-915 px across the Ken Burns drift), and at least 16 px
-   between the button rim and the legal line pinned at the bottom (measured across the bob on the device).
-   Errors show above the button, leaving the legal line clear below it. */
-.ct-title-actions { position: absolute; left: 0; right: 0; bottom: 5.4%; align-items: center; }
-.ct-title-under { position: absolute; bottom: 100%; left: 0; right: 0; align-items: center; padding-bottom: 6px; }
+/* Mock .shade-b: the bottom 50%, rgba(10,6,24,.55) at the edge fading to clear (texture built in code). */
+.ct-title-shade { position: absolute; left: 0; right: 0; bottom: 0; top: 50%; -unity-background-scale-mode: stretch-to-fill; }
 
-.ct-title-btn {
-    width: 36%; height: 150px; margin: 0; padding: 0 40px 12px 40px; /* the painted rim is thicker at the bottom: lift the label */
-    border-radius: 33px; border-width: 6px; border-bottom-width: 12px; border-color: rgb(58, 20, 64); /* squircle: ~22% of the height */
-    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 60px; -unity-text-align: middle-center; white-space: nowrap;
-    color: rgb(255, 255, 255); -unity-text-outline-width: 4px; -unity-text-outline-color: rgb(58, 20, 64);
-    text-shadow: 0 5px 1px rgb(58, 20, 64); /* the painted labels have a solid plum drop under the letters */
-    overflow: hidden;
-    transition-property: scale, background-color, -unity-background-image-tint-color;
-    transition-duration: 0.08s, 0.08s, 0.08s; transition-timing-function: ease-out, ease-out, ease-out;
-}
-.ct-title-btn:active { scale: 0.96 0.96; -unity-background-image-tint-color: rgb(212, 212, 212); }
-.ct-title-btn:disabled { opacity: 0.82; }
-.ct-title-btn:focus { border-color: rgb(58, 20, 64); }
-
-/* Placeholder bodies until the painted blanks exist (ApplyButtonArt swaps them in). */
-.ct-title-btn-green, .ct-title-btn-green:hover, .ct-title-btn-green:focus { background-color: rgb(92, 196, 74); }
-.ct-title-btn-green:active { background-color: rgb(70, 158, 56); }
-.ct-title-btn-purple, .ct-title-btn-purple:hover, .ct-title-btn-purple:focus { background-color: rgb(146, 88, 220); }
-.ct-title-btn-purple { font-size: 76px; letter-spacing: 3px; }
-.ct-title-btn-purple:active { background-color: rgb(114, 64, 182); }
-.ct-title-btn-art, .ct-title-btn-art:hover, .ct-title-btn-art:focus, .ct-title-btn-art:active {
-    background-color: rgba(0, 0, 0, 0); border-width: 0; border-radius: 0;
+/* Lockup (baked once from the mock HTML: CT mark + LIFE in Lilita One, plum outline, -4 deg, soft shadow), 900x360 device px,
+   centred at 47% height (mock: top 50%, translate -62% of its 150 css px height). */
+.ct-title-logo {
+    position: absolute; left: 50%; top: 47%; width: 809px; height: 324px; translate: -50% -50%;
+    background-image: url("Title/title-logo.png"); -unity-background-scale-mode: scale-to-fit;
 }
 
-/* The painted squircle body sits 5 px (top/sides) and 6-7 px (bottom) inside its 130 px art: 6-8 units at 150 units tall,
-   with a corner radius of ~22% of the body (~30 units). The shine is clipped to that shape. */
-.ct-title-shine-clip { position: absolute; left: 6px; right: 6px; top: 6px; bottom: 8px; border-radius: 30px; overflow: hidden; }
+.ct-title-bottom { position: absolute; left: 0; right: 0; top: 0; bottom: 0; }
 
-.ct-title-shine {
-    position: absolute; top: -30%; bottom: -30%; left: -35%; width: 14%;
-    background-color: rgba(255, 255, 255, 0.26); rotate: 18deg;
+/* Mock .tap (v3): Inter 700 13 css px = 26 device px, letter-spacing 3 css, bottom 76 css. Also the status line. */
+.ct-title-status {
+    position: absolute; left: 0; right: 0; bottom: 137px; margin: 0; padding: 0;
+    font-size: 23px; letter-spacing: 2px; color: rgb(255, 255, 255); -unity-text-align: lower-center; white-space: nowrap;
+    -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); text-shadow: 0 3px 16px rgba(0, 0, 0, 0.55);
 }
+.ct-title-status.ct-title-tap { -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); letter-spacing: 10.5px; }
 
-/* Bottom copy, read the way mobile games do it: no plate, no gradient band. The text carries itself: Lilita One (the button
-   font), solid white fill, a thick dark-plum outline and a soft dark drop shadow (user direction 2026-10-08). On the
-   Seeker the outlines are 3.3-3.9 px. */
+/* Mock .bar: 360x8 css = 720x16 device px, radius 5 css, white on 28% white, bottom 58 css. */
+.ct-title-bar {
+    position: absolute; left: 50%; bottom: 104px; width: 647px; height: 14px; translate: -50% 0;
+    border-radius: 9px; background-color: rgba(255, 255, 255, 0.28); overflow: hidden;
+}
+.ct-title-bar-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; border-radius: 9px; background-color: rgb(255, 255, 255); }
+.ct-title-bar-failed { background-color: rgba(255, 255, 255, 0.18); }
+.ct-title-bar-failed .ct-title-bar-fill { background-color: rgba(255, 255, 255, 0.55); }
 
+/* The real boot error above the bar, with a retry capsule where "Tap to play" goes. */
 .ct-title-error {
-    font-size: 32px; white-space: normal; max-width: 56%; margin-top: 0; padding: 0 12px;
-    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); color: rgb(255, 255, 255); -unity-text-align: middle-center;
-    -unity-text-outline-width: 3px; -unity-text-outline-color: rgb(58, 20, 64); text-shadow: 0 3px 5px rgba(26, 8, 32, 0.85);
+    position: absolute; left: 22%; right: 22%; bottom: 196px; margin: 0; padding: 0;
+    font-size: 22px; color: rgb(255, 255, 255); -unity-text-align: lower-center; white-space: normal;
+    -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); text-shadow: 0 2px 10px rgba(0, 0, 0, 0.7);
+}
+.ct-title-retry {
+    position: absolute; left: 50%; bottom: 126px; translate: -50% 0; height: 56px; min-width: 200px; margin: 0; padding: 0 36px;
+    border-width: 0; border-radius: 28px; background-color: rgb(255, 255, 255);
+    font-size: 22px; letter-spacing: 1px; color: rgb(42, 11, 74); -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf");
+}
+.ct-title-retry:hover { background-color: rgb(255, 255, 255); }
+.ct-title-retry:active { opacity: 0.8; }
+
+/* Mock .legal: Inter 500 10.5 css = 21 device px, 78% white, bottom 12 css. */
+.ct-title-legal {
+    position: absolute; left: 0; right: 0; bottom: 22px; margin: 0; padding: 0;
+    font-size: 19px; color: rgba(255, 255, 255, 0.78); -unity-text-align: lower-center; white-space: nowrap;
+    -unity-font-definition: url("Fonts/Phone/Inter-Medium.ttf"); text-shadow: 0 2px 7px rgba(0, 0, 0, 0.6);
 }
 
-/* The legal line, same outlined style, slightly smaller (+30%: 24 → 31 px). */
-.ct-title-legal-row { position: absolute; left: 0; right: 0; bottom: 10px; align-items: center; }
-.ct-title-legal {
-    font-size: 31px; white-space: nowrap; letter-spacing: 0.5px;
-    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); color: rgb(255, 255, 255); -unity-text-align: middle-center;
-    -unity-text-outline-width: 3px; -unity-text-outline-color: rgb(58, 20, 64); text-shadow: 0 3px 5px rgba(26, 8, 32, 0.85);
+/* ---------- sign-in sheet (no session): white, iOS-like, the Duo kit language ---------- */
+.ct-title-sheet-layer { position: absolute; left: 0; top: 0; right: 0; bottom: 0; justify-content: flex-end; align-items: center; }
+.ct-title-sheet-scrim {
+    position: absolute; left: 0; top: 0; right: 0; bottom: 0; margin: 0; padding: 0; border-width: 0; border-radius: 0;
+    background-color: rgba(0, 0, 0, 0.32);
+}
+.ct-title-sheet-scrim:hover, .ct-title-sheet-scrim:active { background-color: rgba(0, 0, 0, 0.32); }
+.ct-title-sheet {
+    width: 860px; padding: 16px 56px 34px; background-color: rgb(255, 255, 255);
+    border-top-left-radius: 40px; border-top-right-radius: 40px; align-items: stretch;
+}
+.ct-title-sheet Label { margin: 0; padding: 0; -unity-text-outline-width: 0; }
+.ct-title-sheet-grabber { width: 72px; height: 8px; border-radius: 4px; background-color: rgba(60, 60, 67, 0.3); align-self: center; margin-bottom: 26px; }
+.ct-title-sheet .ct-title-sheet-title { font-size: 34px; color: rgb(0, 0, 0); -unity-text-align: middle-center; -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); letter-spacing: -0.5px; }
+.ct-title-sheet .ct-title-sheet-body {
+    font-size: 23px; color: rgba(60, 60, 67, 0.62); -unity-text-align: middle-center; white-space: normal; margin: 10px 40px 30px;
+    -unity-font-definition: url("Fonts/Phone/Inter-Regular.ttf");
+}
+/* Primary squircle (corner radius ~28% of the height). */
+.ct-title-sheet-primary {
+    height: 104px; margin: 0; padding: 0 40px; border-width: 0; border-radius: 30px; background-color: rgb(17, 12, 26);
+    flex-direction: row; justify-content: center; align-items: center;
+    font-size: 29px; color: rgb(255, 255, 255); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); -unity-text-align: middle-center;
+    transition-property: scale; transition-duration: 0.08s;
+}
+.ct-title-sheet-primary:hover, .ct-title-sheet-primary:focus { background-color: rgb(17, 12, 26); }
+.ct-title-sheet-primary:active { scale: 0.98 0.98; opacity: 0.85; }
+.ct-title-sheet-primary:disabled { opacity: 0.5; }
+.ct-title-sheet .ct-title-sheet-primary-label { font-size: 29px; color: rgb(255, 255, 255); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); }
+.ct-title-sheet-primary-icon { width: 38px; height: 34px; margin-right: 18px; -unity-background-scale-mode: scale-to-fit; flex-shrink: 0; }
+.ct-title-sheet .ct-title-sheet-error {
+    font-size: 22px; color: rgb(196, 39, 29); -unity-text-align: middle-center; white-space: normal; margin-top: 18px;
+    -unity-font-definition: url("Fonts/Phone/Inter-Medium.ttf");
+}
+.ct-title-sheet .ct-title-sheet-legal {
+    font-size: 18px; color: rgba(60, 60, 67, 0.55); -unity-text-align: middle-center; white-space: normal; margin-top: 24px;
+    -unity-font-definition: url("Fonts/Phone/Inter-Regular.ttf");
 }
