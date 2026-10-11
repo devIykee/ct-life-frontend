@@ -44,8 +44,8 @@ namespace CTLife.World
         /// <summary>The arrival point and facing for <paramref name="venue"/> (world space).</summary>
         public static Vector3 For(VenueSceneRoot venue, out float rotYRad)
         {
-            venue.TryGetSpot("entrance", out var entrance, out rotYRad);
-            var inward = venue.transform.rotation * new Vector3(Mathf.Sin(rotYRad), 0f, Mathf.Cos(rotYRad));
+            venue.TryGetSpot("entrance", out var entrance, out rotYRad);   // world yaw (anchors and registry spots alike)
+            var inward = new Vector3(Mathf.Sin(rotYRad), 0f, Mathf.Cos(rotYRad));
             // Every exit spot is a door ("exit" opens the map; "entrance" shares the mat).
             var doors = new System.Collections.Generic.List<Vector3>();
             if (venue.TryGetSpot("exit", out var exit, out _)) doors.Add(exit);

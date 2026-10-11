@@ -23,6 +23,13 @@ namespace CTLife.App
     /// </summary>
     public sealed class FlowController : MonoBehaviour
     {
+        /// <summary>Dev builds only: `islandOffline` enters CT Island without joining venue rooms (no realtime server needed).</summary>
+#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
+        private static bool IslandOfflineDev => LaunchArgs.Flag("islandOffline");
+#else
+        private const bool IslandOfflineDev = false;
+#endif
+
         public const string StartVenue = "timeline_square";
         private string _homeReturnVenueId;
 
@@ -444,7 +451,9 @@ namespace CTLife.App
                     {
                         var v = s.Island.Find(id);
                         var e = Services.Get<ConfigStore>().Registries.SpotsFor(id)?.spots.Values.FirstOrDefault(x => x.id == "entrance" || x.id.EndsWith(".entrance"));
-                        var target = new Vector3(v.origin.x + (e?.x ?? 0f), 0f, v.origin.y + (e != null ? e.z + 2.5f : 0f));
+                        var local = new Vector2(e?.x ?? 0f, e != null ? e.z + 2.5f : 0f);       // a step inside, in the venue's own frame
+                        var flat = v.ToIsland(local);
+                        var target = new Vector3(flat.x, v.elevation, flat.y);
                         bool ok = s.LocalPlayer.MoveTo(target);
                         Log.Info("island", $"islandWalk -> {id}: path {(ok ? "ok" : "REFUSED")}");
                         float t0 = Time.realtimeSinceStartup;
@@ -453,6 +462,25 @@ namespace CTLife.App
                         Log.Info("island", $"islandWalk arrived {id}: zone={s.VenueId} after {Time.realtimeSinceStartup - t0:0.0}s");
                         await Awaitable.WaitForSecondsAsync(2f, game.Token);
                     }
+                });
+                // Open-world device tour (dev builds only): `islandTour=timeline_square,yacht_club,...` fast-travels to each venue
+                // door in turn and stays 8 s (streaming + render check; FpsMeter logs every 5 s).
+                if (!string.IsNullOrEmpty(LaunchArgs.Get("islandTour"))) RunGameAction(game, async () =>
+                {
+                    float deadline = Time.realtimeSinceStartup + 90f;
+                    while (GameAlive(game) && (VenueSession.Current == null || !VenueSession.Current.IsActive) && Time.realtimeSinceStartup < deadline)
+                        await Awaitable.WaitForSecondsAsync(0.5f, game.Token);
+                    await Awaitable.WaitForSecondsAsync(4f, game.Token);
+                    var s = VenueSession.Current;
+                    if (s == null || !s.IsIsland) { Log.Warn("island", "islandTour: not on CT Island"); return; }
+                    foreach (var id in LaunchArgs.Get("islandTour").Split(','))
+                    {
+                        float t0 = Time.realtimeSinceStartup;
+                        await s.FastTravel(id);
+                        Log.Info("island", $"islandTour at {id} after {Time.realtimeSinceStartup - t0:0.0}s (cells {s.Island.LoadedCellCount})");
+                        await Awaitable.WaitForSecondsAsync(8f, game.Token);
+                    }
+                    Log.Info("island", "islandTour done");
                 });
                 // Device feature pass (dev builds only): `integration=1 [peer=<userId>]`. The editor driver calls it directly.
                 if (LaunchArgs.Flag("integration") && !Application.isEditor) RunGameAction(game, async () =>
@@ -830,7 +858,7 @@ namespace CTLife.App
                     if (IslandWorld.Places(venueId) && !LaunchArgs.Flag("classicVenues"))
                     {
                         if (VenueSession.Current != null && VenueSession.Current.IsIsland && !leavingOwnHome) await game.Wait(VenueSession.Current.FastTravel(venueId));
-                        else await game.Wait(VenueSession.EnterIsland(venueId, joinRoom: true, owner: game.Token));
+                        else await game.Wait(VenueSession.EnterIsland(venueId, joinRoom: !IslandOfflineDev, owner: game.Token));
                     }
                     else await game.Wait(VenueSession.Enter(venueId, joinRoom: true, owner: game.Token));
                 }

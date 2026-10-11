@@ -401,3 +401,22 @@ The 29 Rain-derived cast appearances retain their existing Blender Foundation / 
 |---|---|---|---|---|---|
 | CMU Graphics Lab Motion Capture Database — subject 141 (141_16 "Wave Hello", 141_21 "Shrug") | http://mocap.cs.cmu.edu/subjects/141/ (ASF/AMC; FAQ http://mocap.cs.cmu.edu/faqs.php) | Free use: "The motion capture data may be copied, modified, or redistributed without permission." (same FAQ as the 2026-10-08 rows). Acknowledgement: "The data used in this project was obtained from mocap.cs.cmu.edu. The database was created with funding from NSF EIA-0196217." | Carnegie Mellon University Graphics Lab | 2026-10-17 | `client/Assets/Art/animations/mocap/wave_hello.fbx`, `shrug.fbx` (converted by `tools/anim/build_mocap_clips.py`, provenance in `art/processed/animations/mocap/mocap.json`); their upper body is baked onto the game idles as `emote_wave` / `emote_shrug` by `client/Assets/Scripts/Editor/EmoteBake.cs` |
 | `client/Assets/Art/animations/emotes/*.anim` (21 emotes × Snow / Rain idle) | Baked by `EmoteBake.cs`: upper body from the CMU clips above or the CT Life hand-keyed clips (CC0, `art/pipeline/anim_emotes.py`), root and legs from the shipped relaxed Snow / Rain idles | Derived from the sources named; no new third-party material | CT Life | 2026-10-17 | the emote states of `AvatarController` (Rain variants via `RainController`) |
+## CT Island v2 world (World lane) — 2026-10-17
+
+Tiling ground and surface detail for the v2 island. The photos are reduced to normalised grayscale or tinted detail by
+`tools/world/islandgen/textures.py`, and the shaders and painted maps supply the colour. ambientCG licence re-read
+2026-10-17 at https://docs.ambientcg.com/license/ (CC0 1.0; credit not required).
+
+| Name | Source URL | Licence | Author | Downloaded | Used for |
+| --- | --- | --- | --- | --- | --- |
+| ambientCG `Grass004` (1K JPG) | https://ambientcg.com/view?id=Grass004 | CC0 1.0 | ambientCG (Lennart Demes) | 2026-10-17 | terrain detail pack, grass channel (`client/Assets/World/Island/Textures/terrain_detail.png`) |
+| ambientCG `Rock030` (1K JPG) | https://ambientcg.com/view?id=Rock030 | CC0 1.0 | ambientCG (Lennart Demes) | 2026-10-17 | terrain detail pack, rock channel |
+| ambientCG `Ground054` (1K JPG) | https://ambientcg.com/view?id=Ground054 | CC0 1.0 | ambientCG (Lennart Demes) | 2026-10-17 | terrain detail pack, sand channel |
+| ambientCG `Ground037` (1K JPG) | https://ambientcg.com/view?id=Ground037 | CC0 1.0 | ambientCG (Lennart Demes) | 2026-10-17 | terrain detail pack, dirt channel |
+| ambientCG `Ground048` (1K JPG) | https://ambientcg.com/view?id=Ground048 | CC0 1.0 | ambientCG (Lennart Demes) | 2026-10-17 | dirt road detail (`dirt_detail.png`) |
+| ambientCG `Asphalt031` (1K JPG, downloaded 2026-10-05) | https://ambientcg.com/view?id=Asphalt031 | CC0 1.0 | ambientCG (Lennart Demes) | 2026-10-05 | road asphalt detail (`asphalt_detail.png`) |
+| ambientCG `PavingStones128` (1K JPG, downloaded 2026-10-05) | https://ambientcg.com/view?id=PavingStones128 | CC0 1.0 | ambientCG (Lennart Demes) | 2026-10-05 | sidewalk pavers (`pavers.png`, warmed) |
+| ambientCG `Gravel022` (1K JPG) | https://ambientcg.com/view?id=Gravel022 | CC0 1.0 | ambientCG (Lennart Demes) | 2026-10-17 | downloaded, not used yet |
+| ambientCG `Grass001`, `Rock035` (1K JPG) | https://ambientcg.com/view?id=Grass001 , https://ambientcg.com/view?id=Rock035 | CC0 1.0 | ambientCG (Lennart Demes) | 2026-10-17 | downloaded, not used yet |
+| Poly Haven `Concrete Floor 02` (1k diffuse, downloaded 2026-10-05) | https://polyhaven.com/a/concrete_floor_02 | CC0 | Rob Tuytel | 2026-10-05 | kerbs, bridges, tunnel (`concrete.png`) |
+| CT Island v2 heightfield, ground maps, water depth, far map, ripple normals | `tools/world/islandgen/` | CC0 (made by us) | CT Life World lane | 2026-10-17 | terrain, water, far LOD |

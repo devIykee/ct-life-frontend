@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using CTLife.EditorTools;
+using CTLife.EditorTools.IslandV2;
 using CTLife.World;
 using NUnit.Framework;
 using UnityEngine;
@@ -50,30 +51,83 @@ namespace CTLife.Tests
         }
 
         [Test]
-        public void Terrain_TownIsFlat_VenuesSitFlush_HillsAndSeaAreReal()
+        public void ZoneAt_RotatedVenue_UsesItsOwnFrame()
         {
-            var frames = new List<Rect> { new Rect(-16, -14, 32, 28) };
-            Assert.AreEqual(0f, IslandBuilder.GroundHeight(new Vector2(72, 72), frames), 0.01f, "the town is level");
-            Assert.AreEqual(-0.12f, IslandBuilder.GroundHeight(new Vector2(0, 0), frames), 0.01f, "a venue frame is sunk so its own floor sits flush");
-            float north = Enumerable.Range(-20, 30).Select(i => IslandBuilder.GroundHeight(new Vector2(i * 8f, 262f), frames)).Max();
-            Assert.Greater(north, 10f, "mountains on the north edge");
-            Assert.Less(IslandBuilder.GroundHeight(new Vector2(0, 299), frames), IslandBuilder.Water, "the sea is below the water line");
+            // a venue turned to face east (yaw 270: local -z, its door side, points to +x)
+            var v = new IslandVenue { venueId = "r", origin = new Vector2(100, 0), yaw = 270f, localWalk = new Rect(-12, -10, 24, 20), localFrame = new Rect(-13, -15, 26, 26) };
+            var list = new List<IslandVenue> { v };
+            Assert.AreEqual("r", IslandStreaming.ZoneAt(new Vector2(100, 0), list)?.venueId);
+            Assert.AreEqual("r", IslandStreaming.ZoneAt(new Vector2(109.5f, 0), list)?.venueId, "local z -9.5 lies east of the origin");
+            Assert.IsNull(IslandStreaming.ZoneAt(new Vector2(111f, 0), list), "past the door line (local z -10)");
+            Assert.AreEqual("r", IslandStreaming.ZoneAt(new Vector2(100, 11.5f), list)?.venueId, "local x spans 12 m north and south");
+            Assert.IsNull(IslandStreaming.ZoneAt(new Vector2(100, 13f), list));
+            var door = v.ToIsland(new Vector2(0, -10));
+            Assert.AreEqual(110f, door.x, 1e-3f); Assert.AreEqual(0f, door.y, 1e-3f);
+            Assert.Less(Vector2.Distance(new Vector2(0, -10), v.ToLocal(door)), 1e-3f);
+            Assert.AreEqual(IslandStreaming.RoomAction.Leave, IslandStreaming.Decide(new Vector2(125, 0), null, v), "15 m out of the door, past the 8 m street margin");
+            Assert.AreEqual(IslandStreaming.RoomAction.None, IslandStreaming.Decide(new Vector2(114, 0), null, v));
         }
 
         [Test]
-        public void BuiltIsland_PlacesEveryPublicVenue_WithNavigation()
+        public void CellPlan_LoadsAroundThePlayerAndAlongThePrefetchPath()
+        {
+            var cells = new List<Rect> { new Rect(0, 0, 256, 256), new Rect(256, 0, 256, 256), new Rect(640, 0, 256, 256) };
+            var (load, unload) = IslandStreaming.PlanCells(new Vector2(10, 10), cells, new HashSet<int>(), 300f, 420f);
+            CollectionAssert.AreEqual(new[] { 0, 1 }, load);
+            var path = IslandStreaming.PredictPath(new Vector3(10, 0, 10), new Vector3(40, 0, 0), 10f);
+            Assert.AreEqual(10, path.Count);
+            (load, _) = IslandStreaming.PlanCells(new Vector2(10, 10), cells, new HashSet<int> { 0, 1 }, 300f, 420f, path);
+            CollectionAssert.Contains(load, 2, "a fast car heading east prefetches the far cell");
+            (_, unload) = IslandStreaming.PlanCells(new Vector2(2000, 10), cells, new HashSet<int> { 0, 1 }, 300f, 420f);
+            CollectionAssert.AreEquivalent(new[] { 0, 1 }, unload);
+        }
+
+        private static IslandHeightfield _h;
+        private static IslandHeightfield H => _h ??= IslandV2Height.Load(IslandV2Paths.Out);
+
+        [Test]
+        public void Terrain_PlazaAtOrigin_RealSummit_SeaBelowSeaLevel()
+        {
+            Assert.AreEqual(-0.12f, H.Sample(0f, 0f), 0.15f, "the plaza pad sits at the origin height (diorama floor at y = 0)");
+            Assert.AreEqual(-6f, H.Sea, 1e-3f);
+            Assert.Greater(H.Sample(-180f, 495f), 150f, "the MtnDAO summit");
+            Assert.Less(H.Sample(0f, -600f), H.Sea, "the sea south of the bay");
+            Assert.Less(H.Sample(510f, -400f), H.Sea - 3f, "the marina basin holds deep water");
+            Assert.Greater(H.Sample(-780f, 250f), H.Sea + 15f, "west cliffs");
+        }
+
+        [Test]
+        public void BuiltIsland_PlacesEveryPublicVenue_OnItsPad_WithRoadsAndNavigation()
         {
             var prefab = Resources.Load<GameObject>(IslandWorld.ResourcePath);
             Assert.IsNotNull(prefab, "CT Island prefab is built");
             var w = prefab.GetComponent<IslandWorld>();
-            Assert.IsNotNull(w.navigation, "the island NavMesh is referenced (not an unsaved object)");
+            Assert.IsNotNull(w.navigation, "the pedestrian NavMesh is referenced");
+            Assert.IsNotNull(w.roads, "the road network is referenced");
             Assert.AreEqual(21, w.venues.Count);
-            Assert.AreEqual(9, w.districts.Count);
-            Assert.IsTrue(IslandWorld.Places("timeline_square") && IslandWorld.Places("terminal_cafe"));
+            Assert.GreaterOrEqual(w.districts.Count, 9);
+            Assert.Greater(w.cells.Count, 20);
+            Assert.IsTrue(IslandWorld.Places("timeline_square") && IslandWorld.Places("terminal_cafe") && IslandWorld.Places("hackathon_house"));
             Assert.IsFalse(IslandWorld.Places("home"), "private homes stay separate visits");
-            foreach (var v in w.venues) Assert.IsTrue(v.frame.Contains(v.walk.center) && v.frame.Contains(v.exit), v.venueId);
-            Assert.Greater(prefab.GetComponentsInChildren<MeshCollider>().Length, 100, "ground chunks with colliders");
-            Assert.IsTrue(prefab.GetComponentsInChildren<MeshFilter>().All(f => f.sharedMesh != null), "chunk meshes are saved assets");
+            foreach (var v in w.venues)
+            {
+                Assert.IsTrue(v.HasLocal, v.venueId);
+                Assert.IsTrue(v.localFrame.Contains(v.localWalk.center) && v.localFrame.Contains(v.ToLocal(v.exit)), v.venueId);
+                Assert.AreEqual(v.elevation - 0.12f, H.Sample(v.origin.x, v.origin.y), 0.35f, v.venueId + " sits on its pad");
+            }
+            var ts = w.Find("timeline_square");
+            Assert.AreEqual(Vector2.zero, ts.origin);
+            Assert.AreEqual(0f, ts.elevation, 1e-3f);
+            int cellsWithGround = 0;
+            foreach (var c in w.cells)
+            {
+                var cp = Resources.Load<GameObject>(IslandWorld.CellFolder + "/" + c.id);
+                Assert.IsNotNull(cp, c.id);
+                var ground = cp.GetComponentInChildren<IslandTerrainCell>(true);
+                if (ground != null && ground.chunks.Length > 0 && ground.material != null) cellsWithGround++;
+                Assert.IsTrue(cp.GetComponentsInChildren<MeshFilter>().All(f => f.sharedMesh != null), c.id + " meshes are saved assets");
+            }
+            Assert.Greater(cellsWithGround, 20, "land cells generate their ground (and its colliders) on load");
         }
     }
 }

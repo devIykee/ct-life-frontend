@@ -64,7 +64,7 @@ namespace CTLife.World
                 if (_registrySpots != null && (_registrySpots.spots.TryGetValue(spotId, out var s) || _registrySpots.spots.TryGetValue(local, out s)))
                 {
                     position = ToWorld(s.x, s.z);
-                    rotYRad = s.rotY;
+                    rotYRad = s.rotY + YawRad;   // world yaw, like anchors (CT Island v2 venues are turned to face their streets)
                     return true;
                 }
                 Log.UnknownId("spots", (venueId ?? "?") + "." + spotId);
@@ -108,6 +108,9 @@ namespace CTLife.World
             }
         }
 
+        /// <summary>This root's yaw in radians (0 for venues loaded on their own; CT Island turns venues to their streets).</summary>
+        public float YawRad => transform.eulerAngles.y * Mathf.Deg2Rad;
+
         public Vector3 ToWorld(float x, float z) => transform.TransformPoint(new Vector3(x, 0f, z));
 
         public Vector3 ToWorld(Vector2 local) => ToWorld(local.x, local.y);
@@ -142,7 +145,7 @@ namespace CTLife.World
             if (_npcHomeSpot.TryGetValue(npcId, out var claimed) && TryGetSpot(claimed, out var claimedPos, out _)) return claimedPos;
             TryGetSpot("entrance", out var entranceWorld, out var entranceRot);
             var entrance = ToLocal(entranceWorld);
-            var forward = NpcSpawnPlanner.Forward(entranceRot);
+            var forward = NpcSpawnPlanner.Forward(entranceRot - YawRad);   // the planner works in venue-local space
             if (_npcHomeRing.TryGetValue(npcId, out var ring)) return ToWorld(NpcSpawnPlanner.Ring(ring, entrance, forward));
 
             // The registry indexes every spot twice (local `crier_2` and wire `timeline_square.crier_2`, same SpotDef), so
