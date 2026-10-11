@@ -98,6 +98,17 @@ Shader "CT Life/World/Terrain"
             #endif
             half3 rock = lerp(_RockColor.rgb, _RockColorHigh.rgb, rockHigh) * (1.0h + (rockDet - 0.5h) * k * 1.3h) * lerp(1.0h, macro.rgb * 1.6h, 0.06h);
             rock *= lerp(0.72h, 1.0h, ao);                     // crevices darker
+            // rock strata: alternating cool-grey and warm-ochre beds (~7.5 m), strongest on steep faces; the far terrain
+            // bakes the same bands (textures.far_albedo), so the range reads layered from downtown too
+            {
+                half bedNoise = (macro.r - macro.g) * 3.0h;
+                #if !defined(_FAR)
+                    bedNoise += (rx + rz) * 1.2h;
+                #endif
+                half bed = smoothstep(0.3h, 0.7h, sin(positionWS.y * 0.42h + bedNoise) * 0.5h + 0.5h);
+                half3 bedTint = lerp(half3(0.80h, 0.79h, 0.84h), half3(1.14h, 1.02h, 0.86h), bed);
+                rock *= lerp(half3(1, 1, 1), bedTint, clamp(1.0h - normalWS.y * 1.2h, 0.35h, 1.0h));
+            }
             half3 sand = _SandColor.rgb * (1.0h + (det.b - 0.5h) * k * 0.6h);
             // wet sand: a darker band just above the waterline (follows the real shore height)
             half wet = smoothstep(_Shore.x + _Shore.y, _Shore.x + 0.15h, positionWS.y + (det.b - 0.5h) * 0.3h);
