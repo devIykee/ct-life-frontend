@@ -1,8 +1,93 @@
-READY TO COMMIT — merge in this order, back to back. Every builder script rides in step 1 (they depend on each other); steps 2–4 are data. Use `git add -A` on these paths (steps 3 and 4 also delete old studio / Timeline / café files). The `client/Assets/Art/` re-saves are Unity import churn: discard them. Re-run of all three rebuilt venues: `VenueBuildPipeline.All -ctVenues spaces_studio,timeline_square,terminal_cafe -ctEntranceCaptures`.
-READY TO COMMIT (1/3 collision + shared builder scripts): client/Assets/Scripts/Editor/VenueBuild/VenueCollision.cs client/Assets/Scripts/Editor/VenueBuild/VenueCollision.cs.meta client/Assets/Scripts/Editor/VenueBuild/VenueCollisionPass.cs client/Assets/Scripts/Editor/VenueBuild/VenueCollisionPass.cs.meta client/Assets/Scripts/Editor/VenueBuild/VenueMeshCompression.cs client/Assets/Scripts/Editor/VenueBuild/VenueMeshCompression.cs.meta client/Assets/Scripts/Editor/VenueBuild/VenueLookdev.cs client/Assets/Scripts/Editor/VenueBuild/VenueLookdev.cs.meta client/Assets/Scripts/Editor/VenueBuild/VenueSeatMotion.cs client/Assets/Scripts/Editor/VenueBuild/VenueSeatMotion.cs.meta client/Assets/Scripts/Editor/VenueBuild/VenueDump.cs client/Assets/Scripts/Editor/VenueBuild/VenueDump.cs.meta client/Assets/Scripts/Editor/VenueBuild/Venues_Spaces.cs client/Assets/Scripts/Editor/VenueBuild/Venues_Spaces.cs.meta client/Assets/Scripts/Editor/VenueBuild/Venues_TimelineSquare.cs client/Assets/Scripts/Editor/VenueBuild/Venues_TimelineSquare.cs.meta client/Assets/Scripts/Editor/VenueBuild/Venues_CafeDress.cs client/Assets/Scripts/Editor/VenueBuild/Venues_CafeDress.cs.meta client/Assets/Scripts/Editor/VenueBuild/VenueBuildPipeline.cs client/Assets/Scripts/Editor/VenueBuild/VenueKit.cs client/Assets/Scripts/Editor/VenueBuild/VenueMeshAcc.cs client/Assets/Scripts/Editor/VenueBuild/VenueProps.cs client/Assets/Scripts/Editor/VenueBuild/VenueRepack.cs client/Assets/Scripts/Editor/VenueBuild/VenueSpec.cs client/Assets/Scripts/Editor/VenueBuild/VenueVerify.cs client/Assets/Scripts/Editor/VenueBuild/VenueBake.cs client/Assets/Scripts/Editor/VenueBuild/VenuePalette.cs client/Assets/Scripts/World/Venue/VenueLook.cs client/Assets/Scripts/World/Venue/VenueLook.cs.meta client/Assets/Settings/CTLife_URP_Renderer.asset 'client/Assets/World/Venues/*/*.prefab' 'client/Assets/World/Venues/*/*_NavMesh.asset' ':(exclude)client/Assets/World/Venues/spaces_studio' ':(exclude)client/Assets/World/Venues/timeline_square' ':(exclude)client/Assets/World/Venues/terminal_cafe' — fix(venues): prop colliders and walk-around NavMesh for all venues with a build gate; builder support for look-dev (grade volume, probes, reflections), curved decks, live screens, lit decals, seat-motion binding
-READY TO COMMIT (APK mesh compression): 'client/Assets/World/Venues/*/Lighting/Meshes/*.asset' 'client/Assets/World/Venues/*/Meshes/*.asset' ':(exclude)client/Assets/World/Venues/spaces_studio' ':(exclude)client/Assets/World/Venues/timeline_square' ':(exclude)client/Assets/World/Venues/terminal_cafe' — perf(venues): mesh compression on the venue meshes (bundle 71.6 → 34.5 MiB raw, 31.3 → 19.9 MiB LZ4)
-READY TO COMMIT (2/3 Spaces Studio): client/Assets/World/Venues/spaces_studio client/Assets/World/Venues/_Shared/Textures/VenueBlockPalette.png client/Assets/Scripts/Editor/VenueBuild/VenueCatalog.cs docs/fe-contract-proposals/ids/spots.json tools/venues/make_venue_signs.py tools/venues/propose_spots.py — feat(venues): Spaces Studio v4 built to the in-game concept (curved amphitheatre, talk-show stage, green-room lounge, terrace), spots.json fe.4
-READY TO COMMIT (3/3 look-dev Timeline Square + Terminal Café): client/Assets/World/Venues/timeline_square client/Assets/World/Venues/terminal_cafe art/LICENSES.md docs/progress/venues.md — feat(venues): Timeline Square v2 to the key art (golden-hour square, fountain, 15 Tier A community eggs, live screens) and a Terminal Café look-dev pass
+READY TO COMMIT (round 4) — two commits, in this order (step 2 uses builder APIs from step 1). Use `git add -A` on these paths; the `client/Assets/Art/` re-saves are Unity import churn: discard them. Worktree is fast-forwarded to dev 7618938.
+READY TO COMMIT (1/2 solid props + carved NavMesh, all venues): client/Assets/Scripts/Editor/VenueBuild/VenueCollision.cs client/Assets/Scripts/Editor/VenueBuild/VenueCollisionPass.cs client/Assets/Scripts/Editor/VenueBuild/VenueKit.cs client/Assets/Scripts/Editor/VenueBuild/VenueRepack.cs client/Assets/Scripts/Editor/VenueBuild/VenueBuildPipeline.cs client/Assets/Scripts/Editor/VenueBuild/VenueMeshCompression.cs 'client/Assets/World/Venues/*/*.prefab' 'client/Assets/World/Venues/*/*_NavMesh.asset' ':(exclude)client/Assets/World/Venues/spaces_studio' ':(exclude)client/Assets/World/Venues/timeline_square' ':(exclude)client/Assets/World/Venues/terminal_cafe' — fix(venues): every prop solid and carved from the NavMesh (seat furniture too, never its anchor or approach), body-height geometry scan in the build gate, venue APK size measurement
+READY TO COMMIT (2/2 Timeline Square v3 + Spaces Studio terrace): client/Assets/Scripts/Editor/VenueBuild/Venues_TimelineSquare.cs client/Assets/Scripts/Editor/VenueBuild/Venues_Spaces.cs client/Assets/Scripts/Editor/VenueBuild/Venues_CafeDress.cs client/Assets/Scripts/Editor/VenueBuild/VenueCatalog.cs client/Assets/World/Venues/timeline_square client/Assets/World/Venues/spaces_studio client/Assets/World/Venues/terminal_cafe docs/fe-contract-proposals/ids/spots.json tools/venues/propose_spots.py docs/progress/venues.md — feat(venues): Timeline Square v3 as a compact, dense square at the default camera; Spaces Studio walk-out terrace, city view and riser LEDs; spots.json fe.5
+
+## 2026-10-08 round 4: Timeline Square v3, Spaces Studio polish, solid props, APK
+
+Evidence (`ct-life-evidence/venues/round4/`): `timeline_square-before-after-concept.png` (v2 vs v3 from the default game
+camera at the entrance and the centre spot, then the concept), `timeline_square-eggs-views.png` (game camera at four
+named spots), `spaces_studio-before-after-concept.png`, single shots `*-after-*.png`, and
+`venue-physicality-audit-after.json` (the character-feel lane's VenueFeelAudit, re-run on all 26 venues/homes).
+
+**Timeline Square v3** (layout build, default camera 11.5 m / 31°, the 14.5 m camera is reverted):
+- **Compact square.** The plaza is 23 × 22 m (v2 was 41 × 31), plus the street to the town hall steps. Building fronts
+  close three sides: the café terrace and bakery on the left, the toyshop, parcels shop and market stall on the right.
+  The fountain sits in the middle of the frame from both the entrance and the centre spot.
+- **Dense dressing:**
+  - Fountain and square: flower troughs and pots on the fountain deck, a ring of planters round it, stone paving rings
+    and a bordered path from the gate.
+  - Street furniture: lantern posts and wall lanterns, citrus trees, three strings of lights across the square.
+  - Café and market: café umbrella table, crates of fruit, barrels.
+  - Buildings: vines and wisteria, window boxes.
+  - Approach: steps up to the town hall; a stone wall with railings and a gate on the camera side.
+- **Eggs:** all 15, 1.5–2× their v2 size via the new `VB.Scaled` block, still props.
+- **Live surfaces.** The game camera's frame top meets the north fronts at about 3 m, so the screens moved to the ground
+  floors: `bb_01` / `bb_02` (ad slots `billboard_01/02`) on the left north house, the Timeline screen on the right one.
+  The Pixel Wall is on the west corner house. All four are LiveSurfaces `Screen_*` materials.
+- **Skyline** (Colosseum-style hall, clock tower, hills, hill town) is visible in the overview and when zoomed out.
+  [Inference] With the player at 30% from the bottom and a 45° FOV, no default-camera framing reaches above the
+  north fronts, so the skyline cannot be in the default view.
+- **Budgets:** 14 draws max, 86.8k tris (v2: 10 / 87k); 2 lightmaps (1.31 M texels); 200 light probes.
+  Spots 15/15 reachable.
+- **Spots (`spots.json` fe.5):**
+  - Moved into the compact square: crier_1/2/3, entrance, exit, pixel_wall and billboard_view.
+  - Walkable rectangles shrunk to the square.
+  - Unchanged: bench positions and facing, center and square_center.
+
+**Spaces Studio polish** (camera yaw −12° → +6°):
+- **Terrace and city.** The glazing moved in to x 8.6, so the walk-out terrace sits inside the room's footprint and the
+  default view. It has cushioned benches, lanterns, planters, palms and zig-zag string lights.
+- **Bunting.** The multi-flag bunting runs along the terrace, flags turned to the camera.
+- **City.** The studio now sits on a rooftop: city blocks stand below the parapet and towers rise beyond. Backdrop
+  models merge into 40 m cells (`BackdropCellSize`), which keeps draws at 23.
+- **On-air lamp** moved to 3.3 m beside the LED wall, which is lowered so it is fully in frame.
+- **Riser LEDs:** warm strips on the top edges, the back edge and the ends of the risers.
+- **Spots:** stage_5/6 are 0.3 m further apart (fe.5) so their side-step approaches stay reachable with carved chairs.
+- **Budgets:** 23 draws, 89.8k tris (round 3: 23 / 69k); spots 36/36.
+
+**Solid props, carved NavMesh (character-feel request, docs/progress/requests.md):**
+- **Colliders.** Every prop gets a solid collider. Seat tap targets no longer count as cover, so benches and sofas get
+  full furniture colliders. [Inference] Taps still resolve the seat, because WorldInput falls back to the nearest
+  claimable spot within 0.9 m.
+- **Carving.** Every prop is carved from the NavMesh, seat furniture included. The carve is clipped so each spot anchor
+  and approach point keeps 0.6 m of walkable NavMesh (carve the furniture, never the anchor or its approach). Clipped
+  pieces under 0.35 m are dropped, because the 0.17 m voxels would not carve them.
+- **Geometry scan in the build gate** (`VenueCollision.GeometryRegions`), same criteria as VenueFeelAudit, computed
+  analytically:
+  - It scans the merged render meshes on a 0.2 m grid at body height (0.25–1.9 m) where the NavMesh is under them.
+  - Anything walk-through or uncarved gets a collider and a carve during the build, then the build fails if any remains.
+  - Areas within 0.75 m of anchors and approaches are skipped.
+- **Applied to all 25 venues:**
+  - Timeline, Studio and Café were rebuilt.
+  - The other 22 venues were patched by `VenueCollisionPass` (no re-bake).
+  - The reachability error now prints an ASCII NavMesh map round the failing spot. It showed two things:
+    - Carving whole seat chairs closed the VC Row back seats and the studio's centre approaches in. That is why
+      anchors are kept clear as well as approaches.
+    - A café bookshelf (round-3 dressing) closed the barista's way behind the counter once the menu partition was
+      carved. The bookshelf is removed.
+  - Every spot and every approach point in all 25 venues is reachable (receipts `receipts/<id>-collision.json`).
+- **Audit result:**
+  - Timeline Square: 23 walk-through regions on dev → 0.
+  - All venues: 1 walk-through region left (2 samples on the hacker-house bunk rail, beside the bed anchor).
+  - 142 "collider, NavMesh not carved" regions remain, all within 0.8 m of a seat or terminal anchor. They are the
+    furniture deliberately left walkable at the anchor so NPCs and the approach / align / sit path reach it.
+
+**APK.** `VenueMeshCompression.MeasureVenues -buildTarget Android`: all 25 venue prefabs and their dependencies in one
+Android asset bundle (LZ4 / raw):
+
+| State | Raw | LZ4 | Timeline (LZ4) | Studio (LZ4) | Café (LZ4) |
+| --- | --- | --- | --- | --- | --- |
+| dev before round 3 (dedfe79d) | 118.5 MiB | 45.1 MiB | 11.92 MiB | 5.09 MiB | 8.26 MiB |
+| round 3 merged | 73.3 MiB | 31.3 MiB | 5.11 MiB | 7.95 MiB | 7.16 MiB |
+| round 4 (this) | 73.7 MiB | 31.4 MiB | 4.90 MiB | 8.26 MiB | 7.16 MiB |
+
+- Round 4 adds +0.1 MiB LZ4.
+- Since the 148.4 MiB APK, venue data is down 13.7 MiB LZ4. [Inference] With no other lane's additions the release
+  would be about 135 MiB. Unity's Android build compresses player data with LZ4 (project setting not checked) and the
+  APK zip adds a little, so this is not an APK build.
+- How it was measured: the old venue folders were checked out for the measurement, then the round-4 folder was restored
+  from a tar backup. The checksums and `git status` were verified identical afterwards.
+- The worktree's Library is now on the Android target.
 
 ## 2026-10-08 round 3, task 3: look-dev, Timeline Square v2 and Terminal Café
 

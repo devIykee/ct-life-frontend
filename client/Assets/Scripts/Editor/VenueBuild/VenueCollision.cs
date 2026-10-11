@@ -15,9 +15,13 @@ namespace CTLife.EditorTools.VenueBuild
     /// <summary>
     /// Prop collision for every venue. A prop is a floor-standing object (sourced model or registered procedural piece)
     /// whose footprint touches the walkable area. Each prop gets a BoxCollider fitted to its oriented bounds (tree:
-    /// trunk only) and, unless it is seat furniture, a not-walkable NavMesh volume so agents path around it. Seat
-    /// furniture (its footprint holds a claimable spot) keeps the anchor and approach untouched: collider only.
-    /// <see cref="Validate"/> fails the build when a prop has no collider or a non-seat prop is still on the NavMesh.
+    /// trunk only) and a not-walkable NavMesh volume so NPC agents path around it. Seat furniture is carved too (round 4,
+    /// the player has a physics body and the interaction system walks to the approach point), but the carve is clipped
+    /// so every spot anchor and approach point keeps <see cref="ClearRadius"/> of walkable NavMesh round it.
+    /// <see cref="GeometryRegions"/> then scans the merged render meshes (body height, 0.2 m grid, like the character-feel
+    /// lane's VenueFeelAudit) for anything still walkable or without a solid collider and the builders cover it.
+    /// <see cref="Validate"/> fails the build when a prop has no collider, a prop is still on the NavMesh, or the
+    /// geometry scan finds walk-through or uncarved geometry.
     /// </summary>
     public static class VenueCollision
     {
@@ -135,19 +139,195 @@ namespace CTLife.EditorTools.VenueBuild
             return added;
         }
 
-        public static IEnumerable<NavMeshBuildSource> Obstacles(List<PropBox> props) =>
-            props.Where(p => !p.seat).Select(p => new NavMeshBuildSource
+        /// <summary>Walkable clearance (agent radius 0.5 m + margin) kept round approach points and approach-less spots.</summary>
+        public const float ClearRadius = 0.6f;
+
+        /// <summary>
+        /// Not-walkable volumes for the props. Seat furniture is carved too, clipped away from <paramref name="keepClear"/>
+        /// (approach points and spots without one); a seat whose own anchor has no approach is not carved.
+        /// </summary>
+        public static IEnumerable<NavMeshBuildSource> Obstacles(List<PropBox> props, IReadOnlyList<Vector3> keepClear)
+        {
+            foreach (var p in props)
             {
-                // Reaches 0.5 m below the floor so the walkable surface voxels are always inside the modifier.
-                shape = NavMeshBuildSourceShape.ModifierBox,
-                transform = Matrix4x4.TRS(new Vector3(p.center.x, (Mathf.Max(p.size.y, 1f) - 0.5f) * .5f, p.center.z), Quaternion.Euler(0, p.yaw, 0), Vector3.one),
-                size = new Vector3(p.size.x, Mathf.Max(p.size.y, 1f) + 0.5f, p.size.z), area = 1,
-            });
+                var box = p.seat ? ClipClear(p, keepClear) : p;
+                if (box == null) continue;
+                yield return new NavMeshBuildSource
+                {
+                    // Reaches 0.5 m below the floor so the walkable surface voxels are always inside the modifier.
+                    shape = NavMeshBuildSourceShape.ModifierBox,
+                    transform = Matrix4x4.TRS(new Vector3(box.center.x, (Mathf.Max(box.size.y + box.center.y - box.size.y * .5f, 1f) - 0.5f) * .5f, box.center.z),
+                        Quaternion.Euler(0, box.yaw, 0), Vector3.one),
+                    size = new Vector3(box.size.x, Mathf.Max(box.size.y + box.center.y - box.size.y * .5f, 1f) + 0.5f, box.size.z), area = 1,
+                };
+            }
+        }
+
+        /// <summary>
+        /// The prop's footprint with every side that faces a keep-clear point pulled back so the point stays
+        /// <see cref="ClearRadius"/> outside it; null if too little remains (or a keep-clear point is inside the core).
+        /// </summary>
+        public static PropBox ClipClear(PropBox p, IReadOnlyList<Vector3> keepClear)
+        {
+            float x0 = -p.size.x * .5f, x1 = p.size.x * .5f, z0 = -p.size.z * .5f, z1 = p.size.z * .5f;
+            var inv = Quaternion.Euler(0, -p.yaw, 0);
+            foreach (var k in keepClear)
+            {
+                var l = inv * new Vector3(k.x - p.center.x, 0, k.z - p.center.z);
+                if (l.x < x0 - ClearRadius || l.x > x1 + ClearRadius || l.z < z0 - ClearRadius || l.z > z1 + ClearRadius) continue;
+                // Candidate cuts: move one side so the point is ClearRadius outside; keep the cut with the largest area left.
+                var options = new List<(float x0, float x1, float z0, float z1)>
+                {
+                    (x0, Mathf.Min(x1, l.x - ClearRadius), z0, z1), (Mathf.Max(x0, l.x + ClearRadius), x1, z0, z1),
+                    (x0, x1, z0, Mathf.Min(z1, l.z - ClearRadius)), (x0, x1, Mathf.Max(z0, l.z + ClearRadius), z1),
+                };
+                // At least 0.35 m both ways, or the NavMesh voxelisation (0.17 m cells) may not carve it at all.
+                var best = options.Where(o => o.x1 - o.x0 >= 0.35f && o.z1 - o.z0 >= 0.35f)
+                    .OrderByDescending(o => (o.x1 - o.x0) * (o.z1 - o.z0)).Cast<(float, float, float, float)?>().FirstOrDefault();
+                if (best == null) return null;
+                (x0, x1, z0, z1) = best.Value;
+            }
+            var q = Quaternion.Euler(0, p.yaw, 0);
+            var c = q * new Vector3((x0 + x1) * .5f, 0, (z0 + z1) * .5f);
+            return new PropBox
+            {
+                name = p.name, seat = p.seat, tree = p.tree, yaw = p.yaw,
+                center = new Vector3(p.center.x + c.x, p.center.y, p.center.z + c.z), size = new Vector3(x1 - x0, p.size.y, z1 - z0),
+            };
+        }
+
+        /// <summary>
+        /// Every spot anchor and every approach point (venue-local): the walkable keep-clear set. Furniture is carved, never
+        /// the seat anchor or its approach (character-feel lane, docs/progress/requests.md), so NPCs and the player's
+        /// approach / align / sit path still reach both.
+        /// </summary>
+        public static List<Vector3> KeepClear(GameObject root)
+        {
+            var list = new List<Vector3>();
+            foreach (var a in root.GetComponentsInChildren<SpotAnchor>(true))
+            {
+                list.Add(root.transform.InverseTransformPoint(a.transform.position));
+                if (a.approach != null) list.Add(root.transform.InverseTransformPoint(a.approach.position));
+            }
+            return list;
+        }
+
+        // ------------------------------------------------------------------ geometry scan (body-height render geometry)
+
+        public const float ScanCell = 0.2f, BodyMin = 0.25f, BodyMax = 1.9f, ScanTop = 2.2f, ScanKeepClear = 0.75f;
+
+        /// <summary>
+        /// Scans the venue's LOD0 render meshes on a 0.2 m grid over the walkable bounds: where the topmost surface below
+        /// 2.2 m stands 0.25–1.9 m above the floor and the NavMesh is still under it, or no solid collider holds it, the
+        /// sample is a gap. Samples within 0.75 m of an approach point or approach-less spot are left alone. Gaps cluster
+        /// into regions (2+ samples); each region comes back as an axis-aligned prop box (collider + carve).
+        /// Same criteria as the character-feel lane's VenueFeelAudit, computed analytically (no physics scene needed).
+        /// </summary>
+        public static List<PropBox> GeometryRegions(GameObject root, NavMeshData navigation, Rect walk, out int walkThrough, out int uncarved)
+        {
+            walkThrough = uncarved = 0;
+            int nx = Mathf.FloorToInt(walk.width / ScanCell) + 1, nz = Mathf.FloorToInt(walk.height / ScanCell) + 1;
+            var top = new float[nx, nz];
+            for (int i = 0; i < nx; i++) for (int j = 0; j < nz; j++) top[i, j] = float.NegativeInfinity;
+            var toVenue = root.transform.worldToLocalMatrix;
+            foreach (var mf in root.GetComponentsInChildren<MeshFilter>(true))
+            {
+                var mesh = mf.sharedMesh;
+                var r = mf.GetComponent<MeshRenderer>();
+                if (mesh == null || r == null || !r.enabled || VB.LodIndex(mf.name) > 0 || !mesh.isReadable) continue;
+                if (mf.GetComponentsInParent<Transform>(true).Any(t => t.name == "Backdrop")) continue;
+                var m = toVenue * mf.transform.localToWorldMatrix;
+                var v = mesh.vertices;
+                for (int k = 0; k < v.Length; k++) v[k] = m.MultiplyPoint3x4(v[k]);
+                for (int sm = 0; sm < mesh.subMeshCount; sm++)
+                {
+                    var tris = mesh.GetTriangles(sm);
+                    for (int t = 0; t < tris.Length; t += 3)
+                        Raster(v[tris[t]], v[tris[t + 1]], v[tris[t + 2]], walk, top, nx, nz);
+                }
+            }
+            var colliders = root.GetComponentsInChildren<Collider>(true).Where(c => !c.isTrigger && c.enabled).ToList();
+            var keep = KeepClear(root);
+            NavMeshDataInstance instance = default;
+            if (navigation != null) instance = NavMesh.AddNavMeshData(navigation, root.transform.position, root.transform.rotation);
+            var gaps = new Dictionary<Vector2Int, float>();
+            try
+            {
+                for (int i = 0; i < nx; i++)
+                    for (int j = 0; j < nz; j++)
+                    {
+                        float h = top[i, j];
+                        if (h < BodyMin || h > BodyMax) continue;
+                        float x = walk.xMin + i * ScanCell, z = walk.yMin + j * ScanCell;
+                        if (keep.Any(k => new Vector2(k.x - x, k.z - z).sqrMagnitude < ScanKeepClear * ScanKeepClear)) continue;
+                        var feet = root.transform.TransformPoint(new Vector3(x, 0f, z));
+                        bool onNav = NavMesh.SamplePosition(feet, out var hit, 0.5f, NavMesh.AllAreas) &&
+                                     new Vector2(hit.position.x - feet.x, hit.position.z - feet.z).magnitude <= 0.08f;
+                        bool solid = colliders.Any(c => Inside(c, root.transform.TransformPoint(new Vector3(x, h - 0.05f, z))) ||
+                                                        Inside(c, root.transform.TransformPoint(new Vector3(x, h - 0.2f, z))));
+                        // Characters stay on the NavMesh (the player's CharacterController rides on it), so geometry
+                        // matters only where the NavMesh is under it: then it needs a solid collider and a carve.
+                        if (!onNav) continue;
+                        if (solid) uncarved++; else walkThrough++;
+                        gaps[new Vector2Int(i, j)] = h;
+                    }
+            }
+            finally { if (instance.valid) NavMesh.RemoveNavMeshData(instance); }
+            var regions = new List<PropBox>();
+            var visited = new HashSet<Vector2Int>();
+            foreach (var g in gaps.Keys.OrderBy(k => k.x).ThenBy(k => k.y))
+            {
+                if (!visited.Add(g)) continue;
+                var cells = new List<Vector2Int>();
+                var stack = new Stack<Vector2Int>(); stack.Push(g);
+                while (stack.Count > 0)
+                {
+                    var c = stack.Pop(); cells.Add(c);
+                    foreach (var d in new[] { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right })
+                        if (gaps.ContainsKey(c + d) && visited.Add(c + d)) stack.Push(c + d);
+                }
+                if (cells.Count < 2) continue;
+                float x0 = walk.xMin + cells.Min(c => c.x) * ScanCell - ScanCell * .5f, x1 = walk.xMin + cells.Max(c => c.x) * ScanCell + ScanCell * .5f;
+                float z0 = walk.yMin + cells.Min(c => c.y) * ScanCell - ScanCell * .5f, z1 = walk.yMin + cells.Max(c => c.y) * ScanCell + ScanCell * .5f;
+                float hmax = cells.Max(c => gaps[c]);
+                var box = new PropBox
+                {
+                    name = $"geometry@{(x0 + x1) * .5f:F1},{(z0 + z1) * .5f:F1}", center = new Vector3((x0 + x1) * .5f, hmax * .5f, (z0 + z1) * .5f),
+                    size = new Vector3(x1 - x0, hmax, z1 - z0), seat = true, // clipped against keep-clear points like seats
+                };
+                regions.Add(box);
+            }
+            return regions;
+        }
+
+        private static void Raster(Vector3 a, Vector3 b, Vector3 c, Rect walk, float[,] top, int nx, int nz)
+        {
+            if (a.y < BodyMin - 0.05f && b.y < BodyMin - 0.05f && c.y < BodyMin - 0.05f) return;
+            if (a.y > ScanTop && b.y > ScanTop && c.y > ScanTop) return;
+            float area = (b.x - a.x) * (c.z - a.z) - (c.x - a.x) * (b.z - a.z);
+            if (Mathf.Abs(area) < 1e-6f) return; // vertical face: its edges belong to neighbouring faces
+            int i0 = Mathf.Max(0, Mathf.CeilToInt((Mathf.Min(a.x, Mathf.Min(b.x, c.x)) - walk.xMin) / ScanCell));
+            int i1 = Mathf.Min(nx - 1, Mathf.FloorToInt((Mathf.Max(a.x, Mathf.Max(b.x, c.x)) - walk.xMin) / ScanCell));
+            int j0 = Mathf.Max(0, Mathf.CeilToInt((Mathf.Min(a.z, Mathf.Min(b.z, c.z)) - walk.yMin) / ScanCell));
+            int j1 = Mathf.Min(nz - 1, Mathf.FloorToInt((Mathf.Max(a.z, Mathf.Max(b.z, c.z)) - walk.yMin) / ScanCell));
+            for (int i = i0; i <= i1; i++)
+                for (int j = j0; j <= j1; j++)
+                {
+                    float x = walk.xMin + i * ScanCell, z = walk.yMin + j * ScanCell;
+                    float w0 = ((b.x - x) * (c.z - z) - (c.x - x) * (b.z - z)) / area;
+                    float w1 = ((c.x - x) * (a.z - z) - (a.x - x) * (c.z - z)) / area;
+                    float w2 = 1f - w0 - w1;
+                    if (w0 < -1e-4f || w1 < -1e-4f || w2 < -1e-4f) continue;
+                    float y = w0 * a.y + w1 * b.y + w2 * c.y;
+                    if (y <= ScanTop && y > top[i, j]) top[i, j] = y;
+                }
+        }
 
         /// <summary>Fraction of the prop's footprint (3×3 samples at knee height) inside some non-trigger collider.</summary>
         public static float Coverage(GameObject root, PropBox p)
         {
-            var colliders = root.GetComponentsInChildren<Collider>(true).Where(c => !c.isTrigger).ToList();
+            // Seat tap targets (colliders under a SpotAnchor) do not count: the furniture itself must be solid (round 4).
+            var colliders = root.GetComponentsInChildren<Collider>(true).Where(c => !c.isTrigger && c.GetComponentInParent<SpotAnchor>() == null).ToList();
             float y = Mathf.Min(p.center.y - p.size.y * .5f + 0.3f, p.center.y);
             int inside = 0, total = 0;
             var q = Quaternion.Euler(0, p.yaw, 0);
@@ -188,6 +368,7 @@ namespace CTLife.EditorTools.VenueBuild
         {
             var missing = new List<string>();
             var walkThrough = new List<string>();
+            var keep = KeepClear(root);
             NavMeshDataInstance instance = default;
             if (navigation != null) instance = NavMesh.AddNavMeshData(navigation, root.transform.position, root.transform.rotation);
             try
@@ -195,10 +376,14 @@ namespace CTLife.EditorTools.VenueBuild
                 foreach (var p in props)
                 {
                     if (Coverage(root, p) < 0.6f) missing.Add(p.name + "@" + p.center.ToString("F1"));
-                    if (!p.seat && navigation != null)
+                    // Every prop is carved (seats clipped away from approach points): the centre of what remains of the
+                    // carve must be off the NavMesh.
+                    var box = p.seat ? ClipClear(p, keep) : p;
+                    if (box != null && navigation != null)
                     {
-                        var c = root.transform.TransformPoint(new Vector3(p.center.x, 0, p.center.z));
-                        if (NavMesh.SamplePosition(c, out _, 0.2f, NavMesh.AllAreas)) walkThrough.Add(p.name + "@" + p.center.ToString("F1"));
+                        var c = root.transform.TransformPoint(new Vector3(box.center.x, 0, box.center.z));
+                        if (NavMesh.SamplePosition(c, out var hit, 0.2f, NavMesh.AllAreas) && Mathf.Abs(hit.position.y - c.y) < 0.5f)
+                            walkThrough.Add(p.name + "@" + p.center.ToString("F1"));
                     }
                 }
             }
@@ -206,14 +391,30 @@ namespace CTLife.EditorTools.VenueBuild
             {
                 if (instance.valid) NavMesh.RemoveNavMeshData(instance);
             }
-            if (missing.Count > 0 || walkThrough.Count > 0)
+            var walk = root.GetComponent<VenueSceneRoot>().cameraBounds;
+            var regions = GeometryRegions(root, navigation, walk, out int gapSamples, out int uncarvedSamples);
+            if (missing.Count > 0 || walkThrough.Count > 0 || regions.Count > 0)
                 throw new InvalidDataException($"{id}: prop collision gate failed. Without collider: [{string.Join(", ", missing)}]. " +
-                                               $"Walk-through (on NavMesh): [{string.Join(", ", walkThrough)}].");
+                                               $"Walk-through (on NavMesh): [{string.Join(", ", walkThrough)}]. " +
+                                               $"Geometry scan ({gapSamples} walk-through / {uncarvedSamples} uncarved samples): " +
+                                               $"[{string.Join(", ", regions.Select(r => r.name + " " + r.size.x.ToString("F1") + "x" + r.size.z.ToString("F1") + " h" + r.size.y.ToString("F2")))}].");
             return new JObject
             {
                 ["props"] = props.Count, ["seatProps"] = props.Count(p => p.seat), ["trees"] = props.Count(p => p.tree),
-                ["obstacles"] = props.Count(p => !p.seat),
+                ["obstacles"] = props.Count, ["geometryScan"] = "clean (0 walk-through, 0 uncarved regions)",
             };
+        }
+
+        /// <summary>
+        /// Builder step after the first NavMesh: geometry the prop list missed (procedural details, authored joinery, wall-hung
+        /// pieces) gets a collider and a carve. Returns the extra props (empty when the scan is clean).
+        /// </summary>
+        public static List<PropBox> CoverGeometry(GameObject root, NavMeshData navigation, Transform colliderParent)
+        {
+            var walk = root.GetComponent<VenueSceneRoot>().cameraBounds;
+            var extra = GeometryRegions(root, navigation, walk, out _, out _);
+            if (extra.Count > 0) AddColliders(colliderParent, root, extra);
+            return extra;
         }
 
         // ------------------------------------------------------------------ props from an authored (repack source) prefab

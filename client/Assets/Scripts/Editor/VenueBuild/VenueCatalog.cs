@@ -30,10 +30,11 @@ namespace CTLife.EditorTools.VenueBuild
             new VenueSpec
             {
                 id = "timeline_square", venueId = "timeline_square", spotsKey = "timeline_square", title = "Timeline Square", district = "timeline",
-                identity = "Sunny Mediterranean square at golden hour: tiered fountain on a round deck, benches, café terrace, bakery, toyshop, market stall, " +
-                           "clock tower and town hall; Timeline screen, Pixel Wall and two billboards (live surfaces); the 15 Tier A community eggs.",
+                identity = "Compact sunny Mediterranean square at golden hour (v3): tiered fountain ringed by planters and benches, café umbrella terrace, " +
+                           "bakery, toyshop, market stall, steps up to the town hall, clock tower; Timeline screen, Pixel Wall and two billboards " +
+                           "(live surfaces); string lights, bunting and the 15 Tier A community eggs.",
                 build = VenuesTimelineSquare.TimelineSquare, cellSize = 22f,
-            }.SunAt(32f, 48f).Camera(14.5f, 33f).Look(C("ffd29a"), 1.25f, C("a9b4e6"), C("e2c39c"), C("7a6650"))
+            }.SunAt(32f, 48f).Look(C("ffd29a"), 1.25f, C("a9b4e6"), C("e2c39c"), C("7a6650"))
              .Grade(C("c9bcf0"), 0.06f, 15f, 16f, 7f, C("fff6ea"), bloom: 0.3f, bloomAt: 0.95f, vignetteValue: 0.15f),
             new VenueSpec
             {
@@ -45,7 +46,7 @@ namespace CTLife.EditorTools.VenueBuild
             // Spaces Studio, redesigned in round 3 (layout build; the old repack source is no longer used).
             V("spaces_studio", "Spaces Studio", "timeline",
                 "Evening broadcast studio / rooftop (v4, to the in-game concept): round two-step stage with amber LED nosing, cream rug, 4 tan armchairs in a talk-show semicircle with boom mics, host desk + sun lamp, speaker pods with three-lens phones on mic stands, teal LED waveform wall + on-air lamp (live hooks), fluted purple/teal panels, truss spots, bean bags and poufs in arcs on curved risers, green-room lounge beside a rainbow neon arched door + lanyard frame, open glazing onto a terrace with lanterns, bunting and the city.",
-                VenuesSpaces.SpacesStudio).SeatMotionFrom("Assets/Art/Candidates/PlayableVenues20261007/spaces_studio.prefab").Camera(11.6f, 29f, -12f, 45f, 0.3f).Look(C("ffb27a"), 0.55f, C("5b5a9e"), C("8a6a7a"), C("2a2238"))
+                VenuesSpaces.SpacesStudio).SeatMotionFrom("Assets/Art/Candidates/PlayableVenues20261007/spaces_studio.prefab").Camera(11.6f, 29f, 6f, 45f, 0.3f).Look(C("ffb27a"), 0.55f, C("5b5a9e"), C("8a6a7a"), C("2a2238"))
                 .Grade(C("3b3f7c"), 0.05f, 18f, 2f, -3f, C("f2ecff"), bloom: 0.65f, bloomAt: 0.85f, vignetteValue: 0.22f),
             // The Trenches
             V("perp_pit", "Perp Pit", "trenches",
