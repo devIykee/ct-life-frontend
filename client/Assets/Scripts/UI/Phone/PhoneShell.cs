@@ -26,7 +26,15 @@ namespace CTLife.UI
         public abstract VisualElement Open();
 
         public virtual void Closed() { }
+
+        /// <summary>
+        /// Legacy apps keep the shell's title bar. Duo-kit apps draw their own DuoNav and large title; Grouped also
+        /// paints the status bar iOS grouped grey (Settings).
+        /// </summary>
+        public virtual DuoChrome Chrome => DuoChrome.Legacy;
     }
+
+    public enum DuoChrome { Legacy, Plain, Grouped }
 
     /// <summary>The in-game phone overlay: home grid of apps, one open app at a time, back button.</summary>
     public sealed class PhoneShell : IDisposable
@@ -43,6 +51,8 @@ namespace CTLife.UI
         private StyleEnum<DisplayStyle> _previousHudDisplay;
         private readonly IVisualElementScheduledItem _clockTick;
         private Tween _entrance;
+        private readonly Action<DuoTextSize> _onTextSize;
+        private readonly Action _onBadges;
 
         public bool IsOpen => _frame.parent != null;
         /// <summary>Config-driven (GET /config livePhase → EnvConfig.livePhase). Not a constant.</summary>
@@ -98,6 +108,11 @@ namespace CTLife.UI
             }).Every(1000);
             _clockTick.Pause();
             UnityEngine.Application.focusChanged += OnFocusChanged;
+            DuoText.Apply(_frame, DuoText.Current);
+            _onTextSize = size => DuoText.Apply(_frame, size);
+            DuoText.Changed += _onTextSize;
+            _onBadges = RefreshBadges;
+            DuoNotificationCenter.Queue.BadgesChanged += _onBadges;
         }
 
         private void OnFocusChanged(bool focused)
@@ -146,6 +161,14 @@ namespace CTLife.UI
             Home();
         }
 
+        /// <summary>Registered title for an app id (Settings lists banner sources by name); null when unknown.</summary>
+        public string AppTitle(string appId) => _apps.Find(a => a.Id == appId)?.Title;
+
+        /// <summary>The app in front, for banner suppression (null at home or when closed).</summary>
+        public string ForegroundAppId => IsOpen ? _current?.Id : null;
+
+        private void ReportForeground() => DuoNotificationCenter.Queue.SetForeground(IsOpen, ForegroundAppId);
+
         public void Close()
         {
             if (!IsOpen && _current == null) return;
@@ -163,6 +186,7 @@ namespace CTLife.UI
                 _scrim.RemoveFromHierarchy();
                 if (_hiddenHud != null) _hiddenHud.style.display = _previousHudDisplay;
                 _hiddenHud = null;
+                ReportForeground();
             }
         }
 
@@ -172,6 +196,8 @@ namespace CTLife.UI
             if (_disposed) return;
             _disposed = true;
             UnityEngine.Application.focusChanged -= OnFocusChanged;
+            DuoText.Changed -= _onTextSize;
+            DuoNotificationCenter.Queue.BadgesChanged -= _onBadges;
             try { Close(); }
             catch (Exception e) { Log.Exception("phone-dispose", e); }
             finally
@@ -211,6 +237,7 @@ namespace CTLife.UI
             if (_disposed) return;
             _current?.Closed();
             _current = null;
+            SetChrome(DuoChrome.Legacy);
             _frame.AddToClassList("ct-phone-at-home");
             _back.Show(false);
             _title.text = Strings.T("phone.title");
@@ -219,6 +246,22 @@ namespace CTLife.UI
             _home.Show(true);
             _home.SetApps(_apps, CurrentPhase);
             UpdateHomeTooltip();
+            RefreshBadges();
+            ReportForeground();
+        }
+
+        private void SetChrome(DuoChrome chrome)
+        {
+            _frame.EnableInClassList("ct-phone-app-chrome", chrome != DuoChrome.Legacy);
+            _frame.EnableInClassList("ct-phone-grouped", chrome == DuoChrome.Grouped);
+        }
+
+        /// <summary>Red counts on launcher icons (dock and grid) from the notification center.</summary>
+        private void RefreshBadges()
+        {
+            if (_disposed) return;
+            foreach (var badge in _frame.Query<Label>(className: "ct-app-badge").ToList())
+                Duo.SetBadge(badge, DuoNotificationCenter.Badge(badge.userData as string));
         }
 
         private void UpdateHomeTooltip() => _homeControl.tooltip = Strings.T(_current == null && _home.PageIndex == 0 ? "phone.close" : "phone.home");
@@ -227,7 +270,12 @@ namespace CTLife.UI
         {
             bool open = app.Phase <= CurrentPhase;
             bool available = Features.IsAvailable(app.Feature);
-            var icon = El.Div("ct-app-icon", new PhoneAppIcon(app.Id));
+            var badge = Duo.Badge(DuoNotificationCenter.Badge(app.Id), "ct-app-badge");
+            badge.userData = app.Id;
+            badge.name = "badge-" + app.Id;
+            // Two very soft planes under the tile; the artwork carries its own rim and sheen.
+            var icon = El.Div("ct-app-icon", El.Div("ct-app-icon-shadow ct-app-icon-shadow-far"),
+                El.Div("ct-app-icon-shadow ct-app-icon-shadow-near"), new PhoneAppIcon(app.Id), badge);
             var tile = El.Btn("", () =>
             {
                 if (_home.SuppressClick) return;
@@ -256,7 +304,9 @@ namespace CTLife.UI
             }
             _current?.Closed();
             _current = app;
+            ReportForeground();
             _frame.RemoveFromClassList("ct-phone-at-home");
+            SetChrome(app.Chrome);
             _back.Show(true);
             _title.text = app.Title;
             _homeControl.tooltip = Strings.T("phone.home");

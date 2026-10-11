@@ -84,7 +84,7 @@ namespace CTLife.UI
             var social = El.Div("ct-hud-social",
                 HudAction("chat", Strings.T("hud.chat"), () => { CollapseNeeds(); _emotes.Hide(); _chat.Toggle(); }),
                 HudAction("emotes", Strings.T("hud.emote"), () => { CollapseNeeds(); _chat.Hide(); _emotes.Toggle(); }, "emote"), _mic,
-                HudAction("phone", Strings.T("phone.ctos"), () => OpenUtility(OpenPhone), primary: true));
+                PhoneAction());
             var personal = El.Div("ct-hud-personal",
                 HudAction("lobby", Strings.T("hud.lobby"), () => OpenUtility(OpenHome)), location);
             // Movement owns the lower left. Social/utility actions stay on the right.
@@ -117,6 +117,19 @@ namespace CTLife.UI
             });
             RefreshProfile();
             RefreshDegraded();
+        }
+
+        private Label _phoneBadge;
+
+        /// <summary>The phone action carries the Duo's total unread count (red badge, cleared when read).</summary>
+        private Button PhoneAction()
+        {
+            var button = HudAction("phone", Strings.T("phone.ctos"), () => OpenUtility(OpenPhone), primary: true);
+            _phoneBadge = Duo.Badge(DuoNotificationCenter.TotalBadge, "ct-hud-badge");
+            _phoneBadge.name = "hud-phone-badge";
+            button.Add(_phoneBadge);
+            _subs.On<DuoBadgesChangedSignal>(s => Duo.SetBadge(_phoneBadge, s.total));
+            return button;
         }
 
         private static Button HudAction(string id, string label, Action action, string icon = null, bool primary = false)

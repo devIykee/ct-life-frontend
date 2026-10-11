@@ -1,10 +1,11 @@
-/* App-wide notices: quiet white surface, semantic vector symbol, optional real detail.
-   UI Toolkit has no CSS box-shadow; two low-opacity, non-interactive planes give restrained depth. */
+/* App-wide notices: the same light glass material, radius, width and shadow as the Duo notification banners
+   (duo-kit.uss .duo-banner-*), so toasts and banners read as one system. Semantic vector symbol, optional detail.
+   UI Toolkit has no CSS box-shadow; low-opacity, non-interactive planes give restrained depth. */
 .layer-toast {
-    --ct-toast-paper: #ffffff;
-    --ct-toast-ink: #24272c;
-    --ct-toast-secondary: #6b7178;
-    --ct-toast-edge: #e3e6e9;
+    --ct-toast-paper: rgba(250,250,252,0.97);
+    --ct-toast-ink: #0b0b0d;
+    --ct-toast-secondary: rgba(60,60,67,0.62);
+    --ct-toast-edge: rgba(255,255,255,0.85);
     --ct-toast-success: #278c55;
     --ct-toast-error: #d33c3c;
     --ct-toast-info: #4078ce;
@@ -14,45 +15,45 @@
     padding-top: 104px;
 }
 .ct-toast {
-    width: 704px; max-width: 90%;
+    width: 900px; max-width: 92%;
     flex-shrink: 0;
     padding: 0; margin: 0 0 16px;
     background-color: transparent;
-    border-width: 0; border-radius: 28px;
+    border-width: 0; border-radius: 52px;
     overflow: visible;
     -unity-font-definition: url("Fonts/Phone/Inter-Regular.ttf");
 }
 .ct-toast-shadow {
     position: absolute;
-    border-radius: 29px;
+    border-radius: 56px;
 }
 .ct-toast-shadow-far {
-    top: 5px; bottom: -7px; left: -3px; right: -3px;
-    background-color: rgba(20,26,35,0.035);
+    top: 14px; bottom: -26px; left: -10px; right: -10px; border-radius: 64px;
+    background-color: rgba(10,12,30,0.05);
 }
 .ct-toast-shadow-near {
-    top: 3px; bottom: -3px; left: -1px; right: -1px;
-    background-color: rgba(20,26,35,0.055);
+    top: 3px; bottom: -5px; left: -1px; right: -1px; border-radius: 53px;
+    background-color: rgba(10,12,30,0.08);
 }
 .ct-toast-surface {
     flex-direction: row; align-items: center;
-    min-height: 100px;
-    padding: 4px 8px 4px 24px;
-    border-radius: 28px;
+    min-height: 120px;
+    padding: 8px 10px 8px 30px;
+    border-radius: 52px;
     border-width: 1px; border-color: var(--ct-toast-edge);
     background-color: var(--ct-toast-paper);
 }
 .ct-toast-copy { flex-grow: 1; flex-shrink: 1; min-width: 0; margin-left: 20px; margin-right: 14px; }
 .ct-toast .ct-toast-text {
     margin: 0; padding: 0; white-space: normal;
-    font-size: 28px; color: var(--ct-toast-ink);
+    font-size: 31px; color: var(--ct-toast-ink); letter-spacing: -0.3px;
     -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf");
     -unity-font-style: normal; -unity-text-align: middle-left;
     -unity-text-outline-width: 0; text-shadow: 0 0 0 transparent; letter-spacing: 0;
 }
 .ct-toast .ct-toast-detail {
     margin: 5px 0 0; padding: 0; white-space: normal;
-    font-size: 24px; color: var(--ct-toast-secondary);
+    font-size: 27px; color: var(--ct-toast-secondary);
     -unity-font-definition: url("Fonts/Phone/Inter-Regular.ttf");
     -unity-font-style: normal; -unity-text-align: middle-left;
     -unity-text-outline-width: 0; text-shadow: 0 0 0 transparent; letter-spacing: 0;
@@ -66,12 +67,12 @@
     width: 96px; height: 96px; min-width: 96px; min-height: 96px;
     flex-shrink: 0; align-items: center; justify-content: center;
     padding: 0; margin: 0;
-    border-width: 0; border-radius: 18px;
+    border-width: 0; border-radius: 48px;
     background-color: transparent; background-image: none;
     color: #8a8e94;
 }
-.ct-toast .ct-toast-dismiss:hover { background-color: #f2f4f6; }
-.ct-toast .ct-toast-dismiss:active { background-color: #e9edf1; }
+.ct-toast .ct-toast-dismiss:hover { background-color: rgba(120,120,128,0.10); }
+.ct-toast .ct-toast-dismiss:active { background-color: rgba(120,120,128,0.18); }
 .ct-toast .ct-toast-dismiss:focus { border-width: 2px; border-color: var(--ct-toast-info); }
 .ct-toast-close-symbol { width: 28px; height: 28px; color: #8a8e94; }
 .ct-landscape .layer-toast { padding-top: 32px; }

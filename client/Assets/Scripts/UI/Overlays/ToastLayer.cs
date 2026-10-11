@@ -15,6 +15,7 @@ namespace CTLife.UI
         private const int MaxVisible = 3;
         private readonly UiRoot _ui;
         private readonly IncidentPresentation _incidents;
+        private readonly DuoBannerLayer _banners;
         private bool _disposed;
         private readonly VisualElement _layer;
         private readonly Queue<(string text, string detail, ToastKind kind)> _queue = new Queue<(string, string, ToastKind)>();
@@ -28,6 +29,8 @@ namespace CTLife.UI
             _layer.RegisterCallback<DetachFromPanelEvent>(OnDetached);
             _subs.On<ToastSignal>(OnToast);
             _incidents = new IncidentPresentation(_ui);
+            // Notification banners share this layer and material, above toasts, so both read as one system.
+            _banners = new DuoBannerLayer(_layer);
             _ui.AddUpdater(Tick);
         }
 
@@ -87,6 +90,7 @@ namespace CTLife.UI
             _subs.Dispose();
             if (_ui != null) _ui.RemoveUpdater(Tick);
             _incidents.Dispose();
+            _banners.Dispose();
             foreach (var toast in _live) toast.el.RemoveFromHierarchy();
             _live.Clear();
             _queue.Clear();

@@ -36,6 +36,7 @@ namespace CTLife.UI
         private Popover _popover;
         private AvatarPreview _preview;
         private Subscriptions _subs;
+        private Label _phoneBadge;
         private ConfigStore _config;
         private HomeState _state;
         private CancellationTokenSource _life;
@@ -255,6 +256,13 @@ namespace CTLife.UI
         {
             var t = new IconTile(icon, Strings.T(labelKey), tone, () => OpenApp(app), art: KitIcons.ForRoute(app));
             t.name = "home-tile-" + (app ?? "phone");
+            if (app == null)
+            {
+                // The Duo's unread total, like the HUD phone button (cleared when read).
+                _phoneBadge = Duo.Badge(DuoNotificationCenter.TotalBadge, "home-tile-badge");
+                _phoneBadge.name = "home-phone-badge";
+                t.Add(_phoneBadge);
+            }
             return t;
         }
 
@@ -345,7 +353,9 @@ namespace CTLife.UI
                 _subs = new Subscriptions();
                 _subs.On<ProfileChangedSignal>(_ => Refresh());
                 _subs.On<MoodSignal>(m => { _mood = m.bps; Refresh(); });
+                _subs.On<DuoBadgesChangedSignal>(s => Duo.SetBadge(_phoneBadge, s.total));
             }
+            Duo.SetBadge(_phoneBadge, DuoNotificationCenter.TotalBadge);
             if (_config == null && Services.TryGet<ConfigStore>(out var config))
             {
                 _config = config;
