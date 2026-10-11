@@ -22,6 +22,10 @@ namespace CTLife.World.Vehicles
         public float Thrust01 { get; private set; }
         public bool Grounded { get; private set; }
         public float Altitude { get; private set; }
+        /// <summary>Over the sea (its surface is nearer than any ground below): no landing, no getting out.</summary>
+        public bool OverWater { get; private set; }
+        /// <summary>The Roadstar was told to land but is over water, so it hovers instead (the HUD says why).</summary>
+        public bool LandingBlockedByWater => IsRoadstar && !_wantFlight && _v.Flying && OverWater;
         /// <summary>Roadstar: 0 = wheels down (driving), 1 = folded into hover pads.</summary>
         public float Fold01 { get; private set; }
         private bool _wantFlight;
@@ -124,7 +128,7 @@ namespace CTLife.World.Vehicles
             bool powered = _v.Occupied && _v.EngineOn;
             Rotor01 = Mathf.MoveTowards(Rotor01, powered ? 1f : 0f, dt / (IsRoadstar ? 0.6f : _s.kind == VehicleKind.Drone ? 0.4f : 3.2f));
             // the Roadstar's wheels fold away in flight and come back down in the last couple of metres of a landing
-            bool folded = IsRoadstar && _v.Flying && (_wantFlight || Altitude > 2.4f);
+            bool folded = IsRoadstar && _v.Flying && (_wantFlight || Altitude > 2.4f || OverWater);
             Fold01 = Mathf.MoveTowards(Fold01, folded ? 1f : 0f, dt / 0.8f);
             if (!Active) { Thrust01 = 0f; return; }
             var input = _v.Occupied ? _v.Input : VehicleInput.None;
@@ -133,15 +137,23 @@ namespace CTLife.World.Vehicles
             // ground below (for ground effect, landing and altitude)
             Grounded = Physics.Raycast(transform.position + Vector3.up * 0.5f, Vector3.down, out var hit, 600f, CarPhysics.GroundMask, QueryTriggerInteraction.Ignore)
                        && hit.distance < 0.5f + (IsRoadstar ? 0.55f : 0.25f);
-            Altitude = hit.collider != null ? hit.distance - 0.5f : 600f;
+            float groundAlt = hit.collider != null ? hit.distance - 0.5f : 600f;
+            // the sea counts as a surface (it has no collider): fly over it, never "land" in it
+            float sea = VehicleWorld.SeaLevel;
+            float seaAlt = float.IsInfinity(sea) ? 600f : transform.position.y - sea;
+            OverWater = seaAlt < groundAlt - 0.3f;
+            if (OverWater) Grounded = false;
+            Altitude = Mathf.Min(groundAlt, seaAlt);
             float ceiling = VehicleWorld.FlightCeiling;
             // vertical: the stick sets a climb rate; centred holds altitude
             float climb = input.lift * _s.climbRate;
             if (IsRoadstar)
             {
-                if (!_wantFlight) climb = -Mathf.Clamp(Altitude * 0.9f, 1.4f, 8f);                // coming down to land
+                if (!_wantFlight && OverWater) climb = (_s.hoverHeight + 1f - Altitude) * 1.5f;   // no landing on water: hover over it
+                else if (!_wantFlight) climb = -Mathf.Clamp(Altitude * 0.9f, 1.4f, 8f);        // coming down to land
                 else if (Mathf.Abs(input.lift) < 0.05f && Altitude < _s.hoverHeight) climb = 2.5f; // lift-off to hover height
             }
+            else if (OverWater && Altitude < 1.2f) climb = Mathf.Max(climb, (1.2f - Altitude) * 2f);   // skim the water, never sink
             if (transform.position.y > ceiling - 12f) climb = Mathf.Min(climb, (ceiling - transform.position.y) * 0.6f);
             float spin = Rotor01 * Rotor01;
             float effect = 1f + (_s.kind == VehicleKind.Helicopter ? 0.12f * Mathf.Clamp01(1f - Altitude / 7f) : 0f);  // ground effect
@@ -205,7 +217,7 @@ namespace CTLife.World.Vehicles
             {
                 _groundedFor = Grounded ? _groundedFor + dt : 0f;
                 bool low = Altitude < 0.9f && vel.y < 0.5f;
-                if (!_wantFlight && (low || _groundedFor > 0.1f)) { _v.Flying = false; _v.SetFlightLayer(false); }
+                if (!_wantFlight && !OverWater && (low || _groundedFor > 0.1f)) { _v.Flying = false; _v.SetFlightLayer(false); }
             }
             Leash(vel);
         }

@@ -84,6 +84,7 @@ namespace CTLife.World.Vehicles
                     var center = hit.point + Vector3.up * (size.y * 0.5f + 0.15f);
                     if (Physics.CheckBox(center, size * 0.5f, rot, CarPhysics.GroundMask | (1 << CharacterLayers.Vehicle), QueryTriggerInteraction.Ignore)) continue;
                     if (!Corners(hit.point, size, rot, hit.point.y)) continue;
+                    if (!Reachable(around, hit.point)) continue;
                     pos = hit.point + Vector3.up * 0.05f;
                     return true;
                 }
@@ -91,6 +92,24 @@ namespace CTLife.World.Vehicles
             pos = default;
             return false;
         }
+
+        /// <summary>
+        /// A spot the player could walk or drive to: on the walkable NavMesh where there is one (not in a fountain basin or a
+        /// planter), above the sea, and in plain sight at knee height from where the player stands (no rim or wall between).
+        /// </summary>
+        public static bool Reachable(Vector3 from, Vector3 spot)
+        {
+            float sea = VehicleWorld.SeaLevel;
+            if (!float.IsInfinity(sea) && spot.y < sea + 0.15f) return false;
+            if (UnityEngine.AI.NavMesh.SamplePosition(spot, out var nav, 3f, UnityEngine.AI.NavMesh.AllAreas))
+            {
+                if (Mathf.Abs(nav.position.y - spot.y) > 0.35f || (Flat(nav.position) - Flat(spot)).magnitude > 0.8f) return false;
+            }
+            var a = from + Vector3.up * 0.45f; var b = spot + Vector3.up * 0.45f;
+            return !Physics.Linecast(a, b, CarPhysics.GroundMask, QueryTriggerInteraction.Ignore);
+        }
+
+        private static Vector3 Flat(Vector3 v) { v.y = 0f; return v; }
 
         /// <summary>All four corners of the footprint have ground within 0.25 m of the centre's height (no overhangs).</summary>
         private static bool Corners(Vector3 c, Vector3 size, Quaternion rot, float y)

@@ -199,6 +199,7 @@ namespace CTLife.UI
             ["vehicle.compact"] = "Hatchback", ["vehicle.suv"] = "SUV", ["vehicle.sports"] = "Sports car", ["vehicle.roadstar"] = "Roadstar",
             ["vehicle.scooter"] = "Scooter", ["vehicle.heli"] = "Helicopter", ["vehicle.drone"] = "Drone", ["hud.drone"] = "Drone",
             ["drone.range"] = "Drone at the edge of its range", ["vehicle.reverse"] = "Reverse",
+            ["vehicle.noWaterLanding"] = "No landing on water: fly back over land.",
             ["controls.up"] = "Move forward", ["controls.down"] = "Move backward",
             ["controls.left"] = "Move left", ["controls.right"] = "Move right",
             ["hud.onlineWaiting"] = "City · —",

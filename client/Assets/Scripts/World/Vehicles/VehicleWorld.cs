@@ -61,7 +61,25 @@ namespace CTLife.World.Vehicles
         public static float FlightCeiling { get { Bind(); return _ceiling != null ? _ceiling() : 214f; } }
 
         /// <summary>Sea level, or -infinity when the world has none (nothing to fall into).</summary>
-        public static float SeaLevel { get { Bind(); return _sea != null ? _sea() : float.NegativeInfinity; } }
+        public static float SeaLevel
+        {
+            get
+            {
+                Bind();
+                if (_sea != null) return _sea();
+                // the v1 island (no World v2 yet): its water is the CTIsland prefab's "Sea" plane (y -0.35, no collider)
+                if (_seaPlane == null && Time.frameCount - _seaSearchFrame > 300)
+                {
+                    _seaSearchFrame = Time.frameCount;
+                    var go = GameObject.Find("Sea");
+                    _seaPlane = go != null && go.GetComponent<MeshRenderer>() != null ? go.transform : null;
+                }
+                return _seaPlane != null ? _seaPlane.position.y : float.NegativeInfinity;
+            }
+        }
+
+        private static Transform _seaPlane;
+        private static int _seaSearchFrame = -100000;
 
         public static void Prefetch(Vector3 position, Vector3 velocity, float horizonSeconds)
         {

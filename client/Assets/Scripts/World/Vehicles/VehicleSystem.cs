@@ -98,10 +98,16 @@ namespace CTLife.World.Vehicles
                     if (f.AtLeash && !_droneRangeToast) { _droneRangeToast = true; Bus.Publish(new InteractionToastSignal { key = "drone.range" }); }
                     else if (!f.AtLeash) _droneRangeToast = false;
                 }
+                if (Driving != null && Driving.Kind == VehicleKind.Roadstar && Driving.GetComponent<FlightPhysics>() is FlightPhysics rf)
+                {
+                    bool blocked = rf.LandingBlockedByWater;
+                    if (blocked && !_waterToast) Bus.Publish(new InteractionToastSignal { key = "vehicle.noWaterLanding" });
+                    _waterToast = blocked;
+                }
             }
         }
 
-        private bool _droneRangeToast;
+        private bool _droneRangeToast, _waterToast;
 
         private Vehicle FindOffer()
         {
@@ -181,8 +187,8 @@ namespace CTLife.World.Vehicles
         {
             if (Driving == null || Busy) return false;
             // in the air (the helicopter, the Roadstar in flight): land first
-            if ((Driving.Kind == VehicleKind.Helicopter || Driving.Flying) && Driving.GetComponent<FlightPhysics>() is FlightPhysics f && f.Altitude > 1.5f)
-            { Bus.Publish(new InteractionToastSignal { key = "vehicle.landFirst" }); return false; }
+            if ((Driving.Kind == VehicleKind.Helicopter || Driving.Flying) && Driving.GetComponent<FlightPhysics>() is FlightPhysics f && (f.Altitude > 1.5f || f.OverWater))
+            { Bus.Publish(new InteractionToastSignal { key = f.OverWater ? "vehicle.noWaterLanding" : "vehicle.landFirst" }); return false; }
             StartCoroutine(ExitRoutine());
             return true;
         }
