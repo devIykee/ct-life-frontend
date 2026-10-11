@@ -52,6 +52,11 @@ namespace CTLife.EditorTools
             public Task<RawResponse> SendRaw(string method, string path, string jsonBody, bool auth, string idempotencyKey, string ifNoneMatch, CancellationToken ct) => Reject<RawResponse>();
         }
 
+        /// <summary>Phase A: run only the every-venue/every-home arrival sweep (captureSet "visits").</summary>
+        public static bool SweepOnly;
+        /// <summary>Phase A: run only the locomotion feel probe (captureSet "feel").</summary>
+        public static bool FeelOnly;
+
         public static async Task Run(Func<string, float, Task> shot, Func<float, Task> wait,
             Action<bool, string> expect, Action<string> step, JObject receipt)
         {
@@ -139,6 +144,8 @@ namespace CTLife.EditorTools
                 Bus.Publish(new OnlineCountSignal { online = 27 }); Bus.Publish(new MoodSignal { bps = 420 });
                 Bus.Publish(new InteractionPromptSignal());
                 hud.Show(true);
+                if (FeelOnly) { FeelProbe.OutDir = Environment.GetCommandLineArgs().SkipWhile(x => x != "-ctlife-captureOut").Skip(1).FirstOrDefault(); var (feel, last) = await FeelProbe.Run(visit, camera, shot); receipt["feel"] = feel; visit = last; return; }
+                if (SweepOnly) { visit = await VisitSweep(ui, hud, visit, camera, session, transport, profile, shot, wait, expect, receipt); return; }
                 await shot("hud-01-city-idle", 1.2f);
                 Inspect(hud, "idle", report, expect);
 
@@ -355,6 +362,71 @@ namespace CTLife.EditorTools
             await shot("map-duo-card", .6f);
             phone.Close();
             await wait(.2f);
+        }
+
+        /// <summary>
+        /// Phase A: arrive in EVERY shipped venue and home the way travel does and check the player can be found: on screen
+        /// (comfortably inside the frame), grounded (navmesh and floor under the feet), not covered by an interaction prompt,
+        /// lit enough to tell apart from the floor, wearing the "you" ring, and on the minimap at the right place.
+        /// </summary>
+        private static async Task<VenueSession> VisitSweep(UiRoot ui, Hud hud, VenueSession visit, Camera camera, Session session,
+            Transport transport, PlayerProfile profile, Func<string, float, Task> shot, Func<float, Task> wait, Action<bool, string> expect, JObject receipt)
+        {
+            var rows = new JArray();
+            receipt["visits"] = rows;
+            // Homes need a signed-in owner: an in-memory token only (never stored; the fixture transport has no network).
+            typeof(Session).GetProperty(nameof(Session.AccessToken)).SetValue(session, "fixture-in-memory");
+            var targets = VenueContent.VenueIds.Select(v => (v, (string)null)).ToList();
+            foreach (var h in VenueContent.BuiltHomes) if (VenueContent.HasPlayableHome(h)) targets.Add(("home", h));
+            foreach (var (venueId, homeId) in targets)
+            {
+                string name = homeId != null ? "home_" + homeId : venueId;
+                await visit.Exit();
+                if (homeId != null)
+                {
+                    transport.Profile["homeId"] = homeId;
+                    await profile.Refresh();
+                    visit = await VenueSession.EnterOwnHome();
+                }
+                else visit = await VenueSession.Enter(venueId, joinRoom: false, voice: false);
+                camera = CameraRig.Instance.Camera;
+                await wait(1.0f);
+                var player = visit.LocalPlayer;
+                var pos = player.transform.position;
+                var vp = camera.WorldToViewportPoint(pos + Vector3.up * 0.9f);
+                bool onScreen = vp.z > 0 && vp.x > 0.12f && vp.x < 0.88f && vp.y > 0.14f && vp.y < 0.86f;
+                bool nav = UnityEngine.AI.NavMesh.SamplePosition(pos, out var navHit, 0.3f, UnityEngine.AI.NavMesh.AllAreas);
+                bool floor = Physics.Raycast(pos + Vector3.up * 0.6f, Vector3.down, out var floorHit, 1.2f, CTLife.World.CharacterLayers.WorldMask, QueryTriggerInteraction.Ignore);
+                float floorGap = floor ? pos.y - floorHit.point.y : 99f;
+                // Prompt: none on arrival, or never over the player.
+                var prompt = hud.Element.Q(className: "ct-hud-interact");
+                bool promptShown = prompt != null && prompt.resolvedStyle.display != DisplayStyle.None && prompt.resolvedStyle.visibility == Visibility.Visible;
+                bool promptClear = true;
+                if (promptShown && CTLife.UI.InteractionPrompt.LocalPlayerRect(prompt.parent, camera, out var me))
+                {
+                    var b = prompt.worldBound; var pmin = prompt.parent.WorldToLocal(b.min); var pmax = prompt.parent.WorldToLocal(b.max);
+                    promptClear = !Rect.MinMaxRect(pmin.x, pmin.y, pmax.x, pmax.y).Overlaps(me);
+                }
+                // Minimap: visible, on this area, centred on the player.
+                var mini = hud.Minimap;
+                var area = CTLife.UI.Map.MapCatalog.ForVisit(visit.VenueId, visit.HomeId);
+                var placement = CTLife.UI.Map.MapCatalog.PlacementOf(area);
+                bool miniShown = mini.resolvedStyle.display != DisplayStyle.None && mini.Area == area && area != null;
+                float miniErr = placement != null ? (mini.PlayerAtlas - CTLife.UI.Map.MapMath.AtlasFromLocal(placement, visit.Venue.ToLocal(pos))).magnitude : 99f;
+                bool ring = player.GetComponent<LocalPlayerMarker>() != null && player.transform.Find("you-ring") != null;
+                await shot("visit-" + name, .05f);
+                expect(onScreen, name + ": the player is comfortably on screen on arrival");
+                expect(nav && navHit.distance < 0.3f, name + ": the player stands on the navmesh");
+                expect(floor && Mathf.Abs(floorGap) < 0.25f, name + ": the player is grounded (floor gap " + floorGap.ToString("0.00") + " m)");
+                expect(promptClear, name + ": no interaction prompt covers the player");
+                expect(miniShown && miniErr < 0.01f, name + ": the minimap shows this area with the player at the centre");
+                expect(ring, name + ": the 'you' ring marks the player");
+                rows.Add(new JObject { ["visit"] = name, ["viewport"] = new JArray(vp.x, vp.y), ["navmesh"] = nav, ["floorGap"] = floorGap,
+                    ["promptOnArrival"] = promptShown, ["promptClear"] = promptClear, ["minimap"] = miniShown, ["minimapErrorM"] = miniErr,
+                    ["local"] = new JArray(visit.Venue.ToLocal(pos).x, visit.Venue.ToLocal(pos).y) });
+            }
+            typeof(Session).GetProperty(nameof(Session.AccessToken)).SetValue(session, null);
+            return visit;
         }
 
         private static Vector2 CTLite() => CTLife.UI.Map.MapCatalog.Atlas.Rect.center;

@@ -72,7 +72,7 @@ namespace CTLife.EditorTools
                 var areas = doc["areas"] as JArray ?? new JArray();
                 using (new BakeQuality())
                 {
-                    foreach (var spec in VenueCatalog.All)
+                    foreach (var spec in Specs())
                     {
                         if (only.Count > 0 && !only.Contains(spec.id)) continue;
                         if (AssetDatabase.LoadAssetAtPath<GameObject>(spec.PrefabPath) == null) { receipt[spec.id] = "no prefab"; continue; }
@@ -103,6 +103,31 @@ namespace CTLife.EditorTools
             bool pass = fatal == null && Failures.Count == 0;
             Debug.Log($"CTLIFE [mapbake] {(pass ? "PASS" : "FAIL")} fatal={fatal} failures={Failures.Count}");
             if (Application.isBatchMode) EditorApplication.Exit(pass ? 0 : 1);
+        }
+
+        /// <summary>
+        /// Every shipped area: the venue catalog plus any VenueContentEntry it does not build (the default Parents Basement
+        /// home ships from a candidate prefab and had no map, so the minimap vanished at home).
+        /// </summary>
+        public static List<VenueSpec> Specs()
+        {
+            var list = VenueCatalog.All;
+            var known = new HashSet<string>(list.Select(s => s.id));
+            foreach (var guid in AssetDatabase.FindAssets("t:VenueContentEntry"))
+            {
+                var e = AssetDatabase.LoadAssetAtPath<VenueContentEntry>(AssetDatabase.GUIDToAssetPath(guid));
+                if (e == null || e.prefab == null) continue;
+                string id = e.isHome ? "home_" + e.contentId : e.contentId;
+                if (known.Contains(id)) continue;
+                list.Add(new VenueSpec
+                {
+                    id = id, venueId = e.isHome ? "home" : e.contentId, spotsKey = e.isHome ? "home" : e.contentId,
+                    homeId = e.isHome ? e.contentId : null, title = e.contentId, district = e.isHome ? "" : e.prefab.districtId,
+                    prefabPathOverride = AssetDatabase.GetAssetPath(e.prefab),
+                });
+                known.Add(id);
+            }
+            return list;
         }
 
         /// <summary>Phone URP settings are raised in memory for the bake only (render scale 1, soft main-light shadows); restored after.</summary>

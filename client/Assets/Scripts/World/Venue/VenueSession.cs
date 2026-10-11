@@ -295,10 +295,13 @@ namespace CTLife.World
             // The session's own user id: a server that does not verify the JWT reports a placeholder (item 38).
             view.userId = Services.Get<Session>().UserId ?? state?.userId;
             view.sessionId = Channel?.SessionId;
-            // (0,0) is the schema default: the server has not placed us yet. Spawn at the entrance and publish it.
-            bool placed = state != null && !VenueRoomCheck.IsUnplaced(state.x, state.z);
-            view.transform.position = placed ? Venue.ToWorld((float)state.x, (float)state.z) : Venue.EntrancePosition;
+            // Arrive a few steps inside, clear of the door (VenueArrival); the first move publishes it to the room.
+            var arrival = VenueArrival.For(Venue, out float arrivalYaw);
+            view.transform.SetPositionAndRotation(arrival, Quaternion.Euler(0f, arrivalYaw * Mathf.Rad2Deg, 0f));
+            Log.Info("venue", $"Arrival {VenueId}: local=({Venue.ToLocal(arrival).x:0.00}, {Venue.ToLocal(arrival).y:0.00})" +
+                (state != null ? $" server=({state.x:0.00}, {state.z:0.00}) ignored" : ""));
             LocalPlayer = view.gameObject.AddComponent<LocalPlayerController>();
+            view.gameObject.AddComponent<LocalPlayerMarker>();
             LocalPlayer.Init(Venue, Channel);
             // Player-chosen interactions (CTA): nothing sits or uses anything until the player presses it.
             view.gameObject.AddComponent<InteractionController>().Init(Venue, Channel, this);

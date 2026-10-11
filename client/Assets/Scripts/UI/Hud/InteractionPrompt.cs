@@ -107,6 +107,10 @@ namespace CTLife.UI
                 var min = parent.WorldToLocal(r.min); var max = parent.WorldToLocal(r.max);
                 _blocked.Add(Rect.MinMaxRect(min.x, min.y, max.x, max.y));
             }
+            // The local player is an obstacle too: an object's action (the door's Leave, a seat's Sit) never covers the
+            // character it is offered to (it covered the player on arrival in dark venues). Prompts that follow the actor
+            // already sit above the head.
+            if (!_state.anchor.followsActor && LocalPlayerRect(parent, cam, out var me)) _blocked.Add(me);
             if (!ContextPromptPlacement.TryPlace(point, Element.layout.size, safe, _blocked, out var placed, _previousOffset))
             { SetPresented(false); return; }
             // Keep the intrinsic row layout at the origin. Moving left/top changes the available width near an
@@ -124,6 +128,28 @@ namespace CTLife.UI
             var tail = new Vector2(x - pointerSize * .5f, (below ? _actions.layout.yMin : _actions.layout.yMax) - pointerSize * .5f);
             Move(_pointer, tail - _pointer.layout.position, ref _pointerTranslation);
             Element.EnableInClassList("ct-interact-below", below);
+        }
+
+        /// <summary>The local player's on-screen box (feet to just above the head), in <paramref name="parent"/> space.</summary>
+        public static bool LocalPlayerRect(VisualElement parent, Camera cam, out Rect rect)
+        {
+            rect = default;
+            var me = VenueSession.Current != null ? VenueSession.Current.LocalPlayer : null;
+            if (me == null || cam == null) return false;
+            var feet = me.transform.position;
+            if (cam.WorldToScreenPoint(feet).z <= cam.nearClipPlane) return false;
+            var f = parent.WorldToLocal(RuntimePanelUtils.CameraTransformWorldToPanel(parent.panel, feet, cam));
+            var h = parent.WorldToLocal(RuntimePanelUtils.CameraTransformWorldToPanel(parent.panel, feet + Vector3.up * 1.9f, cam));
+            rect = PlayerBox(f, h);
+            return true;
+        }
+
+        /// <summary>Pure: a box from projected feet and head points (width ~0.55 of the height).</summary>
+        public static Rect PlayerBox(Vector2 feet, Vector2 head)
+        {
+            float height = Mathf.Max(8f, Mathf.Abs(feet.y - head.y));
+            float cx = (feet.x + head.x) * 0.5f, half = height * 0.28f;
+            return Rect.MinMaxRect(cx - half, Mathf.Min(head.y, feet.y), cx + half, Mathf.Max(head.y, feet.y));
         }
 
         private static void Move(VisualElement element, Vector2 position, ref Vector2? previous)

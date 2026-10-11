@@ -13,8 +13,10 @@ namespace CTLife.World
     [RequireComponent(typeof(AvatarView))]
     public sealed class RemotePlayer : MonoBehaviour
     {
-        private const float InterpDelay = 0.12f;
-        private const float MaxExtrapolate = 0.15f;
+        // Jitter buffer (Phase A, 2026-10-17): FeelProbe saw 0.79 m pops at +-100 ms jitter / 20% loss with a fixed 120 ms
+        // delay and arrival-time stamps. RemoteTimeline smooths the stamps and adapts the delay to the measured jitter.
+        private readonly RemoteTimeline _timeline = new RemoteTimeline();
+        private const float MaxExtrapolate = RemoteTimeline.MaxExtrapolate;
 
         private struct Snap
         {
@@ -69,9 +71,10 @@ namespace CTLife.World
             }
             else if (!string.IsNullOrEmpty(s.spotId)) { _view.CancelSeatExitPresentation(false); _exitedSeatAction = null; }
             float yaw = (float)s.rotY * Mathf.Rad2Deg;
+            double stamp = _timeline.Stamp(Time.timeAsDouble);   // every patch counts toward the cadence, moving or not
             if (_buffer.Count == 0 || (_buffer[_buffer.Count - 1].pos - p).sqrMagnitude > 1e-6f || Mathf.Abs(Mathf.DeltaAngle(_buffer[_buffer.Count - 1].yaw, yaw)) > 0.5f)
             {
-                _buffer.Add(new Snap { t = Time.timeAsDouble, pos = p, yaw = yaw });
+                _buffer.Add(new Snap { t = stamp, pos = p, yaw = yaw });
                 if (_buffer.Count > 16) _buffer.RemoveAt(0);
             }
 
@@ -110,10 +113,19 @@ namespace CTLife.World
             }
         }
 
+        /// <summary>Speed from the last two snapshots (server truth, not the rendered motion).</summary>
+        private float SnapshotSpeed()
+        {
+            if (_buffer.Count < 2) return 0f;
+            var a = _buffer[_buffer.Count - 2]; var b = _buffer[_buffer.Count - 1];
+            double dt = b.t - a.t;
+            return dt > 1e-3 ? (float)((b.pos - a.pos).magnitude / dt) : 0f;
+        }
+
         private void Update()
         {
             if (_buffer.Count == 0) return;
-            double renderT = Time.timeAsDouble - InterpDelay;
+            double renderT = Time.timeAsDouble - _timeline.Delay;
             Vector3 pos;
             float yaw;
             int i = _buffer.Count - 1;
@@ -144,6 +156,8 @@ namespace CTLife.World
                 yaw = Mathf.LerpAngle(a.yaw, b.yaw, f);
             }
 
+            // Final follow: never faster than the motion can explain (no pops), but a real teleport still snaps.
+            pos = RemoteTimeline.Follow(transform.position, pos, SnapshotSpeed(), Time.deltaTime);
             transform.SetPositionAndRotation(pos, Quaternion.Euler(0, yaw, 0));
             _view.ReapplySeatExitPresentation();
             float inst = Time.deltaTime > 0 ? (pos - _prevRenderPos).magnitude / Time.deltaTime : 0f;
