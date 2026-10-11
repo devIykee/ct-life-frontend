@@ -1,8 +1,8 @@
 {
   "_owner": "FE",
   "_provisional": true,
-  "version": "1.0.0-rc1+fe.3",
-  "_note": "FE-owned registry (contract section 2). Proposed as an ADDITIVE replacement of contract/ids/spots.json: every id in contract-v1.0.0-rc1 is kept unchanged; new ids are appended. Never renamed. Spot ids are global (venueId.spotId), as the rc1 venue room expects for `sit`. Each spot carries its venue-local position (x, z metres; rotY radians; x right, z forward) and, if claimable with `sit`, the clip the server should set (`anim`: act_sit / act_type); FE walkable rectangles match the venue scenes. Kinds kept from rc1 where the id existed. fe.2 (venue builder, 2026-10-08): additive spots for the venue dioramas; new sets checker_kiosk, yacht_club, penthouse_row. fe.3 (integration lead, 2026-10-08): builder_hills set for Phase 5 (Ventures): project_board opens the project board and hq_door the project HQ (both `stand`, mapped to the Builder app by VenturesSpots). Positions are proposals: there is no Builder Hills scene yet, so the venue lane places the anchors when it builds the venue.",
+  "version": "1.0.0-rc1+fe.4",
+  "_note": "FE-owned registry (contract section 2). Proposed as an ADDITIVE replacement of contract/ids/spots.json: every id in contract-v1.0.0-rc1 is kept unchanged; new ids are appended. Never renamed. Spot ids are global (venueId.spotId), as the rc1 venue room expects for `sit`. Each spot carries its venue-local position (x, z metres; rotY radians; x right, z forward) and, if claimable with `sit`, the clip the server should set (`anim`: act_sit / act_type); FE walkable rectangles match the venue scenes. Kinds kept from rc1 where the id existed. fe.2 (venue builder, 2026-10-08): additive spots for the venue dioramas; new sets checker_kiosk, yacht_club, penthouse_row. fe.3 (integration lead, 2026-10-08): builder_hills set for Phase 5 (Ventures): project_board opens the project board and hq_door the project HQ (both `stand`, mapped to the Builder app by VenturesSpots). Positions are proposals: there is no Builder Hills scene yet, so the venue lane places the anchors when it builds the venue. fe.4 (venue builder, 2026-10-08, Spaces Studio redesign): spaces_studio greenroom_1/2 added (green-room lounge sofa); seat_1..20 moved onto four arcs facing the round stage, stage_4..7 into a shallow talk-show arc and stage_1..3 / 8..10 into pods round the stage (ids, kinds and anims unchanged; positions and rotY only). stage_host stands and stage_4..7 sit on the raised stage (floor y 0.22 m); seat_11..15 / 16..20 sit on risers (0.12 / 0.24 m). fe.4 also (Timeline Square v2): timeline_square.center -> (0, -5.6) and square_center -> (0, -7.0), off the new central fountain; bench_1..6 rotY now face the fountain (positions unchanged).",
   "units": "metres, radians; venue-local; x right, z forward",
   "venues": {
     "timeline_square": {
@@ -24,8 +24,8 @@
         {
           "id": "timeline_square.center",
           "kind": "stage",
-          "x": 0,
-          "z": 0,
+          "x": 0.0,
+          "z": -5.6,
           "rotY": 0.0
         },
         {
@@ -66,8 +66,8 @@
         {
           "id": "timeline_square.square_center",
           "kind": "stand",
-          "x": 0,
-          "z": 2,
+          "x": 0.0,
+          "z": -7.0,
           "rotY": 0.0
         },
         {
@@ -75,7 +75,7 @@
           "kind": "seat",
           "x": 4.5,
           "z": 7.79,
-          "rotY": 4.189,
+          "rotY": -2.618,
           "anim": "act_sit"
         },
         {
@@ -83,7 +83,7 @@
           "kind": "seat",
           "x": -4.5,
           "z": 7.79,
-          "rotY": 5.236,
+          "rotY": 2.618,
           "anim": "act_sit"
         },
         {
@@ -91,7 +91,7 @@
           "kind": "seat",
           "x": -9.0,
           "z": 0.0,
-          "rotY": 6.283,
+          "rotY": 1.571,
           "anim": "act_sit"
         },
         {
@@ -99,7 +99,7 @@
           "kind": "seat",
           "x": -4.5,
           "z": -7.79,
-          "rotY": 7.33,
+          "rotY": 0.524,
           "anim": "act_sit"
         },
         {
@@ -107,7 +107,7 @@
           "kind": "seat",
           "x": 4.5,
           "z": -7.79,
-          "rotY": 8.378,
+          "rotY": -0.524,
           "anim": "act_sit"
         },
         {
@@ -115,7 +115,7 @@
           "kind": "seat",
           "x": 9.0,
           "z": -0.0,
-          "rotY": 9.425,
+          "rotY": -1.571,
           "anim": "act_sit"
         },
         {
@@ -155,81 +155,81 @@
         {
           "id": "spaces_studio.stage_1",
           "kind": "stage",
-          "x": -9,
-          "z": 6,
-          "rotY": 3.142,
+          "x": -4.99,
+          "z": 3.55,
+          "rotY": 1.082,
           "anim": "act_sit"
         },
         {
           "id": "spaces_studio.stage_2",
           "kind": "stage",
-          "x": -7,
-          "z": 6,
-          "rotY": 3.142,
+          "x": -5.63,
+          "z": 5.71,
+          "rotY": 1.484,
           "anim": "act_sit"
         },
         {
           "id": "spaces_studio.stage_3",
           "kind": "stage",
-          "x": -5,
-          "z": 6,
-          "rotY": 3.142,
+          "x": -5.37,
+          "z": 7.95,
+          "rotY": 1.885,
           "anim": "act_sit"
         },
         {
           "id": "spaces_studio.stage_4",
           "kind": "stage",
-          "x": -3,
-          "z": 6,
-          "rotY": 3.142,
+          "x": -3.0,
+          "z": 5.2,
+          "rotY": 2.88,
           "anim": "act_sit"
         },
         {
           "id": "spaces_studio.stage_5",
           "kind": "stage",
-          "x": -1,
-          "z": 6,
-          "rotY": 3.142,
+          "x": -1.0,
+          "z": 5.75,
+          "rotY": 3.002,
           "anim": "act_sit"
         },
         {
           "id": "spaces_studio.stage_6",
           "kind": "stage",
-          "x": 1,
-          "z": 6,
-          "rotY": 3.142,
+          "x": 1.0,
+          "z": 5.75,
+          "rotY": -3.002,
           "anim": "act_sit"
         },
         {
           "id": "spaces_studio.stage_7",
           "kind": "stage",
-          "x": 3,
-          "z": 6,
-          "rotY": 3.142,
+          "x": 3.0,
+          "z": 5.2,
+          "rotY": -2.88,
           "anim": "act_sit"
         },
         {
           "id": "spaces_studio.stage_8",
           "kind": "stage",
-          "x": 5,
-          "z": 6,
-          "rotY": 3.142,
+          "x": 5.37,
+          "z": 7.95,
+          "rotY": -1.885,
           "anim": "act_sit"
         },
         {
           "id": "spaces_studio.stage_9",
           "kind": "stage",
-          "x": 7,
-          "z": 6,
-          "rotY": 3.142,
+          "x": 5.63,
+          "z": 5.71,
+          "rotY": -1.484,
           "anim": "act_sit"
         },
         {
           "id": "spaces_studio.stage_10",
           "kind": "stage",
-          "x": 9,
-          "z": 6,
-          "rotY": 3.142,
+          "x": 4.99,
+          "z": 3.55,
+          "rotY": -1.082,
           "anim": "act_sit"
         },
         {
@@ -256,17 +256,17 @@
         {
           "id": "spaces_studio.seat_1",
           "kind": "seat",
-          "x": -6,
-          "z": -2,
-          "rotY": 0,
+          "x": -5.25,
+          "z": -0.1,
+          "rotY": 0.695,
           "anim": "act_sit"
         },
         {
           "id": "spaces_studio.seat_2",
           "kind": "seat",
-          "x": -3,
-          "z": -2,
-          "rotY": 0,
+          "x": -2.79,
+          "z": -1.51,
+          "rotY": 0.348,
           "anim": "act_sit"
         },
         {
@@ -280,33 +280,33 @@
         {
           "id": "spaces_studio.seat_4",
           "kind": "seat",
-          "x": 3,
-          "z": -2,
-          "rotY": 0,
+          "x": 2.79,
+          "z": -1.51,
+          "rotY": -0.348,
           "anim": "act_sit"
         },
         {
           "id": "spaces_studio.seat_5",
           "kind": "seat",
-          "x": 6,
-          "z": -2,
-          "rotY": 0,
+          "x": 5.25,
+          "z": -0.1,
+          "rotY": -0.695,
           "anim": "act_sit"
         },
         {
           "id": "spaces_studio.seat_6",
           "kind": "seat",
-          "x": -6,
-          "z": -4,
-          "rotY": 0,
+          "x": -5.41,
+          "z": -2.45,
+          "rotY": 0.559,
           "anim": "act_sit"
         },
         {
           "id": "spaces_studio.seat_7",
           "kind": "seat",
-          "x": -3,
-          "z": -4,
-          "rotY": 0,
+          "x": -2.81,
+          "z": -3.6,
+          "rotY": 0.279,
           "anim": "act_sit"
         },
         {
@@ -320,33 +320,33 @@
         {
           "id": "spaces_studio.seat_9",
           "kind": "seat",
-          "x": 3,
-          "z": -4,
-          "rotY": 0,
+          "x": 2.81,
+          "z": -3.6,
+          "rotY": -0.279,
           "anim": "act_sit"
         },
         {
           "id": "spaces_studio.seat_10",
           "kind": "seat",
-          "x": 6,
-          "z": -4,
-          "rotY": 0,
+          "x": 5.41,
+          "z": -2.45,
+          "rotY": -0.559,
           "anim": "act_sit"
         },
         {
           "id": "spaces_studio.seat_11",
           "kind": "seat",
-          "x": -6,
-          "z": -6,
-          "rotY": 0,
+          "x": -5.49,
+          "z": -4.69,
+          "rotY": 0.467,
           "anim": "act_sit"
         },
         {
           "id": "spaces_studio.seat_12",
           "kind": "seat",
-          "x": -3,
-          "z": -6,
-          "rotY": 0,
+          "x": -2.82,
+          "z": -5.67,
+          "rotY": 0.234,
           "anim": "act_sit"
         },
         {
@@ -360,33 +360,33 @@
         {
           "id": "spaces_studio.seat_14",
           "kind": "seat",
-          "x": 3,
-          "z": -6,
-          "rotY": 0,
+          "x": 2.82,
+          "z": -5.67,
+          "rotY": -0.234,
           "anim": "act_sit"
         },
         {
           "id": "spaces_studio.seat_15",
           "kind": "seat",
-          "x": 6,
-          "z": -6,
-          "rotY": 0,
+          "x": 5.49,
+          "z": -4.69,
+          "rotY": -0.467,
           "anim": "act_sit"
         },
         {
           "id": "spaces_studio.seat_16",
           "kind": "seat",
-          "x": -6,
-          "z": -8,
-          "rotY": 0,
+          "x": -5.55,
+          "z": -6.87,
+          "rotY": 0.401,
           "anim": "act_sit"
         },
         {
           "id": "spaces_studio.seat_17",
           "kind": "seat",
-          "x": -3,
-          "z": -8,
-          "rotY": 0,
+          "x": -2.83,
+          "z": -7.71,
+          "rotY": 0.201,
           "anim": "act_sit"
         },
         {
@@ -400,17 +400,33 @@
         {
           "id": "spaces_studio.seat_19",
           "kind": "seat",
-          "x": 3,
-          "z": -8,
-          "rotY": 0,
+          "x": 2.83,
+          "z": -7.71,
+          "rotY": -0.201,
           "anim": "act_sit"
         },
         {
           "id": "spaces_studio.seat_20",
           "kind": "seat",
-          "x": 6,
-          "z": -8,
-          "rotY": 0,
+          "x": 5.55,
+          "z": -6.87,
+          "rotY": -0.401,
+          "anim": "act_sit"
+        },
+        {
+          "id": "spaces_studio.greenroom_1",
+          "kind": "seat",
+          "x": -11.0,
+          "z": -2.0,
+          "rotY": 1.571,
+          "anim": "act_sit"
+        },
+        {
+          "id": "spaces_studio.greenroom_2",
+          "kind": "seat",
+          "x": -11.0,
+          "z": -0.8,
+          "rotY": 1.571,
           "anim": "act_sit"
         }
       ]

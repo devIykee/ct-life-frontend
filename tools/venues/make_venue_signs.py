@@ -409,7 +409,517 @@ def ore_idle(size=256):
     return None
 
 
+# ----------------------------------------------------------------------------- Spaces Studio (no letters anywhere)
+
+def waveform(w, h, seed=3, bg=(10, 12, 30)):
+    im = vgrad(w, h, bg, (18, 14, 44))
+    d = ImageDraw.Draw(im)
+    rnd = random.Random(seed)
+    n = 72
+    bw = w / n
+    mid = h / 2
+    for i in range(n):
+        t = i / (n - 1)
+        env = math.sin(t * math.pi) ** 0.8
+        a = (0.18 + 0.82 * abs(math.sin(i * 0.37) * math.cos(i * 0.11 + 1.3))) * env * (0.75 + 0.25 * rnd.random())
+        hh = a * h * 0.42
+        e = abs(t - 0.5) * 2  # cyan core, violet tails
+        col = (int(60 + 120 * e), int(235 - 120 * e), int(240 + 15 * e))
+        x0 = int(i * bw + bw * 0.2)
+        d.rounded_rectangle([x0, int(mid - hh), int(x0 + bw * 0.6), int(mid + hh)], radius=max(2, int(bw * 0.3)), fill=col)
+    d.line([(0, int(mid)), (w, int(mid))], fill=(60, 50, 110), width=2)
+    glow = im.filter(ImageFilter.GaussianBlur(6))
+    return ImageChops.screen(im, glow)
+
+
+def lanyards(w, h, seed=11):
+    im = Image.new("RGB", (w, h), (34, 30, 40))
+    d = ImageDraw.Draw(im)
+    rnd = random.Random(seed)
+    cols, rows = 8, 3
+    cw, rh = w / cols, h / rows
+    straps = [(153, 69, 255), (20, 241, 149), (255, 196, 61), (61, 126, 255), (255, 95, 162), (31, 191, 184), (255, 138, 61), (240, 240, 240)]
+    for r in range(rows):
+        for c in range(cols):
+            x0, y0 = c * cw, r * rh
+            sc = straps[(r * 3 + c) % len(straps)]
+            cx = x0 + cw / 2 + rnd.uniform(-6, 6)
+            # strap V
+            d.polygon([(cx - cw * .28, y0 + 4), (cx - cw * .22, y0 + 4), (cx + 3, y0 + rh * .42), (cx - 3, y0 + rh * .42)], fill=sc)
+            d.polygon([(cx + cw * .22, y0 + 4), (cx + cw * .28, y0 + 4), (cx + 3, y0 + rh * .42), (cx - 3, y0 + rh * .42)], fill=sc)
+            # clip + card
+            d.rectangle([cx - 5, y0 + rh * .40, cx + 5, y0 + rh * .47], fill=(170, 170, 180))
+            card = [cx - cw * .30, y0 + rh * .46, cx + cw * .30, y0 + rh * .96]
+            d.rounded_rectangle(card, radius=6, fill=(246, 244, 238))
+            d.rectangle([card[0], card[1], card[2], card[1] + (card[3] - card[1]) * .22], fill=sc)
+            # avatar circle + abstract bars (no letters)
+            ar = (card[2] - card[0]) * .22
+            acx, acy = cx, card[1] + (card[3] - card[1]) * .48
+            d.ellipse([acx - ar, acy - ar, acx + ar, acy + ar], fill=straps[(c + r * 2 + 3) % len(straps)])
+            for k in range(2):
+                yy = card[1] + (card[3] - card[1]) * (.74 + k * .1)
+                d.rounded_rectangle([card[0] + 8, yy, card[2] - 8 - k * 14, yy + 5], radius=2, fill=(190, 190, 200))
+    return im
+
+
+def sky_evening(w, h):
+    im = vgrad(w, h, (38, 46, 110), (255, 170, 120))
+    px = im.load()
+    for y in range(h):
+        t = y / (h - 1)
+        if t > 0.55:
+            k = (t - 0.55) / 0.45
+            for x in range(w):
+                r, g, b = px[x, y]
+                px[x, y] = (min(255, int(r + 30 * k)), min(255, int(g + 10 * k)), b)
+    d = ImageDraw.Draw(im)
+    rnd = random.Random(5)
+    for _ in range(9):
+        cx, cy = rnd.uniform(0, w), rnd.uniform(h * .25, h * .6)
+        for k in range(5):
+            rw, rh = rnd.uniform(60, 160), rnd.uniform(14, 30)
+            ox = rnd.uniform(-60, 60)
+            d.ellipse([cx + ox - rw, cy - rh, cx + ox + rw, cy + rh], fill=(255, 190, 170) if cy > h * .45 else (150, 130, 190))
+    im = im.filter(ImageFilter.GaussianBlur(2))
+    # Layered mountain ridges on the horizon (the concept's evening range), far = lighter haze.
+    d = ImageDraw.Draw(im)
+    rnd = random.Random(9)
+    for layer, (base, col) in enumerate([(0.80, (126, 96, 150)), (0.87, (88, 66, 118)), (0.93, (58, 46, 92))]):
+        pts, x = [(0, h)], 0.0
+        y = h * base
+        while x <= w:
+            pts.append((x, y))
+            x += rnd.uniform(18, 46)
+            y = min(h * (base + 0.05), max(h * (base - 0.12 + layer * 0.03), y + rnd.uniform(-22, 22)))
+        pts.append((w, h))
+        d.polygon(pts, fill=col)
+    return im
+
+
+def lanyard_frame(w, h):
+    """Framed board of three big conference lanyards (purple / teal / yellow straps, geometric badge marks, no letters)."""
+    im = Image.new("RGB", (w, h), (92, 70, 54))
+    d = ImageDraw.Draw(im)
+    d.rectangle([14, 14, w - 15, h - 15], fill=(226, 222, 214))
+    straps = [((153, 69, 255), "circle"), ((31, 191, 184), "triangle"), ((255, 196, 61), "triangle")]
+    cw = (w - 28) / 3
+    for i, (col, mark) in enumerate(straps):
+        cx = 14 + cw * (i + .5)
+        top, clip = 22, h * .52
+        d.polygon([(cx - cw * .16, top), (cx - cw * .08, top), (cx + 4, clip), (cx - 4, clip)], fill=col)
+        d.polygon([(cx + cw * .08, top), (cx + cw * .16, top), (cx + 4, clip), (cx - 4, clip)], fill=col)
+        d.rectangle([cx - 7, clip - 4, cx + 7, clip + 10], fill=(160, 160, 170))
+        card = [cx - cw * .24, clip + 8, cx + cw * .24, h - 30]
+        d.rounded_rectangle(card, radius=8, fill=(84, 52, 120) if i == 0 else (40, 44, 60))
+        d.rectangle([card[0], card[1], card[2], card[1] + 16], fill=col)
+        mx, my, r = cx, (card[1] + card[3]) / 2 + 8, cw * .11
+        if mark == "circle":
+            d.ellipse([mx - r, my - r, mx + r, my + r], outline=col, width=9)
+        else:
+            d.polygon([(mx, my - r), (mx + r, my + r * .8), (mx - r, my + r * .8)], fill=col)
+    return im
+
+
+FLAG_SETS = [
+    ("h", [(153, 69, 255), (255, 196, 61)]), ("h", [(255, 196, 61), (153, 69, 255)]),
+    ("v", [(0, 135, 81), (245, 245, 245), (0, 135, 81)]), ("h", [(255, 153, 51), (245, 245, 245), (19, 136, 8)]),
+    ("v", [(0, 85, 164), (245, 245, 245), (239, 65, 53)]), ("h", [(20, 20, 20), (221, 0, 0), (255, 206, 0)]),
+    ("cross", [(0, 106, 167), (254, 204, 0)]), ("h", [(218, 37, 29), (255, 255, 0)]), ("v", [(0, 146, 70), (245, 245, 245), (206, 43, 55)]),
+    ("h", [(245, 245, 245), (213, 43, 30)]), ("diag", [(0, 155, 58), (254, 223, 0)]), ("h", [(255, 205, 0), (0, 56, 147), (206, 17, 38)]),
+    ("v", [(0, 158, 96), (252, 209, 22)]), ("cross", [(200, 16, 46), (245, 245, 245)]), ("h", [(0, 56, 168), (206, 17, 38)]),
+    ("diag", [(153, 69, 255), (255, 196, 61)]),
+]
+
+
+def flag(kind, colors, w=96, h=64):
+    im = Image.new("RGB", (w, h), colors[0])
+    d = ImageDraw.Draw(im)
+    n = len(colors)
+    if kind == "h":
+        for i, c in enumerate(colors):
+            d.rectangle([0, int(i * h / n), w, int((i + 1) * h / n)], fill=c)
+    elif kind == "v":
+        for i, c in enumerate(colors):
+            d.rectangle([int(i * w / n), 0, int((i + 1) * w / n), h], fill=c)
+    elif kind == "cross":
+        d.rectangle([0, 0, w, h], fill=colors[0])
+        d.rectangle([int(w * .3), 0, int(w * .42), h], fill=colors[1])
+        d.rectangle([0, int(h * .42), w, int(h * .58)], fill=colors[1])
+    elif kind == "diag":
+        d.polygon([(0, 0), (w, 0), (0, h)], fill=colors[0])
+        d.polygon([(w, 0), (w, h), (0, h)], fill=colors[1])
+    return im
+
+
+def stage_feed(w, h):
+    im = waveform(w, h, seed=9, bg=(12, 10, 26))
+    d = ImageDraw.Draw(im)
+    for i, x in enumerate((w * .3, w * .5, w * .7)):
+        d.ellipse([x - 26, h * .58, x + 26, h * .58 + 52], fill=(40, 30, 70))
+        d.rounded_rectangle([x - 40, h * .58 + 50, x + 40, h * .98], radius=20, fill=(40, 30, 70))
+    return im
+
+
+def rug(w, h, seed, base, accent, round_=False):
+    """Woven rug: border bands, a medallion lattice and fringe-free edges (no letters)."""
+    im = Image.new("RGB", (w, h), base)
+    d = ImageDraw.Draw(im)
+    rnd = random.Random(seed)
+    if round_:
+        cx, cy = w / 2, h / 2
+        for k, col in enumerate([accent, base, tuple(min(255, c + 25) for c in base), accent, base]):
+            r = w * (0.48 - k * 0.07)
+            d.ellipse([cx - r, cy - r, cx + r, cy + r], outline=col, width=max(3, w // 60))
+        for i in range(16):
+            a = i * math.pi / 8
+            x, y = cx + math.cos(a) * w * .3, cy + math.sin(a) * w * .3
+            d.ellipse([x - 6, y - 6, x + 6, y + 6], fill=accent)
+    else:
+        for k in range(3):
+            m = 8 + k * 14
+            d.rectangle([m, m, w - m, h - m], outline=accent if k != 1 else tuple(min(255, c + 30) for c in base), width=6)
+        step = 48
+        for y in range(70, h - 60, step):
+            for x in range(70, w - 60, step):
+                d.polygon([(x, y - 14), (x + 14, y), (x, y + 14), (x - 14, y)], outline=accent, width=3)
+    px = im.load()
+    for _ in range(w * h // 6):
+        x, y = rnd.randrange(w), rnd.randrange(h)
+        r, g, b = px[x, y]
+        j = rnd.randint(-10, 10)
+        px[x, y] = (max(0, min(255, r + j)), max(0, min(255, g + j)), max(0, min(255, b + j)))
+    return im
+
+
+def gig_poster(w, h, seed):
+    rnd = random.Random(seed)
+    base = rnd.choice([(255, 196, 61), (153, 69, 255), (31, 191, 184), (255, 95, 162)])
+    im = vgrad(w, h, base, tuple(max(0, c - 70) for c in base))
+    d = ImageDraw.Draw(im)
+    cx, cy = w / 2, h * .42
+    for k in range(6, 0, -1):
+        r = k * w * .07
+        d.ellipse([cx - r, cy - r, cx + r, cy + r], outline=(255, 255, 255) if k % 2 else (20, 20, 30), width=4)
+    d.rectangle([w * .15, h * .8, w * .85, h * .84], fill=(255, 255, 255))
+    return im
+
+
 # ----------------------------------------------------------------------------- venue sign sets
+
+
+# ---------------------------------------------------------------------------------------------------------------
+# Timeline Square (round 3 look-dev, to ingame-timeline-concept-v1.png / title-bg-eggs-v1.png): painted, letter-free.
+
+def _jitter(im, rnd, amount=8, frac=4):
+    px = im.load()
+    w, h = im.size
+    for _ in range(w * h // frac):
+        x, y = rnd.randrange(w), rnd.randrange(h)
+        r, g, b = px[x, y][:3]
+        j = rnd.randint(-amount, amount)
+        px[x, y] = (max(0, min(255, r + j)), max(0, min(255, g + j)), max(0, min(255, b + j)))
+    return im
+
+
+def cobbles(size, seed, palette, grout):
+    """Tileable painted cobblestones: rounded stones on a wrapped jittered grid, soft top light, dark grout."""
+    rnd = random.Random(seed)
+    im = Image.new("RGB", (size, size), grout)
+    d = ImageDraw.Draw(im)
+    n = 12
+    cell = size / n
+    for gy in range(n):
+        off = (gy % 2) * cell * .5
+        for gx in range(n):
+            cx = gx * cell + off + rnd.uniform(-cell * .08, cell * .08)
+            cy = gy * cell + cell * .5 + rnd.uniform(-cell * .08, cell * .08)
+            rw, rh = cell * rnd.uniform(.34, .49), cell * rnd.uniform(.30, .46)
+            base = rnd.choice(palette)
+            tone = rnd.randint(-14, 14)
+            col = tuple(max(0, min(255, c + tone)) for c in base)
+            for dx in (-size, 0, size):
+                for dy in (-size, 0, size):
+                    x, y = cx + dx, cy + dy
+                    d.rounded_rectangle([x - rw, y - rh, x + rw, y + rh], radius=rh * .7, fill=col)
+                    hl = tuple(min(255, c + 12) for c in col)
+                    d.rounded_rectangle([x - rw * .78, y - rh * .82, x + rw * .55, y - rh * .05], radius=rh * .5, fill=hl)
+                    sh = tuple(max(0, c - 20) for c in col)
+                    d.rounded_rectangle([x - rw * .9, y + rh * .45, x + rw * .9, y + rh * .92], radius=rh * .4, fill=sh)
+    im = im.filter(ImageFilter.GaussianBlur(1.2))
+    return _jitter(im, rnd, 7, 3)
+
+
+def stucco(size, seed, base):
+    """Warm painted plaster: soft mottling, a few hairline cracks and a darker plinth wash at the bottom."""
+    rnd = random.Random(seed)
+    im = Image.new("RGB", (size, size), base)
+    d = ImageDraw.Draw(im)
+    for _ in range(60):
+        x, y, r = rnd.uniform(0, size), rnd.uniform(0, size), rnd.uniform(size * .05, size * .18)
+        t = rnd.randint(-12, 10)
+        d.ellipse([x - r, y - r * .7, x + r, y + r * .7], fill=tuple(max(0, min(255, c + t)) for c in base))
+    im = im.filter(ImageFilter.GaussianBlur(size / 28))
+    d = ImageDraw.Draw(im)
+    for _ in range(5):
+        x, y = rnd.uniform(0, size), rnd.uniform(0, size)
+        pts = [(x, y)]
+        for _ in range(5):
+            x += rnd.uniform(-10, 10); y += rnd.uniform(4, 14)
+            pts.append((x, y))
+        d.line(pts, fill=tuple(max(0, c - 40) for c in base), width=1)
+    for y in range(int(size * .86), size):
+        k = (y - size * .86) / (size * .14)
+        for x in range(size):
+            r, g, b = im.getpixel((x, y))
+            im.putpixel((x, y), (int(r * (1 - .18 * k)), int(g * (1 - .2 * k)), int(b * (1 - .22 * k))))
+    return _jitter(im, rnd, 5, 4)
+
+
+def roof_tiles(w, h, seed, base=(196, 98, 58)):
+    """Terracotta barrel tiles in courses, each tile lit on its left and shaded on its right (letter-free)."""
+    rnd = random.Random(seed)
+    im = Image.new("RGB", (w, h), tuple(max(0, c - 45) for c in base))
+    d = ImageDraw.Draw(im)
+    rows, cols = 9, 14
+    rh, cw = h / rows, w / cols
+    for r in range(rows):
+        for c in range(cols + 1):
+            x = c * cw + (r % 2) * cw * .5
+            col = tuple(max(0, min(255, v + rnd.randint(-18, 14))) for v in base)
+            d.rounded_rectangle([x - cw * .46, r * rh + 2, x + cw * .46, (r + 1) * rh + rh * .25], radius=cw * .4, fill=col)
+            d.rectangle([x - cw * .34, r * rh + 4, x - cw * .12, (r + 1) * rh], fill=tuple(min(255, v + 28) for v in col))
+            d.rectangle([x + cw * .2, r * rh + 4, x + cw * .44, (r + 1) * rh], fill=tuple(max(0, v - 30) for v in col))
+    return _jitter(im.filter(ImageFilter.GaussianBlur(1.0)), rnd, 6, 4)
+
+
+def solana_sky(w, h):
+    """Golden-hour sky with the Solana gradient as a wash (lavender top to mint and peach), soft clouds, the sea, far
+    hills and a terracotta hill town on the horizon. No bars, no logo."""
+    rnd = random.Random(21)
+    im = Image.new("RGB", (w, h))
+    px = im.load()
+    stops = [(0.0, (150, 128, 222)), (0.38, (178, 170, 236)), (0.62, (176, 226, 214)), (0.74, (252, 214, 168))]
+    for y in range(h):
+        t = y / (h - 1)
+        for i in range(len(stops) - 1):
+            if stops[i][0] <= t <= stops[i + 1][0] or i == len(stops) - 2:
+                a, b = stops[i], stops[i + 1]
+                k = max(0.0, min(1.0, (t - a[0]) / max(1e-6, b[0] - a[0])))
+                col = tuple(int(a[1][j] + (b[1][j] - a[1][j]) * k) for j in range(3))
+                break
+        for x in range(w):
+            px[x, y] = col
+    d = ImageDraw.Draw(im)
+    for _ in range(14):
+        cx, cy = rnd.uniform(0, w), rnd.uniform(h * .1, h * .45)
+        for k in range(6):
+            rw, rh = rnd.uniform(40, 120), rnd.uniform(10, 22)
+            ox = rnd.uniform(-70, 70)
+            d.ellipse([cx + ox - rw, cy - rh, cx + ox + rw, cy + rh], fill=(255, 236, 228) if cy > h * .3 else (226, 214, 250))
+    im = im.filter(ImageFilter.GaussianBlur(3))
+    d = ImageDraw.Draw(im)
+    sea = int(h * .74)
+    d.rectangle([0, sea, w, h], fill=(78, 150, 188))
+    for i in range(40):
+        y = sea + 3 + i * 3
+        if y >= h: break
+        d.line([(rnd.uniform(0, w * .4), y), (rnd.uniform(w * .5, w), y)], fill=(130, 190, 214), width=1)
+    for layer, (base, col) in enumerate([(0.70, (150, 168, 150)), (0.76, (112, 142, 104))]):
+        pts, x, y = [(0, h)], 0.0, h * base
+        while x <= w:
+            pts.append((x, y)); x += rnd.uniform(20, 60)
+            y = min(h * (base + .06), max(h * (base - .07), y + rnd.uniform(-14, 14)))
+        pts.append((w, h))
+        if layer == 0:
+            pts = [(px_, py_) for px_, py_ in pts]
+            d.polygon([(0, h)] + [(x_, y_) for x_, y_ in pts[1:-1] if x_ < w * .45] + [(w * .45, h)], fill=col)
+        else:
+            d.polygon([(0, h)] + [(x_, y_ + 18) for x_, y_ in pts[1:-1] if x_ < w * .3] + [(w * .3, h)], fill=col)
+    for _ in range(70):
+        x, y = rnd.uniform(0, w * .42), rnd.uniform(h * .78, h * .95)
+        bw = rnd.uniform(8, 18)
+        d.rectangle([x, y, x + bw, y + bw * .7], fill=rnd.choice([(238, 222, 196), (226, 200, 160), (244, 232, 214)]))
+        d.polygon([(x - 2, y), (x + bw / 2, y - bw * .45), (x + bw + 2, y)], fill=(190, 96, 62))
+    return im
+
+
+def feed_idle(w, h):
+    """Timeline screen idle art: a dark feed UI with post cards (avatars, text bars, small reaction icons), no letters."""
+    rnd = random.Random(31)
+    im = vgrad(w, h, (14, 18, 30), (24, 22, 44))
+    d = ImageDraw.Draw(im)
+    d.rectangle([0, 0, w, 40], fill=(28, 32, 52))
+    for i, col in enumerate([(153, 69, 255), (20, 241, 149), (255, 196, 61)]):
+        d.ellipse([16 + i * 30, 12, 32 + i * 30, 28], fill=col)
+    cols = 3
+    cw = (w - 40) / cols
+    for c in range(cols):
+        y = 56
+        while y < h - 60:
+            ch = rnd.randint(110, 170)
+            x0 = 16 + c * cw
+            d.rounded_rectangle([x0, y, x0 + cw - 14, y + ch], radius=12, fill=(34, 38, 62))
+            av = rnd.choice([(153, 69, 255), (20, 241, 149), (255, 196, 61), (61, 126, 255), (255, 95, 162), (31, 191, 184)])
+            d.ellipse([x0 + 12, y + 12, x0 + 44, y + 44], fill=av)
+            d.rounded_rectangle([x0 + 54, y + 16, x0 + 54 + rnd.randint(60, 120), y + 26], radius=4, fill=(210, 214, 230))
+            d.rounded_rectangle([x0 + 54, y + 32, x0 + 54 + rnd.randint(40, 80), y + 39], radius=3, fill=(110, 116, 150))
+            for k in range(rnd.randint(2, 3)):
+                d.rounded_rectangle([x0 + 14, y + 56 + k * 18, x0 + cw - 30 - rnd.randint(0, 80), y + 66 + k * 18], radius=4, fill=(160, 166, 196))
+            for k, ic in enumerate([(120, 200, 255), (20, 241, 149), (255, 95, 162)]):
+                d.ellipse([x0 + 14 + k * 46, y + ch - 24, x0 + 26 + k * 46, y + ch - 12], fill=ic)
+                d.rounded_rectangle([x0 + 30 + k * 46, y + ch - 21, x0 + 46 + k * 46, y + ch - 15], radius=2, fill=(110, 116, 150))
+            y += ch + 12
+    return im
+
+
+def pixel_canvas(w, h, seed=41):
+    """Community pixel wall idle art: a coarse pixel mosaic with hearts, a sun, a smiley, a wave and a little rocket."""
+    rnd = random.Random(seed)
+    g = 8
+    cols, rows = w // g, h // g
+    base = [(242, 236, 222), (236, 228, 210)]
+    grid = [[base[(x + y) % 2] for x in range(cols)] for y in range(rows)]
+    def put(x, y, c):
+        if 0 <= x < cols and 0 <= y < rows: grid[y][x] = c
+    for _ in range(cols * rows // 9):
+        put(rnd.randrange(cols), rnd.randrange(rows), rnd.choice([(153, 69, 255), (20, 241, 149), (255, 196, 61), (61, 126, 255), (255, 95, 162), (255, 138, 61), (31, 191, 184)]))
+    heart = ["01100110", "11111111", "11111111", "01111110", "00111100", "00011000"]
+    for ox, oy, col in [(6, 5, (230, 57, 70)), (cols - 18, rows - 14, (255, 95, 162))]:
+        for yy, row in enumerate(heart):
+            for xx, ch in enumerate(row):
+                if ch == "1": put(ox + xx, oy + yy, col)
+    cx, cy, r = cols // 2 + 6, rows // 3, 6
+    for y in range(-r - 3, r + 4):
+        for x in range(-r - 3, r + 4):
+            dd = (x * x + y * y) ** .5
+            if dd <= r: put(cx + x, cy + y, (255, 196, 61))
+            elif dd <= r + 3 and (x == 0 or y == 0 or abs(x) == abs(y)): put(cx + x, cy + y, (255, 138, 61))
+    sx, sy = cols // 4, rows * 2 // 3
+    for y in range(-6, 7):
+        for x in range(-6, 7):
+            if x * x + y * y <= 36: put(sx + x, sy + y, (255, 214, 64))
+    for x, y in [(-2, -2), (2, -2)]: put(sx + x, sy + y, (30, 30, 40))
+    for x in range(-3, 4): put(sx + x, sy + (1 if abs(x) == 3 else 2 if abs(x) == 2 else 3), (30, 30, 40))
+    for x in range(cols):
+        y = int(rows * .86 + 2 * math.sin(x / 3))
+        for k in range(3): put(x, y + k, (61, 126, 255))
+    img = Image.new("RGB", (cols * g, rows * g))
+    d = ImageDraw.Draw(img)
+    for y in range(rows):
+        for x in range(cols):
+            d.rectangle([x * g, y * g, x * g + g - 1, y * g + g - 1], fill=grid[y][x])
+    return img.resize((w, h), Image.NEAREST)
+
+
+def billboard_idle(w, h, kind):
+    """Letter-free billboard idle art (house ads replace it at runtime)."""
+    if kind == 0:
+        im = vgrad(w, h, (255, 186, 120), (255, 120, 140))
+        d = ImageDraw.Draw(im)
+        d.ellipse([w * .55, h * .18, w * .55 + h * .5, h * .68], fill=(255, 240, 200))
+        d.rectangle([0, h * .64, w, h], fill=(60, 150, 200))
+        for i in range(6):
+            d.line([(w * .05, h * (.7 + i * .05)), (w * .95, h * (.7 + i * .05))], fill=(150, 210, 230), width=3)
+        d.polygon([(w * .12, h * .64), (w * .2, h * .3), (w * .28, h * .64)], fill=(250, 250, 250))
+        d.line([(w * .2, h * .3), (w * .2, h * .66)], fill=(80, 60, 50), width=4)
+    else:
+        im = vgrad(w, h, (36, 30, 62), (90, 48, 120))
+        d = ImageDraw.Draw(im)
+        cx, cy = w * .3, h * .55
+        d.rounded_rectangle([cx - 60, cy - 70, cx + 60, cy + 70], radius=18, fill=(250, 244, 230))
+        d.ellipse([cx + 50, cy - 30, cx + 100, cy + 30], outline=(250, 244, 230), width=12)
+        d.rectangle([cx - 60, cy - 70, cx + 60, cy - 40], fill=(200, 130, 70))
+        for i in range(3):
+            d.arc([cx - 40 + i * 25, cy - 140, cx - 10 + i * 25, cy - 80], 200, 340, fill=(250, 244, 230), width=6)
+        for i in range(5):
+            x = w * (.55 + i * .08)
+            d.rounded_rectangle([x, h * .3, x + w * .05, h * .8], radius=10, fill=[(153, 69, 255), (20, 241, 149), (255, 196, 61), (255, 95, 162), (61, 126, 255)][i])
+    return im
+
+
+def burst_poster(w, h):
+    """Hot-red poster with a black jagged lightning-cut frame (no letters, no character)."""
+    im = Image.new("RGB", (w, h), (246, 32, 56))
+    d = ImageDraw.Draw(im)
+    rnd = random.Random(51)
+    cx, cy = w / 2, h / 2
+    pts = []
+    for i in range(22):
+        a = i * math.pi * 2 / 22
+        r = (min(w, h) * (.46 if i % 2 == 0 else .3)) * rnd.uniform(.9, 1.08)
+        pts.append((cx + math.cos(a) * r * (w / min(w, h)) * .9, cy + math.sin(a) * r * (h / min(w, h)) * .9))
+    d.polygon(pts, fill=(18, 14, 16))
+    inner = [(cx + (x - cx) * .78, cy + (y - cy) * .78) for x, y in pts]
+    d.polygon(inner, fill=(246, 32, 56))
+    d.rectangle([0, 0, w - 1, h - 1], outline=(18, 14, 16), width=10)
+    return im
+
+
+def clock_face(size):
+    im = Image.new("RGB", (size, size), (196, 170, 128))
+    d = ImageDraw.Draw(im)
+    c, r = size / 2, size * .46
+    d.ellipse([c - r, c - r, c + r, c + r], fill=(248, 242, 226), outline=(60, 46, 34), width=size // 40)
+    for i in range(60):
+        a = i * math.pi / 30
+        r0 = r * (.8 if i % 5 == 0 else .88)
+        d.line([(c + math.cos(a) * r0, c + math.sin(a) * r0), (c + math.cos(a) * r * .94, c + math.sin(a) * r * .94)],
+               fill=(40, 34, 30), width=size // 60 if i % 5 == 0 else 2)
+    for ang, ln, wd in [(-math.pi / 2 + 4.2 * math.pi / 6, .5, size // 28), (-math.pi / 2 + 10 * math.pi / 30, .74, size // 44)]:
+        d.line([(c, c), (c + math.cos(ang) * r * ln, c + math.sin(ang) * r * ln)], fill=(30, 26, 24), width=wd)
+    d.ellipse([c - 10, c - 10, c + 10, c + 10], fill=(30, 26, 24))
+    return im
+
+
+def shop_window(w, h, kind, seed):
+    """Warm shop interiors seen through a window (painted, letter-free): bakery, toys, café, parcels."""
+    rnd = random.Random(seed)
+    im = vgrad(w, h, (120, 78, 48), (70, 44, 30))
+    d = ImageDraw.Draw(im)
+    for i in range(3):
+        y = h * (.32 + i * .26)
+        d.rectangle([0, y, w, y + 8], fill=(150, 104, 66))
+    d.ellipse([w * .2, -h * .3, w * .8, h * .3], fill=(255, 214, 150))
+    im = im.filter(ImageFilter.GaussianBlur(4))
+    d = ImageDraw.Draw(im)
+    for i in range(3):
+        y = h * (.32 + i * .26)
+        for k in range(rnd.randint(6, 9)):
+            x = rnd.uniform(w * .04, w * .92)
+            if kind == "bakery":
+                col = rnd.choice([(214, 150, 80), (196, 120, 60), (232, 186, 120), (170, 96, 50)])
+                d.ellipse([x, y - 26, x + 48, y + 2], fill=col)
+                d.arc([x + 8, y - 22, x + 40, y - 6], 200, 340, fill=tuple(min(255, c + 40) for c in col), width=3)
+            elif kind == "toys":
+                col = rnd.choice([(230, 70, 70), (70, 130, 230), (250, 200, 60), (90, 190, 110), (200, 110, 220)])
+                if k % 3 == 0:
+                    d.rectangle([x, y - 30, x + 28, y], fill=col)
+                elif k % 3 == 1:
+                    d.ellipse([x, y - 34, x + 30, y], fill=col); d.ellipse([x + 4, y - 44, x + 26, y - 26], fill=col)
+                else:
+                    d.rounded_rectangle([x, y - 18, x + 46, y], radius=6, fill=col); d.ellipse([x + 4, y - 4, x + 14, y + 6], fill=(30, 30, 30)); d.ellipse([x + 32, y - 4, x + 42, y + 6], fill=(30, 30, 30))
+            elif kind == "cafe":
+                col = rnd.choice([(240, 236, 226), (60, 120, 190), (200, 170, 120)])
+                d.rounded_rectangle([x, y - 24, x + 22, y], radius=4, fill=col)
+            else:
+                col = rnd.choice([(196, 150, 96), (180, 136, 84), (210, 168, 112)])
+                d.rectangle([x, y - 34, x + 46, y], fill=col); d.line([(x + 23, y - 34), (x + 23, y)], fill=(220, 200, 160), width=4)
+    d.rectangle([0, 0, w - 1, h - 1], outline=(40, 28, 20), width=6)
+    d.line([(w / 2, 0), (w / 2, h)], fill=(40, 28, 20), width=6)
+    return im
+
+
+def window_pane(w, h, lit, seed):
+    rnd = random.Random(seed)
+    im = vgrad(w, h, (90, 110, 140) if not lit else (250, 214, 150), (40, 50, 70) if not lit else (200, 140, 80))
+    d = ImageDraw.Draw(im)
+    d.polygon([(0, 0), (w * .3, 0), (w * .1, h), (0, h)], fill=(236, 226, 214) if lit else (150, 160, 180))
+    d.polygon([(w, 0), (w * .7, 0), (w * .9, h), (w, h)], fill=(236, 226, 214) if lit else (150, 160, 180))
+    d.rectangle([0, 0, w - 1, h - 1], outline=(250, 246, 236), width=6)
+    d.line([(w / 2, 0), (w / 2, h)], fill=(250, 246, 236), width=5)
+    d.line([(0, h * .45), (w, h * .45)], fill=(250, 246, 236), width=5)
+    return im
+
 
 def common():
     return {"exit": floor_text(512, 192, "EXIT", WHITE, sub="BACK TO THE CITY MAP", arrow="down")}
@@ -659,6 +1169,40 @@ def venue_signs(vid):
             "pr_pool": poster(768, 256, ["INFINITY POOL", "INFINITY LEVERAGE NOT PERMITTED"], accent=CYAN, bg=(30, 30, 36)),
             "pr_window": window_view(1024, 512, "night"),
         })
+    elif vid == "spaces_studio":
+        s.update({
+            "ss_waveform_idle": waveform(1024, 448),
+            "ss_lanyards": lanyards(1024, 384),
+            "ss_sky": sky_evening(1024, 512),
+            "ss_greenroom_tv": stage_feed(512, 288),
+            "ss_poster_1": gig_poster(256, 384, 1), "ss_poster_2": gig_poster(256, 384, 2), "ss_poster_3": gig_poster(256, 384, 3),
+            "ss_rug_rect": rug(768, 384, 5, (178, 96, 72), (236, 214, 176)),
+            "ss_rug_green": rug(512, 384, 6, (120, 132, 110), (226, 214, 186)),
+            "ss_rug_grey": rug(768, 384, 7, (112, 102, 98), (196, 180, 160)),
+            "ss_lanyard_frame": lanyard_frame(512, 384),
+        })
+        for i, (kind, colors) in enumerate(FLAG_SETS):
+            s["ss_flag_%d" % i] = flag(kind, colors)
+    elif vid == "timeline_square":
+        s.update({
+            "tl_cobble_a": cobbles(512, 61, [(208, 192, 164), (196, 178, 150), (214, 200, 174), (186, 168, 142), (204, 188, 162), (194, 182, 164)], (132, 116, 96)),
+            "tl_stucco_cream": stucco(256, 71, (236, 218, 184)), "tl_stucco_ochre": stucco(256, 72, (226, 182, 112)),
+            "tl_stucco_peach": stucco(256, 73, (232, 176, 140)), "tl_stucco_blue": stucco(256, 74, (150, 168, 210)),
+            "tl_stucco_stone": stucco(256, 75, (206, 192, 166)), "tl_stucco_sage": stucco(256, 76, (178, 192, 160)),
+            "tl_roof": roof_tiles(256, 256, 81),
+            "tl_sky": solana_sky(1024, 512),
+            "tl_timeline_idle": feed_idle(1024, 576),
+            "tl_pixel_idle": pixel_canvas(640, 448),
+            "tl_bb_1_idle": billboard_idle(768, 384, 0), "tl_bb_2_idle": billboard_idle(768, 384, 1),
+            "tl_burst": burst_poster(320, 400),
+            "tl_clock": clock_face(256),
+            "tl_win_bakery": shop_window(512, 256, "bakery", 91), "tl_win_toys": shop_window(512, 256, "toys", 92),
+            "tl_win_cafe": shop_window(512, 256, "cafe", 93), "tl_win_parcels": shop_window(512, 256, "parcels", 94),
+            "tl_pane_lit": window_pane(96, 144, True, 95), "tl_pane_dark": window_pane(96, 144, False, 96),
+            "tl_poster_1": gig_poster(192, 288, 4), "tl_poster_2": gig_poster(192, 288, 5),
+        })
+        for i, (kind, colors) in enumerate(FLAG_SETS):
+            s["tl_flag_%d" % i] = flag(kind, colors)
     elif vid.startswith("home_"):
         s.update({"hm_tv": screen(512, 288, "pulse", PURPLE, "CHART TV"), "hm_monitor": screen(512, 192, "code", GREEN, "~/side-project")})
         if vid == "home_hacker_house":
@@ -765,7 +1309,7 @@ def build(vid):
     print(f"{vid}: {len(images)} signs, atlas {atlas.width}x{atlas.height}, decor scale {scale:.2f}")
 
 
-VENUES = ["perp_pit", "rekt_clinic", "ore_refinery", "launchpad_tower", "prediction_pit", "ratio_arena", "conference_hall",
+VENUES = ["timeline_square", "spaces_studio", "perp_pit", "rekt_clinic", "ore_refinery", "launchpad_tower", "prediction_pit", "ratio_arena", "conference_hall",
           "ct_jail", "hackathon_house", "audit_row", "discord_heights", "vc_row", "airdrop_fields", "sybil_barn", "checker_kiosk",
           "cabal_lounge", "yacht_club", "penthouse_row", "home_hacker_house", "home_studio", "home_penthouse", "home_marina_villa"]
 
