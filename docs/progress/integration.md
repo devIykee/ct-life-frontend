@@ -1,4 +1,4 @@
-READY TO COMMIT (title screen on dev 981f134): client/Assets/Scripts/UI/Screens/SignInScreen.cs, client/Assets/Scripts/UI/DeviceFeel.cs (+.meta), client/Assets/Scripts/Editor/TitleArtImporter.cs (+.meta), client/Assets/Resources/UI/title.uss (+.meta), client/Assets/Resources/UI/Title.meta, client/Assets/Resources/UI/Title/title-bg.png (+.meta), client/Assets/Resources/UI/{ctlife.uss,landscape.uss}, client/Assets/Scripts/App/FlowController.cs, client/Assets/Scripts/Core/Env/LaunchArgs.cs, client/Assets/Scripts/UI/Text/Strings.cs, client/Assets/Scripts/Features/Ventures/Tests/WireAndErrorTests.cs, art/LICENSES.md, docs/progress/integration.md. NOT mine, leave out: client/Assets/Art/characters/cast/materials/snow_everyday.mat. Commit message: "feat(ui): title screen sign-in (approved art), PLAY for returning players". Checks: compile_check dev/release/editor 0 errors; EditMode 1301/1301 (9 assemblies; first run 1300/1301, a Ventures test-isolation bug fixed); release APK 149.5 MiB. Seeker screenshots PENDING (MTN dialog holds focus).
+READY TO COMMIT (title screen buttons on dev 6b69ae7): client/Assets/Resources/UI/Title/btn-green-blank.png (+.meta), client/Assets/Resources/UI/Title/btn-purple-blank.png (+.meta), client/Assets/Scripts/UI/Screens/SignInScreen.cs, client/Assets/Resources/UI/title.uss, docs/progress/integration.md. NOT mine, leave out: client/Assets/Art/characters/cast/materials/snow_everyday.mat. Commit message: "feat(title): painted button bodies, 9-slice that keeps the rounded ends, button below the group's feet". Checks: compile_check dev/release 0 errors; release APK 149.56 MiB; dev APK installed on the Seeker. Screenshots NOT taken: the MTN carrier dialog still holds focus after 30 min.
 
 # Integration lead log
 
@@ -531,6 +531,21 @@ bodies around 900×260 would be about 0.47 MB.
   - Then `seeker_launch.sh -e autologin dev` to sign the dev account back in.
   - (b) Returning: `seeker_launch.sh -e shot title-play` → `files/title-play.png`
 - Target: `../ct-life-evidence/title-screen/`.
+
+**Buttons (2026-10-08, second pass).**
+- **Art:** the painted blanks `btn-green-blank.png` / `btn-purple-blank.png` (600×130, alpha) are imported as ASTC 4x4 with
+  no mipmaps (`TitleArtImporter`). They are 77.5 KB each in the build.
+- **9-slice:** the top and bottom slices together cover the whole height (64 + 64 of 130) and the caps are 64 wide. The
+  slice scale follows the button height, so the rounded ends stay round at any width and only the flat middle stretches.
+  Simulated at 700, 862 and 1000 px wide: ends round. That is a model of the slice math, not a Unity render.
+- **Placement:** 37% wide × 186 px, bottom at 7.5%. The top edge is at ~75% of the height, clearing the group's feet
+  (~72%, ~73% at the Ken Burns peak); the centre is at ~84%.
+- **Label:** Lilita One 66 px (PLAY 84 px), cream with a 4 px plum outline and a solid plum drop shadow, as on the painted
+  references. It is lifted 14 px off the thicker bottom rim.
+- **Release APK: 149.56 MiB** (≤ 150, 0.44 MiB headroom).
+- **Seeker:** the dev APK with the buttons is installed. The screenshots were **not taken**: I polled `mCurrentFocus`
+  every 20 s for 30 min and the "MTN - NG Message" dialog still holds focus (no touch on the phone for 53 min). Unity does
+  not start without window focus. The three commands in the section above are ready to run.
 
 ## Status
 

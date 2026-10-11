@@ -97,19 +97,27 @@ namespace CTLife.UI
             return b;
         }
 
-        /// <summary>The painted blank button body (Resources/UI/Title/btn-*-blank.png), 9-sliced; USS placeholder until it exists.</summary>
+        /// <summary>
+        /// The painted blank button body (Resources/UI/Title/btn-*-blank.png, a pill with alpha), 9-sliced so only the middle
+        /// stretches sideways: the top and bottom slices together cover the whole height and the side caps are half the height,
+        /// and the slice scale follows the button's height, so the rounded ends stay round at any width. USS placeholder until
+        /// the file exists.
+        /// </summary>
         private static void ApplyButtonArt(Button b, string resource)
         {
             var tex = Resources.Load<Texture2D>(resource);
             if (tex == null) return;
             b.AddToClassList("ct-title-btn-art");
             b.style.backgroundImage = new StyleBackground(tex);
-            // Rounded ends keep their shape when the body stretches: slice at ~45% of the height on each side.
-            int cap = Mathf.RoundToInt(tex.height * 0.45f);
-            b.style.unitySliceLeft = cap;
-            b.style.unitySliceRight = cap;
-            b.style.unitySliceTop = Mathf.RoundToInt(tex.height * 0.3f);
-            b.style.unitySliceBottom = Mathf.RoundToInt(tex.height * 0.3f);
+            int half = tex.height / 2 - 1;
+            b.style.unitySliceLeft = half;
+            b.style.unitySliceRight = half;
+            b.style.unitySliceTop = half;
+            b.style.unitySliceBottom = half;
+            b.RegisterCallback<GeometryChangedEvent>(e =>
+            {
+                if (e.newRect.height > 0f) b.style.unitySliceScale = e.newRect.height / tex.height;
+            });
         }
 
         private void Bleed()

@@ -11,16 +11,17 @@
 }
 .ct-title-bg.ct-title-zoom { scale: 1.04 1.04; }
 
-/* The button sits in the open cobblestones of the lower third. */
-.ct-title-actions { position: absolute; left: 0; right: 0; bottom: 9%; align-items: center; }
-.ct-title-under { position: absolute; top: 100%; left: 0; right: 0; align-items: center; padding-top: 10px; }
+/* The button sits in the open cobblestones of the lower third: its top edge (~75% of the height) clears the group's feet
+   (~72%, ~73% at the Ken Burns peak); its centre is ~84%. */
+.ct-title-actions { position: absolute; left: 0; right: 0; bottom: 7.5%; align-items: center; }
+.ct-title-under { position: absolute; top: 100%; left: 0; right: 0; align-items: center; padding-top: 6px; }
 
 .ct-title-btn {
-    width: 38%; height: 168px; margin: 0; padding: 0 28px;
+    width: 37%; height: 186px; margin: 0; padding: 0 40px 14px 40px; /* the painted rim is thicker at the bottom: lift the label */
     border-radius: 46px; border-width: 6px; border-bottom-width: 12px; border-color: rgb(58, 20, 64);
-    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 62px; -unity-text-align: middle-center; white-space: nowrap;
-    color: rgb(255, 246, 228); -unity-text-outline-width: 3px; -unity-text-outline-color: rgb(58, 20, 64);
-    text-shadow: 0 4px 2px rgba(40, 8, 44, 0.55);
+    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 66px; -unity-text-align: middle-center; white-space: nowrap;
+    color: rgb(255, 246, 228); -unity-text-outline-width: 4px; -unity-text-outline-color: rgb(58, 20, 64);
+    text-shadow: 0 5px 1px rgb(58, 20, 64); /* the painted labels have a solid plum drop under the letters */
     overflow: hidden;
     transition-property: scale, background-color, -unity-background-image-tint-color;
     transition-duration: 0.08s, 0.08s, 0.08s; transition-timing-function: ease-out, ease-out, ease-out;
@@ -33,6 +34,7 @@
 .ct-title-btn-green, .ct-title-btn-green:hover, .ct-title-btn-green:focus { background-color: rgb(92, 196, 74); }
 .ct-title-btn-green:active { background-color: rgb(70, 158, 56); }
 .ct-title-btn-purple, .ct-title-btn-purple:hover, .ct-title-btn-purple:focus { background-color: rgb(146, 88, 220); }
+.ct-title-btn-purple { font-size: 84px; letter-spacing: 3px; }
 .ct-title-btn-purple:active { background-color: rgb(114, 64, 182); }
 .ct-title-btn-art, .ct-title-btn-art:hover, .ct-title-btn-art:focus, .ct-title-btn-art:active {
     background-color: rgba(0, 0, 0, 0); border-width: 0; border-radius: 0;
@@ -46,7 +48,7 @@
 .ct-title-link {
     font-size: 30px; -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); color: rgb(255, 246, 228);
     -unity-text-outline-width: 2px; -unity-text-outline-color: rgb(58, 20, 64); text-shadow: 0 2px 2px rgba(40, 8, 44, 0.6);
-    padding: 8px 20px;
+    padding: 4px 20px;
 }
 .ct-title-link:disabled { opacity: 0.6; }
 
@@ -57,7 +59,7 @@
 }
 
 .ct-title-legal {
-    position: absolute; left: 0; right: 0; bottom: 12px;
+    position: absolute; left: 0; right: 0; bottom: 6px;
     font-size: 22px; color: rgba(255, 246, 228, 0.94); -unity-text-align: middle-center;
     text-shadow: 0 2px 4px rgba(20, 6, 24, 0.85);
 }
