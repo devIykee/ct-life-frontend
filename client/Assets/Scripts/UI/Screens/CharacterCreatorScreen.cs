@@ -209,6 +209,20 @@ namespace CTLife.UI
             _dim.pickingMode = PickingMode.Ignore;
             _content.Add(_dim);
             BuildStage();
+            _frame.Root.RegisterCallback<GeometryChangedEvent>(_ => UpdatePortraitCanvas());
+            VisualElement previewLayer = null;
+            void UpdatePreviewGeometry(GeometryChangedEvent _) => UpdatePortraitCanvas();
+            _frame.Root.RegisterCallback<AttachToPanelEvent>(_ =>
+            {
+                previewLayer = _frame.Root.parent;
+                previewLayer?.RegisterCallback<GeometryChangedEvent>(UpdatePreviewGeometry);
+                UpdatePortraitCanvas();
+            });
+            _frame.Root.RegisterCallback<DetachFromPanelEvent>(_ =>
+            {
+                previewLayer?.UnregisterCallback<GeometryChangedEvent>(UpdatePreviewGeometry);
+                previewLayer = null;
+            });
             BuildLookControls();
             var right = El.Div("ob-right");
             right.pickingMode = PickingMode.Ignore;
@@ -656,14 +670,37 @@ namespace CTLife.UI
         private void ApplyFraming()
         {
             if (_preview == null) return;
-            // The player card (Confirm) shows an ID-photo crop: head and shoulders; the celebration goes back to full body.
+            // Questions use a large portrait across the actual screen; the player card has its own art window.
             bool face = _typing || (!OnLookSteps && _celebrated == null);
             _portrait = face;
             _preview.SetPodium(!face);
             _preview.SetIdle(face ? FaceIdle : FullIdle);
+            _preview.SetIdentityPortrait(_flow.Step == CreatorStep.Confirm);
             _preview.SetPortrait(face);
+            UpdatePortraitCanvas();
             _model.pickingMode = OnLookSteps ? PickingMode.Position : PickingMode.Ignore;
             if (face && SelectedLook != null) _preview.SetYaw(SelectedLook.previewYaw);
+        }
+
+        private void UpdatePortraitCanvas()
+        {
+            if (_preview == null || _stage == null) return;
+            bool openPortrait = _portrait && !_typing && _flow.Step != CreatorStep.Confirm;
+            var panelRoot = _frame.Root.panel?.visualTree;
+            if (openPortrait && panelRoot != null && panelRoot.worldBound.width > 0f)
+            {
+                var insets = SafeAreaBleed.Insets(panelRoot.worldBound, _frame.Root.worldBound);
+                _stage.style.left = -72f - insets.x; _stage.style.top = -22f - insets.y;
+                _stage.style.right = -72f - insets.z; _stage.style.bottom = -30f - insets.w;
+                _preview.SetPortraitCanvas(panelRoot.worldBound.size,
+                    new Rect(-368f + insets.x, 112f + insets.y, 1120f, 1120f));
+            }
+            else
+            {
+                _stage.style.left = StyleKeyword.Null; _stage.style.top = StyleKeyword.Null;
+                _stage.style.right = StyleKeyword.Null; _stage.style.bottom = StyleKeyword.Null;
+                _preview.SetPortraitCanvas(Vector2.zero, default);
+            }
         }
 
         protected override void OnShown()
@@ -779,11 +816,11 @@ namespace CTLife.UI
             {
                 var dream = d;
                 var card = new ChoiceCard(d.id, d.name, null, _ => PickDream(dream), ChoiceCard.Layout.Horizontal,
-                    null, OnboardingCopy.DreamIcon(d.id), "gold");
+                    KitIcons.Load(OnboardingCopy.DreamArt(d.id)), OnboardingCopy.DreamIcon(d.id), "purple");
                 card.AddToClassList("ob-dream-card");
                 _dreamCards.Add(card);
             }
-            var grid = ChoiceGrid.Build(_dreamCards.Cast<VisualElement>().ToList(), 3, 200f, 1.4f, 18f);
+            var grid = ChoiceGrid.Build(_dreamCards.Cast<VisualElement>().ToList(), 3, 184f, 1.4f, 18f);
             return Page(Strings.T("ob.dream.title"), Strings.T("ob.dream.sub"), grid);
         }
 
@@ -900,37 +937,53 @@ namespace CTLife.UI
         {
             _cardPortrait = El.Div("ob-card-portrait");
             _cardPortrait.style.backgroundImage = Background.FromRenderTexture(_preview.Texture);
-            var portraitHit = CardHit("ob-card-portrait-hit", CreatorStep.Look, _cardPortrait);
+            var portraitHit = CardHit("ob-card-portrait-hit", CreatorStep.Look,
+                El.Div("ob-card-art-field"), _cardPortrait);
 
             _cardName = El.Text("", "ob-card-name");
+            _cardName.RegisterCallback<GeometryChangedEvent>(_ => FitCardName());
             var nameHit = CardHit("ob-card-row--name", CreatorStep.Name, _cardName);
+            nameHit.RegisterCallback<GeometryChangedEvent>(_ => FitCardName());
             _cardTribeBadge = El.Div("ob-card-tribe-badge");
             _cardTribe = El.Text("", "ob-card-tribe");
             var tribeHit = CardHit("ob-card-row--tribe", CreatorStep.Tribe, _cardTribeBadge, _cardTribe);
-            var header = El.Div("ob-card-header", nameHit, tribeHit);
+            var header = El.Div("ob-card-header", tribeHit, nameHit);
 
             _cardOriginArt = El.Div("ob-card-origin-art");
             _cardOrigin = El.Text("", "ob-card-value");
-            _cardOriginRow = El.Div("ob-card-row ob-card-row--static", Caption("ob.sum.origin"), El.Div("ob-card-line", _cardOriginArt, _cardOrigin));
-            _cardDreamIcon = new IconBadge("dream", "gold");
+            _cardOriginRow = El.Div("ob-card-row ob-card-row--static", El.Div("ob-card-line", _cardOriginArt, _cardOrigin));
+            _cardDreamIcon = El.Div("ob-card-dream-art");
             _cardDream = El.Text("", "ob-card-value");
-            var dreamHit = CardHit("ob-card-row", CreatorStep.Dream, Caption("ob.sum.dream"), El.Div("ob-card-line", _cardDreamIcon, _cardDream));
+            var dreamHit = CardHit("ob-card-dream", CreatorStep.Dream,
+                _cardDreamIcon, El.Div("ob-card-dream-copy", Caption("ob.sum.dream"), _cardDream));
             _cardTraits = El.Div("ob-card-line ob-card-traits");
-            var traitsHit = CardHit("ob-card-row", CreatorStep.Traits, Caption("ob.sum.traits"), _cardTraits);
+            var traitsHit = CardHit("ob-card-traits-hit", CreatorStep.Traits, _cardTraits);
             var info = El.Div("ob-card-info", header, _cardOriginRow, dreamHit, traitsHit);
             info.pickingMode = PickingMode.Ignore;
-            var band = El.Div("ob-card-band", El.Text(Strings.T("ob.card.band"), "ob-card-band-text"), El.Text(Strings.T("ob.confirm.sub"), "ob-card-band-hint"));
-            var shine = El.Div("ob-card-holo");
-            _idCard = El.Div("ob-idcard", band, El.Div("ob-card-body", portraitHit, info), shine);
-            El.PassThrough(band);
-            El.PassThrough(shine);
+            var edition = El.Text(Strings.T("ob.card.brand"), "ob-card-edition");
+            _idCard = El.Div("ob-idcard", El.Div("ob-card-body", portraitHit, info), edition);
+            El.PassThrough(edition);
 
             _ageRow = new CheckRow(Strings.T("ob.confirm.age"), ToggleAge);
             _ageRow.AddToClassList("ob-age-row");
+            var hint = El.Text(Strings.T("ob.confirm.sub"), "ob-note ob-card-edit-hint");
             var note = El.Text(Strings.T("ob.confirm.note"), "ob-note ob-note--card");
-            var page = Page(Strings.T("ob.confirm.title"), Strings.T("ob.confirm.sub"), _idCard, El.Div("ob-card-foot", _ageRow, note));
+            var page = Page(Strings.T("ob.confirm.title"), Strings.T("ob.confirm.sub"), _idCard,
+                El.Div("ob-card-foot", _ageRow, hint), note);
             _confirmTitle = page.Q<Label>(className: "ob-title");
             return page;
+        }
+
+        private void FitCardName()
+        {
+            if (_cardName?.panel == null || _cardName.parent == null) return;
+            float available = _cardName.parent.contentRect.width;
+            float current = _cardName.resolvedStyle.fontSize;
+            float measured = _cardName.MeasureTextSize(_cardName.text, 0, VisualElement.MeasureMode.Undefined,
+                0, VisualElement.MeasureMode.Undefined).x;
+            if (available <= 0 || measured <= 0 || current <= 0 || float.IsNaN(measured)) return;
+            float fitted = Mathf.Clamp(Mathf.Floor(current * (available - 4f) / measured), 44f, 104f);
+            if (Mathf.Abs(fitted - current) >= 1f) _cardName.style.fontSize = fitted;
         }
 
         private static Label Caption(string key)
@@ -972,12 +1025,16 @@ namespace CTLife.UI
         {
             if (_idCard == null) return;
             _cardName.text = string.IsNullOrEmpty(_draft.alias) ? "—" : _draft.alias;
+            _cardName.style.fontSize = 104;
+            _cardName.schedule.Execute(FitCardName);
             var tribe = _reg.TribeOrder.FirstOrDefault(t => t.id == _draft.tribeId);
             _cardTribe.text = tribe?.name?.ToUpperInvariant() ?? "—";
             var badge = OnboardingArt.TribeBadge(_draft.tribeId);
             _cardTribeBadge.style.backgroundImage = badge != null ? new StyleBackground(badge) : new StyleBackground(StyleKeyword.None);
             _cardTribeBadge.style.display = badge != null ? DisplayStyle.Flex : DisplayStyle.None;
             _cardDream.text = _reg.Dreams.FirstOrDefault(d => d.id == _draft.dreamId)?.name ?? "—";
+            var dreamArt = KitIcons.Load(OnboardingCopy.DreamArt(_draft.dreamId));
+            _cardDreamIcon.style.backgroundImage = dreamArt != null ? new StyleBackground(dreamArt) : new StyleBackground(StyleKeyword.None);
             _cardTraits.Clear();
             foreach (var t in _reg.Traits.Where(t => _draft.traitIds.Contains(t.id)))
             {
@@ -1076,7 +1133,7 @@ namespace CTLife.UI
                 case CreatorStep.Traits: React(Strings.T(_draft.traitIds.Count == 2 ? "ob.say.traitTwo" : "ob.say.traits"), "emote_nod"); break;
                 case CreatorStep.Dream: React(Strings.T(_draft.dreamId != null ? "ob.say.dreamPick" : "ob.say.dream"), "idle_fidget_lookaround"); break;
                 case CreatorStep.Name: React(Strings.T("ob.say.name"), "emote_point"); break;
-                default: React(Strings.T("ob.say.confirm"), "emote_chest_thump", "emote_thumbs_up"); break;
+                default: React(Strings.T("ob.say.confirm"), "emote_nod"); break;
             }
         }
 

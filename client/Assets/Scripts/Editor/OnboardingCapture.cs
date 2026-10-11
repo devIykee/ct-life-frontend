@@ -135,6 +135,10 @@ namespace CTLife.EditorTools
                 {
                     await OnboardingCaptureR2.Run(Shot, Wait, Expect, Step, Receipt);
                 }
+                else if (Set == "refinements")
+                {
+                    await OnboardingRefinementCapture.Run(Shot, Wait, Expect, Step, Receipt);
+                }
                 else if (Set == "lottery")
                 {
                     await Lottery(); // the origin cards only (fast iteration on the lottery screens)

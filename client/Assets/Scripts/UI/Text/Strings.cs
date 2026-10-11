@@ -286,7 +286,7 @@ namespace CTLife.UI
             ["ob.name.placeholder"] = "Your alias", ["ob.name.done"] = "DONE",
             ["ob.name.rule"] = "3–20 characters", ["ob.name.short"] = "At least 3 characters", ["ob.name.ok"] = "Looks good",
             ["ob.confirm.title"] = "Meet {0}", ["ob.confirm.sub"] = "Tap anything to change it.",
-            ["ob.confirm.age"] = "I'm 18 or older", ["ob.card.band"] = "CT LIFE · PLAYER CARD",
+            ["ob.confirm.age"] = "I'm 18 or older", ["ob.card.band"] = "CT LIFE · PLAYER CARD", ["ob.card.brand"] = "CT LIFE",
             ["ob.custom.title"] = "Make it yours", ["ob.custom.sub"] = "Pick a category, then a style.",
             ["ob.custom.empty"] = "Nothing to change here yet.", ["ob.say.custom"] = "Let's switch it up.",
             ["ob.cat.character"] = "Character", ["ob.cat.skintone"] = "Skin tone", ["ob.cat.hair"] = "Hair",

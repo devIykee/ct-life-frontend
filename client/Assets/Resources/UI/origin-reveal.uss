@@ -1,0 +1,197 @@
+/* Origin result only. The card remains a collectible-sized illustration; information sits
+   directly on the shared onboarding backdrop. References and rationale are recorded in
+   docs/research/player-cards-context-20261012.md. The draw uses its existing dimensions. */
+
+.ob-lottery .ob-origin-portrait {
+    position: relative;
+    flex-grow: 1;
+    flex-shrink: 0;
+}
+
+.ob-lottery .ob-card--wide {
+    flex-direction: row;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 0;
+    border-radius: 0;
+    padding: 0;
+    overflow: visible;
+}
+
+.ob-lottery .ob-card--wide .ob-origin-portrait {
+    border-width: 8px;
+    border-color: rgb(255, 255, 255);
+    border-radius: 24px;
+    background-color: rgb(255, 255, 255);
+    overflow: hidden;
+}
+
+/* Present the existing painting as full-bleed artwork inside a flat frame. Its old
+   baked bevel stays outside the viewport; the source painting is left untouched. */
+.ob-lottery .ob-card--wide .ob-card-art {
+    position: absolute;
+    left: -8.5%;
+    right: -8.5%;
+    top: -8.5%;
+    bottom: -8.5%;
+    -unity-background-scale-mode: scale-and-crop;
+}
+
+.ob-lottery .ob-card--wide .ob-card-art--plain {
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    border-width: 0;
+    border-radius: 0;
+    background-color: rgb(255, 212, 84);
+}
+
+.ob-lottery .ob-card--wide .ob-card-fallback {
+    color: rgb(58, 20, 64);
+    -unity-text-outline-width: 0;
+    text-shadow: 0 0 0 rgba(0, 0, 0, 0);
+}
+
+.ob-lottery .ob-origin-info {
+    height: 100%;
+    min-width: 0;
+    margin-left: 92px;
+    padding: 12px 0;
+    overflow: visible;
+    justify-content: space-between;
+}
+
+.ob-lottery .ob-origin-head {
+    flex-shrink: 0;
+}
+
+.ob-lottery .ob-origin-top {
+    min-height: 54px;
+    margin-bottom: 12px;
+}
+
+.ob-lottery .ob-origin-rarity {
+    font-size: 30px;
+    letter-spacing: 2px;
+    color: rgb(58, 20, 64);
+    background-color: rgb(255, 255, 255);
+    padding: 9px 22px;
+    border-radius: 18px;
+}
+
+.ob-lottery .ob-card--rare .ob-origin-rarity {
+    background-color: rgb(255, 212, 84);
+}
+
+.ob-lottery .ob-card--seeker .ob-origin-rarity {
+    background-color: rgb(20, 241, 149);
+}
+
+.ob-lottery .ob-origin-chance,
+.ob-lottery .ob-origin-alias,
+.ob-lottery .ob-origin-line,
+.ob-lottery .ob-origin-perk,
+.ob-lottery .ob-origin-label,
+.ob-lottery .ob-origin-value,
+.ob-lottery .ob-origin-note {
+    color: rgb(255, 255, 255);
+    -unity-text-outline-width: 2px;
+    -unity-text-outline-color: rgb(58, 20, 64);
+    text-shadow: 0 2px 2px rgba(26, 8, 32, 0.55);
+}
+
+.ob-lottery .ob-origin-chance {
+    font-size: 32px;
+    margin-left: 24px;
+}
+
+.ob-lottery .ob-origin-alias {
+    font-size: 30px;
+    margin-top: 4px;
+    white-space: normal;
+}
+
+.ob-lottery .ob-origin-name {
+    font-size: 92px;
+    color: rgb(255, 255, 255);
+    margin-top: 6px;
+    white-space: normal;
+    -unity-text-outline-width: 3px;
+    -unity-text-outline-color: rgb(58, 20, 64);
+    text-shadow: 0 3px 1px rgb(58, 20, 64);
+}
+
+.ob-lottery .ob-origin-line {
+    font-size: 40px;
+    margin-top: 8px;
+}
+
+.ob-lottery .ob-origin-perk {
+    font-size: 32px;
+    margin-top: 16px;
+    white-space: normal;
+}
+
+.ob-lottery .ob-origin-benefits {
+    margin-top: 28px;
+}
+
+.ob-lottery .ob-origin-stats {
+    padding-top: 24px;
+    border-top-width: 2px;
+    border-color: rgba(255, 255, 255, 0.5);
+    align-items: flex-start;
+}
+
+.ob-lottery .ob-origin-stat {
+    flex-grow: 0;
+    flex-shrink: 0;
+    flex-basis: auto;
+    padding: 0;
+    border-width: 0;
+}
+
+.ob-lottery .ob-origin-stat--cash {
+    width: 280px;
+}
+
+.ob-lottery .ob-origin-stat--home {
+    flex-grow: 1;
+    flex-shrink: 1;
+    min-width: 0;
+    padding: 0 42px 0 24px;
+}
+
+.ob-lottery .ob-origin-stat--debt {
+    width: 260px;
+}
+
+.ob-lottery .ob-origin-label {
+    font-size: 28px;
+    letter-spacing: 2px;
+}
+
+.ob-lottery .ob-origin-value {
+    font-size: 64px;
+    margin-top: 10px;
+}
+
+.ob-lottery .ob-origin-value--cash {
+    color: rgb(20, 241, 149);
+}
+
+.ob-lottery .ob-origin-value--debt {
+    color: rgb(255, 212, 84);
+}
+
+.ob-lottery .ob-origin-value--home {
+    font-size: 42px;
+    white-space: normal;
+}
+
+.ob-lottery .ob-origin-note {
+    font-size: 28px;
+    margin-top: 20px;
+    white-space: normal;
+}

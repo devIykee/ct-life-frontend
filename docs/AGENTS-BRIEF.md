@@ -113,8 +113,8 @@ Phase 6 = Competition. Every phase must end in something that runs. Do NOT reduc
   Never trust memory for APIs. Label anything unverified `[Unverified]` in your notes.
 - Stay inside your folder(s) (see README.md ownership table). Read other folders freely.
   Never edit another agent's folder; write a request in `docs/progress/requests.md` instead.
-- Git: only the coordinator (the lead session) commits and pushes, on the working branch, at
-  least daily. Agents do not run `git commit`, `git add -A`, `git stash`, `git reset` or
+- Git: only the coordinator (the lead session) commits and pushes, on the working branch, after
+  every completed, verified change (user instruction 2026-10-12). Agents do not run `git commit`, `git add -A`, `git stash`, `git reset` or
   `git clean`; when a unit of work is done, write "READY TO COMMIT: <paths> — <message>" at the
   top of your progress log. Never commit secrets or files over 50 MB; binaries are plain git (GitHub LFS is blocked on this account).
 - Do not deploy anything to a public host. Do not create accounts or sign in anywhere. Do not

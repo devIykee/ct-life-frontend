@@ -16,18 +16,17 @@ namespace CTLife.UI
     /// The roll delegate returns null when the server shows the roll already happened (409 or reconciled /me).
     ///
     /// After the creator selections, centred painted cards automatically shuffle and reveal the server's result.
-    /// The winning card unfolds into one landscape card with its art, rarity and starting Cash, home and debt.
+    /// The winning illustration settles at the left; its origin and starting resources are revealed beside it.
     /// The result remains visible while the coordinator commits the character; a failed commit can retry without rolling.
     ///
-    /// Round 3 (user review 2026-10-10, trading-card references): the face-down cards carry a rarity ribbon (RARE · 20%,
-    /// COMMON · 80%); the winner flips, comes to the centre and unfolds into a landscape origin card: the painted art in a
-    /// window on the left, rarity, name, the story line and a stat band (starting Cash, home, debt) on the card itself.
+    /// The face-down cards retain their rarity ribbon and the existing draw/flip. The result uses one compact
+    /// illustrated card, with readable name, story and resource values on the surrounding onboarding background.
     /// </summary>
     public sealed class LotteryScreen : UiScreen
     {
         private const float CardW = 440f, CardH = 605f, CardGap = 96f, SeekerCardW = 360f;
-        private const float WideW = 1880f, WideH = 660f, WideTop = -8f, WidePad = 22f, WideBorder = 10f;
-        private static readonly Color WideBody = new Color32(42, 15, 50, 255);
+        private const float WideW = 1880f, WideH = 660f, WideTop = -8f;
+        private const float ResultArtW = 480f, ResultArtH = 660f;
 
         private readonly Func<Task<PostLotteryRoll200Response>> _roll;
         private readonly Action<PostLotteryRoll200Response> _onDone;
@@ -48,7 +47,7 @@ namespace CTLife.UI
         private sealed class Card
         {
             public string id;
-            public VisualElement root, glow, art, fallback, ribbon, info, stats, debtCell;
+            public VisualElement root, glow, portrait, art, fallback, ribbon, info, stats, debtCell;
             public Label odds, rarity, chance, name, line, alias, perk, cash, home, debt;
             public float homeX;
             public bool wide;
@@ -77,9 +76,9 @@ namespace CTLife.UI
         protected override VisualElement Build()
         {
             _frame = new OnboardingFrame("ob-lottery", null, OnRoll, Strings.T("ob.lottery.continue"));
+            OnboardingFrame.AddSheet(_frame.Root, "UI/origin-reveal");
             _frame.Back.style.visibility = Visibility.Hidden;
             _frame.Progress.Set(CreatorFlow.ProgressSegments - 1, false);
-            _frame.Cta.EnableShine();
             _frame.ShowCta(false, false);
 
             _error = El.Text("", "ob-error");
@@ -132,6 +131,7 @@ namespace CTLife.UI
             c.fallback = El.Text(Strings.T(LotteryModel.NameKey(id)), "ob-card-fallback");
             c.fallback.style.display = DisplayStyle.None;
             c.art.Add(c.fallback);
+            c.portrait = El.Div("ob-origin-portrait", c.art);
             int pct = -1;
             if (odds != null && odds.TryGetValue(id, out var p)) pct = p;
             string rarity = Strings.T(RarityKey(id));
@@ -140,7 +140,7 @@ namespace CTLife.UI
             c.ribbon.pickingMode = PickingMode.Ignore;
             c.info = BuildInfo(c, id, rarity, pct);
             c.info.style.display = DisplayStyle.None;
-            c.root = El.Div("ob-card " + RarityClass(id), c.glow, c.art, c.info, c.ribbon);
+            c.root = El.Div("ob-card " + RarityClass(id), c.glow, c.portrait, c.info, c.ribbon);
             c.root.name = "card_" + id;
             c.root.style.width = width;
             c.root.style.height = width * CardH / CardW;
@@ -169,7 +169,7 @@ namespace CTLife.UI
             return card;
         }
 
-        /// <summary>The right half of the unfolded origin card: rarity and odds, the name, the story line, the stat band.</summary>
+        /// <summary>The result details stand beside the illustration, without a containing panel.</summary>
         private static VisualElement BuildInfo(Card c, string id, string rarity, int pct)
         {
             c.rarity = El.Text(rarity, "ob-origin-rarity");
@@ -182,11 +182,14 @@ namespace CTLife.UI
             c.alias.style.display = DisplayStyle.None;
             c.perk.style.display = DisplayStyle.None;
             c.cash = El.Text("", "ob-origin-value ob-origin-value--cash");
+            c.cash.name = "origin-cash";
             c.home = El.Text("", "ob-origin-value ob-origin-value--home");
+            c.home.name = "origin-home";
             c.debt = El.Text("", "ob-origin-value ob-origin-value--debt");
+            c.debt.name = "origin-debt";
             var cashCell = El.Div("ob-origin-stat ob-origin-stat--cash", El.Text(Strings.T("ob.lottery.stat.cash"), "ob-origin-label"), c.cash);
-            var homeCell = El.Div("ob-origin-stat ob-origin-stat--sep", El.Text(Strings.T("ob.lottery.stat.home"), "ob-origin-label"), c.home);
-            c.debtCell = El.Div("ob-origin-stat ob-origin-stat--sep", El.Text(Strings.T("ob.lottery.stat.debt"), "ob-origin-label"), c.debt);
+            var homeCell = El.Div("ob-origin-stat ob-origin-stat--home", El.Text(Strings.T("ob.lottery.stat.home"), "ob-origin-label"), c.home);
+            c.debtCell = El.Div("ob-origin-stat ob-origin-stat--debt", El.Text(Strings.T("ob.lottery.stat.debt"), "ob-origin-label"), c.debt);
             c.stats = El.Div("ob-origin-stats", cashCell, homeCell, c.debtCell);
             var note = El.Text(Strings.T("ob.lottery.note"), "ob-origin-note");
             var info = El.Div("ob-origin-info", El.Div("ob-origin-head", top, c.alias, c.name, c.line, c.perk), El.Div("ob-origin-benefits", c.stats, note));
@@ -194,9 +197,7 @@ namespace CTLife.UI
             return info;
         }
 
-        private static float WideArtWidth() => (WideH - 2f * (WidePad + WideBorder)) * CardW / CardH;
-
-        /// <summary>One frame of the unfold, t 0 → 1: the face-up card grows into the landscape origin card.</summary>
+        /// <summary>One frame of the result reveal: the illustration moves left as its details enter beside it.</summary>
         private static void SetWide(Card c, float t, float w0, float h0, float top0, float ml0, float s0)
         {
             float w = Mathf.Lerp(w0, WideW, t), h = Mathf.Lerp(h0, WideH, t);
@@ -206,13 +207,8 @@ namespace CTLife.UI
             c.root.style.top = Mathf.Lerp(top0, WideTop, t);
             float s = Mathf.Lerp(s0, 1f, t);
             c.root.style.scale = new Scale(new Vector2(s, s));
-            float pad = WidePad * t, border = WideBorder * t;
-            c.root.style.paddingLeft = pad; c.root.style.paddingRight = pad; c.root.style.paddingTop = pad; c.root.style.paddingBottom = pad;
-            c.root.style.borderLeftWidth = border; c.root.style.borderRightWidth = border;
-            c.root.style.borderTopWidth = border; c.root.style.borderBottomWidth = border;
-            var body = WideBody; body.a = Mathf.Clamp01(t * 4f);
-            c.root.style.backgroundColor = body;
-            c.art.style.width = Mathf.Lerp(w0, WideArtWidth(), t);
+            c.portrait.style.width = Mathf.Lerp(w0, ResultArtW, t);
+            c.portrait.style.height = Mathf.Lerp(h0, ResultArtH, t);
             float info = Mathf.Clamp01((t - 0.72f) / 0.28f); // after the card is wide enough for the name
             c.info.style.opacity = info;
             c.info.style.translate = new Translate((1f - info) * 48f, 0f);
@@ -224,12 +220,12 @@ namespace CTLife.UI
             c.wide = true;
             c.root.AddToClassList("ob-card--wide");
             c.ribbon.style.display = DisplayStyle.None;
-            c.art.style.flexGrow = 0f;
-            c.art.style.flexShrink = 0f;
+            c.portrait.style.flexGrow = 0f;
+            c.portrait.style.flexShrink = 0f;
             c.info.style.display = DisplayStyle.Flex;
         }
 
-        /// <summary>The flipped card comes to the centre and unfolds sideways into the landscape origin card.</summary>
+        /// <summary>The flipped card settles left while its origin details appear beside it.</summary>
         private async Task Unfold(Card c)
         {
             float w0 = c.root.resolvedStyle.width, h0 = c.root.resolvedStyle.height, top0 = c.root.resolvedStyle.top;
@@ -241,7 +237,7 @@ namespace CTLife.UI
             await Animate(_table, 0.5f, t => SetWide(c, t, w0, h0, top0, ml0, s0), Ease.OutCubic);
         }
 
-        /// <summary>The unfolded card without animation (reduced motion, instant results).</summary>
+        /// <summary>The same result arrangement without movement (reduced motion, instant results).</summary>
         private static void MakeWide(Card c)
         {
             if (!c.wide) BeginWide(c);

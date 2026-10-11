@@ -148,6 +148,23 @@ namespace CTLife.UI
             _ => "dream",
         };
 
+        /// <summary>
+        /// Authored dream badges in the same glossy family as the trait icons. Reuse only exact visual matches;
+        /// unknown registry ids return null so the caller can keep the DreamIcon fallback.
+        /// </summary>
+        public static string DreamArt(string id) => id switch
+        {
+            "make_10k" => "cash",
+            "rug_survivor" => "rug_veteran",
+            "top_rich_list" => "dream_top_rich_list",
+            "build_a_project" => "dream_build_a_project",
+            "get_rugged_by_creator" => "dream_get_rugged_by_creator",
+            "host_a_space" => "dream_host_a_space",
+            "stake_ore" => "dream_stake_ore",
+            "call_a_top" => "dream_call_a_top",
+            _ => null,
+        };
+
         /// <summary>Icon disc when a painted tribe badge is not there yet.</summary>
         public static string TribeIcon(string id) => id switch
         {

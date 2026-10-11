@@ -26,7 +26,10 @@ namespace CTLife.UI
         private Vector3 _frameCentre;
         private float _frameDistance;
         private Bounds _bodyBounds, _portraitBounds;
-        private bool _portrait;
+        private bool _portrait, _identityPortrait;
+        private readonly int _textureWidth, _textureHeight;
+        private Vector2 _portraitCanvas;
+        private Rect _portraitWindow;
         private bool _disposed;
         private readonly Light _keyLight;
         private Light _previousSun;
@@ -54,6 +57,7 @@ namespace CTLife.UI
         public AvatarPreview(int width = 1080, int height = 1620, bool transparent = false)
         {
             _transparent = transparent;
+            _textureWidth = width; _textureHeight = height;
             var origin = new Vector3(1000f + 50f * _slot++, -500f, 0f);
             _root = new GameObject("CTLife.AvatarPreview");
             _root.transform.position = origin;
@@ -482,6 +486,15 @@ namespace CTLife.UI
             if (_avatar == null) return;
             var bounds = _portrait ? _portraitBounds : _podiumEnabled ? _creatorBounds : _bodyBounds;
 
+            if (_portrait && _identityPortrait)
+            {
+                // A collectible shows the chosen outfit as well as the face. Keep the native portrait's
+                // head centre, but include the body down to the thighs instead of using an ID-photo crop.
+                float lower = _bodyBounds.min.y + _bodyBounds.size.y * .27f;
+                float width = Mathf.Max(_portraitBounds.size.x, _bodyBounds.size.y * .42f);
+                bounds = new Bounds(new Vector3(_portraitBounds.center.x, (lower + _bodyBounds.max.y) * .5f, _portraitBounds.center.z),
+                    new Vector3(width, _bodyBounds.max.y - lower, _portraitBounds.size.z));
+            }
             if (_podiumEnabled && !_portrait)
             {
                 // Include the plinth, with the actor's soles placed at its top. Keep a small camera elevation so
@@ -504,6 +517,7 @@ namespace CTLife.UI
             if (_podiumEnabled && !_portrait)
                 radius = Mathf.Max(_podium.Radius, _creatorRadius * Mathf.Max(Mathf.Abs(scale.x), Mathf.Abs(scale.z)));
             float tanVertical = Mathf.Tan(_cam.fieldOfView * Mathf.Deg2Rad * 0.5f);
+            float framingAspect = (float)_textureWidth / _textureHeight;
             if (_podiumEnabled && !_portrait)
             {
                 // Fit the cylinder's actual projected silhouette, not a depth-padded box. This keeps the actor
@@ -519,15 +533,42 @@ namespace CTLife.UI
                         var point = new Vector3(Mathf.Cos(angle) * radius, extent.y * y, Mathf.Sin(angle) * radius);
                         float depth = Vector3.Dot(point, backward);
                         required = Mathf.Max(required, Mathf.Abs(Vector3.Dot(point, up)) / tanVertical + depth,
-                            Mathf.Abs(point.x) / (tanVertical * _cam.aspect) + depth);
+                            Mathf.Abs(point.x) / (tanVertical * framingAspect) + depth);
                     }
                 }
                 _frameDistance = required * 1.035f;
             }
-            else _frameDistance = Mathf.Max(extent.y / tanVertical, radius / (tanVertical * _cam.aspect)) * 1.06f + radius;
+            else _frameDistance = Mathf.Max(extent.y / tanVertical, radius / (tanVertical * framingAspect)) * 1.06f + radius;
             _frameCentre = bounds.center;
             _cam.farClipPlane = Mathf.Max(20f, _frameDistance + radius + 1f);
             PositionCamera();
+        }
+
+        /// <summary>
+        /// Composes a portrait into a larger transparent canvas without changing its apparent scale.
+        /// window is the original portrait rectangle in canvas coordinates (top-left origin). Arms can
+        /// extend outside that rectangle; only the actual screen clips them. Zero size restores normal framing.
+        /// The same RenderTexture is resized, so UI consumers keep a valid reference and no second camera is needed.
+        /// </summary>
+        public void SetPortraitCanvas(Vector2 size, Rect window)
+        {
+            bool enabled = size.x > 0f && size.y > 0f;
+            _portraitCanvas = enabled ? size : Vector2.zero;
+            _portraitWindow = window;
+            int width = enabled ? 1536 : _textureWidth;
+            int height = enabled ? Mathf.Clamp(Mathf.RoundToInt(width * size.y / size.x), 256, 1536) : _textureHeight;
+            if (Texture.width != width || Texture.height != height)
+            {
+                Texture.Release(); Texture.width = width; Texture.height = height; Texture.Create();
+            }
+            ApplyFraming();
+        }
+
+        public void SetIdentityPortrait(bool enabled)
+        {
+            if (_identityPortrait == enabled) return;
+            _identityPortrait = enabled;
+            ApplyFraming();
         }
 
         public void SetPortrait(bool portrait)
@@ -556,6 +597,17 @@ namespace CTLife.UI
             var centre = _avatar.transform.TransformPoint(_frameCentre);
             _cam.transform.position = centre + (_podiumEnabled && !_portrait ? CreatorCameraBackward : Vector3.forward) * _frameDistance;
             _cam.transform.rotation = Quaternion.LookRotation(centre - _cam.transform.position, Vector3.up);
+            _cam.ResetProjectionMatrix();
+            _cam.aspect = (float)_textureWidth / _textureHeight;
+            if (_portrait && _portraitCanvas.x > 0f && _portraitCanvas.y > 0f)
+            {
+                var projection = Matrix4x4.Perspective(_cam.fieldOfView, _cam.aspect, _cam.nearClipPlane, _cam.farClipPlane);
+                projection.m00 *= _portraitWindow.width / _portraitCanvas.x;
+                projection.m11 *= _portraitWindow.height / _portraitCanvas.y;
+                projection.m02 = 1f - 2f * _portraitWindow.center.x / _portraitCanvas.x;
+                projection.m12 = 2f * _portraitWindow.center.y / _portraitCanvas.y - 1f;
+                _cam.projectionMatrix = projection;
+            }
         }
 
         public void Spin(float pixels)

@@ -123,10 +123,11 @@
 }
 .ob-mode-look .ob-stage { left: -50px; top: 60px; width: 1000px; height: 820px; overflow: visible; }
 .ob-mode-custom .ob-stage { left: -100px; width: 900px; }
-.ob-mode-side .ob-stage { left: -440px; top: 90px; width: 1120px; height: 1120px; }
-.ob-mode-side .ob-stage-model { -unity-background-scale-mode: scale-and-crop; }
+.ob-mode-side .ob-stage { left: -72px; right: -72px; top: -22px; bottom: -30px; width: auto; height: auto; transition-duration: 0s; }
+.ob-mode-side .ob-stage-model { -unity-background-scale-mode: stretch-to-fill; }
 .ob-screen.ob-mode-confirm .ob-stage { left: 0; top: 0; width: 1px; height: 1px; opacity: 0; } /* the RT feeds the player card */
-.ob-screen.ob-typing .ob-stage { left: 0; top: 0; width: 340px; height: 330px; }
+.ob-screen.ob-typing .ob-stage { left: 0; top: 0; right: auto; bottom: auto; width: 340px; height: 330px; }
+.ob-screen.ob-typing .ob-stage-model { -unity-background-scale-mode: scale-to-fit; }
 .ob-screen.ob-mode-celebrate .ob-stage { left: 760px; top: 330px; width: 736px; height: 698px; }
 .ob-stage-glow {
     position: absolute; left: -40%; right: -40%; top: -16%; bottom: -6%; opacity: 0.75;
@@ -285,59 +286,63 @@
 .ob-custom-body .unity-base-slider__tracker { background-color: rgba(58, 20, 64, 0.4); border-radius: 12px; }
 .ob-custom-body .unity-base-slider__dragger { background-color: rgb(255, 255, 255); border-width: 4px; border-color: rgb(58, 20, 64); border-radius: 12px; }
 
-/* Confirm: one player card, "a look of yourself" */
+/* Player collectible: Storm Breakers composition, adapted to landscape and the actual avatar.
+   One graphic art field, a bold identity, and compact dream/traits. Consent stays outside. */
 .ob-mode-confirm .ob-title-row { display: none; }
+.ob-mode-confirm .ob-right { top: 180px; align-items: center; }
 .ob-idcard {
-    width: 1700px; height: 690px; margin-top: 0; overflow: hidden;
-    background-color: rgb(255, 255, 255); border-width: 8px; border-bottom-width: 20px; border-color: rgb(58, 20, 64); border-radius: 48px;
+    width: 1740px; height: 650px; margin-top: 0; overflow: hidden;
+    background-color: rgb(255, 255, 255); border-width: 3px; border-color: rgb(58, 20, 64); border-radius: 32px;
 }
-.ob-card-band {
-    height: 70px; padding: 0 40px; margin: 0; flex-direction: row; align-items: center; justify-content: space-between;
-    background-color: rgb(146, 88, 220); border-bottom-width: 6px; border-color: rgb(58, 20, 64);
-}
-.ob-card-band-text, .ob-card-band-hint {
-    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 38px; color: rgb(255, 255, 255); margin: 0; padding: 0;
-    -unity-text-outline-width: 3px; -unity-text-outline-color: rgb(58, 20, 64);
-}
-.ob-card-band-text { letter-spacing: 6px; }
-.ob-card-body { flex-direction: row; flex-grow: 1; }
+.ob-card-body { position: absolute; left: 0; top: 0; right: 0; bottom: 0; flex-direction: row; }
 .ob-card-hit, .ob-card-hit:hover, .ob-card-hit:focus, .ob-card-hit:active {
     margin: 0; padding: 0; border-width: 0; border-radius: 0; background-color: rgba(0, 0, 0, 0); align-items: stretch;
 }
 .ob-card-hit:active { opacity: 0.7; }
 .ob-card-portrait-hit, .ob-card-portrait-hit:hover, .ob-card-portrait-hit:focus, .ob-card-portrait-hit:active {
-    width: 470px; background-color: rgb(236, 226, 248); border-right-width: 6px; border-color: rgb(58, 20, 64); overflow: hidden;
+    width: 680px; flex-shrink: 0; overflow: visible; background-color: rgba(0, 0, 0, 0);
 }
-.ob-card-portrait { position: absolute; left: 0; top: 0; right: 0; bottom: 0; -unity-background-scale-mode: scale-and-crop; }
-.ob-card-info { flex-grow: 1; padding: 14px 40px 10px 40px; }
-.ob-card-header { flex-direction: row; align-items: center; justify-content: space-between; min-height: 138px; }
-.ob-card-row--name { align-items: flex-start; justify-content: center; }
-.ob-card-row--name { flex-shrink: 1; }
+.ob-card-art-field { position: absolute; left: 46px; right: 46px; top: 102px; bottom: 38px;
+    border-radius: 28px; background-color: rgb(20, 241, 149); rotate: -5deg; }
+.ob-card-portrait { position: absolute; left: -110px; top: -116px; width: 900px; height: 960px; -unity-background-scale-mode: scale-to-fit; }
+.ob-card-edition {
+    position: absolute; left: 34px; top: 28px; padding: 10px 20px; margin: 0;
+    background-color: rgb(255, 212, 84); border-radius: 8px;
+    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 26px; letter-spacing: 3px; color: rgb(58, 20, 64);
+}
+.ob-card-info { flex-grow: 1; padding: 48px 52px 38px 20px; justify-content: space-between; }
+.ob-card-header { flex-direction: column; align-items: flex-start; }
+.ob-card-row--name { align-items: flex-start; justify-content: center; width: 100%; }
 .ob-card-name {
-    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 92px; color: rgb(58, 20, 64); margin: 0; padding: 0; white-space: nowrap;
+    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 104px; color: rgb(58, 20, 64); margin: 0; padding: 0; white-space: nowrap;
 }
-.ob-card-row--tribe { flex-direction: row; align-items: center; min-height: 130px; }
-.ob-card-tribe-badge { width: 110px; height: 110px; -unity-background-scale-mode: scale-to-fit; }
+.ob-card-row--tribe { flex-direction: row; align-items: center; margin-bottom: 8px; }
+.ob-card-tribe-badge { width: 70px; height: 70px; -unity-background-scale-mode: scale-to-fit; }
 .ob-card-tribe {
-    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 40px; letter-spacing: 3px; color: rgb(120, 86, 124);
-    margin: 0 0 0 12px; padding: 0;
+    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 30px; letter-spacing: 3px; color: rgb(58, 20, 64);
+    margin: 0 0 0 14px; padding: 0; white-space: normal;
 }
-.ob-card-row { min-height: 130px; justify-content: center; align-items: flex-start; border-top-width: 3px; border-color: rgba(58, 20, 64, 0.14); }
+.ob-card-dream { flex-direction: row; align-items: center; padding-top: 12px; }
+.ob-card-dream-art { width: 102px; height: 102px; margin-right: 16px; flex-shrink: 0; -unity-background-scale-mode: scale-to-fit; }
+.ob-card-dream-copy { flex-grow: 1; flex-shrink: 1; align-items: flex-start; }
 .ob-card-caption {
-    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 38px; letter-spacing: 3px; color: rgb(146, 112, 150);
-    margin: 0; padding: 0;
+    -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); font-size: 24px; letter-spacing: 3px; color: rgb(120, 86, 124);
+    margin: 0 0 6px 0; padding: 0;
 }
 .ob-card-line { flex-direction: row; align-items: center; }
-.ob-card-line > .kit-badge { width: 72px; height: 72px; border-width: 5px; }
-.ob-card-origin-art { width: 54px; height: 74px; -unity-background-scale-mode: scale-to-fit; }
+.ob-card-origin-art { width: 42px; height: 58px; -unity-background-scale-mode: scale-to-fit; }
 .ob-card-value {
-    -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); font-size: 44px; color: rgb(58, 20, 64); margin: 0 0 0 16px; padding: 0;
+    -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); font-size: 38px; color: rgb(58, 20, 64); margin: 0; padding: 0; white-space: normal; -unity-text-align: middle-left;
 }
-.ob-card-trait { flex-direction: row; align-items: center; margin-right: 34px; }
-.ob-card-trait > .kit-badge { width: 72px; height: 72px; border-width: 5px; }
-.ob-card-holo { position: absolute; left: 60%; top: -60%; width: 120px; height: 220%; rotate: 22deg; background-color: rgba(255, 255, 255, 0.16); }
-.ob-card-foot { flex-direction: row; align-items: center; margin-top: 6px; }
-.ob-note--card { margin-left: 46px; }
+.ob-card-row--static .ob-card-value { font-size: 28px; margin-left: 14px; }
+.ob-card-traits-hit { border-top-width: 2px; border-color: rgba(58, 20, 64, 0.14); padding-top: 22px; }
+.ob-card-traits { justify-content: flex-start; }
+.ob-card-trait { flex-direction: row; align-items: center; margin-right: 26px; flex-shrink: 1; }
+.ob-card-trait > .kit-badge { width: 80px; height: 80px; margin-right: 10px; flex-shrink: 0; }
+.ob-card-value--trait { font-size: 29px; flex-shrink: 1; }
+.ob-card-foot { width: 1250px; flex-direction: row; align-items: center; justify-content: space-between; margin-top: 12px; }
+.ob-card-edit-hint { font-size: 26px; }
+.ob-note--card { font-size: 26px; margin-top: 4px; max-width: 1550px; }
 .ob-screen.ob-typing .ob-right { left: 380px; top: 0; }
 .ob-page { flex-direction: column; }
 .ob-title-row { flex-direction: row; align-items: flex-end; margin-bottom: 12px; }
@@ -354,7 +359,8 @@
 .ob-tribe-card .kit-card__title { font-size: 34px; margin-top: 4px; }
 .ob-tribe-card .kit-card__sub { font-size: 25px; }
 .ob-dream-card > .kit-card__face { padding-top: 10px; padding-bottom: 10px; }
-.ob-dream-card .kit-card__title { font-size: 44px; }
+.ob-dream-card .kit-card__title { font-size: 34px; white-space: normal; }
+.ob-dream-card .kit-card__badge { width: 100px; height: 100px; flex-shrink: 0; }
 /* Traits: 44px keeps the longest name ("Diamond Hands") on one line beside the icon (device 2026-10-10). */
 .ob-trait-card .kit-card__title { font-size: 34px; }
 .ob-trait-card .kit-card__sub, .ob-dream-card .kit-card__sub { font-size: 27px; }

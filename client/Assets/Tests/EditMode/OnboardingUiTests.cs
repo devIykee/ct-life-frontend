@@ -307,7 +307,8 @@ namespace CTLife.Tests
             Assert.IsNotNull(OnboardingArt.CardBack);
             Assert.IsNotNull(OnboardingArt.CardFront("insider"));
             Assert.IsNotNull(OnboardingArt.CardFront("exit_liquidity"));
-            Assert.IsNull(OnboardingArt.CardFront("seeker"), "no Seeker face yet: the lottery falls back to a plain named card");
+            Assert.IsNotNull(OnboardingArt.CardFront("seeker"));
+            Assert.IsNull(OnboardingArt.CardFront("not_an_origin"));
             Assert.IsNotNull(OnboardingArt.Backdrop);
             Assert.IsNotNull(OnboardingArt.Glow);
         }
