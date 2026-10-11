@@ -1,22 +1,29 @@
 using System;
+using CTLife.Core;
 using UnityEngine;
 
 namespace CTLife.World
 {
     /// <summary>
-    /// Direct-control locomotion curves (Phase A feel pass, 2026-10-17), measured with the FeelProbe before tuning:
-    /// the old controller stopped dead in two frames (270 m/s^2), turned at a flat 720 deg/s from the first frame, and froze
-    /// against the venue's walkable edge (128 of 181 frames stalled). Pure functions, EditMode-tested.
+    /// Direct-control locomotion curves. Phase A (2026-10-17) measured the old controller with the FeelProbe: it stopped dead
+    /// in two frames (270 m/s^2), turned at a flat 720 deg/s from the first frame, and froze against the venue's walkable
+    /// edge. Feel lane F1 retuned them for human speeds (walk 1.6, jog 3.5, sprint 6 m/s) with a little weight: a jog builds
+    /// in ~0.4 s, a sprint in another ~0.3 s, a sprint coasts ~1 m to a stop, and fast turns are wider. Pure functions,
+    /// EditMode-tested.
     /// </summary>
     public static class Locomotion
     {
-        /// <summary>Speeding up (m/s^2): 0 to run in ~0.3 s, unchanged from the accepted start.</summary>
-        public const float Acceleration = 14f;
+        /// <summary>Speeding up (m/s^2).</summary>
+        public const float Acceleration = 9f;
         /// <summary>Slowing to a lower target while still holding the stick.</summary>
-        public const float Deceleration = 18f;
-        /// <summary>Release braking: friction-like, proportional plus a floor, so a run settles in ~0.22 s over ~0.5 m.</summary>
-        public const float BrakeRate = 9f, BrakeFloor = 6f, StopBelow = 0.08f;
-        public const float TurnSmoothTime = 0.055f, MaxTurnRate = 900f;
+        public const float Deceleration = 12f;
+        /// <summary>Release braking: friction-like, proportional plus a floor.</summary>
+        public const float BrakeRate = 5f, BrakeFloor = 4f, StopBelow = 0.08f;
+        public const float TurnSmoothTime = 0.08f, MaxTurnRate = 720f, SprintTurnRate = 400f;
+
+        /// <summary>Turn-rate cap at a speed: full at a jog or slower, wider arcs at a sprint.</summary>
+        public static float TurnRateAt(float speed) =>
+            Mathf.Lerp(MaxTurnRate, SprintTurnRate, Mathf.InverseLerp(DirectMovementInput.JogSpeed, DirectMovementInput.SprintSpeed, speed));
 
         public static float Accelerate(float speed, float target, float dt) =>
             Mathf.MoveTowards(speed, target, (target > speed ? Acceleration : Deceleration) * dt);

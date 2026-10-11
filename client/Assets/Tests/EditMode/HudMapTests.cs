@@ -20,6 +20,7 @@ namespace CTLife.Tests
                 foreach (var id in new[] { "hud-lobby", "hud-needs", "hud-chat", "hud-emotes", "hud-mic", "hud-phone" })
                     Assert.IsNotNull(hud.Element.Q<Button>(id), id);
                 Assert.IsNotNull(hud.Element.Q<Label>(className: "ct-cash"));
+                Assert.AreEqual("Duo", hud.Element.Q<Button>("hud-phone").Q<Label>(className: "ct-dock-label").text, "the device is the Solana Duo, as in the lobby");
             }
             finally { hud.Dispose(); }
         }

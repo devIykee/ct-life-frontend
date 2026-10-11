@@ -50,6 +50,102 @@ namespace CTLife.Tests
             Near(r.min, p.Origin + a.Min); Near(r.size, a.Size);
         }
 
+        // ------------------------------------------------------------------ rotated venues (atlas.json v2, World lane 2026-10-17)
+
+        private static readonly string RotatedAreas = new JObject
+        {
+            ["areas"] = new JArray(new JObject
+            {
+                ["id"] = "rot", ["venueId"] = "rot", ["texture"] = "x", ["min"] = new JArray(-20f, -10f), ["size"] = new JArray(40f, 30f),
+                ["pixels"] = new JArray(400, 300),
+            }),
+        }.ToString();
+
+        private static Vector2Int Pixel(Vector2 uv, MapArea a) => new Vector2Int(Mathf.FloorToInt(uv.x * a.Pixels.x), Mathf.FloorToInt(uv.y * a.Pixels.y));
+
+        [Test]
+        public void RotatedVenue_MarkerLandsOnItsTexturePixel()
+        {
+            foreach (var yaw in new[] { 30f, 90f, -47.5f, 180f })
+                foreach (var legacyOnly in new[] { false, true })
+                {
+                    var origin = new Vector2(212f, -64f);
+                    var root = new GameObject("venue-root");   // the venue root as World places it: Unity yaw, clockwise seen from above
+                    try
+                    {
+                        root.transform.SetPositionAndRotation(new Vector3(origin.x, 3f, origin.y), Quaternion.Euler(0f, yaw, 0f));
+                        var centre = root.transform.TransformPoint(new Vector3(0f, 0f, 5f));   // the area centre, local (0, 5)
+                        var entry = new JObject { ["id"] = "rot", ["origin"] = new JArray(origin.x, origin.y), ["rotation"] = -yaw, ["scale"] = 1f };
+                        if (!legacyOnly) { entry["rotationDeg"] = yaw; entry["center"] = new JArray(centre.x, centre.z); }
+                        MapCatalog.LoadFrom(RotatedAreas, new JObject
+                        {
+                            ["min"] = new JArray(-800f, -600f), ["size"] = new JArray(1600f, 1200f), ["areas"] = new JArray(entry),
+                        }.ToString());
+                        var a = MapCatalog.Areas["rot"];
+                        var p = MapCatalog.PlacementOf(a);
+                        Assert.AreEqual(legacyOnly, p.Center == null);
+                        if (p.Center != null) Near(MapMath.AtlasFromLocal(p, a.Center), p.Center.Value, 1e-3f, "declared centre, yaw " + yaw);
+                        var layer = MapSurface.AreaLayer(a, p, null, 1);
+                        Near(layer.AtlasRect.center, new Vector2(centre.x, centre.z), 1e-3f, "quad turns about the area centre, yaw " + yaw);
+                        foreach (var local in new[] { new Vector2(12.34f, -4.13f), new Vector2(-19.46f, 19.41f), new Vector2(0.37f, 5.21f), new Vector2(19.87f, -9.93f) })
+                        {
+                            // A marker: world position -> venue-local (VenueSceneRoot.ToLocal) -> atlas (MapMarkers.Live).
+                            var world = root.transform.TransformPoint(new Vector3(local.x, 0f, local.y));
+                            var atlas = MapMath.AtlasFromLocal(p, MapMath.LocalFromWorld(world, root.transform.position, root.transform.rotation));
+                            Near(atlas, new Vector2(world.x, world.z), 1e-3f, "atlas metres are island metres, yaw " + yaw);
+                            // The pixel the drawn quad puts under the marker is the pixel the bake drew that spot on.
+                            var drawn = MapSurface.LayerFromAtlas(layer, atlas);
+                            var baked = MapMath.AreaUv(a, local);
+                            Near(drawn, baked, 1e-4f, "uv, yaw " + yaw);
+                            Assert.AreEqual(Pixel(baked, a), Pixel(drawn, a), "pixel, yaw " + yaw + " at " + local);
+                            Near(MapSurface.AtlasFromLayer(layer, baked), atlas, 1e-3f, "vertex math, yaw " + yaw);
+                            Assert.IsTrue(MapSurface.AreaContains(a, p, atlas));
+                        }
+                    }
+                    finally { Object.DestroyImmediate(root); MapCatalog.Reset(); }
+                }
+        }
+
+        [Test]
+        public void RotatedVenue_TapsBoundsAndLabelsFollowTheTurnedQuad()
+        {
+            var a = new MapArea { Id = "rot", Min = new Vector2(-20f, -10f), Size = new Vector2(40f, 30f), Pixels = new Vector2Int(400, 300) };
+            var p = new MapPlacement { AreaId = "rot", Origin = new Vector2(100f, 50f), RotationDeg = -90f };   // yaw 90: local north faces east
+            var r = MapSurface.AreaAtlasRect(a, p);
+            Near(r.center, MapMath.AtlasFromLocal(p, a.Center), 1e-3f);
+            Near(r.size, a.Size);
+            var b = MapSurface.AreaAtlasBounds(a, p);
+            Near(b.size, new Vector2(30f, 40f), 1e-3f, "a quarter turn swaps the footprint");
+            Near(b.center, r.center, 1e-3f);
+            Assert.IsTrue(MapSurface.AreaContains(a, p, MapMath.AtlasFromLocal(p, new Vector2(19f, 19f))), "a corner of the turned quad");
+            Assert.IsFalse(MapSurface.AreaContains(a, p, r.min + new Vector2(0.5f, 0.5f)), "the unturned frame's corner is off the venue");
+            Near(MapSurface.AreaNorthEdge(a, p), r.center + new Vector2(0f, 20f), 1e-3f, "the name pill rides the turned north edge");
+            var corners = MapSurface.AreaCorners(a, p);
+            Near(corners[0], MapMath.AtlasFromLocal(p, a.Min), 1e-3f, "texture bottom-left is the local Min corner");
+            Near(corners[2], MapMath.AtlasFromLocal(p, a.Min + a.Size), 1e-3f, "texture top-right is the local Max corner");
+            var flat = new MapPlacement { AreaId = "rot", Origin = new Vector2(100f, 50f) };
+            var fr = MapSurface.AreaAtlasRect(a, flat);
+            Near(fr.min, flat.Origin + a.Min, 1e-4f, "unrotated venues keep their frame");
+            Near(MapSurface.AreaNorthEdge(a, flat), new Vector2(fr.center.x, fr.yMax), 1e-4f);
+            Assert.AreEqual(0f, MapSurface.AreaLayer(a, flat, null, 1).RotationDeg);
+        }
+
+        /// <summary>Separating-axis test for two convex quads given as ordered corners (touching edges do not overlap).</summary>
+        private static bool QuadsOverlap(Vector2[] a, Vector2[] b)
+        {
+            foreach (var poly in new[] { a, b })
+                for (int i = 0; i < poly.Length; i++)
+                {
+                    var e = poly[(i + 1) % poly.Length] - poly[i];
+                    var n = new Vector2(-e.y, e.x);
+                    float aMin = float.MaxValue, aMax = float.MinValue, bMin = float.MaxValue, bMax = float.MinValue;
+                    foreach (var v in a) { float d = Vector2.Dot(v, n); aMin = Mathf.Min(aMin, d); aMax = Mathf.Max(aMax, d); }
+                    foreach (var v in b) { float d = Vector2.Dot(v, n); bMin = Mathf.Min(bMin, d); bMax = Mathf.Max(bMax, d); }
+                    if (aMax <= bMin + 1e-3f * n.magnitude || bMax <= aMin + 1e-3f * n.magnitude) return false;
+                }
+            return true;
+        }
+
         [Test]
         public void LocalFromWorld_MatchesTheVenueRootTransform()
         {
@@ -129,17 +225,19 @@ namespace CTLife.Tests
             Assert.GreaterOrEqual(areas.Count, 20, "every shipped venue and home type has a baked map");
             foreach (var id in new[] { "timeline_square", "terminal_cafe", "perp_pit", "spaces_studio", "home_studio" })
                 Assert.IsTrue(areas.ContainsKey(id), id);
-            var rects = atlas.Placements.Values.Select(p => (p.AreaId, r: MapSurface.AreaAtlasRect(areas[p.AreaId], p))).ToList();
-            foreach (var (id, r) in rects)
+            // Venues may turn to face their streets (atlas.json v2): bounds and overlaps use the turned quads.
+            var rects = atlas.Placements.Values.Select(p => (p.AreaId, p, r: MapSurface.AreaAtlasBounds(areas[p.AreaId], p), q: MapSurface.AreaCorners(areas[p.AreaId], p))).ToList();
+            foreach (var (id, p, r, _) in rects)
             {
                 Assert.IsTrue(atlas.Rect.Contains(r.min) && atlas.Rect.Contains(r.max), id + " inside the atlas");
                 Assert.IsNotNull(Resources.Load<Texture2D>(areas[id].Texture), id + " texture");
                 var a = areas[id];
                 Assert.AreEqual(a.Pixels.x / a.Size.x, a.Pixels.y / a.Size.y, 0.01f, id + ": square pixels (one transform both ways)");
+                if (p.Center != null) Near(MapMath.AtlasFromLocal(p, a.Center), p.Center.Value, 0.05f, id + ": the declared centre is where the math puts it");
             }
             for (int i = 0; i < rects.Count; i++)
                 for (int j = i + 1; j < rects.Count; j++)
-                    Assert.IsFalse(rects[i].r.Overlaps(rects[j].r), rects[i].AreaId + " / " + rects[j].AreaId + " do not overlap");
+                    Assert.IsFalse(QuadsOverlap(rects[i].q, rects[j].q), rects[i].AreaId + " / " + rects[j].AreaId + " do not overlap");
             Assert.IsNotNull(Resources.Load<Texture2D>(atlas.Texture), "atlas texture");
             Assert.AreEqual(9, atlas.Plots.Count, "3 x 3 plot grid");
             Assert.AreEqual(3, atlas.Plots.Count(p => p.Reserved), "three reserved lots for growth");

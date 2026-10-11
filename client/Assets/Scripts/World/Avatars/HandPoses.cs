@@ -13,6 +13,7 @@ namespace CTLife.World
         public const string Layer = "Hands", None = "hand_none";
         public const float FadeIn = 0.12f, FadeOut = 0.2f;
 
+        /// <summary>Keyed by the controller state AvatarView plays (the registry anim id), not the clip file name.</summary>
         public static readonly Dictionary<string, (string left, string right)> Map = new Dictionary<string, (string, string)>
         {
             ["emote_wave"] = ("relaxed", "open"),
@@ -20,10 +21,11 @@ namespace CTLife.World
             ["emote_thumbs_up"] = ("relaxed", "thumbs"),
             ["emote_clap"] = ("open", "open"),
             ["emote_heart_hands"] = ("curve", "curve"),
-            ["emote_wagmi_fist_pump"] = ("fist", "fist"),
+            ["emote_wagmi"] = ("fist", "fist"),
             ["emote_chest_thump"] = ("relaxed", "fist"),
-            ["emote_send_it_slam"] = ("fist", "fist"),
+            ["emote_send_it"] = ("fist", "fist"),
             ["emote_moon_jump"] = ("fist", "fist"),
+            ["react_moon_jump"] = ("fist", "fist"),
             ["emote_facepalm"] = ("open", "open"),
             ["emote_salute"] = ("relaxed", "open"),
             ["emote_shrug"] = ("open", "open"),
@@ -31,12 +33,12 @@ namespace CTLife.World
             ["emote_coin_flip"] = ("relaxed", "grip"),
             ["emote_watering_can"] = ("grip", "grip"),
             ["emote_hood_up"] = ("grip", "grip"),
-            ["emote_ring_light_pose"] = ("open", "point"),
-            ["emote_cry"] = ("curve", "curve"),
+            ["emote_ring_light"] = ("open", "point"),
+            ["act_cry"] = ("curve", "curve"),
             ["emote_laugh"] = ("relaxed", "relaxed"),
             ["emote_bow"] = ("relaxed", "relaxed"),
-            ["emote_dance_1"] = ("open", "open"),
-            ["emote_dance_2"] = ("fist", "fist"),
+            ["act_dance_1"] = ("open", "open"),
+            ["act_dance_2"] = ("fist", "fist"),
         };
 
         public static string StateName(string left, string right) => $"hand_{left}_{right}";

@@ -180,6 +180,15 @@ namespace CTLife.EditorTools
                     CityHudCapture.IslandOnly = true;
                     await CityHudCapture.Run(Shot, Wait, Expect, Step, Receipt);
                 }
+                else if (Set == "controls")
+                {
+                    CityHudCapture.ControlsOnly = true;
+                    await CityHudCapture.Run(Shot, Wait, Expect, Step, Receipt);
+                }
+                else if (Set == "arms")
+                {
+                    await ArmsReviewCapture.Run(Shot, Expect, Receipt, Arg("-ctlife-captureOut") ?? "/tmp/arms");
+                }
                 else if (Set == "feel")
                 {
                     CityHudCapture.FeelOnly = true;

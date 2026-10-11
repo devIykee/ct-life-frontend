@@ -108,11 +108,14 @@ namespace CTLife.World
         private static readonly int LocoRateParam = Animator.StringToHash("locoRate");
         private RuntimeAnimatorController _rateFor;
         private bool _hasLocoRate;
-        private float _walkNative = 1f, _runNative = 5.7f;
+        private float _walkNative = 1f, _runNative = 5.7f, _sprintNative = 5.8f;
         private float _speed;
         private float _nextIdleVariation;
         private float _lastYaw, _turnShuffleUntil;
-        private static readonly string[] IdleVariations = { "idle_fidget_lookaround", "idle_fidget_stretch", "idle_fidget_foldarms" };
+        // Subtle variations only (Feel lane F1): the overhead stretch read as the character randomly throwing its arms up
+        // ("when it raises its hands it feels very weird"); it stays a state for anything that asks for it explicitly.
+        private static readonly string[] IdleVariations = { "idle_fidget_lookaround", "idle_fidget_foldarms" };
+        public static System.Collections.Generic.IReadOnlyList<string> IdleVariationIds => IdleVariations;
 
         public void Init(Animator animator, ProceduralAnimator procedural, SkinnedMeshRenderer body, Mesh[] lods, float height)
         {
@@ -482,7 +485,7 @@ namespace CTLife.World
                     Animator.SetFloat(AnimationLibrary.SpeedParam, metresPerSecond, 0.1f, Mathf.Max(Time.deltaTime, 1e-4f));
                     float blended = Animator.GetFloat(AnimationLibrary.SpeedParam);
                     // Feet planted: the Locomotion tree plays at speed / native ground speed (LocomotionTuning).
-                    Animator.SetFloat(LocoRateParam, LocomotionTuning.Rate(blended, _walkNative, _runNative));
+                    Animator.SetFloat(LocoRateParam, LocomotionTuning.Rate(blended, _walkNative, _runNative, _sprintNative));
                 }
                 else Animator.SetFloat(AnimationLibrary.SpeedParam, metresPerSecond);
             }
@@ -527,11 +530,14 @@ namespace CTLife.World
             _hasLocoRate = false;
             foreach (var p in Animator.parameters) if (p.nameHash == LocoRateParam) { _hasLocoRate = true; break; }
             var tuning = LocomotionTuning.Instance;
-            if (tuning != null) (_walkNative, _runNative) = tuning.NativeFor(_rateFor);
+            if (tuning != null) (_walkNative, _runNative, _sprintNative) = tuning.NativeFor(_rateFor);
         }
 
-        /// <summary>One-shot emote/react. startInSeconds lets emotes start at the server's `emoteAt`.</summary>
-        public void PlayOneShot(string animId, float startInSeconds = 0f)
+        /// <summary>
+        /// One-shot emote/react. startInSeconds lets emotes start at the server's `emoteAt`; a positive
+        /// <paramref name="duration"/> cuts a presentation clip short (a landing absorb, not the whole clip).
+        /// </summary>
+        public void PlayOneShot(string animId, float startInSeconds = 0f, float duration = -1f)
         {
             if (string.IsNullOrEmpty(animId) || Suppressed) return;
             if (SeatTransitionActive)
@@ -552,7 +558,7 @@ namespace CTLife.World
             }
             var def = AnimationLibrary.Def(animId);
             // Registry anims carry their duration; FE presentation states use their measured clip length.
-            float duration = def != null ? def.durationMs / 1000f : LocomotionTuning.Instance != null ? LocomotionTuning.Instance.LengthOf(animId, 2f) : 2f;
+            if (duration <= 0f) duration = def != null ? def.durationMs / 1000f : LocomotionTuning.Instance != null ? LocomotionTuning.Instance.LengthOf(animId, 2f) : 2f;
             // Late joiners: skip the part that already happened.
             if (startInSeconds < 0f) duration += startInSeconds;
             if (duration <= 0.05f) return;
@@ -634,7 +640,7 @@ namespace CTLife.World
                 if (idleBase) AnimationLibrary.TryPlay(Animator, "loco_idle", 0.2f);
             }
             if (!idleBase || Talking || LodTier > 0 || _speed > 0.1f || Time.time < _nextIdleVariation) return;
-            _nextIdleVariation = Time.time + Random.Range(9f, 18f);
+            _nextIdleVariation = Time.time + Random.Range(14f, 28f);
             var id = IdleVariations[Random.Range(0, IdleVariations.Length)];
             if (!Animator.HasState(0, AnimationLibrary.Hash(id))) return;
             float length = LocomotionTuning.Instance != null ? LocomotionTuning.Instance.LengthOf(id, 3f) : 3f;

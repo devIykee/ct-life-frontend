@@ -395,6 +395,13 @@ The 29 Rain-derived cast appearances retain their existing Blender Foundation / 
 |---|---|---|---|---|---|
 | `client/Assets/Resources/UI/Brand/solana-logomark.png` | [Official Solana branding page](https://solana.com/branding), [original PNG](https://solana.com/src/img/branding/solanaLogoMark.png) | Solana Foundation trademark/brand asset, subject to its published Brand Guidelines; not CC0. Keep the artwork unaltered. The published guidance requires written permission for combinations with another name/graphic/generic term; a CT Life-specific permission was not verified in this task. | Solana Foundation | 2026-10-15 | User-requested official mark preceding “Duo” in the fictional in-game phone header. Original 101×88 PNG copied byte-for-byte (SHA256 `c20cf2118506af6428993609364c77653d51c21561c41120bacb91eb4679a4cc`), aspect ratio preserved, no tint/effect. |
 
+## Feel lane F1: emote gestures — 2026-10-17
+
+| Name | Source | Licence / usage terms | Author | Date downloaded | Use |
+|---|---|---|---|---|---|
+| CMU Graphics Lab Motion Capture Database — subject 141 (141_16 "Wave Hello", 141_21 "Shrug") | http://mocap.cs.cmu.edu/subjects/141/ (ASF/AMC; FAQ http://mocap.cs.cmu.edu/faqs.php) | Free use: "The motion capture data may be copied, modified, or redistributed without permission." (same FAQ as the 2026-10-08 rows). Acknowledgement: "The data used in this project was obtained from mocap.cs.cmu.edu. The database was created with funding from NSF EIA-0196217." | Carnegie Mellon University Graphics Lab | 2026-10-17 | `client/Assets/Art/animations/mocap/wave_hello.fbx`, `shrug.fbx` (converted by `tools/anim/build_mocap_clips.py`, provenance in `art/processed/animations/mocap/mocap.json`); their upper body is baked onto the game idles as `emote_wave` / `emote_shrug` by `client/Assets/Scripts/Editor/EmoteBake.cs` |
+| `client/Assets/Art/animations/emotes/*.anim` (21 emotes × Snow / Rain idle) | Baked by `EmoteBake.cs`: upper body from the CMU clips above or the CT Life hand-keyed clips (CC0, `art/pipeline/anim_emotes.py`), root and legs from the shipped relaxed Snow / Rain idles | Derived from the sources named; no new third-party material | CT Life | 2026-10-17 | the emote states of `AvatarController` (Rain variants via `RainController`) |
+
 ## CT Island v2 world (World lane) — 2026-10-17
 
 Tiling ground and surface detail for the v2 island. The photos are reduced to normalised grayscale or tinted detail by

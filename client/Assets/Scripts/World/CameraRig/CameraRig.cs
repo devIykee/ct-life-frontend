@@ -1,60 +1,78 @@
 using CTLife.Audio;
+using CTLife.Core;
 using UnityEngine;
 
 namespace CTLife.World
 {
     /// <summary>
-    /// The high 3/4 "tilt" camera over the diorama (AGENTS-BRIEF art direction): follows the local avatar, pinch to
-    /// zoom, one-finger drag pans a little and eases back, focus clamped to the venue's camera bounds.
-    /// Input arrives from the UI layer (UI Toolkit owns touch), so this class has no input-system dependency.
+    /// The on-foot camera (Feel lane F1, 2026-10-17, "it doesn't feel GTA like"): third person behind the player at shoulder
+    /// height. A drag on the world (the right half; the left half is the stick) orbits it, a pinch zooms; after a moment
+    /// without orbiting it swings back behind the direction of travel. It pulls in when something solid comes between it
+    /// and the player and sits closer indoors. Input arrives from the UI layer (UI Toolkit owns touch), so this class has no
+    /// input-system dependency.
     /// </summary>
     public sealed class CameraRig : MonoBehaviour
     {
         public static CameraRig Instance { get; private set; }
 
-        public float pitch = 50f;
-        public float yaw = 45f;
-        public float distance = 15f;
-        public float minDistance = 7f;
-        public float maxDistance = 26f;
-        public float followSharpness = 6f;
+        /// <summary>Degrees down from horizontal, and the yaw the camera looks along (the stick is relative to it).</summary>
+        public float pitch = DefaultPitch;
+        public float yaw;
+        /// <summary>Boom length outdoors (m); pinch scales it between <see cref="minDistance"/> and <see cref="maxDistance"/>.</summary>
+        public float distance = OutdoorDistance;
+        public float minDistance = 2.2f;
+        public float maxDistance = 7f;
+        public float followSharpness = 14f;
+        /// <summary>Legacy (the old view's pan limit); unused by the follow camera.</summary>
         public float maxPan = 8f;
+
+        public const float DefaultPitch = 14f, MinPitch = -30f, MaxPitch = 65f;
+        public const float OutdoorDistance = 4.2f, InteriorDistance = 2.7f;
+        public const float PivotHeight = 1.5f, LookAbove = 0.12f;
+        public const float FieldOfView = 52f;
+        /// <summary>Orbit gain (degrees per screen pixel of drag).</summary>
+        public const float YawPerPixel = 0.14f, PitchPerPixel = 0.1f;
+        /// <summary>After this long without orbiting, a moving player's camera swings back behind them.</summary>
+        public const float RecenterDelay = 1.2f, RecenterRate = 1.8f;
+        public const float CollisionRadius = 0.22f;
 
         private Transform _target;
         private AvatarView _targetAvatar;
+        private Renderer[] _targetRenderers = System.Array.Empty<Renderer>();
+        private bool _targetHidden;
         public Transform Target
         {
             get => _target;
-            set { _target = value; _targetAvatar = value != null ? value.GetComponent<AvatarView>() : null; }
+            set
+            {
+                ShowTarget(true);
+                _target = value;
+                _targetAvatar = value != null ? value.GetComponent<AvatarView>() : null;
+                _targetRenderers = value != null ? value.GetComponentsInChildren<Renderer>(true) : System.Array.Empty<Renderer>();
+            }
         }
+        /// <summary>Closer than this to the pivot (backed against a wall) the camera rises over the head and the player hides.</summary>
+        public const float CloseBoom = 1.1f, MaxLift = 0.7f, HideWithin = 0.8f;
         private Vector3 TargetPosition => _targetAvatar != null ? _targetAvatar.PresentationPosition : Target.position;
+        /// <summary>Legacy venue camera bounds (kept for venues that still declare them; the follow camera does not clamp).</summary>
         public Rect Bounds { get; set; } = new Rect(-30, -30, 60, 60);
         public Camera Camera { get; private set; }
 
-        private Vector3 _focus;
-        private Vector3 _pan;
-        private float _lastInputAt;
-        private Vector3 _lookAhead;
-        private float _targetViewportY;
-        private float _focusHeight = 1f;
+        private Vector3 _pivot, _lastTarget;
+        private float _lastOrbitAt = -10f, _zoom = 1f, _boom = OutdoorDistance;
+        private bool _interiorFlag, _ceiling;
+        private float _ceilingCheckAt;
+
+        public static int CollisionMask => CharacterLayers.BodyMask & ~((1 << 13) | (1 << 14)); // not props or vegetation (World v2 13, 14)
 
         public void ConfigureVenue(VenueSceneRoot venue)
         {
             Bounds = venue.cameraBounds;
-            _lookAhead = venue.cameraLookAhead;
-            _targetViewportY = venue.cameraTargetViewportY;
-            _focusHeight = venue.cameraFocusHeight;
-            distance = venue.cameraDistance > 0f ? venue.cameraDistance : 15f;
-            pitch = venue.cameraDistance > 0f ? venue.cameraPitch : 50f;
-            yaw = venue.cameraDistance > 0f ? venue.cameraYaw : 45f;
-            maxDistance = Mathf.Max(26f, distance + 8f);
-            minDistance = 9f;
             if (Camera != null)
             {
-                Camera.fieldOfView = venue.cameraDistance > 0f ? venue.cameraFieldOfView : 35f;
+                Camera.fieldOfView = FieldOfView;
                 Camera.backgroundColor = new Color(0.81f, 0.83f, 0.80f);
             }
-            _pan = Vector3.zero;
         }
 
         public static CameraRig Ensure()
@@ -69,9 +87,9 @@ namespace CTLife.World
                 go.AddComponent<AudioListener>();
             }
             else go = cam.gameObject;
-            cam.nearClipPlane = 0.3f;
-            cam.farClipPlane = 120f;
-            cam.fieldOfView = 35f;
+            cam.nearClipPlane = 0.1f;
+            cam.farClipPlane = 400f;
+            cam.fieldOfView = FieldOfView;
             cam.clearFlags = CameraClearFlags.SolidColor;
             cam.backgroundColor = new Color(0.62f, 0.78f, 0.92f);
             var rig = go.GetComponent<CameraRig>();
@@ -106,56 +124,125 @@ namespace CTLife.World
             if (Instance == this) Instance = null;
         }
 
+        /// <summary>Indoors (a home, or a ceiling overhead): the boom shortens.</summary>
+        public void SetInterior(bool interior) => _interiorFlag = interior;
+        public bool Interior => _interiorFlag || _ceiling;
+
+        private bool _settleBehind;
+        /// <summary>Ease round behind the target even though it is not moving (it just sat down: look where it looks).</summary>
+        public void SettleBehind() { _settleBehind = true; _lastOrbitAt = -10f; }
+
+        /// <summary>Jump behind the target (spawn, fast travel, teleports).</summary>
         public void SnapToTarget()
         {
-            if (Target != null) _focus = TargetPosition;
-            _pan = Vector3.zero;
+            if (Target != null)
+            {
+                _pivot = TargetPosition + Vector3.up * PivotHeight;
+                _lastTarget = TargetPosition;
+                yaw = Target.eulerAngles.y;
+            }
+            pitch = DefaultPitch;
+            _boom = DesiredDistance();
+            _lastOrbitAt = -10f;
             LateUpdate();
         }
 
         /// <summary>Pinch: positive delta zooms in. Units are screen pixels of finger-distance change.</summary>
         public void Zoom(float pixelDelta)
         {
-            distance = Mathf.Clamp(distance - pixelDelta * 0.03f, minDistance, maxDistance);
-            _lastInputAt = Time.unscaledTime;
+            _zoom = Mathf.Clamp(_zoom - pixelDelta * 0.0025f, minDistance / OutdoorDistance, maxDistance / OutdoorDistance);
+            distance = OutdoorDistance * _zoom;
         }
 
-        /// <summary>One-finger drag in screen pixels.</summary>
-        public void Pan(Vector2 pixelDelta)
+        /// <summary>One-finger drag in screen pixels (right = orbit right, up = look up).</summary>
+        public void Orbit(Vector2 pixelDelta)
         {
-            var right = Quaternion.Euler(0, yaw, 0) * Vector3.right;
-            var fwd = Quaternion.Euler(0, yaw, 0) * Vector3.forward;
-            float k = distance * 0.0016f;
-            _pan -= (right * pixelDelta.x + fwd * pixelDelta.y) * k;
-            _pan = Vector3.ClampMagnitude(_pan, maxPan);
-            _lastInputAt = Time.unscaledTime;
+            _settleBehind = false;
+            yaw = Mathf.Repeat(yaw + pixelDelta.x * YawPerPixel, 360f);
+            pitch = Mathf.Clamp(pitch - pixelDelta.y * PitchPerPixel, MinPitch, MaxPitch);
+            _lastOrbitAt = Time.time;
+        }
+
+        /// <summary>Legacy name of <see cref="Orbit"/> (the old view panned).</summary>
+        public void Pan(Vector2 pixelDelta) => Orbit(pixelDelta);
+
+        private float DesiredDistance()
+        {
+            float d = distance > 0f ? distance : OutdoorDistance;
+            return Interior ? Mathf.Min(d, InteriorDistance * _zoom) : d;
         }
 
         private void LateUpdate()
         {
-            if (Target != null)
-                _focus = Vector3.Lerp(_focus, TargetPosition, 1f - Mathf.Exp(-followSharpness * Time.unscaledDeltaTime));
-            if (Time.unscaledTime - _lastInputAt > 2.5f)
-                _pan = Vector3.Lerp(_pan, Vector3.zero, 1f - Mathf.Exp(-1.5f * Time.unscaledDeltaTime));
-
-            // Clamp the tracked position, not the camera's aim point. Clamping a world-Z look-ahead
-            // moved the entrance avatar outside the narrow portrait frustum when the camera had yaw.
-            var f = _focus + _pan;
-            f.x = Mathf.Clamp(f.x, Bounds.xMin, Bounds.xMax);
-            f.z = Mathf.Clamp(f.z, Bounds.yMin, Bounds.yMax);
-            if (_targetViewportY > 0f)
+            if (Target == null) return;
+            // Game time, like the body it follows (the body moves on Time.deltaTime; captures step both at a fixed rate).
+            float dt = Mathf.Min(Time.deltaTime, 0.1f);
+            var target = TargetPosition;
+            var travel = target - _lastTarget; travel.y = 0f;
+            float speed = dt > 1e-5f ? travel.magnitude / dt : 0f;
+            _lastTarget = target;
+            if (speed > 12f) _pivot = target + Vector3.up * PivotHeight; // a teleport: no swoop across the map
+            _pivot = Vector3.Lerp(_pivot, target + Vector3.up * PivotHeight, 1f - Mathf.Exp(-followSharpness * dt));
+            if (Time.time >= _ceilingCheckAt)
             {
-                float ahead = LookAheadForViewport(distance, pitch, Camera.fieldOfView, _targetViewportY, _focusHeight);
-                f += Quaternion.Euler(0f, yaw, 0f) * Vector3.forward * ahead;
+                _ceilingCheckAt = Time.time + 0.25f;
+                _ceiling = Physics.Raycast(target + Vector3.up * 1.0f, Vector3.up, 3.5f, CollisionMask, QueryTriggerInteraction.Ignore);
             }
-            else f += _lookAhead;
-            var rot = Quaternion.Euler(pitch, yaw, 0);
-            transform.SetPositionAndRotation(f + Vector3.up * _focusHeight - rot * Vector3.forward * distance, rot);
+            // Swing back behind the direction of travel once the player stops steering the view.
+            float idle = Time.time - _lastOrbitAt;
+            if (_settleBehind)
+            {
+                float delta = Mathf.DeltaAngle(yaw, Target.eulerAngles.y);
+                yaw = Mathf.Repeat(yaw + delta * (1f - Mathf.Exp(-3f * dt)), 360f);
+                if (Mathf.Abs(delta) < 1.5f || idle < RecenterDelay) _settleBehind = false;
+            }
+            else yaw = Recenter(yaw, Target.eulerAngles.y, speed, idle, dt);
+            if (idle > RecenterDelay + 0.8f && speed > 0.5f) pitch = Mathf.Lerp(pitch, DefaultPitch, 1f - Mathf.Exp(-1.2f * dt));
+            var rot = Quaternion.Euler(pitch, yaw, 0f);
+            float want = DesiredDistance();
+            float clear = ClearDistance(_pivot, rot * Vector3.back, want, CollisionRadius, CollisionMask);
+            // Pull in at once when something solid comes between; ease back out.
+            _boom = clear < _boom ? clear : Mathf.Lerp(_boom, clear, 1f - Mathf.Exp(-3f * dt));
+            // Backed against something: rise over the head and look past it (seeing the inside of the head is not a view).
+            float lift = MaxLift * Mathf.Clamp01((CloseBoom - _boom) / (CloseBoom - 0.35f));
+            if (lift > 0f && Physics.SphereCast(_pivot, CollisionRadius, Vector3.up, out var roof, lift + 0.1f, CollisionMask, QueryTriggerInteraction.Ignore))
+                lift = Mathf.Max(0f, roof.distance - 0.1f);
+            var position = _pivot + rot * Vector3.back * _boom + Vector3.up * lift;
+            var look = _pivot + Vector3.up * LookAbove + (rot * Vector3.forward) * (lift * 1.5f);
+            transform.SetPositionAndRotation(position, Quaternion.LookRotation(look - position));
+            ShowTarget(Vector3.Distance(position, _pivot) > HideWithin);
+        }
+
+        private void ShowTarget(bool show)
+        {
+            if (_targetHidden == !show) return;
+            _targetHidden = !show;
+            foreach (var r in _targetRenderers) if (r != null) r.forceRenderingOff = !show;
         }
 
         /// <summary>
-        /// Solve the perspective projection for a ground-plane follow target at the requested screen height.
-        /// Recomputed on zoom, so the avatar remains centered horizontally and above the bottom HUD.
+        /// The yaw after one frame of auto-recentring: toward <paramref name="heading"/> (the player's facing) once
+        /// <paramref name="idle"/> exceeds the delay and the player moves; faster the faster they go. Pure (EditMode-tested).
+        /// </summary>
+        public static float Recenter(float yaw, float heading, float speed, float idle, float dt)
+        {
+            if (idle < RecenterDelay || speed < 0.5f) return yaw;
+            float delta = Mathf.DeltaAngle(yaw, heading);
+            float rate = RecenterRate * Mathf.Clamp01(speed / DirectMovementInput.JogSpeed);
+            return Mathf.Repeat(yaw + delta * (1f - Mathf.Exp(-rate * dt)), 360f);
+        }
+
+        /// <summary>How far the boom can reach from the pivot before a solid surface (minus a margin), at most <paramref name="want"/>.</summary>
+        public static float ClearDistance(Vector3 pivot, Vector3 back, float want, float radius, int mask)
+        {
+            if (Physics.SphereCast(pivot, radius, back, out var hit, want, mask, QueryTriggerInteraction.Ignore))
+                return Mathf.Max(0.35f, hit.distance - 0.05f);
+            return want;
+        }
+
+        /// <summary>
+        /// Legacy diorama-view helper (the old high 3/4 camera): the look-ahead that puts a ground target at a viewport
+        /// height. Kept for editor captures that still frame venues that way.
         /// </summary>
         public static float LookAheadForViewport(float distance, float pitchDegrees, float fovDegrees, float viewportY, float focusHeight)
         {

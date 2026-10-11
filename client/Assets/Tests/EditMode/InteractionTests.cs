@@ -263,23 +263,24 @@ namespace CTLife.Tests
         // ------------------------------------------------------------------ speed-matched locomotion
 
         [Test]
-        public void LocoRate_KeepsTheWalkAndMatchesTheRun()
+        public void LocoRate_KeepsTheWalkAndMatchesTheJogAndSprint()
         {
-            // Below the walk threshold: identical to the accepted walk (speed / 1.0 m/s).
-            Assert.AreEqual(0.5f, LocomotionTuning.Rate(0.5f, 1f, 4.5f), 1e-4f);
-            Assert.AreEqual(2.2f, LocomotionTuning.Rate(2.2f, 1f, 4.5f), 1e-4f);
-            // In the run band: speed / run ground speed (feet move with the body).
-            Assert.AreEqual(1f, LocomotionTuning.Rate(4.5f, 1f, 4.5f), 1e-4f);
-            Assert.AreEqual(3.6f / 4.5f, LocomotionTuning.Rate(3.6f, 1f, 4.5f), 1e-4f);
-            // Continuous across the crossover, and stopped = 1.
-            float prev = LocomotionTuning.Rate(2.2f, 1f, 4.5f);
-            for (float v = 2.25f; v <= 3.6f; v += 0.05f)
+            // Up to the walk speed: identical to the accepted walk (speed / 1.0 m/s).
+            Assert.AreEqual(0.5f, LocomotionTuning.Rate(0.5f, 1f, 4.5f, 5.8f), 1e-4f);
+            Assert.AreEqual(1.6f, LocomotionTuning.Rate(1.6f, 1f, 4.5f, 5.8f), 1e-4f);
+            // At the jog speed: speed / jog ground speed; at the sprint speed: speed / sprint ground speed.
+            Assert.AreEqual(3.5f / 4.5f, LocomotionTuning.Rate(3.5f, 1f, 4.5f, 5.8f), 1e-4f);
+            Assert.AreEqual(6f / 5.8f, LocomotionTuning.Rate(6f, 1f, 4.5f, 5.8f), 1e-4f);
+            // Continuous across both crossovers, and stopped = 1.
+            float prev = LocomotionTuning.Rate(1.6f, 1f, 4.5f, 5.8f);
+            for (float v = 1.65f; v <= 6.5f; v += 0.05f)
             {
-                float r = LocomotionTuning.Rate(v, 1f, 4.5f);
+                float r = LocomotionTuning.Rate(v, 1f, 4.5f, 5.8f);
                 Assert.Less(Mathf.Abs(r - prev), 0.25f, $"jump at {v}");
                 prev = r;
             }
-            Assert.AreEqual(1f, LocomotionTuning.Rate(0f, 1f, 4.5f));
+            Assert.AreEqual(1f, LocomotionTuning.Rate(0f, 1f, 4.5f, 5.8f));
+            Assert.AreEqual(LocomotionTuning.Rate(4f, 1f, 4.5f), LocomotionTuning.Rate(4f, 1f, 4.5f, 4.5f), "two-band overload");
         }
     }
 }

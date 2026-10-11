@@ -60,6 +60,64 @@ namespace CTLife.EditorTools
         /// (The seated blend trees and Codex's fitted states keep Foot IK off: their FK feet are the fitted contact.)
         public static readonly string[] SeatedFootIk = { "act_type", "act_frantic_type", "act_sit_talk" };
 
+        /// <summary>
+        /// Feel lane F1, in place and nothing else: the Locomotion tree gets its thresholds at the new gait speeds (walk 1.6,
+        /// jog 3.5) and a sprint child (the UAL Sprint at 6 m/s), and LocomotionTuning the measured sprint ground speed per
+        /// family. (A full <see cref="Apply"/> would also re-point states that later tools re-fitted, e.g. the stretch.)
+        /// Batch: -executeMethod CTLife.EditorTools.CharacterFeelController.ApplySprintBandBatch
+        /// </summary>
+        public static JObject ApplySprintBand()
+        {
+            var report = new JObject();
+            var ctrl = AssetDatabase.LoadAssetAtPath<AnimatorController>(ControllerPath) ?? throw new FileNotFoundException(ControllerPath);
+            var male = AssetDatabase.LoadAssetAtPath<GameObject>(ReferencePrefab) ?? throw new FileNotFoundException(ReferencePrefab);
+            var female = AssetDatabase.LoadAssetAtPath<GameObject>(FemaleReferencePrefab) ?? throw new FileNotFoundException(FemaleReferencePrefab);
+            var snowCtrl = AssetDatabase.LoadAssetAtPath<AnimatorOverrideController>(CastImport.SnowControllerPath);
+            var rainCtrl = AssetDatabase.LoadAssetAtPath<AnimatorOverrideController>(CastImport.RainControllerPath);
+            var walk = Clip(Anim + "loco_walk.fbx");
+            var band = Clip(Anim + RunBandClip);
+            var sprint = Clip(Anim + "loco_run.fbx");
+            AnimationClip Played(AnimatorOverrideController o, AnimationClip shared) => o != null && o[shared] != null ? o[shared] : shared;
+            float mRaw = ClipMeasure.GroundSpeed(male, Played(snowCtrl, sprint)), fRaw = ClipMeasure.GroundSpeed(female, Played(rainCtrl, sprint));
+            if (mRaw < 3f || fRaw < 3f || mRaw > 9f || fRaw > 9f) throw new InvalidDataException($"implausible sprint ground speed m={mRaw:F2} f={fRaw:F2}");
+            // The stance-regression measure reads the sprint's short, toe-rolling stance high on the long-legged male look
+            // (7.97 m/s on 2026-10-17 against 5.51 on the female and the ~5.5-5.8 m/s of ct_motion.md): keep it to the band
+            // where the clip plays at about 1x at 6 m/s.
+            float mSprint = Mathf.Clamp(mRaw, 5f, 6.5f), fSprint = Mathf.Clamp(fRaw, 5f, 6.5f);
+            report["measured"] = $"m {mRaw:F2} f {fRaw:F2}";
+            var sm = ctrl.layers[0].stateMachine;
+            var tree = sm.states.Select(st => st.state.motion).OfType<BlendTree>().FirstOrDefault(t => t.name == "Locomotion")
+                ?? throw new InvalidDataException("Locomotion tree missing (run Apply first)");
+            tree.useAutomaticThresholds = false;
+            tree.children = Array.Empty<ChildMotion>();
+            tree.AddChild(walk, LocomotionTuning.BlendWalk);
+            tree.AddChild(band, LocomotionTuning.BlendRun);
+            tree.AddChild(sprint, LocomotionTuning.BlendSprint);
+            EditorUtility.SetDirty(tree);
+            EditorUtility.SetDirty(ctrl);
+            var tuning = AssetDatabase.LoadAssetAtPath<LocomotionTuning>(TuningPath) ?? throw new FileNotFoundException(TuningPath);
+            foreach (var f in tuning.families)
+            {
+                if (f == null) continue;
+                if (f.controller == snowCtrl) f.sprint = mSprint;
+                else if (f.controller == rainCtrl) f.sprint = fSprint;
+            }
+            tuning.defaultSprint = (mSprint + fSprint) * 0.5f;
+            EditorUtility.SetDirty(tuning);
+            AssetDatabase.SaveAssets();
+            report["summary"] = $"tree walk {LocomotionTuning.BlendWalk} jog {LocomotionTuning.BlendRun} sprint {LocomotionTuning.BlendSprint}; " +
+                                $"sprint native m {mSprint:F2} f {fSprint:F2}";
+            return report;
+        }
+
+        public static void ApplySprintBandBatch()
+        {
+            int code = 0;
+            try { Debug.Log("CTLIFE [feel-controller] " + ApplySprintBand()["summary"]); }
+            catch (Exception e) { Debug.LogException(e); code = 1; }
+            if (Application.isBatchMode) EditorApplication.Exit(code);
+        }
+
         public static void ApplyBatch()
         {
             int code = 0;
@@ -107,11 +165,11 @@ namespace CTLife.EditorTools
                 return v;
             }
             float mWalk = Measure(male, Played(snowCtrl, walk), "m.walk:" + Played(snowCtrl, walk).name);
-            Measure(male, Played(snowCtrl, run), "m.sprint:" + Played(snowCtrl, run).name);
+            float mSprint = Measure(male, Played(snowCtrl, run), "m.sprint:" + Played(snowCtrl, run).name);
             var band = Clip(Anim + RunBandClip) ?? run;
             float mRun = Measure(male, band, "m.runBand:" + RunBandClip);
             float fWalk = Measure(female, Played(rainCtrl, walk), "f.walk:" + Played(rainCtrl, walk).name);
-            Measure(female, Played(rainCtrl, run), "f.sprint:" + Played(rainCtrl, run).name);
+            float fSprint = Measure(female, Played(rainCtrl, run), "f.sprint:" + Played(rainCtrl, run).name);
             float fRun = Measure(female, band, "f.runBand:" + RunBandClip);
             foreach (var (state, file) in new[] { ("act_sit_down", "act_sit_down.fbx"), ("act_stand_up", "act_stand_up.fbx"), ("act_sit", "act_sit.fbx"),
                          ("act_get_up", "act_get_up.fbx"), ("react_fall", "react_rug_pull_fall.fbx"), ("react_stagger", "react_stagger.fbx"), ("jump_land", "jump_land.fbx") })
@@ -140,7 +198,8 @@ namespace CTLife.EditorTools
             ctrl.layers = layers;
             var sm = ctrl.layers[0].stateMachine;
 
-            // 3) One walk↔run tree by "speed" (thresholds = the control's walk max / run min), playback "locoRate".
+            // 3) One walk↔jog↔sprint tree by "speed" (thresholds = the control's gait speeds), playback "locoRate"
+            //    (Feel lane F1: the sprint clip plays for 6 m/s instead of the jog at 1.3x).
             var tree = sm.states.Select(st => st.state.motion).OfType<BlendTree>().FirstOrDefault(t => t.name == "Locomotion");
             if (tree == null)
             {
@@ -153,6 +212,7 @@ namespace CTLife.EditorTools
             tree.children = Array.Empty<ChildMotion>();
             tree.AddChild(walk, LocomotionTuning.BlendWalk);
             tree.AddChild(band, LocomotionTuning.BlendRun);
+            tree.AddChild(run, LocomotionTuning.BlendSprint);
             foreach (var name in new[] { "loco_walk", "loco_run" })
             {
                 var st = State(sm, name) ?? sm.AddState(name);
@@ -219,8 +279,8 @@ namespace CTLife.EditorTools
             {
                 // Walk: Codex's 1.0 m/s reference (fitted with the walk's Foot IK on). In motion it slides less than the
                 // static fit (0.895 m/s m-family): stance slide 0.23 vs 0.29 m/s at 2 m/s (gait_idle_turn capture).
-                new LocomotionTuning.Family { controller = snowCtrl, walk = WalkReference, run = mRun, walkSoleLift = Mathf.Max(0f, mWalkLift), runSoleLift = Mathf.Max(0f, mRunLift) },
-                new LocomotionTuning.Family { controller = rainCtrl, walk = WalkReference, run = fRun, walkSoleLift = Mathf.Max(0f, fWalkLift), runSoleLift = Mathf.Max(0f, fRunLift) },
+                new LocomotionTuning.Family { controller = snowCtrl, walk = WalkReference, run = mRun, sprint = mSprint, walkSoleLift = Mathf.Max(0f, mWalkLift), runSoleLift = Mathf.Max(0f, mRunLift) },
+                new LocomotionTuning.Family { controller = rainCtrl, walk = WalkReference, run = fRun, sprint = fSprint, walkSoleLift = Mathf.Max(0f, fWalkLift), runSoleLift = Mathf.Max(0f, fRunLift) },
             };
             tuning.lengths = new List<LocomotionTuning.StateLength>();
             foreach (var (state, file) in ExtraStates)
@@ -241,6 +301,7 @@ namespace CTLife.EditorTools
             }
             tuning.defaultWalk = WalkReference;
             tuning.defaultRun = (mRun + fRun) * 0.5f;
+            tuning.defaultSprint = (mSprint + fSprint) * 0.5f;
             EditorUtility.SetDirty(tuning);
             AssetDatabase.SaveAssets();
 
