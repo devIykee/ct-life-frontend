@@ -368,3 +368,9 @@ The 29 Rain-derived cast appearances retain their existing Blender Foundation / 
 ## CTOS photographic wallpaper — 12 October 2026
 
 `client/Assets/Resources/UI/PhoneOS/Wallpaper/Dunes.png` — original built-in OpenAI imagegen photographic-style wallpaper created for CT Life. No Apple wallpaper, product photo, third-party photograph, UI or logo is embedded. Original 1024×1536 PNG copied unchanged; mobile texture import is bounded to2048, ASTC6×6. Prompt/source and validation: `docs/progress/ctos-iphone-20261012.md`.
+
+## Solana Duo header mark — 15 October 2026
+
+| Name | Source | Licence / usage terms | Author | Date downloaded | Use |
+|---|---|---|---|---|---|
+| `client/Assets/Resources/UI/Brand/solana-logomark.png` | [Official Solana branding page](https://solana.com/branding), [original PNG](https://solana.com/src/img/branding/solanaLogoMark.png) | Solana Foundation trademark/brand asset, subject to its published Brand Guidelines; not CC0. Keep the artwork unaltered. The published guidance requires written permission for combinations with another name/graphic/generic term; a CT Life-specific permission was not verified in this task. | Solana Foundation | 2026-10-15 | User-requested official mark preceding “Duo” in the fictional in-game phone header. Original 101×88 PNG copied byte-for-byte (SHA256 `c20cf2118506af6428993609364c77653d51c21561c41120bacb91eb4679a4cc`), aspect ratio preserved, no tint/effect. |

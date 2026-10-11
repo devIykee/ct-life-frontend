@@ -15,6 +15,9 @@
     --ct-os-map-green: #73b77b;
     --ct-os-map-blue: #59a4dc;
     --ct-os-input: #e7e7ec;
+    --ct-os-rail-width: 124px;
+    --ct-os-rail-radius: 62px;
+    --ct-os-rail-gap: 20px;
     -unity-font-definition: url("Fonts/Phone/Inter-Regular.ttf");
     color: var(--ct-os-ink);
     left: 56px; right: 40px; top: 120px; bottom: 40px;
@@ -51,10 +54,8 @@
 .ct-phone .ct-phone-clock { color: var(--ct-os-ink); font-size: 23px; margin: 0; -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); }
 .ct-phone-camera { position: absolute; width: 14px; height: 14px; top: 24px; left: 50%; margin-left: -7px; background-color: var(--ct-game-outline); border-radius: 7px; }
 .ct-phone-device-name { flex-direction: row; align-items: center; }
-.ct-phone .ct-phone-device-label { font-size: 20px; margin: 0 12px 0 0; color: var(--ct-os-ink); -unity-font-definition: url("Fonts/Phone/Inter-Medium.ttf"); }
-.ct-phone-emblem { width: 22px; height: 17px; justify-content: space-between; }
-.ct-phone-stripe { height: 3px; background-color: var(--ct-os-ink); border-radius: 2px; translate: 3px 0; }
-.ct-phone-stripe-middle { translate: 0 0; }
+.ct-phone .ct-phone-device-label { font-size: 20px; margin: 0; color: var(--ct-os-ink); -unity-font-definition: url("Fonts/Phone/Inter-Medium.ttf"); }
+.ct-phone-solana-mark { width: 28px; height: 25px; flex-shrink: 0; margin-right: 12px; background-image: url("Brand/solana-logomark.png"); -unity-background-scale-mode: scale-to-fit; }
 .ct-phone-bar { background-color: var(--ct-os-paper); border-bottom-width: 1px; border-bottom-color: var(--ct-os-line); padding: 0 16px; min-height: 96px; }
 .ct-phone .ct-phone-title { color: var(--ct-os-ink); font-size: 34px; -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); }
 .ct-phone-at-home .ct-phone-bar { display: none; }
@@ -65,7 +66,6 @@
 .ct-phone-wallpaper { position: absolute; left: 0; top: 0; right: 0; bottom: 0; display: none; -unity-background-scale-mode: scale-and-crop; }
 .ct-phone-at-home .ct-phone-wallpaper { display: flex; }
 .ct-phone-at-home .ct-phone-clock, .ct-phone-at-home .ct-phone-device-label { color: var(--ct-os-paper); text-shadow: 0 1px 4px var(--ct-os-label-shadow); }
-.ct-phone-at-home .ct-phone-stripe { background-color: var(--ct-os-paper); }
 .ct-phone-home { flex-grow: 1; min-height: 0; background-color: rgba(0,0,0,0); }
 .ct-phone-widgets { height: 232px; flex-shrink: 0; flex-direction: row; margin: 18px 156px 20px 32px; justify-content: space-between; }
 .ct-phone-widget { width: 47.8%; height: 100%; border-radius: 36px; border-width: 1px; border-color: var(--ct-os-glass-edge); margin: 0; padding: 0; overflow: hidden; }
@@ -121,11 +121,13 @@
 .ct-phone-page-selected .ct-phone-page-dot { background-color: var(--ct-os-paper); }
 .ct-phone-page-button:focus { border-width: 2px; border-color: var(--ct-os-paper); border-radius: 40px; }
 .ct-os-glass { background-color: var(--ct-os-glass); border-width: 1.5px; border-color: var(--ct-os-glass-edge); overflow: hidden; }
-.ct-phone-dock { position: absolute; width: 124px; right: 22px; top: 276px; bottom: 82px; padding: 8px 0; flex-direction: column; align-items: center; justify-content: space-around; border-radius: 58px; }
+/* One centered rail owns both controls; the search circle and dock share the same silhouette. */
+.ct-phone-control-rail { position: absolute; width: var(--ct-os-rail-width); right: 22px; top: 0; bottom: 0; align-items: center; justify-content: center; }
+.ct-phone-dock { width: 100%; height: 488px; flex-shrink: 0; padding: 16px 0; flex-direction: column; align-items: center; justify-content: space-around; border-radius: var(--ct-os-rail-radius); }
 .ct-phone .ct-phone-dock .ct-app { width: 100%; height: 25%; min-height: 0; padding: 8px; }
 .ct-phone .ct-phone-dock .ct-app-icon { width: 90px; height: 90px; }
 .ct-phone .ct-phone-dock .ct-app-label { display: none; }
-.ct-phone-search-button { position: absolute; right: 45px; bottom: 0; width: 80px; height: 80px; padding: 20px; margin: 0; border-radius: 40px; }
+.ct-phone-search-button { width: 100%; height: var(--ct-os-rail-width); flex-shrink: 0; padding: 38px; margin: var(--ct-os-rail-gap) 0 0; border-radius: var(--ct-os-rail-radius); }
 .ct-phone-search-button .ct-phone-system-icon { color: var(--ct-os-paper); }
 .ct-phone-search-button:hover { background-color: rgba(255,255,255,0.4); }
 .ct-phone-search-button:focus { border-width: 3px; border-color: var(--ct-os-paper); }
@@ -147,7 +149,7 @@
 .ct-phone .ct-phone-search-result .ct-app-icon { width: 76px; height: 76px; }
 .ct-phone .ct-phone-search-result .ct-app-label { width: auto; flex-grow: 1; align-self: center; margin: 0 0 0 24px; font-size: 28px; color: var(--ct-os-ink); -unity-text-align: middle-left; text-shadow: 0 0 0 rgba(0,0,0,0); }
 .ct-phone-search-empty { font-size: 28px; color: var(--ct-os-secondary); margin: 32px 12px; }
-.ct-phone-searching > .ct-phone-widgets, .ct-phone-searching > .ct-phone-page-viewport, .ct-phone-searching > .ct-phone-pages, .ct-phone-searching > .ct-phone-dock, .ct-phone-searching > .ct-phone-search-button { visibility: hidden; }
+.ct-phone-searching > .ct-phone-widgets, .ct-phone-searching > .ct-phone-page-viewport, .ct-phone-searching > .ct-phone-pages, .ct-phone-searching > .ct-phone-control-rail { visibility: hidden; }
 
 /* Shared app chrome: one clear reading scale, white cards, restrained edge controls. */
 .ct-phone .ct-app-page { padding: 24px 28px 40px; }

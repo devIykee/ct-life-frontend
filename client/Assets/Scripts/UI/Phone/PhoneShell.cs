@@ -71,8 +71,8 @@ namespace CTLife.UI
                 El.Div("ct-grow"), SystemButton("close", Strings.T("phone.close"), Close));
             var status = El.Div("ct-phone-status", _clock,
                 El.PassThrough(El.Div("ct-phone-camera")),
-                El.PassThrough(El.Div("ct-phone-device-name", El.Text(Strings.T("phone.title"), "ct-phone-device-label"),
-                    El.Div("ct-phone-emblem", El.Div("ct-phone-stripe"), El.Div("ct-phone-stripe ct-phone-stripe-middle"), El.Div("ct-phone-stripe")))));
+                El.PassThrough(El.Div("ct-phone-device-name", El.Div("ct-phone-solana-mark"),
+                    El.Text(Strings.T("phone.device_model"), "ct-phone-device-label"))));
             // The home indicator is a real, generously sized button; decoration never intercepts input.
             _homeControl = El.Btn("", () =>
             {

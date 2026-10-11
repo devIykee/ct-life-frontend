@@ -201,7 +201,7 @@ namespace CTLife.UI
             ["interact.cantReach"] = "Can't get there from here.", ["interact.noResponse"] = "The room didn't answer. Try again.",
             ["hud.chatPrompt"] = "Say something to the room", ["hud.say"] = "Say it", ["hud.wait"] = "Give it {0:0.0}s, then try again.",
             ["hud.emotesTitle"] = "A whole mood", ["hud.emotesEmpty"] = "Your emotes are on their way.",
-            ["phone.title"] = "Solana Duo", ["phone.eyebrow"] = "Your city",
+            ["phone.title"] = "Solana Duo", ["phone.device_model"] = "Duo", ["phone.eyebrow"] = "Your city",
             ["wallet.mainnet"] = "WALLET · MAINNET",
             ["wallet.stale"] = "WALLET · MAINNET · LAST CHECK",
             ["wallet.refreshing"] = "WALLET · MAINNET · CHECKING…",

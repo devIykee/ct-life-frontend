@@ -36,6 +36,8 @@ Latest refinement (2026-10-12): the user approves the Duo hardware mockup. CTOS 
 
 Latest phone correction (2026-10-12): the user rejected the first CTOS home-grid restyling because its icons and font still looked like CT Life. Research the current iPhone OS and the supplied fold-leaf reference before implementing. Match its photographic wallpaper, two upper widgets, multicolour dimensional app icons, compact typography, vertical glass dock and small search control inside the approved Duo hardware. Phone-local typography/materials deliberately differ from the game. Apple system fonts/symbols cannot be redistributed in the Android APK under the reviewed licences; use the bundled licensed Inter and original CTOS icon artwork. See `docs/research/ctos-iphone-fidelity-20261012.md`.
 
+Phone spacing refinement (2026-10-15): center the vertical dock and search together as one right-hand group, with equal outer widths and coherent spacing. The header should show the official Solana mark followed by “Duo”, replacing the written “Solana Duo” and approximate trailing stripes.
+
 - **No deadline.** Ignore CLOCK IN and every hackathon date in older docs. Do not plan around it.
 - **Everything must work first.** Build the whole game robustly and properly, phase by phase:
   real wallet sign-in on the Seeker, real backend integration (devIykee's server, run locally
