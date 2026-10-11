@@ -1,5 +1,4 @@
 using System;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using CTLife.Core;
@@ -11,7 +10,7 @@ using UnityEngine.Networking;
 namespace CTLife.Ventures
 {
     /// <summary>
-    /// `multipart/form-data` POST for `/uploads` over UnityWebRequest, with the same headers RestClient sends (version headers,
+    /// Raw PNG/JPEG POST for `/uploads` over UnityWebRequest, with the same headers RestClient sends (version headers,
     /// bearer token, Idempotency-Key). The session token is refreshed first when stale and once more after a 401. The body is the
     /// already-validated creative (at most 1 MB); the reply is read as text and parsed with the contract error envelope.
     /// </summary>
@@ -21,7 +20,8 @@ namespace CTLife.Ventures
 
         public async Task<JToken> PostFile(string path, string field, string fileName, string mime, byte[] data, string idempotencyKey, CancellationToken ct)
         {
-            if (data == null || data.Length == 0 || data.Length > 4 * 1024 * 1024) throw new ArgumentException("Bad upload size");
+            ValidateImage(data, mime);
+            if (string.IsNullOrEmpty(idempotencyKey)) throw new ArgumentException("A retained Idempotency-Key is required", nameof(idempotencyKey));
             var session = Services.Get<Session>();
             if (Services.TryGet<IAuthService>(out var auth)) await auth.EnsureFresh(ct);
             for (int attempt = 0; ; attempt++)
@@ -40,13 +40,14 @@ namespace CTLife.Ventures
         private static async Task<(long status, string body)> SendOnce(string path, string field, string fileName, string mime, byte[] data,
             string key, Session session, CancellationToken ct)
         {
-            var form = new WWWForm();
-            form.AddBinaryData(field, data, fileName, mime);
-            using (var req = UnityWebRequest.Post(Env.Current.ApiUrl(path), form))
+            using (var req = new UnityWebRequest(Env.Current.ApiUrl(path), "POST"))
             {
+                req.uploadHandler = new UploadHandlerRaw(data) { contentType = mime };
                 req.timeout = TimeoutSeconds;
+                req.redirectLimit = 0;
                 req.downloadHandler = new DownloadHandlerBuffer();
                 req.SetRequestHeader("Accept", "application/json");
+                req.SetRequestHeader("Content-Type", mime);
                 req.SetRequestHeader("X-Client-Version", Semver.ClientVersion);
                 req.SetRequestHeader("X-Contract-Version", Semver.ContractVersion);
                 if (!string.IsNullOrEmpty(key)) req.SetRequestHeader("Idempotency-Key", key);
@@ -57,6 +58,12 @@ namespace CTLife.Ventures
                     throw new ApiException(0, "NETWORK_ERROR", req.error ?? "network", null, true);
                 return (req.responseCode, req.downloadHandler?.text);
             }
+        }
+
+        public static void ValidateImage(byte[] data, string mime)
+        {
+            if (data == null || data.Length == 0 || data.Length > 1_048_576) throw new ArgumentException("Bad upload size", nameof(data));
+            if (mime != "image/png" && mime != "image/jpeg") throw new ArgumentException("Expected a PNG or JPEG", nameof(mime));
         }
 
         private static ApiException ParseError(long status, string body)

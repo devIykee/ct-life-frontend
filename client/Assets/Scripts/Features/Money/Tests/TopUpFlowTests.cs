@@ -30,6 +30,15 @@ namespace CTLife.Economy.Tests
         public readonly Queue<Func<IntentStatusRow>> Statuses = new Queue<Func<IntentStatusRow>>();
         public Func<IntentStatusRow> DefaultStatus = () => new IntentStatusRow { Status = "pending" };
         public int StatusCalls;
+        public readonly List<(string IntentId, string Signature, string Key)> Submissions = new List<(string, string, string)>();
+        public Action Submit;
+
+        public Task SubmitIntent(string intentId, string signature, string idempotencyKey, CancellationToken ct)
+        {
+            Submissions.Add((intentId, signature, idempotencyKey));
+            Submit?.Invoke();
+            return Task.CompletedTask;
+        }
 
         public static PaymentIntentRow Intent(string id = "0192a1c2-0000-7000-8000-000000000001", long expiresAt = 1_800_000_900_000, string tx = "AQID") =>
             new PaymentIntentRow { IntentId = id, Currency = "USDC", Amount = "10000000", CashCents = 700000, BonusBps = 0, Tx = tx, ExpiresAtMs = expiresAt, Recipient = "Treasury1111" };
@@ -117,6 +126,9 @@ namespace CTLife.Economy.Tests
             Assert.AreEqual(TopUpStage.Confirmed, _flow.Stage);
             Assert.AreEqual("AQID", _signer.LastTx);
             Assert.AreEqual("5igSig1111", _flow.Signature);
+            Assert.AreEqual(1, _gw.Submissions.Count);
+            Assert.AreEqual((_flow.Intent.IntentId, "5igSig1111", "key-2"), _gw.Submissions[0]);
+            Assert.IsTrue(_flow.SubmissionReported);
             Assert.AreEqual(3, _gw.StatusCalls);
             Assert.AreEqual(2, _clock.Delays, "polls 1 s apart");
             Assert.IsNull(_store.Json, "a confirmed payment is no longer persisted");
@@ -258,6 +270,80 @@ namespace CTLife.Economy.Tests
             Assert.AreEqual(TopUpStage.Pending, _flow.Stage);
             Run(_flow.Pay(CancellationToken.None));
             Assert.AreEqual(1, _signer.Calls, "Pay is only valid from Review");
+            Assert.AreEqual(0, _gw.Submissions.Count, "there is no signature to report");
+        }
+
+        [Test]
+        public void SubmissionFailureSurvivesRestartAndRetriesTheSameSignatureAndKey()
+        {
+            _gw.Submit = () => throw new ApiException(0, "NETWORK_ERROR", "offline", isNetwork: true);
+            Run(_flow.Create("whale", "USDC", CancellationToken.None));
+            Run(_flow.Pay(CancellationToken.None));
+            Assert.AreEqual(TopUpStage.Pending, _flow.Stage);
+            Assert.IsFalse(_flow.SubmissionReported);
+            var original = _gw.Submissions[0];
+
+            var restarted = new TopUpFlow(_gw, _signer, _clock, _store);
+            Assert.IsTrue(restarted.Resume());
+            _gw.Submit = null;
+            _gw.DefaultStatus = () => new IntentStatusRow { Status = "confirmed" };
+            Run(restarted.CheckAgain(CancellationToken.None));
+            Assert.AreEqual(TopUpStage.Confirmed, restarted.Stage);
+            Assert.AreEqual(original, _gw.Submissions[1]);
+            Assert.AreEqual(1, _signer.Calls, "reporting retry must not broadcast another payment");
+        }
+
+        [Test]
+        public void AcknowledgedSubmissionIsNotReportedAgainAfterRestart()
+        {
+            Run(_flow.Create("whale", "USDC", CancellationToken.None));
+            Run(_flow.Pay(CancellationToken.None));
+            var restarted = new TopUpFlow(_gw, _signer, _clock, _store);
+            Assert.IsTrue(restarted.Resume());
+            Assert.IsTrue(restarted.SubmissionReported);
+            Run(restarted.CheckAgain(CancellationToken.None));
+            Assert.AreEqual(1, _gw.Submissions.Count);
+            Assert.AreEqual(TopUpStage.Pending, restarted.Stage, "submission acknowledgement does not credit Cash");
+        }
+
+        [Test]
+        public void CancelledSubmissionReturnsToRecoverablePending()
+        {
+            using var cts = new CancellationTokenSource();
+            _gw.Submit = () => { cts.Cancel(); cts.Token.ThrowIfCancellationRequested(); };
+            Run(_flow.Create("whale", "USDC", CancellationToken.None));
+            Assert.Throws<OperationCanceledException>(() => Run(_flow.Pay(cts.Token)));
+            Assert.AreEqual(TopUpStage.Pending, _flow.Stage);
+            Assert.IsFalse(_flow.Busy);
+            Assert.IsNotNull(_store.Json);
+            _gw.Submit = null;
+            _gw.DefaultStatus = () => new IntentStatusRow { Status = "confirmed" };
+            Run(_flow.CheckAgain(CancellationToken.None));
+            Assert.AreEqual(_gw.Submissions[0], _gw.Submissions[1]);
+            Assert.AreEqual(1, _signer.Calls);
+        }
+
+        [Test]
+        public void ConfirmationDuringSubmissionDoesNotReopenOrPersistTheFinishedPayment()
+        {
+            _gw.Submit = () => _flow.OnPaymentConfirmed(_flow.Intent.IntentId, 700000);
+            Run(_flow.Create("whale", "USDC", CancellationToken.None));
+            Run(_flow.Pay(CancellationToken.None));
+            Assert.AreEqual(TopUpStage.Confirmed, _flow.Stage);
+            Assert.AreEqual(0, _gw.StatusCalls);
+            Assert.IsNull(_store.Json);
+        }
+
+        [Test]
+        public void ConfirmationBeforeWalletReturnsDoesNotRestartPolling()
+        {
+            _signer.Result = () => { _flow.OnPaymentConfirmed(_flow.Intent.IntentId, 700000); return "sig"; };
+            Run(_flow.Create("whale", "USDC", CancellationToken.None));
+            Run(_flow.Pay(CancellationToken.None));
+            Assert.AreEqual(TopUpStage.Confirmed, _flow.Stage);
+            Assert.AreEqual(0, _gw.StatusCalls);
+            Assert.AreEqual(0, _gw.Submissions.Count);
+            Assert.IsNull(_store.Json);
         }
 
         [Test]
@@ -300,16 +386,58 @@ namespace CTLife.Economy.Tests
         }
 
         [Test]
-        public void UnsignedOrStalePersistedIntent_IsDiscarded()
+        public void UnsignedOrMalformedPersistedIntent_IsDiscarded()
         {
             _store.Json = new PendingIntent { IntentId = "abc", SigningStarted = false, SavedAtMs = _clock.NowMs }.Serialize();
             Assert.IsFalse(_flow.Resume());
             Assert.IsNull(_store.Json);
-            _store.Json = new PendingIntent { IntentId = "abc", SigningStarted = true, SavedAtMs = _clock.NowMs - 25 * 3600 * 1000.0 }.Serialize();
-            Assert.IsFalse(_flow.Resume());
             _store.Json = "{not json";
             Assert.IsFalse(_flow.Resume());
             Assert.AreEqual(TopUpStage.Choose, _flow.Stage);
+        }
+
+        [TestCase("old-signed-signature")]
+        [TestCase(null)]
+        public void OldWalletStartedIntentResumesUntilAuthoritativeResolutionWithoutSigningAgain(string signature)
+        {
+            _store.Json = new PendingIntent
+            {
+                IntentId = "old-intent", Signature = signature, SubmissionKey = "old-report-key",
+                SigningStarted = true, SavedAtMs = _clock.NowMs - 30 * 24 * 3600 * 1000.0,
+                ExpiresAtMs = (long)_clock.NowMs - 29 * 24 * 3600 * 1000L,
+            }.Serialize();
+            Assert.IsTrue(_flow.Resume(), "age and displayed expiry are not authoritative payment status");
+            Assert.AreEqual(TopUpStage.Pending, _flow.Stage);
+            Assert.AreEqual(signature == null, _flow.SignUncertain);
+            Assert.IsNotNull(_store.Json);
+            Run(_flow.Pay(CancellationToken.None));
+            Assert.AreEqual(0, _signer.Calls);
+            _flow.Reset();
+            Assert.AreEqual(TopUpStage.Pending, _flow.Stage);
+            Assert.IsNotNull(_store.Json, "a new-purchase shortcut cannot discard an unresolved transfer");
+
+            _gw.DefaultStatus = () => new IntentStatusRow { Status = "confirmed" };
+            Run(_flow.CheckAgain(CancellationToken.None));
+            Assert.AreEqual(TopUpStage.Confirmed, _flow.Stage);
+            Assert.AreEqual(0, _signer.Calls);
+            Assert.AreEqual(signature == null ? 0 : 1, _gw.Submissions.Count);
+            if (signature != null) Assert.AreEqual(("old-intent", signature, "old-report-key"), _gw.Submissions[0]);
+            Assert.IsNull(_store.Json, "only server confirmation ended recovery");
+        }
+
+        [Test]
+        public void ResetDuringConfirmationDoesNotClearRecoveryEvidence()
+        {
+            Run(_flow.Create("whale", "USDC", CancellationToken.None));
+            _gw.Submit = () =>
+            {
+                _flow.Reset();
+                Assert.AreEqual(TopUpStage.Confirming, _flow.Stage);
+                Assert.IsNotNull(_store.Json);
+            };
+            Run(_flow.Pay(CancellationToken.None));
+            Assert.AreEqual(TopUpStage.Pending, _flow.Stage);
+            Assert.IsNotNull(_store.Json);
         }
 
         [Test]

@@ -105,6 +105,7 @@ namespace CTLife.CityLife
             ["home.renew"] = "Pay rent now",
             ["home.noPrice"] = "No price from the server",
             ["home.movesTitle"] = "Homes",
+            ["home.moveUnavailable"] = "Moving homes is unavailable on this server.",
             ["home.movesHint"] = "Rent is due at Sunday Unlock (Sun 20:00 UTC). Moving signs a new lease.",
             ["home.confirmMove"] = "Move to {0}? Rent {1} a week, charged by the server.",
             ["home.confirmRenew"] = "Pay {0} rent for {1} now?",

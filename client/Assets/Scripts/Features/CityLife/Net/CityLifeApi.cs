@@ -68,13 +68,7 @@ namespace CTLife.CityLife
         {
             var r = await Write("POST", "/needs/actions", new JObject { ["actionId"] = actionId }, key, ct);
             var n = r?["needs"] as JObject ?? throw new FormatException("Missing needs");
-            int Read(string f)
-            {
-                var v = CityWire.Long(n[f]);
-                if (v < 0 || v > 100) throw new FormatException("Need out of range");
-                return (int)v;
-            }
-            var needs = new CTLife.Rest.Model.Needs(Read("energy"), Read("hunger"), Read("fun"), Read("hygiene"), Read("sanity"));
+            var needs = NeedsCodec.Decode(n);
             return (needs, CityWire.Long(r["cashCents"]));
         }
 

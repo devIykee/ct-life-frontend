@@ -744,12 +744,6 @@ namespace CTLife.App
                     if (lobby != null) AudioManager.Instance?.Music.SetDistrict("lobby");
                     return;
                 }
-                catch (Exception e)
-                {
-                    Log.Warn("flow", $"Venue room join failed ({e.Message}); entering the venue offline");
-                    Bus.Publish(ToastSignal.Text("Realtime is offline. You're alone here for now.", ToastKind.Bad));
-                    await game.Wait(VenueSession.Enter(venueId, joinRoom: false, owner: game.Token));
-                }
                 _homeReturnVenueId = null;
                 CloseLobby();
             }
@@ -757,6 +751,9 @@ namespace CTLife.App
             catch (Exception e)
             {
                 if (!GameAlive(game)) return;
+                // A failed multiplayer join must not silently become a local-only city visit.
+                // Enter() has released the failed visit; restore navigation so the player can retry.
+                rejected = true;
                 Log.Exception("flow", e);
                 Bus.Publish(ToastSignal.Text(e.Message, ToastKind.Bad));
                 lobby?.ShowError(Strings.T("home.error.travel"));

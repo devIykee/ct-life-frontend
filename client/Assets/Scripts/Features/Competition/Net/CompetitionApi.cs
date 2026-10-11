@@ -10,7 +10,7 @@ namespace CTLife.Competition
 {
     /// <summary>
     /// Thin HTTP wrapper for the Phase 6 routes in docs/fe-contract-proposals/phase4-6/openapi-additions.yaml (plus rc1
-    /// `PATCH /characters/me/tribe`, `GET /leaderboards/{boardId}` and `POST /reports`). Transport policy (auth refresh, version
+    /// `POST /me/tribe`, `GET /leaderboards/{boardId}` and `POST /reports`). Transport policy (auth refresh, version
     /// headers, 429/503, network retries with the same Idempotency-Key) is RestClient's. Every write takes the caller's
     /// retained Idempotency-Key. Outcomes are never decided here: beef settlement, votes, invite acceptance, gates and LLM
     /// moderation are the server's.
@@ -33,9 +33,20 @@ namespace CTLife.Competition
         };
 
         /// <summary>rc1 operations this lane calls.</summary>
-        public static readonly string[] ContractCovered = { "PATCH /characters/me/tribe", "GET /leaderboards/{boardId}", "POST /reports", "GET /users/{id}" };
+        public static readonly string[] ContractCovered = { "POST /me/tribe", "GET /leaderboards/{boardId}", "POST /reports", "GET /users/{id}" };
 
         private Task<JToken> Get(string path, CancellationToken ct) => _rest.Get<JToken>(path, ct);
+
+        // New, explicit backend opt-in; absent on eefa667. Read the actual network payload,
+        // not the merged ConfigStore snapshot, before these otherwise destructive writes.
+        private async Task RequireCapability(string capability, CancellationToken ct)
+        {
+            var raw = await Get("/config", ct);
+            var caps = (raw as JObject)?["competitionCapabilities"] as JObject;
+            if (caps?["version"]?.Type != JTokenType.Integer || (int)caps["version"] != 1 ||
+                caps[capability]?.Type != JTokenType.Boolean || !(bool)caps[capability])
+                throw new ApiException(501, "UNAVAILABLE", "This server does not support this action yet.");
+        }
 
         private Task<JToken> Write(string method, string path, JObject body, string key, CancellationToken ct)
         {
@@ -60,9 +71,9 @@ namespace CTLife.Competition
         public async Task<DistrictStandings> Standings(string districtId, CancellationToken ct) =>
             DistrictStandings.Parse(await Get("/districts/" + CompWire.Seg(districtId) + "/standings", ct));
 
-        /// <summary>rc1 `PATCH /characters/me/tribe` (once per season; the server refuses with FORBIDDEN or RATE_LIMITED).</summary>
+        /// <summary>rc1 `POST /me/tribe` (once per season; the server refuses with FORBIDDEN or RATE_LIMITED).</summary>
         public Task<JToken> ChangeTribe(string tribeId, string key, CancellationToken ct) =>
-            Write("PATCH", "/characters/me/tribe", new JObject { ["tribeId"] = tribeId }, key, ct);
+            Write("POST", "/me/tribe", new JObject { ["tribeId"] = tribeId }, key, ct);
 
         // ---------------------------------------------------------------- leagues (#39)
 
@@ -99,8 +110,17 @@ namespace CTLife.Competition
             return b;
         }
 
-        public async Task<BeefMatch> OpenBeef(JObject body, string key, CancellationToken ct) =>
-            BeefMatch.Parse(await Write("POST", "/beef", body, key, ct));
+        public async Task<BeefMatch> OpenBeef(JObject body, string key, CancellationToken ct)
+        {
+            if (string.IsNullOrEmpty(key)) throw new ArgumentException("A retained Idempotency-Key is required", nameof(key));
+            await RequireCapability("beefChallenges", ct);
+            var match = BeefMatch.Parse(await Write("POST", "/beef", body, key, ct));
+            if (match.TopicId != CompWire.Str(body?["topicId"]) ||
+                match.InvitedUserId != CompWire.Str(body?["invitedUserId"]) ||
+                match.StakeCents != CompWire.Long(body?["stakeCents"]))
+                throw new FormatException("The server did not preserve the challenge terms");
+            return match;
+        }
 
         public async Task<BeefMatch> AcceptBeef(string id, string key, CancellationToken ct) =>
             BeefMatch.Parse(await Write("POST", "/beef/" + CompWire.Seg(id) + "/accept", null, key, ct));
@@ -142,11 +162,23 @@ namespace CTLife.Competition
         public async Task<CabalMembership> MyCabal(CancellationToken ct) => CabalMembership.Parse(await Get("/me/cabal", ct));
 
         /// <summary>`role` is host | guest; the server returns only the caller's own invites and never a bearer code.</summary>
-        public async Task<List<CabalInvite>> CabalInvites(string role, CancellationToken ct) =>
-            CabalInvite.ParseList(await Get("/cabal/invites" + (string.IsNullOrEmpty(role) ? "" : "?role=" + Uri.EscapeDataString(role)), ct));
+        public async Task<List<CabalInvite>> CabalInvites(string role, string userId, CancellationToken ct)
+        {
+            if (role != "host" && role != "guest") throw new ArgumentException("Expected host or guest", nameof(role));
+            if (!CompWire.IsSafeId(userId)) throw new ArgumentException("Expected the signed-in user", nameof(userId));
+            // The backend route accepts hostId/guestId, not the proposal's role filter.
+            return CabalInvite.ParseList(await Get("/cabal/invites?" + role + "Id=" + Uri.EscapeDataString(userId), ct));
+        }
 
-        public async Task<CabalInvite> Invite(string guestUserId, string key, CancellationToken ct) =>
-            CabalInvite.Parse(await Write("POST", "/cabal/invites", new JObject { ["guestUserId"] = guestUserId }, key, ct));
+        public async Task<CabalInvite> Invite(string guestUserId, string key, CancellationToken ct)
+        {
+            if (string.IsNullOrEmpty(key)) throw new ArgumentException("A retained Idempotency-Key is required", nameof(key));
+            await RequireCapability("targetedCabalInvites", ct);
+            var invite = CabalInvite.Parse(await Write("POST", "/cabal/invites", new JObject { ["guestUserId"] = guestUserId }, key, ct));
+            if (invite.GuestUserId != guestUserId)
+                throw new FormatException("The server did not address the invite to the selected player");
+            return invite;
+        }
 
         public async Task<CabalInvite> AcceptInvite(string id, string key, CancellationToken ct) =>
             CabalInvite.Parse(await Write("POST", "/cabal/invites/" + CompWire.Seg(id) + "/accept", null, key, ct));

@@ -96,6 +96,18 @@ namespace CTLife.SocialFeatures
         public async Task<VideoCallStart> StartVideoCall(IReadOnlyList<string> userIds, string me, RetainedKey key, CancellationToken ct) =>
             SocialParse.VideoStart(await Write("POST", "/video-calls", new JObject { ["userIds"] = new JArray(userIds) }, key, ct), me);
 
+        /// <summary>The current server stores free-call participants under video:, and paid participants under paid_call:.</summary>
+        public Task<RtcGrant> CallToken(string callId, bool paid, CancellationToken ct) =>
+            RtcToken(paid ? "paid_call" : "video", callId, ct);
+
+        /// <summary>Host-only end. A repeated end after the server already closed the call is a confirmed terminal result.</summary>
+        public async Task EndVideoCall(string callId, RetainedKey key, CancellationToken ct)
+        {
+            try { await Write("POST", "/video-calls/" + Seg(callId) + "/end", null, key, ct); }
+            catch (ApiException e) when (e.Is("VALIDATION_FAILED") &&
+                SocialWire.Str((e.Details as JObject)?["reason"]) == "call already ended") { }
+        }
+
         /// <summary>PUT /creator {enabled, ratePerMinUsdc (base units string), maxMinutes}.</summary>
         public async Task<CreatorProfileRow> PutCreator(bool enabled, string ratePerMinUsdc, int maxMinutes, RetainedKey key, CancellationToken ct) =>
             SocialParse.Creator(await Write("PUT", "/creator", new JObject { ["enabled"] = enabled, ["ratePerMinUsdc"] = ratePerMinUsdc, ["maxMinutes"] = maxMinutes }, key, ct));
@@ -156,7 +168,7 @@ namespace CTLife.SocialFeatures
         {
             "POST /rtc/token", "GET /spaces?live=true", "POST /spaces", "GET /spaces/{id}", "POST /spaces/{id}/hand", "DELETE /spaces/{id}/hand",
             "POST /spaces/{id}/speakers", "DELETE /spaces/{id}/speakers/{userId}", "POST /spaces/{id}/end",
-            "POST /video-calls", "PUT /creator", "POST /paid-calls", "POST /paid-calls/{id}/submitted", "POST /paid-calls/{id}/accept",
+            "POST /video-calls", "POST /video-calls/{id}/end", "PUT /creator", "POST /paid-calls", "POST /paid-calls/{id}/submitted", "POST /paid-calls/{id}/accept",
             "POST /paid-calls/{id}/decline", "POST /paid-calls/{id}/end", "GET /paid-calls/{id}",
             "GET /dms", "GET /dms/{userId}?before=", "POST /dms/{userId}", "GET /feed?scope=", "POST /feed/posts",
             "POST /follows/{userId}", "DELETE /follows/{userId}", "POST /tips", "POST /tips/onchain",

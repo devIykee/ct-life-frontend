@@ -138,9 +138,7 @@ namespace CTLife.Economy
                         MoneyUi.Text(MoneyStrings.T(_flow.SignUncertain ? "topup.pendingUnsure" : "topup.pendingBody")),
                         _flow.StatusUnavailable ? MoneyUi.Small(MoneyStrings.T("topup.statusUnavailable")) : null));
                     AddSignature();
-                    _topUp.Add(MoneyUi.Row(
-                        MoneyUi.Btn(MoneyStrings.T("topup.checkAgain"), () => _ = Check()),
-                        MoneyUi.Btn(MoneyStrings.T("topup.newTopup"), () => _flow.Reset(), "ct-btn ct-btn-ghost")));
+                    _topUp.Add(MoneyUi.Btn(MoneyStrings.T("topup.checkAgain"), () => _ = Check()));
                     break;
                 case TopUpStage.Expired:
                 case TopUpStage.Failed:

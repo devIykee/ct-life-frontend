@@ -137,7 +137,8 @@ namespace CTLife.Ventures
 
     public sealed class UploadedCreative
     {
-        public string UploadId, Url;
+        public string UploadId, Url, ImageKey, MimeType;
+        public int SizeBytes;
     }
 
     public sealed class BookingResult
@@ -295,15 +296,20 @@ namespace CTLife.Ventures
 
         public static UploadedCreative Upload(JToken t)
         {
-            var id = VWire.Str(t?["uploadId"]);
+            var id = VWire.Str(t?["uploadId"] ?? t?["creativeId"]);
             if (!VWire.IsSafeId(id)) throw new FormatException("Bad uploadId");
-            return new UploadedCreative { UploadId = id, Url = HttpsOrNull(VWire.Str(t["url"])) };
+            return new UploadedCreative
+            {
+                UploadId = id, Url = HttpsOrNull(VWire.Str(t["url"])),
+                ImageKey = VWire.Str(t["imageKey"]), MimeType = VWire.Str(t["mimeType"]),
+                SizeBytes = VWire.IntOr(t["sizeBytes"], 0),
+            };
         }
 
         /// <summary>`POST /ads/bookings` → `{bookingId, intent}`. The intent is read with the Money lane's parser.</summary>
         public static BookingResult BookingResult(JToken t)
         {
-            var id = VWire.Str(t?["bookingId"]);
+            var id = VWire.Str(t?["bookingId"] ?? t?["booking"]?["bookingId"]);
             if (!VWire.IsSafeId(id)) throw new FormatException("Bad bookingId");
             // Backend 9f3e5ef creates the booking without a payment intent (README observation 8): the booking exists, so keep its id
             // with a null intent and let the screen say that payment is not offered, instead of failing and replaying forever.

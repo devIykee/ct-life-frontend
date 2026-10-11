@@ -18,7 +18,15 @@ namespace CTLife.Ventures.Tests
     {
         public readonly Queue<string> Statuses = new Queue<string>();
         public int Calls;
+        public string SubmittedIntent, SubmittedSignature, SubmittedKey;
         public Task<PaymentIntentRow> CreateIntent(string kind, string sku, string currency, string key, CancellationToken ct) => throw new InvalidOperationException("must not be called");
+        public Task SubmitIntent(string intentId, string signature, string idempotencyKey, CancellationToken ct)
+        {
+            SubmittedIntent = intentId;
+            SubmittedSignature = signature;
+            SubmittedKey = idempotencyKey;
+            return Task.CompletedTask;
+        }
         public Task<IntentStatusRow> GetIntent(string intentId, CancellationToken ct)
         {
             Calls++;
@@ -88,6 +96,9 @@ namespace CTLife.Ventures.Tests
             Assert.AreEqual("AQID", _signer.LastTx);
             Assert.AreEqual(1, _signer.Calls);
             Assert.AreEqual(2, _status.Calls);
+            Assert.AreEqual(Kit.Intent, _status.SubmittedIntent);
+            Assert.AreEqual("5igSig", _status.SubmittedSignature);
+            Assert.IsFalse(string.IsNullOrEmpty(_status.SubmittedKey));
         }
 
         [Test]

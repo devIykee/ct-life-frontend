@@ -6,7 +6,7 @@
 #   B. Realtime: ENTER THE CITY, then the observer bot (another client in Timeline Square) must see this player by
 #      alias, and the device must log the venue join.
 #   C. Feature probe on the device (integration=1, peer=<bot>): every lane's API through the client's own code.
-#      "blocked" rows are backend gaps already reported (docs/progress/backend-dev-feedback.md); they do not fail.
+#      "blocked" rows are backend gaps, and keep the overall integration verdict incomplete.
 #   D. Health: no Unity exceptions or CTLIFE errors in logcat, and the app process is still alive.
 # Usage: tools/integration/run_device_e2e.sh [--out <dir>] [--skip-ui] [--wallet <base58>]
 # Exit 0 = every check passes. Receipt: <out>/receipt.json; screenshots: <out>/*.png; summary on stdout.
@@ -176,7 +176,7 @@ except Exception:
         m = re.search(r"CTLIFE \[probe\] (\w+) ([\w.]+): (.*)", line)
         if m and m.group(2) != "wrote": rows.append({"feature": m.group(2), "result": m.group(1).lower(), "detail": m.group(3)})
 c = collections.Counter(r["result"] for r in rows)
-fails = [r["feature"] for r in rows if r["result"] == "fail"]
+fails = [r["feature"] for r in rows if r["result"] != "pass"]
 print(("1" if rows and not fails else "0") + "|" + json.dumps(dict(c)) + (" fails=" + ",".join(fails) if fails else ""))
 EOF
 )"

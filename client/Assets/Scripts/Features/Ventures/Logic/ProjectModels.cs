@@ -115,8 +115,11 @@ namespace CTLife.Ventures
                 ProjectId = Id(t, "projectId", "id"), Name = VWire.Plain(t["name"], 40), Kind = VWire.Plain(t["kind"], 24),
                 Status = VWire.Plain(t["status"], 16), OwnerUserId = VWire.Str(t["ownerUserId"]) ?? VWire.Str(t["founderId"]),
                 OwnerAlias = VWire.Plain(t["ownerAlias"], 32), MemberCount = Math.Max(0, VWire.IntOr(t["memberCount"], 0)),
-                TreasuryCents = VWire.LongOr(t["treasuryCents"], 0), CreatedAtMs = VWire.TimeMsOrNull(t["createdAt"]) ?? 0,
+                TreasuryCents = VWire.LongOr(t["treasuryCents"] ?? t["cashCents"], 0), CreatedAtMs = VWire.TimeMsOrNull(t["createdAt"]) ?? 0,
             };
+            // The current detail/create response omits name; don't render a blank heading.
+            // This is a category label, never a replacement for the player's persisted name.
+            if (string.IsNullOrEmpty(p.Name)) p.Name = VStrings.Kind(p.Kind);
             var coin = VWire.Str(t["coinId"]);
             p.CoinId = VWire.IsSafeId(coin) ? coin : null;
             if (t["openRoles"] is JArray roles)
@@ -142,7 +145,7 @@ namespace CTLife.Ventures
             return new ProjectMember
             {
                 UserId = uid, Alias = VWire.Plain(t["alias"], 32), Role = VWire.Plain(t["role"], 24),
-                SalaryCentsPerWeek = VWire.LongOr(t["salaryCentsPerWeek"], 0), JoinedAtMs = VWire.TimeMsOrNull(t["joinedAt"]) ?? 0,
+                SalaryCentsPerWeek = VWire.LongOr(t["salaryCentsPerWeek"], 0), JoinedAtMs = VWire.TimeMsOrNull(t["joinedAt"] ?? t["hiredAt"]) ?? 0,
             };
         }
 
@@ -182,7 +185,14 @@ namespace CTLife.Ventures
             else d.Project = Summary(body);
             d.PayrollCentsPerWeek = VWire.LongOr(body["payrollCentsPerWeek"], 0);
             d.NextPayrollAtMs = VWire.TimeMsOrNull(body["nextPayrollAt"]);
-            Fill(d.Members, body["members"], Member);
+            Fill(d.Members, body["members"] ?? body["hires"], Member);
+            // Current backend returns every hire instead of a pre-computed payroll/count.
+            // Only aggregate that explicit list; absence of a list is not evidence of no hires.
+            if (body["hires"] is JArray && body["members"] == null)
+            {
+                if (body["payrollCentsPerWeek"] == null) d.PayrollCentsPerWeek = d.Members.Sum(m => m.SalaryCentsPerWeek);
+                if (body["project"]?["memberCount"] == null) d.Project.MemberCount = d.Members.Count;
+            }
             Fill(d.VcStakes, body["vcStakes"], Stake);
             Fill(d.Events, body["recentEvents"], Event);
             d.Events.Sort((a, b) => b.AtMs.CompareTo(a.AtMs));

@@ -49,14 +49,14 @@ namespace CTLife.Competition
 
         protected override void OnDisposed() { Hub.Feed.CabalInviteEvent -= OnInvite; }
 
-        private void OnInvite(CabalInviteMsg m) { if (Alive) Load(_mine, ct => Hub.Api.CabalInvites("guest", ct), RenderMine); }
+        private void OnInvite(CabalInviteMsg m) { if (Alive) Load(_mine, ct => Hub.Api.CabalInvites("guest", Hub.UserId, ct), RenderMine); }
 
         private void LoadAll()
         {
             Load(_door, ct => Hub.Api.MyCabal(ct), RenderDoor);
             LoadGates();
-            Load(_mine, ct => Hub.Api.CabalInvites("guest", ct), RenderMine);
-            Load(_sent, ct => Hub.Api.CabalInvites("host", ct), RenderSent);
+            Load(_mine, ct => Hub.Api.CabalInvites("guest", Hub.UserId, ct), RenderMine);
+            Load(_sent, ct => Hub.Api.CabalInvites("host", Hub.UserId, ct), RenderSent);
         }
 
         // ---------------------------------------------------------------- door + host

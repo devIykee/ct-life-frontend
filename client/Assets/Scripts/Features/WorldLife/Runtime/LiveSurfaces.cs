@@ -502,7 +502,8 @@ namespace CTLife.WorldLife
             root.style.paddingLeft = root.style.paddingRight = h * 0.04f;
             root.style.paddingTop = h * 0.03f;
             root.style.backgroundColor = new Color(0.03f, 0.05f, 0.09f, 1f);
-            var title = Text((WireText.Str(_data.HouseAds["timeline"], "title") ?? "THE TIMELINE") + " · live", h * 0.11f, true, new Color(0.11f, 0.85f, 0.95f));
+            // This screen also contains local NPC flavour and retained city events, so it must not claim a live connection.
+            var title = Text(WireText.Str(_data.HouseAds["timeline"], "title") ?? "THE TIMELINE", h * 0.11f, true, new Color(0.11f, 0.85f, 0.95f));
             title.style.unityTextAlign = TextAnchor.MiddleLeft;
             root.Add(title);
             var lines = _feed.Lines(6, 72);

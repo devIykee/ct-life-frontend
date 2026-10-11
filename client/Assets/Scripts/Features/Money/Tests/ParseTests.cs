@@ -142,6 +142,28 @@ namespace CTLife.Economy.Tests
         }
 
         [Test]
+        public void PredictionHistoryReadsPersistentBackendBetsWithoutInventingMarketQuestions()
+        {
+            var rows = MoneyParse.PredictionHistory(J("[{'predictionId':'p','outcomeId':'btc-24h-up','stakeCents':'100','status':'won','horizon':'5m','closesAt':'2026-10-05T12:15:00Z','createdAt':'2026-10-05T12:10:00Z'}]"));
+            Assert.AreEqual(0, rows.Skipped);
+            Assert.AreEqual(1, rows.Items.Count);
+            Assert.AreEqual("p", rows.Items[0].PredictionId);
+            Assert.AreEqual("btc-24h-up", rows.Items[0].OutcomeId);
+            Assert.AreEqual("won", rows.Items[0].Status);
+            Assert.AreEqual(100, rows.Items[0].StakeCents);
+            Assert.IsNotNull(rows.Items[0].ClosesAtMs);
+            Assert.IsNotNull(rows.Items[0].CreatedAtMs);
+        }
+
+        [Test]
+        public void PredictionHistoryRejectsInvalidStakesAndUnknownStatuses()
+        {
+            var rows = MoneyParse.PredictionHistory(J("[{'predictionId':'p','outcomeId':'x','stakeCents':'-1','status':'open'},{'predictionId':'q','outcomeId':'x','stakeCents':'100','status':'maybe'}]"));
+            Assert.AreEqual(2, rows.Skipped);
+            Assert.AreEqual(0, rows.Items.Count);
+        }
+
+        [Test]
         public void AlphaCalls_SmartMoney_Tombstones()
         {
             var calls = MoneyParse.AlphaCalls(J("{'calls':[{'callId':'c1','userId':'u','coinId':'" + CoinId + "','entryMicros':'15000','targetMicros':'30000','stopMicros':'10000','status':'open','createdAt':'2026-10-05T12:00:00Z'}],'trustScore':{'hitRate':0.5,'avgReturnBps':120,'maxDrawdownBps':800,'heldBagPct':10}}"));

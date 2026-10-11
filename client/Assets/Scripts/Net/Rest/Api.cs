@@ -50,7 +50,11 @@ namespace CTLife.Net
         {
             var raw = await _rest.Get<JToken>("/me", ct);
             LastLikenessJobId = (raw?["character"] as JObject)?.Value<string>("likenessJobId");
-            try { return MeCompat.Normalize(raw).ToObject<Me>(Newtonsoft.Json.JsonSerializer.Create(Json.Settings)); }
+            try
+            {
+                if (raw is JObject profile) profile["needs"] = NeedsCodec.Normalize(profile["needs"]);
+                return MeCompat.Normalize(raw).ToObject<Me>(Newtonsoft.Json.JsonSerializer.Create(Json.Settings));
+            }
             catch (Exception e) { throw new ApiException(200, "DECODE_FAILED", "GET /me: " + e.Message); }
         }
 
@@ -68,8 +72,13 @@ namespace CTLife.Net
         public Task<PostLotteryRoll200Response> RollLottery(CancellationToken ct = default, string idempotencyKey = null) =>
             _rest.Post<PostLotteryRoll200Response>("/lottery/roll", null, idempotencyKey: idempotencyKey, ct: ct);
 
-        public Task<PostNeedsAction200Response> NeedsAction(string actionId, CancellationToken ct = default) =>
-            _rest.Post<PostNeedsAction200Response>("/needs/actions", new JObject { ["actionId"] = actionId }.ToString(), ct: ct);
+        public async Task<PostNeedsAction200Response> NeedsAction(string actionId, CancellationToken ct = default)
+        {
+            var raw = await _rest.Post<JObject>("/needs/actions", new JObject { ["actionId"] = actionId }, ct: ct);
+            if (raw == null) throw new ApiException(200, "DECODE_FAILED", "Missing needs action receipt");
+            raw["needs"] = NeedsCodec.Normalize(raw["needs"]);
+            return raw.ToObject<PostNeedsAction200Response>(Newtonsoft.Json.JsonSerializer.Create(Json.Settings));
+        }
 
         // ---------------------------------------------------------------- work (Ph 1)
 

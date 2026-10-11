@@ -46,8 +46,16 @@ namespace CTLife.SocialFeatures
 
         private readonly HashSet<string> _seenInvites = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private readonly RetainedKey _dialKey = new RetainedKey();
-        private RtcGrant _embedded;
-        private bool _joining, _disposed, _paidPolling;
+        private sealed class PendingVideoEnd
+        {
+            public readonly RetainedKey Key = new RetainedKey();
+            public bool Busy;
+            public double RetryAt;
+        }
+        private readonly Dictionary<string, PendingVideoEnd> _videoEnds = new Dictionary<string, PendingVideoEnd>();
+        private CancellationTokenSource _mediaJoin;
+        private CallSession _joiningCall;
+        private bool _disposed, _paidPolling;
         private double _nextRing, _paidPollAt, _submitRetryAt, _confirmingSince = double.NaN;
         private int _submitAttempts;
         public event Action Changed;
@@ -129,9 +137,14 @@ namespace CTLife.SocialFeatures
                 try { start = await _hub.Api.StartVideoCall(invitees, _hub.Me, _dialKey, ct); }
                 finally { Dialing = false; }
                 _dialKey.Complete();
-                if (!ReferenceEquals(Active, call) || call.IsOver) return; // hung up while dialing
+                if (!ReferenceEquals(Active, call) || call.IsOver)
+                {
+                    // Hanging up while POST /video-calls is in flight must not leave its eventual server room open.
+                    QueueVideoEnd(start.CallId);
+                    return;
+                }
                 call.Dialed(start.CallId, SocialHub.NowMs);
-                JoinMedia(call, start.EmbeddedGrant);
+                JoinMedia(call);
                 Notify();
             }, e =>
             {
@@ -180,7 +193,7 @@ namespace CTLife.SocialFeatures
                 Active = inc.Call;
                 Active.Joining(now);
                 AddRecent(inc.Call.FromUserId, "incoming", false);
-                JoinMedia(Active, null);
+                JoinMedia(Active);
                 Notify();
                 return;
             }
@@ -202,7 +215,7 @@ namespace CTLife.SocialFeatures
                     Paid = inc.Paid;
                     _paidPollAt = SocialHub.NowMs + Paid.PollIntervalMs();
                     AddRecent(inc.Call.FromUserId, "incoming", true);
-                    JoinMedia(Active, null);
+                    JoinMedia(Active);
                 }
                 else if (inc.Paid.Terminal) { Incoming.Remove(inc); inc.Call.End(CallEnd.Expired, SocialHub.NowMs); Message = "paid.alreadyRefunded"; }
                 else Message = "paid.notLive";
@@ -245,25 +258,25 @@ namespace CTLife.SocialFeatures
 
         // ---------------------------------------------------------------- media
 
-        private void JoinMedia(CallSession call, RtcGrant embedded)
+        private void JoinMedia(CallSession call)
         {
-            if (_joining || call == null || call.CallId == null || _disposed) return;
-            _joining = true;
-            if (embedded != null) _embedded = embedded;
+            if (call == null || call.CallId == null || _disposed || ReferenceEquals(_joiningCall, call)) return;
+            CancelMediaJoin();
+            var join = _mediaJoin = new CancellationTokenSource();
+            _joiningCall = call;
             if (call.Phase == CallPhase.Reconnecting) call.ReconnectStarted();
             if (_hub.Spaces.InSpace) _hub.Spaces.Leave(); // one voice context at a time
             _hub.Run(async ct =>
             {
+                using var linked = CancellationTokenSource.CreateLinkedTokenSource(ct, join.Token);
                 try
                 {
-                    RtcGrant grant;
-                    try { grant = await _hub.Api.RtcToken("call", call.CallId, ct); }
-                    catch (ApiException e) when (SocialError.IsRouteMissing(e) && _embedded != null && _embedded.Usable(ServerClock.NowMs))
-                    {
-                        grant = _embedded; // backend checkout: no /rtc/token route, but POST /video-calls embedded the caller's grant
-                    }
+                    var grant = await _hub.Api.CallToken(call.CallId, call.Paid, linked.Token);
+                    linked.Token.ThrowIfCancellationRequested();
                     if (!ReferenceEquals(Active, call) || call.IsOver) return;
-                    if (Services.TryGet<VoiceService>(out var nearby)) await SpacesRequest.Run(async _ => { await nearby.Disconnect(); return true; }, ct, 15000);
+                    if (Services.TryGet<VoiceService>(out var nearby)) await SpacesRequest.Run(async _ => { await nearby.Disconnect(); return true; }, linked.Token, 15000);
+                    linked.Token.ThrowIfCancellationRequested();
+                    if (!ReferenceEquals(Active, call) || call.IsOver) return;
                     DisposeMedia();
                     var media = new VideoRoom();
                     media.Changed += Notify;
@@ -272,18 +285,23 @@ namespace CTLife.SocialFeatures
                     media.PeerLeft += id => { if (ReferenceEquals(Media, media)) call.RemoteLeft(id, SocialHub.NowMs); };
                     media.Lost += () => { if (ReferenceEquals(Media, media)) { Media = null; call.MediaLost(SocialHub.NowMs); Message = "calls.reconnecting"; Notify(); } };
                     Media = media;
-                    await media.Connect(grant, ct);
+                    await media.Connect(grant, linked.Token);
                     if (!ReferenceEquals(Media, media) || call.IsOver) { media.Dispose(); return; }
                     foreach (var p in media.Peers) call.RemoteJoined(p.Identity, SocialHub.NowMs);
                     call.MediaConnected(SocialHub.NowMs);
                     Message = null;
                 }
-                finally { _joining = false; Notify(); }
+                finally
+                {
+                    if (ReferenceEquals(_mediaJoin, join)) { _mediaJoin = null; _joiningCall = null; }
+                    join.Dispose();
+                    Notify();
+                }
             }, e =>
             {
-                _joining = false;
-                DisposeMedia();
+                // A canceled predecessor must never tear down its successor's media.
                 if (!ReferenceEquals(Active, call) || call.IsOver) return;
+                DisposeMedia();
                 if (e.Kind == ErrorKind.RouteMissing) { Finish(CallEnd.Failed, "calls.noVoiceRoute"); return; }
                 if (e.Kind == ErrorKind.Definitive && !e.Is("RATE_LIMITED")) { Finish(CallEnd.Failed, e.CopyKey); return; }
                 if (call.Phase == CallPhase.Reconnecting) call.ReconnectFailed(SocialHub.NowMs);
@@ -291,6 +309,14 @@ namespace CTLife.SocialFeatures
                 if (call.IsOver) Finish(call.EndReason, "calls.connectionLost");
                 Notify();
             });
+        }
+
+        private void CancelMediaJoin()
+        {
+            var join = _mediaJoin;
+            _mediaJoin = null;
+            _joiningCall = null;
+            join?.Cancel(); // The owning attempt disposes its CTS after its continuation completes.
         }
 
         private void DisposeMedia()
@@ -315,11 +341,52 @@ namespace CTLife.SocialFeatures
             var call = Active;
             if (call == null) return;
             call.End(reason, SocialHub.NowMs);
+            CancelMediaJoin();
             DisposeMedia();
             Message = messageKey ?? EndKey(reason);
             Bus.Publish(new SfxSignal("sfx_call_end"));
             if (Paid != null && call.Paid && (Paid.Stage == PaidStage.Live)) EndPaid();
+            else if (!call.Paid && call.Outgoing && !string.IsNullOrEmpty(call.CallId)) QueueVideoEnd(call.CallId);
             Notify();
+        }
+
+        private void QueueVideoEnd(string callId)
+        {
+            if (string.IsNullOrEmpty(callId) || _disposed) return;
+            if (!_videoEnds.ContainsKey(callId)) _videoEnds.Add(callId, new PendingVideoEnd());
+            FlushVideoEnds(SocialHub.NowMs);
+        }
+
+        private void FlushVideoEnds(double now)
+        {
+            if (_disposed || _hub.Offline) return;
+            foreach (var pair in _videoEnds.ToArray())
+            {
+                var id = pair.Key;
+                var pending = pair.Value;
+                if (pending.Busy || now < pending.RetryAt) continue;
+                pending.Busy = true;
+                _hub.Run(async ct =>
+                {
+                    await _hub.Api.EndVideoCall(id, pending.Key, ct);
+                    pending.Key.Complete();
+                    _videoEnds.Remove(id);
+                    if (_videoEnds.Count == 0 && Message == "calls.endPending")
+                    {
+                        Message = "calls.end.hungup";
+                        Notify();
+                    }
+                }, e =>
+                {
+                    pending.Busy = false;
+                    if (e.OutcomeUnknown || e.Kind == ErrorKind.Session || e.Is("RATE_LIMITED") || e.Is("SERVER_BUSY"))
+                        pending.RetryAt = SocialHub.NowMs + 10000;
+                    else _videoEnds.Remove(id);
+                    // Media is already off; do not claim the remote room closed when its end request failed.
+                    Message = "calls.endPending";
+                    Notify();
+                });
+            }
         }
 
         private static string EndKey(CallEnd r) => r == CallEnd.None ? null : "calls.end." + r.ToString().ToLowerInvariant();
@@ -504,7 +571,7 @@ namespace CTLife.SocialFeatures
                 if (_hub.Spaces.InSpace) _hub.Spaces.Leave();
                 Active = CallSession.JoinPaid(flow.CallId, flow.PeerId, true, SocialHub.NowMs);
                 AddRecent(flow.PeerId, "outgoing", true);
-                JoinMedia(Active, flow.EmbeddedGrant);
+                JoinMedia(Active);
             }
         }
 
@@ -532,6 +599,7 @@ namespace CTLife.SocialFeatures
         public void Tick(double now)
         {
             if (_disposed) return;
+            FlushVideoEnds(now);
             for (int i = Incoming.Count - 1; i >= 0; i--)
             {
                 var inc = Incoming[i];
@@ -547,7 +615,7 @@ namespace CTLife.SocialFeatures
             if (Active != null && !Active.IsOver)
             {
                 if (Active.Tick(now)) Finish(Active.EndReason, null);
-                else if (Active.ReconnectDue(now) && !_hub.Offline) JoinMedia(Active, null);
+                else if (Active.ReconnectDue(now) && !_hub.Offline) JoinMedia(Active);
             }
             if (Incoming.Count > 0 && now >= _nextRing) { _nextRing = now + 3000; Bus.Publish(new SfxSignal("sfx_call_ring")); }
             else if (Active != null && Active.Phase == CallPhase.Waiting && now >= _nextRing) { _nextRing = now + 3000; Bus.Publish(new SfxSignal("sfx_call_ring", 0.35f)); }
@@ -574,6 +642,7 @@ namespace CTLife.SocialFeatures
         public void Dispose()
         {
             if (_disposed) return;
+            CancelMediaJoin();
             DisposeMedia();
             _disposed = true;
         }

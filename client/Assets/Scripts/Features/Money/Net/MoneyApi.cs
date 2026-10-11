@@ -62,10 +62,9 @@ namespace CTLife.Economy
         public async Task<PerpRow> ClosePerp(string perpId, string key, CancellationToken ct) =>
             MoneyParse.Perp(await Post("/perps/" + Seg(perpId) + "/close", null, key, ct));
 
-        public async Task<Rows<PredictionRow>> Predictions(CancellationToken ct) => MoneyParse.Predictions(await Get("/predictions?status=open", ct));
-
-        public async Task<BetReceipt> Bet(string predictionId, JObject body, string key, CancellationToken ct) =>
-            MoneyParse.Bet(await Post("/predictions/" + Seg(predictionId) + "/bets", body, key, ct));
+        /// <summary>The running backend returns the signed-in player's bets, not a market catalog.</summary>
+        public async Task<Rows<BetReceipt>> PredictionHistory(CancellationToken ct) =>
+            MoneyParse.PredictionHistory(await Get("/predictions", ct));
 
         /// <summary>GET /alpha-calls?userId= (omit for the signed-in player).</summary>
         public async Task<AlphaCallsResult> AlphaCalls(string userId, CancellationToken ct) =>
@@ -86,6 +85,9 @@ namespace CTLife.Economy
         public async Task<IntentStatusRow> GetIntent(string intentId, CancellationToken ct) =>
             MoneyParse.IntentStatus(await Get("/payments/intents/" + Seg(intentId), ct));
 
+        public async Task SubmitIntent(string intentId, string signature, string idempotencyKey, CancellationToken ct) =>
+            await Post("/payments/intents/" + Seg(intentId) + "/submitted", new JObject { ["signature"] = signature }, idempotencyKey, ct);
+
         // ---------------------------------------------------------------- ORE (Ph 2, mainnet)
 
         public async Task<OreBoardRow> OreBoard(CancellationToken ct) => MoneyParse.OreBoard(await Get("/ore/board", ct));
@@ -102,9 +104,10 @@ namespace CTLife.Economy
         public static readonly IReadOnlyList<string> Covered = new[]
         {
             "GET /market/coins", "GET /market/coins/{coinId}", "POST /market/trades", "GET /market/positions",
-            "GET /perps", "POST /perps", "POST /perps/{perpId}/close", "GET /predictions", "POST /predictions/{id}/bets",
+            "GET /perps", "POST /perps", "POST /perps/{perpId}/close", "GET /predictions",
             "GET /alpha-calls", "POST /alpha-calls", "GET /smart-money", "GET /rekt/tombstones",
-            "POST /payments/intents", "GET /payments/intents/{id}", "GET /ore/board", "GET /ore/me", "POST /ore/stake/tx",
+            "POST /payments/intents", "GET /payments/intents/{id}", "POST /payments/intents/{id}/submitted",
+            "GET /ore/board", "GET /ore/me", "POST /ore/stake/tx",
         };
     }
 }

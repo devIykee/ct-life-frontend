@@ -62,9 +62,6 @@ namespace CTLife.Economy
         public CancellationToken Life => _life.Token;
         public bool Disposed { get; private set; }
 
-        /// <summary>Session-local bet receipts (the contract has no "my bets" endpoint).</summary>
-        public readonly List<BetReceipt> Bets = new List<BetReceipt>();
-
         /// <summary>The live hub, or null before the phone is built / after sign-out.</summary>
         public static MoneyHub Current => _shared != null && !_shared.Disposed ? _shared : null;
 

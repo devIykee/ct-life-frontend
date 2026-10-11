@@ -73,6 +73,7 @@ namespace CTLife.Ventures.Tests
         public readonly List<JObject> BookBodies = new List<JObject>();
         public int UploadCalls, BookCalls;
         public Func<Exception> UploadFails, BookFails;
+        public Func<UploadedCreative> UploadResult = () => new UploadedCreative { UploadId = Kit.Upload, Url = "https://cdn.ctlife.dev/u.png" };
         public Func<BookingResult> BookResult = () => new BookingResult
         {
             BookingId = Kit.Booking,
@@ -90,7 +91,7 @@ namespace CTLife.Ventures.Tests
             UploadCalls++;
             UploadKeys.Add(key);
             if (UploadFails != null) { var e = UploadFails(); if (e != null) return Task.FromException<UploadedCreative>(e); }
-            return Task.FromResult(new UploadedCreative { UploadId = Kit.Upload, Url = "https://cdn.ctlife.dev/u.png" });
+            return Task.FromResult(UploadResult());
         }
 
         public Task<BookingResult> Book(JObject body, string key, CancellationToken ct)

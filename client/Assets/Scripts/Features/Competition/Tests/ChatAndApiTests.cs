@@ -130,13 +130,17 @@ namespace CTLife.Competition.Tests
         public readonly List<(string method, string path, string body, string key)> Calls = new List<(string, string, string, string)>();
         public Func<string, string, JToken> Reply = (m, p) => new JObject();
         public Exception Throw;
+        public JObject CompetitionCapabilities;
         public Func<Task<bool>> RefreshHandler { get; set; }
 
         private Task<T> Do<T>(string method, string path, object body, string key)
         {
             Calls.Add((method, path, body as string, key));
             if (Throw != null) return Task.FromException<T>(Throw);
-            return Task.FromResult((T)(object)Reply(method, path));
+            var value = method == "GET" && path == "/config" && CompetitionCapabilities != null
+                ? new JObject { ["competitionCapabilities"] = CompetitionCapabilities.DeepClone() }
+                : Reply(method, path);
+            return Task.FromResult((T)(object)value);
         }
 
         public Task<T> Get<T>(string path, CancellationToken ct = default) => Do<T>("GET", path, null, null);
@@ -154,7 +158,11 @@ namespace CTLife.Competition.Tests
         private CompetitionApi _api;
         private readonly CancellationToken _ct = CancellationToken.None;
 
-        [SetUp] public void SetUp() { _rest = new FakeRest(); _api = new CompetitionApi(_rest); }
+        [SetUp] public void SetUp()
+        {
+            _rest = new FakeRest { CompetitionCapabilities = JObject.Parse("{\"version\":1,\"targetedCabalInvites\":true,\"beefChallenges\":true}") };
+            _api = new CompetitionApi(_rest);
+        }
 
         private static T Wait<T>(Task<T> t) => t.GetAwaiter().GetResult();
 
@@ -180,10 +188,10 @@ namespace CTLife.Competition.Tests
         }
         [Test] public void OpenBeefBodyAndKey()
         {
-            _rest.Reply = (m, p) => JToken.Parse("{\"matchId\":\"m\",\"challengerUserId\":\"u\",\"topicId\":\"t\",\"stakeCents\":2500,\"status\":\"open\"}");
+            _rest.Reply = (m, p) => JToken.Parse("{\"matchId\":\"m\",\"challengerUserId\":\"u\",\"topicId\":\"beef_perps_vs_spot\",\"invitedUserId\":\"guest-1\",\"stakeCents\":2500,\"status\":\"open\"}");
             var m1 = Wait(_api.OpenBeef(CompetitionApi.BeefOpenBody(2500, "beef_perps_vs_spot", "guest-1"), "key-1", _ct));
             Assert.AreEqual("m", m1.MatchId);
-            var c = _rest.Calls[0];
+            var c = _rest.Calls.Single(x => x.method == "POST");
             Assert.AreEqual(("POST", "/beef", "key-1"), (c.method, c.path, c.key));
             var body = JObject.Parse(c.body);
             Assert.AreEqual(2500, (long)body["stakeCents"]);
@@ -214,10 +222,10 @@ namespace CTLife.Competition.Tests
             CollectionAssert.AreEqual(new[] { "/beef/elo", "/beef/elo?userId=u%201", "/leaderboards/beef_elo", "/leaderboards/net_worth?scope=league", "/me/season-results", "/me/season-results?seasonId=2026%20S1" },
                 _rest.Calls.Select(c => c.path).ToArray());
         }
-        [Test] public void TribeChangeUsesRc1Patch()
+        [Test] public void TribeChangeUsesImplementedBackendRoute()
         {
             Wait(_api.ChangeTribe("builder", "k", _ct));
-            Assert.AreEqual(("PATCH", "/characters/me/tribe", "k"), (_rest.Calls[0].method, _rest.Calls[0].path, _rest.Calls[0].key));
+            Assert.AreEqual(("POST", "/me/tribe", "k"), (_rest.Calls[0].method, _rest.Calls[0].path, _rest.Calls[0].key));
             Assert.AreEqual("builder", (string)JObject.Parse(_rest.Calls[0].body)["tribeId"]);
         }
         [Test] public void FarmClaimAndBail()
@@ -229,13 +237,77 @@ namespace CTLife.Competition.Tests
         }
         [Test] public void CabalCallsNeverCarryACode()
         {
-            _rest.Reply = (m, p) => JToken.Parse("{\"inviteId\":\"i\",\"hostUserId\":\"h\",\"guestUserId\":\"g\",\"status\":\"pending\"}");
+            _rest.Reply = (m, p) => JToken.Parse("{\"inviteId\":\"i\",\"hostUserId\":\"h\",\"guestUserId\":\"guest-1\",\"status\":\"pending\"}");
             Wait(_api.Invite("guest-1", "k1", _ct)); Wait(_api.AcceptInvite("i1", "k2", _ct)); Wait(_api.RevokeInvite("i1", "k3", _ct));
             _rest.Reply = (m, p) => JToken.Parse("{\"invites\":[]}");
-            Wait(_api.CabalInvites("guest", _ct));
-            Assert.AreEqual("/cabal/invites?role=guest", _rest.Calls[3].path);
-            Assert.AreEqual("{\"guestUserId\":\"guest-1\"}", _rest.Calls[0].body);
+            Wait(_api.CabalInvites("guest", "guest-1", _ct));
+            Assert.AreEqual("/cabal/invites?guestId=guest-1", _rest.Calls.Last().path);
+            Assert.AreEqual("{\"guestUserId\":\"guest-1\"}", _rest.Calls.Single(x => x.path == "/cabal/invites").body);
             Assert.IsFalse(_rest.Calls.Any(c => (c.body ?? "").Contains("code") || c.path.Contains("code")));
+        }
+        [Test] public void UnsupportedCompetitionWritesAreBlockedBeforeMutation()
+        {
+            _rest.CompetitionCapabilities = null;
+            var invite = Assert.Throws<ApiException>(() => Wait(_api.Invite("guest-1", "k1", _ct)));
+            var beef = Assert.Throws<ApiException>(() => Wait(_api.OpenBeef(CompetitionApi.BeefOpenBody(100, "topic", "guest-1"), "k2", _ct)));
+            Assert.IsTrue(CompErrors.From(invite, true).IsUnavailable);
+            Assert.IsFalse(CompErrors.From(beef, true).OutcomeUnknown);
+            Assert.IsTrue(_rest.Calls.All(x => x.method == "GET" && x.path == "/config"));
+        }
+        [TestCase("{\"version\":1,\"beefChallenges\":\"true\"}")]
+        [TestCase("{\"version\":2,\"beefChallenges\":true}")]
+        [TestCase("{\"version\":1,\"beefChallenges\":false}")]
+        public void CapabilityNeedsExactVersionAndBoolean(string value)
+        {
+            _rest.CompetitionCapabilities = JObject.Parse(value);
+            Assert.Throws<ApiException>(() => Wait(_api.OpenBeef(CompetitionApi.BeefOpenBody(100, "topic", null), "k", _ct)));
+            Assert.IsFalse(_rest.Calls.Any(x => x.method == "POST"));
+        }
+        [Test] public void IgnoredInviteRecipientNeverBecomesSentSuccessAndRetainsRequestKey()
+        {
+            _rest.Reply = (m, p) => JToken.Parse("{\"inviteId\":\"i\",\"hostUserId\":\"h\",\"guestUserId\":null}");
+            var key = new RetainedKey();
+            var before = key.KeyFor("POST", "/cabal/invites", "guest-1");
+            var error = Assert.Throws<FormatException>(() => Wait(_api.Invite("guest-1", before, _ct)));
+            key.Settle(CompErrors.From(error, true));
+            Assert.AreEqual(before, key.KeyFor("POST", "/cabal/invites", "guest-1"));
+        }
+        [TestCase(null, "topic", 100)]
+        [TestCase("guest-1", null, 100)]
+        [TestCase("guest-1", "topic", 999)]
+        public void IgnoredBeefTermsNeverBecomeSentSuccess(string guest, string topic, int stake)
+        {
+            _rest.Reply = (m, p) => new JObject { ["matchId"] = "m", ["challengerUserId"] = "u", ["invitedUserId"] = guest, ["topicId"] = topic, ["stakeCents"] = stake, ["status"] = "open" };
+            var body = CompetitionApi.BeefOpenBody(100, "topic", "guest-1");
+            var key = new RetainedKey();
+            var before = key.KeyFor("POST", "/beef", body.ToString());
+            var error = Assert.Throws<FormatException>(() => Wait(_api.OpenBeef(body, before, _ct)));
+            var outcome = CompErrors.From(error, true);
+            Assert.IsTrue(outcome.OutcomeUnknown);
+            key.Settle(outcome);
+            Assert.AreEqual(before, key.KeyFor("POST", "/beef", body.ToString()));
+            Assert.AreEqual(before, _rest.Calls.Single(x => x.method == "POST").key);
+        }
+        [Test] public void CabalListsUseTheBackendCallerFilters()
+        {
+            _rest.Reply = (m, p) => JToken.Parse("{\"invites\":[]}");
+            Wait(_api.CabalInvites("host", "user-1", _ct));
+            Assert.AreEqual("/cabal/invites?hostId=user-1", _rest.Calls.Single().path);
+            Assert.Throws<ArgumentException>(() => Wait(_api.CabalInvites("all", "user-1", _ct)));
+            Assert.Throws<ArgumentException>(() => Wait(_api.CabalInvites("guest", null, _ct)));
+            Assert.AreEqual(1, _rest.Calls.Count, "invalid caller filters never send a request");
+        }
+        [Test] public void UsedCabalInviteFromCurrentBackendIsNotPending()
+        {
+            var invite = CabalInvite.Parse(JToken.Parse("{\"inviteId\":\"i-1\",\"hostUserId\":\"h-1\",\"guestUserId\":\"g-1\",\"usedAt\":\"2026-10-12T12:00:00Z\"}"));
+            Assert.AreEqual("accepted", invite.Status);
+            Assert.IsFalse(GateRules.InviteIsPendingFor(invite, "g-1", 0));
+        }
+        [Test] public void ServerRefusalReasonIsPreserved()
+        {
+            var reply = LlmReply.Parse(JToken.Parse("{\"response\":\"prompt_injection_detected\",\"refused\":true,\"refusalReason\":\"prompt_injection_detected\"}"));
+            Assert.AreEqual("prompt_injection_detected", reply.RefusalReasonId);
+            Assert.IsTrue(reply.Refused);
         }
         [Test] public void ChatBodyAndNpcIdFiltering()
         {

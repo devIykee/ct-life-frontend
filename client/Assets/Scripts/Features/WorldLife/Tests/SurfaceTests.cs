@@ -6,6 +6,19 @@ using NUnit.Framework;
 
 namespace CTLife.WorldLife.Tests
 {
+    public class WorldLifeRouteTests
+    {
+        [Test]
+        public void MissingEntityDoesNotDisablePollingForTheWholeSession()
+        {
+            Assert.IsFalse(WorldLifeApi.IsUnsupported(new CTLife.Net.ApiException(404, "NOT_FOUND", "Not found.",
+                JObject.Parse("{\"resource\":\"creative\"}"))));
+            Assert.IsTrue(WorldLifeApi.IsUnsupported(new CTLife.Net.ApiException(404, "NOT_FOUND", "No route for this path and method.",
+                JObject.Parse("{\"path\":\"/v1/ads/live\",\"method\":\"GET\"}"))));
+            Assert.IsFalse(WorldLifeApi.IsUnsupported(new CTLife.Net.ApiException(503, "SERVER_BUSY", "Busy")));
+        }
+    }
+
     public class TimelineFeedTests
     {
         [Test]

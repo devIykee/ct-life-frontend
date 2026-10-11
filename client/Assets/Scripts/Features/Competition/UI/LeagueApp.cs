@@ -204,7 +204,7 @@ namespace CTLife.Competition
         {
             status.text = CompStrings.T("common.working");
             var key = Hub.KeyFor("tribe");
-            var k = key.KeyFor("PATCH", "/characters/me/tribe", tribe.Id);
+            var k = key.KeyFor("POST", "/me/tribe", tribe.Id);
             Run(async ct =>
             {
                 await Hub.Api.ChangeTribe(tribe.Id, k, ct);

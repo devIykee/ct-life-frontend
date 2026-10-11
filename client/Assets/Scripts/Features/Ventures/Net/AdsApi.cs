@@ -7,7 +7,7 @@ using Newtonsoft.Json.Linq;
 
 namespace CTLife.Ventures
 {
-    /// <summary>`multipart/form-data` upload with the signed-in session (IRestClient has no multipart verb).</summary>
+    /// <summary>Binary image upload with the signed-in session; the legacy interface name is retained for composition compatibility.</summary>
     public interface IMultipartClient
     {
         Task<JToken> PostFile(string path, string field, string fileName, string mime, byte[] data, string idempotencyKey, CancellationToken ct);

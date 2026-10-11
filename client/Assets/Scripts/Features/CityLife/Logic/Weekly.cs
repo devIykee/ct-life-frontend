@@ -304,7 +304,7 @@ namespace CTLife.CityLife
     public static class WeekRecap
     {
         public static List<string> Lines(WeekSnapshot before, long cashNow, long debtNow, string homeNow, string homeName,
-            MetaView meta, int moodBps, RentView rent)
+            MetaView meta, int? moodBps, RentView rent)
         {
             var lines = new List<string>();
             if (before != null)
@@ -319,7 +319,8 @@ namespace CTLife.CityLife
             }
             else lines.Add(CityLifeStrings.T("recap.first"));
             if (meta != null && meta.HasBonus) lines.Add(CityLifeStrings.F("recap.meta", CityLifeStrings.MetaTitle(meta.BonusId)));
-            lines.Add(CityLifeStrings.F("recap.mood", CityLifeStrings.T(MarketMood.Key(moodBps)), Bps(moodBps)));
+            if (moodBps.HasValue)
+                lines.Add(CityLifeStrings.F("recap.mood", CityLifeStrings.T(MarketMood.Key(moodBps.Value)), Bps(moodBps.Value)));
             if (rent.State != RentState.Unknown) lines.Add(CityLifeStrings.F("recap.rent", CityLifeStrings.T(rent.Key)));
             return lines;
         }

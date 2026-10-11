@@ -44,6 +44,7 @@ namespace CTLife.App.Dev
         public static async Task<List<Row>> Run(string peerUserId, CancellationToken ct)
         {
             Rows.Clear();
+            _cityEvents = 0;
             var subs = new Subscriptions();
             subs.On<EventMessage>(_ => _cityEvents++);
             var rest = Services.Get<IRestClient>();
@@ -128,12 +129,17 @@ namespace CTLife.App.Dev
                 try { await social.RtcToken("space", space.Id, ct); return Pass("space " + space.Id + " with audio token"); }
                 catch (ApiException e) when (RouteMissing(e)) { return Blocked("40", "space " + space.Id + " created; no POST /rtc/token for audio"); }
             });
-            await Check("social.call_ring", async () =>
+            await Check("social.free_call_session", async () =>
             {
                 if (string.IsNullOrEmpty(peerUserId)) return Fail("no peer user id");
                 var call = await social.StartVideoCall(new[] { peerUserId }, Services.Get<Session>().UserId, new RetainedKey(), ct);
-                // 7243073: the start reply carries only callId (#68 fixed); the city room still never sends call_invite (#54).
-                return Blocked("54", "call " + call.CallId + " created; city room never sends call_invite");
+                try
+                {
+                    var grant = await social.CallToken(call.CallId, false, ct);
+                    return grant != null ? Pass("free call created and RTC grant issued; media and peer ringing are separate checks")
+                        : Fail("missing RTC grant");
+                }
+                finally { await social.EndVideoCall(call.CallId, new RetainedKey(), ct); }
             });
             await Check("world.city_events", () => Task.FromResult(_cityEvents > 0 ? Pass(_cityEvents + " city events") :
                 Blocked("64", "no city `event` during the run")));
@@ -199,7 +205,7 @@ namespace CTLife.App.Dev
             await Proposal("competition.sybil_status", async () => Pass("sybil " + Json.Serialize(await api.Sybil(ct))));
             await Proposal("competition.venue_access", async () => Pass("dubai_marina " + Json.Serialize(await api.Access("dubai_marina", ct))));
             await Proposal("competition.cabal", async () => Pass("cabal " + Json.Serialize(await api.MyCabal(ct))));
-            await Proposal("competition.cabal_invites", async () => Pass((await api.CabalInvites("guest", ct)).Count + " invites"));
+            await Proposal("competition.cabal_invites", async () => Pass((await api.CabalInvites("guest", Services.Get<Session>().UserId, ct)).Count + " invites"));
             await Proposal("competition.llm_quota", async () => Pass("quota " + Json.Serialize(await api.Quota(ct))));
             await Proposal("competition.x_link", async () => Pass("x link " + Json.Serialize(await api.XLink(ct))));
         }

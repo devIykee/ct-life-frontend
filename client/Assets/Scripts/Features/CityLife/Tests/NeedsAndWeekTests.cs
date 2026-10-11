@@ -390,6 +390,13 @@ namespace CTLife.CityLife.Tests
         }
 
         [Test]
+        public void DisconnectedRecapDoesNotInventZeroMarketMood()
+        {
+            var lines = WeekRecap.Lines(null, 1, 0, "studio", null, null, null, new RentView(RentState.Unknown, false, 0, -1, 0, -1));
+            CollectionAssert.AreEqual(new[] { CityLifeStrings.T("recap.first") }, lines);
+        }
+
+        [Test]
         public void SnapshotRoundTripAndGarbage()
         {
             var s = new WeekSnapshot { WeekIso = "2026-W41", HomeId = "studio", CashCents = 5, DebtCents = 0, AtMs = 1 };

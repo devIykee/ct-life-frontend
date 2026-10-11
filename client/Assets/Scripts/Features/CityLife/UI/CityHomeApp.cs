@@ -140,6 +140,12 @@ namespace CTLife.CityLife
                 _homesBox.Clear();
                 var me = Hub.Profile?.Me;
                 var card = CityUi.Card(CityUi.H2(CityLifeStrings.T("home.movesTitle")), CityUi.Small(CityLifeStrings.T("home.movesHint")));
+                card.Add(CityUi.Small(CityLifeStrings.T("home.moveUnavailable")));
+                if (Hub.HomesError != null)
+                {
+                    card.Add(CityUi.Error(Hub.HomesError.Message));
+                    card.Add(CityUi.Btn(CityLifeStrings.T("common.retry"), () => { _ = Hub.RefreshHomes(force: true); }, "ct-btn"));
+                }
                 if (_move.Stage != MoveStage.Idle && _move.Target != null) card.Add(MoveBox(me));
                 long currentRent = Hub.Homes.Find(h => h.Id == me?.HomeId)?.RentCents ?? -1;
                 foreach (var h in Hub.Homes)
@@ -155,7 +161,8 @@ namespace CTLife.CityLife
                         var target = h;
                         bool down = currentRent >= 0 && h.RentCents < currentRent;
                         var b = CityUi.Btn(CityLifeStrings.T(down ? "home.downsize" : "home.move"), () => { if (Alive) _move.Select(target, me?.HomeId); }, "ct-btn");
-                        b.SetEnabled(_move.Stage != MoveStage.Signing && _move.Stage != MoveStage.Unknown);
+                        // This backend's /rent endpoint only renews existing leases; it cannot move the character.
+                        b.SetEnabled(false);
                         row.Add(b);
                         if (me != null && me.CashCents < h.RentCents) row.Add(CityUi.Small(CityLifeStrings.F("home.cantAffordHint", Money.Cash(me.CashCents))));
                     }
@@ -194,10 +201,25 @@ namespace CTLife.CityLife
 
             private void Sign()
             {
+                if (!HomeLeaseActions.CanRenew(Hub.Profile?.Me?.HomeId, _move.Target?.Id))
+                {
+                    Bus.Publish(ToastSignal.Text(CityLifeStrings.T("home.moveUnavailable"), ToastKind.Bad));
+                    return;
+                }
                 var key = _move.BeginSign();
                 if (key == null) return;
                 var target = _move.Target;
-                Run(ct => Hub.Api.Rent(target.Id, key, ct), receipt =>
+                Run(async ct =>
+                {
+                    var receipt = await Hub.Api.Rent(target.Id, key, ct);
+                    // A lease receipt alone does not prove that the authoritative character moved.
+                    // Current server rent renews an owned home without changing characters.home_id.
+                    var profile = Hub.Profile ?? throw new InvalidOperationException("Missing player profile");
+                    await profile.Refresh(ct);
+                    if (profile.Me == null || profile.Me.HomeId != target.Id)
+                        throw new FormatException("Home change was not confirmed by the player profile");
+                    return receipt;
+                }, receipt =>
                 {
                     _move.Succeeded(receipt);
                     Bus.Publish(new SfxSignal("sfx_ui_success"));

@@ -145,6 +145,17 @@ namespace CTLife.CityLife
         public string UserId => _user;
         public double NowMs => ServerClock.NowMs;
 
+        /// <summary>A zero-valued first city snapshot need not emit MoodSignal. Reconcile it, and clear knowledge on disconnect.</summary>
+        public void RefreshMood()
+        {
+            if (Services.TryGet<IRealtimeService>(out var rt) && rt.City != null && rt.City.IsJoined)
+            {
+                MoodBps = rt.City.Mood;
+                MoodKnown = true;
+            }
+            else MoodKnown = false;
+        }
+
         // ---------------------------------------------------------------- profile / needs / rent
 
         private void OnProfileChanged()

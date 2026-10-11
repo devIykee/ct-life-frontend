@@ -80,8 +80,9 @@ namespace CTLife.Economy
 
     public sealed class BetReceipt
     {
-        public string BetId, PredictionId, OutcomeId;
+        public string BetId, PredictionId, OutcomeId, Status, Horizon;
         public long StakeCents;
+        public long? ClosesAtMs, CreatedAtMs;
     }
 
     public sealed class AlphaCallRow
@@ -327,6 +328,24 @@ namespace CTLife.Economy
             };
         }
 
+        /// <summary>Backend GET /predictions: persisted personal bets, including resolved bets.</summary>
+        public static Rows<BetReceipt> PredictionHistory(JToken t) => Many(Wire.List(t, "predictions"), p =>
+        {
+            if (!(p is JObject)) throw new FormatException("Missing prediction");
+            var status = Wire.ReqStr(p["status"], "status");
+            if (status != "open" && status != "won" && status != "lost" && status != "cancelled")
+                throw new FormatException("Unknown prediction status");
+            var stake = Wire.Long(p["stakeCents"]);
+            if (stake <= 0) throw new FormatException("Invalid prediction stake");
+            var id = Wire.SafeId(p["predictionId"], "predictionId");
+            return new BetReceipt
+            {
+                BetId = id, PredictionId = id, OutcomeId = Wire.ReqStr(p["outcomeId"], "outcomeId"),
+                StakeCents = stake, Status = status, Horizon = Wire.Plain(p["horizon"], 16),
+                ClosesAtMs = Wire.TimeMs(p["closesAt"]), CreatedAtMs = SafeTime(p["createdAt"]),
+            };
+        });
+
         public static AlphaCallRow AlphaCall(JToken c)
         {
             if (!(c is JObject)) throw new FormatException("Missing call");
@@ -390,8 +409,8 @@ namespace CTLife.Economy
         });
 
         /// <summary>
-        /// Contract `PaymentIntent`. `tx` is required by the contract; the backend checkout omits it (and `cashCents`,
-        /// `bonusBps`, `currency`), so HasTx is checked before signing. `amount` must be base units; anything else is kept
+        /// Contract `PaymentIntent`. HasTx is checked before signing, including when an older/degraded server omits it.
+        /// `amount` must be base units; anything else is kept
         /// raw and displayed as such.
         /// </summary>
         public static PaymentIntentRow Intent(JToken t)
@@ -454,7 +473,7 @@ namespace CTLife.Economy
             };
         }
 
-        /// <summary>Contract `{tx}` (base64 unsigned v0 transaction). Backend 9f3e5ef answers `{txBase64, ...}`.</summary>
+        /// <summary>Contract `{tx}` (base64 unsigned v0 transaction), with legacy txBase64 compatibility.</summary>
         public static string StakeTx(JToken t)
         {
             var tx = Wire.Str(t?["tx"]) ?? Wire.Str(t?["txBase64"]);

@@ -53,6 +53,32 @@ namespace CTLife.Ventures.Tests
         }
 
         [Test]
+        public void Detail_CurrentBackendCashAndHiresPreserveTreasuryAndMembership()
+        {
+            var j = JObject.Parse(@"{""project"":{""projectId"":""p-1"",""ownerUserId"":""u1"",""kind"":""dex"",""status"":""founded"",""cashCents"":250000},
+                ""hires"":[{""hireId"":""h-1"",""userId"":""u2"",""role"":""dev"",""salaryCentsPerWeek"":4000,""hiredAt"":""2026-10-07T11:00:00.000Z""}]}");
+            var d = ProjectParse.Detail(j);
+            Assert.AreEqual(250000, d.Project.TreasuryCents, "GET detail used to show zero despite a funded project");
+            Assert.AreEqual(VStrings.Kind("dex"), d.Project.Name, "the backend omits the saved name; show its category, not a blank heading");
+            Assert.AreEqual(1, d.Project.MemberCount);
+            Assert.AreEqual(4000, d.PayrollCentsPerWeek);
+            Assert.Greater(d.Members[0].JoinedAtMs, 0);
+            Assert.AreEqual(ProjectRules.Standing.Member, ProjectRules.StandingOf(d, "u2"));
+        }
+
+        [Test]
+        public void Detail_ExplicitServerSummaryWinsOverLegacyHires()
+        {
+            var j = DetailJson();
+            j["hires"] = new JArray(new JObject { ["userId"] = "other", ["salaryCentsPerWeek"] = 99 });
+            j["project"]["cashCents"] = 1;
+            var d = ProjectParse.Detail(j);
+            Assert.AreEqual(250000, d.Project.TreasuryCents);
+            Assert.AreEqual(2, d.Members.Count);
+            Assert.AreEqual(4000, d.PayrollCentsPerWeek);
+        }
+
+        [Test]
         public void Summary_RejectsAnUnsafeId()
         {
             var j = Summary();

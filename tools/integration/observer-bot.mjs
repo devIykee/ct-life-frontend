@@ -48,10 +48,11 @@ async function main() {
   // Contract order: lottery first (backend main treats an existing character as rolled).
   const roll = await post('/lottery/roll', {}, token);
   status.lottery = roll.json; 
-  const look = { skinTone: 'skin_tone3', headId: 'head_rain', hairId: 'hair_rain_ponytail', topId: 'top_hoodie_black',
-    bottomId: 'bottom_jeans_indigo', shoesId: 'shoes_sneakers_white', accId: 'acc_none' };
+  const look = { skinTone: 'skin_tone3', headId: 'head_snow', hairId: 'hair_snow_bun', topId: 'top_vneck_charcoal',
+    bottomId: 'bottom_denim_light', shoesId: 'shoes_sneakers_blue', accId: 'acc_none' };
   const ch = await post('/characters', { alias: name, look, traitIds: ['fast_talker', 'iron_will'], dreamId: 'make_10k', tribeId: 'trencher', ageConfirmed: true }, token);
   status.character = ch.status; save();
+  if (ch.status < 200 || ch.status >= 300) throw new Error('observer character rejected: HTTP ' + ch.status);
 
   const client = new Client(ws);
   const room = await client.joinOrCreate('venue', { token, venueId, name, tribeId: 'trencher', look: Object.values(look) });

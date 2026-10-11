@@ -7,13 +7,16 @@
 set -uo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 REPO="$(cd "$HERE/../.." && pwd)"
+PROJECT="${CTLIFE_INTEGRATION_PROJECT:-$REPO/client}"
+API="${CTLIFE_INTEGRATION_API:-http://localhost:4010}"
+WS="${CTLIFE_INTEGRATION_WS:-ws://localhost:2567}"
 U="${UNITY:-/Applications/Unity/Hub/Editor/6000.3.25f1/Unity.app/Contents/MacOS/Unity}"
 STAMP="$(date +%Y%m%d-%H%M%S)"
 OUT="${CTLIFE_EVIDENCE:-$REPO/../ct-life-evidence/integration}/editor-$STAMP"
 mkdir -p "$OUT"
-curl -fsS http://localhost:4010/healthz >/dev/null || { echo "backend not running (tools/backend-local/up.sh)"; exit 2; }
+curl -fsS "$API/healthz" >/dev/null || { echo "backend not running (tools/backend-local/up.sh)"; exit 2; }
 
-node "$HERE/observer-bot.mjs" --out "$OUT/bot.json" --seconds 900 > "$OUT/bot.log" 2>&1 &
+node "$HERE/observer-bot.mjs" --api "$API" --ws "$WS" --out "$OUT/bot.json" --seconds 900 > "$OUT/bot.log" 2>&1 &
 BOT=$!
 trap 'kill $BOT 2>/dev/null' EXIT
 sleep 3
@@ -26,7 +29,7 @@ WALLET="${WALLET:-$(node -e "const r=require('node:module').createRequire(proces
 echo "wallet $WALLET"
 EXTRA=()
 [[ "${1:-}" == "--keep-open" ]] && EXTRA+=(-ctlife-integrationKeepOpen 1)
-"$U" -batchmode -projectPath "$REPO/client" -buildTarget Android \
+"$U" -batchmode -projectPath "$PROJECT" -buildTarget Android \
   -executeMethod CTLife.Tests.Integration.IntegrationRun.Launch \
   -ctlife-env local -ctlife-autologin dev -ctlife-wallet "$WALLET" -ctlife-autocreate 1 -ctlife-autoenter 1 -ctlife-fresh 1 \
   -ctlife-botStatus "$OUT/bot.json" -ctlife-integrationOut "$OUT/receipt.json" ${EXTRA[@]+"${EXTRA[@]}"} \

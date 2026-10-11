@@ -105,7 +105,7 @@ namespace CTLife.Tests.Integration
 
         private static void Blocked(string name, string item, string detail)
         {
-            Checks.Add(new JObject { ["name"] = name, ["pass"] = true, ["blocked"] = item, ["detail"] = detail, ["t"] = Math.Round(Time.realtimeSinceStartup, 1) });
+            Checks.Add(new JObject { ["name"] = name, ["pass"] = false, ["blocked"] = item, ["detail"] = detail, ["t"] = Math.Round(Time.realtimeSinceStartup, 1) });
             Debug.Log($"CTLIFE [integration] BLOCKED {name} [backend #{item}]: {detail}");
         }
 
@@ -291,11 +291,15 @@ namespace CTLife.Tests.Integration
 
         private static void Finish(string fatal)
         {
-            bool pass = fatal == null && Checks.Count > 0 && Checks.All(c => (bool)c["pass"]);
+            bool corePassed = fatal == null && Checks.Count > 0 && Checks.All(c => (bool)c["pass"]);
+            // A working core cannot certify disconnected feature lanes. Keep both verdicts so
+            // callers can inspect progress without reporting an incomplete game as all-green.
+            bool pass = corePassed && Features.Count > 0 && Features.All(f => (string)f["result"] == "pass");
             var receipt = new JObject
             {
                 ["at"] = DateTime.UtcNow.ToString("o"), ["pass"] = pass, ["fatal"] = fatal, ["checks"] = new JArray(Checks),
                 ["features"] = new JArray(Features),
+                ["corePassed"] = corePassed,
                 ["env"] = Env.Current?.id.ToString(), ["unity"] = Application.unityVersion,
             };
             try
@@ -304,7 +308,7 @@ namespace CTLife.Tests.Integration
                 File.WriteAllText(_out, receipt.ToString());
             }
             catch (Exception e) { Debug.LogException(e); }
-            Debug.Log($"CTLIFE [integration] RESULT {(pass ? "PASS" : "FAIL")} ({Checks.Count(c => (bool)c["pass"])}/{Checks.Count}) receipt {_out}");
+            Debug.Log($"CTLIFE [integration] RESULT {(pass ? "PASS" : "INCOMPLETE")} core {Checks.Count(c => (bool)c["pass"])}/{Checks.Count}; feature probes {Features.Count(f => (string)f["result"] == "pass")}/{Features.Count}; receipt {_out}");
             SessionState.SetBool(ActiveKey, false);
             if (LaunchArgs.Flag("integrationKeepOpen")) return;
             EditorApplication.Exit(pass ? 0 : 1);
