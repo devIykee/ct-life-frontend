@@ -147,7 +147,9 @@ namespace CTLife.EditorTools
                 entry.look = ids;
                 entry.labelKey = "cast." + kv.Key;
                 entry.label = (string)kv.Value["label"] ?? kv.Key;
-                entry.previewYaw = 180f;
+                // Unity Humanoid faces +Z and the preview camera sits in front at +Z, as for Snow/Rain: 0 shows the face
+                // (180 showed every cast look's back in the creator; editor captures 2026-10-09).
+                entry.previewYaw = 0f;
                 players++;
             }
             EditorUtility.SetDirty(registry);

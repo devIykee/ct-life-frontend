@@ -19,7 +19,9 @@ namespace CTLife.EditorTools
         public static void Apply()
         {
             int changed = 0;
-            var guids = AssetDatabase.FindAssets("t:Texture2D", new[] { "Assets/World/Venues", "Assets/Resources/UI/Art" });
+            // Resources/UI/Art held only the old lobby diorama (removed 2026-10-09); search the folders that exist.
+            var folders = Array.FindAll(new[] { "Assets/World/Venues", "Assets/Resources/UI/Art" }, AssetDatabase.IsValidFolder);
+            var guids = folders.Length == 0 ? new string[0] : AssetDatabase.FindAssets("t:Texture2D", folders);
             AssetDatabase.StartAssetEditing();
             try
             {

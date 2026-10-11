@@ -9,6 +9,13 @@ namespace CTLife.EditorTools
         public static void ConfigurePresentation()
         {
             const string path = "Assets/Resources/UI/Art/CityDiorama.png";
+            // The home redesign (2026-10-09) no longer ships the diorama (copy kept in website/assets/city-diorama.png).
+            if (!System.IO.File.Exists(path))
+            {
+                DirectMovementImport.ConfigureLocomotion();
+                Debug.Log("CTLIFE [presentation] Lobby diorama not bundled any more; direct locomotion configured.");
+                return;
+            }
             AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceSynchronousImport);
             var importer = (TextureImporter)AssetImporter.GetAtPath(path);
             importer.textureType = TextureImporterType.Default;
