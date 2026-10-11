@@ -134,39 +134,72 @@ namespace CTLife.App
             }
         }
 
-        /// <summary>One attempt at config → resume or sign-in → profile/onboarding → rooms. Throws on any failure.</summary>
+        /// <summary>
+        /// One attempt at config → resume or sign-in → profile/onboarding → rooms. The title screen is up from the start: its bar
+        /// shows the real boot steps (config, stored session); a failure before it is ready shows the real error and a retry on the
+        /// title itself. Failures after the tap throw (the caller offers the connection retry screen).
+        /// </summary>
         private async Task StartSession()
         {
-            var splash = SplashScreen.TakeBoot() ?? new SplashScreen();
-            ShowFlow(splash);
+            var wallet = Services.Get<IWalletSignIn>();
+            var title = NewTitle(wallet, out var signIn);
+            var boot = SplashScreen.TakeBoot();
+            ShowFlow(title);
+            boot?.Close();
             try
             {
-                splash.SetStatus("Loading config…");
-                try { await _owner.Wait(Services.Get<Api>().RefreshConfig(_owner.Token)); }
-                catch (OperationCanceledException) when (!Alive) { throw; }
-                catch (Exception e)
+                var steps = new TitleBoot();
+                bool signedIn;
+                while (true)
                 {
-                    Log.Warn("flow", "Config refresh failed, using " + Services.Get<ConfigStore>().Source + ": " + e.Message);
-                }
-                _owner.ThrowIfClosed();
-                if (_updateRequired) return;
-                var session = Services.Get<Session>();
+                    try
+                    {
+                        steps.Begin(TitleBoot.Step.Config);
+                        title.SetLoading(steps.Progress, Strings.T(steps.StatusKey));
+                        try { await _owner.Wait(Services.Get<Api>().RefreshConfig(_owner.Token)); }
+                        catch (OperationCanceledException) when (!Alive) { throw; }
+                        catch (Exception e)
+                        {
+                            Log.Warn("flow", "Config refresh failed, using " + Services.Get<ConfigStore>().Source + ": " + e.Message);
+                        }
+                        _owner.ThrowIfClosed();
+                        if (_updateRequired) return;
+                        steps.Complete(TitleBoot.Step.Config);
+                        var session = Services.Get<Session>();
 #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
-                // Development automation: `fresh=1` ignores a stored session so onboarding runs for a new account.
-                if (LaunchArgs.Flag("fresh") && !_freshApplied) { _freshApplied = true; session.Clear(); }
+                        // Development automation: `fresh=1` ignores a stored session so onboarding runs for a new account.
+                        if (LaunchArgs.Flag("fresh") && !_freshApplied) { _freshApplied = true; session.Clear(); }
 #endif
-                bool signedIn = session.IsSignedIn;
-                if (!signedIn)
-                {
-                    splash.SetStatus("Signing in…");
-                    signedIn = await _owner.Wait(Services.Get<IAuthService>().TryResume(_owner.Token));
+                        steps.Begin(TitleBoot.Step.Session);
+                        title.SetLoading(steps.Progress, Strings.T(steps.StatusKey));
+                        signedIn = session.IsSignedIn;
+                        if (!signedIn) signedIn = await _owner.Wait(Services.Get<IAuthService>().TryResume(_owner.Token));
+                        steps.Complete(TitleBoot.Step.Session);
+                        break;
+                    }
+                    catch (OperationCanceledException) when (!Alive) { throw; }
+                    catch (Exception e) when (!_updateRequired)
+                    {
+                        // The real error on the title, with a retry; finished steps stay done.
+                        Log.Warn("flow", "Start-up failed, offering retry on the title: " + e.Message);
+                        string detail = e is ApiException api ? (api.IsNetwork ? Strings.T("common.offline") : Strings.Error(api.Code, api.ServerMessage)) : e.Message;
+                        steps.Fail(detail);
+                        var retry = new TaskCompletionSource<bool>();
+                        title.ShowBootError(detail, () => retry.TrySetResult(true));
+                        await _owner.Wait(retry.Task);
+                    }
                 }
-                CloseFlow(splash);
-                // The title screen: "Sign in with Solana" for a new player, "PLAY" for a valid saved session.
-                if (!signedIn || !SkipTitleForAutomation()) await _owner.Wait(SignIn(returning: signedIn));
+                // Ready: "Tap to play" (a saved session continues; without one the sign-in sheet opens).
+                if (!signedIn || !SkipTitleForAutomation())
+                {
+                    title.SetReady(returning: signedIn);
+                    StartTitleAutomation(title, signedIn, signIn);
+                    await _owner.Wait(signIn.Task);
+                }
+                CloseFlow(title);
                 await _owner.Wait(EnterGame());
             }
-            finally { CloseFlow(splash); }
+            finally { CloseFlow(title); }
         }
 
         private Task WaitForRetry(Exception error)
@@ -196,14 +229,14 @@ namespace CTLife.App
         }
 
         /// <summary>
-        /// The title screen. `returning`: a valid session exists, so it shows PLAY (continue) and "Use another wallet" (sign out,
-        /// then the sign-in button). Completes once the player is signed in and continues.
+        /// The title screen and its sign-in. <paramref name="done"/> completes once the player continues: a tap with a valid
+        /// session, or a successful wallet sign-in from the sheet (the existing MWA / Seed Vault path and its error copy).
         /// </summary>
-        private Task SignIn(bool returning = false)
+        private SignInScreen NewTitle(IWalletSignIn wallet, out TaskCompletionSource<bool> done)
         {
             var tcs = new TaskCompletionSource<bool>();
+            done = tcs;
             var auth = Services.Get<IAuthService>();
-            var wallet = Services.Get<IWalletSignIn>();
             SignInScreen screen = null;
             bool pending = false;
 
@@ -216,7 +249,6 @@ namespace CTLife.App
                 {
                     await _owner.Wait(auth.SignInWithWallet(wallet, _owner.Token));
                     if (!Owns(screen)) return;
-                    CloseFlow(screen);
                     tcs.TrySetResult(true);
                 }
                 catch (OperationCanceledException) when (!Alive) { }
@@ -239,6 +271,14 @@ namespace CTLife.App
                 }
             }
 
+            void Play()
+            {
+                if (pending || !Owns(screen)) return;
+                tcs.TrySetResult(true);
+            }
+
+            screen = new SignInScreen(Wallet, wallet.IsAvailable, false, Play);
+            _devSignIn = null;
 #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
             async void Dev()
             {
@@ -250,7 +290,6 @@ namespace CTLife.App
                     var w = LaunchArgs.Get("wallet", DevWallet());
                     await _owner.Wait(auth.SignInDev(w, LaunchArgs.Flag("seeker"), _owner.Token));
                     if (!Owns(screen)) return;
-                    CloseFlow(screen);
                     tcs.TrySetResult(true);
                 }
                 catch (OperationCanceledException) when (!Alive) { }
@@ -264,20 +303,30 @@ namespace CTLife.App
                     if (Owns(screen)) screen.SetBusy(false);
                 }
             }
+            _devSignIn = Dev;
 #endif
+            return screen;
+        }
 
-            void Play()
-            {
-                if (pending || !Owns(screen)) return;
-                CloseFlow(screen);
-                tcs.TrySetResult(true);
-            }
+        private Action _devSignIn;
 
-            screen = new SignInScreen(Wallet, wallet.IsAvailable, returning, Play);
-            ShowFlow(screen);
+        /// <summary>The title after a sign-out: ready at once (nothing to load), a tap opens the sign-in sheet.</summary>
+        private async Task SignIn()
+        {
+            var title = NewTitle(Services.Get<IWalletSignIn>(), out var done);
+            ShowFlow(title);
+            title.SetReady(returning: false);
+            StartTitleAutomation(title, false, done);
+            try { await _owner.Wait(done.Task); }
+            finally { CloseFlow(title); }
+        }
+
+        /// <summary>Development automation and evidence hooks on the ready title (explicit launch extras only).</summary>
+        private void StartTitleAutomation(SignInScreen screen, bool returning, TaskCompletionSource<bool> done)
+        {
 #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
             // Explicit development automation only. No guest/demo route is exposed in the product UI.
-            if (!returning && LaunchArgs.Get("autologin") == "dev" && auth.DevAuthAllowed) Dev();
+            if (!returning && LaunchArgs.Get("autologin") == "dev" && Services.Get<IAuthService>().DevAuthAllowed) _devSignIn?.Invoke();
             // Dev check: `logerror=1` logs one error on the title screen, to confirm the developer console overlay stays
             // closed in development builds (GameBootstrap) while the error still reaches logcat.
             if (LaunchArgs.Flag("logerror")) Log.Error("dev", "developer console check (launch extra logerror)");
@@ -285,7 +334,6 @@ namespace CTLife.App
             if (LaunchArgs.Get("shot") is string shot && System.Text.RegularExpressions.Regex.IsMatch(shot, "^[a-z0-9-]{1,40}$"))
                 screen.Element?.schedule.Execute(() => { ScreenCapture.CaptureScreenshot(shot + ".png"); Log.Info("flow", "Saved screenshot " + shot); }).StartingIn(5000);
 #endif
-            return _owner.Wait(tcs.Task);
         }
 
 #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
