@@ -85,6 +85,32 @@ namespace CTLife.EditorTools.VenueBuild
             }
         }
 
+        /// <summary>
+        /// Annular sector block (curved riser, stage step): radii r0..r1, angles a0..a1 in degrees (0 = +z, 90 = +x),
+        /// from y0 to y1 around <paramref name="c"/>. Top, inner and outer faces and both end caps (optionally the bottom).
+        /// </summary>
+        public void Arc(Vector3 c, float r0, float r1, float a0, float a1, float y0, float y1, int segments, Vector2 uv, bool bottom = false)
+        {
+            Vector3 P(float r, float a, float y) => new Vector3(c.x + Mathf.Sin(a * Mathf.Deg2Rad) * r, y, c.z + Mathf.Cos(a * Mathf.Deg2Rad) * r);
+            for (int i = 0; i < segments; i++)
+            {
+                float t0 = Mathf.Lerp(a0, a1, i / (float)segments), t1 = Mathf.Lerp(a0, a1, (i + 1) / (float)segments);
+                Quad(P(r0, t0, y1), P(r1, t0, y1), P(r1, t1, y1), P(r0, t1, y1), uv, uv, uv, uv);              // top (+y)
+                Quad(P(r1, t1, y0), P(r1, t1, y1), P(r1, t0, y1), P(r1, t0, y0), uv, uv, uv, uv);              // outer
+                if (r0 > 0.001f) Quad(P(r0, t0, y0), P(r0, t0, y1), P(r0, t1, y1), P(r0, t1, y0), uv, uv, uv, uv); // inner
+                if (bottom) Quad(P(r0, t0, y0), P(r0, t1, y0), P(r1, t1, y0), P(r1, t0, y0), uv, uv, uv, uv);
+            }
+            Quad(P(r1, a0, y0), P(r1, a0, y1), P(r0, a0, y1), P(r0, a0, y0), uv, uv, uv, uv);
+            Quad(P(r0, a1, y0), P(r0, a1, y1), P(r1, a1, y1), P(r1, a1, y0), uv, uv, uv, uv);
+        }
+
+        /// <summary>Single triangle (pennant, gable end); optionally two-sided.</summary>
+        public void Triangle(Vector3 a, Vector3 b, Vector3 c, Vector2 uv, bool twoSided = true)
+        {
+            Tri(a, b, c, uv);
+            if (twoSided) Tri(a, c, b, uv);
+        }
+
         /// <summary>Low-poly UV sphere.</summary>
         public void Sphere(Matrix4x4 m, float radius, int rings, int segments, Vector2 uv)
         {

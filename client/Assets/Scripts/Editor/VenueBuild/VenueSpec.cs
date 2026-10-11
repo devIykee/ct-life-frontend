@@ -26,6 +26,10 @@ namespace CTLife.EditorTools.VenueBuild
         /// LOD-grouped cells with texture atlases. Live Screen_* surfaces stay separate renderers.
         /// </summary>
         public string repackSource;
+        /// <summary>Layout builds: authored prefab whose CafeSeatMotionProfile bindings are kept (exit routes regenerated).</summary>
+        public string seatMotionSource;
+        /// <summary>Repack: extra dressing added to the source instance before it is merged, atlased and baked.</summary>
+        public Action<GameObject> dress;
         public float cellSize = 10f;
         /// <summary>Screen-relative height below which a repacked cell switches to its source LOD1 meshes.</summary>
         public float lod0Threshold = 0.22f;
@@ -52,6 +56,16 @@ namespace CTLife.EditorTools.VenueBuild
         public Color sky = new Color(0.55f, 0.64f, 0.74f), equator = new Color(0.52f, 0.5f, 0.47f), ground = new Color(0.25f, 0.24f, 0.22f);
         public Color haze = new Color(0.7f, 0.74f, 0.76f);
 
+        /// <summary>
+        /// Look-dev (round 3): global Volume (grade, neutral tonemapping, threshold bloom, vignette), baked light probes
+        /// and a baked reflection probe for characters, and the camera clear colour. Off for venues not yet graded.
+        /// </summary>
+        public bool lookdev;
+        public Color skyColor = new Color(0.62f, 0.78f, 0.92f);
+        public float postExposure = 0.1f, contrast = 8f, saturation = 12f, temperature = 6f, tint = 0f;
+        public Color colorFilter = Color.white;
+        public float bloomThreshold = 0.92f, bloomIntensity = 0.45f, vignette = 0.16f;
+
         public bool IsHome => !string.IsNullOrEmpty(homeId);
         public string Folder => VB.VenuesRoot + "/" + id;
         public string PrefabPath => Folder + "/" + id + ".prefab";
@@ -59,6 +73,27 @@ namespace CTLife.EditorTools.VenueBuild
         public VenueSpec Look(Color sun, float intensity, Color skyColor, Color equatorColor, Color groundColor)
         {
             sunColor = sun; sunIntensity = intensity; sky = skyColor; equator = equatorColor; ground = groundColor;
+            return this;
+        }
+
+        public VenueSpec Grade(Color sky, float exposure, float contrastValue, float saturationValue, float warm, Color filter,
+            float bloom = 0.45f, float bloomAt = 0.92f, float vignetteValue = 0.16f)
+        {
+            lookdev = true; skyColor = sky; postExposure = exposure; contrast = contrastValue; saturation = saturationValue;
+            temperature = warm; colorFilter = filter; bloomIntensity = bloom; bloomThreshold = bloomAt; vignette = vignetteValue;
+            return this;
+        }
+
+        public VenueSpec SeatMotionFrom(string prefabPath)
+        {
+            seatMotionSource = prefabPath;
+            return this;
+        }
+
+        /// <summary>Sun direction (light rotation: pitch down from the horizon, yaw of travel, degrees).</summary>
+        public VenueSpec SunAt(float pitch, float yaw)
+        {
+            sunAngles = new Vector3(pitch, yaw, 0f);
             return this;
         }
 

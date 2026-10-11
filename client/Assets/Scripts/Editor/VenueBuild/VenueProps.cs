@@ -90,6 +90,7 @@ namespace CTLife.EditorTools.VenueBuild
         /// <summary>Stylised standing figure (clone, mannequin, crowd prop). Static decor, not an NPC.</summary>
         public static void Figure(this VB vb, float x, float z, string body, string head = "blush", float scale = 1f, string accent = null)
         {
+            vb.RegisterProp("figure", new Vector3(x, 0.78f * scale, z), new Vector3(0.45f, 1.56f, 0.45f) * scale);
             vb.Cylinder(new Vector3(x, 0, z), 0.2f * scale, 1.15f * scale, body, 8, topRadius: 0.16f * scale);
             vb.Sphere(new Vector3(x, 1.38f * scale, z), 0.17f * scale, head, rings: 5, segments: 8);
             if (accent != null) vb.Box(new Vector3(x, 1.0f * scale, z - 0.17f * scale), new Vector3(0.22f, 0.15f, 0.02f) * scale, accent);
@@ -126,6 +127,7 @@ namespace CTLife.EditorTools.VenueBuild
         public static void Rocket(this VB vb, float x, float z, float height, string body = "white", string accent = "solpurple")
         {
             float r = height * 0.09f;
+            vb.RegisterProp("rocket", new Vector3(x, height * .5f, z), new Vector3(r * 2.8f, height, r * 2.8f));
             vb.Cylinder(new Vector3(x, 0, z), r * 2.2f, 0.3f, "darksteel", 12, solid: true);
             vb.Cylinder(new Vector3(x, 0.3f, z), r, height * .62f, body, 12);
             vb.Cylinder(new Vector3(x, 0.3f + height * .2f, z), r * 1.02f, height * .06f, accent, 12);
@@ -147,14 +149,18 @@ namespace CTLife.EditorTools.VenueBuild
             if (solid && y < 0.1f) vb.Solid(x, z, 0.9f, 0.9f, 0.8f);
         }
 
-        public static void HayBale(this VB vb, float x, float z, float yaw = 0f, float y = 0f) =>
+        public static void HayBale(this VB vb, float x, float z, float yaw = 0f, float y = 0f)
+        {
+            vb.RegisterProp("hay_bale", new Vector3(x, y + 0.3f, z), new Vector3(1.1f, 0.6f, 0.55f), yaw);
             vb.Box(new Vector3(x, y + 0.3f, z), new Vector3(1.1f, 0.6f, 0.55f), "hay", yaw);
+        }
 
         /// <summary>Queue stanchion pair with a glowing rope (non-blocking decor).</summary>
         public static void Stanchions(this VB vb, Vector2 a, Vector2 b, string rope = "glowgold")
         {
             foreach (var p in new[] { a, b })
             {
+                vb.RegisterProp("stanchion", new Vector3(p.x, 0.5f, p.y), new Vector3(0.32f, 1f, 0.32f));
                 vb.Cylinder(new Vector3(p.x, 0, p.y), 0.16f, 0.04f, "chrome", 10);
                 vb.Cylinder(new Vector3(p.x, 0, p.y), 0.035f, 0.95f, "chrome", 8);
                 vb.Sphere(new Vector3(p.x, 0.97f, p.y), 0.05f, "chrome", rings: 4, segments: 6);

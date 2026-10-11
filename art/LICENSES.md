@@ -226,7 +226,7 @@ listed above (environment manifest, CC0: Kenney, Quaternius, KayKit, Poly Haven 
 
 | Asset | Source | Licence | Author | Date | Used for |
 | --- | --- | --- | --- | --- | --- |
-| Venue signage atlases `client/Assets/World/Venues/<id>/Textures/<id>_signs.png` | `tools/venues/make_venue_signs.py` (original parody text and graphics; no third-party logos or product names) | CC0 (made by us); text rasterised from Lilita One and Manrope, SIL OFL 1.1, already bundled in `client/Assets/Resources/UI/Fonts` | CT Life venue builder | 2026-10-08 | venue signs, idle states of the live boards |
+| Venue signage atlases `client/Assets/World/Venues/<id>/Textures/<id>_signs.png` and live-screen idle crops `Screen_*_idle.png` | `tools/venues/make_venue_signs.py` (original parody text and graphics; no third-party logos or product names; round 3 adds letter-free painted cobbles, stucco, roof tiles, skies, rugs, lanyards, simplified national flags, shop interiors, clock face, pixel canvas) | CC0 (made by us); text rasterised from Lilita One and Manrope, SIL OFL 1.1, already bundled in `client/Assets/Resources/UI/Fonts` | CT Life venue builder | 2026-10-08 | venue signs, painted surfaces, idle states of the live boards |
 | Venue block palette `client/Assets/World/Venues/_Shared/Textures/VenueBlockPalette.png`, ORE 5×5 idle texture | generated in `client/Assets/Scripts/Editor/VenueBuild/` | CC0 (made by us) | CT Life venue builder | 2026-10-08 | procedural trim, ORE board idle state |
 
 <!-- BEGIN cast -->

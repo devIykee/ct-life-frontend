@@ -26,24 +26,27 @@ namespace CTLife.EditorTools.VenueBuild
         public static List<VenueSpec> All => new List<VenueSpec>
         {
             // Repacked pre-pipeline venues: same authored layout/anchors/components, merged + atlased + rebaked.
+            // Timeline Square v2 (round 3 look-dev): layout build to the in-game concept; the old repack source is no longer used.
             new VenueSpec
             {
                 id = "timeline_square", venueId = "timeline_square", spotsKey = "timeline_square", title = "Timeline Square", district = "timeline",
-                identity = "Plaza with the Timeline screen, Pixel Wall, billboards and ad kiosk (live surfaces), blossom gardens, shopfront street, marina skyline.",
-                repackSource = "Assets/Art/Generated/Venues/TimelineStreet20261006.prefab", cellSize = 22f, lod0Threshold = 0.6f, farLod1Distance = 10f,
-            },
+                identity = "Sunny Mediterranean square at golden hour: tiered fountain on a round deck, benches, café terrace, bakery, toyshop, market stall, " +
+                           "clock tower and town hall; Timeline screen, Pixel Wall and two billboards (live surfaces); the 15 Tier A community eggs.",
+                build = VenuesTimelineSquare.TimelineSquare, cellSize = 22f,
+            }.SunAt(32f, 48f).Camera(14.5f, 33f).Look(C("ffd29a"), 1.25f, C("a9b4e6"), C("e2c39c"), C("7a6650"))
+             .Grade(C("c9bcf0"), 0.06f, 15f, 16f, 7f, C("fff6ea"), bloom: 0.3f, bloomAt: 0.95f, vignetteValue: 0.15f),
             new VenueSpec
             {
                 id = "terminal_cafe", venueId = "terminal_cafe", spotsKey = "terminal_cafe", title = "Terminal Café", district = "trenches",
                 identity = "Trading café: 8 terminals, social tables, coffee bar, pulse screen, brick and glass shell (seat motion profile kept).",
                 repackSource = "Assets/Art/Candidates/PlayableVenues20261007/terminal_cafe.prefab", cellSize = 12.5f, cellSizeZ = 6f, cellSplit = true, lod0Threshold = 0.65f,
-            },
-            new VenueSpec
-            {
-                id = "spaces_studio", venueId = "spaces_studio", spotsKey = "spaces_studio", title = "Spaces Studio", district = "timeline",
-                identity = "Broadcast salon: host podium, 10 speaker chairs, 20 audience chairs, identity wall, side lounges (seat motion profile kept).",
-                repackSource = "Assets/Art/Candidates/PlayableVenues20261007/spaces_studio.prefab", cellSize = 12.5f, cellSplit = true, lod0Threshold = 0.5f,
-            },
+                dress = VenuesCafeDress.Dress,
+            }.Grade(C("d9cdf2"), 0.08f, 12f, 10f, 9f, C("fff2e2"), bloom: 0.4f, bloomAt: 0.9f, vignetteValue: 0.18f),
+            // Spaces Studio, redesigned in round 3 (layout build; the old repack source is no longer used).
+            V("spaces_studio", "Spaces Studio", "timeline",
+                "Evening broadcast studio / rooftop (v4, to the in-game concept): round two-step stage with amber LED nosing, cream rug, 4 tan armchairs in a talk-show semicircle with boom mics, host desk + sun lamp, speaker pods with three-lens phones on mic stands, teal LED waveform wall + on-air lamp (live hooks), fluted purple/teal panels, truss spots, bean bags and poufs in arcs on curved risers, green-room lounge beside a rainbow neon arched door + lanyard frame, open glazing onto a terrace with lanterns, bunting and the city.",
+                VenuesSpaces.SpacesStudio).SeatMotionFrom("Assets/Art/Candidates/PlayableVenues20261007/spaces_studio.prefab").Camera(11.6f, 29f, -12f, 45f, 0.3f).Look(C("ffb27a"), 0.55f, C("5b5a9e"), C("8a6a7a"), C("2a2238"))
+                .Grade(C("3b3f7c"), 0.05f, 18f, 2f, -3f, C("f2ecff"), bloom: 0.65f, bloomAt: 0.85f, vignetteValue: 0.22f),
             // The Trenches
             V("perp_pit", "Perp Pit", "trenches",
                 "Perp-DEX trading floor: leverage board + 24h casualties board (live hooks), 8 terminals, liquidation witness circle, CROSS/ISOLATED lounges, lever-o-meter.",
