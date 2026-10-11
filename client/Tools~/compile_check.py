@@ -265,13 +265,14 @@ def units(editor):
         Unit("Unity.ResourceManager", [addr / "ResourceManager"], refs=["Unity.Profiling.Core"], unsafe=True),
         Unit("Unity.Addressables", [addr], refs=["Unity.ResourceManager"], extra_defines=[]),
         Unit("Unity.RenderPipelines.Universal.Runtime", [pathlib.Path(__file__).parent / "compile_check_stubs/urp"]),
+        Unit("glTFast", [pathlib.Path(__file__).parent / "compile_check_stubs/gltfast"]),
         # ---- CT Life ----
         Unit("CTLife.Generated", [ASSETS / "Generated"], refs=["ColyseusSDK"], dlls=[newtonsoft]),
         Unit("CTLife.Core", [ASSETS / S_ / "Core"], dlls=[newtonsoft]),
         Unit("CTLife.Net", [ASSETS / S_ / "Net"], refs=["CTLife.Core", "CTLife.Generated", "ColyseusSDK", "LiveKit"], dlls=[newtonsoft]),
         Unit("CTLife.Audio", [ASSETS / S_ / "Audio"], refs=["CTLife.Core"], dlls=[newtonsoft]),
         Unit("CTLife.World", [ASSETS / S_ / "World"], refs=["CTLife.Core", "CTLife.Net", "CTLife.Generated", "CTLife.Audio", "ColyseusSDK",
-                                                            "Unity.Addressables", "Unity.ResourceManager", "Unity.RenderPipelines.Universal.Runtime"],
+                                                            "Unity.Addressables", "Unity.ResourceManager", "Unity.RenderPipelines.Universal.Runtime", "glTFast"],
              dlls=[newtonsoft]),
         Unit("CTLife.Solana", [ASSETS / S_ / "Solana"], refs=["CTLife.Core", "com.solana.unity_sdk", "UniTask"], dlls=sol_dlls + [newtonsoft]),
         Unit("CTLife.UI", [ASSETS / S_ / "UI"], refs=["CTLife.Core", "CTLife.Net", "CTLife.Generated", "CTLife.World", "CTLife.Audio", "ColyseusSDK", "Unity.RenderPipelines.Universal.Runtime"],
@@ -295,8 +296,10 @@ def units(editor):
         for unit in u:
             unit.dlls = [newtonsoft_editor if d == newtonsoft else d for d in unit.dlls]
         u.append(Unit("Unity.Addressables.Editor", [pathlib.Path(__file__).parent / "compile_check_stubs/addressables_editor"], editor=True))
-        u.append(Unit("CTLife.Editor", [ASSETS / S_ / "Editor"], refs=["CTLife.Core", "CTLife.Net", "CTLife.Generated", "ColyseusSDK", "CTLife.World", "CTLife.UI", "CTLife.App", "Unity.Addressables",
-                                                                       "Unity.Addressables.Editor", "Unity.RenderPipelines.Universal.Runtime"],
+        # References come from the asmdef (feature lanes such as CTLife.Features.Social are added there over time);
+        # Unity.RenderPipelines.Core.Runtime has no harness unit (the URP stub carries the types CT Life uses).
+        emeta_refs = json.loads((ASSETS / S_ / "Editor/CTLife.Editor.asmdef").read_text(encoding="utf-8-sig")).get("references", [])
+        u.append(Unit("CTLife.Editor", [ASSETS / S_ / "Editor"], refs=[r for r in emeta_refs if r != "Unity.RenderPipelines.Core.Runtime"],
                       dlls=[newtonsoft], editor=True))
         # EditMode test assemblies (NUnit from the installed com.unity.ext.nunit; the test runner itself is not needed
         # to compile [Test]/[TestCase] code).
@@ -314,7 +317,8 @@ def units(editor):
                 # References from the asmdef itself (minus the test runners), like the feature test assemblies below.
                 emeta = json.loads((tests / "CTLife.Tests.EditMode.asmdef").read_text(encoding="utf-8-sig"))
                 erefs = [r for r in emeta.get("references", []) if not r.startswith(("UnityEngine.TestRunner", "UnityEditor.TestRunner"))]
-                u.append(Unit("CTLife.Tests.EditMode", [tests], refs=erefs,
+                u.append(Unit("UnityEngine.TestRunner", [pathlib.Path(__file__).parent / "compile_check_stubs/testrunner"], editor=True, override=True))
+                u.append(Unit("CTLife.Tests.EditMode", [tests], refs=erefs + ["UnityEngine.TestRunner"],
                               dlls=[newtonsoft, str(nunit[-1])], editor=True, override=True))
             for tasm in sorted((ASSETS / S_ / "Features").glob("*/Tests/*.asmdef")):
                 meta = json.loads(tasm.read_text(encoding="utf-8-sig"))

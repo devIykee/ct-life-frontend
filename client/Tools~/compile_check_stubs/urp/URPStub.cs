@@ -45,6 +45,8 @@ namespace UnityEngine.Rendering.Universal
     public partial class UniversalAdditionalCameraData : MonoBehaviour
     {
         public bool renderPostProcessing { get; set; }
+        public bool renderShadows { get; set; }
+        public bool allowXRRendering { get; set; }
     }
 
     public static class CameraExtensions
