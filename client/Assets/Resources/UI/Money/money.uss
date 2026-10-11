@@ -1,0 +1,28 @@
+/* Phase 2 money apps (Bank, Pulse, Perp Pit, Prediction Pit, ORE). Functional layout only on top of ctlife.uss;
+   visual polish is deferred to the user's taste (AGENTS-BRIEF, priorities 2026-10-07). */
+.ct-money-tabs { flex-wrap: wrap; }
+.ct-money-tabs > .ct-money-chip { min-width: 160px; flex-basis: auto; margin: 6px; padding: 18px 20px; min-height: 96px; }
+.ct-money-row { flex-wrap: wrap; align-items: center; }
+.ct-money-row > .ct-btn { margin: 8px 12px 8px 0; }
+.ct-money-card > * { flex-shrink: 0; }
+.ct-money-pair { margin: 6px 0; }
+.ct-money-key { font-size: 28px; color: var(--ct-muted); white-space: normal; }
+.ct-money-value { font-size: 30px; -unity-font-definition: url("../Fonts/Manrope-Semibold.ttf"); white-space: normal; -unity-text-align: middle-right; }
+.ct-money-title { font-size: 32px; -unity-font-definition: url("../Fonts/Manrope-Semibold.ttf"); white-space: normal; }
+.ct-money-up { color: var(--ct-green); }
+.ct-money-down { color: var(--ct-red); }
+.ct-money-notice { font-size: 28px; white-space: normal; padding: 20px 24px; margin: 12px 0; border-left-width: 6px; border-left-color: var(--ct-deep); background-color: var(--ct-bg); color: var(--ct-ink); }
+.ct-money-notice-warn { border-left-color: var(--ct-gold); background-color: rgb(255, 246, 214); }
+.ct-money-notice-error { border-left-color: var(--ct-red); background-color: rgb(253, 232, 235); }
+.ct-money-coin { flex-direction: row; align-items: center; padding: 24px 28px; }
+.ct-money-right { align-items: flex-end; margin-left: 16px; }
+.ct-money-chart { height: 200px; min-height: 200px; margin: 12px 0; border-bottom-width: 1px; border-bottom-color: var(--ct-line); }
+.ct-money-bar { height: 14px; border-radius: 7px; background-color: var(--ct-surface); margin: 10px 0 6px 0; overflow: hidden; }
+.ct-money-bar-fill { height: 14px; background-color: var(--ct-green); }
+.ct-money-lev { margin: 0 24px; }
+.ct-money-ack { margin: 16px 0; font-size: 28px; }
+.ct-money-ack > .unity-toggle__label { flex-grow: 1; white-space: normal; }
+.ct-money-ore-grid { flex-direction: row; flex-wrap: wrap; margin: 12px -4px; }
+.ct-money-ore-cell { width: 19%; margin: 0.5%; min-height: 72px; border-radius: 12px; border-width: 2px; border-color: var(--ct-line); background-color: var(--ct-card); align-items: center; justify-content: center; }
+.ct-money-ore-hot { border-color: var(--ct-gold); background-color: rgb(255, 246, 214); }
+.ct-money-ore-sol { font-size: 24px; -unity-text-align: middle-center; }

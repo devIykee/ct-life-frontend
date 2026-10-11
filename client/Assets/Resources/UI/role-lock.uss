@@ -1,0 +1,118 @@
+/* Reuses the current desk/Manrope palette, spacing, borders and 124-unit touch minimum. */
+.ct-role-panel { width: 96%; height: 96%; max-width: 2600px; max-height: 1080px; padding: 16px 40px; }
+.ct-role-panel .ct-desk-header { margin-bottom: 8px; }
+.ct-role-panel .ct-desk-timer { font-size: 28px; padding: 12px 24px; white-space: nowrap; flex-shrink: 0; }
+.ct-role-title, .ct-role-score { font-size: 36px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); color: var(--ct-ink); white-space: nowrap; flex-shrink: 0; }
+.ct-role-score { color: var(--ct-deep); margin-left: 24px; }
+.ct-role-meta { flex-direction: row; align-items: center; justify-content: space-between; margin: 8px 0 4px 0; flex-shrink: 0; }
+.ct-role-board-title { font-size: 32px; color: var(--ct-ink); -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); white-space: nowrap; flex-shrink: 0; }
+.ct-role-counter { font-size: 24px; color: var(--ct-muted); white-space: nowrap; flex-shrink: 0; margin-left: 24px; }
+.ct-role-instruction { font-size: 24px; color: var(--ct-muted); white-space: normal; flex-shrink: 0; margin-bottom: 8px; }
+.ct-role-grid { flex-grow: 1; flex-shrink: 1; min-height: 464px; background-color: var(--ct-deep); border-radius: 24px; padding: 8px 24px; }
+.ct-role-grid-header { flex-direction: row; align-items: center; min-height: 44px; flex-shrink: 0; }
+.ct-role-row-heading, .ct-role-task { width: 560px; margin-right: 8px; flex-shrink: 0; }
+.ct-role-row-heading { font-size: 22px; color: var(--ct-card); white-space: nowrap; }
+.ct-role-permission { flex-grow: 1; flex-basis: 0; min-width: 0; margin: 0 8px; font-size: 24px; color: var(--ct-card); -unity-text-align: middle-center; white-space: nowrap; flex-shrink: 0; }
+.ct-role-row { flex-direction: row; flex-grow: 1; min-height: 132px; margin-bottom: 0; border-top-width: 1px; border-top-color: var(--ct-muted); }
+.ct-role-task { justify-content: center; padding: 8px 16px 8px 0; }
+.ct-role-name { font-size: 30px; color: var(--ct-card); -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); white-space: nowrap; flex-shrink: 0; }
+.ct-role-task-copy { font-size: 24px; color: var(--ct-card); white-space: normal; flex-shrink: 0; margin-top: 4px; }
+.ct-role-cell, .ct-role-control { min-height: 124px; min-width: 240px; flex-grow: 1; flex-basis: 0; flex-shrink: 0; margin: 0 8px; padding: 16px 24px; background-color: var(--ct-card); border-width: 1px; border-color: var(--ct-line); border-radius: 16px; color: var(--ct-ink); font-size: 28px; white-space: nowrap; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-text-outline-width: 0; }
+/* The whole 124+ unit region is interactive; the rail is the visual affordance, not a tiny hit target. */
+.ct-role-cell { justify-content: center; align-items: center; padding: 8px 16px; border-width: 2px; border-color: transparent; background-color: transparent; color: var(--ct-card); }
+.ct-role-cell-state { width: 100%; margin-top: 8px; font-size: 24px; color: var(--ct-card); -unity-text-align: middle-center; white-space: nowrap; flex-shrink: 0; }
+.ct-role-switch { width: 144px; height: 64px; flex-shrink: 0; border-radius: 32px; background-color: var(--ct-muted); }
+.ct-role-switch-thumb { position: absolute; left: 8px; top: 8px; width: 48px; height: 48px; border-radius: 24px; background-color: var(--ct-card); translate: 0 0; transition-property: translate; transition-duration: 0.12s; transition-timing-function: ease-out; }
+.ct-role-selected .ct-role-switch { background-color: var(--ct-accent); }
+.ct-role-selected .ct-role-switch-thumb { translate: 80px 0; background-color: var(--ct-deep); }
+.ct-role-selected .ct-role-cell-state { color: var(--ct-accent); }
+.ct-role-cell > .ct-button-depth, .ct-role-cell > .ct-button-glint, .ct-role-control > .ct-button-depth, .ct-role-control > .ct-button-glint { display: none; }
+.ct-role-cell:hover { background-color: transparent; border-color: var(--ct-muted); color: var(--ct-card); }
+.ct-role-cell:focus { border-color: var(--ct-card); }
+.ct-role-control:hover { background-color: var(--ct-bg); color: var(--ct-ink); }
+.ct-role-control:focus { border-width: 3px; border-color: var(--ct-deep); }
+.ct-role-cell:disabled { opacity: 1; }
+.ct-role-error { border-color: var(--ct-red); }
+.ct-role-error .ct-role-cell-state { color: var(--ct-card); }
+.ct-role-error .ct-role-switch { border-width: 3px; border-color: var(--ct-red); }
+.ct-role-feedback-area { flex-direction: row; align-items: center; min-height: 80px; flex-shrink: 0; padding-top: 4px; margin-bottom: 8px; }
+.ct-role-feedback-copy { flex-grow: 1; min-width: 0; }
+.ct-role-seal { width: 48px; height: 56px; margin-right: 24px; flex-shrink: 0; }
+.ct-role-shackle { position: absolute; left: 8px; top: 0; width: 32px; height: 32px; border-width: 4px; border-color: var(--ct-deep); border-radius: 16px; translate: 0 -4px; transition-property: translate; transition-duration: 0.12s; }
+.ct-role-lock-body { position: absolute; left: 0; bottom: 0; width: 48px; height: 32px; background-color: var(--ct-surface); border-width: 2px; border-color: var(--ct-deep); border-radius: 8px; }
+.ct-role-sealed .ct-role-shackle { translate: 0 4px; }
+.ct-role-sealed .ct-role-lock-body { background-color: var(--ct-accent); }
+.ct-role-sealed-error .ct-role-lock-body { background-color: var(--ct-red); }
+.ct-role-feedback { font-size: 26px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); color: var(--ct-deep); white-space: nowrap; flex-shrink: 0; }
+.ct-role-feedback-error { color: var(--ct-red); }
+.ct-role-explanation { font-size: 22px; color: var(--ct-muted); white-space: normal; flex-shrink: 0; margin-top: 4px; }
+.ct-role-controls { flex-direction: row; flex-shrink: 0; margin: 0 -8px; }
+.ct-role-primary { background-color: var(--ct-accent); }
+.ct-role-footnote { font-size: 20px; color: var(--ct-muted); white-space: nowrap; flex-shrink: 0; margin-top: 8px; -unity-text-align: middle-center; }
+.ct-role-paused { position: absolute; left: 0; right: 0; top: 0; bottom: 0; background-color: var(--ct-scrim); align-items: center; justify-content: center; border-radius: 24px; }
+.ct-role-pause-panel { width: 1080px; padding: 40px; border-width: 1px; border-color: var(--ct-line); border-radius: 24px; background-color: var(--ct-bg); }
+.ct-role-pause-copy { font-size: 26px; color: var(--ct-muted); white-space: normal; flex-shrink: 0; margin: 16px 0 24px 0; }
+
+/* Mechanical console revision. Same nine targets and tasks; existing CT palette and type only. */
+.ct-role-panel { background-color: var(--ct-ink); border-width: 2px; border-color: var(--ct-control-ring-active); }
+.ct-role-panel .ct-desk-heading { flex-direction: row; align-items: center; }
+.ct-role-title { font-size: 44px; color: var(--ct-card); }
+.ct-role-score { color: var(--ct-card); }
+.ct-role-kicker { color: var(--ct-game-cyan); font-size: 20px; letter-spacing: 2px; margin-left: 24px; white-space: nowrap; flex-shrink: 0; }
+.ct-role-panel .ct-desk-timer { color: var(--ct-ink); background-color: var(--ct-accent); }
+.ct-role-panel .ct-desk-progress { height: 6px; background-color: var(--ct-control-ring-active); }
+.ct-role-panel .ct-desk-progress-fill { background-color: var(--ct-game-cyan); }
+.ct-role-board-title { color: var(--ct-card); }
+.ct-role-counter, .ct-role-instruction, .ct-role-explanation, .ct-role-footnote { color: var(--ct-line); }
+.ct-role-grid { border-width: 2px; border-top-color: var(--ct-game-blue-light); border-left-color: var(--ct-control-ring-active); border-right-color: var(--ct-control-ring-active); border-bottom-color: var(--ct-game-outline); border-radius: 16px; }
+.ct-role-case-edge { position: absolute; left: 0; right: 0; bottom: 0; height: 8px; background-color: var(--ct-resource-depth); border-bottom-left-radius: 14px; border-bottom-right-radius: 14px; }
+.ct-role-rivet { position: absolute; width: 12px; height: 12px; border-radius: 6px; border-width: 2px; border-top-color: var(--ct-game-blue-light); border-left-color: var(--ct-game-blue-light); border-bottom-color: var(--ct-game-outline); border-right-color: var(--ct-game-outline); background-color: var(--ct-muted); justify-content: center; align-items: center; }
+.ct-role-rivet-top-left { top: 8px; left: 6px; }
+.ct-role-rivet-top-right { top: 8px; right: 6px; }
+.ct-role-rivet-bottom-left { bottom: 12px; left: 6px; }
+.ct-role-rivet-bottom-right { bottom: 12px; right: 6px; }
+.ct-role-rivet-slot { width: 6px; height: 2px; background-color: var(--ct-game-outline); }
+.ct-role-row { border-top-color: var(--ct-control-ring-active); }
+.ct-role-row-heading, .ct-role-permission { color: var(--ct-line); }
+.ct-role-task-copy { color: var(--ct-line); }
+.ct-role-switch-assembly { flex-direction: row; align-items: center; flex-shrink: 0; }
+.ct-role-switch { width: 160px; height: 64px; border-radius: 12px; background-color: var(--ct-game-outline); border-width: 4px; border-top-color: var(--ct-resource-depth); border-left-color: var(--ct-resource-depth); border-right-color: var(--ct-control-ring-active); border-bottom-color: var(--ct-game-blue-light); }
+.ct-role-rail-guide { position: absolute; left: 8px; right: 8px; top: 24px; height: 4px; background-color: var(--ct-control-ring-active); }
+.ct-role-switch-thumb { left: 4px; top: 4px; width: 56px; height: 48px; border-radius: 8px; background-color: var(--ct-card); border-width: 2px; border-top-color: var(--ct-card); border-left-color: var(--ct-bg); border-right-color: var(--ct-line); border-bottom-width: 6px; border-bottom-color: var(--ct-muted); align-items: center; justify-content: center; }
+.ct-role-thumb-grip { flex-direction: row; align-items: center; justify-content: center; }
+.ct-role-grip-ridge { width: 3px; height: 20px; margin: 0 2px; border-left-width: 1px; border-left-color: var(--ct-card); background-color: var(--ct-muted); }
+.ct-role-indicator { width: 16px; height: 16px; margin-left: 12px; border-radius: 8px; border-width: 3px; border-color: var(--ct-game-outline); background-color: var(--ct-muted); flex-shrink: 0; }
+.ct-role-indicator-glint { position: absolute; left: 1px; top: 1px; width: 3px; height: 3px; border-radius: 2px; background-color: var(--ct-game-highlight); }
+.ct-role-selected .ct-role-switch { background-color: var(--ct-game-outline); }
+.ct-role-selected .ct-role-switch-thumb { translate: 88px 0; background-color: var(--ct-accent); border-top-color: var(--ct-accent-hover); border-left-color: var(--ct-accent); border-right-color: var(--ct-game-yellow-depth); border-bottom-color: var(--ct-game-yellow-depth); }
+.ct-role-selected .ct-role-grip-ridge { border-left-color: var(--ct-accent-hover); background-color: var(--ct-game-yellow-depth); }
+.ct-role-selected .ct-role-indicator { background-color: var(--ct-accent); }
+.ct-role-error .ct-role-indicator { background-color: var(--ct-red); }
+.ct-role-error .ct-role-switch { border-width: 4px; border-color: var(--ct-red); }
+.ct-role-cell:hover { border-color: var(--ct-control-ring-active); }
+.ct-role-panel .ct-role-cell:focus { border-width: 2px; border-color: var(--ct-card); }
+.ct-role-panel .ct-role-cell:active { translate: 0 0; scale: 1 1; }
+.ct-role-feedback { color: var(--ct-line); }
+.ct-role-sealed .ct-role-feedback { color: var(--ct-game-green); }
+.ct-role-sealed-error .ct-role-feedback { color: var(--ct-game-coral); }
+.ct-role-seal { width: 64px; height: 64px; }
+.ct-role-shackle { left: 14px; top: 8px; width: 36px; height: 36px; border-width: 6px; border-bottom-width: 0; border-color: var(--ct-line); border-radius: 16px 16px 0 0; transform-origin: left bottom; rotate: -16deg; translate: -4px -6px; transition-property: translate, rotate; transition-duration: 160ms; }
+.ct-role-lock-body { width: 64px; height: 40px; background-color: var(--ct-muted); border-width: 2px; border-top-color: var(--ct-line); border-left-color: var(--ct-muted); border-right-color: var(--ct-game-outline); border-bottom-width: 6px; border-bottom-color: var(--ct-game-outline); align-items: center; justify-content: center; }
+.ct-role-keyhole { width: 6px; height: 14px; border-radius: 3px; background-color: var(--ct-ink); }
+.ct-role-sealed .ct-role-shackle { rotate: 0deg; translate: 0 -2px; }
+.ct-role-control { flex-grow: 0; flex-basis: auto; min-width: 240px; width: 240px; background-color: var(--ct-deep); color: var(--ct-card); border-width: 2px; border-color: var(--ct-control-ring-active); border-bottom-width: 6px; border-bottom-color: var(--ct-game-outline); }
+.ct-role-control-spacer { flex-grow: 1; }
+.ct-role-end { width: 320px; background-color: var(--ct-ink); border-color: var(--ct-line); border-bottom-color: var(--ct-muted); }
+.ct-role-control:hover { background-color: var(--ct-deep); color: var(--ct-card); border-color: var(--ct-game-blue-light); }
+.ct-role-control:focus { border-width: 2px; border-bottom-width: 6px; border-color: var(--ct-card); }
+.ct-role-primary { width: 480px; min-width: 480px; color: var(--ct-ink); background-color: var(--ct-accent); border-color: var(--ct-accent); border-bottom-width: 8px; border-bottom-color: var(--ct-game-yellow-depth); }
+.ct-role-primary:hover { color: var(--ct-ink); background-color: var(--ct-accent-hover); border-color: var(--ct-accent-hover); border-bottom-color: var(--ct-game-yellow-depth); }
+.ct-role-primary:focus { border-width: 2px; border-bottom-width: 8px; border-color: var(--ct-card); border-bottom-color: var(--ct-game-yellow-depth); }
+.ct-role-primary:active { translate: 0 4px; scale: 1 1; border-bottom-width: 4px; }
+.ct-role-action-lock { position: absolute; left: 24px; top: 32px; width: 48px; height: 56px; }
+.ct-role-action-lock .ct-role-shackle { left: 8px; top: 0; width: 32px; height: 30px; border-color: var(--ct-ink); border-width: 4px; border-bottom-width: 0; rotate: 0deg; translate: 0 0; }
+.ct-role-action-lock .ct-role-lock-body { width: 48px; height: 32px; background-color: var(--ct-ink); border-color: var(--ct-ink); border-bottom-width: 4px; }
+.ct-role-action-lock .ct-role-keyhole { background-color: var(--ct-accent); }
+.ct-role-pause-panel { background-color: var(--ct-ink); border-color: var(--ct-control-ring-active); }
+.ct-role-pause-panel .ct-desk-title { color: var(--ct-card); }
+.ct-role-pause-copy { color: var(--ct-line); }

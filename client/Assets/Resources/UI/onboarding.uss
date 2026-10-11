@@ -1,0 +1,325 @@
+/* First-time flow (LotteryScreen, CharacterCreatorScreen), redesign 2026-10-08. Spec: docs/research/duolingo-design-teardown.md.
+   Layout for the 2400 x 1080-unit landscape panel (Seeker 2670 x 1200). Content box: 72 units in from the sides (the safe
+   margin), 22 from the top, 30 from the bottom, so 2256 x 1028. Zones: the character on the left, one question and its
+   choices on the right, the CTA always bottom-right with its hint above it, the back button and progress bar on top.
+   Text sits straight on the blurred painting: white Lilita with a thick plum outline and a drop, never a plate. */
+
+.ob-screen { background-color: rgba(0, 0, 0, 0); overflow: visible; }
+.ob-bg { position: absolute; left: 0; top: 0; right: 0; bottom: 0; -unity-background-scale-mode: scale-and-crop; }
+.ob-content { position: absolute; left: 72px; right: 72px; top: 22px; bottom: 30px; }
+.ob-overlay { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+
+.ob-topbar { position: absolute; left: 72px; right: 72px; top: 22px; height: 140px; flex-direction: row; align-items: center; }
+.ob-topbar > .kit-progress { margin-left: 40px; margin-top: -8px; }
+
+.ob-cta-zone { position: absolute; right: 72px; bottom: 30px; align-items: flex-end; }
+.ob-cta-zone--hidden { display: none; }
+.ob-hint {
+    display: none; margin: 0 6px 10px 0; padding: 0;
+    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 42px; -unity-text-align: middle-right; white-space: nowrap;
+    color: rgb(255, 255, 255); -unity-text-outline-width: 3px; -unity-text-outline-color: rgb(58, 20, 64);
+    text-shadow: 0 3px 4px rgba(26, 8, 32, 0.85);
+}
+.ob-hint--on { display: flex; }
+
+/* ------------------------------------------------------------------ type on the painting */
+
+.ob-eyebrow, .ob-title, .ob-sub, .ob-line, .ob-note, .ob-look-name, .ob-look-count,
+.ob-drag-hint, .ob-alias-status, .ob-celebrate-title, .ob-celebrate-sub, .ob-card-odds, .ob-card-fallback {
+    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); color: rgb(255, 255, 255); margin: 0; padding: 0;
+    -unity-text-outline-color: rgb(58, 20, 64); white-space: normal;
+}
+.ob-eyebrow { font-size: 40px; letter-spacing: 4px; -unity-text-outline-width: 3px; text-shadow: 0 3px 4px rgba(26, 8, 32, 0.85); }
+.ob-title { font-size: 84px; -unity-text-outline-width: 5px; text-shadow: 0 6px 1px rgb(58, 20, 64); }
+.ob-sub { font-size: 44px; -unity-text-outline-width: 3px; text-shadow: 0 3px 4px rgba(26, 8, 32, 0.85); margin-left: 28px; flex-shrink: 1; }
+.ob-line { font-size: 50px; -unity-text-outline-width: 4px; text-shadow: 0 4px 3px rgba(26, 8, 32, 0.85); margin-top: 14px; }
+.ob-note { font-size: 40px; -unity-text-outline-width: 3px; text-shadow: 0 3px 4px rgba(26, 8, 32, 0.85); }
+.ob-error {
+    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 44px; white-space: normal; margin: 18px 0 0 0;
+    color: rgb(255, 216, 216); -unity-text-outline-width: 4px; -unity-text-outline-color: rgb(110, 12, 36);
+    text-shadow: 0 3px 4px rgba(26, 8, 32, 0.85);
+}
+
+/* ------------------------------------------------------------------ lottery */
+
+.ob-lottery-left { position: absolute; left: 0; top: 190px; width: 960px; bottom: 90px; }
+/* The table spans the content: face-down cards sit right of the copy (DrawShiftX), the unfolded card is centred. */
+.ob-lottery-table { position: absolute; left: 0; right: 0; top: 150px; height: 760px; }
+.ob-lottery .ob-title { margin-top: 6px; }
+.ob-lottery-intro > .ob-line { max-width: 640px; }
+.ob-lottery > .ob-content > .ob-note { position: absolute; left: 0; bottom: 0; }
+
+.ob-card { position: absolute; top: 14px; transition-property: scale; transition-duration: 0.12s; transition-timing-function: ease-out; }
+.ob-card--hot { scale: 1.05 1.05; }
+.ob-card-glow {
+    position: absolute; left: -240px; right: -240px; top: -240px; bottom: -240px; opacity: 0;
+    -unity-background-scale-mode: stretch-to-fill; -unity-background-image-tint-color: rgb(255, 206, 72);
+    transition-property: opacity; transition-duration: 0.1s;
+}
+.ob-card--hot > .ob-card-glow { opacity: 1; }
+.ob-card--face > .ob-card-glow { opacity: 0.9; }
+.ob-card-art { flex-grow: 1; -unity-background-scale-mode: scale-to-fit; align-items: center; justify-content: center; }
+.ob-card-art--plain {
+    background-color: rgb(110, 58, 170); border-width: 12px; border-color: rgb(58, 20, 64); border-radius: 46px;
+}
+.ob-card-fallback { font-size: 60px; -unity-text-align: middle-center; -unity-text-outline-width: 5px; padding: 0 30px; }
+
+/* Rarity ribbon on each face-down card (RARE · 20%), solid pill overlapping the card's bottom edge. */
+.ob-card-ribbon { position: absolute; left: -60px; right: -60px; bottom: -40px; align-items: center; }
+.ob-card-odds {
+    font-size: 40px; letter-spacing: 2px; color: rgb(58, 20, 64); -unity-text-outline-width: 0; text-shadow: 0 0 0 rgba(0, 0, 0, 0);
+    padding: 8px 32px 12px 32px; border-width: 6px; border-color: rgb(58, 20, 64); border-radius: 34px;
+    background-color: rgb(120, 205, 255); white-space: nowrap;
+}
+.ob-card--rare .ob-card-odds { background-color: rgb(255, 200, 60); }
+.ob-card--seeker .ob-card-odds { background-color: rgb(186, 132, 255); }
+
+/* The unfolded landscape origin card (widths, padding and border animate inline in LotteryScreen.SetWide). */
+.ob-card--wide { flex-direction: row; border-radius: 56px; border-color: rgb(120, 205, 255); }
+.ob-card--wide.ob-card--rare { border-color: rgb(255, 200, 60); }
+.ob-card--wide.ob-card--seeker { border-color: rgb(186, 132, 255); }
+.ob-origin-info { flex-grow: 1; flex-shrink: 1; margin-left: 50px; padding: 18px 20px 0 0; justify-content: space-between; overflow: hidden; }
+.ob-origin-head { flex-shrink: 1; }
+.ob-origin-top { flex-direction: row; align-items: center; }
+.ob-origin-rarity, .ob-origin-chance, .ob-origin-name, .ob-origin-line, .ob-origin-label, .ob-origin-value {
+    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); color: rgb(255, 255, 255); margin: 0; padding: 0;
+    -unity-text-outline-width: 0; white-space: nowrap;
+}
+.ob-origin-rarity {
+    font-size: 36px; letter-spacing: 3px; color: rgb(58, 20, 64); padding: 6px 26px 9px 26px; border-radius: 26px;
+    background-color: rgb(120, 205, 255);
+}
+.ob-card--rare .ob-origin-rarity { background-color: rgb(255, 200, 60); }
+.ob-card--seeker .ob-origin-rarity { background-color: rgb(186, 132, 255); }
+.ob-origin-chance { font-size: 38px; color: rgb(206, 186, 236); margin-left: 24px; }
+.ob-origin-name {
+    font-size: 104px; margin-top: 16px; -unity-text-outline-width: 6px; -unity-text-outline-color: rgb(22, 6, 28);
+    text-shadow: 0 7px 1px rgb(22, 6, 28);
+}
+.ob-origin-line { font-size: 46px; color: rgb(236, 226, 255); margin-top: 10px; white-space: normal; }
+.ob-origin-stats { flex-direction: row; background-color: rgb(26, 8, 32); border-radius: 34px; padding: 24px 6px 26px 6px; }
+.ob-origin-stat { flex-grow: 1; flex-basis: 0; padding: 0 34px; justify-content: center; }
+.ob-origin-stat--sep { border-left-width: 4px; border-color: rgb(76, 40, 88); }
+.ob-origin-label { font-size: 30px; letter-spacing: 3px; color: rgb(190, 166, 216); }
+.ob-origin-value { font-size: 72px; margin-top: 6px; }
+.ob-origin-value--cash { color: rgb(20, 241, 149); }
+.ob-origin-value--debt { color: rgb(255, 166, 80); }
+.ob-origin-value--home { font-size: 50px; white-space: normal; }
+
+/* ------------------------------------------------------------------ creator: the character */
+
+.ob-dim { position: absolute; left: -200px; right: -200px; top: -200px; bottom: -200px; background-color: rgba(30, 10, 40, 0); }
+
+.ob-stage {
+    position: absolute; left: 0; top: 330px; width: 520px; height: 698px;
+    transition-property: left, top, width, height; transition-duration: 0.36s; transition-timing-function: ease-out-cubic;
+}
+.ob-mode-look .ob-stage { left: 40px; top: 150px; width: 780px; height: 770px; }
+/* The 2:3 preview needs 514px at this height. Reclaim its unused side gutters for the customizer, not its character scale. */
+.ob-mode-custom .ob-stage { left: 150px; width: 520px; }
+.ob-screen.ob-mode-confirm .ob-stage { left: 0; top: 0; width: 1px; height: 1px; opacity: 0; } /* the RT feeds the player card */
+.ob-screen.ob-typing .ob-stage { left: 0; top: 0; width: 340px; height: 330px; }
+.ob-screen.ob-mode-celebrate .ob-stage { left: 760px; top: 330px; width: 736px; height: 698px; }
+.ob-stage-glow {
+    position: absolute; left: -40%; right: -40%; top: -16%; bottom: -6%; opacity: 0.75;
+    -unity-background-scale-mode: stretch-to-fill; -unity-background-image-tint-color: rgb(255, 250, 240);
+}
+.ob-stage-shadow {
+    position: absolute; left: 30%; right: 30%; bottom: 3%; height: 5%; border-radius: 40px;
+    background-color: rgba(58, 20, 64, 0.42);
+}
+.ob-stage--face .ob-stage-shadow, .ob-typing .ob-stage-shadow { display: none; }
+.ob-stage-model { position: absolute; left: 0; top: 0; right: 0; bottom: 0; -unity-background-scale-mode: scale-to-fit; }
+.ob-drag-hint {
+    position: absolute; left: 0; right: 0; bottom: -6px; font-size: 40px; -unity-text-align: middle-center;
+    -unity-text-outline-width: 3px; text-shadow: 0 3px 4px rgba(26, 8, 32, 0.85);
+}
+.ob-mode-side .ob-drag-hint { display: none; }
+.ob-stage-missing { position: absolute; left: 0; right: 0; top: 40%; align-items: center; }
+
+.ob-bubble { left: 0; top: 150px; max-width: 520px; }
+.ob-mode-side .ob-bubble .kit-bubble__tail--bottom-left { left: 190px; }
+.ob-mode-look .ob-bubble { left: 520px; top: 120px; max-width: 420px; }
+.ob-mode-custom .ob-bubble { left: 40px; top: 120px; max-width: 420px; }
+.ob-mode-confirm .ob-bubble { display: none; }
+.ob-screen.ob-mode-celebrate .ob-bubble { left: 1250px; top: 380px; max-width: 560px; }
+.ob-typing .ob-bubble { display: none; }
+
+/* Look step: big painted arrows either side, the look's name underneath. */
+.ob-look-controls { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+.ob-look-label { position: absolute; left: 40px; width: 780px; top: 930px; flex-direction: row; justify-content: center; align-items: center; }
+.ob-mode-custom .ob-look-label { left: 150px; width: 520px; }
+/* Full body / face zoom belongs to the model, so it sits on the model's left (user review 2026-10-10). */
+.ob-zoom-col { position: absolute; left: 0; top: 380px; }
+.ob-mode-custom .ob-zoom-col { left: 0; }
+.ob-zoom { margin-bottom: 18px; }
+.ob-zoom.ob-seg--on > .kit-btn__face { background-color: rgb(146, 88, 220); }
+.ob-zoom.ob-seg--on .kit-btn__icon { -unity-background-image-tint-color: rgb(255, 255, 255); }
+.ob-mode-confirm .ob-look-controls { display: none; }
+.ob-look-name { font-size: 66px; -unity-text-outline-width: 5px; text-shadow: 0 5px 1px rgb(58, 20, 64); white-space: nowrap; }
+.ob-look-count { font-size: 42px; -unity-text-outline-width: 3px; margin-left: 22px; white-space: nowrap; }
+.ob-tag {
+    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 38px; color: rgb(58, 20, 64); margin: 0 0 0 22px;
+    padding: 4px 16px 6px 16px; background-color: rgb(255, 212, 84); border-width: 4px; border-color: rgb(58, 20, 64); border-radius: 18px;
+}
+
+/* ------------------------------------------------------------------ creator: the question */
+
+.ob-right { position: absolute; left: 560px; right: 0; top: 160px; bottom: 0; }
+.ob-mode-look .ob-right { left: 920px; }
+.ob-mode-custom .ob-right { left: 720px; }
+.ob-mode-confirm .ob-right { left: 0; }
+
+/* Character step: the base-model portrait grid (scrolls when there are many) */
+/* Character step: a roster of portrait tiles, not cards (user review 2026-10-10): no white face, no lip, the portrait is
+   the tile, its name sits under it on the painting. Two rows show; the scroll stops above the CTA hint. */
+.ob-model-scroll { height: 528px; }
+.ob-model-card { padding-bottom: 0; }
+.ob-model-card > .kit-card__lip { display: none; }
+.ob-model-card > .kit-card__face, .ob-model-card.kit-card--selected > .kit-card__face {
+    padding: 0; justify-content: flex-start; background-color: rgba(0, 0, 0, 0); border-width: 0; border-radius: 0;
+}
+.ob-model-card .kit-card__badge {
+    width: 100%; height: 182px; -unity-background-scale-mode: scale-and-crop; background-color: rgb(232, 220, 246);
+    border-width: 5px; border-color: rgb(58, 20, 64); border-radius: 30px;
+}
+.ob-model-card.kit-card--selected .kit-card__badge { background-color: rgb(214, 252, 234); border-color: rgb(20, 241, 149); border-width: 8px; }
+.ob-model-card .kit-card__disc { width: 150px; height: 150px; border-radius: 75px; margin-top: 12px; }
+.ob-model-card .kit-card__title {
+    width: 100%; font-size: 28px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    -unity-text-align: upper-center; margin-top: 8px; color: rgb(255, 255, 255);
+    -unity-text-outline-width: 3px; -unity-text-outline-color: rgb(58, 20, 64); text-shadow: 0 3px 3px rgba(26, 8, 32, 0.85);
+}
+.ob-model-card > .kit-card__check { top: -12px; right: -8px; width: 58px; height: 58px; }
+
+/* Customize step: the category rail and its options */
+.ob-custom-body { flex-direction: row; height: 640px; }
+.ob-rail-scroll { width: 420px; height: 640px; flex-shrink: 0; }
+.ob-rail { width: 380px; padding-bottom: 12px; }
+.ob-rail-item, .ob-rail-item:hover, .ob-rail-item:focus, .ob-rail-item:active {
+    flex-direction: row; align-items: center; margin: 0 0 12px 0; padding: 0 18px 0 10px; min-height: 130px; flex-shrink: 0;
+    background-color: rgb(84, 38, 92); border-width: 5px; border-color: rgb(58, 20, 64); border-radius: 65px;
+}
+.ob-rail-item--on, .ob-rail-item--on:hover, .ob-rail-item--on:focus { background-color: rgb(255, 255, 255); }
+.ob-rail-item .kit-badge { width: 92px; height: 92px; }
+.ob-rail-label {
+    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 42px; color: rgb(255, 255, 255); margin: 0 0 0 16px; padding: 0;
+    -unity-text-outline-width: 3px; -unity-text-outline-color: rgb(58, 20, 64); white-space: normal; min-width: 0; flex-shrink: 1;
+}
+.ob-rail-item--on .ob-rail-label { color: rgb(58, 20, 64); -unity-text-outline-width: 0; }
+.ob-custom-options { flex-grow: 1; flex-shrink: 1; min-width: 0; margin-left: 26px; }
+.ob-option-scroll { height: 640px; }
+/* The selected badge extends 16px above / 14px right; the selection pop needs a little more room. */
+.ob-options { padding: 24px; }
+.ob-option-card > .kit-card__face { justify-content: center; padding: 12px; }
+.ob-option-card .kit-card__badge { width: 100%; height: 120px; -unity-background-scale-mode: scale-to-fit; }
+
+.ob-swatch { width: 96px; height: 96px; flex-shrink: 0; border-radius: 48px; border-width: 7px; border-color: rgb(58, 20, 64); margin-bottom: 6px; }
+.ob-option-card .kit-card__title { font-size: 36px; -unity-text-align: upper-center; }
+/* Keep scroll affordances visible without changing the native touch / wheel behaviour. */
+.ob-custom-body .unity-scroller--vertical { width: 24px; margin-left: 10px; }
+.ob-custom-body .unity-scroller__low-button, .ob-custom-body .unity-scroller__high-button { display: none; }
+.ob-custom-body .unity-base-slider__tracker { background-color: rgba(58, 20, 64, 0.4); border-radius: 12px; }
+.ob-custom-body .unity-base-slider__dragger { background-color: rgb(255, 255, 255); border-width: 4px; border-color: rgb(58, 20, 64); border-radius: 12px; }
+
+/* Confirm: one player card, "a look of yourself" */
+.ob-mode-confirm .ob-title-row { display: none; }
+.ob-idcard {
+    width: 1700px; height: 690px; margin-top: 0; overflow: hidden;
+    background-color: rgb(255, 255, 255); border-width: 8px; border-bottom-width: 20px; border-color: rgb(58, 20, 64); border-radius: 48px;
+}
+.ob-card-band {
+    height: 70px; padding: 0 40px; margin: 0; flex-direction: row; align-items: center; justify-content: space-between;
+    background-color: rgb(146, 88, 220); border-bottom-width: 6px; border-color: rgb(58, 20, 64);
+}
+.ob-card-band-text, .ob-card-band-hint {
+    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 38px; color: rgb(255, 255, 255); margin: 0; padding: 0;
+    -unity-text-outline-width: 3px; -unity-text-outline-color: rgb(58, 20, 64);
+}
+.ob-card-band-text { letter-spacing: 6px; }
+.ob-card-body { flex-direction: row; flex-grow: 1; }
+.ob-card-hit, .ob-card-hit:hover, .ob-card-hit:focus, .ob-card-hit:active {
+    margin: 0; padding: 0; border-width: 0; border-radius: 0; background-color: rgba(0, 0, 0, 0); align-items: stretch;
+}
+.ob-card-hit:active { opacity: 0.7; }
+.ob-card-portrait-hit, .ob-card-portrait-hit:hover, .ob-card-portrait-hit:focus, .ob-card-portrait-hit:active {
+    width: 470px; background-color: rgb(236, 226, 248); border-right-width: 6px; border-color: rgb(58, 20, 64); overflow: hidden;
+}
+.ob-card-portrait { position: absolute; left: 0; top: 0; right: 0; bottom: 0; -unity-background-scale-mode: scale-and-crop; }
+.ob-card-info { flex-grow: 1; padding: 14px 40px 10px 40px; }
+.ob-card-header { flex-direction: row; align-items: center; justify-content: space-between; min-height: 138px; }
+.ob-card-row--name { align-items: flex-start; justify-content: center; }
+.ob-card-row--name { flex-shrink: 1; }
+.ob-card-name {
+    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 92px; color: rgb(58, 20, 64); margin: 0; padding: 0; white-space: nowrap;
+}
+.ob-card-row--tribe { flex-direction: row; align-items: center; min-height: 130px; }
+.ob-card-tribe-badge { width: 110px; height: 110px; -unity-background-scale-mode: scale-to-fit; }
+.ob-card-tribe {
+    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 40px; letter-spacing: 3px; color: rgb(120, 86, 124);
+    margin: 0 0 0 12px; padding: 0;
+}
+.ob-card-row { min-height: 130px; justify-content: center; align-items: flex-start; border-top-width: 3px; border-color: rgba(58, 20, 64, 0.14); }
+.ob-card-caption {
+    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 38px; letter-spacing: 3px; color: rgb(146, 112, 150);
+    margin: 0; padding: 0;
+}
+.ob-card-line { flex-direction: row; align-items: center; }
+.ob-card-line > .kit-badge { width: 72px; height: 72px; border-width: 5px; }
+.ob-card-origin-art { width: 54px; height: 74px; -unity-background-scale-mode: scale-to-fit; }
+.ob-card-value {
+    -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); font-size: 44px; color: rgb(58, 20, 64); margin: 0 0 0 16px; padding: 0;
+}
+.ob-card-trait { flex-direction: row; align-items: center; margin-right: 34px; }
+.ob-card-trait > .kit-badge { width: 72px; height: 72px; border-width: 5px; }
+.ob-card-holo { position: absolute; left: 60%; top: -60%; width: 120px; height: 220%; rotate: 22deg; background-color: rgba(255, 255, 255, 0.16); }
+.ob-card-foot { flex-direction: row; align-items: center; margin-top: 6px; }
+.ob-note--card { margin-left: 46px; }
+.ob-screen.ob-typing .ob-right { left: 380px; top: 0; }
+.ob-page { flex-direction: column; }
+.ob-title-row { flex-direction: row; align-items: flex-end; margin-bottom: 12px; }
+.ob-title-row > .ob-sub { margin-bottom: 10px; }
+.ob-typing .ob-title-row { display: none; }
+
+
+.ob-dots { flex-direction: row; margin: 0 0 18px 26px; }
+.ob-dot { width: 44px; height: 44px; border-radius: 22px; margin-right: 12px; border-width: 5px; border-color: rgb(58, 20, 64); background-color: rgba(255, 255, 255, 0.55); }
+.ob-dot--on { background-color: rgb(20, 241, 149); }
+
+.ob-tribe-card .kit-card__badge { width: 108px; height: 108px; }
+.ob-tribe-card > .kit-card__face { padding-top: 14px; padding-bottom: 8px; }
+.ob-tribe-card .kit-card__title { font-size: 46px; margin-top: 4px; }
+.ob-dream-card > .kit-card__face { padding-top: 10px; padding-bottom: 10px; }
+.ob-dream-card .kit-card__title { font-size: 44px; }
+/* Traits: 44px keeps the longest name ("Diamond Hands") on one line beside the icon (device 2026-10-10). */
+.ob-trait-card .kit-card__title { font-size: 44px; }
+
+/* Name: one big field. While typing, the field and the character's face move into the strip above the keyboard. */
+.ob-field-row { flex-direction: row; align-items: center; margin-top: 20px; }
+.ob-field { flex-grow: 1; max-width: 1180px; height: 150px; margin: 0; }
+.ob-field > .unity-base-text-field__input {
+    margin: 0; padding: 0 40px; border-width: 6px; border-bottom-width: 14px; border-color: rgb(58, 20, 64); border-radius: 34px;
+    background-color: rgb(255, 255, 255); color: rgb(58, 20, 64);
+    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 72px; -unity-text-align: middle-left;
+}
+.ob-field--ok > .unity-base-text-field__input { border-color: rgb(8, 168, 104); }
+.ob-field .unity-base-text-field__input--placeholder { color: rgba(58, 20, 64, 0.45); }
+.ob-done { margin-left: 24px; display: none; }
+.ob-typing .ob-done { display: flex; }
+.ob-alias-status { font-size: 46px; -unity-text-outline-width: 3px; text-shadow: 0 3px 4px rgba(26, 8, 32, 0.85); margin-top: 22px; }
+.ob-alias-status--ok { color: rgb(124, 255, 196); }
+.ob-alias-status--warn { color: rgb(255, 214, 140); }
+.ob-typing .ob-topbar, .ob-typing .ob-cta-zone, .ob-typing .ob-creator-error { display: none; }
+.ob-typing .ob-field-row { margin-top: 0; }
+.ob-typing .ob-alias-status { margin-top: 14px; }
+
+/* Confirm: the summary chips (tap to change), the 18+ toggle card with its label, the money line. */
+.ob-creator-error { position: absolute; left: 560px; right: 520px; bottom: 6px; }
+
+/* Celebration. */
+.ob-celebrate { position: absolute; left: 0; top: 0; right: 0; bottom: 0; align-items: center; }
+.ob-celebrate-title { margin-top: 186px; font-size: 104px; -unity-text-outline-width: 6px; text-shadow: 0 7px 1px rgb(58, 20, 64); -unity-text-align: upper-center; }
+.ob-celebrate-sub { margin-top: 6px; font-size: 50px; -unity-text-outline-width: 4px; text-shadow: 0 4px 3px rgba(26, 8, 32, 0.85); }
+.ob-enter-city { position: absolute; right: 72px; bottom: 30px; }
+.ob-mode-celebrate .ob-look-controls, .ob-mode-celebrate .ob-right, .ob-mode-celebrate .ob-creator-error { display: none; }
+.ob-cta-blocker { position: absolute; left: 0; right: 0; bottom: 0; height: 150px; }

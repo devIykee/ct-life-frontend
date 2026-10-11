@@ -1,0 +1,84 @@
+/* World presentation. Same design tokens as the rest of CT Life.
+   1080 short-axis reference: secondary touch targets remain >= 124 units.
+   The world carries colour; opaque text surfaces preserve contrast over scenery. */
+.ct-hud .ct-hud-top { left: 32px; right: 32px; top: 28px; }
+.ct-hud-location { flex-shrink: 1; min-width: 0; max-width: 620px; }
+.ct-hud .ct-venue-name { margin: 0; padding: 12px 22px; max-width: 620px; font-size: 36px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); border-radius: 20px; background-color: var(--ct-scrim); }
+/* One line, always: a wrapped second chip (Market %) fell under the Explore/Lobby dock, which sits at a fixed top. */
+.ct-hud-presence { flex-direction: row; margin-top: 8px; flex-wrap: nowrap; }
+.ct-hud-presence > .ct-pill { flex-shrink: 0; }
+.ct-hud .ct-pill { font-size: 22px; padding: 7px 14px; border-width: 0; border-radius: 12px; margin-right: 8px; }
+.ct-hud .ct-cash-card { padding: 12px 20px; border-width: 0; border-radius: 20px; flex-shrink: 0; margin-left: 20px; }
+.ct-hud .ct-cash-card .ct-icon { width: 42px; height: 42px; margin-right: 14px; }
+.ct-hud .ct-hud-caption { font-size: 20px; color: var(--ct-line); }
+.ct-hud .ct-cash { font-size: 36px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); }
+.ct-hud .ct-needs-toggle { top: 146px; right: 32px; min-height: 124px; padding: 12px 18px; border-width: 1px; border-color: var(--ct-line); border-radius: 20px; background-color: var(--ct-scrim); color: var(--ct-card); }
+.ct-hud .ct-needs-toggle-title { font-size: 25px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); }
+.ct-hud .ct-needs-summary { font-size: 22px; color: var(--ct-line); }
+.ct-hud .ct-needs-toggle .ct-icon { width: 36px; height: 36px; -unity-background-image-tint-color: var(--ct-game-coral); }
+.ct-hud .ct-needs-toggle > .ct-button-depth, .ct-hud .ct-needs-toggle > .ct-button-glint { display: none; }
+.ct-hud .ct-needs-alert { border-color: var(--ct-game-coral); border-width: 3px; }
+.ct-hud .ct-needs { top: 282px; right: 32px; border-width: 1px; border-color: var(--ct-line); }
+.ct-hud .ct-hud-personal { left: 26px; right: auto; top: 166px; bottom: auto; flex-direction: row; }
+.ct-hud .ct-hud-social { left: auto; right: 24px; bottom: 48px; flex-direction: row; align-items: flex-end; }
+.ct-hud .ct-dock-action { width: 124px; min-width: 124px; height: 144px; min-height: 144px; margin: 0 6px; padding: 18px 6px 14px 6px; border-width: 2px; border-color: var(--ct-line); border-radius: 30px; background-color: var(--ct-scrim); color: var(--ct-card); }
+.ct-hud .ct-dock-action .ct-icon { width: 46px; height: 46px; -unity-background-image-tint-color: var(--ct-card); }
+.ct-hud .ct-dock-label { font-size: 22px; margin-top: 10px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); }
+.ct-hud .ct-dock-action > .ct-button-depth, .ct-hud .ct-dock-action > .ct-button-glint { display: none; }
+.ct-hud .ct-dock-action:hover { background-color: var(--ct-deep); }
+.ct-hud .ct-dock-action:focus { border-width: 4px; border-color: var(--ct-card); }
+.ct-hud .ct-dock-action:active { scale: 0.96 0.96; }
+.ct-hud .ct-dock-primary { width: 148px; min-width: 148px; height: 168px; min-height: 168px; padding-bottom: 24px; background-color: var(--ct-accent); border-color: var(--ct-game-yellow-depth); color: var(--ct-ink); }
+.ct-hud .ct-dock-primary .ct-icon { width: 58px; height: 58px; -unity-background-image-tint-color: var(--ct-ink); }
+.ct-hud .ct-dock-primary > .ct-button-depth { display: flex; height: 10px; }
+.ct-hud .ct-dock-primary:hover { background-color: var(--ct-accent-hover); }
+.ct-hud .ct-dock-primary:focus { border-color: var(--ct-game-outline); }
+.ct-hud .ct-dock-action.ct-btn-live { background-color: var(--ct-green); color: var(--ct-card); }
+.ct-hud .ct-dock-action:disabled { opacity: 0.65; }
+.ct-hud .ct-move-controls { width: 368px; height: 368px; left: 20px; bottom: 16px; }
+.ct-hud .ct-move-zone { width: 368px; height: 368px; }
+.ct-hud .ct-move-ring { width: 260px; height: 260px; left: 54px; top: 40px; border-width: 3px; border-color: var(--ct-game-highlight); background-color: var(--ct-control-ring); border-radius: 130px; }
+.ct-hud .ct-move-thumb { border-width: 3px; border-bottom-width: 6px; border-color: var(--ct-line); background-color: var(--ct-float); }
+.ct-hud .ct-move-active .ct-move-thumb { background-color: var(--ct-game-cyan); }
+.ct-hud .ct-move-running .ct-move-thumb { background-color: var(--ct-accent); }
+.ct-hud .ct-move-hint { font-size: 24px; top: auto; bottom: 0; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-text-outline-width: 1px; }
+.ct-hud .ct-move-arrows { left: 0; top: -24px; }
+.ct-hud .ct-chat, .ct-hud .ct-emotes { bottom: 248px; border-width: 1px; border-color: var(--ct-line); }
+
+/* Keep the send action readable while the input takes the remaining width. */
+.ct-hud .ct-chat-field { flex-basis: 0; flex-shrink: 1; }
+.ct-hud .ct-chat .ct-btn { min-width: 240px; flex-shrink: 0; white-space: nowrap; font-size: 30px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); }
+
+/* Wide city play. Menus retain a comfortable reading width instead of stretching. */
+.ct-landscape .ct-hud .ct-hud-top { left: 40px; right: 40px; }
+.ct-landscape .ct-hud .ct-hud-personal { left: 34px; top: 176px; }
+.ct-landscape .ct-hud .ct-needs-toggle { top: 146px; right: 40px; }
+.ct-landscape .ct-hud .ct-needs { right: 40px; }
+.ct-landscape .ct-hud .ct-hud-social { bottom: 40px; right: 40px; }
+.ct-landscape .ct-hud .ct-move-controls { left: 40px; bottom: 16px; }
+.ct-landscape .ct-hud .ct-chat, .ct-landscape .ct-hud .ct-emotes { left: auto; right: 40px; width: 850px; bottom: 234px; max-height: 590px; }
+.ct-landscape .ct-phone { width: 980px; left: auto; right: 24px; top: 12px; bottom: 12px; }
+
+/* Device QA 2026-10-07: functional fixes only. */
+/* Chat: while the soft keyboard is up, dock the panel at the top so the input and history stay visible. */
+.ct-hud .ct-chat.ct-chat-keyboard, .ct-landscape .ct-hud .ct-chat.ct-chat-keyboard { top: 16px; bottom: auto; }
+.ct-hud .ct-chat-history { margin-bottom: 8px; }
+.ct-hud .ct-chat-line { white-space: normal; }
+/* Emotes: readable buttons (the picker wrapped one letter per line at ~20 dp). */
+.ct-hud .ct-emotes .ct-chips > .ct-chip { min-width: 30%; flex-basis: 30%; flex-grow: 1; min-height: 96px; align-items: center; white-space: normal; }
+
+/* Context interaction CTA (character-feel): above the right dock, under the thumb. Primary = brand yellow like Phone. */
+.ct-hud .ct-hud-interact { position: absolute; right: 24px; bottom: 236px; flex-direction: row-reverse; align-items: flex-end; }
+.ct-hud .ct-interact { flex-direction: row; align-items: center; height: 104px; min-height: 104px; margin: 0 6px; padding: 0 30px 0 22px; border-width: 2px; border-radius: 52px; border-color: var(--ct-line); background-color: var(--ct-scrim); color: var(--ct-card); }
+.ct-hud .ct-interact .ct-icon { width: 46px; height: 46px; margin-right: 14px; -unity-background-image-tint-color: var(--ct-card); }
+.ct-hud .ct-interact-label { font-size: 30px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); white-space: nowrap; }
+.ct-hud .ct-interact-primary { height: 120px; min-height: 120px; border-radius: 60px; padding: 0 40px 0 28px; background-color: var(--ct-accent); border-color: var(--ct-game-yellow-depth); color: var(--ct-ink); }
+.ct-hud .ct-interact-primary .ct-icon { width: 54px; height: 54px; -unity-background-image-tint-color: var(--ct-ink); }
+.ct-hud .ct-interact-primary .ct-interact-label { font-size: 34px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); }
+.ct-hud .ct-interact > .ct-button-depth, .ct-hud .ct-interact > .ct-button-glint { display: none; }
+.ct-hud .ct-interact-primary > .ct-button-depth { display: flex; height: 10px; }
+.ct-hud .ct-interact:hover { background-color: var(--ct-deep); }
+.ct-hud .ct-interact-primary:hover { background-color: var(--ct-accent-hover); }
+.ct-hud .ct-interact:active { scale: 0.96 0.96; }
+.ct-hud .ct-interact-busy .ct-interact { opacity: 0.9; }
+.ct-landscape .ct-hud .ct-hud-interact { right: 40px; bottom: 214px; }

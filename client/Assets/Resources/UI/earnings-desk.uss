@@ -1,0 +1,28 @@
+/* Same white/ink/blue/gold family as the existing phone and moderation desk. */
+.ct-earn-panel { max-width: 1400px; padding: 32px; }
+.ct-earn-body { flex-grow: 1; flex-shrink: 1; min-height: 0; }
+.ct-earn-evidence { background-color: var(--ct-card); border-width: 2px; border-color: var(--ct-line); border-radius: 24px; padding: 28px; flex-grow: 1; flex-shrink: 1; min-height: 0; }
+.ct-earn-decision { padding: 24px 8px 0 8px; flex-grow: 1; flex-shrink: 1; min-height: 0; }
+.ct-earn-number, .ct-earn-fictional { color: var(--ct-muted); font-size: 22px; white-space: normal; letter-spacing: 2px; }
+.ct-earn-company { color: var(--ct-deep); font-size: 42px; white-space: normal; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); margin: 16px 0; }
+.ct-earn-headline { font-size: 30px; color: var(--ct-ink); white-space: normal; margin-bottom: 24px; }
+.ct-earn-figure { margin: 12px 0; }
+.ct-earn-figure-top { flex-direction: row; align-items: center; justify-content: space-between; }
+.ct-earn-figure-label { font-size: 26px; color: var(--ct-muted); white-space: normal; flex-shrink: 1; margin-right: 16px; }
+.ct-earn-value { font-size: 36px; color: var(--ct-ink); -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); white-space: normal; }
+.ct-earn-bar-track { height: 16px; background-color: var(--ct-bg); border-radius: 8px; margin: 12px 0; overflow: hidden; }
+.ct-earn-bar { height: 100%; background-color: var(--ct-game-blue); border-radius: 8px; }
+.ct-earn-figure-b .ct-earn-bar { background-color: var(--ct-accent); }
+.ct-earn-note { font-size: 26px; color: var(--ct-muted); white-space: normal; margin: 20px 0 24px 0; }
+.ct-earn-question { font-size: 36px; color: var(--ct-ink); white-space: normal; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); margin: 0 0 24px 0; }
+.ct-earn-choice { min-height: 124px; margin: 0 0 16px 0; padding: 24px; background-color: var(--ct-card); color: var(--ct-ink); border-width: 2px; border-color: var(--ct-line); border-radius: 16px; white-space: normal; font-size: 32px; -unity-text-align: middle-left; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); }
+.ct-earn-choice:hover, .ct-earn-choice:focus { border-color: var(--ct-deep); background-color: var(--ct-surface); color: var(--ct-ink); }
+.ct-earn-choice > .ct-button-depth, .ct-earn-choice > .ct-button-glint { display: none; }
+.ct-earn-landscape .ct-earn-panel { width: 96%; max-width: 2200px; max-height: 1080px; height: 96%; padding: 24px 40px; }
+.ct-earn-landscape .ct-desk-header { margin-bottom: 12px; }
+.ct-earn-landscape .ct-desk-meta { margin: 12px 0; }
+.ct-earn-landscape .ct-earn-body { flex-direction: row; }
+.ct-earn-landscape .ct-earn-evidence { width: 54%; flex-grow: 0; }
+.ct-earn-landscape .ct-earn-decision { width: 46%; padding: 24px 0 0 32px; }
+.ct-earn-landscape .ct-earn-question { margin-bottom: 24px; }
+.ct-earn-landscape .ct-desk-feedback { margin-top: 0; }

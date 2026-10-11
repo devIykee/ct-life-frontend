@@ -1,0 +1,88 @@
+/* Home / lobby (DashboardScreen), redesign 2026-10-09: docs/progress/home-ui.md. Same identity as the title and onboarding:
+   the painted town (pre-blurred), Lilita One in white with a thick plum outline, no plates behind text, the kit's lipped
+   bodies. Landscape panel 2400 x 1080 units (Seeker: 1 unit = 1.112 px, 48 dp = 130 units). Content box: 72 units in from
+   the sides, 22 from the top, 30 from the bottom. Zones: status chips + settings across the top, icon tiles down the left,
+   the character centre-left, greeting / today / cards on the right, ENTER THE CITY bottom-right. */
+
+.home-screen { background-color: rgba(0, 0, 0, 0); overflow: visible; }
+.home-bg {
+    position: absolute; left: 0; top: 0; right: 0; bottom: 0; -unity-background-scale-mode: scale-and-crop;
+    transition-property: scale; transition-duration: 25s; transition-timing-function: ease-in-out;
+}
+.home-bg--zoom { scale: 1.05 1.05; }
+.home-content { position: absolute; left: 72px; right: 72px; top: 22px; bottom: 30px; }
+
+/* Top bar */
+.home-top { position: absolute; left: 0; right: 0; top: 0; height: 150px; flex-direction: row; align-items: flex-start; }
+.home-chips { flex-direction: row; flex-grow: 1; }
+.home-chips > .kit-chip { margin-right: 22px; }
+.home-settings { position: absolute; right: 0; top: 0; }
+
+/* Left rail: five tiles */
+.home-rail { position: absolute; left: 0; top: 176px; width: 176px; }
+.home-rail > .kit-tile { margin-bottom: 6px; }
+
+/* The character */
+.home-stage { position: absolute; left: 230px; top: 150px; width: 720px; height: 878px; }
+.home-stage-glow {
+    position: absolute; left: -36%; right: -36%; top: -10%; bottom: -4%; opacity: 0.8;
+    -unity-background-scale-mode: stretch-to-fill; -unity-background-image-tint-color: rgb(255, 250, 240);
+}
+.home-stage-shadow { position: absolute; left: 31%; right: 31%; bottom: 2.5%; height: 4.5%; border-radius: 40px; background-color: rgba(58, 20, 64, 0.42); }
+.home-stage-model { position: absolute; left: 0; top: 0; right: 0; bottom: 0; -unity-background-scale-mode: scale-to-fit; }
+.home-bubble { left: 640px; top: 168px; max-width: 360px; }
+
+/* Right column */
+.home-right { position: absolute; left: 1010px; right: 0; top: 176px; }
+.home-eyebrow-row { flex-direction: row; align-items: center; height: 64px; }
+.home-tribe-mark { width: 64px; height: 64px; margin-right: 14px; -unity-background-scale-mode: scale-to-fit; }
+.home-eyebrow, .home-greeting, .home-sub, .home-today-caption, .home-today-value, .home-error {
+    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); color: rgb(255, 255, 255); margin: 0; padding: 0;
+    -unity-text-outline-color: rgb(58, 20, 64); white-space: normal;
+}
+.home-eyebrow { font-size: 40px; letter-spacing: 4px; -unity-text-outline-width: 3px; text-shadow: 0 3px 4px rgba(26, 8, 32, 0.85); }
+.home-greeting { font-size: 96px; -unity-text-outline-width: 6px; text-shadow: 0 6px 1px rgb(58, 20, 64); white-space: nowrap; margin-top: 2px; }
+.home-sub { font-size: 48px; -unity-text-outline-width: 4px; text-shadow: 0 4px 3px rgba(26, 8, 32, 0.85); margin-top: 4px; }
+
+/* Today row: small chips, only for what the server provides */
+.home-today { flex-direction: row; margin-top: 26px; min-height: 0; }
+.home-today-chip, .home-today-chip:hover, .home-today-chip:focus, .home-today-chip:active {
+    flex-direction: row; align-items: center; margin: 0 20px 0 0; padding: 0 28px 0 14px; min-height: 130px; max-width: 720px;
+    background-color: rgb(84, 38, 92); border-width: 5px; border-color: rgb(58, 20, 64); border-radius: 65px;
+}
+.home-today-chip:active { scale: 0.97 0.97; }
+.home-today-chip > .kit-badge { width: 92px; height: 92px; }
+.home-today-copy { margin-left: 18px; flex-shrink: 1; }
+.home-today-caption { font-size: 38px; letter-spacing: 2px; color: rgb(214, 196, 222); -unity-text-outline-width: 0; }
+.home-today-value { font-size: 48px; -unity-text-outline-width: 3px; white-space: nowrap; }
+.home-today-value--clue { font-size: 40px; white-space: normal; max-width: 520px; }
+.home-today--up .home-today-value { color: rgb(124, 255, 196); }
+.home-today--down .home-today-value { color: rgb(255, 170, 160); }
+/* Solid, never translucent: the user rejected see-through plates (title review 2026-10-08, ledger 2026-10-10). */
+.home-today--offline { background-color: rgb(128, 34, 56); }
+
+/* Dream and Home cards */
+.home-cards { flex-direction: row; margin-top: 30px; }
+.home-card { height: 214px; }
+.home-card--dream { width: 62%; margin-right: 2%; }
+.home-card--home { width: 36%; }
+.home-card .kit-card__title { font-size: 50px; }
+.home-card .kit-card__caption { font-size: 38px; }
+.home-dream-progress {
+    -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); font-size: 38px; color: rgb(96, 52, 104); margin: 4px 0 0 0; padding: 0;
+}
+.home-dream-bar {
+    height: 26px; margin-top: 8px; border-radius: 13px; background-color: rgba(58, 20, 64, 0.22); border-width: 3px;
+    border-color: rgb(58, 20, 64); overflow: hidden;
+}
+.home-dream-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; border-radius: 10px; background-color: rgb(20, 241, 149); }
+
+/* ENTER THE CITY: the one dominant action */
+.home-cta-zone { position: absolute; right: 0; bottom: 0; flex-direction: row; align-items: center; }
+.home-enter { height: 176px; min-width: 760px; }
+.home-enter .kit-btn__label { font-size: 70px; -unity-text-outline-width: 5px; text-shadow: 0 5px 1px rgb(58, 20, 64); }
+.home-error {
+    font-size: 42px; max-width: 470px; margin: 0 28px 10px 0; -unity-text-align: middle-right;
+    color: rgb(255, 216, 216); -unity-text-outline-width: 4px; -unity-text-outline-color: rgb(110, 12, 36);
+    text-shadow: 0 3px 4px rgba(26, 8, 32, 0.85);
+}

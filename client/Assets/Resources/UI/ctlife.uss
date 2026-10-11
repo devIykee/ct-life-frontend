@@ -1,0 +1,424 @@
+/* CT Life · tactile city game. 1080 × 2400 reference canvas.
+   Lilita One display, Manrope body, Phosphor fill/bold. Touch targets >= 124 units. */
+:root {
+    --ct-bg: #EAF3FF;
+    --ct-card: #FFFFFF;
+    --ct-ink: #172343;
+    --ct-muted: #536887;
+    --ct-line: #AFCAEB;
+    --ct-surface: #D8E9FF;
+    --ct-hover: #C3DDFF;
+    --ct-accent: #FFD247;
+    --ct-accent-hover: #FFE278;
+    --ct-deep: #173B88;
+    --ct-green: #137754;
+    --ct-green-light: #DEF4EF;
+    --ct-red: #C34258;
+    --ct-gold: #FFD247;
+    --ct-violet: #7750BF;
+    --ct-blue: #177CCE;
+    --ct-shadow: rgba(13, 25, 58, 0.35);
+    --ct-preview: #E8E6E1;
+    --ct-float: rgba(239, 248, 255, 0.98);
+    --ct-scrim: rgba(14, 28, 57, 0.93);
+    --ct-game-blue: #197BD4;
+    --ct-game-blue-light: #61BFFF;
+    --ct-game-blue-depth: #1256A6;
+    --ct-game-yellow-depth: #C28A1F;
+    --ct-game-cyan: #57DBF3;
+    --ct-game-coral: #FF8A73;
+    --ct-game-purple: #B594FF;
+    --ct-game-green: #85DB9B;
+    --ct-game-highlight: rgba(255, 255, 255, 0.55);
+    --ct-game-white: #FFFFFF;
+    --ct-game-outline: #14213F;
+    --ct-control-ring: rgba(16,42,85,0.42);
+    --ct-control-ring-active: rgba(21,115,200,0.58);
+    --ct-game-pattern: rgba(83,194,255,0.17);
+    --ct-resource-depth: rgba(0,0,0,0.2);
+    --ct-phone-scrim: rgba(13,25,58,0.56);
+}
+
+.ct-root { flex-grow: 1; color: var(--ct-ink); font-size: 36px; -unity-font-definition: url("Fonts/Manrope-Regular.ttf"); -unity-font-style: normal; }
+.layer-screen-backdrop { background-color: var(--ct-bg); }
+.ct-layer { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+.ct-grow { flex-grow: 1; min-width: 0; }
+.ct-row { flex-direction: row; align-items: center; }
+.ct-col { flex-direction: column; }
+.ct-right { align-items: flex-end; }
+.ct-center { -unity-text-align: middle-center; }
+.ct-header { padding: 32px 40px 20px 40px; flex-shrink: 0; }
+.ct-h1 { font-size: 56px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-font-style: normal; margin: 12px 0 16px 0; white-space: normal; }
+.ct-h2 { font-size: 40px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-font-style: normal; margin: 16px 0 12px 0; white-space: normal; }
+.ct-body { font-size: 36px; white-space: normal; margin: 8px 0; }
+.ct-small { font-size: 28px; white-space: normal; }
+.ct-muted { color: var(--ct-muted); }
+.ct-eyebrow { color: var(--ct-muted); font-size: 27px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-font-style: normal; letter-spacing: 0; white-space: normal; }
+.ct-error { color: var(--ct-red); font-size: 30px; white-space: normal; margin: 8px 0; }
+.ct-green { color: var(--ct-green); }
+.ct-red { color: var(--ct-red); }
+.ct-big-number { font-size: 76px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-font-style: normal; white-space: normal; margin: 16px 0 32px 0; }
+.ct-badge { background-color: var(--ct-green-light); color: var(--ct-green); border-radius: 12px; padding: 10px 20px; align-self: flex-start; font-size: 24px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-font-style: normal; letter-spacing: 0; }
+.ct-icon { width: 52px; height: 52px; flex-shrink: 0; -unity-background-scale-mode: scale-to-fit; -unity-background-image-tint-color: var(--ct-ink); }
+
+/* One button language. Explicit focus state is also useful with keyboard / controller input. */
+.ct-btn { background-color: var(--ct-surface); color: var(--ct-ink); border-radius: 20px; border-width: 2px; border-color: rgba(0, 0, 0, 0); padding: 24px 32px; margin: 8px 0; min-height: 124px; font-size: 36px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-font-style: normal; white-space: normal; justify-content: center; align-items: center; }
+.ct-btn:hover { background-color: var(--ct-hover); }
+.ct-btn:focus { border-color: var(--ct-deep); }
+.ct-btn:active { scale: 0.98 0.98; }
+.ct-btn:disabled { opacity: 0.5; }
+.ct-btn-primary { background-color: var(--ct-accent); color: var(--ct-ink); }
+.ct-btn-primary:hover { background-color: var(--ct-accent-hover); }
+.ct-btn-primary:focus { border-color: var(--ct-deep); }
+.ct-btn-danger { background-color: var(--ct-red); color: var(--ct-card); }
+.ct-btn-danger:hover { background-color: rgb(150, 48, 58); }
+.ct-btn-ghost { background-color: rgba(0, 0, 0, 0); border-color: var(--ct-line); }
+.ct-btn-big { padding: 28px 36px; font-size: 36px; min-height: 136px; border-radius: 24px; }
+.ct-btn-icon { width: 124px; min-width: 124px; min-height: 124px; padding: 28px; flex-shrink: 0; }
+.ct-btn-round { border-radius: 40px; background-color: rgba(255, 253, 248, 0.95); }
+.ct-btn-live { background-color: var(--ct-deep); color: white; }
+.ct-row-btn { background-color: var(--ct-card); color: var(--ct-ink); border-radius: 20px; border-width: 2px; border-color: var(--ct-line); padding: 32px; margin: 8px 0; min-height: 124px; -unity-text-align: middle-left; font-size: 36px; white-space: normal; }
+.ct-row-btn:hover { background-color: var(--ct-green-light); }
+.ct-row-btn:focus { border-color: var(--ct-deep); }
+.ct-chip { background-color: var(--ct-card); color: var(--ct-ink); border-radius: 20px; border-width: 3px; border-color: var(--ct-line); padding: 24px; margin: 8px; min-height: 124px; font-size: 32px; flex-direction: column; align-items: flex-start; justify-content: center; white-space: normal; }
+.ct-chip:hover { background-color: var(--ct-hover); }
+.ct-chip:focus { border-color: var(--ct-deep); }
+.ct-chip-on { border-color: var(--ct-deep); background-color: var(--ct-green-light); color: var(--ct-ink); }
+.ct-chip-title { font-size: 34px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-font-style: normal; white-space: normal; }
+.ct-chip-sub { font-size: 27px; color: var(--ct-muted); white-space: normal; margin-top: 10px; }
+.ct-chips { flex-direction: row; flex-wrap: wrap; margin-left: -8px; margin-right: -8px; }
+.ct-field { margin: 16px 0; font-size: 36px; flex-direction: column; }
+.ct-field > .unity-text-field__label { color: var(--ct-muted); margin-bottom: 12px; font-size: 28px; }
+.ct-field > .unity-text-field__input { min-height: 124px; background-color: var(--ct-card); color: var(--ct-ink); border-width: 3px; border-color: var(--ct-line); border-radius: 20px; padding: 24px; font-size: 38px; }
+.ct-field > .unity-text-field__input:focus { border-color: var(--ct-deep); }
+.ct-toggle { margin: 36px 0 12px 0; min-height: 124px; font-size: 32px; flex-shrink: 0; align-items: center; }
+.ct-toggle > .unity-toggle__label { flex-grow: 1; white-space: normal; }
+.ct-toggle > .unity-toggle__input > .unity-toggle__checkmark { width: 64px; height: 64px; border-radius: 16px; border-width: 3px; border-color: var(--ct-deep); margin-right: 20px; }
+/* Native Slider.fill follows the real value; the complete track area is touchable. */
+.ct-slider { margin: 24px 0; min-height: 172px; font-size: 32px; flex-direction: column; flex-shrink: 0; }
+.ct-slider > .unity-slider__label { min-width: 0; margin: 0 0 8px 0; padding: 0; color: var(--ct-ink); white-space: normal; }
+.ct-slider > .unity-slider__input { min-height: 124px; margin: 0; padding: 0; flex-grow: 1; }
+.ct-slider .unity-base-slider__drag-container { min-height: 124px; margin: 0; padding: 0; flex-grow: 1; }
+.ct-slider .unity-base-slider__tracker { position: absolute; left: 32px; right: 32px; top: 50%; height: 12px; margin-top: -6px; border-width: 0; border-radius: 6px; background-color: var(--ct-line); }
+.ct-slider .unity-base-slider__fill { position: absolute; border-radius: 6px; background-color: var(--ct-deep); }
+.ct-slider .unity-base-slider__dragger { position: absolute; left: 0; top: 50%; width: 64px; height: 64px; margin: -32px 0 0 0; border-width: 4px; border-color: var(--ct-deep); border-radius: 32px; background-color: var(--ct-card); }
+.ct-slider .unity-base-slider__dragger-border { display: none; }
+.ct-slider:hover .unity-base-slider__dragger,
+.ct-slider:focus .unity-base-slider__dragger,
+.ct-slider .unity-base-slider__dragger.unity-base-slider--movable { background-color: var(--ct-accent); }
+.ct-slider:disabled { opacity: 0.5; }
+.ct-card { background-color: var(--ct-card); border-radius: 24px; border-width: 2px; border-color: var(--ct-line); padding: 32px; margin: 12px 0; }
+.ct-section-heading { flex-direction: row; align-items: flex-start; margin-bottom: 24px; }
+.ct-section-number { color: var(--ct-green); background-color: var(--ct-green-light); border-radius: 16px; width: 68px; height: 68px; -unity-text-align: middle-center; font-size: 25px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-font-style: normal; margin-right: 24px; margin-top: 4px; }
+.ct-section-title { font-size: 40px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-font-style: normal; white-space: normal; margin-bottom: 10px; }
+
+/* Brand / welcome. Real portrait preview is created only for an exact authored look. */
+.ct-screen { position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: var(--ct-bg); }
+.ct-brand { flex-direction: row; align-items: center; flex-shrink: 0; }
+.ct-brand-mark { width: 84px; height: 84px; border-radius: 24px; background-color: var(--ct-deep); align-items: center; justify-content: center; margin-right: 20px; }
+.ct-brand-mark .ct-icon { -unity-background-image-tint-color: var(--ct-accent); }
+.ct-brand-wordmark { font-size: 40px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); letter-spacing: 3px; }
+.ct-brand-compact .ct-brand-mark { width: 68px; height: 68px; border-radius: 20px; }
+.ct-brand-compact .ct-icon { width: 44px; height: 44px; }
+.ct-brand-compact .ct-brand-wordmark { font-size: 30px; letter-spacing: 2px; }
+.ct-splash { flex-grow: 1; align-items: center; justify-content: center; padding: 64px; }
+.ct-splash-emblem { width: 192px; height: 192px; border-radius: 52px; background-color: var(--ct-deep); align-items: center; justify-content: center; margin-bottom: 36px; }
+.ct-splash-emblem .ct-icon { width: 124px; height: 124px; -unity-background-image-tint-color: var(--ct-accent); }
+.ct-logo { font-size: 100px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); color: var(--ct-ink); letter-spacing: 6px; }
+.ct-tagline { font-size: 36px; color: var(--ct-muted); white-space: normal; -unity-text-align: middle-center; margin: 24px 24px 48px 24px; }
+.ct-loading-track { width: 180px; height: 8px; border-radius: 4px; background-color: var(--ct-line); margin-top: 64px; }
+.ct-loading-accent { width: 60%; height: 8px; border-radius: 4px; background-color: var(--ct-deep); }
+.ct-splash-status { font-size: 28px; color: var(--ct-muted); white-space: normal; -unity-text-align: middle-center; margin-top: 28px; }
+.ct-legal { font-size: 27px; color: var(--ct-muted); white-space: normal; -unity-text-align: middle-center; margin: 24px 24px 12px 24px; }
+
+.ct-scroll { flex-grow: 1; min-height: 0; padding: 16px 40px 48px 40px; }
+
+
+/* A district guide, with distinct local color and generous travel targets. */
+.ct-map { flex-grow: 1; min-height: 0; }
+.ct-map-intro { padding: 0 8px 24px 8px; }
+.ct-map-count { align-self: flex-start; font-size: 26px; color: var(--ct-green); background-color: var(--ct-green-light); padding: 12px 20px; border-radius: 16px; margin-top: 24px; }
+.ct-district { background-color: var(--ct-card); border-radius: 32px; border-width: 2px; border-color: var(--ct-line); padding: 28px; margin: 16px 0; }
+.ct-district-heading { flex-direction: row; align-items: center; padding: 8px 0 28px 0; }
+.ct-district-heading .ct-h2 { margin: 0 0 10px 0; }
+.ct-district-symbol { width: 108px; height: 108px; flex-shrink: 0; border-radius: 24px; background-color: var(--ct-game-cyan); border-width: 3px; border-color: var(--ct-game-outline); align-items: center; justify-content: center; margin-right: 24px; }
+.ct-district-trenches .ct-district-symbol { background-color: var(--ct-game-coral); }
+.ct-district-builder_hills .ct-district-symbol { background-color: var(--ct-game-purple); }
+.ct-district-airdrop_farm .ct-district-symbol { background-color: var(--ct-game-green); }
+.ct-district-dubai_marina .ct-district-symbol { background-color: var(--ct-gold); }
+.ct-venue { flex-direction: row; align-items: center; background-color: var(--ct-bg); color: var(--ct-ink); border-radius: 20px; border-width: 2px; border-color: rgba(0, 0, 0, 0); padding: 24px 28px; margin: 8px 0; min-height: 144px; }
+.ct-venue:hover { background-color: var(--ct-green-light); }
+.ct-venue:focus { border-color: var(--ct-deep); }
+.ct-venue-title { font-size: 36px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-font-style: normal; white-space: normal; }
+.ct-venue-status { font-size: 26px; color: var(--ct-green); margin-top: 8px; }
+.ct-venue-locked { opacity: 0.6; }
+.ct-venue-locked .ct-venue-status { color: var(--ct-muted); }
+
+/* In-world HUD: two light corner clusters leave the city and movement surface open. */
+.ct-hud { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+.ct-hud-top { position: absolute; left: 28px; top: 24px; right: 28px; flex-direction: row; align-items: flex-start; }
+.ct-cash-card { flex-direction: row; align-items: center; background-color: var(--ct-float); border-radius: 24px; padding: 14px 20px; }
+.ct-cash-card .ct-icon { width: 40px; height: 40px; margin-right: 16px; }
+.ct-hud-caption { color: var(--ct-muted); font-size: 23px; }
+.ct-cash { font-size: 36px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); color: var(--ct-ink); margin-top: 0; }
+.ct-venue-name { align-self: flex-start; color: white; background-color: var(--ct-scrim); border-radius: 16px; padding: 8px 16px; font-size: 27px; margin: 10px 0 0 0; white-space: normal; max-width: 460px; }
+.ct-pill { color: var(--ct-ink); background-color: var(--ct-float); border-radius: 16px; padding: 8px 16px; margin: 0 0 8px 0; font-size: 25px; }
+.ct-pill.ct-green { color: var(--ct-green); }
+.ct-pill.ct-red { color: var(--ct-red); }
+.ct-needs-toggle { position: absolute; right: 24px; top: 132px; flex-direction: row; align-items: center; min-height: 124px; margin: 0; padding: 12px 18px; color: var(--ct-ink); background-color: var(--ct-float); border-width: 2px; border-color: rgba(255, 255, 255, 0.65); border-radius: 24px; }
+.ct-needs-toggle .ct-icon { width: 38px; height: 38px; margin-right: 14px; }
+.ct-needs-toggle-title { font-size: 25px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); }
+.ct-needs-summary { font-size: 23px; color: var(--ct-muted); margin-top: 2px; }
+.ct-needs-alert { border-color: var(--ct-red); }
+.ct-needs-open { border-color: var(--ct-deep); }
+.ct-needs { position: absolute; right: 24px; top: 268px; width: 510px; background-color: var(--ct-float); border-radius: 24px; padding: 24px; }
+.ct-needs-title { color: var(--ct-muted); font-size: 27px; margin-bottom: 8px; }
+.ct-need { flex-direction: row; align-items: center; margin: 10px 0; }
+.ct-need-label { width: 136px; font-size: 25px; }
+.ct-need-value { width: 52px; margin-left: 16px; font-size: 25px; -unity-text-align: middle-right; }
+.ct-need-track { flex-grow: 1; height: 8px; background-color: var(--ct-line); border-radius: 4px; overflow: hidden; }
+.ct-need-fill { height: 100%; width: 0%; background-color: var(--ct-deep); border-radius: 4px; }
+.ct-need-low { background-color: var(--ct-red); }
+.ct-hud-social { position: absolute; left: 24px; bottom: 24px; flex-direction: row; align-items: flex-end; }
+.ct-hud-personal { position: absolute; right: 24px; bottom: 24px; flex-direction: row; align-items: flex-end; }
+.ct-dock-action { min-width: 132px; width: 144px; min-height: 144px; margin: 0 6px; padding: 20px 8px; border-radius: 36px; border-width: 2px; border-color: rgba(255, 255, 255, 0.65); background-color: var(--ct-float); color: var(--ct-ink); align-items: center; justify-content: center; }
+.ct-dock-action .ct-icon { width: 46px; height: 46px; }
+.ct-dock-action:hover { background-color: var(--ct-hover); }
+.ct-dock-action:active { scale: 0.97 0.97; }
+.ct-dock-action:focus { border-color: var(--ct-deep); }
+.ct-dock-action:disabled { opacity: 0.6; }
+.ct-dock-label { font-size: 25px; margin-top: 10px; white-space: normal; -unity-text-align: middle-center; }
+.ct-dock-primary { background-color: var(--ct-accent); border-color: var(--ct-accent); }
+.ct-dock-primary:hover { background-color: var(--ct-accent-hover); }
+.ct-dock-action.ct-btn-live { background-color: var(--ct-deep); color: white; }
+.ct-dock-action.ct-btn-live .ct-icon { -unity-background-image-tint-color: white; }
+.ct-chat { position: absolute; left: 24px; right: 24px; bottom: 192px; background-color: var(--ct-float); border-radius: 28px; padding: 28px; }
+.ct-chat-field { flex-grow: 1; min-width: 0; font-size: 36px; margin-right: 16px; }
+.ct-chat-field > .unity-text-field__input { min-height: 124px; border-radius: 20px; border-width: 2px; border-color: var(--ct-line); padding: 20px; background-color: white; color: var(--ct-ink); }
+.ct-emotes { position: absolute; left: 24px; right: 24px; bottom: 192px; flex-direction: column; background-color: var(--ct-float); border-radius: 28px; padding: 28px; max-height: 640px; }
+.ct-emote-scroll { flex-grow: 1; min-height: 140px; max-height: 500px; }
+
+/* Name tags and short-lived conversation bubbles. */
+.ct-tag { position: absolute; left: 0; top: 0; flex-direction: row; align-items: center; background-color: rgba(18, 14, 30, 0.66); border-radius: 13px; padding: 3px 11px 4px 11px; }
+.ct-tag-text { color: white; font-size: 19px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-font-style: normal; white-space: nowrap; }
+.ct-tag-icon { width: 14px; height: 14px; margin-right: 5px; -unity-background-image-tint-color: rgb(255, 214, 102); }
+.ct-tag-npc { background-color: rgba(70, 52, 98, 0.78); }
+.ct-tag-talking { background-color: rgba(35, 102, 76, 0.92); }
+.ct-bubble { position: absolute; left: 0; top: 0; max-width: 520px; background-color: var(--ct-card); border-radius: 26px; padding: 20px 24px; border-width: 2px; border-color: var(--ct-line); }
+.ct-bubble-npc { border-color: var(--ct-violet); }
+.ct-bubble-text { white-space: normal; font-size: 28px; color: var(--ct-ink); }
+.layer-toast { align-items: center; padding-top: 112px; }
+.ct-toast { background-color: var(--ct-deep); border-radius: 20px; padding: 24px 32px; margin: 8px 32px; max-width: 960px; }
+.ct-toast-text { color: white; font-size: 30px; white-space: normal; -unity-text-align: middle-center; }
+.ct-toast-good { background-color: rgba(35, 102, 76, 0.97); }
+.ct-toast-bad { background-color: rgba(172, 59, 70, 0.97); }
+.ct-toast-event { background-color: var(--ct-gold); }
+.ct-toast-event > .ct-toast-text { color: var(--ct-ink); -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-font-style: normal; }
+
+/* Bottom sheets, dialogs, and the in-game phone. */
+.ct-modal-backdrop { position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: rgba(33, 27, 40, 0.5); align-items: center; justify-content: center; }
+.ct-modal-bottom { justify-content: flex-end; }
+.ct-sheet { background-color: var(--ct-bg); border-top-left-radius: 40px; border-top-right-radius: 40px; padding: 32px 48px 48px 48px; align-self: stretch; max-height: 90%; }
+.ct-sheet-handle { width: 104px; height: 8px; background-color: var(--ct-line); border-radius: 4px; align-self: center; margin-bottom: 24px; }
+.ct-sheet .ct-row > .ct-btn { flex-grow: 1; flex-basis: 0; margin: 8px; }
+.ct-busy-card { width: 86%; max-width: 880px; align-items: center; padding: 48px; }
+.ct-busy-card .ct-body, .ct-busy-card .ct-small { -unity-text-align: middle-center; }
+.layer-phone { justify-content: flex-end; }
+.ct-phone { position: absolute; left: 96px; right: 28px; top: 220px; bottom: 24px; background-color: var(--ct-bg); border-radius: 48px; border-width: 3px; border-color: var(--ct-card); overflow: hidden; }
+.ct-phone-handle { width: 100px; height: 6px; border-radius: 3px; align-self: center; background-color: var(--ct-line); margin: 18px 0 4px 0; }
+.ct-phone-bar { flex-direction: row; align-items: center; padding: 0 12px 8px 12px; border-bottom-width: 2px; border-bottom-color: var(--ct-line); flex-shrink: 0; }
+.ct-phone-bar .ct-btn-icon { background-color: rgba(0, 0, 0, 0); min-width: 124px; width: 124px; min-height: 124px; }
+.ct-phone-title { color: var(--ct-ink); font-size: 32px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); margin-left: 0; white-space: normal; flex-shrink: 1; }
+.ct-phone-clock { color: var(--ct-muted); font-size: 26px; margin-right: 4px; }
+.ct-phone-home { flex-grow: 1; min-height: 0; }
+.ct-phone-welcome { padding: 28px 36px 16px 36px; }
+.ct-phone-greeting { font-size: 42px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); white-space: normal; margin: 0 0 10px 0; }
+.ct-phone-section { font-size: 25px; color: var(--ct-muted); margin: 24px 36px 8px 36px; }
+.ct-phone-grid { flex-direction: row; flex-wrap: wrap; padding: 4px 20px 24px 20px; }
+.ct-phone-grid-later { padding-bottom: 36px; }
+.ct-phone-body { flex-grow: 1; min-height: 0; }
+.ct-app { width: 33.3333%; align-items: center; background-color: rgba(0, 0, 0, 0); color: var(--ct-ink); border-width: 0; padding: 20px 8px; margin: 0; min-height: 220px; }
+.ct-app:hover .ct-app-icon { background-color: var(--ct-hover); }
+.ct-app:active .ct-app-icon { scale: 0.96 0.96; }
+.ct-app:focus .ct-app-icon { border-color: var(--ct-deep); }
+.ct-app-icon { width: 124px; height: 124px; border-radius: 32px; border-width: 2px; border-color: var(--ct-line); background-color: var(--ct-card); align-items: center; justify-content: center; }
+.ct-app-icon .ct-icon { width: 64px; height: 64px; -unity-background-image-tint-color: var(--ct-deep); }
+.ct-app-locked .ct-app-icon { background-color: var(--ct-surface); border-color: var(--ct-surface); }
+.ct-app-locked .ct-icon { -unity-background-image-tint-color: var(--ct-muted); }
+.ct-app-label { font-size: 28px; margin-top: 12px; white-space: normal; -unity-text-align: middle-center; }
+.ct-app-phase { font-size: 23px; color: var(--ct-muted); margin-top: 4px; }
+.ct-phone-home-line { flex-shrink: 0; align-self: center; width: 144px; height: 6px; border-radius: 3px; background-color: var(--ct-line); margin: 12px 0 20px 0; }
+.ct-app-page { flex-grow: 1; min-height: 0; padding: 32px 40px 56px 40px; }
+.ct-bank-hero { background-color: var(--ct-green-light); border-radius: 32px; padding: 40px; margin-bottom: 28px; }
+.ct-bank-hero .ct-big-number { color: var(--ct-ink); }
+.ct-lb-row { flex-direction: row; align-items: center; background-color: var(--ct-card); border-radius: 20px; border-width: 2px; border-color: var(--ct-line); padding: 28px; margin: 8px 0; min-height: 112px; }
+.ct-lb-rank { width: 110px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-font-style: normal; color: var(--ct-green); }
+.ct-lb-name { flex-grow: 1; flex-shrink: 1; min-width: 0; white-space: normal; }
+.ct-lb-value { -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-font-style: normal; font-size: 32px; margin-left: 16px; }
+.ct-app-tabs { flex-direction: row; margin-bottom: 24px; }
+.ct-app-tabs > .ct-chip { flex-grow: 1; flex-basis: 0; align-items: center; font-size: 30px; }
+
+/* Existing feature surfaces keep their states while inheriting the new design language. */
+.ct-rekt { background-color: var(--ct-deep); border-radius: 40px; padding: 48px; width: 86%; max-width: 900px; align-items: center; border-width: 4px; border-color: var(--ct-red); }
+.ct-rekt-title { font-size: 160px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-font-style: normal; color: rgb(239, 132, 135); }
+.ct-rekt-loss { font-size: 72px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-font-style: normal; color: white; white-space: normal; }
+.ct-rekt .ct-body { color: rgb(245, 214, 218); }
+.ct-rekt .ct-small { color: rgb(222, 195, 202); }
+.ct-rekt .ct-btn-ghost { color: white; }
+.ct-mg { justify-content: flex-start; padding: 64px 32px 40px 32px; }
+.ct-mg > .ct-row .ct-h2, .ct-mg > .ct-body { color: white; }
+.ct-mg-arena { flex-grow: 1; align-self: stretch; background-color: rgba(255, 255, 255, 0.08); border-radius: 36px; margin-top: 24px; }
+.ct-mg-score { color: var(--ct-gold); font-size: 56px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-font-style: normal; margin-right: 24px; }
+.ct-mg-time { color: white; font-size: 44px; }
+.ct-mg-target { position: absolute; padding: 28px 32px; border-radius: 24px; border-width: 0; font-size: 32px; min-height: 120px; max-width: 420px; white-space: normal; }
+.ct-mg-good { background-color: var(--ct-red); color: white; }
+.ct-mg-bad { background-color: var(--ct-green); color: white; }
+.ct-spike { position: absolute; left: 24px; top: 24px; background-color: rgba(0, 0, 0, 0.7); border-radius: 20px; padding: 18px 24px; }
+.ct-spike .ct-small, .ct-spike .ct-body { color: white; }
+
+/* Asset credits are available offline from Settings. Long license text wraps inside the phone. */
+.ct-credits { margin-top: 28px; padding-top: 20px; border-top-width: 2px; border-top-color: var(--ct-line); }
+.ct-credit { padding: 20px 0; border-bottom-width: 2px; border-bottom-color: var(--ct-line); }
+.ct-credit-title { font-size: 34px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); white-space: normal; }
+.ct-license { font-size: 28px; white-space: normal; color: var(--ct-muted); margin: 16px 0; }
+.ct-btn-danger .ct-icon { -unity-background-image-tint-color: var(--ct-card); }
+
+
+/* Tactile controls. The native Button retains events/focus; these two faces ignore picking. */
+.ct-pressable { border-width: 4px; border-color: var(--ct-game-outline); border-radius: 24px; overflow: hidden; }
+.ct-button-depth { position: absolute; left: 0; right: 0; bottom: 0; height: 12px; background-color: var(--ct-game-blue-depth); border-bottom-left-radius: 18px; border-bottom-right-radius: 18px; }
+.ct-button-glint { position: absolute; left: 12px; right: 12px; top: 3px; height: 8px; border-radius: 4px; background-color: var(--ct-game-highlight); }
+.ct-pressable:active { translate: 0 6px; scale: 1 1; }
+.ct-pressable:active > .ct-button-depth { height: 3px; }
+.ct-pressable:active > .ct-button-glint { height: 4px; opacity: 0.55; }
+.ct-pressable:focus { border-color: var(--ct-game-outline); }
+.ct-pressable:disabled { opacity: 0.5; }
+.ct-btn { background-color: var(--ct-game-blue); color: var(--ct-game-white); border-width: 4px; border-color: var(--ct-game-outline); padding-bottom: 32px; font-size: 42px; -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); -unity-text-outline-color: var(--ct-game-outline); -unity-text-outline-width: 1px; }
+.ct-btn:hover { background-color: var(--ct-game-blue-light); }
+.ct-btn-primary { background-color: var(--ct-accent); color: var(--ct-ink); -unity-text-outline-width: 0; }
+.ct-btn-primary:hover { background-color: var(--ct-accent-hover); }
+.ct-btn-primary > .ct-button-depth { background-color: var(--ct-game-yellow-depth); }
+.ct-btn-ghost { background-color: var(--ct-card); color: var(--ct-ink); -unity-text-outline-width: 0; }
+.ct-btn-ghost > .ct-button-depth { background-color: var(--ct-line); }
+.ct-btn-danger { background-color: var(--ct-red); color: var(--ct-card); }
+.ct-btn-danger > .ct-button-depth { background-color: var(--ct-ink); opacity: 0.35; }
+.ct-btn .ct-icon { -unity-background-image-tint-color: var(--ct-game-white); }
+.ct-btn-primary .ct-icon, .ct-btn-ghost .ct-icon { -unity-background-image-tint-color: var(--ct-ink); }
+.ct-row-btn, .ct-chip, .ct-venue { border-width: 4px; border-color: var(--ct-game-outline); padding-bottom: 36px; }
+.ct-row-btn > .ct-button-depth, .ct-chip > .ct-button-depth, .ct-venue > .ct-button-depth { background-color: var(--ct-line); }
+.ct-chip-on { background-color: var(--ct-accent); color: var(--ct-ink); border-color: var(--ct-game-outline); }
+.ct-chip-on > .ct-button-depth { background-color: var(--ct-game-yellow-depth); }
+.ct-h1, .ct-h2, .ct-section-title, .ct-chip-title, .ct-venue-title, .ct-phone-title, .ct-brand-wordmark, .ct-logo, .ct-big-number { -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); letter-spacing: 0; }
+.ct-h1 { font-size: 60px; }
+.ct-h2 { font-size: 42px; }
+.ct-brand-mark { background-color: var(--ct-accent); border-width: 4px; border-color: var(--ct-game-outline); border-radius: 18px; }
+.ct-brand-mark .ct-icon { -unity-background-image-tint-color: var(--ct-ink); }
+.ct-brand-wordmark { color: var(--ct-game-white); -unity-text-outline-color: var(--ct-game-outline); -unity-text-outline-width: 2px; }
+.ct-card, .ct-district, .ct-lb-row { border-width: 3px; border-color: var(--ct-game-outline); }
+.ct-phone { background-color: var(--ct-bg); border-width: 5px; border-color: var(--ct-game-outline); border-radius: 36px; }
+.ct-phone-bar { background-color: var(--ct-game-blue); border-bottom-width: 5px; border-bottom-color: var(--ct-game-outline); padding-top: 8px; }
+.ct-phone-title { color: var(--ct-card); font-size: 40px; -unity-text-outline-color: var(--ct-game-outline); -unity-text-outline-width: 1.5px; }
+.ct-phone-clock { color: var(--ct-card); }
+.ct-phone-handle { background-color: var(--ct-game-outline); }
+.ct-phone-bar .ct-btn-icon { min-height: 110px; width: 110px; min-width: 110px; margin: 8px; padding: 24px; background-color: var(--ct-game-blue-light); }
+.ct-app.ct-pressable { background-color: rgba(0,0,0,0); border-width: 0; overflow: visible; }
+.ct-app > .ct-button-depth, .ct-app > .ct-button-glint { display: none; }
+.ct-app-icon { background-color: var(--ct-game-blue-light); border-width: 4px; border-bottom-width: 10px; border-color: var(--ct-game-outline); border-radius: 28px; width: 140px; height: 140px; }
+.ct-app-icon .ct-icon { width: 82px; height: 82px; -unity-background-image-tint-color: var(--ct-ink); }
+.ct-app-locked .ct-app-icon { background-color: var(--ct-surface); border-color: var(--ct-muted); }
+.ct-app-label { -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 34px; }
+.ct-phone-greeting { -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); }
+.ct-slider .unity-base-slider__dragger { border-color: var(--ct-game-outline); background-color: var(--ct-accent); }
+
+/* Game HUD: left thumb moves; two compact rows on the right contain actions. */
+.ct-cash-card { background-color: var(--ct-scrim); border-width: 4px; border-color: var(--ct-game-outline); border-radius: 22px; padding: 12px 20px 16px 12px; }
+.ct-cash-card .ct-icon { width: 64px; height: 64px; -unity-background-image-tint-color: var(--ct-accent); }
+.ct-hud-caption { color: var(--ct-game-cyan); font-size: 22px; }
+.ct-cash { font-size: 42px; color: var(--ct-game-white); -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); }
+.ct-pill { background-color: var(--ct-scrim); color: var(--ct-game-white); border-width: 3px; border-color: var(--ct-game-outline); }
+.ct-pill.ct-green { color: var(--ct-game-green); }
+.ct-pill.ct-red { color: var(--ct-game-coral); }
+.ct-needs-toggle { top: 148px; background-color: var(--ct-card); border-width: 4px; border-color: var(--ct-game-outline); padding-bottom: 20px; }
+.ct-needs-toggle > .ct-button-depth { background-color: var(--ct-line); }
+.ct-needs-toggle .ct-icon { width: 48px; height: 48px; -unity-background-image-tint-color: var(--ct-red); }
+.ct-needs-toggle-title { font-size: 30px; -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); }
+.ct-needs { top: 286px; border-width: 4px; border-color: var(--ct-game-outline); }
+.ct-need-track { height: 14px; border-radius: 7px; }
+.ct-need-fill { border-radius: 7px; background-color: var(--ct-game-blue); }
+.ct-hud-social { left: auto; right: 24px; bottom: 218px; }
+.ct-hud-personal { right: 24px; bottom: 28px; }
+.ct-dock-action { width: 144px; min-width: 144px; min-height: 160px; padding: 16px 8px 24px 8px; border-width: 4px; border-color: var(--ct-game-outline); border-radius: 28px; background-color: var(--ct-game-blue-light); color: var(--ct-ink); }
+.ct-dock-action .ct-icon { width: 66px; height: 66px; -unity-background-image-tint-color: var(--ct-ink); }
+.ct-dock-label { font-size: 30px; -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); }
+.ct-dock-primary { background-color: var(--ct-accent); }
+.ct-dock-primary > .ct-button-depth { background-color: var(--ct-game-yellow-depth); }
+.ct-dock-action.ct-btn-live { background-color: var(--ct-game-green); color: var(--ct-ink); }
+.ct-chat, .ct-emotes { bottom: 446px; border-width: 4px; border-color: var(--ct-game-outline); }
+
+/* Movement sizes use the same 1080 reference canvas as the HUD. */
+.ct-move-controls { position: absolute; left: 16px; bottom: 12px; width: 420px; height: 420px; }
+.ct-move-zone { width: 420px; height: 420px; position: relative; align-items: center; justify-content: center; }
+.ct-move-ring { position: absolute; width: 300px; height: 300px; left: 60px; top: 48px; border-radius: 150px; border-width: 6px; border-color: var(--ct-game-outline); background-color: var(--ct-control-ring); }
+.ct-move-thumb { position: absolute; left: 50%; top: 50%; margin-left: -62px; margin-top: -62px; width: 124px; height: 124px; border-radius: 62px; border-width: 5px; border-bottom-width: 12px; border-color: var(--ct-game-outline); background-color: var(--ct-game-blue-light); }
+.ct-move-active .ct-move-ring { background-color: var(--ct-control-ring-active); }
+.ct-move-active .ct-move-thumb { background-color: var(--ct-game-cyan); }
+.ct-move-running .ct-move-thumb { background-color: var(--ct-accent); }
+.ct-move-hint { position: absolute; left: 0; right: 0; bottom: 12px; -unity-text-align: middle-center; color: var(--ct-card); -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 30px; -unity-text-outline-color: var(--ct-game-outline); -unity-text-outline-width: 2px; }
+.ct-move-arrows { position: absolute; left: 12px; top: 12px; width: 396px; height: 396px; }
+.ct-move-arrow { position: absolute; width: 124px; height: 124px; background-color: var(--ct-game-blue-light); border-width: 5px; border-bottom-width: 12px; border-color: var(--ct-game-outline); border-radius: 26px; align-items: center; justify-content: center; }
+.ct-move-up { left: 136px; top: 0; }
+.ct-move-down { left: 136px; top: 272px; }
+.ct-move-left { left: 0; top: 136px; }
+.ct-move-right { left: 272px; top: 136px; }
+.ct-move-arrow-glyph { width: 64px; height: 64px; -unity-background-image-tint-color: var(--ct-ink); }
+.ct-move-up .ct-move-arrow-glyph { rotate: 90deg; }
+.ct-move-down .ct-move-arrow-glyph { rotate: -90deg; }
+.ct-move-right .ct-move-arrow-glyph { rotate: 180deg; }
+.ct-move-arrow.ct-move-active { background-color: var(--ct-accent); }
+
+.ct-tone-cyan { background-color: var(--ct-game-cyan); }
+.ct-tone-coral { background-color: var(--ct-game-coral); }
+.ct-tone-gold { background-color: var(--ct-accent); }
+.ct-tone-violet { background-color: var(--ct-game-purple); }
+.ct-tone-green { background-color: var(--ct-game-green); }
+
+/* Mounted beside the safe-area PhoneLayer: blocks lobby/world input including edge strips. */
+.ct-phone-scrim, .ct-phone-scrim:hover, .ct-phone-scrim:active, .ct-phone-scrim:focus {
+    position: absolute; left: 0; top: 0; right: 0; bottom: 0;
+    margin: 0; padding: 0; border-width: 0; border-radius: 0;
+    background-color: var(--ct-phone-scrim);
+}
+
+/* Visible native focus: a thicker light rim on dark faces, dark-blue rim on light faces. */
+.ct-pressable:focus { border-width: 6px; border-color: var(--ct-game-white); }
+.ct-btn-primary:focus, .ct-btn-ghost:focus, .ct-chip:focus, .ct-row-btn:focus,
+.ct-venue:focus,
+.ct-needs-toggle:focus, .ct-dock-action:focus { border-color: var(--ct-game-blue-depth); }
+.ct-pressable:focus > .ct-button-glint { opacity: 1; height: 10px; }
+.ct-app:focus { border-width: 0; }
+.ct-app:focus .ct-app-icon { border-color: var(--ct-game-blue-depth); border-top-width: 6px; border-left-width: 6px; border-right-width: 6px; }
+
+.ct-pressable:focus:active > .ct-button-glint { height: 4px; opacity: 0.55; }
+
+.layer-screen-backdrop.ct-backdrop-lobby { background-color: var(--ct-game-blue); }
+
+/* A mode caption above the cluster stays clear of the down arrow and every touch target. */
+.ct-move-hint { top: -40px; bottom: auto; }
+
+/* Settings volume steppers (replace sliders that captured scroll swipes). */
+.ct-stepper { align-items: center; margin-top: 12px; margin-bottom: 12px; }
+.ct-stepper-btn { min-width: 112px; min-height: 96px; font-size: 40px; }
+.ct-stepper-value { min-width: 120px; -unity-text-align: middle-center; font-size: 32px; }
+
+/* Brand (art/branding/logo): the official CT mark replaces the old building icon at the same sizes. Fonts unchanged.
+   Only the loading screen takes the brand purple (sampled from ct-mark-on-purple), matching the Android splash. */
+.ct-brand-logo { width: 84px; height: 84px; margin-right: 20px; -unity-background-scale-mode: scale-to-fit; flex-shrink: 0; }
+.ct-brand-compact .ct-brand-logo { width: 68px; height: 68px; }
+.ct-splash-mark { width: 192px; height: 192px; margin-bottom: 36px; -unity-background-scale-mode: scale-to-fit; }
+.ct-busy-mark { width: 52px; height: 52px; -unity-background-scale-mode: scale-to-fit; flex-shrink: 0; }
+.ct-brand-screen { background-color: rgb(32, 4, 82); }
+.ct-root .layer-screen-backdrop.ct-backdrop-brand { background-color: rgb(32, 4, 82); } /* full-bleed behind safe-area insets */
+.ct-brand-screen .ct-logo { color: rgb(255, 255, 255); }
+.ct-brand-screen .ct-tagline, .ct-brand-screen .ct-splash-status { color: rgba(255, 255, 255, 0.78); }
+.ct-brand-screen .ct-loading-track { background-color: rgba(255, 255, 255, 0.22); overflow: hidden; }
+.ct-brand-screen .ct-loading-accent { position: absolute; width: 40%; background-color: rgb(255, 255, 255); }

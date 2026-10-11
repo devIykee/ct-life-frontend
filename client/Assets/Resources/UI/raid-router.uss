@@ -1,0 +1,71 @@
+/* Raid Router arena. Uses only CT's existing palette and Manrope family. */
+.ct-router-panel { width: 96%; height: 96%; max-width: 2600px; max-height: 1080px; padding: 20px 40px; background-color: var(--ct-ink); border-color: var(--ct-control-ring-active); border-width: 2px; border-radius: 24px; }
+.ct-router-panel .ct-desk-header { margin-bottom: 12px; align-items: center; }
+.ct-router-panel .ct-desk-eyebrow { color: var(--ct-game-cyan); white-space: nowrap; flex-shrink: 0; margin-bottom: 4px; font-size: 20px; letter-spacing: 2px; }
+.ct-router-title { font-size: 44px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); color: var(--ct-card); white-space: nowrap; flex-shrink: 0; }
+.ct-router-scoreboard { align-items: flex-end; flex-shrink: 0; margin-left: 24px; }
+.ct-router-score-label { font-size: 18px; letter-spacing: 2px; color: var(--ct-game-blue-light); white-space: nowrap; }
+.ct-router-score { font-size: 38px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); color: var(--ct-card); white-space: nowrap; flex-shrink: 0; }
+.ct-router-panel .ct-desk-timer { font-size: 36px; padding: 16px 28px; white-space: nowrap; flex-shrink: 0; color: var(--ct-ink); background-color: var(--ct-accent); border-radius: 20px; }
+.ct-router-panel .ct-desk-timer.ct-router-urgent { background-color: var(--ct-game-coral); }
+.ct-router-panel .ct-desk-progress { height: 6px; background-color: var(--ct-control-ring-active); margin-bottom: 4px; }
+.ct-router-panel .ct-desk-progress-fill { background-color: var(--ct-game-cyan); }
+.ct-router-brief { font-size: 26px; white-space: normal; flex-shrink: 0; margin: 8px 0 4px 0; color: var(--ct-card); }
+.ct-router-rule { font-size: 20px; color: var(--ct-line); white-space: normal; flex-shrink: 0; margin-bottom: 8px; }
+.ct-router-meta { flex-direction: row; justify-content: space-between; flex-shrink: 0; margin: 0 0 8px 0; }
+.ct-router-stat, .ct-router-wave { font-size: 24px; color: var(--ct-line); white-space: nowrap; flex-shrink: 0; }
+.ct-router-wave { color: var(--ct-game-cyan); -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); }
+.ct-router-board { flex-grow: 1; min-height: 0; flex-shrink: 1; }
+.ct-router-row { flex-direction: row; flex-grow: 1; min-height: 136px; margin: 0 0 8px 0; }
+.ct-router-lane { -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-text-outline-width: 0; align-items: stretch; flex-direction: row; flex-grow: 1; min-width: 0; min-height: 124px; margin: 0; padding: 0; border-width: 2px; border-color: var(--ct-control-ring-active); border-radius: 20px; background-color: var(--ct-deep); color: var(--ct-card); overflow: hidden; }
+.ct-router-lane > .ct-button-depth, .ct-router-lane > .ct-button-glint { display: none; }
+.ct-router-lane:hover { background-color: var(--ct-deep); border-color: var(--ct-game-blue-light); }
+.ct-router-lane:focus { border-width: 2px; border-color: var(--ct-card); }
+.ct-router-lane:active { translate: 0 0; scale: 1 1; }
+.ct-router-lane.ct-router-selected { border-color: var(--ct-accent); background-color: var(--ct-deep); }
+.ct-router-lane-label { width: 320px; flex-shrink: 0; flex-direction: row; align-items: center; padding: 16px 20px; }
+.ct-router-lane-copy { flex-grow: 1; min-width: 0; }
+.ct-router-lane-name { font-size: 30px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); white-space: nowrap; flex-shrink: 0; color: var(--ct-card); }
+.ct-router-lane-status { font-size: 18px; color: var(--ct-game-blue-light); white-space: nowrap; flex-shrink: 0; margin-top: 8px; letter-spacing: 1px; }
+.ct-router-selected .ct-router-lane-status { color: var(--ct-accent); }
+.ct-router-socket { width: 40px; height: 40px; margin-right: 12px; flex-shrink: 0; }
+.ct-router-socket .ct-icon { width: 36px; height: 36px; -unity-background-image-tint-color: var(--ct-game-blue-light); }
+.ct-router-selected .ct-router-socket .ct-icon { -unity-background-image-tint-color: var(--ct-accent); }
+.ct-router-track { align-self: stretch; flex-grow: 1; min-width: 0; background-color: var(--ct-game-outline); border-left-width: 2px; border-left-color: var(--ct-control-ring-active); overflow: hidden; transition-property: background-color; transition-duration: 120ms; }
+.ct-router-guide { position: absolute; left: 0; right: 0; top: 50%; height: 2px; background-color: var(--ct-game-pattern); }
+.ct-router-gate { position: absolute; left: 80px; top: 8px; bottom: 8px; width: 4px; background-color: var(--ct-control-ring-active); }
+.ct-router-protected .ct-router-gate { background-color: var(--ct-accent); }
+.ct-router-shield { position: absolute; left: 40px; top: 50%; width: 84px; height: 96px; translate: 0 -50%; align-items: center; justify-content: center; }
+.ct-router-shield-glyph { width: 76px; height: 88px; flex-shrink: 0; color: var(--ct-accent); align-items: center; justify-content: center; }
+.ct-router-shield-glyph .ct-icon { width: 32px; height: 32px; margin-top: -8px; -unity-background-image-tint-color: var(--ct-ink); }
+.ct-router-impact-good { background-color: var(--ct-deep); }
+.ct-router-impact-bad { background-color: var(--ct-red); }
+.ct-router-packet { position: absolute; top: 8px; width: 352px; height: 116px; border-width: 2px; border-color: var(--ct-card); border-radius: 16px; padding: 8px 16px; background-color: var(--ct-bg); }
+.ct-router-kind { font-size: 22px; letter-spacing: 2px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); white-space: nowrap; flex-shrink: 0; margin-bottom: 8px; color: var(--ct-deep); }
+.ct-router-message { font-size: 22px; white-space: normal; flex-shrink: 0; color: var(--ct-ink); }
+.ct-router-raid { background-color: var(--ct-red); border-color: var(--ct-game-coral); border-left-width: 8px; border-radius: 4px; }
+.ct-router-raid .ct-router-kind, .ct-router-raid .ct-router-message { color: var(--ct-card); }
+.ct-router-chat { border-left-width: 8px; border-left-color: var(--ct-game-cyan); }
+.ct-router-feedback { font-size: 26px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); color: var(--ct-game-green); white-space: nowrap; flex-shrink: 0; margin: 0 0 8px 0; min-height: 34px; }
+.ct-router-mistake { color: var(--ct-game-coral); }
+.ct-router-controls { flex-direction: row; flex-shrink: 0; }
+.ct-router-control { -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-text-outline-width: 0; flex-shrink: 0; min-width: 240px; min-height: 124px; margin: 0 0 0 16px; padding: 20px 28px; font-size: 26px; white-space: nowrap; color: var(--ct-card); background-color: var(--ct-deep); border-width: 2px; border-color: var(--ct-control-ring-active); border-radius: 20px; }
+.ct-router-control > .ct-button-depth { background-color: var(--ct-resource-depth); height: 8px; }
+.ct-router-control > .ct-button-glint { display: none; }
+.ct-router-control:hover { background-color: var(--ct-deep); border-color: var(--ct-game-blue-light); }
+.ct-router-control:focus { border-width: 2px; border-color: var(--ct-card); }
+.ct-router-control:active { translate: 0 4px; }
+.ct-router-control-spacer { flex-grow: 1; }
+.ct-router-park { flex-direction: row; align-items: center; justify-content: center; margin-left: 0; min-width: 380px; background-color: var(--ct-accent); color: var(--ct-ink); border-color: var(--ct-accent); }
+.ct-router-park .ct-router-shield-glyph { width: 40px; height: 48px; margin-right: 20px; color: var(--ct-ink); }
+.ct-router-park .ct-router-shield-glyph .ct-icon { width: 20px; height: 20px; margin-top: -4px; -unity-background-image-tint-color: var(--ct-accent); }
+.ct-router-control-copy { font-size: 26px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); white-space: nowrap; color: var(--ct-ink); }
+.ct-router-park:hover { background-color: var(--ct-accent-hover); border-color: var(--ct-accent-hover); }
+.ct-router-park.ct-router-selected { background-color: var(--ct-green-light); border-color: var(--ct-green-light); }
+.ct-router-end { background-color: var(--ct-ink); border-color: var(--ct-line); }
+.ct-router-footnote { font-size: 18px; color: var(--ct-line); white-space: nowrap; flex-shrink: 0; margin-top: 8px; -unity-text-align: middle-center; }
+.ct-router-paused { position: absolute; left: 0; right: 0; top: 0; bottom: 0; background-color: var(--ct-scrim); align-items: center; justify-content: center; border-radius: 24px; }
+.ct-router-pause-card { width: 960px; padding: 40px; border-radius: 24px; border-width: 2px; border-color: var(--ct-control-ring-active); background-color: var(--ct-ink); }
+.ct-router-pause-card .ct-desk-title { color: var(--ct-card); }
+.ct-router-resume { margin: 24px 0 0 0; background-color: var(--ct-accent); color: var(--ct-ink); }
+.ct-router-resume:hover { background-color: var(--ct-accent-hover); }

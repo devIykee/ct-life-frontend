@@ -1,0 +1,23 @@
+/* Landscape is the primary gameplay orientation, chosen 6 October 2026.
+   Preserve portrait fallback; existing tokens and native controls remain shared. */
+
+.ct-landscape .ct-backdrop-lobby { background-color: var(--ct-ink); }
+
+/* Wallet entry: the action stays visible while the portrait/copy may scroll. */
+
+
+
+/* Profile and report share the phone's reading scale; city context stays visible. */
+.ct-profile-sheet { background-color: var(--ct-card); padding: 32px; }
+.ct-profile-sheet .ct-h1 { font-size: 42px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); margin: 16px 0 24px 0; }
+.ct-profile-sheet .ct-small { color: var(--ct-muted); margin-bottom: 24px; }
+.ct-profile-sheet .ct-body { font-size: 30px; margin-bottom: 24px; }
+.ct-profile-sheet .ct-btn { min-height: 124px; font-size: 30px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); background-color: var(--ct-bg); color: var(--ct-ink); border-width: 1px; border-color: var(--ct-line); }
+.ct-profile-sheet .ct-btn-danger { color: var(--ct-red); background-color: var(--ct-card); }
+.ct-profile-sheet .ct-btn:hover { background-color: var(--ct-hover); }
+.ct-profile-sheet .ct-btn:focus { border-color: var(--ct-deep); border-width: 3px; }
+.ct-profile-sheet .ct-row > .ct-btn { margin: 8px 4px; }
+.ct-profile-sheet .ct-pressable > .ct-button-depth, .ct-profile-sheet .ct-pressable > .ct-button-glint { display: none; }
+.ct-landscape .ct-profile-backdrop { align-items: flex-end; justify-content: center; padding: 32px 48px; background-color: var(--ct-phone-scrim); }
+.ct-landscape .ct-profile-sheet { width: 780px; max-width: 100%; max-height: 100%; align-self: auto; border-radius: 24px; border-width: 1px; border-color: var(--ct-line); }
+.ct-landscape .ct-profile-sheet .ct-sheet-handle { display: none; }

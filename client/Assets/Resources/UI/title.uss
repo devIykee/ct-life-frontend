@@ -1,0 +1,91 @@
+/* Title screen (SignInScreen), approved art direction 2026-10-08. Landscape, inside the safe area; the art bleeds to the edges.
+   Palette: white text rgb(255, 255, 255) (was cream until 2026-10-09: user direction) with a dark-plum outline rgb(58, 20, 64). */
+
+.ct-title { background-color: rgba(0, 0, 0, 0); overflow: visible; }
+
+.ct-title-bg {
+    position: absolute; left: 0; top: 0; right: 0; bottom: 0;
+    background-image: url("Title/title-bg.png");
+    -unity-background-scale-mode: scale-and-crop; /* cover, centred: 16:9 screens crop the sides */
+    transition-property: scale; transition-duration: 25s; transition-timing-function: ease-in-out;
+}
+.ct-title-bg.ct-title-zoom { scale: 1.04 1.04; }
+
+/* The button sits fully on the open cobblestones of the lower third, ~4% of the screen height lower than v5 (user tweak;
+   3.7% exactly, so the gap holds through the button's ±5-unit idle bob). Seeker (2670x1200, 1.112 px per unit, 480 dpi =
+   3 px/dp): top edge ~970 px, well clear of the group's shoes (905-915 px across the Ken Burns drift), and at least 16 px
+   between the button rim and the legal line pinned at the bottom (measured across the bob on the device).
+   "Use another wallet" sits beside PLAY, centred on the button body, where its 48 dp hit area (130 units) fits without
+   touching PLAY or the legal line. Errors show above the button: there is no room under it any more. */
+.ct-title-actions { position: absolute; left: 0; right: 0; bottom: 5.4%; align-items: center; }
+.ct-title-under { position: absolute; bottom: 100%; left: 0; right: 0; align-items: center; padding-bottom: 6px; }
+.ct-title-side {
+    position: absolute; left: 68%; right: 0; top: 0; bottom: 0;
+    padding-left: 12px; padding-bottom: 12px; /* the painted rim is thicker at the bottom: centre on the body */
+    justify-content: center; align-items: flex-start;
+}
+
+.ct-title-btn {
+    width: 36%; height: 150px; margin: 0; padding: 0 40px 12px 40px; /* the painted rim is thicker at the bottom: lift the label */
+    border-radius: 33px; border-width: 6px; border-bottom-width: 12px; border-color: rgb(58, 20, 64); /* squircle: ~22% of the height */
+    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 60px; -unity-text-align: middle-center; white-space: nowrap;
+    color: rgb(255, 255, 255); -unity-text-outline-width: 4px; -unity-text-outline-color: rgb(58, 20, 64);
+    text-shadow: 0 5px 1px rgb(58, 20, 64); /* the painted labels have a solid plum drop under the letters */
+    overflow: hidden;
+    transition-property: scale, background-color, -unity-background-image-tint-color;
+    transition-duration: 0.08s, 0.08s, 0.08s; transition-timing-function: ease-out, ease-out, ease-out;
+}
+.ct-title-btn:active { scale: 0.96 0.96; -unity-background-image-tint-color: rgb(212, 212, 212); }
+.ct-title-btn:disabled { opacity: 0.82; }
+.ct-title-btn:focus { border-color: rgb(58, 20, 64); }
+
+/* Placeholder bodies until the painted blanks exist (ApplyButtonArt swaps them in). */
+.ct-title-btn-green, .ct-title-btn-green:hover, .ct-title-btn-green:focus { background-color: rgb(92, 196, 74); }
+.ct-title-btn-green:active { background-color: rgb(70, 158, 56); }
+.ct-title-btn-purple, .ct-title-btn-purple:hover, .ct-title-btn-purple:focus { background-color: rgb(146, 88, 220); }
+.ct-title-btn-purple { font-size: 76px; letter-spacing: 3px; }
+.ct-title-btn-purple:active { background-color: rgb(114, 64, 182); }
+.ct-title-btn-art, .ct-title-btn-art:hover, .ct-title-btn-art:focus, .ct-title-btn-art:active {
+    background-color: rgba(0, 0, 0, 0); border-width: 0; border-radius: 0;
+}
+
+/* The painted squircle body sits 5 px (top/sides) and 6-7 px (bottom) inside its 130 px art: 6-8 units at 150 units tall,
+   with a corner radius of ~22% of the body (~30 units). The shine is clipped to that shape. */
+.ct-title-shine-clip { position: absolute; left: 6px; right: 6px; top: 6px; bottom: 8px; border-radius: 30px; overflow: hidden; }
+
+.ct-title-shine {
+    position: absolute; top: -30%; bottom: -30%; left: -35%; width: 14%;
+    background-color: rgba(255, 255, 255, 0.26); rotate: 18deg;
+}
+
+/* Bottom copy, read the way mobile games do it: no plate, no gradient band. The text carries itself: Lilita One (the button
+   font), solid white fill, a thick dark-plum outline and a soft dark drop shadow (user direction 2026-10-08). On the
+   Seeker the outlines are 3.3-3.9 px. */
+
+/* "Use another wallet": the same outlined game text, underlined (rich text <u>), 28 → 41 px (+30%, then +15% so it holds its
+   own beside PLAY), outline as thick as the legal line's. The transparent padding makes the hit area 130 units tall
+   (48 dp on the Seeker) without any visible box. */
+.ct-title-link, .ct-title-link:hover, .ct-title-link:focus, .ct-title-link:active {
+    margin: 0; padding: 0 26px; min-height: 130px; min-width: 130px;
+    background-color: rgba(0, 0, 0, 0); border-width: 0;
+    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 41px; white-space: nowrap; -unity-text-align: middle-center;
+    color: rgb(255, 255, 255); -unity-text-outline-width: 3px; -unity-text-outline-color: rgb(58, 20, 64);
+    text-shadow: 0 3px 5px rgba(26, 8, 32, 0.85);
+    transition-property: scale; transition-duration: 0.08s; transition-timing-function: ease-out;
+}
+.ct-title-link:active { scale: 0.94 0.94; }
+.ct-title-link:disabled { opacity: 0.6; }
+
+.ct-title-error {
+    font-size: 32px; white-space: normal; max-width: 56%; margin-top: 0; padding: 0 12px;
+    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); color: rgb(255, 255, 255); -unity-text-align: middle-center;
+    -unity-text-outline-width: 3px; -unity-text-outline-color: rgb(58, 20, 64); text-shadow: 0 3px 5px rgba(26, 8, 32, 0.85);
+}
+
+/* The legal line, same outlined style, slightly smaller (+30%: 24 → 31 px). */
+.ct-title-legal-row { position: absolute; left: 0; right: 0; bottom: 10px; align-items: center; }
+.ct-title-legal {
+    font-size: 31px; white-space: nowrap; letter-spacing: 0.5px;
+    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); color: rgb(255, 255, 255); -unity-text-align: middle-center;
+    -unity-text-outline-width: 3px; -unity-text-outline-color: rgb(58, 20, 64); text-shadow: 0 3px 5px rgba(26, 8, 32, 0.85);
+}

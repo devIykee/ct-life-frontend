@@ -1,0 +1,90 @@
+/* Fictional broadcast desk. Existing CT palette/Manrope; no audience or audio meter. */
+.ct-cues-panel {
+    --ct-cues-type-main: 38px;
+    --ct-cues-type-secondary: 32px;
+    --ct-cues-type-display: 44px;
+    width: 96%; height: 100%; max-width: 2600px; max-height: 1080px;
+    padding: 16px 32px; background-color: var(--ct-surface); border-color: var(--ct-line);
+    border-width: 2px; border-bottom-width: 8px; border-radius: 24px;
+    -unity-font-definition: url("Fonts/Manrope-Semibold.ttf");
+}
+.ct-cues-panel .ct-desk-header { align-items: center; margin-bottom: 8px; }
+.ct-cues-brand { flex-direction: row; align-items: center; flex-shrink: 0; }
+.ct-cues-title { font-size: var(--ct-cues-type-display); color: var(--ct-ink); white-space: nowrap; flex-shrink: 0; }
+.ct-cues-brief { color: var(--ct-ink); font-size: var(--ct-cues-type-main); white-space: nowrap; flex-grow: 1; flex-shrink: 0; margin: 0 24px; -unity-text-align: middle-center; }
+.ct-cues-air { flex-direction: row; align-items: center; margin-left: 24px; padding: 8px 16px; border-width: 2px; border-color: var(--ct-line); border-radius: 12px; background-color: var(--ct-card); flex-shrink: 0; }
+.ct-cues-air-copy { font-size: var(--ct-cues-type-secondary); color: var(--ct-red); white-space: nowrap; flex-shrink: 0; margin-left: 8px; }
+.ct-cues-air-lamp { width: 16px; height: 16px; border-radius: 8px; background-color: var(--ct-red); flex-shrink: 0; }
+.ct-cues-air-held .ct-cues-air-copy { color: var(--ct-muted); }
+.ct-cues-air-held .ct-cues-air-lamp { background-color: var(--ct-muted); }
+.ct-cues-score { font-size: var(--ct-cues-type-main); color: var(--ct-ink); white-space: nowrap; flex-shrink: 0; margin: 0 16px; }
+.ct-cues-panel .ct-desk-timer { font-size: var(--ct-cues-type-main); padding: 8px 24px; margin-left: 16px; white-space: nowrap; flex-shrink: 0; color: var(--ct-ink); background-color: var(--ct-accent); border-radius: 16px; }
+.ct-cues-panel .ct-desk-progress { height: 6px; margin-bottom: 8px; background-color: var(--ct-line); }
+.ct-cues-panel .ct-desk-progress-fill { background-color: var(--ct-deep); }
+/* Dark inset monitor; larger present cue, condensed next-cue preview. */
+.ct-cues-stage { flex-direction: row; min-height: 240px; flex-grow: 1; flex-shrink: 0; border-width: 4px; border-top-width: 8px; border-color: var(--ct-deep); border-radius: 20px; background-color: var(--ct-game-outline); margin-bottom: 12px; }
+.ct-cues-current { flex-grow: 1; flex-basis: 0; min-width: 0; padding: 12px 24px; }
+.ct-cues-stage-meta { flex-direction: row; align-items: center; justify-content: space-between; margin-bottom: 4px; flex-shrink: 0; }
+.ct-cues-cue-count, .ct-cues-status { font-size: var(--ct-cues-type-secondary); color: var(--ct-line); white-space: nowrap; flex-shrink: 0; }
+.ct-cues-action { font-size: var(--ct-cues-type-display); color: var(--ct-card); white-space: nowrap; flex-shrink: 0; margin-bottom: 4px; }
+.ct-cues-script { font-size: var(--ct-cues-type-main); color: var(--ct-card); white-space: normal; flex-shrink: 0; }
+.ct-cues-stage.ct-cues-go { border-color: var(--ct-accent); }
+.ct-cues-go .ct-cues-status { color: var(--ct-accent); }
+.ct-cues-next { width: 640px; flex-shrink: 0; padding: 16px 24px; border-left-width: 2px; border-left-color: var(--ct-deep); justify-content: center; }
+.ct-cues-next-action { font-size: var(--ct-cues-type-secondary); color: var(--ct-game-cyan); white-space: nowrap; flex-shrink: 0; margin-bottom: 8px; }
+.ct-cues-next-copy { font-size: var(--ct-cues-type-secondary); color: var(--ct-card); white-space: normal; flex-shrink: 0; }
+.ct-cues-timing { flex-shrink: 0; margin-bottom: 12px; }
+.ct-cues-rail-labels { height: 56px; flex-direction: row; align-items: center; justify-content: space-between; position: relative; }
+.ct-cues-rail-copy, .ct-cues-countdown, .ct-cues-window-copy { color: var(--ct-muted); font-size: var(--ct-cues-type-secondary); white-space: nowrap; flex-shrink: 0; }
+.ct-cues-countdown { color: var(--ct-ink); min-width: 240px; -unity-text-align: middle-right; }
+.ct-cues-window-copy { color: var(--ct-ink); position: absolute; left: 38%; width: 24%; -unity-text-align: middle-center; }
+.ct-cues-track { height: 64px; margin: 0 12px; flex-shrink: 0; background-color: var(--ct-game-outline); border-radius: 12px; overflow: hidden; }
+.ct-cues-track-line { position: absolute; left: 0; right: 0; top: 50%; height: 2px; background-color: var(--ct-control-ring-active); }
+.ct-cues-tick { position: absolute; top: 28px; width: 2px; height: 16px; background-color: var(--ct-line); }
+.ct-cues-window { position: absolute; left: 38.888889%; width: 22.222222%; top: 4px; bottom: 4px; background-color: var(--ct-deep); border-width: 2px; border-color: var(--ct-accent); border-radius: 8px; }
+.ct-cues-window.ct-cues-go { background-color: var(--ct-accent); }
+.ct-cues-needle { position: absolute; left: 0; top: 4px; width: 8px; height: 56px; background-color: var(--ct-card); border-width: 2px; border-color: var(--ct-game-outline); }
+.ct-cues-needle-head { position: absolute; left: -8px; top: -2px; width: 24px; height: 16px; border-radius: 4px; background-color: var(--ct-card); border-width: 2px; border-color: var(--ct-game-outline); }
+/* Three raised physical keys, not three nested blue cards. */
+.ct-cues-pads { flex-direction: row; flex-shrink: 0; margin-bottom: 12px; padding-bottom: 4px; }
+.ct-cues-pad { flex-grow: 1; flex-basis: 0; min-width: 240px; min-height: 196px; margin: 0 12px 0 0; padding: 16px 24px; background-color: var(--ct-card); border-color: var(--ct-line); border-width: 2px; border-bottom-width: 12px; border-radius: 20px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-text-outline-width: 0; }
+.ct-cues-pad-caption { background-color: var(--ct-game-cyan); border-color: var(--ct-game-blue-depth); }
+.ct-cues-pad-applause { background-color: var(--ct-accent); border-color: var(--ct-game-yellow-depth); }
+.ct-cues-pad-last { margin-right: 0; }
+.ct-cues-pad > .ct-button-depth, .ct-cues-pad > .ct-button-glint { display: none; }
+.ct-cues-pad:hover { background-color: var(--ct-card); }
+.ct-cues-pad-caption:hover { background-color: var(--ct-game-cyan); }
+.ct-cues-pad-applause:hover { background-color: var(--ct-accent-hover); }
+.ct-cues-pad:focus { border-width: 2px; border-bottom-width: 12px; border-top-color: var(--ct-ink); border-left-color: var(--ct-ink); border-right-color: var(--ct-ink); }
+.ct-cues-panel .ct-cues-pad:active, .ct-cues-panel .ct-cues-pad.ct-cues-pad-pressed { translate: 0 4px; scale: 1 1; border-bottom-width: 8px; }
+.ct-cues-pad:disabled { opacity: 1; }
+.ct-cues-pad-face { flex-grow: 1; align-self: stretch; flex-shrink: 0; }
+.ct-cues-pad-title-row { flex-direction: row; align-items: center; flex-grow: 1; flex-shrink: 0; min-height: 64px; }
+.ct-cues-pad-title { font-size: var(--ct-cues-type-display); color: var(--ct-ink); white-space: nowrap; flex-shrink: 0; flex-grow: 1; -unity-text-align: middle-left; margin: 0 16px; }
+.ct-cues-pad-light { width: 16px; height: 16px; border-radius: 8px; background-color: var(--ct-muted); border-width: 2px; border-color: var(--ct-game-outline); flex-shrink: 0; }
+.ct-cues-pad-go .ct-cues-pad-light { background-color: var(--ct-green); }
+.ct-cues-pad-lower { flex-direction: row; justify-content: space-between; align-items: center; flex-shrink: 0; min-height: 48px; }
+.ct-cues-pad-number, .ct-cues-pad-status { font-size: var(--ct-cues-type-secondary); color: var(--ct-ink); white-space: nowrap; flex-shrink: 0; }
+.ct-cues-pad .ct-cues-pad-symbol { width: 64px; height: 64px; flex-shrink: 0; -unity-background-image-tint-color: var(--ct-ink); }
+.ct-cues-sound-burst { flex-direction: row; justify-content: center; align-items: center; }
+.ct-cues-sound-bar { width: 8px; height: 48px; margin: 0 4px; border-radius: 4px; background-color: var(--ct-ink); }
+.ct-cues-sound-short { height: 28px; }
+.ct-cues-feedback-row { flex-direction: row; align-items: center; margin-bottom: 8px; min-height: 60px; flex-shrink: 0; }
+.ct-cues-feedback { flex-grow: 1; min-width: 0; font-size: var(--ct-cues-type-main); color: var(--ct-green); white-space: nowrap; flex-shrink: 0; }
+.ct-cues-mistake { color: var(--ct-red); }
+.ct-cues-tally { font-size: var(--ct-cues-type-secondary); color: var(--ct-ink); white-space: nowrap; flex-shrink: 0; margin-left: 24px; }
+.ct-cues-controls { flex-direction: row; align-items: center; flex-shrink: 0; }
+.ct-cues-footnote { flex-grow: 1; min-width: 0; color: var(--ct-muted); font-size: var(--ct-cues-type-secondary); white-space: nowrap; flex-shrink: 0; }
+.ct-cues-control { -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-text-outline-width: 0; font-size: var(--ct-cues-type-main); min-width: 240px; min-height: 124px; margin: 0 0 0 16px; padding: 16px 24px; flex-shrink: 0; white-space: nowrap; color: var(--ct-ink); background-color: var(--ct-card); border-width: 2px; border-color: var(--ct-line); border-radius: 20px; }
+.ct-cues-control > .ct-button-depth { height: 8px; background-color: var(--ct-line); }
+.ct-cues-control > .ct-button-glint { display: none; }
+.ct-cues-control:hover { background-color: var(--ct-hover); }
+.ct-cues-control:focus { border-width: 2px; border-color: var(--ct-deep); }
+.ct-cues-panel .ct-cues-control:active { translate: 0 4px; scale: 1 1; }
+.ct-cues-end { min-width: 320px; }
+.ct-cues-paused { position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: var(--ct-scrim); border-radius: 24px; align-items: center; justify-content: center; }
+.ct-cues-pause-panel { width: 1040px; padding: 40px; background-color: var(--ct-surface); border-width: 2px; border-color: var(--ct-line); border-radius: 24px; }
+.ct-cues-pause-panel .ct-desk-title { color: var(--ct-ink); font-size: var(--ct-cues-type-display); }
+.ct-cues-pause-copy { font-size: var(--ct-cues-type-main); color: var(--ct-ink); white-space: normal; margin: 16px 0 32px 0; }
+.ct-cues-resume { background-color: var(--ct-accent); color: var(--ct-ink); margin-left: 0; }
+.ct-cues-resume:hover { background-color: var(--ct-accent-hover); }

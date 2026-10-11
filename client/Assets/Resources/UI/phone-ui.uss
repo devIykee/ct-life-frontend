@@ -1,0 +1,45 @@
+/* A quiet device shell: colour identifies apps; typography carries the content.
+   Existing CT tokens, shared by every phone app in portrait and landscape. */
+.ct-phone { background-color: var(--ct-card); border-width: 2px; border-color: var(--ct-line); border-radius: 36px; }
+.ct-phone-handle { background-color: var(--ct-line); width: 88px; height: 5px; margin-top: 16px; }
+.ct-phone-bar { background-color: var(--ct-card); border-bottom-width: 1px; border-bottom-color: var(--ct-line); padding: 0 16px 6px 16px; }
+.ct-phone-title { color: var(--ct-ink); font-size: 34px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-text-outline-width: 0; }
+.ct-phone-clock { color: var(--ct-muted); font-size: 24px; }
+.ct-phone-bar .ct-btn-icon { min-height: 124px; height: 124px; min-width: 124px; width: 124px; margin: 0; padding: 36px; border-width: 0; background-color: rgba(0,0,0,0); }
+.ct-phone-bar .ct-btn-icon .ct-icon { width: 44px; height: 44px; -unity-background-image-tint-color: var(--ct-ink); }
+.ct-phone-bar .ct-btn-icon:hover { background-color: var(--ct-bg); }
+.ct-phone-bar .ct-btn-icon:focus { border-width: 2px; border-color: var(--ct-deep); }
+.ct-phone-welcome { padding: 28px 40px 16px 40px; }
+.ct-phone-greeting { font-size: 44px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); margin-bottom: 8px; }
+.ct-phone-welcome .ct-small { font-size: 28px; }
+.ct-phone-section { margin: 24px 40px 12px 40px; font-size: 23px; }
+.ct-phone-grid { padding: 0 24px 16px 24px; }
+.ct-phone .ct-app { min-height: 208px; padding: 18px 8px; }
+.ct-phone .ct-app-icon { width: 112px; height: 112px; border-width: 0; border-radius: 28px; }
+.ct-phone .ct-app-icon .ct-icon { width: 58px; height: 58px; }
+.ct-phone .ct-app-label { font-size: 27px; margin-top: 14px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); }
+.ct-phone .ct-app-phase { font-size: 22px; }
+.ct-phone .ct-app:focus .ct-app-icon { border-width: 3px; border-color: var(--ct-deep); }
+.ct-phone .ct-app-locked .ct-app-icon { background-color: var(--ct-bg); }
+.ct-phone .ct-app-locked .ct-app-icon .ct-icon { -unity-background-image-tint-color: var(--ct-muted); }
+.ct-phone .ct-app-locked .ct-app-label { color: var(--ct-muted); }
+.ct-phone-home-line { background-color: var(--ct-line); height: 5px; margin: 10px 0 16px 0; }
+
+.ct-phone .ct-h1, .ct-phone .ct-h2, .ct-phone .ct-section-title,
+.ct-phone .ct-chip-title, .ct-phone .ct-venue-title, .ct-phone .ct-big-number {
+    -unity-font-definition: url("Fonts/Manrope-Semibold.ttf");
+}
+.ct-phone .ct-card, .ct-phone .ct-district, .ct-phone .ct-lb-row,
+.ct-phone .ct-row-btn, .ct-phone .ct-chip, .ct-phone .ct-venue { border-width: 1px; border-color: var(--ct-line); }
+.ct-phone .ct-btn { background-color: var(--ct-bg); color: var(--ct-ink); border-width: 1px; border-color: var(--ct-line); -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); }
+.ct-phone .ct-btn .ct-icon { -unity-background-image-tint-color: var(--ct-ink); }
+.ct-phone .ct-btn-primary { background-color: var(--ct-accent); border-color: var(--ct-accent); }
+.ct-phone .ct-btn-danger { background-color: var(--ct-red); border-color: var(--ct-red); color: var(--ct-card); }
+.ct-phone .ct-btn-danger .ct-icon { -unity-background-image-tint-color: var(--ct-card); }
+.ct-phone .ct-btn:focus, .ct-phone .ct-row-btn:focus, .ct-phone .ct-chip:focus { border-width: 3px; border-color: var(--ct-deep); }
+.ct-phone .ct-pressable > .ct-button-depth, .ct-phone .ct-pressable > .ct-button-glint { display: none; }
+.ct-landscape .ct-phone .ct-app { width: 25%; min-height: 204px; }
+
+/* Header controls retain their clear surface after the general app-button rules. */
+.ct-phone .ct-phone-bar .ct-btn-icon { border-width: 0; background-color: rgba(0,0,0,0); }
+.ct-phone .ct-phone-bar .ct-btn-icon:focus { border-width: 2px; border-color: var(--ct-deep); }
