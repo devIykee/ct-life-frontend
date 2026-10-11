@@ -58,7 +58,7 @@ namespace CTLife.App.Dev
             {
                 var i = await money.CreateIntent("topup", "ramen", "USDC", Key(), ct);
                 return string.IsNullOrEmpty(i.Tx) ? Blocked("52", $"intent {i.IntentId} amount={i.Amount}: no tx to sign") : Pass("intent with tx " + i.IntentId);
-            });
+            }, e => e.Status >= 500 ? "87" : null); // backend #87: the route builds a PublicKey from the user UUID (500)
             string coinId = null;
             await Check("money.trade_buy", async () =>
             {

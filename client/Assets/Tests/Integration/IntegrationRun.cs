@@ -141,13 +141,19 @@ namespace CTLife.Tests.Integration
             bool npcs = await Until(() => visit.Npcs.Count > 0, 15);
             Check("server_npcs_visible", npcs, "npcs=" + string.Join(",", visit.Npcs.Values.Select(n => n != null ? n.name : "?")));
 
-            // Second client: the observer bot.
-            bool seeBot = await Until(() => visit.Players.Count > 0, 45);
-            var botView = visit.Players.Values.FirstOrDefault();
+            // Second client: the observer bot, found by its session id (other players, e.g. a phone left in Timeline
+            // Square by a device run, may share the room and stand still).
+            string botSession = null;
+            bool seeBot = await Until(() =>
+            {
+                botSession = (string)Bot()?["sessionId"];
+                return botSession != null ? visit.Players.ContainsKey(botSession) : visit.Players.Count > 0;
+            }, 45);
+            var botView = botSession != null && visit.Players.TryGetValue(botSession, out var bv) ? bv : visit.Players.Values.FirstOrDefault();
             Vector3 first = botView != null ? botView.transform.position : Vector3.zero;
             await Task.Delay(2500);
             float moved = botView != null ? Vector3.Distance(first, botView.transform.position) : 0f;
-            Check("sees_other_player_move", seeBot && moved > 0.05f, $"remotePlayers={visit.Players.Count} movedMetres={moved:0.00}");
+            Check("sees_other_player_move", seeBot && moved > 0.05f, $"remotePlayers={visit.Players.Count} bot={botSession} movedMetres={moved:0.00}");
 
             int saidFromOthers = 0;
             var subs = new Subscriptions();
