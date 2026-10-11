@@ -35,6 +35,7 @@ namespace CTLife.Audio
             public float weight;
             public float bpm = 100f;
             public bool fullMixMode;
+            public bool moodReactive = true;
             public double startDsp;
             public bool pendingStart;
             public double pendingSince;
@@ -152,13 +153,17 @@ namespace CTLife.Audio
         /// <summary>Select a music set by its sfx-map key (district id, venue id, "clubs", "lobby"); null stops.</summary>
         public void SetDistrict(string districtId)
         {
-            if (_audio == null || districtId == _district) return;
+            if (_audio == null) return;
+            // Accept the prefixed id too ("mus_title" → "title"); an unknown key keeps its name so the miss is logged once.
+            if (districtId != null) districtId = _audio.Map.MusicKeyFor(districtId) ?? districtId;
+            if (districtId == _district) return;
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             _reviewTransitions++;
 #endif
             _district = districtId;
             _targetBank = -1;
-            if (districtId == null || !_audio.Map.Music.TryGetValue(districtId, out var set)) return;
+            if (districtId == null) return;
+            if (!_audio.Map.Music.TryGetValue(districtId, out var set)) { Log.UnknownId("music", districtId); return; }
 
             // Returning to a still-fading set reverses the fade without restarting it. Lobby and Timeline share one
             // full composition; entering the city keeps its musical phase.
@@ -167,6 +172,7 @@ namespace CTLife.Audio
                 {
                     _banks[i].key = districtId;
                     _banks[i].gain = set.volume;
+                    _banks[i].moodReactive = set.moodReactive;
                     _targetBank = i;
                     return;
                 }
@@ -177,6 +183,7 @@ namespace CTLife.Audio
             bank.gain = set.volume;
             bank.bpm = set.bpm > 1f ? set.bpm : 100f;
             bank.fullMixMode = set.FullMixMode;
+            bank.moodReactive = set.moodReactive;
             if (set.FullMixMode)
             {
                 bank.fullMixPath = set.fullMix;
@@ -229,6 +236,7 @@ namespace CTLife.Audio
             foreach (var bank in _banks) if (bank.key != null && bank.pendingStart) TryStart(bank, now);
 
             var target = _targetBank >= 0 ? _banks[_targetBank] : null;
+            _mood.Reactive = target == null || target.moodReactive;
             var layers = target != null && !target.pendingStart
                 ? _mood.Tick(now, target.startDsp, target.bpm, dt)
                 : _mood.Tick(now, now, 120, dt);
@@ -294,6 +302,7 @@ namespace CTLife.Audio
             bank.weight = 0f;
             bank.pendingStart = false;
             bank.fullMixMode = false;
+            bank.moodReactive = true;
         }
 
         private void OnDisable()

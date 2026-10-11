@@ -42,7 +42,8 @@ UNITY = {
 }
 
 # Client-only cues (sfx-map ids the server never references): research-led CT-native additions, 2026-10-08.
-CLIENT_ONLY = {"sfx_news_flash", "sfx_gm", "sfx_cash_in", "sfx_rekt_phonk"}
+CLIENT_ONLY = {"sfx_news_flash", "sfx_gm", "sfx_cash_in", "sfx_rekt_phonk",
+               "sfx_origin_insider", "sfx_origin_exit_liquidity", "sfx_creator_complete", "sfx_ui_next", "sfx_card_shuffle"}
 
 # Footstep floor defaults per venue (CTLife.Audio SurfaceResolver.VenueDefaults mirrors these; the map wins at runtime).
 # [Inference] from each venue's theme in the spec; scenes refine patches with FootstepSurface components or material names.
@@ -145,6 +146,20 @@ for d, m in mus.items():
     sections["music"][key] = e
     ids[f"mus_{d}"] = {"section": "music", "key": key, "sources": e["sources"]}
 
+# CT Life main theme (tools/gen_title.py): title screen + onboarding, own work, deliberately not mood-reactive.
+title = load("build_title.json")
+if title:
+    sections["music"]["title"] = {
+        "id": "mus_title", "bpm": title["bpm"], "bars": title["bars"], "time_signature": "4/4", "key": title["key"],
+        "district": "Title screen and onboarding (CT Life main theme)", "full_mix": rel(title["file"]), "volume": 1.0,
+        "mood_reactive": False, "loop": True, "loop_kind": "seamless (rendered circularly)",
+        "loop_samples": title["loop_samples"], "sample_rate": title["sr"], "loop_seconds": title["loop_seconds"],
+        "full_mix_lufs": qa_of(title["file"]).get("I"), "full_mix_true_peak_dbtp": qa_of(title["file"]).get("TP"),
+        "status": "client_only", "sources": ["own work (composed and synthesised, tools/gen_title.py + tools/theme.py)"],
+        "unity_import": UNITY["music"],
+    }
+    ids["mus_title"] = {"section": "music", "key": "title", "sources": sections["music"]["title"]["sources"]}
+
 # Authored/licensed music choices survive regeneration of the older synthesized build reports.
 curation_path = ROOT / "music-curation.json"
 curated_music = json.loads(curation_path.read_text()) if curation_path.exists() else {}
@@ -229,6 +244,8 @@ lines = [
     "- Synthetic layers in ambience (hum, room tone, monitor beeps, club-through-wall) — `tools/gen_ambience.py`.",
     "- Club music (Afropiano stems: log drum, shakers, 3-2 clave, talking-drum glides, highlife-style guitar, synth air horn) "
     "— `tools/gen_music.py` `club()`; red-market tension bed for the licensed tracks — `tools/gen_mood_bed.py`.",
+    "- CT Life main theme `mus_title` (title + onboarding) and its quotes `sfx_origin_insider`, "
+    "`sfx_origin_exit_liquidity`, `sfx_creator_complete` — `tools/gen_title.py`, `tools/theme.py`, `tools/gen_sfx.py`.",
     "- CT-native cues `sfx_news_flash`, `sfx_gm`, `sfx_cash_in`, `sfx_rekt_phonk` and the revised `sfx_buy`/`sfx_sell`/`sfx_graduation`/"
     "`sfx_sunday_unlock` — `tools/gen_sfx.py` (no sampled meme audio; research notes in docs/progress/audio-integration.md).",
     "",

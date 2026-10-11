@@ -27,6 +27,11 @@ namespace CTLife.Audio
             CallConnect = "sfx_call_connect", CallEnd = "sfx_call_end", SpaceStarted = "sfx_space_started", Gm = "sfx_gm";
         // Voice rooms
         public const string VrJoin = "sfx_vr_join", VrLeave = "sfx_vr_leave", VrRaiseHand = "sfx_vr_raise_hand", VrPromoted = "sfx_vr_promoted";
+        // Onboarding (client-only, quote the main theme `mus_title`). "sfx_origin_" + outcome id works for every outcome:
+        // insider, exit_liquidity, seeker (alias of insider).
+        public const string OriginInsider = "sfx_origin_insider", OriginExitLiquidity = "sfx_origin_exit_liquidity",
+            OriginSeeker = "sfx_origin_seeker", CreatorComplete = "sfx_creator_complete",
+            UiNext = "sfx_ui_next", CardShuffle = "sfx_card_shuffle";
         // ORE Refinery
         public const string OreFurnace = "sfx_ore_furnace_whoosh", OreClink = "sfx_ore_clink";
     }
@@ -44,6 +49,7 @@ namespace CTLife.Audio
             ["sfx_sunday_bell"] = SfxIds.SundayUnlock, ["sfx_room_join"] = SfxIds.VrJoin,
             ["sfx_room_leave"] = SfxIds.VrLeave, ["sfx_raise_hand"] = SfxIds.VrRaiseHand,
             ["sfx_promoted"] = SfxIds.VrPromoted,
+            [SfxIds.OriginSeeker] = SfxIds.OriginInsider,
         };
 
         public static string Canonical(string id) =>

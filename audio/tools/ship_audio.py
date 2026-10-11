@@ -77,7 +77,8 @@ def group(rel: str) -> str:
 
 
 # Mirrors ImportPolicy.Stingers (stereo by design); every other one-shot, footstep and babble file must be mono.
-STINGERS = {"sfx_liquidation", "sfx_rug", "sfx_graduation", "sfx_moon_horn", "sfx_rank_up", "sfx_sunday_unlock", "sfx_rekt_phonk"}
+STINGERS = {"sfx_liquidation", "sfx_rug", "sfx_graduation", "sfx_moon_horn", "sfx_rank_up", "sfx_sunday_unlock", "sfx_rekt_phonk",
+            "sfx_origin_insider", "sfx_origin_exit_liquidity", "sfx_creator_complete"}
 MONO_GROUPS = {"sfx", "footstep", "babble"}
 
 

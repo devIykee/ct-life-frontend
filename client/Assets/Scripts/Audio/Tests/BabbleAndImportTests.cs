@@ -166,6 +166,11 @@ namespace CTLife.Audio.Tests
         [TestCase("Assets/Resources/Audio/sfx/foot_wood_03.wav", "footstep", ClipLoad.DecompressOnLoad)]
         [TestCase("Assets/Resources/Audio/sfx/sfx_liquidation.wav", "stinger", ClipLoad.CompressedInMemory)]
         [TestCase("Assets/Resources/Audio/sfx/sfx_rekt_phonk.wav", "stinger", ClipLoad.CompressedInMemory)]
+        [TestCase("Assets/Resources/Audio/sfx/sfx_origin_insider.wav", "stinger", ClipLoad.CompressedInMemory)]
+        [TestCase("Assets/Resources/Audio/sfx/sfx_origin_exit_liquidity.wav", "stinger", ClipLoad.CompressedInMemory)]
+        [TestCase("Assets/Resources/Audio/sfx/sfx_creator_complete.wav", "stinger", ClipLoad.CompressedInMemory)]
+        [TestCase("Assets/Resources/Audio/music/title/mus_title.ogg", "music", ClipLoad.Streaming)]
+        [TestCase("Assets/Resources/Audio/sfx/sfx_card_shuffle.wav", "sfx", ClipLoad.DecompressOnLoad)]
         [TestCase("Assets/Resources/Audio/sfx/licensed/sfx_ui_tap_kenney.wav", "sfx", ClipLoad.DecompressOnLoad)]
         [TestCase("Assets/Resources/Audio/sfx/sfx_call_ring.wav", "sfx", ClipLoad.DecompressOnLoad)]
         public void GroupsAndLoadTypes(string path, string group, ClipLoad load)

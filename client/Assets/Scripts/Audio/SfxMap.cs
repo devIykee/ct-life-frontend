@@ -22,6 +22,10 @@ namespace CTLife.Audio
     public sealed class MusicEntry
     {
         public string districtId;
+        /// <summary>The prefixed id (`mus_title`, `mus_lobby`…). <see cref="SfxMap.MusicKeyFor"/> accepts either.</summary>
+        public string id;
+        /// <summary>False: the set ignores market_mood (title / onboarding). Map field `mood_reactive`, default true.</summary>
+        public bool moodReactive = true;
         public float bpm;
         /// <summary>A licensed complete composition. Empty selects the adaptive-stem mode.</summary>
         public string fullMix;
@@ -46,6 +50,16 @@ namespace CTLife.Audio
         public readonly Dictionary<string, SfxEntry> Footsteps = new Dictionary<string, SfxEntry>();
         public readonly Dictionary<string, MusicEntry> Music = new Dictionary<string, MusicEntry>();
         public readonly Dictionary<string, string> VenueSurfaces = new Dictionary<string, string>();
+
+        /// <summary>The `music` key for a key or a prefixed id ("title" or "mus_title" → "title"); null when unknown.</summary>
+        public string MusicKeyFor(string keyOrId)
+        {
+            if (string.IsNullOrEmpty(keyOrId)) return null;
+            if (Music.ContainsKey(keyOrId)) return keyOrId;
+            foreach (var kv in Music)
+                if (kv.Value.id == keyOrId) return kv.Key;
+            return null;
+        }
 
         public static SfxMap Parse(string json)
         {
@@ -78,6 +92,8 @@ namespace CTLife.Audio
                     var m = new MusicEntry
                     {
                         districtId = p.Name,
+                        id = p.Value.Str("id"),
+                        moodReactive = p.Value.Bool("mood_reactive", true),
                         bpm = p.Value.Float("bpm", 100),
                         fullMix = p.Value.Str("full_mix"),
                         volume = UnityEngine.Mathf.Clamp01(p.Value.Float("volume", 1f)),

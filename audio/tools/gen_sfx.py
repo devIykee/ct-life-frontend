@@ -229,7 +229,7 @@ def whale_horn():
     return trim_tail(y.mean(axis=1))
 
 
-@sfx("sfx_pnl_card_flip", "trading", volume_db=-8, desc="PnL card flip: swish + card snap (Kenney card-place-1)")
+@sfx("sfx_pnl_card_flip", "trading", volume_db=-1, desc="PnL card flip: swish + card snap (Kenney card-place-1)")
 def pnl_card_flip():
     x = canvas(0.7)
     place(x, ins.whoosh(0.2, 700, 4500, q=1.4, shape=0.7), 0, 0.5)
@@ -677,6 +677,117 @@ def rekt_phonk():
             place(x, dsp.pan(ins.hat(0.04, tone=9000), 0.3), (bar * 4 + k / 3) * b, 0.18 if k % 3 else 0.26)
     y = dsp.reverb(x, wet=0.16, decay=1.4)
     return trim_tail(y)
+
+
+# ====================================================================== onboarding (main-theme quotes, 2026-10-09)
+# Key G major like mus_title (tools/theme.py), so a stinger over the ducked title loop stays in key.
+
+def _theme_band(x, t0: float, notes, voice, gain: float, pan: float = 0.0, spb: float = 60.0 / 112.0):
+    import theme as th  # noqa: F401  (documents the shared source of the motif)
+    for beat, m, d in notes:
+        place(x, dsp.pan(voice(mtof(m), max(0.12, d * spb)), pan), t0 + beat * spb, gain)
+
+
+@sfx("sfx_origin_insider", "stinger", channels=2, volume_db=-3,
+     desc="Origin reveal: Insider (also Seeker). Snare roll into a brass fanfare of the main-theme hook, G major hit, crash, glock sparkle")
+def origin_insider():
+    import theme as th
+    x = canvas(3.4, 2)
+    spb = 60.0 / th.BPM
+    for k in range(10):                                   # snare/rim roll, crescendo
+        place(x, dsp.pan(ins.snare(0.12, tone=210, snappy=0.8, decay=0.06), 0.1), k * 0.035, 0.08 + 0.025 * k)
+        place(x, dsp.pan(ins.tom(98, 0.25), -0.3), k * 0.035, 0.05 + 0.02 * k)
+    t0 = 0.36
+    fan = [(0, th.D5, 0.35), (0.33, th.G5, 0.35), (0.66, th.B5, 0.4)]   # quick pickup of the hook
+    for beat, m, d in fan:
+        place(x, dsp.pan(ins.brass(mtof(m), d, vel=0.9), -0.1), t0 + beat * spb, 0.42)
+        place(x, dsp.pan(ins.brass(mtof(m - 12), d, vel=0.8), 0.15), t0 + beat * spb, 0.22)
+    hit = t0 + 1.0 * spb
+    for j, m in enumerate([th.G4, th.B4, th.D5, th.G5, th.D6]):           # G major brass chord
+        place(x, dsp.pan(ins.brass(mtof(m), 1.5, vel=1.0), (j - 2) * 0.22), hit, 0.30)
+    place(x, dsp.to_stereo(ins.kick(0.7, f0=45, punch=0.9, click=0.3)), hit, 0.55)
+    place(x, dsp.to_stereo(ins.crash(2.2)) * np.array([0.9, 1.0]), hit, 0.22)
+    for i, m in enumerate([th.G5, th.B5, th.D6, th.G6, th.B6]):           # glock run up
+        place(x, dsp.pan(ins.glock(mtof(m), 0.8), 0.35), hit + 0.08 + i * 0.06, 0.28)
+    place(x, dsp.widen(ins.sparkle(1.1, 12, 2600, 3.0), 0.7), hit + 0.1, 0.14)
+    y = dsp.reverb(x, wet=0.24, decay=1.8, predelay=0.02)
+    return trim_tail(y)
+
+
+@sfx("sfx_origin_exit_liquidity", "stinger", channels=2, volume_db=-4,
+     desc="Origin reveal: Exit Liquidity. Cartoon bonk, a short slide-whistle deflate, then a hopeful ukulele + glock quote of the hook")
+def origin_exit_liquidity():
+    """Comic, never punishing: the bonk lands the joke, the rising tag says 'you can still make it'."""
+    import theme as th
+    x = canvas(3.0, 2)
+    place(x, dsp.pan(ins.bonk(0.5), 0.0), 0.0, 0.85)
+    place(x, dsp.pan(ins.slide_whistle(1250, 420, 0.42), 0.15), 0.26, 0.22)
+    t0 = 1.0
+    spb = 60.0 / th.BPM
+    # hopeful tag: G major strum, then the hook's opening rising to D6
+    place(x, dsp.pan(ins.strum([mtof(n) for n in (67, 71, 74, 79)], 1.2), -0.25), t0, 0.55)
+    tag = [(0, th.D5, 0.5), (0.5, th.G5, 0.5), (1, th.A5, 0.5), (1.5, th.B5, 0.5), (2, th.D6, 1.5)]
+    for beat, m, d in tag:
+        place(x, dsp.pan(ins.marimba(mtof(m), max(0.3, d * spb + 0.2)), 0.1), t0 + 0.1 + beat * spb, 0.5)
+    place(x, dsp.pan(ins.glock(mtof(th.D6 + 12), 1.0), 0.35), t0 + 0.1 + 2 * spb, 0.3)
+    place(x, dsp.pan(ins.strum([mtof(n) for n in (67, 71, 74, 79)], 1.0, up=True), -0.25), t0 + 0.1 + 2 * spb, 0.4)
+    y = dsp.reverb(x, wet=0.18, decay=1.4, predelay=0.015)
+    return trim_tail(y)
+
+
+@sfx("sfx_creator_complete", "stinger", channels=2, volume_db=-3,
+     desc="Character creation done: the full main-theme hook on marimba + brass, ukulele strums, two claps, ba-dum-tss, G major finish with a glock run")
+def creator_complete():
+    import theme as th
+    x = canvas(3.4, 2)
+    spb = 60.0 / th.BPM * 0.5                           # the hook at double speed: the fanfare lands at ~1.2 s
+    for beat, m, d in th.HOOK[:6] + [(4, th.B5, 0.5), (4.5, th.D6, 1.5)]:
+        place(x, dsp.pan(ins.marimba(mtof(m), max(0.3, d * spb + 0.2)), 0.1), beat * spb, 0.5)
+        place(x, dsp.pan(ins.brass(mtof(m), max(0.12, d * spb), vel=0.7), -0.15), beat * spb, 0.16)
+    for beat, up in ((0, False), (1, False), (1.5, True), (2.5, True), (3, False), (3.5, True)):
+        place(x, dsp.pan(ins.strum([mtof(n) for n in (67, 71, 74, 79)], 0.6, up=up), -0.3), beat * spb, 0.32 if not up else 0.22)
+    end = 4.5 * spb
+    for k, t in enumerate((2 * spb, 3 * spb)):
+        place(x, dsp.pan(ins.clap(0.25, 0.1), 0.0), t, 0.42)
+    place(x, dsp.pan(ins.snare(0.15, tone=200, decay=0.08), 0.0), end - 0.2, 0.35)
+    place(x, dsp.to_stereo(ins.kick(0.6, f0=48, punch=0.9, click=0.3)), end - 0.07, 0.5)
+    place(x, dsp.to_stereo(ins.crash(2.4)) * np.array([1.0, 0.9]), end, 0.24)
+    for j, m in enumerate([th.G4, th.B4, th.D5, th.G5]):
+        place(x, dsp.pan(ins.brass(mtof(m), 1.1, vel=0.95), (j - 1.5) * 0.25), end, 0.26)
+        place(x, dsp.pan(ins.epiano(mtof(m), 1.3, vel=0.7), 0.2), end, 0.12)
+    for i, m in enumerate([th.G5, th.B5, th.D6, th.G6, th.B6]):
+        place(x, dsp.pan(ins.glock(mtof(m), 0.9), 0.35), end + 0.1 + i * 0.065, 0.26)
+    place(x, dsp.widen(ins.sparkle(1.2, 14, 2600, 3.0), 0.8), end + 0.1, 0.14)
+    y = dsp.reverb(x, wet=0.22, decay=1.8, predelay=0.02)
+    return trim_tail(y)
+
+
+@sfx("sfx_ui_next", "ui", volume_db=-5,
+     desc="Onboarding step complete: rising two-note chime (D6 to G6, the main theme's key), glock + marimba")
+def ui_next():
+    """Onboarding spec (docs/research/duolingo-design-teardown.md C4): 'Step complete: rising 2-note chime'.
+    Bright enough to sit in the 1-6 kHz band over mus_title (tools/mix_audit.py)."""
+    import theme as th
+    x = canvas(0.7)
+    for i, m in enumerate((th.D6, th.G6)):
+        place(x, ins.glock(mtof(m), 0.45), i * 0.085, 0.7)
+        place(x, ins.marimba(mtof(m - 12), 0.35), i * 0.085, 0.45)
+    return trim_tail(small_room(x, 0.08, 0.4))
+
+
+@sfx("sfx_card_shuffle", "card", volume_db=-1,
+     desc="Origin draw: two quick card riffles (Kenney casino-audio card-shuffle, first 1.15 s)")
+def card_shuffle():
+    """Onboarding spec C 'Screen 1/2': the cards gather and deal twice (~1 s). Kenney casino-audio, CC0."""
+    r = src(K / "casino-audio/Audio/card-shuffle.ogg", used_by="sfx_card_shuffle")
+    r = r[onset(r, -40):][: ns(1.15)]
+    # The riffle is many tiny paper clicks with a 30 dB crest factor: tame the spikes (5 ms look-ahead limiter, 14 dB)
+    # so it reads as a riffle over the title music instead of a few faint ticks.
+    from gen_music import limiter_gain
+    peak = 20 * np.log10(np.max(np.abs(r)) + 1e-12)
+    r = r * limiter_gain(r, peak - 16.0)
+    r = dsp.eq(r, "peak", 3500, 3.0, q=0.9)
+    return dsp.fade(r, 0.002, 0.12)
 
 
 def main(only: list[str] | None = None) -> dict:

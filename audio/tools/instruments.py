@@ -472,3 +472,88 @@ def tick(dur: float = 0.012, f: float = 5200.0) -> np.ndarray:
     n = ns(dur)
     x = filt(noise(n=n), "bp", f, q=2.0) * env_exp(n, dur * 0.6, attack=0.0003) * 2.0
     return x
+
+
+# ================================================================ main-theme voices (2026-10-09, audio integration lane)
+
+def uke(freq: float, dur: float = 0.6, bright: float = 0.7) -> np.ndarray:
+    """Ukulele / nylon-string pluck: Karplus-Strong with a small wooden body (peaks ~450 Hz and ~2.4 kHz)."""
+    x = pluck_ks(freq, dur, bright=bright, decay=0.9955, pick=0.22)
+    x = dsp.eq(x, "peak", 450, 4.0, q=1.4)
+    x = dsp.eq(x, "peak", 2400, 3.0, q=1.2)
+    x = filt(x, "hp", 160)
+    return x * env_exp(len(x), dur * 1.4, attack=0.0008)
+
+
+def strum(freqs: list[float], dur: float, up: bool = False, spread: float = 0.011, bright: float = 0.7) -> np.ndarray:
+    """A strum across `freqs` (low→high, or high→low for an up-strum), each string `spread` s apart."""
+    order = list(reversed(freqs)) if up else list(freqs)
+    n = ns(dur + spread * len(order))
+    out = np.zeros(n)
+    for i, f in enumerate(order):
+        s = ns(i * spread)
+        v = uke(f, dur, bright=bright) * (0.8 + 0.2 * (i / max(1, len(order) - 1)))
+        out[s:s + len(v)] += v[: n - s]
+    return out / max(1.0, len(order) ** 0.6)
+
+
+def glock(freq: float, dur: float = 0.9) -> np.ndarray:
+    """Glockenspiel: bar partials ~1, 2.76, 5.4 with fast upper decays and a mallet tick."""
+    n = ns(dur)
+    t = np.arange(n) / SR
+    x = np.sin(2 * np.pi * freq * t) * np.exp(-t / (dur * 0.45))
+    x += 0.35 * np.sin(2 * np.pi * freq * 2.76 * t) * np.exp(-t / 0.12)
+    x += 0.15 * np.sin(2 * np.pi * freq * 5.40 * t) * np.exp(-t / 0.04)
+    tick = filt(noise(n=ns(0.003)), "hp", 6000) * 0.25
+    x[: len(tick)] += tick
+    a = ns(0.0007)
+    x[:a] *= np.linspace(0, 1, a)
+    return x / 1.4
+
+
+def tambourine(dur: float = 0.18, accent: float = 1.0) -> np.ndarray:
+    """Tambourine: jingles (several inharmonic metallic partials) + skin tap."""
+    n = ns(dur)
+    t = np.arange(n) / SR
+    x = np.zeros(n)
+    for f in (5200, 6100, 7300, 8800, 10400):
+        x += np.sin(2 * np.pi * f * t + f) * np.exp(-t / 0.06)
+    x = x * 0.15 + filt(noise(n=n), "bp", 8000, q=1.2) * env_exp(n, 0.07) * 1.2
+    skin = filt(noise(n=ns(0.01)), "bp", 1200, q=1.0) * 0.3
+    x[: len(skin)] += skin
+    return x * env_adsr(n, 0.002, 0.05, 0.4, dur * 0.6) * accent
+
+
+def snap(dur: float = 0.12) -> np.ndarray:
+    """Finger snap: short bright noise burst with a little body."""
+    n = ns(dur)
+    x = filt(noise(n=n), "bp", 2600, q=1.5) * env_exp(n, 0.025, attack=0.0004) * 2.0
+    x += filt(noise(n=n), "hp", 5000) * env_exp(n, 0.012) * 0.6
+    return x
+
+
+def bonk(dur: float = 0.45) -> np.ndarray:
+    """Cartoon bonk: hollow wooden knock with a fast downward pitch drop, then a short springy wobble."""
+    n = ns(dur)
+    t = np.arange(n) / SR
+    f = 160 + 620 * np.exp(-t / 0.018)
+    knock = np.sin(2 * np.pi * np.cumsum(f) / SR) * env_exp(n, 0.12, attack=0.0005)
+    wood = filt(noise(n=ns(0.02)), "bp", 1500, q=3.0) * 0.8
+    knock[: len(wood)] += wood
+    wob_f = 330 * (1 + 0.08 * np.sin(2 * np.pi * 17 * t) * np.exp(-t / 0.2)) * (1 - 0.25 * t / dur)
+    wobble = np.sin(2 * np.pi * np.cumsum(wob_f) / SR) * env_adsr(n, 0.02, 0.1, 0.5, dur * 0.5) * 0.35
+    s = ns(0.05)
+    out = knock.copy()
+    out[s:] += wobble[: n - s]
+    return sat(out * 1.4, 1.3)
+
+
+def slide_whistle(f0: float, f1: float, dur: float) -> np.ndarray:
+    """Slide whistle glide f0 → f1 (comic deflate when f1 < f0)."""
+    n = ns(dur)
+    t = np.linspace(0, 1, n)
+    f = f0 * (f1 / f0) ** (t ** 1.3)
+    f = f * (1 + 0.012 * np.sin(2 * np.pi * 6 * t * dur))
+    x = np.sin(2 * np.pi * np.cumsum(f) / SR) + 0.05 * np.sin(4 * np.pi * np.cumsum(f) / SR)
+    br = filt(noise(n=n), "bp", 2000, q=1.0) * 0.06
+    return (x + br) * env_adsr(n, 0.03, 0.05, 0.85, 0.08)

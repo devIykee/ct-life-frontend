@@ -146,6 +146,39 @@ namespace CTLife.Audio.Tests
         }
 
         [Test]
+        public void NonReactiveSetIgnoresTheMarket()
+        {
+            // Title / onboarding theme: SOL red must not muffle the welcome music.
+            var c = new MoodController { Reactive = false };
+            c.SetMood(-1f);
+            c.Restart(false);
+            var x = c.Tick(0, 0, 112, 0.016f);
+            Assert.AreEqual(0f, x.Tension, 1e-4, "no tension layer");
+            Assert.IsFalse(x.FilterActive, "no low-pass");
+            Assert.AreEqual(-1f, c.TargetMood, "the requested mood is remembered");
+            Assert.AreEqual(0f, c.EffectiveMood);
+            // Leaving the title for a reactive set: the remembered red mood fades in over two bars, not as a jump.
+            c.Reactive = true;
+            var y = c.Tick(0.5, 0, 112, 0.016f);
+            Assert.That(y.Tension, Is.GreaterThan(0f).And.LessThan(0.1f));
+            for (int i = 0; i < 400; i++) y = c.Tick(0.5 + (i + 1) * 0.016, 0, 112, 0.016f);
+            Assert.AreEqual(1f, y.Tension, 1e-3);
+            Assert.AreEqual(900f, y.CutoffHz, 5f);
+        }
+
+        [Test]
+        public void FullMixNonReactiveIsThePlainTrack()
+        {
+            var c = new MoodController { Reactive = false };
+            c.SetMood(1f);
+            c.Restart(false);
+            var x = c.Tick(0, 0, 112, 0.016f);
+            Assert.AreEqual(1f, x.Pad, 1e-4);
+            Assert.AreEqual(MoodMix.Evaluate(0f, false).Drums, x.Drums, 1e-4, "neutral mood, not green");
+            Assert.AreEqual(MoodMix.OpenCutoffHz, x.CutoffHz, 1e-3);
+        }
+
+        [Test]
         public void ControllerIgnoresBadDeltaTimes()
         {
             var c = new MoodController();

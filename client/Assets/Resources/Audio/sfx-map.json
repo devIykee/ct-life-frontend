@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated": "2026-10-08",
+  "generated": "2026-10-09",
   "paths_relative_to": "audio/processed/",
   "_notes": [
     "Shape follows the unity -> audio request (docs/progress/requests.md); extra keys are informational.",
@@ -69,12 +69,15 @@
     "mus_perp_pit": "music.perp_pit",
     "mus_terminal_cafe": "music.terminal_cafe",
     "mus_timeline_square": "music.timeline",
+    "mus_title": "music.title",
     "mus_trenches": "music.trenches",
     "sfx_buy": "sfx.sfx_buy",
     "sfx_call_connect": "sfx.sfx_call_connect",
     "sfx_call_end": "sfx.sfx_call_end",
     "sfx_call_ring": "sfx.sfx_call_ring",
+    "sfx_card_shuffle": "sfx.sfx_card_shuffle",
     "sfx_cash_in": "sfx.sfx_cash_in",
+    "sfx_creator_complete": "sfx.sfx_creator_complete",
     "sfx_dm_ping": "sfx.sfx_dm_ping",
     "sfx_gm": "sfx.sfx_gm",
     "sfx_graduation": "sfx.sfx_graduation",
@@ -85,6 +88,8 @@
     "sfx_news_flash": "sfx.sfx_news_flash",
     "sfx_ore_clink": "sfx.sfx_ore_clink",
     "sfx_ore_furnace_whoosh": "sfx.sfx_ore_furnace_whoosh",
+    "sfx_origin_exit_liquidity": "sfx.sfx_origin_exit_liquidity",
+    "sfx_origin_insider": "sfx.sfx_origin_insider",
     "sfx_pnl_card_flip": "sfx.sfx_pnl_card_flip",
     "sfx_rank_up": "sfx.sfx_rank_up",
     "sfx_rekt_phonk": "sfx.sfx_rekt_phonk",
@@ -95,6 +100,7 @@
     "sfx_take_profit": "sfx.sfx_take_profit",
     "sfx_ui_close": "sfx.sfx_ui_close",
     "sfx_ui_error": "sfx.sfx_ui_error",
+    "sfx_ui_next": "sfx.sfx_ui_next",
     "sfx_ui_open": "sfx.sfx_ui_open",
     "sfx_ui_success": "sfx.sfx_ui_success",
     "sfx_ui_tap": "sfx.sfx_ui_tap",
@@ -231,6 +237,31 @@
         "preloadAudioData": true
       }
     },
+    "sfx_card_shuffle": {
+      "files": [
+        "sfx/sfx_card_shuffle.wav"
+      ],
+      "volume": 0.891,
+      "pitchJitter": 0.0,
+      "category": "card",
+      "volume_db": -1,
+      "channels": 1,
+      "loop": false,
+      "duration_s": 1.15,
+      "true_peak_dbtp": -1.0,
+      "ducks_music": false,
+      "status": "client_only_cue",
+      "desc": "Origin draw: two quick card riffles (Kenney casino-audio card-shuffle, first 1.15 s)",
+      "sources": [
+        "raw/kenney/casino-audio/Audio/card-shuffle.ogg"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
+        "preloadAudioData": true
+      }
+    },
     "sfx_cash_in": {
       "files": [
         "sfx/sfx_cash_in.wav"
@@ -251,6 +282,31 @@
       ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
+        "preloadAudioData": true
+      }
+    },
+    "sfx_creator_complete": {
+      "files": [
+        "sfx/sfx_creator_complete.wav"
+      ],
+      "volume": 0.708,
+      "pitchJitter": 0.0,
+      "category": "stinger",
+      "volume_db": -3,
+      "channels": 2,
+      "loop": false,
+      "duration_s": 3.509,
+      "true_peak_dbtp": -1.3,
+      "ducks_music": true,
+      "status": "client_only_cue",
+      "desc": "Character creation done: the full main-theme hook on marimba + brass, ukulele strums, two claps, ba-dum-tss, G major finish with a glock run",
+      "sources": [
+        "own work (synthesised, tools/gen_sfx.py)"
+      ],
+      "unity_import": {
+        "loadType": "CompressedInMemory",
         "compressionFormat": "Vorbis",
         "quality": 0.6,
         "preloadAudioData": true
@@ -517,14 +573,64 @@
         "preloadAudioData": true
       }
     },
+    "sfx_origin_exit_liquidity": {
+      "files": [
+        "sfx/sfx_origin_exit_liquidity.wav"
+      ],
+      "volume": 0.631,
+      "pitchJitter": 0.0,
+      "category": "stinger",
+      "volume_db": -4,
+      "channels": 2,
+      "loop": false,
+      "duration_s": 3.602,
+      "true_peak_dbtp": -1.0,
+      "ducks_music": true,
+      "status": "client_only_cue",
+      "desc": "Origin reveal: Exit Liquidity. Cartoon bonk, a short slide-whistle deflate, then a hopeful ukulele + glock quote of the hook",
+      "sources": [
+        "own work (synthesised, tools/gen_sfx.py)"
+      ],
+      "unity_import": {
+        "loadType": "CompressedInMemory",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
+        "preloadAudioData": true
+      }
+    },
+    "sfx_origin_insider": {
+      "files": [
+        "sfx/sfx_origin_insider.wav"
+      ],
+      "volume": 0.708,
+      "pitchJitter": 0.0,
+      "category": "stinger",
+      "volume_db": -3,
+      "channels": 2,
+      "loop": false,
+      "duration_s": 3.503,
+      "true_peak_dbtp": -1.0,
+      "ducks_music": true,
+      "status": "client_only_cue",
+      "desc": "Origin reveal: Insider (also Seeker). Snare roll into a brass fanfare of the main-theme hook, G major hit, crash, glock sparkle",
+      "sources": [
+        "own work (synthesised, tools/gen_sfx.py)"
+      ],
+      "unity_import": {
+        "loadType": "CompressedInMemory",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
+        "preloadAudioData": true
+      }
+    },
     "sfx_pnl_card_flip": {
       "files": [
         "sfx/sfx_pnl_card_flip.wav"
       ],
-      "volume": 0.398,
+      "volume": 0.891,
       "pitchJitter": 0.02,
       "category": "trading",
-      "volume_db": -8,
+      "volume_db": -1,
       "channels": 1,
       "loop": false,
       "duration_s": 0.7,
@@ -746,14 +852,14 @@
       "files": [
         "sfx/licensed/sfx_ui_error_kenney.wav"
       ],
-      "volume": 0.199526,
+      "volume": 0.891251,
       "pitchJitter": 0.0,
       "category": "ui",
-      "volume_db": -14,
+      "volume_db": -1,
       "channels": 1,
       "loop": false,
       "duration_s": 0.16166666666666665,
-      "sample_peak_dbfs": -6.010532855987549,
+      "sample_peak_dbfs": -1.0502629280090332,
       "ducks_music": false,
       "status": "existing_FE_proposal_not_new_contract_id",
       "desc": "error cue distinct from success and ordinary tap",
@@ -762,7 +868,32 @@
       ],
       "source_page": "https://kenney.nl/assets/interface-sounds",
       "license": "CC0-1.0",
-      "processing": "Constant -6.704093dB gain; 48kHz mono PCM16, duration unchanged",
+      "processing": "equalizer=f=2200:t=q:w=0.8:g=6 then constant -2.540418dB gain (peak -1 dBFS); 48kHz mono PCM16, duration unchanged",
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
+        "preloadAudioData": true
+      }
+    },
+    "sfx_ui_next": {
+      "files": [
+        "sfx/sfx_ui_next.wav"
+      ],
+      "volume": 0.562,
+      "pitchJitter": 0.0,
+      "category": "ui",
+      "volume_db": -5,
+      "channels": 1,
+      "loop": false,
+      "duration_s": 0.668,
+      "true_peak_dbtp": -1.0,
+      "ducks_music": false,
+      "status": "client_only_cue",
+      "desc": "Onboarding step complete: rising two-note chime (D6 to G6, the main theme's key), glock + marimba",
+      "sources": [
+        "own work (synthesised, tools/gen_sfx.py)"
+      ],
       "unity_import": {
         "loadType": "DecompressOnLoad",
         "compressionFormat": "Vorbis",
@@ -799,14 +930,14 @@
       "files": [
         "sfx/licensed/sfx_ui_success_kenney.wav"
       ],
-      "volume": 0.199526,
+      "volume": 0.707946,
       "pitchJitter": 0.0,
       "category": "ui",
-      "volume_db": -14,
+      "volume_db": -3,
       "channels": 1,
       "loop": false,
       "duration_s": 0.2898541666666667,
-      "sample_peak_dbfs": -2.999987840652466,
+      "sample_peak_dbfs": -0.9998545050621033,
       "ducks_music": false,
       "status": "existing_FE_proposal_not_new_contract_id",
       "desc": "confirmation cue distinct from error and ordinary tap",
@@ -815,7 +946,7 @@
       ],
       "source_page": "https://kenney.nl/assets/interface-sounds",
       "license": "CC0-1.0",
-      "processing": "Constant -2.072576dB gain; 48kHz mono PCM16, duration unchanged",
+      "processing": "constant -0.072576dB gain (peak -1 dBFS); 48kHz mono PCM16, duration unchanged",
       "unity_import": {
         "loadType": "DecompressOnLoad",
         "compressionFormat": "Vorbis",
@@ -827,14 +958,14 @@
       "files": [
         "sfx/licensed/sfx_ui_tap_kenney.wav"
       ],
-      "volume": 0.158489,
+      "volume": 0.707946,
       "pitchJitter": 0.0,
       "category": "ui",
-      "volume_db": -16,
+      "volume_db": -3,
       "channels": 1,
       "loop": false,
       "duration_s": 0.007125,
-      "sample_peak_dbfs": -2.999987840652466,
+      "sample_peak_dbfs": -0.9998545050621033,
       "ducks_music": false,
       "status": "existing_FE_proposal_not_new_contract_id",
       "desc": "short dry interaction click",
@@ -843,7 +974,7 @@
       ],
       "source_page": "https://kenney.nl/assets/interface-sounds",
       "license": "CC0-1.0",
-      "processing": "Constant -1.555996dB gain; 48kHz mono PCM16, duration unchanged",
+      "processing": "constant 0.444004dB gain (peak -1 dBFS); 48kHz mono PCM16, duration unchanged",
       "unity_import": {
         "loadType": "DecompressOnLoad",
         "compressionFormat": "Vorbis",
@@ -855,14 +986,14 @@
       "files": [
         "sfx/licensed/sfx_ui_toast_kenney.wav"
       ],
-      "volume": 0.125893,
+      "volume": 0.794328,
       "pitchJitter": 0.0,
       "category": "ui",
-      "volume_db": -18,
+      "volume_db": -2,
       "channels": 1,
       "loop": false,
       "duration_s": 0.02033333333333333,
-      "sample_peak_dbfs": -2.999987840652466,
+      "sample_peak_dbfs": -0.9998545050621033,
       "ducks_music": false,
       "status": "existing_FE_proposal_not_new_contract_id",
       "desc": "quiet notification tick",
@@ -871,7 +1002,7 @@
       ],
       "source_page": "https://kenney.nl/assets/interface-sounds",
       "license": "CC0-1.0",
-      "processing": "Constant -4.091027dB gain; 48kHz mono PCM16, duration unchanged",
+      "processing": "constant -2.091027dB gain (peak -1 dBFS); 48kHz mono PCM16, duration unchanged",
       "unity_import": {
         "loadType": "DecompressOnLoad",
         "compressionFormat": "Vorbis",
@@ -883,14 +1014,14 @@
       "files": [
         "sfx/licensed/sfx_ui_toggle_off_kenney.wav"
       ],
-      "volume": 0.141254,
+      "volume": 0.237137,
       "pitchJitter": 0.0,
       "category": "ui",
-      "volume_db": -17,
+      "volume_db": -12.5,
       "channels": 1,
       "loop": false,
       "duration_s": 0.1364375,
-      "sample_peak_dbfs": -2.999987840652466,
+      "sample_peak_dbfs": -0.9998545050621033,
       "ducks_music": false,
       "status": "existing_FE_proposal_not_new_contract_id",
       "desc": "toggle-off cue from paired Kenney family",
@@ -899,7 +1030,7 @@
       ],
       "source_page": "https://kenney.nl/assets/interface-sounds",
       "license": "CC0-1.0",
-      "processing": "Constant -2.022649dB gain; 48kHz mono PCM16, duration unchanged",
+      "processing": "constant -0.022649dB gain (peak -1 dBFS); 48kHz mono PCM16, duration unchanged",
       "unity_import": {
         "loadType": "DecompressOnLoad",
         "compressionFormat": "Vorbis",
@@ -911,14 +1042,14 @@
       "files": [
         "sfx/licensed/sfx_ui_toggle_on_kenney.wav"
       ],
-      "volume": 0.141254,
+      "volume": 0.446684,
       "pitchJitter": 0.0,
       "category": "ui",
-      "volume_db": -17,
+      "volume_db": -7,
       "channels": 1,
       "loop": false,
       "duration_s": 0.1364375,
-      "sample_peak_dbfs": -2.999987840652466,
+      "sample_peak_dbfs": -0.9998545050621033,
       "ducks_music": false,
       "status": "existing_FE_proposal_not_new_contract_id",
       "desc": "toggle-on cue from paired Kenney family",
@@ -927,7 +1058,7 @@
       ],
       "source_page": "https://kenney.nl/assets/interface-sounds",
       "license": "CC0-1.0",
-      "processing": "Constant -2.061490dB gain; 48kHz mono PCM16, duration unchanged",
+      "processing": "constant -0.061490dB gain (peak -1 dBFS); 48kHz mono PCM16, duration unchanged",
       "unity_import": {
         "loadType": "DecompressOnLoad",
         "compressionFormat": "Vorbis",
@@ -1778,6 +1909,35 @@
         "tension": "music/mood/mus_mood_tension_bed.ogg"
       },
       "mood_rule": "full_mix stays intact (green = neutral = the track); red low-passes it 20 kHz -> 2.5 kHz (mood 0..-0.5) -> 900 Hz (-1) and fades in stems.tension (key/tempo-neutral bed, tools/gen_mood_bed.py)"
+    },
+    "title": {
+      "id": "mus_title",
+      "bpm": 112.0,
+      "bars": 32,
+      "time_signature": "4/4",
+      "key": "G major",
+      "district": "Title screen and onboarding (CT Life main theme)",
+      "full_mix": "music/title/mus_title.ogg",
+      "volume": 1.0,
+      "mood_reactive": false,
+      "loop": true,
+      "loop_kind": "seamless (rendered circularly)",
+      "loop_samples": 3291429,
+      "sample_rate": 48000,
+      "loop_seconds": 68.5714,
+      "full_mix_lufs": -16.0,
+      "full_mix_true_peak_dbtp": -1.6,
+      "status": "client_only",
+      "sources": [
+        "own work (composed and synthesised, tools/gen_title.py + tools/theme.py)"
+      ],
+      "unity_import": {
+        "loadType": "Streaming",
+        "compressionFormat": "Vorbis",
+        "quality": 0.45,
+        "preloadAudioData": false,
+        "loadInBackground": true
+      }
     },
     "trenches": {
       "id": "mus_trenches",

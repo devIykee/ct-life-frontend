@@ -45,6 +45,7 @@ namespace CTLife.Audio
         public static readonly HashSet<string> Stingers = new HashSet<string>
         {
             "sfx_liquidation", "sfx_rug", "sfx_graduation", "sfx_moon_horn", "sfx_rank_up", "sfx_sunday_unlock", "sfx_rekt_phonk",
+            "sfx_origin_insider", "sfx_origin_exit_liquidity", "sfx_creator_complete",
         };
 
         /// <param name="assetPath">Unity asset path, e.g. "Assets/Resources/Audio/sfx/foot_wood_01.wav".</param>

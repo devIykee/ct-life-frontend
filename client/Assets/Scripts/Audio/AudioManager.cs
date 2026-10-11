@@ -441,10 +441,17 @@ namespace CTLife.Audio
         /// <summary>Plays an sfx id as a 2D one-shot (loops such as `sfx_call_ring` start a timed loop instead).</summary>
         public void Play(string sfxId, float volume = 1f) => PlayInternal(sfxId, volume, null);
 
+        /// <summary>
+        /// 2D one-shot transposed by `semitones` (clamped ±12; pitch and speed together). Onboarding spec: the draw
+        /// spotlight's tick rises one semitone per hop.
+        /// </summary>
+        public void PlayPitched(string sfxId, float semitones, float volume = 1f) =>
+            PlayInternal(sfxId, volume, null, float.IsNaN(semitones) ? 0f : Mathf.Clamp(semitones, -12f, 12f));
+
         /// <summary>3D one-shot in the shared bounded SFX pool. Local footsteps have a dedicated pool.</summary>
         public void PlayAt(string sfxId, Vector3 position, float volume = 1f) => PlayInternal(sfxId, volume, position);
 
-        private void PlayInternal(string sfxId, float volume, Vector3? position)
+        private void PlayInternal(string sfxId, float volume, Vector3? position, float semitones = 0f)
         {
             if (!_runtimeReady) return;
             if (float.IsNaN(volume) || volume < 0f) volume = 0f;
@@ -480,7 +487,7 @@ namespace CTLife.Audio
                 src.spatialBlend = 1f;
                 src.transform.position = position.Value;
             }
-            src.pitch = 1f + UnityEngine.Random.Range(-entry.pitchJitter, entry.pitchJitter);
+            src.pitch = AudioMath.SemitonesToPitch(semitones) * (1f + UnityEngine.Random.Range(-entry.pitchJitter, entry.pitchJitter));
             src.PlayOneShot(clip, entry.volume * volume);
             // A muted or zero-gain stinger never ducks the music.
             if (entry.ducksMusic && entry.volume * volume > 0f && SfxGain > 0f)

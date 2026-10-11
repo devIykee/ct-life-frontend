@@ -115,6 +115,16 @@ namespace CTLife.Audio
         public MoodLayers Current => _current;
         public bool FullMixMode { get; private set; }
 
+        /// <summary>
+        /// False for sets that must ignore the market (the title / onboarding theme): the mix is evaluated at mood 0
+        /// (pad/bass on, drums in halfway, no lead or tension, filter open) — for a full mix: the plain track. The requested
+        /// mood is still remembered and applies again as soon as a reactive set plays.
+        /// </summary>
+        public bool Reactive { get; set; } = true;
+
+        /// <summary>The mood the mix is built from: the latched market mood, or 0 for a non-reactive set.</summary>
+        public float EffectiveMood => Reactive ? AppliedMood : 0f;
+
         public void SetMood(float mood) => _target = AudioMath.Clamp(float.IsNaN(mood) ? 0f : mood, -1f, 1f);
 
         /// <summary>A new set started (or the mode changed): latch the target immediately on the next tick.</summary>
@@ -133,7 +143,7 @@ namespace CTLife.Audio
             if (_snap)
             {
                 AppliedMood = _target;
-                _current = MoodMix.Evaluate(AppliedMood, FullMixMode);
+                _current = MoodMix.Evaluate(EffectiveMood, FullMixMode);
                 _lastBar = bar;
                 _snap = false;
                 return _current;
@@ -143,7 +153,7 @@ namespace CTLife.Audio
                 _lastBar = bar;
                 AppliedMood = _target;
             }
-            var goal = MoodMix.Evaluate(AppliedMood, FullMixMode);
+            var goal = MoodMix.Evaluate(EffectiveMood, FullMixMode);
             if (float.IsNaN(deltaSeconds) || deltaSeconds <= 0f) return _current;
             float step = Math.Min(1f, deltaSeconds) / FadeSeconds(bpm);
             _current.Pad = AudioMath.MoveTowards(_current.Pad, goal.Pad, step);

@@ -1299,3 +1299,50 @@ I checked the NPC side (`art/cast/export/manifest.json`, one curated look per ar
   hero" direction is approved. The creator's interleaving uses the tone ids, so it keeps working with the new colours.
 
 Status: open (cast / world-life lane; integration lead to route)
+
+## 2026-10-09 audio-integration -> UI lane / integration lead: title music + onboarding cues
+
+Assets are in (`mus_title`, 5 new sfx ids, UI cues re-mastered; `audio/RUNTIME_API.md` §3–§4, changelog 2026-10-09).
+Nothing plays them until these call sites change. UI and App already reference CTLife.Audio.
+
+**1. Start the main theme at the title and keep it through onboarding** (`App/FlowController.cs`; `PlayTitle()` is
+idempotent, so calling it on every onboarding screen keeps one continuous loop and covers resume paths that skip sign-in):
+```diff
+@@ SignIn(), l.290-291
+             screen = new SignInScreen(Wallet, wallet.IsAvailable, returning, Play, AnotherWallet);
+             ShowFlow(screen);
++            CTLife.Audio.Music.PlayTitle();
+@@ CreateCharacter(), l.482 and the lottery flow, l.527: after `ShowFlow(screen);`
++            CTLife.Audio.Music.PlayTitle();
+```
+The existing `Music.SetDistrict("lobby")` (l.585) crossfades to the lobby track as before (1.2 s). Optional: the splash
+(l.141) can call it too if config loading takes long enough to feel silent.
+
+**2. Onboarding cue ids** (`UI/Kit/Motion.cs` `Cues`):
+```diff
+-            SfxError = "sfx_ui_error", SfxStep = "sfx_ui_success", SfxHop = "sfx_ui_toggle_on", SfxFlip = "sfx_pnl_card_flip",
+-            SfxGood = "sfx_moon_horn", SfxDebt = "sfx_rug", SfxCoins = "sfx_cash_in", SfxCelebrate = "sfx_graduation";
++            SfxError = "sfx_ui_error", SfxStep = "sfx_ui_next", SfxHop = "sfx_ui_toggle_on", SfxFlip = "sfx_pnl_card_flip",
++            SfxGood = "sfx_origin_insider", SfxDebt = "sfx_origin_exit_liquidity", SfxCoins = "sfx_cash_in",
++            SfxCelebrate = "sfx_creator_complete", SfxShuffle = "sfx_card_shuffle";
+```
+`UI/Screens/LotteryScreen.cs`:
+- l.253 `Kit.Cues.Play(Kit.Cues.SfxFlip, 0.5f);` → `Kit.Cues.Play(Kit.Cues.SfxShuffle, 0.5f);` (two riffles, ~1.1 s, fits both passes).
+- l.305 and l.361: play the debt stinger at full volume — `Kit.Cues.Play(good ? Kit.Cues.SfxGood : Kit.Cues.SfxDebt)`
+  and `Kit.Cues.Play(Kit.Cues.SfxDebt)`. The new stinger is comic (bonk + hopeful tag), already mixed 1 dB under the
+  Insider one; the spec's "−6 dB, cut 800 ms" was for `sfx_rug`.
+- Seeker outcome: `"sfx_origin_" + id` works for all three outcomes (`sfx_origin_seeker` → Insider fanfare).
+- Spec C "Draw hop: tick, +1 semitone per hop (cap +6)" — l.228 and l.245:
+  `Kit.Cues.Hop();` → `CTLife.Audio.Sfx.PlayPitched(Kit.Cues.SfxHop, Mathf.Min(i, 6), 0.45f); DeviceFeel.ClockTick();`
+  (second loop: `Mathf.Min(6, h)`), or add `Hop(int n)` to `Kit.Cues` with that body.
+`UI/Screens/CharacterCreatorScreen.cs` l.842 needs no change once `SfxCelebrate` points at `sfx_creator_complete`.
+
+**3. Levels** (no code): at the default settings every cue above clears the title music in the 1–6 kHz band by ≥ +6 dB
+(actions) / ≥ +3 dB (hop, shuffle and deselect ticks) at today's call-site volumes (`python3 audio/tools/mix_audit.py`).
+Keep those volumes (Select 0.8, Hop 0.45, Step 0.55, Nope 0.6, shuffle 0.5, coins 0.7) or re-run the audit after changing them.
+
+**4. Device volume** [Unverified, not built]: the Seeker was at media volume 4/15. A "turn your volume up" hint at the
+title would need Android `AudioManager.getStreamVolume(STREAM_MUSIC)` via JNI; I could not confirm the current API page
+from here, so I did not add it. Your call whether it is worth a check on the device.
+
+Status: open

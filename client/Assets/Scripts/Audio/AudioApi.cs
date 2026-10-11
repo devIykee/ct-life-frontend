@@ -14,6 +14,9 @@ namespace CTLife.Audio
 
         public static void PlayAt(string id, Vector3 position, float volume = 1f) => AudioManager.Instance?.PlayAt(id, position, volume);
 
+        /// <summary>One-shot transposed by `semitones` (±12): e.g. the draw spotlight tick, +1 semitone per hop (cap +6).</summary>
+        public static void PlayPitched(string id, float semitones, float volume = 1f) => AudioManager.Instance?.PlayPitched(id, semitones, volume);
+
         /// <summary>Loop `id` under `key` until <see cref="StopLoop"/> or `maxSeconds` (call ring: key = SfxIds.CallRing).</summary>
         public static void StartLoop(string key, string id, float maxSeconds = AudioManager.LoopMaxSeconds) =>
             AudioManager.Instance?.StartLoop(key, id, maxSeconds);
@@ -33,11 +36,18 @@ namespace CTLife.Audio
     /// <summary>Adaptive music: venue/district selection and market mood.</summary>
     public static class Music
     {
+        /// <summary>Music keys for screens outside venues. Title = CT Life main theme (`mus_title`, ignores market mood).</summary>
+        public const string Title = "title", Lobby = "lobby";
+
+        /// <summary>Title screen and onboarding (sign-in, origin reveal, creator): the main theme. Idempotent.</summary>
+        public static void PlayTitle() => SetDistrict(Title);
+
         /// <summary>Entering a venue: ambience + music (venue set → clubs → district) + footstep floor default.</summary>
         public static void SetVenue(string venueId, string districtId, bool isClub = false) =>
             AudioManager.Instance?.SetVenue(venueId, districtId, isClub);
 
-        /// <summary>Select a set by sfx-map key ("lobby", a district id, a venue id, "clubs"); null fades music out.</summary>
+        /// <summary>Select a set by sfx-map key ("title", "lobby", a district id, a venue id, "clubs") or its id ("mus_title");
+        /// null fades music out. Selecting the playing set again does nothing (no restart).</summary>
         public static void SetDistrict(string key) => AudioManager.Instance?.Music?.SetDistrict(key);
 
         /// <summary>market_mood −1 (red) … +1 (green). Usually driven by the city room's MoodSignal automatically.</summary>

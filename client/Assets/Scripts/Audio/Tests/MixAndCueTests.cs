@@ -92,6 +92,8 @@ namespace CTLife.Audio.Tests
             Assert.AreEqual(0.0625f, s.BusGain(AudioBus.Voice), 1e-6);
             Assert.Throws<System.ArgumentException>(() => s.Get("bogus"));
             foreach (var k in VolumeSettings.Keys) Assert.AreEqual(VolumeSettings.Default(k), new VolumeSettings().Get(k), k);
+            // Music default ≈ −3 dB (title theme −16 LUFS → about −19 LUFS; spec mix target −18..−16).
+            Assert.AreEqual(-2.8f, AudioMath.LinearToDb(new VolumeSettings().BusGain(AudioBus.Music)), 0.1f);
         }
     }
 
@@ -153,8 +155,21 @@ namespace CTLife.Audio.Tests
         [TestCase("sfx_room_leave", "sfx_vr_leave")]
         [TestCase("sfx_raise_hand", "sfx_vr_raise_hand")]
         [TestCase("sfx_promoted", "sfx_vr_promoted")]
+        [TestCase("sfx_origin_seeker", "sfx_origin_insider")]
+        [TestCase("sfx_origin_exit_liquidity", "sfx_origin_exit_liquidity")]
         [TestCase("sfx_buy", "sfx_buy")]
         public void RegistryAliasesResolve(string id, string canonical) => Assert.AreEqual(canonical, CueGate.Canonical(id));
+
+        [Test]
+        public void OriginStingersShareTheStingerCooldown()
+        {
+            var g = new CueGate();
+            Assert.IsTrue(g.TryPass(CueGate.Canonical(SfxIds.OriginSeeker), "stinger", 0));
+            Assert.IsFalse(g.TryPass(SfxIds.OriginInsider, "stinger", 0.5), "same reveal, one fanfare");
+            Assert.IsTrue(g.TryPass(SfxIds.CreatorComplete, "stinger", 0.6), "different stinger");
+            Assert.IsTrue(g.TryPass(SfxIds.CardShuffle, "card", 0));
+            Assert.IsTrue(g.TryPass(SfxIds.UiNext, "ui", 0));
+        }
 
         [Test]
         public void EmptyIdNeverPasses()

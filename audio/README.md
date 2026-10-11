@@ -6,6 +6,7 @@ Everything here is CC0 or our own work (see `LICENSES.md`). IDs → files: `sfx-
 audio/
   processed/sfx/            one-shots + footsteps (48 kHz 16-bit WAV; UI/phone/trading/footsteps mono, stingers stereo)
   processed/ambience/       venue loops (48 kHz 16-bit stereo WAV, seamless)
+  processed/music/title/    CT Life main theme mus_title (own work; tools/gen_title.py, motif in tools/theme.py)
   processed/music/licensed/ complete CC-BY district tracks (Ogg Vorbis, stereo)
   processed/music/stems/    adaptive stem sets, sample-locked (today: club/ — Afropiano, own work)
   processed/music/mood/     red-market tension bed for the full-mix sets (key/tempo-neutral, own work)
@@ -28,11 +29,14 @@ cd tools
 ../.venv/bin/python gen_footsteps.py     # processed/sfx/foot_*.wav
 ../.venv/bin/python gen_music.py club    # processed/music/stems/club/mus_club_*.ogg (16 bars, 112 BPM); preview in build/
 ../.venv/bin/python gen_mood_bed.py      # processed/music/mood/mus_mood_tension_bed.ogg (24 s seamless)
+../.venv/bin/python gen_title.py         # processed/music/title/mus_title.ogg (68.6 s seamless main theme)
+../.venv/bin/python curate_ui_sounds.py  # Kenney UI cues → processed/sfx/licensed/ (peak −1 dBFS, audited gains)
 ../.venv/bin/python gen_ambience.py      # processed/ambience/amb_*.wav (needs gen_music for the club; `amb_club_doors` alone re-renders one)
 ../.venv/bin/python gen_babble.py        # processed/babble/*
 ../.venv/bin/python check_audio.py       # loudness / true peak / loop seams -> qa_report.json
 ../.venv/bin/python build_map.py         # sfx-map.json + LICENSES.md
 python3 ship_audio.py --archive --sync   # only map-referenced files reach client/Assets/Resources/Audio; prints footprint
+../.venv/bin/python mix_audit.py         # onboarding cues vs the title music at default settings (margins in dB)
 ```
 Needs ffmpeg with libvorbis and soxr (checked with Homebrew ffmpeg 8.0). The first run on macOS can stall
 for minutes while the OS scans scipy's native libraries; later runs take seconds.

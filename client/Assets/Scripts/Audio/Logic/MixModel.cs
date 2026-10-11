@@ -17,12 +17,17 @@ namespace CTLife.Audio
         public const string PrefPrefix = "ctlife.audio.";
         public static readonly string[] Keys = { "master", "music", "sfx", "voice", "ambience" };
 
-        public float Master = 1f, Music = 0.7f, Sfx = 1f, Voice = 1f, Ambience = 0.6f;
+        // Defaults (2026-10-09): music 0.85 → −2.8 dB, so the −16 LUFS title theme plays near −19 LUFS (the spec's mix target
+        // is −18..−16); 0.7 put it at −22 LUFS, which a Seeker at low media volume rendered close to silent. Ambience 0.75
+        // → −5 dB. UI cue levels in sfx-map.json are audited against these defaults (audio/tools/mix_audit.py).
+        public const float DefaultMusic = 0.85f, DefaultAmbience = 0.75f;
+
+        public float Master = 1f, Music = DefaultMusic, Sfx = 1f, Voice = 1f, Ambience = DefaultAmbience;
 
         public static float Default(string key) => key switch
         {
-            "music" => 0.7f,
-            "ambience" => 0.6f,
+            "music" => DefaultMusic,
+            "ambience" => DefaultAmbience,
             _ => 1f,
         };
 

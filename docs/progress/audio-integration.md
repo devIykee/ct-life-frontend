@@ -1,29 +1,62 @@
-READY TO COMMIT: client/Assets/Scripts/Audio/ client/Assets/Resources/Audio/ audio/ docs/progress/audio-integration.md docs/progress/requests.md — "feat(audio): runtime API v1, adaptive mood music, surface footsteps, babble budget, CT-native cues, ship only referenced audio (−14 MB)"
+READY TO COMMIT: audio/ client/Assets/Resources/Audio/ client/Assets/Scripts/Audio/ docs/progress/audio-integration.md docs/progress/requests.md — "feat(audio): CT Life main theme for title + onboarding, origin stingers, creator jingle, audible UI cues"
 
-Exact paths (git status as of 2026-10-08 01:40):
-- `client/Assets/Scripts/Audio/` — modified `AudioManager.cs`, `Babble.cs`, `BabblePlayer.cs`, `MusicDirector.cs`, `SfxMap.cs`;
-  new `AudioApi.cs`, `FootstepEmitter.cs`, `FootstepSurface.cs`, `FootstepSurfaces.cs`, `Logic/` (7 files, incl.
-  `FootstepCadence.cs` + its original `.meta`, moved from `Audio/`), `Cues/` (asmdef + `RealtimeCues.cs`), `Editor/`
-  (asmdef + `AudioImportPostprocessor.cs`), `Tests/` (asmdef + 4 test files), `Tests~/` (runner, scripts);
-  **deleted** `Audio/FootstepCadence.cs` and `Audio/FootstepCadence.cs.meta` (moved into `Logic/`, same GUID).
-- `client/Assets/Resources/Audio/` — modified `sfx-map.json`, `Music-Credits.txt`, `ambience/amb_club_doors.wav`,
-  `sfx/sfx_buy.wav`, `sfx/sfx_sell.wav`, `sfx/sfx_graduation.wav`, `sfx/sfx_sunday_unlock.wav`; new `sfx/sfx_news_flash.wav`,
-  `sfx/sfx_gm.wav`, `sfx/sfx_cash_in.wav`, `sfx/sfx_rekt_phonk.wav`, `music/stems/club/mus_club_{pad,bass,drums,lead,tension}.ogg`,
-  `music/mood/mus_mood_tension_bed.ogg`; **deleted (intentional, never played: not referenced by sfx-map.json), each with
-  its `.meta`**: `music/mus_{timeline_square,trenches,perp_pit,airdrop_farm,builder_hills,dubai_marina,club}_{pad,bass,drums,lead,tension,full}.ogg`
-  (42), `music/licensed/mus_clubs_disco_con_tutti.ogg`, `sfx/sfx_ui_{tap,toast,toggle_on,toggle_off,success,error}.wav` (6,
-  superseded by `sfx/licensed/*_kenney.wav`), `babble/babble-banks.json` (tool input, never loaded at runtime).
-  New clips/folders get their `.meta` from Unity on the next import; commit those with this.
-- `audio/` — modified `BABBLE.md`, `LICENSES.md`, `README.md`, `music-curation.json`, `sfx-curation.json`, `sfx-map.json`,
-  `processed/Music-Credits.txt`, `processed/ambience/amb_club_doors.wav`, `processed/sfx/sfx_{buy,sell,graduation,sunday_unlock}.wav`,
-  `tools/{build_map,check_audio,gen_ambience,gen_music,gen_sfx,instruments}.py`, `tools/{build_music,build_sfx,qa_report}.json`;
-  new `RUNTIME_API.md`, `processed/music/stems/club/` (5), `processed/music/mood/` (1), `processed/sfx/sfx_{cash_in,gm,news_flash,rekt_phonk}.wav`,
-  `tools/{gen_mood_bed,ship_audio}.py`, `tools/build_mood_bed.json`, `archive/processed/**` (49);
-  **deleted** 49 files under `audio/processed/` = `music/mus_*` (42), `music/licensed/mus_clubs_disco_con_tutti.ogg`,
-  `sfx/sfx_ui_*.wav` (6). Every one was moved byte-identical to `audio/archive/processed/<same path>` (checked with
-  `cmp` against `HEAD`), so git stores no new blobs.
-- `docs/progress/requests.md` — five "2026-10-08 audio-integration -> …" sections (already committed by the coordinator;
-  one later reorder of Money items 4/5).
+Exact paths (git status, 2026-10-09):
+- `audio/` — modified `LICENSES.md`, `README.md`, `RUNTIME_API.md`, `sfx-curation.json`, `sfx-map.json`, `processed/Music-Credits.txt`,
+  `processed/sfx/licensed/sfx_ui_{tap,toast,toggle_on,toggle_off,success,error}_kenney.wav` (re-mastered, same Kenney sources),
+  `tools/{build_map,curate_ui_sounds,gen_sfx,instruments,ship_audio}.py`, `tools/{build_sfx,qa_report}.json`;
+  new `processed/music/title/mus_title.ogg`, `processed/sfx/sfx_{origin_insider,origin_exit_liquidity,creator_complete,ui_next,card_shuffle}.wav`,
+  `sources/kenney-ui-metrics-20261009.json`, `tools/{gen_title,theme,mix_audit}.py`, `tools/build_title.json`. No deletions.
+- `client/Assets/Resources/Audio/` — modified `sfx-map.json`, `Music-Credits.txt`, the six `sfx/licensed/sfx_ui_*_kenney.wav`;
+  new `music/title/mus_title.ogg`, `sfx/sfx_{origin_insider,origin_exit_liquidity,creator_complete,ui_next,card_shuffle}.wav`
+  (Unity creates their `.meta` and the `music/title` folder `.meta` on import; commit those with this). No deletions.
+- `client/Assets/Scripts/Audio/` — modified `AudioApi.cs`, `AudioManager.cs`, `MusicDirector.cs`, `SfxMap.cs`,
+  `Logic/{CueRules,ImportPolicy,MixModel,MoodMix}.cs`, `Tests/{BabbleAndImportTests,MixAndCueTests,MoodMixTests}.cs`. No new or deleted files.
+- `docs/progress/requests.md` — new section "2026-10-09 audio-integration -> UI lane / integration lead".
+
+## 2026-10-09 — title / onboarding audio (coordinator job)
+
+Problem (device report): title screen and onboarding were silent except UI ticks; music started only at the lobby
+(`FlowController` `SetDistrict("lobby")`) and the Seeker's media volume was 4/15.
+
+| Asked | Done | Evidence |
+| --- | --- | --- |
+| CT Life main theme, upbeat/warm/playful, sunny town, loopable 60–90 s | `mus_title`: own composition, G major, 112 BPM light swing, 32 bars = **68.6 s seamless loop** (rendered circularly). Ukulele island strum, marimba states a 2-bar hook, whistle answer, highlife-style guitar counter-line, upright bass, light kit (snaps, shaker, tambourine), electric-piano bridge, glockenspiel sparkle | −16.0 LUFS integrated, −1.6 dBTP, LRA 6.3 LU; sections −17.3 / −16.2 / −15.8 / −15.3 / −16.8 LUFS (intro → turnaround); every long strong-beat melody note checked against its chord (only 9ths/6ths/13ths remain, by design) |
+| Origin reveal stingers | `sfx_origin_insider` (snare roll → brass fanfare of the hook → G major hit, crash, glock run; also Seeker via alias `sfx_origin_seeker`), `sfx_origin_exit_liquidity` (cartoon bonk → short slide-whistle deflate → hopeful ukulele + marimba quote of the hook rising to D6) | stereo, −1.0 dBTP, ~3.5 s with tails; stinger category (music ducks −9 dB) |
+| Celebration jingle | `sfx_creator_complete`: the full hook as a ~1.2 s fanfare (marimba + brass + strums + claps), ba-dum-tss, G major brass/e-piano chord, glock run | spec C "short fanfare about 1.5 s" |
+| Register `mus_title` + stinger ids | `music.title` (`id: mus_title`, `mood_reactive: false`), 5 sfx ids; `Music.PlayTitle()`, `Music.SetDistrict` accepts `mus_title` too | `sfx-map.json`, `RUNTIME_API.md` |
+| Audit onboarding SFX: exist + loud enough vs music at normal volume | All exist. At the old levels every button/tick cue sat 1–15 dB **under** the title music in the 1–6 kHz band (tap −4, select −3, hop tick −8, next −14, error −15, reveal flip −1); only the coin burst (+7) was audible. Fixed: Kenney UI cues re-mastered to −1 dBFS peak (were −3, error −6), map gains raised (tap −16→−3 dB, toggle −17→−7/−12.5, success −14→−3, error −14→−1 with +6 dB presence EQ, card flip −8→−1). New `sfx_ui_next` (spec C4 "rising 2-note chime") and `sfx_card_shuffle` (Kenney riffle, limited for density) replace cues that could not reach the target | `tools/mix_audit.py`: all proposed onboarding cues pass (+6 dB actions, +3 dB ticks, peaks ≤ −1 dBFS) |
+| APK budget | Title loop ≈ 0.64 MB + 5 one-shots ≈ 0.13 MB (estimated from measured bytes/s of the same import groups). Audio payload estimate 22.3–23.4 MB (was 21.5–22.6) | `ship_audio.py` |
+
+Also changed:
+- **Music default 0.7 → 0.85** (gain −6.2 → −2.8 dB; v² taper). At 0.7 the −16 LUFS theme played near −22 LUFS, quieter
+  than the spec's −18…−16 mix target and easy to lose at low media volume. Ambience default 0.6 → 0.75. Players who
+  moved a slider keep their saved value.
+- **Non-reactive sets** (`MoodController.Reactive`): the title theme ignores market mood (no low-pass, no tension when SOL
+  is red); the remembered mood fades in over two bars when the lobby/venue music takes over.
+- **`Sfx.PlayPitched(id, semitones, volume)`** for the spec's rising draw tick (+1 semitone per hop, cap +6).
+- `ImportPolicy`: the three onboarding stingers are Compressed In Memory (stereo); `mus_title` streams like the other
+  full mixes (Vorbis 0.45). Vorbis q6 source.
+
+Verification: `Tests~/run_audio_tests.sh` → **PASSED 142 FAILED 0** (10 new: non-reactive mood ×2, origin aliases and
+cooldown, music default level, import groups for the new files). `client/Tools~/compile_check.py`: player, `--editor`
+and `--release` passes all compile (the only warning is in CTLife.Editor, not audio). The requested UI/App diffs were
+applied to a scratch copy and compile clean. Unity was not opened; nothing was installed on the Seeker.
+
+**Not verified: nobody has listened to any of it.** I have no listening ability; checks are loudness, peaks, loop seam,
+spectrum, section balance and a chord-tone audit of the melody. The synthesized timbres (marimba, whistle, ukulele,
+brass) are the same family the user called "depressing" in the old district music — this piece is major-key, bright and
+busier, but it needs the user's ear. If it does not land, the fallback is a CC-BY track with a licence row (as for the
+districts), at roughly +1.5–2.5 MB of APK for a full-length track.
+
+Requests: `docs/progress/requests.md` "2026-10-09 audio-integration -> UI lane / integration lead" — `PlayTitle()` at
+sign-in and the onboarding screens; `Kit.Cues` ids (`sfx_ui_next`, `sfx_origin_*`, `sfx_creator_complete`,
+`sfx_card_shuffle`); debt stinger at full volume; pitched hop ticks; optional device media-volume hint ([Unverified]
+Android API, not built).
+
+Re-run: `cd audio/tools && ../.venv/bin/python gen_title.py && ../.venv/bin/python gen_sfx.py sfx_origin_insider
+sfx_origin_exit_liquidity sfx_creator_complete sfx_ui_next sfx_card_shuffle && ../.venv/bin/python curate_ui_sounds.py
+&& ../.venv/bin/python check_audio.py sfx music && ../.venv/bin/python build_map.py && python3 ship_audio.py --sync
+&& ../.venv/bin/python mix_audit.py`.
 
 # Audio integration lane — progress log
 
