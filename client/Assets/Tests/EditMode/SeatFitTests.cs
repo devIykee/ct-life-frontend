@@ -211,10 +211,14 @@ namespace CTLife.Tests
         [Test]
         public void CastFFamilyShoesCarryNoHeadWeight()
         {
-            // CastWeightRepair (import): the uncorrected Rain source sent stale hip/ankle groups to Head.
-            foreach (var look in new[] { "player_f_builder", "player_f_kol", "rain_breeze" })
+            // The uncorrected Rain source sent stale hip/ankle groups to Head (shoes smeared). Fixed at the export (658cb8b,
+            // RainAdult_WeightsCorrected.blend); the client import patch was removed 2026-10-08. Every cast look is checked.
+            var looks = System.IO.Directory.GetDirectories("Assets/Art/characters/cast/looks").Select(System.IO.Path.GetFileName).ToArray();
+            Assert.Greater(looks.Length, 20, "cast looks imported");
+            foreach (var look in looks)
             {
                 var path = $"Assets/Art/characters/cast/looks/{look}/{look}.fbx";
+                if (AssetDatabase.LoadAssetAtPath<GameObject>(path) == null) continue;
                 var go = Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(path));
                 try
                 {

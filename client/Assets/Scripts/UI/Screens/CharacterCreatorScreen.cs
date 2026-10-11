@@ -360,6 +360,16 @@ namespace CTLife.UI
         public bool AutoSubmitForAutomation(string alias)
         {
             if (SelectedLook == null || _busy) return false;
+            // `look=<cast look id>` (e.g. player_f_kol) picks that creator look for device checks.
+            var want = LaunchArgs.Get("look");
+            if (!string.IsNullOrEmpty(want))
+            {
+                int index = -1;
+                for (int i = 0; i < _looks.Count; i++)
+                    if (_looks[i].look != null && Array.IndexOf(_looks[i].look, "head_" + want) >= 0) { index = i; break; }
+                if (index >= 0 && index != _lookIndex) { _lookIndex = index; RefreshLook(); }
+                if (index < 0) Log.Warn("creator", "look " + want + " is not in the creator");
+            }
             _draft.tribeId = _reg.TribeOrder.FirstOrDefault()?.id;
             _draft.traitIds.Clear();
             _draft.traitIds.AddRange(_reg.Traits.Take(2).Select(t => t.id));

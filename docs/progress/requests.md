@@ -842,7 +842,10 @@ Import steps (proposal; Unity 6.3 behaviour not exercised by this lane):
    `waist` = the `<bottom>_waist` chunk, hidden under any top/outer layer; `hip` = `<bottom>_hip`, hidden under
    top_jacket/top_coat/top_kaftan), include `needs` (e.g. shorts
    need `legs`). Tint per sub id with `<part>_Mask.png`. Part FBX keep all 55 bones even when unweighted.
-10. Credits screen must carry: "Snow Rig (CC) Blender Foundation | studio.blender.org" and
+10. Skin weights are clean at export (2026-10-08): no Head/Jaw/Eye weight below 1.1 m on any mesh (checked in
+    `validation.json`), and coat/kaftan/skirt/wrapper hems are weighted Hips→Thigh(→Calf). The feel lane's
+    `CastWeightRepair` import patch should be a no-op and can be removed after one import confirms it.
+11. Credits screen must carry: "Snow Rig (CC) Blender Foundation | studio.blender.org" and
     "Rain Rig (CC) Blender Foundation | studio.blender.org", CC BY 4.0, with "modified by CT Life".
 
 Status: open

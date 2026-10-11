@@ -404,6 +404,30 @@ namespace CTLife.App
                         await Awaitable.WaitForSecondsAsync(0.5f, game.Token);
                     if (GameAlive(game)) { Log.Info("flow", "Opening app " + smokeApp + " (launch extra)"); _phone?.Open(smokeApp); }
                 });
+                // Device checks (dev builds only): `spot=<venue-local spot id>` focuses that seat/terminal/mic and presses its CTA
+                // (the player walks there and engages); `stand=<seconds>` presses "Stand up" that long after engaging.
+                if (LaunchArgs.Get("spot") is string smokeSpot && smokeSpot.Length > 0) RunGameAction(game, async () =>
+                {
+                    float deadline = Time.realtimeSinceStartup + 90f;
+                    while (GameAlive(game) && (VenueSession.Current == null || !VenueSession.Current.IsActive) && Time.realtimeSinceStartup < deadline)
+                        await Awaitable.WaitForSecondsAsync(0.5f, game.Token);
+                    await Awaitable.WaitForSecondsAsync(2f, game.Token);
+                    var ic = InteractionController.Current;
+                    SpotAnchor anchor = null;
+                    foreach (var a in FindObjectsByType<SpotAnchor>(FindObjectsSortMode.None)) if (a.spotId == smokeSpot) { anchor = a; break; }
+                    bool focused = ic != null && anchor != null && ic.Focus(anchor);
+                    await Awaitable.WaitForSecondsAsync(0.6f, game.Token);
+                    bool offered = focused && ic.Offered != null && ic.Offered.id == smokeSpot;
+                    Log.Info("flow", $"spot {smokeSpot} (launch extra): anchor {(anchor != null ? "found" : "missing")}, focus {focused}, offered {offered}");
+                    if (!offered) return;
+                    ic.Perform("use");
+                    if (LaunchArgs.Get("stand") is string st && float.TryParse(st, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var secs))
+                    {
+                        await Awaitable.WaitForSecondsAsync(secs, game.Token);
+                        Log.Info("flow", $"spot {smokeSpot}: stand up (launch extra)");
+                        InteractionController.Current?.Perform("stand");
+                    }
+                });
 #endif
             }
             catch (OperationCanceledException) when (!GameAlive(game)) { }
