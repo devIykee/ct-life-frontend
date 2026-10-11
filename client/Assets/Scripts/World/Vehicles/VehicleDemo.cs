@@ -14,17 +14,29 @@ namespace CTLife.World.Vehicles
     /// steers toward the most open direction; each part logs its frame rate:
     /// <c>CTLIFE [vehicles] demo sports drive: 58.9 fps avg, 41.2 min, 132 km/h top</c>, then one summary line.
     /// </summary>
-    internal static class VehicleDemo
+    public static class VehicleDemo
     {
-        private sealed class Part { public string name; public int frames; public float time, worst, topKmh; }
+        public sealed class Part { public string name; public int frames; public float time, worst, topKmh; }
 
-        private static readonly List<Part> Parts = new List<Part>();
+        /// <summary>The parts driven so far (frame rate and top speed each).</summary>
+        public static readonly List<Part> Parts = new List<Part>();
+        public static bool Running { get; private set; }
+        /// <summary>The part being driven now ("sports drive", "heli fly", ...), for captures that shoot each part.</summary>
+        public static string Current { get; private set; }
 
-        public static IEnumerator Run(VehicleSystem sys, LocalPlayerController player, string which)
+        public static IEnumerator Run(VehicleSystem sys, LocalPlayerController player, string which, float settleSeconds = 8f)
         {
-            yield return new WaitForSeconds(8f);   // the fleet parks 20 frames in; let streaming and the HUD settle
+            Running = true;
+            try { yield return RunParts(sys, player, which, settleSeconds); }
+            finally { Running = false; Current = null; VehicleSystem.ScriptedInput = false; }
+        }
+
+        private static IEnumerator RunParts(VehicleSystem sys, LocalPlayerController player, string which, float settleSeconds)
+        {
+            yield return new WaitForSeconds(settleSeconds);   // the fleet parks 20 frames in; let streaming and the HUD settle
             string[] ids = which == "1" || which == "all" ? new[] { "sports", "roadstar", "heli", "drone" } : which.Split(',');
             Parts.Clear();
+            _home = player.transform.position;
             VehicleSystem.ScriptedInput = true;
             foreach (var id in ids)
             {
@@ -77,6 +89,7 @@ namespace CTLife.World.Vehicles
         private static IEnumerator Drive(Vehicle v, string part, float seconds, Pilot pilot, System.Func<bool> until = null)
         {
             var p = new Part { name = $"{v.specId} {part}" };
+            Current = p.name;
             for (float t = 0f; t < seconds; t += Time.deltaTime)
             {
                 if (v == null || v.Driver == null) break;
@@ -105,9 +118,9 @@ namespace CTLife.World.Vehicles
             yield return Drive(v, "road", 3f, (c, t) => Auto(c, 1f));
             f.SetFlight(true);
             yield return Drive(v, "takeoff", 4f, (c, t) => new VehicleInput { lift = 1f });
-            yield return Drive(v, "fly", 7f, (c, t) => { var a = Auto(c, 1f); a.lift = 0.15f; return a; });
+            yield return Drive(v, "fly", 8f, (c, t) => new VehicleInput { throttle = 0.75f, lift = 0.1f, steer = Mathf.Clamp(HomeTurn(c, 140f) / 30f, -1f, 1f) });
             f.SetFlight(false);
-            yield return Drive(v, "land", 16f, (c, t) => new VehicleInput { brake = 0.4f }, () => !v.Flying);
+            yield return Drive(v, "land", 18f, (c, t) => new VehicleInput { brake = 0.4f, throttle = f.OverWater ? 0.6f : 0f, steer = Mathf.Clamp(HomeTurn(c, 40f) / 30f, -1f, 1f) }, () => !v.Flying);
             yield return Drive(v, "stop", 3f, (c, t) => new VehicleInput { brake = 1f, handbrake = true }, () => v.Speed < 0.5f);
         }
 
@@ -116,7 +129,7 @@ namespace CTLife.World.Vehicles
             var f = v.GetComponent<FlightPhysics>();
             yield return Drive(v, "spinup", 3.5f, (c, t) => VehicleInput.None);
             yield return Drive(v, "takeoff", 5f, (c, t) => new VehicleInput { lift = 1f });
-            yield return Drive(v, "fly", 7f, (c, t) => new VehicleInput { pitch = 1f, yaw = Mathf.Clamp(Turn(c) / 30f, -1f, 1f) });
+            yield return Drive(v, "fly", 7f, (c, t) => new VehicleInput { pitch = 1f, yaw = Mathf.Clamp(HomeTurn(c, 120f) / 30f, -1f, 1f) });
             yield return Drive(v, "hover", 4f, (c, t) => VehicleInput.None);
             yield return Drive(v, "land", 25f, (c, t) => new VehicleInput { lift = f.Altitude > 6f ? -1f : -0.5f }, () => f.Grounded);
             yield return Drive(v, "settle", 1.5f, (c, t) => VehicleInput.None);
@@ -134,6 +147,17 @@ namespace CTLife.World.Vehicles
         }
 
         // ------------------------------------------------------------------ the autopilot
+
+        private static Vector3 _home;
+
+        /// <summary>Flight: wander freely near home, turn back toward it beyond <paramref name="radius"/> (keeps the run over land).</summary>
+        private static float HomeTurn(Vehicle v, float radius)
+        {
+            var to = _home - v.transform.position; to.y = 0f;
+            if (to.magnitude < radius) return 0f;
+            var fwd = Vector3.ProjectOnPlane(v.transform.forward, Vector3.up);
+            return Vector3.SignedAngle(fwd, to, Vector3.up);
+        }
 
         /// <summary>Gas, steering toward the most open heading within +-60 degrees; brakes for a wall close ahead.</summary>
         private static VehicleInput Auto(Vehicle v, float throttle)
@@ -155,13 +179,25 @@ namespace CTLife.World.Vehicles
             return best;
         }
 
-        /// <summary>Free distance (to 120 m) at <paramref name="yaw"/> degrees off the nose, at bumper height.</summary>
+        /// <summary>
+        /// Free distance (to 120 m) at <paramref name="yaw"/> degrees off the nose, at bumper height, and only as far as there
+        /// is dry ground under it (the most open way is often the sea).
+        /// </summary>
         private static float Open(Vehicle v, float yaw)
         {
             var dir = Quaternion.AngleAxis(yaw, Vector3.up) * Vector3.ProjectOnPlane(v.transform.forward, Vector3.up).normalized;
             var from = v.transform.position + Vector3.up * 0.9f + dir * 2.6f;
             int mask = CarPhysics.GroundMask | (1 << CharacterLayers.Vehicle);
-            return Physics.SphereCast(from, 0.7f, dir, out var hit, 120f, mask, QueryTriggerInteraction.Ignore) ? hit.distance : 120f;
+            float free = Physics.SphereCast(from, 0.7f, dir, out var hit, 120f, mask, QueryTriggerInteraction.Ignore) ? hit.distance : 120f;
+            float sea = VehicleWorld.SeaLevel;
+            for (float d = 8f; d < free; d += 8f)
+            {
+                var p = from + dir * d;
+                bool land = Physics.Raycast(p + Vector3.up * 3f, Vector3.down, out var g, 9f, CarPhysics.GroundMask, QueryTriggerInteraction.Ignore)
+                            && (float.IsInfinity(sea) || g.point.y > sea + 0.1f);
+                if (!land) return d;
+            }
+            return free;
         }
     }
 }

@@ -35,6 +35,7 @@ namespace CTLife.EditorTools
             var sys = VehicleSystem.Current;
             expect(sys != null, "the island session has a VehicleSystem");
             if (sys == null) return visit;
+            var arrival = p.transform.position; float arrivalYaw = p.transform.eulerAngles.y;
             var origin = p.transform.position + Vector3.up * 60f;
             var ground = BuildGround(origin);
             Physics.SyncTransforms();
@@ -269,12 +270,46 @@ namespace CTLife.EditorTools
                 bool pocketed = drone != null && !drone.gameObject.activeSelf;
                 o["drone"] = new JObject { ["launched"] = launched, ["kmh"] = R(droneTop), ["back"] = sys.Driving == null, ["backInS"] = R(droneBackIn), ["pocketed"] = pocketed };
                 expect(launched && droneTop > 25f && sys.Driving == null && pocketed, $"the drone launches, flies ({droneTop:F0} km/h), lands and goes back in the pocket ({droneBackIn:F1} s)");
+                // ---------------------------------------------------------------- the real island
+                // The parked fleet round the arrival, driven by the dev demo's autopilot on the island's own ground,
+                // venue fronts and props (the same run a Seeker gets with vehicleDemo=1).
+                // the proving ground's own vehicles go first (they would drop 60 m onto the island)
+                foreach (var gone in new[] { car, scooter, star, heli }) if (gone != null) { sys.Vehicles.Remove(gone); Object.Destroy(gone.gameObject); }
+                for (int i = 0; i < 2; i++) await Awaitable.NextFrameAsync();
+                Object.Destroy(ground); ground = null;
+                p.SnapTo(arrival, arrivalYaw * Mathf.Deg2Rad);
+                rig.FollowAvatar(p.transform);
+                for (int i = 0; i < 30; i++) await Awaitable.NextFrameAsync();
+                int fleet = 0;
+                foreach (var v in sys.Vehicles) if (v != null && (v.transform.position - arrival).sqrMagnitude < 90f * 90f && !v.Occupied) fleet++;
+                await shot("vehicles-22-island-fleet", .2f);
+                Mark("island");
+                sys.StartCoroutine(VehicleDemo.Run(sys, p, "sports,roadstar,heli", 0.5f));
+                string seen = null; float demoT0 = Time.time;
+                while (Time.time - demoT0 < 2f || VehicleDemo.Running)
+                {
+                    await Awaitable.NextFrameAsync();
+                    if (film && (frame++ & 1) == 0) OnboardingCapture.FilmFrame($"vehicles-clip-{frame / 2:0000}");
+                    var now = VehicleDemo.Current;
+                    if (now != null && now != seen)
+                    {
+                        seen = now;
+                        if (now.EndsWith(" drive") || now.EndsWith(" drift") || now.EndsWith(" fly") || now.EndsWith(" land"))
+                            OnboardingCapture.FilmFrame("vehicles-23-island-" + now.Replace(' ', '-'));
+                    }
+                    if (Time.time - demoT0 > 200f) break;
+                }
+                var parts = new JArray();
+                foreach (var part in VehicleDemo.Parts) parts.Add(new JObject { ["part"] = part.name, ["topKmh"] = R(part.topKmh), ["seconds"] = R(part.time) });
+                o["island"] = new JObject { ["parkedNearArrival"] = fleet, ["parts"] = parts };
+                expect(fleet >= 5, $"the fleet parks round the island arrival ({fleet} vehicles within 90 m)");
+                expect(VehicleDemo.Parts.Count >= 10, $"the island demo drove, flew and landed ({VehicleDemo.Parts.Count} parts)");
             }
             finally
             {
                 VehicleControls.ScriptedInput = false;
                 Time.captureFramerate = prevCapture;
-                Object.Destroy(ground);
+                if (ground != null) Object.Destroy(ground);
             }
             return visit;
         }
