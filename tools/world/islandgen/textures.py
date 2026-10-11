@@ -93,12 +93,35 @@ def water_depth(h, river, size=1024):
         cx, cz = lake['center']
         r = np.hypot(T.X - cx, T.Z - cz)
         depth = np.where(r < lake['radius'] + 6, np.maximum(depth, lake['level'] - h), depth)
+    depth = ndimage.gaussian_filter(depth, 2.5)          # smooth shelves: no blocky steps in the tint
     return T.resize(np.clip(depth / 12.0, 0, 1), size)
 
 
-def far_macro(macro, h, net, size=2048):
-    """The macro tint with roads, sidewalks and districts painted in, for the far terrain (seen from the hills)."""
-    m = T.resize(macro, size)
+def far_albedo(ctl, macro, h):
+    """The ground colour the near shader composites (grass tint, rock by height with darker crevices, sand with the wet
+    band, dirt, snow on the high north faces), baked for the far terrain, which samples it directly (rgb) with AO (a)."""
+    gz, gx = np.gradient(h, L.CELL)
+    nlen = np.sqrt(1 + gx * gx + gz * gz)
+    ny, nzn = 1.0 / nlen, -gz / nlen
+    ao = macro[..., 3:4]
+    grass = macro[..., :3]
+    t = np.clip((h - 40.0) / 110.0, 0, 1)[..., None]
+    rock = (np.array([0.50, 0.50, 0.53]) * (1 - t) + np.array([0.66, 0.66, 0.70]) * t) * (0.72 + 0.28 * ao)
+    wet = G.smoothstep(L.SEA + 1.1, L.SEA + 0.15, h)[..., None]
+    sand = np.array([0.92, 0.83, 0.62]) * (1 - wet) + np.array([0.60, 0.52, 0.40]) * wet
+    dirt = np.array([0.56, 0.43, 0.30]) * (0.8 + 0.2 * np.clip(grass * 1.8, 0, 2))
+    w = ctl
+    alb = grass * w[..., 0:1] + rock * w[..., 1:2] + sand * w[..., 2:3] + dirt * w[..., 3:4]
+    north = 0.4 + 0.6 * G.smoothstep(-0.05, 0.35, nzn)
+    cap = G.smoothstep(164.0, 172.0, h)
+    snow = G.smoothstep(138.0, 156.0, h) * G.smoothstep(0.45, 0.6, ny) * np.maximum(north, cap)
+    alb = alb * (1 - snow[..., None]) + np.array([0.97, 0.97, 1.0]) * snow[..., None]
+    return np.concatenate([np.clip(alb, 0, 1), ao], axis=-1)
+
+
+def far_macro(macro, h, net, size=2048, ctl=None):
+    """The far terrain's colour: the composited ground albedo (or the macro tint) with roads and sidewalks painted in."""
+    m = T.resize(far_albedo(ctl, macro, h) if ctl is not None else macro, size)
     img = Image.fromarray(np.clip(m[::-1] * 255, 0, 255).astype(np.uint8), 'RGBA')
     d = ImageDraw.Draw(img)
     scale = size / (2 * L.DOMAIN)
@@ -126,7 +149,7 @@ def far_macro(macro, h, net, size=2048):
     return out
 
 
-def write_all(h, river, net, macro, out_dir):
+def write_all(h, river, net, macro, out_dir, ctl=None):
     os.makedirs(out_dir, exist_ok=True)
     pack = np.stack([
         detail(raw('ambientcg', 'Grass004', 'Grass004_1K-JPG_Color.jpg'), 1024, 40, 1.0),
@@ -153,4 +176,4 @@ def write_all(h, river, net, macro, out_dir):
     save_rgba(ripple_normal()[::-1], os.path.join(out_dir, 'water_ripples.png'))
     save_gray(clouds(), os.path.join(out_dir, 'clouds.png'))
     save_gray(water_depth(h, river)[::-1], os.path.join(out_dir, 'water_depth.png'))
-    save_rgba(far_macro(macro, h, net)[::-1], os.path.join(out_dir, 'terrain_far_macro.png'))
+    save_rgba(far_macro(macro, h, net, ctl=ctl)[::-1], os.path.join(out_dir, 'terrain_far_macro.png'))

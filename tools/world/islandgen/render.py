@@ -111,16 +111,10 @@ def plan_image(h, land, net, venues, homes, river, forest, path, landmarks=None,
             fillpoly(dd['poly'], (176, 164, 150, 150))
         if dd['id'] == 'dubai_marina':
             fillpoly(dd['poly'], (226, 220, 206, 120))
-    # downtown blocks (paved city blocks between the grid streets; buildings come in W2)
-    xs_ = L.DT_X
-    for c in range(len(xs_) - 1):
-        for rr in range(1, len(L.DT_Z) - 1):
-            x0, x1 = xs_[c] + 9, xs_[c + 1] - 9
-            z0, z1 = L.DT_Z[rr] + 9, L.DT_Z[rr + 1] - 9
-            fillpoly([(x0, z0), (x1, z0), (x1, z1), (x0, z1)], (206, 196, 182, 200))
-        x0, x1 = xs_[c] + 9, xs_[c + 1] - 9
-        zo = max(L.DT_OCEAN_Z[c], L.DT_OCEAN_Z[c + 1]) + 13
-        fillpoly([(x0, zo), (x1, zo), (x1, L.DT_Z[1] - 9 if c in (1, 2, 3) else L.DT_Z[2] - 9), (x0, L.DT_Z[1] - 9 if c in (1, 2, 3) else L.DT_Z[2] - 9)], (206, 196, 182, 200))
+    # downtown: paved ground under the turned grid (the lots and buildings are drawn from dress.json when present)
+    fillpoly(L.DOWNTOWN_POLY, (206, 196, 182, 170))
+    for name, poly in L.PARKS:
+        fillpoly(poly, (126, 176, 96, 210))
     crop_col = {'wheat': (226, 196, 96, 230), 'corn': (150, 186, 70, 230), 'sunflower': (240, 206, 60, 230),
                 'cabbage': (120, 176, 104, 230), 'lavender': (170, 140, 210, 230), 'pumpkin': (214, 150, 70, 230)}
     for poly_f, ang, crop in L.FIELDS:
@@ -277,10 +271,14 @@ def plan_image(h, land, net, venues, homes, river, forest, path, landmarks=None,
     d.rectangle([20, 20, 470, 86], fill=(255, 255, 255, 220))
     d.text((34, 28), 'CT Island v2: plan', font=font(30, True), fill=(20, 20, 24, 255))
     d.text((34, 62), '1.6 x 1.2 km; south-facing; doors face their streets', font=fnt, fill=(60, 60, 60, 255))
-    lx0, ly0 = 560, H - 22 * len(legend) - 30
-    d.rectangle([lx0 - 10, ly0 - 6, W - 20, ly0 + 22 * len(legend) + 12], fill=(255, 255, 255, 215))
+    # venue key: three compact columns over the sea in the bottom-right corner
+    cols, colw, rowh = 3, 205, 21
+    rows = (len(legend) + cols - 1) // cols
+    lx0, ly0 = 300, H - rows * rowh - 30
+    d.rectangle([lx0 - 10, ly0 - 8, lx0 + cols * colw + 10, H - 20], fill=(255, 255, 255, 215))
     for k, t in enumerate(legend):
-        d.text((lx0, ly0 + 4 + 22 * k), t, font=fnt, fill=(25, 25, 25, 255))
+        c, r = divmod(k, rows)
+        d.text((lx0 + c * colw, ly0 + r * rowh), t, font=fnt, fill=(25, 25, 25, 255))
     sx, sy = 40, H - 50
     d.rectangle([sx, sy, sx + 200 * PPM, sy + 8], fill=(20, 20, 20, 255))
     d.rectangle([sx + 100 * PPM, sy, sx + 200 * PPM, sy + 8], fill=(250, 250, 250, 255), outline=(20, 20, 20, 255))

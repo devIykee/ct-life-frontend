@@ -5,8 +5,9 @@ using UnityEngine.Rendering.Universal;
 namespace CTLife.World
 {
     /// <summary>
-    /// CT Island v2 light and air (World lane): one golden-hour sun with realtime shadows near the camera, trilight
-    /// ambient, the sky material, long-range fog and the world shaders' warm distance haze (_CTWorldHaze* globals).
+    /// CT Island v2 light and air (World lane): one warm golden-hour sun with realtime shadows near the camera, trilight
+    /// ambient, the sky material, long-range fog and a light, cool aerial perspective (_CTWorldHaze* globals): distant
+    /// hills turn slightly blue, the foreground keeps its warmth and saturation, and only the sun side glows warm.
     /// Applied while the island is loaded and fully restored afterwards, so venues, the lobby and captures keep their
     /// own lighting. The URP asset only enables main-light shadows; the island sets the shadow distance itself.
     /// </summary>
@@ -14,25 +15,25 @@ namespace CTLife.World
     {
         [Header("Sun")]
         public Color sunColor = new Color(1f, 0.86f, 0.68f);
-        public float sunIntensity = 1.15f;
+        public float sunIntensity = 1.25f;
         [Tooltip("x = elevation (degrees), y = heading the light travels towards (degrees clockwise from north).")]
         public Vector2 sunAngles = new Vector2(30f, 38f);
         public float shadowDistance = 70f;
         [Range(0f, 1f)] public float shadowStrength = 0.72f;
 
         [Header("Ambient")]
-        public Color skyAmbient = new Color(0.55f, 0.62f, 0.78f);
-        public Color equatorAmbient = new Color(0.70f, 0.62f, 0.55f);
-        public Color groundAmbient = new Color(0.34f, 0.31f, 0.27f);
+        public Color skyAmbient = new Color(0.52f, 0.62f, 0.80f);
+        public Color equatorAmbient = new Color(0.66f, 0.64f, 0.60f);
+        public Color groundAmbient = new Color(0.32f, 0.31f, 0.27f);
         public Material skybox;
 
         [Header("Fog and haze")]
-        public Color fogColor = new Color(0.92f, 0.84f, 0.74f);
-        public float fogStart = 900f, fogEnd = 6000f;
-        public Color hazeColor = new Color(0.90f, 0.83f, 0.75f);
-        public Color sunGlowColor = new Color(1f, 0.78f, 0.55f);
-        [Range(0f, 1f)] public float hazeStrength = 0.42f;
-        public float hazeStart = 220f, hazeEnd = 2400f, hazeHeightFalloff = 0.006f, sunGlow = 0.9f;
+        public Color fogColor = new Color(0.76f, 0.84f, 0.92f);
+        public float fogStart = 1400f, fogEnd = 7000f;
+        public Color hazeColor = new Color(0.62f, 0.74f, 0.88f);
+        public Color sunGlowColor = new Color(1f, 0.82f, 0.62f);
+        [Range(0f, 1f)] public float hazeStrength = 0.30f;
+        public float hazeStart = 320f, hazeEnd = 2800f, hazeHeightFalloff = 0.004f, sunGlow = 0.55f;
 
         private static readonly int HazeColorId = Shader.PropertyToID("_CTWorldHazeColor");
         private static readonly int HazeParamsId = Shader.PropertyToID("_CTWorldHazeParams");

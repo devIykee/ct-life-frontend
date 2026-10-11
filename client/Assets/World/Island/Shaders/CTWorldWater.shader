@@ -17,7 +17,9 @@ Shader "CT Life/World/Water"
         _RippleScale("Ripple repeats per metre (x, y layers)", Vector) = (0.06, 0.11, 0, 0)
         _Glint("Sun glint (power, strength)", Vector) = (180, 2.2, 0, 0)
         _FoamDepth("Foam depth (m)", Float) = 0.75
-        _Alpha("Alpha (shallow, deep)", Vector) = (0.42, 0.94, 0, 0)
+        _Alpha("Alpha (shallow, deep)", Vector) = (0.42, 1.0, 0, 0)
+        _Reef("Shallow reef", Color) = (0.30, 0.86, 0.78, 1)
+        _ReefBand("Reef band (from depth m, to depth m, strength, patch scale)", Vector) = (0.5, 3.6, 0.55, 0.02)
     }
     SubShader
     {
@@ -41,7 +43,8 @@ Shader "CT Life/World/Water"
             TEXTURE2D(_Ripples); SAMPLER(sampler_Ripples);
             CBUFFER_START(UnityPerMaterial)
                 float4 _Domain, _Waves, _RippleScale, _Glint, _Alpha;
-                half4 _Shallow, _Deep, _Sky, _Foam;
+                half4 _Shallow, _Deep, _Sky, _Foam, _Reef;
+                float4 _ReefBand;
                 float _FoamDepth;
             CBUFFER_END
 
@@ -95,6 +98,10 @@ Shader "CT Life/World/Water"
                 half shadow = lerp(0.55h, 1.0h, sun.shadowAttenuation);
                 half dep = smoothstep(0.0, 9.0, depth);
                 half3 col = lerp(_Shallow.rgb, _Deep.rgb, dep);
+                // a turquoise reef band in the shallows, broken into patches
+                half patch = SAMPLE_TEXTURE2D(_Ripples, sampler_Ripples, ws.xz * _ReefBand.w + 0.31).r;
+                half reef = smoothstep(_ReefBand.x, _ReefBand.x + 0.6h, depth) * smoothstep(_ReefBand.y, _ReefBand.y - 1.4h, depth);
+                col = lerp(col, _Reef.rgb, reef * _ReefBand.z * (0.55h + 0.9h * patch));
                 half3 ambient = SampleSH(half3(0, 1, 0));
                 col = col * (ambient * 0.85h + sun.color * 0.45h * shadow);
                 half fres = pow(1.0h - saturate(dot(n, view)), 4.0h);
@@ -108,7 +115,7 @@ Shader "CT Life/World/Water"
                 half lines = smoothstep(0.55h, 0.95h, sin(depth * 9.0 - _Time.y * 1.6 + noise * 3.0) * 0.5h + 0.5h) * smoothstep(_FoamDepth * 1.8h, 0.2h, depth);
                 half foam = saturate(band * 0.85h + lines * 0.45h);
                 col = lerp(col, _Foam.rgb * (ambient + sun.color * 0.6h), foam);
-                half alpha = lerp(_Alpha.x, _Alpha.y, smoothstep(0.0, 4.0, depth));
+                half alpha = lerp(_Alpha.x, _Alpha.y, smoothstep(0.0, 5.0, depth));     // opaque deep water: no seabed tiles show through
                 alpha = saturate(max(alpha, foam * 0.9h) + fres * 0.2h);
                 col = MixFog(col, input.fog);
                 col = CTWorldHaze(col, ws);

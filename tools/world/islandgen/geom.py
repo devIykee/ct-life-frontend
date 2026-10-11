@@ -210,3 +210,12 @@ def ridged(x, z, octaves=4, lac=2.07, gain=0.55):
 def smoothstep(e0, e1, x):
     t = np.clip((np.asarray(x, dtype=np.float64) - e0) / (e1 - e0), 0.0, 1.0)
     return t * t * (3 - 2 * t)
+
+
+def point_in_poly(x, z, poly):
+    """Even-odd test of one point against a polygon [(x, z), ...]."""
+    P = np.asarray(poly, dtype=np.float64)
+    xs, zs = P[:, 0], P[:, 1]
+    xj, zj = np.roll(xs, 1), np.roll(zs, 1)
+    cross = ((zs > z) != (zj > z)) & (x < (xj - xs) * (z - zs) / np.where(zj - zs == 0, 1e-12, zj - zs) + xs)
+    return bool(np.count_nonzero(cross) % 2)
