@@ -62,6 +62,8 @@ namespace CTLife.EditorTools
         public static bool ControlsOnly;
         /// <summary>captureSet "vehicles": the Feel lane F2 proving ground (VehiclesCapture).</summary>
         public static bool VehiclesOnly;
+        /// <summary>captureSet "traffic": the Feel lane F3 traffic run on the real island (TrafficCapture).</summary>
+        public static bool TrafficOnly;
 
         public static async Task Run(Func<string, float, Task> shot, Func<float, Task> wait,
             Action<bool, string> expect, Action<string> step, JObject receipt)
@@ -153,6 +155,7 @@ namespace CTLife.EditorTools
                 if (IslandOnly) { visit = await IslandWalk(ui, hud, visit, shot, wait, expect, receipt); return; }
                 if (ControlsOnly) { visit = await ControlsCapture.Run(visit, shot, wait, expect, receipt); return; }
                 if (VehiclesOnly) { visit = await VehiclesCapture.Run(visit, shot, wait, expect, receipt); return; }
+                if (TrafficOnly) { visit = await TrafficCapture.Run(visit, shot, wait, expect, receipt); return; }
                 if (FeelOnly) { FeelProbe.OutDir = Environment.GetCommandLineArgs().SkipWhile(x => x != "-ctlife-captureOut").Skip(1).FirstOrDefault(); var (feel, last) = await FeelProbe.Run(visit, camera, shot); receipt["feel"] = feel; visit = last; return; }
                 if (SweepOnly) { visit = await VisitSweep(ui, hud, visit, camera, session, transport, profile, shot, wait, expect, receipt); return; }
                 await shot("hud-01-city-idle", 1.2f);
