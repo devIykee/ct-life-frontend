@@ -138,6 +138,7 @@ namespace CTLife.Careers
                 if (!outcome.Finished)
                 {
                     _flow.Cancel();
+                    ShiftReadyNotice.Cancel();
                     Status("shift.failed", "shift.abandoned");
                     await Dismiss("shift.done", ct);
                     return false;
@@ -146,6 +147,7 @@ namespace CTLife.Careers
             }
 
             double minimumEnd = ShiftTiming.MinimumEnd(assignedAt, _card.ShiftSec, plan.TotalDuration);
+            ShiftReadyNotice.Schedule(plan.EndsAtUtc);   // "Shift done, collect your pay" at the server's endsAt
             await WaitForEnd(plan.EndsAtUtc, minimumEnd, ct);
             return await Settle(ct);
         }
@@ -162,6 +164,7 @@ namespace CTLife.Careers
                 {
                     var receipt = await Deadline.Run(c => _api.CompleteShift(_flow.Plan.ShiftId, _flow.CompletionBody(), _flow.CompletionKey, c), ct, 45000);
                     _flow.Settled(receipt);
+                    ShiftReadyNotice.Cancel();
                     await ShowReceipt(receipt, ct);
                     return true;
                 }

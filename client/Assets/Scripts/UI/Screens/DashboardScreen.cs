@@ -28,7 +28,7 @@ namespace CTLife.UI
         private readonly bool _firstArrival;
         private VisualElement _root, _bg, _stage, _model, _today, _avatar, _meters;
         private WalletBalanceService _wallet;
-        private Label _walletValue, _walletStatus;
+        private Label _walletValue, _walletStatus, _debtStatus;
         private Label _greeting, _eyebrow, _error, _marketValue, _clueText, _cashValue, _debtValue, _dreamTitle, _homeName;
         private SkewBox _enter, _cash, _debt, _walletPill, _dreamCard, _homeCard;
         private VisualElement _dreamFill, _dreamTrack, _energy, _sanity, _energyFill, _sanityFill;
@@ -169,6 +169,11 @@ namespace CTLife.UI
             _debtValue = El.Text("", "home-pill-value");
             _debt = Pill("debt", "bank", _debtValue, () => ExplainStat("debt"));
             _debt.Fill = new Color(120f / 255f, 10f / 255f, 40f / 255f, 0.82f);
+            // this week's instalment and when it is due (GET /me debtWeeklyDueCents / debtDueAt)
+            _debtStatus = El.Text("", "home-pill-status");
+            _debtStatus.name = "home-debt-due";
+            _debtStatus.pickingMode = PickingMode.Ignore;
+            _debt.Add(_debtStatus);
             _walletValue = El.Text("", "home-pill-value");
             _walletStatus = El.Text("", "home-pill-status");
             _walletPill = Pill("wallet", null, _walletValue, ExplainWallet);
@@ -645,7 +650,8 @@ namespace CTLife.UI
             Services.TryGet<PlayerProfile>(out var profile);
             var me = profile?.Me;
             var reg = _config?.Registries;
-            _state = HomeModel.Build(me, reg, _config?.Config("needs"), _config?.Config("lottery"), _mood, _firstArrival);
+            _state = HomeModel.Build(me, reg, _config?.Config("needs"), _config?.Config("lottery"), _mood, _firstArrival,
+                profile?.DebtWeeklyDueCents, profile?.DebtDueAtMs);
             LoadCharacter(profile);
             RefreshAvatar(profile);
 
@@ -659,6 +665,9 @@ namespace CTLife.UI
             var debt = _state.Stats.Find(x => x.id == "debt");
             _debt.style.display = debt != null ? DisplayStyle.Flex : DisplayStyle.None;
             if (debt != null) _debtValue.text = Strings.F("lobby.owe", profile != null ? LobbyAmounts.Cash(profile.DebtCents) : debt.value);
+            var due = debt != null && profile != null ? DebtDue.Line(profile.DebtWeeklyDueCents, profile.DebtDueAtMs, ServerClock.NowMs) : null;
+            _debtStatus.text = due ?? "";
+            _debtStatus.style.display = due != null ? DisplayStyle.Flex : DisplayStyle.None;
             SetMeter(_energy, _energyFill, _state.Stats.Find(x => x.id == "energy"));
             SetMeter(_sanity, _sanityFill, _state.Stats.Find(x => x.id == "sanity"));
             _meters.style.display = _energy.style.display == DisplayStyle.None && _sanity.style.display == DisplayStyle.None ? DisplayStyle.None : DisplayStyle.Flex;

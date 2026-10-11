@@ -195,6 +195,7 @@ namespace CTLife.UI
                 if (shift == null || string.IsNullOrEmpty(shift.ShiftId) || shift.MiniGameIds == null || shift.MiniGameIds.Count == 0 ||
                     shift.EndsAt == default || shift.MiniGameIds.Distinct(StringComparer.Ordinal).Count() != shift.MiniGameIds.Count)
                     throw new InvalidOperationException(ShiftStrings.T("invalidAssignment"));
+                ShiftReadyNotice.Schedule(shift.EndsAt.Kind == DateTimeKind.Local ? shift.EndsAt.ToUniversalTime() : shift.EndsAt);   // "Shift done" at endsAt
                 foreach (string id in shift.MiniGameIds)
                 {
                     if (string.IsNullOrEmpty(id) || !registry.MiniGames.TryGetValue(id, out var definition) || definition.maxScore <= 0 ||
@@ -232,6 +233,7 @@ namespace CTLife.UI
                     result = await ShiftReliability.Request(ct => api.CompleteShift(shift.ShiftId, results, ct), cancellation.Token);
                 }
                 cancellation.Token.ThrowIfCancellationRequested();
+                ShiftReadyNotice.Cancel();   // collected
                 view.Receipt(result);
                 if (result.Promoted) Bus.Publish(new SfxSignal("sfx_rank_up"));
                 else Bus.Publish(new SfxSignal("sfx_ui_success"));

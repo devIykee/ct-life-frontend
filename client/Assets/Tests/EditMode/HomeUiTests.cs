@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using CTLife.Core;
@@ -61,9 +62,15 @@ namespace CTLife.Tests
             Assert.AreEqual("$720", debt.value);
             StringAssert.Contains("$720", debt.explainBody);
             StringAssert.Contains("$120", debt.explainBody, "weekly due comes from lottery.json debtRepayment");
-            Assert.AreEqual("bank", debt.actionApp);
+            Assert.AreEqual("repay", debt.actionApp, "the debt chip opens the Repay sheet (backend eeef49d)");
             var noWeekly = HomeModel.Build(NewMe(debt: 72000), Reg(), null, null, null, false);
             StringAssert.DoesNotContain("each week", noWeekly.Stats[1].explainBody, "no weekly line without config");
+            // the server's schedule wins over the config's figure, with its due date
+            var due = DateTimeOffset.UtcNow.AddDays(3).ToUnixTimeMilliseconds();
+            var server = HomeModel.Build(NewMe(debt: 72000), Reg(), null, Lottery, null, false, weeklyDueCents: 9000, dueAtMs: due);
+            StringAssert.Contains("$90", server.Stats[1].explainBody);
+            StringAssert.Contains("is due", server.Stats[1].explainBody);
+            Assert.AreEqual(due, server.DebtDueAtMs);
         }
 
         [Test]

@@ -41,6 +41,7 @@ namespace CTLife.UI
         public DreamProgress Dream;
         public readonly List<HomeStat> Stats = new List<HomeStat>();
         public long DebtCents, WeeklyDueCents = -1;
+        public long? DebtDueAtMs;
         public int? MoodBps;
         public string GreetingKey, SubKey;
         public string ReactionKey;
@@ -59,7 +60,10 @@ namespace CTLife.UI
         /// <summary>Market Mood beyond ±3% reads as a big day (the HUD shows the same number).</summary>
         public const int MoodSwingBps = 300;
 
-        public static HomeState Build(Me me, Registries reg, JToken needsConfig, JToken lotteryConfig, int? moodBps, bool firstArrival)
+        /// <param name="weeklyDueCents">GET /me debtWeeklyDueCents (server truth; overrides the lottery config's figure).</param>
+        /// <param name="dueAtMs">GET /me debtDueAt (the next Sunday Unlock).</param>
+        public static HomeState Build(Me me, Registries reg, JToken needsConfig, JToken lotteryConfig, int? moodBps, bool firstArrival,
+            long? weeklyDueCents = null, long? dueAtMs = null)
         {
             var s = new HomeState { MoodBps = moodBps };
             s.HasProfile = me != null;
@@ -74,7 +78,8 @@ namespace CTLife.UI
                 s.HomeName = reg?.Homes.FirstOrDefault(h => h.id == me.HomeId)?.name;
                 s.Dream = ReadDreamProgress(me);
                 s.DebtCents = Math.Max(0, me.DebtCents);
-                s.WeeklyDueCents = WeeklyDue(lotteryConfig);
+                s.WeeklyDueCents = weeklyDueCents ?? WeeklyDue(lotteryConfig);
+                s.DebtDueAtMs = dueAtMs;
 
                 s.Stats.Add(new HomeStat
                 {
@@ -85,11 +90,13 @@ namespace CTLife.UI
                 if (s.DebtCents > 0)
                 {
                     var body = Strings.F("home.explain.debtBody", LotteryModel.CashWhole(s.DebtCents));
-                    if (s.WeeklyDueCents > 0) body += " " + Strings.F("home.explain.debtWeekly", LotteryModel.CashWhole(s.WeeklyDueCents));
+                    if (s.WeeklyDueCents > 0 && dueAtMs.HasValue)
+                        body += " " + Strings.F("home.explain.debtDue", LotteryModel.CashWhole(s.WeeklyDueCents), DebtDue.When(dueAtMs.Value, ServerClock.NowMs));
+                    else if (s.WeeklyDueCents > 0) body += " " + Strings.F("home.explain.debtWeekly", LotteryModel.CashWhole(s.WeeklyDueCents));
                     s.Stats.Add(new HomeStat
                     {
                         id = "debt", icon = "bank", badgeTone = "orange", captionKey = "home.debt", value = LotteryModel.CashWhole(s.DebtCents),
-                        explainTitleKey = "home.explain.debt", explainBody = body, actionKey = "home.action.bank", actionApp = "bank",
+                        explainTitleKey = "home.explain.debt", explainBody = body, actionKey = "home.action.repay", actionApp = "repay",
                     });
                 }
                 if (me.Needs != null)

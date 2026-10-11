@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using CTLife.Core;
@@ -22,6 +23,9 @@ namespace CTLife.Net
         public bool LotteryRolled => Onboarding.LotteryRolled(Me);
         public long CashCents => Me?.CashCents ?? 0;
         public long DebtCents => Me?.DebtCents ?? 0;
+        /// <summary>The next debt instalment deadline (epoch ms) and its amount from GET /me; null with no debt or unknown.</summary>
+        public long? DebtDueAtMs { get; private set; }
+        public long? DebtWeeklyDueCents { get; private set; }
         public string Alias => Me?.Character?.Alias ?? "anon";
         public string UserId => Me?.User?.Id.ToString();
 
@@ -31,6 +35,8 @@ namespace CTLife.Net
             ct.ThrowIfCancellationRequested();
             Me = current;
             LikenessJobId = _api.LastLikenessJobId;
+            DebtDueAtMs = _api.LastDebtDueAtMs;
+            DebtWeeklyDueCents = _api.LastDebtWeeklyDueCents;
 #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
             Log.Info("appearance", "Profile refreshed: " + (HasCharacter ? "character present, " : "no character, ") +
                 (string.IsNullOrEmpty(LikenessJobId) ? "stock appearance." : "personal appearance."));
@@ -53,6 +59,17 @@ namespace CTLife.Net
         {
             if (Me == null) return;
             Me.CashCents = cents;
+            Bus.Publish(new ProfileChangedSignal());
+        }
+
+        /// <summary>After POST /bank/repay: the server's balances. A paid-off debt has no instalment left.</summary>
+        public void ApplyRepay(long cashCents, long debtCents)
+        {
+            if (Me == null) return;
+            Me.CashCents = cashCents;
+            Me.DebtCents = Math.Max(0, debtCents);
+            if (Me.DebtCents == 0) { DebtDueAtMs = null; DebtWeeklyDueCents = null; }
+            else if (DebtWeeklyDueCents.HasValue) DebtWeeklyDueCents = Math.Min(DebtWeeklyDueCents.Value, Me.DebtCents);
             Bus.Publish(new ProfileChangedSignal());
         }
 

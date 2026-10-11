@@ -17,12 +17,14 @@ namespace CTLife.Economy
     public sealed class MoneyBankApp : MoneyApp
     {
         private readonly string _id;
-        private readonly bool _topUpTile;
+        private readonly bool _topUpTile, _repay;
 
-        public MoneyBankApp(bool topUpTile = false)
+        /// <param name="repay">Registered as id "repay": the Bank page with the Repay sheet open (the Wallet's Loan card uses it).</param>
+        public MoneyBankApp(bool topUpTile = false, bool repay = false)
         {
             _topUpTile = topUpTile;
-            _id = topUpTile ? "topup" : "bank";
+            _repay = repay && !topUpTile;
+            _id = topUpTile ? "topup" : _repay ? "repay" : "bank";
         }
 
         public override string Id => _id;
@@ -31,9 +33,10 @@ namespace CTLife.Economy
         public override int Phase => _topUpTile ? 2 : 1;
         public override string Feature => _topUpTile ? FeatureFlags.Payments : null;
         public override DuoChrome Chrome => DuoChrome.Plain;
+        public override bool ShowOnHome => !_repay;
 
         internal override MoneyView CreateView(MoneyHub hub) =>
-            new BankView(hub, Shell, Title, showTopUp: _topUpTile || (Shell?.CurrentPhase ?? 1) >= 2, openTopUp: _topUpTile);
+            new BankView(hub, Shell, Title, showTopUp: _topUpTile || (Shell?.CurrentPhase ?? 1) >= 2, openTopUp: _topUpTile, openRepay: _repay);
     }
 
     internal sealed class BankView : MoneyView
@@ -52,7 +55,7 @@ namespace CTLife.Economy
 
         public override VisualElement Container => _page;
 
-        public BankView(MoneyHub hub, PhoneShell phone, string title, bool showTopUp, bool openTopUp) : base(hub)
+        public BankView(MoneyHub hub, PhoneShell phone, string title, bool showTopUp, bool openTopUp, bool openRepay = false) : base(hub)
         {
             _showTopUp = showTopUp;
             _flow = hub.TopUp;
@@ -65,22 +68,27 @@ namespace CTLife.Economy
             _page.name = "bank-page";
             _page.Nav.AddLeft(DuoGlyph.Kind.Back, Strings.T("common.back"), () => phone?.Back(), "bank-back");
             if (_showTopUp) _page.Nav.AddRight(DuoGlyph.Kind.Plus, MoneyStrings.T("topup.title"), OpenTopUp, "bank-plus");
-            _stack = new DuoWalletStack(DuoWalletStack.Card.Cash, _showTopUp ? OpenTopUp : (Action)null);
+            _stack = new DuoWalletStack(DuoWalletStack.Card.Cash, _showTopUp ? OpenTopUp : (Action)null, OpenRepay);
             _page.Body.Add(_stack);
             _page.Body.Add(_latest);
+            Subs.On<ProfileChangedSignal>(_ => { if (_repaySheet != null) RenderRepay(); });
             Subs.On<DegradedChangedSignal>(_ => RenderTopUp());
             _flow.Changed += FlowChanged;
             Hub.RefreshProfile(force: true);
             RenderTopUp();
             RenderLatest();
+            LoadLedger();
             if (_flow.Stage == TopUpStage.Pending) _ = Check();
             if (openTopUp && _showTopUp) _page.schedule.Execute(OpenTopUp);
+            else if (openRepay) _page.schedule.Execute(() => { _stack.Show(DuoWalletStack.Card.Loan); OpenRepay(); });
         }
 
         public override void Dispose()
         {
             _flow.Changed -= FlowChanged;
             _sheet?.Close();
+            _repaySheet?.Close();
+            _ledgerSheet?.Close();
             _stack?.Dispose();
             base.Dispose();
         }
@@ -88,7 +96,7 @@ namespace CTLife.Economy
         private void FlowChanged()
         {
             if (!Alive) return;
-            if (_flow.Stage == TopUpStage.Confirmed) Hub.RefreshProfile(force: true);
+            if (_flow.Stage == TopUpStage.Confirmed) { Hub.RefreshProfile(force: true); LoadLedger(); }
             RenderTopUp();
             RenderLatest();
         }
@@ -104,12 +112,30 @@ namespace CTLife.Economy
 
         // ------------------------------------------------------------------ latest transactions
 
-        /// <summary>Only this session's top-up exists client-side (no ledger route): one row, or no section at all.</summary>
+        /// <summary>
+        /// Latest transactions: a top-up still in flight this session (its live stage), then the newest Cash ledger rows
+        /// (GET /ledger) with "See all" for the paged history.
+        /// </summary>
         private void RenderLatest()
         {
             _latest.Clear();
-            if (!_showTopUp || _flow.Stage == TopUpStage.Choose || (_flow.Stage == TopUpStage.Error && _flow.Intent == null)) return;
-            _latest.Add(Duo.SectionHeader(Strings.T("wallet.latest")));
+            bool topUp = _showTopUp && !(_flow.Stage == TopUpStage.Choose || (_flow.Stage == TopUpStage.Error && _flow.Intent == null));
+            bool rows = _ledger != null && _ledger.Rows.Items.Count > 0;
+            if (!topUp && !rows && !_ledgerFailed) return;
+            _latest.Add(Duo.SectionHeader(Strings.T("wallet.latest"), rows ? MoneyStrings.T("ledger.seeAll") : null, rows ? OpenLedger : (Action)null));
+            var list = El.Div("duo-list");
+            list.name = "bank-latest";
+            if (topUp) list.Add(TopUpRow());
+            if (rows) for (int i = 0; i < _ledger.Rows.Items.Count && i < LatestCount; i++) list.Add(LedgerUi.Row(_ledger.Rows.Items[i]));
+            if (_ledgerFailed && !rows) list.Add(new DuoRow(LoadLedger).Title(MoneyStrings.T("ledger.unavailable")).Subtitle(MoneyStrings.T("common.retry")));
+            Duo.MarkLast(list);
+            _latest.Add(list);
+        }
+
+        private const int LatestCount = 5;
+
+        private VisualElement TopUpRow()
+        {
             string subtitle = _flow.Stage switch
             {
                 TopUpStage.Creating => MoneyStrings.T("topup.creating"),
@@ -128,9 +154,148 @@ namespace CTLife.Economy
             long? cash = _flow.CreditedCashCents ?? _flow.Intent?.CashCents;
             if (cash.HasValue) row.Value((_flow.Stage == TopUpStage.Confirmed ? "+" : "") + MoneyFormat.Cash(cash.Value),
                 _flow.Stage == TopUpStage.Confirmed ? "duo-value-positive" : null);
-            var list = El.Div("duo-list", row);
-            Duo.MarkLast(list);
-            _latest.Add(list);
+            return row;
+        }
+
+        // ------------------------------------------------------------------ the Cash ledger
+
+        private LedgerPage _ledger;
+        private bool _ledgerFailed;
+        private int _ledgerGen;
+
+        private async void LoadLedger()
+        {
+            int gen = ++_ledgerGen;
+            try
+            {
+                var page = await Hub.Api.Ledger(null, LatestCount, Hub.Life);
+                if (!Alive || gen != _ledgerGen) return;
+                _ledger = page; _ledgerFailed = false;
+            }
+            catch (OperationCanceledException) { return; }
+            catch (Exception e)
+            {
+                Log.Exception("money", e);
+                if (!Alive || gen != _ledgerGen) return;
+                _ledgerFailed = true;
+            }
+            RenderLatest();
+        }
+
+        private DuoSheet _ledgerSheet;
+
+        private void OpenLedger()
+        {
+            if (!Alive) return;
+            _ledgerSheet?.Close();
+            _ledgerSheet = LedgerUi.OpenAll(Hub, _page);
+        }
+
+        // ------------------------------------------------------------------ repay
+
+        private DuoSheet _repaySheet;
+        private readonly VisualElement _repay = El.Div("duo-repay");
+        private readonly RetainedWrite _repayWrite = new RetainedWrite();
+        private long _repayAmount;
+        private bool _repaying;
+        private MoneyError _repayError;
+        private RepayReceipt _repayDone;
+
+        private void OpenRepay()
+        {
+            if (!Alive) return;
+            _repaySheet?.Close();
+            _repay.RemoveFromHierarchy();
+            _repayError = null; _repayDone = null; _repayAmount = 0;
+            var scroll = El.VerticalScroll("duo-sheet-scroll");
+            scroll.Add(_repay);
+            var sheet = new DuoSheet(MoneyStrings.T("repay.title"));
+            sheet.name = "bank-repay-sheet";
+            sheet.AddContent(scroll);
+            _repaySheet = sheet;
+            sheet.Closed += () => { if (_repaySheet == sheet) _repaySheet = null; };
+            RenderRepay();
+            sheet.Show(_page);
+        }
+
+        private void RenderRepay()
+        {
+            if (!Alive) return;
+            _repay.Clear();
+            Services.TryGet<PlayerProfile>(out var p);
+            long debt = p?.DebtCents ?? 0, cash = p?.CashCents ?? 0;
+            if (_repayDone != null)
+            {
+                _repay.Add(Duo.Empty(_repayDone.DebtCents == 0 ? MoneyStrings.T("repay.cleared") : MoneyStrings.F("repay.paid", MoneyFormat.Cash(_repayDone.RepaidCents)),
+                    _repayDone.DebtCents == 0 ? null : MoneyStrings.F("repay.left", MoneyFormat.Cash(_repayDone.DebtCents))));
+                _repay.Add(SheetButton(MoneyStrings.T("common.done"), () => _repaySheet?.Close(), name: "repay-done"));
+                return;
+            }
+            if (debt <= 0)
+            {
+                _repay.Add(Duo.Empty(MoneyStrings.T("err.nothingToRepay")));
+                _repay.Add(SheetButton(MoneyStrings.T("common.done"), () => _repaySheet?.Close()));
+                return;
+            }
+            var summary = El.Div("duo-list",
+                Pair(MoneyStrings.T("repay.owed"), MoneyFormat.Cash(debt)),
+                Pair(MoneyStrings.T("repay.cash"), MoneyFormat.Cash(cash)));
+            var due = DebtDue.Line(p.DebtWeeklyDueCents, p.DebtDueAtMs, ServerClock.NowMs);
+            if (due != null) summary.Add(Pair(MoneyStrings.T("repay.thisWeek"), due));
+            Duo.MarkLast(summary);
+            _repay.Add(summary);
+            var chips = RepayChips.For(debt, p.DebtWeeklyDueCents, cash);
+            if (_repayAmount <= 0 || !chips.Exists(c => c.AmountCents == _repayAmount)) _repayAmount = RepayChips.Default(chips)?.AmountCents ?? 0;
+            _repay.Add(Duo.GroupHeader(MoneyStrings.T("repay.amount")));
+            var row = El.Div("duo-topup-currencies duo-repay-chips");
+            foreach (var chip in chips)
+            {
+                var c = chip;
+                string label = c.Kind == RepayChips.Kind.All ? MoneyStrings.F("repay.all", MoneyFormat.Cash(c.AmountCents))
+                    : c.Kind == RepayChips.Kind.Weekly ? MoneyStrings.F("repay.weekly", MoneyFormat.Cash(c.AmountCents)) : MoneyFormat.Cash(c.AmountCents);
+                var pill = Duo.Pill(label, () => { _repayAmount = c.AmountCents; _repayError = null; RenderRepay(); }, c.AmountCents == _repayAmount ? Duo.PillKind.Primary : Duo.PillKind.Plain);
+                pill.name = "repay-chip-" + c.AmountCents;
+                pill.SetEnabled(c.Affordable && !_repaying);
+                row.Add(pill);
+            }
+            _repay.Add(row);
+            if (!chips.Exists(c => c.Affordable)) _repay.Add(Duo.Notice(MoneyStrings.T("repay.noCash"), Duo.Tone.Warning));
+            if (_repayError != null) _repay.Add(Duo.Notice(MoneyStrings.Err(_repayError), _repayError.OutcomeUnknown ? Duo.Tone.Warning : Duo.Tone.Danger));
+            var pay = SheetButton(_repaying ? MoneyStrings.T("repay.paying") : MoneyStrings.F("repay.pay", MoneyFormat.Cash(Math.Max(0, _repayAmount))), () => _ = RepayAsync(), name: "repay-pay");
+            pay.SetEnabled(!_repaying && _repayAmount > 0 && _repayAmount <= cash);
+            _repay.Add(pay);
+            _repay.Add(Duo.Footnote(MoneyStrings.T("repay.note")));
+        }
+
+        private async System.Threading.Tasks.Task RepayAsync()
+        {
+            if (_repaying || _repayAmount <= 0) return;
+            long amount = _repayAmount;
+            var body = new Newtonsoft.Json.Linq.JObject { ["amountCents"] = amount };
+            var key = _repayWrite.KeyFor("/bank/repay", RetainedWrite.Body(body));
+            _repaying = true; _repayError = null;
+            RenderRepay();
+            try
+            {
+                var receipt = await Hub.Api.Repay(amount, key, Hub.Life);
+                _repayWrite.Complete();
+                if (Services.TryGet<PlayerProfile>(out var p)) p.ApplyRepay(receipt.CashCents, receipt.DebtCents);
+                _repayDone = receipt;
+                Bus.Publish(new SfxSignal("sfx_ui_success"));
+                Hub.RefreshProfile(force: true);   // the new instalment (amount and due date) comes from the server
+                LoadLedger();
+            }
+            catch (OperationCanceledException) { _repaying = false; return; }
+            catch (Exception e)
+            {
+                var err = MoneyErrors.From(e, write: true);
+                // a definite answer frees the key; an unknown outcome keeps it so a retry can never pay twice
+                if (!err.OutcomeUnknown) _repayWrite.Complete();
+                if (err.Is("NOTHING_TO_REPAY")) Hub.RefreshProfile(force: true);
+                _repayError = err;
+            }
+            _repaying = false;
+            if (Alive) RenderRepay();
         }
 
         // ------------------------------------------------------------------ top-up sheet

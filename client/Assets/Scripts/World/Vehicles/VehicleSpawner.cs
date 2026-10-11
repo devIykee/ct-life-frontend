@@ -4,10 +4,10 @@ using UnityEngine;
 namespace CTLife.World.Vehicles
 {
     /// <summary>
-    /// Parks vehicles near the player (Feel lane F2). With World v2 markers: the nearest street bays that accept each class
-    /// (IslandMarkers.SpawnsNear) and a helipad for the helicopter. Without them (the v1 island, test scenes): clear, flat
-    /// ground found by rays and box checks in rings round the arrival, cars side by side like a car park, the helicopter on
-    /// the largest clear patch close by.
+    /// Parks the showcase fleet near the player (Feel lane F2). On CT Island v2: World's street bays (VehicleSpawn) that take
+    /// each class, the demo-visible ones (showcase priority) first, and the nearest helipad for the helicopter. Where there
+    /// are none (a test scene, a bay-less district): clear, flat, reachable ground found by rays and box checks in rings
+    /// round the arrival, cars side by side like a car park, the helicopter on the largest clear patch close by.
     /// </summary>
     public static class VehicleSpawner
     {
@@ -26,35 +26,43 @@ namespace CTLife.World.Vehicles
                     if (v != null) taken.Add(pos);
                 }
             }
-            var pads = VehicleWorld.HeliPads();
-            Vector3 hpos; Quaternion hrot;
-            bool havePad = false;
-            hpos = default; hrot = Quaternion.identity;
-            float best = float.MaxValue;
-            foreach (var (c, r) in pads)
+            HeliPad pad = null;
+            float best = 260f;
+            foreach (var p in VehicleWorld.HeliPads)
             {
-                float d = Vector3.Distance(c, around);
-                if (d < best && d < 260f) { best = d; hpos = c; hrot = Quaternion.LookRotation(facing); havePad = true; }
+                if (p == null) continue;
+                float d = Vector3.Distance(p.transform.position, around);
+                if (d < best) { best = d; pad = p; }
             }
-            if (havePad || TryClearGround(around, facing, new Vector3(9f, 4f, 11f), taken, 14f, 70f, out hpos, out hrot))
+            if (pad != null)
+            {
+                var face = Vector3.ProjectOnPlane(around - pad.transform.position, Vector3.up);
+                system.Spawn("heli", pad.transform.position + Vector3.up * 0.05f, Quaternion.LookRotation(face.sqrMagnitude > 1f ? -face.normalized : Vector3.forward));
+            }
+            else if (TryClearGround(around, facing, new Vector3(9f, 4f, 11f), taken, 14f, 70f, out var hpos, out var hrot))
                 system.Spawn("heli", hpos + Vector3.up * 0.05f, hrot);
         }
 
         private static Vector3 Footprint(VehicleSpec s) => s.kind == VehicleKind.Scooter ? new Vector3(1.0f, 1.6f, 2.1f) : new Vector3(2.5f, 1.9f, 5.0f);
 
+        /// <summary>A free World bay for this class within 90 m: showcase bays first (they face the demo), then the nearest.</summary>
         private static bool TryBay(Vector3 around, VehicleSpec spec, List<Vector3> taken, out Vector3 pos, out Quaternion rot)
         {
             pos = default; rot = Quaternion.identity;
-            if (!VehicleWorld.HasWorldV2) return false;
+            VehicleSpawn best = null; float score = float.MaxValue;
             foreach (var b in VehicleWorld.BaysNear(around, 90f, spec.spawnClass))
             {
+                if (b == null) continue;
+                var p = b.transform.position;
                 bool used = false;
-                foreach (var t in taken) if ((t - b.position).sqrMagnitude < 9f) { used = true; break; }
-                if (used) continue;
-                pos = b.position; rot = b.rotation;
-                return true;
+                foreach (var t in taken) if ((t - p).sqrMagnitude < 16f) { used = true; break; }
+                if (used || Physics.CheckBox(p + Vector3.up * 1.1f, new Vector3(1.0f, 0.8f, 2.2f), b.transform.rotation, 1 << CharacterLayers.Vehicle, QueryTriggerInteraction.Ignore)) continue;
+                float s = Vector3.Distance(p, around) - b.showcase * 60f;   // a showcase bay beats a bay up to 60 m nearer
+                if (s < score) { score = s; best = b; }
             }
-            return false;
+            if (best == null) return false;
+            pos = best.transform.position + Vector3.up * 0.05f; rot = best.transform.rotation;
+            return true;
         }
 
         /// <summary>

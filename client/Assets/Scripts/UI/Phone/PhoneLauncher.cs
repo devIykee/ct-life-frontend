@@ -87,7 +87,7 @@ namespace CTLife.UI
             Suspend();
             HideSearch(false);
             _catalog.Clear();
-            foreach (var app in apps) _catalog.Add(app);
+            foreach (var app in apps) if (app.ShowOnHome) _catalog.Add(app);
             _widgets.Refresh();
             _track.Clear(); _dots.Clear(); _dock.Clear(); _pages.Clear(); _pageButtons.Clear();
             _dock.Add(_dockGlass);
@@ -95,7 +95,7 @@ namespace CTLife.UI
             // Live routes precede planned ones, but every registered route remains reachable.
             for (int pass = 0; pass < 2; pass++)
                 foreach (var app in apps)
-                    if ((app.Phase <= livePhase) == (pass == 0) && Array.IndexOf(DockIds, app.Id) < 0)
+                    if ((app.Phase <= livePhase) == (pass == 0) && Array.IndexOf(DockIds, app.Id) < 0 && app.ShowOnHome)
                         gridApps.Add(app);
             foreach (string id in DockIds)
                 foreach (var app in apps)

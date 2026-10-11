@@ -49,11 +49,18 @@ namespace CTLife.World.Vehicles
             s._player = player;
             s._view = player.GetComponent<AvatarView>();
             Current = s;
+            // AI traffic on the island's roads (it waits for World's RoadNetwork to be loaded)
+            TrafficSystem.Ensure(player, player.transform.parent);
             return s;
         }
 
+        private readonly ParkedCars _parked = new ParkedCars();
+        public ParkedCars Parked => _parked;
+        private float _cleanAt;
+
         private void OnDestroy()
         {
+            _parked.Clear(this);
             if (Current == this) Current = null;
         }
 
@@ -84,6 +91,9 @@ namespace CTLife.World.Vehicles
         private void Update()
         {
             if (_player == null) { Destroy(gameObject); return; }
+            var me = Driving != null ? Driving.transform.position : _player.transform.position;
+            _parked.Update(this, me);
+            if (Time.time >= _cleanAt) { _cleanAt = Time.time + 2f; Abandoned(me); }
             Offered = Driving == null && !Busy ? FindOffer() : null;
             if (Driving != null)
             {
@@ -108,6 +118,25 @@ namespace CTLife.World.Vehicles
         }
 
         private bool _droneRangeToast, _waterToast;
+
+        /// <summary>Cars left far behind (driven off and dropped somewhere) go once they are out of sight.</summary>
+        private void Abandoned(Vector3 me)
+        {
+            var cam = Camera.main;
+            for (int i = Vehicles.Count - 1; i >= 0; i--)
+            {
+                var v = Vehicles[i];
+                if (v == null) { Vehicles.RemoveAt(i); continue; }
+                if (v.Occupied || v == _drone || (v.transform.position - me).sqrMagnitude < 320f * 320f) continue;
+                if (cam != null)
+                {
+                    var vp = cam.WorldToViewportPoint(v.transform.position);
+                    if (vp.z > 0f && vp.x > -0.1f && vp.x < 1.1f && vp.y > -0.1f && vp.y < 1.1f) continue;
+                }
+                Vehicles.RemoveAt(i);
+                Destroy(v.gameObject);
+            }
+        }
 
         private Vehicle FindOffer()
         {
@@ -148,14 +177,17 @@ namespace CTLife.World.Vehicles
             t.SetPositionAndRotation(Vector3.Lerp(t.position, targetPos, blend), Quaternion.Slerp(t.rotation, v.transform.rotation, blend));
         }
 
-        private void Grip(Vehicle v)
+        private void Grip(Vehicle v) => GripWheel(v, _view);
+
+        /// <summary>Hands on the wheel (or the bars) of <paramref name="v"/> for a seated avatar; the player and NPC drivers.</summary>
+        public static void GripWheel(Vehicle v, AvatarView view)
         {
-            var ik = _view.Animator != null ? _view.Animator.GetComponent<CharacterIK>() : null;
-            if (ik == null) return;
+            var ik = view != null && view.Animator != null ? view.Animator.GetComponent<CharacterIK>() : null;
+            if (ik == null || v == null) return;
             var right = v.transform.right; var up = v.transform.up;
             if (v.Kind == VehicleKind.Scooter)
             {
-                var bar = v.transform.Find("Model") != null ? FindDeep(v.transform, "Handlebar") : null;
+                var bar = v.Handlebar;
                 if (bar == null) return;
                 ik.Grip(bar.position - right * 0.32f + up * 0.02f, bar.position + right * 0.32f + up * 0.02f, right);
                 return;
@@ -166,12 +198,6 @@ namespace CTLife.World.Vehicles
             var turn = Quaternion.AngleAxis(-steer * 6f, column);
             var c = v.SteeringCenter.position;
             ik.Grip(c + turn * (-right * 0.16f + up * 0.05f), c + turn * (right * 0.16f + up * 0.05f), right);
-        }
-
-        private static Transform FindDeep(Transform root, string name)
-        {
-            foreach (var t in root.GetComponentsInChildren<Transform>(true)) if (t.name == name) return t;
-            return null;
         }
 
         // ------------------------------------------------------------------ in and out

@@ -26,6 +26,8 @@ namespace CTLife.World.Vehicles
         public Transform Entry { get; private set; }
         public Transform SteeringCenter { get; private set; }
         public Transform Exhaust { get; private set; }
+        /// <summary>Scooters: the bars the rider holds.</summary>
+        public Transform Handlebar { get; private set; }
         public readonly List<Transform> Rotors = new List<Transform>();
 
         public VehicleInput Input;
@@ -70,7 +72,7 @@ namespace CTLife.World.Vehicles
             Wheels[2] = P("Wheel_RL") ?? P("Wheel_R"); Wheels[3] = P("Wheel_RR");
             DoorLeft = P("Door_FL"); DoorRight = P("Door_FR");
             Steering = P("Steering"); Seat = P("Seat_Driver"); Entry = P("Entry_Driver");
-            SteeringCenter = P("SteeringCenter"); Exhaust = P("Exhaust");
+            SteeringCenter = P("SteeringCenter"); Exhaust = P("Exhaust"); Handlebar = P("Handlebar");
             Rotors.Clear();
             foreach (var kv in parts) if (kv.Key.StartsWith("Rotor_", System.StringComparison.Ordinal)) Rotors.Add(kv.Value);
             if (DoorLeft != null) _doorLeftRest = DoorLeft.localRotation;

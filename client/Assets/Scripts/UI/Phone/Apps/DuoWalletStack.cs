@@ -20,7 +20,7 @@ namespace CTLife.UI
         private static readonly string[] Symbols = { "SOL", "USDC", "SKR", "ORE" };
         private const float StripStep = 92f;
 
-        private readonly Action _topUp;
+        private readonly Action _topUp, _repay;
         private readonly Dictionary<Card, VisualElement> _cards = new Dictionary<Card, VisualElement>();
         private WalletBalanceService _wallet;
         private readonly Subscriptions _subs = new Subscriptions();
@@ -32,8 +32,10 @@ namespace CTLife.UI
 
         /// <param name="front">Card shown in front first (Bank: Cash, Wallet: Solana).</param>
         /// <param name="topUp">Opens the Cash top-up flow; null hides the action (no payments yet).</param>
-        public DuoWalletStack(Card front, Action topUp)
+        /// <param name="repay">Opens the Repay sheet (POST /bank/repay); null hides the action.</param>
+        public DuoWalletStack(Card front, Action topUp, Action repay = null)
         {
+            _repay = repay;
             AddToClassList("duo-wallet-stack");
             AddToClassList("ct-wallet-page");
             _front = front;
@@ -153,9 +155,20 @@ namespace CTLife.UI
         {
             string debt = Money.Cash(p.DebtCents);
             var card = Shell(Card.Loan, "loan", Strings.T("wallet.card.loan"), "−" + debt, "duo-wcard-owed");
-            // The backend has no due date or repay route for this debt; show only what it reports.
-            card.Add(Body(El.Text(Strings.T("wallet.card.toPayBack"), "duo-wcard-caption"),
-                El.Text(debt, "duo-wcard-amount"), El.Text(Strings.T("wallet.card.loanNote"), "duo-wcard-note")));
+            var body = Body(El.Text(Strings.T("wallet.card.toPayBack"), "duo-wcard-caption"), El.Text(debt, "duo-wcard-amount"));
+            // The instalment the server schedules (weekly amount, due at Sunday Unlock); nothing is shown when it sent none.
+            var due = DebtDue.Line(p.DebtWeeklyDueCents, p.DebtDueAtMs, ServerClock.NowMs);
+            var dueLabel = El.Text(due ?? Strings.T("wallet.card.loanNote"), "duo-wcard-note" + (due != null ? " duo-wcard-due" : ""));
+            dueLabel.name = "wallet-loan-due";
+            body.Add(dueLabel);
+            if (_repay != null)
+            {
+                var repay = Duo.Pill(Strings.T("wallet.card.repay"), _repay, Duo.PillKind.Primary);
+                repay.name = "wallet-repay";
+                repay.AddToClassList("duo-wcard-pill");
+                body.Add(El.Div("duo-wcard-actions", repay));
+            }
+            card.Add(body);
             return card;
         }
 

@@ -64,6 +64,29 @@ namespace CTLife.Economy
         public int Leverage;
         public long MarginCents, EntryMicros, LiqMicros;
         public long? RealizedCents, ClosedAtMs;
+        /// <summary>Open positions (backend eeef49d): the price liquidation reads now, and the PnL if closed at it.</summary>
+        public long? MarkMicros, UnrealizedPnlCents;
+    }
+
+    /// <summary>POST /bank/repay → what was actually paid (capped at the debt) and the balances after.</summary>
+    public sealed class RepayReceipt
+    {
+        public long RepaidCents, CashCents, DebtCents;
+    }
+
+    /// <summary>One Cash ledger row: signed amount (credits +, debits −), the server's reason code and its label.</summary>
+    public sealed class LedgerItem
+    {
+        public string Id, Kind, Label;
+        public long AmountCents;
+        public long? AtMs;
+    }
+
+    /// <summary>GET /ledger page, newest first; <see cref="Next"/> is passed back as `before` (null on the last page).</summary>
+    public sealed class LedgerPage
+    {
+        public Rows<LedgerItem> Rows = new Rows<LedgerItem>();
+        public string Next;
     }
 
     public sealed class PredictionOutcome
@@ -294,7 +317,44 @@ namespace CTLife.Economy
                 LiqMicros = Wire.Long(p["liqMicros"]),
                 RealizedCents = Wire.OptLong(p["realizedCents"]),
                 ClosedAtMs = SafeTime(p["closedAt"]),
+                MarkMicros = Wire.OptLong(p["markMicros"]),
+                UnrealizedPnlCents = Wire.OptLong(p["unrealizedPnlCents"]),
             };
+        }
+
+        public static RepayReceipt Repay(JToken t)
+        {
+            if (!(t is JObject)) throw new FormatException("Missing repay receipt");
+            return new RepayReceipt
+            {
+                RepaidCents = Wire.Long(t["repaidCents"]),
+                CashCents = Wire.Long(t["cashCents"]),
+                DebtCents = Math.Max(0, Wire.Long(t["debtCents"])),
+            };
+        }
+
+        public static LedgerItem LedgerRow(JToken t)
+        {
+            if (!(t is JObject)) throw new FormatException("Missing ledger row");
+            var id = Wire.ReqStr(t["id"], "id");
+            if (id.Length > 64) throw new FormatException("Bad id");
+            return new LedgerItem
+            {
+                Id = id,
+                Kind = Wire.Plain(t["kind"], 32) ?? "",
+                Label = Wire.Plain(t["label"], 64),
+                AmountCents = Wire.Long(t["amountCents"]),
+                AtMs = SafeTime(t["at"]),
+            };
+        }
+
+        public static LedgerPage Ledger(JToken t)
+        {
+            var page = new LedgerPage { Rows = Many(Wire.List(t, "items"), LedgerRow) };
+            var next = Wire.Str(t?["next"]);
+            // a page cursor is a plain number (the contract's `before` pattern); anything else ends paging
+            page.Next = !string.IsNullOrEmpty(next) && next.Length <= 24 && ulong.TryParse(next, out _) ? next : null;
+            return page;
         }
 
         public static Rows<PerpRow> Perps(JToken t) => Many(Wire.List(t, "perps"), Perp);

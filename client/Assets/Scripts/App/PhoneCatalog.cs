@@ -28,6 +28,8 @@ namespace CTLife.App
             phone.Register(new PredictionPitApp());
             phone.Register(new OreRefineryApp());
             phone.Register(new MoneyBankApp(topUpTile: true));
+            phone.Register(new MoneyBankApp(repay: true));   // no tile: the Wallet's Loan card opens it
+            WalletApp.LatestTransactions = MoneyLedgerSection.Create;
             phone.Register(new TimelineApp());
             phone.Register(new MessagesApp());
             phone.Register(new SpacesStudioApp());

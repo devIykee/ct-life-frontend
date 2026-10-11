@@ -33,6 +33,7 @@ namespace CTLife.Economy
             ["PAYMENT_EXPIRED"] = "err.paymentExpired",
             ["PAYMENT_UNDERPAID"] = "err.paymentUnderpaid",
             ["INSUFFICIENT_CASH"] = "err.insufficientCash",
+            ["NOTHING_TO_REPAY"] = "err.nothingToRepay",
             ["SLIPPAGE_EXCEEDED"] = "err.slippage",
             ["LEVERAGE_NOT_ALLOWED"] = "err.leverage",
             ["VALIDATION_FAILED"] = "err.validation",
