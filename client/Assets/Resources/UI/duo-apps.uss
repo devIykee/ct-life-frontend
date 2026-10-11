@@ -221,7 +221,11 @@
 .ct-phone .duo-post > .duo-avatar { margin-right: 22px; }
 .ct-phone .duo-post-body { flex-grow: 1; flex-shrink: 1; min-width: 0; }
 .ct-phone .duo-post-head { flex-direction: row; align-items: center; flex-wrap: wrap; }
-.ct-phone .duo-post .duo-post-name { font-size: var(--duo-headline); color: var(--duo-label); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); margin: 0 10px 0 0; padding: 0; }
+.ct-phone .duo-post .duo-post-name {
+    font-size: var(--duo-headline); color: var(--duo-label); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); margin: 0 10px 0 0; padding: 0;
+    flex-shrink: 1; min-width: 0; max-width: 72%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ct-phone .duo-post-head { flex-wrap: nowrap; }
 .ct-phone .duo-post .duo-post-time { font-size: var(--duo-subhead); color: var(--duo-label2); margin: 0 10px 0 0; padding: 0; }
 .ct-phone .duo-post .duo-post-kind { font-size: var(--duo-caption); color: var(--duo-blue); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); padding: 4px 12px; border-radius: 10px; background-color: rgba(10,124,255,0.1); margin: 0; }
 .ct-phone .duo-post .duo-post-kind-warn { color: #9a4f00; background-color: rgba(255,149,0,0.14); }

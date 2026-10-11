@@ -364,13 +364,15 @@ namespace CTLife.Economy
             var levList = El.Div("duo-list", lev);
             Duo.MarkLast(levList);
             _tradeControls.Add(levList);
-            _tradeControls.Add(Duo.Footnote(_cap.HasValue ? MoneyStrings.F("perps.cap", _cap.Value) : MoneyStrings.T("perps.capUnknown"), "duo-topup-note"));
+            // One line for the cap and the Cash you can use (the sheet must show Open without scrolling).
+            _tradeControls.Add(Duo.Footnote((_cap.HasValue ? MoneyStrings.F("perps.cap", _cap.Value) : MoneyStrings.T("perps.capUnknown"))
+                + " · " + MoneyStrings.F("perps.available", MoneyFormat.Cash(Cash)), "duo-topup-note"));
 
             var field = new TextField { value = _marginInput ?? "", isDelayed = false, name = "perps-margin" };
             field.AddToClassList("duo-field");
             field.textEdition.placeholder = MoneyStrings.T("perps.marginHint");
             field.RegisterValueChangedCallback(e => _marginInput = e.newValue);
-            _tradeControls.Add(Duo.GroupHeader(MoneyStrings.T("perps.margin")));
+            field.tooltip = MoneyStrings.T("perps.margin");
             _tradeControls.Add(field);
             var quick = El.Div("duo-topup-currencies");
             foreach (var dollars in new[] { "10", "50", "100", "500" })
@@ -379,7 +381,6 @@ namespace CTLife.Economy
                 quick.Add(Duo.Pill("$" + d, () => { _marginInput = d; field.SetValueWithoutNotify(d); }));
             }
             _tradeControls.Add(quick);
-            _tradeControls.Add(Duo.Footnote(MoneyStrings.F("perps.available", MoneyFormat.Cash(Cash)), "duo-topup-note"));
             var open = _openButton = El.Btn(MoneyStrings.T(_opening ? "perps.opening" : "perps.open"), OpenPerp,
                 "duo-sheet-primary " + (_side == "short" ? "duo-perp-primary-short" : "duo-perp-primary-long"));
             open.name = "perps-open";

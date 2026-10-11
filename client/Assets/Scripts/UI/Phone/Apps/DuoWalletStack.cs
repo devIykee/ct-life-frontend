@@ -188,6 +188,7 @@ namespace CTLife.UI
                 if (connected)
                 {
                     // SOL is the hero; the other tokens sit underneath. Full precision; missing never becomes zero.
+                    bool anyStale = false;
                     for (int i = 0; i < Symbols.Length; i++)
                     {
                         var token = snapshot.Token(Symbols[i]);
@@ -203,8 +204,10 @@ namespace CTLife.UI
                             body.Add(El.Div("duo-wcard-token", El.Text(WalletStrings.T("name." + Symbols[i]), "duo-wcard-token-name"),
                                 El.Text(text, "duo-wcard-token-value ct-wallet-amount"), El.Text(amount != null ? Symbols[i] : "", "duo-wcard-token-symbol")));
                         }
-                        if (token?.IsStale == true) body.Add(El.Text(WalletStrings.T("stale"), "duo-wcard-note ct-wallet-status ct-wallet-stale"));
+                        anyStale |= token?.IsStale == true;
                     }
+                    // One note for the card (it repeated under every token on the Seeker).
+                    if (anyStale) body.Add(El.Text(WalletStrings.T("stale"), "duo-wcard-note ct-wallet-status ct-wallet-stale"));
                 }
                 body.Add(status);
             }
