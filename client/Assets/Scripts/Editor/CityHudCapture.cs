@@ -54,6 +54,8 @@ namespace CTLife.EditorTools
 
         /// <summary>Phase A: run only the every-venue/every-home arrival sweep (captureSet "visits").</summary>
         public static bool SweepOnly;
+        /// <summary>Phase A: run only the locomotion feel probe (captureSet "feel").</summary>
+        public static bool FeelOnly;
 
         public static async Task Run(Func<string, float, Task> shot, Func<float, Task> wait,
             Action<bool, string> expect, Action<string> step, JObject receipt)
@@ -142,6 +144,7 @@ namespace CTLife.EditorTools
                 Bus.Publish(new OnlineCountSignal { online = 27 }); Bus.Publish(new MoodSignal { bps = 420 });
                 Bus.Publish(new InteractionPromptSignal());
                 hud.Show(true);
+                if (FeelOnly) { FeelProbe.OutDir = Environment.GetCommandLineArgs().SkipWhile(x => x != "-ctlife-captureOut").Skip(1).FirstOrDefault(); var (feel, last) = await FeelProbe.Run(visit, camera, shot); receipt["feel"] = feel; visit = last; return; }
                 if (SweepOnly) { visit = await VisitSweep(ui, hud, visit, camera, session, transport, profile, shot, wait, expect, receipt); return; }
                 await shot("hud-01-city-idle", 1.2f);
                 Inspect(hud, "idle", report, expect);

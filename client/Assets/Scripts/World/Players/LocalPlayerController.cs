@@ -57,6 +57,11 @@ namespace CTLife.World
         public Vector3 ActualVelocity { get; private set; }
         public bool DirectInputActive => _directControl || (_view != null && _view.SeatPresentationActive && _moveInput.sqrMagnitude > DirectMovementInput.DeadZone * DirectMovementInput.DeadZone);
         public bool IsRunning => _running;
+        private bool _braking;
+        private float _turnVelocity;
+        /// <summary>Feel probe and tests: coasting to a stop after the stick was released.</summary>
+        public bool Braking => _braking;
+
         public int InputEpoch { get; private set; }
         private bool AgentReady => _agent != null && _agent.enabled && _agent.isOnNavMesh;
 
@@ -158,9 +163,12 @@ namespace CTLife.World
             input = Vector2.ClampMagnitude(input, 1f);
             if (input.magnitude <= DirectMovementInput.DeadZone)
             {
-                if (_directControl || (_view != null && _view.SeatPresentationActive)) StopDirectInput();
+                // Releasing the stick brakes over a few frames (Locomotion.Brake) instead of stopping dead in two.
+                if (_directControl && !(_view != null && _view.SeatPresentationActive)) { _braking = true; _moveInput = Vector2.zero; _inputAt = Time.unscaledTime; }
+                else if (_directControl || (_view != null && _view.SeatPresentationActive)) StopDirectInput();
                 return;
             }
+            _braking = false;
             StandIfSeated(); // A confirmed seat deliberately disables the agent.
             if (_view != null && _view.SeatPresentationActive)
             {
@@ -189,6 +197,8 @@ namespace CTLife.World
         /// <summary>Release a thumb without cancelling an unrelated, intentional seat/review path.</summary>
         public void StopDirectInput()
         {
+            _braking = false;
+            _turnVelocity = 0f;
             _moveInput = Vector2.zero;
             _running = false;
             _directSpeed = 0f;
@@ -655,12 +665,24 @@ namespace CTLife.World
 
         private void UpdateDirectMovement()
         {
-            if (_appPaused || Time.unscaledTime - _inputAt > 0.25f) { StopDirectInput(); return; }
-            float targetSpeed = DirectMovementInput.Speed(_moveInput.magnitude, ref _running);
-            var rig = CameraRig.Instance;
-            float yaw = rig != null ? rig.yaw : (Camera.main != null ? Camera.main.transform.eulerAngles.y : 0f);
-            var direction = Quaternion.Euler(0f, yaw, 0f) * new Vector3(_moveInput.x, 0f, _moveInput.y).normalized;
-            _directSpeed = Mathf.MoveTowards(_directSpeed, targetSpeed, 14f * Time.deltaTime);
+            if (_appPaused) { StopDirectInput(); return; }
+            Vector3 direction;
+            if (_braking)
+            {
+                // Coast to a stop along the current heading (no input producer needed while braking).
+                _directSpeed = Locomotion.Brake(_directSpeed, Time.deltaTime);
+                if (_directSpeed <= Locomotion.StopBelow) { StopDirectInput(); return; }
+                direction = transform.forward;
+            }
+            else
+            {
+                if (Time.unscaledTime - _inputAt > 0.25f) { StopDirectInput(); return; }
+                float targetSpeed = DirectMovementInput.Speed(_moveInput.magnitude, ref _running);
+                var rig = CameraRig.Instance;
+                float yaw = rig != null ? rig.yaw : (Camera.main != null ? Camera.main.transform.eulerAngles.y : 0f);
+                direction = Quaternion.Euler(0f, yaw, 0f) * new Vector3(_moveInput.x, 0f, _moveInput.y).normalized;
+                _directSpeed = Locomotion.Accelerate(_directSpeed, targetSpeed, Time.deltaTime);
+            }
             var velocity = direction * _directSpeed;
             float dt = Mathf.Max(Time.deltaTime, 1f / 120f);
             var target = _agent.nextPosition + velocity * dt;
@@ -679,11 +701,26 @@ namespace CTLife.World
                 velocity = Vector3.ProjectOnPlane(velocity, edge.normal);
                 velocity.y = 0f;
                 target = _agent.nextPosition + velocity * dt;
-                if (_agent.Raycast(target, out _) || velocity.sqrMagnitude < 0.0001f) velocity = Vector3.zero;
+                // A ray cast exactly along the boundary reports a hit, which froze the player against every wall
+                // (FeelProbe: 128 of 181 frames). Accept the tangent move when its end point is on the navmesh instead.
+                bool sampled = NavMesh.SamplePosition(target, out var along, 0.3f, _agent.areaMask);
+                var step = sampled ? along.position - _agent.nextPosition : Vector3.zero; step.y = 0f;
+                float forward = velocity.sqrMagnitude > 1e-6f ? Vector3.Dot(step, velocity.normalized) : 0f;
+                // Keep only the tangent progress (the sample can pull the point back inside; that part would jitter).
+                velocity = sampled && forward > 0f ? velocity.normalized * (forward / dt) : Vector3.zero;
             }
-            if (_venue != null && !_venue.IsWalkable(_agent.nextPosition + velocity * dt)) velocity = Vector3.zero;
+            if (_venue != null && !_venue.IsWalkable(_agent.nextPosition + velocity * dt))
+            {
+                // At the venue's walkable edge keep the component along the edge (glide) rather than freezing.
+                var from = _agent.nextPosition; var vt = _venue.transform;
+                var local = Locomotion.SlideAlongEdge(vt.InverseTransformDirection(velocity), v => _venue.IsWalkable(from + vt.TransformDirection(v) * dt));
+                velocity = vt.TransformDirection(local);
+            }
             var facing = velocity.sqrMagnitude > 0.0001f ? velocity.normalized : direction;
-            transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.LookRotation(facing), 720f * Time.deltaTime);
+            // Eased turn: the turn rate ramps in and out (no instant 720 deg/s onset), capped at Locomotion.MaxTurnRate.
+            float current = transform.eulerAngles.y, goal = Quaternion.LookRotation(facing).eulerAngles.y;
+            float next = Mathf.SmoothDampAngle(current, goal, ref _turnVelocity, Locomotion.TurnSmoothTime, Locomotion.MaxTurnRate, Time.deltaTime);
+            transform.rotation = Quaternion.Euler(0f, next, 0f);
             // Turn before advancing, including when a wall changes the allowed direction into a slide.
             velocity *= Mathf.Clamp01(Vector3.Dot(transform.forward, facing));
             // Unity's supported player-control path remains constrained to the existing baked NavMesh; the body collides

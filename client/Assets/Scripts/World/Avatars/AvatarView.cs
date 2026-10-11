@@ -559,9 +559,12 @@ namespace CTLife.World
             _seatBridgeTarget = null; // Cancel queued presentation; later changed base requests retain their existing interrupt behavior.
             _overlayAnim = animId;
             _overlayEndsAt = Time.time + duration;
-            if (AnimationLibrary.TryPlay(Animator, animId, 0.1f)) return;
+            if (AnimationLibrary.TryPlay(Animator, animId, 0.1f)) { Hands.Begin(Animator, animId); return; }
             Procedural?.PlayOverlay(animId, duration, false);
         }
+
+        /// <summary>Emote finger poses (HandPoses "Hands" layer).</summary>
+        public readonly HandPoses.Driver Hands = new HandPoses.Driver();
 
         public void SetTalking(bool on)
         {
@@ -582,9 +585,11 @@ namespace CTLife.World
                 _pendingOverlay = null;
                 PlayOneShot(id);
             }
+            Hands.Tick(Animator, Time.deltaTime);
             if (_overlayAnim != null && Time.time >= _overlayEndsAt)
             {
                 _overlayAnim = null;
+                Hands.End();
                 // Return the Animator to the base state after a one-shot.
                 var b = _baseAnim;
                 var spot = _baseSpot;
