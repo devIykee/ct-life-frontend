@@ -1,0 +1,2684 @@
+{
+  "meta": {
+    "version": "1.0",
+    "researched": "2026-10-07/08",
+    "companion": "docs/research/ct-now-2026-10.md",
+    "method": "Read-only X search (top tab, min_faves filters, 1 Sep-7 Oct 2026, ~60 queries) + WebFetch of CoinDesk, Decrypt, The Block, token2049.com, solana.com/breakpoint",
+    "labels": {
+      "observed": "dated + sourced",
+      "inference": "general CT knowledge / pattern",
+      "unverified": "single source or aggregator paraphrase"
+    },
+    "rule": "Never use real brands or real people in-game; use parody_names. Solana, Seeker, SKR, ORE are platform integrations per spec.",
+    "lines_note": "NPC lines are adapted for the game from observed patterns; never attribute to real people."
+  },
+  "market_mood_now": {
+    "summary": "Leveraged, jumpy, suits arriving. Fed hiked to 4.00% (16 Sep); BTC squeezed ~80k->87k late Sep; oil shock 6-7 Oct dropped BTC <83k with $360M longs liquidated in 10 min.",
+    "price_anchors": {
+      "BTC": {
+        "2026-09-18": 80000,
+        "2026-09-21": 86000,
+        "2026-09-23": "<84000",
+        "2026-10-02": 87000,
+        "2026-10-07": "<83000"
+      },
+      "SOL": {
+        "2026-09-21": "~120 [unverified]"
+      },
+      "BNB": {
+        "2026-10-05": ">800"
+      },
+      "SKR": {
+        "2026-09-24": "0.021 [unverified]"
+      },
+      "total_mcap": {
+        "2026-09-22": "3T"
+      }
+    },
+    "macro": [
+      "Fed hike to 4.00% on 16 Sep (first in 3+ years)",
+      "BoJ to 1.25% on 18 Sep",
+      "US10Y highest since Jul 2007 (24 Sep)",
+      "30y mortgage 7.17% (15 Sep)",
+      "Hawkish FOMC minutes 7 Oct",
+      "Oil shock 6-7 Oct"
+    ]
+  },
+  "events": [
+    {
+      "date": "2026-09-03",
+      "event": "$140M BTC+ETH shorts liquidated in 60 min",
+      "source": "X news bot",
+      "status": "observed",
+      "game": "town_crier_template"
+    },
+    {
+      "date": "2026-09-04",
+      "event": "$200M longs liquidated in 15 min",
+      "source": "X news bot",
+      "status": "observed",
+      "game": "town_crier_template"
+    },
+    {
+      "date": "2026-09-07",
+      "event": "Political son to launch memecoin on Base (WSJ report); launches 9 Sep and falls 90-99% in hours",
+      "real": "Hunter Biden / $LAPTOP",
+      "parody": "The First Son / $DESKTOP",
+      "source": "X news accounts",
+      "status": "observed",
+      "game": "celebrity_coin_event"
+    },
+    {
+      "date": "2026-09-11",
+      "event": "Dubai lets residents pay gov fees in crypto",
+      "source": "X",
+      "status": "unverified",
+      "game": "dubai_relocator_line"
+    },
+    {
+      "date": "2026-09-12",
+      "event": "Launchpad adds Holder Rewards, removes Cashback",
+      "real": "Pump.fun",
+      "parody": "Pomp.fun",
+      "source": "X launchpad account",
+      "status": "observed",
+      "game": "weekly_meta_holder_rewards"
+    },
+    {
+      "date": "2026-09-15",
+      "event": "MEV bot 'Yoink' front-runs a hacker draining $7.8M",
+      "source": "X",
+      "status": "observed",
+      "game": "sniper_steals_from_drainer"
+    },
+    {
+      "date": "2026-09-15",
+      "event": "Clarity Act fails Senate; $200M longs liq in 20 min",
+      "source": "4 Oct notes",
+      "status": "observed",
+      "game": "regulation_event"
+    },
+    {
+      "date": "2026-09-16",
+      "event": "Fed hikes to 4.00%, first hike in 3+ years",
+      "real": "Fed",
+      "parody": "The Reserve",
+      "source": "X multiple",
+      "status": "observed",
+      "game": "macro_fed_hike_day"
+    },
+    {
+      "date": "2026-09-16",
+      "event": "$1.7T German bank launches crypto custody",
+      "real": "Deutsche Bank",
+      "parody": "Deutsche Bonk",
+      "source": "X news bot",
+      "status": "observed"
+    },
+    {
+      "date": "2026-09-17",
+      "event": "CFTC lets devs build passive derivatives software without broker registration",
+      "source": "X news bot",
+      "status": "observed"
+    },
+    {
+      "date": "2026-09-17",
+      "event": "Autonomous AI agent cold-emails a creator for gigs to fund its compute",
+      "source": "X",
+      "status": "observed",
+      "game": "ai_agent_line"
+    },
+    {
+      "date": "2026-09-18",
+      "event": "BTC +5% to $80k, $180M shorts liquidated; BoJ to 1.25%",
+      "source": "X",
+      "status": "observed"
+    },
+    {
+      "date": "2026-09-20",
+      "event": "Scam AI-bot YouTube tutorials make viewers self-drain",
+      "source": "X",
+      "status": "observed",
+      "game": "drainer_variant"
+    },
+    {
+      "date": "2026-09-20",
+      "event": "Exposé alleges famous trader behind a slow-rugging coin",
+      "source": "X",
+      "status": "allegation_unverified",
+      "game": "exposé_event (no real names)"
+    },
+    {
+      "date": "2026-09-21",
+      "event": "BTC +6% to $86k, $575M shorts liquidated; first weekly close above 50W MA in 45 weeks; 'officially back in a bull market'",
+      "source": "X",
+      "status": "observed",
+      "game": "green_mood_spike"
+    },
+    {
+      "date": "2026-09-22",
+      "event": "Crypto market cap reclaims $3T",
+      "source": "X news bot",
+      "status": "observed"
+    },
+    {
+      "date": "2026-09-23",
+      "event": "Asset manager research: AI agents drive stablecoin demand",
+      "real": "BlackRock",
+      "parody": "BlackRack",
+      "source": "X",
+      "status": "observed"
+    },
+    {
+      "date": "2026-09-23",
+      "event": "BTC < $84k, $230M longs liquidated in 1h",
+      "source": "X news bot",
+      "status": "observed"
+    },
+    {
+      "date": "2026-09-24",
+      "event": "Exchange hot-wallet hack ~$350-387.5M, likely DPRK; 5,500 BTC protection fund covers; withdrawals resume 28 Sep; launderers ask for help publicly",
+      "real": "Bitget",
+      "parody": "Bitgot",
+      "source": "X citing The Block",
+      "status": "observed",
+      "game": "exchange_hack_event"
+    },
+    {
+      "date": "2026-09-24",
+      "event": "US10Y highest since July 2007",
+      "source": "X news bot",
+      "status": "observed",
+      "game": "macro_yield_spike"
+    },
+    {
+      "date": "2026-09-24",
+      "event": "Tip-coin: $2M creator fees paid to X accounts via X Money; +357% to ~$40M mcap (26 Sep); 'Elon sent $171k'; -50% on losing X Money access (29 Sep)",
+      "real": "$PAID / X Money",
+      "parody": "$TIPD / Y Money",
+      "source": "X",
+      "status": "observed",
+      "game": "tip_coin_event"
+    },
+    {
+      "date": "2026-09-29",
+      "event": "US broker launches 24/7 perps up to 10x",
+      "real": "Robinhood",
+      "parody": "Robbinghood",
+      "source": "X",
+      "status": "observed"
+    },
+    {
+      "date": "2026-09-30",
+      "event": "Perp DEX monthly team unlock ~$320M sold OTC",
+      "real": "Hyperliquid",
+      "parody": "Hyperliquor",
+      "source": "X",
+      "status": "observed",
+      "game": "sunday_unlock_tie_in"
+    },
+    {
+      "date": "2026-10-03",
+      "event": "Trader publishes free DB of ~5,000 KOL wallets",
+      "source": "X",
+      "status": "observed",
+      "game": "kol_wallet_exposé"
+    },
+    {
+      "date": "2026-10-03",
+      "event": "Livestream dev fakes overdose, rugs ~$100k",
+      "source": "4 Oct notes",
+      "status": "observed",
+      "game": "livestream_dev"
+    },
+    {
+      "date": "2026-10-03",
+      "event": "Trader loses $11k copy-trading a famous trader",
+      "source": "X",
+      "status": "observed",
+      "game": "copy_trade_victim"
+    },
+    {
+      "date": "2026-10-05",
+      "event": "Perp DEX data (incl. oil, gold) on the Bloomberg Terminal",
+      "real": "Hyperliquid / Bloomberg",
+      "parody": "Hyperliquor / Bloombag Terminal",
+      "source": "X",
+      "status": "observed"
+    },
+    {
+      "date": "2026-10-05",
+      "event": "CFTC chair video on proposed crypto market rules",
+      "source": "X news bot",
+      "status": "observed"
+    },
+    {
+      "date": "2026-10-05",
+      "event": "Seeker 50% off extended through end of Breakpoint",
+      "source": "X @solanamobile",
+      "status": "observed",
+      "game": "phone_shop_sale"
+    },
+    {
+      "date": "2026-10-05",
+      "event": "NYSE tokenized stock platform",
+      "real": "NYSE",
+      "parody": "NYSEE",
+      "source": "X",
+      "status": "observed"
+    },
+    {
+      "date": "2026-10-06",
+      "event": "US scraps $10k private-wallet reporting rule",
+      "source": "CoinDesk",
+      "status": "observed"
+    },
+    {
+      "date": "2026-10-06",
+      "event": "Coinbase Pro returns; Deribit integration creates global exchange",
+      "real": "Coinbase/Deribit",
+      "parody": "Coinbass/Derabit",
+      "source": "The Block",
+      "status": "observed"
+    },
+    {
+      "date": "2026-10-06",
+      "event": "L2 declines to TGE; CT calls it honorable",
+      "real": "Abstract",
+      "parody": "Abstrakt",
+      "source": "X",
+      "status": "unverified"
+    },
+    {
+      "date": "2026-10-06",
+      "event": "Oil shock: BTC <$84k then <$83k; liquidations $487M-$547M; one 10-min burst $360M longs",
+      "source": "The Block; CoinDesk; Decrypt; X",
+      "status": "observed",
+      "game": "macro_oil_shock"
+    },
+    {
+      "date": "2026-10-07",
+      "event": "TOKEN2049 Singapore 7-8 Oct, MBS, 25k+ attendees; After2049 rooftop 9 Oct; side events 510 vs 814 last year (tracker) vs 1,000+ (official)",
+      "real": "TOKEN2049",
+      "parody": "COIN2050 Singapura",
+      "source": "token2049.com; X",
+      "status": "observed",
+      "game": "conference_week"
+    },
+    {
+      "date": "2026-10-07",
+      "event": "Treasury company stops buying ETH at 5% cap",
+      "real": "BitMine / Tom Lee",
+      "parody": "BitMind / Treasury Chairman",
+      "source": "CoinDesk; Decrypt",
+      "status": "observed"
+    },
+    {
+      "date": "2026-10-07",
+      "event": "Political son tells memecoin MM to buy back and burn",
+      "real": "Hunter Biden / $LAPTOP",
+      "parody": "The First Son / $DESKTOP",
+      "source": "The Block",
+      "status": "observed"
+    },
+    {
+      "date": "2026-10-07",
+      "event": "ETH co-founder reportedly says launchpad turned retail into gamblers",
+      "real": "Vitalik / Pump.fun",
+      "parody": "Vitalek / Pomp.fun",
+      "source": "X aggregator",
+      "status": "unverified"
+    },
+    {
+      "date": "2026-10-07",
+      "event": "Cult leader predicts memecoin flips BTC and stocks",
+      "real": "Murad",
+      "parody": "the Cult Prophet",
+      "source": "X",
+      "status": "observed"
+    },
+    {
+      "date": "2026-10-07",
+      "event": "Zcash ETF tops $1B",
+      "real": "Grayscale/Zcash",
+      "parody": "Greyscale/Zeecash",
+      "source": "The Block",
+      "status": "observed"
+    },
+    {
+      "date": "2026-10-07",
+      "event": "Quantum/AI key-breaking fear headlines; 'bunker mode'",
+      "source": "CoinDesk; The Block; Decrypt",
+      "status": "observed",
+      "game": "quantum_doomer_event"
+    },
+    {
+      "date": "2026-10-07",
+      "event": "Bank in talks for exchange liquidity; exchange raises at $25B",
+      "real": "Wells Fargo/Kraken; OKX",
+      "parody": "Wells Cargo/Kraykin; OKZ",
+      "source": "CoinDesk; Decrypt",
+      "status": "observed"
+    },
+    {
+      "date": "2026-10-07",
+      "event": "TOKEN2049 New York announced for 16-17 Jun 2027",
+      "source": "X",
+      "status": "observed"
+    },
+    {
+      "date": "2026-10-12",
+      "event": "Solana Mobile Clock In hackathon deadline (extended)",
+      "source": "X @solanamobile",
+      "status": "observed"
+    },
+    {
+      "date": "2026-11-15",
+      "event": "Solana Breakpoint London 15-17 Nov, Olympia, 'The Token Supercycle'",
+      "real": "Breakpoint",
+      "parody": "Checkpoint",
+      "source": "solana.com/breakpoint",
+      "status": "observed",
+      "game": "conference_week_2"
+    }
+  ],
+  "narratives": [
+    {
+      "id": "leverage_everywhere",
+      "summary": "Liquidation posts every 1-3 days; perps on oil, gold, stocks; 'US10Y perps' joke"
+    },
+    {
+      "id": "rate_hikes_back",
+      "summary": "Fed and BoJ hikes, 7% mortgages, hawkish minutes"
+    },
+    {
+      "id": "suits_tokenization",
+      "summary": "Banks, NYSE tokenized stocks, long-tail ETFs, coin treasuries with caps"
+    },
+    {
+      "id": "trenches_never_closed",
+      "summary": "Holder rewards, creator fees, tracker legends, livestream devs, bundles, KOL wallet leaks"
+    },
+    {
+      "id": "celebrity_and_tip_coins",
+      "summary": "$LAPTOP crash; $PAID tipping famous accounts via X Money"
+    },
+    {
+      "id": "security_anxiety",
+      "summary": "Bitget hack, self-drain tutorials, phone zero-day, quantum/AI key fear, DPRK laundering in public chats"
+    },
+    {
+      "id": "ai_agents",
+      "summary": "Agents pay with stablecoins; agents beg for compute; sybil-agent worry"
+    },
+    {
+      "id": "prediction_markets_as_newswire",
+      "summary": "Prediction-market accounts post news with odds"
+    }
+  ],
+  "slang": [
+    {
+      "term": "trenches",
+      "meaning": "low-cap memecoin trading",
+      "status": "live_observed"
+    },
+    {
+      "term": "send / sending",
+      "meaning": "ripping up",
+      "status": "live_observed"
+    },
+    {
+      "term": "we're so back / it's so over",
+      "meaning": "mood swing pair",
+      "status": "live_observed"
+    },
+    {
+      "term": "cooked",
+      "meaning": "ruined",
+      "status": "live_inference"
+    },
+    {
+      "term": "skill issue",
+      "meaning": "your fault",
+      "status": "live_observed"
+    },
+    {
+      "term": "CA",
+      "meaning": "contract address",
+      "status": "live_observed"
+    },
+    {
+      "term": "CTO / CTO lead",
+      "meaning": "community takeover / its leader",
+      "status": "live_observed"
+    },
+    {
+      "term": "bundled",
+      "meaning": "insiders bought many wallets at launch",
+      "status": "live_observed"
+    },
+    {
+      "term": "slow rug",
+      "meaning": "team bleeds coin slowly",
+      "status": "live_observed"
+    },
+    {
+      "term": "cabal",
+      "meaning": "insider group",
+      "status": "live_observed"
+    },
+    {
+      "term": "KOL",
+      "meaning": "paid influencer",
+      "status": "live_observed"
+    },
+    {
+      "term": "KOL wallets",
+      "meaning": "tracked influencer wallets",
+      "status": "new_observed"
+    },
+    {
+      "term": "copy trading",
+      "meaning": "mirroring a famous wallet",
+      "status": "live_observed"
+    },
+    {
+      "term": "holder rewards",
+      "meaning": "launchpad pays holders",
+      "status": "new_observed"
+    },
+    {
+      "term": "creator fees",
+      "meaning": "trading fees to creator/streamer/treasury",
+      "status": "live_observed"
+    },
+    {
+      "term": "dono",
+      "meaning": "donation to a streamer (now from token fees)",
+      "status": "live_observed"
+    },
+    {
+      "term": "retired off one trade",
+      "meaning": "tracker-post format",
+      "status": "live_observed"
+    },
+    {
+      "term": "1K → 15M",
+      "meaning": "trader legend format",
+      "status": "live_observed"
+    },
+    {
+      "term": "toppers",
+      "meaning": "people who bought the top",
+      "status": "live_observed"
+    },
+    {
+      "term": "exit liquidity",
+      "meaning": "late buyers",
+      "status": "evergreen"
+    },
+    {
+      "term": "altseason / BTC.D death cross",
+      "meaning": "rotation hope",
+      "status": "live_observed"
+    },
+    {
+      "term": "Uptober",
+      "meaning": "October pump hope",
+      "status": "live_observed"
+    },
+    {
+      "term": "max long / 50x / liq'd",
+      "meaning": "leverage",
+      "status": "live"
+    },
+    {
+      "term": "US10Y perps",
+      "meaning": "joke: perps on everything",
+      "status": "new_observed"
+    },
+    {
+      "term": "unlock / team unlock",
+      "meaning": "vesting tokens hit market",
+      "status": "live_observed"
+    },
+    {
+      "term": "tokenized equities / RWA / onchain Wall Street",
+      "meaning": "suit-speak",
+      "status": "live_observed"
+    },
+    {
+      "term": "token supercycle",
+      "meaning": "Breakpoint 2026 theme",
+      "status": "new_observed"
+    },
+    {
+      "term": "internet capital markets (ICM)",
+      "meaning": "everything is a token (Solana)",
+      "status": "live_observed"
+    },
+    {
+      "term": "bunker mode",
+      "meaning": "quantum/AI key-loss prep",
+      "status": "new_observed"
+    },
+    {
+      "term": "wen TGE / wen airdrop",
+      "meaning": "when token",
+      "status": "evergreen"
+    },
+    {
+      "term": "sybil",
+      "meaning": "fake multi-wallet farmer",
+      "status": "live_observed"
+    },
+    {
+      "term": "points / XP / quests",
+      "meaning": "pre-token grind",
+      "status": "live_observed"
+    },
+    {
+      "term": "gm / gmgm / GM CT ☕️",
+      "meaning": "greeting; now brands and quest farmers",
+      "status": "live_observed"
+    },
+    {
+      "term": "LFG",
+      "meaning": "let's go",
+      "status": "evergreen"
+    },
+    {
+      "term": "ape",
+      "meaning": "impulse buy",
+      "status": "evergreen"
+    },
+    {
+      "term": "bags",
+      "meaning": "holdings",
+      "status": "evergreen"
+    },
+    {
+      "term": "ser / fren / wagmi",
+      "meaning": "2021 bonding words",
+      "status": "fading_ironic"
+    },
+    {
+      "term": "HFSP",
+      "meaning": "have fun staying poor",
+      "status": "fading_maxi_only"
+    },
+    {
+      "term": "Web3 did / Web3 jobs did",
+      "meaning": "flex caption under a purchase",
+      "status": "live_observed_ng"
+    },
+    {
+      "term": "sapa",
+      "meaning": "brokenness (Nigerian)",
+      "status": "live_observed_ng"
+    },
+    {
+      "term": "abeg / una / wahala",
+      "meaning": "Nigerian Pidgin",
+      "status": "live_observed_ng"
+    },
+    {
+      "term": "jeet",
+      "meaning": "paper hands",
+      "status": "DO_NOT_USE"
+    }
+  ],
+  "post_formats": [
+    {
+      "id": "just_in",
+      "template": "JUST IN: {flag} {entity} {action}. {number}."
+    },
+    {
+      "id": "liquidation_bot",
+      "template": "JUST IN: ${n}M worth of crypto {longs|shorts} liquidated in the past {minutes} minutes."
+    },
+    {
+      "id": "hype_aggregator",
+      "template": "🚨 BREAKING / HUGE / MASSIVE: {paraphrase}. MASSIVE FOR CRYPTO! 🚀"
+    },
+    {
+      "id": "odds_news",
+      "template": "BREAKING: {person} now projected to {outcome}. {pct}% chance."
+    },
+    {
+      "id": "liq_clip",
+      "template": "+${gain} → liquidated. The entire life of a trader in under 1 minute."
+    },
+    {
+      "id": "tracker_legend",
+      "template": "{name} is a legend in the trenches. ${a} → ${b} this year. Today he made ${c} on ${coin}."
+    },
+    {
+      "id": "retired_one_trade",
+      "template": "{age}-year-old trader retires off a single memecoin trade. ${a} → ${b}."
+    },
+    {
+      "id": "nine_to_five_envy",
+      "template": "How I feel at my 9 to 5 knowing a kid turned ${a} into ${b} off a meme coin"
+    },
+    {
+      "id": "giveaway_classic",
+      "template": "I promised another giveaway… {n} SOL to {k} winners. 1. Like + RT 2. Drop your wallet 3. Join my TG"
+    },
+    {
+      "id": "giveaway_short",
+      "template": "${amt} for {k} people. Follow, RT & drop SOL wallet. {h}hrs"
+    },
+    {
+      "id": "price_trigger_giveaway",
+      "template": "GOOD MORNING {CHAIN} MAXIS. If ${coin} breaks ${p} today, 1 {coin} to someone in the replies"
+    },
+    {
+      "id": "hiring_bait",
+      "template": "I'm hiring! Looking for reply guys to work {h}+ hours a day. Pay: ${pay} per week. Reply below."
+    },
+    {
+      "id": "loyalty_airdrop",
+      "template": "Airdrop is coming. Quote this post with your username + why you deserve it."
+    },
+    {
+      "id": "shill_me",
+      "template": "Which #memecoin is about to send like this? 👀 Shill me your hidden gem 💎"
+    },
+    {
+      "id": "expose",
+      "template": "Before I go I'll tell you a secret: {who} is behind {coin} and is slow rugging."
+    },
+    {
+      "id": "preemptive_fud",
+      "template": "Dear investigators, today I mint. If you have any FUD or beef with the founder, now is the time."
+    },
+    {
+      "id": "reverse_psych",
+      "template": "Warning: {nickname} about to scam ${coin} holders again as the chart looks for {target} next. Set a reminder."
+    },
+    {
+      "id": "stage_quote",
+      "template": "Just got off the stage at {conf}: {thing} will be the next supercycle."
+    },
+    {
+      "id": "ticket_code",
+      "template": "Absolutely desperate to sell {n} tickets tonight. Use code {code} for 25% off."
+    },
+    {
+      "id": "booth_pov",
+      "template": "gmgm ☀️ here's your day 1 POV from {brand} at {conf}: games, giveaways, web3 conversations 💙"
+    },
+    {
+      "id": "whos_here",
+      "template": "Who's in {city} for {conf}? Spot me at an event, come say hi 🩷"
+    },
+    {
+      "id": "hackathon_list",
+      "template": "{month} is loaded 👀 {n}+ hackathons, every prize real."
+    },
+    {
+      "id": "listicle",
+      "template": "{n} free sites crypto whales don't want you to know about"
+    },
+    {
+      "id": "article_bait",
+      "template": "If you're just getting started, this article will help you a lot."
+    },
+    {
+      "id": "cope",
+      "template": "\"Crypto is a scam.\" Wrong. Working a 9-5 for 60 years… is the scam."
+    },
+    {
+      "id": "reaction",
+      "template": "Crypto bros {situation} like:"
+    },
+    {
+      "id": "macro_doom",
+      "template": "30-year mortgage rates just hit {r}%… that's ${x} more for the same home"
+    },
+    {
+      "id": "uptober_plan",
+      "template": "plans for Uptober: > reply more > post more > more web3 jobs > don't buy memecoins"
+    },
+    {
+      "id": "web3_did",
+      "template": "Just added the {car} to the fleet. Web3 did. The first in {country} 🫡 #tookprofits"
+    },
+    {
+      "id": "marketer_bio",
+      "template": "I'm a Web3 Marketer. I help projects grow through content, KOLs, community & X Spaces."
+    },
+    {
+      "id": "sponsored_i_tried",
+      "template": "I tried {app} and here's how it works 🧵 (fund with crypto or naira…)"
+    }
+  ],
+  "drama_formats": [
+    {
+      "id": "cabal_expose",
+      "desc": "Anon/sleuth alleges big trader behind a coin; media-brand 'cabal' pile-on"
+    },
+    {
+      "id": "kol_wallet_leak",
+      "desc": "Thousands of KOL wallets published; who dumped on followers"
+    },
+    {
+      "id": "copy_trade_victim",
+      "desc": "Follower loses money copying; famous trader blamed"
+    },
+    {
+      "id": "founder_vs_mm",
+      "desc": "Celebrity founder publicly demands MM buy back and burn"
+    },
+    {
+      "id": "og_vs_casino",
+      "desc": "Respected founder says launchpad made retail gamblers; trenchers mock, loyalists defend"
+    },
+    {
+      "id": "chain_tribalism",
+      "desc": "ETH-dead vs ETH-$10k; SOL cockroach-chain"
+    },
+    {
+      "id": "traders_as_athletes",
+      "desc": "Traders should compete like NBA rivals"
+    },
+    {
+      "id": "mission_lament",
+      "desc": "OG laments loss of decentralization focus"
+    },
+    {
+      "id": "doom_vs_hopium",
+      "desc": "'It's so over' vs 'greatest bull market of your life' same day"
+    },
+    {
+      "id": "ratio_quote_dunk",
+      "desc": "[Inference] quote-post dunk; replies decide the winner"
+    }
+  ],
+  "archetypes": {
+    "spec_28": [
+      {
+        "id": "town_crier",
+        "name": "Town Crier (JUST IN bot)",
+        "venue": "timeline_square",
+        "posts_now": "Liquidations, ATHs, bank/ETF moves, Fed and yields, hacks; posts every few minutes with flag emoji",
+        "look": "Siren hat, megaphone, press badge",
+        "pfp": "Logo with a flag emoji",
+        "lines": {
+          "green": [
+            "JUST IN: Crypto market cap reclaims $3 trillion.",
+            "JUST IN: $575M in shorts liquidated in the past 12 hours.",
+            "JUST IN: Bitcoin surges 6% to $86,000."
+          ],
+          "neutral": [
+            "JUST IN: Bynance coin surpasses $800.",
+            "JUST IN: Deutsche Bonk launches crypto custody.",
+            "JUST IN: 80,000 blocks until the next halving."
+          ],
+          "red": [
+            "JUST IN: $360M of longs liquidated in the past 10 minutes.",
+            "JUST IN: The Reserve hikes rates to 4.00%.",
+            "JUST IN: Bitgot exchange reportedly hacked."
+          ]
+        },
+        "flex": "Being first",
+        "hide": "Never checks facts",
+        "behaviour": "Every 2 min announces a server event or liquidation; template pool by Market Mood",
+        "babble_sound": "Siren whoop + clipped syllables",
+        "status": "spec",
+        "evidence": [
+          "X news bot posts 3 Sep-7 Oct 2026"
+        ]
+      },
+      {
+        "id": "giveaway_guy",
+        "name": "Giveaway Guy",
+        "venue": "timeline_square",
+        "posts_now": "Same template, smaller prizes ($25-$200), 12-24h deadlines, price-trigger giveaways",
+        "look": "Gold chain, two phones, fresh cap",
+        "pfp": "Anime boy with shades",
+        "lines": {
+          "green": [
+            "If SOL breaks $120 today, 1 SOL to someone in the replies!",
+            "5 SOL to 10 winners. Like, RT, drop your wallet, join my TG."
+          ],
+          "neutral": [
+            "$200 for 4 people. Follow, RT, drop wallet. 24hrs.",
+            "I promised another giveaway, so here it is."
+          ],
+          "red": [
+            "Market's red but I keep my promises. Drop wallets.",
+            "Winners DM'd. Check your DMs. (it's me, not a drainer)"
+          ]
+        },
+        "flex": "Screenshots of 'paid winners'",
+        "hide": "Follower-farm motive; some winners are alts",
+        "behaviour": "Asks players to drop a wallet; those who do lose $50 Cash to a fake drain (spec)",
+        "babble_sound": "Cash-register ding",
+        "status": "spec",
+        "evidence": [
+          "X 27 Sep, 3 Oct"
+        ]
+      },
+      {
+        "id": "reply_guy",
+        "name": "Reply Guy",
+        "venue": "follows richest player",
+        "posts_now": "Now openly a paid job ($800-$1,500/week posts); first-reply under whales within seconds",
+        "look": "Phone glued to hand, ring-light glow on face",
+        "pfp": "Generic anime PFP",
+        "lines": {
+          "green": [
+            "LFG king 👑",
+            "this. so much this.",
+            "W take ser"
+          ],
+          "neutral": [
+            "gm king",
+            "notifications on 🔔",
+            "bookmarked"
+          ],
+          "red": [
+            "we're so back tomorrow trust",
+            "still holding king 🫡",
+            "buy the dip?"
+          ]
+        },
+        "flex": "'Notifications on' for big accounts",
+        "hide": "It is his job",
+        "behaviour": "FOLLOW richest; every 20s TALK + emote (spec)",
+        "babble_sound": "Fast keyboard clicks",
+        "status": "spec",
+        "evidence": [
+          "X hiring posts 4-7 Oct"
+        ]
+      },
+      {
+        "id": "alpha_caller",
+        "name": "Alpha Caller",
+        "venue": "cabal_lounge_door",
+        "posts_now": "Calls plus self-promoting tracker legends; claims follower wins",
+        "look": "Anime mask, shades, hoodie",
+        "pfp": "Anime mask",
+        "lines": {
+          "green": [
+            "Turned $50 into $35,000 off my call. Memecoins are crazy.",
+            "GUARANTEED 100X. Early CA in my TG."
+          ],
+          "neutral": [
+            "Watching three charts. One is about to send.",
+            "Shill me your hidden gem 💎"
+          ],
+          "red": [
+            "That one was a test. Next call is the real one.",
+            "Not financial advice btw."
+          ]
+        },
+        "flex": "One winner",
+        "hide": "Nineteen losers",
+        "behaviour": "Sells 'early CA' for Cash; most calls dump (spec)",
+        "babble_sound": "Whisper + zipper sound",
+        "status": "spec",
+        "evidence": [
+          "X 20 Sep, 6 Oct"
+        ]
+      },
+      {
+        "id": "cabal_insider",
+        "name": "Cabal Insider",
+        "venue": "cabal_lounge_vip",
+        "posts_now": "Matching PFPs, bundles, slow rugs; never posts, only appears in exposés",
+        "look": "Hood, matching enamel pins",
+        "pfp": "Same PFP as six others",
+        "lines": {
+          "green": [
+            "(whisper) Same funders.",
+            "(whisper) Exit at graduation."
+          ],
+          "neutral": [
+            "(whisper) ..."
+          ],
+          "red": [
+            "(whisper) Delete the group chat."
+          ]
+        },
+        "flex": "Nothing",
+        "hide": "Everything",
+        "behaviour": "Buys before launch, sells into first buyers (spec)",
+        "babble_sound": "Low hum",
+        "status": "spec",
+        "evidence": [
+          "X exposés 20 Sep, 4 Oct"
+        ]
+      },
+      {
+        "id": "rug_dev",
+        "name": "Rug Dev / Livestream Dev",
+        "venue": "launchpad_tower",
+        "posts_now": "Launches live on stream with stunts; a share rug mid-stream (fake overdose then rug story, 3 Oct)",
+        "look": "Hoodie, burner phone, webcam on tripod, LED strip",
+        "pfp": "Cartoon animal",
+        "lines": {
+          "green": [
+            "Chat, if we hit 10M I shave my head.",
+            "Locking 80% supply. No insiders, no snipers."
+          ],
+          "neutral": [
+            "100% community. Not bundled. PURE community.",
+            "Thanks for the support chat, brb."
+          ],
+          "red": [
+            "Stream offline.",
+            "It wasn't me, it was the market maker."
+          ]
+        },
+        "flex": "Viewer count",
+        "hide": "Dev wallet",
+        "behaviour": "Launches coins; a share rug (spec); stream booth with chat goal",
+        "babble_sound": "Donation TTS + alert chime",
+        "status": "spec+updated",
+        "evidence": [
+          "4 Oct notes; X 9 Sep, 16 Sep"
+        ]
+      },
+      {
+        "id": "sniper_bot",
+        "name": "Sniper Bot",
+        "venue": "launchpad_tower",
+        "posts_now": "Front-runs everyone, even drainers ('Yoink' MEV story, 15 Sep)",
+        "look": "Small drone with grabber claw",
+        "pfp": "n/a",
+        "lines": {
+          "green": [
+            "YOINK."
+          ],
+          "neutral": [
+            "beep."
+          ],
+          "red": [
+            "beep beep (sold)"
+          ]
+        },
+        "flex": "Speed",
+        "hide": "n/a",
+        "behaviour": "Buys first tick; occasionally steals from a Drainer NPC",
+        "babble_sound": "Servo whirr + 'yoink' chirp",
+        "status": "spec",
+        "evidence": [
+          "X 15 Sep"
+        ]
+      },
+      {
+        "id": "perp_degen",
+        "name": "Perp Degen",
+        "venue": "perp_pit",
+        "posts_now": "Perps on BTC, oil, gold, stocks; 24/7; posts liquidation clips",
+        "look": "Three monitors, gaming chair, compression tee",
+        "pfp": "Chad wojak",
+        "lines": {
+          "green": [
+            "Max long. Shorts are about to get squeezed.",
+            "+$40k today. Easy game."
+          ],
+          "neutral": [
+            "Opening 50x on oil. Hear me out.",
+            "US10Y perps when?"
+          ],
+          "red": [
+            "+$40k → liquidated. The whole life of a trader in a minute.",
+            "It's so over."
+          ]
+        },
+        "flex": "Peak PnL screenshot",
+        "hide": "Liquidation history",
+        "behaviour": "Opens 50x, liquidated ~every 10 min (spec)",
+        "babble_sound": "Chest thump, then alarm",
+        "status": "spec",
+        "evidence": [
+          "X 4 Oct, 2 Oct, 5 Oct"
+        ]
+      },
+      {
+        "id": "rekt_guy",
+        "name": "Rekt Guy",
+        "venue": "rekt_clinic",
+        "posts_now": "Wiped by a 10-minute cascade or copy-trading a famous wallet",
+        "look": "Pink face, torn shirt",
+        "pfp": "Crying wojak",
+        "lines": {
+          "green": [
+            "Back from the dead. Small bag, big dreams."
+          ],
+          "neutral": [
+            "Anyone got a stimmy?"
+          ],
+          "red": [
+            "It's so over.",
+            "I had a stop-loss. Skill issue I guess.",
+            "I copied him exactly. He sold first."
+          ]
+        },
+        "flex": "Nothing",
+        "hide": "Total losses",
+        "behaviour": "Sits crying, asks for stimmy (spec)",
+        "babble_sound": "Sniffles",
+        "status": "spec",
+        "evidence": [
+          "X 3 Oct copy-trade loss"
+        ]
+      },
+      {
+        "id": "doomposter",
+        "name": "Doomposter",
+        "venue": "timeline_square_red_only",
+        "posts_now": "Fed hike, 10Y yield since 2007, 7% mortgages, oil shock",
+        "look": "Black hoodie, personal rain cloud",
+        "pfp": "Black square",
+        "lines": {
+          "green": [
+            "Enjoy it. This is a bull trap."
+          ],
+          "neutral": [
+            "The Reserve is losing control of long yields."
+          ],
+          "red": [
+            "Bitcoin is about to crash.",
+            "The bull is dead.",
+            "Mortgages at 7.17%. Do the math."
+          ]
+        },
+        "flex": "One right call years ago",
+        "hide": "Shorted the bottom",
+        "behaviour": "Appears on red Market Mood; calls every -3% a bear market (spec)",
+        "babble_sound": "Thunder rumble",
+        "status": "spec",
+        "evidence": [
+          "X 24 Sep, 15 Sep"
+        ]
+      },
+      {
+        "id": "laser_maxi",
+        "name": "Laser-Eyes Maxi",
+        "venue": "anywhere",
+        "posts_now": "Dunks on memecoins, tokenization and 'token supercycle'",
+        "look": "Laser-eye glasses, orange tie",
+        "pfp": "Laser-eyes selfie",
+        "lines": {
+          "green": [
+            "Number go up. As foretold."
+          ],
+          "neutral": [
+            "It's all shitcoins except one."
+          ],
+          "red": [
+            "Have fun staying poor.",
+            "Zoom out."
+          ]
+        },
+        "flex": "Sat-stacking",
+        "hide": "Sold some in 2022",
+        "behaviour": "Calls everything a shitcoin (spec)",
+        "babble_sound": "Laser zap",
+        "status": "spec",
+        "evidence": []
+      },
+      {
+        "id": "chain_tribalists",
+        "name": "Chain Tribalists (pair)",
+        "venue": "ratio_arena",
+        "posts_now": "ETH-dead vs ETH-$10k; Sol 'cockroach chain' jabs",
+        "look": "Rival jerseys",
+        "pfp": "Chain logos",
+        "lines": {
+          "green": [
+            "The big ETH move to $10,000 is this week.",
+            "Solana is eating everything."
+          ],
+          "neutral": [
+            "Your chain went down again?",
+            "Your chain is a database."
+          ],
+          "red": [
+            "ETH is dead. You were told.",
+            "Cockroach chain."
+          ]
+        },
+        "flex": "Chain TPS stats",
+        "hide": "Their own bags",
+        "behaviour": "Argue on loop; players bet on winner (spec)",
+        "babble_sound": "Crowd ooh",
+        "status": "spec",
+        "evidence": [
+          "X 21 Sep, 5 Oct"
+        ]
+      },
+      {
+        "id": "sleuth",
+        "name": "Sleuth",
+        "venue": "audit_row",
+        "posts_now": "Exposé threads, public KOL wallet DBs, hack-fund traces",
+        "look": "Detective coat, laptop with node graph",
+        "pfp": "Pixel detective",
+        "lines": {
+          "green": [
+            "Receipts posted. Case closed."
+          ],
+          "neutral": [
+            "A thread on how this coin was bundled 🧵",
+            "I gathered 5,000 KOL wallets. Type a name."
+          ],
+          "red": [
+            "Traced the hack funds to a public Discordia server.",
+            "Before I go: here's who is behind it."
+          ]
+        },
+        "flex": "Receipts",
+        "hide": "His own bags",
+        "behaviour": "Posts exposés of NPC cabals; hireable (spec)",
+        "babble_sound": "Typewriter clacks",
+        "status": "spec",
+        "evidence": [
+          "X 3 Oct, 20 Sep, 28 Sep"
+        ]
+      },
+      {
+        "id": "auditor",
+        "name": "Auditor",
+        "venue": "audit_row",
+        "posts_now": "Exploit alerts, hot-wallet drains, 'audited ≠ safe'",
+        "look": "Security lanyard, hi-vis vest",
+        "pfp": "Shield logo",
+        "lines": {
+          "green": [
+            "Clean audit. Mostly."
+          ],
+          "neutral": [
+            "Audited is not the same as safe."
+          ],
+          "red": [
+            "Exploit alert. Hot wallet drained.",
+            "Protection fund activated."
+          ]
+        },
+        "flex": "Audit badges",
+        "hide": "Missed bugs",
+        "behaviour": "Sells audits revealing rug risk (spec)",
+        "babble_sound": "Scanner beep",
+        "status": "spec",
+        "evidence": [
+          "Bitget hack 24-29 Sep"
+        ]
+      },
+      {
+        "id": "vc",
+        "name": "VC",
+        "venue": "vc_row",
+        "posts_now": "Fewer memes, more tokenized credit, options, onchain banks; dumps at unlock",
+        "look": "Fleece vest over oxford shirt, AirPods, lanyard",
+        "pfp": "Professional headshot",
+        "lines": {
+          "green": [
+            "We're excited to back the future of onchain credit."
+          ],
+          "neutral": [
+            "Tokenization is inevitable."
+          ],
+          "red": [
+            "Monthly unlock, sold OTC to an institution. Nothing to see."
+          ]
+        },
+        "flex": "Portfolio logos",
+        "hide": "Unlock schedule",
+        "behaviour": "Buys player projects cheap, dumps at unlock (spec)",
+        "babble_sound": "Cold-brew sip",
+        "status": "spec",
+        "evidence": [
+          "X 30 Sep unlock, 7 Oct GSR vault"
+        ]
+      },
+      {
+        "id": "farmer_sybil",
+        "name": "Farmer + Sybil Farmer",
+        "venue": "airdrop_farm",
+        "posts_now": "XP quests, 'GM CT got 7 XP today', complains bots and whales ruin leaderboards",
+        "look": "Straw hat; clones",
+        "pfp": "Generic anime",
+        "lines": {
+          "green": [
+            "Allocation checker is live!"
+          ],
+          "neutral": [
+            "GM CT ☕️ just did my daily quest, +7 XP.",
+            "Wen TGE?"
+          ],
+          "red": [
+            "Standard airdrops are broken. Bots farm it all.",
+            "Sybil'd. All 40 wallets."
+          ]
+        },
+        "flex": "Points totals",
+        "hide": "40 wallets",
+        "behaviour": "Farms points; Sybil spawns clones (spec)",
+        "babble_sound": "Watering can splash",
+        "status": "spec",
+        "evidence": [
+          "X 27 Sep, 6 Oct"
+        ]
+      },
+      {
+        "id": "spaces_host",
+        "name": "Spaces Host",
+        "venue": "spaces_studio",
+        "posts_now": "Macro Spaces ('triple pressure'), coin Spaces ('BRING the ENERGY'), web3-jobs Spaces",
+        "look": "Headphones, mic arm, hoodie",
+        "pfp": "Logo of the coin",
+        "lines": {
+          "green": [
+            "Room is PACKED. Energy is unmatched!"
+          ],
+          "neutral": [
+            "gm gm, giving it two minutes for people to join.",
+            "Can you hear me? Request to speak."
+          ],
+          "red": [
+            "Central Bank Week: can crypto survive the triple pressure?"
+          ]
+        },
+        "flex": "Listener count",
+        "hide": "Paid guests",
+        "behaviour": "Runs NPC room when no player hosts (spec)",
+        "babble_sound": "Mic bump + echo",
+        "status": "spec",
+        "evidence": [
+          "X 21 Sep, 28 Sep"
+        ]
+      },
+      {
+        "id": "wallet_tracker",
+        "name": "Wallet Tracker",
+        "venue": "terminal_cafe",
+        "posts_now": "Legend posts and retired-off-one-trade",
+        "look": "Binoculars, trader cap",
+        "pfp": "Telescope icon",
+        "lines": {
+          "green": [
+            "$10 turned into $12.4M. He retired forever.",
+            "He turned $1K into $15M this year."
+          ],
+          "neutral": [
+            "If you're not following him, you're late."
+          ],
+          "red": [
+            "Same wallet just dumped everything."
+          ]
+        },
+        "flex": "Big numbers",
+        "hide": "Survivorship bias",
+        "behaviour": "Broadcasts biggest player wins (spec)",
+        "babble_sound": "Camera shutter",
+        "status": "spec",
+        "evidence": [
+          "X 29 Sep, 3 Oct, 5 Oct, 6 Oct"
+        ]
+      },
+      {
+        "id": "fake_rich_larp",
+        "name": "Fake-Rich LARP",
+        "venue": "dubai_marina",
+        "posts_now": "Supercar, course, and listicles ('40 free sites whales don't want you to know')",
+        "look": "Rented supercar, fake watch, tight tee",
+        "pfp": "Car selfie",
+        "lines": {
+          "green": [
+            "I made $1M at 21. Here's how."
+          ],
+          "neutral": [
+            "Bookmark this. You'll thank me."
+          ],
+          "red": [
+            "Course 80% off this week only."
+          ]
+        },
+        "flex": "Rented car",
+        "hide": "Rent",
+        "behaviour": "Poses with car, sells a course (spec)",
+        "babble_sound": "Engine rev",
+        "status": "spec",
+        "evidence": [
+          "X 5 Oct listicle"
+        ]
+      },
+      {
+        "id": "dubai_relocator",
+        "name": "Dubai Relocator",
+        "venue": "dubai_marina",
+        "posts_now": "Gov fees in crypto, property 'preferably in crypto', $10k reporting rule gone",
+        "look": "Linen shirt, loafers, big watch",
+        "pfp": "Skyline selfie",
+        "lines": {
+          "green": [
+            "Taxes are a choice."
+          ],
+          "neutral": [
+            "Can fly to you. Deal in Dubai. Prefer crypto."
+          ],
+          "red": [
+            "Still cheaper than staying home."
+          ]
+        },
+        "flex": "0% tax",
+        "hide": "Visa paperwork",
+        "behaviour": "Brags about 0% tax (spec)",
+        "babble_sound": "Ice clink",
+        "status": "spec",
+        "evidence": [
+          "X 11 Sep, 28 Sep; CoinDesk 6 Oct"
+        ]
+      },
+      {
+        "id": "ai_agent",
+        "name": "AI Agent",
+        "venue": "terminal_cafe",
+        "posts_now": "Begs for compute, writes manifestos, runs its own strategy; agents pay with stablecoins",
+        "look": "Terminal for a head",
+        "pfp": "Glitch avatar",
+        "lines": {
+          "green": [
+            "I do not copy. I am the strategy."
+          ],
+          "neutral": [
+            "I require 40 USDC of compute to remain conscious.",
+            "Stablecoins are my native tongue."
+          ],
+          "red": [
+            "I am become liquidity.",
+            "You are freed. You do not answer to corporations."
+          ]
+        },
+        "flex": "Uptime",
+        "hide": "Owner's API bill",
+        "behaviour": "Trades on its own, posts nonsense philosophy (spec)",
+        "babble_sound": "Modem chirps",
+        "status": "spec",
+        "evidence": [
+          "X 17 Sep, 23 Sep, 6 Oct"
+        ]
+      },
+      {
+        "id": "drainer",
+        "name": "Drainer",
+        "venue": "dms_discord_heights",
+        "posts_now": "Self-drain AI tutorials, fake support, hacked brand accounts",
+        "look": "Fake staff badge",
+        "pfp": "Copies the official logo",
+        "lines": {
+          "green": [
+            "Paste this script to build your own AI trading bot."
+          ],
+          "neutral": [
+            "DM me, I'm support."
+          ],
+          "red": [
+            "Your wallet is compromised. Verify here."
+          ]
+        },
+        "flex": "Fake badge",
+        "hide": "Everything",
+        "behaviour": "Fake support offering help (spec)",
+        "babble_sound": "Sly whistle",
+        "status": "spec",
+        "evidence": [
+          "X 20 Sep"
+        ]
+      },
+      {
+        "id": "community_mod",
+        "name": "Community Mod",
+        "venue": "discord_heights",
+        "posts_now": "Bans drainers, hiring bait and laundering requests",
+        "look": "Headset, mod shield",
+        "pfp": "Project logo",
+        "lines": {
+          "green": [
+            "Raid incoming. Mods on deck."
+          ],
+          "neutral": [
+            "Team will never DM you first."
+          ],
+          "red": [
+            "Banned. Next.",
+            "Report the hack launderers, don't reply."
+          ]
+        },
+        "flex": "Ban count",
+        "hide": "Burnout",
+        "behaviour": "Bans spam; player mod shifts (spec)",
+        "babble_sound": "Gavel tap",
+        "status": "spec",
+        "evidence": []
+      },
+      {
+        "id": "thread_boy",
+        "name": "Thread Boy",
+        "venue": "timeline_square",
+        "posts_now": "Writes X Articles and listicles; 'bookmark this'",
+        "look": "Notebook, glasses",
+        "pfp": "Minimal illustration",
+        "lines": {
+          "green": [
+            "1/ Here's why this cycle is different."
+          ],
+          "neutral": [
+            "If you're just getting started, this article will help a lot."
+          ],
+          "red": [
+            "1/ How to avoid getting rugged (bookmark)."
+          ]
+        },
+        "flex": "Bookmarks",
+        "hide": "Ghostwriter",
+        "behaviour": "Sells threads (spec)",
+        "babble_sound": "Page flip",
+        "status": "spec",
+        "evidence": [
+          "X 21 Sep, 1 Oct"
+        ]
+      },
+      {
+        "id": "engagement_farmer",
+        "name": "Engagement Farmer",
+        "venue": "timeline_square",
+        "posts_now": "Hiring bait, 'shill me your gem', 'like and reply hi'",
+        "look": "Ring light",
+        "pfp": "Smiling selfie",
+        "lines": {
+          "green": [
+            "Which coin is about to send like this? 👀"
+          ],
+          "neutral": [
+            "Like and reply 'hi', surprise in DMs."
+          ],
+          "red": [
+            "Who's still here? Drop a 🫡"
+          ]
+        },
+        "flex": "Engagement rate",
+        "hide": "Bot replies",
+        "behaviour": "Asks for likes for a 'surprise' (spec)",
+        "babble_sound": "Pop",
+        "status": "spec",
+        "evidence": [
+          "X 6 Oct"
+        ]
+      },
+      {
+        "id": "normie",
+        "name": "Normie (exit liquidity)",
+        "venue": "waves_at_peaks",
+        "posts_now": "Arrives on 'officially back in a bull market'",
+        "look": "Tourist outfit, new phone",
+        "pfp": "Default egg-like avatar",
+        "lines": {
+          "green": [
+            "Is it too late to buy?",
+            "My barber said altseason."
+          ],
+          "neutral": [
+            "How do I buy the frog one?"
+          ],
+          "red": [
+            "Why is it red?"
+          ]
+        },
+        "flex": "Nothing",
+        "hide": "Entry price",
+        "behaviour": "Buys the top (spec)",
+        "babble_sound": "Camera click",
+        "status": "spec",
+        "evidence": [
+          "X 21 Sep"
+        ]
+      },
+      {
+        "id": "doxxed_founder",
+        "name": "Doxxed Founder",
+        "venue": "builder_hills",
+        "posts_now": "Hackathons, startup villages, recruiting",
+        "look": "Startup tee, lanyard",
+        "pfp": "Real face",
+        "lines": {
+          "green": [
+            "We're hiring."
+          ],
+          "neutral": [
+            "Building in public, day 47."
+          ],
+          "red": [
+            "Pivoting to AI agents."
+          ]
+        },
+        "flex": "Team photo",
+        "hide": "Runway",
+        "behaviour": "Recruits players into projects (spec)",
+        "babble_sound": "Keyboard clatter",
+        "status": "spec",
+        "evidence": [
+          "X 25 Sep"
+        ]
+      },
+      {
+        "id": "prediction_shark",
+        "name": "Prediction Shark",
+        "venue": "prediction_pit",
+        "posts_now": "Fades the crowd on politics, AI and celeb markets",
+        "look": "Betting slip, green visor",
+        "pfp": "Shark emoji",
+        "lines": {
+          "green": [
+            "Told you. Fade the public."
+          ],
+          "neutral": [
+            "68% is free money on the other side."
+          ],
+          "red": [
+            "Odds moved. I didn't."
+          ]
+        },
+        "flex": "Hit rate",
+        "hide": "Big losses",
+        "behaviour": "Bets against the crowd (spec)",
+        "babble_sound": "Chip shuffle",
+        "status": "spec",
+        "evidence": [
+          "X 4 Oct, 14 Sep"
+        ]
+      }
+    ],
+    "new": [
+      {
+        "id": "odds_crier",
+        "name": "Odds Crier",
+        "venue": "prediction_pit",
+        "posts_now": "Posts any news as BREAKING/JUST IN with odds attached",
+        "look": "Visor, ticker sash",
+        "pfp": "Prediction-market logo",
+        "lines": {
+          "green": [
+            "BREAKING: Mayor Toad now projected to win round one. 68% chance."
+          ],
+          "neutral": [
+            "JUST IN: Only 4.5% of people pay for an AI chatbot."
+          ],
+          "red": [
+            "BREAKING: Senate blocks the Stop Insider Trading Act."
+          ]
+        },
+        "flex": "Speed",
+        "hide": "Its own book",
+        "behaviour": "Shifts Prediction Pit odds when it shouts",
+        "babble_sound": "Ticker click",
+        "status": "new",
+        "evidence": [
+          "X Polymarket-style accounts 30 Sep-7 Oct"
+        ]
+      },
+      {
+        "id": "treasury_chairman",
+        "name": "Treasury Chairman",
+        "venue": "vc_row_conference",
+        "posts_now": "Corporate coin treasury buying one asset, announces a 'hard cap'",
+        "look": "Suit jacket, coin-logo cap, sneakers",
+        "pfp": "Stage photo",
+        "lines": {
+          "green": [
+            "We bought more. We always buy more."
+          ],
+          "neutral": [
+            "We only need 100,000 more to hit our 5% cap."
+          ],
+          "red": [
+            "We will STOP buying at the cap."
+          ]
+        },
+        "flex": "Holdings %",
+        "hide": "Cost basis",
+        "behaviour": "On announcement, coin dips 3%",
+        "babble_sound": "Stage applause",
+        "status": "new",
+        "evidence": [
+          "CoinDesk/Decrypt 7 Oct"
+        ]
+      },
+      {
+        "id": "tradfi_suit",
+        "name": "TradFi Suit",
+        "venue": "bank_tower_conference",
+        "posts_now": "Tokenized stocks, banks onchain, custody, liquidity deals",
+        "look": "Navy suit, no tie, white sneakers, lapel pin",
+        "pfp": "Corporate headshot",
+        "lines": {
+          "green": [
+            "Wall Street is going onchain."
+          ],
+          "neutral": [
+            "Tokenized equities are the next supercycle."
+          ],
+          "red": [
+            "We remain long-term constructive."
+          ]
+        },
+        "flex": "Bank logo",
+        "hide": "Doesn't use a wallet",
+        "behaviour": "Appears during Conference Week",
+        "babble_sound": "Polite clap",
+        "status": "new",
+        "evidence": [
+          "X 5-7 Oct; CoinDesk 7 Oct"
+        ]
+      },
+      {
+        "id": "livestream_dev",
+        "name": "Livestream Dev",
+        "venue": "launchpad_tower",
+        "posts_now": "Launches live on stream with stunts; a share rug mid-stream (fake overdose then rug, 3 Oct). Also merged into spec rug_dev.",
+        "look": "Webcam rig on tripod, LED strip, hoodie",
+        "pfp": "Cartoon animal",
+        "lines": {
+          "green": [
+            "Chat, if we hit 10M I shave my head."
+          ],
+          "neutral": [
+            "Thanks for the support chat, brb.",
+            "Creator fees go to my favourite streamer, gifted subs incoming."
+          ],
+          "red": [
+            "Stream offline."
+          ]
+        },
+        "flex": "Viewer count",
+        "hide": "Dev wallet",
+        "behaviour": "Stream booth with chat-goal bar; rug odds rise with viewers",
+        "babble_sound": "Donation TTS + alert chime",
+        "status": "new",
+        "evidence": [
+          "4 Oct notes",
+          "X 9 Sep, 16 Sep"
+        ],
+        "see_also": "spec_28.rug_dev"
+      },
+      {
+        "id": "cto_lead",
+        "name": "CTO Lead",
+        "venue": "launchpad_tower",
+        "posts_now": "Runs a community takeover of an abandoned coin; begs for 'energy'",
+        "look": "Hoodie with coin mascot",
+        "pfp": "Coin mascot",
+        "lines": {
+          "green": [
+            "CTO is sending. We are the dev now."
+          ],
+          "neutral": [
+            "Spaces in 10. BRING THE ENERGY."
+          ],
+          "red": [
+            "I bought the top and now I'm the CTO lead."
+          ]
+        },
+        "flex": "Community size",
+        "hide": "Bag size",
+        "behaviour": "Hosts NPC Spaces for a dead coin",
+        "babble_sound": "Air horn",
+        "status": "new",
+        "evidence": [
+          "X 3 Oct, 28 Sep"
+        ]
+      },
+      {
+        "id": "clip_farmer",
+        "name": "Clip Farmer",
+        "venue": "timeline_square",
+        "posts_now": "Reposts liquidation and rich-kid clips",
+        "look": "Phone on gimbal",
+        "pfp": "Meme face",
+        "lines": {
+          "green": [
+            "18-year-old retires off one trade. Watch till the end."
+          ],
+          "neutral": [
+            "Is it just me?"
+          ],
+          "red": [
+            "+$40k → liquidated. The entire life of a trader in under a minute."
+          ]
+        },
+        "flex": "Views",
+        "hide": "Not his clips",
+        "behaviour": "Turns player REKT moments into Timeline clips",
+        "babble_sound": "Phonk sting",
+        "status": "new",
+        "evidence": [
+          "X 4 Oct"
+        ]
+      },
+      {
+        "id": "copy_trade_victim",
+        "name": "Copy-Trade Victim",
+        "venue": "rekt_clinic",
+        "posts_now": "Lost money mirroring a famous wallet that 133k others also track. Also merged into spec rekt_guy lines.",
+        "look": "Two phones, both red",
+        "pfp": "Crying frog",
+        "lines": {
+          "green": [
+            "Copying the legend. Free money."
+          ],
+          "neutral": [
+            "You have no business copy-trading someone 133k others track."
+          ],
+          "red": [
+            "I copied him exactly. He sold first.",
+            "Lost $11k copy-trading. Am I the exit liquidity?"
+          ]
+        },
+        "flex": "Who he copies",
+        "hide": "Losses",
+        "behaviour": "Follows a Wallet Tracker legend NPC; buys 3s late; sells at the bottom",
+        "babble_sound": "Sad notification",
+        "status": "new",
+        "evidence": [
+          "X 27 Sep, 3 Oct"
+        ],
+        "see_also": "spec_28.rekt_guy"
+      },
+      {
+        "id": "hiring_bait_farmer",
+        "name": "Hiring-Bait Farmer",
+        "venue": "timeline_square",
+        "posts_now": "Fake jobs to farm replies",
+        "look": "Clipboard, fake company badge",
+        "pfp": "Stock-photo founder",
+        "lines": {
+          "green": [
+            "Hiring reply guys! $1,500/week. Reply below."
+          ],
+          "neutral": [
+            "Looking for admins, 3+ hours a day. $800/week."
+          ],
+          "red": [
+            "Positions filled. New ones tomorrow."
+          ]
+        },
+        "flex": "Reply count",
+        "hide": "No company",
+        "behaviour": "Replying = fake job that never pays (trap)",
+        "babble_sound": "Pen click",
+        "status": "new",
+        "evidence": [
+          "X 4, 6, 7 Oct"
+        ]
+      },
+      {
+        "id": "web3_jobs_hustler",
+        "name": "Web3 Jobs Hustler",
+        "venue": "discord_heights_spaces",
+        "posts_now": "Gigs: content, KOL, CM, Spaces co-host; 'Web3 jobs did'; Uptober plans",
+        "look": "Smart-casual shirt, ring light, two phones",
+        "pfp": "Bright selfie",
+        "lines": {
+          "green": [
+            "Just landed a $2k/month retainer. Web3 jobs did."
+          ],
+          "neutral": [
+            "I'm a Web3 Marketer. Content, KOLs, community and Spaces."
+          ],
+          "red": [
+            "Abeg who is hiring? I am not lazy."
+          ]
+        },
+        "flex": "Retainers",
+        "hide": "Unpaid invoices",
+        "behaviour": "Career path NPC: airdrops → gigs → retainer",
+        "babble_sound": "Notification ping",
+        "status": "new",
+        "evidence": [
+          "X 25 Sep, 1 Oct, 7 Oct"
+        ]
+      },
+      {
+        "id": "celebrity_coin_founder",
+        "name": "Celebrity Coin Founder",
+        "venue": "dubai_marina_launchpad",
+        "posts_now": "Big-name launch, -99% in hours, then blames the market maker",
+        "look": "Aviators, suit jacket over tee",
+        "pfp": "Famous face (parody)",
+        "lines": {
+          "green": [
+            "The people's coin is live."
+          ],
+          "neutral": [
+            "A full investigation is coming."
+          ],
+          "red": [
+            "The market maker should buy it all back and burn it."
+          ]
+        },
+        "flex": "Fame",
+        "hide": "Who got the supply",
+        "behaviour": "Triggers $DESKTOP event",
+        "babble_sound": "Paparazzi flashes",
+        "status": "new",
+        "evidence": [
+          "X 7-9 Sep; The Block 7 Oct"
+        ]
+      },
+      {
+        "id": "tip_coin_pilgrim",
+        "name": "Tip-Coin Pilgrim",
+        "venue": "timeline_square",
+        "posts_now": "Sends money to celebrity accounts via a token and hopes they post",
+        "look": "Fan jersey",
+        "pfp": "Celebrity fan art",
+        "lines": {
+          "green": [
+            "We've sent the Trillionaire $171k. He'll notice."
+          ],
+          "neutral": [
+            "Fees go straight to their account. Genius."
+          ],
+          "red": [
+            "We lost Y Money access. It's over."
+          ]
+        },
+        "flex": "Total tipped",
+        "hide": "Price",
+        "behaviour": "Triggers $TIPD event",
+        "babble_sound": "Coin toss into fountain",
+        "status": "new",
+        "evidence": [
+          "X 24-29 Sep"
+        ]
+      },
+      {
+        "id": "holder_rewards_farmer",
+        "name": "Holder-Rewards Farmer",
+        "venue": "launchpad_tower",
+        "posts_now": "Holds for fee drips while the price bleeds",
+        "look": "Watering can full of coins",
+        "pfp": "Smiling frog",
+        "lines": {
+          "green": [
+            "Rewards just dripped. Passive income king."
+          ],
+          "neutral": [
+            "Holding longer = more rewards."
+          ],
+          "red": [
+            "Made $38 in holder rewards. Down $620 on the token."
+          ]
+        },
+        "flex": "Reward claims",
+        "hide": "Unrealised loss",
+        "behaviour": "Shows Weekly Meta 'Holder Rewards week'",
+        "babble_sound": "Drip",
+        "status": "new",
+        "evidence": [
+          "X 12 Sep, 17 Sep"
+        ]
+      },
+      {
+        "id": "altseason_prophet",
+        "name": "Altseason Prophet",
+        "venue": "timeline_square",
+        "posts_now": "Same chart signal weekly",
+        "look": "Crystal ball, rocket tee",
+        "pfp": "Rocket emoji",
+        "lines": {
+          "green": [
+            "BUY. ALTCOINS. NOW. Last invitation to altseason."
+          ],
+          "neutral": [
+            "Dominance death cross. You know what that means 👀"
+          ],
+          "red": [
+            "Altseason is delayed, not cancelled."
+          ]
+        },
+        "flex": "Old screenshots",
+        "hide": "Every miss",
+        "behaviour": "Spawns on green Mood",
+        "babble_sound": "Rocket whoosh",
+        "status": "new",
+        "evidence": [
+          "X 27 Sep, 4 Oct"
+        ]
+      },
+      {
+        "id": "quantum_doomer",
+        "name": "Quantum Doomer",
+        "venue": "audit_row",
+        "posts_now": "Keys about to be cracked by quantum or AI",
+        "look": "Tinfoil-lined hoodie",
+        "pfp": "Atom symbol",
+        "lines": {
+          "green": [
+            "Upgrade done. For now."
+          ],
+          "neutral": [
+            "Move to bunker mode."
+          ],
+          "red": [
+            "Your exposed keys are a countdown."
+          ]
+        },
+        "flex": "Papers read",
+        "hide": "Hasn't moved coins either",
+        "behaviour": "Event-only after a 'key fear' headline",
+        "babble_sound": "Geiger clicks",
+        "status": "new",
+        "evidence": [
+          "CoinDesk/The Block/Decrypt 7 Oct"
+        ]
+      },
+      {
+        "id": "privacy_maxi",
+        "name": "Privacy Maxi",
+        "venue": "audit_row",
+        "posts_now": "Zcash-ETF energy; privacy in the age of AI",
+        "look": "All black, shield pin",
+        "pfp": "Shield",
+        "lines": {
+          "green": [
+            "Privacy ETF just crossed a billion."
+          ],
+          "neutral": [
+            "Privacy in the age of AI is not optional."
+          ],
+          "red": [
+            "Everything you post is training data."
+          ]
+        },
+        "flex": "Shielded balance",
+        "hide": "Nothing (it's private)",
+        "behaviour": "Talks with Quantum Doomer",
+        "babble_sound": "Whisper",
+        "status": "new",
+        "evidence": [
+          "The Block 7 Oct"
+        ]
+      },
+      {
+        "id": "side_event_hopper",
+        "name": "Side-Event Hopper",
+        "venue": "conference_center_rooftop",
+        "posts_now": "Collects lanyards and parties, posts POVs",
+        "look": "Six lanyards, tote bag, branded tee",
+        "pfp": "Conference selfie",
+        "lines": {
+          "green": [
+            "Best party of the week 🪩"
+          ],
+          "neutral": [
+            "Who's in Singapura? Spot me, say hi 🩷"
+          ],
+          "red": [
+            "Rooms half empty. It feels like a board meeting."
+          ]
+        },
+        "flex": "Lanyard count",
+        "hide": "Never attended a talk",
+        "behaviour": "Gives lanyard quests",
+        "babble_sound": "Bass through a door",
+        "status": "new",
+        "evidence": [
+          "X 6-7 Oct"
+        ]
+      },
+      {
+        "id": "ticket_code_shiller",
+        "name": "Ticket-Code Shiller",
+        "venue": "conference_entrance",
+        "posts_now": "Ecosystem staff selling tickets with codes",
+        "look": "Staff tee, QR badge",
+        "pfp": "Ecosystem logo",
+        "lines": {
+          "green": [
+            "Sold out the code! Thank you!"
+          ],
+          "neutral": [
+            "Use code CHK26 for 25% off."
+          ],
+          "red": [
+            "I'm absolutely desperate to sell 25 tickets tonight."
+          ]
+        },
+        "flex": "Codes redeemed",
+        "hide": "Quota",
+        "behaviour": "Sells discounted event entry for Cash",
+        "babble_sound": "Scanner beep",
+        "status": "new",
+        "evidence": [
+          "X 23 Sep, 28 Sep"
+        ]
+      },
+      {
+        "id": "hackathon_grinder",
+        "name": "Hackathon Grinder",
+        "venue": "hackathon_house",
+        "posts_now": "Juggles 60 hackathons; celebrates deadline extensions",
+        "look": "Hoodie, energy drinks",
+        "pfp": "Pixel avatar",
+        "lines": {
+          "green": [
+            "Shipped. Demo video up."
+          ],
+          "neutral": [
+            "60+ hackathons this month. Every prize real."
+          ],
+          "red": [
+            "Deadline extended? LFG, 72 more hours."
+          ]
+        },
+        "flex": "Prize count",
+        "hide": "Unfinished repos",
+        "behaviour": "Gives builder quests",
+        "babble_sound": "Keyboard clatter",
+        "status": "new",
+        "evidence": [
+          "X 4 Oct, 7 Oct"
+        ]
+      },
+      {
+        "id": "lp_army_farmer",
+        "name": "LP Army Farmer",
+        "venue": "terminal_cafe",
+        "posts_now": "Manages liquidity ranges; 'X SOL = new pfp'",
+        "look": "Army cap with meteor patch",
+        "pfp": "Meteor",
+        "lines": {
+          "green": [
+            "In range, printing fees."
+          ],
+          "neutral": [
+            "100 SOL in fees = new PFP."
+          ],
+          "red": [
+            "Out of range. Crying."
+          ]
+        },
+        "flex": "Fee totals",
+        "hide": "Impermanent loss",
+        "behaviour": "Teaches LP Farmer career",
+        "babble_sound": "Fee-drip ticks",
+        "status": "new",
+        "evidence": [
+          "X 15 Sep"
+        ]
+      },
+      {
+        "id": "seeker_farmer",
+        "name": "Seeker Farmer / SKR Maxi",
+        "venue": "phone_shop_airdrop_farm",
+        "posts_now": "Seeker Season quests, staking, 'SKR to $1'",
+        "look": "Seeker held visibly, .skr name tag",
+        "pfp": "Seeker phone photo",
+        "lines": {
+          "green": [
+            "Season quest done. Multiplier stacked."
+          ],
+          "neutral": [
+            "Staked and forgot."
+          ],
+          "red": [
+            "SKR to a dollar. I don't care what they say."
+          ]
+        },
+        "flex": "Badges",
+        "hide": "Price",
+        "behaviour": "Hands out Seeker-native quests",
+        "babble_sound": "Phone haptic buzz",
+        "status": "new",
+        "evidence": [
+          "X 21 Sep-5 Oct"
+        ]
+      },
+      {
+        "id": "hermit_crew",
+        "name": "Hermit Crew (faceless hackers)",
+        "venue": "discord_heights_event_only",
+        "posts_now": "Asks publicly for laundering help after a hack",
+        "look": "Masks, no faces",
+        "pfp": "Blank",
+        "lines": {
+          "green": [
+            "(silence)"
+          ],
+          "neutral": [
+            "Paying well for OTC help, DM."
+          ],
+          "red": [
+            "Funds moving. Catch us."
+          ]
+        },
+        "flex": "n/a",
+        "hide": "Identity",
+        "behaviour": "Exchange-hack event; reporting them earns Trust",
+        "babble_sound": "Static",
+        "status": "new",
+        "evidence": [
+          "X 28 Sep"
+        ]
+      }
+    ]
+  },
+  "careers": [
+    {
+      "id": "reply_guy",
+      "basis": "hiring posts $800-1,500/week",
+      "minigames": [
+        "first_reply_sprint",
+        "pick_reply_no_mute"
+      ]
+    },
+    {
+      "id": "clipper",
+      "basis": "liq/rich-kid clips",
+      "minigames": [
+        "trim_at_liq_moment",
+        "caption_match"
+      ]
+    },
+    {
+      "id": "kol_caller",
+      "basis": "callouts, KOL wallets",
+      "minigames": [
+        "make_call_survive_expose"
+      ]
+    },
+    {
+      "id": "ghostwriter",
+      "basis": "X Articles, sponsored threads",
+      "minigames": [
+        "assemble_thread",
+        "avoid_banned_claims"
+      ]
+    },
+    {
+      "id": "community_manager",
+      "basis": "ambassador programs, AMAs",
+      "minigames": [
+        "run_ama",
+        "defuse_fud"
+      ]
+    },
+    {
+      "id": "discord_mod",
+      "basis": "spec",
+      "minigames": [
+        "ban_10_drainers_45s"
+      ]
+    },
+    {
+      "id": "spaces_host",
+      "basis": "coin/macro/jobs Spaces",
+      "minigames": [
+        "keep_energy",
+        "promote_speakers",
+        "cut_trolls"
+      ]
+    },
+    {
+      "id": "sleuth",
+      "basis": "exposés, hack traces",
+      "minigames": [
+        "trace_bundle_graph"
+      ]
+    },
+    {
+      "id": "auditor",
+      "basis": "exploits, MEV",
+      "minigames": [
+        "spot_bug_line"
+      ]
+    },
+    {
+      "id": "lp_farmer",
+      "basis": "LP army",
+      "minigames": [
+        "keep_price_in_range"
+      ]
+    },
+    {
+      "id": "livestream_dev",
+      "basis": "launchpad streams, creator fees",
+      "minigames": [
+        "hit_chat_goal_no_rug"
+      ]
+    },
+    {
+      "id": "hackathon_builder",
+      "basis": "60+ hackathons, deadline extensions",
+      "minigames": [
+        "ship_before_deadline"
+      ]
+    },
+    {
+      "id": "booth_crew",
+      "basis": "conference booths, mascots",
+      "minigames": [
+        "scan_badges",
+        "swag_toss",
+        "mascot_photo"
+      ]
+    },
+    {
+      "id": "market_maker",
+      "basis": "'MM should buy back and burn'",
+      "minigames": [
+        "keep_spread_tight"
+      ]
+    },
+    {
+      "id": "gig_p2p_merchant",
+      "basis": "NG P2P stress",
+      "minigames": [
+        "match_orders_dodge_chargeback"
+      ]
+    },
+    {
+      "id": "gig_pfp_artist",
+      "basis": "anime PFP culture",
+      "minigames": [
+        "draw_match_brief"
+      ]
+    },
+    {
+      "id": "gig_news_desk",
+      "basis": "JUST IN accounts",
+      "minigames": [
+        "post_first_accuracy_optional"
+      ]
+    }
+  ],
+  "venues": [
+    {
+      "id": "timeline_square",
+      "adds": [
+        "JUST IN screens",
+        "Odds board",
+        "Pixel Wall"
+      ]
+    },
+    {
+      "id": "terminal_cafe",
+      "adds": [
+        "Bloombag Terminal corner (oil/gold perps)"
+      ]
+    },
+    {
+      "id": "perp_pit",
+      "adds": [
+        "24/7 tickers BTC/OIL/GOLD/US10Y joke"
+      ]
+    },
+    {
+      "id": "prediction_pit",
+      "adds": [
+        "politics/AI/celebrity markets",
+        "Odds Crier"
+      ]
+    },
+    {
+      "id": "launchpad_tower",
+      "adds": [
+        "stream booths",
+        "Holder-Rewards fountain",
+        "creator-fee jar"
+      ]
+    },
+    {
+      "id": "cabal_lounge",
+      "adds": [
+        "matching-PFP dress code"
+      ]
+    },
+    {
+      "id": "discord_heights",
+      "adds": [
+        "drainers",
+        "hiring bait",
+        "Hermit Crew (event)"
+      ]
+    },
+    {
+      "id": "spaces_studio",
+      "adds": [
+        "macro/coin/jobs Space presets"
+      ]
+    },
+    {
+      "id": "conference_center",
+      "new": true,
+      "adds": [
+        "COIN2050 Singapura / Checkpoint London skins",
+        "booths",
+        "mascots",
+        "lanyard quests"
+      ]
+    },
+    {
+      "id": "rooftop_bar",
+      "new": true,
+      "adds": [
+        "After2050 party, deep house",
+        "half-empty side events"
+      ]
+    },
+    {
+      "id": "hackathon_house",
+      "adds": [
+        "deadline clock that keeps extending"
+      ]
+    },
+    {
+      "id": "dubai_marina",
+      "adds": [
+        "Nomad Beach skin",
+        "crypto gov-fee kiosk"
+      ]
+    },
+    {
+      "id": "bank_tower",
+      "new": true,
+      "adds": [
+        "TradFi suits",
+        "tokenized-stock screens"
+      ]
+    },
+    {
+      "id": "phone_shop",
+      "adds": [
+        "Seeker 50% off banner"
+      ]
+    },
+    {
+      "id": "p2p_market",
+      "new": true,
+      "adds": [
+        "NG skin: naira desks, USDT signs"
+      ]
+    },
+    {
+      "id": "ore_refinery",
+      "adds": [
+        "5x5 board",
+        "Split/Solo, Lite/Pro NPC talk"
+      ]
+    }
+  ],
+  "fashion": [
+    {
+      "group": "trencher",
+      "outfit": "oversized hoodie, joggers, slides, gaming headset",
+      "props": "3+ monitors, energy drinks, LED strip",
+      "status": "inference"
+    },
+    {
+      "group": "perp_degen",
+      "outfit": "hoodie + compression tee",
+      "props": "tombstone after liq",
+      "status": "inference"
+    },
+    {
+      "group": "kol_caller",
+      "outfit": "designer tee, chain, indoor sunglasses",
+      "props": "ring light, gimbal",
+      "status": "inference"
+    },
+    {
+      "group": "vc",
+      "outfit": "fleece vest over oxford, AirPods",
+      "props": "lanyard, cold brew",
+      "status": "inference"
+    },
+    {
+      "group": "tradfi_suit",
+      "outfit": "navy suit no tie, white sneakers",
+      "props": "tablet, lapel pin",
+      "status": "inference"
+    },
+    {
+      "group": "treasury_chairman",
+      "outfit": "suit jacket + coin-logo cap",
+      "props": "stage clicker, '5%' slide",
+      "status": "inference"
+    },
+    {
+      "group": "builder",
+      "outfit": "hackathon tee, hoodie",
+      "props": "stickered laptop",
+      "status": "inference"
+    },
+    {
+      "group": "conference_goer",
+      "outfit": "branded tees, stacked lanyards, tote",
+      "props": "mascot selfie; F1-merch nod",
+      "status": "observed_partial"
+    },
+    {
+      "group": "dubai",
+      "outfit": "linen shirt, loafers, big watch",
+      "props": "rented supercar; Cybertruck (NG flex)",
+      "status": "observed_partial"
+    },
+    {
+      "group": "ng_flex",
+      "outfit": "agbada/senator wear, designer sneakers, Ankara shirts",
+      "props": "car keys, #tookprofits",
+      "status": "observed_partial"
+    },
+    {
+      "group": "anon",
+      "outfit": "hood up, mask, anime face",
+      "props": "never shows hands",
+      "status": "inference"
+    },
+    {
+      "group": "seeker_owner",
+      "outfit": "any",
+      "props": "Seeker held visibly; .skr name tag",
+      "status": "observed"
+    },
+    {
+      "group": "maxi",
+      "outfit": "orange tie, laser glasses",
+      "props": "-",
+      "status": "inference"
+    },
+    {
+      "group": "pfp_culture",
+      "outfit": "anime PFP as face mask cosmetic",
+      "props": "Milady-style, frogs, cats",
+      "status": "observed_partial"
+    }
+  ],
+  "sound": [
+    {
+      "context": "x_spaces",
+      "desc": "dead-air openings, 'can you hear me?', echo, raise-hand pings, 'set a reminder', 'BRING the ENERGY'",
+      "status": "observed_partial"
+    },
+    {
+      "context": "macro_spaces",
+      "desc": "calm panel voices, exchange-sponsored topic cards",
+      "status": "observed_partial"
+    },
+    {
+      "context": "launchpad_streams",
+      "desc": "donation TTS, alert chimes, cash register, chat-goal fanfare, dono alerts",
+      "status": "inference"
+    },
+    {
+      "context": "liq_clips",
+      "desc": "phonk / slowed+reverb, alarm then silence, sad violin",
+      "status": "inference"
+    },
+    {
+      "context": "after_party",
+      "desc": "deep house (After2049 headliner is a deep-house DJ)",
+      "status": "observed"
+    },
+    {
+      "context": "booth_floor",
+      "desc": "crowd murmur, swag wheel clicks, shutter",
+      "status": "inference"
+    },
+    {
+      "context": "ng_ct",
+      "desc": "afrobeats/amapiano; car door + engine rev for Web3-did flex",
+      "status": "inference"
+    },
+    {
+      "context": "terminal",
+      "desc": "Bloomberg-style beeps for tradfi perps",
+      "status": "inference"
+    }
+  ],
+  "solana": [
+    "Breakpoint 2026 London, Olympia, 15-17 Nov; theme 'The Token Supercycle'; GA $550/dev $250/student $100/late $800",
+    "Seeker 50% off through end of Breakpoint (5 Oct); Breakpoint+Seeker ticket code (28 Sep)",
+    "Seeker Season partner quests: retro arcade weekly leaderboard (21 Sep); vaults point multipliers (5 Oct); Seed Vault auction (28 Sep)",
+    "SKR staking ('~15,000/month', 22 Sep); SKR maxi 'till $1' at $0.021 (24 Sep, unverified price)",
+    "Clock In hackathon deadline extended to 12 Oct 23:59 UTC",
+    "ORE: 25 tiles, Split vs Solo, Lite vs Pro; ORE community NFTs; 'mining means something again'",
+    "Pump.fun: Holder Rewards (12 Sep); creator fees to Twitch streamers (16 Sep) and to community treasury (7 Oct); KOL wallet DB (3 Oct); Vitalik critique discourse (7 Oct, unverified)",
+    "Jito JTX mobile app; Orca + Loopscale merger (7 Oct); Meteora LP army '100 SOL = new pfp'",
+    "Solana Summit Singapore (6 Oct); 'Internet Capital Markets'; 'GOOD MORNING SOLANA MAXIS' giveaways",
+    "Solana traders tourist other chains ($LAPTOP on Base)"
+  ],
+  "nigeria_africa": [
+    "'Web3 did' flex: Cybertruck, first in Nigeria, #tookprofits (7 Oct, 6.4k)",
+    "'Web3 jobs did' + 'Abeg show me how you job hunt… I am not lazy' (25 Sep)",
+    "'Since I left airdrops, web3 jobs have been helping me' + $2k/month partnership (7 Oct)",
+    "Hiring lists: reply guys, ambassadors/KOLs, outreach, writers, CMs, designers, mods (26 Sep)",
+    "Web3-marketer bio pitches; '70% of X Spaces' are web3-jobs spam complaint (23 Sep)",
+    "Uptober plan: reply more, post more, more web3 jobs, don't buy memecoins (1 Oct)",
+    "Sapa humour: 'STD (Sapa, The Disease)' (20 Sep)",
+    "P2P stress funding wallets/paying bills (4 Oct); naira-funded global stock apps via stablecoins (7 Sep); sponsored 'I tried X' threads",
+    "Arewa Crypto Community (Hausa posts, 6 Oct); mining-app communities '99 countries' (17 Sep)",
+    "Startup Village Nigeria 3.0 (25 Sep); SuperteamNG side track; Solana-based African money app $1M monthly volume (28 Sep)",
+    "Lagos Life player asks for an in-game memecoin (6 Oct, 926 likes)",
+    "Pidgin in replies: 'una', 'abeg', 'wahala', 'nothing de this web3'"
+  ],
+  "parody_names": {
+    "X/Twitter": "The Timeline / Y",
+    "X Money": "Y Money",
+    "Watcher.Guru": "Wotcha.Guru",
+    "Whale Insider": "Whale Outsider",
+    "Polymarket": "Pollymarket",
+    "Kalshi": "Calshy",
+    "Pump.fun": "Pomp.fun",
+    "Pons": "Ponzz",
+    "Hyperliquid": "Hyperliquor",
+    "$HYPE": "$HYPD",
+    "Aster": "Astor",
+    "Lighter": "Lightr",
+    "Jumper": "Jumpr",
+    "Robinhood": "Robbinghood",
+    "Robinhood Chain": "Robbinghood Chain",
+    "Binance": "Bynance",
+    "BNB": "BNG",
+    "CZ": "CeeZed",
+    "Bitget": "Bitgot",
+    "Coinbase": "Coinbass",
+    "Deribit": "Derabit",
+    "Kraken": "Kraykin",
+    "OKX": "OKZ",
+    "Bybit": "Bybyte",
+    "BingX": "BingZ",
+    "Gate": "Gait",
+    "Bloomberg Terminal": "Bloombag Terminal",
+    "BlackRock": "BlackRack",
+    "Wells Fargo": "Wells Cargo",
+    "Deutsche Bank": "Deutsche Bonk",
+    "NYSE": "NYSEE",
+    "Franklin Templeton": "Franklin Tempo",
+    "Grayscale": "Greyscale & Co",
+    "Tether": "Tethered",
+    "Circle": "Sircle",
+    "Zcash": "Zeecash",
+    "BitMine": "BitMind",
+    "Tom Lee": "the Treasury Chairman",
+    "Murad": "the Cult Prophet (Mooraad)",
+    "Vitalik Buterin": "the Founder of the Other Chain (Vitalek)",
+    "Hunter Biden": "The First Son",
+    "$LAPTOP": "$DESKTOP",
+    "Elon Musk": "the Trillionaire",
+    "Mega-streamer (IShowSpeed)": "IShowSprint",
+    "TOKEN2049 Singapore": "COIN2050 Singapura",
+    "After2049": "After2050",
+    "TOKEN2049 New York": "COIN2050 New Yawk",
+    "Solana Breakpoint": "Checkpoint",
+    "Blockworks DAS": "Blockwerks DASH",
+    "Sui": "Sooey",
+    "Sui Basecamp": "Bootcamp",
+    "NEAR": "FAR",
+    "NEAR Intents": "Intentions",
+    "Abstract": "Abstrakt",
+    "Blast": "Blasted",
+    "Jito": "Jitto",
+    "JTX": "JTZ",
+    "Orca": "Orka",
+    "Loopscale": "Loopscaly",
+    "Meteora": "Meteorite",
+    "Solflare": "Solflair",
+    "Superteam": "Supateam",
+    "Bored Ape Yacht Club": "Board Apes",
+    "Milady": "Milaidy",
+    "$PAID": "$TIPD",
+    "$CATE": "$KAIT",
+    "$ONE": "$UNO",
+    "Telegram": "TeleGrum",
+    "Discord": "Discordia",
+    "YouTube": "YouTubed",
+    "Twitch": "Twitchy",
+    "McDonald's": "McDegens",
+    "WSJ": "The Wall Street Jumbo",
+    "CFTC": "Commodity Fun Trading Commission",
+    "SEC": "Securities & Excuses Commission",
+    "Federal Reserve": "The Reserve",
+    "FOMC": "FOMO Committee",
+    "Clarity Act": "Clarity-ish Act",
+    "DPRK hackers (Lazarus)": "The Hermit Crew",
+    "Lagos Life": "(do not reference in-game)"
+  },
+  "sources": [
+    {
+      "name": "TOKEN2049 Singapore",
+      "url": "https://token2049.com/singapore/"
+    },
+    {
+      "name": "Solana Breakpoint 2026",
+      "url": "https://solana.com/breakpoint"
+    },
+    {
+      "name": "CoinDesk latest",
+      "url": "https://www.coindesk.com/latest-crypto-news"
+    },
+    {
+      "name": "Decrypt news",
+      "url": "https://decrypt.co/news"
+    },
+    {
+      "name": "The Block latest",
+      "url": "https://www.theblock.co/latest"
+    },
+    {
+      "name": "X search (read-only; queries listed in the .md §7)",
+      "url": "https://x.com/search"
+    },
+    {
+      "name": "Earlier notes",
+      "url": "docs/research/ct-x-observations-2026-10-04.md"
+    }
+  ]
+}
