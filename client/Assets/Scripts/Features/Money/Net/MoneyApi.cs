@@ -77,6 +77,27 @@ namespace CTLife.Economy
         public async Task<Rows<TombstoneRow>> Tombstones(int limit, CancellationToken ct) =>
             MoneyParse.Tombstones(await Get("/rekt/tombstones?limit=" + Math.Max(1, Math.Min(50, limit)), ct));
 
+        // ---------------------------------------------------------------- bank (backend eeef49d)
+
+        /// <summary>POST /bank/repay {amountCents}: Cash onto debt, capped at the debt. 402 INSUFFICIENT_CASH, 409 NOTHING_TO_REPAY.</summary>
+        public async Task<RepayReceipt> Repay(long amountCents, string key, CancellationToken ct)
+        {
+            if (amountCents < 1) throw new ArgumentOutOfRangeException(nameof(amountCents));
+            return MoneyParse.Repay(await Post("/bank/repay", new JObject { ["amountCents"] = amountCents }, key, ct));
+        }
+
+        /// <summary>GET /ledger?before=&amp;limit= : the Cash history, newest first.</summary>
+        public async Task<LedgerPage> Ledger(string before, int limit, CancellationToken ct)
+        {
+            var q = "/ledger?limit=" + Math.Max(1, Math.Min(100, limit));
+            if (!string.IsNullOrEmpty(before))
+            {
+                if (!ulong.TryParse(before, out _)) throw new ArgumentException("Bad cursor", nameof(before));
+                q += "&before=" + before;
+            }
+            return MoneyParse.Ledger(await Get(q, ct));
+        }
+
         // ---------------------------------------------------------------- payments (Ph 2)
 
         public async Task<PaymentIntentRow> CreateIntent(string kind, string sku, string currency, string idempotencyKey, CancellationToken ct) =>
@@ -107,7 +128,7 @@ namespace CTLife.Economy
             "GET /perps", "POST /perps", "POST /perps/{perpId}/close", "GET /predictions",
             "GET /alpha-calls", "POST /alpha-calls", "GET /smart-money", "GET /rekt/tombstones",
             "POST /payments/intents", "GET /payments/intents/{id}", "POST /payments/intents/{id}/submitted",
-            "GET /ore/board", "GET /ore/me", "POST /ore/stake/tx",
+            "GET /ore/board", "GET /ore/me", "POST /ore/stake/tx", "POST /bank/repay", "GET /ledger",
         };
     }
 }

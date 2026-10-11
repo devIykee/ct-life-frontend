@@ -83,6 +83,7 @@ namespace CTLife.App
                 _overlays.Add(new WorldLabels(ui.LabelLayer));
                 _overlays.Add(new CTLife.Economy.MoneyRektCard(ui.ModalLayer, id => { if (_phone != null) _phone.Open(id); }));
                 _overlays.Add(new CTLife.SocialFeatures.SocialOverlay(ui.ModalLayer, id => { if (_phone != null) _phone.Open(id); }));
+                ShiftReadyNotice.Opener = id => { if (_phone != null) _phone.Open(id); };
                 _overlays.Add(new ProfileCard(ui.ModalLayer));
                 _overlays.Add(new CTLife.CityLife.CityLifeOverlays(ui.ModalLayer));
                 _overlays.Add(new BusyOverlay(ui.ToastLayer));

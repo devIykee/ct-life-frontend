@@ -12,6 +12,9 @@ namespace CTLife.UI
     {
         private DuoWalletStack _stack;
 
+        /// <summary>Set by the Money feature (App/PhoneCatalog): the Latest transactions section with See all.</summary>
+        public static System.Func<PhoneShell, VisualElement> LatestTransactions;
+
         public override string Id => "wallet";
         public override string Title => WalletStrings.T("title");
         public override DuoChrome Chrome => DuoChrome.Plain;
@@ -25,8 +28,11 @@ namespace CTLife.UI
             page.Nav.AddLeft(DuoGlyph.Kind.Back, Strings.T("common.back"), () => Phone?.Back(), "wallet-back");
             bool canTopUp = Phone == null || Phone.CurrentPhase >= 2;
             if (canTopUp) page.Nav.AddRight(DuoGlyph.Kind.Plus, Strings.T("wallet.card.topUp"), () => Phone?.Open("topup"), "wallet-plus");
-            _stack = new DuoWalletStack(DuoWalletStack.Card.Solana, canTopUp ? () => Phone?.Open("topup") : (System.Action)null);
+            _stack = new DuoWalletStack(DuoWalletStack.Card.Solana, canTopUp ? () => Phone?.Open("topup") : (System.Action)null, () => Phone?.Open("repay"));
             page.Body.Add(_stack);
+            // Latest transactions (GET /ledger) come from the Money feature, which registers the section here.
+            var latest = LatestTransactions?.Invoke(Phone);
+            if (latest != null) page.Body.Add(latest);
             page.Body.Add(Duo.Footnote(WalletStrings.T("cashNote")));
             return page;
         }

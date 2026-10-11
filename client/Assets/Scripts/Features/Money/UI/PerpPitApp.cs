@@ -226,6 +226,11 @@ namespace CTLife.Economy
                 El.Text(_cap.HasValue ? MoneyStrings.F("perps.asset", coin.Ticker, MaxLeverage) : MoneyStrings.F("perps.assetNoCap", coin.Ticker), "duo-perp-asset-name"));
             _hero.Add(asset);
             _hero.Add(Duo.Hero("", MoneyFormat.Micros(coin.PriceMicros), MoneyFormat.Bps(coin.Change5mBps), coin.Change5mBps >= 0, MoneyStrings.T("perps.change5m")));
+            // the player's live PnL on this coin (open positions' unrealizedPnlCents, backend eeef49d)
+            _heroPnl = El.Text("", "duo-perp-hero-pnl");
+            _heroPnl.name = "perps-hero-pnl";
+            _hero.Add(_heroPnl);
+            RenderHeroPnl();
             // Real 1-minute candles for this coin; nothing drawn without them.
             var candles = _detailCoin == coin.CoinId ? _detail?.Candles : null;
             if (candles != null && candles.Count >= 2)
@@ -255,8 +260,26 @@ namespace CTLife.Economy
             else if (_detailCoin == coin.CoinId && _detail != null) _hero.Add(Duo.Footnote(MoneyStrings.T("perps.noHistory")));
         }
 
+        private Label _heroPnl;
+
+        private void RenderHeroPnl()
+        {
+            if (_heroPnl == null) return;
+            var coin = Selected;
+            var mine = coin == null || _open == null ? null : _open.Items.Where(p => p.Status == "open" && p.CoinId == coin.CoinId && p.UnrealizedPnlCents.HasValue).ToList();
+            bool show = mine != null && mine.Count > 0;
+            _heroPnl.Show(show);
+            if (!show) return;
+            long pnl = mine.Sum(p => p.UnrealizedPnlCents.Value);
+            _heroPnl.text = MoneyStrings.F("perps.livePnl", SignedMoney.Text(pnl));
+            var tone = SignedMoney.ToneOf(pnl);
+            _heroPnl.EnableInClassList("duo-value-positive", tone == SignedMoney.Tone.Up);
+            _heroPnl.EnableInClassList("duo-value-negative", tone == SignedMoney.Tone.Down);
+        }
+
         private void RenderPosition()
         {
+            RenderHeroPnl();
             if (_position == null) return;
             _position.Clear();
             var coin = Selected;
@@ -271,9 +294,17 @@ namespace CTLife.Economy
                     Kv(MoneyStrings.T("perps.side"), MoneyStrings.T(p.Side == "short" ? "perps.short" : "perps.long") + " " + p.Leverage + "×", p.Side == "short" ? "duo-value-negative" : "duo-value-positive"),
                     Kv(MoneyStrings.T("perps.size"), MoneyFormat.Cash(p.MarginCents * Math.Max(1, p.Leverage))),
                     Kv(MoneyStrings.T("label.entry"), MoneyFormat.Micros(p.EntryMicros)),
-                    Kv(MoneyStrings.T("label.mark"), MoneyFormat.Micros(coin.PriceMicros)),
+                    Kv(MoneyStrings.T("label.mark"), MoneyFormat.Micros(p.MarkMicros ?? coin.PriceMicros)),
                     Kv(MoneyStrings.T("label.margin"), MoneyFormat.Cash(p.MarginCents)),
                     Kv(MoneyStrings.T("label.liq"), MoneyFormat.Micros(p.LiqMicros), "duo-value-negative"));
+                if (p.UnrealizedPnlCents.HasValue)
+                {
+                    var tone = SignedMoney.ToneOf(p.UnrealizedPnlCents.Value);
+                    var pnl = Kv(MoneyStrings.T("label.pnl"), SignedMoney.Text(p.UnrealizedPnlCents.Value),
+                        tone == SignedMoney.Tone.Up ? "duo-value-positive" : tone == SignedMoney.Tone.Down ? "duo-value-negative" : null);
+                    pnl.name = "perps-pnl-" + p.PerpId;
+                    grid.Insert(0, pnl);
+                }
                 var perp = p;
                 var close = Duo.Pill(MoneyStrings.T("perps.close"), () => ConfirmClose(perp), Duo.PillKind.Destructive);
                 close.name = "perps-close-" + p.PerpId;
@@ -475,6 +506,8 @@ namespace CTLife.Economy
             row.name = "perps-row-" + p.PerpId;
             if (p.Status == "liquidated") row.Value(MoneyStrings.T("perps.liquidated"), "duo-value-negative");
             else if (p.RealizedCents.HasValue) row.Value(MoneyFormat.SignedCash(p.RealizedCents.Value), p.RealizedCents.Value >= 0 ? "duo-value-positive" : "duo-value-negative");
+            else if (p.Status == "open" && p.UnrealizedPnlCents.HasValue)
+                row.Value(SignedMoney.Text(p.UnrealizedPnlCents.Value), p.UnrealizedPnlCents.Value > 0 ? "duo-value-positive" : p.UnrealizedPnlCents.Value < 0 ? "duo-value-negative" : null);
             else if (mark != null && p.Status == "open") row.Value(MoneyStrings.F("perps.mark", MoneyFormat.Micros(mark.PriceMicros)));
             if (closable)
             {

@@ -133,10 +133,10 @@ namespace CTLife.SocialFeatures
         private bool _devDmReplayed;
 
         /// <summary>
-        /// Dev builds only (launch extras need the automation key): the local backend stores DMs but does not yet push
-        /// the realtime `dm` (its sendDm never calls publishToUser). For device QA of the banner, a DM that a second
-        /// account really sent through POST /v1/dms is replayed once onto the Bus as that missing push
-        /// (extras devDmFrom, devDmId, devDmText URL-encoded), 8 s after sign-in. It then takes the shipping path:
+        /// Dev builds only (launch extras need the automation key), a QA tool: since backend da95d7f the server pushes the
+        /// realtime `dm` itself after the message commits (DmMessage, `at` in epoch ms; nothing for a blocked pair), so real
+        /// banners need no help. This replays one DM onto the Bus as if pushed (extras devDmFrom, devDmId, devDmText
+        /// URL-encoded), 8 s after sign-in, for checking the banner without a second account. It takes the shipping path:
         /// MessagesController.OnRealtime → DmBannerPolicy → banner/badge.
         /// </summary>
         private void ReplayDevDm()
@@ -145,7 +145,7 @@ namespace CTLife.SocialFeatures
             _devDmReplayed = true;
             string id = LaunchArgs.Get("devDmId", Guid.NewGuid().ToString("N"));
             string text = Uri.UnescapeDataString(LaunchArgs.Get("devDmText", "gm"));
-            Log.Info("social", "Dev: replaying stored DM " + id + " from " + from + " as the realtime push the backend omits");
+            Log.Info("social", "Dev: replaying DM " + id + " from " + from + " as a realtime push (QA tool)");
             _layer.schedule.Execute(() =>
             {
                 if (_disposed) return;

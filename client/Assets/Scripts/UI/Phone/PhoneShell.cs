@@ -17,6 +17,8 @@ namespace CTLife.UI
         public virtual string HomeLabel => Title;
         public virtual string Color => "#4b7bec";
         public virtual int Phase => 1;
+        /// <summary>False for routes that only other apps open (e.g. "repay" from the Wallet's Loan card): no launcher tile.</summary>
+        public virtual bool ShowOnHome => true;
 
         /// <summary>Feature key from GET /config `degraded` that disables this app (null = never).</summary>
         public virtual string Feature => null;

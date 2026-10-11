@@ -26,6 +26,9 @@ namespace CTLife.Net
 
         public IRestClient Rest => _rest;
         public string LastLikenessJobId { get; private set; }
+        /// <summary>From the last GET /me (backend eeef49d): the next instalment deadline (epoch ms) and its amount; null with no debt.</summary>
+        public long? LastDebtDueAtMs { get; private set; }
+        public long? LastDebtWeeklyDueCents { get; private set; }
         public PerpsApi Perps => new PerpsApi(_rest);
         public SpacesApi Spaces => new SpacesApi(_rest);
 
@@ -50,6 +53,7 @@ namespace CTLife.Net
         {
             var raw = await _rest.Get<JToken>("/me", ct);
             LastLikenessJobId = (raw?["character"] as JObject)?.Value<string>("likenessJobId");
+            (LastDebtDueAtMs, LastDebtWeeklyDueCents) = DebtSchedule.Read(raw as JObject);
             try
             {
                 if (raw is JObject profile) profile["needs"] = NeedsCodec.Normalize(profile["needs"]);
