@@ -78,6 +78,8 @@ art/gameplay-candidates
 website/draft-01
 website/evidence
 *.obj.gz
+# ...but Unity-imported assets keep their .meta pairing (GeometryEvidence in Art/Candidates).
+!client/Assets/**/*.obj.gz
 
 # macOS
 ._*

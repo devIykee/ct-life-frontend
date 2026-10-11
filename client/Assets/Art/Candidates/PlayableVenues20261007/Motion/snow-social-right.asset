@@ -1,0 +1,2934 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 21f222fa991da4a64a3b94d03945c985, type: 3}
+  m_Name: snow-social-right
+  m_EditorClassIdentifier: CTLife.World::CTLife.World.CafeWorkExitMotion
+  firstStep: {x: 0.375, y: 0, z: -0.05}
+  secondStep: {x: 0.375, y: 0, z: 0}
+  hands: 0
+  settleContact: 1
+  frames:
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0.00006578386}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0.00042425146}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0.001260676}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0.0024937342}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0.0037068725}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0.0051042438}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0.0067418814}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0.008607984}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0.010680079}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0.012467146}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0.013980091}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0.0154771805}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0.016943038}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0.018363535}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0.019725144}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0.021016598}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0.02223283}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0.023366928}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0.024406254}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0.025340497}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0.02614355}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0.026783824}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0.027330875}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0.02769041}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0.027847886}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0.02780199}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0.027558148}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0.027122736}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0.026528}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0.025752723}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0.024724185}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0.023368418}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0.021613598}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0.019399285}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0.016666949}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0.013356686}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0.009483159}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0.0051214695}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0.000057239195}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: 0, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: -0.003100908, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: -0.006201816, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: -0.009302723, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0, y: -0.012403632, z: 0}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 3.7649747e-14, y: -0.015504539, z: -5.019966e-15}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.18224996, y: 0.092086956, z: 0.0715809}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.00024665767, y: -0.015493406, z: -0.00003288769}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.1832267, y: 0.09252281, z: 0.071450666}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.0009767327, y: -0.015327508, z: -0.00013023103}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.1860778, y: 0.09381513, z: 0.07107052}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.002175396, y: -0.014677778, z: -0.00029005282}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.19068463, y: 0.09591888, z: 0.07045628}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.0038278196, y: -0.0136294365, z: -0.00051037595}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.19692855, y: 0.0987607, z: 0.06962376}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.0059191734, y: -0.013392784, z: -0.0007892232}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.20469092, y: 0.1022415, z: 0.06858877}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.00843463, y: -0.015504539, z: -0.0011246174}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.21385312, y: 0.106239915, z: 0.067367144}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.011359361, y: -0.015504539, z: -0.0015145815}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.22429654, y: 0.110616535, z: 0.06597469}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.014678534, y: -0.015504539, z: -0.0019571378}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.23590253, y: 0.11521876, z: 0.06442723}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.018377326, y: -0.015504539, z: -0.0024503102}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.24855246, y: 0.11988613, z: 0.06274057}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.022440905, y: -0.015504539, z: -0.0029921206}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.2621277, y: 0.1244559, z: 0.060930535}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.02685444, y: -0.015504539, z: -0.0035805923}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.27650964, y: 0.12876873, z: 0.059012946}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.03160311, y: -0.015504539, z: -0.004213748}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.2915796, y: 0.13267425, z: 0.057003614}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.03667207, y: -0.015504539, z: -0.0048896093}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.307219, y: 0.13603629, z: 0.054918364}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.04204651, y: -0.015504539, z: -0.0056062015}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.32330918, y: 0.13873762, z: 0.052773003}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.047711592, y: -0.015504539, z: -0.0063615455}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.33973154, y: 0.14068407, z: 0.050583355}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.053652495, y: -0.015504539, z: -0.007153666}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.35636747, y: 0.14180773, z: 0.048365235}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.059854377, y: -0.016318858, z: -0.007980584}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.37309822, y: 0.14206947, z: 0.046134464}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.06630242, y: -0.017285049, z: -0.0088403225}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.38980532, y: 0.14146014, z: 0.043906853}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.07298179, y: -0.018342137, z: -0.009730905}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.40637, y: 0.14000098, z: 0.04169823}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.07987766, y: -0.0194937, z: -0.010650354}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.42267376, y: 0.13774288, z: 0.039524395}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.0869752, y: -0.020743191, z: -0.011596694}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.43859786, y: 0.13476458, z: 0.037401184}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.09425959, y: -0.022093773, z: -0.012567945}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.4540237, y: 0.1311699, z: 0.035344403}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.10171596, y: -0.02354759, z: -0.013562128}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.46883264, y: 0.1270842, z: 0.033369876}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.109329544, y: -0.029771626, z: -0.014577272}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.4829061, y: 0.12264992, z: 0.031493414}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.11708547, y: -0.036430836, z: -0.015611397}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.49612543, y: 0.11802167, z: 0.029730838}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.124968946, y: -0.042746067, z: -0.016662527}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.508372, y: 0.11336083, z: 0.028097961}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.1329651, y: -0.04849267, z: -0.01772868}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.5195272, y: 0.10882992, z: 0.026610605}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.14105913, y: -0.053455293, z: -0.018807886}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.52947235, y: 0.1045869, z: 0.025284588}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.1492362, y: -0.057434022, z: -0.019898161}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.5380888, y: 0.10077973, z: 0.024135724}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.15748149, y: -0.060252845, z: -0.020997534}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.545258, y: 0.09754112, z: 0.023179833}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.16578016, y: -0.061766684, z: -0.022104023}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.55086124, y: 0.09498404, z: 0.02243273}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.17411739, y: -0.06186664, z: -0.023215652}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.55477995, y: 0.093197614, z: 0.021910235}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.18247834, y: -0.060486734, z: -0.024330445}
+    leftFoot: {x: -0.1371407, y: 0.09208737, z: 0.048734993}
+    rightFoot: {x: 0.5568955, y: 0.09224414, z: 0.02162816}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.19084817, y: -0.057735085, z: -0.025446424}
+    leftFoot: {x: -0.13698252, y: 0.09215728, z: 0.0487139}
+    rightFoot: {x: 0.55724996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.19921209, y: -0.054801583, z: -0.026561612}
+    leftFoot: {x: -0.13524179, y: 0.09293924, z: 0.048481803}
+    rightFoot: {x: 0.55724996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.20755523, y: -0.051977158, z: -0.027674032}
+    leftFoot: {x: -0.13167417, y: 0.09456318, z: 0.04800612}
+    rightFoot: {x: 0.55724996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.21586281, y: -0.049265265, z: -0.02878171}
+    leftFoot: {x: -0.12639827, y: 0.09697247, z: 0.047302667}
+    rightFoot: {x: 0.55724996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.22411996, y: -0.046668053, z: -0.02988266}
+    leftFoot: {x: -0.11953273, y: 0.100083105, z: 0.046387263}
+    rightFoot: {x: 0.55724996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.23231184, y: -0.04418701, z: -0.030974913}
+    leftFoot: {x: -0.111196175, y: 0.10378663, z: 0.04527572}
+    rightFoot: {x: 0.55724996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.24042368, y: -0.041823387, z: -0.03205649}
+    leftFoot: {x: -0.10150725, y: 0.10795391, z: 0.043983866}
+    rightFoot: {x: 0.55724996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.2484406, y: -0.039577484, z: -0.03312541}
+    leftFoot: {x: -0.09058456, y: 0.11243966, z: 0.042527508}
+    rightFoot: {x: 0.55724996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.25634778, y: -0.0374493, z: -0.034179706}
+    leftFoot: {x: -0.078546755, y: 0.117087446, z: 0.040922467}
+    rightFoot: {x: 0.55724996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.2641304, y: -0.035438538, z: -0.035217386}
+    leftFoot: {x: -0.06551246, y: 0.12173524, z: 0.03918456}
+    rightFoot: {x: 0.55724996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.27177364, y: -0.033544123, z: -0.036236487}
+    leftFoot: {x: -0.051600307, y: 0.12622097, z: 0.037329607}
+    rightFoot: {x: 0.55724996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.2792626, y: -0.03176433, z: -0.037235018}
+    leftFoot: {x: -0.036928974, y: 0.13038823, z: 0.035373427}
+    rightFoot: {x: 0.55724996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.2865826, y: -0.030097604, z: -0.038211014}
+    leftFoot: {x: -0.021616995, y: 0.13409173, z: 0.03333183}
+    rightFoot: {x: 0.55724996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.29371867, y: -0.028541625, z: -0.03916249}
+    leftFoot: {x: -0.0057830364, y: 0.13720235, z: 0.031220637}
+    rightFoot: {x: 0.55724996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.30065608, y: -0.027093649, z: -0.040087476}
+    leftFoot: {x: 0.010454252, y: 0.13961163, z: 0.029055664}
+    rightFoot: {x: 0.55724996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.30737993, y: -0.025750816, z: -0.04098399}
+    leftFoot: {x: 0.026976272, y: 0.14123553, z: 0.026852729}
+    rightFoot: {x: 0.55724996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.3138754, y: -0.024510145, z: -0.041850056}
+    leftFoot: {x: 0.04366435, y: 0.14201748, z: 0.02462765}
+    rightFoot: {x: 0.55724996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.3201277, y: -0.023367882, z: -0.042683695}
+    leftFoot: {x: 0.060399905, y: 0.14193018, z: 0.022396246}
+    rightFoot: {x: 0.55724996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.326122, y: -0.02232045, z: -0.04348293}
+    leftFoot: {x: 0.07706426, y: 0.14097667, z: 0.02017433}
+    rightFoot: {x: 0.55724996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.33184338, y: -0.021364272, z: -0.044245787}
+    leftFoot: {x: 0.093538806, y: 0.13919023, z: 0.017977724}
+    rightFoot: {x: 0.55724996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.33727714, y: -0.020495415, z: -0.044970285}
+    leftFoot: {x: 0.10970491, y: 0.13663313, z: 0.015822243}
+    rightFoot: {x: 0.55724996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.3424084, y: -0.019709647, z: -0.045654453}
+    leftFoot: {x: 0.12544395, y: 0.13339451, z: 0.013723705}
+    rightFoot: {x: 0.55724996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.34722227, y: -0.019003212, z: -0.046296306}
+    leftFoot: {x: 0.1406373, y: 0.12958731, z: 0.011697926}
+    rightFoot: {x: 0.55724996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.35170403, y: -0.018372476, z: -0.046893872}
+    leftFoot: {x: 0.15516631, y: 0.12534429, z: 0.009760726}
+    rightFoot: {x: 0.55724996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.35583878, y: -0.017813206, z: -0.04744517}
+    leftFoot: {x: 0.16891234, y: 0.120813355, z: 0.007927917}
+    rightFoot: {x: 0.55724996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.3596117, y: -0.017321587, z: -0.047948226}
+    leftFoot: {x: 0.18175681, y: 0.11615252, z: 0.0062153228}
+    rightFoot: {x: 0.55724996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.36300796, y: -0.016894758, z: -0.048401065}
+    leftFoot: {x: 0.19358106, y: 0.111524284, z: 0.0046387576}
+    rightFoot: {x: 0.55724996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.36601275, y: -0.01652944, z: -0.0488017}
+    leftFoot: {x: 0.20426644, y: 0.10709, z: 0.003214039}
+    rightFoot: {x: 0.55724996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.36861125, y: -0.016222477, z: -0.04914817}
+    leftFoot: {x: 0.21369432, y: 0.103004314, z: 0.0019569881}
+    rightFoot: {x: 0.55724996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.3707886, y: -0.015972078, z: -0.04943848}
+    leftFoot: {x: 0.22174613, y: 0.09940965, z: 0.00088341534}
+    rightFoot: {x: 0.55724996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.37252998, y: -0.015776098, z: -0.049670666}
+    leftFoot: {x: 0.22830318, y: 0.09643136, z: 0.000009138137}
+    rightFoot: {x: 0.55724996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.3738206, y: -0.015633166, z: -0.049842745}
+    leftFoot: {x: 0.23324688, y: 0.09417328, z: -0.00065001845}
+    rightFoot: {x: 0.55724996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.37464553, y: -0.015542865, z: -0.04995274}
+    leftFoot: {x: 0.23645855, y: 0.09271415, z: -0.0010782443}
+    rightFoot: {x: 0.55724996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.37499005, y: -0.015505731, z: -0.049998675}
+    leftFoot: {x: 0.2378196, y: 0.09210485, z: -0.0012597144}
+    rightFoot: {x: 0.55724996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.37528044, y: -0.015504539, z: -0.05}
+    leftFoot: {x: 0.2378593, y: 0.09208737, z: -0.001265008}
+    rightFoot: {x: 0.55835974, y: 0.09248351, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.3764008, y: -0.015504539, z: -0.05}
+    leftFoot: {x: 0.2378593, y: 0.09208737, z: -0.001265008}
+    rightFoot: {x: 0.5627165, y: 0.094067596, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.37834364, y: -0.015504539, z: -0.05}
+    leftFoot: {x: 0.2378593, y: 0.09208737, z: -0.001265008}
+    rightFoot: {x: 0.5701101, y: 0.09676609, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.38107383, y: -0.015504539, z: -0.05}
+    leftFoot: {x: 0.2378593, y: 0.09208737, z: -0.001265008}
+    rightFoot: {x: 0.5802595, y: 0.100412115, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.38455623, y: -0.015504539, z: -0.05}
+    leftFoot: {x: 0.2378593, y: 0.09208737, z: -0.001265008}
+    rightFoot: {x: 0.59288335, y: 0.104780175, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.38875568, y: -0.015504539, z: -0.05}
+    leftFoot: {x: 0.2378593, y: 0.09208737, z: -0.001265008}
+    rightFoot: {x: 0.6077006, y: 0.10960013, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.39363703, y: -0.015504539, z: -0.05}
+    leftFoot: {x: 0.2378593, y: 0.09208737, z: -0.001265008}
+    rightFoot: {x: 0.62442994, y: 0.11457387, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.39916515, y: -0.015504539, z: -0.05}
+    leftFoot: {x: 0.2378593, y: 0.09208737, z: -0.001265008}
+    rightFoot: {x: 0.6427903, y: 0.119393826, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.40530485, y: -0.015504539, z: -0.05}
+    leftFoot: {x: 0.2378593, y: 0.09208737, z: -0.001265008}
+    rightFoot: {x: 0.6625004, y: 0.12376187, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.412021, y: -0.015504539, z: -0.05}
+    leftFoot: {x: 0.2378593, y: 0.09208737, z: -0.001265008}
+    rightFoot: {x: 0.683279, y: 0.12740788, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.4192785, y: -0.015504539, z: -0.05}
+    leftFoot: {x: 0.2378593, y: 0.09208737, z: -0.001265008}
+    rightFoot: {x: 0.7048449, y: 0.13010634, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.42704213, y: -0.015504539, z: -0.05}
+    leftFoot: {x: 0.2378593, y: 0.09208737, z: -0.001265008}
+    rightFoot: {x: 0.726917, y: 0.13169041, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.43527675, y: -0.015915811, z: -0.05}
+    leftFoot: {x: 0.2378593, y: 0.09208737, z: -0.001265008}
+    rightFoot: {x: 0.7492141, y: 0.13206209, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.44394723, y: -0.017157853, z: -0.05}
+    leftFoot: {x: 0.2378593, y: 0.09208737, z: -0.001265008}
+    rightFoot: {x: 0.7714549, y: 0.1311984, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.45301843, y: -0.01855892, z: -0.05}
+    leftFoot: {x: 0.2378593, y: 0.09208737, z: -0.001265008}
+    rightFoot: {x: 0.79335827, y: 0.12915275, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.46245518, y: -0.020441353, z: -0.05}
+    leftFoot: {x: 0.2378593, y: 0.09208737, z: -0.001265008}
+    rightFoot: {x: 0.814643, y: 0.12605165, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.47222233, y: -0.028142452, z: -0.05}
+    leftFoot: {x: 0.2378593, y: 0.09208737, z: -0.001265008}
+    rightFoot: {x: 0.83502793, y: 0.12208691, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.48228472, y: -0.03607446, z: -0.05}
+    leftFoot: {x: 0.2378593, y: 0.09208737, z: -0.001265008}
+    rightFoot: {x: 0.85423183, y: 0.11750372, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.49260724, y: -0.043801665, z: -0.05}
+    leftFoot: {x: 0.2378593, y: 0.09208737, z: -0.001265008}
+    rightFoot: {x: 0.87197345, y: 0.11258552, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.5031547, y: -0.05086708, z: -0.05}
+    leftFoot: {x: 0.2378593, y: 0.09208737, z: -0.001265008}
+    rightFoot: {x: 0.8879717, y: 0.10763649, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.513892, y: -0.056818247, z: -0.05}
+    leftFoot: {x: 0.2378593, y: 0.09208737, z: -0.001265008}
+    rightFoot: {x: 0.9019453, y: 0.102962695, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.52478397, y: -0.06123656, z: -0.05}
+    leftFoot: {x: 0.2378593, y: 0.09208737, z: -0.001265008}
+    rightFoot: {x: 0.9136131, y: 0.0988532, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.5357954, y: -0.06376147, z: -0.05}
+    leftFoot: {x: 0.2378593, y: 0.09208737, z: -0.001265008}
+    rightFoot: {x: 0.92269385, y: 0.095562145, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.5468912, y: -0.064117074, z: -0.05}
+    leftFoot: {x: 0.2378593, y: 0.09208737, z: -0.001265008}
+    rightFoot: {x: 0.9289064, y: 0.093293086, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.5580362, y: -0.062136233, z: -0.05}
+    leftFoot: {x: 0.2378593, y: 0.09208737, z: -0.001265008}
+    rightFoot: {x: 0.9319695, y: 0.09218633, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.5691953, y: -0.05823219, z: -0.05}
+    leftFoot: {x: 0.23848696, y: 0.092310764, z: -0.001265008}
+    rightFoot: {x: 0.93224996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.5803333, y: -0.054313004, z: -0.05}
+    leftFoot: {x: 0.24220254, y: 0.09365787, z: -0.001265008}
+    rightFoot: {x: 0.93224996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.59141505, y: -0.050590754, z: -0.05}
+    leftFoot: {x: 0.2490113, y: 0.09614476, z: -0.001265008}
+    rightFoot: {x: 0.93224996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.60240537, y: -0.047071874, z: -0.05}
+    leftFoot: {x: 0.258632, y: 0.099617615, z: -0.001265008}
+    rightFoot: {x: 0.93224996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.61326915, y: -0.043759942, z: -0.05}
+    leftFoot: {x: 0.27078348, y: 0.103861675, z: -0.001265008}
+    rightFoot: {x: 0.93224996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.62397134, y: -0.040656984, z: -0.05}
+    leftFoot: {x: 0.28518456, y: 0.10861447, z: -0.001265008}
+    rightFoot: {x: 0.93224996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.6344766, y: -0.037763536, z: -0.05}
+    leftFoot: {x: 0.30155402, y: 0.11358203, z: -0.001265008}
+    rightFoot: {x: 0.93224996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.6447499, y: -0.035078347, z: -0.05}
+    leftFoot: {x: 0.3196106, y: 0.11845715, z: -0.001265008}
+    rightFoot: {x: 0.93224996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.65475607, y: -0.032598972, z: -0.05}
+    leftFoot: {x: 0.33907324, y: 0.12293835, z: -0.001265008}
+    rightFoot: {x: 0.93224996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.66445994, y: -0.030321538, z: -0.05}
+    leftFoot: {x: 0.35966063, y: 0.12674844, z: -0.001265008}
+    rightFoot: {x: 0.93224996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.6738264, y: -0.02824068, z: -0.05}
+    leftFoot: {x: 0.3810916, y: 0.12965183, z: -0.001265008}
+    rightFoot: {x: 0.93224996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.68282026, y: -0.026350558, z: -0.05}
+    leftFoot: {x: 0.40308505, y: 0.13146894, z: -0.001265008}
+    rightFoot: {x: 0.93224996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.69140637, y: -0.02464372, z: -0.05}
+    leftFoot: {x: 0.42535955, y: 0.13208738, z: -0.001265008}
+    rightFoot: {x: 0.93224996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.69954956, y: -0.023112774, z: -0.05}
+    leftFoot: {x: 0.4476341, y: 0.1314689, z: -0.001265008}
+    rightFoot: {x: 0.93224996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.7072148, y: -0.021749318, z: -0.05}
+    leftFoot: {x: 0.46962744, y: 0.12965178, z: -0.001265008}
+    rightFoot: {x: 0.93224996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.7143668, y: -0.020544648, z: -0.05}
+    leftFoot: {x: 0.49105847, y: 0.12674837, z: -0.001265008}
+    rightFoot: {x: 0.93224996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.72097045, y: -0.019490004, z: -0.05}
+    leftFoot: {x: 0.5116458, y: 0.12293825, z: -0.001265008}
+    rightFoot: {x: 0.93224996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.72699064, y: -0.018576503, z: -0.05}
+    leftFoot: {x: 0.5311084, y: 0.11845705, z: -0.001265008}
+    rightFoot: {x: 0.93224996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.7323922, y: -0.017795801, z: -0.05}
+    leftFoot: {x: 0.549165, y: 0.1135819, z: -0.001265008}
+    rightFoot: {x: 0.93224996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.73713994, y: -0.017139852, z: -0.05}
+    leftFoot: {x: 0.5655344, y: 0.10861434, z: -0.001265008}
+    rightFoot: {x: 0.93224996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.7411988, y: -0.016601384, z: -0.05}
+    leftFoot: {x: 0.5799354, y: 0.10386158, z: -0.001265008}
+    rightFoot: {x: 0.93224996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.74453354, y: -0.016174436, z: -0.05}
+    leftFoot: {x: 0.59208685, y: 0.09961752, z: -0.001265008}
+    rightFoot: {x: 0.93224996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.7471091, y: -0.01585424, z: -0.05}
+    leftFoot: {x: 0.6017075, y: 0.09614468, z: -0.001265008}
+    rightFoot: {x: 0.93224996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.7488902, y: -0.015637517, z: -0.05}
+    leftFoot: {x: 0.60851616, y: 0.09365783, z: -0.001265008}
+    rightFoot: {x: 0.93224996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.7498418, y: -0.015523374, z: -0.05}
+    leftFoot: {x: 0.6122317, y: 0.09231075, z: -0.001265008}
+    rightFoot: {x: 0.93224996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.75, y: -0.015504777, z: -0.05}
+    leftFoot: {x: 0.6128593, y: 0.09208737, z: -0.001265008}
+    rightFoot: {x: 0.93224996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.75, y: -0.015504658, z: -0.05}
+    leftFoot: {x: 0.6128593, y: 0.09208737, z: -0.001265008}
+    rightFoot: {x: 0.93224996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.75, y: -0.015504539, z: -0.05}
+    leftFoot: {x: 0.6128593, y: 0.09208737, z: -0.001265008}
+    rightFoot: {x: 0.93224996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.75, y: -0.015504658, z: -0.05}
+    leftFoot: {x: 0.6128593, y: 0.09208737, z: -0.001265008}
+    rightFoot: {x: 0.93224996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.75, y: -0.015504658, z: -0.05}
+    leftFoot: {x: 0.6128593, y: 0.09208737, z: -0.001265008}
+    rightFoot: {x: 0.93224996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.75, y: -0.015504658, z: -0.05}
+    leftFoot: {x: 0.6128593, y: 0.09208737, z: -0.001265008}
+    rightFoot: {x: 0.93224996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.75, y: -0.015504658, z: -0.05}
+    leftFoot: {x: 0.6128593, y: 0.09208737, z: -0.001265008}
+    rightFoot: {x: 0.93224996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.75, y: -0.015504658, z: -0.05}
+    leftFoot: {x: 0.6128593, y: 0.09208737, z: -0.001265008}
+    rightFoot: {x: 0.93224996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.75, y: -0.015504777, z: -0.05}
+    leftFoot: {x: 0.6128593, y: 0.09208737, z: -0.001265008}
+    rightFoot: {x: 0.93224996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.75, y: -0.015504658, z: -0.05}
+    leftFoot: {x: 0.6128593, y: 0.09208737, z: -0.001265008}
+    rightFoot: {x: 0.93224996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.75, y: -0.015504777, z: -0.05}
+    leftFoot: {x: 0.6128593, y: 0.09208737, z: -0.001265008}
+    rightFoot: {x: 0.93224996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.75, y: -0.015504777, z: -0.05}
+    leftFoot: {x: 0.6128593, y: 0.09208737, z: -0.001265008}
+    rightFoot: {x: 0.93224996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.75, y: -0.015504658, z: -0.05}
+    leftFoot: {x: 0.6128593, y: 0.09208737, z: -0.001265008}
+    rightFoot: {x: 0.93224996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.75, y: -0.015504658, z: -0.05}
+    leftFoot: {x: 0.6128593, y: 0.09208737, z: -0.001265008}
+    rightFoot: {x: 0.93224996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.75, y: -0.015504658, z: -0.05}
+    leftFoot: {x: 0.6128593, y: 0.09208737, z: -0.001265008}
+    rightFoot: {x: 0.93224996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.75, y: -0.015504658, z: -0.05}
+    leftFoot: {x: 0.6128593, y: 0.09208737, z: -0.001265008}
+    rightFoot: {x: 0.93224996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.75, y: -0.015504658, z: -0.05}
+    leftFoot: {x: 0.6128593, y: 0.09208737, z: -0.001265008}
+    rightFoot: {x: 0.93224996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.75, y: -0.015504658, z: -0.05}
+    leftFoot: {x: 0.6128593, y: 0.09208737, z: -0.001265008}
+    rightFoot: {x: 0.93224996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.75, y: -0.015504539, z: -0.05}
+    leftFoot: {x: 0.6128593, y: 0.09208737, z: -0.001265008}
+    rightFoot: {x: 0.93224996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.75, y: -0.015504539, z: -0.05}
+    leftFoot: {x: 0.6128593, y: 0.09208737, z: -0.001265008}
+    rightFoot: {x: 0.93224996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}
+  - body: {x: 0.75, y: -0.015504658, z: -0.05}
+    leftFoot: {x: 0.6128593, y: 0.09208737, z: -0.001265008}
+    rightFoot: {x: 0.93224996, y: 0.092086956, z: 0.021580901}
+    leftFootRotation: {x: 0.00000014187606, y: 0.030107383, z: -0.000000068894145, w: -0.9995469}
+    rightFootRotation: {x: -0.00000080815556, y: -0.0017394334, z: 0.00000008458156, w: 0.9999989}
+    leftHand: {x: 0, y: 0, z: 0}
+    rightHand: {x: 0, y: 0, z: 0}
+    leftElbow: {x: 0, y: 0, z: 0}
+    rightElbow: {x: 0, y: 0, z: 0}
+    leftHandRotation: {x: 0, y: 0, z: 0, w: 0}
+    rightHandRotation: {x: 0, y: 0, z: 0, w: 0}

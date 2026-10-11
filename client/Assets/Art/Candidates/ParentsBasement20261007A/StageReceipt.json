@@ -1,0 +1,1282 @@
+{
+  "status": "staged_unbaked_private_home_not_published",
+  "prefab": "Assets/Art/Candidates/ParentsBasement20261007A/ParentsBasementA.prefab",
+  "prefab_sha256": "28c10fb34b5a630f34625d76e1d706fbcef9493092cb49fff79bc57509c2796d",
+  "home_id": "parents_basement",
+  "logical_spot_group": "home",
+  "snapshot_sha256": "3a54ec2117e03fd3e456355e8fe407e5889d10790def5f4863d2163e970a9b56",
+  "anchors": [
+    {
+      "spot": "bed",
+      "wire_id": "home.bed",
+      "position": [
+        -4.0,
+        0.0,
+        3.0
+      ],
+      "rotation_radians": 0.0,
+      "declared_action": "act_sit",
+      "contact_accepted": false
+    },
+    {
+      "spot": "center",
+      "wire_id": "home.center",
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_radians": 0.0,
+      "declared_action": null,
+      "contact_accepted": false
+    },
+    {
+      "spot": "desk",
+      "wire_id": "home.desk",
+      "position": [
+        4.0,
+        0.0,
+        3.0
+      ],
+      "rotation_radians": 0.0,
+      "declared_action": "act_type",
+      "contact_accepted": false
+    },
+    {
+      "spot": "entrance",
+      "wire_id": "home.entrance",
+      "position": [
+        0.0,
+        0.0,
+        -4.0
+      ],
+      "rotation_radians": 0.0,
+      "declared_action": null,
+      "contact_accepted": false
+    },
+    {
+      "spot": "exit",
+      "wire_id": "home.exit",
+      "position": [
+        0.0,
+        0.0,
+        -5.0
+      ],
+      "rotation_radians": 3.142,
+      "declared_action": null,
+      "contact_accepted": false
+    },
+    {
+      "spot": "sofa",
+      "wire_id": "home.sofa",
+      "position": [
+        0.0,
+        0.0,
+        2.0
+      ],
+      "rotation_radians": 0.0,
+      "declared_action": "act_sit",
+      "contact_accepted": false
+    }
+  ],
+  "positioned_anchors": 6,
+  "authored_approaches": 4,
+  "navigation": [
+    {
+      "spot": "bed",
+      "approach": [
+        -3.05,
+        0.0,
+        3.0
+      ],
+      "sampled": [
+        -3.04980469,
+        0.0199999958,
+        3.0
+      ],
+      "path": "PathComplete",
+      "corners": [
+        [
+          0.0,
+          0.0199999958,
+          -4.0
+        ],
+        [
+          -3.04980469,
+          0.0199999958,
+          3.0
+        ]
+      ],
+      "scope": "Standing approach only, not furniture support or seated action acceptance"
+    },
+    {
+      "spot": "center",
+      "approach": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "sampled": [
+        0.0,
+        0.0199999958,
+        0.0
+      ],
+      "path": "PathComplete",
+      "corners": [
+        [
+          0.0,
+          0.0199999958,
+          -4.0
+        ],
+        [
+          0.0,
+          0.0199999958,
+          0.0
+        ]
+      ],
+      "scope": "Standing approach only, not furniture support or seated action acceptance"
+    },
+    {
+      "spot": "desk",
+      "approach": [
+        2.85,
+        0.0,
+        2.65
+      ],
+      "sampled": [
+        2.84960938,
+        0.0199999958,
+        2.65039063
+      ],
+      "path": "PathComplete",
+      "corners": [
+        [
+          0.0,
+          0.0199999958,
+          -4.0
+        ],
+        [
+          2.84960938,
+          0.0199999958,
+          2.65039063
+        ]
+      ],
+      "scope": "Standing approach only, not furniture support or seated action acceptance"
+    },
+    {
+      "spot": "entrance",
+      "approach": [
+        0.0,
+        0.0,
+        -4.0
+      ],
+      "sampled": [
+        0.0,
+        0.0199999958,
+        -4.0
+      ],
+      "path": "PathComplete",
+      "corners": [
+        [
+          0.0,
+          0.0199999958,
+          -4.0
+        ]
+      ],
+      "scope": "Standing approach only, not furniture support or seated action acceptance"
+    },
+    {
+      "spot": "exit",
+      "approach": [
+        0.0,
+        0.0,
+        -4.45
+      ],
+      "sampled": [
+        0.0,
+        0.0199999958,
+        -4.45019531
+      ],
+      "path": "PathComplete",
+      "corners": [
+        [
+          0.0,
+          0.0199999958,
+          -4.0
+        ],
+        [
+          0.0,
+          0.0199999958,
+          -4.45019531
+        ]
+      ],
+      "scope": "Standing approach only, not furniture support or seated action acceptance"
+    },
+    {
+      "spot": "sofa",
+      "approach": [
+        1.8,
+        0.0,
+        2.0
+      ],
+      "sampled": [
+        1.79980469,
+        0.0199999958,
+        2.0
+      ],
+      "path": "PathComplete",
+      "corners": [
+        [
+          0.0,
+          0.0199999958,
+          -4.0
+        ],
+        [
+          1.79980469,
+          0.0199999958,
+          2.0
+        ]
+      ],
+      "scope": "Standing approach only, not furniture support or seated action acceptance"
+    }
+  ],
+  "placements": [
+    {
+      "id": "floor_tiles_2m",
+      "x": -5.0,
+      "y": 0.0,
+      "z": -4.0,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::floor_tiles_2m",
+      "lod0_triangles": 14
+    },
+    {
+      "id": "floor_tiles_2m",
+      "x": -5.0,
+      "y": 0.0,
+      "z": -2.0,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::floor_tiles_2m",
+      "lod0_triangles": 14
+    },
+    {
+      "id": "floor_tiles_2m",
+      "x": -5.0,
+      "y": 0.0,
+      "z": 0.0,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::floor_tiles_2m",
+      "lod0_triangles": 14
+    },
+    {
+      "id": "floor_wood_2m",
+      "x": -5.0,
+      "y": 0.0,
+      "z": 2.0,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::floor_wood_2m",
+      "lod0_triangles": 14
+    },
+    {
+      "id": "floor_wood_2m",
+      "x": -5.0,
+      "y": 0.0,
+      "z": 4.0,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::floor_wood_2m",
+      "lod0_triangles": 14
+    },
+    {
+      "id": "floor_wood_2m",
+      "x": -3.0,
+      "y": 0.0,
+      "z": -4.0,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::floor_wood_2m",
+      "lod0_triangles": 14
+    },
+    {
+      "id": "floor_wood_2m",
+      "x": -3.0,
+      "y": 0.0,
+      "z": -2.0,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::floor_wood_2m",
+      "lod0_triangles": 14
+    },
+    {
+      "id": "floor_wood_2m",
+      "x": -3.0,
+      "y": 0.0,
+      "z": 0.0,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::floor_wood_2m",
+      "lod0_triangles": 14
+    },
+    {
+      "id": "floor_wood_2m",
+      "x": -3.0,
+      "y": 0.0,
+      "z": 2.0,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::floor_wood_2m",
+      "lod0_triangles": 14
+    },
+    {
+      "id": "floor_wood_2m",
+      "x": -3.0,
+      "y": 0.0,
+      "z": 4.0,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::floor_wood_2m",
+      "lod0_triangles": 14
+    },
+    {
+      "id": "floor_wood_2m",
+      "x": -1.0,
+      "y": 0.0,
+      "z": -4.0,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::floor_wood_2m",
+      "lod0_triangles": 14
+    },
+    {
+      "id": "floor_wood_2m",
+      "x": -1.0,
+      "y": 0.0,
+      "z": -2.0,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::floor_wood_2m",
+      "lod0_triangles": 14
+    },
+    {
+      "id": "floor_wood_2m",
+      "x": -1.0,
+      "y": 0.0,
+      "z": 0.0,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::floor_wood_2m",
+      "lod0_triangles": 14
+    },
+    {
+      "id": "floor_wood_2m",
+      "x": -1.0,
+      "y": 0.0,
+      "z": 2.0,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::floor_wood_2m",
+      "lod0_triangles": 14
+    },
+    {
+      "id": "floor_wood_2m",
+      "x": -1.0,
+      "y": 0.0,
+      "z": 4.0,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::floor_wood_2m",
+      "lod0_triangles": 14
+    },
+    {
+      "id": "floor_wood_2m",
+      "x": 1.0,
+      "y": 0.0,
+      "z": -4.0,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::floor_wood_2m",
+      "lod0_triangles": 14
+    },
+    {
+      "id": "floor_wood_2m",
+      "x": 1.0,
+      "y": 0.0,
+      "z": -2.0,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::floor_wood_2m",
+      "lod0_triangles": 14
+    },
+    {
+      "id": "floor_wood_2m",
+      "x": 1.0,
+      "y": 0.0,
+      "z": 0.0,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::floor_wood_2m",
+      "lod0_triangles": 14
+    },
+    {
+      "id": "floor_wood_2m",
+      "x": 1.0,
+      "y": 0.0,
+      "z": 2.0,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::floor_wood_2m",
+      "lod0_triangles": 14
+    },
+    {
+      "id": "floor_wood_2m",
+      "x": 1.0,
+      "y": 0.0,
+      "z": 4.0,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::floor_wood_2m",
+      "lod0_triangles": 14
+    },
+    {
+      "id": "floor_wood_2m",
+      "x": 3.0,
+      "y": 0.0,
+      "z": -4.0,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::floor_wood_2m",
+      "lod0_triangles": 14
+    },
+    {
+      "id": "floor_wood_2m",
+      "x": 3.0,
+      "y": 0.0,
+      "z": -2.0,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::floor_wood_2m",
+      "lod0_triangles": 14
+    },
+    {
+      "id": "floor_wood_2m",
+      "x": 3.0,
+      "y": 0.0,
+      "z": 0.0,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::floor_wood_2m",
+      "lod0_triangles": 14
+    },
+    {
+      "id": "floor_wood_2m",
+      "x": 3.0,
+      "y": 0.0,
+      "z": 2.0,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::floor_wood_2m",
+      "lod0_triangles": 14
+    },
+    {
+      "id": "floor_wood_2m",
+      "x": 3.0,
+      "y": 0.0,
+      "z": 4.0,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::floor_wood_2m",
+      "lod0_triangles": 14
+    },
+    {
+      "id": "floor_tiles_2m",
+      "x": 5.0,
+      "y": 0.0,
+      "z": -4.0,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::floor_tiles_2m",
+      "lod0_triangles": 14
+    },
+    {
+      "id": "floor_tiles_2m",
+      "x": 5.0,
+      "y": 0.0,
+      "z": -2.0,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::floor_tiles_2m",
+      "lod0_triangles": 14
+    },
+    {
+      "id": "floor_wood_2m",
+      "x": 5.0,
+      "y": 0.0,
+      "z": 0.0,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::floor_wood_2m",
+      "lod0_triangles": 14
+    },
+    {
+      "id": "floor_wood_2m",
+      "x": 5.0,
+      "y": 0.0,
+      "z": 2.0,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::floor_wood_2m",
+      "lod0_triangles": 14
+    },
+    {
+      "id": "floor_wood_2m",
+      "x": 5.0,
+      "y": 0.0,
+      "z": 4.0,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::floor_wood_2m",
+      "lod0_triangles": 14
+    },
+    {
+      "id": "wall_plaster_window_2m",
+      "x": -5.0,
+      "y": 0.0,
+      "z": 5.1,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::wall_plaster_window_2m",
+      "lod0_triangles": 84
+    },
+    {
+      "id": "wall_plaster_solid_2m",
+      "x": -3.0,
+      "y": 0.0,
+      "z": 5.1,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::wall_plaster_solid_2m",
+      "lod0_triangles": 24
+    },
+    {
+      "id": "wall_plaster_solid_2m",
+      "x": -1.0,
+      "y": 0.0,
+      "z": 5.1,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::wall_plaster_solid_2m",
+      "lod0_triangles": 24
+    },
+    {
+      "id": "wall_plaster_window_2m",
+      "x": 1.0,
+      "y": 0.0,
+      "z": 5.1,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::wall_plaster_window_2m",
+      "lod0_triangles": 84
+    },
+    {
+      "id": "wall_plaster_solid_2m",
+      "x": 3.0,
+      "y": 0.0,
+      "z": 5.1,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::wall_plaster_solid_2m",
+      "lod0_triangles": 24
+    },
+    {
+      "id": "wall_plaster_solid_2m",
+      "x": 5.0,
+      "y": 0.0,
+      "z": 5.1,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::wall_plaster_solid_2m",
+      "lod0_triangles": 24
+    },
+    {
+      "id": "wall_plaster_solid_2m",
+      "x": -6.1,
+      "y": 0.0,
+      "z": -4.0,
+      "yaw": -90.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::wall_plaster_solid_2m",
+      "lod0_triangles": 24
+    },
+    {
+      "id": "wall_plaster_solid_2m",
+      "x": 6.1,
+      "y": 0.0,
+      "z": -4.0,
+      "yaw": 90.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::wall_plaster_solid_2m",
+      "lod0_triangles": 24
+    },
+    {
+      "id": "wall_plaster_solid_2m",
+      "x": -6.1,
+      "y": 0.0,
+      "z": -2.0,
+      "yaw": -90.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::wall_plaster_solid_2m",
+      "lod0_triangles": 24
+    },
+    {
+      "id": "wall_plaster_solid_2m",
+      "x": 6.1,
+      "y": 0.0,
+      "z": -2.0,
+      "yaw": 90.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::wall_plaster_solid_2m",
+      "lod0_triangles": 24
+    },
+    {
+      "id": "wall_plaster_solid_2m",
+      "x": -6.1,
+      "y": 0.0,
+      "z": 0.0,
+      "yaw": -90.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::wall_plaster_solid_2m",
+      "lod0_triangles": 24
+    },
+    {
+      "id": "wall_plaster_solid_2m",
+      "x": 6.1,
+      "y": 0.0,
+      "z": 0.0,
+      "yaw": 90.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::wall_plaster_solid_2m",
+      "lod0_triangles": 24
+    },
+    {
+      "id": "wall_plaster_solid_2m",
+      "x": -6.1,
+      "y": 0.0,
+      "z": 2.0,
+      "yaw": -90.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::wall_plaster_solid_2m",
+      "lod0_triangles": 24
+    },
+    {
+      "id": "wall_plaster_solid_2m",
+      "x": 6.1,
+      "y": 0.0,
+      "z": 2.0,
+      "yaw": 90.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::wall_plaster_solid_2m",
+      "lod0_triangles": 24
+    },
+    {
+      "id": "wall_plaster_solid_2m",
+      "x": -6.1,
+      "y": 0.0,
+      "z": 4.0,
+      "yaw": -90.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::wall_plaster_solid_2m",
+      "lod0_triangles": 24
+    },
+    {
+      "id": "wall_plaster_solid_2m",
+      "x": 6.1,
+      "y": 0.0,
+      "z": 4.0,
+      "yaw": 90.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::wall_plaster_solid_2m",
+      "lod0_triangles": 24
+    },
+    {
+      "id": "wall_plaster_solid_2m",
+      "x": -5.0,
+      "y": 0.0,
+      "z": -5.1,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::wall_plaster_solid_2m",
+      "lod0_triangles": 24
+    },
+    {
+      "id": "wall_plaster_solid_2m",
+      "x": -3.0,
+      "y": 0.0,
+      "z": -5.1,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::wall_plaster_solid_2m",
+      "lod0_triangles": 24
+    },
+    {
+      "id": "wall_plaster_solid_2m",
+      "x": 3.0,
+      "y": 0.0,
+      "z": -5.1,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::wall_plaster_solid_2m",
+      "lod0_triangles": 24
+    },
+    {
+      "id": "wall_plaster_solid_2m",
+      "x": 5.0,
+      "y": 0.0,
+      "z": -5.1,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::wall_plaster_solid_2m",
+      "lod0_triangles": 24
+    },
+    {
+      "id": "home_bed_single",
+      "x": -4.65,
+      "y": 0.0,
+      "z": 3.28,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "quaternius/ultimate_home_interior::Bed_Single",
+      "lod0_triangles": 536
+    },
+    {
+      "id": "home_bookshelf",
+      "x": -5.55,
+      "y": 0.0,
+      "z": 1.35,
+      "yaw": 90.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "quaternius/ultimate_home_interior::Bookshelf",
+      "lod0_triangles": 120
+    },
+    {
+      "id": "home_light_floor1",
+      "x": -3.3,
+      "y": 0.0,
+      "z": 4.42,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "quaternius/ultimate_home_interior::Light_Floor1",
+      "lod0_triangles": 226
+    },
+    {
+      "id": "home_houseplant_1",
+      "x": -2.7,
+      "y": 0.0,
+      "z": 4.43,
+      "yaw": 0.0,
+      "scale": 0.65,
+      "screen": null,
+      "solid": false,
+      "source": "quaternius/ultimate_home_interior::Houseplant_1",
+      "lod0_triangles": 245
+    },
+    {
+      "id": "home_desk",
+      "x": 4.0,
+      "y": 0.0,
+      "z": 3.65,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "quaternius/ultimate_furniture::Desk",
+      "lod0_triangles": 2640
+    },
+    {
+      "id": "office_chair",
+      "x": 4.0,
+      "y": 0.0,
+      "z": 2.72,
+      "yaw": 180.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "quaternius/ultimate_furniture::OfficeChair",
+      "lod0_triangles": 2116
+    },
+    {
+      "id": "laptop",
+      "x": 3.95,
+      "y": 0.76,
+      "z": 3.65,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "kenney/furniture-kit::laptop",
+      "lod0_triangles": 68
+    },
+    {
+      "id": "cup_coffee",
+      "x": 4.47,
+      "y": 0.76,
+      "z": 3.4,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "kenney/food-kit::cup-coffee",
+      "lod0_triangles": 108
+    },
+    {
+      "id": "home_shelf_b_large_decorated",
+      "x": 4.0,
+      "y": 1.62,
+      "z": 4.83,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "kaykit/furniture_bits::shelf_B_large_decorated",
+      "lod0_triangles": 482
+    },
+    {
+      "id": "home_couch_medium1",
+      "x": 0.0,
+      "y": 0.0,
+      "z": 1.72,
+      "yaw": 180.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "quaternius/ultimate_home_interior::Couch_Medium1",
+      "lod0_triangles": 1012
+    },
+    {
+      "id": "home_tv_modern",
+      "x": 0.0,
+      "y": 1.08,
+      "z": 4.82,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "kenney/furniture-kit::televisionModern",
+      "lod0_triangles": 72
+    },
+    {
+      "id": "home_light_floor1",
+      "x": 1.9,
+      "y": 0.0,
+      "z": 4.1,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "quaternius/ultimate_home_interior::Light_Floor1",
+      "lod0_triangles": 226
+    },
+    {
+      "id": "home_houseplant_1",
+      "x": 2.6,
+      "y": 0.0,
+      "z": 4.45,
+      "yaw": 0.0,
+      "scale": 0.65,
+      "screen": null,
+      "solid": false,
+      "source": "quaternius/ultimate_home_interior::Houseplant_1",
+      "lod0_triangles": 245
+    },
+    {
+      "id": "home_kitchen_fridge",
+      "x": -5.4,
+      "y": 0.0,
+      "z": -3.45,
+      "yaw": 90.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "quaternius/ultimate_home_interior::Kitchen_Fridge",
+      "lod0_triangles": 404
+    },
+    {
+      "id": "home_kitchen_sink",
+      "x": -5.47,
+      "y": 0.0,
+      "z": -2.47,
+      "yaw": 90.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "quaternius/ultimate_home_interior::Kitchen_Sink",
+      "lod0_triangles": 444
+    },
+    {
+      "id": "home_kitchen_cabinet1",
+      "x": -5.42,
+      "y": 0.0,
+      "z": -1.8,
+      "yaw": 90.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "quaternius/ultimate_home_interior::Kitchen_Cabinet1",
+      "lod0_triangles": 68
+    },
+    {
+      "id": "home_kitchen_cabinet1",
+      "x": -5.42,
+      "y": 0.0,
+      "z": -1.1,
+      "yaw": 90.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "quaternius/ultimate_home_interior::Kitchen_Cabinet1",
+      "lod0_triangles": 68
+    },
+    {
+      "id": "home_kitchen_cabinet1",
+      "x": -5.42,
+      "y": 0.0,
+      "z": -0.4,
+      "yaw": 90.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "quaternius/ultimate_home_interior::Kitchen_Cabinet1",
+      "lod0_triangles": 68
+    },
+    {
+      "id": "home_bathroom_shower1",
+      "x": 5.13,
+      "y": 0.0,
+      "z": -3.46,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "quaternius/ultimate_home_interior::Bathroom_Shower1",
+      "lod0_triangles": 652
+    },
+    {
+      "id": "home_bathroom_toilet",
+      "x": 5.35,
+      "y": 0.0,
+      "z": -1.5,
+      "yaw": 90.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "quaternius/ultimate_home_interior::Bathroom_Toilet",
+      "lod0_triangles": 402
+    },
+    {
+      "id": "home_bathroom_sink",
+      "x": 3.76,
+      "y": 0.0,
+      "z": -3.82,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "quaternius/ultimate_home_interior::Bathroom_Sink",
+      "lod0_triangles": 350
+    },
+    {
+      "id": "wall_plaster_solid_2m",
+      "x": 3.1,
+      "y": 0.0,
+      "z": -3.45,
+      "yaw": 90.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::wall_plaster_solid_2m",
+      "lod0_triangles": 24
+    },
+    {
+      "id": "floor_tiles_2m",
+      "x": -5.0,
+      "y": -0.101,
+      "z": 6.1,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::floor_tiles_2m",
+      "lod0_triangles": 14
+    },
+    {
+      "id": "floor_tiles_2m",
+      "x": -3.0,
+      "y": -0.101,
+      "z": 6.1,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::floor_tiles_2m",
+      "lod0_triangles": 14
+    },
+    {
+      "id": "floor_tiles_2m",
+      "x": -1.0,
+      "y": -0.101,
+      "z": 6.1,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::floor_tiles_2m",
+      "lod0_triangles": 14
+    },
+    {
+      "id": "floor_tiles_2m",
+      "x": 1.0,
+      "y": -0.101,
+      "z": 6.1,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::floor_tiles_2m",
+      "lod0_triangles": 14
+    },
+    {
+      "id": "floor_tiles_2m",
+      "x": 3.0,
+      "y": -0.101,
+      "z": 6.1,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::floor_tiles_2m",
+      "lod0_triangles": 14
+    },
+    {
+      "id": "floor_tiles_2m",
+      "x": 5.0,
+      "y": -0.101,
+      "z": 6.1,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::floor_tiles_2m",
+      "lod0_triangles": 14
+    },
+    {
+      "id": "wall_plaster_solid_2m",
+      "x": -5.0,
+      "y": 0.0,
+      "z": 7.1,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::wall_plaster_solid_2m",
+      "lod0_triangles": 24
+    },
+    {
+      "id": "wall_plaster_solid_2m",
+      "x": -3.0,
+      "y": 0.0,
+      "z": 7.1,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::wall_plaster_solid_2m",
+      "lod0_triangles": 24
+    },
+    {
+      "id": "wall_plaster_solid_2m",
+      "x": -1.0,
+      "y": 0.0,
+      "z": 7.1,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::wall_plaster_solid_2m",
+      "lod0_triangles": 24
+    },
+    {
+      "id": "wall_plaster_solid_2m",
+      "x": 1.0,
+      "y": 0.0,
+      "z": 7.1,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::wall_plaster_solid_2m",
+      "lod0_triangles": 24
+    },
+    {
+      "id": "wall_plaster_solid_2m",
+      "x": 3.0,
+      "y": 0.0,
+      "z": 7.1,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::wall_plaster_solid_2m",
+      "lod0_triangles": 24
+    },
+    {
+      "id": "wall_plaster_solid_2m",
+      "x": 5.0,
+      "y": 0.0,
+      "z": 7.1,
+      "yaw": 0.0,
+      "scale": 1.0,
+      "screen": null,
+      "solid": false,
+      "source": "ctlife_custom::wall_plaster_solid_2m",
+      "lod0_triangles": 24
+    },
+    {
+      "id": "home_houseplant_1",
+      "x": -5.0,
+      "y": 0.0,
+      "z": 6.1,
+      "yaw": 0.0,
+      "scale": 0.75,
+      "screen": null,
+      "solid": false,
+      "source": "quaternius/ultimate_home_interior::Houseplant_1",
+      "lod0_triangles": 245
+    },
+    {
+      "id": "home_houseplant_1",
+      "x": 1.0,
+      "y": 0.0,
+      "z": 6.1,
+      "yaw": 0.0,
+      "scale": 0.75,
+      "screen": null,
+      "solid": false,
+      "source": "quaternius/ultimate_home_interior::Houseplant_1",
+      "lod0_triangles": 245
+    }
+  ],
+  "source_lod0_triangles_manifest_sum": 12314,
+  "static_mesh_renderers": 46,
+  "mesh_colliders": 18,
+  "baked_only_lights": 5,
+  "limitations": "Private local home art only. No public registry or Home entry callback, needs effects, server claim, accepted bed/couch/desk posture, sleep animation, motion profile, voice or device performance. Exactly six declared anchors held; navigation validates frontend approaches rather than claiming furniture interiors are walkable."
+}
