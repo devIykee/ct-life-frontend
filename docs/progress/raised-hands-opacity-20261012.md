@@ -1,0 +1,44 @@
+# Raised hands and Rain surface review — 2026-10-12
+
+## Verified source findings
+
+- The shared `idle_fidget_stretch.fbx` is imported from the legacy rig whose Humanoid mapping has no finger chains. `art/pipeline/anim_emotes.py` authors shoulder/arm/wrist direction for this pose, with no articulated finger pose. Snow and Rain each have an authored native idle with all 30 digit joints represented by 40 Humanoid muscle curves. Their native idle does not replace the stretch.
+- `art/cast/scripts/cast_extract.py` deliberately removes Rain's solidified top inner shell before exporting the current wardrobe. Cast materials use back-face culling, as does the custom palette shader. Thus an exposed inside surface of that single-sided shell is culled. This is independent of alpha blending; the current palette shader explicitly supplies opaque alpha and writes depth.
+- The previous torso-alpha test sampled only a small closed patch between hips and chest. It did not test the armhole/hem openings visible in the full model or raised-arm hand pose quality. Passing it cannot establish that the whole character has no visible holes.
+
+## Initial diagnostic and correction design
+
+`RaisedHandsReviewTests.CaptureRaisedHandsAndSurfaceCoverage` captures actual shipped Rain/Snow idle/stretch/wave at multiple phases and angles, records runtime finger/wrist muscles and compares normal rendering with an opaque two-sided diagnostic material. Set `CTLIFE_HAND_REVIEW` to an external evidence directory; it writes PNGs and `measurements.json` there. No persistent source materials are mutated.
+
+`RaisedHandAnimationImport.RunBatch` is an explicit editor operation. It creates separate Snow and Rain stretch clips with each family's already authored relaxed finger pose. The shared stretch uses Snow's hand articulation (covering Dex/Nova and the other shared-controller rigs), with Rain's own hand-shape override. It does not add runtime physics or alter root/body/arm curves. `RaisedHandAnimationTests` checks all 40 finger channels and preservation of every original non-finger curve. A PlayMode regression compares forty real Humanoid muscle values to native idle on Snow/Rain/Dex/Nova and requires both hands actually above the head. Application and acceptance results follow below.
+
+The first coordinator diagnostic measured zero partly transparent rendered pixels. Rain's opaque two-sided comparison filled 759 missing pixels at front idle and 723 at side idle (1000×1000 target); Snow filled 15 and 2. This reproduces visible Rain surface holes independently of UI alpha. Runtime HumanPose recorded all forty finger muscle values at approximately zero in stretch/wave, compared with the native idle's deliberately spread and curled finger values. The first rendered pose images did not wait for GPU skin-matrix upload and still displayed the earlier idle; the harness now waits one frame per sampled pose. These early PNGs are not accepted evidence of the raised-hands silhouette.
+
+`CharacterSurfaceImport.RunBatch` is prepared to apply opaque two-sided rendering only to Rain-family cast materials and their existing palettes, then apply the finger correction. The palette shader gains a culling property and back-face normal handling; palette importers retain the source's culling choice. No mesh, texture, palette selection, alpha blend mode or unrelated character material is changed.
+
+## Current primary documentation consulted
+
+- [Unity 6.3 Avatar Muscle & Settings](https://docs.unity.com/en-us/engine/6000.3/manual/animation-section/animation-mecanim/avatar-creationand-setup/muscle-definitions): Humanoid motion maps onto muscle ranges; artifact/self-overlap review belongs to rig configuration and animation.
+- [Unity 6.3 AnimationUtility.SetEditorCurve](https://docs.unity3d.com/6000.3/Documentation/ScriptReference/AnimationUtility.SetEditorCurve.html): editor-authored curve changes.
+- [Unity 6.3 ShaderLab Cull](https://docs.unity3d.com/6000.3/Documentation/Manual/SL-Cull.html): back-face culling discards surfaces facing away; two-sided thin materials require a deliberate culling choice.
+
+Only the coordinator runs Unity/device tests and publishes reviewed changes. No Unity, ADB, commit or push was run by this lane.
+
+## Coordinator's first correction run
+
+- The corrected pre-change harness waited for skin-matrix upload. Its hand closeups reproduce the raised stretch's claw-like zero/default finger pose. Rain's missing backface coverage ranges up to 1,198 pixels during wave and 1,101 during stretch on the 1000² target; no partly transparent pixels were measured.
+- The editor helper generated both articulated clips and updated 29 Rain-family source materials. The shared state now supplies the complete pose to Dex/Nova too. Direct comparison with Git's pre-change controller assets found Snow's one existing non-null override and all sixteen existing Rain overrides preserved exactly. Extra serialized null entries are inherited motions, not removed overrides.
+- First after-change PlayMode result: three tests passed, one failed. The actual Snow/Rain/Dex/Nova raised-arm finger comparison passed; the render evidence shows open natural hands instead of the zero/default claw. Rain's opaque silhouette comparison passed.
+- The failed test found that the saved Rain palette still had `_Cull=2` although the source material had `0`. Runtime palette creation now always copies the source's geometry-side setting, and the twelve Rain palette files are aligned to `0`. The explicit importer refresh order was changed so animation generation finishes before surface updates. No claim is made that the cause of that earlier serialized value has been independently reproduced.
+- Visual after-review also caught a stock URP/Lit backface shading difference (the filled surface appeared darker). The unmodified-color Rain path now uses the same palette shader with all tints zero, which preserves authored albedo and flips backface lighting normals. This needs the final rerender, rather than accepting coverage alone.
+- `PortraitCanvasTests` independently checks the coordinator's expanded portrait projection on actual Rain/Dex/Shark animated vertices at eight stretch/wave phases each: unchanged virtual-screen positions and face scale, rendered pixels beyond the former square, bounded reused render texture, hidden podium, and restoration of the square projection.
+
+## Accepted desktop verification
+
+- Coordinator's `onboarding-refinements-20261012/verified-playmode.xml`: **13/13 passed**, including the four-human raised-hand comparison, world/preview palette and shader tests, expanded portrait test, and onboarding regressions.
+- Expanded portrait test measured every animated vertex at eight stretch/wave phases on Rain (8,415 vertices), Dex (6,221) and Shark (3,045). Maximum screen-position differences were 0.61789, 0.35003 and 0.41875 UI pixels respectively; maximum head/neck size difference was 0.06937 pixels. The initial 0.12-pixel threshold was too strict for the native world-to-viewport calculation at the preview's distant world position. [Inference] the remaining subpixel differences are consistent with floating-point matrix cancellation; an additional camera-space diagnostic was not run and is not part of the accepted test.
+- More importantly, the test renders both targets and maps the original opaque interior pixels into the expanded canvas. Rain retained all 6,060 sampled pixels, Dex all 4,806 and Shark all 6,805, with **zero missing pixels**. It also requires actual rendered coverage beyond the old square, preserves the render-texture binding, hides the podium, and restores square framing afterward.
+- Independently reviewed `pass2/02-rain-traits-idle_fidget_stretch.png` and `pass2/01-rain-tribe-emote_wave.png`: Rain's shirt is white with its authored blue scarf, the formerly dark filled surface is corrected, and the large raised hands extend outside the former portrait square. They meet the actual screen boundary, as requested.
+- The portrait test leaves its readback target active before resizing it, producing non-failing `Releasing render texture that is set to be RenderTexture.active!` warnings. This is test-harness cleanup, not a runtime app failure. Restore the previous active target before the next resize when this harness is next maintained. No runtime change or additional test run was made for that warning.
+
+The coordinator copied the tested portrait regression back from the clone, excluding the later unexecuted diagnostic. The Android build subsequently succeeded with zero errors and was installed on the Seeker. Rain's original and red-coloured top were visually reviewed on-device; the expanded portrait was also reviewed on the people and traits screens. Complete build/device acceptance is in `cards-and-character-review-20261012.md`. The rig subagent did not run Unity, ADB, commits or pushes; those operations remained with the coordinator.

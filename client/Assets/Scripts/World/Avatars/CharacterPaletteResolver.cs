@@ -121,13 +121,21 @@ namespace CTLife.World
 
         internal static void Apply(GameObject actor, CharacterPaletteSelection selected)
         {
-            if (selected == null || !selected.HasChanges) return;
+            if (selected == null) return;
+            var source = selected.binding?.sourceMaterial;
+            // Original-color thin shells still need the palette shader's back-face lighting.
+            // URP/Lit can draw both sides but uses the same normal on both; that darkens the
+            // previously hidden cloth face. Zero tint values preserve the authored albedo.
+            if (!selected.HasChanges && (source == null || !source.HasProperty("_Cull") || source.GetFloat("_Cull") != 0f)) return;
             if (!ValidBinding(selected.binding)) throw new InvalidOperationException("Character palette binding is unavailable.");
             var renderers = actor.GetComponentsInChildren<SkinnedMeshRenderer>(true);
             if (renderers.Length == 0 || renderers.Any(r => r.sharedMaterials.Length != 1 ||
                 r.sharedMaterial != selected.binding.sourceMaterial))
                 throw new InvalidOperationException("Character palette does not match this actor's source material.");
             var material = new Material(selected.binding.maskedMaterial) { name = selected.binding.id + "_selected_palette" };
+            // Culling describes the source geometry, not a color choice. Keep it even when an older
+            // serialized palette material predates the surface-side property or a source-side repair.
+            material.SetFloat("_Cull", selected.binding.sourceMaterial.GetFloat("_Cull"));
             actor.AddComponent<CharacterPaletteResources>().Own(material);
             for (int i = 0; i < Regions.Length; i++)
                 if (selected.colors.TryGetValue(Regions[i], out var color)) material.SetVector(Properties[i], LinearTint(color));

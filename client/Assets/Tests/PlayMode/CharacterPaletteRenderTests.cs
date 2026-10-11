@@ -43,6 +43,10 @@ namespace CTLife.Tests
                     Assert.AreNotSame(worldMaterial, previewMaterial, "Different actors must not overwrite one another's colors.");
                     Assert.That(binding.maskedMaterial.GetVector("_SkinTint"), Is.EqualTo(Vector4.zero));
                     Assert.That(binding.sourceMaterial.shader.name, Is.EqualTo("Universal Render Pipeline/Lit"));
+                    Assert.That(worldMaterial.GetFloat("_Cull"), Is.EqualTo(binding.sourceMaterial.GetFloat("_Cull")),
+                        "Changing a color must preserve the authored material's surface sides.");
+                    if (id == "head_rain") Assert.That(worldMaterial.GetFloat("_Cull"), Is.EqualTo(0f),
+                        "Rain's removed inner cloth shell needs opaque two-sided rendering.");
                 }
                 finally { Object.Destroy(world.gameObject); Object.Destroy(preview.gameObject); }
                 yield return null;
@@ -112,6 +116,11 @@ namespace CTLife.Tests
                     }
                     material.SetVector(properties[region], Vector4.zero);
                 }
+                shape.transform.localRotation = Quaternion.Euler(0, 180, 0);
+                material.SetFloat("_Cull", (float)CullMode.Back);
+                Assert.That(Read()[0].a, Is.LessThan(.01f), "The fixture now views the thin surface from inside.");
+                material.SetFloat("_Cull", (float)CullMode.Off);
+                Assert.That(Read()[0].a, Is.GreaterThan(.99f), "A two-sided wardrobe back remains opaque after recoloring.");
             }
             finally
             {

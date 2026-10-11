@@ -66,6 +66,7 @@ namespace CTLife.EditorTools
                 material.SetTexture("_MetallicGlossMap", metal); material.SetFloat("_UseMetallicMap", metal != null ? 1f : 0f);
                 material.SetFloat("_Metallic", original.GetFloat("_Metallic"));
                 material.SetFloat("_Smoothness", original.GetFloat("_Smoothness"));
+                material.SetFloat("_Cull", original.GetFloat("_Cull"));
                 material.SetTexture("_EmissionMap", original.GetTexture("_EmissionMap"));
                 material.SetColor("_EmissionColor", original.IsKeywordEnabled("_EMISSION") ? original.GetColor("_EmissionColor") : Color.black);
                 material.SetFloat("_ReferenceFloor", .0001f);

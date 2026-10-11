@@ -27,6 +27,7 @@ Shader "CT Life/Character Masked Lit"
         _EmissionMap("Authored emission", 2D) = "black" {}
         _EmissionColor("Emission", Color) = (0,0,0,0)
         _ReferenceFloor("Minimum source reference luminance", Float) = 0.03
+        [Enum(UnityEngine.Rendering.CullMode)] _Cull("Surface sides", Float) = 2
     }
     SubShader
     {
@@ -78,7 +79,7 @@ Shader "CT Life/Character Masked Lit"
             half shade = min(dot(source, luminance) / max(_ReferenceFloor, dot(reference, luminance)), 1.6);
             return lerp(source, tint.rgb * shade, saturate(mask * tint.a));
         }
-        half4 PaletteFragment(Varyings input):SV_Target
+        half4 PaletteFragment(Varyings input, FRONT_FACE_TYPE facing : FRONT_FACE_SEMANTIC):SV_Target
         {
             UNITY_SETUP_INSTANCE_ID(input); UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
             half3 albedo = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.uv).rgb;
@@ -105,7 +106,9 @@ Shader "CT Life/Character Masked Lit"
                 half3 bitangent = input.tangentWS.w * cross(input.normalWS, input.tangentWS.xyz);
                 normalWS = TransformTangentToWorld(normalTS, half3x3(input.tangentWS.xyz, bitangent, input.normalWS));
             }
-            lighting.normalWS = NormalizeNormalPerPixel(normalWS);
+            // Wardrobe shells have no hidden inner wall. Their deliberately enabled back face
+            // needs an inward-facing lighting normal, while the opaque alpha/depth remain unchanged.
+            lighting.normalWS = NormalizeNormalPerPixel(normalWS) * IS_FRONT_VFACE(facing, 1.0h, -1.0h);
             lighting.viewDirectionWS = GetWorldSpaceNormalizeViewDir(input.positionWS);
             lighting.shadowCoord = TransformWorldToShadowCoord(input.positionWS);
             lighting.fogCoord = input.fog; lighting.vertexLighting = input.vertexLight;
@@ -133,7 +136,7 @@ Shader "CT Life/Character Masked Lit"
         {
             Name "ForwardLit"
             Tags { "LightMode"="UniversalForward" }
-            ZWrite On Cull Back
+            ZWrite On Cull [_Cull]
             HLSLPROGRAM
             #pragma target 3.0
             #pragma vertex PaletteVertex
@@ -149,7 +152,7 @@ Shader "CT Life/Character Masked Lit"
         {
             Name "DepthOnly"
             Tags { "LightMode"="DepthOnly" }
-            ZWrite On ColorMask R Cull Back
+            ZWrite On ColorMask R Cull [_Cull]
             HLSLPROGRAM
             #pragma target 3.0
             #pragma vertex PaletteVertex

@@ -47,6 +47,7 @@ namespace CTLife.EditorTools
                 material.SetTexture("_BaseMap", original.GetTexture("_BaseMap"));
                 material.SetTexture("_TintMask0", mask0); material.SetTexture("_TintMask1", mask1);
                 material.SetFloat("_Smoothness", .22f);
+                material.SetFloat("_Cull", original.GetFloat("_Cull"));
                 material.SetFloat("_UseNormalMap", 0f); material.SetFloat("_UseMetallicMap", 0f);
                 material.SetFloat("_Metallic", 0f); material.SetColor("_EmissionColor", Color.black);
                 material.SetFloat("_ReferenceFloor", .03f);
