@@ -296,7 +296,7 @@ namespace CTLife.Economy
                     Kv(MoneyStrings.T("label.entry"), MoneyFormat.Micros(p.EntryMicros)),
                     Kv(MoneyStrings.T("label.mark"), MoneyFormat.Micros(p.MarkMicros ?? coin.PriceMicros)),
                     Kv(MoneyStrings.T("label.margin"), MoneyFormat.Cash(p.MarginCents)),
-                    Kv(MoneyStrings.T("label.liq"), MoneyFormat.Micros(p.LiqMicros), "duo-value-negative"));
+                    Kv(MoneyStrings.T("label.liq"), LiqText(p.LiqMicros), "duo-value-negative"));
                 if (p.UnrealizedPnlCents.HasValue)
                 {
                     var tone = SignedMoney.ToneOf(p.UnrealizedPnlCents.Value);
@@ -445,7 +445,7 @@ namespace CTLife.Economy
                 _tradeStatus?.Add(El.Div("duo-kv-grid",
                     Kv(MoneyStrings.T("label.margin"), MoneyFormat.Cash(perp.MarginCents)),
                     Kv(MoneyStrings.T("label.entry"), MoneyFormat.Micros(perp.EntryMicros)),
-                    Kv(MoneyStrings.T("label.liq"), MoneyFormat.Micros(perp.LiqMicros), "duo-value-negative")));
+                    Kv(MoneyStrings.T("label.liq"), LiqText(perp.LiqMicros), "duo-value-negative")));
                 Hub.RefreshProfile();
                 _openGate.Kick();
                 RenderTradeControls();
@@ -493,12 +493,14 @@ namespace CTLife.Economy
             foreach (var kv in _closeResult) _body.Add(Duo.Notice(kv.Value));
         }
 
+        private static string LiqText(long liqMicros) => MoneyFormat.Liquidation(liqMicros, MoneyStrings.T("perps.liqNone"));
+
         private DuoRow PerpRowView(PerpRow p, bool closable)
         {
             var perp = p;
             var mark = Hub.Market.Find(p.CoinId);
             string sub = MoneyStrings.F("perps.marginLine", MoneyFormat.Cash(p.MarginCents)) + " · " + MoneyStrings.F("perps.entry", MoneyFormat.Micros(p.EntryMicros))
-                + " · " + MoneyStrings.F("perps.liq", MoneyFormat.Micros(p.LiqMicros));
+                + " · " + MoneyStrings.F("perps.liq", LiqText(p.LiqMicros));
             var row = new DuoRow(closable ? () => ConfirmClose(perp) : (Action)null)
                 .Leading(Duo.Avatar(TickerOf(p), p.CoinId, "duo-avatar-s"))
                 .Title(MoneyStrings.F("perps.positionTitle", TickerOf(p), MoneyStrings.T(p.Side == "short" ? "perps.short" : "perps.long"), p.Leverage), "duo-row-title-strong")

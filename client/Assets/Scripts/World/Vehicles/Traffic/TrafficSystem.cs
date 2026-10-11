@@ -22,6 +22,9 @@ namespace CTLife.World.Vehicles
         // budget
         public int MaxCars = 12;
         public const float SpawnMin = 75f, SpawnMax = 190f, DespawnBeyond = 235f, QuietBeyond = 65f, Lookahead = 60f;
+        /// <summary>Out of view a car may appear this close (behind the camera), so the street around the player has
+        /// traffic, not just the far ring: with the ring alone at most one car was ever near enough to seat a driver.</summary>
+        public const float SpawnHiddenMin = 32f;
         /// <summary>The traffic mix (spec ids and weights).</summary>
         public static readonly (string id, float weight)[] Mix = { ("compact", 0.36f), ("suv", 0.3f), ("sports", 0.16f), ("scooter", 0.1f), ("roadstar", 0.08f) };
 
@@ -34,6 +37,7 @@ namespace CTLife.World.Vehicles
         private RoadNetwork _net;
         private LocalPlayerController _player;
         private TrafficDrivers _drivers;
+        public TrafficDrivers Drivers => _drivers;
         private float _spawnAt, _quietAt;
         private int _step;
         private List<(LaneRef lane, float along, Vector3 pos)> _spawnPoints;
@@ -169,12 +173,12 @@ namespace CTLife.World.Vehicles
             int cx = Mathf.FloorToInt(focus.x / 64f), cz = Mathf.FloorToInt(focus.z / 64f);
             for (int attempt = 0; attempt < 10; attempt++)
             {
-                long k = ((long)(cx + _rng.Next(-r, r + 1)) << 32) ^ (uint)(cz + _rng.Next(-r, r + 1));
+                int rr = (attempt & 1) == 0 ? 1 : r;                        // every other try in the cells around the player
+                long k = ((long)(cx + _rng.Next(-rr, rr + 1)) << 32) ^ (uint)(cz + _rng.Next(-rr, rr + 1));
                 if (!_spawnGrid.TryGetValue(k, out var list) || list.Count == 0) continue;
                 var (lane, along, pos) = _spawnPoints[list[_rng.Next(list.Count)]];
                 float d = Vector3.Distance(Flat(pos), Flat(focus));
-                if (d < SpawnMin || d > SpawnMax) continue;
-                if (d < 150f && Visible(pos)) continue;                    // pop-in only where nobody is looking
+                if (!SpawnDistanceOk(d, Visible(pos))) continue;            // pop-in only where nobody is looking
                 if (!VehicleWorld.IsReady(pos)) continue;                   // its ground must be streamed in
                 bool crowded = false;
                 foreach (var c in Cars) if ((c.transform.position - pos).sqrMagnitude < 22f * 22f) { crowded = true; break; }
@@ -198,6 +202,15 @@ namespace CTLife.World.Vehicles
                 Spawned++;
                 return;
             }
+        }
+
+        /// <summary>Where a car may appear: anywhere in the ring out of view, or from <see cref="SpawnHiddenMin"/> when
+        /// unseen; in view only beyond 150 m. Pure, EditMode-tested.</summary>
+        public static bool SpawnDistanceOk(float d, bool visible)
+        {
+            if (d > SpawnMax) return false;
+            if (visible) return d >= 150f;
+            return d >= SpawnHiddenMin;
         }
 
         private string PickKind()

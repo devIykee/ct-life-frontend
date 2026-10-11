@@ -45,7 +45,7 @@ namespace CTLife.EditorTools
             void Mark(string name) => marks[name] = frame / 2;
             // hold the view (the follow camera would swing back behind the player)
             float holdYaw = float.NaN, holdPitch = 0f;
-            int maxSeated = 0, overlaps = 0; float deepest = 0f;
+            int maxSeated = 0, overlaps = 0, maxNear = 0, maxNoSeat = 0; float deepest = 0f;
             async Task Frames(float seconds, Action<float> each = null)
             {
                 for (float t = 0f; t < seconds; t += 1f / 60f)
@@ -57,6 +57,7 @@ namespace CTLife.EditorTools
                     int seated = 0;
                     foreach (var c in traffic.Cars) if (c != null && c.Driver != null) seated++;
                     maxSeated = Math.Max(maxSeated, seated);
+                    if (traffic.Drivers != null) { maxNear = Math.Max(maxNear, traffic.Drivers.NearInView); maxNoSeat = Math.Max(maxNoSeat, traffic.Drivers.NearWithoutSeat); }
                     if ((Time.frameCount % 10) == 0) Overlaps(traffic, ref overlaps, ref deepest);
                 }
             }
@@ -239,7 +240,7 @@ namespace CTLife.EditorTools
                 else expect(false, "no traffic car to ram");
 
                 // ---------------------------------------------------------------- NPC drivers
-                o["drivers"] = new JObject { ["maxSeated"] = maxSeated };
+                o["drivers"] = new JObject { ["maxSeated"] = maxSeated, ["maxNearInView"] = maxNear, ["maxNearWithoutSeat"] = maxNoSeat };
                 expect(maxSeated > 0, $"NPC drivers sit at the wheel of the near cars (up to {maxSeated} at once)");
 
                 // ---------------------------------------------------------------- take a parked car

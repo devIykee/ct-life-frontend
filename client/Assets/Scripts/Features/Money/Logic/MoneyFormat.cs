@@ -21,6 +21,9 @@ namespace CTLife.Economy
         /// <summary>Micro-dollars per whole coin (contract `priceMicros`) → "$0.015000".</summary>
         public static string Micros(long micros) => micros < 0 ? "-" + CoreMoney.Micros(-micros) : CoreMoney.Micros(micros);
 
+        /// <summary>A perp's liquidation price; a 1x long has none (the server sends 0): <paramref name="none"/>, not "$0.000000".</summary>
+        public static string Liquidation(long liqMicros, string none) => liqMicros > 0 ? Micros(liqMicros) : none;
+
         /// <summary>Fictional coin units (6 decimals): "2500000" → "2.5". Falls back to the raw string when invalid.</summary>
         public static string CoinUnits(string units) => TokenUnits.Format(units, TokenUnits.CoinDecimals, 4) ?? units ?? "—";
 

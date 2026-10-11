@@ -82,6 +82,49 @@ namespace CTLife.World
             return Mathf.Min(main, thin);
         }
 
+        /// <summary>What may hide the player from the lens: the world, props and hedges; not vehicles or people passing by,
+        /// and not the invisible coast wall.</summary>
+        public static int OcclusionMask => (CharacterLayers.BodyMask | ThinMask) &
+            ~((1 << CharacterLayers.Vehicle) | (1 << CharacterLayers.VehicleFlight) | (1 << CharacterLayers.Characters) | (1 << CharacterLayers.Ragdoll) |
+              (1 << CharacterLayers.CoastWall));
+        /// <summary>Heights on the body (from the feet) the lens must see at least one of.</summary>
+        public static readonly float[] BodyChecks = { 0.55f, 1.15f };
+        public const float NearBody = 0.7f, MinSeenBoom = 1.3f;
+
+        /// <summary>
+        /// The longest boom (at most <paramref name="boom"/>) from which some of the player's body is in sight: the boom cast
+        /// only keeps the line pivot-to-lens clear, so a planter or a wall between the lens and the body (seen from a low
+        /// angle) hid the player behind it. When every body point is blocked, the lens moves in front of the nearest blocker.
+        /// </summary>
+        public static float VisibleBoom(Vector3 pivot, Vector3 back, float boom, Vector3 feet, int mask)
+        {
+            float b = boom;
+            for (int iter = 0; iter < 4; iter++)
+            {
+                var lens = pivot + back * b;
+                float nearest = 1f;   // fraction of body-to-lens where the blocker nearest the lens sits
+                bool seen = false;
+                foreach (float h in BodyChecks)
+                {
+                    var p = feet + Vector3.up * h;
+                    var d = lens - p;
+                    float l = d.magnitude;
+                    if (l < 0.05f) { seen = true; break; }
+                    // what the player leans on or sits in (a bench back, the wall at their shoulder) is not in the way
+                    float first = float.MaxValue;
+                    foreach (var hit in Physics.RaycastAll(p, d / l, l, mask, QueryTriggerInteraction.Ignore))
+                        if (hit.distance > NearBody && hit.distance < first) first = hit.distance;
+                    if (first == float.MaxValue) { seen = true; break; }
+                    nearest = Mathf.Min(nearest, first / l);
+                }
+                if (seen) return b;
+                b = b * nearest - 0.25f;
+                // in front of it would put the lens in the player's face: keep the view (the lift looks over instead)
+                if (b < MinSeenBoom) return boom;
+            }
+            return b;
+        }
+
         /// <summary>The boom length this frame: solid surfaces pull it in at once, thin ones quickly but smoothly; it eases out.</summary>
         private static float Boom(float boom, float clear, bool thinOnly, float outRate, float dt)
         {
@@ -309,6 +352,9 @@ namespace CTLife.World
             var rot = Quaternion.Euler(pitch, yaw, 0f);
             float want = DesiredDistance();
             float clear = Clearance(_pivot, rot * Vector3.back, want, CollisionMask, out bool thinOnly);
+            // Something between the lens and the body (not the pivot): come in front of it, smoothly.
+            float seen = VisibleBoom(_pivot, rot * Vector3.back, clear, target, OcclusionMask);
+            if (seen < clear - 0.05f) { clear = seen; thinOnly = true; }
             // Pull in at once when something solid comes between (quickly but smoothly for a pole or a trunk); ease back out.
             _boom = Boom(_boom, clear, thinOnly, 3f, dt);
             // Backed against something: rise over the head and look past it (seeing the inside of the head is not a view).

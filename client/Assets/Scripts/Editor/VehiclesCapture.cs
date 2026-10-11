@@ -36,7 +36,9 @@ namespace CTLife.EditorTools
             expect(sys != null, "the island session has a VehicleSystem");
             if (sys == null) return visit;
             var arrival = p.transform.position; float arrivalYaw = p.transform.eulerAngles.y;
-            var origin = p.transform.position + Vector3.up * 60f;
+            // The proving ground floats out at sea, clear of the island: 60 m over the v2 downtown arrival, its strip ran
+            // into a tower (0-100 never reached, the drift stopped dead; regression from World W2).
+            var origin = p.transform.position + new Vector3(3000f, 60f, 0f);
             var ground = BuildGround(origin);
             Physics.SyncTransforms();
             int prevCapture = Time.captureFramerate;
@@ -106,6 +108,9 @@ namespace CTLife.EditorTools
             {
                 // ---------------------------------------------------------------- the sports car
                 Mark("enter");
+                // onto the proving ground first: vehicles 320 m from the player are cleaned up as abandoned
+                p.SnapTo(origin + new Vector3(-4.5f, 0f, -150f), 90f * Mathf.Deg2Rad);
+                for (int i = 0; i < 5; i++) await Awaitable.NextFrameAsync();
                 var car = sys.Spawn("sports", origin + new Vector3(0f, 0.1f, -150f), Quaternion.identity);
                 for (int i = 0; i < 60; i++) await Awaitable.NextFrameAsync();   // settle on the springs
                 float rest = car.transform.position.y - origin.y;
@@ -279,17 +284,23 @@ namespace CTLife.EditorTools
                 Object.Destroy(ground); ground = null;
                 p.SnapTo(arrival, arrivalYaw * Mathf.Deg2Rad);
                 rig.FollowAvatar(p.transform);
+                // back from the proving ground at sea: the island streams in again around the arrival
+                float back0 = Time.realtimeSinceStartup;
+                while (!VehicleWorld.IsReady(arrival) && Time.realtimeSinceStartup - back0 < 20f) await Awaitable.NextFrameAsync();
+                // the fleet was cleaned up as abandoned while the player was out at sea: park it again
+                VehicleSpawner.SpawnShowcase(sys, arrival, Quaternion.Euler(0f, arrivalYaw, 0f) * Vector3.forward);
                 for (int i = 0; i < 30; i++) await Awaitable.NextFrameAsync();
                 int fleet = 0;
                 foreach (var v in sys.Vehicles) if (v != null && (v.transform.position - arrival).sqrMagnitude < 90f * 90f && !v.Occupied) fleet++;
                 await shot("vehicles-22-island-fleet", .2f);
                 Mark("island");
                 sys.StartCoroutine(VehicleDemo.Run(sys, p, "sports,roadstar,heli", 0.5f));
-                string seen = null; float demoT0 = Time.time;
+                string seen = null; float demoT0 = Time.time; int shotImpacts = VehicleDemo.Impacts;
                 while (Time.time - demoT0 < 2f || VehicleDemo.Running)
                 {
                     await Awaitable.NextFrameAsync();
                     if (film && (frame++ & 1) == 0) OnboardingCapture.FilmFrame($"vehicles-clip-{frame / 2:0000}");
+                    if (VehicleDemo.Impacts != shotImpacts) { shotImpacts = VehicleDemo.Impacts; OnboardingCapture.FilmFrame($"vehicles-24-impact-{shotImpacts}"); }
                     var now = VehicleDemo.Current;
                     if (now != null && now != seen)
                     {
@@ -300,10 +311,13 @@ namespace CTLife.EditorTools
                     if (Time.time - demoT0 > 200f) break;
                 }
                 var parts = new JArray();
-                foreach (var part in VehicleDemo.Parts) parts.Add(new JObject { ["part"] = part.name, ["topKmh"] = R(part.topKmh), ["seconds"] = R(part.time) });
+                foreach (var part in VehicleDemo.Parts) parts.Add(new JObject { ["part"] = part.name, ["topKmh"] = R(part.topKmh), ["seconds"] = R(part.time), ["impacts"] = part.impacts, ["hardestImpact"] = R(part.hardestImpact) });
                 o["island"] = new JObject { ["parkedNearArrival"] = fleet, ["parts"] = parts };
                 expect(fleet >= 5, $"the fleet parks round the island arrival ({fleet} vehicles within 90 m)");
                 expect(VehicleDemo.Parts.Count >= 10, $"the island demo drove, flew and landed ({VehicleDemo.Parts.Count} parts)");
+                int roadKnocks = 0;
+                foreach (var part in VehicleDemo.Parts) if (part.name.EndsWith(" drive") || part.name.EndsWith(" drive2") || part.name.EndsWith(" road")) roadKnocks += part.impacts;
+                expect(roadKnocks == 0, $"the road pilot keeps the cars off the walls ({roadKnocks} impacts while driving)");
             }
             finally
             {
