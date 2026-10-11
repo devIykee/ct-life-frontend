@@ -55,6 +55,7 @@ namespace CTLife.EditorTools.VenueBuild
 
         public static void SpacesStudio(VB vb)
         {
+            vb.FoliageAtlas = true;
             vb.GroundAt = Ground;
             vb.InteriorShell("floor_wood_2m", "walnut", wallHeight: 6.4f, westHeight: 5.0f, eastHeight: 0f, frontHeight: 0.9f, trim: "darkwood");
             var inn = vb.Inner;
@@ -112,12 +113,9 @@ namespace CTLife.EditorTools.VenueBuild
             {
                 float z = -7.6f + i * 4.9f;
                 float bx = x1 - 0.55f;
-                vb.Box(new Vector3(bx, 0.21f, z), new Vector3(0.72f, 0.42f, 3.2f), "honey");
-                vb.Box(new Vector3(bx, 0.47f, z), new Vector3(0.68f, 0.1f, 3.1f), seat[i]);
-                vb.Box(new Vector3(x1 - 0.27f, 0.72f, z), new Vector3(0.16f, 0.42f, 3.0f), seat[(i + 1) % 4]);
-                vb.Box(new Vector3(x1 - 0.42f, 0.72f, z + 0.9f), new Vector3(0.14f, 0.36f, 0.48f), "terracotta", 12f);
-                vb.Box(new Vector3(x1 - 0.42f, 0.7f, z - 1.0f), new Vector3(0.14f, 0.34f, 0.44f), "dustpink", -10f);
-                vb.RegisterProp("terrace_bench", new Vector3(bx, 0.3f, z), new Vector3(0.75f, 0.6f, 3.2f));
+                vb.ModelAt(i % 2 == 0 ? "terrace_bench_purple" : "terrace_bench_teal", new Vector3(x1 - 0.5f, 0f, z), -90f, 1f);
+                vb.ModelAt("throw_pillow", new Vector3(x1 - 0.55f, 0.48f, z + 0.9f), -78f, 0.95f, recolor: "terracotta");
+                vb.ModelAt("throw_pillow", new Vector3(x1 - 0.55f, 0.48f, z - 1.0f), -100f, 0.95f, recolor: "dustpink");
                 Lantern(vb, new Vector3(bx, 0f, z + 2.1f));
                 Lantern(vb, new Vector3(x1, 1.1f, z - 1.6f));
             }
@@ -125,7 +123,7 @@ namespace CTLife.EditorTools.VenueBuild
             foreach (float z in new[] { -5.0f, 0.0f, 5.0f })
             {
                 vb.Box(new Vector3(x0 + 0.5f, 0.3f, z), new Vector3(0.8f, 0.6f, 1.4f), "darkconcrete");
-                vb.Model("houseplant_bush", x0 + 0.5f, z - 0.3f, 0f, y: 0.6f, scale: 0.7f);
+                vb.Model("houseplant_bush_lite", x0 + 0.5f, z - 0.3f, 0f, y: 0.6f, scale: 0.7f);
                 vb.Model("home_houseplant_1", x0 + 0.5f, z + 0.35f, 90f, y: 0.6f, scale: 0.6f);
                 vb.RegisterProp("planter", new Vector3(x0 + 0.5f, 0.3f, z), new Vector3(0.8f, 0.6f, 1.4f));
             }
@@ -200,12 +198,7 @@ namespace CTLife.EditorTools.VenueBuild
 
         private static void Lantern(VB vb, Vector3 floor)
         {
-            vb.Box(floor + new Vector3(0, 0.02f, 0), new Vector3(0.28f, 0.04f, 0.28f), "black");
-            vb.Box(floor + new Vector3(0, 0.24f, 0), new Vector3(0.22f, 0.38f, 0.22f), "glowamber", glow: true);
-            foreach (var (dx, dz) in new[] { (-0.11f, -0.11f), (0.11f, -0.11f), (-0.11f, 0.11f), (0.11f, 0.11f) })
-                vb.Box(floor + new Vector3(dx, 0.24f, dz), new Vector3(0.03f, 0.42f, 0.03f), "black");
-            vb.Box(floor + new Vector3(0, 0.46f, 0), new Vector3(0.28f, 0.05f, 0.28f), "black");
-            vb.Pipe(floor + new Vector3(0, 0.48f, 0), floor + new Vector3(0, 0.56f, 0), 0.05f, "black", 6);
+            vb.ModelAt("lantern_floor", floor, 45f, 0.8f, glow: "glowamber");
             vb.PointLight(floor + new Vector3(0, 0.35f, 0), "glowamber", 0.5f, 2.2f);
         }
 
@@ -330,7 +323,7 @@ namespace CTLife.EditorTools.VenueBuild
             for (int i = 0; i < 8; i++)
                 vb.Sphere(new Vector3(-0.33f + i * 0.065f, top + 0.07f, 7.12f), 0.013f, i % 3 == 0 ? "glowgreen" : i % 3 == 1 ? "glowamber" : "glowred", glow: true, rings: 3, segments: 5);
             for (int i = 0; i < 4; i++) vb.Box(new Vector3(-0.3f + i * 0.08f, top + 0.075f, 7.27f), new Vector3(0.02f, 0.03f, 0.08f), "lightgrey");
-            vb.ModelAt("laptop", new Vector3(0.5f, top, 7.22f), 180f);
+            vb.ModelAt("cafe_laptop", new Vector3(0.5f, top, 7.22f), 180f);
             vb.ModelAt("plant_small", new Vector3(0.95f, top, 7.3f), 0f, 1.5f);
             Phone(vb, new Vector3(0.18f, top + 0.006f, 7.05f), flat: true);
             BoomMic(vb, new Vector3(0.15f, top, 7.42f), new Vector3(0f, StageH + 1.5f, 7.72f));
@@ -344,21 +337,18 @@ namespace CTLife.EditorTools.VenueBuild
                 var p = VB.P(s);
                 var fwd = Fwd(s);
                 var right = Right(s);
-                vb.ModelAt("home_armchair_pillows", p - fwd * 0.12f + Vector3.up * StageH, VB.Deg(s), 0.85f, recolor: "tan");
-                var pillow = p - fwd * 0.28f + right * 0.2f + Vector3.up * (StageH + 0.58f);
-                vb.Box(pillow, new Vector3(0.38f, 0.34f, 0.14f), cushion[k++ % 4], VB.Deg(s) - 12f);
+                vb.ModelAt("studio_armchair", p - fwd * 0.12f + Vector3.up * StageH, VB.Deg(s));
+                vb.ModelAt("throw_pillow", p - fwd * 0.4f + right * 0.18f + Vector3.up * (StageH + 0.38f), VB.Deg(s) - 12f, 0.9f, recolor: cushion[k++ % 4]);
                 vb.SeatCollider(s, new Vector3(0, 0.5f, -0.1f), new Vector3(0.9f, 0.6f, 0.9f));
                 vb.Approach(s, p - right * 0.95f);
                 MicStand(vb, p + fwd * 0.6f + right * 0.25f + Vector3.up * StageH, p + fwd * 0.35f + Vector3.up * (StageH + 1.1f), phone: false);
             }
             // Low round table in front of the guests: mugs, a small plant, a book stack.
             var table = new Vector3(0f, StageH, 3.25f);
-            vb.Cylinder(table, 0.38f, 0.36f, "walnut", 20);
-            vb.Cylinder(table + Vector3.up * 0.36f, 0.46f, 0.045f, "oak", 24);
-            vb.RegisterProp("coffee_table", table + Vector3.up * 0.2f, new Vector3(0.92f, 0.42f, 0.92f));
-            float tt = StageH + 0.405f;
-            vb.Cylinder(new Vector3(-0.22f, tt, 3.33f), 0.045f, 0.09f, "offwhite", 10);
-            vb.Cylinder(new Vector3(0.24f, tt, 3.15f), 0.045f, 0.09f, "charcoal", 10);
+            vb.ModelAt("table_oval", table, 0f);
+            float tt = StageH + 0.39f;
+            vb.ModelAt("mug_lite", new Vector3(-0.22f, tt, 3.33f), 30f, 1.3f);
+            vb.ModelAt("mug_lite", new Vector3(0.24f, tt, 3.15f), 200f, 1.3f, recolor: "charcoal");
             vb.ModelAt("plant_small", new Vector3(0.05f, tt, 3.4f), 0f, 1.3f);
             vb.Box(new Vector3(0.12f, tt + 0.02f, 3.03f), new Vector3(0.26f, 0.04f, 0.2f), "barnred", 18f);
             vb.Box(new Vector3(0.12f, tt + 0.055f, 3.03f), new Vector3(0.24f, 0.03f, 0.18f), "cream", 10f);
@@ -434,15 +424,14 @@ namespace CTLife.EditorTools.VenueBuild
 
         private static void Pods(VB vb)
         {
-            string[] cushion = { "rose", "petrol", "velvetpurple" };
+            string[] stools = { "studio_stool_rose", "studio_stool_petrol", "studio_stool_purple" };
             int i = 0;
             foreach (var s in vb.SpotsWhere(s => s.id.StartsWith("stage_") && s.id != "stage_host" && vb.GroundAt(VB.P(s)) < 0.01f))
             {
                 var p = VB.P(s);
                 var fwd = Fwd(s);
                 var right = Right(s);
-                vb.ModelAt("bar_stool", p, VB.Deg(s));
-                vb.Cylinder(p + Vector3.up * 0.75f, 0.2f, 0.06f, cushion[i++ % 3], 14);
+                vb.ModelAt(stools[i++ % 3], p, VB.Deg(s));
                 vb.SeatCollider(s, new Vector3(0, 0.5f, 0), new Vector3(0.55f, 0.6f, 0.55f));
                 vb.Approach(s, p - right * 0.95f); // fitted social exit steps left on stage_*
                 MicStand(vb, p + fwd * 0.5f + right * 0.3f, p + fwd * 0.28f + Vector3.up * 1.4f, phone: true);
@@ -501,18 +490,14 @@ namespace CTLife.EditorTools.VenueBuild
                 if (g < 0.01f)
                 {
                     string col = bags[k % bags.Length];
-                    vb.Blob(p - fwd * 0.08f + Vector3.up * 0.34f, new Vector3(1.3f, 0.7f, 1.2f), col, yaw: VB.Deg(s), rings: 9, segments: 16);
-                    vb.Blob(p - fwd * 0.5f + Vector3.up * 0.62f, new Vector3(1.15f, 0.7f, 0.5f), col, yaw: VB.Deg(s), rings: 8, segments: 14);
-                    vb.RegisterProp("bean_bag", p - fwd * 0.15f + Vector3.up * 0.49f, new Vector3(1.2f, 0.98f, 1.2f), VB.Deg(s));
+                    vb.ModelAt("bean_bag", p - fwd * 0.12f, VB.Deg(s), 1f, recolor: col);
                     vb.SeatCollider(s, new Vector3(0, 0.35f, -0.08f), new Vector3(0.9f, 0.5f, 0.9f));
                     vb.Approach(s, p + Right(s) * 0.95f); // fitted social exit steps right on seat_*
                 }
                 else
                 {
                     string col = poufs[k % poufs.Length];
-                    vb.Box(p + Vector3.up * (g + 0.19f), new Vector3(0.74f, 0.38f, 0.74f), col, VB.Deg(s));
-                    vb.Box(p + Vector3.up * (g + 0.4f), new Vector3(0.7f, 0.06f, 0.7f), poufs[(k + 2) % poufs.Length], VB.Deg(s));
-                    vb.RegisterProp("pouf", p + Vector3.up * (g + 0.22f), new Vector3(0.74f, 0.44f, 0.74f), VB.Deg(s));
+                    vb.ModelAt("pouf_round", p + Vector3.up * g, VB.Deg(s), 1.05f, recolor: col);
                     vb.SeatCollider(s, new Vector3(0, 0.3f, 0), new Vector3(0.7f, 0.5f, 0.7f));
                     vb.Approach(s, p + Right(s) * 0.95f);
                 }
@@ -522,8 +507,7 @@ namespace CTLife.EditorTools.VenueBuild
             foreach (var (r, phi, col) in new[] { (12.3f, -17.8f, "petrol"), (12.3f, 22.3f, "velvetpurple"), (14.1f, 7.7f, "rose"), (14.1f, -29f, "plum") })
             {
                 var p = Polar(r, phi, r < 13f ? Tier1 : Tier2);
-                vb.Box(p + Vector3.up * 0.1f, new Vector3(0.62f, 0.2f, 0.62f), col, -phi + 8f);
-                vb.RegisterProp("floor_cushion", p + Vector3.up * 0.1f, new Vector3(0.62f, 0.2f, 0.62f), -phi + 8f);
+                vb.ModelAt("floor_cushion", p, -phi + 8f, 0.95f, recolor: col);
             }
             foreach (var (r, phi) in new[] { (14.15f, -15.3f), (14.15f, 19.2f), (12.25f, 9.0f) })
                 SideTable(vb, Polar(r, phi, r < 13f ? Tier1 : Tier2), "darkwood", true);
@@ -533,19 +517,13 @@ namespace CTLife.EditorTools.VenueBuild
 
         private static void DecorBag(VB vb, Vector3 p, string col, float facing)
         {
-            var fwd = Quaternion.Euler(0, facing, 0) * Vector3.forward;
-            vb.Blob(p - fwd * 0.08f + Vector3.up * 0.34f, new Vector3(1.25f, 0.68f, 1.15f), col, yaw: facing, rings: 9, segments: 16);
-            vb.Blob(p - fwd * 0.48f + Vector3.up * 0.6f, new Vector3(1.1f, 0.66f, 0.48f), col, yaw: facing, rings: 8, segments: 14);
-            vb.RegisterProp("bean_bag", p - fwd * 0.15f + Vector3.up * 0.48f, new Vector3(1.15f, 0.96f, 1.15f), facing);
+            vb.ModelAt("bean_bag", p, facing, 1f, recolor: col);
         }
 
         private static void SideTable(VB vb, Vector3 floor, string wood, bool drink)
         {
-            vb.Cylinder(floor, 0.2f, 0.02f, "black", 12);
-            vb.Cylinder(floor, 0.03f, 0.5f, "darksteel", 6);
-            vb.Cylinder(floor + Vector3.up * 0.5f, 0.24f, 0.035f, wood, 16);
-            if (drink) vb.Cylinder(floor + new Vector3(0.05f, 0.535f, 0.02f), 0.035f, 0.12f, "charcoal", 8);
-            vb.RegisterProp("side_table", floor + Vector3.up * 0.27f, new Vector3(0.48f, 0.54f, 0.48f));
+            vb.ModelAt("studio_side_table", floor, 0f, 1f, recolor: wood == "darkwood" ? "walnut" : null);
+            if (drink) vb.ModelAt("mug_lite", floor + new Vector3(0.05f, 0.52f, 0.02f), 40f, 1.3f);
         }
 
         // ------------------------------------------------------------------ backstage block (north-west): lanyards, neon arch door
@@ -583,7 +561,8 @@ namespace CTLife.EditorTools.VenueBuild
             foreach (float x in new[] { -8.15f, -7.9f, -7.65f })
             {
                 vb.Pipe(new Vector3(x, 1.6f, BackZ - 0.1f), new Vector3(x, 1.6f, BackZ - 0.2f), 0.01f, "darksteel", 4);
-                vb.Blob(new Vector3(x, 1.5f, BackZ - 0.22f), new Vector3(0.18f, 0.2f, 0.07f), "black");
+                if (x == -7.9f) vb.ModelAt("studio_headphones", new Vector3(x, 1.4f, BackZ - 0.2f), 180f, 1f);
+                else vb.Blob(new Vector3(x, 1.5f, BackZ - 0.22f), new Vector3(0.12f, 0.16f, 0.05f), "charcoal", rings: 3, segments: 5);
             }
             // Lanyard poster wall on the backstage block's east face (seen from the stage and the pods).
             vb.Sign("ss_lanyards", new Vector3(BackX + 0.12f, 1.0f, 4.6f), 3.6f, 90f, frame: "darkwood", lit: true);
@@ -593,9 +572,9 @@ namespace CTLife.EditorTools.VenueBuild
 
             // Backstage interior (seen from above through the open top): couch, rail, vanity mirror, fridge, plant.
             vb.Decal(-9.7f, 6.0f, 3.6f, 6.6f, "plum");
-            vb.Model("home_couch_pillows", x0 + 0.5f, 6.8f, 90f, recolor: "velvetpurple");
-            vb.Box(new Vector3(-9.6f, 0.2f, 6.8f), new Vector3(0.9f, 0.4f, 0.6f), "walnut");
-            vb.RegisterProp("bs_table", new Vector3(-9.6f, 0.2f, 6.8f), new Vector3(0.9f, 0.4f, 0.6f));
+            vb.Model("studio_sofa_plum", x0 + 0.5f, 6.8f, 90f);
+            vb.ModelAt("throw_pillow", new Vector3(x0 + 0.25f, 0.4f, 6.0f), 80f, 0.85f, recolor: "ctteal");
+            vb.ModelAt("table_oval", new Vector3(-9.6f, 0f, 6.8f), 90f, 0.75f);
             vb.Pipe(new Vector3(-11.6f, 1.7f, 3.0f), new Vector3(-11.6f, 1.7f, 5.0f), 0.02f, "chrome", 6);
             foreach (float z in new[] { 3.0f, 5.0f }) vb.Pipe(new Vector3(-11.6f, 0f, z), new Vector3(-11.6f, 1.7f, z), 0.02f, "chrome", 6);
             string[] coats = { "ctteal", "mustard", "plum", "denim", "barnred", "charcoal" };
@@ -604,8 +583,7 @@ namespace CTLife.EditorTools.VenueBuild
             vb.Box(new Vector3(BackX - 0.13f, 1.6f, 8.3f), new Vector3(0.04f, 0.9f, 1.2f), "chrome");
             for (int i = 0; i < 5; i++) vb.Sphere(new Vector3(BackX - 0.16f, 2.1f, 7.8f + i * 0.25f), 0.04f, "glowwhite", glow: true, rings: 3, segments: 6);
             vb.Box(new Vector3(BackX - 0.35f, 0.8f, 8.3f), new Vector3(0.45f, 0.06f, 1.3f), "oak");
-            vb.Box(new Vector3(x0 + 0.4f, 0.75f, 9.4f), new Vector3(0.65f, 1.5f, 0.6f), "offwhite");
-            vb.RegisterProp("bs_fridge", new Vector3(x0 + 0.4f, 0.75f, 9.4f), new Vector3(0.65f, 1.5f, 0.6f));
+            vb.Model("home_kitchen_fridge", x0 + 0.4f, 9.4f, 90f, scale: 0.8f);
             vb.Plant(-8.1f, 9.4f, "houseplant_bush", 0.9f);
             vb.Plant(-8.1f, 2.4f, "houseplant_bush", 0.7f);
             vb.PointLight(new Vector3(-9.7f, 2.6f, 5.6f), "glowamber", 1.2f, 7f);
@@ -632,10 +610,10 @@ namespace CTLife.EditorTools.VenueBuild
             float x0 = inn.xMin;
             vb.FloorSign("ss_rug_green", -10.0f, -1.4f, 4.6f, 90f, 3.4f, 0f, lit: true);
             // Teal sofa against the west wall (greenroom_1/2) with a purple and an orange pillow.
-            vb.Model("lounge_sofa", x0 + 0.8f, -1.4f, 90f, recolor: "petrol");
+            vb.Model("studio_sofa_teal", x0 + 0.7f, -1.4f, 90f);
             vb.Obstacle(new Vector3(x0 + 0.25f, 0.45f, -1.4f), new Vector3(0.4f, 0.9f, 2.2f));
-            vb.Box(new Vector3(x0 + 0.5f, 0.68f, -2.25f), new Vector3(0.14f, 0.4f, 0.44f), "velvetpurple", 14f);
-            vb.Blob(new Vector3(x0 + 0.52f, 0.66f, -0.5f), new Vector3(0.14f, 0.38f, 0.38f), "ctorange");
+            vb.ModelAt("throw_pillow", new Vector3(x0 + 0.42f, 0.42f, -2.3f), 76f, 0.9f, recolor: "velvetpurple");
+            vb.ModelAt("throw_pillow", new Vector3(x0 + 0.42f, 0.42f, -0.5f), 104f, 0.9f, recolor: "ctorange");
             foreach (var s in vb.SpotsWhere(s => s.id.StartsWith("greenroom_")))
             {
                 vb.SeatCollider(s, new Vector3(0, 0.55f, -0.25f), new Vector3(0.8f, 0.5f, 0.7f));
@@ -643,20 +621,19 @@ namespace CTLife.EditorTools.VenueBuild
             }
             // Low round table with a record player and headphones.
             var t = new Vector3(-10.0f, 0f, -1.4f);
-            vb.Cylinder(t, 0.36f, 0.38f, "walnut", 18);
-            vb.Cylinder(t + Vector3.up * 0.38f, 0.42f, 0.04f, "oak", 20);
-            vb.RegisterProp("lounge_table", t + Vector3.up * 0.2f, new Vector3(0.84f, 0.42f, 0.84f));
-            vb.Box(t + new Vector3(0.02f, 0.47f, 0.05f), new Vector3(0.42f, 0.1f, 0.34f), "charcoal");
-            vb.Cylinder(t + new Vector3(0.0f, 0.52f, 0.05f), 0.14f, 0.008f, "black", 18);
-            vb.Cylinder(t + new Vector3(0.0f, 0.528f, 0.05f), 0.04f, 0.004f, "ctorange", 10);
-            vb.Blob(t + new Vector3(-0.22f, 0.47f, -0.22f), new Vector3(0.22f, 0.08f, 0.2f), "black");
+            vb.ModelAt("table_oval", t, 90f, 0.85f);
+            vb.Box(t + new Vector3(0.02f, 0.38f, 0.05f), new Vector3(0.42f, 0.1f, 0.34f), "charcoal");
+            vb.Cylinder(t + new Vector3(0.0f, 0.43f, 0.05f), 0.14f, 0.008f, "black", 18);
+            vb.Cylinder(t + new Vector3(0.0f, 0.438f, 0.05f), 0.04f, 0.004f, "ctorange", 10);
+            vb.ModelAt("studio_headphones", t + new Vector3(-0.24f, 0.333f, -0.2f), 30f, 1.1f);
             // Headphone shelf by the partition, a floor lamp, plants.
             var sh = new Vector3(-8.1f, 0f, -3.2f);
             vb.Box(sh + new Vector3(0, 0.55f, 0), new Vector3(0.55f, 1.1f, 0.36f), "oak");
             vb.Box(sh + new Vector3(0, 0.55f, -0.17f), new Vector3(0.47f, 1.0f, 0.02f), "walnut");
             for (int i = 0; i < 3; i++)
                 for (int j = 0; j < 2; j++)
-                    vb.Blob(sh + new Vector3(-0.12f + j * 0.24f, 0.24f + i * 0.33f, -0.16f), new Vector3(0.18f, 0.2f, 0.08f), i == 1 && j == 0 ? "ctteal" : "black");
+                    vb.ModelAt("studio_headphones", sh + new Vector3(-0.12f + j * 0.24f, 0.14f + i * 0.33f, -0.12f), 180f + j * 10f, 1f,
+                               recolor: i == 1 && j == 0 ? "ctteal" : null);
             vb.RegisterProp("headphone_shelf", sh + Vector3.up * 0.55f, new Vector3(0.55f, 1.1f, 0.36f));
             vb.Model("floor_lamp", x0 + 0.45f, -3.25f, 90f);
             vb.PointLight(new Vector3(x0 + 0.6f, 1.55f, -3.1f), "glowamber", 1.1f, 5f);
@@ -743,7 +720,7 @@ namespace CTLife.EditorTools.VenueBuild
                         {
                             float x = cx - len * .5f + (i + 0.5f) * len / n;
                             int pick = (i + (outside ? 2 : 0)) % 4;
-                            string id = pick == 1 ? "home_houseplant_1" : pick == 3 ? "home_houseplant_5" : "houseplant_bush";
+                            string id = pick == 1 ? "home_houseplant_1" : pick == 3 ? "houseplant_fern_lite" : "houseplant_bush_lite";
                             vb.Model(id, x, z + (i % 2 == 0 ? 0.05f : -0.05f), 37f * i, y: h, scale: outside ? 0.72f : 0.62f);
                         }
                     }

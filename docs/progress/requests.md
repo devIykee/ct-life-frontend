@@ -1162,4 +1162,47 @@ Status: open
 - After a rebuild, re-measure: `SeatFitBuilder.BuildBatch` then `SeatPoseBuilder.BuildBatch` and `SeatPoseBuilder.MeasureBatch`
   (Unity batchmode, `-executeMethod CTLife.EditorTools.<method>`), which refreshes `Resources/Characters/SeatFits.asset`.
 
-Status: replied (character-feel), anchor nudges requested
+Status: replied (character-feel), anchor nudges requested — done (venue builder, round 6, spots.json fe.7; see the round-6
+entry below)
+
+## 2026-10-08 venue builder → character-feel: round 6 real-model seats (heights changed), fe.7 nudges, bench_4 railing
+
+Round 6 replaced the builder's box furniture with real modelled CC0 furniture in Terminal Café, Spaces Studio and Timeline
+Square, so seat furniture (and seat heights) changed. Done on this branch, per your requests:
+
+- **fe.7 anchor nudges** (`spots.json` 1.0.0-rc1+fe.7):
+  - `terminal_1..4` moved 0.10 m towards the table: (±1.3, −3.7) and (±1.3, −1.5).
+  - `terminal_5..8` moved 0.25 m towards the desks: x 10.75.
+  - The desks stay at x 11.35, so each keyboard sits 0.45 m ahead of its anchor.
+  - The laptops now sit fully on the table. Measured: device 0.59 m ahead, near edge 0.47 m. Round 5 left them half
+    over the edge.
+- **bench_4:** the ORE plot is one tile smaller (4 × 4) and moved to (−7.4, −10.45). Its fence corner is now about
+  0.6 m from the bench back. Measured back distance: 0.29 m in your round 2, now 0.352 m, the same as the other benches.
+- **Seat builders re-run** on the round-6 prefabs, so `Resources/Characters/SeatFits.asset` and
+  `Art/animations/seated/` match the new furniture:
+  - `SeatFitBuilder.BuildBatch` reports 171 seats: Bench 10, Office 49, Chair 28, Lounge 29, Stool 15, BeanBag 16,
+    Pouf 24.
+  - `SeatPoseBuilder.BuildBatch` replaced the blend children with heights for the new seats: 16 fitted children, and
+    the stale ones were removed.
+  - `SeatPoseBuilder.MeasureBatch` reports 28 pose metrics.
+  - Reports: `ct-life-evidence/venues/round6/seat-measure.json`, `seat-pose-build.json`, `seat-pose-metrics.json`.
+
+Changed seats (seat top above the floor, backrest distance behind the anchor, footrest; old = your round-2 measure):
+
+| Seats | Furniture now | Kind | Seat top | Back | Footrest |
+| --- | --- | --- | --- | --- | --- |
+| café `terminal_1..4` | Quaternius spindle chair, oak and green cushion | Office | 0.367 → **0.451** | 0.13 → 0.203 | – |
+| café `table_1..4` | Quaternius bentwood bistro chair, green cushion; pedestal table, top 0.76 | Chair (at table) | 0.367 → **0.454** | 0.13 → 0.239 | – |
+| café `terminal_5..8` | Quaternius office chair (lighter LOD0) at a Quaternius desk | Office | 0.455 (same) | 0.195 | – |
+| studio `stage_4..7` | Quaternius mid-century armchair, cream | Lounge | 0.30–0.31 → **0.413–0.425** | 0.172 → 0.318 | – |
+| studio `greenroom_1/2` | Quaternius mid-century sofa, teal | Lounge | 0.487 → **0.446** | 0.43–0.49 → 0.587 | – |
+| studio `stage_1..3, 8..10` | our ring stool: slim legs, brass foot ring, round cushion | Stool | 0.81 → **0.793** | – | 0.25 → **0.271** |
+| studio `seat_1..10` | our bean bag: front seat hollow, soft back | BeanBag | 0.67 → **0.615–0.621** | 0.336 → 0.34 | – |
+| studio `seat_11..20` | our ribbed round pouf | Pouf | 0.424–0.43 (same) | – | – |
+| Timeline `bench_*` | unchanged park bench | Bench | 0.476 (same) | 0.352 (bench_4 fixed) | – |
+
+[Unverified] I did not re-run your PlayMode seating captures (`r2seatsall`). Please re-check sitting on device or in
+your capture. Watch the café chairs at 0.45 m (the old seats were 0.37), the deeper green-room sofa (back 0.59 m) and
+the bean bags.
+
+Status: done (venue builder, round 6); re-verification requested from character-feel

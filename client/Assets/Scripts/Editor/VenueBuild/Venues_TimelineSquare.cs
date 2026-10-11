@@ -58,6 +58,7 @@ namespace CTLife.EditorTools.VenueBuild
 
         public static void TimelineSquare(VB vb)
         {
+            vb.FoliageAtlas = true;
             vb.GroundAt = Ground;
             Cobbles(vb);
             Paving(vb);
@@ -136,57 +137,44 @@ namespace CTLife.EditorTools.VenueBuild
                 float a = i * 15f * Mathf.Deg2Rad;
                 vb.Box(F + new Vector3(Mathf.Sin(a) * 3.55f, DeckH + 0.003f, Mathf.Cos(a) * 3.55f), new Vector3(0.03f, 0.004f, 1.5f), "stoneshade", i * 15f);
             }
-            // Basin: a stone ring wall (seat height), a moulded lip, water; navigation blocked by a round solid.
-            vb.Arc(F, BasinR - 0.34f, BasinR, 0f, 360f, DeckH, DeckH + 0.52f, "limestone", 64);
-            vb.Arc(F, BasinR - 0.4f, BasinR + 0.06f, 0f, 360f, DeckH + 0.52f, DeckH + 0.6f, "stuccocream", 64);
-            vb.Arc(F, BasinR - 0.02f, BasinR + 0.04f, 0f, 360f, DeckH, DeckH + 0.12f, "stoneshade", 64);
-            vb.Cylinder(F + Vector3.up * DeckH, BasinR - 0.34f, 0.4f, "water2", 48);
-            vb.BlockPrism("FountainBasin", F + Vector3.up * DeckH, BasinR + 0.08f, 0.62f, 32);
-            // Tiers: pedestal, flared lower bowl, column, upper bowl, finial.
-            float y0 = DeckH + 0.4f;
-            vb.Cylinder(F + Vector3.up * y0, 0.55f, 0.22f, "limestone", 18, topRadius: 0.32f);
-            vb.Cylinder(F + Vector3.up * (y0 + 0.22f), 0.26f, 0.85f, "stuccocream", 14);
-            vb.Cylinder(F + Vector3.up * (y0 + 1.07f), 0.3f, 0.36f, "limestone", 28, topRadius: 1.3f, caps: false);
-            vb.Arc(F, 1.2f, 1.36f, 0f, 360f, y0 + 1.38f, y0 + 1.48f, "stuccocream", 48);
-            vb.Cylinder(F + Vector3.up * (y0 + 1.3f), 1.2f, 0.12f, "water2", 32);
-            vb.Cylinder(F + Vector3.up * (y0 + 1.42f), 0.18f, 0.6f, "limestone", 12);
-            vb.Cylinder(F + Vector3.up * (y0 + 2.0f), 0.2f, 0.24f, "limestone", 20, topRadius: 0.68f, caps: false);
-            vb.Arc(F, 0.6f, 0.72f, 0f, 360f, y0 + 2.22f, y0 + 2.3f, "stuccocream", 32);
-            vb.Cylinder(F + Vector3.up * (y0 + 2.15f), 0.62f, 0.08f, "water2", 24);
-            vb.Cylinder(F + Vector3.up * (y0 + 2.23f), 0.1f, 0.22f, "limestone", 10);
-            vb.Sphere(F + Vector3.up * (y0 + 2.55f), 0.14f, "stuccocream", rings: 6, segments: 10);
-            // Water: a spout, streams from both bowls, splash rings on the basin.
-            vb.Pipe(F + Vector3.up * (y0 + 2.62f), F + Vector3.up * (y0 + 3.05f), 0.04f, "waterlight", 6);
+            // Modelled three-tier fountain (lathe-profiled basin ring with a moulded lip, pedestal, column rings, scalloped
+            // lower bowl, upper bowl, pine-cone finial; KEEP_water surfaces). Navigation is blocked by a round solid.
+            vb.ModelAt("fountain_tiered", F + Vector3.up * DeckH, 0f);
+            vb.BlockPrism("FountainBasin", F + Vector3.up * DeckH, 2.96f, 0.62f, 32);
+            // Water in motion (model dims, local to the deck: basin water 0.38, lower rim r 1.44 at 1.75 with its water at
+            // 1.70, upper rim r 0.79 at 2.5, finial top 2.92): a spout, streams off both rims, splash rings.
+            float d = DeckH;
+            vb.Pipe(F + Vector3.up * (d + 2.9f), F + Vector3.up * (d + 3.25f), 0.04f, "waterlight", 6);
             for (int i = 0; i < 6; i++)
             {
                 float a = i * 60f * Mathf.Deg2Rad;
                 var dir = new Vector3(Mathf.Sin(a), 0, Mathf.Cos(a));
-                vb.Sphere(F + Vector3.up * (y0 + 3.0f) + dir * 0.12f, 0.05f, "waterlight", rings: 3, segments: 5);
+                vb.Sphere(F + Vector3.up * (d + 3.2f) + dir * 0.12f, 0.05f, "waterlight", rings: 3, segments: 5);
             }
             for (int i = 0; i < 12; i++)
             {
                 float a = (i + 0.5f) * 30f * Mathf.Deg2Rad;
                 var dir = new Vector3(Mathf.Sin(a), 0, Mathf.Cos(a));
-                var p0 = F + dir * 1.32f + Vector3.up * (y0 + 1.47f);
-                var p1 = F + dir * 1.5f + Vector3.up * (y0 + 1.3f);
-                var p2 = F + dir * 1.62f + Vector3.up * (y0 + 0.7f);
-                var p3 = F + dir * 1.68f + Vector3.up * (y0 + 0.02f);
+                var p0 = F + dir * 1.47f + Vector3.up * (d + 1.73f);
+                var p1 = F + dir * 1.62f + Vector3.up * (d + 1.55f);
+                var p2 = F + dir * 1.74f + Vector3.up * (d + 0.95f);
+                var p3 = F + dir * 1.8f + Vector3.up * (d + 0.4f);
                 vb.Pipe(p0, p1, 0.05f, "waterlight", 6);
                 vb.Pipe(p1, p2, 0.05f, "waterlight", 6);
                 vb.Pipe(p2, p3, 0.045f, "waterlight", 6);
                 vb.Sphere(p3 + Vector3.up * 0.02f, 0.09f, "petalwhite", rings: 3, segments: 6);
                 if (i % 2 == 0)
                 {
-                    var q0 = F + dir * 0.68f + Vector3.up * (y0 + 2.3f);
-                    var q1 = F + dir * 0.8f + Vector3.up * (y0 + 2.15f);
-                    var q2 = F + dir * 0.88f + Vector3.up * (y0 + 1.5f);
+                    var q0 = F + dir * 0.81f + Vector3.up * (d + 2.48f);
+                    var q1 = F + dir * 0.9f + Vector3.up * (d + 2.3f);
+                    var q2 = F + dir * 0.98f + Vector3.up * (d + 1.71f);
                     vb.Pipe(q0, q1, 0.035f, "waterlight", 5);
                     vb.Pipe(q1, q2, 0.035f, "waterlight", 5);
                 }
             }
-            vb.RingDecal(F + Vector3.up * (DeckH + 0.4f), 1.68f, 0.07f, "waterlight", 40);
-            vb.RingDecal(F + Vector3.up * (DeckH + 0.4f), 2.05f, 0.03f, "waterlight", 40);
-            vb.RingDecal(F + Vector3.up * (y0 + 1.42f), 0.86f, 0.04f, "waterlight", 24);
+            vb.RingDecal(F + Vector3.up * (d + 0.4f), 1.8f, 0.07f, "waterlight", 40);
+            vb.RingDecal(F + Vector3.up * (d + 0.4f), 2.15f, 0.03f, "waterlight", 40);
+            vb.RingDecal(F + Vector3.up * (d + 1.71f), 0.98f, 0.04f, "waterlight", 24);
             // Flower planters on the deck between the bench lines (stone troughs with flowers and leaves).
             for (int i = 0; i < 6; i++)
             {
@@ -200,27 +188,35 @@ namespace CTLife.EditorTools.VenueBuild
             }
         }
 
-        /// <summary>A bed of flowers: leafy mounds, flower clumps and petal dots in mixed colours.</summary>
+        /// <summary>A bed of flowers (real alpha-cut foliage, one atlas draw for the whole square): pots get two flower clumps,
+        /// planters and troughs alternate a flowering bush with clumps of tulips and wild flowers.</summary>
         private static void Flowers(VB vb, Vector3 top, float length, float depth, float yaw, int seed, bool tall = false)
         {
             var q = Quaternion.Euler(0, yaw, 0);
             seed = Mathf.Abs(seed) % 9973;
             var rnd = new System.Random(seed * 7919 + 17);
-            string[] petals = { "petalred", "petalpink", "petalwhite", "petalyellow", "wisteria", "ctorange" };
-            int n = Mathf.Max(2, Mathf.RoundToInt(length / 0.45f));
+            string[] clumps = { "tl_flower_1", "tl_tulips", "tl_flower_2", "tl_flower_4", "tl_tulips", "tl_flower_5" };
+            float cs = (tall ? 1.2f : 1.0f) * Mathf.Clamp(depth / 0.4f, 0.75f, 1.25f);
+            if (length <= 0.5f)
+            {
+                // A pot: two clumps of different flowers.
+                for (int c = 0; c < 2; c++)
+                    vb.ModelAt(clumps[(seed + c * 2) % clumps.Length], top + q * new Vector3((c - 0.5f) * length * 0.35f, -0.02f, (c - 0.5f) * 0.04f),
+                               (float)rnd.NextDouble() * 360f, cs * 0.95f);
+                return;
+            }
+            bool trough = length > 1.2f && depth < 0.8f;
+            float step = length > 3f ? 0.7f : 0.55f;
+            int n = Mathf.Max(2, Mathf.RoundToInt(length / step));
+            float bs = Mathf.Clamp(Mathf.Min(depth / (trough ? 0.3f : 0.6f), 1.3f), 0.6f, 1.3f) * (tall ? 1.1f : 0.95f);
             for (int k = 0; k < n; k++)
             {
                 float t = (k + 0.5f) / n - 0.5f;
-                var p = top + q * new Vector3(t * length, 0f, (float)(rnd.NextDouble() - 0.5) * depth * 0.4f);
-                vb.Blob(p + Vector3.up * 0.1f, new Vector3(0.5f, tall ? 0.42f : 0.3f, 0.42f), k % 2 == 0 ? "ivy" : "leaf", yaw: (float)rnd.NextDouble() * 180f, rings: 3, segments: 6);
-                string bloom = petals[(k + seed) % petals.Length];
-                // Round 5 lushness: denser blooms (10 per clump) with a few trailing over the rim.
-                for (int j = 0; j < 10; j++)
-                {
-                    var o = new Vector3((float)(rnd.NextDouble() - 0.5) * 0.5f, 0.14f + (float)rnd.NextDouble() * (tall ? 0.34f : 0.18f), (float)(rnd.NextDouble() - 0.5) * 0.36f);
-                    if (j == 9) o = new Vector3(o.x, -0.06f, (rnd.NextDouble() < 0.5 ? -1f : 1f) * depth * 0.55f);
-                    vb.Sphere(p + q * o, 0.07f, j % 3 == 2 ? petals[(k + j + seed) % petals.Length] : bloom, rings: 2, segments: 4);
-                }
+                var p = top + q * new Vector3(t * length, 0f, (float)(rnd.NextDouble() - 0.5) * depth * 0.2f);
+                if (trough ? k % 3 == 1 : n >= 3 && k == n / 2)
+                    vb.ModelAt(trough ? "tl_bush_flowers_long" : "tl_bush_flowers", p - Vector3.up * 0.03f, yaw + (trough ? 0f : (float)rnd.NextDouble() * 360f), bs);
+                else
+                    vb.ModelAt(clumps[(k + seed) % clumps.Length], p, (float)rnd.NextDouble() * 360f, cs);
             }
         }
 
@@ -239,9 +235,8 @@ namespace CTLife.EditorTools.VenueBuild
                 foreach (float side in new[] { -1f, 1f })
                 {
                     var pot = p + right * side * 1.25f - fwd * 0.15f;
-                    vb.Cylinder(pot, 0.24f, 0.42f, "terracotta", 14, topRadius: 0.3f);
-                    vb.RegisterProp("bench_pot", pot + Vector3.up * 0.21f, new Vector3(0.6f, 0.42f, 0.6f));
-                    Flowers(vb, pot + Vector3.up * 0.42f, 0.3f, 0.3f, VB.Deg(s), (int)(side + 3) + s.id.Length);
+                    vb.ModelAt("tl_pot_small", pot, VB.Deg(s) + side * 30f, 1.2f);
+                    Flowers(vb, pot + Vector3.up * 0.42f, 0.36f, 0.36f, VB.Deg(s), (int)(side + 3) + s.id.Length);
                 }
             }
         }
@@ -265,8 +260,8 @@ namespace CTLife.EditorTools.VenueBuild
             {
                 float a = (i * 60f + 30f) * Mathf.Deg2Rad;
                 var p = new Vector3(Mathf.Sin(a) * 4.0f, DeckH, Mathf.Cos(a) * 4.0f);
-                vb.Cylinder(p, 0.2f, 0.36f, "terracotta", 12, topRadius: 0.25f);
-                Flowers(vb, p + Vector3.up * 0.36f, 0.3f, 0.3f, i * 60f, 40 + i, tall: true);
+                vb.ModelAt("tl_pot_small", p, i * 60f, 1.0f);
+                Flowers(vb, p + Vector3.up * 0.35f, 0.32f, 0.32f, i * 60f, 40 + i, tall: true);
             }
         }
 
@@ -276,20 +271,11 @@ namespace CTLife.EditorTools.VenueBuild
                 Lamp(vb, p);
         }
 
-        /// <summary>Black cast-iron lantern post with a lit lantern (baked warm light).</summary>
+        /// <summary>Modelled cast-iron lantern post (warm glass) with a baked warm light.</summary>
         private static void Lamp(VB vb, Vector3 p)
         {
-            vb.Cylinder(p, 0.2f, 0.3f, "iron", 8, topRadius: 0.13f);
-            vb.Cylinder(p + Vector3.up * 0.3f, 0.07f, 2.8f, "iron", 8, topRadius: 0.055f);
-            vb.Cylinder(p + Vector3.up * 1.0f, 0.1f, 0.12f, "iron", 8);
-            vb.Cylinder(p + Vector3.up * 3.08f, 0.17f, 0.08f, "iron", 8);
-            vb.Box(p + Vector3.up * 3.38f, new Vector3(0.28f, 0.42f, 0.28f), "glowamber", glow: true);
-            foreach (var (dx, dz) in new[] { (-0.14f, -0.14f), (0.14f, -0.14f), (-0.14f, 0.14f), (0.14f, 0.14f) })
-                vb.Box(p + new Vector3(dx, 3.38f, dz), new Vector3(0.035f, 0.46f, 0.035f), "iron");
-            vb.Cylinder(p + Vector3.up * 3.6f, 0.24f, 0.18f, "iron", 8, topRadius: 0.03f);
-            vb.Sphere(p + Vector3.up * 3.82f, 0.05f, "iron", rings: 3, segments: 6);
-            vb.RegisterProp("lamp", p + Vector3.up * 1.6f, new Vector3(0.4f, 3.2f, 0.4f));
-            vb.PointLight(p + Vector3.up * 3.3f, "glowamber", 0.7f, 6f);
+            vb.ModelAt("tl_lamp_post", p, 0f);
+            vb.PointLight(p + Vector3.up * 3.35f, "glowamber", 0.7f, 6f);
             // Two hanging flower baskets on short arms (round 5).
             foreach (float sx in new[] { -1f, 1f })
             {
@@ -691,10 +677,9 @@ namespace CTLife.EditorTools.VenueBuild
         /// <summary>Terracotta pot with flowers (a floor prop).</summary>
         private static void Pot(VB vb, Vector3 p, float r, int seed)
         {
-            vb.Cylinder(p, r * 0.85f, r * 1.6f, "terracotta", 12, topRadius: r);
-            vb.Arc(p, r * 0.92f, r * 1.08f, 0f, 360f, r * 1.5f, r * 1.7f, "terracotta", 14);
-            vb.RegisterProp("pot", p + Vector3.up * r * 0.8f, new Vector3(r * 2.1f, r * 1.6f, r * 2.1f));
-            Flowers(vb, p + Vector3.up * r * 1.6f, r * 1.4f, r * 1.4f, seed * 37f, seed, tall: true);
+            float k = r / 0.22f;                       // modelled terracotta flowerpot, 0.44 m wide x 0.365 m at scale 1
+            vb.ModelAt("tl_pot_small", p, seed * 37f, k);
+            Flowers(vb, p + Vector3.up * 0.35f * k, r * 1.4f, r * 1.4f, seed * 37f, seed, tall: true);
         }
 
         // ------------------------------------------------------------------ south edge (camera side)
@@ -743,7 +728,7 @@ namespace CTLife.EditorTools.VenueBuild
             Lamp(vb, ghostLamp);
             using (vb.Scaled(ghostLamp, 1.6f)) VenueEggs.PhantomGhost(vb, ghostLamp);
             PopcatWindow(vb, BakeryFr, 0.9f, 1.7f);
-            OrePlot(vb, new Vector3(-7.0f, 0f, -10.2f));
+            OrePlot(vb, new Vector3(-7.4f, 0f, -10.45f));
             BonkStall(vb, new Vector3(9.2f, 0f, -8.4f), 155f);
             var igloo = new Vector3(6.4f, 0f, -5.4f);
             using (vb.Scaled(igloo, 1.35f)) IglooCart(vb, igloo, 220f);
@@ -764,21 +749,20 @@ namespace CTLife.EditorTools.VenueBuild
             for (int t = 0; t < tables.Length; t++)
             {
                 var p = tables[t];
-                vb.ModelAt("cafe_table_round", p, 0f, 1f, recolor: "walnut");
+                vb.ModelAt("tl_table_bistro", p, t * 25f);
                 for (int c = 0; c < 3; c++)
                 {
                     float a = (c * 120f + t * 40f) * Mathf.Deg2Rad;
-                    var cp = p + new Vector3(Mathf.Sin(a), 0, Mathf.Cos(a)) * 0.82f;
-                    vb.ModelAt(c % 2 == 0 ? "cafe_chair_a" : "cafe_chair_b", cp, c * 120f + t * 40f + 180f, 1f, recolor: "awningblue");
+                    var cp = p + new Vector3(Mathf.Sin(a), 0, Mathf.Cos(a)) * 0.72f;
+                    vb.ModelAt("tl_chair_bistro", cp, c * 120f + t * 40f + 180f);
                 }
-                vb.Cylinder(p + new Vector3(0.18f, 0.76f, 0.1f), 0.1f, 0.012f, "petalwhite", 12);
-                vb.Cylinder(p + new Vector3(0.18f, 0.772f, 0.1f), 0.045f, 0.08f, "petalwhite", 10);
-                if (t != 1) vb.Blob(p + new Vector3(-0.2f, 0.8f, -0.12f), new Vector3(0.16f, 0.07f, 0.09f), "pizza", yaw: 30f);
-                vb.ModelAt("plant_small", p + new Vector3(-0.15f, 0.76f, 0.22f), 0f, 1.2f);
+                vb.ModelAt("mug_lite", p + new Vector3(0.16f, 0.74f, 0.1f), 30f, 1.3f);
+                if (t != 1) vb.ModelAt("croissant", p + new Vector3(-0.18f, 0.74f, -0.1f), 30f, 1.5f);
+                vb.ModelAt("plant_small", p + new Vector3(-0.12f, 0.74f, 0.18f), 0f, 1.2f);
             }
             // Seeker-style phone (back up, three lens dots, a small engraved shield) beside a coffee on the table nearest the
             // plaza, 1.6x so it reads from the gameplay camera.
-            var tp = tables[1] + new Vector3(-0.12f, 0.765f, -0.2f);
+            var tp = tables[1] + new Vector3(-0.12f, 0.745f, -0.2f);
             VenueEggs.SeekerPhone(vb, tp, 20f, 1.6f);
             // Big white umbrellas over the two tables by the café wall.
             vb.ModelAt("parasol", tables[0], 0f, 1.15f, recolor: "petalwhite");
@@ -796,20 +780,21 @@ namespace CTLife.EditorTools.VenueBuild
 
         private static void OrePlot(VB vb, Vector3 c)
         {
-            // 5x5 patch of copper-sheen tiles, a pickaxe leaning on the fence, a wheelbarrow of glowing ore; iron fence.
+            // 4x4 patch of copper-sheen tiles, a pickaxe leaning on the fence, a wheelbarrow of glowing ore; iron fence. Round 6:
+            // one tile smaller and 0.4 m further from bench_4, whose back the old fence corner ran through.
             const float t = 0.78f;
             string[] tones = { "copper", "rosegold", "copper", "pumpkin", "copper" };
-            for (int i = 0; i < 5; i++)
-                for (int j = 0; j < 5; j++)
+            for (int i = 0; i < 4; i++)
+                for (int j = 0; j < 4; j++)
                 {
-                    var tc = c + new Vector3((i - 2) * t, 0f, (j - 2) * t);
+                    var tc = c + new Vector3((i - 1.5f) * t, 0f, (j - 1.5f) * t);
                     vb.Box(tc + Vector3.up * 0.04f, new Vector3(t - 0.05f, 0.08f, t - 0.05f), "rust");
                     vb.Box(tc + Vector3.up * 0.085f, new Vector3(t - 0.16f, 0.012f, t - 0.16f), tones[(i * 3 + j * 7) % tones.Length]);
                     vb.Box(tc + new Vector3(-0.1f, 0.093f, -0.1f), new Vector3(t - 0.42f, 0.006f, 0.05f), "gold", 0f);
                     if ((i + j * 2) % 7 == 3) vb.Box(tc + Vector3.up * 0.095f, new Vector3(0.12f, 0.004f, 0.12f), "oreglow", 45f, glow: true);
                 }
-            vb.Box(c + new Vector3(0, 0.01f, 0), new Vector3(t * 5 + 0.2f, 0.02f, t * 5 + 0.2f), "soil");
-            float half = t * 2.5f + 0.4f;
+            vb.Box(c + new Vector3(0, 0.01f, 0), new Vector3(t * 4 + 0.2f, 0.02f, t * 4 + 0.2f), "soil");
+            float half = t * 2f + 0.4f;
             foreach (var (a, b) in new[] { (new Vector3(-half, 0, half), new Vector3(half, 0, half)), (new Vector3(half, 0, half), new Vector3(half, 0, -half)),
                                            (new Vector3(-half, 0, -half), new Vector3(half - 1.2f, 0, -half)) })
             {
@@ -847,35 +832,14 @@ namespace CTLife.EditorTools.VenueBuild
             // balloon tied to the post, fruit and veg crates, sunflowers. No disc badge, no letters.
             var q = Quaternion.Euler(0, yaw, 0);
             Vector3 L(float x, float y, float z) => p + q * new Vector3(x, y, z);
-            vb.Box(L(0, 0.45f, 0), new Vector3(1.0f, 0.9f, 3.0f), "walnut", yaw);
-            vb.Box(L(0, 0.92f, 0), new Vector3(1.15f, 0.06f, 3.15f), "oak", yaw);
-            foreach (var (x, z) in new[] { (-0.55f, -1.55f), (-0.55f, 1.55f), (0.55f, -1.55f), (0.55f, 1.55f) })
-                vb.Box(L(x, 1.3f, z), new Vector3(0.07f, 2.6f, 0.07f), "walnut", yaw);
-            vb.RegisterProp("market_stall", L(0, 0.5f, 0), new Vector3(1.2f, 1.0f, 3.2f), yaw);
-            int n = 8;
-            for (int i = 0; i < n; i++)
-            {
-                float z = -1.7f + (i + 0.5f) * 3.4f / n;
-                vb.BoxRot(L(0, 2.65f, z), new Vector3(1.6f, 0.04f, 3.4f / n + 0.002f), q * Quaternion.Euler(0, 0, -14f), i % 2 == 0 ? "bonkyellow" : "bonkorange");
-                vb.Box(L(0.82f, 2.36f, z), new Vector3(0.03f, 0.3f, 3.4f / n), i % 2 == 0 ? "bonkyellow" : "bonkorange", yaw);
-                vb.Sphere(L(0.82f, 2.2f, z), 3.4f / n * 0.5f, i % 2 == 0 ? "bonkyellow" : "bonkorange", rings: 3, segments: 6);
-            }
-            // Crates of oranges, apples, greens and lemons on the counter and the ground.
-            string[] fruit = { "ctorange", "petalred", "grass", "petalyellow", "ctorange" };
-            for (int c = 0; c < 5; c++)
-            {
-                var cp = L(0.05f, 0.95f, -1.2f + c * 0.6f);
-                vb.Box(cp + Vector3.up * 0.1f, new Vector3(0.5f, 0.2f, 0.5f), "plywood", yaw + c * 4f);
-                for (int k = 0; k < 6; k++)
-                    vb.Sphere(cp + new Vector3(-0.13f + (k % 3) * 0.13f, 0.22f, -0.1f + (k / 3) * 0.2f), 0.07f, fruit[c], rings: 4, segments: 7);
-            }
+            // Modelled market stall (Kenney Fantasy Town Kit, CC0) with its canopy recoloured to the dog's orange.
+            vb.ModelAt("tl_stall", L(0f, 0f, 0f), yaw + 90f, 1.1f);
+            foreach (var (z, id) in new[] { (-0.5f, "tl_crate_lettuce"), (0.0f, "tl_crate_potatoes"), (0.5f, "tl_crate_tomatoes") })
+                vb.ModelAt(id, L(0.35f, 0.99f, z), yaw + 4f, 0.62f);
             foreach (var (x, z) in new[] { (0.95f, -1.0f), (0.95f, 0.6f) })
             {
                 var cp = L(x, 0f, z);
-                vb.Box(cp + Vector3.up * 0.18f, new Vector3(0.55f, 0.36f, 0.55f), "plywood");
-                for (int k = 0; k < 9; k++)
-                    vb.Sphere(cp + new Vector3(-0.15f + (k % 3) * 0.15f, 0.4f, -0.15f + (k / 3) * 0.15f), 0.075f, k % 2 == 0 ? "ctorange" : "petalred", rings: 4, segments: 7);
-                vb.RegisterProp("crate", cp + Vector3.up * 0.2f, new Vector3(0.6f, 0.4f, 0.6f));
+                vb.ModelAt(x < 0.95f || z < 0f ? "tl_crate_carrots" : "tl_crate_tomatoes", cp, yaw + 8f, 0.95f);
             }
             // Sunflowers in a bucket.
             var bucket = L(0.9f, 0f, 1.5f);
@@ -1134,17 +1098,10 @@ namespace CTLife.EditorTools.VenueBuild
                 vb.Sphere(new Vector3(x, 0.86f, z), 0.12f, "petalred", rings: 3, segments: 6);
                 vb.RegisterProp("barrel", new Vector3(x, 0.4f, z), new Vector3(0.62f, 0.8f, 0.62f));
             }
-            string[] fruit = { "ctorange", "petalred", "grass", "petalyellow", "ctorange", "petalred" };
+            string[] crates = { "tl_crate_tomatoes", "tl_crate_lettuce", "tl_crate_onions", "tl_crate_potatoes", "tl_crate_carrots", "tl_crate_onions" };
             int f = 0;
-            foreach (var (x, z, h) in new[] { (10.9f, -5.3f, 0f), (10.9f, -5.3f, 0.42f), (10.9f, -5.95f, 0f), (10.25f, -5.6f, 0f), (10.9f, -10.6f, 0f), (10.9f, -10.6f, 0.42f) })
-            {
-                vb.Box(new Vector3(x, h + 0.2f, z), new Vector3(0.62f, 0.4f, 0.5f), "plywood", 8f);
-                for (int k = 0; k < 6; k++)
-                    vb.Sphere(new Vector3(x - 0.18f + (k % 3) * 0.18f, h + 0.44f, z - 0.1f + (k / 3) * 0.2f), 0.085f, fruit[f % fruit.Length], rings: 3, segments: 6);
-                f++;
-            }
-            vb.RegisterProp("crates", new Vector3(10.6f, 0.42f, -5.6f), new Vector3(1.3f, 0.84f, 1.3f));
-            vb.RegisterProp("crates", new Vector3(10.9f, 0.42f, -10.6f), new Vector3(0.7f, 0.84f, 0.6f));
+            foreach (var (x, z, h) in new[] { (10.9f, -5.3f, 0f), (10.9f, -5.3f, 0.29f), (10.9f, -5.95f, 0f), (10.25f, -5.6f, 0f), (10.9f, -10.6f, 0f), (10.9f, -10.6f, 0.29f) })
+                vb.ModelAt(crates[f++ % crates.Length], new Vector3(x, h, z), 8f + f * 13f, 1f);
             Bicycle(vb, new Vector3(10.9f, 0, 8.4f), 0f);
             Pot(vb, new Vector3(10.9f, 0f, 3.9f), 0.3f, 31);
             Pot(vb, new Vector3(-10.9f, 0f, 9.2f), 0.3f, 32);
@@ -1165,14 +1122,7 @@ namespace CTLife.EditorTools.VenueBuild
                 vb.Pipe(hook, bowl + new Vector3(Mathf.Cos(a) * 0.2f, 0.12f, Mathf.Sin(a) * 0.2f), 0.006f, "iron", 3);
             }
             vb.Cylinder(bowl - Vector3.up * 0.12f, 0.1f, 0.24f, "walnut", 10, topRadius: 0.24f);
-            vb.Blob(bowl + Vector3.up * 0.12f, new Vector3(0.52f, 0.26f, 0.52f), "ivy", rings: 3, segments: 7);
-            string[] petals = { "petalpink", "petalred", "petalwhite", "wisteria", "petalyellow", "ctorange" };
-            string bloom = petals[Mathf.Abs(seed) % petals.Length];
-            for (int j = 0; j < 9; j++)
-            {
-                float a = (float)rnd.NextDouble() * Mathf.PI * 2f, r = 0.12f + (float)rnd.NextDouble() * 0.14f;
-                vb.Sphere(bowl + new Vector3(Mathf.Cos(a) * r, 0.16f + (float)rnd.NextDouble() * 0.12f, Mathf.Sin(a) * r), 0.06f, j % 3 == 2 ? petals[(j + seed & 0xff) % petals.Length] : bloom, rings: 2, segments: 4);
-            }
+            vb.ModelAt("tl_bush_flowers", bowl + Vector3.up * 0.06f, (float)rnd.NextDouble() * 360f, 0.85f);
             for (int t = 0; t < 4; t++)
             {
                 float a = t * Mathf.PI * 0.5f + 0.4f;
@@ -1226,18 +1176,13 @@ namespace CTLife.EditorTools.VenueBuild
             vb.Box(t + Vector3.up * 0.42f, new Vector3(1.6f, 0.06f, 0.7f), "oak", -20f);
             foreach (var (dx, dz) in new[] { (-0.7f, -0.28f), (0.7f, -0.28f), (-0.7f, 0.28f), (0.7f, 0.28f) })
                 vb.Box(t + Quaternion.Euler(0, -20f, 0) * new Vector3(dx, 0.21f, dz), new Vector3(0.05f, 0.42f, 0.05f), "walnut", -20f);
-            string[] produce = { "ctorange", "petalred", "grass", "petalyellow" };
+            string[] produce = { "tl_crate_tomatoes", "tl_crate_lettuce", "tl_crate_carrots", "tl_crate_potatoes" };
             for (int i = 0; i < 4; i++)
-            {
-                var bp = t + Quaternion.Euler(0, -20f, 0) * new Vector3(-0.55f + i * 0.37f, 0.45f, 0f);
-                vb.Cylinder(bp, 0.15f, 0.12f, "plywood", 10, topRadius: 0.17f);
-                for (int k = 0; k < 5; k++) vb.Sphere(bp + new Vector3(-0.07f + (k % 3) * 0.07f, 0.15f, -0.04f + (k / 3) * 0.08f), 0.055f, produce[i], rings: 2, segments: 5);
-            }
+                vb.ModelAt(produce[i], t + Quaternion.Euler(0, -20f, 0) * new Vector3(-0.57f + i * 0.38f, 0.45f, 0f), -20f + i * 4f, 0.58f);
             vb.RegisterProp("produce_table", t + Vector3.up * 0.25f, new Vector3(1.7f, 0.5f, 0.8f), -20f);
             foreach (var (dx, dz) in new[] { (1.1f, 0.5f), (1.3f, -0.2f) })
             {
-                vb.Blob(t + new Vector3(dx, 0.28f, dz), new Vector3(0.45f, 0.56f, 0.4f), "sand", yaw: dx * 40f, rings: 4, segments: 7);
-                vb.RegisterProp("sack", t + new Vector3(dx, 0.28f, dz), new Vector3(0.45f, 0.56f, 0.4f));
+                vb.ModelAt("tl_sack", t + new Vector3(dx, 0f, dz), dx * 40f, 0.95f);
             }
         }
 
@@ -1270,17 +1215,12 @@ namespace CTLife.EditorTools.VenueBuild
             vb.Cylinder(p, 0.75f, 0.55f, "limestone", 18);
             vb.Arc(p, 0.62f, 0.8f, 0f, 360f, 0.55f, 0.61f, "stuccocream", 24);
             vb.Cylinder(p + Vector3.up * 0.5f, 0.62f, 0.06f, "soil", 18);
-            vb.Pipe(p + Vector3.up * 0.55f, p + Vector3.up * 1.9f + new Vector3(0.1f, 0, 0.05f), 0.08f, "walnut", 7);
-            var crown = p + Vector3.up * 2.45f;
-            for (int i = 0; i < 6; i++)
+            vb.ModelAt("tl_tree_citrus", p + Vector3.up * 0.55f, (float)rnd.NextDouble() * 360f, 1.05f);
+            var crown = p + Vector3.up * 2.35f;
+            for (int i = 0; i < 12; i++)
             {
-                var o = new Vector3((float)(rnd.NextDouble() - 0.5) * 1.1f, (float)(rnd.NextDouble() - 0.4) * 0.7f, (float)(rnd.NextDouble() - 0.5) * 1.1f);
-                vb.Blob(crown + o, new Vector3(1.2f, 0.95f, 1.15f), i % 2 == 0 ? "ivy" : "leafdark", yaw: i * 40f, rings: 5, segments: 8);
-            }
-            for (int i = 0; i < 14; i++)
-            {
-                float a = (float)rnd.NextDouble() * Mathf.PI * 2f, y = (float)rnd.NextDouble() * 0.9f - 0.35f;
-                vb.Sphere(crown + new Vector3(Mathf.Cos(a) * 0.95f, y, Mathf.Sin(a) * 0.95f), 0.07f, "ctorange", rings: 3, segments: 6);
+                float a = (float)rnd.NextDouble() * Mathf.PI * 2f, y = (float)rnd.NextDouble() * 0.7f - 0.3f;
+                vb.Sphere(crown + new Vector3(Mathf.Cos(a) * 0.72f, y, Mathf.Sin(a) * 0.62f), 0.065f, "ctorange", rings: 3, segments: 6);
             }
             vb.BlockPrism("Planter_" + seed, p, 0.8f, 0.6f, 12);
             vb.RegisterProp("tree_planter", p + Vector3.up * 0.3f, new Vector3(1.5f, 0.6f, 1.5f));

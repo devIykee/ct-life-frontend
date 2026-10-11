@@ -1,5 +1,153 @@
-READY TO COMMIT (round 5) — one commit. Use `git add -A` on these paths (it also records the deletions: the unused `Venues_CafeDress.cs` and the café's old repack atlases/meshes). The `client/Assets/Art/` re-saves were Unity import churn and are already discarded. Worktree is fast-forwarded to dev 6aa8bb3.
-READY TO COMMIT (round 5: Terminal Café v2, Spaces truss, Timeline lushness): client/Assets/Scripts/Editor/VenueBuild/VenueEggs.cs client/Assets/Scripts/Editor/VenueBuild/VenueEggs.cs.meta client/Assets/Scripts/Editor/VenueBuild/Venues_Cafe.cs client/Assets/Scripts/Editor/VenueBuild/Venues_Cafe.cs.meta client/Assets/Scripts/Editor/VenueBuild/Venues_CafeDress.cs client/Assets/Scripts/Editor/VenueBuild/Venues_CafeDress.cs.meta client/Assets/Scripts/Editor/VenueBuild/Venues_Spaces.cs client/Assets/Scripts/Editor/VenueBuild/Venues_TimelineSquare.cs client/Assets/Scripts/Editor/VenueBuild/VenueCatalog.cs client/Assets/World/Venues/terminal_cafe client/Assets/World/Venues/spaces_studio client/Assets/World/Venues/timeline_square client/Assets/World/Venues/_Shared/Materials/M_stylized_nature_megakit__Leaves.mat client/Assets/World/Venues/_Shared/Materials/M_stylized_nature_megakit__Leaves.mat.meta tools/venues/make_venue_signs.py tools/venues/propose_spots.py docs/fe-contract-proposals/ids/spots.json docs/progress/venues.md docs/progress/requests.md art/LICENSES.md — feat(venues): Terminal Café v2 to the in-game concept (spots.json fe.6), Spaces Studio truss off the mic camera, Timeline Square lushness
+READY TO COMMIT (round 6) — one commit. Use `git add -A` on these paths so the deletions are recorded too (the seat-pose builder removed its stale blend children). The `client/Assets/Art/Candidates/` re-saves are Unity import churn and are discarded. The worktree is fast-forwarded to dev aa1685a (feel round 2).
+READY TO COMMIT (round 6: real modelled venue furniture): art/pipeline/env_config.py art/pipeline/env_process.py art/pipeline/env_custom_r6.py art/processed/environment/manifest.json art/processed/environment/_shared art/processed/environment/terminal_cafe art/processed/environment/spaces_studio art/processed/environment/timeline_square client/Assets/Art/environment/manifest.json client/Assets/Art/environment/manifest.json.meta client/Assets/Art/environment/_shared client/Assets/Art/environment/terminal_cafe client/Assets/Art/environment/spaces_studio client/Assets/Art/environment/timeline_square client/Assets/Scripts/Editor/VenueBuild/VenueKit.cs client/Assets/Scripts/Editor/VenueBuild/VenueVerify.cs client/Assets/Scripts/Editor/VenueBuild/VenueCloseups.cs client/Assets/Scripts/Editor/VenueBuild/VenueCloseups.cs.meta client/Assets/Scripts/Editor/VenueBuild/Venues_Cafe.cs client/Assets/Scripts/Editor/VenueBuild/Venues_Spaces.cs client/Assets/Scripts/Editor/VenueBuild/Venues_TimelineSquare.cs client/Assets/World/Venues/terminal_cafe client/Assets/World/Venues/spaces_studio client/Assets/World/Venues/timeline_square client/Assets/Resources/Characters/SeatFits.asset client/Assets/Resources/Characters/AvatarController.controller client/Assets/Resources/Characters/RainController.overrideController client/Assets/Art/animations/seated tools/venues/propose_spots.py docs/fe-contract-proposals/ids/spots.json docs/progress/venues.md docs/progress/requests.md art/LICENSES.md — feat(venues): real modelled CC0 furniture in Terminal Café, Spaces Studio and Timeline Square (palette colourways, LODs, foliage atlas), fe.7 café anchor nudges, bench_4 railing, seat fits re-run
+
+## 2026-10-08 round 6: real modelled props (Terminal Café, Spaces Studio, Timeline Square)
+
+Evidence (`ct-life-evidence/venues/round6/`):
+- Before/after sheets per venue: `*-before-after-concept.png` (round 5, then round 6, at the entrance and centre spots,
+  then the concept).
+- Furniture close-ups: `*-closeups-sheet.png`, plus single `*-close-*.png` shots from free cameras (`-ctCloseups`).
+- `r6-models-sheet.png`: every new processed model in its palette colourway, with triangles and size.
+- `candidates/*.png`: the ~280 CC0 candidates, processed and rendered before choosing (seating, tables, lamps, plants,
+  coffee, tech and soft goods, square, flowers).
+- Seat builder reports (`seat-measure.json`, `seat-pose-build.json`, `seat-pose-metrics.json`) and the physicality
+  audit (`venue-physicality-audit-after.json`).
+- Logs `venues/logs/120`–`139`.
+
+### Prop audit: what was primitive, what is a real model now
+
+**Terminal Café**
+
+| Prop | Round 5 | Round 6 |
+| --- | --- | --- |
+| Communal-table chairs (`terminal_1..4`, two end chairs), booth chairs | KayKit `chair_A` (blocky) | Quaternius spindle chair (UHI `Chair_3`): oak, green cushion |
+| Round-table chairs (`table_1..4`, four extra chairs) | KayKit `chair_B` | Quaternius bentwood bistro chair (Ultimate Furniture `Chair`): walnut, green cushion |
+| Bar stools ×4 | Kenney `stoolBar` + primitive cushion | Quaternius bentwood stool (`Stool`) with cushion |
+| Booths ×2 | primitives (boxes) | **ours** (`booth_bench`): walnut base and frame, two seat cushions, four channel-tufted back cushions |
+| Booth tables ×2 | primitives | Quaternius trestle table (`Table2`) |
+| Communal table | primitives (5.2 m slab) | Two Quaternius plank farmhouse tables (`Table`) pushed together |
+| Round tables ×2 | KayKit `table_round_A` | Quaternius pedestal table (UHI `Table_RoundSmall2`) |
+| Coffee table, side table | primitive cylinders | Quaternius round tables (UHI `Table_RoundSmall`, lighter LOD0) |
+| Sofa | KayKit `couch_pillows` | Quaternius mid-century sofa (UHI `Couch_Medium1`), green velvet, walnut legs |
+| Armchairs ×2 | KayKit `armchair_pillows` | Quaternius armchair (UHI `Couch_Small1`), green |
+| Cushions on the sofa, armchairs, booths, window seat | primitive boxes and blobs | **ours** (`throw_pillow`), recoloured per placement |
+| Pouf | primitive cylinders | **ours** (`pouf_round`): ribbed knit |
+| Espresso machine | primitives | **ours** (`espresso_machine`): enamel body, chrome top and rails, group heads, portafilters, steam wands, gauges, drip tray, cups |
+| Grinders ×2 | primitives | **ours** (`coffee_grinder`): bean hopper, lid, spout |
+| Pastry case | primitives + a printed sign | **ours** (`pastry_case`): open front with a chrome frame, holding Kenney croissants, doughnuts and a cake |
+| Cups, mugs, to-go cups | Kenney models + primitive stacks | Kenney models only (`mug_lite`, `cup_coffee`) |
+| Laptops ×4 | primitives + a sign | Kenney `laptop`, with a candle-chart sign on the leaning display |
+| Monitors ×8, keyboards ×4 | primitives + a sign | Kenney `computerScreen` with a chart sign, Kenney `computerKeyboard` |
+| Desks ×4, office chairs ×4 | Quaternius models | same models, lighter LOD0 |
+| Pendants ×9 | primitive cones | **ours** (`pendant_dome`): enamel dome, white inside, brass cap; plus the glowing bulb |
+| Desk lamp, floor lamp | primitives; KayKit `lamp_standing` | Quaternius banker's desk lamp (UHI `Light_Desk`); floor lamp kept |
+| Floor plants ×17 | Quaternius houseplants (black pots) + primitive pots | Quaternius houseplants recoloured with terracotta or cream pots (`cafe_plant_*`) |
+| Hanging pothos | primitive blobs | **ours** (`pothos_vine`): a stem with two-tone leaves |
+| Books | primitive boxes | Kenney `books` |
+
+Still primitive in the café, on purpose:
+- Room joinery: the bar counter and back counter, which now have a rounded nosing, foot-rail brackets and cabinet
+  doors; shelves, the window seat and window frames; the planter boxes.
+- Printed decor: signs, rugs and the neon.
+
+**Spaces Studio**
+
+| Prop | Round 5 | Round 6 |
+| --- | --- | --- |
+| Stage armchairs (`stage_4..7`) | KayKit `armchair_pillows`, tan | Quaternius armchair (UHI `Couch_Small1`), cream with walnut legs, plus our throw pillow |
+| Pod stools (`stage_1..3, 8..10`) | Kenney `stoolBar` + primitive cushion | **ours** (`bar_stool_ring`): slim legs, brass foot ring, rose / petrol / purple cushion |
+| Bean bags (`seat_1..10` + one decor) | primitive blobs | **ours** (`bean_bag`): seat hollow, soft back |
+| Riser poufs (`seat_11..20`) | primitive boxes | **ours** (`pouf_round`) |
+| Floor cushions | primitive boxes | **ours** (`floor_cushion`): tufted |
+| Stage coffee table, lounge and backstage tables | primitive cylinders and boxes | **ours** (`table_oval`): oval walnut |
+| Side tables, drinks | primitive cylinders | Quaternius round table (lighter LOD0), Kenney mugs |
+| Green-room sofa (`greenroom_1/2`), backstage couch | Kenney `loungeSofa`; KayKit `couch_pillows` | Quaternius mid-century sofas, teal and plum |
+| Terrace benches ×4 | primitives | **ours** (`bench_cushioned`): slatted base, seat cushion, three back cushions, in purple and teal |
+| Terrace lanterns ×8 | primitives | **ours** (`lantern_floor`): wooden frame, glowing core |
+| Headphones on the shelf, wall and lounge table | primitive blobs | **ours** (`headphones`) |
+| Fridge | primitive box | Quaternius fridge (UHI `Kitchen_Fridge`) |
+| Laptop on the host desk | Kenney `laptop` | same, café colourway |
+| Planter fill | Quaternius houseplants | lighter variants of the same plants |
+
+Still primitive in the studio, on purpose:
+- Studio build: the host desk, stage, risers, truss and fixtures.
+- Kit built from parts: mic stands with phone holders, the broadcast camera, coat rail, bar cart, credenza, the
+  headphone shelf body and the record player.
+
+**Timeline Square**
+
+| Prop | Round 5 | Round 6 |
+| --- | --- | --- |
+| Fountain | primitives (cylinders, arcs) | **ours** (`fountain_tiered`, lathe-profiled): moulded basin ring, pedestal, ringed column, scalloped lower bowl, upper bowl, pine-cone finial, water surfaces. The water streams stay builder geometry. |
+| Lamp posts ×4 | primitives | Quaternius cast-iron streetlight (Modular Streets `Streetlight_Single`), warm glass, lighter LOD0 |
+| Café terrace tables ×3, chairs ×9 | KayKit table and chairs, recoloured | Quaternius pedestal tables (black) and bentwood chairs (black, cream cushion) |
+| Market stall (the dog stall) | primitives | Kenney Fantasy Town `stall-red`, canopy recoloured to the stall's orange, produce on the counter. The egg pennant, balloon and sunflowers are kept. |
+| Produce crates ×12 | primitive boxes + spheres | KayKit restaurant crates (carrots, tomatoes, lettuce, onions, potatoes), flattened to the palette, lighter LOD0 |
+| Sacks | primitive blobs | **ours** (`sack`): tied burlap |
+| Flower pots ×~30 | primitive cylinders | Kenney `pot_small`, terracotta |
+| Flowers in every bed, trough, pot and basket | primitive blobs + spheres | Quaternius flowering bushes, flower clumps and tulips (alpha-cut foliage), all in one atlas draw |
+| Citrus trees ×4 | primitive blobs on a pipe | Quaternius tree (`MapleTree_4`) with its greyscale leaves recoloured green by us, plus the oranges |
+| Benches ×6 | our `park_bench` model | unchanged (already a model) |
+
+Still primitive in the square, on purpose:
+- Buildings and their facade details: windows, awnings, vines, wisteria.
+- Stone planters and troughs, the south wall, railings and gate pillars.
+- The ORE plot, string lights and bunting.
+- The eggs (our own drawings, built from parts).
+- Barrels and the bicycle: no CC0 model on disk fits.
+
+### How
+- **Asset pipeline (`art/pipeline`):**
+  - `env_config.py` has a new "Round 6" section listing every new model.
+  - `env_process.py` gains:
+    - rule-based recolouring: HSV ranges map to palette colours, so one source ships as several colourways on the
+      shared palette material (no new draws);
+    - `force_palette` for KayKit and Kenney gradient maps (alpha-cut foliage keeps its texture) and a per-item colour
+      `quant`;
+    - `smooth: <degrees>` (smooth shading with hard edges above the angle);
+    - `decimate` (a lighter LOD0 for props placed by the dozen); LODs as before.
+  - `env_custom_r6.py` builds our own models. Every chosen model was rendered first (`candidates/`).
+- **Fetched today:** Kenney Fantasy Town Kit 2.0. Its CC0 was checked on the page and in its `License.txt` on
+  2026-10-08; it is unzipped in this worktree at `art/raw/kenney-fantasy-town-kit/`, which git ignores.
+- **Licences re-checked live today:** Quaternius Ultimate Furniture, Ultimate House Interior and Ultimate Stylized
+  Nature pages say CC0; the Kenney Furniture Kit page says CC0.
+- **Poly Pizza:** not used, in line with the `LICENSES.md` note on it. I first tried its CC0 monitor and headphones,
+  then replaced them with Kenney `computerScreen` and our own headphones.
+- **Venue builder (`VenueKit`):**
+  - `FoliageAtlas` (opt-in): alpha-cut foliage textures from sourced models are packed into one 1024 atlas per venue
+    and merged into one renderer, instead of one draw per material per 10 m cell. A submesh whose UVs leave 0..1 keeps
+    its own material, and no shared material asset is written for foliage routed to the atlas.
+  - `VenueCloseups` with the `-ctCloseups` flag renders the furniture close-ups.
+- **Feel-lane requests folded in:**
+  - fe.7 anchor nudges: `terminal_1..4` 0.10 m towards the table, `terminal_5..8` 0.25 m towards the desks. The desks,
+    laptops and keyboards stay put.
+  - bench_4: the ORE plot fence moved off the bench back.
+  - `SeatFitBuilder` and `SeatPoseBuilder` (Build + Measure) re-run on the new prefabs. The changed seats are listed in
+    `requests.md`.
+- **Seat kinds kept:** the bean bags got a real seat hollow and back, and the pod stools slim legs and a low foot
+  ring, so `SeatFitBuilder` still classifies them as BeanBag and Stool.
+
+### Budgets (editor estimates; venue only)
+
+| Venue | Gameplay max draws | Gameplay tris | LOD0 tris | APK LZ4 (single venue) |
+| --- | --- | --- | --- | --- |
+| Terminal Café | 31 → **26** | 67.5k → **84.0k** | 68.3k → 84.2k | 7.22 → 8.54 MiB |
+| Spaces Studio | 23 → **26** | 89.7k → **111.3k** | 104.0k → 121.4k | 8.25 → 9.22 MiB |
+| Timeline Square | 14 → **24** | 103.4k → **129.7k** | 103.6k → 136.5k | 5.36 → 7.40 MiB |
+
+- **Draws with the crowd:** Timeline 24 + 85–106 crowd ≈ 109–130, under the 150 budget.
+- **Where Timeline's +10 draws come from:**
+  - +1 for the foliage atlas;
+  - the Kenney food-kit material, for mugs and croissants on the terrace;
+  - more palette cells, now that props sit across the whole square.
+- **Triangles:** about +20–25% per venue, with lighter LOD0 variants on the props placed most often.
+  [Unverified] I have not measured frame time on the device; the 60 fps headroom needs a device check.
+- **APK** (all 25 venues, Android, one bundle): LZ4 30.3 → **34.2 MiB** (+3.9), raw 68.3 → 75.0 MiB.
+  - [Inference] With the reported ~141 MiB APK, the release would be about 145 MiB, under 150.
+  - Receipt: `receipts/venue-size-r6.json`.
+- **Physicality audit:** 0 walk-through regions in all three venues. The "collider, NavMesh not carved" regions
+  (café 14, studio 29, Timeline 6) sit at seat anchors, where carving is clipped by design.
+- **Spots:** all reachable (café 17, studio 36, Timeline 15).
 
 ## 2026-10-08 round 5: Terminal Café v2, Spaces Studio truss, Timeline Square lushness
 

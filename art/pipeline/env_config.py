@@ -275,3 +275,96 @@ for k in 'abcdefgh':
     add(f'map_house_{k}', KS + f'building-type-{k}', CM, fit=('max', 10.0))
 for k in 'abcd':
     add(f'map_tower_{k}', KC + f'low-detail-building-{k}', CM, fit=('max', 14.0))
+
+# ================================================================== Round 6: real modelled venue furniture (café, studio, square)
+# Replaces the venue builder's box/cylinder furniture. Colourways come from rule-based recolouring in env_process
+# (first matching HSV range -> palette colour), so every variant stays on the shared palette material (no new draws).
+FT = 'kenney-fantasy-town-kit::'
+TL = 'environment/timeline_square'
+
+
+def rc(*rules):
+    return [dict(r) for r in rules]
+
+
+WOOD_GREEN = rc({'v': (0.0, 0.4), 'to': 'a06a3c'}, {'v': (0.4, 1.0), 'to': '3b6b4b'})          # UHI chairs: wood / cushion
+BENT = lambda cushion, wood='5a3a24': rc({'s': (0.3, 1.0), 'to': wood}, {'s': (0.0, 0.3), 'to': cushion})  # UF chair/stool
+UPH = lambda fabric, legs='5a3a24': rc({'s': (0.2, 1.0), 'to': fabric}, {'s': (0.0, 0.2), 'to': legs})    # UHI couches
+PLANKS = rc({'v': (0.0, 0.43), 'to': '7f5530'}, {'v': (0.43, 1.0), 'to': '94643a'})
+POT = lambda pot, leaf='4f8a3a': rc({'h': (0.15, 0.35), 's': (0.4, 1.0), 'to': leaf}, {'s': (0.0, 0.12), 'to': pot})
+CUSHION = lambda col: rc({'h': (0.36, 0.46), 's': (0.3, 1.0), 'to': col})                     # custom upholstery 35634a
+
+# --- Terminal Café
+add('cafe_chair_spindle', HI + 'Chair_3', TC, fit=('z', 0.9), recolor=WOOD_GREEN)
+add('cafe_chair_bistro', UF + 'Chair', TC, fit=('z', 0.85), recolor=BENT('3b6b4b'), decimate=0.7)
+add('cafe_bar_stool', UF + 'Stool', TC, fit3=(0.46, 0.46, 0.76), recolor=BENT('3b6b4b'))
+add('cafe_sofa', HI + 'Couch_Medium1', TC, fit3=(2.2, 0.95, 0.66), recolor=UPH('35634a'))
+add('cafe_armchair', HI + 'Couch_Small1', TC, fit3=(0.95, 0.85, 0.66), recolor=UPH('35634a'))
+add('cafe_table_farm', UF + 'Table', TC, fit3=(2.6, 1.3, 0.76), recolor=PLANKS)
+add('cafe_table_booth', UF + 'Table2', TC, fit3=(1.3, 0.72, 0.76), recolor=PLANKS)
+add('cafe_table_bistro', HI + 'Table_RoundSmall2', TC, fit3=(1.0, 1.0, 0.76), recolor=rc({'to': '6b4429'}))
+add('cafe_coffee_table', HI + 'Table_RoundSmall', TC, fit3=(1.0, 1.0, 0.46), recolor=rc({'to': '6b4429'}), decimate=0.6)
+add('cafe_side_table', HI + 'Table_RoundSmall', TC, fit3=(0.6, 0.6, 0.55), recolor=rc({'to': '6b4429'}), decimate=0.6)
+add('cafe_floor_lamp', HI + 'Light_Stand1', TC, fit=('z', 1.7), recolor=rc({'v': (0.0, 0.6), 'to': 'b8913f'}, {'to': 'efe3c8'}))
+add('cafe_desk_lamp', HI + 'Light_Desk', TC, fit=('z', 0.45), recolor=rc({'v': (0.0, 0.3), 'to': '2e6b4a'}, {'to': 'b8913f'}))
+add('cafe_plant_monstera', HI + 'Houseplant_1', TC, fit=('z', 1.15), recolor=POT('efe3c8'))
+add('cafe_plant_leafy', HI + 'Houseplant_6', TC, fit=('z', 1.35), recolor=POT('c8673f', '5a9441'))
+add('cafe_plant_snake', HI + 'Houseplant_4', TC, fit=('z', 0.95), recolor=POT('c8673f', '4f7f3a'))
+add('cafe_plant_fern', HI + 'Houseplant_5', TC, fit=('z', 0.62), recolor=POT('efe3c8', '5a9441'))
+add('cafe_plant_bush', HI + 'Houseplant_7', TC, fit=('z', 0.95), recolor=POT('c8673f', '4f8a3a'))
+add('cafe_laptop', KFU + 'laptop', TC, fit=('x', 0.34), recolor=rc({'v': (0.85, 1.0), 'to': '1b2230'}, {'to': 'b9c0c6'}))
+add('cafe_keyboard', KFU + 'computerKeyboard', TC, fit=('x', 0.44), recolor=rc({'v': (0.0, 0.68), 'to': '2b2d31'}, {'to': '3a3d44'}))
+add('cafe_monitor', KFU + 'computerScreen', TC, fit=('x', 0.62), recolor=rc({'v': (0.85, 1.0), 'to': '0f141c'}, {'to': '1d1f24'}))
+add('booth_bench', CU + 'booth_bench', TC, smooth=40)
+add('espresso_machine', CU + 'espresso_machine', TC, smooth=35)
+add('coffee_grinder', CU + 'coffee_grinder', TC, smooth=35)
+add('pastry_case', CU + 'pastry_case', TC)
+add('pendant_dome', CU + 'pendant_dome', TC, smooth=40)
+add('cafe_books', KFU + 'books', TC, fit=('x', 0.26),
+    recolor=rc({'h': (0.95, 0.1), 'to': '8e2f23'}, {'h': (0.4, 0.5), 's': (0.3, 1.0), 'to': '2f6f73'}, {'v': (0.97, 1.0), 'to': 'efe3c8'}, {'to': 'c9962f'}))
+
+# --- Spaces Studio
+add('studio_armchair', HI + 'Couch_Small1', SS, fit3=(0.95, 0.85, 0.62), recolor=UPH('e3d6c0', '6b4429'))
+add('studio_sofa_teal', HI + 'Couch_Medium1', SS, fit3=(2.2, 0.95, 0.66), recolor=UPH('2f6f73', '6b4429'))
+add('studio_sofa_plum', HI + 'Couch_Medium1', SS, fit3=(2.0, 0.9, 0.64), recolor=UPH('4b2163', '6b4429'))
+for col, hexc in (('rose', 'c25560'), ('petrol', '2f6f73'), ('purple', '4b2163')):
+    add('studio_stool_' + col, CU + 'bar_stool_ring', SS, smooth=40, recolor=CUSHION(hexc))
+add('studio_side_table', HI + 'Table_RoundSmall', SS, fit3=(0.5, 0.5, 0.52), recolor=rc({'to': '6b4429'}), decimate=0.6)
+add('studio_coat_rack', KFU + 'coatRackStanding', SS, fit=('z', 1.75), recolor=rc({'to': '6b4429'}))
+add('studio_headphones', CU + 'headphones', SS, smooth=35)
+add('bean_bag', CU + 'bean_bag', SS, smooth=True)
+add('floor_cushion', CU + 'floor_cushion', SS, smooth=True)
+add('pouf_round', CU + 'pouf_round', SS, smooth=True)
+add('throw_pillow', CU + 'throw_pillow', SS, smooth=True)
+add('table_oval', CU + 'table_oval', SS, smooth=35)
+add('lantern_floor', CU + 'lantern_floor', SS, tags=['neon'])
+add('terrace_bench_purple', CU + 'bench_cushioned', SS, smooth=40, recolor=CUSHION('4b2163'))
+add('terrace_bench_teal', CU + 'bench_cushioned', SS, smooth=40, recolor=CUSHION('2f6f73'))
+
+# --- Timeline Square
+add('fountain_tiered', CU + 'fountain_tiered', TL, smooth=40)
+add('tl_chair_bistro', UF + 'Chair', TL, fit=('z', 0.85), recolor=BENT('efe3c8', '2b2d31'), decimate=0.7)
+add('tl_table_bistro', HI + 'Table_RoundSmall2', TL, fit3=(0.8, 0.8, 0.74), recolor=rc({'to': '2b2d31'}))
+add('tl_stall', FT + 'stall-red', TL, fit=('z', 2.7), force_palette=True, quant=24,
+    recolor=rc({'h': (0.93, 0.03), 's': (0.4, 1.0), 'to': 'fc8e03'}))
+for veg in ('carrots', 'tomatoes', 'lettuce', 'onions', 'potatoes'):
+    add('tl_crate_' + veg, KYR + 'crate_' + veg, TL, fit=('x', 0.62), force_palette=True, quant=20, decimate=0.4)
+add('tl_sack', CU + 'sack', TL, smooth=True)
+add('tl_pot_large', 'kenney/nature-kit::pot_large', TL, fit=('x', 0.62), recolor=rc({'v': (0.0, 0.95), 'to': 'b05a36'}, {'to': 'c8673f'}))
+add('tl_pot_small', 'kenney/nature-kit::pot_small', TL, fit=('x', 0.44), recolor=rc({'v': (0.0, 0.95), 'to': 'b05a36'}, {'to': 'c8673f'}))
+add('tl_bush_flowers', USN + 'Bush_Flowers', TL, fit=('z', 0.42), decimate=0.5)
+add('tl_bush_flowers_long', USN + 'Bush_Large_Flowers', TL, fit=('z', 0.45), decimate=0.6)
+for i in (1, 2, 4, 5):
+    add(f'tl_flower_{i}', USN + f'Flower_{i}_Clump', TL, fit=('z', 0.34), decimate=0.4 if i == 1 else None)
+add('tl_tulips', SN + 'Flower_3_Group', TL, fit=('z', 0.4), decimate=0.3)
+add('pothos_vine', CU + 'pothos_vine', TC)
+# lighter LOD0 variants of models placed many times (round 6 triangle budget)
+add('cafe_desk', UF + 'Desk', TC, fit=('z', 0.76), decimate=0.4)
+add('cafe_office_chair', UF + 'OfficeChair', TC, fit=('z', 1.05), decimate=0.45)
+add('mug_lite', KFO + 'mug', TC, fit=('z', 0.1), decimate=0.5)
+add('houseplant_bush_lite', HI + 'Houseplant_7', TC, fit=('z', 0.9), decimate=0.45)
+add('tl_lamp_post', 'quaternius/modular_streets::Streetlight_Single', TL, fit=('z', 3.9), decimate=0.6,
+    recolor=rc({'v': (0.85, 1.0), 's': (0.0, 0.1), 'to': 'ffe9b0'}, {'h': (0.1, 0.2), 's': (0.5, 1.0), 'to': 'ffd36a'}))
+add('tl_tree_citrus', USN + 'MapleTree_4', TL, fit=('z', 2.6), force_palette=True, quant=24,
+    tex={'MapleTree_Leaves': 'ctlife_custom/CitrusTree_Leaves.png'})
+add('houseplant_fern_lite', HI + 'Houseplant_5', TC, fit=('z', 0.6), decimate=0.5)

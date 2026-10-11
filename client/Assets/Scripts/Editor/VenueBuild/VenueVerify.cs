@@ -78,6 +78,19 @@ namespace CTLife.EditorTools.VenueBuild
                 bool entranceCapture = Environment.GetCommandLineArgs().Contains("-ctEntranceCaptures");
                 var (views, maxDraws, maxTris) = MeasureViews(go, venue, spots, lodBias, cam,
                     entranceCapture ? Path.Combine(VenueBuildPipeline.EvidenceDir, "captures", spec.id + "-entrance.png") : null);
+                // -ctCloseups: furniture close-ups (round 6 evidence), free cameras from VenueCloseups.
+                if (Environment.GetCommandLineArgs().Contains("-ctCloseups"))
+                {
+                    float fov = cam.fieldOfView;
+                    foreach (var (name, eye, target, shotFov) in VenueCloseups.For(spec.id, spots))
+                    {
+                        cam.transform.position = eye;
+                        cam.transform.LookAt(target);
+                        cam.fieldOfView = shotFov;
+                        Render(cam, Path.Combine(VenueBuildPipeline.EvidenceDir, "captures", spec.id + "-close-" + name + ".png"), 1400, 1000);
+                    }
+                    cam.fieldOfView = fov;
+                }
                 // Overview preview: high three-quarter shot of the whole diorama.
                 PlaceOverview(cam, venue);
                 var overview = Estimate(go, cam, lodBias);
