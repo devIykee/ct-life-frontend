@@ -26,3 +26,9 @@ C. Vehicles (new)
 11. Optional: the server owns the parked cars per district, built from our parking bays (we can send the bay list). Today each client parks its own.
 
 None of this blocks the demo video: the app runs vehicles locally until these exist.
+
+Pending for the next message to Iyke (not sent yet):
+- debtWeeklyDueCents stays at the full weekly amount after the player pays it that week (nothing tracks this week's paid amount), so the app keeps saying "$120 due today" after a $120 repay.
+- openapi: a stray `description` under /payments/intents/{id} fails strict spec validation.
+- openapi: the debtDueAt description is unquoted flow YAML and gets cut at ", Sun 20:00 UTC)".
+- ids/archetypes.json 1.0.2 removed spaces_host and added barista/patron with no lines.
