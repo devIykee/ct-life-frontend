@@ -58,6 +58,8 @@ namespace CTLife.EditorTools
         public static bool IslandOnly;
         /// <summary>Phase A: run only the locomotion feel probe (captureSet "feel").</summary>
         public static bool FeelOnly;
+        /// <summary>captureSet "controls": the Feel lane F1 on-foot course (ControlsCapture) instead of the HUD layouts.</summary>
+        public static bool ControlsOnly;
 
         public static async Task Run(Func<string, float, Task> shot, Func<float, Task> wait,
             Action<bool, string> expect, Action<string> step, JObject receipt)
@@ -147,6 +149,7 @@ namespace CTLife.EditorTools
                 Bus.Publish(new InteractionPromptSignal());
                 hud.Show(true);
                 if (IslandOnly) { visit = await IslandWalk(ui, hud, visit, shot, wait, expect, receipt); return; }
+                if (ControlsOnly) { visit = await ControlsCapture.Run(visit, shot, wait, expect, receipt); return; }
                 if (FeelOnly) { FeelProbe.OutDir = Environment.GetCommandLineArgs().SkipWhile(x => x != "-ctlife-captureOut").Skip(1).FirstOrDefault(); var (feel, last) = await FeelProbe.Run(visit, camera, shot); receipt["feel"] = feel; visit = last; return; }
                 if (SweepOnly) { visit = await VisitSweep(ui, hud, visit, camera, session, transport, profile, shot, wait, expect, receipt); return; }
                 await shot("hud-01-city-idle", 1.2f);
