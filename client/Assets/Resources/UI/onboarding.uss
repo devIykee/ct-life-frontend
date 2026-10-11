@@ -24,7 +24,7 @@
 
 /* ------------------------------------------------------------------ type on the painting */
 
-.ob-eyebrow, .ob-title, .ob-sub, .ob-line, .ob-note, .ob-result-name, .ob-result-home, .ob-look-name, .ob-look-count,
+.ob-eyebrow, .ob-title, .ob-sub, .ob-line, .ob-note, .ob-look-name, .ob-look-count,
 .ob-drag-hint, .ob-alias-status, .ob-celebrate-title, .ob-celebrate-sub, .ob-card-odds, .ob-card-fallback {
     -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); color: rgb(255, 255, 255); margin: 0; padding: 0;
     -unity-text-outline-color: rgb(58, 20, 64); white-space: normal;
@@ -43,26 +43,13 @@
 /* ------------------------------------------------------------------ lottery */
 
 .ob-lottery-left { position: absolute; left: 0; top: 190px; width: 960px; bottom: 90px; }
-.ob-lottery-table { position: absolute; left: 1000px; right: 0; top: 150px; height: 760px; }
+/* The table spans the content: face-down cards sit right of the copy (DrawShiftX), the unfolded card is centred. */
+.ob-lottery-table { position: absolute; left: 0; right: 0; top: 150px; height: 760px; }
 .ob-lottery .ob-title { margin-top: 6px; }
 .ob-lottery-intro > .ob-line { max-width: 640px; }
-.ob-lottery-result { flex-direction: column; align-items: flex-start; }
-.ob-result-name { font-size: 88px; -unity-text-outline-width: 5px; text-shadow: 0 6px 1px rgb(58, 20, 64); }
-.ob-result-cash {
-    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 124px; margin: 6px 0 0 0; padding: 0;
-    color: rgb(255, 212, 84); -unity-text-outline-width: 6px; -unity-text-outline-color: rgb(58, 20, 64);
-    text-shadow: 0 7px 1px rgb(58, 20, 64);
-}
-.ob-result-home { font-size: 54px; -unity-text-outline-width: 4px; text-shadow: 0 4px 3px rgba(26, 8, 32, 0.85); }
-.ob-debt-tag {
-    flex-direction: row; align-self: flex-start; margin-top: 22px; padding: 10px 30px 14px 30px;
-    background-color: rgb(255, 162, 76); border-width: 5px; border-color: rgb(58, 20, 64); border-radius: 34px;
-}
-.ob-debt-text { -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 48px; color: rgb(58, 20, 64); margin: 0; padding: 0; }
-.ob-line--second { margin-top: 28px; max-width: 900px; }
 .ob-lottery > .ob-content > .ob-note { position: absolute; left: 0; bottom: 0; }
 
-.ob-card { position: absolute; top: 40px; transition-property: scale; transition-duration: 0.12s; transition-timing-function: ease-out; }
+.ob-card { position: absolute; top: 14px; transition-property: scale; transition-duration: 0.12s; transition-timing-function: ease-out; }
 .ob-card--hot { scale: 1.05 1.05; }
 .ob-card-glow {
     position: absolute; left: -240px; right: -240px; top: -240px; bottom: -240px; opacity: 0;
@@ -76,10 +63,48 @@
     background-color: rgb(110, 58, 170); border-width: 12px; border-color: rgb(58, 20, 64); border-radius: 46px;
 }
 .ob-card-fallback { font-size: 60px; -unity-text-align: middle-center; -unity-text-outline-width: 5px; padding: 0 30px; }
+
+/* Rarity ribbon on each face-down card (RARE · 20%), solid pill overlapping the card's bottom edge. */
+.ob-card-ribbon { position: absolute; left: -60px; right: -60px; bottom: -40px; align-items: center; }
 .ob-card-odds {
-    position: absolute; left: -40px; right: -40px; bottom: -70px; font-size: 42px; -unity-text-align: middle-center;
-    -unity-text-outline-width: 3px; text-shadow: 0 3px 4px rgba(26, 8, 32, 0.85);
+    font-size: 40px; letter-spacing: 2px; color: rgb(58, 20, 64); -unity-text-outline-width: 0; text-shadow: 0 0 0 rgba(0, 0, 0, 0);
+    padding: 8px 32px 12px 32px; border-width: 6px; border-color: rgb(58, 20, 64); border-radius: 34px;
+    background-color: rgb(120, 205, 255); white-space: nowrap;
 }
+.ob-card--rare .ob-card-odds { background-color: rgb(255, 200, 60); }
+.ob-card--seeker .ob-card-odds { background-color: rgb(186, 132, 255); }
+
+/* The unfolded landscape origin card (widths, padding and border animate inline in LotteryScreen.SetWide). */
+.ob-card--wide { flex-direction: row; border-radius: 56px; border-color: rgb(120, 205, 255); }
+.ob-card--wide.ob-card--rare { border-color: rgb(255, 200, 60); }
+.ob-card--wide.ob-card--seeker { border-color: rgb(186, 132, 255); }
+.ob-origin-info { flex-grow: 1; flex-shrink: 1; margin-left: 50px; padding: 18px 20px 0 0; justify-content: space-between; overflow: hidden; }
+.ob-origin-head { flex-shrink: 1; }
+.ob-origin-top { flex-direction: row; align-items: center; }
+.ob-origin-rarity, .ob-origin-chance, .ob-origin-name, .ob-origin-line, .ob-origin-label, .ob-origin-value {
+    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); color: rgb(255, 255, 255); margin: 0; padding: 0;
+    -unity-text-outline-width: 0; white-space: nowrap;
+}
+.ob-origin-rarity {
+    font-size: 36px; letter-spacing: 3px; color: rgb(58, 20, 64); padding: 6px 26px 9px 26px; border-radius: 26px;
+    background-color: rgb(120, 205, 255);
+}
+.ob-card--rare .ob-origin-rarity { background-color: rgb(255, 200, 60); }
+.ob-card--seeker .ob-origin-rarity { background-color: rgb(186, 132, 255); }
+.ob-origin-chance { font-size: 38px; color: rgb(206, 186, 236); margin-left: 24px; }
+.ob-origin-name {
+    font-size: 104px; margin-top: 16px; -unity-text-outline-width: 6px; -unity-text-outline-color: rgb(22, 6, 28);
+    text-shadow: 0 7px 1px rgb(22, 6, 28);
+}
+.ob-origin-line { font-size: 46px; color: rgb(236, 226, 255); margin-top: 10px; white-space: normal; }
+.ob-origin-stats { flex-direction: row; background-color: rgb(26, 8, 32); border-radius: 34px; padding: 24px 6px 26px 6px; }
+.ob-origin-stat { flex-grow: 1; flex-basis: 0; padding: 0 34px; justify-content: center; }
+.ob-origin-stat--sep { border-left-width: 4px; border-color: rgb(76, 40, 88); }
+.ob-origin-label { font-size: 30px; letter-spacing: 3px; color: rgb(190, 166, 216); }
+.ob-origin-value { font-size: 72px; margin-top: 6px; }
+.ob-origin-value--cash { color: rgb(20, 241, 149); }
+.ob-origin-value--debt { color: rgb(255, 166, 80); }
+.ob-origin-value--home { font-size: 50px; white-space: normal; }
 
 /* ------------------------------------------------------------------ creator: the character */
 
