@@ -96,11 +96,14 @@ Phase 6 = Competition. Every phase must end in something that runs. Do NOT reduc
 - Git: only the coordinator (the lead session) commits and pushes, on the working branch, at
   least daily. Agents do not run `git commit`, `git add -A`, `git stash`, `git reset` or
   `git clean`; when a unit of work is done, write "READY TO COMMIT: <paths> — <message>" at the
-  top of your progress log. Never commit secrets or files over 50 MB; binaries go through LFS.
+  top of your progress log. Never commit secrets or files over 50 MB; binaries are plain git (GitHub LFS is blocked on this account).
 - Do not deploy anything to a public host. Do not create accounts or sign in anywhere. Do not
   spend money. Devnet/localnet only for Solana writes. Never edit devIykee's repository except
   through a pull request the coordinator opens.
 - Keep secrets out of the repo (`.env` is gitignored; commit `.env.example` only).
+- Treat every server, chat, name and NFT string as untrusted. Build text with `El.Text`/`El.Btn` (rich text
+  is off there) and never pass such strings to a label with `enableRichText = true`; cap lengths, allow-list
+  URLs (https only), and bound downloads and decoded image sizes before allocating.
 - Log progress in `docs/progress/<your-agent-name>.md`: what's done, what's next, blockers,
   exact commands to run/verify. Update it as you go, not only at the end.
 - Check `adb devices -l` before device work; availability changes. The known Seeker serial is
