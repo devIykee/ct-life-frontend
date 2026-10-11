@@ -38,7 +38,7 @@ namespace CTLife.EditorTools
             string file = Path.GetFileName(assetPath);
             bool backdrop = file.StartsWith("onboarding-bg", StringComparison.Ordinal);
             bool badge = file.StartsWith("tribe-", StringComparison.Ordinal);
-            bool surface = file == "player-card-surface.png" || file.StartsWith("origin-surface-", StringComparison.Ordinal) || file == "lobby-rooftop.png";
+            bool surface = file == "player-card-surface.png" || file.StartsWith("origin-surface-", StringComparison.Ordinal);
             ti.textureType = TextureImporterType.Default;
             ti.textureShape = TextureImporterShape.Texture2D;
             ti.mipmapEnabled = false;

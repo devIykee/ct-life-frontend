@@ -35,8 +35,12 @@ namespace CTLife.UI
                 "UI/Fonts/LilitaOne-OFL"));
             entries.Add(Credit("credits.phosphor", "credits.phosphorSummary", "https://github.com/phosphor-icons/core",
                 "UI/Icons/LICENSE"));
+            entries.Add(Credit("credits.icons8", "credits.icons8Summary", Icons8Url, "UI/Licenses/Icons8"));
             return expanded ? entries : El.Div("ct-col", toggle, entries);
         }
+
+        /// <summary>The Icons8 free licence asks for a link to icons8.com wherever its icons are used (the lobby).</summary>
+        public const string Icons8Url = "https://icons8.com";
 
         /// <summary>Optional notice from the cast lane (one block per model: title, author, source, licence, changes).</summary>
         public const string ModelCredits = "UI/Licenses/Model-Credits";
