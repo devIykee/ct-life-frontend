@@ -501,6 +501,19 @@ namespace CTLife.EditorTools.VenueBuild
                     else { EditorUtility.CopySerialized(data, existing); Object.DestroyImmediate(data); EditorUtility.SetDirty(existing); }
                     venue.navigation = existing;
                     written.Add(navPath);
+                    // Geometry the prop list missed (authored joinery, wall-hung shelves): collider + carve, rebuild once.
+                    var group = go.transform.Find("Prop colliders") ?? go.transform;
+                    var extra = VenueCollision.CoverGeometry(go, existing, group);
+                    if (extra.Count > 0)
+                    {
+                        sources.AddRange(VenueCollision.Obstacles(extra, VenueCollision.KeepClear(go)));
+                        props.AddRange(extra);
+                        var rebuilt = VB.BuildNavMeshData(spec.id, sources, venue.cameraBounds);
+                        EditorUtility.CopySerialized(rebuilt, existing);
+                        Object.DestroyImmediate(rebuilt);
+                        EditorUtility.SetDirty(existing);
+                        Debug.Log($"CTLIFE [collision] {spec.id}: geometry scan covered {extra.Count} extra regions: {string.Join(", ", extra.Select(e => e.name))}");
+                    }
                 }
                 if (spec.lookdev) VenueLookdev.AddLook(spec, go);
                 var liveAfter = LiveSurfaceKeys(go);

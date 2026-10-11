@@ -72,7 +72,7 @@ namespace CTLife.EditorTools.VenueBuild
                         c.size = box.size;
                     }
                     VenueCollision.AddColliders(group, root, props);
-                    return (props, vb.NavSources.Concat(VenueCollision.Obstacles(props)).ToList(), vb.Walk);
+                    return (props, vb.NavSources.Concat(VenueCollision.Obstacles(props, VenueCollision.KeepClear(root))).ToList(), vb.Walk);
                 });
             }
             finally { EditorSceneManager.ClosePreviewScene(preview); }
@@ -158,7 +158,7 @@ namespace CTLife.EditorTools.VenueBuild
             }
             var group = VB.Child("Prop colliders", root.transform);
             VenueCollision.AddColliders(group, root, props);
-            sources.AddRange(VenueCollision.Obstacles(props));
+            sources.AddRange(VenueCollision.Obstacles(props, VenueCollision.KeepClear(root)));
             Debug.Log($"CTLIFE [collision] {root.name}: {solids} existing solid colliders as obstacles, {props.Count} props " +
                       $"({props.Count(p => p.seat)} seats, {props.Count(p => p.tree)} trees), {group.childCount} new prop colliders.");
             return sources;
@@ -179,6 +179,20 @@ namespace CTLife.EditorTools.VenueBuild
                 else { EditorUtility.CopySerialized(data, existing); Object.DestroyImmediate(data); EditorUtility.SetDirty(existing); }
                 AssetDatabase.SaveAssetIfDirty(existing);
                 venue.navigation = existing;
+                // Geometry the prop list missed: collider + carve, then rebuild the NavMesh once.
+                var group = root.transform.Find("Prop colliders") ?? root.transform.Find("Colliders") ?? root.transform;
+                var extra = VenueCollision.CoverGeometry(root, existing, group);
+                if (extra.Count > 0)
+                {
+                    sources.AddRange(VenueCollision.Obstacles(extra, VenueCollision.KeepClear(root)));
+                    props.AddRange(extra);
+                    var rebuilt = VB.BuildNavMeshData(spec.id, sources, walk);
+                    EditorUtility.CopySerialized(rebuilt, existing);
+                    Object.DestroyImmediate(rebuilt);
+                    EditorUtility.SetDirty(existing);
+                    AssetDatabase.SaveAssetIfDirty(existing);
+                    Debug.Log($"CTLIFE [collision] {spec.id}: geometry scan covered {extra.Count} extra regions: {string.Join(", ", extra.Select(e => e.name))}");
+                }
                 var nav = VenueBuildPipeline.ValidateBuild(spec, venue, spots);
                 var collision = VenueCollision.Validate(spec.id, root, existing, props);
                 if (PrefabUtility.SaveAsPrefabAsset(root, spec.PrefabPath) == null) throw new IOException("Saving " + spec.PrefabPath + " failed.");
