@@ -1,3 +1,8 @@
+NOTE FOR INTEGRATION LEAD (coordinator, 2026-10-08): builds from 9d66918 on ignore Android launch extras unless the
+intent carries `-e automationKey <key>` matching `files/automation.key` (write it with `adb shell run-as com.ctlife.app`;
+client/Tools~/seeker_run.sh does both). Update the SIWS watcher and any direct `am start` calls before the next build.
+The Seeker's current 03:05 build predates this and is unaffected.
+
 CHECKPOINT PUSHED: 7fb99fb on origin/dev (2026-10-07, by the coordinator). LFS is not used: the
 account's Git LFS budget is $0 with stop-usage, so the unpushed history was exported to plain git
 and rebased onto 95cd4b9 (dev descends from main). Binaries are regular blobs (largest 36.5 MB).
