@@ -11,6 +11,8 @@ namespace CTLife.Economy
     /// Bank (feature #13): Cash balance and debt from GET /me, plus Cash top-ups in USDC, SOL, SKR and ORE through
     /// payment intents, MWA sign_and_send, intent polling and the city room's `payment_confirmed`.
     /// Registered twice: id "bank" (Phase 1 tile; the top-up section appears from Phase 2) and id "topup" (Phase 2 tile).
+    /// Duo layout (board #5): the Wallet card stack with Cash in front, the top-up flow in a sheet, and Latest
+    /// transactions listing only what the client really knows (this session's top-up). No history is invented.
     /// </summary>
     public sealed class MoneyBankApp : MoneyApp
     {
@@ -28,8 +30,10 @@ namespace CTLife.Economy
         public override string Color => "#f7b731";
         public override int Phase => _topUpTile ? 2 : 1;
         public override string Feature => _topUpTile ? FeatureFlags.Payments : null;
+        public override DuoChrome Chrome => DuoChrome.Plain;
 
-        internal override MoneyView CreateView(MoneyHub hub) => new BankView(hub, showTopUp: _topUpTile || (Shell?.CurrentPhase ?? 1) >= 2);
+        internal override MoneyView CreateView(MoneyHub hub) =>
+            new BankView(hub, Shell, Title, showTopUp: _topUpTile || (Shell?.CurrentPhase ?? 1) >= 2, openTopUp: _topUpTile);
     }
 
     internal sealed class BankView : MoneyView
@@ -38,12 +42,17 @@ namespace CTLife.Economy
         private readonly TopUpFlow _flow;
         private readonly TopUpCatalog _catalog;
         private readonly SolanaCluster _cluster;
-        private readonly VisualElement _hero = El.Div("ct-col"), _topUp = El.Div("ct-col");
+        private readonly DuoPage _page;
+        private readonly DuoWalletStack _stack;
+        private readonly VisualElement _topUp = El.Div("duo-topup"), _latest = El.Div("duo-latest");
+        private DuoSheet _sheet;
         private string _currency = "USDC";
         private bool _ack;
         private Label _countdown;
 
-        public BankView(MoneyHub hub, bool showTopUp) : base(hub)
+        public override VisualElement Container => _page;
+
+        public BankView(MoneyHub hub, PhoneShell phone, string title, bool showTopUp, bool openTopUp) : base(hub)
         {
             _showTopUp = showTopUp;
             _flow = hub.TopUp;
@@ -52,21 +61,27 @@ namespace CTLife.Economy
             foreach (var code in TopUpCatalog.CurrencyOrder)
                 if (_catalog.Availability(code, _cluster).CanPay) { _currency = code; break; }
 
-            Root.Add(MoneyUi.Text(MoneyStrings.T("bank.title"), "ct-h1"));
-            Root.Add(_hero);
-            if (_showTopUp) Root.Add(_topUp);
-            RenderHero();
-            Subs.On<ProfileChangedSignal>(_ => RenderHero());
+            _page = new DuoPage(Root, title);
+            _page.name = "bank-page";
+            _page.Nav.AddLeft(DuoGlyph.Kind.Back, Strings.T("common.back"), () => phone?.Back(), "bank-back");
+            if (_showTopUp) _page.Nav.AddRight(DuoGlyph.Kind.Plus, MoneyStrings.T("topup.title"), OpenTopUp, "bank-plus");
+            _stack = new DuoWalletStack(DuoWalletStack.Card.Cash, _showTopUp ? OpenTopUp : (Action)null);
+            _page.Body.Add(_stack);
+            _page.Body.Add(_latest);
             Subs.On<DegradedChangedSignal>(_ => RenderTopUp());
             _flow.Changed += FlowChanged;
             Hub.RefreshProfile(force: true);
             RenderTopUp();
+            RenderLatest();
             if (_flow.Stage == TopUpStage.Pending) _ = Check();
+            if (openTopUp && _showTopUp) _page.schedule.Execute(OpenTopUp);
         }
 
         public override void Dispose()
         {
             _flow.Changed -= FlowChanged;
+            _sheet?.Close();
+            _stack?.Dispose();
             base.Dispose();
         }
 
@@ -75,6 +90,7 @@ namespace CTLife.Economy
             if (!Alive) return;
             if (_flow.Stage == TopUpStage.Confirmed) Hub.RefreshProfile(force: true);
             RenderTopUp();
+            RenderLatest();
         }
 
         protected override void Tick()
@@ -86,28 +102,77 @@ namespace CTLife.Economy
                 _countdown.text = MoneyStrings.F("topup.confirming", (int)Math.Max(0, (ServerClock.NowMs - _flow.PollStartedMs) / 1000.0));
         }
 
-        private void RenderHero()
+        // ------------------------------------------------------------------ latest transactions
+
+        /// <summary>Only this session's top-up exists client-side (no ledger route): one row, or no section at all.</summary>
+        private void RenderLatest()
         {
-            _hero.Clear();
-            if (!Services.TryGet<PlayerProfile>(out var p)) return;
-            var balance = El.Div("ct-bank-hero",
-                El.Div("ct-duo-balance-heading", new UiIcon("bank"), MoneyUi.Text(MoneyStrings.T("bank.balance"), "ct-eyebrow")),
-                MoneyUi.Text(MoneyFormat.Cash(p.CashCents), "ct-big-number"),
-                MoneyUi.Small(MoneyStrings.T("bank.note")));
-            balance.Add(El.Div("ct-duo-bank-debt", PhonePresentation.Status(
-                p.DebtCents > 0 ? MoneyStrings.F("bank.debt", MoneyFormat.Cash(p.DebtCents)) : MoneyStrings.T("bank.noDebt"),
-                p.DebtCents > 0 ? PhonePresentation.Tone.Warning : PhonePresentation.Tone.Success)));
-            _hero.Add(balance);
+            _latest.Clear();
+            if (!_showTopUp || _flow.Stage == TopUpStage.Choose || (_flow.Stage == TopUpStage.Error && _flow.Intent == null)) return;
+            _latest.Add(Duo.SectionHeader(Strings.T("wallet.latest")));
+            string subtitle = _flow.Stage switch
+            {
+                TopUpStage.Creating => MoneyStrings.T("topup.creating"),
+                TopUpStage.Review => MoneyStrings.T("topup.reviewTitle"),
+                TopUpStage.Signing => MoneyStrings.T("topup.signing"),
+                TopUpStage.Confirming => MoneyStrings.F("topup.confirming", (int)Math.Max(0, (ServerClock.NowMs - _flow.PollStartedMs) / 1000.0)),
+                TopUpStage.Confirmed => MoneyStrings.T("topup.confirmed"),
+                TopUpStage.Pending => MoneyStrings.T("topup.pending"),
+                TopUpStage.Expired => MoneyStrings.T("topup.expired"),
+                TopUpStage.Failed => MoneyStrings.T("topup.failedTitle"),
+                _ => MoneyStrings.T("topup.title"),
+            };
+            var row = new DuoRow(OpenTopUp).Leading(Duo.IconSquare("cash", _flow.Stage == TopUpStage.Confirmed ? "green" : "gray"))
+                .Title(MoneyStrings.T("topup.title")).Subtitle(subtitle + (_flow.Currency != null ? " · " + _flow.Currency : ""));
+            row.name = "bank-latest-topup";
+            long? cash = _flow.CreditedCashCents ?? _flow.Intent?.CashCents;
+            if (cash.HasValue) row.Value((_flow.Stage == TopUpStage.Confirmed ? "+" : "") + MoneyFormat.Cash(cash.Value),
+                _flow.Stage == TopUpStage.Confirmed ? "duo-value-positive" : null);
+            var list = El.Div("duo-list", row);
+            Duo.MarkLast(list);
+            _latest.Add(list);
+        }
+
+        // ------------------------------------------------------------------ top-up sheet
+
+        private void OpenTopUp()
+        {
+            if (!_showTopUp || !Alive) return;
+            _sheet?.Close();
+            _topUp.RemoveFromHierarchy();
+            var scroll = El.VerticalScroll("duo-sheet-scroll");
+            scroll.Add(_topUp);
+            _sheet = new DuoSheet(MoneyStrings.T("topup.title"));
+            _sheet.name = "bank-topup-sheet";
+            _sheet.AddContent(scroll);
+            var sheet = _sheet;
+            _sheet.Closed += () => { if (_sheet == sheet) _sheet = null; };
+            RenderTopUp();
+            _sheet.Show(_page);
         }
 
         private bool WalletAvailable => Services.TryGet<IWalletSignIn>(out var w) && w.IsAvailable && Services.TryGet<ITransactionSigner>(out _);
+
+        private static Button SheetButton(string text, Action action, bool primary = true, string name = null)
+        {
+            var b = El.Btn(text, action, primary ? "duo-sheet-primary" : "duo-sheet-secondary");
+            if (name != null) b.name = name;
+            return b;
+        }
+
+        private static VisualElement Pair(string key, string value, Label valueLabel = null)
+        {
+            var row = new DuoRow().Title(key);
+            if (valueLabel != null) { valueLabel.AddToClassList("duo-row-value"); row.Trailing(valueLabel); }
+            else row.Value(value);
+            return row;
+        }
 
         private void RenderTopUp()
         {
             if (!_showTopUp || !Alive) return;
             _topUp.Clear();
             _countdown = null;
-            _topUp.Add(MoneyUi.Text(MoneyStrings.T("topup.title"), "ct-h2"));
             switch (_flow.Stage)
             {
                 case TopUpStage.Choose:
@@ -115,39 +180,37 @@ namespace CTLife.Economy
                     RenderChoose();
                     break;
                 case TopUpStage.Creating:
-                    _topUp.Add(MoneyUi.Notice(MoneyStrings.T("topup.creating")));
+                    _topUp.Add(Duo.Notice(MoneyStrings.T("topup.creating")));
                     break;
                 case TopUpStage.Review:
                     RenderReview();
                     break;
                 case TopUpStage.Signing:
-                    _topUp.Add(MoneyUi.Notice(MoneyStrings.T("topup.signing")));
+                    _topUp.Add(Duo.Notice(MoneyStrings.T("topup.signing")));
                     break;
                 case TopUpStage.Confirming:
-                    _countdown = MoneyUi.Notice(MoneyStrings.F("topup.confirming", 0));
-                    _topUp.Add(_countdown);
+                    _countdown = El.Text(MoneyStrings.F("topup.confirming", 0), "duo-notice-text");
+                    _topUp.Add(El.Div("duo-notice duo-notice-info", _countdown));
                     AddSignature();
                     break;
                 case TopUpStage.Confirmed:
-                    _topUp.Add(PhonePresentation.StatePanel(MoneyStrings.T("topup.confirmed"),
-                        _flow.CreditedCashCents.HasValue ? MoneyStrings.F("topup.credited", MoneyFormat.Cash(_flow.CreditedCashCents.Value)) : MoneyStrings.T("topup.creditedSoon"),
-                        PhonePresentation.Tone.Success));
+                    _topUp.Add(Duo.Empty(MoneyStrings.T("topup.confirmed"),
+                        _flow.CreditedCashCents.HasValue ? MoneyStrings.F("topup.credited", MoneyFormat.Cash(_flow.CreditedCashCents.Value)) : MoneyStrings.T("topup.creditedSoon")));
                     AddSignature();
-                    _topUp.Add(MoneyUi.Btn(MoneyStrings.T("common.done"), () => _flow.Reset()));
+                    _topUp.Add(SheetButton(MoneyStrings.T("common.done"), () => { _flow.Reset(); _sheet?.Close(); }));
                     break;
                 case TopUpStage.Pending:
-                    _topUp.Add(PhonePresentation.StatePanel(MoneyStrings.T("topup.pending"),
-                        MoneyStrings.T(_flow.SignUncertain ? "topup.pendingUnsure" : "topup.pendingBody"), PhonePresentation.Tone.Warning));
-                    if (_flow.StatusUnavailable) _topUp.Add(MoneyUi.Small(MoneyStrings.T("topup.statusUnavailable")));
+                    _topUp.Add(Duo.Notice(MoneyStrings.T("topup.pending") + ". " +
+                        MoneyStrings.T(_flow.SignUncertain ? "topup.pendingUnsure" : "topup.pendingBody"), Duo.Tone.Warning));
+                    if (_flow.StatusUnavailable) _topUp.Add(Duo.Footnote(MoneyStrings.T("topup.statusUnavailable")));
                     AddSignature();
-                    _topUp.Add(MoneyUi.Btn(MoneyStrings.T("topup.checkAgain"), () => _ = Check()));
+                    _topUp.Add(SheetButton(MoneyStrings.T("topup.checkAgain"), () => _ = Check()));
                     break;
                 case TopUpStage.Expired:
                 case TopUpStage.Failed:
-                    _topUp.Add(PhonePresentation.StatePanel(
-                        MoneyStrings.T(_flow.Stage == TopUpStage.Expired ? "topup.expired" : "topup.failedTitle"),
-                        MoneyStrings.Err(_flow.Error), _flow.Stage == TopUpStage.Expired ? PhonePresentation.Tone.Neutral : PhonePresentation.Tone.Danger));
-                    _topUp.Add(MoneyUi.Btn(MoneyStrings.T("topup.newTopup"), () => _flow.Reset()));
+                    _topUp.Add(Duo.Notice(MoneyStrings.T(_flow.Stage == TopUpStage.Expired ? "topup.expired" : "topup.failedTitle") + ". " +
+                        MoneyStrings.Err(_flow.Error), _flow.Stage == TopUpStage.Expired ? Duo.Tone.Neutral : Duo.Tone.Danger));
+                    _topUp.Add(SheetButton(MoneyStrings.T("topup.newTopup"), () => _flow.Reset()));
                     break;
             }
         }
@@ -155,58 +218,60 @@ namespace CTLife.Economy
         private void AddSignature()
         {
             if (!string.IsNullOrEmpty(_flow.Signature))
-                _topUp.Add(MoneyUi.Small(MoneyStrings.F("topup.signature", MoneyFormat.Short(_flow.Signature, 6, 6))));
+                _topUp.Add(Duo.Footnote(MoneyStrings.F("topup.signature", MoneyFormat.Short(_flow.Signature, 6, 6))));
         }
 
         private void RenderChoose()
         {
-            _topUp.Add(MoneyUi.Small(MoneyStrings.T("topup.note")));
+            _topUp.Add(Duo.Footnote(MoneyStrings.T("topup.note"), "duo-topup-note"));
             bool paymentsOn = FeatureFlags.IsAvailable(FeatureFlags.Payments);
-            if (!paymentsOn) _topUp.Add(MoneyUi.Notice(MoneyStrings.T("topup.paymentsOff"), "warn"));
-            if (!WalletAvailable) _topUp.Add(MoneyUi.Notice(MoneyStrings.T("topup.walletOff"), "warn"));
+            if (!paymentsOn) _topUp.Add(Duo.Notice(MoneyStrings.T("topup.paymentsOff"), Duo.Tone.Warning));
+            if (!WalletAvailable) _topUp.Add(Duo.Notice(MoneyStrings.T("topup.walletOff"), Duo.Tone.Warning));
             if (_flow.Stage == TopUpStage.Error && _flow.Error != null)
             {
-                _topUp.Add(MoneyUi.Notice(MoneyStrings.Err(_flow.Error), "error"));
+                _topUp.Add(Duo.Notice(MoneyStrings.Err(_flow.Error), Duo.Tone.Danger));
                 if (_flow.Error.OutcomeUnknown && _flow.Sku != null)
-                    _topUp.Add(MoneyUi.Btn(MoneyStrings.T("common.retry"), () => Create(_flow.Sku, _flow.Currency)));
+                    _topUp.Add(El.Div("duo-topup-actions", Duo.Pill(MoneyStrings.T("common.retry"), () => Create(_flow.Sku, _flow.Currency))));
             }
 
-            _topUp.Add(MoneyUi.Text(MoneyStrings.T("topup.currency"), "ct-section-title"));
-            var chips = El.Div("ct-app-tabs ct-money-tabs");
+            _topUp.Add(Duo.GroupHeader(MoneyStrings.T("topup.currency")));
+            var chips = El.Div("duo-topup-currencies");
             foreach (var code in TopUpCatalog.CurrencyOrder)
             {
                 var c = code;
                 var access = _catalog.Availability(c, _cluster);
-                var chip = MoneyUi.Chip(c, () => { _currency = c; _ack = false; RenderTopUp(); }, c == _currency);
+                var chip = Duo.Pill(c, () => { _currency = c; _ack = false; RenderTopUp(); }, c == _currency ? Duo.PillKind.Primary : Duo.PillKind.Plain);
+                chip.name = "topup-currency-" + c;
                 chip.SetEnabled(access.CanPay);
                 chips.Add(chip);
             }
             _topUp.Add(chips);
             var avail = _catalog.Availability(_currency, _cluster);
             var bonus = _catalog.Currencies.TryGetValue(_currency, out var cur) ? cur.BonusBps : 0;
-            _topUp.Add(MoneyUi.Small(MoneyStrings.T(avail.ReasonKey) + (bonus > 0 ? "  " + MoneyStrings.F("topup.bonus", MoneyFormat.Bps(bonus, false)) : "")));
+            _topUp.Add(Duo.Footnote(MoneyStrings.T(avail.ReasonKey) + (bonus > 0 ? "  " + MoneyStrings.F("topup.bonus", MoneyFormat.Bps(bonus, false)) : ""), "duo-topup-note"));
 
             if (!_catalog.Loaded)
             {
-                _topUp.Add(MoneyUi.Notice(MoneyStrings.T("err.invalidResponse"), "error"));
+                _topUp.Add(Duo.Notice(MoneyStrings.T("err.invalidResponse"), Duo.Tone.Danger));
                 return;
             }
+            var packs = El.Div("duo-list");
             foreach (var pack in _catalog.Packs)
             {
                 var p = pack;
                 var price = _currency == "USDC" ? MoneyStrings.F("topup.packPrice", p.PriceUsdc) : MoneyStrings.F("topup.packQuote", p.PriceUsdc, _currency);
-                var button = MoneyUi.Btn(MoneyStrings.T("topup.choose"), () => Create(p.Id, _currency));
+                var button = Duo.Pill(MoneyStrings.T("topup.choose"), () => Create(p.Id, _currency), Duo.PillKind.Primary);
+                button.name = "topup-pack-" + p.Id;
                 // Creating an intent moves nothing, so it is allowed without a wallet (editor verification against a local
                 // backend); "Pay with wallet" stays disabled until MWA is available.
                 button.SetEnabled(paymentsOn && avail.CanPay && _flow.CanStartNew);
-                var copy = El.Div("ct-duo-pack-copy",
-                    p.BestValue ? PhonePresentation.Status(MoneyStrings.T("topup.best"), PhonePresentation.Tone.Accent) : null,
-                    MoneyUi.Text(p.Label, "ct-h2"),
-                    MoneyUi.Text(MoneyStrings.F("topup.get", MoneyFormat.Cash(p.CashCents))), MoneyUi.Small(price));
-                var packCard = MoneyUi.Card(copy, button);
-                packCard.AddToClassList("ct-duo-pack");
-                _topUp.Add(packCard);
+                var row = new DuoRow().Leading(Duo.IconSquare("cash", p.BestValue ? "orange" : "green"))
+                    .Title(p.Label + (p.BestValue ? " · " + MoneyStrings.T("topup.best") : ""), "duo-row-title-strong")
+                    .Subtitle(MoneyStrings.F("topup.get", MoneyFormat.Cash(p.CashCents)) + " · " + price, twoLines: true).Trailing(button);
+                packs.Add(row);
             }
+            Duo.MarkLast(packs);
+            _topUp.Add(packs);
         }
 
         private void Create(string sku, string currency)
@@ -229,30 +294,36 @@ namespace CTLife.Economy
             int decimals = _catalog.Decimals(currency, -1);
             string amount = decimals >= 0 ? MoneyFormat.Token(intent.Amount, decimals, currency) : (intent.Amount ?? "—") + " " + currency;
             var access = _catalog.Availability(currency, _cluster);
-            _countdown = MoneyUi.Text("", "ct-money-value");
-            _topUp.Add(MoneyUi.Card(
-                MoneyUi.Text(MoneyStrings.T("topup.reviewTitle"), "ct-h2"),
-                MoneyUi.Pair(MoneyStrings.T("topup.pay"), amount),
-                MoneyUi.Pair(MoneyStrings.T("topup.receive"), intent.CashCents.HasValue ? MoneyFormat.Cash(intent.CashCents.Value) : MoneyStrings.T("topup.notShown")),
-                intent.BonusBps.HasValue && intent.BonusBps.Value > 0 ? MoneyUi.Pair(MoneyStrings.T("topup.bonusLine"), MoneyFormat.Bps(intent.BonusBps.Value)) : null,
-                MoneyUi.Pair(MoneyStrings.T("topup.to"), MoneyFormat.Short(intent.Recipient)),
-                El.Div("ct-row ct-money-pair", MoneyUi.Text(MoneyStrings.T("topup.expires"), "ct-money-key"), El.Div("ct-grow"), _countdown),
-                MoneyUi.Small(access.NeedsMainnetConfirm ? "" : MoneyStrings.T("topup.devnet"))));
+            _countdown = El.Text("", "duo-row-value");
+            var pairs = El.Div("duo-list duo-topup-review",
+                Pair(MoneyStrings.T("topup.pay"), amount),
+                Pair(MoneyStrings.T("topup.receive"), intent.CashCents.HasValue ? MoneyFormat.Cash(intent.CashCents.Value) : MoneyStrings.T("topup.notShown")),
+                intent.BonusBps.HasValue && intent.BonusBps.Value > 0 ? Pair(MoneyStrings.T("topup.bonusLine"), MoneyFormat.Bps(intent.BonusBps.Value)) : null,
+                Pair(MoneyStrings.T("topup.to"), MoneyFormat.Short(intent.Recipient)),
+                Pair(MoneyStrings.T("topup.expires"), null, _countdown));
+            Duo.MarkLast(pairs);
+            _topUp.Add(pairs);
+            if (!access.NeedsMainnetConfirm) _topUp.Add(Duo.Footnote(MoneyStrings.T("topup.devnet")));
             Tick();
 
-            if (_flow.Error != null) _topUp.Add(MoneyUi.Notice(MoneyStrings.Err(_flow.Error), "error"));
+            if (_flow.Error != null) _topUp.Add(Duo.Notice(MoneyStrings.Err(_flow.Error), Duo.Tone.Danger));
             if (!intent.HasTx && !string.IsNullOrEmpty(intent.SolanaPayUrl))
-                _topUp.Add(MoneyUi.Card(MoneyUi.Small(MoneyStrings.T("topup.solanaPay")), MoneyUi.Small(MoneyFormat.Short(intent.SolanaPayUrl, 24, 8)),
-                    MoneyUi.Btn(MoneyStrings.T("topup.copyLink"), () => MoneyUi.Copy(intent.SolanaPayUrl), "ct-btn ct-btn-ghost")));
+            {
+                var copy = Duo.Pill(MoneyStrings.T("topup.copyLink"), () => MoneyUi.Copy(intent.SolanaPayUrl));
+                var link = new DuoRow().Title(MoneyStrings.T("topup.solanaPay")).Subtitle(MoneyFormat.Short(intent.SolanaPayUrl, 24, 8)).Trailing(copy);
+                _topUp.Add(El.Div("duo-list", link));
+            }
 
-            var pay = MoneyUi.Btn(MoneyStrings.T("topup.payWallet"), () => _ = PayAsync());
+            var pay = SheetButton(MoneyStrings.T("topup.payWallet"), () => _ = PayAsync(), name: "topup-pay");
             if (access.NeedsMainnetConfirm)
             {
-                _topUp.Add(MoneyUi.Notice(MoneyStrings.T("topup.mainnetTitle") + ". " + MoneyStrings.F("topup.mainnetBody", currency), "warn"));
-                _topUp.Add(MoneyUi.Ack(MoneyStrings.F("topup.mainnetAck", currency), on => { _ack = on; pay.SetEnabled(CanPay(intent, access)); }));
+                _topUp.Add(Duo.Notice(MoneyStrings.T("topup.mainnetTitle") + ". " + MoneyStrings.F("topup.mainnetBody", currency), Duo.Tone.Warning));
+                var ack = new DuoToggle(_ack, on => { _ack = on; pay.SetEnabled(CanPay(intent, access)); }) { name = "topup-mainnet-ack" };
+                _topUp.Add(El.Div("duo-list", ack.InRow(MoneyStrings.F("topup.mainnetAck", currency))));
             }
             pay.SetEnabled(CanPay(intent, access));
-            _topUp.Add(MoneyUi.Row(pay, MoneyUi.Btn(MoneyStrings.T("common.cancel"), () => _flow.Reset(), "ct-btn ct-btn-ghost")));
+            _topUp.Add(pay);
+            _topUp.Add(SheetButton(MoneyStrings.T("common.cancel"), () => _flow.Reset(), primary: false, name: "topup-cancel"));
         }
 
         private bool CanPay(PaymentIntentRow intent, CurrencyAvailability access) =>

@@ -195,6 +195,12 @@ namespace CTLife.Economy
 
         protected bool Alive => !Disposed && !Hub.Disposed && _session.IsSignedIn && _session.UserId == _user;
 
+        /// <summary>The Duo that shows this view (nav back); set by MoneyApp after creation, null in tests.</summary>
+        public PhoneShell Phone { get; internal set; }
+
+        /// <summary>What the phone shows: the scroll view, or a Duo frame around it (nav, bottom bar).</summary>
+        public virtual VisualElement Container => Root;
+
         private void SessionChanged()
         {
             if (!Alive) Dispose();
@@ -274,7 +280,8 @@ namespace CTLife.Economy
         {
             Closed();
             _view = CreateView(Hub);
-            return _view.Root;
+            _view.Phone = Phone;
+            return _view.Container;
         }
 
         internal abstract MoneyView CreateView(MoneyHub hub);

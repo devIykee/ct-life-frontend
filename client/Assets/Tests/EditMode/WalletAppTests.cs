@@ -62,7 +62,7 @@ namespace CTLife.Tests
             var page = Open(rpc, null);
             Assert.AreEqual(WalletStrings.T("disconnected"), page.Q<Label>(className: "ct-wallet-status").text);
             Assert.IsEmpty(page.Query<Label>(className: "ct-wallet-amount").ToList());
-            Assert.IsFalse(page.Q<Button>().enabledSelf);
+            Assert.IsFalse(page.Q<Button>("wallet-refresh").enabledSelf, "no refresh action without a wallet");
             Assert.AreEqual(0, rpc.Calls);
         }
 
@@ -78,6 +78,20 @@ namespace CTLife.Tests
             await _service.Refresh();
             Assert.AreEqual(0.000000002m, _service.State.Token("SOL").Amount);
             Assert.AreEqual("0.000000001", page.Q<Label>(className: "ct-wallet-amount").text);
+        }
+
+        [Test]
+        public void CardStackShowsNoLoanWithoutDebtAndBringsTappedCardForward()
+        {
+            var page = Open(new BalanceRpc(), null);
+            Assert.IsNull(page.Q("wallet-card-loan"), "no debt reported, no Loan card");
+            var stack = page.Q<DuoWalletStack>();
+            Assert.AreEqual(DuoWalletStack.Card.Solana, stack.Front, "the Wallet app opens on the Solana card");
+            Assert.IsTrue(page.Q("wallet-card-solana").ClassListContains("duo-wcard-front"));
+            stack.Show(DuoWalletStack.Card.Cash);
+            Assert.IsTrue(page.Q("wallet-card-cash").ClassListContains("duo-wcard-front"));
+            Assert.IsTrue(page.Q("wallet-card-solana").ClassListContains("duo-wcard-stacked"));
+            Assert.IsEmpty(page.Query<Label>(className: "ct-wallet-amount").ToList(), "disconnected: no token amounts at all");
         }
 
         private sealed class BalanceRpc : IWalletBalanceRpc
