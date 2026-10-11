@@ -180,6 +180,11 @@ namespace CTLife.EditorTools
                     CityHudCapture.IslandOnly = true;
                     await CityHudCapture.Run(Shot, Wait, Expect, Step, Receipt);
                 }
+                else if (Set == "vehicles")
+                {
+                    CityHudCapture.VehiclesOnly = true;
+                    await CityHudCapture.Run(Shot, Wait, Expect, Step, Receipt);
+                }
                 else if (Set == "controls")
                 {
                     CityHudCapture.ControlsOnly = true;
@@ -290,6 +295,22 @@ namespace CTLife.EditorTools
             if (c.r + c.g + c.b < 0.01f && _read.GetPixel(40, 40).r < 0.01f) Failures.Add(name + ": frame looks empty");
             Shots.Add(name + ".png");
             Step("shot " + name);
+        }
+
+        /// <summary>
+        /// A half-size JPEG of the current frame, taken at once (no frames waited, unlike <see cref="Shot"/>), so a scripted
+        /// run filmed at a fixed capture rate keeps its timing. Film frames for review clips.
+        /// </summary>
+        internal static void FilmFrame(string name)
+        {
+            Render();
+            Graphics.Blit(_rt, _half);
+            var prev = RenderTexture.active;
+            RenderTexture.active = _half;
+            _readHalf.ReadPixels(new Rect(0, 0, W / 2, H / 2), 0, 0, false);
+            _readHalf.Apply(false);
+            RenderTexture.active = prev;
+            File.WriteAllBytes(Path.Combine(_out, name + ".jpg"), _readHalf.EncodeToJPG(88));
         }
 
         /// <summary>Half-size frames for a strip, with animation time slowed so a fast move is sampled densely.</summary>

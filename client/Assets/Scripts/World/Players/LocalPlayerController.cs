@@ -109,6 +109,33 @@ namespace CTLife.World
         public CharacterBody Body => _body;
         public bool Stunned => _stunned;
 
+        /// <summary>Driving or flying (Feel lane F2): the vehicle carries the avatar; no walking, no `move` messages.</summary>
+        public bool InVehicle { get; private set; }
+
+        /// <summary>Hand the avatar to a vehicle seat (VehicleSystem parents it there).</summary>
+        public void EnterVehicleMode()
+        {
+            CancelMovement();
+            StandIfSeated();
+            InVehicle = true;
+            _body?.Suspend(true);
+            ResetFootsteps();
+        }
+
+        /// <summary>Back on foot at <paramref name="position"/>, facing <paramref name="yawDegrees"/>.</summary>
+        public void ExitVehicleMode(Vector3 position, float yawDegrees)
+        {
+            InVehicle = false;
+            var rotation = Quaternion.Euler(0f, yawDegrees, 0f);
+            if (_body != null) { _body.Suspend(false); _body.Teleport(position, rotation); }
+            else transform.SetPositionAndRotation(position, rotation);
+            _locomotion = "loco_idle";
+            _view?.SetBase("loco_idle");
+            _dirty = true; _paceFresh = true;
+            ResetFootsteps();
+            GetComponent<LocalPlayerMarker>()?.Pulse();
+        }
+
         public void Init(VenueSceneRoot venue, VenueChannel channel)
         {
             _venue = venue;
@@ -136,6 +163,7 @@ namespace CTLife.World
             _paceFresh = true;
             ResetFootsteps();
             BindListener();
+            if (OpenWorld) CTLife.World.Vehicles.VehicleSystem.Ensure(this);   // parked vehicles, the drone (Feel lane F2)
         }
 
         private void BindListener()
@@ -173,7 +201,7 @@ namespace CTLife.World
         /// <summary>HUD axes: right/up on screen. Refresh while held; a missing producer times out safely.</summary>
         public void SetMoveInput(Vector2 input)
         {
-            if (_appPaused || !isActiveAndEnabled) return;
+            if (_appPaused || !isActiveAndEnabled || InVehicle) return;
             if (_stunned || (_body != null && _body.Airborne)) { _moveInput = Vector2.zero; return; } // down or falling: no steering
             if (float.IsNaN(input.x) || float.IsInfinity(input.x) || float.IsNaN(input.y) || float.IsInfinity(input.y))
                 input = Vector2.zero;
@@ -249,6 +277,7 @@ namespace CTLife.World
         public bool MoveTo(Vector3 worldPoint, string thenSitAt = null)
         {
             if (_appPaused) { ObserveReviewCommand("path-rejected:paused"); return false; }
+            if (InVehicle) { ObserveReviewCommand("path-rejected:in-vehicle"); return false; }
             StandIfSeated();
             if (!BodyReady) { ObserveReviewCommand("path-rejected:body-not-ready"); return false; }
             var target = worldPoint;
@@ -525,7 +554,7 @@ namespace CTLife.World
         {
             // Local locomotion still animates when the venue is entered without realtime (offline/review).
             // Server-owned actions such as claiming a seat continue to require a connected channel.
-            if (!string.IsNullOrEmpty(_seatedSpot)) { ResetFootsteps(); return; }
+            if (!string.IsNullOrEmpty(_seatedSpot) || InVehicle) { ResetFootsteps(); return; }
             if (_stunned || _body == null || _view == null) { ResetFootsteps(); return; }
             if (_view.SeatPresentationActive)
             {

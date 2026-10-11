@@ -1,5 +1,6 @@
 using CTLife.Audio;
 using CTLife.Core;
+using CTLife.World.Vehicles;
 using UnityEngine;
 
 namespace CTLife.World
@@ -172,8 +173,91 @@ namespace CTLife.World
             return Interior ? Mathf.Min(d, InteriorDistance * _zoom) : d;
         }
 
+        // ------------------------------------------------------------------ vehicles (Feel lane F2)
+
+        private Vehicle _vehicle;
+        private float _shake, _vehicleYaw;
+        private Transform _footTarget;
+
+        /// <summary>Chase a vehicle (the driver's avatar rides inside it).</summary>
+        public void FollowVehicle(Vehicle v)
+        {
+            if (v == null) return;
+            if (_vehicle == null) _footTarget = Target;
+            _vehicle = v;
+            _vehicleYaw = v.transform.eulerAngles.y;
+            yaw = _vehicleYaw;
+            pitch = v.Spec != null ? v.Spec.camPitch : DefaultPitch;
+            _lastOrbitAt = -10f;
+            ShowTarget(true);
+        }
+
+        /// <summary>Back on foot behind the avatar.</summary>
+        public void FollowAvatar(Transform avatar)
+        {
+            bool fromVehicle = _vehicle != null;
+            _vehicle = null;
+            if (Camera != null) Camera.fieldOfView = FieldOfView;
+            Target = avatar != null ? avatar : _footTarget;
+            if (!fromVehicle || Target == null) { SnapToTarget(); return; }
+            // out of a vehicle: keep looking the way the chase camera did, so the car stays in view beside the player
+            // (snapping behind a player who faces away from the car would put the camera against the car's side)
+            _pivot = TargetPosition + Vector3.up * PivotHeight;
+            _lastTarget = TargetPosition;
+            pitch = DefaultPitch;
+            _boom = DesiredDistance();
+            _lastOrbitAt = Time.time;   // like a manual orbit: recentring behind the player waits a moment
+        }
+
+        public Vehicle FollowingVehicle => _vehicle;
+
+        /// <summary>A collision jolt (0..1).</summary>
+        public void Shake(float amount) => _shake = Mathf.Max(_shake, Mathf.Clamp01(amount));
+
+        private static int VehicleCameraMask => CollisionMask & ~((1 << CharacterLayers.Vehicle) | (1 << CharacterLayers.VehicleFlight) | (1 << CharacterLayers.Characters));
+
+        private void ChaseVehicle(float dt)
+        {
+            var v = _vehicle;
+            var spec = v.Spec ?? new VehicleSpec();
+            var rb = v.Body;
+            var vel = rb != null ? rb.linearVelocity : Vector3.zero;
+            float speed = vel.magnitude;
+            bool flying = v.Flying || VehicleCatalog.Flies(v.Kind);
+            // the boom swings behind the direction of travel (the nose when slow, flying or reversing)
+            float fwdSpeed = Vector3.Dot(vel, v.transform.forward);
+            var flat = new Vector3(vel.x, 0f, vel.z);
+            float heading = !flying && fwdSpeed > 4f && flat.sqrMagnitude > 1f ? Quaternion.LookRotation(flat).eulerAngles.y : v.transform.eulerAngles.y;
+            float idle = Time.time - _lastOrbitAt;
+            if (idle > 1.4f)
+            {
+                yaw = Mathf.Repeat(yaw + Mathf.DeltaAngle(yaw, heading) * (1f - Mathf.Exp(-(flying ? 2.2f : 3.4f) * dt)), 360f);
+                pitch = Mathf.Lerp(pitch, spec.camPitch + (flying ? 4f : 0f), 1f - Mathf.Exp(-1.5f * dt));
+            }
+            float top = Mathf.Max(5f, flying ? spec.flightTopSpeed : spec.topSpeed);
+            float k = Mathf.Clamp01(speed / top);
+            if (Camera != null) Camera.fieldOfView = Mathf.Lerp(Camera.fieldOfView, FieldOfView + 12f * k, 1f - Mathf.Exp(-2.5f * dt));
+            var pos = v.transform.position;
+            // a tight follow (the car stays big on a phone screen at speed); the yaw lag and FOV carry the sense of speed
+            var pivotTarget = pos + Vector3.up * spec.camHeight + Vector3.ClampMagnitude(vel, 40f) * 0.015f;
+            _pivot = Vector3.Lerp(_pivot, pivotTarget, 1f - Mathf.Exp(-26f * dt));
+            if ((_pivot - pivotTarget).sqrMagnitude > 400f) _pivot = pivotTarget;   // a respawn: no swoop
+            var rot = Quaternion.Euler(pitch, yaw, 0f);
+            float want = spec.camDistance * (1f + 0.18f * k) * _zoom;
+            float clear = ClearDistance(_pivot, rot * Vector3.back, want, CollisionRadius, VehicleCameraMask);
+            _boom = clear < _boom ? clear : Mathf.Lerp(_boom, clear, 1f - Mathf.Exp(-2.5f * dt));
+            var position = _pivot + rot * Vector3.back * _boom;
+            if (_shake > 0f)
+            {
+                position += new Vector3(Mathf.PerlinNoise(Time.time * 23f, 0.1f) - 0.5f, Mathf.PerlinNoise(0.3f, Time.time * 23f) - 0.5f, 0f) * (_shake * 0.35f);
+                _shake = Mathf.MoveTowards(_shake, 0f, dt * 1.6f);
+            }
+            transform.SetPositionAndRotation(position, Quaternion.LookRotation(_pivot + Vector3.up * 0.2f - position));
+        }
+
         private void LateUpdate()
         {
+            if (_vehicle != null) { ChaseVehicle(Mathf.Min(Time.deltaTime, 0.1f)); return; }
             if (Target == null) return;
             // Game time, like the body it follows (the body moves on Time.deltaTime; captures step both at a fixed rate).
             float dt = Mathf.Min(Time.deltaTime, 0.1f);

@@ -24,6 +24,8 @@ namespace CTLife.UI
             // The multi-model cast's credits (Sketchfab hero authors and others) land as one notice file from the cast lane.
             if (Resources.Load<TextAsset>(ModelCredits) != null)
                 entries.Add(Credit("credits.models", "credits.modelsSummary", null, ModelCredits, "UI/Licenses/CC-BY-4.0"));
+            // Feel lane F2: vehicle models (two CC BY 3.0) and their CC0 recorded sounds
+            entries.Add(Credit("credits.vehicles", "credits.vehiclesSummary", "https://poly.pizza", "UI/Licenses/Vehicle-Credits", "UI/Licenses/CC-BY-3.0"));
             entries.Add(El.Text(Strings.T("credits.section.audio"), "ct-eyebrow"));
             entries.Add(Credit("credits.music", "credits.musicSummary", null, "Audio/Music-Credits", "UI/Licenses/CC-BY-4.0"));
             entries.Add(El.Text(Strings.T("credits.section.type"), "ct-eyebrow"));

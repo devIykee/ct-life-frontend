@@ -24,6 +24,16 @@ namespace CTLife.World
         private bool _hasLook, _handsOnTable;
         private Vector3 _leftHand, _rightHand, _leftElbow, _rightElbow;
         private float _handWeight;
+        // Feel lane F2: hands on a steering wheel or handlebar (VehicleSystem sets the grips every frame while driving).
+        private Vector3 _gripLeft, _gripRight, _gripElbowOut;
+        private int _gripFrame = -10;
+        private float _gripWeight;
+
+        /// <summary>Hold the hands at these world points this frame (a steering wheel's rim, handlebar grips).</summary>
+        public void Grip(Vector3 left, Vector3 right, Vector3 elbowOut)
+        {
+            _gripLeft = left; _gripRight = right; _gripElbowOut = elbowOut; _gripFrame = Time.frameCount;
+        }
         private Transform _cam;
 
         public static bool Enabled = true;
@@ -202,7 +212,8 @@ namespace CTLife.World
             return info.IsName("act_sit") || info.IsName("act_type") || info.IsName("act_sit_talk") || info.IsName("act_frantic_type") ||
                    info.IsName("act_sit_lounge") || info.IsName("act_sit_beanbag") || info.IsName("act_sit_stool") ||
                    info.IsName(CafeSeatMotionProfile.SocialState) || info.IsName(CafeSeatMotionProfile.TypingState) ||
-                   info.IsName("act_lean_back") || info.IsName("act_head_in_hands") || info.IsName("act_sit_down") || info.IsName("act_stand_up");
+                   info.IsName("act_lean_back") || info.IsName("act_head_in_hands") || info.IsName("act_sit_down") || info.IsName("act_stand_up") ||
+                   info.IsName("act_drive");
         }
 
         // ------------------------------------------------------------------ feet
@@ -318,6 +329,20 @@ namespace CTLife.World
 
         private void Hands(bool seated)
         {
+            bool gripping = Time.frameCount - _gripFrame <= 2;
+            _gripWeight = Mathf.MoveTowards(_gripWeight, gripping ? 1f : 0f, 5f * Time.deltaTime);
+            if (_gripWeight > 0.01f)
+            {
+                _animator.SetIKPositionWeight(AvatarIKGoal.LeftHand, _gripWeight);
+                _animator.SetIKPositionWeight(AvatarIKGoal.RightHand, _gripWeight);
+                _animator.SetIKPosition(AvatarIKGoal.LeftHand, _gripLeft);
+                _animator.SetIKPosition(AvatarIKGoal.RightHand, _gripRight);
+                _animator.SetIKHintPositionWeight(AvatarIKHint.LeftElbow, _gripWeight);
+                _animator.SetIKHintPositionWeight(AvatarIKHint.RightElbow, _gripWeight);
+                _animator.SetIKHintPosition(AvatarIKHint.LeftElbow, _gripLeft - _gripElbowOut * 0.25f + Vector3.down * 0.25f);
+                _animator.SetIKHintPosition(AvatarIKHint.RightElbow, _gripRight + _gripElbowOut * 0.25f + Vector3.down * 0.25f);
+                return;
+            }
             var info = _animator.GetCurrentAnimatorStateInfo(0);
             bool sitting = seated && info.IsName("act_sit");
             if (sitting && Time.time >= _nextHands) { _nextHands = Time.time + 0.5f; FindTable(); }
