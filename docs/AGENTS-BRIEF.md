@@ -32,6 +32,8 @@ later explicit user decisions, including the art direction below, supersede olde
 ## Current priorities (user decision, 2026-10-07) — read first
 Latest presentation scope (2026-10-12): research and redesign the signed-in lobby, in-game phone and its app presentation. Use the user's character-centred game-lobby references; show actual connected-wallet balances separately from fictional Cash. Name the fictional hinged phone **Solana Duo**, styled like one leaf of a folding device. This explicitly authorizes visual work on these surfaces while preserving game behavior.
 
+Latest refinement (2026-10-12): the user approves the Duo hardware mockup. CTOS inside must feel like an iPhone home screen/OS, rather than a scrolling app menu. Research and redesign the in-game HUD too; sit/stand actions should appear by the relevant object or character in the scene, not tucked in a corner. Preserve actual interactions and test on the Seeker.
+
 - **No deadline.** Ignore CLOCK IN and every hackathon date in older docs. Do not plan around it.
 - **Everything must work first.** Build the whole game robustly and properly, phase by phase:
   real wallet sign-in on the Seeker, real backend integration (devIykee's server, run locally

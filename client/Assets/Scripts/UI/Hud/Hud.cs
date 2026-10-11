@@ -49,6 +49,7 @@ namespace CTLife.UI
             _needs.Show(false);
             _needsSummary = El.Text(Strings.T("hud.needsGood"), "ct-needs-summary");
             _needsToggle = El.Btn("", ToggleNeeds, "ct-needs-toggle");
+            _needsToggle.name = "hud-needs";
             _needsToggle.tooltip = Strings.T("hud.needsShow");
             _needsToggle.Add(new UiIcon("needs"));
             _needsToggle.Add(El.Div("ct-col", El.Text(Strings.T("hud.needsToggle"), "ct-needs-toggle-title"), _needsSummary));
@@ -65,28 +66,35 @@ namespace CTLife.UI
             _emotes = new EmotePicker();
             _movement = new MovementControls();
             _interact = new InteractionPrompt();
-            _mic = El.DockButton("mic", Strings.T("hud.micOff"), ToggleMic);
+            _mic = HudAction("mic", Strings.T("hud.micOff"), ToggleMic);
             _micLabel = _mic.Q<Label>();
 
-            var location = El.Div("ct-hud-location", _venue, El.Div("ct-hud-presence", _online, _mood));
+            var location = El.Btn("", () => OpenUtility(OpenMap), "ct-hud-location");
+            location.name = "hud-map";
+            location.tooltip = Strings.T("hud.map");
+            location.Add(El.PassThrough(El.Div("ct-hud-location-mark", new UiIcon("map"))));
+            location.Add(El.PassThrough(El.Div("ct-hud-location-copy", _venue, El.Div("ct-hud-presence", _online, _mood))));
+            location.Add(new UiIcon("next").With("ct-hud-location-next"));
             var cash = El.Div("ct-cash-card", new UiIcon("cash"),
                 El.Div("ct-col", El.Text(Strings.T("hud.cash"), "ct-hud-caption"), _cash));
-            var top = El.PassThrough(El.Div("ct-hud-top", location, El.Div("ct-grow"), cash));
+            El.PassThrough(cash);
+            var top = El.Div("ct-hud-top", cash, _needsToggle);
+            top.pickingMode = PickingMode.Ignore;
             El.PassThrough(_needs);
             var social = El.Div("ct-hud-social",
-                El.DockButton("chat", Strings.T("hud.chat"), () => { _emotes.Hide(); _chat.Toggle(); }),
-                El.DockButton("emote", Strings.T("hud.emote"), () => { _chat.Hide(); _emotes.Toggle(); }), _mic,
-                El.DockButton("phone", Strings.T("hud.phone"), () => OpenPhone?.Invoke(), "ct-dock-action ct-dock-primary", null));
+                HudAction("chat", Strings.T("hud.chat"), () => { CollapseNeeds(); _emotes.Hide(); _chat.Toggle(); }),
+                HudAction("emotes", Strings.T("hud.emote"), () => { CollapseNeeds(); _chat.Hide(); _emotes.Toggle(); }, "emote"), _mic,
+                HudAction("phone", Strings.T("phone.ctos"), () => OpenUtility(OpenPhone), primary: true));
             var personal = El.Div("ct-hud-personal",
-                El.DockButton("map", Strings.T("hud.map"), () => OpenMap?.Invoke(), sfx: null),
-                El.DockButton("lobby", Strings.T("hud.lobby"), () => OpenHome?.Invoke()));
+                HudAction("lobby", Strings.T("hud.lobby"), () => OpenUtility(OpenHome)), location);
             // Movement owns the lower left. Social/utility actions stay on the right.
             social.pickingMode = personal.pickingMode = PickingMode.Ignore;
-            _root = El.Div("ct-hud", top, _needsToggle, _needs, _movement.Element, _emotes.Element, _chat.Element, social, personal, _interact.Element);
+            _root = El.Div("ct-hud", top, _needs, _movement.Element, _emotes.Element, _chat.Element, social, personal, _interact.Element);
             _root.pickingMode = PickingMode.Ignore;
+            _interact.SetObstacles(top, _needsToggle, _needs, _movement.Element, social, personal, _chat.Element, _emotes.Element);
 
             _subs.On<ProfileChangedSignal>(_ => RefreshProfile());
-            _subs.On<OpenMapRequestSignal>(_ => OpenMap?.Invoke()); // the door interaction
+            _subs.On<OpenMapRequestSignal>(_ => OpenUtility(OpenMap)); // the door interaction
             _subs.On<DegradedChangedSignal>(_ => RefreshDegraded());
             _subs.On<OnlineCountSignal>(s => _online.text = Strings.F("hud.online", s.online));
             // The count only changes on joins/leaves; show the value the city room already has.
@@ -111,11 +119,26 @@ namespace CTLife.UI
             RefreshDegraded();
         }
 
+        private static Button HudAction(string id, string label, Action action, string icon = null, bool primary = false)
+        {
+            var button = El.Btn("", action, primary ? "ct-dock-action ct-dock-primary" : "ct-dock-action");
+            button.name = "hud-" + id;
+            button.tooltip = label;
+            button.Add(El.PassThrough(El.Div("ct-hud-keycap", new UiIcon(icon ?? id))));
+            button.Add(El.PassThrough(El.Text(label, "ct-dock-label")));
+            return button;
+        }
+
         public void Show(bool on)
         {
             _root.Show(on);
             _movement.SetEnabled(on);
-            if (!on) { _chat.Hide(); _emotes.Hide(); TurnMicOff(); }
+            if (!on)
+            {
+                _chat.Hide(); _emotes.Hide();
+                if (_needsExpanded) ToggleNeeds();
+                TurnMicOff();
+            }
         }
 
         /// <summary>
@@ -145,7 +168,9 @@ namespace CTLife.UI
         private void RefreshProfile()
         {
             if (!Services.TryGet<PlayerProfile>(out var p) || p.Me == null) return;
-            _cash.text = Money.Cash(p.CashCents);
+            decimal cash = p.CashCents / 100m;
+            _cash.text = Math.Abs(cash) >= 10000m ? "$" + LobbyAmounts.Compact(cash) : Money.Cash(p.CashCents);
+            _cash.tooltip = Money.Cash(p.CashCents);
             var n = p.Me.Needs;
             if (n == null) return;
             SetNeed("energy", n.Energy);
@@ -162,10 +187,19 @@ namespace CTLife.UI
 
         private void ToggleNeeds()
         {
+            if (!_needsExpanded) { _chat.Hide(); _emotes.Hide(); }
             _needsExpanded = !_needsExpanded;
             _needs.Show(_needsExpanded);
             _needsToggle.tooltip = Strings.T(_needsExpanded ? "hud.needsHide" : "hud.needsShow");
             _needsToggle.EnableInClassList("ct-needs-open", _needsExpanded);
+        }
+
+        private void CollapseNeeds() { if (_needsExpanded) ToggleNeeds(); }
+
+        private void OpenUtility(Action open)
+        {
+            CollapseNeeds(); _chat.Hide(); _emotes.Hide();
+            open?.Invoke();
         }
 
         private void SetNeed(string id, int value)

@@ -1,4 +1,4 @@
-READY TO COMMIT: client/Assets/Scripts/UI/Phone/PhoneShell.cs; client/Assets/Resources/UI/phone-ui.uss; client/Assets/Scripts/UI/Phone/Apps/WalletApp.cs (+ meta); client/Assets/Scripts/UI/Phone/Apps/WalletStrings.cs (+ meta); client/Assets/Scripts/App/PhoneCatalog.cs; client/Assets/Tests/EditMode/WalletAppTests.cs (+ meta); docs/research/solana-duo-phone-20261012.md; this log — Give Solana Duo a hinged device shell and a real read-only Wallet app.
+READY TO COMMIT: client/Assets/Scripts/UI/Phone/PhoneShell.cs; client/Assets/Scripts/UI/Phone/PhoneLauncher.cs (+ meta); client/Assets/Scripts/UI/Phone/PhoneWallpaper.cs (+ meta); client/Assets/Resources/UI/phone-ui.uss; client/Assets/Tests/EditMode/PhoneLauncherTests.cs (+ meta); docs/research/solana-duo-phone-20261012.md; this log — Give CTOS an iPhone-inspired Home Screen inside the approved Solana Duo hardware.
 
 ## 12 October 2026
 
@@ -29,3 +29,33 @@ Visually inspected final launcher (nine complete first-view app tiles), Jobs (se
 ## Device corrections
 
 Actual Seeker review found Profile wrapping at its last glyph. Launcher labels now take full tile width and use centered single-line text with bounded ellipsis for unusually long names. The new device capture confirms Profile fits. Lower-grid inspection found nine catalog routes using the fallback dots icon; PhoneShell now maps those routes to existing bundled assets. All 29 catalog routes resolve to a concrete icon. The coordinator rebuilt and performed final device checks; see the lobby progress log.
+
+## CTOS Home Screen revision
+
+User approved the hardware but requested an iPhone-like OS inside. Read current Apple Home Screen primary docs and visually inspected all three relevant official images; references and observed details are recorded in the research note. Hardware kept intact.
+
+Replaced the scrolling three-column launcher with four-column pages and persistent Map/Wallet/Messages/Spaces dock. Removed the Home title bar, retained subtle device identity, added original static Painter2D pearl/lavender/mint wallpaper using existing tokens. All app IDs/gates and the actual Wallet service remain connected. Page dots, horizontal swipes, keyboard navigation and the bottom Home control are functional; app-button drag suppression and capture-loss handling guard against a swipe launching an app. Off-page buttons do not enter the keyboard tab order. No external assets or dependencies.
+
+Files: `PhoneShell.cs`, `PhoneLauncher.cs` (+ meta), `PhoneWallpaper.cs` (+ meta), `phone-ui.uss`, `PhoneLauncherTests.cs` (+ meta). Seven tests now cover actual shell/pager behavior. Source and tests handed to root for compile/capture. Current revision's native tests now pass **66/66**, including all seven launcher cases; native visual review also passes as recorded below; Seeker touch review subsequently passed, as recorded below; prior verification sections describe the earlier launcher. No Unity/ADB/build/Git activity by this lane.
+
+First native CTOS run compiled: 64/65 targeted tests passed, including 5/6 initial launcher tests. The failing horizontal swipe exposed Unity captured events bypassing ancestor callbacks. Added direct grid-Button captured-event observers, preserved normal taps/dock behavior, and strengthened the swipe assertion. Independent review found a blank-page capture gap; whitespace now captures immediately and a seventh test covers outside release plus closing during capture. Source/test follow-up passed the coordinator's corrected rerun: **66/66**, including all seven PhoneLauncherTests, as verified directly in `ct-life-evidence/hud-ctos-20261012/editmode-final.xml`. Subsequent native visual/device validation is recorded below.
+
+Native pass2 captured 23 shots with zero runtime errors, but visual review rejected the all-white wallpaper: the painter displayed only white. Working diagnosis is that direct inherited token reads did not resolve for the painter; the subsequent material assertion and recapture below verify the corrected binding. Bound phone-local custom-style aliases to the existing theme tokens, following Unity's [custom-style query pattern](https://docs.unity3d.com/6000.3/Documentation/Manual/UIE-get-custom-styles.html). Added assertions for actual nonwhite resolved material color, visibility and layout width to the existing catalog test. The subsequent wallpaper recapture and material assertion both passed, as recorded below. Grid and page-two typography fit in the inspected native image.
+
+Final native CTOS review: visually inspected `native-final/hud-06-ctos-open.png`, `hud-06b-ctos-page-two.png` and Wallet unavailable. Wallpaper now renders lavender/mint curves and the white translucent dock reads clearly. Labels fit both pages. `phone-material.xml` passes 7/7, including resolved nonwhite material/geometry assertions added after the white-wallpaper finding. `native-final/receipt.json` reports PASS, 23 combined HUD/CTOS shots, zero runtime errors, no REST writes, restored services. These are isolated fixture captures, not live backend or real wallet results. Phone native source/test/visual work is verified; subsequent build and Seeker touch acceptance are recorded below.
+
+## Final Seeker acceptance
+
+The coordinator installed the final Android build (227 MiB, SHA-256 `cc3f704e8ad5e2d8b5e79dd3d1f890867aae86caf19f49a1b1892baeff6ea87a`). The existing `joel` / Gynoid player was preserved. Phone source was unchanged after the tested wallpaper binding correction.
+
+Coordinator-performed actual Seeker touches passed:
+
+- Swipe across the Business icon moved to page two without launching an app.
+- Vertical drag across Settings neither opened an app nor changed page.
+- The persistent Wallet shortcut opened the real Wallet app and showed its disconnected state; no token balance was invented.
+- Home returned from Wallet to page two; the first page dot returned to page one; Home closed the device.
+- After the final corrected HUD rebuild, a fresh swipe to page two, Home to page one and Home to close all worked again. The HUD Map action opened the actual Map app; its close control restored the HUD.
+
+This lane inspected the final page-two and dock-Wallet device screenshots, and directly read `final-tests.xml` (66/66 passed) and `native-stress/receipt.json` (PASS, 24 shots, no failures, zero runtime errors). Evidence lives under `ct-life-evidence/hud-ctos-20261012/`, including `seeker-ctos-page2-swipe`, `seeker-ctos-vertical-drag`, `seeker-wallet-from-dock`, `seeker-final-ctos-page2`, `seeker-final-ctos-home` and `seeker-final-hud-map` PNG/JSON pairs. Native fixtures remain separate from this device session, and the device's disconnected Wallet does not validate funded-wallet RPC behavior.
+
+Phone source, native tests, native visual review and the scoped Seeker interactions are complete. Overall progress and Git checkpoint are owned by the coordinator. Only phone documentation changed in this final update; no Unity, ADB, build or Git action by this lane.

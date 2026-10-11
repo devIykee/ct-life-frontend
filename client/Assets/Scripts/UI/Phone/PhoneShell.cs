@@ -32,9 +32,9 @@ namespace CTLife.UI
     public sealed class PhoneShell : IDisposable
     {
         private readonly VisualElement _layer;
-        private readonly VisualElement _frame, _grid, _body;
-        private readonly Button _scrim, _back;
-        private readonly ScrollView _home;
+        private readonly VisualElement _frame, _body;
+        private readonly Button _scrim, _back, _homeControl;
+        private readonly PhoneLauncher _home;
         private readonly Label _title, _clock;
         private readonly List<PhoneApp> _apps = new List<PhoneApp>();
         private PhoneApp _current;
@@ -60,20 +60,27 @@ namespace CTLife.UI
             _scrim.AddToClassList("ct-phone-scrim");
             _title = El.Text("", "ct-phone-title");
             _clock = El.Text("", "ct-phone-clock");
-            _grid = El.Div("ct-phone-grid");
-            _home = El.VerticalScroll("ct-phone-home");
+            _home = new PhoneLauncher(CreateAppTile);
             _body = El.Div("ct-phone-body");
             _back = El.IconButton("back", Strings.T("common.back"), Back, sfx: null);
             var bar = El.Div("ct-phone-bar", _back, _title,
                 El.Div("ct-grow"), El.IconButton("close", Strings.T("phone.close"), Close, sfx: null));
             var status = El.Div("ct-phone-status", _clock,
                 El.PassThrough(El.Div("ct-phone-camera")),
-                El.PassThrough(El.Div("ct-phone-emblem", El.Div("ct-phone-stripe"), El.Div("ct-phone-stripe ct-phone-stripe-middle"), El.Div("ct-phone-stripe"))));
+                El.PassThrough(El.Div("ct-phone-device-name", El.Text(Strings.T("phone.title"), "ct-phone-device-label"),
+                    El.Div("ct-phone-emblem", El.Div("ct-phone-stripe"), El.Div("ct-phone-stripe ct-phone-stripe-middle"), El.Div("ct-phone-stripe")))));
             // The home indicator is a real, generously sized button; decoration never intercepts input.
-            var home = El.Btn("", () => { if (_current != null) Home(); }, "ct-phone-home-control");
-            home.tooltip = Strings.T("phone.home");
-            home.Add(El.PassThrough(El.Div("ct-phone-home-line")));
-            var glass = El.Div("ct-phone-glass", status, bar, _home, _body, home);
+            _homeControl = El.Btn("", () =>
+            {
+                if (_current != null) Home();
+                else if (_home.PageIndex > 0) _home.ShowPage(0);
+                else Close();
+            }, "ct-phone-home-control");
+            _home.PageChanged += UpdateHomeTooltip;
+            _homeControl.name = "phone-home";
+            _homeControl.tooltip = Strings.T("phone.home");
+            _homeControl.Add(El.PassThrough(El.Div("ct-phone-home-line")));
+            var glass = El.Div("ct-phone-glass", new PhoneWallpaper(), status, bar, _home, _body, _homeControl);
             _frame = El.Div("ct-phone",
                 El.PassThrough(El.Div("ct-phone-hinge ct-phone-hinge-top")),
                 El.PassThrough(El.Div("ct-phone-hinge ct-phone-hinge-bottom")),
@@ -136,6 +143,7 @@ namespace CTLife.UI
                 _entrance?.Cancel();
                 _entrance = null;
                 _clockTick.Pause();
+                _home.Suspend();
                 _frame.RemoveFromHierarchy();
                 _scrim.RemoveFromHierarchy();
                 if (_hiddenHud != null) _hiddenHud.style.display = _previousHudDisplay;
@@ -162,7 +170,7 @@ namespace CTLife.UI
                 _apps.Clear();
                 _body.Clear();
                 _home.Clear();
-                _grid.Clear();
+
             }
         }
 
@@ -217,34 +225,32 @@ namespace CTLife.UI
             _body.Clear();
             _body.Show(false);
             _home.Show(true);
-            _home.Clear();
-            _grid.Clear();
-            _home.Add(_grid);
-            var later = El.Div("ct-phone-grid ct-phone-grid-later");
-            foreach (var app in _apps)
+            _home.SetApps(_apps, CurrentPhase);
+            UpdateHomeTooltip();
+        }
+
+        private void UpdateHomeTooltip() => _homeControl.tooltip = Strings.T(_current == null && _home.PageIndex == 0 ? "phone.close" : "phone.home");
+
+        private Button CreateAppTile(PhoneApp app)
+        {
+            bool open = app.Phase <= CurrentPhase;
+            bool available = Features.IsAvailable(app.Feature);
+            var icon = El.Div("ct-app-icon " + AppTone(app.Id), new UiIcon(AppIcon(app.Id)));
+            var tile = El.Btn("", () =>
             {
-                bool open = app.Phase <= CurrentPhase;
-                bool available = Features.IsAvailable(app.Feature);
-                var a = app;
-                var icon = El.Div("ct-app-icon " + AppTone(app.Id), new UiIcon(AppIcon(app.Id)));
-                var tile = El.Btn("", () =>
-                {
-                    if (!open) Bus.Publish(ToastSignal.Text(Strings.F("phone.soon", a.Title)));
-                    else if (!Features.IsAvailable(a.Feature)) Bus.Publish(ToastSignal.Text(Strings.F("phone.unavailable", a.Title), ToastKind.Bad));
-                    else Launch(a);
-                }, "ct-app");
-                tile.EnableInClassList("ct-app-locked", !open || !available);
-                tile.Add(icon);
-                tile.Add(El.Text(app.Title, "ct-app-label"));
-                if (!open) tile.Add(El.Text(Strings.T("common.soon"), "ct-app-phase"));
-                else if (!available) tile.Add(El.Text(Strings.T("common.unavailable"), "ct-app-phase"));
-                (open ? _grid : later).Add(tile);
-            }
-            if (later.childCount > 0)
-            {
-                _home.Add(El.Text(Strings.T("phone.later"), "ct-phone-section"));
-                _home.Add(later);
-            }
+                if (_home.SuppressClick) return;
+                if (app.Phase > CurrentPhase) Bus.Publish(ToastSignal.Text(Strings.F("phone.soon", app.Title)));
+                else if (!Features.IsAvailable(app.Feature)) Bus.Publish(ToastSignal.Text(Strings.F("phone.unavailable", app.Title), ToastKind.Bad));
+                else Launch(app);
+            }, "ct-app");
+            tile.name = "phone-app-" + app.Id;
+            tile.tooltip = app.Title + (!open ? " · " + Strings.T("common.soon") : !available ? " · " + Strings.T("common.unavailable") : "");
+            tile.EnableInClassList("ct-app-locked", !open || !available);
+            tile.Add(El.PassThrough(icon));
+            tile.Add(El.PassThrough(El.Text(app.Title, "ct-app-label")));
+            if (!open) tile.Add(El.PassThrough(El.Text(Strings.T("common.soon"), "ct-app-phase")));
+            else if (!available) tile.Add(El.PassThrough(El.Text(Strings.T("common.unavailable"), "ct-app-phase")));
+            return tile;
         }
 
         private void Launch(PhoneApp app)
@@ -261,6 +267,8 @@ namespace CTLife.UI
             _frame.RemoveFromClassList("ct-phone-at-home");
             _back.Show(true);
             _title.text = app.Title;
+            _homeControl.tooltip = Strings.T("phone.home");
+            _home.Suspend();
             _home.Show(false);
             _body.Show(true);
             _body.Clear();

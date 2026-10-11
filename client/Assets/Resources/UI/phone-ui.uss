@@ -35,41 +35,80 @@
 .ct-phone-stripe-middle { background-color: var(--ct-green); translate: 0 0; }
 .ct-phone-bar { background-color: var(--ct-card); border-bottom-width: 1px; border-bottom-color: var(--ct-line); padding: 0 8px; min-height: 124px; }
 .ct-phone-title { color: var(--ct-ink); font-size: 36px; -unity-text-outline-width: 0; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); }
-.ct-phone-at-home .ct-phone-title { margin-left: 24px; font-size: 42px; }
+.ct-phone-at-home .ct-phone-bar { display: none; }
 .ct-phone-bar .ct-btn-icon { min-height: 124px; height: 124px; min-width: 124px; width: 124px; margin: 0; padding: 38px; border-width: 0; border-radius: 24px; background-color: rgba(0,0,0,0); }
 .ct-phone-bar .ct-btn-icon .ct-icon { width: 44px; height: 44px; -unity-background-image-tint-color: var(--ct-ink); }
 .ct-phone-bar .ct-btn-icon:hover { background-color: var(--ct-bg); }
 .ct-phone-bar .ct-btn-icon:focus { border-width: 3px; border-color: var(--ct-deep); }
-.ct-phone-home { background-color: var(--ct-card); }
-.ct-phone-section { margin: 24px 32px 8px; font-size: 22px; color: var(--ct-muted); -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); }
-.ct-phone-grid { padding: 24px 16px 16px; }
-.ct-phone-grid-later { padding-top: 0; }
-.ct-phone .ct-app, .ct-landscape .ct-phone .ct-app { width: 33.3333%; min-height: 204px; padding: 16px 8px; margin: 0; border-width: 0; background-color: rgba(0,0,0,0); }
-.ct-phone .ct-app-icon { width: 112px; height: 112px; border-radius: 28px; border-width: 0; background-color: var(--ct-surface); }
+/* CTOS home: wallpaper-led pages and a persistent dock, without an app-style title bar. */
+.ct-phone-wallpaper {
+    /* CustomStyleResolvedEvent reads declarations on this element; bind existing theme tokens here. */
+    --ct-wallpaper-paper: var(--ct-card);
+    --ct-wallpaper-sky: var(--ct-surface);
+    --ct-wallpaper-lavender: var(--ct-game-purple);
+    --ct-wallpaper-mint: var(--ct-green-light);
+    position: absolute; left: 0; top: 0; right: 0; bottom: 0; display: none;
+}
+.ct-phone-at-home .ct-phone-wallpaper { display: flex; }
+.ct-phone-device-name { flex-direction: row; align-items: center; }
+.ct-phone-device-label { font-size: 20px; margin: 0 16px 0 0; color: var(--ct-ink); -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); }
+.ct-phone-home { flex-grow: 1; min-height: 0; background-color: rgba(0,0,0,0); }
+.ct-phone-page-viewport { flex-grow: 1; min-height: 0; overflow: hidden; }
+.ct-phone-page-track { height: 100%; flex-direction: row; flex-shrink: 0; }
+.ct-phone-grid.ct-phone-page { height: 100%; flex-shrink: 0; flex-direction: row; flex-wrap: wrap; align-content: flex-start; padding: 8px 20px; }
+.ct-phone .ct-app, .ct-landscape .ct-phone .ct-app {
+    width: 25%; height: 25%; min-height: 124px; flex-shrink: 0;
+    align-items: center; justify-content: center; padding: 4px 8px; margin: 0;
+    border-width: 0; background-color: rgba(0,0,0,0);
+}
+.ct-phone .ct-app-icon { width: 88px; height: 88px; flex-shrink: 0; border-radius: 24px; border-width: 0; background-color: var(--ct-surface); }
 .ct-phone .ct-app-icon.ct-tone-cyan { background-color: var(--ct-game-cyan); }
 .ct-phone .ct-app-icon.ct-tone-coral { background-color: var(--ct-game-coral); }
 .ct-phone .ct-app-icon.ct-tone-gold { background-color: var(--ct-accent); }
 .ct-phone .ct-app-icon.ct-tone-violet { background-color: var(--ct-game-purple); }
 .ct-phone .ct-app-icon.ct-tone-green { background-color: var(--ct-game-green); }
-.ct-phone .ct-app-icon .ct-icon { width: 60px; height: 60px; -unity-background-image-tint-color: var(--ct-ink); }
+.ct-phone .ct-app-icon .ct-icon { width: 48px; height: 48px; -unity-background-image-tint-color: var(--ct-ink); }
 /* Use the tile's available width, not the glyph's rounded intrinsic measurement on Android. */
 .ct-phone .ct-app-label {
     width: 100%; min-width: 0; align-self: stretch; flex-shrink: 0;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; -unity-text-align: middle-center;
-    font-size: 26px; margin-top: 12px; color: var(--ct-ink); -unity-font-definition: url("Fonts/Manrope-Semibold.ttf");
+    font-size: 26px; margin: 6px 0 0; color: var(--ct-ink); -unity-font-definition: url("Fonts/Manrope-Semibold.ttf");
 }
-.ct-phone .ct-app-phase { font-size: 21px; margin-top: 4px; }
+.ct-phone .ct-app-phase {
+    position: absolute; top: 4px; right: 4px; max-width: 100%;
+    font-size: 18px; margin: 0; padding: 2px 6px; border-radius: 8px;
+    color: var(--ct-muted); background-color: var(--ct-card);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
 .ct-phone .ct-app:focus .ct-app-icon { border-width: 3px; border-color: var(--ct-deep); }
 .ct-phone .ct-app-locked .ct-app-icon { background-color: var(--ct-bg); }
 .ct-phone .ct-app-locked .ct-app-icon .ct-icon { -unity-background-image-tint-color: var(--ct-muted); }
 .ct-phone .ct-app-locked .ct-app-label { color: var(--ct-muted); }
 .ct-phone .ct-app:hover .ct-app-icon { opacity: 0.8; }
+.ct-phone-pages { height: 124px; flex-shrink: 0; flex-direction: row; justify-content: center; align-items: center; }
+.ct-phone-page-button {
+    width: 124px; height: 124px; min-width: 124px; min-height: 124px;
+    padding: 0; margin: 0; align-items: center; justify-content: center;
+    border-width: 0; background-color: rgba(0,0,0,0);
+}
+.ct-phone-page-dot { width: 12px; height: 12px; border-radius: 6px; background-color: var(--ct-muted); }
+.ct-phone-page-selected .ct-phone-page-dot { width: 32px; background-color: var(--ct-ink); }
+.ct-phone-page-button:focus { border-width: 3px; border-color: var(--ct-deep); border-radius: 24px; }
+.ct-phone-dock {
+    height: 144px; flex-shrink: 0; margin: 0 24px; padding: 8px;
+    flex-direction: row; align-items: center; justify-content: center;
+    border-radius: 40px; border-width: 1px; border-color: var(--ct-card);
+    background-color: var(--ct-game-highlight);
+}
+.ct-phone .ct-phone-dock .ct-app { height: 124px; min-height: 124px; padding: 8px; }
+.ct-phone .ct-phone-dock .ct-app-label { display: none; }
 .ct-phone-body { background-color: var(--ct-bg); }
 .ct-phone-home-control {
     flex-shrink: 0; align-items: center; justify-content: center;
     height: 124px; min-height: 124px; margin: 0; padding: 0;
     border-width: 0; border-radius: 0; background-color: var(--ct-card);
 }
+.ct-phone-at-home .ct-phone-home-control { background-color: rgba(0,0,0,0); }
 .ct-phone-home-control:hover { background-color: var(--ct-bg); }
 .ct-phone-home-control:focus { border-width: 3px; border-color: var(--ct-deep); }
 .ct-phone-home-line { width: 144px; height: 6px; margin: 0; border-radius: 3px; background-color: var(--ct-ink); }

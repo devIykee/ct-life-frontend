@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using CTLife.Core;
 using CTLife.Net;
@@ -11,6 +12,38 @@ namespace CTLife.World
         public List<InteractionAction> actions;
         public InteractionKind? kind;
         public bool busy;
+        public string targetId;
+        public InteractionController owner;
+        public InteractionPromptAnchor anchor;
+    }
+
+    /// <summary>Presentation only: a fixed spot, or an actor root (never an animated head/hand bone).</summary>
+    public readonly struct InteractionPromptAnchor
+    {
+        public readonly Vector3 position;
+        public readonly Transform actor;
+        public readonly bool followsActor;
+        public readonly bool valid;
+
+        public InteractionPromptAnchor(Vector3 position, Transform actor = null, bool followsActor = false)
+        { this.position = position; this.actor = actor; this.followsActor = followsActor; valid = true; }
+
+        public bool TryGetPosition(out Vector3 world)
+        {
+            world = position;
+            if (!valid || (followsActor && actor == null)) return false;
+            if (followsActor) world += actor.position;
+            return true;
+        }
+
+        public static InteractionPromptAnchor For(InteractionMachine machine, Interactable offered, Transform actor)
+        {
+            var target = machine.Phase == InteractionPhase.Idle ? offered : machine.Target;
+            if (target == null) return default;
+            if (machine.Phase == InteractionPhase.Engaged)
+                return new InteractionPromptAnchor(Vector3.up * (target.Sits ? 1.65f : 2.1f), actor, true);
+            return new InteractionPromptAnchor(target.position + Vector3.up * 0.8f);
+        }
     }
 
     /// <summary>A short message for the player (UI Strings key), e.g. the seat could not be reached.</summary>
@@ -27,9 +60,11 @@ namespace CTLife.World
     /// occupying a seat make it unavailable.
     /// </summary>
     [RequireComponent(typeof(LocalPlayerController))]
+    [DefaultExecutionOrder(100)] // Project the contextual prompt after CameraRig/AvatarView's default-order LateUpdate.
     public sealed class InteractionController : MonoBehaviour
     {
         public static InteractionController Current { get; private set; }
+        public static event Action PresentationUpdated;
 
         public InteractionMachine Machine { get; } = new InteractionMachine();
         public Interactable Offered { get; private set; }
@@ -94,6 +129,18 @@ namespace CTLife.World
             Publish(force: true);
         }
 
+        /// <summary>A rendered button may outlive its offered target by one frame; never act on another object.</summary>
+        public void Perform(string actionId, string expectedTargetId)
+        {
+            if (Current != this || !Machine.AcceptsPrompt(actionId, expectedTargetId, Offered)) return;
+            if (actionId == "use")
+            {
+                RefreshOccupancy();
+                if (!_occupancy.IsFree(Offered, Me)) { _nextScan = 0f; return; }
+            }
+            Perform(actionId);
+        }
+
         /// <summary>A tapped seat/terminal becomes the offered target (from farther away) — it does not sit by itself.</summary>
         public bool Focus(SpotAnchor spot)
         {
@@ -143,6 +190,11 @@ namespace CTLife.World
                 Publish(force: false);
             }
             UpdateHighlight();
+        }
+
+        private void LateUpdate()
+        {
+            if (Current == this) PresentationUpdated?.Invoke();
         }
 
         private void RefreshOccupancy()
@@ -227,14 +279,19 @@ namespace CTLife.World
             var key = Machine.Phase + "|" + string.Join(",", actions) + "|" + (Offered != null ? Offered.id : "");
             if (!force && key == _lastPromptKey) return;
             _lastPromptKey = key;
-            var kind = Machine.Target != null ? Machine.Target.kind : Offered != null ? Offered.kind : (InteractionKind?)null;
-            var labels = new List<InteractionAction>(actions.Count);
-            foreach (var a in actions) labels.Add(a);
-            Bus.Publish(new InteractionPromptSignal
+            Bus.Publish(GetPrompt());
+        }
+
+        /// <summary>Initial state for a HUD attached after the latest change signal.</summary>
+        public InteractionPromptSignal GetPrompt()
+        {
+            var target = Machine.Phase == InteractionPhase.Idle ? Offered : Machine.Target;
+            return new InteractionPromptSignal
             {
-                actions = labels, kind = kind,
+                actions = Machine.Actions(Offered), kind = target?.kind, targetId = target?.id, owner = this,
+                anchor = InteractionPromptAnchor.For(Machine, Offered, transform),
                 busy = Machine.Phase == InteractionPhase.Approaching || Machine.Phase == InteractionPhase.Requesting,
-            });
+            };
         }
     }
 }

@@ -1,0 +1,38 @@
+# City HUD and CTOS — 12 October 2026
+
+## Inspected primary references
+
+- **Sky: Children of the Light:** the official [favorite expressions guide](https://thatgamecompany.helpshift.com/hc/en/17-sky-children-of-the-light/faq/1348-how-do-i-favorite-emotes-in-sky/) documents a summoned wheel containing eight chosen actions. Its actual embedded screenshots were downloaded and inspected. The scene and avatar remain visible; the temporary action wheel occupies one edge, while the normal controls are sparse. This is the closest social-world reference for CT Life. We are using the separation of world and temporary actions, not copying its artwork or implementing an unrelated favorites system.
+- **Warzone Mobile, historical design reference:** the publisher's [8 March 2024 controls article](https://www.callofduty.com/uk/en/blog/2024/03/call-of-duty-warzone-mobile-complete-control-plus-customization-controller-options) and actual embedded gameplay screenshot show lower-left movement, right-side contextual actions and compact corner information. Its control layouts change with the gameplay context. This is a historical HUD reference, not a claim about the title's current availability. CT Life needs fewer actions than this combat game.
+- **Fortnite:** current [developer touchscreen documentation](https://dev.epicgames.com/documentation/fortnite/developer-customizable-touchscreen-controls-in-fortnite) allows developers to position, restyle and hide controls and switch layouts by context. It explicitly warns that hiding a required action makes it unavailable to touch players. CT Life must retain working navigation and microphone controls when reducing visible decoration.
+- **PUBG Mobile:** the official [control help page](https://pubgmobile.helpshift.com/hc/en/3-pubg-mobile/faq/37-what-are-the-controls/?l=en&p=all&s=account) separates left movement, unobstructed-area camera dragging and right-side actions. CT Life's existing two-thumb movement/camera behavior should remain usable across the redesign.
+
+Reference images and source manifest are research-only under `../ct-life-evidence/hud-ctos-20261012/references/`: `sky-emotes.jpg`, `sky-favorites.jpg`, `cod-gameplay.jpg`, `inspected-image-sources.json`. No reference image is added to shipped resources.
+
+## Proposed application
+
+Design recommendation: reserve the middle of the display for people, their speech and the scene. Keep location/map and the small lobby route together at the upper-left, Cash/needs at the upper-right, movement at the lower-left and social/CTOS actions at the lower-right. Retain visible labels or tooltips where an icon alone is ambiguous. Use one temporary panel for chat/emotes/needs rather than allowing independent panels to accumulate over the character.
+
+Sit and Stand must be truthful contextual actions. A nearby eligible seat offers Sit; a confirmed local/server engagement offers Stand. A moving/claiming state must not look like a completed seat, an occupied seat must not offer a usable claim, and a stale button must not act on a new target. The interaction lane is adding scene anchors and obstacle-aware positioning; screenshots of synthetic prompt states verify layout only, not successful seat reservation.
+
+## Existing behavior that the visual work must preserve
+
+- `Hud.Show(false)` disables movement and hides chat/emotes, then turns off a live microphone so the lobby cannot conceal a recording control. `HudMicLobbyTests` covers three visibility cases.
+- `ChatBarVenueTests` covers native focus retention on Say, focus release after send/hide, cooldown retry, own speech bubble and duplicate-echo suppression. Android keyboard behavior still needs device verification.
+- `MovementControls` releases a held gesture on HUD hiding, phone/modal/text-focus blocking, venue change or input ownership change. Its root pointer handler/updater must be removed on disposal. Camera drags through world space must remain possible.
+- `InteractionTests` covers no automatic action, approach/claim/confirm/stand, local mode, rejection/timeout, cancellation and stale network echoes. Existing runtime controllers remain the action authority.
+- Phone close restores the previous HUD display. A redesign cannot leave the HUD hidden or a joystick held after closing CTOS.
+
+## Focused acceptance
+
+Use a new Editor-only `CityHudCapture` through the compiled `OnboardingCapture` dispatcher (`-ctlife-captureSet hud`), not the excluded `Experiments~` controller. Load a shipped scene and actual stock character through the production local venue path; use isolated in-memory profile/REST data and no network join, voice connection or writes. Watermark fixture captures. Record control/prompt bounds, projected anchors, label fit, centre-world input picking, services restored and errors.
+
+Capture idle, low needs/expanded panel, long location/large Cash, chat draft, emotes, context Sit/busy/Stand and each HUD-edge obstacle, CTOS open/close and HUD hidden/shown. The coordinator then verifies on Seeker: held movement releases; camera drag works; real eligible seat → approach → seated → Stand; occupied seat/rejection; keyboard enter/send/dismiss; voice off when returning to lobby; CTOS back/home/close; and no exceptions or native crash. Fixture screenshots do not replace these checks.
+
+## Native review outcome
+
+The authoritative coordinator capture at `../ct-life-evidence/hud-ctos-20261012/native-stress/receipt.json` passed all 24 screenshots and 60 camera-pan frames with the Seeker QA snapshot/`Panel.Pick` traversal. It recorded zero runtime errors, zero layout-struggle messages, no writes and restored service instances. It includes both CTOS launcher pages, Wallet's honest unavailable state and Home return. Eleven static contextual prompt cases passed an independent comparison against the rendered camera viewport; maximum projection difference was 0.000315 panel units. Latest focused tests in `final-tests.xml` passed 66/66; the earlier phone-only receipt passed 7/7.
+
+The first device build exposed recursive layout errors that the static 23-image capture had not exercised. The interaction lane changed moving prompt presentation to cached transform translation and removed geometry-callback repositioning; the 60-frame stress run covers the same QA-picking trigger. On the rebuilt Seeker app, the coordinator verified the bench Sit → Stand → Sit-offer cycle, camera drag, joystick release, CTOS swipe/page/Home/close, HUD Map and return, and Lobby navigation. Final logs contained no Unity/AndroidRuntime errors, fatal errors or layout-struggle messages. Thermal status moved from 0 to 1 and the app was backgrounded. Occupied-seat/rejection, real microphone, native chat/keyboard and server-authoritative seat behavior were not verified by this device pass. Build hash and detailed evidence are in `docs/progress/city-hud-capture-20261012.md`.
+
+The earlier `native-pass2` result is superseded: its camera texture was 640×480 while the UI target was 2670×1200, and its checks compared the projector to itself. The final harness matches render sizes/aspect and handles the offscreen texture's Y origin only in the Editor capture. This follows the distinction visible in Unity's official [RuntimePanelUtils implementation](https://github.com/Unity-Technologies/UnityCsReference/blob/master/Modules/UIElements/Core/GameObjects/RuntimePanelUtils.cs) and [PanelSettings screen-to-panel mapping implementation](https://github.com/Unity-Technologies/UnityCsReference/blob/master/Modules/UIElements/Core/GameObjects/PanelSettings.cs). The capture coordinate correction did not change production projection; the separate device layout correction and acceptance are recorded above.

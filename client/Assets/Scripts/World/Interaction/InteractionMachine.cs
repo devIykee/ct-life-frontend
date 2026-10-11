@@ -175,6 +175,15 @@ namespace CTLife.World
         }
 
         /// <summary>The CTA buttons to show now, given the target the finder offers (Idle only).</summary>
+        public bool AcceptsPrompt(string actionId, string targetId, Interactable offered)
+        {
+            var target = Phase == InteractionPhase.Idle ? offered : Target;
+            if (target == null || string.IsNullOrEmpty(targetId) || target.id != targetId) return false;
+            foreach (var action in Actions(offered)) if (action.id == actionId) return true;
+            return false;
+        }
+
+        /// <summary>The CTA buttons to show now, given the target the finder offers (Idle only).</summary>
         public List<InteractionAction> Actions(Interactable offered)
         {
             var list = new List<InteractionAction>();

@@ -152,6 +152,10 @@ namespace CTLife.EditorTools
                 {
                     await LobbyFlowCapture.Run(Shot, Wait, Expect, Step, Receipt);
                 }
+                else if (Set == "hud")
+                {
+                    await CityHudCapture.Run(Shot, Wait, Expect, Step, Receipt);
+                }
                 else
                 {
                     await Lottery();
