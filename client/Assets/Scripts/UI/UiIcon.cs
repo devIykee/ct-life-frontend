@@ -66,6 +66,15 @@ namespace CTLife.UI
                 "counter" => "coffee",
                 "door" => "door-open",
                 "stand" => "person-simple-walk",
+                // Feel lane F2: vehicles (Phosphor fill, MIT)
+                "drive" => "steering-wheel",
+                "car" => "car",
+                "moped" => "motorcycle",
+                "drone" => "drone",
+                "fly" => "airplane-takeoff",
+                "up" => "arrow-fat-up",
+                "exit" => "sign-out",
+                "down" => "arrow-fat-down",
                 _ => "dots-three",
             };
             if (!Textures.TryGetValue(asset, out var texture))

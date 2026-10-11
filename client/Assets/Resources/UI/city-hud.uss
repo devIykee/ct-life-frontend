@@ -159,3 +159,72 @@
 
 .ct-landscape .ct-hud .ct-move-controls { left: 0; bottom: 0; }
 .ct-landscape .ct-hud .ct-chat, .ct-landscape .ct-hud .ct-emotes { left: auto; right: 40px; width: 850px; bottom: 190px; max-height: 420px; }
+
+/* ---------------------------------------------------------------- vehicles (Feel lane F2): a GTA-mobile driving layout in the
+   same plum-glass language. Left: a floating steer stick (in the air: climb / turn). Right: DRIFT, BRAKE and a big GAS pedal
+   (in the air: a second stick for pitch / roll). "Get out" sits by the map, the Roadstar's FLY / LAND above the pedals, the
+   speed beside the pedals (the car itself fills the bottom-centre). VehicleControls places the stick ring under the thumb (inline left/top) and clears it on release. */
+.ct-hud .veh-controls { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+.ct-hud .veh-stick-zone { position: absolute; bottom: 0; width: 40%; height: 74%; }
+.ct-hud .veh-stick-zone--left { left: 0; }
+.ct-hud .veh-stick-zone--right { right: 0; }
+.ct-hud .veh-stick-ring {
+    position: absolute; left: 90px; top: auto; bottom: 70px; width: 260px; height: 260px; border-radius: 130px;
+    border-width: 3px; border-color: rgba(255,255,255,0.55); background-color: rgba(20,6,44,0.16); opacity: 0.7;
+}
+.ct-hud .veh-stick-zone--right .veh-stick-ring { left: auto; right: 90px; }
+.ct-hud .veh-stick-thumb {
+    position: absolute; left: 50%; top: 50%; width: 116px; height: 116px; margin-left: -58px; margin-top: -58px; border-radius: 58px;
+    border-width: 5px; border-color: rgb(42,11,74); background-color: rgba(255,255,255,0.92);
+}
+.ct-hud .veh-active .veh-stick-ring { opacity: 1; background-color: rgba(20,6,44,0.34); border-color: rgb(255,255,255); }
+.ct-hud .veh-active .veh-stick-thumb { background-color: rgb(255,255,255); }
+
+.ct-hud .veh-label {
+    font-size: 30px; color: rgb(255,255,255); -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); -unity-text-align: middle-center;
+    -unity-text-outline-width: 2px; -unity-text-outline-color: rgb(42,11,74); white-space: nowrap; margin: 0; padding: 0;
+}
+.ct-hud .veh-pedals { position: absolute; right: 36px; bottom: 36px; flex-direction: row; align-items: flex-end; }
+.ct-hud .veh-pedal {
+    align-items: center; justify-content: center; margin-left: 22px; border-width: 5px; border-bottom-width: 12px; border-color: rgb(42,11,74);
+    border-radius: 36px; background-color: rgba(20,6,44,0.84);
+}
+.ct-hud .veh-pedal .ct-icon { width: 66px; height: 66px; margin-bottom: 8px; -unity-background-image-tint-color: rgb(255,255,255); }
+.ct-hud .veh-gas { width: 210px; height: 290px; background-color: rgb(61,220,132); }
+.ct-hud .veh-gas .ct-icon { -unity-background-image-tint-color: rgb(13,61,34); }
+.ct-hud .veh-gas .veh-label { color: rgb(13,61,34); -unity-text-outline-width: 0; }
+.ct-hud .veh-brake { width: 186px; height: 220px; }
+.ct-hud .veh-handbrake { width: 186px; height: 150px; background-color: rgb(255,210,63); }
+.ct-hud .veh-handbrake .veh-label { color: rgb(42,11,74); -unity-text-outline-width: 0; }
+.ct-hud .veh-pedal.veh-down { scale: 0.94 0.94; border-bottom-width: 6px; }
+.ct-hud .veh-gas.veh-down { background-color: rgb(124,255,196); }
+.ct-hud .veh-brake.veh-down { background-color: rgb(255,59,92); }
+.ct-hud .veh-handbrake.veh-down { background-color: rgb(255,235,140); }
+.ct-hud .veh-reversing .veh-brake .veh-label { color: rgb(255,210,63); }
+
+.ct-hud .veh-exit, .ct-hud .veh-exit:hover, .ct-hud .veh-exit:active, .ct-hud .veh-exit:focus {
+    position: absolute; right: 500px; top: 26px; height: 96px; min-height: 96px; padding: 0 32px 0 24px; margin: 0;
+    flex-direction: row; align-items: center; border-width: 4px; border-radius: 48px; border-color: rgb(42,11,74); background-color: rgba(20,6,44,0.86);
+}
+.ct-hud .veh-fly, .ct-hud .veh-fly:hover, .ct-hud .veh-fly:active, .ct-hud .veh-fly:focus {
+    position: absolute; right: 36px; bottom: 362px; height: 104px; min-height: 104px; padding: 0 36px 0 26px; margin: 0;
+    flex-direction: row; align-items: center; border-width: 5px; border-radius: 52px; border-color: rgb(42,11,74); background-color: rgb(93,52,200);
+}
+.ct-hud .veh-exit .ct-icon, .ct-hud .veh-fly .ct-icon { width: 50px; height: 50px; margin-right: 12px; -unity-background-image-tint-color: rgb(255,255,255); }
+.ct-hud .veh-exit > .ct-button-depth, .ct-hud .veh-exit > .ct-button-glint, .ct-hud .veh-fly > .ct-button-depth, .ct-hud .veh-fly > .ct-button-glint { display: none; }
+.ct-hud .veh-exit:active, .ct-hud .veh-fly:active { scale: 0.96 0.96; }
+.ct-hud .veh-fly.veh-on { background-color: rgb(53,214,255); }
+.ct-hud .veh-fly.veh-on .veh-label { color: rgb(20,6,44); -unity-text-outline-width: 0; }
+.ct-hud .veh-fly.veh-on .ct-icon { -unity-background-image-tint-color: rgb(20,6,44); }
+
+.ct-hud .veh-readout { position: absolute; left: auto; right: 700px; bottom: 44px; align-items: flex-end; }
+.ct-hud .veh-speed-row { flex-direction: row; align-items: flex-end; }
+.ct-hud .veh-speed-value {
+    font-size: 86px; color: rgb(255,255,255); -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); margin: 0; padding: 0;
+    -unity-text-outline-width: 3px; -unity-text-outline-color: rgb(42,11,74); text-shadow: 0 4px 0 rgb(42,11,74);
+}
+.ct-hud .veh-speed-unit, .ct-hud .veh-alt {
+    font-size: 30px; color: rgb(255,255,255); -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); margin: 0 0 14px 10px; padding: 0;
+    -unity-text-outline-width: 2px; -unity-text-outline-color: rgb(42,11,74);
+}
+.ct-hud .veh-alt { color: rgb(124,255,196); margin: -6px 0 0 0; -unity-text-align: middle-right; }

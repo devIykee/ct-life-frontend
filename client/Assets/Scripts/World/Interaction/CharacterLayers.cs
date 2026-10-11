@@ -20,6 +20,35 @@ namespace CTLife.World
         /// SpotAnchor). Taps still hit them (WorldInput casts every layer); bodies and the camera pass through them.
         /// </summary>
         public const int TapTarget = 21;
+        /// <summary>Feel lane (20+): cars, the scooter and the Roadstar on the road (collide with VehicleBlocker 15, CoastWall 16).</summary>
+        public const int Vehicle = 20;
+        /// <summary>Feel lane: the helicopter, the drone and the Roadstar in flight (over CoastWall 16; venue doorways' VehicleBlocker 15 still stops them).</summary>
+        public const int VehicleFlight = 22;
+        public const int CoastWall = 16;
+
+        private static bool _vehicleRules;
+
+        /// <summary>The vehicle layers' collision rules (runtime, idempotent): no ragdoll bones or tap boxes in the way; flight over coast walls.</summary>
+        public static void EnsureVehicleRules()
+        {
+            if (_vehicleRules) return;
+            _vehicleRules = true;
+            foreach (var layer in new[] { Vehicle, VehicleFlight })
+            {
+                Physics.IgnoreLayerCollision(layer, Ragdoll, true);
+                Physics.IgnoreLayerCollision(layer, TapTarget, true);
+            }
+            Physics.IgnoreLayerCollision(VehicleFlight, CoastWall, true);
+            // no flying in through a venue's front door either (vehicles never enter interiors)
+            Physics.IgnoreLayerCollision(VehicleFlight, VehicleBlocker, false);
+            Physics.IgnoreLayerCollision(Vehicle, VehicleBlocker, false);
+        }
+
+        public static void SetLayerRecursively(GameObject go, int layer)
+        {
+            if (go == null) return;
+            foreach (var t in go.GetComponentsInChildren<Transform>(true)) t.gameObject.layer = layer;
+        }
         /// <summary>What the player's body stands on and its probes see: the world without vehicle-only blockers.</summary>
         public static int BodyMask => WorldMask & ~(1 << VehicleBlocker);
 

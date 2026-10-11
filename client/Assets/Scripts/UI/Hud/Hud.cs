@@ -28,6 +28,9 @@ namespace CTLife.UI
         private readonly ChatBar _chat;
         private readonly EmotePicker _emotes;
         private readonly MovementControls _movement;
+        private readonly VehicleControls _vehicle;
+        private VisualElement _droneAction;
+        private bool _shown = true;
         private readonly InteractionPrompt _interact;
         private readonly Func<IVenueMic> _venueMic;
         private readonly Map.Minimap _minimap;
@@ -72,6 +75,7 @@ namespace CTLife.UI
             _chat = new ChatBar();
             _emotes = new EmotePicker();
             _movement = new MovementControls();
+            _vehicle = new VehicleControls();
             _interact = new InteractionPrompt();
             _mic = HudAction("mic", Strings.T("hud.micOff"), ToggleMic, "microphone");
             _micLabel = _mic.Q<Label>();
@@ -123,17 +127,29 @@ namespace CTLife.UI
             var social = El.Div("ct-hud-social",
                 HudAction("chat", Strings.T("hud.chat"), () => { CollapseNeeds(); _emotes.Hide(); _chat.Toggle(); }, "speech-bubble"),
                 HudAction("emotes", Strings.T("hud.emote"), () => { CollapseNeeds(); _chat.Hide(); _emotes.Toggle(); }, "smiling"), _mic);
+            // Feel lane F2: the pocket camera drone (CT Island only).
+            _droneAction = HudAction("drone", Strings.T("hud.drone"), () => CTLife.World.Vehicles.VehicleSystem.Current?.DeployDrone(), "drone-with-camera");
+            _droneAction.style.display = DisplayStyle.None;
+            social.Insert(0, _droneAction);
             social.pickingMode = PickingMode.Ignore;
             El.PassThrough(_needs);
             // The stick's touch area is the whole lower-left of the screen (a floating stick), so it goes first: every
             // other control sits above it and keeps its taps.
-            _root = El.Div("ct-hud hud-arena", _movement.Element, plate, top, _needs, _emotes.Element, _chat.Element, social, personal, _interact.Element);
+            _root = El.Div("ct-hud hud-arena", _movement.Element, _vehicle.Element, plate, top, _needs, _emotes.Element, _chat.Element, social, personal, _interact.Element);
             _root.pickingMode = PickingMode.Ignore;
             OnboardingFrame.AddSheet(_root, "UI/map");
             _interact.SetObstacles(plate, top, _needs, _movement.Footprint, social, personal, _chat.Element, _emotes.Element);
             if (Services.TryGet<WalletBalanceService>(out var wallet)) { _wallet = wallet; _wallet.Changed += RefreshWallet; RefreshWallet(); }
 
             _subs.On<ProfileChangedSignal>(_ => RefreshProfile());
+            _subs.On<CTLife.World.Vehicles.VehicleChangedSignal>(s =>
+            {
+                // driving or flying: the vehicle controls replace the walking stick and the social buttons
+                bool driving = s.vehicle != null;
+                _movement.SetEnabled(_shown && !driving);
+                social.Show(!driving);
+                if (driving) { _chat.Hide(); _emotes.Hide(); }
+            });
             _subs.On<OpenMapRequestSignal>(_ => OpenUtility(OpenMap)); // the door interaction
             _subs.On<DegradedChangedSignal>(_ => RefreshDegraded());
             _subs.On<OnlineCountSignal>(s => _online.text = Strings.F("hud.online", s.online));
@@ -161,6 +177,7 @@ namespace CTLife.UI
                     ? reg.Homes.FirstOrDefault(h => h.id == visit.HomeId)?.name ?? Strings.T("app.home")
                     : s.venueId != null ? reg.Venue(s.venueId)?.name ?? s.venueId : "";
                 RefreshDegraded();
+                _droneAction.style.display = visit != null && visit.IsIsland ? DisplayStyle.Flex : DisplayStyle.None;
             });
             RefreshProfile();
             RefreshDegraded();
@@ -228,7 +245,8 @@ namespace CTLife.UI
         public void Show(bool on)
         {
             _root.Show(on);
-            _movement.SetEnabled(on);
+            _shown = on;
+            _movement.SetEnabled(on && !_vehicle.Active);
             if (!on)
             {
                 _chat.Hide(); _emotes.Hide();
@@ -364,6 +382,7 @@ namespace CTLife.UI
             _disposed = true;
             _life.Cancel(); _life.Dispose();
             _movement.Dispose();
+            _vehicle.Dispose();
             _chat.Dispose();
             _interact.Dispose();
             _subs.Dispose();

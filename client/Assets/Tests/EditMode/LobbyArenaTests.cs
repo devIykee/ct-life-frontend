@@ -15,7 +15,9 @@ namespace CTLife.Tests
               "door", "laptop", "microphone", "center-direction", "search", "multiply", "crane", "home-page", "place-marker", "speech-bubble", "smiling",
               // Venue landmarks on the CT Island map (96 px, 2026-10-17)
               "fountain", "podcast", "boxing", "prison", "conference-call", "source-code", "inspection", "money-bag", "coffee", "combo-chart",
-              "hospital", "rocket", "dice", "gift", "factory", "farm-2", "approval", "yacht", "cocktail", "skyscrapers" };
+              "hospital", "rocket", "dice", "gift", "factory", "farm-2", "approval", "yacht", "cocktail", "skyscrapers",
+              // Feel lane F2: the HUD's pocket camera drone (2026-10-17)
+              "drone-with-camera" };
 
         [Test]
         public void Cash_ExactBelowTenThousand_CompactAbove()
