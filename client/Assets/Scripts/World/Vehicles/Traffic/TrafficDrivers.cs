@@ -51,7 +51,8 @@ namespace CTLife.World.Vehicles
             {
                 var view = AvatarFactory.Create("traffic-driver", null, true, NextArchetype(), _sys.transform);
                 if (view == null) return null;
-                view.cullDistance = DetachBeyond;   // seen through the glass at the attach distance, not culled at 25 m
+                view.cullDistance = DetachBeyond;
+                view.ambient = true;   // seen through the glass at the attach distance, not culled at 25 m
                 // a passenger in a moving car: no bodies to bump, no shadow blob on the road under the car
                 foreach (var c in view.GetComponentsInChildren<Collider>(true)) c.enabled = false;
                 var blob = view.transform.Find("blob_shadow");

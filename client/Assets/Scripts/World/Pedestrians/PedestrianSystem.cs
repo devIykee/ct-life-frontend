@@ -11,14 +11,14 @@ namespace CTLife.World.Pedestrians
     /// <summary>
     /// Ambient pedestrians round the player on CT Island v2 (Feel lane F6), on World W4's walkable network
     /// (<see cref="PedestrianPaths"/>). Pooled and capped (fewer on a phone, fewer again when it runs hot), more where the
-    /// network is dense; they appear out of view between <see cref="SpawnMin"/> and <see cref="SpawnMax"/> metres and leave
+    /// network is dense (16 on a Seeker, 12 when it runs hot); they appear out of view between <see cref="SpawnMin"/> and <see cref="SpawnMax"/> metres and leave
     /// unseen beyond <see cref="DespawnBeyond"/>. Bodies are the cast archetypes (varied looks); the avatar LOD budget
     /// draws them out to <see cref="DrawWithin"/> m at reduced animation rates. Local to this client, like the traffic.
     /// </summary>
     public sealed class PedestrianSystem : MonoBehaviour
     {
-        public const float SpawnMin = 28f, SpawnMax = 95f, DespawnBeyond = 115f, DrawWithin = 70f;
-        public const int MaxDesktop = 24, MaxMobile = 14;
+        public const float SpawnMin = 28f, SpawnMax = 80f, DespawnBeyond = 100f, DrawWithin = 70f;
+        public const int MaxDesktop = 24, MaxMobile = 16;
         /// <summary>The chance a walker takes a crossing they pass.</summary>
         public float CrossChance = 0.35f;
         public int Max = MaxDesktop;
@@ -133,7 +133,7 @@ namespace CTLife.World.Pedestrians
             for (int dz = -r; dz <= r; dz++)
                 for (int dx = -r; dx <= r; dx++)
                     if (_grid.TryGetValue(((long)(cx + dx) << 32) ^ (uint)(cz + dz), out var list)) near += list.Count;
-            int max = AvatarLod.ThermalScale < 1f ? Mathf.RoundToInt(Max * 0.6f) : Max;
+            int max = AvatarLod.ThermalScale < 1f ? Mathf.RoundToInt(Max * 0.75f) : Max;
             return TargetFor(near, max);
         }
 
@@ -266,6 +266,7 @@ namespace CTLife.World.Pedestrians
                 var view = AvatarFactory.Create("pedestrian", null, true, look, transform);
                 if (view == null) return null;
                 view.cullDistance = DrawWithin;
+                view.ambient = true;
                 var ped = view.gameObject.AddComponent<Pedestrian>();   // before any Knockdown: it finds its owner on Awake
                 ped.Init(this, view, look);
                 view.gameObject.SetActive(false);

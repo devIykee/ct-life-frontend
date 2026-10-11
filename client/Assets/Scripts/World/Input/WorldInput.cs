@@ -30,7 +30,7 @@ namespace CTLife.World
                 var avatar = _hits[i].collider.GetComponentInParent<AvatarView>();
                 if (avatar != null)
                 {
-                    if (avatar.isLocal) continue;
+                    if (avatar.isLocal || avatar.ambient) continue;   // a passer-by: tap through to the world
                     Bus.Publish(new AvatarTappedSignal
                     {
                         userId = avatar.userId, npcId = avatar.npcId, archetypeId = avatar.archetypeId, displayName = avatar.displayName,
