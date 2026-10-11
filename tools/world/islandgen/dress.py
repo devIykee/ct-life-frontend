@@ -261,6 +261,19 @@ class Dress:
             o.rect(cx, cz, sz[0], sz[1], v['yaw'], Occupancy.VENUE, margin=6.0)
         for hp in self.plan['helipads']:
             o.disc(hp[0], hp[2], 15, Occupancy.VENUE)
+        # landmark sites (W3 heroes stand here): kept clear of lots, props and forest
+        clear = {'lighthouse': 26, 'jupiter_observatory': 36, 'superteam_hq': 30, 'seeker_shop': 12, 'helius_depot': 22, 'mtndao_summit': 16}
+        for lm in L.LANDMARKS:
+            r = clear.get(lm['id'])
+            if r and lm.get('at'):
+                o.disc(lm['at'][0], lm['at'][1], r, Occupancy.VENUE)
+        # the bay boardwalk and the beach in front of it stay open (no buildings, no trees)
+        for bw in self.plan.get('boardwalk', []):
+            A = np.array(bw['inner'], float); B = np.array(bw['outer'], float)
+            sea = B - A
+            sea /= np.maximum(np.linalg.norm(sea, axis=1, keepdims=True), 1e-6)
+            o.poly([tuple(q) for q in np.vstack([A, (B + sea * 45.0)[::-1]])], Occupancy.PARK)
+            o.poly([tuple(q) for q in np.vstack([A, B[::-1]])], Occupancy.ROAD)
         log('occupancy stamped')
 
     # -------------------------------------------------------------- buildings
@@ -564,6 +577,63 @@ class Dress:
         self.stats['billboards'] = len(boards)
         log(f'billboards: {len(boards)} ({sum(b["kind"] == "roadside" for b in boards)} roadside, {roof} rooftop)')
 
+    def place_boats(self):
+        """Moored boats along the marina and harbour quays (bow either way, parallel to the wall), sailing boats and a
+        speedboat anchored in the bay, buoys off the beach, and ships far offshore (seen from the hills and the beach)."""
+        K = self.kit.items
+        water = L.SEA - 0.08
+        n = 0
+        marina = ['kw_boat_sail_a', 'kw_boat_sail_b', 'kw_boat_speed_a', 'kw_boat_speed_b', 'kw_boat_speed_c', 'kw_boat_speed_e',
+                  'kw_boat_speed_g', 'kw_boat_house_a']
+        harbour = ['kw_boat_fishing_small', 'kw_boat_fishing_small', 'kw_boat_tug_a', 'kw_boat_row_small', 'kw_boat_speed_c']
+        for q in self.plan.get('quays', []):
+            W = np.array(q['wall'], float)
+            E = np.array(q['edge'], float)
+            if len(W) < 6:
+                continue
+            pool = marina if W[:, 0].mean() > 0 else harbour
+            sl = G.arc_lengths(W)
+            pos = RNG.uniform(4, 10)
+            recent = []
+            while pos < sl[-1] - 6:
+                k = min(max(int(np.searchsorted(sl, pos)), 1), len(W) - 1)
+                t = W[k] - W[k - 1]
+                t = t / max(np.linalg.norm(t), 1e-6)
+                sea = W[k] - E[k]
+                sea = sea / max(np.linalg.norm(sea), 1e-6)
+                choices = [c for c in pool if c not in recent[-2:] and c in K] or [c for c in pool if c in K]
+                if not choices:
+                    break
+                proto = choices[RNG.integers(len(choices))]
+                it = K[proto]
+                beam = it['w']
+                c = W[k] + sea * (beam / 2 + 0.9)
+                yaw = math.degrees(math.atan2(t[0], t[1])) + (180.0 if RNG.random() < 0.5 else 0.0)
+                y = float(self.g.y([c[0]], [c[1]])[0])
+                if y < L.SEA - 1.2:                                       # real water under it
+                    self.add(proto, c[0], water, c[1], yaw + RNG.uniform(-4, 4))
+                    recent.append(proto)
+                    n += 1
+                pos += it['d'] + RNG.uniform(1.5, 5.0)
+        # the bay: a few boats at anchor and buoys off the beach
+        bay = [(-120, -330, 'kw_boat_sail_a'), (40, -360, 'kw_boat_sail_b'), (150, -320, 'kw_boat_speed_e'), (-40, -300, 'kw_boat_row_small'),
+               (240, -420, 'kw_boat_sail_a'), (-260, -420, 'kw_boat_fishing_small'), (520, -520, 'kw_boat_sail_b'), (700, -620, 'kw_boat_speed_g')]
+        for x, z, proto in bay:
+            if proto in K and float(self.g.y([x], [z])[0]) < L.SEA - 2.0:
+                self.add(proto, x, water, z, RNG.uniform(0, 360))
+                n += 1
+        for x in np.arange(-180, 200, 38):
+            z = -276 - 8 * math.cos(x / 120.0)
+            if 'kw_buoy' in K and float(self.g.y([x], [z])[0]) < L.SEA - 0.8:
+                self.add('kw_buoy' if int(x) % 2 else 'kw_buoy_flag', x, water + 0.05, z, RNG.uniform(0, 360))
+        # ships offshore
+        for x, z, yaw, proto in ((-260, -900, 98.0, 'kw_ship_ocean_liner'), (650, -880, 260.0, 'kw_ship_cargo_a'), (980, 120, 10.0, 'kw_ship_large')):
+            if proto in K:
+                self.add(proto, x, water - 0.2, z, yaw)
+                n += 1
+        self.stats['boats'] = n
+        log(f'boats: {n}')
+
     # -------------------------------------------------------------- street furniture
     def town(self, x, z):
         return self.district_at(x, z) in ('timeline', 'trenches', 'dubai_marina', 'boardwalk', 'residences', 'builder_hills')
@@ -660,9 +730,36 @@ class Dress:
 
     # -------------------------------------------------------------- promenade, power lines, billboards
     def place_promenade(self):
-        """Ocean Drive: palms, lamps and benches along the seaward edge, facing the bay."""
+        """Ocean Drive: palms, lamps and benches along the seaward edge, facing the bay; on the boardwalk when there is one."""
         K = self.kit.items
         n = 0
+        bw = self.plan.get('boardwalk') or []
+        if bw:
+            A = np.array(bw[0]['inner'], float); B = np.array(bw[0]['outer'], float); Y = np.array(bw[0]['y'], float)
+            steps = set(bw[0].get('steps', []))
+            for k in range(2, len(A) - 2):
+                sea = B[k] - A[k]
+                sea = sea / max(np.linalg.norm(sea), 1e-6)
+                face = math.degrees(math.atan2(sea[0], sea[1]))
+                if any(abs(k - st) < 3 for st in steps):
+                    continue
+                if k % 6 == 0:
+                    q = A[k] + (B[k] - A[k]) * 0.3
+                    palm = 'palm_1' if (k // 6) % 2 else 'palm_2'
+                    if palm in K:
+                        self.add(palm, q[0], Y[k], q[1], RNG.uniform(0, 360), RNG.uniform(0.95, 1.2))
+                        n += 1
+                elif k % 6 == 3 and 'bench_city' in K:
+                    q = A[k] + (B[k] - A[k]) * 0.62
+                    self.add('bench_city', q[0], Y[k], q[1], face + 180.0)
+                elif k % 12 == 9 and 'street_lamp_single' in K:
+                    q = A[k] + (B[k] - A[k]) * 0.9
+                    self.add('street_lamp_single', q[0], Y[k], q[1], face)
+            # keep the deck clear of other props
+            for a, b in zip(A, B):
+                self.occ.line([tuple(a), tuple(b)], 2.5, Occupancy.PROP)
+            self.stats['promenade_palms'] = n
+            return
         for s in self.roads['segments']:
             if s['route'] != 'ocean_drive':
                 continue
@@ -890,6 +987,7 @@ def main():
     d.place_promenade()
     d.place_plaza()
     d.place_billboards()
+    d.place_boats()
     d.place_street()
     d.place_power()
     d.place_vegetation()

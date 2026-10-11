@@ -29,6 +29,8 @@ namespace CTLife.EditorTools.IslandV2
         private static (float[] ends, float shadow, int layer, string kind) Rules(string id, JObject item)
         {
             var tags = (item["tags"] as JArray)?.Select(t => (string)t).ToHashSet() ?? new HashSet<string>();
+            if (id.StartsWith("kw_ship")) return (new[] { 260f, 900f, 3600f }, 0f, Layers.Prop, "ship");
+            if (id.StartsWith("kw_")) return (new[] { 55f, 170f, 800f }, 45f, Layers.Prop, "boat");
             if (id.StartsWith("kc_tower")) return (new[] { 120f, 420f, 2400f }, 160f, Layers.Building, "building");
             if (tags.Contains("building") || id.StartsWith("shop_") || id.StartsWith("tower_glass")) return (new[] { 80f, 260f, 1300f }, 130f, Layers.Building, "building");
             if (id.StartsWith("kf_tree") || id.StartsWith("palm") || id.StartsWith("tree_")) return (new[] { 55f, 170f, 900f }, 70f, Layers.Vegetation, "tree");

@@ -20,6 +20,8 @@ namespace CTLife.EditorTools.IslandV2
         public readonly List<CapsuleCol> Capsules = new List<CapsuleCol>();
         /// <summary>Live billboards (dress.json) built as real renderers in the cell.</summary>
         public readonly List<Newtonsoft.Json.Linq.JObject> Billboards = new List<Newtonsoft.Json.Linq.JObject>();
+        /// <summary>Venue building shells (walls, roof, sign) with their VenueShell faders.</summary>
+        public readonly List<IslandV2Shells.Def> Shells = new List<IslandV2Shells.Def>();
 
         public struct CapsuleCol { public Vector3 Center; public float Radius, Height; public int Layer; }
         public struct BoxCol { public Vector3 Center; public Quaternion Rotation; public Vector3 Size; public int Layer; public string Name; }
@@ -57,7 +59,8 @@ namespace CTLife.EditorTools.IslandV2
     public static class Mat
     {
         public const string Road = "road", Dirt = "road_dirt", Sidewalk = "sidewalk", Kerb = "kerb", Concrete = "concrete",
-            Rail = "rail", Paint = "paint", Tunnel = "tunnel", Grass = "grass_island", Quay = "quay", Wall = "wall_stone", Plaza = "plaza";
+            Rail = "rail", Paint = "paint", Tunnel = "tunnel", Grass = "grass_island", Quay = "quay", Wall = "wall_stone", Plaza = "plaza",
+            Boardwalk = "boardwalk", Timber = "timber", Lighthouse = "lighthouse", LighthouseLamp = "lighthouse_lamp";
     }
 
     public static class Layers

@@ -313,6 +313,28 @@ VENUES = [
     dict(id='hackathon_house', district='mountain', place=('end', 'summit_road', 'MR1', 4.6)),
 ]
 
+# Venue building shells (W2): the street-side buildings round each room diorama. h = wall height (m), roof flat |
+# gable | none, style = facade (plaster, glass, industrial, timber, arena, arcade), colours sRGB 0..1. The roof and the
+# camera-side walls fade while the player is inside. Open-air venues (plaza, fields, decks) have no shell.
+SHELLS = {
+    'spaces_studio': dict(h=11.0, roof='flat', style='plaster', wall=(0.80, 0.42, 0.34), trim=(0.95, 0.92, 0.86), accent=(0.22, 0.24, 0.32)),
+    'discord_heights': dict(h=17.0, roof='flat', style='glass', wall=(0.42, 0.44, 0.78), trim=(0.92, 0.93, 0.98), accent=(0.55, 0.48, 0.95)),
+    'ct_jail': dict(h=9.0, roof='flat', style='plaster', wall=(0.62, 0.62, 0.60), trim=(0.40, 0.40, 0.42), accent=(0.86, 0.66, 0.20)),
+    'conference_hall': dict(h=14.0, roof='flat', style='glass', wall=(0.86, 0.88, 0.90), trim=(0.30, 0.32, 0.36), accent=(0.58, 0.32, 0.86)),
+    'ratio_arena': dict(h=13.0, roof='none', style='arena', wall=(0.86, 0.84, 0.80), trim=(0.36, 0.38, 0.44), accent=(0.86, 0.22, 0.32)),
+    'terminal_cafe': dict(h=8.2, roof='flat', style='plaster', wall=(0.92, 0.82, 0.62), trim=(0.98, 0.96, 0.90), accent=(0.24, 0.52, 0.42)),
+    'perp_pit': dict(h=10.0, roof='flat', style='industrial', wall=(0.36, 0.40, 0.46), trim=(0.85, 0.65, 0.20), accent=(0.20, 0.85, 0.55)),
+    'launchpad_tower': dict(h=22.0, roof='flat', style='glass', wall=(0.30, 0.34, 0.40), trim=(0.92, 0.94, 0.98), accent=(0.95, 0.45, 0.20)),
+    'rekt_clinic': dict(h=9.0, roof='flat', style='plaster', wall=(0.94, 0.94, 0.92), trim=(0.36, 0.70, 0.52), accent=(0.86, 0.24, 0.24)),
+    'prediction_pit': dict(h=8.0, roof='flat', style='arcade', wall=(0.96, 0.86, 0.60), trim=(0.92, 0.30, 0.36), accent=(0.30, 0.85, 0.95)),
+    'cabal_lounge': dict(h=10.0, roof='flat', style='glass', wall=(0.20, 0.20, 0.26), trim=(0.86, 0.72, 0.40), accent=(0.62, 0.30, 0.86)),
+    'sybil_barn': dict(h=6.5, roof='gable', style='timber', wall=(0.68, 0.18, 0.14), trim=(0.94, 0.92, 0.86), accent=(0.30, 0.20, 0.14)),
+    'audit_row': dict(h=10.0, roof='flat', style='plaster', wall=(0.86, 0.84, 0.76), trim=(0.30, 0.42, 0.62), accent=(0.24, 0.36, 0.60)),
+    'vc_row': dict(h=12.0, roof='flat', style='glass', wall=(0.74, 0.80, 0.84), trim=(0.24, 0.26, 0.30), accent=(0.20, 0.70, 0.60)),
+    'ore_refinery': dict(h=12.0, roof='flat', style='industrial', wall=(0.70, 0.42, 0.22), trim=(0.24, 0.24, 0.26), accent=(0.95, 0.75, 0.25)),
+    'hackathon_house': dict(h=6.8, roof='gable', style='timber', wall=(0.52, 0.36, 0.24), trim=(0.92, 0.88, 0.80), accent=(0.86, 0.32, 0.20)),
+}
+
 # Private homes: exteriors only (visits stay private), placed where each kind of home belongs.
 HOMES = [
     dict(id='home_parents_basement', district='residences', place=('front', 'res_crescent', (-440, -36), 'south', 6.0)),

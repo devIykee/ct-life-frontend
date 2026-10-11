@@ -99,7 +99,8 @@ namespace CTLife.EditorTools.IslandV2
             var go = new GameObject("billboard_" + (string)b["screen"]) { layer = layer };
             go.transform.SetParent(parent, false);
             float sc = (float)b["scale"];
-            go.transform.SetPositionAndRotation(IslandV2Paths.V3(b["p"]), Quaternion.Euler(0f, (float)b["yaw"], 0f));
+            // the kit billboard's panel faces its local -Z: turn it so the screen looks along the yaw dress.py gives
+            go.transform.SetPositionAndRotation(IslandV2Paths.V3(b["p"]), Quaternion.Euler(0f, (float)b["yaw"] + 180f, 0f));
             go.transform.localScale = Vector3.one * sc;
             go.AddComponent<MeshFilter>().sharedMesh = mesh;
             var mr = go.AddComponent<MeshRenderer>();

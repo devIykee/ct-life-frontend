@@ -48,7 +48,10 @@ namespace CTLife.EditorTools.IslandV2
             new View("farm", new Vector3(520f, 40f, -60f), new Vector3(640f, 8f, 110f), 55f),
             new View("builder_hills", new Vector3(240f, 60f, 140f), new Vector3(380f, 20f, 320f), 55f),
             new View("breakpoint", new Vector3(-150f, 40f, 170f), new Vector3(-300f, 10f, 290f), 55f),
-            new View("timeline_screens", new Vector3(-6f, 6f, -10f), new Vector3(-14f, 8f, 70f), 55f),
+            new View("timeline_screens", new Vector3(46f, 9f, 22f), new Vector3(-6f, 7f, 50f), 55f),
+            new View("boardwalk", new Vector3(-60f, 3.2f, -230f), new Vector3(60f, 0f, -222f), 58f, true),
+            new View("marina_quay", new Vector3(520f, 8f, -420f), new Vector3(470f, -3f, -360f), 55f),
+            new View("lighthouse", new Vector3(720f, 14f, -480f), new Vector3(676f, 12f, -532f), 50f),
         };
 
         public static void Run()
@@ -92,7 +95,7 @@ namespace CTLife.EditorTools.IslandV2
                 var go = (GameObject)PrefabUtility.InstantiatePrefab(e.prefab.gameObject);
                 go.transform.SetPositionAndRotation(v.Position, v.Rotation);
                 StripVenueLook(go);
-                IslandVenueTrim.Trim(go.transform, v.localFrame);
+                IslandVenueTrim.Trim(go.transform, v.localFrame, v.shellHeight > 0f ? 0.5f : 4f, v.shellHeight > 0f ? v.shellHeight + 0.4f : 400f);
                 venues++;
             }
             receipt["venues"] = venues;
@@ -136,6 +139,8 @@ namespace CTLife.EditorTools.IslandV2
             cam.targetTexture = rt;
             var h = IslandV2Height.Load(IslandV2Paths.Out);
             var shots = new JArray();
+            var stats = new JObject();
+            receipt["renderStats"] = stats;
             foreach (var v in Views)
             {
                 if (only != null && !only.Contains(v.Name)) continue;
@@ -147,6 +152,28 @@ namespace CTLife.EditorTools.IslandV2
                 cam.transform.LookAt(v.Target);
                 Render(cam, rt, Path.Combine(outDir, "v2-" + v.Name + ".png"));
                 shots.Add(v.Name);
+                stats[v.Name] = new JObject
+                {
+                    ["batches"] = UnityEditor.UnityStats.batches, ["setPass"] = UnityEditor.UnityStats.setPassCalls,
+                    ["triangles"] = UnityEditor.UnityStats.triangles, ["kitDraws"] = IslandInstanceRenderer.LastDraws,
+                    ["kitInstances"] = IslandInstanceRenderer.LastInstances,
+                };
+            }
+            if (Environment.GetCommandLineArgs().Contains("-ctlife-venueviews"))
+            {
+                // every venue from the street, 35 m out from its door and 22 m up (shell and diorama checks)
+                foreach (var v in world.venues)
+                {
+                    var c = v.ToIsland(v.localFrame.center);
+                    var door = v.Rotation * Vector3.back;                     // the door side (local -Z)
+                    var eye = new Vector3(c.x, 0f, c.y) + door * 34f + Quaternion.Euler(0f, 35f, 0f) * door * 8f;
+                    eye.y = h.Sample(eye.x, eye.z) + 22f;
+                    cam.orthographic = false; cam.fieldOfView = 55f;
+                    cam.transform.position = eye;
+                    cam.transform.LookAt(new Vector3(c.x, v.elevation + 3f, c.y));
+                    Render(cam, rt, Path.Combine(outDir, "venue-" + v.venueId + ".png"));
+                    shots.Add("venue-" + v.venueId);
+                }
             }
             if (only == null || only.Contains("topdown"))
             {

@@ -283,7 +283,7 @@ namespace CTLife.World
                 var root = op.Result[0];
                 root.name = "Venue_" + v.venueId;
                 Prepare(root);
-                if (v.HasLocal && v.localFrame.width > 0f) IslandVenueTrim.Trim(root.transform, v.localFrame);
+                if (v.HasLocal && v.localFrame.width > 0f) IslandVenueTrim.Trim(root.transform, v.localFrame, v.shellHeight > 0f ? 0.5f : 4f, v.shellHeight > 0f ? v.shellHeight + 0.4f : 400f);   // inside its building: nothing pokes out
                 var reg = Services.TryGet<ConfigStore>(out var cfg) ? cfg.Registries : null;
                 root.Init(reg?.SpotsFor(v.venueId));
                 if (string.IsNullOrEmpty(root.venueId)) root.venueId = v.venueId;

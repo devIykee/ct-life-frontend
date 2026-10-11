@@ -103,3 +103,11 @@ for n, h in (('crops_cornStageD', 2.2), ('crops_cornStageC', 1.6), ('crops_wheat
     add('kn_' + n.lower(), KN + n, N, fit=('z', h), tags=['crop'])
 for n in ('fence_simple', 'fence_planks', 'fence_gate', 'fence_simpleHigh'):
     add('kn_' + n.lower(), KN + n, P, fit=('x', 2.0), tags=['prop', 'fence'])
+
+W = 'world/boats'
+KW = 'kenney/watercraft-kit::'
+# Kenney Watercraft Kit (CC0): moored boats in the marina and the harbour, sailing boats in the bay, ships offshore
+for n, sc in (('boat-sail-a', 2.6), ('boat-sail-b', 2.6), ('boat-speed-a', 2.1), ('boat-speed-b', 2.1), ('boat-speed-c', 2.1),
+              ('boat-speed-e', 2.1), ('boat-speed-g', 2.1), ('boat-fishing-small', 2.3), ('boat-tug-a', 2.8), ('boat-row-small', 1.4),
+              ('buoy', 1.2), ('buoy-flag', 1.2), ('ship-large', 4.0), ('ship-ocean-liner', 5.0), ('ship-cargo-a', 5.5), ('boat-house-a', 2.4)):
+    add('kw_' + n.replace('-', '_'), KW + n, W, scale=sc, tags=['boat'])

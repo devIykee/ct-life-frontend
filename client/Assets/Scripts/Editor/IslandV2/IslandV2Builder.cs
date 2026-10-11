@@ -107,6 +107,11 @@ namespace CTLife.EditorTools.IslandV2
                     receipt["plaza"] = $"{pz["id"]}: {string.Join(" ", v.Select(q => $"({q.x:0.0},{q.y:0.00},{q.z:0.0})"))}";
                 }
 
+            // waterfront: quay walls and paving, the bay boardwalk, the lighthouse
+            IslandV2Coast.Build(plan, h, cells, receipt);
+            // the venues' street-side buildings
+            IslandV2Shells.Build(plan, cells, mats, receipt);
+
             // dressing: buildings, street furniture, trees, rocks, crops (dress.json) into their cells
             IslandV2Dress.Place(cells, h, receipt);
 
@@ -231,6 +236,8 @@ namespace CTLife.EditorTools.IslandV2
             Set("water_ripples.png", false, true, 256, normal: true);
             Set("water_depth.png", false, false, 1024, fmt: TextureImporterFormat.R8);   // smooth gradients, no ASTC blocks
             Set("clouds.png", false, true, 512, fmt: TextureImporterFormat.ASTC_6x6);
+            Set("boardwalk.png", true, true, 256);
+            foreach (var f in System.IO.Directory.GetFiles(IslandV2Paths.Textures + "/Signs", "*.png")) Set("Signs/" + System.IO.Path.GetFileName(f), true, false, 512);
         }
 
         private static Texture2D Tex(string file) => AssetDatabase.LoadAssetAtPath<Texture2D>(IslandV2Paths.Textures + "/" + file);
@@ -281,6 +288,13 @@ namespace CTLife.EditorTools.IslandV2
                 x.SetColor("_Shallow", new Color(0.42f, 0.72f, 0.66f)); x.SetColor("_Deep", new Color(0.16f, 0.42f, 0.48f)); x.SetVector("_RippleScale", new Vector4(0.11f, 0.2f, 0, 0));
             });
             Mk("barrier", "CT Life/World/Toon", x => { x.SetColor("_BaseColor", Color.white); });
+            Mk("shell_roof", "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Tex("concrete.png")); x.EnableKeyword("_WORLDUV"); x.SetFloat("_UseWorldUV", 1); x.SetFloat("_WorldScale", 0.25f); x.SetColor("_BaseColor", Color.white); x.SetFloat("_Toon", 0.35f); x.SetFloat("_Cull", 0f); });
+            Mk("bird", "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Texture2D.whiteTexture); x.SetColor("_BaseColor", new Color(0.97f, 0.97f, 0.95f)); x.SetFloat("_Toon", 0.2f); x.SetFloat("_Cull", 0f); });
+            Mk(Mat.Quay, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Tex("concrete.png")); x.EnableKeyword("_WORLDUV"); x.SetFloat("_UseWorldUV", 1); x.SetFloat("_WorldScale", 0.3f); x.SetColor("_BaseColor", new Color(0.72f, 0.69f, 0.64f)); x.SetFloat("_Toon", 0.35f); });
+            Mk(Mat.Boardwalk, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Tex("boardwalk.png")); x.DisableKeyword("_WORLDUV"); x.SetFloat("_UseWorldUV", 0); x.SetColor("_BaseColor", Color.white); x.SetFloat("_Toon", 0.3f); });
+            Mk(Mat.Timber, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Texture2D.whiteTexture); x.SetColor("_BaseColor", new Color(0.50f, 0.38f, 0.27f)); x.SetFloat("_Toon", 0.35f); });
+            Mk(Mat.Lighthouse, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Texture2D.whiteTexture); x.SetColor("_BaseColor", Color.white); x.SetFloat("_Toon", 0.4f); });
+            Mk(Mat.LighthouseLamp, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Texture2D.whiteTexture); x.SetColor("_BaseColor", new Color(1f, 0.93f, 0.66f)); x.SetColor("_Emission", new Color(1.6f, 1.35f, 0.8f)); x.SetFloat("_Cull", 0f); });
             Mk(Mat.Wall, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Tex("concrete.png")); x.EnableKeyword("_WORLDUV"); x.SetFloat("_UseWorldUV", 1); x.SetFloat("_WorldScale", 0.35f); x.SetColor("_BaseColor", new Color(0.74f, 0.70f, 0.64f)); x.SetFloat("_Toon", 0.35f); });
             AssetDatabase.SaveAssets();
             return m;
@@ -303,6 +317,7 @@ namespace CTLife.EditorTools.IslandV2
                 {
                     venueId = (string)v["id"], district = (string)v["district"], origin = new Vector2(origin.x, origin.z), elevation = origin.y,
                     yaw = yaw, localFrame = new Rect(mn, sz), localWalk = localWalk,
+                    shellHeight = v["shell"] is JObject shj ? (float)shj["h"] : 0f,
                 };
                 iv.frame = Aabb(iv, iv.localFrame);
                 iv.walk = Aabb(iv, iv.localWalk);
@@ -327,7 +342,8 @@ namespace CTLife.EditorTools.IslandV2
 
         private static readonly Dictionary<string, (int layer, bool shadows)> MatLayer = new Dictionary<string, (int, bool)>
         {
-            { Mat.Road, (Layers.Road, false) }, { Mat.Dirt, (Layers.Road, false) }, { Mat.Sidewalk, (Layers.Road, false) }, { Mat.Plaza, (Layers.Road, false) },
+            { Mat.Road, (Layers.Road, false) }, { Mat.Dirt, (Layers.Road, false) }, { Mat.Sidewalk, (Layers.Road, false) }, { Mat.Plaza, (Layers.Road, false) }, { Mat.Quay, (Layers.Road, false) },
+            { Mat.Boardwalk, (Layers.Road, false) }, { Mat.Timber, (Layers.Prop, true) }, { Mat.Lighthouse, (Layers.Building, true) }, { Mat.LighthouseLamp, (Layers.Building, false) },
             { Mat.Kerb, (Layers.Road, false) }, { Mat.Concrete, (Layers.Road, true) }, { Mat.Tunnel, (Layers.Road, true) },
             { Mat.Rail, (Layers.Prop, false) }, { Mat.Paint, (Layers.Road, false) }, { Mat.Grass, (Layers.Prop, false) },
         };
@@ -446,6 +462,12 @@ namespace CTLife.EditorTools.IslandV2
                 set.data = AssetDatabase.LoadAssetAtPath<TextAsset>(dataPath);
                 foreach (var car in parkedCars) car.set = set;
                 renderers++;
+            }
+            if (g.Shells.Count > 0)
+            {
+                var shRoot = new GameObject("Shells") { layer = Layers.Building };
+                shRoot.transform.SetParent(root.transform, false);
+                foreach (var d in g.Shells) { IslandV2Shells.Write(d, shRoot.transform, meshes, id); renderers += 6; colliders += 5; }
             }
             if (g.Billboards.Count > 0)
             {
@@ -604,6 +626,15 @@ namespace CTLife.EditorTools.IslandV2
             atm.skybox = Skybox();
             root.AddComponent<IslandRenderSettings>();
             root.AddComponent<IslandInstanceRenderer>();
+            var birds = root.AddComponent<IslandBirds>();
+            birds.material = mats.TryGetValue("bird", out var bm) ? bm : null;
+            birds.flocks = new[]
+            {
+                new IslandBirds.Flock { center = new Vector3(480f, 22f, -390f), radius = 60f, count = 9 },     // the marina
+                new IslandBirds.Flock { center = new Vector3(0f, 26f, -300f), radius = 95f, count = 12 },      // the bay
+                new IslandBirds.Flock { center = new Vector3(-420f, 18f, -380f), radius = 45f, count = 7 },    // the harbour
+                new IslandBirds.Flock { center = new Vector3(760f, 30f, -560f), radius = 70f, count = 6 },     // the lighthouse
+            };
             // the island's own look (golden hour grade, bloom, vignette; cool shadows, warm highlights)
             var lookGo = new GameObject("Look");
             lookGo.transform.SetParent(root.transform, false);

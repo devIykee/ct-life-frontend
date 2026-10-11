@@ -67,6 +67,24 @@ def ripple_normal(size=256, seed=3):
     return rgb
 
 
+def planks(size=256, n=5, seed=5):
+    """Boardwalk planks (1 m tile): n planks across v with gaps, each its own warm timber tone, grain along u."""
+    rng = np.random.default_rng(seed)
+    v = (np.arange(size) + 0.5) / size
+    u = (np.arange(size) + 0.5) / size
+    U, V = np.meshgrid(u, v)
+    k = np.floor(V * n).astype(int)
+    f = V * n - k
+    tone = rng.uniform(0.82, 1.08, n)[k]
+    base = np.array([0.66, 0.50, 0.34])
+    grain = ndimage.gaussian_filter(rng.standard_normal((size, size)), (0.6, 14.0), mode='wrap')
+    grain = (grain - grain.mean()) / (grain.std() + 1e-6)
+    col = base[None, None, :] * (tone * (1.0 + 0.06 * grain))[..., None]
+    gap = (f < 0.06) | (f > 0.97)
+    col = np.where(gap[..., None], base * 0.45, col)
+    return np.clip(col, 0, 1)
+
+
 def clouds(size=512, seed=11):
     """Tileable soft cloud noise (r): a few octaves of wrapped blurred noise, contrast-stretched."""
     rng = np.random.default_rng(seed)
@@ -174,6 +192,7 @@ def write_all(h, river, net, macro, out_dir, ctl=None):
         con2 = np.clip(np.array([0.80, 0.78, 0.74])[None, None, :] * (0.85 + (cl[..., None] - cl.mean()) * 1.2), 0, 1)
         Image.fromarray((con2 * 255).astype(np.uint8), 'RGB').save(os.path.join(out_dir, 'concrete.png'), optimize=True)
     save_rgba(ripple_normal()[::-1], os.path.join(out_dir, 'water_ripples.png'))
+    Image.fromarray((planks() * 255).astype(np.uint8), 'RGB').save(os.path.join(out_dir, 'boardwalk.png'), optimize=True)
     save_gray(clouds(), os.path.join(out_dir, 'clouds.png'))
     save_gray(water_depth(h, river)[::-1], os.path.join(out_dir, 'water_depth.png'))
     save_rgba(far_macro(macro, h, net, ctl=ctl)[::-1], os.path.join(out_dir, 'terrain_far_macro.png'))
