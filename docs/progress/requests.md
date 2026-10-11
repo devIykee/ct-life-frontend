@@ -1271,3 +1271,31 @@ Round 7 shrinks Terminal Café to 17 × 12 m (walkable x −8.5..8.5, z −6..6)
 | `center` / `pulse_screen` | (0, 0) / (0, 8.5) | (0.3, 1.4) / (−0.45, 5.2) |
 
 Status: done (venue builder, round 7); FYI for character-feel. [Unverified] I did not re-run your PlayMode seating captures.
+
+## 2026-10-09 onboarding/home UI lead → cast / world-life lane: crowd gender balance (skin tones are fine)
+
+User feedback (2026-10-09): every first character looked Black and the game read as built for one city; CT Life is global.
+The creator now interleaves its looks by skin-tone band and body family with a per-install seed (`CreatorLookOrder`), and
+the Lagos looks have neutral names ("Kaftan & Fila", "Ankara & Gele", "Ankara Kaftan"), still available among the others.
+I checked the NPC side (`art/cast/export/manifest.json`, one curated look per archetype via `NpcCastCatalog`):
+- **Skin tones are balanced** across the 51 NPC looks: fair 6, light 7, olive 6, tan 8, warm 7, brown 7, dark 5, deep 4
+  (+ rekt_pink 1). No change needed.
+- **Body families are not:** 34 m / 17 f. The first venue's five NPCs (town_crier, giveaway_guy, reply_guy, doomposter,
+  spaces_host) are 4 m / 1 f.
+- Request: when the next cast round lands (the "cool CT hero" direction is pending user approval, so nothing now), move
+  toward ~50/50 across archetypes, and make the first venue's spawn set mixed (e.g. one of reply_guy / doomposter / giveaway_guy
+  on the f family). No code change from my lane; the archetype → look binding is yours.
+
+- **The bigger finding: the skin palette itself has no light skin.** The tone *names* are balanced, the *colours* are not.
+  `art/cast/scripts/cast_tex.py` `SKIN_TONES`: deep #3b2418, dark #55331f, brown #74472b, warm #8f5e3c, tan #a8754f,
+  olive #a87d55, light #b47f5c, fair #c08b69. Relative luminance (sRGB, WCAG formula): 0.023, 0.044, 0.084, 0.142, 0.216,
+  0.236, 0.257, 0.307. The lightest tone, "fair", is a medium tan-brown (0.31). For comparison, a typical light-skin swatch
+  such as #f1c9a5 is about 0.63 [Inference: an illustrative reference swatch, not a measured standard]. Snow and Rain, the two
+  Blender Studio characters, are both dark (skin_tone3). So **every character in the game renders medium to deep**, whatever
+  its label. That matches what the user saw, and it survives any reordering. Editor captures
+  `../ct-life-evidence/home-ui/20..22-creator-first-look-seed*.png`: "Blazer" (labelled light) renders medium brown.
+- Request: re-spread the palette across the real range in the next cast export, from about #f3d3b8 down to #3b2418. Keep 8
+  steps and roughly even luminance gaps. Then re-check the creator and crowd captures. Nothing to do until the "cool CT
+  hero" direction is approved. The creator's interleaving uses the tone ids, so it keeps working with the new colours.
+
+Status: open (cast / world-life lane; integration lead to route)

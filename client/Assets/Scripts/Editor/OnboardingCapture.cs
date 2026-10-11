@@ -55,7 +55,10 @@ namespace CTLife.EditorTools
             }
         }
 
-        private static string DefaultOut() => Path.GetFullPath(Path.Combine(Application.dataPath, "../../../ct-life-evidence/onboarding-ui"));
+        private static string Set => Arg("-ctlife-captureSet") ?? "onboarding";
+
+        private static string DefaultOut() => Path.GetFullPath(Path.Combine(Application.dataPath,
+            Set == "home" ? "../../../ct-life-evidence/home-ui" : "../../../ct-life-evidence/onboarding-ui"));
 
         public static void Launch()
         {
@@ -111,9 +114,17 @@ namespace CTLife.EditorTools
             {
                 Directory.CreateDirectory(_out);
                 await Setup();
-                await Lottery();
-                await Creator();
-                await KitSheet();
+                if (Set == "home")
+                {
+                    await OnboardingCaptureHome.Run(Shot, Wait, Expect, Step);
+                    await LookOrderShots();
+                }
+                else
+                {
+                    await Lottery();
+                    await Creator();
+                    await KitSheet();
+                }
             }
             catch (Exception e) { fatal = e.GetType().Name + ": " + e.Message; Debug.LogException(e); }
             Finish(fatal);
@@ -442,6 +453,22 @@ namespace CTLife.EditorTools
         }
 
         // ------------------------------------------------------------------ kit sheet
+
+        /// <summary>The creator's first look for three install seeds: the first character differs per install (look-order fix).</summary>
+        private static async Task LookOrderShots()
+        {
+            var config = Services.Get<ConfigStore>();
+            for (int seed = 0; seed < 3; seed++)
+            {
+                new CreatorDraftStore(null).Clear();
+                CreatorLookOrder.SetInstallSeed(seed);
+                var screen = new CharacterCreatorScreen(config.Registries, _ => { }, serverLookConfirmed: _ => true);
+                screen.Show();
+                await Shot($"{20 + seed:00}-creator-first-look-seed{seed}", 1.4f);
+                screen.Close();
+            }
+            new CreatorDraftStore(null).Clear();
+        }
 
         private static async Task KitSheet()
         {

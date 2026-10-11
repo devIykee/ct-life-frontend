@@ -1,43 +1,7 @@
 /* Landscape is the primary gameplay orientation, chosen 6 October 2026.
    Preserve portrait fallback; existing tokens and native controls remain shared. */
-.ct-lobby-main { flex-grow: 1; min-height: 0; }
-.ct-lobby-top, .ct-lobby-aside { flex-shrink: 0; }
 
-.ct-landscape .ct-lobby { background-color: var(--ct-ink); }
 .ct-landscape .ct-backdrop-lobby { background-color: var(--ct-ink); }
-.ct-landscape .ct-game-pattern { display: none; }
-.ct-landscape .ct-lobby-content { padding: 32px 56px; }
-.ct-landscape .ct-lobby-top { flex-direction: row; align-items: center; }
-.ct-landscape .ct-lobby-header { flex-grow: 1; margin-right: 56px; }
-.ct-landscape .ct-lobby-player { max-width: 600px; min-height: 132px; background-color: rgba(0,0,0,0); border-width: 0; padding: 8px 16px 8px 0; }
-.ct-landscape .ct-lobby-avatar { width: 100px; height: 100px; border-width: 0; }
-.ct-landscape .ct-lobby-alias { font-size: 38px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); }
-.ct-landscape .ct-lobby-player .ct-grow, .ct-landscape .ct-lobby-story .ct-grow, .ct-landscape .ct-lobby-resource .ct-grow { -unity-text-align: middle-left; }
-.ct-landscape .ct-lobby-settings { width: 124px; min-width: 124px; min-height: 124px; border-width: 1px; border-color: var(--ct-line); background-color: var(--ct-deep); }
-.ct-landscape .ct-lobby-settings .ct-icon { -unity-background-image-tint-color: var(--ct-card); }
-.ct-landscape .ct-lobby-resources { width: 780px; margin: 0; }
-.ct-landscape .ct-lobby-resource { border-width: 0; background-color: var(--ct-deep); border-radius: 20px; }
-.ct-landscape .ct-lobby-resource-medallion { width: 64px; height: 64px; border-width: 0; border-radius: 20px; }
-.ct-landscape .ct-lobby-resource-medallion .ct-icon { width: 38px; height: 38px; }
-.ct-landscape .ct-lobby-cash, .ct-landscape .ct-lobby-energy { font-size: 36px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); }
-.ct-landscape .ct-lobby-energy-resource { width: 270px; }
-.ct-landscape .ct-lobby-main { flex-direction: row; margin-top: 28px; }
-.ct-landscape .ct-lobby-stage { flex-basis: 0; min-width: 0; min-height: 0; margin: 0 48px 0 0; }
-.ct-landscape .ct-lobby-eyebrow { margin-top: 28px; font-size: 23px; }
-.ct-landscape .ct-lobby-title { font-size: 78px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-text-outline-width: 0; }
-.ct-landscape .ct-lobby-island { min-height: 0; margin: 0; }
-.ct-landscape .ct-lobby-aside { width: 780px; justify-content: center; }
-.ct-landscape .ct-lobby-stories { flex-direction: column; margin-bottom: 24px; }
-.ct-landscape .ct-lobby-story { width: 100%; min-height: 132px; padding: 22px 28px; margin: 0 0 12px 0; background-color: var(--ct-deep); border-width: 1px; border-color: var(--ct-muted); color: var(--ct-card); }
-.ct-landscape .ct-lobby-story .ct-icon { width: 44px; height: 44px; margin-right: 24px; -unity-background-image-tint-color: var(--ct-accent); }
-.ct-landscape .ct-lobby-story-label { color: var(--ct-line); font-size: 22px; }
-.ct-landscape .ct-lobby-story-value { font-size: 30px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); }
-.ct-landscape .ct-lobby-enter { min-height: 144px; margin: 0 0 28px 0; border-width: 0; font-size: 42px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); }
-.ct-landscape .ct-lobby-nav { min-height: 144px; padding: 16px 4px; border-width: 0; border-radius: 22px; }
-.ct-landscape .ct-lobby-nav .ct-icon { width: 48px; height: 48px; }
-.ct-landscape .ct-lobby-nav-label { font-size: 22px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); }
-.ct-landscape .ct-lobby .ct-pressable > .ct-button-depth,
-.ct-landscape .ct-lobby .ct-pressable > .ct-button-glint { display: none; }
 
 /* Wallet entry: the action stays visible while the portrait/copy may scroll. */
 

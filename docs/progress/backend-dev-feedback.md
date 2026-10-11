@@ -657,3 +657,12 @@ realtime starts and syncs with your own tsconfig; #34 workers start; #41 `flags.
 (with a working devnet RPC; an off-curve wallet gives a 500 with an empty message, low priority); #68 call start returns
 only `callId`; #40 `GET /homes` and `POST /rtc/token` exist (see 88).
 
+
+94. **Dream progress is not in the contract (home screen, 2026-10-09).** `/me` has `character.dreamId` only; nothing says
+    how far a player is towards it, and nothing defines what each dream measures (does "Make $10K" count Cash, net worth or
+    lifetime earnings? what completes "Survive a rug"?). The redesigned home shows the dream as a progress card, so the
+    client now reads an optional `flags.dreamProgress: {current: number, target: number, unit?: "cents"}` (flags is
+    `additionalProperties: true`, so this is not a breaking change) and hides the bar until it arrives. Expected: either
+    that flag, or a typed `character.dreamProgress {current, target, unit, completedAt?}` in `Me`, plus the rule per dream
+    id in `dreams.json` (`metric`, `target`). Debt is fine: `Me.debtCents` and `lottery.json debtRepayment.weeklyDueCents`
+    are what the home shows ("$720 to pay back", "$120 is due each week").

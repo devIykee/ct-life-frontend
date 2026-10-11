@@ -78,7 +78,8 @@ namespace CTLife.UI
             _serverLookConfirmed = serverLookConfirmed;
             _readOnlyReview = readOnlyReview;
             _flow = new CreatorFlow(_draft) { ReadOnlyReview = readOnlyReview };
-            _looks = CreatorLookCatalog.Available();
+            // Interleaved by skin-tone band and body family, starting differently per install (CreatorLookOrder).
+            _looks = CreatorLookOrder.ForCreator(CreatorLookCatalog.Available(), CreatorLookOrder.InstallSeed());
             Log.Info("creator", _looks.Count + " looks available");
             if (SelectedLook != null) Array.Copy(SelectedLook.look, _draft.look, _draft.look.Length);
         }
@@ -834,7 +835,7 @@ namespace CTLife.UI
             _enterCity.style.display = DisplayStyle.None;
             _portrait = false;
             ApplyFraming();
-            _preview.SetYaw(SelectedLook?.previewYaw ?? 180f);
+            _preview.SetYaw(SelectedLook?.previewYaw ?? 0f);
             _lastReaction = -10f;
             React(Strings.T("ob.say.celebrate"), "emote_moon_jump", "react_moon_jump", "emote_wagmi");
             Motion.Enter(_celebrateTitle, 0f, -60f, 0.42f);

@@ -29,6 +29,8 @@ namespace CTLife.App
         private Hud _hud;
         private PhoneShell _phone;
         private DashboardScreen _lobby;
+        /// <summary>True after onboarding ran this session: the next lobby greets a first arrival (cleared once shown).</summary>
+        private bool _firstLobby;
         private bool _travelling;
         private bool _updateRequired;
         private bool _signingOut;
@@ -364,6 +366,7 @@ namespace CTLife.App
                 var session = Services.Get<Session>();
                 await game.Wait(profile.Refresh(game.Token));
                 // The roll comes first: the server treats an existing character as "already rolled".
+                _firstLobby = Onboarding.NeedsCharacter(profile.Me);
                 if (Onboarding.NeedsLottery(profile.Me)) await game.Wait(Lottery(game, session.IsSeeker));
                 if (Onboarding.NeedsCharacter(profile.Me)) await game.Wait(CreateCharacter(game));
 
@@ -566,7 +569,18 @@ namespace CTLife.App
             _phone?.Close();
             VenueSession.Current?.LocalPlayer?.CancelMovement();
             _hud?.Show(false);
-            _lobby = new DashboardScreen(() => RunGameAction(game, () => EnterCityFromLobby(game)), id => { if (GameAlive(game)) _phone?.Open(id); });
+            _lobby = new DashboardScreen(() => RunGameAction(game, () => EnterCityFromLobby(game)), id => { if (GameAlive(game)) _phone?.Open(id); },
+                firstArrival: _firstLobby)
+            {
+                // Today's clue for the home "today" row (City Life lane's API); null hides the chip.
+                DailyClue = async ct =>
+                {
+                    var hub = CTLife.CityLife.CityLifeHub.Acquire();
+                    try { return (await hub.Api.DailyClue(ct))?.Text; }
+                    finally { hub.Release(); }
+                },
+            };
+            _firstLobby = false;
             _lobby.Show();
             AudioManager.Instance?.Music.SetDistrict("lobby");
         }
@@ -619,6 +633,7 @@ namespace CTLife.App
                 {
                     Log.Warn("home", "Private Home entry failed: " + error.GetType().Name);
                     Bus.Publish(ToastSignal.Text(HomeStrings.T("entryFailed"), ToastKind.Bad));
+                    lobby?.ShowError(HomeStrings.T("entryFailed"));
                 }
             }
             finally
@@ -665,13 +680,14 @@ namespace CTLife.App
                 // Phase 6 gated venues (dubai_marina net worth, cabal_lounge membership, sybil_barn jailed-only). Null = go ahead,
                 // including when the server cannot answer yet: the room's own check then decides.
                 var blocked = await game.Wait(CTLife.Competition.CompetitionLinks.BlockMessageBeforeJoin(venueId, game.Token));
-                if (blocked != null) { Bus.Publish(ToastSignal.Text(blocked, ToastKind.Bad)); ReopenLobby(); return; }
+                if (blocked != null) { Bus.Publish(ToastSignal.Text(blocked, ToastKind.Bad)); ReopenLobby(); lobby?.ShowError(blocked); return; }
                 try { await game.Wait(VenueSession.Enter(venueId, joinRoom: true, owner: game.Token)); }
                 catch (OperationCanceledException) when (!GameAlive(game)) { throw; }
                 catch (Exception e) when (GatedJoinRejection(e) is string rejection)
                 {
                     Log.Warn("flow", $"Venue room refused the join ({e.Message})");
                     Bus.Publish(ToastSignal.Text(rejection, ToastKind.Bad));
+                    lobby?.ShowError(rejection);
                     rejected = true;
                     ReopenLobby();
                     if (lobby != null) AudioManager.Instance?.Music.SetDistrict("lobby");
@@ -692,6 +708,7 @@ namespace CTLife.App
                 if (!GameAlive(game)) return;
                 Log.Exception("flow", e);
                 Bus.Publish(ToastSignal.Text(e.Message, ToastKind.Bad));
+                lobby?.ShowError(Strings.T("home.error.travel"));
                 lobby?.SetBusy(false);
                 lobby?.Element.SetEnabled(true);
                 if (lobby != null) AudioManager.Instance?.Music.SetDistrict("lobby");

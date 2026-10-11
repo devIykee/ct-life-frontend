@@ -376,53 +376,6 @@
 .ct-move-right .ct-move-arrow-glyph { rotate: 180deg; }
 .ct-move-arrow.ct-move-active { background-color: var(--ct-accent); }
 
-/* Signed-in game home. The illustration is original art; balances and story are live data. */
-.ct-lobby { background-color: var(--ct-game-blue); overflow: hidden; }
-.ct-game-pattern { position: absolute; left: 0; top: 0; right: 0; bottom: 0; overflow: hidden; }
-.ct-game-pattern-tile { position: absolute; width: 140px; height: 140px; rotate: 45deg; border-radius: 28px; background-color: var(--ct-game-pattern); }
-.ct-lobby-content { flex-grow: 1; padding: 28px 28px 20px 28px; }
-.ct-lobby-header { flex-direction: row; align-items: center; flex-shrink: 0; }
-.ct-lobby-player { flex-grow: 1; flex-shrink: 1; flex-basis: 0; min-width: 0; flex-direction: row; align-items: center; padding: 12px 20px 22px 12px; background-color: var(--ct-deep); color: var(--ct-card); min-height: 140px; margin-right: 20px; }
-.ct-lobby-player > .ct-button-depth { background-color: var(--ct-game-outline); }
-.ct-lobby-avatar { width: 100px; height: 100px; border-radius: 24px; background-color: var(--ct-game-purple); border-width: 4px; border-color: var(--ct-game-outline); align-items: center; justify-content: center; margin-right: 20px; flex-shrink: 0; }
-.ct-lobby-avatar .ct-icon { width: 76px; height: 76px; -unity-background-image-tint-color: var(--ct-ink); }
-.ct-lobby-alias { font-size: 44px; -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.ct-lobby-tribe { font-size: 26px; color: var(--ct-surface); white-space: normal; }
-.ct-lobby-settings { width: 132px; min-width: 132px; flex-shrink: 0; min-height: 132px; padding: 28px; margin: 0; background-color: var(--ct-game-cyan); }
-.ct-lobby-settings .ct-icon { -unity-background-image-tint-color: var(--ct-ink); }
-.ct-lobby-resources { flex-direction: row; flex-shrink: 0; margin: 24px 0 0 0; }
-.ct-lobby-resource { min-height: 124px; flex-direction: row; align-items: center; padding: 8px 20px 16px 8px; background-color: var(--ct-game-outline); color: var(--ct-card); }
-.ct-lobby-resource > .ct-button-depth { background-color: var(--ct-resource-depth); }
-.ct-lobby-resource > .ct-button-glint { opacity: 0.2; }
-.ct-lobby-cash-resource { flex-grow: 1; margin-right: 20px; }
-.ct-lobby-energy-resource { width: 310px; }
-.ct-lobby-resource-medallion { width: 88px; height: 88px; border-radius: 44px; background-color: var(--ct-accent); border-width: 4px; border-color: var(--ct-game-yellow-depth); align-items: center; justify-content: center; margin-right: 16px; flex-shrink: 0; }
-.ct-lobby-resource-medallion .ct-icon { width: 58px; height: 58px; -unity-background-image-tint-color: var(--ct-ink); }
-.ct-lobby-energy-resource .ct-lobby-resource-medallion { background-color: var(--ct-game-green); border-color: var(--ct-green); }
-.ct-lobby-resource-label { color: var(--ct-line); font-size: 21px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); }
-.ct-lobby-cash { font-size: 45px; -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); white-space: normal; }
-.ct-lobby-energy { font-size: 38px; -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); }
-.ct-lobby-stage { flex-grow: 1; min-height: 760px; margin: 28px -12px 0 -12px; align-items: stretch; }
-.ct-lobby-eyebrow { font-size: 24px; color: var(--ct-game-cyan); -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-text-align: middle-center; }
-.ct-lobby-title { font-size: 88px; -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); color: var(--ct-card); -unity-text-align: middle-center; white-space: normal; -unity-text-outline-color: var(--ct-game-outline); -unity-text-outline-width: 3px; margin: 8px 0 0 0; }
-.ct-lobby-island { flex-grow: 1; min-height: 490px; height: 0; margin: -12px -20px 0 -20px; }
-.ct-lobby-stories { flex-direction: row; flex-shrink: 0; margin: 0 0 16px 0; }
-.ct-lobby-story { width: 48.8%; min-height: 142px; flex-direction: row; align-items: center; padding: 20px 18px 28px 18px; background-color: var(--ct-card); color: var(--ct-ink); }
-.ct-lobby-dream { margin-right: 2.4%; background-color: var(--ct-game-purple); }
-.ct-lobby-home { background-color: var(--ct-game-cyan); }
-.ct-lobby-story > .ct-button-depth { background-color: var(--ct-game-outline); opacity: 0.22; }
-.ct-lobby-story .ct-icon { width: 60px; height: 60px; flex-shrink: 0; margin-right: 16px; }
-.ct-lobby-story-label { font-size: 22px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); }
-.ct-lobby-story-value { font-size: 33px; -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); white-space: normal; }
-.ct-lobby-enter { min-height: 176px; font-size: 62px; margin: 0 8px 28px 8px; border-width: 5px; border-radius: 28px; }
-.ct-lobby-enter > .ct-button-depth { height: 20px; }
-.ct-lobby-enter > .ct-button-glint { height: 12px; left: 18px; right: 18px; top: 5px; }
-.ct-lobby-enter:active > .ct-button-depth { height: 5px; }
-.ct-lobby-navigation { flex-direction: row; flex-shrink: 0; justify-content: space-between; }
-.ct-lobby-nav { width: 18.8%; min-height: 186px; align-items: center; justify-content: center; padding: 18px 6px 28px 6px; border-radius: 28px; color: var(--ct-ink); }
-.ct-lobby-nav .ct-icon { width: 82px; height: 82px; margin-bottom: 10px; }
-.ct-lobby-nav-label { font-size: 32px; -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); }
-.ct-lobby-nav > .ct-button-depth { background-color: var(--ct-game-outline); opacity: 0.25; }
 .ct-tone-cyan { background-color: var(--ct-game-cyan); }
 .ct-tone-coral { background-color: var(--ct-game-coral); }
 .ct-tone-gold { background-color: var(--ct-accent); }
@@ -439,7 +392,7 @@
 /* Visible native focus: a thicker light rim on dark faces, dark-blue rim on light faces. */
 .ct-pressable:focus { border-width: 6px; border-color: var(--ct-game-white); }
 .ct-btn-primary:focus, .ct-btn-ghost:focus, .ct-chip:focus, .ct-row-btn:focus,
-.ct-venue:focus, .ct-lobby-story:focus, .ct-lobby-nav:focus, .ct-lobby-settings:focus,
+.ct-venue:focus,
 .ct-needs-toggle:focus, .ct-dock-action:focus { border-color: var(--ct-game-blue-depth); }
 .ct-pressable:focus > .ct-button-glint { opacity: 1; height: 10px; }
 .ct-app:focus { border-width: 0; }

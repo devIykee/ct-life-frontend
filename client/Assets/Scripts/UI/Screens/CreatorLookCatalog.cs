@@ -42,6 +42,15 @@ namespace CTLife.UI
             return _fallbackLooks[(int)(h % (uint)_fallbackLooks.Length)];
         }
 
+        /// <summary>The authored preview yaw (facing the camera) for a look, or 0 (Humanoid faces +Z) when it is not in the catalog.</summary>
+        public static float PreviewYawFor(string[] look)
+        {
+            if (look == null) return 0f;
+            var key = string.Join("|", look);
+            foreach (var e in Available()) if (e.look != null && string.Join("|", e.look) == key) return e.previewYaw;
+            return 0f;
+        }
+
         public static List<Entry> Available()
         {
             var result = new List<Entry>();
