@@ -30,36 +30,24 @@ Mesh:
   m_BonesAABB: []
   m_VariableBoneCountWeights:
     m_Data: 
-  m_MeshCompression: 0
+  m_MeshCompression: 1
   m_IsReadable: 1
   m_KeepVertices: 1
   m_KeepIndices: 1
   m_IndexFormat: 0
-  m_IndexBuffer: 000001000200000002000300
+  m_IndexBuffer: 
   m_VertexData:
     serializedVersion: 3
-    m_VertexCount: 4
+    m_VertexCount: 0
     m_Channels:
     - stream: 0
       offset: 0
       format: 0
-      dimension: 3
-    - stream: 0
-      offset: 12
-      format: 0
-      dimension: 3
-    - stream: 0
-      offset: 0
-      format: 0
       dimension: 0
     - stream: 0
       offset: 0
       format: 0
       dimension: 0
-    - stream: 0
-      offset: 24
-      format: 0
-      dimension: 2
     - stream: 0
       offset: 0
       format: 0
@@ -96,23 +84,35 @@ Mesh:
       offset: 0
       format: 0
       dimension: 0
-    m_DataSize: 128
-    _typelessdata: 000060c000000000000000000000000000000000000080bf0000000000000000000060c000006040000000000000000000000000000080bf000000000000803f0000604000006040000000000000000000000000000080bf0000803f0000803f0000604000000000000000000000000000000000000080bf0000803f00000000
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    m_DataSize: 0
+    _typelessdata: 
   m_CompressedMesh:
     m_Vertices:
-      m_NumItems: 0
-      m_Range: 0
-      m_Start: 0
-      m_Data: 
-      m_BitSize: 0
+      m_NumItems: 12
+      m_Range: 7
+      m_Start: -3.5
+      m_Data: 00000000800000080000ffff0f0080ffffffffff0000f8ffff0000080080
+      m_BitSize: 20
     m_UV:
-      m_NumItems: 0
-      m_Range: 0
+      m_NumItems: 8
+      m_Range: 1
       m_Start: 0
-      m_Data: 
-      m_BitSize: 0
+      m_Data: 000000000000ffffffffffffffff0000
+      m_BitSize: 16
     m_Normals:
-      m_NumItems: 0
+      m_NumItems: 8
       m_Range: 0
       m_Start: 0
       m_Data: 
@@ -128,7 +128,7 @@ Mesh:
       m_Data: 
       m_BitSize: 0
     m_NormalSigns:
-      m_NumItems: 0
+      m_NumItems: 4
       m_Data: 
       m_BitSize: 0
     m_TangentSigns:
@@ -146,10 +146,10 @@ Mesh:
       m_Data: 
       m_BitSize: 0
     m_Triangles:
-      m_NumItems: 0
-      m_Data: 
-      m_BitSize: 0
-    m_UVInfo: 0
+      m_NumItems: 6
+      m_Data: 240e
+      m_BitSize: 2
+    m_UVInfo: 5
   m_LocalAABB:
     m_Center: {x: 0, y: 1.75, z: 0}
     m_Extent: {x: 3.5, y: 1.75, z: 0}
