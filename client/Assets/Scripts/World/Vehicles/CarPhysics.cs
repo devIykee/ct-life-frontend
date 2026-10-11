@@ -105,8 +105,26 @@ namespace CTLife.World.Vehicles
 
         protected float DamperRate() => 2f * _s.suspensionDamping * Mathf.Sqrt(SpringRate() * _s.mass / 4f);
 
+        /// <summary>
+        /// Traffic on rails (Feel lane F3): a <c>TrafficCar</c> moves the kinematic body along its lane, so no forces here;
+        /// the wheels spin and steer from <see cref="RailSpeed"/> and <see cref="RailSteer"/> instead.
+        /// </summary>
+        public bool Rails { get; private set; }
+        public float RailSpeed, RailSteer;
+
+        public void SetRails(bool on)
+        {
+            Rails = on;
+            if (on) { SkidAmount = 0f; Grounded = true; }
+        }
+
         protected virtual void FixedUpdate()
         {
+            if (Rails)
+            {
+                Rpm01 = Mathf.Clamp01(Mathf.Abs(RailSpeed) / Mathf.Max(1f, _s.topSpeed) * 1.15f + 0.1f);
+                return;
+            }
             if (_wheels == null || _wheels.Length == 0 || _v.Flying) return;
             if (!_v.Occupied && _rb.IsSleeping()) return;   // parked and settled: no rays
             float dt = Time.fixedDeltaTime;
@@ -284,7 +302,10 @@ namespace CTLife.World.Vehicles
         /// through <see cref="Knockdown"/>) and carries on, instead of stopping dead against their kinematic capsule. Other
         /// players are only passed through (their client owns their body; a hit message is a server ask).
         /// </summary>
-        private void GuardPeople(float speed)
+        private void GuardPeople(float speed) => GuardPeople(speed, _rb.isKinematic ? transform.forward * speed : _rb.linearVelocity);
+
+        /// <summary>See <see cref="GuardPeople(float)"/>; traffic on rails passes its own velocity.</summary>
+        public void GuardPeople(float speed, Vector3 velocity)
         {
             for (int i = _passed.Count - 1; i >= 0; i--)
             {
@@ -305,7 +326,7 @@ namespace CTLife.World.Vehicles
             }
             if (_hull == null) return;
             float dt = Time.fixedDeltaTime;
-            var center = transform.TransformPoint(_hull.center) + _rb.linearVelocity * dt;
+            var center = transform.TransformPoint(_hull.center) + velocity * dt;
             var half = Vector3.Scale(_hull.size, transform.lossyScale) * 0.5f + new Vector3(0.2f, 0.1f, 0.3f + speed * dt);
             int n = Physics.OverlapBoxNonAlloc(center, half, _near, transform.rotation, 1 << CharacterLayers.Characters, QueryTriggerInteraction.Ignore);
             for (int i = 0; i < n; i++)
@@ -321,9 +342,9 @@ namespace CTLife.World.Vehicles
                 if (view == null) continue;
                 bool npc = view.GetComponent<NpcController>() != null;
                 if (!npc && !view.isLocal) continue;
-                var vel = _rb.linearVelocity;
+                var vel = velocity;
                 Knockdown.For(view).Fall(vel * 0.75f + Vector3.up * Mathf.Min(4f, speed * 0.25f), vel * (8f + speed));
-                _rb.linearVelocity = vel * 0.94f;
+                if (!_rb.isKinematic) _rb.linearVelocity = vel * 0.94f;
                 PersonHit?.Invoke(view, speed);
             }
         }
@@ -334,6 +355,12 @@ namespace CTLife.World.Vehicles
         protected virtual void LateUpdate()
         {
             if (_wheels == null) return;
+            if (Rails)
+            {
+                _steer = Mathf.MoveTowards(_steer, RailSteer, 140f * Time.deltaTime);
+                float rest = _s.mass * 9.81f / 4f / SpringRate();
+                foreach (var w in _wheels) { w.compression = rest; w.spin += RailSpeed / w.radius * Mathf.Rad2Deg * Time.deltaTime; }
+            }
             foreach (var w in _wheels)
             {
                 if (w.visual == null) continue;
