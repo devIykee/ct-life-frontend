@@ -47,6 +47,10 @@
     background-color: rgba(0, 0, 0, 0); border-width: 0; border-radius: 0;
 }
 
+/* The painted squircle body sits 5 px (top/sides) and 6-7 px (bottom) inside its 130 px art: 6-8 units at 150 units tall,
+   with a corner radius of ~22% of the body (~30 units). The shine is clipped to that shape. */
+.ct-title-shine-clip { position: absolute; left: 6px; right: 6px; top: 6px; bottom: 8px; border-radius: 30px; overflow: hidden; }
+
 .ct-title-shine {
     position: absolute; top: -30%; bottom: -30%; left: -35%; width: 14%;
     background-color: rgba(255, 255, 255, 0.26); rotate: 18deg;
@@ -56,13 +60,14 @@
    font), solid cream fill, a thick dark-plum outline and a soft dark drop shadow (user direction 2026-10-08). On the
    Seeker the outlines are 3.3-3.9 px. */
 
-/* "Use another wallet": the same outlined game text, underlined (rich text <u>), +30% (28 → 36 px). The transparent
-   padding makes the hit area 130 units tall (48 dp on the Seeker) without any visible box. */
+/* "Use another wallet": the same outlined game text, underlined (rich text <u>), 28 → 41 px (+30%, then +15% so it holds its
+   own beside PLAY), outline as thick as the legal line's. The transparent padding makes the hit area 130 units tall
+   (48 dp on the Seeker) without any visible box. */
 .ct-title-link, .ct-title-link:hover, .ct-title-link:focus, .ct-title-link:active {
     margin: 0; padding: 0 26px; min-height: 130px; min-width: 130px;
     background-color: rgba(0, 0, 0, 0); border-width: 0;
-    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 36px; white-space: nowrap; -unity-text-align: middle-center;
-    color: rgb(255, 246, 228); -unity-text-outline-width: 3.5px; -unity-text-outline-color: rgb(58, 20, 64);
+    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 41px; white-space: nowrap; -unity-text-align: middle-center;
+    color: rgb(255, 246, 228); -unity-text-outline-width: 3px; -unity-text-outline-color: rgb(58, 20, 64);
     text-shadow: 0 3px 5px rgba(26, 8, 32, 0.85);
     transition-property: scale; transition-duration: 0.08s; transition-timing-function: ease-out;
 }

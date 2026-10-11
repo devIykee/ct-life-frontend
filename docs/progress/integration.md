@@ -1,4 +1,4 @@
-READY TO COMMIT (2 commits). [1] (returning-player lottery fix after the real SIWS pass): client/Assets/Scripts/Net/Auth/Onboarding.cs, client/Assets/Tests/EditMode/OnboardingTests.cs, docs/progress/backend-dev-feedback.md (item 92 + real SIWS pass), docs/progress/integration.md (the "Step 4b" table rows: SIWS pass, returning player, MWA overlay). Commit message: "onboarding: a character always means the lottery was rolled (backend 7243073 reads lotteryRolled:false for pre-migration players and 500s their roll; feedback 92)". Checks: compile_check dev/release/editor compile; EditMode 1360/1360. [2] (title screen v4, separate commit): client/Assets/Scripts/UI/Screens/SignInScreen.cs, client/Assets/Resources/UI/title.uss, client/Assets/Scripts/Editor/TitleArtImporter.cs, client/Assets/Resources/UI/Title/title-bg.png + .meta (3840×1727), client/Assets/Resources/UI/Title/btn-green-blank-sq.png + .meta (NEW), client/Assets/Resources/UI/Title/btn-green-blank.png + .meta (DELETED), client/Assets/Tests/EditMode/TitleButtonArtTests.cs + .meta (NEW), art/LICENSES.md, docs/progress/integration.md (section "Title screen v4"). Commit message: "title v4: high-res 3840 background (ASTC 6x6, max 4096); green squircle body with corner-safe 9-slice (purple pill until its -sq lands); bottom copy as outlined game text (Lilita One +30%, thick plum outline, drop shadow; no plate, old gradient removed), Use another wallet underlined beside PLAY with a 48 dp hit area". Checks: compile_check dev/release/editor compile (the one editor warning is the venue lane's VenueVerify.cs:58); EditMode 1360 passed + 2 ignored; squircle test green passes; release APK 146.2 MiB (budget 150). integration.md holds both sections; if [1] is committed alone, include integration.md with [2].
+READY TO COMMIT (title screen v5): client/Assets/Resources/UI/Title/btn-purple-blank-sq.png + .meta (NEW), client/Assets/Resources/UI/Title/btn-purple-blank.png + .meta (DELETED), client/Assets/Resources/UI/title.uss, client/Assets/Scripts/UI/Screens/SignInScreen.cs, art/LICENSES.md, docs/progress/integration.md (section "Title screen v5"). Commit message: "title v5: purple squircle body (pill art gone), Use another wallet +15% with the legal line's outline, button shine clipped to the squircle body". Checks: compile_check dev compiles; TitleButtonArtTests 2/2; EditMode 1362/1362 (no ignored left).
 
 # Integration lead log
 
@@ -945,6 +945,24 @@ approved v2, with no content change. It replaces `Resources/UI/Title/title-bg.pn
 Checks: compile_check dev / release compile. EditMode 1360 passed + 2 ignored of 1362 before the green body arrived.
 After it: `TitleButtonArtTests` green passes (corner 36 px ≤ cap 39 px) and purple is still ignored. No code changed
 after that full run.
+
+## 2026-10-08: Title screen v5 (purple squircle, larger link, shine clipped)
+
+Evidence: `../ct-life-evidence/title-screen/v5-signin.png`, `v5-play.png` (Seeker screencaps), `v5-*-bottom.png` crops,
+`v5-signin-shine.mp4` + `v5-shine-corner-frames.png` (the sweep at the right end), `editmode-v5.xml`.
+
+- **Purple squircle in.** `btn-purple-blank-sq.png` (16:22) is copied to `Resources/UI/Title/` with the same import as
+  green (ASTC 4x4). `btn-purple-blank.png` + .meta are deleted, so both buttons are squircles and no pill art is left.
+  `TitleButtonArtTests`: both pass (green corner 36 px, purple 31 px, side cap 39 px). `art/LICENSES.md` lists both bodies.
+- **"Use another wallet" beside PLAY:** 36 → 41 px (+15%). Its outline is now 3 units, the same as the legal line (it was
+  3.5). The 48 dp hit area is unchanged.
+- **Shine fixed for the squircle.** On v5's first capture the button shine swept as a rectangle past the squircle's
+  transparent corners and margins: a light wedge over the cobblestones at the right end of PLAY
+  (`v5-play-shine-corner.png`). The shine now sits inside `.ct-title-shine-clip`, a child inset to the painted body
+  (6/6/6/8 units, radius 30) with `overflow: hidden`. The recording shows it clipped to the rounded body at the right end.
+- The dev MWA error overlay does not appear on either variant (no wallet operation runs on the title screen).
+
+Checks: compile_check dev compiles; `TitleButtonArtTests` 2/2 pass; EditMode 1362/1362.
 
 ## Status
 

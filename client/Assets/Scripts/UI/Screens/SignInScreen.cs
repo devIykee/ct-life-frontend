@@ -97,9 +97,14 @@ namespace CTLife.UI
             }) { text = text, enableRichText = false };
             b.AddToClassList("ct-title-btn");
             b.AddToClassList("ct-title-btn-" + tone);
+            // The shine sweeps inside a rounded clip that matches the painted body, so it never lights the transparent
+            // corners and margins of the art (the button's own rect is square).
             var shine = new VisualElement { pickingMode = PickingMode.Ignore };
             shine.AddToClassList("ct-title-shine");
-            b.Add(shine);
+            var clip = new VisualElement { pickingMode = PickingMode.Ignore };
+            clip.AddToClassList("ct-title-shine-clip");
+            clip.Add(shine);
+            b.Add(clip);
             return b;
         }
 
