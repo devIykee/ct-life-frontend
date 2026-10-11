@@ -20,10 +20,16 @@ namespace CTLife.Economy
         internal override MoneyView CreateView(MoneyHub hub) => new PredictionView(hub);
     }
 
+    /// <summary>
+    /// Duo layout (spec "Predict", Polymarket-like rows): a hero for what is in play, then each bet as a question row with the
+    /// side taken, stake and a status tag; details open in a sheet. The backend serves no market catalog, odds or volume, so
+    /// no Yes/No percentages or new-bet sheet are shown (New bets stay unavailable, as before).
+    /// </summary>
     internal sealed class PredictionView : MoneyView
     {
-        private readonly VisualElement _list = El.Div("ct-col");
-        private readonly Label _cash = MoneyUi.Small(""), _age = MoneyUi.Small("");
+        private readonly DuoPage _page;
+        private readonly VisualElement _list = El.Div("duo-predict-body");
+        private readonly Label _age = MoneyUi.Small("");
         private readonly PollGate _gate = new PollGate(15, 60);
         private readonly Dictionary<string, Label> _countdowns = new Dictionary<string, Label>();
         private Rows<BetReceipt> _history;
@@ -31,17 +37,16 @@ namespace CTLife.Economy
 
         public PredictionView(MoneyHub hub) : base(hub)
         {
-            Root.Add(MoneyUi.Row(MoneyUi.Text(MoneyStrings.T("predict.title"), "ct-h1"), El.Div("ct-grow"), _cash));
-            Root.Add(MoneyUi.Row(_age, El.Div("ct-grow"), MoneyUi.Btn(MoneyStrings.T("common.refresh"), () => _gate.Kick(), "ct-btn ct-btn-ghost")));
-            Root.Add(MoneyUi.Notice(MoneyStrings.T("predict.unavailable"), "warn"));
-            Root.Add(_list);
-            Subs.On<ProfileChangedSignal>(_ => RenderCash());
-            RenderCash();
+            _page = Framed(MoneyStrings.T("predict.title"), "predict-page");
+            _page.AddToClassList("duo-predict");
+            _page.Body.Add(_list);
+            _page.Body.Add(_age);
+            _age.AddToClassList("duo-footnote");
+            Subs.On<ProfileChangedSignal>(_ => Render());
             Render();
         }
 
-        private void RenderCash() => _cash.text = MoneyStrings.F("common.cash", MoneyFormat.Cash(
-            Services.TryGet<PlayerProfile>(out var p) ? p.CashCents : 0));
+        private static string Question(string outcomeId) => MoneyStrings.PredictionQuestion(outcomeId);
 
         protected override void Tick()
         {
@@ -50,10 +55,14 @@ namespace CTLife.Economy
             if (_history == null) return;
             foreach (var bet in _history.Items)
                 if (bet.Status == "open" && bet.ClosesAtMs.HasValue && _countdowns.TryGetValue(bet.PredictionId, out var label))
-                {
-                    var left = (bet.ClosesAtMs.Value - ServerClock.NowMs) / 1000.0;
-                    label.text = left > 0 ? MoneyStrings.F("predict.closes", MoneyFormat.Countdown(left)) : MoneyStrings.T("predict.closed");
-                }
+                    label.text = CloseLine(bet);
+        }
+
+        private static string CloseLine(BetReceipt bet)
+        {
+            if (!bet.ClosesAtMs.HasValue) return "";
+            var left = (bet.ClosesAtMs.Value - ServerClock.NowMs) / 1000.0;
+            return left > 0 ? MoneyStrings.F("predict.closes", MoneyFormat.Countdown(left)) : MoneyStrings.T("predict.closed");
         }
 
         private void Fetch()
@@ -76,34 +85,66 @@ namespace CTLife.Economy
             }, write: false);
         }
 
+        private static string Stamp(long ms) =>
+            System.DateTimeOffset.FromUnixTimeMilliseconds(ms).ToLocalTime().ToString("ddd d MMM, HH:mm", System.Globalization.CultureInfo.InvariantCulture);
+
+        private static string Tone(string status) => status == "won" ? "green" : status == "lost" ? "red" : status == "open" ? "blue" : "gray";
+
         private void Render()
         {
             if (!Alive) return;
             _list.Clear();
             _countdowns.Clear();
-            if (_error != null) _list.Add(MoneyUi.Notice(MoneyStrings.Err(_error), "error"));
+            if (_error != null) _list.Add(Duo.Notice(MoneyStrings.Err(_error), Duo.Tone.Danger));
             if (_history == null)
             {
                 if (_error == null) _list.Add(MoneyUi.Small(MoneyStrings.T("common.loading")));
                 return;
             }
-            _list.Add(MoneyUi.Text(MoneyStrings.T("predict.yours"), "ct-h2"));
+            var open = _history.Items.Where(b => b.Status == "open").ToList();
+            long inPlay = open.Sum(b => b.StakeCents);
+            var hero = Duo.Hero(MoneyStrings.T("predict.inPlay"), MoneyFormat.Cash(inPlay), null, null, MoneyStrings.F("predict.openCount", open.Count));
+            hero.name = "predict-hero";
+            _list.Add(hero);
+            _list.Add(Duo.Notice(MoneyStrings.T("predict.unavailable"), Duo.Tone.Warning));
+            var header = Duo.SectionHeader(MoneyStrings.T("predict.yours"), MoneyStrings.T("common.refresh"), () => _gate.Kick());
+            header.name = "predict-header";
+            _list.Add(header);
             if (_history.Skipped > 0) _list.Add(MoneyUi.Small(MoneyStrings.F("common.skipped", _history.Skipped)));
-            if (_history.Items.Count == 0 && _history.Skipped == 0)
-                _list.Add(MoneyUi.Small(MoneyStrings.T("predict.noHistory")));
+            if (_history.Items.Count == 0 && _history.Skipped == 0) { _list.Add(Duo.Empty(MoneyStrings.T("predict.noHistory"))); return; }
+            var list = El.Div("duo-list");
             foreach (var bet in _history.Items)
             {
-                var card = MoneyUi.Card(
-                    MoneyUi.Pair(bet.OutcomeId, MoneyFormat.Cash(bet.StakeCents)),
-                    MoneyUi.Small(MoneyStrings.T("predict.status." + bet.Status) + (string.IsNullOrEmpty(bet.Horizon) ? "" : " · " + bet.Horizon)));
+                var b = bet;
+                var row = new DuoRow(() => Details(b)).Leading(El.PassThrough(El.Div("duo-app-tile duo-tint-indigo", new UiIcon("predict"))))
+                    .Title(Question(bet.OutcomeId), "duo-row-title-strong")
+                    .Subtitle(MoneyStrings.F("predict.rowLine", MoneyFormat.Cash(bet.StakeCents), string.IsNullOrEmpty(bet.Horizon) ? "—" : bet.Horizon));
+                row.name = "predict-bet-" + bet.PredictionId;
                 if (bet.Status == "open" && bet.ClosesAtMs.HasValue)
                 {
-                    var countdown = MoneyUi.Small("");
+                    var countdown = El.Text(CloseLine(bet), "duo-row-subtitle");
                     _countdowns[bet.PredictionId] = countdown;
-                    card.Add(countdown);
+                    row.TextColumn.Add(countdown);
                 }
-                _list.Add(card);
+                row.Trailing(El.Text(MoneyStrings.T("predict.status." + bet.Status), "duo-tag duo-tag-" + Tone(bet.Status)));
+                row.Chevron();
+                list.Add(row);
             }
+            Duo.MarkLast(list);
+            _list.Add(list);
+        }
+
+        private void Details(BetReceipt bet)
+        {
+            var sheet = new DuoSheet(Question(bet.OutcomeId), MoneyStrings.T("predict.status." + bet.Status));
+            sheet.name = "predict-bet-sheet";
+            sheet.AddContent(MoneyUi.Pair(MoneyStrings.T("predict.stakeRow"), MoneyFormat.Cash(bet.StakeCents)));
+            sheet.AddContent(MoneyUi.Pair(MoneyStrings.T("predict.outcomeRow"), bet.OutcomeId));
+            if (!string.IsNullOrEmpty(bet.Horizon)) sheet.AddContent(MoneyUi.Pair(MoneyStrings.T("predict.horizonRow"), bet.Horizon));
+            if (bet.ClosesAtMs.HasValue) sheet.AddContent(MoneyUi.Pair(MoneyStrings.T("predict.closesRow"), Stamp(bet.ClosesAtMs.Value)));
+            if (bet.CreatedAtMs.HasValue) sheet.AddContent(MoneyUi.Pair(MoneyStrings.T("predict.placedRow"), Stamp(bet.CreatedAtMs.Value)));
+            sheet.AddSecondary(MoneyStrings.T("common.done"));
+            ShowSheet(sheet);
         }
     }
 }

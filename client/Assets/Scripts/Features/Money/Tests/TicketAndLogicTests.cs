@@ -336,4 +336,17 @@ namespace CTLife.Economy.Tests
             Assert.AreEqual(90, g.Age(100), 1e-9);
         }
     }
+
+    public sealed class PredictionCopyTests
+    {
+        [Test]
+        public void KnownOutcomesHaveQuestionCopyOthersReadAsWords()
+        {
+            Assert.AreEqual("BTC up over 24h?", MoneyStrings.PredictionQuestion("btc-24h-up"));
+            Assert.AreEqual("Sol 1h up", MoneyStrings.PredictionQuestion("sol-1h-up"));
+            Assert.AreEqual("Eth daily_down".Replace('_', ' '), MoneyStrings.PredictionQuestion("eth_daily_down"));
+            Assert.AreEqual("—", MoneyStrings.PredictionQuestion(null));
+            Assert.AreEqual("—", MoneyStrings.PredictionQuestion(""));
+        }
+    }
 }

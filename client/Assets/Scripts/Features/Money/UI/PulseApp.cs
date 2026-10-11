@@ -39,8 +39,11 @@ namespace CTLife.Economy
         private static readonly string[] ListStages = { "new", "final", "graduated" };
 
         private readonly ChipTabs _tabs;
-        private readonly VisualElement _body = El.Div("ct-col");
-        private readonly Label _cash = MoneyUi.Small("");
+        private readonly VisualElement _body = El.Div("duo-comp-body");
+        private readonly Label _cash = El.Text("", "duo-nav-note");
+        private readonly DuoPage _page;
+        private readonly VisualElement _bar;
+        private DuoSheet _orderSheet;
         private readonly JToken _marketConfig;
         private string _stage = "new";
         private bool _listDirty = true;
@@ -65,7 +68,6 @@ namespace CTLife.Economy
         private Rows<PositionRow> _positions;
         private MoneyError _positionsError;
         private readonly PollGate _positionsGate = new PollGate(5, 30);
-        private string _openCard;
         private Rows<SmartMoneyRow> _smart;
         private MoneyError _smartError;
         private readonly PollGate _smartGate = new PollGate(15, 60);
@@ -84,9 +86,22 @@ namespace CTLife.Economy
                 .Add(TabTape, MoneyStrings.T("pulse.tab.tape"))
                 .Add(TabSmart, MoneyStrings.T("pulse.tab.smart"))
                 .Add(TabAlpha, MoneyStrings.T("pulse.tab.alpha"));
-            Root.Add(MoneyUi.Row(MoneyUi.Text(MoneyStrings.T("pulse.title"), "ct-h1"), El.Div("ct-grow"), _cash));
-            Root.Add(_tabs.Root);
-            Root.Add(_body);
+            _page = Framed(MoneyStrings.T("pulse.title"), "pulse-page");
+            _page.AddToClassList("duo-pulse");
+            _cash.name = "pulse-cash";
+            _page.Nav.Right.Add(_cash);
+            _tabs.Root.name = "pulse-tabs";
+            _page.Body.Add(_tabs.Root);
+            _page.Body.Add(_body);
+            // Coin page: Robinhood-style glass Buy / Sell bar; the ticket opens in a sheet.
+            var buy = El.Btn(MoneyStrings.T("pulse.buy"), () => OpenOrder("buy"), "duo-pulse-buy");
+            buy.name = "pulse-buy";
+            var sell = El.Btn(MoneyStrings.T("pulse.sell"), () => OpenOrder("sell"), "duo-pulse-sell");
+            sell.name = "pulse-sell";
+            _bar = Duo.BottomBar(buy, sell);
+            _bar.name = "pulse-bar";
+            _bar.Show(false);
+            _page.Add(_bar);
             Hub.Market.Changed += MarketChanged;
             Hub.Market.TapeAdded += TapeAdded;
             Subs.On<ProfileChangedSignal>(_ => RenderCash());
@@ -101,13 +116,14 @@ namespace CTLife.Economy
         {
             Hub.Market.Changed -= MarketChanged;
             Hub.Market.TapeAdded -= TapeAdded;
+            _orderSheet?.Close();
             base.Dispose();
         }
 
         private static long Cash => Services.TryGet<PlayerProfile>(out var p) ? p.CashCents : 0;
         private static bool MarketsOn => FeatureFlags.IsAvailable(FeatureFlags.Markets);
 
-        private void RenderCash() => _cash.text = MoneyStrings.F("common.cash", MoneyFormat.Cash(Cash));
+        private void RenderCash() => _cash.text = MoneyFormat.Cash(Cash);
 
         private void MarketChanged()
         {
@@ -180,8 +196,15 @@ namespace CTLife.Economy
             if (!Alive) return;
             _body.Clear();
             _age = null;
+            bool coin = _coinId != null;
+            _tabs.Root.Show(!coin);
+            _bar.Show(coin);
+            _page.EnableInClassList("duo-pulse-coin", coin);
+            _page.Title?.Show(!coin);
+            _page.Nav.SetTitle(coin ? "$" + TickerOf(_coinId, null) : MoneyStrings.T("pulse.title"));
+            if (coin) _page.Nav.SetCollapsed(true, instant: true);
             if (!MarketsOn) _body.Add(MoneyUi.Notice(MoneyStrings.T("common.marketsOff"), "warn"));
-            if (_coinId != null)
+            if (coin)
             {
                 RenderCoin();
                 return;
@@ -204,11 +227,17 @@ namespace CTLife.Economy
             if (Hub.Market.LastError != null && !Hub.Market.RoomLive) _body.Add(MoneyUi.Notice(MoneyStrings.T(Hub.Market.LastError), "error"));
         }
 
+        private static VisualElement Quote(string price, long bps) =>
+            El.Div("duo-perp-quote", El.Text(price, "duo-row-value duo-perp-price"),
+                El.Text(MoneyFormat.Bps(bps), "duo-perp-change " + (bps >= 0 ? "duo-value-positive" : "duo-value-negative")));
+
+        private static VisualElement Empty(string text) => Duo.Empty(text);
+
         private void RenderMarket()
         {
             _listDirty = false;
             _lastListRender = Now;
-            var stages = El.Div("ct-app-tabs ct-money-tabs");
+            var stages = El.Div("duo-chip-row duo-pulse-stages");
             foreach (var s in ListStages)
             {
                 var stage = s;
@@ -217,21 +246,23 @@ namespace CTLife.Economy
             _body.Add(stages);
             AddListHeader();
             var coins = Hub.Market.List(_stage);
-            if (coins.Count == 0) _body.Add(MoneyUi.Text(MoneyStrings.T("pulse.empty"), "ct-body ct-muted"));
-            foreach (var c in coins) _body.Add(CoinRow(c, null));
+            if (coins.Count == 0) { _body.Add(Empty(MoneyStrings.T("pulse.empty"))); return; }
+            var list = El.Div("duo-list");
+            foreach (var c in coins) list.Add(CoinRow(c, null));
+            Duo.MarkLast(list);
+            _body.Add(list);
         }
 
         private VisualElement CoinRow(MarketCoin c, VisualElement extra)
         {
             var coin = c;
-            var change = MoneyUi.Text(MoneyFormat.Bps(c.Change5mBps), "ct-money-value " + MoneyUi.PnlClass(c.Change5mBps));
-            var b = El.Btn("", () => OpenCoin(coin.CoinId, null), "ct-row-btn ct-money-coin");
-            b.Add(El.Div("ct-col ct-grow",
-                MoneyUi.Text("$" + c.Ticker + "  " + c.Name, "ct-money-title"),
-                MoneyUi.Small(MoneyStrings.F("pulse.mcap", MoneyFormat.Cash(c.McapCents, true)) + " · " + MoneyStrings.F("pulse.holders", c.Holders)),
-                extra));
-            b.Add(El.Div("ct-col ct-money-right", MoneyUi.Text(MoneyFormat.Micros(c.PriceMicros), "ct-money-value"), change));
-            return b;
+            var row = new DuoRow(() => OpenCoin(coin.CoinId, null)).Leading(Duo.Avatar(c.Ticker, c.CoinId, "duo-avatar-s"))
+                .Title("$" + c.Ticker, "duo-row-title-strong")
+                .Subtitle(c.Name + " · " + MoneyStrings.F("pulse.mcap", MoneyFormat.Cash(c.McapCents, true)) + " · " + MoneyStrings.F("pulse.holders", c.Holders), twoLines: true);
+            row.name = "pulse-coin-" + c.CoinId;
+            if (extra != null) row.TextColumn.Add(extra);
+            row.Trailing(Quote(MoneyFormat.Micros(c.PriceMicros), c.Change5mBps));
+            return row;
         }
 
         private void RenderLaunch()
@@ -244,7 +275,8 @@ namespace CTLife.Economy
                 _body.Add(MoneyUi.Small(MoneyStrings.F("pulse.launchIntro", Math.Max(1, interval / 60), MoneyFormat.Cash(graduate, true))));
             AddListHeader();
             var coins = Hub.Market.List("new").Concat(Hub.Market.List("final")).OrderByDescending(c => c.LaunchedAtMs ?? 0).ToList();
-            if (coins.Count == 0) _body.Add(MoneyUi.Text(MoneyStrings.T("pulse.empty"), "ct-body ct-muted"));
+            if (coins.Count == 0) { _body.Add(Empty(MoneyStrings.T("pulse.empty"))); return; }
+            var list = El.Div("duo-list");
             foreach (var c in coins)
             {
                 VisualElement extra = null;
@@ -252,53 +284,68 @@ namespace CTLife.Economy
                 {
                     // Display ratio of two server values (mcap vs the config threshold); not a money outcome.
                     float pct = Math.Max(0f, Math.Min(1f, (float)((double)c.McapCents / graduate)));
-                    var fill = El.Div("ct-money-bar-fill");
+                    var fill = El.Div("duo-meter-fill");
                     fill.style.width = new Length(pct * 100f, LengthUnit.Percent);
                     var launched = c.LaunchedAtMs.HasValue ? MoneyStrings.F("pulse.launched", MoneyFormat.Ago((ServerClock.NowMs - c.LaunchedAtMs.Value) / 1000.0)) + " · " : "";
-                    extra = El.Div("ct-col", El.Div("ct-money-bar", fill),
-                        MoneyUi.Small(launched + MoneyStrings.F("pulse.launchProgress", MoneyFormat.Cash(Math.Max(0, graduate - c.McapCents), true))));
+                    extra = El.Div("duo-pulse-launch", El.Div("duo-meter duo-meter-green", fill),
+                        El.Text(launched + MoneyStrings.F("pulse.launchProgress", MoneyFormat.Cash(Math.Max(0, graduate - c.McapCents), true)), "duo-row-subtitle"));
                 }
-                _body.Add(CoinRow(c, extra));
+                list.Add(CoinRow(c, extra));
             }
+            Duo.MarkLast(list);
+            _body.Add(list);
         }
 
         private void RenderPositions()
         {
-            _body.Add(MoneyUi.Small(MoneyUi.Age(_positionsGate.Age(Now))));
             if (_positionsError != null) _body.Add(MoneyUi.Notice(MoneyStrings.Err(_positionsError), "error"));
             if (_positions == null)
             {
                 if (_positionsError == null) _body.Add(MoneyUi.Small(MoneyStrings.T("common.loading")));
                 return;
             }
+            // Hero: total unrealized PnL across the server's open positions.
+            long total = _positions.Items.Sum(p => p.UnrealizedCents);
+            if (_positions.Items.Count > 0)
+            {
+                var hero = Duo.Hero(MoneyStrings.T("pulse.unrealizedLabel"), MoneyFormat.SignedCash(total), null, null, MoneyStrings.F("pulse.positionsCount", _positions.Items.Count));
+                hero.name = "pulse-positions-hero";
+                hero.Q<Label>(className: "duo-hero-value")?.AddToClassList(MoneyUi.PnlClass(total));
+                _body.Add(hero);
+            }
+            _body.Add(MoneyUi.Small(MoneyUi.Age(_positionsGate.Age(Now))));
             if (_positions.Skipped > 0) _body.Add(MoneyUi.Small(MoneyStrings.F("common.skipped", _positions.Skipped)));
-            if (_positions.Items.Count == 0) _body.Add(MoneyUi.Text(MoneyStrings.T("pulse.posEmpty"), "ct-body ct-muted"));
+            if (_positions.Items.Count == 0) { _body.Add(Empty(MoneyStrings.T("pulse.posEmpty"))); return; }
+            var list = El.Div("duo-list");
             foreach (var p in _positions.Items)
             {
                 var pos = p;
                 var ticker = TickerOf(p.CoinId, p.Ticker);
-                var row = El.Btn("", () => { _openCard = _openCard == pos.CoinId ? null : pos.CoinId; Render(); }, "ct-row-btn ct-money-coin");
-                row.Add(El.Div("ct-col ct-grow",
-                    MoneyUi.Text("$" + ticker, "ct-money-title"),
-                    MoneyUi.Small(MoneyStrings.F("pulse.held", MoneyFormat.CoinUnits(p.Units)) + " · " + MoneyStrings.F("pulse.cost", MoneyFormat.Cash(p.CostBasisCents)))));
-                row.Add(MoneyUi.Pnl(p.UnrealizedCents));
-                _body.Add(row);
-                if (_openCard == p.CoinId) _body.Add(PnlCard(PnlCardData.From(p, ticker), pos.CoinId));
+                var row = new DuoRow(() => PnlSheet(PnlCardData.From(pos, ticker), pos.CoinId)).Leading(Duo.Avatar(ticker, p.CoinId, "duo-avatar-s"))
+                    .Title("$" + ticker, "duo-row-title-strong")
+                    .Subtitle(MoneyStrings.F("pulse.held", MoneyFormat.CoinUnits(p.Units)) + " · " + MoneyStrings.F("pulse.cost", MoneyFormat.Cash(p.CostBasisCents)), twoLines: true);
+                row.name = "pulse-position-" + p.CoinId;
+                row.Trailing(MoneyUi.Pnl(p.UnrealizedCents));
+                list.Add(row);
             }
+            Duo.MarkLast(list);
+            _body.Add(list);
         }
 
-        private VisualElement PnlCard(PnlCardData d, string coinId)
+        private void PnlSheet(PnlCardData d, string coinId)
         {
-            return MoneyUi.Card(
-                MoneyUi.Text(MoneyStrings.T("pulse.pnlCard"), "ct-eyebrow"),
-                MoneyUi.Text("$" + d.Ticker, "ct-h2"),
-                MoneyUi.Text(MoneyFormat.SignedCash(d.UnrealizedCents), "ct-big-number " + MoneyUi.PnlClass(d.UnrealizedCents)),
-                d.ReturnBps.HasValue ? MoneyUi.Text(MoneyFormat.Bps(d.ReturnBps.Value), "ct-money-value " + MoneyUi.PnlClass(d.UnrealizedCents)) : null,
-                MoneyUi.Pair(MoneyStrings.T("label.cost"), MoneyFormat.Cash(d.CostBasisCents)),
-                MoneyUi.Small(MoneyStrings.F("pulse.held", d.UnitsText)),
-                MoneyUi.Row(
-                    MoneyUi.Btn(MoneyStrings.T("pulse.copySummary"), () => MoneyUi.Copy(d.ShareText()), "ct-btn ct-btn-ghost"),
-                    MoneyUi.Btn(MoneyStrings.T("pulse.sell"), () => OpenCoin(coinId, "sell"))));
+            var sheet = new DuoSheet("$" + d.Ticker, MoneyStrings.T("pulse.pnlCard"));
+            sheet.name = "pulse-pnl-sheet";
+            var hero = Duo.Hero(MoneyStrings.T("pulse.unrealizedLabel"), MoneyFormat.SignedCash(d.UnrealizedCents),
+                d.ReturnBps.HasValue ? MoneyFormat.Bps(d.ReturnBps.Value) : null, d.UnrealizedCents >= 0);
+            hero.Q<Label>(className: "duo-hero-value")?.AddToClassList(MoneyUi.PnlClass(d.UnrealizedCents));
+            sheet.AddContent(hero);
+            sheet.AddContent(MoneyUi.Pair(MoneyStrings.T("label.cost"), MoneyFormat.Cash(d.CostBasisCents)));
+            sheet.AddContent(MoneyUi.Pair(MoneyStrings.T("pulse.heldRow"), d.UnitsText));
+            sheet.AddContent(MoneyUi.Row(MoneyUi.Btn(MoneyStrings.T("pulse.copySummary"), () => MoneyUi.Copy(d.ShareText()), MoneyUi.Plain)));
+            sheet.AddPrimary(MoneyStrings.T("pulse.sell"), () => OpenCoin(coinId, "sell"), destructive: true, name: "pulse-pnl-sell");
+            sheet.AddSecondary(MoneyStrings.T("common.done"));
+            ShowSheet(sheet);
         }
 
         private void RenderTape()
@@ -306,17 +353,20 @@ namespace CTLife.Economy
             long threshold = Wire.LongOr(_marketConfig?["tapeThresholdCents"], 100000);
             if (!Hub.Market.RoomJoined) _body.Add(MoneyUi.Notice(MoneyStrings.T("pulse.tapeOffline"), "warn"));
             var rows = Hub.Market.Tape.ToList();
-            if (rows.Count == 0) _body.Add(MoneyUi.Text(MoneyStrings.F("pulse.tapeEmpty", MoneyFormat.Cash(threshold)), "ct-body ct-muted"));
+            if (rows.Count == 0) { _body.Add(Empty(MoneyStrings.F("pulse.tapeEmpty", MoneyFormat.Cash(threshold)))); return; }
+            var list = El.Div("duo-list");
             foreach (var t in rows)
             {
                 var row = t;
-                var b = El.Btn("", () => OpenCoin(row.CoinId, null), "ct-row-btn ct-money-coin");
-                b.Add(El.Div("ct-col ct-grow",
-                    MoneyUi.Text(row.Name + " " + (row.Side == "sell" ? MoneyStrings.T("pulse.sell") : MoneyStrings.T("pulse.buy")).ToLowerInvariant() + " $" + TickerOf(row.CoinId, null), "ct-money-title"),
-                    MoneyUi.Small(MoneyFormat.Ago(Now - row.ReceivedAt))));
-                b.Add(MoneyUi.Text(MoneyFormat.Cash(row.CashCents), "ct-money-value " + (row.Side == "sell" ? "ct-money-down" : "ct-money-up")));
-                _body.Add(b);
+                var ticker = TickerOf(row.CoinId, null);
+                var r = new DuoRow(() => OpenCoin(row.CoinId, null)).Leading(Duo.Avatar(row.Name, row.Name, "duo-avatar-s"))
+                    .Title(row.Name + " " + (row.Side == "sell" ? MoneyStrings.T("pulse.sell") : MoneyStrings.T("pulse.buy")).ToLowerInvariant() + " $" + ticker, "duo-row-title-strong")
+                    .Subtitle(MoneyFormat.Ago(Now - row.ReceivedAt));
+                r.Value(MoneyFormat.Cash(row.CashCents), row.Side == "sell" ? "duo-value-negative" : "duo-value-positive");
+                list.Add(r);
             }
+            Duo.MarkLast(list);
+            _body.Add(list);
         }
 
         private void RenderSmart()
@@ -331,19 +381,22 @@ namespace CTLife.Economy
             if (_smartError != null) _body.Add(MoneyUi.Notice(MoneyStrings.Err(_smartError), "error"));
             if (_smart == null) return;
             if (_smart.Skipped > 0) _body.Add(MoneyUi.Small(MoneyStrings.F("common.skipped", _smart.Skipped)));
-            if (_smart.Items.Count == 0) _body.Add(MoneyUi.Text(MoneyStrings.T("pulse.smartEmpty"), "ct-body ct-muted"));
+            if (_smart.Items.Count == 0) { _body.Add(Empty(MoneyStrings.T("pulse.smartEmpty"))); return; }
+            var list = El.Div("duo-list");
             foreach (var s in _smart.Items)
             {
                 var row = s;
                 var age = s.AtMs.HasValue ? " · " + MoneyFormat.Ago((ServerClock.NowMs - s.AtMs.Value) / 1000.0) : "";
-                _body.Add(MoneyUi.Card(
-                    MoneyUi.Row(MoneyUi.Text(s.Alias, "ct-money-title"), El.Div("ct-grow"),
-                        MoneyUi.Text(MoneyFormat.Cash(s.CashCents), "ct-money-value " + (s.Side == "sell" ? "ct-money-down" : "ct-money-up"))),
-                    MoneyUi.Small((s.Side == "sell" ? MoneyStrings.T("pulse.sell") : MoneyStrings.T("pulse.buy")) + " $" + TickerOf(s.CoinId, s.Ticker) + age),
-                    MoneyUi.Row(
-                        MoneyUi.Btn(MoneyStrings.T("pulse.copy"), () => OpenCoin(row.CoinId, row.Side)),
-                        MoneyUi.Btn(MoneyStrings.T("pulse.trust"), () => ShowCalls(row.UserId, row.Alias), "ct-btn ct-btn-ghost"))));
+                var r = new DuoRow(() => ShowCalls(row.UserId, row.Alias)).Leading(Duo.Avatar(s.Alias, s.UserId, "duo-avatar-s"))
+                    .Title(s.Alias, "duo-row-title-strong")
+                    .Subtitle((s.Side == "sell" ? MoneyStrings.T("pulse.sell") : MoneyStrings.T("pulse.buy")) + " $" + TickerOf(s.CoinId, s.Ticker) + " · " + MoneyFormat.Cash(s.CashCents) + age);
+                r.name = "pulse-smart-" + s.UserId;
+                r.Trailing(Duo.Pill(MoneyStrings.T("pulse.copy"), () => OpenCoin(row.CoinId, row.Side), Duo.PillKind.Primary));
+                list.Add(r);
             }
+            Duo.MarkLast(list);
+            _body.Add(list);
+            _body.Add(Duo.Footnote(MoneyStrings.T("pulse.smartTrustHint")));
         }
 
         private void ShowCalls(string userId, string alias)
@@ -359,11 +412,8 @@ namespace CTLife.Economy
         private void RenderCalls()
         {
             if (_callsUser != null)
-            {
-                _body.Add(MoneyUi.Text(MoneyStrings.F("pulse.callsOf", _callsAlias), "ct-h2"));
-                _body.Add(MoneyUi.Btn(MoneyStrings.T("pulse.callsMine"), () => { _callsUser = null; _calls = null; _callsGate.Kick(); Render(); }, "ct-btn ct-btn-ghost"));
-            }
-            else _body.Add(MoneyUi.Text(MoneyStrings.T("pulse.callsMine"), "ct-h2"));
+                _body.Add(Duo.SectionHeader(MoneyStrings.F("pulse.callsOf", _callsAlias), MoneyStrings.T("pulse.callsMine"), () => { _callsUser = null; _calls = null; _callsGate.Kick(); Render(); }));
+            else _body.Add(Duo.SectionHeader(MoneyStrings.T("pulse.callsMine")));
             _body.Add(MoneyUi.Small(MoneyStrings.T("pulse.callsImmutable")));
             if (_callsError != null) _body.Add(MoneyUi.Notice(MoneyStrings.Err(_callsError), "error"));
             if (_calls == null)
@@ -373,28 +423,45 @@ namespace CTLife.Economy
             }
             var t = _calls.Trust;
             if (t != null)
-                _body.Add(MoneyUi.Card(
-                    MoneyUi.Text(MoneyStrings.T("pulse.trust"), "ct-eyebrow"),
-                    MoneyUi.Pair(MoneyStrings.T("label.hitRate"), MoneyFormat.Ratio(t.HitRate)),
-                    MoneyUi.Pair(MoneyStrings.T("label.avgReturn"), MoneyFormat.Bps(t.AvgReturnBps)),
-                    MoneyUi.Pair(MoneyStrings.T("label.drawdown"), MoneyFormat.Bps(t.MaxDrawdownBps, false)),
-                    MoneyUi.Pair(MoneyStrings.T("label.heldBag"), t.HeldBagPct + "%")));
+            {
+                _body.Add(MoneyUi.Label(MoneyStrings.T("pulse.trust")));
+                _body.Add(El.Div("duo-kv-grid",
+                    Kv(MoneyStrings.T("label.hitRate"), MoneyFormat.Ratio(t.HitRate)),
+                    Kv(MoneyStrings.T("label.avgReturn"), MoneyFormat.Bps(t.AvgReturnBps)),
+                    Kv(MoneyStrings.T("label.drawdown"), MoneyFormat.Bps(t.MaxDrawdownBps, false)),
+                    Kv(MoneyStrings.T("label.heldBag"), t.HeldBagPct + "%")));
+            }
             if (_calls.Skipped > 0) _body.Add(MoneyUi.Small(MoneyStrings.F("common.skipped", _calls.Skipped)));
-            if (_calls.Calls.Count == 0) _body.Add(MoneyUi.Text(MoneyStrings.T("pulse.callsEmpty"), "ct-body ct-muted"));
+            if (_calls.Calls.Count == 0) { _body.Add(Empty(MoneyStrings.T("pulse.callsEmpty"))); return; }
+            var list = El.Div("duo-list");
             foreach (var c in _calls.Calls)
             {
                 var call = c;
                 var when = c.AtMs.HasValue ? MoneyFormat.Ago((ServerClock.NowMs - c.AtMs.Value) / 1000.0) : "";
-                var b = El.Btn("", () => OpenCoin(call.CoinId, null), "ct-row-btn ct-money-coin");
-                b.Add(El.Div("ct-col ct-grow",
-                    MoneyUi.Text("$" + TickerOf(c.CoinId, null) + (string.IsNullOrEmpty(c.Status) ? "" : " · " + c.Status), "ct-money-title"),
-                    MoneyUi.Small(MoneyStrings.F("pulse.callLine", MoneyFormat.Micros(c.EntryMicros), MoneyFormat.Micros(c.TargetMicros), MoneyFormat.Micros(c.StopMicros))),
-                    MoneyUi.Small(when)));
-                _body.Add(b);
+                var ticker = TickerOf(c.CoinId, null);
+                var r = new DuoRow(() => OpenCoin(call.CoinId, null)).Leading(Duo.Avatar(ticker, c.CoinId, "duo-avatar-s")).Title("$" + ticker, "duo-row-title-strong")
+                    .Subtitle(MoneyStrings.F("pulse.callLine", MoneyFormat.Micros(c.EntryMicros), MoneyFormat.Micros(c.TargetMicros), MoneyFormat.Micros(c.StopMicros)) + (when.Length > 0 ? "\n" + when : ""), twoLines: true);
+                if (!string.IsNullOrEmpty(c.Status)) r.Trailing(El.Text(c.Status, "duo-tag"));
+                r.Chevron();
+                list.Add(r);
             }
+            Duo.MarkLast(list);
+            _body.Add(list);
         }
 
+        private static VisualElement Kv(string key, string value, string valueClass = null) =>
+            El.Div("duo-kv", El.Text(key, "duo-kv-key"), El.Text(value, "duo-kv-value" + (valueClass != null ? " " + valueClass : "")));
+
         // ------------------------------------------------------------------ coin page
+
+        protected override bool Back()
+        {
+            if (_coinId == null) return false;
+            _orderSheet?.Close();
+            _coinId = null;
+            Render();
+            return true;
+        }
 
         private void OpenCoin(string coinId, string side)
         {
@@ -412,18 +479,19 @@ namespace CTLife.Economy
             _callWrite.Complete();
             _detailGate.Kick();
             _positionsGate.Kick();
+            Root.scrollOffset = UnityEngine.Vector2.zero;
             Render();
+            // A "Copy" or "Sell" deep link lands on the ticket for that side.
+            if (side == "buy" || side == "sell") Root.schedule.Execute(() => { if (Alive && _coinId == coinId) OpenOrder(_side); });
         }
 
         private PositionRow Held => _positions?.Items.FirstOrDefault(p => p.CoinId == _coinId);
 
         private void RenderCoin()
         {
-            _body.Add(MoneyUi.Btn(MoneyStrings.T("common.back"), () => { _coinId = null; Render(); }, "ct-btn ct-btn-ghost"));
-            _detailMarket = El.Div("ct-col");
+            _detailMarket = El.Div("duo-comp-body");
             _body.Add(_detailMarket);
             RenderDetailMarket();
-            BuildOrderPanel();
             BuildCallPanel();
         }
 
@@ -437,62 +505,90 @@ namespace CTLife.Economy
                 _detailMarket.Add(_detailError != null ? MoneyUi.Notice(MoneyStrings.Err(_detailError), "error") : MoneyUi.Small(MoneyStrings.T("common.loading")));
                 return;
             }
-            var chart = new Sparkline();
-            chart.SetData(_detail?.Candles);
-            _detailMarket.Add(MoneyUi.Card(
-                MoneyUi.Row(MoneyUi.Text("$" + coin.Ticker, "ct-h1"), El.Div("ct-grow"), MoneyUi.Text(MoneyStrings.T("pulse.stage." + coin.Stage), "ct-badge")),
-                MoneyUi.Small(coin.Name),
-                MoneyUi.Row(MoneyUi.Text(MoneyFormat.Micros(coin.PriceMicros), "ct-big-number"), El.Div("ct-grow"),
-                    MoneyUi.Text(MoneyFormat.Bps(coin.Change5mBps), "ct-money-value " + MoneyUi.PnlClass(coin.Change5mBps))),
-                MoneyUi.Small(MoneyStrings.T("pulse.chart")),
-                _detail != null && _detail.Candles.Count >= 2 ? (VisualElement)chart : MoneyUi.Small(MoneyStrings.T("pulse.noChart")),
-                MoneyUi.Pair(MoneyStrings.T("label.mcap"), MoneyFormat.Cash(coin.McapCents, true)),
-                MoneyUi.Pair(MoneyStrings.T("label.vol"), MoneyFormat.Cash(coin.Vol5mCents, true)),
-                MoneyUi.Pair(MoneyStrings.T("label.holders"), coin.Holders.ToString(System.Globalization.CultureInfo.InvariantCulture)),
-                _detailError != null ? MoneyUi.Notice(MoneyStrings.Err(_detailError), "error") : null));
+            _page.Nav.SetTitle("$" + coin.Ticker);
+            var asset = El.Div("duo-perp-asset", Duo.Avatar(coin.Ticker, coin.CoinId, "duo-avatar-s"),
+                El.Text("$" + coin.Ticker + " · " + coin.Name, "duo-perp-asset-name"),
+                El.Text(MoneyStrings.T("pulse.stage." + coin.Stage), "duo-tag duo-tag-blue"));
+            _detailMarket.Add(asset);
+            var hero = Duo.Hero("", MoneyFormat.Micros(coin.PriceMicros), MoneyFormat.Bps(coin.Change5mBps), coin.Change5mBps >= 0, MoneyStrings.T("perps.change5m"));
+            hero.name = "pulse-hero";
+            hero.AddToClassList("duo-pulse-hero");
+            _detailMarket.Add(hero);
+            // Real 1-minute candles only; nothing drawn without them.
+            if (_detail != null && _detail.Candles.Count >= 2)
+            {
+                var chart = new DuoLineChart();
+                chart.name = "pulse-chart";
+                chart.SetData(_detail.Candles.Select(c => (double)c.Close));
+                _detailMarket.Add(chart);
+                _detailMarket.Add(Duo.Footnote(MoneyStrings.T("pulse.chart")));
+            }
+            else _detailMarket.Add(Duo.Footnote(_detail == null ? MoneyStrings.T("common.loading") : MoneyStrings.T("pulse.noChart")));
+            _detailMarket.Add(El.Div("duo-kv-grid",
+                Kv(MoneyStrings.T("label.mcap"), MoneyFormat.Cash(coin.McapCents, true)),
+                Kv(MoneyStrings.T("label.vol"), MoneyFormat.Cash(coin.Vol5mCents, true)),
+                Kv(MoneyStrings.T("label.holders"), coin.Holders.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+                Kv(MoneyStrings.T("pulse.heldRow"), Held != null ? MoneyFormat.CoinUnits(Held.Units) : "—")));
+            if (_detailError != null) _detailMarket.Add(MoneyUi.Notice(MoneyStrings.Err(_detailError), "error"));
             if (_detail == null) return;
             if (!string.IsNullOrEmpty(_detail.RiskHint))
-                _detailMarket.Add(MoneyUi.Card(MoneyUi.Text(MoneyStrings.T("pulse.risk"), "ct-eyebrow"), MoneyUi.Text(_detail.RiskHint)));
-            var holders = MoneyUi.Card(MoneyUi.Text(MoneyStrings.T("pulse.holdersTitle"), "ct-eyebrow"));
-            if (_detail.Holders.Count == 0) holders.Add(MoneyUi.Small(MoneyStrings.T("pulse.noHolders")));
+            {
+                _detailMarket.Add(MoneyUi.Label(MoneyStrings.T("pulse.risk")));
+                _detailMarket.Add(MoneyUi.Notice(_detail.RiskHint, "warn"));
+            }
+            _detailMarket.Add(Duo.SectionHeader(MoneyStrings.T("pulse.holdersTitle")));
+            if (_detail.Holders.Count == 0) _detailMarket.Add(MoneyUi.Small(MoneyStrings.T("pulse.noHolders")));
+            var holders = El.Div("duo-list");
+            int rank = 1;
             foreach (var h in _detail.Holders.Take(10))
-                holders.Add(MoneyUi.Pair(h.Alias, MoneyFormat.CoinUnits(h.Units)));
+                holders.Add(DuoBoard.Row(new DuoRank(rank++, h.Alias, h.Alias, MoneyFormat.CoinUnits(h.Units), false)));
+            Duo.MarkLast(holders);
             _detailMarket.Add(holders);
         }
 
-        private void BuildOrderPanel()
+        /// <summary>The order ticket in a sheet: side, amount (Cash or % of the holding), slippage, place, status and receipt.</summary>
+        private void OpenOrder(string side)
         {
-            var card = MoneyUi.Card();
-            _sideRow = El.Div("ct-app-tabs ct-money-tabs");
-            _amountBox = El.Div("ct-col");
-            _slipRow = El.Div("ct-app-tabs ct-money-tabs");
-            _orderStatus = El.Div("ct-col");
-            _orderReceipt = El.Div("ct-col");
+            if (_coinId == null) return;
+            _side = side == "sell" ? "sell" : "buy";
+            _orderSheet?.Close();
+            var sheet = new DuoSheet(MoneyStrings.F("pulse.ticketTitle", TickerOf(_coinId, null)));
+            sheet.name = "pulse-order-sheet";
+            var seg = new DuoSegmented(new[] { MoneyStrings.T("pulse.buy"), MoneyStrings.T("pulse.sell") }, _side == "sell" ? 1 : 0, i => { _side = i == 1 ? "sell" : "buy"; RenderOrderControls(); });
+            seg.name = "pulse-order-side";
+            _sideRow = El.Div("duo-perp-side", seg);
+            _amountBox = El.Div("duo-comp-body");
+            _slipRow = El.Div("duo-chip-row");
+            _orderStatus = El.Div("duo-comp-body");
+            _orderReceipt = El.Div("duo-comp-body");
             _placeButton = MoneyUi.Btn(MoneyStrings.T("pulse.place"), PlaceOrder);
-            card.Add(_sideRow);
-            card.Add(_amountBox);
-            card.Add(MoneyUi.Small(MoneyStrings.T("pulse.slippage")));
-            card.Add(_slipRow);
-            card.Add(_placeButton);
-            card.Add(_orderStatus);
-            card.Add(_orderReceipt);
-            _body.Add(card);
+            _placeButton.name = "pulse-place";
+            _placeButton.AddToClassList("duo-pulse-place");
+            sheet.AddContent(_sideRow);
+            sheet.AddContent(_amountBox);
+            sheet.AddContent(MoneyUi.Label(MoneyStrings.T("pulse.slippage")));
+            sheet.AddContent(_slipRow);
+            sheet.AddContent(_orderStatus);
+            sheet.AddContent(_orderReceipt);
+            sheet.AddContent(_placeButton);
+            sheet.AddSecondary(MoneyStrings.T("common.done"));
+            sheet.Closed += () => { if (_orderSheet == sheet) _orderSheet = null; };
+            _orderSheet = sheet;
+            sheet.Scrolling().Show(Container);
             RenderOrderControls();
         }
 
         private void RenderOrderControls()
         {
-            if (_sideRow == null) return;
-            _sideRow.Clear();
-            _sideRow.Add(MoneyUi.Chip(MoneyStrings.T("pulse.buy"), () => { _side = "buy"; RenderOrderControls(); }, _side == "buy"));
-            _sideRow.Add(MoneyUi.Chip(MoneyStrings.T("pulse.sell"), () => { _side = "sell"; RenderOrderControls(); }, _side == "sell"));
+            if (_amountBox == null) return;
             _amountBox.Clear();
             _sellInfo = null;
             if (_side == "buy")
             {
                 var field = MoneyUi.Field(MoneyStrings.T("pulse.spend"), _cashInput, v => _cashInput = v);
+                field.name = "pulse-spend";
                 _amountBox.Add(field);
-                var quick = El.Div("ct-app-tabs ct-money-tabs");
+                var quick = El.Div("duo-chip-row");
                 foreach (var dollars in new[] { "10", "50", "100", "500" })
                 {
                     var d = dollars;
@@ -503,14 +599,14 @@ namespace CTLife.Economy
             }
             else
             {
-                var pcts = El.Div("ct-app-tabs ct-money-tabs");
+                var pcts = El.Div("duo-chip-row");
                 foreach (var pct in new[] { 25, 50, 100 })
                 {
                     var p = pct;
                     pcts.Add(MoneyUi.Chip(MoneyStrings.F("pulse.sellPct", p), () => { _sellPct = p; RenderOrderControls(); }, _sellPct == p));
                 }
                 _amountBox.Add(pcts);
-                _sellInfo = El.Div("ct-col");
+                _sellInfo = El.Div("duo-comp-body");
                 _amountBox.Add(_sellInfo);
                 RenderSellInfo();
             }
@@ -522,6 +618,8 @@ namespace CTLife.Economy
             }
             _placeButton.SetEnabled(!_placing && MarketsOn);
             _placeButton.text = MoneyStrings.T(_placing ? "pulse.placing" : "pulse.place");
+            _placeButton.EnableInClassList("duo-comp-btn-danger", _side == "sell");
+            _placeButton.EnableInClassList("duo-comp-btn-primary", _side != "sell");
         }
 
         private void RenderSellInfo()
@@ -564,13 +662,13 @@ namespace CTLife.Economy
                 _placing = false;
                 Bus.Publish(new SfxSignal(side == "sell" ? "sfx_sell" : "sfx_buy"));
                 _orderReceipt.Clear();
-                _orderReceipt.Add(MoneyUi.Card(
-                    MoneyUi.Text(MoneyStrings.T("pulse.receipt"), "ct-h2 ct-money-up"),
-                    MoneyUi.Small(MoneyStrings.F("pulse.receiptUnits", MoneyFormat.CoinUnits(receipt.Units))),
-                    MoneyUi.Small(MoneyStrings.F("pulse.receiptPrice", MoneyFormat.Micros(receipt.PriceMicros))),
-                    MoneyUi.Small(MoneyStrings.F("pulse.receiptCash", MoneyFormat.Cash(receipt.CashCents))),
-                    receipt.FeeCents.HasValue ? MoneyUi.Small(MoneyStrings.F("pulse.receiptFee", MoneyFormat.Cash(receipt.FeeCents.Value))) : null,
-                    receipt.RealizedCents.HasValue && side == "sell" ? MoneyUi.Small(MoneyStrings.F("pulse.receiptRealized", MoneyFormat.SignedCash(receipt.RealizedCents.Value))) : null));
+                _orderReceipt.Add(MoneyUi.Notice(MoneyStrings.T("pulse.receipt"), "good"));
+                _orderReceipt.Add(MoneyUi.Pair(MoneyStrings.T("pulse.unitsRow"), MoneyFormat.CoinUnits(receipt.Units)));
+                _orderReceipt.Add(MoneyUi.Pair(MoneyStrings.T("pulse.priceRow"), MoneyFormat.Micros(receipt.PriceMicros)));
+                _orderReceipt.Add(MoneyUi.Pair(MoneyStrings.T("pulse.cashRow"), MoneyFormat.Cash(receipt.CashCents)));
+                if (receipt.FeeCents.HasValue) _orderReceipt.Add(MoneyUi.Pair(MoneyStrings.T("pulse.feeRow"), MoneyFormat.Cash(receipt.FeeCents.Value)));
+                if (receipt.RealizedCents.HasValue && side == "sell")
+                    _orderReceipt.Add(MoneyUi.Pair(MoneyStrings.T("pulse.realizedRow"), MoneyFormat.SignedCash(receipt.RealizedCents.Value), MoneyUi.PnlClass(receipt.RealizedCents.Value)));
                 _sellPct = 0;
                 Hub.RefreshProfile();
                 Hub.Market.Kick();
@@ -586,7 +684,7 @@ namespace CTLife.Economy
                 if (err.OutcomeUnknown)
                     _orderStatus.Add(MoneyUi.Row(
                         MoneyUi.Btn(MoneyStrings.T("common.retry"), PlaceOrder),
-                        MoneyUi.Btn(MoneyStrings.T("pulse.checkPositions"), () => { _tradeWrite.Complete(); _tabs.Select(TabPositions); }, "ct-btn ct-btn-ghost")));
+                        MoneyUi.Btn(MoneyStrings.T("pulse.checkPositions"), () => { _tradeWrite.Complete(); _orderSheet?.Close(); _tabs.Select(TabPositions); }, MoneyUi.Plain)));
                 Bus.Publish(new SfxSignal("sfx_ui_error"));
                 RenderOrderControls();
             }, write: true);
@@ -594,16 +692,30 @@ namespace CTLife.Economy
 
         private void BuildCallPanel()
         {
-            _callStatus = El.Div("ct-col");
-            var card = MoneyUi.Card(
-                MoneyUi.Text(MoneyStrings.T("pulse.postCall"), "ct-h2"),
-                MoneyUi.Small(MoneyStrings.T("pulse.callsImmutable")),
-                MoneyUi.Field(MoneyStrings.T("pulse.callTarget"), _targetInput, v => _targetInput = v),
-                MoneyUi.Field(MoneyStrings.T("pulse.callStop"), _stopInput, v => _stopInput = v),
-                MoneyUi.Btn(MoneyStrings.T("pulse.postCall"), PostCall, "ct-btn ct-btn-ghost"),
-                _callStatus);
-            _body.Add(card);
+            _callStatus = El.Div("duo-comp-body");
+            _body.Add(Duo.SectionHeader(MoneyStrings.T("pulse.callsSection"), MoneyStrings.T("pulse.postCallShort"), CallSheet));
+            _body.Add(MoneyUi.Small(MoneyStrings.T("pulse.callsImmutable")));
+            _body.Add(_callStatus);
             RenderCallEntry();
+        }
+
+        private void CallSheet()
+        {
+            var sheet = new DuoSheet(MoneyStrings.T("pulse.postCall"), MoneyStrings.T("pulse.callsImmutable"));
+            sheet.name = "pulse-call-sheet";
+            var entry = MoneyUi.Small("");
+            var price = _detail?.Coin?.PriceMicros;
+            entry.text = price.HasValue ? MoneyStrings.F("pulse.callEntry", MoneyFormat.Micros(price.Value)) : MoneyStrings.T("common.loading");
+            sheet.AddContent(entry);
+            sheet.AddContent(MoneyUi.Field(MoneyStrings.T("pulse.callTarget"), _targetInput, v => _targetInput = v));
+            sheet.AddContent(MoneyUi.Field(MoneyStrings.T("pulse.callStop"), _stopInput, v => _stopInput = v));
+            var post = MoneyUi.Btn(MoneyStrings.T("pulse.postCall"), () => { PostCall(); });
+            post.name = "pulse-call-post";
+            sheet.AddContent(_callStatus);
+            sheet.AddContent(post);
+            sheet.AddSecondary(MoneyStrings.T("common.done"));
+            sheet.Closed += () => { if (_coinId != null && _body.panel != null) { _body.Add(_callStatus); } };
+            ShowSheet(sheet);
         }
 
         private void RenderCallEntry()
@@ -634,7 +746,7 @@ namespace CTLife.Economy
                 _posting = false;
                 _callWrite.Complete();
                 _callStatus.Clear();
-                _callStatus.Add(MoneyUi.Notice(MoneyStrings.T("pulse.callPosted")));
+                _callStatus.Add(MoneyUi.Notice(MoneyStrings.T("pulse.callPosted"), "good"));
                 _callsGate.Kick();
             }, err =>
             {
@@ -678,7 +790,7 @@ namespace CTLife.Economy
                 _positions = rows;
                 _positionsError = null;
                 foreach (var p in rows.Items) Hub.Market.Remember(p.CoinId, p.Ticker);
-                if (_coinId != null) RenderSellInfo();
+                if (_coinId != null) { RenderSellInfo(); RenderDetailMarket(); }
                 else if (_tabs.Current == TabPositions) Render();
             }, err =>
             {

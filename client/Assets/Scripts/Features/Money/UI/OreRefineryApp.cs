@@ -32,14 +32,14 @@ namespace CTLife.Economy
         /// <summary>[Inference] A server-built transaction carries a recent blockhash that expires after roughly a minute; rebuild after that.</summary>
         private const double TxFreshSeconds = 60;
 
-        private readonly VisualElement _board = El.Div("ct-col"), _me = El.Div("ct-col"), _stake = El.Div("ct-col");
+        private readonly VisualElement _board = El.Div("duo-comp-body"), _me = El.Div("duo-comp-body"), _stake = El.Div("duo-comp-body");
         private readonly PollGate _boardGate = new PollGate(2, 30), _meGate = new PollGate(15, 60);
         private readonly JToken _oreConfig;
         private OreBoardRow _boardRow;
         private OreMeRow _meRow;
         private MoneyError _boardError, _meError, _stakeError;
         private Label _timer, _boardAge, _confirmLabel;
-        private Toggle _ackToggle;
+        private DuoToggle _ackToggle;
         private Button _buildButton;
 
         private string _action = "deposit", _amountInput = "", _tx, _signature;
@@ -51,12 +51,12 @@ namespace CTLife.Economy
         public OreView2(MoneyHub hub) : base(hub)
         {
             _oreConfig = Services.TryGet<ConfigStore>(out var cfg) ? cfg.Config("ore") : null;
-            Root.Add(MoneyUi.Text(MoneyStrings.T("ore.title"), "ct-h1"));
-            Root.Add(MoneyUi.Notice(MoneyStrings.T("ore.mainnet"), "warn"));
-            Root.Add(_board);
-            Root.Add(_me);
-            Root.Add(_stake);
-            Root.Add(MoneyUi.Small(MoneyStrings.T("ore.noMining")));
+            var page = Framed(MoneyStrings.T("ore.title"), "ore-page");
+            page.AddToClassList("duo-ore");
+            page.Body.Add(_board);
+            page.Body.Add(_me);
+            page.Body.Add(_stake);
+            page.Body.Add(Duo.Footnote(MoneyStrings.T("ore.noMining")));
             Subs.On<DegradedChangedSignal>(_ => { RenderBoard(); _boardGate.Kick(); });
             RenderBoard();
             RenderMe();
@@ -75,6 +75,7 @@ namespace CTLife.Economy
             {
                 var left = OreView.SecondsLeft(_boardRow.EndsAtMs, ServerClock.NowMs);
                 _timer.text = !left.HasValue ? "—" : left.Value > 0 ? MoneyStrings.F("ore.endsIn", MoneyFormat.Countdown(left.Value)) : MoneyStrings.T("ore.ended");
+                _timer.EnableInClassList("duo-ore-ended", left.HasValue && left.Value <= 0);
             }
             if (_boardAge != null)
             {
@@ -115,38 +116,46 @@ namespace CTLife.Economy
             _board.Clear();
             _timer = null;
             _boardAge = null;
-            var card = MoneyUi.Card(MoneyUi.Text(MoneyStrings.T("ore.board"), "ct-h2"));
+            var card = MoneyUi.Card();
+            card.name = "ore-board";
             _board.Add(card);
             if (!ReaderOn)
             {
+                card.Add(Duo.SectionHeader(MoneyStrings.T("ore.board")));
                 card.Add(MoneyUi.Notice(MoneyStrings.T("ore.readerOff"), "warn"));
                 return;
             }
-            _boardAge = MoneyUi.Small("");
-            card.Add(_boardAge);
             if (_boardError != null) card.Add(MoneyUi.Notice(MoneyStrings.Err(_boardError), "error"));
             var b = _boardRow;
             if (b == null)
             {
+                card.Add(Duo.SectionHeader(MoneyStrings.T("ore.board")));
                 if (_boardError == null) card.Add(MoneyUi.Small(MoneyStrings.T("common.loading")));
                 return;
             }
-            _timer = MoneyUi.Text("", "ct-big-number");
-            card.Add(MoneyUi.Row(MoneyUi.Text(MoneyStrings.F("ore.round", b.RoundId), "ct-money-title"), El.Div("ct-grow"), _timer));
-            card.Add(MoneyUi.Text(MoneyStrings.F("ore.motherlode", b.MotherlodeOre != null ? OreView.Ore(b.MotherlodeOre) : "—")));
-            card.Add(MoneyUi.Small(MoneyStrings.F("ore.cityStaked", b.CityStakedOre != null ? OreView.Ore(b.CityStakedOre) : "—")));
-            if (!string.IsNullOrEmpty(b.PriceUsd)) card.Add(MoneyUi.Small(MoneyStrings.F("ore.price", b.PriceUsd)));
+            // Hero: this round's motherlode (server ORE); the round timer is the line under it.
+            var hero = Duo.Hero(MoneyStrings.F("ore.round", b.RoundId) + " · " + MoneyStrings.T("ore.motherlodeLabel"),
+                b.MotherlodeOre != null ? OreView.Ore(b.MotherlodeOre) : "—", "—");
+            hero.name = "ore-hero";
+            _timer = hero.Q<Label>(className: "duo-hero-delta");
+            card.Add(hero);
+            card.Add(MoneyUi.Pair(MoneyStrings.T("ore.cityStakedRow"), b.CityStakedOre != null ? OreView.Ore(b.CityStakedOre) : "—"));
+            if (!string.IsNullOrEmpty(b.PriceUsd)) card.Add(MoneyUi.Pair(MoneyStrings.T("ore.priceRow"), "$" + b.PriceUsd));
+            card.Add(Duo.SectionHeader(MoneyStrings.T("ore.board")));
             card.Add(MoneyUi.Small(MoneyStrings.T("ore.squares")));
             if (b.Squares.Count != 25) card.Add(MoneyUi.Small(MoneyStrings.F("ore.shape", b.Squares.Count)));
-            var grid = El.Div("ct-money-ore-grid");
+            var grid = El.Div("duo-ore-grid");
+            grid.name = "ore-grid";
             int busiest = OreView.Busiest(b.Squares);
             for (int i = 0; i < b.Squares.Count; i++)
             {
-                var cell = El.Div("ct-money-ore-cell", MoneyUi.Text(OreView.Sol(b.Squares[i]), "ct-money-ore-sol"));
-                cell.EnableInClassList("ct-money-ore-hot", i == busiest);
+                var cell = El.Div("duo-ore-cell", MoneyUi.Text(OreView.Sol(b.Squares[i]), "duo-ore-sol"));
+                cell.EnableInClassList("duo-ore-hot", i == busiest);
                 grid.Add(cell);
             }
             card.Add(grid);
+            _boardAge = El.Text("", "duo-footnote");
+            card.Add(_boardAge);
             Tick();
         }
 
@@ -172,7 +181,8 @@ namespace CTLife.Economy
         private void RenderMe()
         {
             _me.Clear();
-            var card = MoneyUi.Card(MoneyUi.Text(MoneyStrings.T("ore.you"), "ct-h2"));
+            var card = MoneyUi.Card(Duo.SectionHeader(MoneyStrings.T("ore.you")));
+            card.name = "ore-me";
             _me.Add(card);
             if (_meError != null) card.Add(MoneyUi.Notice(MoneyStrings.Err(_meError), "error"));
             if (_meRow == null)
@@ -180,10 +190,12 @@ namespace CTLife.Economy
                 if (_meError == null) card.Add(MoneyUi.Small(MoneyStrings.T("common.loading")));
                 return;
             }
+            var tier = El.Div("duo-comp-tags", El.Text(MoneyStrings.F("ore.tier", OreView.TierLabel(_oreConfig, _meRow.MinerTier)), "duo-tag duo-tag-orange"));
+            if (OreView.HardHat(_oreConfig, _meRow.MinerTier)) tier.Add(El.Text(MoneyStrings.T("ore.hardhatTag"), "duo-tag duo-tag-green"));
+            card.Add(tier);
             card.Add(MoneyUi.Pair(MoneyStrings.F("ore.balance", "").Trim(), OreView.Ore(_meRow.Balance)));
             card.Add(MoneyUi.Pair(MoneyStrings.F("ore.staked", "").Trim(), OreView.Ore(_meRow.Staked)));
             card.Add(MoneyUi.Pair(MoneyStrings.F("ore.stOre", "").Trim(), MoneyFormat.Token(_meRow.StOre, TokenUnits.OreDecimals, "stORE", 4)));
-            card.Add(MoneyUi.Text(MoneyStrings.F("ore.tier", OreView.TierLabel(_oreConfig, _meRow.MinerTier))));
             if (OreView.HardHat(_oreConfig, _meRow.MinerTier)) card.Add(MoneyUi.Small(MoneyStrings.T("ore.hardhat")));
         }
 
@@ -192,10 +204,12 @@ namespace CTLife.Economy
         private void RenderStake()
         {
             _stake.Clear();
-            var card = MoneyUi.Card();
+            var card = MoneyUi.Card(Duo.SectionHeader(MoneyStrings.T("ore.stakeSection")));
+            card.name = "ore-stake";
             _stake.Add(card);
+            card.Add(MoneyUi.Notice(MoneyStrings.T("ore.mainnet"), "warn"));
             bool locked = _stage != StakeStage.Idle && _stage != StakeStage.Sent;
-            var actions = El.Div("ct-app-tabs ct-money-tabs");
+            var actions = El.Div("duo-chip-row");
             foreach (var a in new[] { "deposit", "withdraw", "claim", "compound" })
             {
                 var action = a;
@@ -226,13 +240,13 @@ namespace CTLife.Economy
             if (!WalletAvailable) card.Add(MoneyUi.Notice(MoneyStrings.T("ore.walletOff"), "warn"));
 
             // Mainnet warning and the acknowledgement that gates "Prepare".
-            card.Add(MoneyUi.Text(MoneyStrings.T("ore.confirmTitle"), "ct-section-title"));
+            card.Add(MoneyUi.Label(MoneyStrings.T("ore.confirmTitle")));
             _confirmLabel = MoneyUi.Notice(MoneyStrings.F("ore.confirmBody", ActionText()), "warn");
             card.Add(_confirmLabel);
             var ack = MoneyUi.Ack(MoneyStrings.T("ore.confirmAck"), on => { _ack = on; RenderStake(); });
-            ack.SetValueWithoutNotify(_ack);
+            _ackToggle = ack.Q<DuoToggle>();
+            _ackToggle?.SetValueWithoutNotify(_ack);
             ack.SetEnabled(!locked);
-            _ackToggle = ack;
             _buildButton = null;
             card.Add(ack);
 
@@ -242,10 +256,11 @@ namespace CTLife.Economy
                 case StakeStage.Idle:
                 case StakeStage.Sent:
                 {
-                    var build = MoneyUi.Btn(MoneyStrings.T("ore.build"), Build, "ct-btn ct-btn-ghost");
+                    var build = MoneyUi.Btn(MoneyStrings.T("ore.build"), Build, MoneyUi.Plain);
+                    build.name = "ore-build";
                     build.SetEnabled(_ack && WalletAvailable);
                     _buildButton = build;
-                    card.Add(build);
+                    card.Add(MoneyUi.Row(build));
                     if (_stage == StakeStage.Sent && !string.IsNullOrEmpty(_signature))
                         card.Add(MoneyUi.Notice(MoneyStrings.F("ore.sent", MoneyFormat.Short(_signature, 6, 6))));
                     break;
@@ -256,9 +271,9 @@ namespace CTLife.Economy
                 case StakeStage.Built:
                 {
                     // The second, separate tap: only this one opens the wallet.
-                    var sign = MoneyUi.Btn(MoneyStrings.T("ore.sign"), Sign, "ct-btn ct-btn-danger");
+                    var sign = MoneyUi.Btn(MoneyStrings.T("ore.sign"), Sign, MoneyUi.Danger);
                     sign.SetEnabled(_ack && WalletAvailable);
-                    card.Add(MoneyUi.Row(sign, MoneyUi.Btn(MoneyStrings.T("common.cancel"), ResetStake, "ct-btn ct-btn-ghost")));
+                    card.Add(MoneyUi.Row(sign, MoneyUi.Btn(MoneyStrings.T("common.cancel"), ResetStake, MoneyUi.Plain)));
                     break;
                 }
                 case StakeStage.Signing:

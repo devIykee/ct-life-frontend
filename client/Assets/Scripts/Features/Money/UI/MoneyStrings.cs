@@ -191,6 +191,18 @@ namespace CTLife.Economy
             ["pulse.callStop"] = "Stop price ($)",
             ["pulse.callEntry"] = "Entry is the current price: {0}",
             ["pulse.callPosted"] = "Call posted.",
+            ["pulse.unrealizedLabel"] = "Unrealized PnL",
+            ["pulse.positionsCount"] = "{0} open",
+            ["pulse.heldRow"] = "You hold",
+            ["pulse.smartTrustHint"] = "Tap a trader for their trust score and calls.",
+            ["pulse.ticketTitle"] = "Trade ${0}",
+            ["pulse.unitsRow"] = "Units",
+            ["pulse.priceRow"] = "Price",
+            ["pulse.cashRow"] = "Cash",
+            ["pulse.feeRow"] = "Fee",
+            ["pulse.realizedRow"] = "Realized",
+            ["pulse.callsSection"] = "Alpha call",
+            ["pulse.postCallShort"] = "Post",
 
             ["label.cost"] = "Cost basis",
             ["label.mcap"] = "Market cap",
@@ -265,6 +277,15 @@ namespace CTLife.Economy
             ["predict.placing"] = "Placing bet…",
             ["predict.placed"] = "Bet placed: {0} on {1}",
             ["predict.yours"] = "Your predictions",
+            ["predict.inPlay"] = "In play",
+            ["predict.q.btc-24h-up"] = "BTC up over 24h?",
+            ["predict.openCount"] = "{0} open",
+            ["predict.rowLine"] = "{0} staked · {1}",
+            ["predict.stakeRow"] = "Stake",
+            ["predict.outcomeRow"] = "Your pick",
+            ["predict.horizonRow"] = "Horizon",
+            ["predict.closesRow"] = "Closes",
+            ["predict.placedRow"] = "Placed",
             ["predict.unavailable"] = "New predictions are unavailable. Your existing bets appear below.",
             ["predict.noHistory"] = "No predictions yet.",
             ["predict.status.open"] = "Open",
@@ -273,6 +294,11 @@ namespace CTLife.Economy
             ["predict.status.cancelled"] = "Cancelled",
 
             // ---- ORE (#18)
+            ["ore.motherlodeLabel"] = "Motherlode",
+            ["ore.cityStakedRow"] = "Staked across the city",
+            ["ore.priceRow"] = "ORE price",
+            ["ore.hardhatTag"] = "Hard hat",
+            ["ore.stakeSection"] = "Stake ORE",
             ["ore.title"] = "ORE Refinery",
             ["ore.mainnet"] = "ORE runs on Solana mainnet. Staking moves real ORE from your wallet.",
             ["ore.board"] = "Live ORE board",
@@ -318,6 +344,16 @@ namespace CTLife.Economy
             ["rekt.clinic"] = "Rekt Clinic",
             ["rekt.dismiss"] = "Pain.",
         };
+
+        /// <summary>A bet's question from its outcome id: known ids have copy, others read as words ("sol-1h-up" → "Sol 1h up").</summary>
+        public static string PredictionQuestion(string outcomeId)
+        {
+            if (string.IsNullOrEmpty(outcomeId)) return "—";
+            var key = "predict.q." + outcomeId;
+            if (T(key) != key) return T(key);
+            var words = outcomeId.Replace('-', ' ').Replace('_', ' ').Trim();
+            return words.Length == 0 ? outcomeId : char.ToUpperInvariant(words[0]) + words.Substring(1);
+        }
 
         public static string T(string key) => key != null && Copy.TryGetValue(key, out var s) ? s : key ?? "";
 

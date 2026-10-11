@@ -9,74 +9,86 @@ using UnityEngine.UIElements;
 
 namespace CTLife.Economy
 {
-    /// <summary>Small UI Toolkit builders on top of CTLife.UI's El and the existing ct-* theme. Functional, unstyled beyond the theme.</summary>
+    /// <summary>
+    /// UI Toolkit builders for the money screens on the Duo kit: sections on the canvas, inset key/value rows, capsule buttons,
+    /// filter chips, kit field and toggle, tinted notices. Plain text only. (The Rekt card overlay passes its own classes.)
+    /// </summary>
     internal static class MoneyUi
     {
-        private static StyleSheet _sheet;
+        public const string Primary = "primary", Plain = "plain", Danger = "danger";
 
-        public static ScrollView Page()
-        {
-            var s = El.VerticalScroll("ct-app-page ct-money");
-            if (_sheet == null) _sheet = Resources.Load<StyleSheet>("UI/Money/money");
-            if (_sheet != null) s.styleSheets.Add(_sheet);
-            return s;
-        }
+        public static ScrollView Page() => El.VerticalScroll();
 
-        public static Label Text(string text, string cls = "ct-body")
+        public static Label Text(string text, string cls = "duo-comp-text")
         {
             var l = El.Text(text ?? "", cls);
             l.enableRichText = false;
             return l;
         }
 
-        public static Label Small(string text) => Text(text, "ct-small ct-muted");
+        public static Label Small(string text) => Text(text, "duo-comp-note");
+        public static Label H2(string text) => Text(text, "duo-comp-h2");
+        public static Label Label(string text) => Text((text ?? "").ToUpperInvariant(), "duo-comp-label");
 
-        public static VisualElement Row(params VisualElement[] children) => El.Div("ct-row ct-money-row", children);
+        public static VisualElement Row(params VisualElement[] children) => El.Div("duo-comp-actions", children);
 
-        public static VisualElement Card(params VisualElement[] children) => El.Div("ct-card ct-money-card", children);
+        /// <summary>A section on the canvas (no box).</summary>
+        public static VisualElement Card(params VisualElement[] children) => El.Div("duo-comp-section", children);
 
-        /// <summary>A muted label on the left, a value on the right.</summary>
+        /// <summary>Key on the left, value on the right, inset hairline below.</summary>
         public static VisualElement Pair(string key, string value, string valueCls = null)
         {
-            var v = Text(value, "ct-money-value" + (string.IsNullOrEmpty(valueCls) ? "" : " " + valueCls));
-            return El.Div("ct-row ct-money-pair", Text(key, "ct-money-key"), El.Div("ct-grow"), v);
+            var v = Text(value, "duo-comp-pair-value" + (string.IsNullOrEmpty(valueCls) ? "" : " " + valueCls));
+            return El.Div("duo-comp-pair", Text(key, "duo-comp-pair-key"), v);
         }
 
-        public static string PnlClass(long cents) => cents > 0 ? "ct-money-up" : cents < 0 ? "ct-money-down" : "";
+        public static string PnlClass(long cents) => cents > 0 ? "duo-value-positive" : cents < 0 ? "duo-value-negative" : "";
 
         public static Label Pnl(long cents, string prefixKey = null)
         {
             var text = MoneyFormat.SignedCash(cents);
-            return Text(prefixKey == null ? text : MoneyStrings.F(prefixKey, text), "ct-money-value " + PnlClass(cents));
+            return Text(prefixKey == null ? text : MoneyStrings.F(prefixKey, text), "duo-money-value " + PnlClass(cents));
         }
 
-        public static Label Notice(string text, string kind = "info") => Text(text, "ct-money-notice ct-money-notice-" + kind);
+        /// <summary>Tinted inline note (kit notice look) as one label so callers can update its text.</summary>
+        public static Label Notice(string text, string kind = "info")
+        {
+            string tone = kind == "warn" ? "warning" : kind == "error" ? "danger" : kind == "good" ? "success" : "info";
+            return Text(text, "duo-money-notice duo-money-notice-" + tone);
+        }
 
-        public static Button Btn(string text, Action onClick, string cls = "ct-btn ct-btn-primary") => El.Btn(text, onClick, cls);
+        public static Button Btn(string text, Action onClick, string kind = Primary)
+        {
+            var b = El.Btn(text, onClick, "duo-comp-btn" + (kind == Plain ? "" : kind == Danger ? " duo-comp-btn-danger" : " duo-comp-btn-primary"));
+            b.enableRichText = false;
+            return b;
+        }
 
         public static Button Chip(string text, Action onClick, bool on)
         {
-            var b = PhonePresentation.SizeToText(El.Btn(text, onClick, "ct-chip ct-money-chip"));
-            b.EnableInClassList("ct-chip-on", on);
+            var b = El.Btn(text, onClick, "duo-chip");
+            b.enableRichText = false;
+            b.EnableInClassList("duo-chip-on", on);
             return b;
         }
 
         public static TextField Field(string label, string value, Action<string> changed)
         {
-            var f = new TextField(label) { value = value ?? "", isDelayed = false };
-            f.AddToClassList("ct-field");
+            var f = new TextField { value = value ?? "", isDelayed = false };
+            f.AddToClassList("duo-field");
+            f.textEdition.placeholder = label ?? "";
+            f.tooltip = label;
             f.RegisterValueChangedCallback(e => changed?.Invoke(e.newValue));
             return f;
         }
 
-        /// <summary>A required acknowledgement toggle (mainnet confirmations).</summary>
-        public static Toggle Ack(string label, Action<bool> changed)
+        /// <summary>A required acknowledgement (mainnet confirmations) as a kit toggle row.</summary>
+        public static VisualElement Ack(string label, Action<bool> changed)
         {
-            var t = new Toggle(label) { value = false };
-            t.AddToClassList("ct-toggle");
-            t.AddToClassList("ct-money-ack");
-            t.RegisterValueChangedCallback(e => changed?.Invoke(e.newValue));
-            return t;
+            var t = new DuoToggle(false, v => changed?.Invoke(v));
+            var row = t.InRow(label);
+            row.AddToClassList("duo-money-ack");
+            return row;
         }
 
         public static void Copy(string text)
@@ -88,10 +100,10 @@ namespace CTLife.Economy
         public static string Age(double seconds) => double.IsNaN(seconds) ? MoneyStrings.T("common.notUpdated") : MoneyStrings.F("common.updated", MoneyFormat.Ago(seconds));
     }
 
-    /// <summary>A row of chips that selects one key.</summary>
+    /// <summary>A row of filter chips that selects one key (kit duo-chip).</summary>
     internal sealed class ChipTabs
     {
-        public readonly VisualElement Root = El.Div("ct-app-tabs ct-money-tabs");
+        public readonly VisualElement Root = El.Div("duo-chip-row duo-money-tabs");
         private readonly Dictionary<string, Button> _chips = new Dictionary<string, Button>();
         private readonly Action<string> _select;
         public string Current { get; private set; }
@@ -100,7 +112,7 @@ namespace CTLife.Economy
 
         public ChipTabs Add(string key, string label)
         {
-            var b = PhonePresentation.SizeToText(El.Btn(label, () => Select(key), "ct-chip ct-money-chip"));
+            var b = El.Btn(label, () => Select(key), "duo-chip");
             _chips[key] = b;
             Root.Add(b);
             return this;
@@ -109,7 +121,7 @@ namespace CTLife.Economy
         public void Select(string key, bool notify = true)
         {
             Current = key;
-            foreach (var kv in _chips) kv.Value.EnableInClassList("ct-chip-on", kv.Key == key);
+            foreach (var kv in _chips) kv.Value.EnableInClassList("duo-chip-on", kv.Key == key);
             if (notify) _select?.Invoke(key);
         }
 
@@ -126,7 +138,7 @@ namespace CTLife.Economy
 
         public Sparkline()
         {
-            AddToClassList("ct-money-chart");
+            AddToClassList("duo-money-chart");
             generateVisualContent += Draw;
         }
 
@@ -149,7 +161,7 @@ namespace CTLife.Economy
             double span = Math.Max(1, max - min);
             var painter = ctx.painter2D;
             bool up = _points[_points.Count - 1].Close >= _points[0].Close;
-            painter.strokeColor = up ? new Color(0.075f, 0.467f, 0.329f) : new Color(0.765f, 0.259f, 0.345f);
+            painter.strokeColor = up ? new Color(0.188f, 0.78f, 0.369f) : new Color(1f, 0.231f, 0.188f);
             painter.lineWidth = 4f;
             painter.lineJoin = LineJoin.Round;
             painter.BeginPath();
@@ -199,7 +211,33 @@ namespace CTLife.Economy
         public PhoneShell Phone { get; internal set; }
 
         /// <summary>What the phone shows: the scroll view, or a Duo frame around it (nav, bottom bar).</summary>
-        public virtual VisualElement Container => Root;
+        public virtual VisualElement Container => (VisualElement)_frame ?? Root;
+
+        private DuoPage _frame;
+        private DuoSheet _sheet;
+
+        /// <summary>Wraps <see cref="Root"/> in the Duo frame (large title, back circle) and makes it the container.</summary>
+        protected DuoPage Framed(string title, string name, bool largeTitle = true)
+        {
+            _frame = new DuoPage(Root, title, largeTitle);
+            _frame.name = name;
+            _frame.AddToClassList("duo-comp");
+            _frame.Nav.AddLeft(DuoGlyph.Kind.Back, Strings.T("common.back"), () => { if (!Back()) Phone?.Back(); }, name + "-back");
+            return _frame;
+        }
+
+        /// <summary>Nav back inside the screen (coin page → list). False lets the phone go back.</summary>
+        protected virtual bool Back() => false;
+
+        /// <summary>Shows a bottom sheet over this screen; closed with the view.</summary>
+        protected DuoSheet ShowSheet(DuoSheet sheet)
+        {
+            _sheet?.Close();
+            _sheet = sheet;
+            sheet.Scrolling();
+            sheet.Closed += () => { if (_sheet == sheet) _sheet = null; };
+            return sheet.Show(Container);
+        }
 
         private void SessionChanged()
         {
@@ -252,6 +290,7 @@ namespace CTLife.Economy
         {
             if (Disposed) return;
             Disposed = true;
+            _sheet?.Close();
             _life.Cancel();
             _tick?.Pause();
             Subs.Dispose();
@@ -275,6 +314,7 @@ namespace CTLife.Economy
 
         internal MoneyHub Hub => _hub == null || _hub.Disposed ? (_hub = MoneyHub.Acquire()) : _hub;
         internal PhoneShell Shell => Phone;
+        public override DuoChrome Chrome => DuoChrome.Plain;
 
         public override VisualElement Open()
         {
