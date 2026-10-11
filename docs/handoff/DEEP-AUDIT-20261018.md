@@ -1,221 +1,324 @@
-# CT Life: deep audit and fix plan (18 Oct 2026)
+# CT Life: deep audit and exact fix plan (18 Oct 2026, v2)
 
-**Verdict: not demo-ready yet.** The pieces exist: title, onboarding, lobby, Duo, island, traffic, vehicles and
-pedestrians. But a real hand-held play session breaks quickly. Our agents verified features with scripted captures
-and fixed demo routes, not by playing the way a person plays. This audit lists what's wrong, why (with code
-references where confirmed), and exactly how to fix it.
+**Verdict: not demo-ready.** The systems all exist, but hand-held play hits several root-cause bugs fast. The agents
+tested with scripted captures and fixed routes; nobody played it like a player, so these slipped through. This audit
+is written from a line-by-line read of the gameplay code on `dev` (`31b5d601`) and a play session on the Seeker (the
+build installed at 15:24, with `islandDemo=1`).
 
-Evidence labels:
-- **[Confirmed in code]**: read in the source on dev `688a4ad9`.
-- **[User report]**: seen by the user on the Seeker.
-- **[Inference]**: likely cause, not yet reproduced.
-
-Read `docs/handoff/CONTINUE-HERE-20261018.md` first for paths, rules and lanes. Fix in priority order, P0 before P1.
+Labels: **[Code]** = confirmed in source (file and line given), **[Device]** = seen on the Seeker today, **[User]** =
+reported by the user, **[Inference]** = likely cause, reproduce before fixing. Every fix has an acceptance test. A
+fix isn't done until it passes on the Seeker by hand (§6).
 
 ---
 
-## P0: blockers for any demo
+## 1. "I landed in nowhere / drowned on the mountains" [User]. Three separate root causes
 
-### P0-1. Everyone gets a fleet, a helicopter and a drone [User report + Confirmed in code]
-- **Cause**:
-  - `World/Vehicles/VehicleSystem.cs` `Start()` calls `VehicleSpawner.SpawnShowcase(...)` on every island entry, for
-    every player, in every build type. Only `vehicleDemo` is behind the dev flag.
-  - `SpawnShowcase` parks compact, sports, roadstar, suv and scooter next to the player and puts a helicopter on the
-    nearest pad.
-  - The HUD shows a Drone button for everyone (`UI/Hud/Hud.cs` `_droneAction`), and `DeployDrone()` creates a drone from
-    nothing.
-- **Why it's wrong**: there's no ownership, cost or scarcity, so nothing feels earned. Every player spawning their own
-  fleet would also flood a shared world once multiplayer vehicles exist.
-- **Fix**:
-  1. Put `SpawnShowcase` behind `#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD` **and**
-     `LaunchArgs.Get("showcaseFleet")`. Don't call it in normal play.
-  2. Normal access model:
-     - **Public cars**: World's `ParkedCar` decor cars are takeable (`ParkedCars.cs` already swaps them) and limited to
-       what's parked in the world.
-     - **Helicopter**: only at helipads (`HeliPad` markers, 3 on the island). Rent it for in-game Cash at the pad
-       (prompt "Rent helicopter, $X"). Use a server-authoritative purchase route when Iyke adds one; until then, show
-       "Coming soon" instead of free use outside dev builds.
-     - **Roadstar**: a premium owned vehicle. Hide it unless the player owns it (Shop or inventory item; ask Iyke for an
-       item id). In dev builds, keep it available via `showcaseFleet`.
-     - **Drone**: an owned gadget from the Shop (inventory item `drone_cam`). Hide the HUD Drone button unless
-       `/inventory` contains it. Dev builds: `showcaseFleet` grants it.
-  3. Add `/inventory`-driven gating in `Hud.cs` and `VehicleSystem` (inventory reads already exist in Shop).
-  4. Backend ask for Iyke (add to round 3): Shop items `vehicle_roadstar` and `gadget_drone_cam`, plus a
-     `POST /v1/rentals/heli {padId}` returning a time-limited rental id (the server deducts Cash). Until then, the
-     items stay hidden in production builds.
+### 1A. Lakes and the river are invisible to the game [Code]
+- `Editor/IslandV2/IslandV2Builder.cs` 586–599 `WaterObj(...)` builds the sea, river and lakes as MeshRenderers on
+  layer Water, with **no collider and no recorded water height**.
+- At runtime the only water the game knows is the **sea level** (`IslandStreamer.SeaLevel`). These all compare
+  against sea level only:
+  - `FlightPhysics.OverWater`
+  - `VehicleSystem.RecoverFromWater`
+  - `VehicleSpawner.Reachable`
+  - the exit checks
+- The two mountain lakes and the river are **above** sea level. A helicopter or Roadstar lands on the lake or river
+  **bed** (the terrain under the water), the game sees "not over water" and allows the exit. The player then stands
+  underwater in a mountain lake. On foot, the player can also walk straight into the river.
 
-### P0-2. You can get out somewhere you can't stand, and then you're lost [User report: "I landed in nowhere… drowned on the mountains" + Confirmed in code]
-- **Cause**:
-  - `VehicleSystem.ExitRoutine`: the exit point is `v.EntryPoint`, falling back to a point beside the vehicle. It only
-    checks `FootPlanner.Free(exit)`, which is a capsule overlap test. **Empty air or a point under the terrain counts
-    as "free".** Nothing checks for walkable ground below, slope, terrain loaded, or sea.
-  - Exit is allowed when `Altitude <= 1.5 && !OverWater`. There's no slope check, so a helicopter or Roadstar resting
-    on a steep mountain face can be exited.
-  - **No on-foot safety net.** `LocalPlayerController`/`Locomotion` never check sea level or falling out of the world.
-    Once on foot in the sea, under terrain or on a cliff, the player stays there.
-  - `RecoverFromWater()` explicitly skips the helicopter (`v.Kind != VehicleKind.Helicopter`) and the drone, so a
-    helicopter that ends up in the sea or below the terrain is never recovered.
-- **Fix**:
-  1. `SafeExitPoint(Vehicle v)` (new, in VehicleSystem): try, in order, the left door, right door, rear, front, then
-     rings of 2–6 m. Accept a point only if all of these hold:
-     - a downward ray (from +2 m, 6 m long) hits Ground/Road/Building-top with `normal.y > 0.8`
-     - the hit is within 1.2 m vertically of the vehicle's base
-     - the hit is above `SeaLevel + 0.3`
-     - `IslandStreamer.IsReady(point)`
-     - `NavMesh.SamplePosition(point, 1.5)` succeeds
-     - the capsule is free
+**Fix**:
+1. In the builder, emit a runtime `WaterBodies` asset: one entry per lake and river reach, holding a polygon (or
+   river polyline with width) and a surface height. For the river, store the height per vertex along its length.
+   Load it in `IslandWorld`.
+2. Add `IslandStreamer.WaterSurfaceAt(x, z) → float` (NaN when dry) and `IsWater(x, z, y)`. Implement it with a 2 m grid
+   lookup baked from the polygons; the sea returns `SeaLevel` outside the coastline.
+3. Replace every `SeaLevel` comparison with `WaterSurfaceAt`:
+   - `FlightPhysics`: OverWater is `y - surface < groundAlt - 0.3`.
+   - `RecoverFromWater`: below the surface by more than 0.6 m.
+   - `VehicleSpawner.Reachable`
+   - the exit checks
+   - the new player safety net (§1C)
+   - `PedestrianSystem` and `TrafficSystem` spawn checks
+4. Optional depth gameplay: shallow river edges (depth under 0.6 m) are walkable and slow you to 50%.
+5. Test (EditMode): sample points inside each lake and river return the surface height, and land points return NaN.
+   Device: land the helicopter on a lake and it refuses ("Can't land on water") and hovers; walk into the river and
+   you're recovered to the bank (§1C).
 
-     If none qualifies, refuse with "Find flat ground to get out" (new string). Never exit into the air.
-  2. Exit rule for aircraft: grounded (`FlightPhysics.Grounded` for at least 0.5 s), speed under 2 m/s, ground normal
-     `y > 0.85`, not over water.
-  3. **Player safety net** (new `World/Players/PlayerSafety.cs`, on the local player):
-     - Every 0.5 s, record a "last safe point" when grounded, on the NavMesh, above sea + 0.3 and `IsReady`.
-     - **Water**: if feet are below `SeaLevel - 0.4` for more than 1.5 s, play a short "swim / out of water" fade and
-       teleport to the last safe point (or the nearest NavMesh point on land within 60 m). Toast: "Washed ashore".
-     - **Fell through**: if `y < GroundHeight(x,z) - 2` or `y < -50`, teleport to the last safe point at once.
-     - **Stuck**: if grounded is false for more than 3 s with vertical speed near 0 (wedged), teleport to the last safe point.
-     - Add an "Unstick me" button in Duo Settings (and a map long-press, "Teleport to nearest road", dev builds) as
-       manual recovery.
-  4. Vehicles: drop the helicopter exclusion. Recover any vehicle below `SeaLevel - 0.6` (except the boats you'll add
-     later), or more than 2 m below the terrain height at x/z, to `_lastSafe`.
+### 1B. Flying over ground that hasn't loaded: no collider, so you sink through the mountain [Code + Inference on timing]
+- `World/Island/IslandWorld.cs` 208–216 `Stream()` loads **one cell at a time** (`_cellLoading.Count == 0` gate). Each
+  `LoadCell` is an async Resources load, an async instantiate and a terrain collider build
+  (`IslandTerrainCell.Build`). There are 51 cells and the load radius is 420 m.
+- The "far terrain" is always drawn **without colliders** (W1: "Far terrain is always loaded"). You see a mountain
+  that isn't solid yet.
+- `World/Vehicles/FlightPhysics.cs` 139–147: with no ground hit, `groundAlt = 600`, so `OverWater = seaAlt < 599.7`,
+  which is **true anywhere above the sea**. The craft believes it's over water. `Grounded` stays false and landing logic
+  is off; the only floor is "skim the water" (stay 1.2 m above sea level).
+- Result: approaching an unloaded mountain cell, the helicopter descends through the visible terrain and settles
+  1.2 m above sea level **inside the mountain**. Exit is refused ("no water landing"), so you're stuck in a void.
+- `VehicleSystem.RecoverFromWater` 419 explicitly excludes `VehicleKind.Helicopter`, so nothing rescues the helicopter.
 
-### P0-3. Flying outruns the streamed ground; terrain colliders can be missing under you [Inference, matches the user report]
-- **Cause**:
-  - Cells load **one async cell at a time** (`IslandStreamer` comment).
-  - The helicopter (97 km/h) and Roadstar (119–164 km/h) cross a 64 m terrain chunk in under 2.5 s.
-  - `FlightPhysics.OverWater` is decided by "the sea surface is nearer than any ground below". Over a mountain whose
-    colliders aren't loaded yet, the ray finds no ground, so the craft thinks it's over water. Landing is blocked, or
-    the craft settles through the visual-only terrain.
-- **Fix**:
-  1. In `FlightPhysics`, when the ground ray misses, sample `IslandStreamer.GroundHeight(x,z)` (the heightfield, always
-     available). If it's above sea level, treat the craft as over land with ground at that height, not over water.
-  2. Use the heightfield for `Altitude` too (the minimum of the collider ray and the heightfield).
-  3. Don't let any vehicle settle while `!IslandStreamer.IsReady(position)`. Hold a hover, show "Loading area…",
-     call `IslandStreamer.EnsureLoaded(position, 120)`, then allow landing.
-  4. Streaming: allow 2–3 concurrent cell loads while `velocity > 20 m/s`. Prefetch along velocity with a horizon of
-     `max(6 s, 200 m / speed)`. For terrain colliders specifically, keep a **low-res collider for the whole island**
-     always loaded (the heightfield at 8 m resolution as one or a few MeshColliders). Nothing should ever fall through
-     the island.
+**Fix**:
+1. **Never fly on missing ground.** In `FlightPhysics`, when the ground ray misses, or `!IslandStreamer.IsReady(pos)`,
+   use the heightfield `IslandStreamer.GroundHeight(x,z)` (always available) as the ground. Compute
+   `groundAlt = y - max(GroundHeight, WaterSurfaceAt)`. Only set `OverWater` from the water lookup (§1A), never from a
+   missing ray.
+2. **Whole-island low-res collider, always loaded.** Bake the heightfield at 8 m into one MeshCollider (or 4 tiles)
+   on layer Ground. Lower it 0.15 m so the detailed cell colliders win where loaded. Nothing can fall through the
+   island again.
+3. **Streaming throughput.** Let `Stream()` start up to 3 concurrent cell loads when the player or vehicle speed is
+   over 15 m/s (keep 1 when walking). Prefetch along velocity with `horizon = clamp(250 m / speed, 4, 10) s` (already
+   called from `VehicleSystem` 104; raise its horizon from 4 or 6 s to that).
+4. **Landing guard.** Before `Grounded` can be true or the craft settles, require `IsReady(pos)`. If not ready, hold
+   the hover, show "Loading area…", and call `EnsureLoaded(pos, 120)`.
+5. **Rescue everything.** Remove the Helicopter exclusion in `RecoverFromWater`. Also recover any vehicle more than
+   2 m below `GroundHeight(x,z)` (fell through) to `_lastSafe`.
+6. Test: in the editor, artificially delay `LoadCell` by 3 s and fly the helicopter at full speed toward the summit.
+   It must never go below the heightfield and lands correctly once loaded. Device: fly straight at the mountain from
+   Timeline at top speed three times and land on the summit cairn.
 
-### P0-4. The helicopter is too hard to fly on a phone [User report: "couldn't use the helicopter properly"]
-- **Cause**: `UI/Hud/VehicleControls.cs` uses two floating sticks in the air (left = climb/descend and yaw, right =
-  pitch/roll), which is real helicopter controls. Mobile players expect GTA-mobile style: one stick moves the craft
-  relative to the camera, plus Up/Down buttons. Auto-hover braking also fights small inputs.
-- **Fix**:
-  1. New default "Simple" flight scheme for the helicopter and drone:
-     - **Left stick = desired horizontal velocity in camera space** (forward = camera forward). The controller tilts the
-       body to reach it (cap tilt at 20°) and yaws the nose toward the direction of travel smoothly.
-     - **Right side: two big buttons, ▲ Up and ▼ Down.** Hold sets a climb rate of ±6 m/s; release holds altitude.
-     - Camera drag on the right half still orbits.
-     - Auto-hover only when the left stick is released.
-     - Move Land/Exit to a single contextual button: "Land" (auto-descends to ground and settles) becomes "Get out" when grounded.
-  2. Keep the current two-stick scheme as "Pro" in Duo Settings → Controls.
-  3. Show a first-flight coach overlay once: three tips with arrows. It never shows again.
-  4. Chase camera for the helicopter: 14 m behind and 5 m above, looking slightly down, with an auto-recentre and a
-     1.2 s delay.
-  5. Check it by having someone who's never seen it take off, fly to the marina and land on a pad within 60 s.
+### 1C. No safety net on foot, and the exit doesn't check for ground [Code]
+- `World/Vehicles/VehicleSystem.cs` `ExitRoutine` (about line 304): the exit point is `v.EntryPoint`, or a point
+  1.8–2.6 m to the left. The only test is `FootPlanner.Free(exit)` (`World/Players/FootPlanner.cs` 34), a capsule
+  overlap. **Empty air and space under the terrain count as free.** There's no check for a floor, its slope, its height
+  relative to the car, the water surface, or whether the ground is loaded.
+- The aircraft exit rule (`VehicleSystem` 218) only checks `Altitude > 1.5 || OverWater`, with no slope check. A
+  helicopter resting on a steep face can be exited.
+- `CharacterBody.SlopeLimit = 45°` (`Avatars/Physicality/CharacterBody.cs` 45). Mountain faces are steeper, so a
+  player put there can't walk off it.
+- **There's no on-foot recovery anywhere.** `LocalPlayerController` and `Locomotion` never check water, a fall
+  through the world, or being stuck.
 
-### P0-5. Things pass through each other [User report]
-- **Causes to check** (several):
-  - The World generator places buildings, lots and props without a global overlap test against each other and
-    against roads (W4 already found trees and a statue on the highway because roads had holes in the placement mask).
-  - The instanced kit renderer draws about 25k instances. Not every model is guaranteed a collider that matches its
-    footprint.
-  - Venue shells: walls dissolve visually from inside, and their colliders may not cover every face.
-  - Vehicles: fast Rigidbody bodies with discrete collision can tunnel through thin colliders.
-  - ParkedCar colliders are on layer 13; traffic may not avoid them.
-- **Fix**:
-  1. Generator (`tools/world/islandgen/`): build a single 2D occupancy map (polygons) of roads, sidewalks, lots,
-     building footprints, plazas and water. Every placement must test against it. Fail the build with a list of
-     overlaps over 5 cm² (unit test `WorldNoOverlapTests`).
-  2. Instanced models: generate one simplified BoxCollider (or compound boxes) per model at bake time from mesh
-     bounds, per LOD0. Test it: every instanced model id in the manifest has a collider entry.
-  3. Venue shells: one closed set of wall colliders per shell, independent of the dissolve visuals.
-  4. Vehicles: `CollisionDetectionMode.ContinuousDynamic` for player-driven vehicles and the Roadstar and helicopter,
-     `ContinuousSpeculative` for traffic. Building and wall colliders at least 0.5 m thick.
-  5. CharacterController: skin width 8% of the radius. The player mask includes 10–14 and 16 (not 15 vehicle
-     blockers, not 21 seat taps). Pedestrians avoid props through NavMesh obstacles (carve) on benches, bins, planters
-     and parked cars.
-  6. Add an editor sweep, `Tools/CT Life/Audit/Interpenetration`: `Physics.ComputePenetration` for every static
-     collider pair per district, which writes a report and fails on overlaps over 10 cm.
+**Fix**:
+1. Add `VehicleSystem.FindSafeExit(Vehicle v, out Vector3 p, out float yaw)`. Candidates, in order: the driver door,
+   the passenger door, rear, front, then rings at 2, 3, 4 and 6 m (16 samples each). Accept a candidate only if all of
+   these hold:
+   - a down-ray from +2 m (6 m long, `CharacterBody.Mask`) hits with `normal.y ≥ 0.82` (35° or less)
+   - `|hit.y - vehicleBaseY| ≤ 1.2`
+   - `WaterSurfaceAt` is NaN, or `hit.y > surface + 0.3`
+   - `IslandStreamer.IsReady(hit)`
+   - `NavMesh.SamplePosition(hit, 1.5)` succeeds
+   - the capsule is free
 
-### P0-6. No reason to play yet: no goals, no loop in the world [User feedback earlier: "there's no interest to this game at ALL"]
-- **Cause**: the world is explorable but has no objectives. The minimap has no objective markers ("no objective
-  system exists"). Jobs live inside the Duo as minigames, not in the world.
-- **Fix** (minimum for the demo):
-  1. **Objective system** (`World/Objectives/`): one active objective with a world marker, a minimap marker plus edge
-     arrow, distance text and a completion toast. Data-driven list per player.
-  2. **First-session quest chain** (about 3 minutes):
-     - walk to the Timeline Square screens (onboarding tip)
-     - take a parked car to Terminal Café and do a job shift (the existing JobsApp shift opens on arrival)
-     - collect your pay (the real `/shifts`)
-     - check your wallet on the Duo
-     - visit the MtnDAO summit (Roadstar or helicopter rental). The reward is a summit photo-op emote.
-  3. **World activities** with markers: job desks inside venues (they exist as spots), the Perp Pit trading floor, a
-     Spaces stage, and a street race checkpoint loop (local time-trial using RoadNetwork checkpoints). These give the
-     demo video things to do.
+   If none passes, refuse with "Find flat ground to get out" (a new string) and keep the player in. Use it in
+   `ExitRoutine` instead of `EntryPoint`.
+2. Aircraft exit rule: `FlightPhysics.Grounded` for at least 0.5 s, speed under 2 m/s, and the ground normal under the
+   craft has `y ≥ 0.85`.
+3. **New `World/Players/PlayerSafety.cs`** (added by `LocalPlayerController.Init`):
+   - **Track the last safe point** every 0.5 s while grounded: on the NavMesh within 0.5 m, out of water, and
+     `IsReady`.
+   - **Water**: feet more than 0.5 m below the water surface for 1.2 s. Play a 0.4 s fade, teleport to the last safe
+     point (or the nearest NavMesh point on land within 80 m) and toast "Washed ashore".
+   - **Fell through**: `y < GroundHeight - 2` or `y < SeaLevel - 20` teleports immediately.
+   - **Stuck**: not grounded for over 4 s and moved less than 0.3 m. Teleport.
+   - **Steep slope**: standing on `normal.y < 0.7` for over 3 s. Slide the player downhill (add a downhill velocity
+     along the slope tangent), or teleport if that fails.
+   - In Duo Settings, add "**Unstick me**": teleport to the nearest road node (`RoadNetwork.NearestLanePoint`, ground-snapped).
+4. Tests: EditMode tests for `FindSafeExit` on synthetic colliders (a slope, water, a void, flat ground) and for
+   `PlayerSafety` state transitions. Device: exit on a slope (refused), wade into the river (washed ashore), drive
+   into the sea (recovered).
 
 ---
 
-## P1: important for quality
+## 2. "Anybody can just spawn a drone, like everybody has one" [User + Device + Code]
+- `World/Vehicles/VehicleSystem.cs` 70–77, `Start()`: `VehicleSpawner.SpawnShowcase(...)` runs on **every** island
+  entry, in **every** build type. Only `vehicleDemo` is behind the dev `#if`. `SpawnShowcase` (`VehicleSpawner.cs`
+  15–41) parks compact, sports, roadstar, suv and scooter next to you, and puts a helicopter on the nearest pad within 260 m.
+- `UI/Hud/Hud.cs` 130–133: the Drone HUD action is shown on the island for everyone. `DeployDrone()` creates one from
+  nothing. Confirmed on the Seeker: the Drone button is in the HUD for a fresh demo character with $0.
+- `VehicleSystem.Abandoned` 125–139: any vehicle more than 320 m away and out of view is **destroyed**. A helicopter
+  you left at the summit is gone when you come back, and the showcase never respawns, so the vehicles you saw
+  disappear for good after a short drive. That's confusing. [Code]
+- **Fix** (the access model):
+  1. Put `SpawnShowcase` behind `#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD` **and** an explicit
+     `LaunchArgs.Get("showcaseFleet")`. Drop it entirely from normal play.
+  2. **Cars and scooters**: the world's `ParkedCar` decor (268 on the island) are the public cars. `ParkedCars.cs`
+     already swaps one for a drivable car. Show a "Drive" prompt on any parked car within 3 m. Scooters: add
+     `ParkedScooter` from W4's 185 parked scooters and bikes, same pattern.
+  3. **Helicopter**: rented at the 3 `HeliPad`s. Put a world prompt at each pad, "Rent helicopter · $250 / 5 min",
+     with a confirm sheet. The server must own the money: ask Iyke for `POST /v1/rentals {kind:"heli", padId}` →
+     `{rentalId, endsAt, cashCents}`. Until it exists, production builds show "Helicopter rentals coming soon"; dev
+     builds can use `showcaseFleet`.
+  4. **Roadstar**: an owned premium vehicle (Shop item `vehicle_roadstar`). It's summoned from the Duo's new
+     "Garage" app to the nearest free street bay. Hidden unless `/inventory` has it.
+  5. **Drone**: an owned gadget (Shop item `gadget_drone_cam`). The HUD Drone button only shows when `/inventory`
+     contains it. Read `/inventory` on island entry and on `inventory_changed`.
+  6. **Ownership persistence**: owned vehicles are never destroyed by `Abandoned`. They despawn and re-summon from the
+     Garage instead. Rentals end at `endsAt`: show a 30 s warning, then the craft auto-lands and the rental closes.
+  7. Backend round 3 for Iyke: the shop items above (catalog, price, purchase with Idempotency-Key, inventory
+     readback), rentals, and an `inventory_changed` realtime push.
+- Test: a fresh account sees no fleet and no drone button. A test account given `gadget_drone_cam` sees the button.
+  `showcaseFleet=1` in a dev build restores the old behaviour for filming.
 
-1. **Multiplayer for vehicles and streets.** Other players see you frozen at the car door, and street walkers are
-   invisible to each other. This waits on Iyke's round 2 (`docs/handoff/backend-asks-for-iyke-20261018.md`). Until
-   then: when you enter a vehicle, send a "hidden / in vehicle" presence state if any field allows it; otherwise hide
-   your avatar for others by leaving the venue room cleanly on enter. Don't leave a frozen ghost.
-2. **First-launch shader stutter** (12–15 fps for about 60 s): create a ShaderVariantCollection from a play session.
-   Warm it up during the title loading bar (it already shows real boot steps; add "Preparing graphics").
-3. **Thermal**: the device sits at the 30 fps cap with GPU about 27 of 33 ms.
-   - Reduce downtown draw calls: merge static instanced batches per cell, cull small props beyond 60 m, drop shadow
-     distance to 50 m in the city.
-   - Target 25 ms GPU at render scale 0.7.
-4. **APK size** (about 264 MiB): put the world kits and venue dioramas in Addressables, as remote bundles or Play
-   Asset Delivery install-time packs. Keep the title, onboarding and lobby in the base APK.
-5. **Traffic quality**:
-   - The roundabout recorded only 0–1 yields, so check that its give-way rule really happens.
-   - Traffic should treat ParkedCar and player-parked vehicles as obstacles.
-   - Despawn traffic stuck for more than 10 s off-screen.
-6. **Pedestrians**: the last commit (removes name tags, raises the cap to 16) isn't device-checked. Verify there are no
-   tags, people don't walk through each other or props, and they stay off roads except at crossings.
-7. **Helicopter tail rotor** doesn't spin (it's part of the body mesh). Split the mesh in Blender and spin it like the main rotor.
-8. **Editor (Metal) captures render some ground black.** The device is fine and the cause is unknown. Suspect the
-   Toon shader reading uninitialised per-instance data in the editor. Compare the SRP Batcher on and off and check
-   the instancing buffer layout. It matters for 4K editor footage in the demo video.
-9. **Camera**: in tight interiors and among props, verify the occlusion pull-in never puts the camera inside the
-   head. In vehicles, add a collision check so the camera never goes inside buildings.
-10. **Weekly debt due** stays at $120 after paying (server). In the client, show "Paid this week ✓" once the ledger
-    has a `loan_repay` this week, until Iyke fixes it.
+## 3. "I couldn't use the helicopter properly" [User + Code]
+Why it feels broken:
+- **A dead stick at start-up with no feedback**: `FlightPhysics.cs` 128 spins the rotor up over **3.2 s**, and lift
+  scales with `Rotor01²` (line 158). After 1 s the rotor gives about 10% of the lift, so pushing "up" does nothing
+  for 2–3 s, and the HUD gives no "rotor spinning up" cue.
+- **Real two-stick controls**: `UI/Hud/VehicleControls.cs` 164. Left stick = lift (y) and yaw (x); right stick =
+  pitch (y) and roll (x). That's a real helicopter "mode 2" layout. Casual mobile players expect to point where they
+  want to go.
+- **Auto-hover fights the player**: `FlightPhysics` 175–180. Whenever the right stick is centred, it pitches against
+  the drift, so small corrections feel like the craft resists.
+- **Yaw is separate from travel**: the camera doesn't turn the craft. The player has to coordinate yaw and cyclic.
+- Thrust is divided by `max(0.35, bodyUp.y)` (line 199). At large tilts that adds a lot of lateral force, which feels twitchy.
 
-## P2: polish
-- Character model flaws seen in close-up (collar cut-out, a glasses-arm stick, jagged cuffs, flat braids, rigid
-  skirts, no mouth or expressions). That needs a model pass or a different base for hero shots.
-- Lodge demo shot: the summit is behind the camera. Add a summit-facing shot.
-- The deferred in-game lighting and look pass (the user wants it when the app is ready).
+**Fix (new default, "Simple" flight, for both the helicopter and the drone)**:
+1. **Input model**:
+   - The left stick is a *desired horizontal velocity in camera space*: forward means where the camera looks, at up to
+     `flightTopSpeed` at full deflection.
+   - The right side gets two large hold buttons, **▲ Up / ▼ Down**, for a climb rate of ±6 m/s. Release holds altitude.
+   - Dragging the right half (outside the buttons) orbits the camera, as on foot.
+   - **Auto-yaw**: the nose turns toward the velocity direction (or the camera forward when hovering) at up to 90°/s.
+2. **Controller**: a PD controller on velocity. The tilt target is `atan(desiredAccel / g)` clamped to 20°, with a
+   damping term so it stops crisply. Remove the separate auto-hover branch; with the stick released, desired velocity
+   is 0, which is a hover.
+3. **Start-up**:
+   - Tapping Up with the rotor below 0.9 queues the climb.
+   - The HUD shows a circular "Rotor 0→100%" ring around the Up button, plus a whine pitch rising (`VehicleAudio`).
+   - Shorten the spin-up to 1.6 s.
+4. **Landing**: one contextual button. "Land" auto-descends at 2 m/s to the ground under the craft (using §1B's ground
+   logic and §1C's slope rule); it becomes "Get out" once grounded and settled. If the ground is too steep, it shows
+   "Too steep, move to flat ground".
+5. **Camera**: a helicopter chase cam 14 m behind and 5 m above, pitched down 12°, with a recentre delay of 1.0 s
+   (`CameraRig.FollowVehicle`, aircraft profile).
+6. **Coach**: on the first flight only, show three tips with arrows: "Move", "Up/Down", "Land". Store a flag in
+   PlayerPrefs.
+7. Keep the current two-stick scheme as **"Pro controls"** in Duo Settings → Controls.
+8. Test: someone who has never played takes off within 5 s, flies to the marina pad and lands within 60 s, twice.
+   Measure and log the time.
 
-## Release blockers (not code)
-- **ctlife.fun is not owned.** Register it, or change the SIWS identity on the client and server.
-- **Tripo API output commercial terms are [Unverified]**, and five statues depend on them. Re-read the terms.
-- Credits: Icons8 in the store description, all CC-BY rows in the in-game credits (see the CONTINUE-HERE §8 checklist).
+## 4. Things pass through each other [User + Code]
 
----
+### 4A. Most props have no collider [Code]
+- `Editor/IslandV2/IslandV2Dress.cs` 56–66: of about 25k instanced dressing items, only `kind == "tree"` (a trunk
+  capsule) and `kind == "lamp" || "pole"` (a capsule) get colliders.
+- Buildings get one box each from `buildingBoxes` (line 70), and there are a few explicit boxes: hero plinths, bus
+  shelters, railings, the roundabout, the lighthouse.
+- **Everything else is ghost geometry**: benches, bins, hydrants, planters, newspaper boxes, kiosks, vendor carts,
+  vending machines, market stalls, parked scooters and bikes, rocks, crates, awnings and parasol poles. Players,
+  pedestrians and cars all pass through them.
 
-## How to verify this time (the agents' testing gap)
-- Every P0 fix needs a **hand-played Seeker session** recorded with `adb screenrecord`, not only scripted captures.
-- Use this route without dev teleports (except the start):
-  1. Spawn at Timeline Square, walk to the beach, wade into the sea (expect "Washed ashore").
-  2. Take a parked car downtown, drive to the marina, crash into a building at speed (no pass-through, no flip-through).
-  3. Get out on a slope (refused or safe).
-  4. Rent the helicopter at the pad, fly with Simple controls to the MtnDAO summit, land on the slope (refused) and on
-     the flat cairn (allowed), get out.
-  5. Walk down a cliff edge (fall, then recover or roll), call the drone (hidden unless owned).
-  6. Fly the Roadstar fast across the island and land on an unloaded far district (no fall-through).
-- Record fps, any fall-through, any pass-through, any lost-player state, with timestamps. A fix isn't done until this
-  route runs clean twice in a row.
+**Fix**:
+1. In `IslandV2Kit` (the per-model metadata), add `collider: none|box|capsule|compound` per proto, with a default per
+   `kind`:
+   - box: bench, bin, hydrant, planter, kiosk, vendor, vending, stall, newspaper box, crate, scooter, bike, rock
+   - capsule: parasol pole, sign post
+   - none: grass, flowers, ferns, pebbles, awning (overhead)
+2. Box size comes from LOD0 bounds × 0.9, aligned to the instance yaw, on layer Prop (13). Rocks over 0.6 m get a box;
+   smaller ones get none.
+3. Emit them into `cell.Boxes` and `cell.Capsules` exactly as trees are now. Group them under "PropColliders" per cell.
+4. Keep the cost in check: about 8–12k boxes island-wide. They're static and in streamed cells, which is fine. Use
+   `Physics.autoSyncTransforms = false`.
+5. Test (EditMode): every kit proto with a kind in the box list has a collider spec. Count colliders per cell in the
+   build receipt.
 
-## Suggested lane split
-- **Feel lane**: P0-1 (gating, HUD), P0-2 (safe exit and player safety net), P0-3 (flight ground logic), P0-4
-  (simple flight controls, coach, camera), P0-6 (objective system and quest chain), P1-1, 2, 5, 6, 7, 9, 10.
-- **World lane**: P0-3.4 (streaming concurrency and the whole-island low-res collider), P0-5 (occupancy map,
-  instanced colliders, shells, interpenetration sweep), P1-3, 4, 8, the P2 lodge shot.
-- **Coordinator**: reviews each fix against the hand-played route, merges, and sends Iyke round 3 (P0-1 shop and
-  rental items, the P1-1 interim, the weekly-due fix).
+### 4B. Traffic is on rails and ignores static geometry and decor cars [Code]
+- `World/Vehicles/Traffic/TrafficSystem.cs` 372: AI cars are **kinematic** (`Body.MovePosition`), so they pass through
+  every static collider. Their lane sensing (`Sense`, 563) only masks Characters, Vehicle and VehicleFlight, **not
+  Prop (13)**. It doesn't see `ParkedCar` decor cars, hero plinths or new prop boxes. Where a lane path clips a
+  building corner, a junction island or a decor car, the AI car drives through it.
+- **Fix**:
+  1. Add Prop (13) and Building (12) to the `Sense` mask. Static hits brake the car (gap logic as for vehicles), and
+     a static block for more than 4 s triggers a lane change or a despawn when off-screen.
+  2. In the World builder, add a test: sweep each lane centreline with a box of car half-width + 0.3 m against
+     Building, Prop and ParkedCar colliders, and fail on any hit. Fix the offending lots or bays in the generator
+     (`dress.py` must keep decor cars inside bay rectangles, out of lanes).
+  3. When the player's dynamic car touches a kinematic traffic car, switch that AI car to dynamic ("knocked", already
+     exists via `PreKnock`) **before** contact, not after, so kinematic bodies never shove the player through walls.
+     Check `PreKnock` runs on every approach under 6 m, not just head-on.
+
+### 4C. The player and pedestrians walk through people [Code]
+- `World/Interaction/CharacterLayers.cs` 15 and 53: `WorldMask` excludes `CharacterMask`, so `BodyMask` (the
+  player's movement mask) ignores the Characters layer. **The player walks through NPCs, pedestrians and remote players.**
+- `World/Pedestrians/Pedestrian.cs` 122–175: pedestrians are path rails with a lateral offset. They only dodge the
+  local player (lines 133–140). **No pedestrian-to-pedestrian avoidance**, and no avoidance of sidewalk props, lamp
+  posts or tree pits, which W4 placed on the same sidewalks.
+- **Fix**:
+  1. Player vs people: add a soft separation in `Locomotion`. An OverlapCapsule each frame on Characters within
+     0.6 m pushes the player sideways at up to 2 m/s. Don't make people solid colliders (it would trap players).
+  2. Pedestrian vs pedestrian: a spatial hash (2 m cells) in `PedestrianSystem`. Each pedestrian looks 3 m ahead in its
+     lane and slows or shifts its `_lateral` when another is within 0.7 m (same rules as the player avoidance).
+  3. Pedestrian vs props: bake each sidewalk's "blocked spans" at build time. In `peds.py`, sample the occupancy map
+     along each sidewalk polyline every 0.5 m, and record the lateral free interval (the sidewalk width minus props).
+     The runtime then clamps `_lateral` to the free interval at each `_s`. Lamp posts and tree pits become slaloms,
+     not pass-throughs.
+  4. Test: a 60 s editor capture at Timeline downtown with collision logging. Zero pedestrian-to-prop and
+     pedestrian-to-pedestrian interpenetration over 0.15 m.
+
+### 4D. A building is one box [Code]
+- `IslandV2Dress.cs` 74: buildings get one oriented box at 96% of the lot. L-shaped buildings, setbacks and
+  overhangs don't match, so you can clip into recessed corners or hit invisible walls.
+- **Fix**: for kit buildings with non-rectangular LOD0 footprints, emit a compound of up to 3 boxes from a simplified
+  footprint (convex decomposition of the bottom slice at 1 m height, done once per proto in the kit build). Test: a
+  wall-hug sweep around 20 random buildings, with the player capsule never more than 0.3 m from or inside the visual wall.
+
+### 4E. The general guard
+- Add an editor tool `Tools/CT Life/Audit/Interpenetration`. For each cell, run `Physics.ComputePenetration` across
+  all static collider pairs (Building, Prop, Road), and list pairs that penetrate more than 0.1 m, with positions.
+  It writes `ct-life-evidence/audit/interpenetration-<date>.json`. Wire it into the builder receipt, and fail the
+  build over a threshold.
+
+## 5. Other confirmed problems
+
+1. **The "pedestrian" name tag is still visible** [Device]. This build (installed 15:24, built from F6's last commit)
+   still shows "+ pedestrian" over a passer-by in Timeline Square. The fix in 762059e0 doesn't cover this case. Find
+   the label source: the NPC nameplate component attaches to anything with an `NpcIdentity`, so pedestrians need
+   `showNameplate = false`, or exclude the "pedestrian" archetype in the nameplate system. Test: no nameplate over
+   any pedestrian or NPC driver across 3 venues.
+2. **Drone launch puts the camera inside the player's body** [Device]. In the first frame after "Drone", the camera is
+   a close-up of the player's torso (the drone spawns at the hands and the chase cam starts behind it, inside the
+   avatar). Fix: spawn the drone 1.2 m in front of and 1.5 m above the hands, and start the camera behind the drone
+   with the avatar on the ignore layer for the first 0.5 s (fade the avatar's renderers if the camera is within 1 m).
+3. **The offline demo still calls the server** [Device]. With `islandDemo=1` the app still sends `GET /ads/live` and
+   `/feed` and gets 401 `SIGNATURE_INVALID` (logcat 15:46:14). With the backend down, those wait on timeouts. Fix:
+   in demo mode, route REST through the fixture provider (no network) and use the bundled house ads for billboards.
+4. **Abandoned vehicles vanish for good** [Code], see §2.6: owned and rented vehicles must not be destroyed.
+5. **Vehicles are local only** [Code]. Other players see you frozen at the car door. Interim fix until Iyke's round 2:
+   on vehicle enter, send `move` with your seat position each tick if the room accepts it. Otherwise send an emote
+   state "driving", and have remote clients hide that avatar and show a generic car placeholder at the last position.
+   The real fix is round 2.
+6. **The weekly debt due doesn't drop after paying** (server). Interim in the client: if the ledger has a
+   `loan_repay` since the last Sunday 20:00 UTC totalling at least the weekly amount, show "Paid this week ✓".
+7. **First-launch shader stutter** (12–15 fps for about 60 s). Record a ShaderVariantCollection from a full play
+   session and `WarmUp()` it during the title loading bar as a new real boot step, "Preparing graphics".
+8. **Thermal** (Seeker at the 30 fps cap; GPU about 27 of 33 ms at render scale 0.6–0.7):
+   - downtown has about 460–650 draw calls; merge static instanced batches per cell
+   - cull props under 1 m beyond 50 m
+   - shadow distance 50 m in the city
+   - the ground-detail draw radius from 38 to 28 m on thermal 2 or above
+   Target 22 ms GPU.
+9. **APK size** (about 264 MiB): move the island kits, cells and venue dioramas to Addressables in an install-time
+   asset pack (Play Asset Delivery or the dApp Store equivalent [Unverified]). Keep the title, onboarding and lobby in the base.
+10. **The editor (Metal) renders some ground black** (the device is fine). This blocks 4K editor footage for the video.
+    Bisect the Toon shader's instanced properties under Metal. Suspect `UNITY_ACCESS_INSTANCED_PROP` reading an
+    unset per-instance buffer in some passes.
+11. **Product loop: nothing to do** [User: "there's no interest to this game at ALL"]. There's no objective system
+    (the minimap has no objective markers). Minimum for the demo:
+    - an objective tracker (one active objective, a world beacon, minimap marker plus edge arrow, distance)
+    - a 3-minute first-session quest: walk to the screens, take a parked car to Terminal Café, do a shift, collect pay
+      (the real `/shifts`), check the Duo wallet, take the Roadstar or a rental up to the MtnDAO summit for a photo emote
+    - in-world activity markers: job desks, the trading floor, the Spaces stage, a street time-trial on RoadNetwork checkpoints
+
+## 6. The hand-played acceptance route (run on the Seeker, record it, and fix until clean twice in a row)
+1. Launch with `islandDemo=1`, no other flags. Check: no fleet, no drone button (fresh character).
+2. Walk Timeline Square to the downtown sidewalk. Brush past pedestrians (no pass-through), weave past benches and
+   bins (blocked), check for no nameplates.
+3. Take a parked car, drive downtown at speed into a kiosk and a building corner (stopped, no pass-through), get out
+   on the sidewalk (safe exit).
+4. Drive to the river bank and walk into the river (washed ashore).
+5. Go to a helipad. Rent in a dev build with `showcaseFleet=1` until the rental route exists. With Simple controls,
+   take off, fly at the mountain at top speed, attempt landing on a steep face (refused) and on the summit cairn
+   (accepted), get out, walk.
+6. Walk off a cliff edge (roll and land, or the stuck rescue fires).
+7. Fly the Roadstar across the island to the far east at top speed, land on a road in a district you haven't visited
+   (no fall-through, ground loaded).
+8. Use "Unstick me" from Duo Settings.
+
+Log fps, every interpenetration, every lost-player state, and timestamps in `ct-life-evidence/audit/route-<date>.md`
+with the screen recording.
+
+## 7. Work order and lanes
+- **Feel lane**: §1A (runtime use), §1B.1, 4, 5, §1C, §2, §3, §4B.1 and 3, §4C.1 and 2, §5.1–5.6, §5.11.
+- **World lane**: §1A (WaterBodies bake), §1B.2–3, §4A, §4B.2, §4C.3, §4D, §4E, §5.7–5.10.
+- **Coordinator**: Iyke round 3 (shop items, rentals, inventory push, weekly due), merge after each acceptance run,
+  hold `main` until the §6 route passes twice.
