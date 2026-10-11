@@ -182,6 +182,9 @@ namespace CTLife.SocialFeatures
             _tick = Root.schedule.Execute(OnTick).Every(250);
         }
 
+        /// <summary>What the phone shows: the scroll view, or a frame around it (Duo-kit apps add a nav and composer).</summary>
+        public virtual VisualElement Container => Root;
+
         protected void MarkDirty() => _dirty = true;
 
         private void Detached(DetachFromPanelEvent e) { if (e.target == Root) Dispose(); }
@@ -256,7 +259,7 @@ namespace CTLife.SocialFeatures
             var hub = Hub;
             if (hub == null) return El.Div("ct-app-page", SocialUi.Notice(SocialStrings.T("err.session"), "error"));
             _view = CreateView(hub, Phone);
-            return _view.Root;
+            return _view.Container;
         }
 
         internal abstract SocialView CreateView(SocialHub hub, PhoneShell phone);

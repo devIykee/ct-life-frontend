@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using CTLife.Core;
+using CTLife.UI;
 using CTLife.Net;
 using CTLife.Realtime;
 using Newtonsoft.Json.Linq;
@@ -250,7 +251,15 @@ namespace CTLife.SocialFeatures
             {
                 Bus.Publish(new SfxSignal("sfx_dm_ping"));
                 var request = IsRequest(entry);
-                Bus.Publish(ToastSignal.Text(SocialStrings.F(request ? "dm.toastRequest" : "dm.toast", _hub.Names.Name(m.fromUserId))));
+                var from = m.fromUserId;
+                // iOS-style banner over the game (DuoNotificationCenter). No banner while the Duo shows this chat
+                // or the inbox; Do Not Disturb and the Settings switches silence it; the unread badge still counts.
+                DuoNotificationCenter.Post(new DuoNotification
+                {
+                    AppId = MessagesApp.AppId, ThreadKey = from, Title = _hub.Names.Name(from),
+                    Detail = request ? SocialStrings.T("dm.bannerRequest") : null,
+                    Body = SocialWire.Plain(m.text, 160), Open = () => MessagesApp.OpenThread(from),
+                });
             }
             Notify();
         }

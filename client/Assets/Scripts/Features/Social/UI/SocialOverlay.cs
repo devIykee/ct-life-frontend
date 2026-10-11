@@ -29,6 +29,7 @@ namespace CTLife.SocialFeatures
         {
             _layer = modalLayer ?? throw new ArgumentNullException(nameof(modalLayer));
             _openApp = openApp;
+            MessagesApp.Opener = openApp; // notification banners open the Duo at a conversation
             _chipBar = El.Div("ct-social-chip-bar");
             _chipBar.pickingMode = PickingMode.Ignore;
             SocialUi.Style(_chipBar);
@@ -60,6 +61,8 @@ namespace CTLife.SocialFeatures
         {
             if (_disposed) return;
             if (_hub != null && _hub.Disposed) { Bind(); return; }
+            // Messages badge = the inbox's unread count (blocked players excluded); opening a chat clears it.
+            DuoNotificationCenter.SetBadge(MessagesApp.AppId, _hub != null ? _hub.Messages.Unread : 0);
             RenderChip();
             RenderRing();
         }
@@ -132,6 +135,8 @@ namespace CTLife.SocialFeatures
             if (_hub != null) { _hub.Changed -= Render; if (!_hub.Disposed) _hub.Release(); _hub = null; }
             _ring?.RemoveFromHierarchy();
             _chipBar.RemoveFromHierarchy();
+            if (MessagesApp.Opener == _openApp) MessagesApp.Opener = null;
+            DuoNotificationCenter.Reset(); // banners and counts belong to this session's identity
         }
     }
 

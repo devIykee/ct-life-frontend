@@ -1,0 +1,114 @@
+/* Solana Duo app interiors built on duo-kit.uss: Messages (board #3/#4) and Settings detail screens. */
+
+/* ================= Messages: inbox ================= */
+.duo-messages Label { margin: 0; padding: 0; -unity-text-outline-width: 0; }
+.ct-phone .duo-messages .duo-messages-scroll .unity-scroll-view__content-container { padding-top: 108px; padding-bottom: 64px; }
+.ct-phone .duo-messages .ct-social-header { padding: 0; margin: 0; }
+.ct-phone .duo-messages .ct-social-body { padding: 0; margin: 0; }
+.ct-phone .duo-messages .duo-large-title { padding: 0 38px 20px; }
+.ct-phone .duo-messages .duo-list { flex-shrink: 0; margin-bottom: 8px; }
+.ct-phone .duo-messages .duo-conv { padding-left: 18px; min-height: 152px; align-items: stretch; }
+.ct-phone .duo-messages .duo-conv > .duo-row-leading { margin-right: 22px; justify-content: center; }
+.ct-phone .duo-messages .duo-conv > .duo-row-body { padding-top: 22px; padding-bottom: 24px; align-items: center; }
+.ct-phone .duo-messages .duo-conv-lead { flex-direction: row; align-items: center; }
+.ct-phone .duo-messages .duo-conv-dot { width: 18px; height: 18px; border-radius: 9px; margin-right: 16px; background-color: rgba(0,0,0,0); }
+.ct-phone .duo-messages .duo-conv-unread .duo-conv-dot { background-color: var(--duo-blue); }
+.ct-phone .duo-messages .duo-conv-top { flex-direction: row; align-items: center; }
+.ct-phone .duo-messages .duo-conv-name { flex-grow: 1; flex-shrink: 1; min-width: 0; }
+.ct-phone .duo-messages .duo-conv-time { flex-shrink: 0; margin-left: 14px; font-size: var(--duo-footnote); color: var(--duo-label2); }
+.ct-phone .duo-messages .duo-conv-top > .duo-row-chevron { width: 22px; height: 22px; margin-left: 10px; }
+.ct-phone .duo-messages .duo-conv .duo-row-subtitle-clip { margin-top: 6px; }
+.ct-phone .duo-messages .duo-messages-hint { font-size: var(--duo-footnote); color: var(--duo-label2); white-space: normal; margin: 0 38px 10px; }
+.ct-phone .duo-messages .duo-messages-safety { margin-top: 28px; }
+.ct-phone .duo-messages .ct-social-notice {
+    margin: 0 30px 18px; padding: 20px 26px; border-radius: 24px; border-width: 0; background-color: rgba(255,149,0,0.12);
+    color: #9a4f00; font-size: var(--duo-footnote); white-space: normal;
+}
+
+/* ================= Messages: thread ================= */
+.ct-phone .duo-messages-thread .duo-messages-scroll .unity-scroll-view__content-container { padding-top: 196px; padding-bottom: 196px; }
+.ct-phone .duo-messages-thread .duo-nav { height: 190px; align-items: flex-start; padding-top: 6px; }
+.ct-phone .duo-messages-thread .duo-nav-backdrop { opacity: 1; background-color: #ffffff; border-bottom-width: 1px; border-bottom-color: rgba(60,60,67,0.10); }
+.ct-phone .duo-messages-thread .duo-circle-face { background-color: #ffffff; border-width: 1px; border-color: rgba(0,0,0,0.06); }
+.ct-phone .duo-messages-thread .duo-nav-title { display: none; }
+.ct-phone .duo-messages .duo-thread-head { display: none; }
+.ct-phone .duo-messages-thread .duo-thread-head { display: flex; align-items: center; }
+.ct-phone .duo-thread-who {
+    align-items: center; margin: 0; padding: 6px 18px 8px; border-width: 0; border-radius: 30px; background-color: rgba(0,0,0,0);
+}
+.ct-phone .duo-thread-who:hover { background-color: rgba(0,0,0,0); }
+.ct-phone .duo-thread-who:active { background-color: var(--duo-pressed); }
+.ct-phone .duo-thread-name-row { flex-direction: row; align-items: center; margin-top: 10px; padding: 4px 6px 4px 14px; border-radius: 20px; }
+.ct-phone .duo-messages .duo-thread-name {
+    font-size: var(--duo-footnote); color: var(--duo-label); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf");
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 420px;
+}
+.ct-phone .duo-thread-name-chevron { width: 18px; height: 18px; margin-left: 4px; color: var(--duo-label3); }
+
+.ct-phone .duo-messages .duo-thread { padding: 0 26px; flex-shrink: 0; }
+.ct-phone .duo-messages .duo-thread-time {
+    align-self: center; margin: 22px 0 12px; font-size: var(--duo-caption); color: var(--duo-label2);
+    -unity-font-definition: url("Fonts/Phone/Inter-Medium.ttf");
+}
+.ct-phone .duo-messages .duo-bubble-row { flex-direction: row; margin-top: 6px; flex-shrink: 0; }
+.ct-phone .duo-messages .duo-bubble-row-gap { margin-top: 20px; }
+.ct-phone .duo-messages .duo-bubble-row-in { justify-content: flex-start; }
+.ct-phone .duo-messages .duo-bubble-row-out { justify-content: flex-end; }
+.ct-phone .duo-messages .duo-bubble { max-width: 76%; padding: 15px 26px 17px; border-radius: 38px; flex-shrink: 1; }
+.ct-phone .duo-messages .duo-bubble-in { background-color: #e9e9eb; }
+.ct-phone .duo-messages .duo-bubble-out { background-color: #1a84ff; }
+.ct-phone .duo-messages .duo-bubble-in.duo-bubble-tail { border-bottom-left-radius: 10px; }
+.ct-phone .duo-messages .duo-bubble-out.duo-bubble-tail { border-bottom-right-radius: 10px; }
+.ct-phone .duo-messages .duo-bubble-failed { background-color: #9cc8ff; }
+.ct-phone .duo-messages .duo-bubble-text { font-size: var(--duo-body); color: #000000; white-space: normal; letter-spacing: -0.3px; }
+.ct-phone .duo-messages .duo-bubble-out .duo-bubble-text { color: #ffffff; }
+.ct-phone .duo-messages .duo-bubble-status { font-size: var(--duo-caption); color: var(--duo-label2); margin: 6px 8px 0; -unity-font-definition: url("Fonts/Phone/Inter-Medium.ttf"); }
+.ct-phone .duo-messages .duo-bubble-status-out { align-self: flex-end; }
+.ct-phone .duo-messages .duo-bubble-status-failed { color: var(--duo-red); margin: 0 8px 0 0; flex-shrink: 1; white-space: normal; }
+.ct-phone .duo-messages .duo-bubble-failure { flex-direction: row; justify-content: flex-end; align-items: center; flex-wrap: wrap; margin-top: 4px; }
+.ct-phone .duo-messages .duo-bubble-action { font-size: var(--duo-footnote); padding: 10px 0 10px 22px; min-height: 64px; }
+.ct-phone .duo-messages .duo-bubble-flag {
+    max-width: 80%; margin: 8px 8px 0; font-size: var(--duo-caption); color: #9a4f00; white-space: normal;
+}
+.ct-phone .duo-messages .duo-load-older { align-self: center; padding: 14px 24px; margin: 4px 0 6px; }
+.ct-phone .duo-messages .duo-load-older:disabled { opacity: 0.4; }
+.ct-phone .duo-messages .duo-request-actions { flex-direction: row; justify-content: center; flex-wrap: wrap; margin: 0 30px 18px; }
+.ct-phone .duo-messages .duo-request-actions > .duo-pill { margin: 6px; }
+
+/* ================= Messages: composer ================= */
+.ct-phone .duo-messages .duo-composer {
+    position: absolute; left: 0; right: 0; bottom: 0; padding: 10px 20px 22px 12px; margin: 0;
+    background-color: #ffffff;
+}
+.ct-phone .duo-messages .duo-composer-row { flex-direction: row; align-items: flex-end; }
+.ct-phone .duo-messages .duo-composer .duo-circle { margin: 0 4px 0 0; }
+.ct-phone .duo-messages .duo-composer-error { margin: 0 0 6px 116px; font-size: var(--duo-footnote); color: var(--duo-red); white-space: normal; }
+.ct-phone .duo-messages .duo-composer-error.duo-composer-count { color: var(--duo-label2); }
+.ct-phone .duo-messages .duo-composer-field {
+    flex-grow: 1; flex-shrink: 1; min-width: 0; flex-direction: row; align-items: flex-end; min-height: 76px; margin: 10px 0;
+    padding: 0 8px 0 28px; border-radius: 38px; background-color: rgba(255,255,255,0.96); border-width: 1px; border-color: rgba(60,60,67,0.16);
+}
+.ct-phone .duo-messages .duo-composer-input { flex-grow: 1; flex-shrink: 1; min-width: 0; margin: 0; padding: 0; }
+.ct-phone .duo-messages .duo-composer-input > .unity-text-field__input {
+    min-height: 74px; max-height: 230px; padding: 18px 0; margin: 0; border-width: 0; background-color: rgba(0,0,0,0);
+    font-size: var(--duo-body); color: var(--duo-label); white-space: normal; -unity-font-definition: url("Fonts/Phone/Inter-Regular.ttf");
+}
+.ct-phone .duo-messages .duo-composer-input .unity-base-text-field__input--placeholder,
+.ct-phone .duo-messages .duo-composer-input > .unity-base-text-field__input--placeholder { color: rgba(60,60,67,0.36); }
+.ct-phone .duo-search .unity-base-text-field__input--placeholder,
+.ct-phone .duo-search .duo-search-field > .unity-base-text-field__input--placeholder { color: rgba(60,60,67,0.62); }
+.ct-phone .duo-messages .duo-composer-send {
+    width: 60px; height: 60px; min-width: 60px; margin: 7px 0 7px 10px; padding: 15px; border-width: 0; border-radius: 30px;
+    background-color: var(--duo-blue); flex-shrink: 0;
+}
+.ct-phone .duo-messages .duo-composer-send:hover { background-color: var(--duo-blue); }
+.ct-phone .duo-messages .duo-composer-send:active { opacity: 0.7; }
+.ct-phone .duo-messages .duo-composer-send .duo-glyph { width: 100%; height: 100%; color: #ffffff; }
+
+/* ================= Settings: credits ================= */
+.ct-phone .duo-credits .ct-eyebrow { font-size: var(--duo-footnote); color: var(--duo-label2); margin: 22px 0 8px; letter-spacing: 0.4px; }
+.ct-phone .duo-credits .ct-credit { padding: 14px 0 20px; border-bottom-width: 1px; border-bottom-color: var(--duo-sep); }
+.ct-phone .duo-credits .ct-credit-title { font-size: var(--duo-headline); color: var(--duo-label); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); white-space: normal; }
+.ct-phone .duo-credits .ct-small { font-size: var(--duo-footnote); color: var(--duo-label2); white-space: normal; margin: 4px 0 10px; }
+.ct-phone .duo-credits .ct-btn { align-self: flex-start; min-height: 64px; padding: 0 26px; margin: 4px 0; border-width: 0; border-radius: 32px; background-color: var(--duo-fill); color: var(--duo-blue); font-size: 27px; -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); }
+.ct-phone .duo-credits .ct-license { font-size: var(--duo-footnote); color: var(--duo-label); white-space: normal; margin: 8px 0; }
