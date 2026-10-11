@@ -8,7 +8,7 @@ import os
 
 REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 ART = os.path.join(REPO, 'art')
-RAW = os.path.join(ART, 'raw')
+RAW = os.environ.get('CTL_RAW') or os.path.join(ART, 'raw')   # CTL_RAW: raw packs from another checkout (worktrees)
 WORK = os.path.join(RAW, 'work')
 PROCESSED = os.path.join(ART, 'processed')
 PREVIEWS = os.path.join(ART, 'previews')

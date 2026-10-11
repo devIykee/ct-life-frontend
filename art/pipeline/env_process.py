@@ -13,18 +13,24 @@ import numpy as np
 from mathutils import Vector, Matrix
 
 sys.path.insert(0, os.path.dirname(__file__))
+import importlib
 import ctl_config as C
 import ctl_tex as T
-import env_config as E
+# CTL_ENV_CONFIG / CTL_ENV_SET (World lane, 2026-10-17): another kit config module and its own output set (manifest,
+# palette atlas and shared textures under art/processed/<set>/), so the island kit never edits the venue palette.
+E = importlib.import_module(os.environ.get('CTL_ENV_CONFIG', 'env_config'))
+SET = os.environ.get('CTL_ENV_SET')
 
 args = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else []
 KITS = args[0].split(',') if args and not args[0].startswith('--') else None
 ONLY = args[args.index('--only') + 1].split(',') if '--only' in args else None
 OUT = C.PROCESSED
-SHARED = os.path.join(OUT, 'environment', '_shared')
+SHARED = os.path.join(OUT, SET or 'environment', '_shared')
 os.makedirs(SHARED, exist_ok=True)
-PAL_PATH = os.path.join(SHARED, 'ctl_palette.png')
-PAL_JSON = os.path.join(SHARED, 'ctl_palette.json')
+PAL_NAME = f'{SET}_palette' if SET else 'ctl_palette'
+PAL_MAT = 'M_' + PAL_NAME
+PAL_PATH = os.path.join(SHARED, PAL_NAME + '.png')
+PAL_JSON = os.path.join(SHARED, PAL_NAME + '.json')
 PAL_N = 32            # 32 x 32 swatches
 PAL_CELL = 16         # px per swatch -> 512 x 512 atlas
 
@@ -37,13 +43,22 @@ def log(*a):
 palette = json.load(open(PAL_JSON)) if os.path.exists(PAL_JSON) else {'colors': []}
 
 
-def swatch(rgb):
-    """sRGB 0..1 triple -> palette index (quantised to 1/64 to merge near-identical colours)."""
+TINT_BASE = PAL_N * PAL_N // 2      # swatches from here on (bottom half, uv.v < 0.5) are tintable greys (World lane)
+
+
+def swatch(rgb, tint=False):
+    """sRGB 0..1 triple -> palette index (quantised to 1/64 to merge near-identical colours). tint=True: a grey swatch
+    in the palette's bottom half, which the island toon shader multiplies by each instance's facade colour."""
     n = CURRENT.get('quant') or 63   # per-item coarser quantisation for forced gradient maps (round 6)
     q = [round(c * n) / n for c in rgb]
     key = '%02x%02x%02x' % tuple(int(round(c * 255)) for c in q)
+    if tint:
+        tl = palette.setdefault('tint', [])
+        if key not in tl:
+            tl.append(key)
+        return TINT_BASE + tl.index(key)
     if key not in palette['colors']:
-        if len(palette['colors']) >= PAL_N * PAL_N:
+        if len(palette['colors']) >= TINT_BASE:
             # palette full: nearest existing colour
             arr = np.array([[int(k[i:i + 2], 16) / 255 for i in (0, 2, 4)] for k in palette['colors']])
             return int(np.argmin(((arr - np.array(q)) ** 2).sum(axis=1)))
@@ -62,6 +77,9 @@ def save_palette():
     img = np.zeros((PAL_N * PAL_CELL, PAL_N * PAL_CELL, 3), np.float32)
     for i, k in enumerate(palette['colors']):
         cx, cy = i % PAL_N, i // PAL_N
+        img[cy * PAL_CELL:(cy + 1) * PAL_CELL, cx * PAL_CELL:(cx + 1) * PAL_CELL] = [int(k[j:j + 2], 16) / 255 for j in (0, 2, 4)]
+    for i, k in enumerate(palette.get('tint', [])):
+        cx, cy = (TINT_BASE + i) % PAL_N, (TINT_BASE + i) // PAL_N
         img[cy * PAL_CELL:(cy + 1) * PAL_CELL, cx * PAL_CELL:(cx + 1) * PAL_CELL] = [int(k[j:j + 2], 16) / 255 for j in (0, 2, 4)]
     T.save(img, PAL_PATH)
     json.dump(palette, open(PAL_JSON, 'w'), indent=0)
@@ -192,9 +210,9 @@ def palettise(o):
     me = o.data
     mats = list(me.materials)
     src = [base_color_source(m) for m in mats]
-    pal_mat = bpy.data.materials.get('M_ctl_palette')
+    pal_mat = bpy.data.materials.get(PAL_MAT)
     if pal_mat is None:
-        pal_mat = bpy.data.materials.new('M_ctl_palette')
+        pal_mat = bpy.data.materials.new(PAL_MAT)
         pal_mat.use_nodes = True
         n = pal_mat.node_tree.nodes.new('ShaderNodeTexImage')
         if os.path.exists(PAL_PATH):
@@ -208,6 +226,7 @@ def palettise(o):
     # pass 1: decide per face (palette colour or keep its material)
     plan = []
     keep_names = []
+    tint_faces = set()
     for f in bm.faces:
         mi = f.material_index
         kind, data = src[mi] if mi < len(src) else ('color', [0.8, 0.8, 0.8])
@@ -226,6 +245,13 @@ def palettise(o):
             rgb = list(a[y, x, :3])
             if data.colorspace_settings.name != 'sRGB':
                 rgb = [lin2srgb(v) for v in rgb]
+            tm = CURRENT.get('tint_mask')
+            if tm is not None:
+                th, tw = tm.shape
+                if tm[int((uv.y % 1.0) * (th - 1)), int((uv.x % 1.0) * (tw - 1))]:
+                    lum = 0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2]
+                    tint_faces.add(f.index)
+                    rgb = [lum, lum, lum]
         if rgb is not None:
             rgb = apply_recolor(rgb, CURRENT['recolor'])
         if rgb is None and mi < len(mats) and mats[mi] is not None and mats[mi].name not in keep_names:
@@ -237,7 +263,7 @@ def palettise(o):
     # pass 2: assign (materials must exist on the mesh before bm.to_mesh, or indices get clamped)
     for f, rgb, mi in plan:
         if rgb is not None:
-            u, v = swatch_uv(swatch(rgb))
+            u, v = swatch_uv(swatch(rgb, tint=f.index in tint_faces))
             for l in f.loops:
                 l[uvl].uv = (u, v)
             f.material_index = 0
@@ -248,7 +274,7 @@ def palettise(o):
         me.materials.append(m)
     bm.to_mesh(me)
     bm.free()
-    return [m for m in me.materials if m.name != 'M_ctl_palette']
+    return [m for m in me.materials if m.name != PAL_MAT]
 
 
 def copy_textures(mats, tex_dir, tex_max=512, prefix=''):
@@ -436,6 +462,14 @@ def process(item):
     CURRENT['id'] = item['id']
     CURRENT['force_palette'] = item.get('force_palette')   # KayKit/Kenney gradient maps -> flat palette colours
     CURRENT['quant'] = item.get('quant')
+    CURRENT['tint_mask'] = None
+    if item.get('tint_mask'):
+        mpath = item['tint_mask'] if os.path.isabs(item['tint_mask']) else os.path.join(OUT, item['tint_mask'])
+        mimg = bpy.data.images.load(mpath, check_existing=True)
+        mw, mh = mimg.size
+        px_ = np.empty(mw * mh * mimg.channels, np.float32)
+        mimg.pixels.foreach_get(px_)
+        CURRENT['tint_mask'] = px_.reshape(mh, mw, mimg.channels)[:, :, 0] > 0.5     # row 0 = bottom, like image_array
     CURRENT['logged'] = set()
     _img_cache.clear()
     path = resolve(item['src'])
@@ -546,7 +580,7 @@ def process(item):
 
 os.makedirs(os.path.join(SHARED, 'textures'), exist_ok=True)
 make_blossom_texture()
-man_path = os.path.join(OUT, 'environment', 'manifest.json')
+man_path = os.path.join(OUT, SET or 'environment', 'manifest.json')
 manifest = json.load(open(man_path)) if os.path.exists(man_path) else {}
 for item in E.ITEMS:
     if KITS and not any(item['dir'].endswith(k) for k in KITS):

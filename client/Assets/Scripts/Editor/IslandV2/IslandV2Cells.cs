@@ -14,7 +14,12 @@ namespace CTLife.EditorTools.IslandV2
         public readonly List<BoxCol> Boxes = new List<BoxCol>();
         public readonly List<Marker> Markers = new List<Marker>();
         public readonly List<IslandV2Terrain.Chunk> Chunks = new List<IslandV2Terrain.Chunk>();
+        /// <summary>Kit instances (dress.json) drawn by the cell's IslandInstances.</summary>
+        public readonly List<IslandV2Dress.Inst> Instances = new List<IslandV2Dress.Inst>();
+        /// <summary>Vertical capsules (tree trunks, lamp posts): all on one GameObject per layer.</summary>
+        public readonly List<CapsuleCol> Capsules = new List<CapsuleCol>();
 
+        public struct CapsuleCol { public Vector3 Center; public float Radius, Height; public int Layer; }
         public struct BoxCol { public Vector3 Center; public Quaternion Rotation; public Vector3 Size; public int Layer; public string Name; }
         public struct Marker { public string Kind, Id, Segment; public Vector3 Position; public Quaternion Rotation; public Vector2 Size; public float Showcase; }
 
@@ -50,7 +55,7 @@ namespace CTLife.EditorTools.IslandV2
     public static class Mat
     {
         public const string Road = "road", Dirt = "road_dirt", Sidewalk = "sidewalk", Kerb = "kerb", Concrete = "concrete",
-            Rail = "rail", Paint = "paint", Tunnel = "tunnel", Grass = "grass_island", Quay = "quay";
+            Rail = "rail", Paint = "paint", Tunnel = "tunnel", Grass = "grass_island", Quay = "quay", Wall = "wall_stone", Plaza = "plaza";
     }
 
     public static class Layers

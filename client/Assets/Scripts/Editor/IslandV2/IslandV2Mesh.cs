@@ -99,7 +99,11 @@ namespace CTLife.EditorTools.IslandV2
             m.SetUVs(0, UV0);
             if (HasUV1) m.SetUVs(1, UV1);
             if (HasUV2) m.SetUVs(2, UV2);
-            if (HasColor) m.SetColors(C);
+            // always a colour stream (Color32, 4 bytes a vertex): the Toon shader reads COLOR (tint + AO), and a missing
+            // stream is undefined on some GPUs (Metal rendered whole frames of kerbs and sidewalks black)
+            var c32 = new List<Color32>(C.Count);
+            foreach (var c in C) c32.Add(c);
+            m.SetColors(c32);
             m.SetTriangles(T, 0, true);
             m.RecalculateBounds();
             return m;
