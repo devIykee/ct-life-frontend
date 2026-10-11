@@ -1,0 +1,36 @@
+{
+  "version": 2,
+  "scope": "local art-selection proposal only; NOT the backend Look schema",
+  "example": {
+    "base": "ubc_m",
+    "skin": "skin_06",
+    "hair": "Hair_Buzzed",
+    "facial": [
+      "Hair_Beard"
+    ],
+    "tints": {
+      "hair": "black",
+      "top": "orange",
+      "bottom": "denim",
+      "shoes": "white"
+    },
+    "accessories": []
+  },
+  "fields": {
+    "base": "exact manifest base ID; own skeleton proportions",
+    "skin": "this export skin_palette.json ID, requires explicit UI mapping",
+    "hair": "per-base hair_library.hair key, or none; null retains default",
+    "facial": "per-base facial keys, additive, not a hairstyle replacement",
+    "tints": "hair palette for hair, cloth palette for top/bottom/shoes/accent; only existing masks have a visible effect",
+    "accessories": "per-base accessory keys; at most one per exact socket; composed triangle gate required"
+  },
+  "compatibility": "No cross-base clothing swaps are declared. Only existing per-base files are catalogued.",
+  "wire_handoff": "runtime_part_map.json; aliases remain null until exact IDs and renderer support are integrated",
+  "tint_preview": {
+    "space": "linear RGB, masks non-color; source textures albedo/emission sRGB",
+    "mask0": "R skin, G hair, B top, A bottom",
+    "mask1": "R shoes, G accent",
+    "formula": "sequential out = lerp(current, tint * min(luminance(current) / max(0.03, luminance(region_default)), 1.6), mask)",
+    "source": "scripts/v2_render.py:toon_material; a Blender preview, not a shipped Unity shader guarantee"
+  }
+}

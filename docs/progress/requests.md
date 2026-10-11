@@ -1346,3 +1346,62 @@ title would need Android `AudioManager.getStreamVolume(STREAM_MUSIC)` via JNI; I
 from here, so I did not add it. Your call whether it is worth a check on the device.
 
 Status: open
+
+## 2026-10-10 cast lane (Hermes) → Unity integrator: cast v3 import plan, rig mapping, customiser data
+
+Art-side only: nothing in `client/` was touched, nothing was imported into Unity, no device run. Everything below is a
+proposal checked in Blender (fresh FBX import receipt `art/cast/v3/export/validation_v3.json`), not Unity acceptance.
+This also answers the 2026-10-09 crowd request above: v3 has 12 F / 13 M bases, a 16 F / 16 M NPC preset roster
+(`manifest_v3.json` `presets`) and the 10-tone skin palette from fair #f7d7c3 to deep #4f3222.
+
+**1. Import plan (one family at a time; start with `umw`, then `umm`, then `ubc_*`, heroes last).**
+- Copy `art/cast/v3/export/` to e.g. `Assets/Art/Cast/v3/` (≈121 MB, 372 files, largest 2.4 MB). Keep the folder layout:
+  the JSONs use paths relative to `export/`; hero geometry is referenced as `../../v2/export/...` (copy those 4 v2 hero
+  folders too, or rewrite `geometry_root`).
+- FBX: Scale Factor 1, Convert Units on (files are metres, -Z forward / Y up), Import Normals **Import** (smooth-by-angle
+  normals are baked; do not let Unity recalculate), Blend Shapes off, Materials **None / external** (one material per
+  character is created in Unity from the PNGs), Read/Write off for complete defaults.
+- Rig tab: Animation Type **Humanoid**. Create **one Avatar per family** from the complete default of the first base
+  (`umw_tee.fbx` for `umw`, `umm_hoodie.fbx` for `umm`), then **Copy From Other Avatar** for every other base, part
+  and backpack of that family. UBC: one Avatar per base (`ubc_m`, `ubc_f`). Heroes: one Avatar each (v2 FBX).
+  Parts of one family share the bind pose, so a SkinnedMeshRenderer of any part can be re-bound to the base rig by bone
+  name; never mix families on one rig (proportions differ).
+- Textures: `<fam>_Albedo.png` sRGB; `<fam>_TintMask0.png` / `<fam>_TintMask1.png` **linear, no sRGB, no compression
+  artefacts on edges** (ASTC 6x6 or better; check the neckline soft edges on UBC). One material per character; all parts
+  and accessories of a family/base use that one material (accessory texels live in the reserved atlas block).
+- LOD Group per character: Hero (creator/close camera) or LOD0 / LOD1 / LOD2 (crowd file `<base>.fbx` holds the three
+  `_LOD*` meshes). Accessories are authored for Hero/LOD0/LOD1 and must be **hidden at LOD2** (budget rule in the manifest).
+
+**2. Rig mapping.** `art/cast/v3/export/cts_humanoid_map.json` lists the CTS bones, parents and the Unity Humanoid slot for
+each bone (same names for every v3 base: `pelvis, spine_01..03, neck_01, Head, clavicle_*, upperarm_*, lowerarm_*, hand_*,
+thumb/index/middle/ring/pinky_01..03_*, thigh_*, calf_*, foot_*, ball_*`). Quaternius families have no toe weights
+(`ball_*` is a placeholder joint: leave Toes unmapped or map it, it does not deform). Sockets are empties parented to
+bones (`socket_face, socket_head_top, socket_neck, socket_back, socket_hand_r, ...` in `manifest_v3.json` `sockets`).
+Please verify native facing and the T-pose in the Avatar configure screen; I could only check Blender.
+
+**3. Customiser data (proposal, `art/cast/v3/export/customizer_schema_v3.json`).**
+```json
+{"base": "umw_punk", "skin": "skin_02",
+ "parts": {"head": "punk", "top": "punk", "bottom": "punk", "feet": "punk"},
+ "tints": {"hair": "green", "top": "sol_purple"},
+ "accessories": ["headphones"]}
+```
+- `base` fixes gender, family and rig. `parts` only for `umm_*`/`umw_*` (keys from `families.<fam>.library`), with the
+  gap rules in `families.<fam>.compatibility` (reject listed bottom/feet and top/bottom pairs). UBC uses `hair`
+  (+ `facial` for `ubc_m`) instead. Heroes: tints + accessories only.
+- Tint resolution (`manifest_v3.json` `tint_resolution`): part `default_tints` (feet, bottom, top, head order) ← base
+  `look_defaults` ← user `tints`; brows = `brow_color(hair)` unless set. Shader: per region
+  `out = lerp(out, tint * min(lum(out)/max(0.03, lum(tint_reference[region])), 1.6), mask)` in linear light, with
+  `tint_reference` from the base/family JSON (`#9a9a9a` for both families).
+- Gate every selection on `budgets.triangles` by summing the chosen tier of each visible part (+ accessories except at
+  LOD2). The art-side resolver `art/cast/v3/scripts/v3_manifest.py` `compose()` / `resolve_tints()` is the reference and
+  is covered by `test_v3_manifest.py`.
+- Wire: the current Look fields (`skinTone, headId, hairId, topId, bottomId, shoesId, accId`) cannot carry `base` or
+  family parts. You need a `baseId` (or encode `<base>/<head>` in `headId`) before modular looks can sync. No alias was
+  registered by me.
+
+**4. Not done / your call.** Real Unity Humanoid import, retarget of the existing animation set onto the two Quaternius
+Avatars (their arm/leg proportions differ from the current Snow/Rain creator rigs), shader port of the tint formula, and
+LOD/accessory culling at runtime. Credits for the four CC-BY heroes are in `art/LICENSES.md` (cast v3 block).
+
+Status: open (Unity integrator)

@@ -1,0 +1,331 @@
+{
+ "id": "hero_balaclava",
+ "label": "Balaclava streetwear",
+ "gender": "m",
+ "source": "Sketchfab CC-BY (row 13)",
+ "licence": "CC BY 4.0",
+ "archetypes": [
+  "cabal_insider",
+  "rug_dev",
+  "perp_degen_npc"
+ ],
+ "tiers": {
+  "hero": {
+   "triangles": 11277,
+   "vertices": 10965,
+   "max_influences": 4
+  },
+  "lod0": {
+   "triangles": 5635,
+   "vertices": 5885,
+   "max_influences": 4
+  },
+  "lod1": {
+   "triangles": 2818,
+   "vertices": 3210,
+   "max_influences": 4
+  },
+  "lod2": {
+   "triangles": 1124,
+   "vertices": 1376,
+   "max_influences": 2
+  }
+ },
+ "files": {
+  "crowd_fbx": "bases/hero_balaclava/hero_balaclava.fbx",
+  "hero_fbx": "bases/hero_balaclava/hero_balaclava_Hero.fbx"
+ },
+ "textures": {
+  "albedo": "bases/hero_balaclava/hero_balaclava_Albedo.png",
+  "mask0": "bases/hero_balaclava/hero_balaclava_TintMask0.png",
+  "mask1": "bases/hero_balaclava/hero_balaclava_TintMask1.png",
+  "emission": "bases/hero_balaclava/hero_balaclava_Emission.png"
+ },
+ "tint_defaults": {
+  "skin": "#9f7268",
+  "hair": "#181419",
+  "top": "#18181c",
+  "bottom": "#1a181f",
+  "shoes": "#c4c1bc",
+  "accent": "#5b0f09"
+ },
+ "parts": {
+  "head": {
+   "fbx": "bases/hero_balaclava/parts/hero_balaclava__head.fbx",
+   "slot": "head",
+   "triangles": {
+    "hero": 2964,
+    "lod0": 1481,
+    "lod1": 741,
+    "lod2": 295
+   }
+  },
+  "top": {
+   "fbx": "bases/hero_balaclava/parts/hero_balaclava__top.fbx",
+   "slot": "top",
+   "triangles": {
+    "hero": 4743,
+    "lod0": 2371,
+    "lod1": 1185,
+    "lod2": 474
+   }
+  },
+  "bottom": {
+   "fbx": "bases/hero_balaclava/parts/hero_balaclava__bottom.fbx",
+   "slot": "bottom",
+   "triangles": {
+    "hero": 2901,
+    "lod0": 1449,
+    "lod1": 725,
+    "lod2": 290
+   }
+  },
+  "feet": {
+   "fbx": "bases/hero_balaclava/parts/hero_balaclava__feet.fbx",
+   "slot": "feet",
+   "triangles": {
+    "hero": 669,
+    "lod0": 334,
+    "lod1": 167,
+    "lod2": 65
+   }
+  }
+ },
+ "accessories": {
+  "pixel_face_mask": {
+   "fbx": "bases/hero_balaclava/accessories/hero_balaclava__pixel_face_mask.fbx",
+   "socket": "face",
+   "bone": "Head",
+   "flags": {
+    "occludes_face": true
+   },
+   "triangles": 272
+  },
+  "tv_head": {
+   "fbx": "bases/hero_balaclava/accessories/hero_balaclava__tv_head.fbx",
+   "socket": "head_top",
+   "bone": "Head",
+   "flags": {
+    "replaces_head": true,
+    "hides_hair": true,
+    "occludes_face": true
+   },
+   "triangles": 100
+  },
+  "visor": {
+   "fbx": "bases/hero_balaclava/accessories/hero_balaclava__visor.fbx",
+   "socket": "face",
+   "bone": "Head",
+   "flags": {
+    "double_sided": true
+   },
+   "triangles": 240
+  },
+  "helmet": {
+   "fbx": "bases/hero_balaclava/accessories/hero_balaclava__helmet.fbx",
+   "socket": "head_top",
+   "bone": "Head",
+   "flags": {
+    "hides_hair": true,
+    "occludes_face": true
+   },
+   "triangles": 520
+  },
+  "laser_eyes": {
+   "fbx": "bases/hero_balaclava/accessories/hero_balaclava__laser_eyes.fbx",
+   "socket": "face",
+   "bone": "Head",
+   "flags": {
+    "emissive": true
+   },
+   "triangles": 272
+  },
+  "chain": {
+   "fbx": "bases/hero_balaclava/accessories/hero_balaclava__chain.fbx",
+   "socket": "neck",
+   "bone": "spine_03",
+   "flags": {},
+   "triangles": 396
+  },
+  "headphones": {
+   "fbx": "bases/hero_balaclava/accessories/hero_balaclava__headphones.fbx",
+   "socket": "head_top",
+   "bone": "Head",
+   "flags": {},
+   "triangles": 344
+  },
+  "small_wings": {
+   "fbx": "bases/hero_balaclava/accessories/hero_balaclava__small_wings.fbx",
+   "socket": "back",
+   "bone": "spine_03",
+   "flags": {
+    "double_sided": true
+   },
+   "triangles": 60
+  },
+  "shoulder_drone": {
+   "fbx": "bases/hero_balaclava/accessories/hero_balaclava__shoulder_drone.fbx",
+   "socket": "shoulder_r",
+   "bone": "clavicle_r",
+   "flags": {
+    "emissive": true
+   },
+   "triangles": 400
+  }
+ },
+ "sockets": {
+  "head_top": {
+   "bone": "Head",
+   "humanoid": "Head",
+   "position_character_m": [
+    0.0,
+    -0.0609,
+    1.8
+   ],
+   "offset_in_bone_space_m": [
+    0.0,
+    0.225,
+    -0.0317
+   ]
+  },
+  "face": {
+   "bone": "Head",
+   "humanoid": "Head",
+   "position_character_m": [
+    0.0,
+    -0.1745,
+    1.6983
+   ],
+   "offset_in_bone_space_m": [
+    0.0,
+    0.1233,
+    0.0819
+   ]
+  },
+  "neck": {
+   "bone": "spine_03",
+   "humanoid": "UpperChest",
+   "position_character_m": [
+    0.0,
+    -0.1954,
+    1.483
+   ],
+   "offset_in_bone_space_m": [
+    0.0,
+    0.1144,
+    0.1133
+   ]
+  },
+  "back": {
+   "bone": "spine_03",
+   "humanoid": "UpperChest",
+   "position_character_m": [
+    0.0,
+    0.1158,
+    1.323
+   ],
+   "offset_in_bone_space_m": [
+    0.0,
+    0.1809,
+    -0.2302
+   ]
+  },
+  "shoulder_l": {
+   "bone": "clavicle_l",
+   "humanoid": "LeftShoulder",
+   "position_character_m": [
+    0.1855,
+    -0.1348,
+    1.509
+   ],
+   "offset_in_bone_space_m": [
+    -0.0071,
+    0.1706,
+    0.0587
+   ]
+  },
+  "shoulder_r": {
+   "bone": "clavicle_r",
+   "humanoid": "RightShoulder",
+   "position_character_m": [
+    -0.1865,
+    -0.1356,
+    1.509
+   ],
+   "offset_in_bone_space_m": [
+    0.0071,
+    0.1712,
+    0.0587
+   ]
+  },
+  "hand_l": {
+   "bone": "hand_l",
+   "humanoid": "LeftHand",
+   "position_character_m": [
+    0.3083,
+    -0.0431,
+    0.8417
+   ],
+   "offset_in_bone_space_m": [
+    0.0,
+    0.0288,
+    -0.0
+   ]
+  },
+  "hand_r": {
+   "bone": "hand_r",
+   "humanoid": "RightHand",
+   "position_character_m": [
+    -0.259,
+    -0.1045,
+    0.8276
+   ],
+   "offset_in_bone_space_m": [
+    0.0,
+    0.0288,
+    0.0
+   ]
+  }
+ },
+ "measurements": {
+  "head_center": [
+   0.0,
+   -0.0609,
+   1.6983
+  ],
+  "top_z": 1.8,
+  "chin_z": 1.5579,
+  "eye_z": 1.6983,
+  "half_w": 0.0854,
+  "half_d": 0.1136,
+  "front_y": -0.1745,
+  "back_y": 0.0527,
+  "neck_z": 1.503,
+  "neck_y": -0.0355,
+  "chest_front_y": -0.2054,
+  "chest_back_y": 0.1158,
+  "chest_z": 1.323,
+  "chest_half_w": 0.1411,
+  "shoulder_l": [
+   0.1855,
+   -0.1348,
+   1.449
+  ],
+  "shoulder_r": [
+   -0.1865,
+   -0.1356,
+   1.449
+  ],
+  "hand_l": [
+   0.3083,
+   -0.0431,
+   0.8417
+  ],
+  "hand_r": [
+   -0.259,
+   -0.1045,
+   0.8276
+  ]
+ },
+ "height_m": 1.8
+}

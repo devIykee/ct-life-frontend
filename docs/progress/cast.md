@@ -1,3 +1,67 @@
+READY TO COMMIT (cast v3, 2026-10-10, Hermes cast lane): art/cast/v3/ (README.md, scripts/, export/, previews/, provenance/) art/cast/scripts/gdrive_fetch.py art/cast/scripts/test_gdrive_fetch.py art/LICENSES.md docs/progress/cast.md docs/progress/requests.md — plus the untracked dependency art/cast/v2/ (Claude's v2 lane, unchanged by me: v3 imports art/cast/v2/scripts and references the v2 hero FBX + export/skin_palette.json, so commit it together or first)
+
+## Cast v3 (2026-10-10): 25 distinct bases, Quaternius modular families added, v2 defects fixed
+
+Status: **art export validated in Blender only** (fresh FBX import of all 308 v3 FBX: 0 failures, `art/cast/v3/export/validation_v3.json`;
+`art/cast/v3/scripts/test_v3_manifest.py` 17/17 OK). Not imported into Unity, not seen on the device, not production-ready.
+Renders are Blender EEVEE previews of the intended toon shader. Working files: `../ct-life-evidence/cast-hermes-20261010/`.
+
+**Cast.** 25 bases, 12 F / 13 M, every default skin tone of the 10-tone palette used, no regional look first:
+- `umm_*` ×10 (Quaternius Ultimate Modular Men, CC0): hoodie anon, tee degen, suit whale, punk caller, tactical bot, moon mission,
+  hard-hat builder, backpack farmer, literal farmer, made-it beach. `umw_*` ×9 (Ultimate Modular Women, CC0): tee degen, suit fund
+  manager, gala KOL, punk caller, tactical sniper, cyber dev, hard-hat builder, backpack farmer, hooded cabal. (King, Witch excluded.)
+- `ubc_m`, `ubc_f` (Quaternius UBC, CC0) rebuilt with the fixes below.
+- 4 CC-BY heroes as rare masked looks (assassin, gynoid, hazmat, balaclava); `hero_tactical` excluded (rigid placeholder hands).
+- 8 CT hero combos (anon, whale, degen, KOL, builder, sniper bot, laser-eyes maxi, cabal), 4 F / 4 M, in `manifest_v3.json`.
+
+**UMM/UMW decision: distinct bases, not refits.** Each pack becomes one family (one CTS skeleton bind pose, one 2048 atlas, one
+material); all head/top/bottom/feet parts swap inside the family (umm 9,100 and umw 4,527 gap-free combinations, all within the
+LOD caps). Refitting the garments onto UBC bodies was rejected: proportions differ too much (overlay) and it would leave the
+whole cast with the two UBC faces. Unification instead: same toon shader/tint masks, smooth-by-angle normals (Quaternius ships
+flat-shaded), shared palette. Evidence: `art/cast/v3/previews/cast_v3_umm_umw_decision.jpg`.
+
+**Fixes.**
+- UBC neck/shoulder/ankle holes: glTF UV-seam vertices welded before the outfit cut (996 / 968 pairs, 0 refused); joint
+  decimation; open boundary edges 0 → 0. Jagged neckline: re-evaluated per texel against an analytic neckline (plane + neck
+  cylinder, limited to the neck band) with a 4 mm anti-aliased edge; cloth inflation fades to 0 at the neckline. Shoe soles cleaned.
+- Pale/white brows: brows get their own mask channel (TintMask1.B) and follow the hair colour darkened (never above 0.08 linear
+  luminance); old brow median was 0.20–0.25 linear.
+- Washed-out heroes: tint regions re-derived per texel (dominant fabric clusters only, prints/visors stay authored), per-hero grade,
+  balaclava's 38 % white emission dropped; gynoid pulled off paper-white.
+- TV head removed from the starter set; accessories use the base material (one material per character).
+- Quaternius UMW materials import with alpha 0, which made the colour bake black: forced opaque before baking.
+- Every swapped-in part brings its own colours for regions the wearer's base lacks (`default_tints`, e.g. a yellow hard hat).
+
+**Sheets** (`art/cast/v3/previews/`): `cast_v3_lineup.jpg`, `cast_v3_ct_combos.jpg`, `cast_v3_customisation.jpg`,
+`cast_v3_fixes_closeups.jpg`, `cast_v3_umm_umw_decision.jpg`.
+
+**Budgets.** Hero ≤ 12k (max 11,278), LOD0 ≤ 6k (max 5,638), LOD1 ≤ 3k (max 2,818), LOD2 ≤ 1.2k (max 1,138) per complete default character, ≤ 4 weights (≤ 2 at LOD2), one
+material + atlas per character. Accessories have no LODs (240–520 tris each; backpack 1,500 per tier): all at Hero/LOD0, LOD1 keeps them in selection order while under 3k,
+none at LOD2 (`compose()` reports `accessories_dropped`).
+
+**Licences** re-read live on 2026-10-10 (quaternius.com pack pages + bundled License.txt: CC0; Drive folder ids and all file
+hashes re-verified; Sketchfab API: CC BY 4.0 for all 5 heroes): `art/cast/v3/provenance/licence-verification-20261010.json`,
+rows in `art/LICENSES.md` (cast v3 block). `gdrive_fetch.py`: path traversal fixed (basename + realpath containment, reserved
+names), offline tests in `test_gdrive_fetch.py` (6 OK).
+
+**Not good enough yet.**
+- Two face styles remain: Quaternius big-head stylised faces vs UBC realistic faces. Cohesion comes from the shared shader,
+  palette and normals, not a shared sculpt.
+- Gynoid 2000 still reads pale and flat (a white robot with few features). It needs a re-texture or should be dropped.
+- UBC: a faint line remains on the neck where the head and top parts meet (a seam between UV islands). The ubc_f neckline edge
+  is still slightly ragged at texel scale.
+- Accessories have no LODs, so most combos drop them at LOD1, and LOD2 shows none. The shoulder drone floats at ear height and
+  the cabal visor sits slightly in front of the hood.
+- Some Quaternius caps belong to the hair region (the UMW hiker cap changes colour with the hair).
+- Quaternius rigs have no toe weights. Deformation has not been tested with animation.
+- Nothing has been done in Unity yet: Humanoid Avatars, animation retargeting (the Quaternius proportions differ from the
+  current animation rigs), the tint shader port, mask compression and Seeker performance.
+- `hero_tactical`'s mitten hands were not fixed, so it is excluded.
+- The wire format cannot carry `baseId` or family parts yet.
+- The four CC-BY heroes need in-game credits.
+
+---
+
 READY TO COMMIT: art/cast/export/looks/{rain_breeze,npc_auditor,npc_chain_tribalist_b,npc_clip_farmer,npc_community_mod,npc_dubai_relocator,npc_engagement_farmer,npc_hackathon_grinder,npc_hiring_bait_farmer,npc_odds_crier,npc_prediction_shark,npc_privacy_maxi,npc_seeker_farmer,npc_side_event_hopper,npc_spaces_host,npc_tip_coin_pilgrim,npc_tradfi_suit,npc_wallet_tracker,player_f_anon,player_f_blazer,player_f_builder,player_f_coat,player_f_farmer,player_f_kol,player_f_lagos_ankara,player_f_lagos_kaftan,player_f_perp,player_f_shark,player_f_trencher,npc_sleuth,player_m_coat,player_m_lagos_kaftan}/ art/cast/export/parts/f/ art/cast/export/parts/m/{top_coat*,top_kaftan*,bottom_skirt*,bottom_wrap*,parts.json} art/cast/export/manifest.json art/cast/export/validation.json art/cast/previews/cast_lineup_f.jpg art/cast/previews/cast_lineup_m.jpg art/cast/scripts/{cast_common,cast_extract,cast_wardrobe,cast_validate}.py art/LICENSES.md docs/progress/cast.md docs/progress/requests.md — cast weight fix: Rain family rebuilt from the weight-corrected creator (no lower-body Head weights) + dress/coat/skirt hems weighted to the thighs (if the earlier fix-pass READY line was not committed yet, commit all of art/cast/export/ art/cast/previews/ art/cast/scripts/ instead)
 
 # CAST lane — progress log
