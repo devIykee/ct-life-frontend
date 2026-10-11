@@ -48,7 +48,7 @@
 .home-today { flex-direction: row; margin-top: 26px; min-height: 0; }
 .home-today-chip, .home-today-chip:hover, .home-today-chip:focus, .home-today-chip:active {
     flex-direction: row; align-items: center; margin: 0 20px 0 0; padding: 0 28px 0 14px; min-height: 130px; max-width: 720px;
-    background-color: rgba(58, 20, 64, 0.78); border-width: 5px; border-color: rgb(58, 20, 64); border-radius: 65px;
+    background-color: rgb(84, 38, 92); border-width: 5px; border-color: rgb(58, 20, 64); border-radius: 65px;
 }
 .home-today-chip:active { scale: 0.97 0.97; }
 .home-today-chip > .kit-badge { width: 92px; height: 92px; }
@@ -58,7 +58,8 @@
 .home-today-value--clue { font-size: 40px; white-space: normal; max-width: 520px; }
 .home-today--up .home-today-value { color: rgb(124, 255, 196); }
 .home-today--down .home-today-value { color: rgb(255, 170, 160); }
-.home-today--offline { background-color: rgba(120, 30, 50, 0.85); }
+/* Solid, never translucent: the user rejected see-through plates (title review 2026-10-08, ledger 2026-10-10). */
+.home-today--offline { background-color: rgb(128, 34, 56); }
 
 /* Dream and Home cards */
 .home-cards { flex-direction: row; margin-top: 30px; }
