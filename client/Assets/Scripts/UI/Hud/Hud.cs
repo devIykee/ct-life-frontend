@@ -169,7 +169,7 @@ namespace CTLife.UI
         /// <summary>The phone action carries the Duo's total unread count (red badge, cleared when read).</summary>
         private Button PhoneAction()
         {
-            var button = HudAction("phone", Strings.T("phone.ctos"), () => OpenUtility(OpenPhone), "smartphone", primary: true);
+            var button = HudAction("phone", Strings.T("lobby.duo"), () => OpenUtility(OpenPhone), "smartphone", primary: true); // the device is the Solana Duo (as in the lobby)
             _phoneBadge = Duo.Badge(DuoNotificationCenter.TotalBadge, "ct-hud-badge");
             _phoneBadge.name = "hud-phone-badge";
             button.Add(_phoneBadge);
