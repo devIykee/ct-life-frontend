@@ -241,7 +241,8 @@ namespace CTLife.EditorTools
                 var cam = (JObject)plate["camera"];
                 Place(st.Camera, cam);
                 Physics.SyncTransforms();
-                Render(st.Camera, path, Width, Height, (int?)plate["supersample"] ?? 2);
+                // Optional per-plate size (the Blender key art asks for a 3840x1726 clean backdrop).
+                Render(st.Camera, path, (int?)plate["width"] ?? Width, (int?)plate["height"] ?? Height, (int?)plate["supersample"] ?? 2);
                 result["camera"] = cam;
                 Debug.Log("CTLIFE [keyart] wrote " + path);
             }
