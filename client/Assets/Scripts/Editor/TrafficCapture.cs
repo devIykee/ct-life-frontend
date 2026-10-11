@@ -99,7 +99,7 @@ namespace CTLife.EditorTools
                 if (junction != null)
                 {
                     Mark("junction");
-                    var corner = Corner(net, junction);
+                    var corner = TrafficSystem.Corner(net, junction);
                     p.SnapTo(corner, 0f);
                     rig.FollowAvatar(p.transform);
                     Look(corner, junction.center, 24f);
@@ -127,7 +127,7 @@ namespace CTLife.EditorTools
                     if (near == null) continue;
                     string name = kind == IntersectionKind.Roundabout ? "roundabout" : "stop";
                     Mark(name);
-                    var corner = Corner(net, near);
+                    var corner = TrafficSystem.Corner(net, near);
                     p.SnapTo(corner, 0f);
                     rig.FollowAvatar(p.transform);
                     Look(corner, near.center, kind == IntersectionKind.Roundabout ? 30f : 22f);
@@ -348,21 +348,6 @@ namespace CTLife.EditorTools
                 if (score < bestScore) { bestScore = score; best = c; }
             }
             return best;
-        }
-
-        /// <summary>A spot at a junction's corner, beside the road (where a pedestrian would watch from).</summary>
-        private static Vector3 Corner(RoadNetwork net, RoadIntersection x)
-        {
-            var c = x.center;
-            float r = Mathf.Max(14f, x.radius + 10f);
-            foreach (var a in new[] { 45f, 135f, 225f, 315f })
-            {
-                var q = c + Quaternion.Euler(0f, a, 0f) * Vector3.forward * r;
-                var lp = net.NearestLanePoint(q, 12f);
-                if (lp.valid && lp.distance < 5f) continue;   // in the road
-                if (Physics.Raycast(q + Vector3.up * 30f, Vector3.down, out var hit, 60f, CharacterLayers.BodyMask, QueryTriggerInteraction.Ignore)) return hit.point;
-            }
-            return c + Vector3.forward * r;
         }
 
         private static float Steer(Vehicle car, TrafficCar target)

@@ -315,13 +315,16 @@ namespace CTLife.World.Vehicles
             if (piece == null) return;
             route.Extend(Lookahead + 20f);
             float v = c.Speed;
-            // 1) the speed the road allows: the limit, and any bend ahead (slowing in time)
+            // 1) the speed the road allows: the limit, and any bend ahead (slowing in time); bends are re-read 10 times a second
             float v0 = Mathf.Max(3f, piece.SpeedLimit * c.Pace);
-            for (float d = 4f; d <= Mathf.Min(Lookahead, 8f + v * 4f); d += 6f)
+            if (scan || float.IsNaN(c.BendCap))
             {
-                float vc = TrafficRules.CurveSpeed(route.Curvature(d));
-                v0 = Mathf.Min(v0, TrafficRules.ApproachSpeed(vc, d - 4f));
+                float cap = 99f;
+                for (float d = 4f; d <= Mathf.Min(Lookahead, 8f + v * 4f); d += 6f)
+                    cap = Mathf.Min(cap, TrafficRules.ApproachSpeed(TrafficRules.CurveSpeed(route.Curvature(d)), d - 4f));
+                c.BendCap = cap; c.BendAt = route.S;
             }
+            v0 = Mathf.Min(v0, c.BendCap);
             // 2) what is ahead: the next car in its lane order, a stop line, the sensor (people, the player, wrecks)
             float gap = float.PositiveInfinity, lead = 0f; string why = "";
             LeaderAhead(c, ref gap, ref lead, ref why);
@@ -363,8 +366,9 @@ namespace CTLife.World.Vehicles
                 c.Car.RailSteer = Mathf.Clamp(Mathf.Atan(2.6f * k) * Mathf.Rad2Deg, -32f, 32f);
             }
             c.Vehicle.Input = new VehicleInput { throttle = a > 0.2f ? Mathf.Clamp01(a / TrafficRules.MaxAccel) : 0f, brake = a < -1f ? Mathf.Clamp01(-a / TrafficRules.MaxBrake) : 0f };
-            // people stepping out at the last moment still get knocked down rather than walked through
-            if (v > 2.5f && c.Car != null) c.Car.GuardPeople(v, dir * v);
+            // people stepping out at the last moment still get knocked down rather than walked through (only when the
+            // sensor has someone or something close ahead: a box query per car every step would be the costliest thing here)
+            if (v > 2.5f && c.Car != null && c.SensorGap < 10f) c.Car.GuardPeople(v, dir * v);
         }
 
         // ------------------------------------------------------------------ what is ahead
@@ -621,5 +625,34 @@ namespace CTLife.World.Vehicles
         }
 
         private static Vector3 Flat(Vector3 v) { v.y = 0f; return v; }
+
+        /// <summary>A spot at a junction's corner beside the road, where a pedestrian would watch it from (captures, the demo).</summary>
+        public static Vector3 Corner(RoadNetwork net, RoadIntersection x)
+        {
+            var c = x.center;
+            float r = Mathf.Max(14f, x.radius + 10f);
+            foreach (var a in new[] { 45f, 135f, 225f, 315f })
+            {
+                var q = c + Quaternion.Euler(0f, a, 0f) * Vector3.forward * r;
+                var lp = net.NearestLanePoint(q, 12f);
+                if (lp.valid && lp.distance < 5f) continue;   // in the road
+                if (Physics.Raycast(q + Vector3.up * 30f, Vector3.down, out var hit, 60f, CharacterLayers.BodyMask, QueryTriggerInteraction.Ignore)) return hit.point;
+            }
+            return c + Vector3.forward * r;
+        }
+
+        /// <summary>The nearest junction of a kind to a point (null when the network has none).</summary>
+        public static RoadIntersection Nearest(RoadNetwork net, Vector3 p, IntersectionKind kind)
+        {
+            RoadIntersection best = null; float d = float.MaxValue;
+            if (net == null) return null;
+            foreach (var x in net.intersections)
+            {
+                if (x == null || x.kind != kind) continue;
+                float dd = (x.center - p).sqrMagnitude;
+                if (dd < d) { d = dd; best = x; }
+            }
+            return best;
+        }
     }
 }

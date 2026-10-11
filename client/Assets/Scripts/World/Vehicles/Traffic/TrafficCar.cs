@@ -41,6 +41,7 @@ namespace CTLife.World.Vehicles
         internal bool StopDone;
         internal float WaitingSince = -1f;
         internal bool Yielding;
+        internal float BendCap = float.NaN, BendAt;
         internal RoadIntersection Inside;         // the junction it is crossing now
         // reacting to the player
         internal float BlockedFor, HonkAt, LaneChangeAt;
@@ -73,7 +74,7 @@ namespace CTLife.World.Vehicles
             }
             if (Car != null) Car.SetRails(true);
             if (Vehicle != null) { Vehicle.EngineOn = true; Vehicle.Input = VehicleInput.None; }
-            Lateral = 0f; BlockedFor = 0f; StoppedAt = null; StopDone = false; Inside = null; WaitingSince = -1f;
+            Lateral = 0f; BlockedFor = 0f; StoppedAt = null; StopDone = false; Inside = null; WaitingSince = -1f; BendCap = float.NaN;
             SensorGap = float.PositiveInfinity; SensorAt = -10f; SensorPlayer = false;
         }
 

@@ -34,7 +34,7 @@ namespace CTLife.World.Vehicles
         private static IEnumerator RunParts(VehicleSystem sys, LocalPlayerController player, string which, float settleSeconds)
         {
             yield return new WaitForSeconds(settleSeconds);   // the fleet parks 20 frames in; let streaming and the HUD settle
-            string[] ids = which == "1" || which == "all" ? new[] { "sports", "roadstar", "heli", "drone" } : which.Split(',');
+            string[] ids = which == "1" || which == "all" ? new[] { "traffic", "sports", "roadstar", "heli", "drone" } : which.Split(',');
             Parts.Clear();
             _home = player.transform.position;
             VehicleSystem.ScriptedInput = true;
@@ -42,6 +42,7 @@ namespace CTLife.World.Vehicles
             {
                 if (sys == null || player == null) yield break;
                 if (id == "drone") { yield return Drone(sys); continue; }
+                if (id == "traffic") { yield return TrafficWatch(player); continue; }
                 var v = Nearest(sys, id, player.transform.position);
                 if (v == null) { Log.Warn("vehicles", $"demo: no {id} parked near the player"); continue; }
                 // stand by its door, then get in the normal way
@@ -144,6 +145,32 @@ namespace CTLife.World.Vehicles
             sys.ExitOrLand();
             float t0 = Time.time;
             while (sys.Driving != null && Time.time - t0 < 10f) yield return null;
+        }
+
+        /// <summary>Stand at the nearest traffic-light junction for 25 s: the frame rate with traffic and NPC drivers in view.</summary>
+        private static IEnumerator TrafficWatch(LocalPlayerController player)
+        {
+            var net = CTLife.World.Roads.RoadNetwork.Active;
+            var traffic = TrafficSystem.Current;
+            var x = TrafficSystem.Nearest(net, player.transform.position, CTLife.World.Roads.IntersectionKind.Signal);
+            if (traffic == null || x == null) { Log.Warn("vehicles", "demo: no traffic or no signalled junction"); yield break; }
+            var corner = TrafficSystem.Corner(net, x);
+            var face = x.center - corner;
+            player.SnapTo(corner, Mathf.Atan2(face.x, face.z));
+            Current = "traffic watch";
+            var p = new Part { name = "traffic watch" };
+            int reds = traffic.RedStops, honks = traffic.Honks, seatedMax = 0;
+            for (float t = 0f; t < 25f; t += Time.deltaTime)
+            {
+                yield return null;
+                p.frames++; p.time += Time.unscaledDeltaTime; p.worst = Mathf.Max(p.worst, Time.unscaledDeltaTime);
+                int seated = 0;
+                foreach (var c in traffic.Cars) if (c != null && c.Driver != null) seated++;
+                seatedMax = Mathf.Max(seatedMax, seated);
+            }
+            Parts.Add(p);
+            Log.Info("vehicles", $"demo traffic watch at {x.id}: {(p.time > 0f ? p.frames / p.time : 0f):F1} fps avg, {(p.worst > 0f ? 1f / p.worst : 0f):F1} min; " +
+                                 $"{traffic.Cars.Count} cars, up to {seatedMax} drivers, step {traffic.StepMs:F2} ms, {traffic.RedStops - reds} red stops, {traffic.Honks - honks} honks");
         }
 
         // ------------------------------------------------------------------ the autopilot
