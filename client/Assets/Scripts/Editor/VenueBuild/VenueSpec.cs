@@ -20,6 +20,28 @@ namespace CTLife.EditorTools.VenueBuild
         public string identity;
         public Action<VB> build;
 
+        /// <summary>
+        /// Repack mode (VenueRepack): instead of a layout script, take this existing authored prefab, keep its anchors,
+        /// approaches, colliders, NavMesh, lights and components, and re-emit its geometry merged per material into
+        /// LOD-grouped cells with texture atlases. Live Screen_* surfaces stay separate renderers.
+        /// </summary>
+        public string repackSource;
+        public float cellSize = 10f;
+        /// <summary>Screen-relative height below which a repacked cell switches to its source LOD1 meshes.</summary>
+        public float lod0Threshold = 0.22f;
+        /// <summary>
+        /// Repack: models whose bounds centre is farther than this from the walkable area (and that have a source LOD1)
+        /// use their LOD1 mesh at every distance. The gameplay camera follows a player inside the walkable area, so
+        /// these are always background. 0 = off.
+        /// </summary>
+        public float farLod1Distance;
+        /// <summary>Repack: tiled-texture materials (facades, floors) as one venue-wide renderer each instead of per cell.</summary>
+        public bool tiledVenueWide;
+        /// <summary>Repack: cells split at the walkable centre (floor) instead of centred on it (round).</summary>
+        public bool cellSplit;
+        /// <summary>Repack: cell depth along z (0 = same as cellSize). Shallow rows let the far side of a room drop to LOD1.</summary>
+        public float cellSizeZ;
+
         // Gameplay camera (VenueSceneRoot fields). Defaults match the shipped Café/Studio framing.
         public float cameraDistance = 11.5f, cameraPitch = 31f, cameraYaw = -12f, cameraFov = 45f, cameraViewportY = 0.3f;
 

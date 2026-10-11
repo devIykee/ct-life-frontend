@@ -1,3 +1,68 @@
+READY TO COMMIT: client/Assets/Scripts/Editor/VenueBuild/VenueRepack.cs client/Assets/Scripts/Editor/VenueBuild/VenueRepack.cs.meta client/Assets/Scripts/Editor/VenueBuild/VenueBake.cs client/Assets/Scripts/Editor/VenueBuild/VenueBuildPipeline.cs client/Assets/Scripts/Editor/VenueBuild/VenueCatalog.cs client/Assets/Scripts/Editor/VenueBuild/VenueMeshAcc.cs client/Assets/Scripts/Editor/VenueBuild/VenueSpec.cs client/Assets/Scripts/Editor/VenueBuild/VenueVerify.cs client/Assets/World/Venues/timeline_square client/Assets/World/Venues/timeline_square.meta client/Assets/World/Venues/terminal_cafe client/Assets/World/Venues/terminal_cafe.meta client/Assets/World/Venues/spaces_studio client/Assets/World/Venues/spaces_studio.meta client/Assets/Venues/VenueContentRegistry.asset client/Assets/Resources/World/VenueContent/venue_timeline_square.asset client/Assets/Resources/World/VenueContent/venue_terminal_cafe.asset client/Assets/Resources/World/VenueContent/venue_spaces_studio.asset docs/progress/venues.md — perf(venues): repack Timeline Square, Terminal Café and Spaces Studio through the venue pipeline (181/194/116 → 28/25/17 draws)
+
+## 2026-10-08 draw-call pass: Timeline Square, Terminal Café, Spaces Studio
+
+Request: `docs/progress/requests.md` (integration lead, 2026-10-08). Done in the worktree on dev @ 60c5fcb; not committed.
+
+**How.** New `VenueRepack.cs` (selected by `VenueSpec.repackSource`) rebuilds each venue from its shipped prefab instead
+of re-authoring it, so the tuned layout and gameplay data stay byte-identical:
+- Kept: anchors, approaches, colliders, NavMesh (copied), camera settings, `VenueContentLighting` and
+  `CafeSeatMotionProfile` (exit routes and controller bindings).
+- Re-emitted geometry:
+  - Merged per material into LOD-grouped cells (source LOD0/LOD1).
+  - Non-tiling textures (palettes, colour maps, signs, desktop screens) go into per-venue atlases with tints baked in.
+  - Bounded tiled textures (bark, paving, plaster) are baked out as repeated tiles into a fourth atlas.
+  - Live `Screen_*` surfaces (WorldLife `house_ads.json` rules) stay one renderer per owner under `Hooks/`, with the
+    exact material name.
+- Rebaked with `VenueBake` (GPU, ≤ 1024² maps) and verified with `VenueVerify`. Registered with
+  `VenueRepack.Register`, which updates the registry, syncs the catalog and checks that `VenueContent.Find` resolves
+  to the new prefab.
+
+**Results.** Editor estimates from the gameplay camera, Android LOD bias 0.7, landscape. Before = shipped prefab,
+after = repacked and baked.
+
+| venue | entrance draws | centre draws | far draws | entrance tris | centre tris | far tris | materials | lightmaps |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| timeline_square | 181 → **28** | 103 → 24 | 45 → 17 | 120,754 → 113,491 | 88,776 → 122,393 | 54,628 → 80,361 | 46 → 5 | 5 → 2 (≤ 1024²) |
+| terminal_cafe | 194 → **25** | 147 → 17 | 63 → 9 | 49,404 → 62,155 | 53,794 → 61,497 | 27,216 → 55,249 | 34 → 4 | 2 (≤ 1024²) |
+| spaces_studio | 116 → **17** | 72 → 12 | 37 → 9 | 24,853 → 23,240 | 16,020 → 21,196 | 9,545 → 17,038 | 21 → 4 | 2 (≤ 1024²) |
+
+**Trade-off.** Draws fall 85–87%, but the cells cull less precisely than the old per-model renderers, so some views
+draw more triangles:
+- Timeline centre rises to 122k.
+- Café is up to 62k.
+- The worst view per venue rises about 1% (Timeline, 122k against the old 121k) and about 15% (Café, 62k against
+  54k); Studio's worst view falls.
+- Cell size and LOD thresholds are per-venue knobs in `VenueCatalog.cs`. Smaller cells trade draws back for
+  triangles if the Seeker shows vertex cost.
+
+**Verified in batchmode:**
+- Spots: all fe.2 spots reachable — Timeline 15, Café 17, Studio 34. Café terminal and table seats are reached via
+  their approach points, as in the shipped NavMesh.
+- Parity against the source (`VenueRepack.CheckParity`, receipts `*-parity.json`), all equal:
+  - live surfaces (Timeline: `timeline:timeline_screen`)
+  - anchor poses and approaches
+  - `CafeSeatMotionProfile` JSON
+  - all colliders (30 / 60 / 48)
+  - camera settings
+  - NavMesh data
+- No lights are left in the prefabs.
+
+**Not changed:**
+- No CT-now set dressing was added to these three tuned layouts; their existing parody signage is kept.
+- The old source prefabs under `Art/Generated/Venues` and `Art/Candidates/PlayableVenues20261007` are no longer
+  registered. They must stay, because they are the repack input.
+- I re-ran no other venue.
+
+**Evidence** (outside the repo):
+- `ct-life-evidence/venues/<id>.png` (one preview each)
+- `receipts/<id>-{before,build,verify,parity}.json`
+- logs `20`–`39`
+
+Commands:
+- `…Unity -batchmode -quit -projectPath client -executeMethod CTLife.EditorTools.VenueBuild.VenueBuildPipeline.All -ctVenues timeline_square,terminal_cafe,spaces_studio`
+  (needs graphics), then `VenueRepack.Register` and `VenueRepack.CheckParity` with the same `-ctVenues`.
+
 # Venue builder lane — progress log
 
 Branch `feat/venues` (worktree `/Users/mac/Documents/codes/projects/ct-life-venues`, from `dev` 7fb99fb).

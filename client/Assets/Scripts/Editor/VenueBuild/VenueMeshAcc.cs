@@ -129,7 +129,7 @@ namespace CTLife.EditorTools.VenueBuild
 
         /// <summary>Copy one submesh of a sourced mesh (only the vertices it uses), transformed into venue space.</summary>
         public void AppendSubmesh(Mesh source, int submesh, Matrix4x4 m, Rect? uvRemap = null,
-            Dictionary<Mesh, MeshCache> cache = null)
+            Dictionary<Mesh, MeshCache> cache = null, Vector4? uvST = null)
         {
             var data = MeshCache.Get(source, cache);
             var tris = data.Submeshes[submesh];
@@ -144,6 +144,7 @@ namespace CTLife.EditorTools.VenueBuild
                 var n = data.Normals.Length > src ? normalMatrix.MultiplyVector(data.Normals[src]).normalized : Vector3.up;
                 Normals.Add(n);
                 var uv = data.Uv.Length > src ? data.Uv[src] : Vector2.zero;
+                if (uvST.HasValue) uv = new Vector2(uv.x * uvST.Value.x + uvST.Value.z, uv.y * uvST.Value.y + uvST.Value.w);
                 if (uvRemap.HasValue)
                 {
                     var r = uvRemap.Value;
