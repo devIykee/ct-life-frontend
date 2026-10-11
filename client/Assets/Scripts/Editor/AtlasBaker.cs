@@ -55,7 +55,7 @@ namespace CTLife.EditorTools
             new PlotDef { id = "dubai_marina", name = "Dubai Marina", kind = "district", col = 0, row = -1, ground = Hex("efdcae"),
                 venues = new[] { "yacht_club", "cabal_lounge", "penthouse_row" } },
             new PlotDef { id = "residences", name = "Residences", kind = "residences", col = -1, row = -1, ground = Hex("b6d88a"),
-                venues = new[] { "home_studio", "home_hacker_house", "home_penthouse", "home_marina_villa" } },
+                venues = new[] { "home_studio", "home_hacker_house", "home_penthouse", "home_marina_villa", "home_parents_basement" } },
             new PlotDef { id = "reserved_nw", name = "Coming soon", kind = "reserved", col = -1, row = 1, ground = Hex("d6c29a") },
             new PlotDef { id = "reserved_ne", name = "Coming soon", kind = "reserved", col = 1, row = 1, ground = Hex("d6c29a") },
             new PlotDef { id = "reserved_se", name = "Coming soon", kind = "reserved", col = 1, row = -1, ground = Hex("d6c29a") },

@@ -175,6 +175,11 @@ namespace CTLife.EditorTools
                 {
                     await DuoIosCapture.Run(Shot, Wait, Expect, Step, Receipt);
                 }
+                else if (Set == "visits")
+                {
+                    CityHudCapture.SweepOnly = true;
+                    await CityHudCapture.Run(Shot, Wait, Expect, Step, Receipt);
+                }
                 else if (Set == "hud")
                 {
                     await CityHudCapture.Run(Shot, Wait, Expect, Step, Receipt);

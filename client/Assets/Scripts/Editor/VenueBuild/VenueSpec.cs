@@ -68,7 +68,9 @@ namespace CTLife.EditorTools.VenueBuild
 
         public bool IsHome => !string.IsNullOrEmpty(homeId);
         public string Folder => VB.VenuesRoot + "/" + id;
-        public string PrefabPath => Folder + "/" + id + ".prefab";
+        /// <summary>Shipped content built outside this catalog (e.g. the Parents Basement candidate): the prefab to read instead.</summary>
+        public string prefabPathOverride;
+        public string PrefabPath => !string.IsNullOrEmpty(prefabPathOverride) ? prefabPathOverride : Folder + "/" + id + ".prefab";
 
         public VenueSpec Look(Color sun, float intensity, Color skyColor, Color equatorColor, Color groundColor)
         {
