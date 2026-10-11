@@ -1,0 +1,100 @@
+/* Careers and mini-games: layout-only rules on the shared CT Life theme (variables from Resources/UI/ctlife.uss).
+   Functional, not final art: the user styles the UI later. Every tappable control is at least 112 px tall. */
+
+.ctc-overlay { position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: var(--ct-scrim); align-items: center; justify-content: center; padding: 24px; }
+.ctc-panel { width: 100%; max-width: 1500px; height: 96%; padding: 32px; border-radius: 24px; background-color: var(--ct-bg); border-width: 2px; border-color: var(--ct-line); flex-shrink: 1; }
+.ctc-shift-panel { height: auto; max-height: 96%; }
+.ctc-header { flex-direction: row; align-items: flex-start; flex-shrink: 0; margin-bottom: 16px; }
+.ctc-header-copy { flex-grow: 1; flex-shrink: 1; min-width: 0; }
+.ctc-header-stats { flex-direction: row; align-items: center; flex-shrink: 0; }
+.ctc-eyebrow { color: var(--ct-muted); font-size: 24px; letter-spacing: 2px; margin-bottom: 6px; white-space: normal; }
+.ctc-title { color: var(--ct-ink); font-size: 46px; white-space: normal; -unity-font-definition: url("project://database/Assets/Resources/UI/Fonts/Manrope-Semibold.ttf"); }
+.ctc-context { color: var(--ct-muted); font-size: 26px; white-space: normal; }
+.ctc-timer { background-color: var(--ct-ink); color: var(--ct-card); border-radius: 18px; padding: 16px 22px; font-size: 34px; margin-left: 16px; }
+.ctc-urgent { background-color: var(--ct-red); }
+.ctc-score { color: var(--ct-deep); font-size: 32px; margin-left: 16px; }
+.ctc-progress { height: 10px; background-color: var(--ct-surface); border-radius: 8px; overflow: hidden; flex-shrink: 0; margin-bottom: 16px; }
+.ctc-progress-fill { height: 100%; background-color: var(--ct-game-blue); }
+.ctc-body { flex-grow: 1; flex-shrink: 1; min-height: 0; }
+.ctc-scroll-col, .ctc-col, .ctc-engine { flex-direction: column; }
+.ctc-grow { flex-grow: 1; min-width: 0; }
+.ctc-row { flex-direction: row; align-items: center; }
+
+/* Buttons and touch targets */
+.ctc-btn { min-height: 112px; min-width: 112px; margin: 8px; padding: 20px 28px; font-size: 34px; white-space: normal; border-radius: 18px; flex-shrink: 0; }
+.ctc-btn-small { min-height: 112px; padding: 14px 22px; font-size: 28px; }
+.ctc-btn-primary { background-color: var(--ct-accent); }
+.ctc-btn-danger { background-color: var(--ct-red); color: var(--ct-card); }
+.ctc-actions { flex-direction: row; flex-wrap: wrap; align-items: center; margin-top: 12px; flex-shrink: 0; }
+.ctc-choices { flex-direction: row; margin-top: 16px; flex-shrink: 0; }
+.ctc-choices > .ctc-choice { flex-grow: 1; flex-basis: 0; }
+.ctc-choices-grid { flex-wrap: wrap; }
+.ctc-choices-grid > .ctc-choice { flex-basis: 45%; }
+.ctc-choice { min-height: 140px; background-color: var(--ct-deep); color: var(--ct-card); font-size: 36px; }
+.ctc-choice:disabled { opacity: 0.45; }
+.ctc-tabs { flex-direction: row; margin-bottom: 8px; }
+.ctc-tab { flex-grow: 1; flex-basis: 0; }
+.ctc-selected { border-color: var(--ct-deep); border-width: 4px; background-color: var(--ct-green-light); }
+
+/* Cards and text */
+.ctc-card { background-color: var(--ct-card); border-radius: 22px; border-width: 2px; border-color: var(--ct-line); padding: 24px; margin: 8px 0; flex-shrink: 0; }
+.ctc-hired { border-color: var(--ct-green); border-width: 4px; }
+.ctc-card-title { color: var(--ct-ink); font-size: 36px; white-space: normal; -unity-font-definition: url("project://database/Assets/Resources/UI/Fonts/Manrope-Semibold.ttf"); }
+.ctc-body-text { color: var(--ct-ink); font-size: 32px; white-space: normal; margin: 6px 0; }
+.ctc-muted { color: var(--ct-muted); font-size: 27px; white-space: normal; margin: 4px 0; }
+.ctc-error { color: var(--ct-red); font-size: 30px; white-space: normal; margin: 8px 0; }
+.ctc-section { color: var(--ct-muted); font-size: 26px; letter-spacing: 2px; margin: 18px 0 6px 0; white-space: normal; }
+.ctc-status { color: var(--ct-deep); font-size: 30px; white-space: normal; margin: 6px 0; }
+.ctc-h { color: var(--ct-ink); font-size: 42px; white-space: normal; margin: 8px 0; }
+.ctc-big { color: var(--ct-ink); font-size: 72px; white-space: normal; margin: 8px 0; }
+.ctc-tagline { color: var(--ct-ink); font-size: 34px; white-space: normal; margin-bottom: 8px; }
+.ctc-rule { color: var(--ct-ink); font-size: 30px; white-space: normal; margin: 4px 0; }
+.ctc-rules { margin-bottom: 8px; }
+.ctc-readout { color: var(--ct-ink); font-size: 38px; white-space: normal; margin: 8px 0; }
+.ctc-tell { background-color: var(--ct-red); color: var(--ct-card); border-radius: 14px; padding: 14px 20px; font-size: 32px; white-space: normal; margin: 6px 0; }
+.ctc-chips { flex-direction: row; flex-wrap: wrap; margin-top: 8px; }
+.ctc-chip { background-color: var(--ct-surface); border-radius: 14px; padding: 8px 14px; margin: 4px 8px 4px 0; }
+.ctc-chip-text { color: var(--ct-ink); font-size: 26px; white-space: normal; }
+
+/* Feedback: always a text verdict; colour is a second signal only */
+.ctc-feedback { background-color: var(--ct-surface); border-radius: 18px; padding: 18px; margin-top: 14px; border-left-width: 8px; border-left-color: var(--ct-line); flex-shrink: 0; }
+.ctc-feedback-head { color: var(--ct-ink); font-size: 30px; white-space: normal; }
+.ctc-feedback-why { color: var(--ct-ink); font-size: 27px; white-space: normal; margin-top: 6px; }
+.ctc-good { border-left-color: var(--ct-green); background-color: var(--ct-green-light); }
+.ctc-bad { border-left-color: var(--ct-red); }
+
+/* Engines */
+.ctc-sort-card { min-height: 220px; }
+.ctc-swatch { border-radius: 16px; min-height: 200px; align-items: center; justify-content: center; margin: 10px 0; padding: 16px; }
+.ctc-swatch-text { font-size: 64px; white-space: normal; -unity-text-align: middle-center; }
+.ctc-lines { flex-direction: column; }
+.ctc-line { -unity-text-align: middle-left; justify-content: flex-start; align-items: flex-start; background-color: var(--ct-card); border-width: 2px; border-color: var(--ct-line); margin: 6px 0; font-size: 30px; }
+.ctc-code { font-size: 26px; }
+.ctc-paired { border-color: var(--ct-game-blue); }
+.ctc-placed > .ctc-line { background-color: var(--ct-green-light); }
+.ctc-option { min-height: 140px; }
+.ctc-divider { height: 4px; background-color: var(--ct-line); margin: 12px 0; }
+.ctc-slots { flex-direction: column; }
+.ctc-slot { margin: 6px 0; }
+.ctc-slot-name { color: var(--ct-ink); font-size: 28px; white-space: normal; }
+.ctc-slot-options { flex-direction: row; flex-wrap: wrap; }
+.ctc-slot-option { flex-grow: 1; flex-basis: 0; font-size: 28px; background-color: var(--ct-card); border-width: 2px; border-color: var(--ct-line); }
+.ctc-chart { flex-direction: row; align-items: flex-end; height: 180px; background-color: var(--ct-card); border-radius: 14px; padding: 8px; margin: 8px 0; flex-shrink: 0; }
+.ctc-bar { flex-grow: 1; flex-basis: 0; margin: 0 1px; background-color: var(--ct-game-blue); border-radius: 3px; }
+.ctc-act { min-height: 160px; flex-grow: 1; font-size: 44px; }
+.ctc-meter { height: 72px; background-color: var(--ct-card); border-radius: 14px; border-width: 2px; border-color: var(--ct-line); margin: 8px 0; flex-shrink: 0; }
+.ctc-meter-band { position: absolute; top: 0; bottom: 0; background-color: var(--ct-green-light); }
+.ctc-meter-fill { position: absolute; left: 0; top: 18px; bottom: 18px; background-color: var(--ct-game-blue); border-radius: 8px; opacity: 0.5; }
+.ctc-meter-marker { position: absolute; top: 0; bottom: 0; width: 10px; margin-left: -5px; background-color: var(--ct-ink); border-radius: 4px; }
+.ctc-meter-labels { flex-direction: row; }
+
+/* Results */
+.ctc-results { align-items: flex-start; }
+.ctc-stats { flex-direction: row; flex-wrap: wrap; margin-top: 12px; }
+.ctc-stat { background-color: var(--ct-surface); border-radius: 14px; padding: 12px 18px; margin: 6px 12px 6px 0; }
+.ctc-stat-label { color: var(--ct-muted); font-size: 24px; }
+.ctc-stat-value { color: var(--ct-ink); font-size: 36px; }
+
+/* Jobs app */
+.ctc-ladder { padding: 10px 14px; border-radius: 14px; margin: 2px 0; }
+.ctc-paused { margin-top: 24px; }

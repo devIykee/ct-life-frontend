@@ -563,7 +563,7 @@ desk, Audit Row, Spaces Studio) could call `_phone.Open("jobs")`. Gigs show from
 `phase` is above `Phases.Live` show "Opens in phase N". In dev builds every career's games can be practised (no server
 calls), so all 42 can be reviewed in the real flow. Release builds respect the phase gate.
 
-Status: open
+Status: open — hooks 1 and 2 seen applied in the working tree at 01:36 (asmdef ref + `new CareersApp()`); all three compile_check passes green with them. Hooks 3–5 open.
 
 ## 2026-10-08 audio-integration -> integration lead: wire the audio runtime (Core, Net, World, UI, Editor, Tools)
 
@@ -694,6 +694,8 @@ Publish `SfxSignal`s (no audio reference needed). Cooldowns dedupe repeats (`aud
    coins; `IsHeldOrWatched` = in positions, or Pulse/Launchpad open on it — graduation is a stinger, not city-wide spam.)
 4. `UI/OreRefineryApp.cs` `FetchBoard` success: `if (_boardRow != null && b.RoundId != _boardRow.RoundId) Bus.Publish(new SfxSignal("sfx_ore_furnace_whoosh"));`
    before `_boardRow = b;`.
+5. REKT card share / replay (`MoneyRektCard`): publish `sfx_rekt_phonk` (2-bar phonk tag, client-only stinger) when the
+   player replays or shares the REKT clip — liquidation clips circulate as phonk edits (research dossier 4d).
 
 Status: open
 
