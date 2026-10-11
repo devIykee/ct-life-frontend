@@ -14,6 +14,12 @@ later explicit user decisions, including the art direction below, supersede olde
   re-rendering, or iterating looks. Functional correctness, robustness and tests come first.
 - **Breadth before micro-polish.** Do not spend time on sub-centimetre motion/contact tuning,
   repeated visual candidates or evidence capture while features are missing.
+- **Research current CT before building content (user, 2026-10-07).** Nothing generic: NPC
+  lines, careers/mini-games, venues, events, cast outfits, phone apps and sound must reflect what
+  Crypto Twitter is actually doing now. Read `docs/research/ct-now-2026-10.md` (+ `.json`) and
+  `docs/research/ct-x-observations-2026-10-04.md` first, and do your own dated web research for
+  your area (cite sources in your log). Only the designated research agent uses the Chrome
+  browser on the user's X account (read-only). Parody names only — no real brands or people.
 - **Definition of done for a feature:** it works against the real backend contract (local
   docker stack or staging) in the Unity editor AND on the Seeker in a non-review build, failure
   paths handled (offline, expired token, server errors, retries), with automated tests for its
