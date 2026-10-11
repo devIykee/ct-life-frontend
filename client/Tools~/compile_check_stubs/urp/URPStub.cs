@@ -30,5 +30,14 @@ namespace UnityEngine.Rendering.Universal
     public sealed class UniversalRenderPipeline
     {
         public static UniversalRenderPipelineAsset asset => null;
+
+        // Mirrors URP 17.3.0 Runtime/UniversalRenderPipeline.cs (render-request API used by VenueVerify).
+        public class SingleCameraRequest
+        {
+            public RenderTexture destination = null;
+            public int mipLevel = 0;
+            public CubemapFace face = CubemapFace.Unknown;
+            public int slice = 0;
+        }
     }
 }
