@@ -28,7 +28,11 @@ namespace CTLife.UI
         }
     }
 
-    /// <summary>Travel (feature #4). Duo layout: districts as sections, venues as rows with a Go pill (open) or a quiet tag.</summary>
+    /// <summary>
+    /// Travel (feature #4): the CT Island map (map/HUD job, 2026-10-17). The baked painterly island with every venue in its place,
+    /// Apple-Maps-like glass controls, search, and a venue card whose Go travels with the existing travel. Replaces the old
+    /// district text list; the same <see cref="CTLife.UI.Map.FullMapView"/> is the in-city full-screen map.
+    /// </summary>
     public sealed class MapApp : PhoneApp
     {
         private readonly Action<string> _travel;
@@ -38,60 +42,23 @@ namespace CTLife.UI
         public override string Color => "#20bf6b";
         public override DuoChrome Chrome => DuoChrome.Plain;
 
-        private static readonly string[] Tints = { "teal", "orange", "indigo", "green", "purple", "pink", "blue" };
-
         public override VisualElement Open()
         {
             var reg = Services.Get<ConfigStore>().Registries;
-            var page = new DuoPage(Title);
-            page.name = "map-page";
-            page.AddToClassList("duo-map");
-            page.Nav.AddLeft(DuoGlyph.Kind.Back, Strings.T("common.back"), () => Phone?.Back(), "map-back");
-            var available = CityMapScreen.AvailableVenues(reg, Phone.CurrentPhase);
-            int openCount = available.Count;
-            var hero = Duo.Hero(Strings.T("map.eyebrow"), openCount.ToString(System.Globalization.CultureInfo.InvariantCulture), null, null,
-                openCount == 1 ? Strings.T("map.openCountOne") : Strings.F("map.openCount", openCount));
-            hero.name = "map-hero";
-            page.Body.Add(hero);
-            page.Body.Add(El.Text(Strings.T("map.body"), "duo-comp-note"));
-            int d = 0;
-            foreach (var district in reg.Districts)
+            var root = El.Div("duo-map-app");
+            root.name = "map-page";
+            var map = new CTLife.UI.Map.FullMapView(CTLife.UI.Map.FullMapView.Look.Duo)
             {
-                var venues = reg.VenueOrder.Where(v => v.districtId == district.Key).ToList();
-                if (venues.Count == 0) continue;
-                string tint = Tints[d++ % Tints.Length];
-                var header = Duo.SectionHeader(district.Value);
-                header.name = "map-district-" + district.Key;
-                page.Body.Add(header);
-                page.Body.Add(El.Text(Strings.DistrictDetail(district.Key), "duo-comp-note duo-map-district-note"));
-                var list = El.Div("duo-list");
-                foreach (var v in venues)
-                {
-                    bool open = available.Contains(v.id);
-                    var id = v.id;
-                    Action go = () => { Phone.Close(); _travel?.Invoke(id); };
-                    var row = new DuoRow(open ? go : null).Leading(Duo.IconSquare(CityMapScreen.DistrictIconFor(district.Key), open ? tint : "gray"))
-                        .Title(v.name, "duo-row-title-strong").Subtitle(Strings.T(open ? (v.isClub ? "map.club" : "map.openRow") : "map.closed"));
-                    row.name = "map-venue-" + v.id;
-                    if (open)
-                    {
-                        var pill = Duo.Pill(Strings.T("map.go"), go, Duo.PillKind.Primary);
-                        pill.name = "map-go-" + v.id;
-                        pill.tooltip = Strings.T("map.open");
-                        row.Trailing(pill);
-                    }
-                    else
-                    {
-                        row.AddToClassList("duo-row-static");
-                        row.Trailing(El.Text(Strings.T("map.soonTag"), "duo-tag"));
-                    }
-                    list.Add(row);
-                }
-                Duo.MarkLast(list);
-                page.Body.Add(list);
-            }
-            if (reg.VenueOrder.Count == 0) page.Body.Add(Duo.Empty(Strings.T("map.empty")));
-            return page;
+                Travel = id => { Phone.Close(); _travel?.Invoke(id); },
+                OpenHome = () => Phone?.Open("home"),
+                Available = () => CityMapScreen.AvailableVenues(reg, Phone.CurrentPhase),
+            };
+            root.Add(map);
+            var back = Duo.Circle(DuoGlyph.Kind.Back, Strings.T("common.back"), () => Phone?.Back(), "map-back");
+            back.AddToClassList("duo-map-back");
+            root.Add(back);
+            OnboardingFrame.AddSheet(root, "UI/map");
+            return root;
         }
     }
 

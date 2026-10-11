@@ -1,0 +1,146 @@
+/* Map (2026-10-17): HUD minimap, full map (Duo app + in-city), labels and markers. Arena language: plum #2a0b4a outlines,
+   dark plum glass, mint #3ddc84, Lilita One for names, Inter for small caps. Panel units (Seeker: device px / 1.1125). */
+.map-fill { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+
+/* ---------------------------------------------------------------- minimap */
+.map-mini { width: 270px; height: 270px; overflow: visible; }
+.map-mini-clip {
+    position: absolute; left: 0; top: 0; right: 0; bottom: 0; overflow: hidden; border-radius: 54px;
+    background-color: rgb(63,143,198);
+}
+.map-mini-ring {
+    position: absolute; left: -2px; top: -2px; right: -2px; bottom: -2px; border-radius: 56px;
+    border-width: 7px; border-color: rgb(42,11,74);
+}
+.map-mini-cone { position: absolute; left: 50%; top: 50%; width: 150px; height: 75px; translate: -50% -100%; }
+.map-me { position: absolute; left: 50%; top: 50%; width: 40px; height: 46px; translate: -50% -55%; }
+.map-mini-north {
+    position: absolute; left: 0; top: 0; width: 44px; height: 44px; border-radius: 22px; background-color: rgb(42,11,74);
+    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 24px; color: rgb(255,255,255);
+    -unity-text-align: middle-center; padding: 0; margin: 0;
+}
+.map-marker {
+    position: absolute; left: 0; top: 0; width: 44px; height: 44px; border-radius: 22px;
+    background-color: rgb(255,255,255); border-width: 4px; border-color: rgb(42,11,74);
+    -unity-background-scale-mode: scale-to-fit; padding: 0;
+}
+.map-marker--desk, .map-marker--mic { width: 30px; height: 30px; border-radius: 15px; border-width: 3px; opacity: 0.85; translate: 7px 7px; }
+.map-full .map-marker--desk, .map-full .map-marker--mic { translate: 0 0; }
+.map-marker--player, .map-marker--friend { width: 22px; height: 22px; border-radius: 11px; border-width: 3px; background-color: rgb(255,255,255); translate: 11px 11px; }
+.map-marker--friend { background-color: rgb(255,210,63); }
+.map-edge-arrow {
+    position: absolute; left: 0; top: 0; width: 36px; height: 36px; border-radius: 8px;
+    border-top-width: 9px; border-left-width: 9px; border-color: rgb(255,255,255); rotate: 45deg;
+}
+.map-edge-arrow--friend { border-color: rgb(255,210,63); }
+
+/* ---------------------------------------------------------------- full map */
+.map-full { flex-grow: 1; position: absolute; left: 0; top: 0; right: 0; bottom: 0; overflow: hidden; background-color: rgb(63,143,198); }
+.map-viewport { position: absolute; left: 0; top: 0; right: 0; bottom: 0; overflow: hidden; background-color: rgb(63,143,198); }
+.map-full-me { position: absolute; left: 0; top: 0; width: 0; height: 0; overflow: visible; }
+.map-full-me-pulse {
+    position: absolute; left: -36px; top: -36px; width: 72px; height: 72px; border-radius: 36px;
+    background-color: rgba(61,220,132,0.45);
+}
+.map-full-me-dot {
+    position: absolute; left: -17px; top: -17px; width: 34px; height: 34px; border-radius: 17px;
+    background-color: rgb(61,220,132); border-width: 6px; border-color: rgb(255,255,255);
+}
+.map-full-cone { position: absolute; left: -90px; top: -90px; width: 180px; height: 180px; transform-origin: 90px 90px; }
+.map-avatar {
+    position: absolute; left: -20px; top: -20px; width: 40px; height: 40px; border-radius: 20px;
+    background-color: rgb(124,92,214); border-width: 4px; border-color: rgb(255,255,255);
+    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 20px; color: rgb(255,255,255);
+    -unity-text-align: middle-center; padding: 0; margin: 0;
+}
+.map-avatar--friend { background-color: rgb(255,170,0); }
+.map-full .map-marker { left: -22px; top: -22px; }
+
+/* Upright pill labels (ref 6/8): plum glass with a white name; the venue's pin icon on the left. */
+.map-pill, .map-pill:hover, .map-pill:active, .map-pill:focus {
+    position: absolute; left: 0; top: 0; flex-direction: row; align-items: center; height: 54px; padding: 0 20px 0 10px;
+    border-radius: 27px; border-width: 4px; border-color: rgb(42,11,74); background-color: rgba(255,255,255,0.96);
+    translate: -50% -100%; margin: 0; white-space: nowrap;
+}
+.map-pill-icon { width: 34px; height: 34px; margin-right: 8px; -unity-background-scale-mode: scale-to-fit; }
+.map-pill-text { -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 26px; color: rgb(42,11,74); padding: 0; margin: 0; }
+.map-pill--district, .map-pill--district:hover, .map-pill--district:active, .map-pill--district:focus {
+    height: 66px; padding: 0 28px; background-color: rgba(42,11,74,0.92); border-color: rgb(255,255,255); translate: -50% -50%;
+}
+.map-pill--district .map-pill-text { font-size: 34px; color: rgb(255,255,255); }
+
+/* Controls: zoom rail (ref 6) and recentre. Duo look = glass circles; city look = Arena dark plum. */
+.map-side { position: absolute; right: 28px; top: 50%; translate: 0 -50%; align-items: center; }
+.map-zoom { align-items: center; margin-bottom: 22px; }
+.map-control, .map-control:hover, .map-control:active, .map-control:focus {
+    width: 86px; height: 86px; border-radius: 43px; margin: 0; padding: 0; align-items: center; justify-content: center;
+    border-width: 4px;
+}
+.map-control--glass, .map-control--glass:hover, .map-control--glass:active, .map-control--glass:focus {
+    background-color: rgba(255,255,255,0.86); border-color: rgba(255,255,255,0.95);
+}
+.map-control--arena, .map-control--arena:hover, .map-control--arena:active, .map-control--arena:focus {
+    background-color: rgb(34,14,64); border-color: rgb(42,11,74);
+}
+.map-control:active { scale: 0.94 0.94; }
+.map-control-icon { width: 48px; height: 48px; -unity-background-scale-mode: scale-to-fit; }
+.map-control-text { -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 48px; padding: 0; margin: 0 0 4px 0; }
+.map-control--glass .map-control-text { color: rgb(29,29,31); }
+.map-control--arena .map-control-text { color: rgb(255,255,255); }
+.map-rail { width: 22px; height: 240px; margin: 14px 0; border-radius: 11px; background-color: rgba(20,6,44,0.55); border-width: 3px; border-color: rgba(255,255,255,0.7); }
+.map-rail-thumb {
+    position: absolute; left: -15px; width: 46px; height: 30px; border-radius: 10px; translate: 0 -50%;
+    background-color: rgb(255,255,255); border-width: 4px; border-color: rgb(42,11,74);
+}
+
+/* Top: search (Duo) or title (city). */
+.map-top { position: absolute; left: 0; right: 0; top: 0; align-items: center; padding-top: 24px; }
+.map-full .map-search { width: 62%; max-width: 760px; background-color: rgba(255,255,255,0.94); border-radius: 26px; border-width: 1px; border-color: rgba(0,0,0,0.08); }
+.map-results { width: 62%; max-width: 760px; margin-top: 10px; border-radius: 26px; background-color: rgba(255,255,255,0.96); padding: 8px 0; }
+.map-result, .map-result:hover, .map-result:active, .map-result:focus {
+    flex-direction: row; align-items: center; height: 76px; padding: 0 22px; margin: 0; border-width: 0; background-color: rgba(0,0,0,0);
+}
+.map-result-icon { width: 40px; height: 40px; margin-right: 16px; -unity-background-scale-mode: scale-to-fit; }
+.map-result-title { font-size: 30px; color: rgb(29,29,31); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); padding: 0; margin: 0; }
+.map-result-none { font-size: 28px; color: rgb(110,110,115); padding: 18px 22px; }
+.map-city-title { font-size: 46px; }
+.map-close, .map-close:hover, .map-close:active, .map-close:focus { position: absolute; right: 28px; top: 24px; }
+
+/* Venue card (bottom): icon, name, district and status, Go. */
+.map-card {
+    position: absolute; left: 50%; bottom: 30px; translate: -50% 0; width: 66%; max-width: 900px; min-height: 140px;
+    flex-direction: row; align-items: center; padding: 18px 22px 18px 24px; border-radius: 34px;
+    background-color: rgba(255,255,255,0.97); border-width: 5px; border-color: rgb(42,11,74);
+}
+.map-full--city .map-card { background-color: rgba(20,6,44,0.94); border-color: rgb(42,11,74); }
+.map-card-icon { width: 72px; height: 72px; margin-right: 20px; -unity-background-scale-mode: scale-to-fit; }
+.map-card-copy { flex-grow: 1; flex-shrink: 1; min-width: 0; }
+.map-card-title { -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 40px; color: rgb(42,11,74); padding: 0; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.map-card-sub { -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); font-size: 24px; color: rgb(96,52,104); padding: 0; margin: 4px 0 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.map-full--city .map-card-title { color: rgb(255,255,255); }
+.map-full--city .map-card-sub { color: rgb(185,245,216); }
+.map-card-go, .map-card-go:hover, .map-card-go:active, .map-card-go:focus {
+    height: 92px; min-width: 190px; padding: 0 36px; margin: 0 14px 0 18px; border-radius: 22px; border-width: 5px; border-color: rgb(42,11,74);
+    background-color: rgb(61,220,132); -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 42px; color: rgb(13,61,34);
+}
+.map-card-close, .map-card-close:hover, .map-card-close:active, .map-card-close:focus {
+    width: 64px; height: 64px; border-radius: 32px; margin: 0 0 0 10px; padding: 0; border-width: 0; background-color: rgba(0,0,0,0.06);
+    align-items: center; justify-content: center;
+}
+.map-card-close-icon { width: 32px; height: 32px; -unity-background-scale-mode: scale-to-fit; }
+
+/* Duo Map app host. */
+.duo-map-app { flex-grow: 1; position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+.duo-map-back { position: absolute; left: 28px; top: 24px; }
+.duo-map-app .map-top { padding-left: 120px; padding-right: 120px; }
+
+/* In-city full-screen host. */
+.map-city-layer { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+.map-full--city { overflow: visible; }
+
+/* Inside the phone the viewport is narrow: a wider card and smaller type. */
+.map-full--duo .map-card { width: 92%; min-height: 120px; padding: 14px 16px 14px 18px; }
+.map-full--duo .map-card-title { font-size: 34px; }
+.map-full--duo .map-card-sub { font-size: 21px; }
+.map-full--duo .map-card-icon { width: 58px; height: 58px; margin-right: 14px; }
+.map-full--duo .map-search, .map-full--duo .map-results { width: 78%; }

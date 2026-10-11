@@ -657,8 +657,27 @@ namespace CTLife.App
 
             _hud?.Element.RemoveFromHierarchy();
             _hud?.Dispose();
-            _hud = new Hud { OpenPhone = () => { if (GameAlive(game)) _phone?.Open(); }, OpenMap = () => { if (GameAlive(game)) _phone?.Open("map"); }, OpenHome = () => { if (GameAlive(game)) ShowLobby(); } };
+            _hud = new Hud
+            {
+                OpenPhone = () => { if (GameAlive(game)) _phone?.Open(); },
+                OpenMap = () => { if (GameAlive(game)) ShowCityMap(game); },
+                OpenHome = () => { if (GameAlive(game)) ShowLobby(); },
+                OpenApp = app => { if (GameAlive(game)) _phone?.Open(app); },
+            };
             ui.HudLayer.Add(_hud.Element);
+        }
+
+        /// <summary>The full-screen CT Island map over the city (minimap tap, the door's "Leave"); Go uses the same travel.</summary>
+        private void ShowCityMap(FlowLifetime game)
+        {
+            if (!GameAlive(game) || _travelling || _lobby != null) return;
+            _phone?.Close();
+            VenueSession.Current?.LocalPlayer?.CancelMovement();
+            CTLife.UI.Map.CityMap.Show(UiRoot.Instance.HudLayer,
+                id => { CTLife.UI.Map.CityMap.Close(); RunGameAction(game, () => Travel(game, id)); },
+                () => { CTLife.UI.Map.CityMap.Close(); if (GameAlive(game)) _phone?.Open("home"); },
+                () => CTLife.UI.Map.CityMap.AvailableVenues(_phone?.CurrentPhase ?? 1),
+                null);
         }
 
         private void ShowLobby()

@@ -225,7 +225,7 @@ namespace CTLife.EditorTools
                 Click(ui.PhoneLayer.Q<Button>("phone-search-cancel"));
                 Click(ui.PhoneLayer.Q<Button>("phone-widget-map"));
                 await shot("hud-06g-ctos-widget-map", .2f);
-                expect(Visible(ui.PhoneLayer.Q(className: "ct-map")), "city widget opens the real map");
+                expect(Visible(ui.PhoneLayer.Q(className: "map-full")), "city widget opens the real map (CT Island)");
                 Click(ui.PhoneLayer.Q<Button>("phone-home"));
                 phone.Close();
                 await shot("hud-07-ctos-closed", .2f);
@@ -234,6 +234,7 @@ namespace CTLife.EditorTools
                 expect(!Visible(hud.Element), "HUD hide is applied");
                 hud.Show(true); await shot("hud-08-restored", .2f);
                 Inspect(hud, "restored", report, expect);
+                await MapShots(ui, hud, phone, visit, shot, wait, expect, report);
                 expect(transport.Writes == 0, "HUD capture attempted no REST mutations");
                 report["localPlayer"] = visit.LocalPlayer.GetComponent<AvatarView>().name;
                 report["scene"] = visit.Venue.name;
@@ -265,6 +266,98 @@ namespace CTLife.EditorTools
             }
             step("city HUD fixtures complete");
         }
+
+        /// <summary>
+        /// Map/HUD job: the minimap while actually walking (navmesh MoveTo) north, east, south and west, with an independent
+        /// accuracy check (an orthographic camera set up exactly like MapBaker's must put the player at the same uv the minimap
+        /// uses); the in-city full map at area, district and island zoom; a venue card; the Duo Map app with search.
+        /// </summary>
+        private static async Task MapShots(UiRoot ui, Hud hud, PhoneShell phone, VenueSession visit, Func<string, float, Task> shot,
+            Func<float, Task> wait, Action<bool, string> expect, JObject report)
+        {
+            var area = CTLife.UI.Map.MapCatalog.ForVisit(visit.VenueId, visit.HomeId);
+            expect(area != null, "baked map exists for the visit");
+            if (area == null) return;
+            var mini = hud.Minimap;
+            var walks = new JArray();
+            report["minimapWalks"] = walks;
+            var player = visit.LocalPlayer;
+            var root = visit.Venue.transform;
+            var checkCam = new GameObject("map-accuracy-check").AddComponent<Camera>();
+            checkCam.enabled = false;
+            checkCam.orthographic = true;
+            checkCam.orthographicSize = area.Size.y / 2f;
+            checkCam.aspect = area.Size.x / area.Size.y;
+            checkCam.transform.SetPositionAndRotation(root.TransformPoint(new Vector3(area.Center.x, 60f, area.Center.y)), root.rotation * Quaternion.Euler(90f, 0f, 0f));
+            try
+            {
+                // Start in the open square (the spawn is the entrance, at the navmesh edge).
+                var start = visit.Venue.ToWorld(0f, -7f);
+                player.SnapTo(start, 0f);
+                await wait(.4f);
+                foreach (var (dirName, dir) in new[] { ("north", Vector3.forward), ("east", Vector3.right), ("south", Vector3.back), ("west", Vector3.left) })
+                {
+                    var target = start + root.TransformDirection(dir) * 4.5f;
+                    bool ok = player.MoveTo(target);
+                    await wait(1.1f);
+                    var local = visit.Venue.ToLocal(player.transform.position);
+                    var vp = checkCam.WorldToViewportPoint(player.transform.position);
+                    var uv = CTLife.UI.Map.MapMath.AreaUv(area, local);
+                    float err = (new Vector2(vp.x, vp.y) - uv).magnitude * Mathf.Max(area.Size.x, area.Size.y);
+                    var f = root.InverseTransformDirection(player.transform.forward);
+                    float want = CTLife.UI.Map.MapMath.Heading(f);
+                    float headingErr = Mathf.Abs(Mathf.DeltaAngle(want * Mathf.Rad2Deg, mini.HeadingRadians * Mathf.Rad2Deg));
+                    var placement = CTLife.UI.Map.MapCatalog.PlacementOf(area);
+                    float centreErr = (mini.PlayerAtlas - CTLife.UI.Map.MapMath.AtlasFromLocal(placement, local)).magnitude;
+                    await shot("map-mini-walk-" + dirName, .05f);
+                    expect(ok, "player walks " + dirName + " on the navmesh");
+                    expect(err < 0.05f, "map marker matches the baked map within 5 cm walking " + dirName);
+                    expect(centreErr < 0.01f, "minimap centre is the player walking " + dirName);
+                    expect(headingErr < 12f, "minimap heading follows the player walking " + dirName);
+                    walks.Add(new JObject { ["dir"] = dirName, ["local"] = new JArray(local.x, local.y), ["uv"] = new JArray(uv.x, uv.y),
+                        ["bakeCameraViewport"] = new JArray(vp.x, vp.y), ["errorMeters"] = err, ["headingErrorDeg"] = headingErr });
+                    player.CancelMovement();
+                    player.SnapTo(start, 0f);
+                    await wait(.4f);
+                }
+            }
+            finally { UnityEngine.Object.Destroy(checkCam.gameObject); }
+
+            // In-city full map: area, district and island zoom (the island view is the atlas).
+            hud.OpenMap = () => CTLife.UI.Map.CityMap.Show(ui.HudLayer, _ => { }, () => { }, () => CTLife.UI.Map.CityMap.AvailableVenues(phone.CurrentPhase), null);
+            Click(hud.Element.Q<Button>("hud-map"));
+            await wait(.3f);
+            var view = CTLife.UI.Map.CityMap.Current;
+            expect(view != null && Visible(view), "minimap opens the full map");
+            if (view != null)
+            {
+                var me = mini.PlayerAtlas;
+                view.SetView(me, 14f); await shot("map-full-1-area", .25f);
+                view.SetView(me, 3.2f); await shot("map-full-2-district", .25f);
+                view.SetView(CTLite(), view.MinPpm); await shot("map-full-3-island-atlas", .25f);
+                view.Select("terminal_cafe", fly: false);
+                var cafe = CTLife.UI.Map.MapCatalog.Areas["terminal_cafe"];
+                view.SetView(CTLife.UI.Map.MapSurface.AreaAtlasRect(cafe, CTLife.UI.Map.MapCatalog.PlacementOf(cafe)).center, 9f);
+                await shot("map-full-4-venue-card", .25f);
+                expect(Visible(view.Q("map-card")) && view.Q<Button>("map-go") != null, "venue card offers Go for an open venue");
+                report["fullMapPpm"] = new JArray(view.MinPpm, view.MaxPpm);
+                CTLife.UI.Map.CityMap.Close();
+            }
+            // The Duo Map app (same component, Duo look) with search.
+            phone.Open("map");
+            await wait(.4f);
+            await shot("map-duo-app", .3f);
+            var duo = ui.PhoneLayer.Q<CTLife.UI.Map.FullMapView>();
+            expect(duo != null && Visible(duo), "Duo Map app shows the island map");
+            var search = ui.PhoneLayer.Q<TextField>(className: "duo-search-field");
+            if (search != null) { search.value = "cafe"; await shot("map-duo-search", .25f); }
+            duo?.Select("timeline_square", fly: true);
+            await shot("map-duo-card", .6f);
+            phone.Close();
+            await wait(.2f);
+        }
+
+        private static Vector2 CTLite() => CTLife.UI.Map.MapCatalog.Atlas.Rect.center;
 
 #if !CTLIFE_PROD
         private static async Task StressSnapshotPicking(UiRoot ui, VenueSession visit, InteractionPrompt prompt, Camera camera,

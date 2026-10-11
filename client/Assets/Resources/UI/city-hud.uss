@@ -1,108 +1,157 @@
-/* CT Life · world HUD. Quiet edge controls, contextual actions in the scene.
-   1080 short-axis canvas; interactive targets are at least 124 units. */
-.ct-hud .ct-hud-top { left: auto; right: 32px; top: 28px; flex-direction: row; align-items: flex-start; }
-.ct-hud .ct-hud-personal { left: 32px; right: auto; top: 28px; bottom: auto; flex-direction: row; align-items: flex-start; }
-.ct-hud-location { flex-direction: row; align-items: center; width: 560px; height: 124px; min-height: 124px; margin: 0 0 0 16px; padding: 16px 20px; border-radius: 32px; border-width: 2px; border-color: var(--ct-card); background-color: var(--ct-card); }
-.ct-hud-location:hover { background-color: var(--ct-green-light); }
-.ct-hud-location:focus { border-color: var(--ct-violet); border-width: 3px; }
-.ct-hud-location-mark { width: 72px; height: 72px; border-radius: 22px; background-color: var(--ct-green-light); margin-right: 16px; align-items: center; justify-content: center; }
-.ct-hud-location-mark .ct-icon { width: 44px; height: 44px; -unity-background-image-tint-color: var(--ct-green); }
-.ct-hud-location-copy { flex-grow: 1; flex-shrink: 1; min-width: 0; }
-.ct-hud .ct-venue-name { color: var(--ct-ink); background-color: rgba(0,0,0,0); padding: 0; margin: 0; max-width: none; align-self: stretch; font-size: 30px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.ct-hud-presence { flex-direction: row; flex-wrap: nowrap; margin-top: 8px; }
-.ct-hud .ct-pill { color: var(--ct-muted); background-color: rgba(0,0,0,0); font-size: 20px; padding: 0; margin: 0 16px 0 0; border-width: 0; flex-shrink: 0; }
-.ct-hud .ct-pill.ct-green { color: var(--ct-green); }
-.ct-hud .ct-pill.ct-red { color: var(--ct-red); }
-.ct-hud-location .ct-hud-location-next { width: 28px; height: 28px; margin-left: 8px; -unity-background-image-tint-color: var(--ct-muted); }
-.ct-hud-location > .ct-button-depth, .ct-hud-location > .ct-button-glint { display: none; }
+/* CT Life · city HUD (2026-10-17, map/HUD job). The Arena lobby's language kept minimal: dark plum glass, Lilita One,
+   Icons8 fluent icons, thick plum outlines. Corners: plate (TL), Cash/wallet (T), minimap + Duo (TR), joystick (BL),
+   round context actions (BR). The world stays open in the middle. Panel units on a 1080 short axis; HUD layer is safe-area inset. */
+/* Each HUD button below sets its own look; only the kit's depth bars are dropped. */
+.ct-hud.hud-arena .ct-button-depth, .ct-hud.hud-arena .ct-button-glint { display: none; }
+.ct-hud.hud-arena .ct-dock-action:active, .ct-hud.hud-arena .hud-plate:active, .ct-hud.hud-arena .hud-pill-wallet:active { scale: 0.96 0.96; }
 
-/* Money and wellbeing remain readable at a glance; details appear only on request. */
-.ct-hud .ct-cash-card { height: 124px; min-width: 240px; max-width: 360px; padding: 16px 24px; margin-right: 14px; border-width: 0; border-radius: 32px; background-color: var(--ct-card); }
-.ct-hud .ct-cash-card .ct-icon { width: 48px; height: 48px; margin-right: 16px; -unity-background-image-tint-color: var(--ct-violet); }
-.ct-hud .ct-hud-caption { font-size: 20px; color: var(--ct-muted); margin: 0; }
-.ct-hud .ct-cash { font-size: 34px; color: var(--ct-ink); -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); white-space: nowrap; }
-.ct-hud .ct-needs-toggle { position: relative; top: auto; right: auto; min-width: 260px; min-height: 124px; height: 124px; padding: 16px 24px; border-width: 2px; border-color: var(--ct-card); border-radius: 32px; background-color: var(--ct-card); color: var(--ct-ink); }
-.ct-hud .ct-needs-toggle-title { font-size: 26px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); }
-.ct-hud .ct-needs-summary { font-size: 20px; color: var(--ct-muted); white-space: nowrap; }
-.ct-hud .ct-needs-toggle .ct-icon { width: 44px; height: 44px; margin-right: 16px; -unity-background-image-tint-color: var(--ct-game-coral); }
-.ct-hud .ct-needs-toggle > .ct-button-depth, .ct-hud .ct-needs-toggle > .ct-button-glint { display: none; }
-.ct-hud .ct-needs-alert { border-color: var(--ct-red); }
-.ct-hud .ct-needs-open, .ct-hud .ct-needs-toggle:focus { border-color: var(--ct-violet); }
-.ct-hud .ct-needs-toggle:hover { background-color: var(--ct-green-light); }
-.ct-hud .ct-needs { top: 168px; right: 32px; width: 500px; padding: 28px; border-width: 2px; border-color: var(--ct-card); border-radius: 32px; background-color: var(--ct-card); }
-.ct-hud .ct-need { margin: 12px 0; }
-.ct-hud .ct-need-track { height: 10px; border-radius: 5px; background-color: var(--ct-bg); }
-.ct-hud .ct-need-fill { border-radius: 5px; background-color: var(--ct-violet); }
-.ct-hud .ct-need-low { background-color: var(--ct-red); }
+/* ---------------------------------------------------------------- top-left plate */
+.ct-hud.hud-arena .hud-plate-row { position: absolute; left: 28px; top: 22px; flex-direction: row; align-items: flex-start; }
+.ct-hud.hud-arena .hud-plate, .ct-hud.hud-arena .hud-plate:hover, .ct-hud.hud-arena .hud-plate:active, .ct-hud.hud-arena .hud-plate:focus {
+    position: relative; left: auto; right: auto; top: auto; flex-direction: row; align-items: center; height: 108px; min-height: 108px; padding: 0 28px 0 0; margin: 0 14px 0 0;
+    border-radius: 54px; border-width: 3px; border-color: rgba(255,255,255,0.14); background-color: rgba(20,6,44,0.78);
+}
+.ct-hud.hud-arena .ct-needs-alert { border-color: rgb(255,59,92); }
+.ct-hud.hud-arena .ct-needs-open { border-color: rgb(61,220,132); }
+.hud-avatar {
+    width: 108px; height: 108px; border-radius: 54px; border-width: 6px; border-color: rgb(255,255,255); margin: -3px 18px -3px -3px;
+    background-color: rgb(93,52,200); -unity-background-scale-mode: scale-and-crop; align-items: center; justify-content: center; overflow: hidden;
+}
+.hud-avatar-letter { -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 50px; color: rgb(255,255,255); -unity-text-align: middle-center; padding: 0; margin: 0; }
+.hud-plate-copy { justify-content: center; }
+.hud-meters { }
+.hud-meter { flex-direction: row; align-items: center; height: 34px; }
+.hud-meter-icon { width: 30px; height: 30px; margin-right: 10px; -unity-background-scale-mode: scale-to-fit; }
+.hud-meter-track { width: 132px; height: 13px; border-radius: 7px; background-color: rgba(255,255,255,0.2); overflow: hidden; }
+.hud-meter-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; border-radius: 7px; }
+.hud-meter-fill--energy { background-color: rgb(255,210,63); }
+.hud-meter-fill--sanity { background-color: rgb(255,126,182); }
+.hud-meter-fill--low { background-color: rgb(255,59,92); }
+.ct-hud.hud-arena .hud-needs-summary { font-size: 18px; color: rgb(255,170,160); -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); margin: 2px 0 0 0; white-space: nowrap; display: none; }
 
-/* Isolated round keys instead of four large opaque rectangles over the world. */
-.ct-hud .ct-hud-social { left: auto; right: 28px; bottom: 28px; flex-direction: row; align-items: flex-end; }
-.ct-hud .ct-dock-action { width: 124px; min-width: 124px; height: 160px; min-height: 160px; margin: 0 8px; padding: 0; border-width: 0; border-radius: 0; background-color: rgba(0,0,0,0); justify-content: flex-start; align-items: center; color: var(--ct-card); }
-.ct-hud .ct-hud-personal > .ct-dock-action { margin-left: 0; }
-.ct-hud-keycap { width: 112px; height: 112px; border-radius: 56px; border-width: 3px; border-color: var(--ct-card); background-color: var(--ct-card); align-items: center; justify-content: center; }
-.ct-hud .ct-hud-keycap .ct-icon { width: 48px; height: 48px; -unity-background-image-tint-color: var(--ct-ink); }
-.ct-hud .ct-dock-label { width: 124px; font-size: 22px; color: var(--ct-card); margin-top: 10px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-text-outline-color: var(--ct-ink); -unity-text-outline-width: 1px; white-space: nowrap; }
-.ct-hud .ct-dock-action > .ct-button-depth, .ct-hud .ct-dock-action > .ct-button-glint { display: none; }
-.ct-hud .ct-dock-action:hover { background-color: rgba(0,0,0,0); }
-.ct-hud .ct-dock-action:hover .ct-hud-keycap { background-color: var(--ct-green-light); }
-.ct-hud .ct-dock-action:focus .ct-hud-keycap { border-color: var(--ct-violet); }
-.ct-hud .ct-dock-action:active { scale: 0.95 0.95; }
-.ct-hud .ct-dock-primary { height: 180px; min-height: 180px; width: 144px; min-width: 144px; margin-left: 20px; }
-.ct-hud .ct-dock-primary .ct-hud-keycap { width: 132px; height: 132px; border-radius: 66px; background-color: var(--ct-violet); border-color: var(--ct-card); }
-.ct-hud .ct-dock-primary .ct-hud-keycap .ct-icon { width: 60px; height: 60px; -unity-background-image-tint-color: var(--ct-card); }
-.ct-hud .ct-dock-primary:hover .ct-hud-keycap { background-color: var(--ct-deep); }
-.ct-hud .ct-dock-primary:focus .ct-hud-keycap { border-color: var(--ct-game-green); }
-.ct-hud .ct-dock-action.ct-btn-live { background-color: rgba(0,0,0,0); }
-.ct-hud .ct-dock-action.ct-btn-live .ct-hud-keycap { background-color: var(--ct-green-light); border-color: var(--ct-green); }
-.ct-hud .ct-dock-action.ct-btn-live .ct-icon { -unity-background-image-tint-color: var(--ct-green); }
-.ct-hud .ct-dock-action:disabled { opacity: 0.65; }
+/* Small round utilities (Lobby, Duo). */
+.ct-hud.hud-arena .ct-dock-action, .ct-hud.hud-arena .ct-dock-action:hover, .ct-hud.hud-arena .ct-dock-action:active, .ct-hud.hud-arena .ct-dock-action:focus {
+    width: 112px; min-width: 112px; height: 138px; min-height: 138px; margin: 0 6px; padding: 0; align-items: center; justify-content: flex-start;
+    background-color: rgba(0,0,0,0); border-width: 0; border-radius: 0;
+}
+.ct-hud.hud-arena .ct-hud-keycap {
+    width: 104px; height: 104px; border-radius: 52px; border-width: 4px; border-color: rgb(42,11,74);
+    background-color: rgba(20,6,44,0.82); align-items: center; justify-content: center;
+}
+.ct-hud.hud-arena .hud-icon { width: 58px; height: 58px; -unity-background-scale-mode: scale-to-fit; }
+.ct-hud.hud-arena .ct-dock-label {
+    width: 140px; margin-top: 4px; font-size: 21px; color: rgb(255,255,255); -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf");
+    -unity-text-align: upper-center; -unity-text-outline-width: 2px; -unity-text-outline-color: rgb(42,11,74); text-shadow: 0 2px 0 rgb(42,11,74); white-space: nowrap;
+}
+.ct-hud.hud-arena .ct-dock-action:focus .ct-hud-keycap { border-color: rgb(61,220,132); }
+.ct-hud.hud-arena .ct-dock-action:disabled { opacity: 0.6; }
+.ct-hud.hud-arena .ct-dock-action.ct-btn-live .ct-hud-keycap { background-color: rgb(61,220,132); border-color: rgb(42,11,74); }
+.ct-hud.hud-arena .ct-dock-primary .ct-hud-keycap { background-color: rgb(43,44,49); }
+.ct-hud.hud-arena .ct-hud-badge {
+    position: absolute; right: 2px; top: -6px; min-width: 40px; height: 40px; padding: 0 8px; border-radius: 20px;
+    background-color: rgb(255,59,92); border-width: 4px; border-color: rgb(42,11,74);
+    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 22px; color: rgb(255,255,255); -unity-text-align: middle-center;
+}
 
-/* Existing analog and optional arrows keep their actual input geometry and cancellation. */
+/* ---------------------------------------------------------------- top-centre currencies */
+.ct-hud.hud-arena .ct-hud-top { position: absolute; left: 50%; right: auto; top: 30px; translate: -50% 0; flex-direction: row; align-items: center; }
+.hud-pill {
+    flex-direction: row; align-items: center; height: 64px; padding: 0 22px 0 8px; margin: 0 8px; border-radius: 18px;
+    border-width: 3px; border-color: rgba(255,255,255,0.14); background-color: rgba(20,6,44,0.8);
+}
+.ct-hud.hud-arena .hud-pill-wallet, .ct-hud.hud-arena .hud-pill-wallet:hover, .ct-hud.hud-arena .hud-pill-wallet:active, .ct-hud.hud-arena .hud-pill-wallet:focus {
+    height: 64px; padding: 0 22px 0 14px; margin: 0 8px; border-radius: 18px; border-width: 3px; border-color: rgba(255,255,255,0.14); background-color: rgba(20,6,44,0.8);
+}
+.hud-pill-icon { width: 48px; height: 48px; margin-right: 10px; -unity-background-scale-mode: scale-to-fit; }
+.hud-sol-mark { width: 40px; height: 30px; margin-right: 10px; background-image: url("Brand/solana-logomark.png"); -unity-background-scale-mode: scale-to-fit; }
+.ct-hud.hud-arena .ct-cash, .ct-hud.hud-arena .hud-pill-value {
+    font-size: 30px; color: rgb(255,255,255); -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); white-space: nowrap; margin: 0; padding: 0;
+}
+.hud-pill--dim .hud-pill-value { opacity: 0.6; }
+
+/* ---------------------------------------------------------------- top-right minimap + Duo */
+.ct-hud.hud-arena .ct-hud-personal { position: absolute; left: auto; right: 28px; top: 22px; bottom: auto; flex-direction: row; align-items: flex-start; }
+.ct-hud.hud-arena .hud-map-button, .ct-hud.hud-arena .hud-map-button:hover, .ct-hud.hud-arena .hud-map-button:active, .ct-hud.hud-arena .hud-map-button:focus {
+    width: 270px; flex-direction: column; align-items: center; padding: 0; margin: 0; background-color: rgba(0,0,0,0); border-width: 0; overflow: visible;
+}
+.ct-hud.hud-arena .hud-map-button:active { scale: 0.98 0.98; }
+.hud-place { margin-top: 10px; align-items: center; width: 270px; overflow: visible; }
+.ct-hud.hud-arena .ct-venue-name {
+    font-size: 26px; color: rgb(255,255,255); -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); background-color: rgba(0,0,0,0);
+    -unity-text-outline-width: 2px; -unity-text-outline-color: rgb(42,11,74); text-shadow: 0 2px 0 rgb(42,11,74);
+    padding: 0 4px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 270px; -unity-text-align: middle-center;
+}
+.ct-hud.hud-arena .ct-hud-presence { flex-direction: row; margin-top: 2px; justify-content: center; }
+.ct-hud.hud-arena .ct-pill {
+    font-size: 17px; color: rgb(255,255,255); -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); background-color: rgba(20,6,44,0.7);
+    padding: 3px 10px; margin: 0 3px; border-radius: 10px; border-width: 0; white-space: nowrap;
+}
+.ct-hud.hud-arena .ct-pill.ct-green { color: rgb(124,255,196); }
+.ct-hud.hud-arena .ct-pill.ct-red { color: rgb(255,170,160); }
+.ct-hud.hud-arena .hud-corner .ct-dock-action { margin: 0 14px 0 0; }
+
+/* ---------------------------------------------------------------- needs card (under the plate) */
+.ct-hud.hud-arena .ct-needs {
+    position: absolute; left: 28px; right: auto; top: 148px; width: 470px; padding: 22px 26px; border-radius: 30px;
+    border-width: 4px; border-color: rgb(42,11,74); background-color: rgba(20,6,44,0.9);
+}
+.ct-hud.hud-arena .ct-needs-title { font-size: 28px; color: rgb(255,255,255); -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); }
+.ct-hud.hud-arena .ct-need { margin: 8px 0; }
+.ct-hud.hud-arena .ct-need-label, .ct-hud.hud-arena .ct-need-value { color: rgb(255,255,255); font-size: 22px; -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); }
+.ct-hud.hud-arena .ct-need-track { height: 12px; border-radius: 6px; background-color: rgba(255,255,255,0.18); }
+.ct-hud.hud-arena .ct-need-fill { border-radius: 6px; background-color: rgb(61,220,132); }
+.ct-hud.hud-arena .ct-need-low { background-color: rgb(255,59,92); }
+
+/* ---------------------------------------------------------------- bottom-right context actions */
+.ct-hud.hud-arena .ct-hud-social { position: absolute; left: auto; right: 28px; bottom: 22px; top: auto; flex-direction: row; align-items: flex-end; }
+
+/* ---------------------------------------------------------------- joystick (ref 6: thin ring, soft fill) */
 .ct-hud .ct-move-controls { width: 368px; height: 368px; left: 20px; bottom: 16px; }
 .ct-hud .ct-move-zone { width: 368px; height: 368px; }
-.ct-hud .ct-move-ring { width: 260px; height: 260px; left: 54px; top: 40px; border-width: 3px; border-color: var(--ct-game-highlight); background-color: rgba(0,0,0,0); border-radius: 130px; }
-.ct-hud .ct-move-thumb { border-width: 3px; border-color: var(--ct-card); background-color: var(--ct-card); }
-.ct-hud .ct-move-active .ct-move-ring { background-color: var(--ct-control-ring); }
-.ct-hud .ct-move-active .ct-move-thumb { background-color: var(--ct-game-purple); }
-.ct-hud .ct-move-running .ct-move-thumb { background-color: var(--ct-game-green); }
-.ct-hud .ct-move-hint { opacity: 0; font-size: 24px; top: auto; bottom: 0; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-text-outline-width: 1px; }
+.ct-hud .ct-move-ring { width: 260px; height: 260px; left: 54px; top: 40px; border-width: 3px; border-color: rgba(255,255,255,0.85); background-color: rgba(20,6,44,0.22); border-radius: 130px; }
+.ct-hud .ct-move-thumb { border-width: 5px; border-color: rgb(42,11,74); background-color: rgba(255,255,255,0.92); }
+.ct-hud .ct-move-active .ct-move-ring { background-color: rgba(20,6,44,0.34); border-color: rgb(255,255,255); }
+.ct-hud .ct-move-active .ct-move-thumb { background-color: rgb(255,255,255); }
+.ct-hud .ct-move-running .ct-move-thumb { background-color: rgb(61,220,132); }
+.ct-hud .ct-move-hint { opacity: 0; font-size: 22px; top: auto; bottom: 0; color: rgb(255,255,255); -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); -unity-text-outline-width: 2px; -unity-text-outline-color: rgb(42,11,74); }
 .ct-hud .ct-move-active .ct-move-hint { opacity: 1; }
 .ct-hud .ct-move-arrows { left: 0; top: -24px; }
 
-.ct-hud .ct-chat, .ct-hud .ct-emotes { bottom: 228px; border-width: 2px; border-color: var(--ct-card); background-color: var(--ct-card); border-radius: 32px; }
+/* ---------------------------------------------------------------- chat and emotes (dark plum cards above the actions) */
+.ct-hud .ct-chat, .ct-hud .ct-emotes { bottom: 190px; border-width: 4px; border-color: rgb(42,11,74); background-color: rgba(20,6,44,0.92); border-radius: 30px; }
 .ct-hud .ct-chat-field { flex-basis: 0; flex-shrink: 1; }
-.ct-hud .ct-chat-field > .unity-text-field__input { background-color: var(--ct-bg); border-width: 0; }
-.ct-hud .ct-chat .ct-btn { min-width: 216px; flex-shrink: 0; white-space: nowrap; font-size: 30px; background-color: var(--ct-green-light); border-width: 0; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); }
+.ct-hud .ct-chat-field > .unity-text-field__input { background-color: rgba(255,255,255,0.94); border-width: 0; border-radius: 16px; color: rgb(29,29,31); }
+.ct-hud .ct-chat .ct-btn { min-width: 200px; flex-shrink: 0; white-space: nowrap; font-size: 30px; color: rgb(13,61,34); background-color: rgb(61,220,132); border-width: 4px; border-color: rgb(42,11,74); border-radius: 18px; -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); }
 .ct-hud .ct-chat .ct-btn > .ct-button-depth, .ct-hud .ct-chat .ct-btn > .ct-button-glint { display: none; }
-.ct-hud .ct-emotes .ct-section-title { font-size: 32px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); }
-.ct-hud .ct-emotes .ct-chips > .ct-chip { min-width: 30%; flex-basis: 30%; flex-grow: 1; min-height: 124px; align-items: center; white-space: normal; font-size: 26px; background-color: var(--ct-bg); border-width: 0; }
+.ct-hud .ct-chat-line { white-space: normal; color: rgb(255,255,255); }
+.ct-hud .ct-emotes .ct-section-title { font-size: 30px; color: rgb(255,255,255); -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); }
+.ct-hud .ct-emotes .ct-chips > .ct-chip { min-width: 30%; flex-basis: 30%; flex-grow: 1; min-height: 112px; align-items: center; white-space: normal; font-size: 26px; color: rgb(255,255,255); background-color: rgba(255,255,255,0.1); border-width: 0; border-radius: 22px; -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); }
 .ct-hud .ct-emotes .ct-chip > .ct-button-depth, .ct-hud .ct-emotes .ct-chip > .ct-button-glint { display: none; }
 .ct-hud .ct-chat.ct-chat-keyboard, .ct-landscape .ct-hud .ct-chat.ct-chat-keyboard { top: 16px; bottom: auto; }
 .ct-hud .ct-chat-history { margin-bottom: 8px; }
-.ct-hud .ct-chat-line { white-space: normal; }
 
-/* This bubble follows the selected object / player, not a corner of the HUD.
+/* ---------------------------------------------------------------- in-world prompts (sit/stand/door): Arena pills near the object.
    InteractionPrompt owns the left/top projection and collision placement. */
 .ct-hud .ct-hud-interact { position: absolute; right: auto; bottom: auto; flex-direction: column; align-items: center; padding-bottom: 18px; }
 .ct-interact-actions { flex-direction: row; align-items: center; }
-.ct-hud .ct-interact { flex-direction: row; align-items: center; height: 124px; min-height: 124px; min-width: 164px; margin: 0 6px; padding: 0 26px; border-width: 3px; border-radius: 42px; border-color: var(--ct-card); background-color: var(--ct-card); color: var(--ct-ink); }
-.ct-hud .ct-interact .ct-icon { width: 48px; height: 48px; margin-right: 14px; -unity-background-image-tint-color: var(--ct-ink); }
-.ct-hud .ct-interact-label { font-size: 30px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); white-space: nowrap; }
-.ct-hud .ct-interact-primary { border-color: var(--ct-green); background-color: var(--ct-card); }
-.ct-hud .ct-interact-primary .ct-icon { -unity-background-image-tint-color: var(--ct-green); }
-.ct-hud .ct-interact-secondary { background-color: var(--ct-ink); border-color: var(--ct-ink); color: var(--ct-card); }
-.ct-hud .ct-interact-secondary .ct-icon { -unity-background-image-tint-color: var(--ct-card); }
+.ct-hud .ct-interact {
+    flex-direction: row; align-items: center; height: 112px; min-height: 112px; min-width: 164px; margin: 0 6px; padding: 0 28px 0 18px;
+    border-width: 5px; border-radius: 56px; border-color: rgb(42,11,74); background-color: rgba(20,6,44,0.9); color: rgb(255,255,255);
+}
+.ct-hud .ct-interact .ct-icon { width: 46px; height: 46px; margin-right: 12px; -unity-background-image-tint-color: rgb(255,255,255); }
+.ct-hud .ct-interact-label { font-size: 32px; color: rgb(255,255,255); -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); white-space: nowrap; }
+.ct-hud .ct-interact-primary { background-color: rgb(61,220,132); border-color: rgb(42,11,74); }
+.ct-hud .ct-interact-primary .ct-interact-label { color: rgb(13,61,34); }
+.ct-hud .ct-interact-primary .ct-icon { -unity-background-image-tint-color: rgb(13,61,34); }
+.ct-hud .ct-interact-secondary { background-color: rgba(20,6,44,0.9); border-color: rgb(42,11,74); }
 .ct-hud .ct-interact > .ct-button-depth, .ct-hud .ct-interact > .ct-button-glint { display: none; }
-.ct-hud .ct-interact:hover { background-color: var(--ct-green-light); color: var(--ct-ink); }
-.ct-hud .ct-interact:focus { border-color: var(--ct-violet); }
+.ct-hud .ct-interact:hover { background-color: rgba(20,6,44,0.9); }
+.ct-hud .ct-interact-primary:hover { background-color: rgb(61,220,132); }
+.ct-hud .ct-interact:focus { border-color: rgb(255,210,63); }
 .ct-hud .ct-interact:active { scale: 0.97 0.97; }
 .ct-hud .ct-interact-busy .ct-interact { opacity: 0.75; }
-.ct-interact-pointer { position: absolute; width: 16px; height: 16px; bottom: auto; left: 50%; margin-left: 0; rotate: 45deg; background-color: var(--ct-card); }
+.ct-interact-pointer { position: absolute; width: 22px; height: 22px; bottom: auto; left: 50%; margin-left: 0; rotate: 45deg; background-color: rgb(42,11,74); }
 .ct-interact-clamped .ct-interact-pointer { display: none; }
 
-.ct-landscape .ct-hud .ct-hud-top { left: auto; right: 40px; top: 28px; }
-.ct-landscape .ct-hud .ct-hud-personal { left: 40px; top: 28px; }
-.ct-landscape .ct-hud .ct-needs { top: 168px; right: 40px; }
-.ct-landscape .ct-hud .ct-hud-social { right: 40px; bottom: 28px; }
 .ct-landscape .ct-hud .ct-move-controls { left: 40px; bottom: 16px; }
-.ct-landscape .ct-hud .ct-chat, .ct-landscape .ct-hud .ct-emotes { left: auto; right: 40px; width: 850px; bottom: 232px; max-height: 620px; }
+.ct-landscape .ct-hud .ct-chat, .ct-landscape .ct-hud .ct-emotes { left: auto; right: 40px; width: 850px; bottom: 190px; max-height: 470px; }
