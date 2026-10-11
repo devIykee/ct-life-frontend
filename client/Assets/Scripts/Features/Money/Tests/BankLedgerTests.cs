@@ -104,5 +104,12 @@ namespace CTLife.Economy.Tests
             Assert.AreEqual("err.nothingToRepay", err.Key);
             Assert.IsFalse(err.OutcomeUnknown, "a definite answer");
         }
+
+        [Test]
+        public void Perps_ALongAtOneTimesHasNoLiquidationPrice()
+        {
+            Assert.AreEqual("none", MoneyFormat.Liquidation(0, "none"), "the server sends 0 for a 1x long");
+            Assert.AreEqual(MoneyFormat.Micros(16_846_782), MoneyFormat.Liquidation(16_846_782, "none"));
+        }
     }
 }

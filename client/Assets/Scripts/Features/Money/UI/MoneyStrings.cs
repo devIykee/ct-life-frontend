@@ -266,6 +266,7 @@ namespace CTLife.Economy
             ["perps.opened"] = "Position open",
             ["perps.entry"] = "Entry {0}",
             ["perps.liq"] = "Liquidation {0}",
+            ["perps.liqNone"] = "none",
             ["perps.mark"] = "Mark {0}",
             ["perps.marginLine"] = "Margin {0}",
             ["perps.close"] = "Close",
