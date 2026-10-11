@@ -106,6 +106,15 @@ namespace CTLife.Core
     {
         public string venueId;
         public string instanceId;
+        /// <summary>Open world: walked into this venue without a load (keep input, camera and the joystick).</summary>
+        public bool seamless;
+    }
+
+    /// <summary>Open world: the place under the player changed (a venue id, or null on the street with its district id).</summary>
+    public struct IslandPlaceSignal
+    {
+        public string venueId;
+        public string districtId;
     }
 
     /// <summary>A player was blocked (POST /blocks/{userId} succeeded).</summary>

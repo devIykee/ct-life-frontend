@@ -120,7 +120,7 @@ namespace CTLife.UI
             });
             Element.RegisterCallback<DetachFromPanelEvent>(_ => Cancel(true));
             ControlSettings.Changed += RefreshMode;
-            _subscriptions.On<VenueChangedSignal>(_ => Cancel(true));
+            _subscriptions.On<VenueChangedSignal>(v => { if (!v.seamless) Cancel(true); });   // walking into a venue keeps the stick
             _ui = UiRoot.Instance;
             if (_ui != null)
             {

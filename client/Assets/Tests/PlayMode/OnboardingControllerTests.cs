@@ -475,6 +475,7 @@ namespace CTLife.Tests
             public Task ConnectMarket(CancellationToken ct = default) => throw new InvalidOperationException("The test must stop at the city boundary.");
             public void KeepPersistentRoomsAlive(CancellationToken owner) => throw new InvalidOperationException("The test must stop before world setup.");
             public Task<VenueChannel> JoinVenue(string venueId, CancellationToken ct = default) => throw new NotSupportedException();
+            public Task<VenueChannel> JoinVenueHandoff(string venueId, CancellationToken ct = default) => throw new NotSupportedException();
             public Task LeaveVenue() => Task.CompletedTask;
             public Task DisconnectAll() => Task.CompletedTask;
         }

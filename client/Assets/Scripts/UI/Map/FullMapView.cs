@@ -287,6 +287,14 @@ namespace CTLife.UI.Map
             if (PlayerOverride != null) { var o = PlayerOverride(); if (o == null) return false; atlas = o.Value.atlas; headingDir = o.Value.dir; return true; }
             var s = VenueSession.Current;
             if (s == null || s.Venue == null || s.LocalPlayer == null) return false;
+            if (s.IsIsland)
+            {
+                var tr = s.LocalPlayer.transform;
+                atlas = new Vector2(tr.position.x, tr.position.z);
+                var fw = new Vector2(tr.forward.x, tr.forward.z);
+                headingDir = fw.sqrMagnitude > 1e-4f ? fw.normalized : Vector2.up;
+                return true;
+            }
             var area = MapCatalog.ForVisit(s.VenueId, s.HomeId);
             var p = MapCatalog.PlacementOf(area);
             if (area == null || p == null) return false;

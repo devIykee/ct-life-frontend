@@ -57,6 +57,20 @@ namespace CTLife.World
         public Vector3 ActualVelocity { get; private set; }
         public bool DirectInputActive => _directControl || (_view != null && _view.SeatPresentationActive && _moveInput.sqrMagnitude > DirectMovementInput.DeadZone * DirectMovementInput.DeadZone);
         public bool IsRunning => _running;
+        /// <summary>
+        /// CT Island (Phase B): the NavMesh is the boundary (no per-venue walkable rect), and the room/venue are the current
+        /// zone's, swapped by <see cref="SetRoom"/> as the player walks between venues.
+        /// </summary>
+        public bool OpenWorld { get; set; }
+
+        /// <summary>Rebind to another zone's venue and room (null channel on the street); publishes the position to it.</summary>
+        public void SetRoom(VenueSceneRoot venue, VenueChannel channel)
+        {
+            CancelRequestedSeat();
+            _venue = venue;
+            _channel = channel;
+            _dirty = channel != null;
+        }
         private bool _braking;
         private float _turnVelocity;
         /// <summary>Feel probe and tests: coasting to a stop after the stick was released.</summary>
@@ -244,7 +258,7 @@ namespace CTLife.World
             if (!AgentReady) { ObserveReviewCommand("path-rejected:agent-not-ready"); return false; }
             if (!NavMesh.SamplePosition(worldPoint, out var hit, thenSitAt != null ? 0.35f : 1.5f, _agent.areaMask))
             { ObserveReviewCommand("path-rejected:no-sample"); return false; }
-            if (_venue != null && !_venue.IsWalkable(hit.position))
+            if (!OpenWorld && _venue != null && !_venue.IsWalkable(hit.position))
             { ObserveReviewCommand("path-rejected:outside-venue"); return false; }
             var path = new NavMeshPath();
             bool calculated = _agent.CalculatePath(hit.position, path);
@@ -333,7 +347,7 @@ namespace CTLife.World
         {
             if (_agent == null || !_hasStandingPose ||
                 !NavMesh.SamplePosition(_standingPosition, out var hit, 0.75f, _agent.areaMask) ||
-                (_venue != null && !_venue.IsWalkable(hit.position))) return false;
+                (!OpenWorld && _venue != null && !_venue.IsWalkable(hit.position))) return false;
             var previousPosition = transform.position;
             var previousRotation = transform.rotation;
             _agent.enabled = false;
@@ -577,7 +591,8 @@ namespace CTLife.World
             {
                 ObserveReviewCommand("move");
             }
-            if (_dirty && _venue != null && _channel != null && string.IsNullOrEmpty(_requestedSpot))
+            // Open world: the room only accepts positions inside its venue's walkable rect; on the street nothing is sent.
+            if (_dirty && _venue != null && _channel != null && string.IsNullOrEmpty(_requestedSpot) && (!OpenWorld || _venue.IsWalkable(pos)))
             {
                 var local = _venue.ToLocal(pos);
                 if (_channel.Move(local.x, local.y, Mathf.Repeat(yaw, 360f) * Mathf.Deg2Rad))
@@ -709,7 +724,7 @@ namespace CTLife.World
                 // Keep only the tangent progress (the sample can pull the point back inside; that part would jitter).
                 velocity = sampled && forward > 0f ? velocity.normalized * (forward / dt) : Vector3.zero;
             }
-            if (_venue != null && !_venue.IsWalkable(_agent.nextPosition + velocity * dt))
+            if (!OpenWorld && _venue != null && !_venue.IsWalkable(_agent.nextPosition + velocity * dt))
             {
                 // At the venue's walkable edge keep the component along the edge (glide) rather than freezing.
                 var from = _agent.nextPosition; var vt = _venue.transform;

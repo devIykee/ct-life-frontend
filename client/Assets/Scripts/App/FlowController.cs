@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CTLife.Realtime;
@@ -430,6 +431,29 @@ namespace CTLife.App
                 ShowLobby();
 #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
                 if (LaunchArgs.Flag("autoenter")) RunGameAction(game, () => EnterCityFromLobby(game));
+                // Open-world device check (dev builds only): `islandWalk=terminal_cafe,airdrop_fields` walks there on foot.
+                if (!string.IsNullOrEmpty(LaunchArgs.Get("islandWalk"))) RunGameAction(game, async () =>
+                {
+                    float deadline = Time.realtimeSinceStartup + 90f;
+                    while (GameAlive(game) && (VenueSession.Current == null || !VenueSession.Current.IsActive) && Time.realtimeSinceStartup < deadline)
+                        await Awaitable.WaitForSecondsAsync(0.5f, game.Token);
+                    await Awaitable.WaitForSecondsAsync(3f, game.Token);
+                    var s = VenueSession.Current;
+                    if (s == null || !s.IsIsland) { Log.Warn("island", "islandWalk: not on CT Island"); return; }
+                    foreach (var id in LaunchArgs.Get("islandWalk").Split(','))
+                    {
+                        var v = s.Island.Find(id);
+                        var e = Services.Get<ConfigStore>().Registries.SpotsFor(id)?.spots.Values.FirstOrDefault(x => x.id == "entrance" || x.id.EndsWith(".entrance"));
+                        var target = new Vector3(v.origin.x + (e?.x ?? 0f), 0f, v.origin.y + (e != null ? e.z + 2.5f : 0f));
+                        bool ok = s.LocalPlayer.MoveTo(target);
+                        Log.Info("island", $"islandWalk -> {id}: path {(ok ? "ok" : "REFUSED")}");
+                        float t0 = Time.realtimeSinceStartup;
+                        while (GameAlive(game) && s.LocalPlayer != null && s.LocalPlayer.HasDestination && Time.realtimeSinceStartup - t0 < 120f)
+                            await Awaitable.WaitForSecondsAsync(0.25f, game.Token);
+                        Log.Info("island", $"islandWalk arrived {id}: zone={s.VenueId} after {Time.realtimeSinceStartup - t0:0.0}s");
+                        await Awaitable.WaitForSecondsAsync(2f, game.Token);
+                    }
+                });
                 // Device feature pass (dev builds only): `integration=1 [peer=<userId>]`. The editor driver calls it directly.
                 if (LaunchArgs.Flag("integration") && !Application.isEditor) RunGameAction(game, async () =>
                 {
@@ -799,7 +823,17 @@ namespace CTLife.App
                 // including when the server cannot answer yet: the room's own check then decides.
                 var blocked = await game.Wait(CTLife.Competition.CompetitionLinks.BlockMessageBeforeJoin(venueId, game.Token));
                 if (blocked != null) { Bus.Publish(ToastSignal.Text(blocked, ToastKind.Bad)); ReopenLobby(); lobby?.ShowError(blocked); return; }
-                try { await game.Wait(VenueSession.Enter(venueId, joinRoom: true, owner: game.Token)); }
+                try
+                {
+                    // CT Island (Phase B): venues placed on the island are one connected world. Already on it, Go is a
+                    // fast travel (teleport + room handoff, no load); otherwise enter the island at that venue's door.
+                    if (IslandWorld.Places(venueId) && !LaunchArgs.Flag("classicVenues"))
+                    {
+                        if (VenueSession.Current != null && VenueSession.Current.IsIsland && !leavingOwnHome) await game.Wait(VenueSession.Current.FastTravel(venueId));
+                        else await game.Wait(VenueSession.EnterIsland(venueId, joinRoom: true, owner: game.Token));
+                    }
+                    else await game.Wait(VenueSession.Enter(venueId, joinRoom: true, owner: game.Token));
+                }
                 catch (OperationCanceledException) when (!GameAlive(game)) { throw; }
                 catch (Exception e) when (GatedJoinRejection(e) is string rejection)
                 {

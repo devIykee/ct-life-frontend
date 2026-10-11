@@ -54,6 +54,8 @@ namespace CTLife.EditorTools
 
         /// <summary>Phase A: run only the every-venue/every-home arrival sweep (captureSet "visits").</summary>
         public static bool SweepOnly;
+        /// <summary>Phase B: the open-world walk across CT Island (captureSet "island").</summary>
+        public static bool IslandOnly;
         /// <summary>Phase A: run only the locomotion feel probe (captureSet "feel").</summary>
         public static bool FeelOnly;
 
@@ -144,6 +146,7 @@ namespace CTLife.EditorTools
                 Bus.Publish(new OnlineCountSignal { online = 27 }); Bus.Publish(new MoodSignal { bps = 420 });
                 Bus.Publish(new InteractionPromptSignal());
                 hud.Show(true);
+                if (IslandOnly) { visit = await IslandWalk(ui, hud, visit, shot, wait, expect, receipt); return; }
                 if (FeelOnly) { FeelProbe.OutDir = Environment.GetCommandLineArgs().SkipWhile(x => x != "-ctlife-captureOut").Skip(1).FirstOrDefault(); var (feel, last) = await FeelProbe.Run(visit, camera, shot); receipt["feel"] = feel; visit = last; return; }
                 if (SweepOnly) { visit = await VisitSweep(ui, hud, visit, camera, session, transport, profile, shot, wait, expect, receipt); return; }
                 await shot("hud-01-city-idle", 1.2f);
@@ -426,6 +429,70 @@ namespace CTLife.EditorTools
                     ["local"] = new JArray(visit.Venue.ToLocal(pos).x, visit.Venue.ToLocal(pos).y) });
             }
             typeof(Session).GetProperty(nameof(Session.AccessToken)).SetValue(session, null);
+            return visit;
+        }
+
+        /// <summary>
+        /// Phase B: arrive on CT Island at Timeline Square and WALK (NavMesh paths) out of its door, along the streets, into
+        /// Terminal Cafe (The Trenches) and on to Airdrop Fields (Airdrop Farm), then fast-travel to Yacht Club. Checks the session
+        /// never reloads, the zone/room binding follows the feet, streaming keeps the frame smooth, and the minimap is the player.
+        /// </summary>
+        private static async Task<VenueSession> IslandWalk(UiRoot ui, Hud hud, VenueSession visit, Func<string, float, Task> shot,
+            Func<float, Task> wait, Action<bool, string> expect, JObject receipt)
+        {
+            var o = new JObject(); receipt["island"] = o;
+            await visit.Exit();
+            float t0 = Time.realtimeSinceStartup;
+            visit = await VenueSession.EnterIsland("timeline_square", joinRoom: false);
+            o["enterSeconds"] = Math.Round(Time.realtimeSinceStartup - t0, 2);
+            expect(visit.IsIsland && visit.VenueId == "timeline_square", "entered CT Island at Timeline Square");
+            await wait(1.5f);
+            await shot("island-01-arrive-timeline", .1f);
+            var session = visit;
+            var island = visit.Island;
+            var zones = new JArray(); o["zones"] = zones;
+            string lastZone = visit.VenueId;
+            float maxFrame = 0f; int frames = 0, slowFrames = 0;
+            async Task<bool> WalkTo(string venueId, string shotPrefix)
+            {
+                var v = island.Find(venueId);
+                var spots = Services.Get<ConfigStore>().Registries.SpotsFor(venueId);
+                var e = spots?.spots.Values.FirstOrDefault(s => s.id == "entrance" || s.id.EndsWith(".entrance"));
+                var target = new Vector3(v.origin.x + (e != null ? e.x : 0f), 0f, v.origin.y + (e != null ? e.z + 2.5f : 0f));
+                bool ok = session.LocalPlayer.MoveTo(target);
+                expect(ok, "a walking path to " + venueId + " exists on the island");
+                float start = Time.realtimeSinceStartup; int shots = 0; float nextShot = 0f;
+                while (Time.realtimeSinceStartup - start < 90f)
+                {
+                    await Awaitable.NextFrameAsync();
+                    frames++; float dt = Time.unscaledDeltaTime; maxFrame = Mathf.Max(maxFrame, dt); if (dt > 1f / 30f) slowFrames++;
+                    if (session.VenueId != lastZone)
+                    {
+                        zones.Add(new JObject { ["at"] = Math.Round(Time.realtimeSinceStartup - t0, 1), ["from"] = lastZone, ["to"] = session.VenueId,
+                            ["loadedVenues"] = island.Loaded.Count });
+                        lastZone = session.VenueId;
+                    }
+                    if (Time.realtimeSinceStartup - start >= nextShot && shots < 6) { await shot($"{shotPrefix}-{shots++}", .02f); nextShot += 6f; }
+                    if (session.VenueId == venueId && !session.LocalPlayer.HasDestination) break;
+                }
+                var pos = session.LocalPlayer.transform.position;
+                var mini = hud.Minimap;
+                expect((mini.PlayerAtlas - new Vector2(pos.x, pos.z)).magnitude < 0.05f, venueId + ": the minimap centre is the player on the island");
+                await shot(shotPrefix + "-arrived", .1f);
+                return session.VenueId == venueId;
+            }
+            expect(await WalkTo("terminal_cafe", "island-02-walk-to-terminal-cafe"), "walked from Timeline Square into Terminal Cafe (The Trenches)");
+            expect(await WalkTo("airdrop_fields", "island-03-walk-to-airdrop-fields"), "walked on into Airdrop Fields (Airdrop Farm)");
+            expect(ReferenceEquals(VenueSession.Current, session), "one session the whole way (no load screen, no re-entry)");
+            float ft = Time.realtimeSinceStartup;
+            await session.FastTravel("yacht_club");
+            o["fastTravelSeconds"] = Math.Round(Time.realtimeSinceStartup - ft, 2);
+            await wait(1f);
+            await shot("island-04-fast-travel-yacht-club", .1f);
+            expect(session.VenueId == "yacht_club" && ReferenceEquals(VenueSession.Current, session), "fast travel within the island (no reload)");
+            o["frames"] = frames; o["maxFrameMs"] = Math.Round(maxFrame * 1000f, 1); o["framesOver33ms"] = slowFrames;
+            o["loadedVenuesAtEnd"] = island.Loaded.Count;
+            o["loaded"] = new JArray(island.Loaded.Keys);
             return visit;
         }
 

@@ -49,7 +49,8 @@ namespace CTLife.EditorTools
                 {
                     p.StopDirectInput(); p.CancelMovement();
                     p.SnapTo(root.ToWorld(local.x, local.y), yawDeg * Mathf.Deg2Rad);
-                    for (int i = 0; i < 40; i++) await Awaitable.NextFrameAsync();
+                    CameraRig.Instance?.SnapToTarget();   // a teleport must not leave the camera settling into the next scenario
+                    for (int i = 0; i < 90; i++) await Awaitable.NextFrameAsync();
                 }
                 // CameraRig yaw: the stick is camera-relative; express directions in world terms through it.
                 float camYaw = CameraRig.Instance != null ? CameraRig.Instance.yaw : 0f;
@@ -64,7 +65,6 @@ namespace CTLife.EditorTools
                 var steps = await Drive(2.6f, t => Stick(root.transform.forward, 0.6f));
                 o["steps"] = Ground(steps);
                 o["stepsPath"] = steps.Count > 0 ? $"{root.ToLocal(steps[0].pos)} -> {root.ToLocal(steps[steps.Count - 1].pos)} y {steps[0].pos.y:0.00}->{steps[steps.Count - 1].pos.y:0.00}" : "none";
-                o["stepsCamera"] = Cam(steps, p.transform, camera);
                 // The flat scenarios run on Airdrop Fields' open lawn (no fountain or benches in the lanes).
                 await visit.Exit();
                 visit = await VenueSession.Enter("airdrop_fields", joinRoom: false, voice: false);
@@ -97,8 +97,34 @@ namespace CTLife.EditorTools
                 o["wallSlide"] = Wall(wall);
                 o["wallPath"] = new JArray(wall.Where((x, i) => i % 15 == 0).Select(x => $"{root.ToLocal(x.pos).x:0.00},{root.ToLocal(x.pos).y:0.00} walk={root.IsWalkable(x.pos)}"));
                 // 5) Camera follow over the run and the circle (separately: resets snap the camera).
-                o["camera"] = Cam(run, p.transform, camera);
-                o["cameraCircle"] = Cam(circle, p.transform, camera);
+                // Camera, in REAL time (CameraRig follows on unscaledDeltaTime; a captured clock mixes two clocks):
+                // the same run ended the old way (instant StopDirectInput) and the new way (stick release = braking).
+                Time.captureFramerate = 0;
+                async Task<List<Frame>> RealRun(bool legacyStop)
+                {
+                    await Reset(new Vector2(-6f, -7.5f), 90f);
+                    var frames = new List<Frame>(); float t0 = Time.unscaledTime;
+                    while (Time.unscaledTime - t0 < 3.4f)
+                    {
+                        float t = Time.unscaledTime - t0;
+                        if (t < 2.2f) p.SetMoveInput(Stick(east, 1f));
+                        else if (legacyStop) p.StopDirectInput(); else p.SetMoveInput(Vector2.zero);
+                        await Awaitable.NextFrameAsync();
+                        frames.Add(Sample(Time.unscaledTime - t0, p, view.Animator, camera));
+                    }
+                    return frames;
+                }
+                var legacy = await RealRun(true);
+                var braked = await RealRun(false);
+                o["cameraRealTime"] = new JObject
+                {
+                    ["instantStop_start"] = Cam(Resample(legacy, 0f, 0.8f), p.transform, camera),
+                    ["instantStop_stop"] = Cam(Resample(legacy, 2.1f, 3.3f), p.transform, camera),
+                    ["braking_start"] = Cam(Resample(braked, 0f, 0.8f), p.transform, camera),
+                    ["braking_stop"] = Cam(Resample(braked, 2.1f, 3.3f), p.transform, camera),
+                };
+                Time.captureFramerate = 60;
+
                 await shot("feel-probe-end", .05f);
                 o["remote"] = await Remote(visit, camera);
                 await Reset(new Vector2(0f, -3f), 180f);
@@ -106,6 +132,21 @@ namespace CTLife.EditorTools
             }
             finally { Time.captureFramerate = prevCapture; }
             return (o, visit);
+        }
+
+        /// <summary>Linear resample of position and camera to a fixed 60 Hz grid (finite differences need even steps).</summary>
+        private static List<Frame> Resample(List<Frame> f, float from, float to)
+        {
+            var o = new List<Frame>();
+            int j = 0;
+            for (float t = from; t <= to; t += 1f / 60f)
+            {
+                while (j < f.Count - 2 && f[j + 1].t < t) j++;
+                var a = f[j]; var b = f[Mathf.Min(j + 1, f.Count - 1)];
+                float k = b.t > a.t ? Mathf.Clamp01((t - a.t) / (b.t - a.t)) : 0f;
+                o.Add(new Frame { t = t, pos = Vector3.Lerp(a.pos, b.pos, k), cam = Vector3.Lerp(a.cam, b.cam, k), yaw = a.yaw, state = a.state });
+            }
+            return o;
         }
 
         private static Frame Sample(float t, LocalPlayerController p, Animator anim, Camera cam)
@@ -121,6 +162,7 @@ namespace CTLife.EditorTools
         }
 
         public static bool SampleFeet = false;
+        public static bool OnlyVisible = false, StandStrip = false;
         private static readonly Mesh Baked = new Mesh();
         private static readonly List<Vector3> Verts = new List<Vector3>();
         private static readonly List<Vector3> LastVerts = new List<Vector3>();
@@ -135,6 +177,7 @@ namespace CTLife.EditorTools
             foreach (var smr in smrs)
             {
                 if (!smr.enabled || smr.sharedMesh == null || smr.sharedMesh.vertexCount < 200) continue;
+                if (OnlyVisible && !smr.isVisible) continue;   // hidden LOD meshes keep a stale skin pose
                 smr.BakeMesh(Baked, true);
                 Baked.GetVertices(Verts);
                 var m = smr.transform.localToWorldMatrix;
@@ -312,7 +355,7 @@ namespace CTLife.EditorTools
                 var a = (f[i].cam - 2f * f[i - 1].cam + f[i - 2].cam) / (dt * dt);
                 acc.Add(a); maxAcc = Mathf.Max(maxAcc, a.magnitude);
             }
-            for (int i = 1; i < acc.Count; i++) maxJerk = Mathf.Max(maxJerk, (acc[i] - acc[i - 1]).magnitude / (1f / 60f));
+            for (int i = 1; i < acc.Count; i++) maxJerk = Mathf.Max(maxJerk, (acc[i] - acc[i - 1]).magnitude / Mathf.Max(1e-3f, f[i + 2].t - f[i + 1].t));
             int peak = acc.Count > 0 ? acc.IndexOf(acc.OrderByDescending(x => x.magnitude).First()) + 2 : 0;
             // Collision: frames where solid world geometry sits between the camera and the player's chest.
             int occluded = 0;
@@ -374,10 +417,16 @@ namespace CTLife.EditorTools
             var me = visit.LocalPlayer.transform.position;
             var bench = visit.Venue.Anchors.Where(a => a != null && a.kind == "seat").OrderBy(a => (a.transform.position - me).sqrMagnitude).FirstOrDefault();
             if (bench == null) return new JObject { ["seat"] = "none" };
+            // Stand the local player (= the camera target) 2.5 m in front of the bench so the remote is on screen, with the
+            // game's own Animator culling (AvatarLod) left as is.
+            visit.LocalPlayer.StopDirectInput();
+            visit.LocalPlayer.SnapTo(bench.transform.position + bench.transform.forward * 2.5f, 0f);
+            CameraRig.Instance?.SnapToTarget();
+            for (int i = 0; i < 30; i++) await Awaitable.NextFrameAsync();
             var local = visit.Venue.ToLocal(bench.transform.position);
             st.x = local.x; st.z = local.y - 0.8f; st.spotId = ""; st.anim = "loco_idle"; rp.Apply(st);
             for (int i = 0; i < 30; i++) await Awaitable.NextFrameAsync();
-            var trace = new JArray(); float prevModelY = 0f; string prevState = "";
+            var trace = new JArray(); float prevModelY = 0f; string prevState = ""; string lastLine = "";
             async Task<(float secs, float jump)> Measure(Func<bool> active)
             {
                 float t = 0f, jump = 0f; float prevTop = float.NaN;
@@ -389,19 +438,30 @@ namespace CTLife.EditorTools
                         if (!float.IsNaN(prevTop)) jump = Mathf.Max(jump, Mathf.Abs(top.y - prevTop));
                         float my = view.Animator.transform.position.y;
                         if (!float.IsNaN(prevTop) && Mathf.Abs(top.y - prevTop) > 0.1f)
-                            trace.Add($"t={t:0.000} top {prevTop:0.00}->{top.y:0.00} model y {prevModelY:0.000}->{my:0.000} state {prevState}->{StateName(view.Animator)} norm={view.Animator.GetCurrentAnimatorStateInfo(0).normalizedTime:0.00} inTrans={view.Animator.IsInTransition(0)} trans={view.SeatTransitionActive} culled={view.Culled} lod={view.LodTier} animEnabled={view.Animator.enabled} cull={view.Animator.cullingMode}");
+                            trace.Add($"t={t:0.000} top {prevTop:0.00}->{top.y:0.00} model y {prevModelY:0.000}->{my:0.000} state {prevState}->{StateName(view.Animator)} norm={view.Animator.GetCurrentAnimatorStateInfo(0).normalizedTime:0.00} inTrans={view.Animator.IsInTransition(0)} trans={view.SeatTransitionActive} culled={view.Culled} lod={view.LodTier} animEnabled={view.Animator.enabled} cull={view.Animator.cullingMode} visible={view.GetComponentInChildren<SkinnedMeshRenderer>()?.isVisible}");
                         prevModelY = my; prevState = StateName(view.Animator);
                         prevTop = top.y;
                     }
+                    var seatField = typeof(AvatarView).GetField("_seat", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.GetValue(view);
+                    var stage = seatField?.GetType().GetProperty("Current")?.GetValue(seatField)?.ToString();
+                    string now = StateName(view.Animator) + (view.Animator.IsInTransition(0) ? "~" + view.Animator.GetNextAnimatorStateInfo(0).shortNameHash : "") + " stage=" + stage;
+                    if (now != lastLine) { trace.Add($"t={t:0.000} {now}"); lastLine = now; }
+                    if (StandStrip && t >= 1.3f && t <= 1.7f) Portrait(view.transform, $"stand-strip-{t:0.000}");
                     if (t > 0.1f && !active()) break;
                 }
                 return (t, jump);
             }
+            OnlyVisible = true;
             st.spotId = bench.spotId; st.anim = string.IsNullOrEmpty(bench.anim) ? "act_sit" : bench.anim; rp.Apply(st);
             var sit = await Measure(() => view.SeatTransitionActive);
             for (int i = 0; i < 60; i++) await Awaitable.NextFrameAsync();
             st.spotId = ""; st.anim = "loco_idle"; rp.Apply(st);
+            trace.Add("---- stand ----");
+            StandStrip = true;
             var stand = await Measure(() => view.SeatExitActive || view.SeatTransitionActive);
+            OnlyVisible = false; StandStrip = false;
+            int visibleMeshes = view.GetComponentsInChildren<SkinnedMeshRenderer>().Count(r => r.isVisible), allMeshes = view.GetComponentsInChildren<SkinnedMeshRenderer>().Length;
+            trace.Add($"skinned meshes: {allMeshes}, visible {visibleMeshes}");
             return new JObject { ["trace"] = trace, ["seat"] = bench.spotId, ["sitSeconds"] = R(sit.secs), ["sitMaxTopJump"] = R(sit.jump), ["standSeconds"] = R(stand.secs), ["standMaxTopJump"] = R(stand.jump) };
         }
 
@@ -474,8 +534,9 @@ namespace CTLife.EditorTools
             try
             {
                 cam.fieldOfView = 34f; cam.nearClipPlane = 0.05f; cam.clearFlags = CameraClearFlags.SolidColor; cam.backgroundColor = new Color(0.85f, 0.88f, 0.9f);
-                var target = actor.position + Vector3.up * 1.25f;
-                go.transform.position = target + actor.forward * 1.7f + actor.right * 0.15f;
+                bool full = name.StartsWith("stand-strip");
+                var target = actor.position + Vector3.up * (full ? 0.9f : 1.25f);
+                go.transform.position = full ? target + actor.right * 3.2f + Vector3.up * 0.3f : target + actor.forward * 1.7f + actor.right * 0.15f;
                 go.transform.LookAt(target);
                 var rt = new RenderTexture(720, 720, 24); cam.targetTexture = rt; cam.Render();
                 var prev = RenderTexture.active; RenderTexture.active = rt;

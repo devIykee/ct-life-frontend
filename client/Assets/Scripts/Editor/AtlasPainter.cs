@@ -92,7 +92,7 @@ namespace CTLife.EditorTools
         }
 
         /// <summary>Distance to the canal centreline and how far along it (0 source .. 1 mouth).</summary>
-        private static float CanalDist(Vector2 p, out float along)
+        internal static float CanalDist(Vector2 p, out float along)
         {
             float best = float.MaxValue; along = 0f;
             for (int i = 0; i < Canal.Length - 1; i++)
@@ -107,11 +107,11 @@ namespace CTLife.EditorTools
             return best;
         }
 
-        private static float CanalHalfWidth(float along) => Mathf.Lerp(3.2f, 7.5f, along * along);
+        internal static float CanalHalfWidth(float along) => Mathf.Lerp(3.2f, 7.5f, along * along);
 
         // ------------------------------------------------------------------ terrain
 
-        private static float Mountains(Vector2 p)
+        internal static float Mountains(Vector2 p)
         {
             float north = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(222f, 252f, p.y)) * Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(-262f, -200f, p.x)) * (1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(110f, 170f, p.x)));
             float ne = Mathf.Clamp01(1f - Segment(p, new Vector2(190f, 214f), new Vector2(250f, 246f)) / 24f);
@@ -119,7 +119,7 @@ namespace CTLife.EditorTools
             return Mathf.Max(north, Mathf.Max(ne, west));
         }
 
-        private static float Height(Vector2 p, float coast, float flat)
+        internal static float Height(Vector2 p, float coast, float flat)
         {
             float hills = Fbm(p.x / 120f, p.y / 120f) * 7f + Fbm(p.x / 38f + 9f, p.y / 38f) * 2.2f;
             float m = Mountains(p);
@@ -137,7 +137,7 @@ namespace CTLife.EditorTools
         // ------------------------------------------------------------------ town layout (art only)
 
         /// <summary>Distance to the avenues (gently curved, between the plots) and the ring boulevard; <paramref name="along"/> drives dashes.</summary>
-        private static float RoadDist(Vector2 p, out float along, out bool ring)
+        internal static float RoadDist(Vector2 p, out float along, out bool ring)
         {
             along = 0f; ring = false;
             float best = float.MaxValue;
@@ -206,7 +206,7 @@ namespace CTLife.EditorTools
 
         private static float RectDist(Vector2 p, Rect r) => RoundRect(p - r.center, r.size / 2f, 0.01f);
 
-        private static float PlotDist(Vector2 p, AtlasBaker.PlotDef plot) =>
+        internal static float PlotDist(Vector2 p, AtlasBaker.PlotDef plot) =>
             RoundRect(p - plot.Center, new Vector2(PlotHalf, PlotHalf), 26f) + (N_(p.x / 22f + 11f, p.y / 22f) - 0.5f) * 8f;
 
         /// <summary>No venue may touch water or the canal, and every plot stays on land.</summary>
@@ -808,7 +808,7 @@ namespace CTLife.EditorTools
             return ((h ^ (h >> 16)) & 0xffff) / 65535f;
         }
 
-        private static float N_(float x, float y)
+        internal static float N_(float x, float y)
         {
             int xi = Mathf.FloorToInt(x), yi = Mathf.FloorToInt(y);
             float tx = x - xi, ty = y - yi;
@@ -817,7 +817,7 @@ namespace CTLife.EditorTools
             return Mathf.Lerp(Mathf.Lerp(a, b, tx), Mathf.Lerp(c, d, tx), ty);
         }
 
-        private static float Fbm(float x, float y)
+        internal static float Fbm(float x, float y)
         {
             float s = 0, a = 0.5f, f = 1, n = 0;
             for (int i = 0; i < 4; i++) { s += N_(x * f, y * f) * a; n += a; a *= 0.5f; f *= 2.03f; }

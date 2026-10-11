@@ -48,6 +48,11 @@ namespace CTLife.Net
         Task ConnectCity(CancellationToken ct = default);
         Task ConnectMarket(CancellationToken ct = default);
         Task<VenueChannel> JoinVenue(string venueId, CancellationToken ct = default);
+        /// <summary>
+        /// Open-world handoff (Phase B): join <paramref name="venueId"/>'s room while the current one stays joined, then make
+        /// the new room current and leave the old one, so the player never drops out of presence between zones.
+        /// </summary>
+        Task<VenueChannel> JoinVenueHandoff(string venueId, CancellationToken ct = default);
         Task LeaveVenue();
         Task DisconnectAll();
     }
