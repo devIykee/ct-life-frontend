@@ -72,7 +72,8 @@ namespace CTLife.Tests
             Assert.IsTrue(IslandWorld.Places("timeline_square") && IslandWorld.Places("terminal_cafe"));
             Assert.IsFalse(IslandWorld.Places("home"), "private homes stay separate visits");
             foreach (var v in w.venues) Assert.IsTrue(v.frame.Contains(v.walk.center) && v.frame.Contains(v.exit), v.venueId);
-            Assert.IsNotNull(prefab.GetComponentInChildren<Terrain>().terrainData, "terrain data is a saved asset");
+            Assert.Greater(prefab.GetComponentsInChildren<MeshCollider>().Length, 100, "ground chunks with colliders");
+            Assert.IsTrue(prefab.GetComponentsInChildren<MeshFilter>().All(f => f.sharedMesh != null), "chunk meshes are saved assets");
         }
     }
 }

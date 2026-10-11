@@ -19,13 +19,13 @@ namespace CTLife.EditorTools
     /// Phase B (open world, 2026-10-17): builds the walkable CT Island from the SAME layout and terrain functions as the painted
     /// atlas (AtlasBaker plots and placements, AtlasPainter coast/hills/mountains/canal), so the baked maps and the minimap stay
     /// truthful, and so a later top-down bake of this 3D island can replace the hand-painted 2D atlas.
-    ///  - Unity Terrain: flat town inside the ring road (venue frames sunk 12 cm so streamed dioramas sit flush), beaches sloping
+    ///  - Ground: chunked meshes (28 m, unlit, MeshColliders; replaced Unity Terrain, 23.8 ms GPU on the Seeker): flat town inside the ring road (venue frames sunk 12 cm so streamed dioramas sit flush), beaches sloping
     ///    into the sea, the canal carved except under the road bridges, real hills and mountains on the north and north-east.
     ///  - Ground texture: the painted atlas with every baked venue map composited in (the far-district impostor for free).
     ///  - One island NavMesh: each venue's own baked walkable surface (its triangulation, so seats and aisles stay exactly as
     ///    tuned), a generated street ground outside the venue frames, and a 2.4 m door corridor from every exit to the street.
     ///    Steep terrain and the sea are not walkable; the NavMesh is the coast wall.
-    ///  - Prefab Resources/World/Island/CTIsland: Terrain + collider, water, island VenueSceneRoot, IslandWorld, Timeline's look.
+    ///  - Prefab Resources/World/Island/CTIsland: ground chunks, water, island VenueSceneRoot, IslandWorld, Timeline's look.
     /// Batch: Unity -batchmode -projectPath client -buildTarget Android -executeMethod CTLife.EditorTools.IslandBuilder.Run
     /// </summary>
     public static class IslandBuilder
@@ -121,8 +121,7 @@ namespace CTLife.EditorTools
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
             // Terrain.
-            var td = new TerrainData { heightmapResolution = HeightRes };
-            td.size = new Vector3(2f * Half, Top - Base, 2f * Half);
+
             var heights = new float[HeightRes, HeightRes];
             float step = 2f * Half / (HeightRes - 1);
             float maxH = float.MinValue, minH = float.MaxValue;
@@ -134,29 +133,23 @@ namespace CTLife.EditorTools
                     maxH = Mathf.Max(maxH, h); minH = Mathf.Min(minH, h);
                     heights[y, x] = Mathf.Clamp01((h - Base) / (Top - Base));
                 }
-            td.SetHeights(0, 0, heights);
+
             receipt["heightRange"] = new JArray(Math.Round(minH, 2), Math.Round(maxH, 2));
             var ground = GroundTexture();
-            var layer = new TerrainLayer { diffuseTexture = ground, tileSize = new Vector2(2f * Half, 2f * Half), tileOffset = Vector2.zero, smoothness = 0f, metallic = 0f };
-            layer = Save(layer, Folder + "/IslandGround.terrainlayer");
-            td.terrainLayers = new[] { layer };
-            td.alphamapResolution = 16;
-            td = Save(td, Folder + "/CTIsland.asset");
+
 
             var root = new GameObject("CTIsland");
             SceneManager_Move(root, scene);
-            var terrainGo = Terrain.CreateTerrainGameObject(td);
-            terrainGo.name = "Terrain";
-            terrainGo.transform.SetParent(root.transform, false);
-            terrainGo.transform.localPosition = new Vector3(-Half, Base, -Half);
-            var terrain = terrainGo.GetComponent<Terrain>();
-            terrain.materialTemplate = AssetDatabase.LoadAssetAtPath<Material>("Packages/com.unity.render-pipelines.universal/Runtime/Materials/TerrainLit.mat");
-            terrain.heightmapPixelError = 6f;
-            terrain.basemapDistance = 400f;
-            terrain.drawTreesAndFoliage = false;
-            terrain.shadowCastingMode = ShadowCastingMode.Off;
-            terrain.allowAutoConnect = false;
-
+            // Ground: chunked meshes from the same heightfield (frustum-culled per chunk; unlit, the painted texture carries the
+            // light). The Seeker spent 23.8 ms of GPU on the URP Terrain shader over the whole screen.
+            var groundMat = new Material(Shader.Find("Universal Render Pipeline/Unlit")) { name = "IslandGround" };
+            groundMat.SetTexture("_BaseMap", ground);
+            groundMat.SetColor("_BaseColor", Color.white);
+            groundMat = Save(groundMat, Folder + "/IslandGround.mat");
+            var groundGo = new GameObject("Ground");
+            groundGo.transform.SetParent(root.transform, false);
+            int chunks = BuildGroundChunks(groundGo.transform, heights, groundMat);
+            receipt["groundChunks"] = chunks;
             // Water.
             var water = GameObject.CreatePrimitive(PrimitiveType.Quad);
             Object.DestroyImmediate(water.GetComponent<Collider>());
@@ -213,8 +206,57 @@ namespace CTLife.EditorTools
             receipt["prefab"] = PrefabPath;
             receipt["navMeshBytes"] = new FileInfo(Folder + "/CTIsland_NavMesh.asset").Length;
             receipt["connectivity"] = Connectivity(nav, venues);
-            receipt["terrainBytes"] = new FileInfo(Folder + "/CTIsland.asset").Length;
+            receipt["groundBytes"] = Directory.GetFiles(Folder + "/Ground", "*.asset").Sum(f => new FileInfo(f).Length);
             EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+        }
+
+        public const int ChunkCells = 16, Stride = 2;   // every 2nd height sample (2.34 m), 16 cells = 37 m chunks
+
+        /// <summary>Mesh chunks over the heightfield, each with a MeshCollider; uv = the island texture.</summary>
+        private static int BuildGroundChunks(Transform parent, float[,] heights, Material mat)
+        {
+            string dir = Folder + "/Ground";
+            if (AssetDatabase.IsValidFolder(dir)) AssetDatabase.DeleteAsset(dir);
+            AssetDatabase.CreateFolder(Folder, "Ground");
+            int full = HeightRes - 1, cells = full / Stride, count = 0;
+            float step = 2f * Half / cells;
+            for (int cy = 0; cy < cells; cy += ChunkCells)
+                for (int cx = 0; cx < cells; cx += ChunkCells)
+                {
+                    int w = Mathf.Min(ChunkCells, cells - cx), h = Mathf.Min(ChunkCells, cells - cy);
+                    var v = new Vector3[(w + 1) * (h + 1)]; var uv = new Vector2[v.Length]; var t = new int[w * h * 6];
+                    bool anyLand = false;
+                    for (int y = 0; y <= h; y++)
+                        for (int x = 0; x <= w; x++)
+                        {
+                            int gx = cx + x, gy = cy + y;
+                            float hy = Base + heights[gy * Stride, gx * Stride] * (Top - Base);
+                            if (hy > Water - 1f) anyLand = true;
+                            v[y * (w + 1) + x] = new Vector3(-Half + gx * step, hy, -Half + gy * step);
+                            uv[y * (w + 1) + x] = new Vector2(gx / (float)cells, gy / (float)cells);
+                        }
+                    if (!anyLand) continue;   // deep sea: the water plane covers it
+                    int k = 0;
+                    for (int y = 0; y < h; y++)
+                        for (int x = 0; x < w; x++)
+                        {
+                            int a = y * (w + 1) + x, b = a + 1, c = a + w + 1, d = c + 1;
+                            t[k++] = a; t[k++] = c; t[k++] = b; t[k++] = b; t[k++] = c; t[k++] = d;
+                        }
+                    var m = new Mesh { name = $"ground_{cx}_{cy}" };
+                    m.vertices = v; m.uv = uv; m.triangles = t; m.RecalculateNormals(); m.RecalculateBounds();
+                    AssetDatabase.CreateAsset(m, $"{dir}/ground_{cx}_{cy}.asset");
+                    var go = new GameObject(m.name);
+                    go.transform.SetParent(parent, false);
+                    go.AddComponent<MeshFilter>().sharedMesh = m;
+                    var r = go.AddComponent<MeshRenderer>();
+                    r.sharedMaterial = mat; r.shadowCastingMode = ShadowCastingMode.Off; r.receiveShadows = false;
+                    r.lightProbeUsage = LightProbeUsage.Off; r.reflectionProbeUsage = ReflectionProbeUsage.Off;
+                    go.AddComponent<MeshCollider>().sharedMesh = m;
+                    go.isStatic = true;
+                    count++;
+                }
+            return count;
         }
 
         private static void SceneManager_Move(GameObject go, UnityEngine.SceneManagement.Scene scene) => UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(go, scene);
