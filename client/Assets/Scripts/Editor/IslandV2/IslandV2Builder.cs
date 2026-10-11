@@ -261,7 +261,7 @@ namespace CTLife.EditorTools.IslandV2
             void Ground(Material x)
             {
                 x.SetTexture("_Control", Tex("terrain_control.png")); x.SetTexture("_Detail", Tex("terrain_detail.png"));
-                x.SetColor("_RockColor", new Color(0.47f, 0.46f, 0.49f)); x.SetColor("_RockColorHigh", new Color(0.63f, 0.62f, 0.67f));
+                x.SetColor("_RockColor", new Color(0.38f, 0.36f, 0.37f)); x.SetColor("_RockColorHigh", new Color(0.55f, 0.53f, 0.56f));   // darker, so the range reads against the sky
                 x.SetColor("_SandColor", new Color(0.92f, 0.83f, 0.62f)); x.SetColor("_DirtColor", new Color(0.56f, 0.43f, 0.30f));
                 x.SetVector("_Snow", new Vector4(138f, 156f, 0.45f, 0.6f)); x.SetVector("_Shore", new Vector4(-6f, 1.1f, 0f, 0f)); x.SetVector("_DetailScale", new Vector4(0.16f, 0.035f, 0f, 0f));
                 x.SetFloat("_Contrast", 0.65f); x.SetFloat("_Sharpness", 2.5f); x.SetFloat("_Toon", 0.3f);
@@ -295,6 +295,12 @@ namespace CTLife.EditorTools.IslandV2
             Mk(Mat.Timber, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Texture2D.whiteTexture); x.SetColor("_BaseColor", new Color(0.50f, 0.38f, 0.27f)); x.SetFloat("_Toon", 0.35f); });
             Mk(Mat.Lighthouse, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Texture2D.whiteTexture); x.SetColor("_BaseColor", Color.white); x.SetFloat("_Toon", 0.4f); });
             Mk(Mat.LighthouseLamp, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Texture2D.whiteTexture); x.SetColor("_BaseColor", new Color(1f, 0.93f, 0.66f)); x.SetColor("_Emission", new Color(1.6f, 1.35f, 0.8f)); x.SetFloat("_Cull", 0f); });
+            Mk(IslandV2Dress.ShopSigns, "CT Life/World/Toon", x =>
+            {
+                x.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>(IslandV2Paths.Textures + "/Signs/shop_signs.png") ?? Texture2D.whiteTexture);
+                x.DisableKeyword("_WORLDUV"); x.SetFloat("_UseWorldUV", 0); x.SetColor("_BaseColor", Color.white); x.SetFloat("_Toon", 0.2f);
+                x.SetColor("_Emission", new Color(0.22f, 0.22f, 0.22f));
+            });
             Mk(Mat.Wall, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Tex("concrete.png")); x.EnableKeyword("_WORLDUV"); x.SetFloat("_UseWorldUV", 1); x.SetFloat("_WorldScale", 0.35f); x.SetColor("_BaseColor", new Color(0.74f, 0.70f, 0.64f)); x.SetFloat("_Toon", 0.35f); });
             AssetDatabase.SaveAssets();
             return m;
@@ -346,6 +352,7 @@ namespace CTLife.EditorTools.IslandV2
             { Mat.Boardwalk, (Layers.Road, false) }, { Mat.Timber, (Layers.Prop, true) }, { Mat.Lighthouse, (Layers.Building, true) }, { Mat.LighthouseLamp, (Layers.Building, false) },
             { Mat.Kerb, (Layers.Road, false) }, { Mat.Concrete, (Layers.Road, true) }, { Mat.Tunnel, (Layers.Road, true) },
             { Mat.Rail, (Layers.Prop, false) }, { Mat.Paint, (Layers.Road, false) }, { Mat.Grass, (Layers.Prop, false) },
+            { IslandV2Dress.ShopSigns, (Layers.Prop, false) },
         };
 
         private static (int objects, int colliders, int renderers, int bays) WriteCell(CellGeo g, Dictionary<string, Material> mats, List<Mesh> roadSurfaces)
@@ -584,7 +591,9 @@ namespace CTLife.EditorTools.IslandV2
                 var vis = new GameObject("pad") { layer = Layers.Road };
                 vis.transform.SetParent(go.transform, false);
                 vis.AddComponent<MeshFilter>().sharedMesh = pm;
-                vis.AddComponent<MeshRenderer>().sharedMaterial = mats[Mat.Concrete];
+                var padMr = vis.AddComponent<MeshRenderer>();
+                padMr.sharedMaterial = mats[Mat.Concrete];
+                padMr.lightProbeUsage = LightProbeUsage.Off; padMr.reflectionProbeUsage = ReflectionProbeUsage.Off;
                 vis.AddComponent<MeshCollider>().sharedMesh = pm;
                 pads++;
             }

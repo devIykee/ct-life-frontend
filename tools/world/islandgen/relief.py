@@ -298,6 +298,23 @@ def erode_thermal(h, cell, talus_deg=38.0, iters=40, rate=0.45, mask=None):
     return out, acc
 
 
+def summit_crags(h, X, Z):
+    """W3 art direction: a craggy summit silhouette. Above ~110 m the smooth eroded cone gets sharp ridged crags
+    (towers and notches, ~40 m apart) and smaller pinnacles, scaled up with height; the cairn top stays walkable."""
+    sx, sz, sy, _ = L.SUMMIT
+    w = G.smoothstep(104.0, 150.0, h)
+    if not (w > 0).any():
+        return h
+    r = np.hypot(X - sx, Z - sz)
+    w = w * G.smoothstep(9.0, 26.0, r)                      # a level-ish top round the cairn
+    big = ridged_mf(X / 42.0 + 1.3, Z / 42.0 - 2.1, 3, sharp=2.6, seed=71)
+    pin = ridged_mf(X / 17.0 - 4.2, Z / 17.0 + 0.7, 2, sharp=3.2, seed=73)
+    on = w > 0.05
+    big = big - float(np.mean(big[on]))
+    pin = pin - float(np.mean(pin[on]))
+    return h + (big * 16.0 + pin * 5.0) * w
+
+
 def shoulder_bench(h, X, Z):
     """A natural bench on the summit's south shoulder for the lodge: the slope eases to 30 % of its own gradient over
     a small shelf (no flat disc with cliffs round it), blended well into the slopes around."""

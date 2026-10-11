@@ -29,9 +29,13 @@ namespace CTLife.EditorTools.IslandV2
         private static (float[] ends, float shadow, int layer, string kind) Rules(string id, JObject item)
         {
             var tags = (item["tags"] as JArray)?.Select(t => (string)t).ToHashSet() ?? new HashSet<string>();
+            if (id.StartsWith("hero_")) return (new[] { 70f, 240f, 900f }, 80f, Layers.Prop, "hero");
             if (id.StartsWith("kw_ship")) return (new[] { 260f, 900f, 3600f }, 0f, Layers.Prop, "ship");
             if (id.StartsWith("kw_")) return (new[] { 55f, 170f, 800f }, 45f, Layers.Prop, "boat");
             if (id.StartsWith("kc_tower")) return (new[] { 120f, 420f, 2400f }, 160f, Layers.Building, "building");
+            // Quaternius town buildings: 3.5k-tri LOD0 (W2 perf note), so LOD1 from 45 m and shadows to 90 m
+            if (id.StartsWith("qtb_")) return (new[] { 45f, 150f, 1100f }, 90f, Layers.Building, "building");
+            if (id.StartsWith("kc_detail")) return (new[] { 40f, 90f, 160f }, 30f, Layers.Prop, "prop");
             if (tags.Contains("building") || id.StartsWith("shop_") || id.StartsWith("tower_glass")) return (new[] { 80f, 260f, 1300f }, 130f, Layers.Building, "building");
             if (id.StartsWith("kf_tree") || id.StartsWith("palm") || id.StartsWith("tree_")) return (new[] { 55f, 170f, 900f }, 70f, Layers.Vegetation, "tree");
             if (id.StartsWith("kf_bush")) return (new[] { 30f, 80f, 200f }, 25f, Layers.Vegetation, "bush");
@@ -178,7 +182,7 @@ namespace CTLife.EditorTools.IslandV2
             string tex = fbxMaterial.StartsWith("M_") ? fbxMaterial.Substring(2) : fbxMaterial;
             bool foliage = kind == "tree" || kind == "bush" || kind == "grass" || kind == "crop";
             bool leaves = tex.IndexOf("leaves", StringComparison.OrdinalIgnoreCase) >= 0 || tex.IndexOf("leaf", StringComparison.OrdinalIgnoreCase) >= 0;
-            string role = foliage ? (kind == "tree" ? (leaves ? "leaves" : "tree") : kind) : "plain";
+            string role = foliage ? (kind == "tree" ? (leaves ? "leaves" : "tree") : kind) : kind == "hero" ? "hero" : "plain";
             string key = tex + "__" + role;
             if (Cache.TryGetValue(key, out var cached) && cached != null) return cached;
             var path = $"{KitDir}/Materials/{key}.mat";
@@ -192,7 +196,7 @@ namespace CTLife.EditorTools.IslandV2
             bool tint = tex == "world_palette";
             if (tint) mat.EnableKeyword("_TINTPALETTE"); else mat.DisableKeyword("_TINTPALETTE");
             mat.SetFloat("_TintPalette", tint ? 1f : 0f);
-            bool tintAll = foliage && (role == "tree" || role == "bush" || role == "leaves");
+            bool tintAll = foliage && (role == "tree" || role == "bush" || role == "leaves") || kind == "hero";
             if (tintAll) mat.EnableKeyword("_TINTALL"); else mat.DisableKeyword("_TINTALL");
             mat.SetFloat("_TintAll", tintAll ? 1f : 0f);
             var wind = role switch
@@ -201,7 +205,7 @@ namespace CTLife.EditorTools.IslandV2
                 "grass" => new Vector4(0.06f, 2.2f, 0.6f, 0), "crop" => new Vector4(0.08f, 1.8f, 1.6f, 0), _ => Vector4.zero,
             };
             mat.SetVector("_Wind", wind);
-            mat.SetVector("_GroundAO", kind == "building" ? new Vector4(2.2f, 0.3f, 0, 0) : new Vector4(1.0f, 0.3f, 0, 0));
+            mat.SetVector("_GroundAO", kind == "building" ? new Vector4(2.6f, 0.5f, 0, 0) : new Vector4(1.0f, 0.36f, 0, 0));   // contact darkening at the base
             mat.SetFloat("_Cutoff", leaves || role == "grass" ? 0.45f : 0f);
             mat.SetFloat("_Cull", leaves || role == "grass" || role == "crop" ? 0f : 2f);
             mat.enableInstancing = true;

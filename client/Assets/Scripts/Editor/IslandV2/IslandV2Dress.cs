@@ -17,6 +17,7 @@ namespace CTLife.EditorTools.IslandV2
     /// </summary>
     public static class IslandV2Dress
     {
+        public const string ShopSigns = "shop_signs";
         public static IslandKit Kit;
         public static int[] CarProtos = Array.Empty<int>();
         /// <summary>Share of street bays with a decor car, by district (downtown busier than the hills).</summary>
@@ -78,6 +79,51 @@ namespace CTLife.EditorTools.IslandV2
             int boards = 0;
             if (doc["billboards"] is JArray bbs)
                 foreach (var b in bbs) { cells.At(IslandV2Paths.V3(b["p"])).Billboards.Add((JObject)b); boards++; }
+            int heroes = 0;
+            if (doc["heroes"] is JArray hs)
+                foreach (JObject hj in hs)
+                {
+                    heroes++;
+                    if (!(hj["plinth"] is JArray pl)) continue;
+                    var p = IslandV2Paths.V3(hj["p"]);
+                    float w = (float)pl[0], d = (float)pl[1], hh = (float)pl[2];
+                    var rot = Quaternion.Euler(0f, (float)hj["yaw"], 0f);
+                    var cell = cells.At(p);
+                    var c = p + Vector3.up * (hh * 0.5f + 0.05f);
+                    var stone = cell.V(Mat.Quay);
+                    stone.Box(c, rot * Vector3.right, Vector3.up, rot * Vector3.forward, new Vector3(w * 0.5f, hh * 0.5f + 0.05f, d * 0.5f));
+                    stone.Box(p + Vector3.up * (hh + 0.12f), rot * Vector3.right, Vector3.up, rot * Vector3.forward, new Vector3(w * 0.5f + 0.12f, 0.08f, d * 0.5f + 0.12f));
+                    cell.Boxes.Add(new CellGeo.BoxCol { Center = p + Vector3.up * (hh * 0.5f + 1.2f), Rotation = rot, Size = new Vector3(w, hh + 2.4f, d), Layer = Layers.Prop, Name = "hero_" + (string)hj["id"] });
+                }
+            receipt["dressHeroes"] = heroes;
+            // W3 street life: blade shop signs projecting from downtown ground floors (atlas Textures/Signs/shop_signs.png,
+            // 4 x 8 cells), a two-sided panel with a slim bracket to the facade
+            int signs = 0;
+            if (doc["shopSigns"] is JArray ss)
+                foreach (JArray sj in ss)
+                {
+                    var q = new Vector3((float)sj[0], (float)sj[1], (float)sj[2]);
+                    var rot = Quaternion.Euler(0f, (float)sj[3], 0f);
+                    int idx = (int)sj[4];
+                    var cell = cells.At(q);
+                    var b = cell.V(ShopSigns);
+                    Vector3 R = rot * Vector3.right, O = rot * Vector3.forward, U = Vector3.up;
+                    const float hw = 0.68f, hh = 0.34f;
+                    float u0 = (idx % 4) / 4f, u1 = u0 + 0.25f, v1 = 1f - (idx / 4) / 8f, v0 = v1 - 0.125f;
+                    void Face(Vector3 n, Vector3 right)
+                    {
+                        var c = q + n * 0.025f;
+                        int bl = b.Add(c - right * hw - U * hh, n, new Vector2(u0, v0)), tl = b.Add(c - right * hw + U * hh, n, new Vector2(u0, v1));
+                        int tr = b.Add(c + right * hw + U * hh, n, new Vector2(u1, v1)), br = b.Add(c + right * hw - U * hh, n, new Vector2(u1, v0));
+                        b.Tri(bl, tl, tr); b.Tri(bl, tr, br);
+                    }
+                    Face(R, O);
+                    Face(-R, -O);
+                    var rail = cell.V(Mat.Rail);
+                    rail.Box(q + O * ((hw - 0.62f) * 0.5f) + U * (hh + 0.06f), R, U, O, new Vector3(0.03f, 0.03f, (hw + 0.62f) * 0.5f));   // facade to the outer edge
+                    signs++;
+                }
+            receipt["dressShopSigns"] = signs;
             receipt["dressInstances"] = n; receipt["dressBuildings"] = boxes; receipt["dressTrunks"] = trunks; receipt["dressBillboards"] = boards;
             receipt["dressStats"] = doc["stats"];
         }

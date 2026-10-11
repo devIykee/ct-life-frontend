@@ -175,6 +175,32 @@ namespace CTLife.EditorTools.IslandV2
                     shots.Add("venue-" + v.venueId);
                 }
             }
+            if (Environment.GetCommandLineArgs().Contains("-ctlife-heroviews"))
+            {
+                // W3: every hero statue and landmark building, from the street side
+                var targets = new List<(string name, Vector3 at, float yaw, float dist, float lift)>();
+                var dress = IslandV2Paths.Json("dress.json");
+                if (dress["heroes"] is JArray hs) foreach (var hj in hs) targets.Add(("hero-" + (string)hj["id"], IslandV2Paths.V3(hj["p"]), (float)hj["yaw"], 9f, 3.2f));
+                var planJ = IslandV2Paths.Json("plan.json");
+                if (planJ["landmarkBuildings"] is JArray lbs)
+                    foreach (var lb in lbs)
+                    {
+                        var at2 = IslandV2Paths.V2(lb["at"]);
+                        targets.Add(("landmark-" + (string)lb["id"], new Vector3(at2.x, (float)lb["y"], at2.y), (float)lb["yaw"], (float)lb["h"] > 10f ? 70f : 34f, (float)lb["h"] > 10f ? (float)lb["h"] * 0.6f + 4f : (float)lb["h"] + 12f));   // small ones from above the street
+                    }
+                foreach (var (name, at, yaw, dist, lift) in targets)
+                {
+                    var front = Quaternion.Euler(0f, yaw + 25f, 0f) * Vector3.forward;   // statues face their road; buildings' signs face local -Z
+                    if (name.StartsWith("landmark-")) front = Quaternion.Euler(0f, yaw + 25f, 0f) * Vector3.back;
+                    var eye = at + front * dist;
+                    eye.y = Mathf.Max(h.Sample(eye.x, eye.z) + 1.8f, at.y + lift);
+                    cam.orthographic = false; cam.fieldOfView = 50f;
+                    cam.transform.position = eye;
+                    cam.transform.LookAt(at + Vector3.up * Mathf.Min(lift, 12f) * 0.6f);
+                    Render(cam, rt, Path.Combine(outDir, name + ".png"));
+                    shots.Add(name);
+                }
+            }
             if (only == null || only.Contains("topdown"))
             {
                 // top-down: the whole island, orthographic, sun overhead-ish for an even read
