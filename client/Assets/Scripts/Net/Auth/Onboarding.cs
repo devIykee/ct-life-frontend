@@ -94,6 +94,7 @@ namespace CTLife.Net
     {
         public static Newtonsoft.Json.Linq.JToken Normalize(Newtonsoft.Json.Linq.JToken body)
         {
+            DebtSchedule.Sanitize(body as Newtonsoft.Json.Linq.JObject);   // an unreadable instalment reads as unknown
             if (!(body is Newtonsoft.Json.Linq.JObject me) || !(me["user"] is Newtonsoft.Json.Linq.JObject user)) return body;
             if (user["hasCharacter"] == null || user["hasCharacter"].Type != Newtonsoft.Json.Linq.JTokenType.Boolean)
             {
