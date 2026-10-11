@@ -228,3 +228,30 @@ listed above (environment manifest, CC0: Kenney, Quaternius, KayKit, Poly Haven 
 | --- | --- | --- | --- | --- | --- |
 | Venue signage atlases `client/Assets/World/Venues/<id>/Textures/<id>_signs.png` | `tools/venues/make_venue_signs.py` (original parody text and graphics; no third-party logos or product names) | CC0 (made by us); text rasterised from Lilita One and Manrope, SIL OFL 1.1, already bundled in `client/Assets/Resources/UI/Fonts` | CT Life venue builder | 2026-10-08 | venue signs, idle states of the live boards |
 | Venue block palette `client/Assets/World/Venues/_Shared/Textures/VenueBlockPalette.png`, ORE 5×5 idle texture | generated in `client/Assets/Scripts/Editor/VenueBuild/` | CC0 (made by us) | CT Life venue builder | 2026-10-08 | procedural trim, ORE board idle state |
+
+<!-- BEGIN cast -->
+## CT cast (art/cast/) — added 2026-10-08 by the CAST lane
+
+Everything under `art/cast/export/` is derived from the sources below. Snow/Rain derivatives keep the
+CC-BY 4.0 attribution; procedural parts are CT Life originals (CC0); Poly Haven props are CC0.
+Ship credits must carry the two CC-BY lines. No Synty / Asset Store / ActorCore / Mixamo / RPM content,
+nothing behind a login.
+
+| Name | Source URL | Licence | Author | Downloaded | Used for |
+| --- | --- | --- | --- | --- | --- |
+| Snow v4 (via the compiled `art/character-candidates/unity-snow` derivative) | https://studio.blender.org/characters/snow/v4/ | CC-BY 4.0 — credit "Snow Rig (CC) Blender Foundation \| studio.blender.org" | Blender Foundation / Blender Studio | 2026-10-05 (existing raw) | `m` family: head, hands/arms, hair, tee/pants/shoes and every garment shell derived from them (tops, vest, shorts, boots, beards, scalp/buzz). Changes: tiered reductions, slot atlas re-pack, garment/skin shells, recolours, body/face morphs |
+| Rain v3 (via `art/character-candidates/rain-adult-production` + `rain-cloth-correction`) | https://studio.blender.org/characters/rain/v3/ | CC-BY 4.0 — credit "Rain Rig (CC) Blender Foundation \| studio.blender.org" | Blender Foundation / Blender Studio | 2026-10-05 (existing raw) | `f` family: same as above (inner tank shell and mouth interior removed) |
+| Poly Haven `Megaphone_01` (1k glTF) | https://polyhaven.com/a/Megaphone_01 | CC0 | Ethan Simon-Law | 2026-10-08 | `hand_megaphone` (decimated, re-baked) |
+| Poly Haven `binoculars` (1k glTF) | https://polyhaven.com/a/binoculars | CC0 | Derek Wight | 2026-10-08 | `acc_binoculars` (strap dropped) |
+| Poly Haven `magnifying_glass_01` (1k glTF) | https://polyhaven.com/a/magnifying_glass_01 | CC0 | Nazar Borodavka | 2026-10-08 | `hand_magnifier` |
+| Poly Haven `Camera_01` (1k glTF) | https://polyhaven.com/a/Camera_01 | CC0 | Rajil Jose Macatangay | 2026-10-08 | `acc_camera` (strap dropped) |
+| Poly Haven `picke_dirty_01` (1k glTF) | https://polyhaven.com/a/picke_dirty_01 | CC0 | Dennis Halbeck | 2026-10-08 | `hand_pickaxe` (ORE miner) |
+| Poly Haven `watering_can_metal_01` (1k glTF) | https://polyhaven.com/a/watering_can_metal_01 | CC0 | Charles Nderitu | 2026-10-08 | `hand_watering_can` (farmer) |
+| Poly Haven `clipboard` (1k glTF) | https://polyhaven.com/a/clipboard | CC0 | ProgrammerOnCoffee | 2026-10-08 | `hand_clipboard` (auditor) |
+| Poly Haven `office_notepads` (1k glTF) | https://polyhaven.com/a/office_notepads | CC0 | Ulan Cabanilla | 2026-10-08 | downloaded, not used (procedural notebook used instead) |
+| CT Life procedural cast parts (hats: hard hat, straw, siren beanie, beanie, cap, bucket, fila, gele, headphones; headset, monitor head, shades, glasses, laser eyes, visor, anime mask, gold chain, lanyard, pins, ring-light rig, backpack, drone, rain cloud, phone, burner, notebook, slip, coffee, cash, car key, energy can; skirts/wrapper, boot shafts, hoods, collars, hem extensions, afro, locs, long-hair curtain) and all procedural textures/prints | art/cast/scripts/cast_wardrobe.py, cast_spec.py | CC0 (made by us) | CT Life CAST lane | 2026-10-08 | wardrobe parts and looks in art/cast/export |
+
+Poly Haven licence page (checked 2026-10-08): https://polyhaven.com/license — "CC0 … You do not need to give credit".
+Download hashes/sizes: `ct-life-evidence/cast/downloads/polyhaven_manifest.json` (outside the repo).
+Print text and marks are original parody (e.g. COIN2050, CHECKPOINT, POMP, WOTCHA); no real logos.
+<!-- END cast -->

@@ -801,3 +801,47 @@ and, once that exists, one line in `Features/Social/Net/SocialHub.cs` constructo
   different API and no transaction to sign.
 
 Status: open
+
+## 2026-10-08 cast -> integration lead (Unity): import the CT cast (art/cast/export)
+
+What it is: 75 looks (2 identity looks Snow/Rain re-tiered, 51 NPC looks covering all 28 contract
+archetypes + spec extras + dossier archetypes, 22 player combinations) and 138 runtime part FBX chunks,
+on the two existing 55-bone skeletons (unchanged). Index: `art/cast/export/manifest.json`; parts index:
+`art/cast/export/parts/{m,f}/parts.json`; fresh-import checks: `art/cast/export/validation.json`.
+No `.gitignore` change is needed: all large intermediates live in
+`/Users/mac/Documents/codes/projects/ct-life-evidence/cast/`, not in the repo.
+
+Import steps (proposal; Unity 6.3 behaviour not exercised by this lane):
+1. Copy `art/cast/export/looks/` and `art/cast/export/parts/` under e.g. `client/Assets/Art/characters/cast/`
+   (outside `authored/Snow` and `authored/Rain`, so the existing Snow/Rain postprocessors do not fire).
+2. Model tab: Scale Factor 1, Convert Units on, Import BlendShapes off (none exported), Import Visibility/
+   Cameras/Lights off, Normals = Import (custom normals carry the full-res shading), Tangents = Calculate
+   Mikktspace, Read/Write off for looks, **on for parts** (runtime merge reads them).
+3. Rig tab: Animation Type **Humanoid**, Avatar Definition **Copy From Other Avatar**: family `m` → the
+   Avatar in `Assets/Art/characters/authored/Snow/SnowAdult_Creator.fbx`; family `f` → the Avatar in
+   `Assets/Art/characters/authored/Rain/RainAdult_Creator.fbx` (bone names and rest matrices are
+   identical; `validation.json` reports max rest delta 0.0). Skin Weights Standard (4); Optimize Game
+   Objects on. Animation tab: Import Animation off.
+4. LOD: each `<look>.fbx` holds `<look>_LOD0/_LOD1/_LOD2`; Unity creates a LOD Group from the `_LODX`
+   suffix on import (Unity 6.3 manual, lod-group-configure). `<look>_Hero.fbx` is the near/creator tier
+   (only identity + player looks have one). Spec distances: nearest 12 at LOD0, next 24 LOD1, rest LOD2,
+   cull beyond 25 m; Animator Culling Mode = Cull Completely.
+5. Materials: Material Creation Mode None. One URP/Lit opaque material per look: BaseColor (sRGB),
+   Normal (Texture Type Normal map, OpenGL +Y, no green flip), MetallicSmoothness (sRGB off, alpha is
+   data: Alpha Source = Input Texture Alpha, Alpha Is Transparency off; Smoothness Source = Metallic
+   Alpha), Emission (sRGB) only where the look lists `_Emission.png` (`manifest.looks[*].emissive`).
+6. Textures, Android override: ASTC 6x6 for BaseColor/MetallicSmoothness/Emission, ASTC 4x4 for Normal,
+   mipmaps on, max size 512 (NPC looks) or 1024 (hero looks, `atlas_size` in the manifest).
+7. Per-look root scale for height variety: `manifest.looks[*].scale` (skeleton unchanged).
+8. NPC binding: `manifest.contract_binding.archetype_to_looks` (all 28 contract ids covered; ids under
+   `proposed_ids_not_in_contract` are not in `contract/ids/archetypes.json` and need a backend proposal
+   before use). Sybil clones: same look at runtime scale 0.6-0.9.
+9. Runtime wardrobe (players): merge the chosen parts into one SkinnedMeshRenderer (same rig), copy each
+   part's slot texture into its fixed rect of one atlas (8x8 grid in `parts.json` → `slots`), drop body
+   chunks named in `hides_body_regions` (skin is split into `skin_hand/forearm/upperarm/torso/ankle`;
+   `waist` = the `<bottom>_waist` chunk, hidden under any top/outer layer), include `needs` (e.g. shorts
+   need `legs`). Tint per sub id with `<part>_Mask.png`. Part FBX keep all 55 bones even when unweighted.
+10. Credits screen must carry: "Snow Rig (CC) Blender Foundation | studio.blender.org" and
+    "Rain Rig (CC) Blender Foundation | studio.blender.org", CC BY 4.0, with "modified by CT Life".
+
+Status: open
