@@ -224,7 +224,7 @@ namespace CTLife.UI
             ["map.title"] = "Where to next?", ["map.eyebrow"] = "EXPLORE CT CITY",
             ["map.body"] = "Good company, bad takes, and a few new beginnings.",
             ["map.openCount"] = "{0} places to drop into", ["map.openCountOne"] = "1 place to drop into", ["map.open"] = "Drop in", ["map.club"] = "Club",
-            ["map.closed"] = "Opening soon", ["map.openRow"] = "Open now", ["map.go"] = "Go", ["map.soonTag"] = "Soon", ["map.empty"] = "The city map is loading. Try again in a moment.",
+            ["map.search"] = "Search CT Island", ["map.comingSoon"] = "Coming soon", ["map.comingSoonBody"] = "A new neighbourhood is being built here.", ["map.youAreHere"] = "You are here", ["map.yourHome"] = "Your home", ["map.privateHome"] = "Private home", ["map.openHome"] = "Home", ["map.noResults"] = "No places match.", ["map.closed"] = "Opening soon", ["map.openRow"] = "Open now", ["map.go"] = "Go", ["map.soonTag"] = "Soon", ["map.empty"] = "The city map is loading. Try again in a moment.",
             ["district.timeline"] = "The conversation starts here.",
             ["district.trenches"] = "Big conviction. Bigger plot twists.",
             ["district.builder_hills"] = "Make something worth talking about.",

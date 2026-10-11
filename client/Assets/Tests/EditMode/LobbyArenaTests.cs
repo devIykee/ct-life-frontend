@@ -10,7 +10,9 @@ namespace CTLife.Tests
     public class LobbyArenaTests
     {
         private static readonly string[] Icons =
-            { "treasure-map", "briefcase", "bank", "shop", "coins", "lightning-bolt", "brain", "crown", "calendar", "chat", "smartphone" };
+            { "treasure-map", "briefcase", "bank", "shop", "coins", "lightning-bolt", "brain", "crown", "calendar", "chat", "smartphone",
+              // Map and city HUD (2026-10-17)
+              "door", "laptop", "microphone", "center-direction", "search", "multiply", "crane", "home-page", "place-marker", "speech-bubble", "smiling" };
 
         [Test]
         public void Cash_ExactBelowTenThousand_CompactAbove()
