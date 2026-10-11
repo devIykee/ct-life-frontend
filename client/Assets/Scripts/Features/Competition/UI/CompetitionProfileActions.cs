@@ -15,8 +15,8 @@ namespace CTLife.Competition
         {
             if (!CompWire.IsSafeId(userId)) return null;
             var row = El.Div("ct-row");
-            row.Add(CompUi.Btn(CompStrings.T("profile.beef"), () => { close?.Invoke(); CompetitionLinks.ChallengeToBeef(userId, name); }, "ct-btn"));
-            row.Add(CompUi.Btn(CompStrings.T("profile.cabal"), () => { close?.Invoke(); CompetitionLinks.InviteToCabal(userId, name); }, "ct-btn"));
+            row.Add(El.Btn(CompStrings.T("profile.beef"), () => { close?.Invoke(); CompetitionLinks.ChallengeToBeef(userId, name); }, "ct-btn"));
+            row.Add(El.Btn(CompStrings.T("profile.cabal"), () => { close?.Invoke(); CompetitionLinks.InviteToCabal(userId, name); }, "ct-btn"));
             return row;
         }
 
@@ -24,7 +24,7 @@ namespace CTLife.Competition
         public static VisualElement BuildNpc(string archetypeId, string npcId, Action close)
         {
             if (!ChatSession.IsLlmNpc(archetypeId)) return null;
-            return CompUi.Btn(CompStrings.T("profile.talk"), () => { close?.Invoke(); CompetitionLinks.OpenNpcChat(archetypeId, npcId); }, "ct-btn");
+            return El.Btn(CompStrings.T("profile.talk"), () => { close?.Invoke(); CompetitionLinks.OpenNpcChat(archetypeId, npcId); }, "ct-btn");
         }
     }
 }

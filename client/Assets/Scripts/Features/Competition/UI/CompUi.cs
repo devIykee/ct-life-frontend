@@ -8,85 +8,106 @@ using UnityEngine.UIElements;
 
 namespace CTLife.Competition
 {
-    /// <summary>Small UI Toolkit builders on CTLife.UI's El and the existing ct-* theme. Functional, not styled. All text is plain.</summary>
+    /// <summary>
+    /// UI Toolkit builders for the Phase 6 screens on the Duo kit (duo-kit.uss / duo-apps.uss): sections on the canvas instead of
+    /// boxed cards, key/value rows with inset hairlines, capsule buttons, segmented tabs, a kit text field. All text is plain.
+    /// </summary>
     internal static class CompUi
     {
-        public static ScrollView Page() => El.VerticalScroll("ct-app-page");
+        /// <summary>Button styles: <see cref="Primary"/> (blue capsule), <see cref="Plain"/> (grey capsule, blue label), <see cref="Danger"/>.</summary>
+        public const string Primary = "primary", Plain = "plain", Danger = "danger";
 
-        public static Label Text(string text, string cls = "ct-body")
+        public static ScrollView Page() => El.VerticalScroll();
+
+        public static Label Text(string text, string cls = "duo-comp-text")
         {
             var l = El.Text(text ?? "", cls);
             l.enableRichText = false;
             return l;
         }
 
-        public static Label H1(string text) => Text(text, "ct-h1");
-        public static Label H2(string text) => Text(text, "ct-h2");
-        public static Label Small(string text) => Text(text, "ct-small ct-muted");
-        public static Label Error(string text) => Text(text, "ct-error");
+        public static Label H2(string text) => Text(text, "duo-comp-h2");
+        public static Label Small(string text) => Text(text, "duo-comp-note");
+        public static Label Error(string text) => Text(text, "duo-comp-error");
+        /// <summary>Small uppercase label above a control group (iOS grouped-table header).</summary>
+        public static Label Label(string text) => Text((text ?? "").ToUpperInvariant(), "duo-comp-label");
 
-        public static VisualElement Card(params VisualElement[] children) => El.Div("ct-card", children);
+        /// <summary>A section on the canvas: its own title, rows and actions; spacing, not a box, separates sections.</summary>
+        public static VisualElement Card(params VisualElement[] children) => El.Div("duo-comp-section", children);
 
-        public static VisualElement Row(params VisualElement[] children)
+        public static VisualElement Row(params VisualElement[] children) => El.Div("duo-comp-actions", children);
+
+        /// <summary>Key on the left, value on the right, inset hairline below (iOS detail row).</summary>
+        public static VisualElement Pair(string key, string value) =>
+            El.Div("duo-comp-pair", Text(key, "duo-comp-pair-key"), Text(value, "duo-comp-pair-value"));
+
+        /// <summary>A key/value row whose value is coloured by sign or state ("duo-value-positive" / "duo-value-negative").</summary>
+        public static VisualElement Pair(string key, string value, string valueClass)
         {
-            var r = El.Div("ct-row", children);
-            r.style.flexDirection = FlexDirection.Row;
-            r.style.alignItems = Align.Center;
-            r.style.flexWrap = Wrap.Wrap;
-            return r;
+            var row = Pair(key, value);
+            if (!string.IsNullOrEmpty(valueClass)) row.ElementAt(1).AddToClassList(valueClass);
+            return row;
         }
 
-        public static VisualElement Pair(string key, string value)
+        public static Button Btn(string text, Action onClick, string kind = Primary)
         {
-            var spacer = El.Div("ct-grow");
-            spacer.style.flexGrow = 1;
-            return Row(Text(key, "ct-small ct-muted"), spacer, Text(value, "ct-body"));
-        }
-
-        public static Button Btn(string text, Action onClick, string cls = "ct-btn ct-btn-primary") => El.Btn(text, onClick, cls);
-
-        public static Button Chip(string text, Action onClick, bool on)
-        {
-            var b = PhonePresentation.SizeToText(El.Btn(text, onClick, "ct-chip"));
-            b.EnableInClassList("ct-chip-on", on);
+            var b = El.Btn(text, onClick, "duo-comp-btn" + (kind == Plain ? "" : kind == Danger ? " duo-comp-btn-danger" : " duo-comp-btn-primary"));
+            b.enableRichText = false;
             return b;
         }
 
+        /// <summary>Selectable capsule (topic, reason). Callers flip "duo-chip-on".</summary>
+        public static Button Chip(string text, Action onClick, bool on)
+        {
+            var b = El.Btn(text, onClick, "duo-chip");
+            b.enableRichText = false;
+            b.EnableInClassList("duo-chip-on", on);
+            return b;
+        }
+
+        public static VisualElement ChipRow(params VisualElement[] chips) => El.Div("duo-chip-row", chips);
+
         public static TextField Field(string label, string value, Action<string> changed, int maxLength)
         {
-            var f = new TextField(label) { value = value ?? "", isDelayed = false, maxLength = maxLength };
-            f.AddToClassList("ct-field");
+            var f = new TextField { value = value ?? "", isDelayed = false, maxLength = maxLength };
+            f.AddToClassList("duo-field");
+            f.textEdition.placeholder = label ?? "";
+            f.tooltip = label;
             f.RegisterValueChangedCallback(e => changed?.Invoke(e.newValue));
             return f;
         }
 
+        /// <summary>Segmented control (iOS); re-created by the screens on every tab change.</summary>
         public static VisualElement Tabs(string[] labels, int selected, Action<int> pick)
         {
-            var row = El.Div("ct-app-tabs");
-            for (int i = 0; i < labels.Length; i++)
-            {
-                int idx = i;
-                row.Add(Chip(labels[i], () => pick(idx), i == selected));
-            }
+            var seg = new DuoSegmented(labels, selected, i => pick(i));
+            return El.Div("duo-comp-tabs", seg);
+        }
+
+        /// <summary>The "not available yet" or error state, with a retry where a retry makes sense. Centred, no box.</summary>
+        public static VisualElement ErrorBlock(CompError err, Action retry)
+        {
+            bool canRetry = retry != null && (err.Retryable || err.IsUnavailable);
+            string action = canRetry ? CompStrings.T(err.IsUnavailable ? "common.checkAgain" : "common.retry") : null;
+            if (err.IsUnavailable) return Duo.Empty(CompStrings.T("unavailable.title"), CompStrings.T("unavailable.body"), action, canRetry ? retry : null);
+            var block = El.Div("duo-comp-error-block", Duo.Notice(err.Message, Duo.Tone.Danger));
+            if (canRetry) block.Add(Row(Btn(action, retry, Plain)));
+            return block;
+        }
+
+        /// <summary>Rank row for leaderboards: rank, avatar, alias, value; "you" is highlighted.</summary>
+        public static VisualElement RankRow(int rank, string alias, string seed, string value, bool me)
+        {
+            var row = new DuoRow().Leading(El.Div("duo-rank-lead", Text(rank > 0 ? rank.ToString(System.Globalization.CultureInfo.InvariantCulture) : "—", "duo-rank-number"),
+                    Duo.Avatar(alias, seed, "duo-avatar-s")))
+                .Title(alias, me ? "duo-row-title-strong" : null).Value(value, "duo-rank-value");
+            row.AddToClassList("duo-row-static");
+            row.EnableInClassList("duo-rank-me", me);
             return row;
         }
 
-        /// <summary>The "not available yet" or error block, with a retry button where a retry makes sense.</summary>
-        public static VisualElement ErrorBlock(CompError err, Action retry)
-        {
-            var card = Card();
-            if (err.IsUnavailable)
-            {
-                card.Add(H2(CompStrings.T("unavailable.title")));
-                card.Add(Text(CompStrings.T("unavailable.body")));
-            }
-            else
-            {
-                card.Add(Error(err.Message));
-            }
-            if (retry != null && (err.Retryable || err.IsUnavailable)) card.Add(Btn(CompStrings.T(err.IsUnavailable ? "common.checkAgain" : "common.retry"), retry, "ct-btn"));
-            return card;
-        }
+        /// <summary>Status tag (reference 2): a small tinted capsule naming a real server state.</summary>
+        public static Label Tag(string text, string tone = "gray") => Text(text, "duo-tag duo-tag-" + tone);
     }
 
     /// <summary>
@@ -96,6 +117,11 @@ namespace CTLife.Competition
     internal abstract class CompScreen : IDisposable
     {
         public readonly ScrollView Root;
+        /// <summary>The Duo frame (nav + large title) around <see cref="Root"/>; what the phone shows.</summary>
+        public readonly DuoPage Page;
+        /// <summary>Content below the large title.</summary>
+        protected VisualElement Body => Page.Body;
+        internal PhoneShell Shell;
         protected readonly CompetitionHub Hub;
         private readonly CancellationTokenSource _life = new CancellationTokenSource();
         private readonly Session _session;
@@ -106,10 +132,13 @@ namespace CTLife.Competition
         protected CancellationToken Life => _life.Token;
         protected string Me => _user;
 
-        protected CompScreen(CompetitionHub hub)
+        protected CompScreen(CompetitionHub hub, string title)
         {
             Hub = hub;
             Root = CompUi.Page();
+            Page = new DuoPage(Root, title);
+            Page.AddToClassList("duo-comp");
+            Page.Nav.AddLeft(DuoGlyph.Kind.Back, Strings.T("common.back"), () => { if (!Back()) Shell?.Back(); }, "comp-back");
             _session = Services.Get<Session>();
             _user = _session.UserId;
             _session.Changed += SessionChanged;
@@ -131,6 +160,37 @@ namespace CTLife.Competition
         }
 
         protected virtual void Tick() { }
+
+        /// <summary>A row for another player: avatar and title fill in once the alias resolves (cached aliases render at once).</summary>
+        protected DuoRow PersonRow(string userId, Func<string, string> title, Action onTap = null)
+        {
+            var cached = Hub.AliasCached(userId);
+            var row = new DuoRow(onTap).Leading(Duo.Avatar(cached ?? "…", userId, "duo-avatar-m")).Title(cached != null ? title(cached) : "…", "duo-row-title-strong");
+            if (onTap == null) row.AddToClassList("duo-row-static");
+            if (cached == null)
+                Run(ct => Hub.AliasOf(userId, ct), a =>
+                {
+                    row.TitleLabel.text = title(a);
+                    var letter = row.Q<Label>(className: "duo-avatar-letter");
+                    if (letter != null && !string.IsNullOrWhiteSpace(a)) letter.text = System.Globalization.StringInfo.GetNextTextElement(a.Trim()).ToUpperInvariant();
+                }, null, false);
+            return row;
+        }
+
+        /// <summary>Nav back inside the screen (detail → list). False lets the phone go back.</summary>
+        protected virtual bool Back() => false;
+
+        /// <summary>Shows a bottom sheet over this screen; closed with the screen.</summary>
+        protected DuoSheet ShowSheet(DuoSheet sheet)
+        {
+            _sheet?.Close();
+            _sheet = sheet;
+            sheet.Scrolling();
+            sheet.Closed += () => { if (_sheet == sheet) _sheet = null; };
+            return sheet.Show(Page);
+        }
+
+        private DuoSheet _sheet;
 
         /// <summary>Runs async work bound to this view. Callbacks run only while the view is alive.</summary>
         protected async void Run<T>(Func<CancellationToken, Task<T>> work, Action<T> done, Action<CompError> fail, bool write)
@@ -163,6 +223,7 @@ namespace CTLife.Competition
         {
             if (Disposed) return;
             Disposed = true;
+            _sheet?.Close();
             _life.Cancel();
             _tick?.Pause();
             Subs.Dispose();
@@ -187,6 +248,7 @@ namespace CTLife.Competition
         }
 
         public override int Phase => 6;
+        public override DuoChrome Chrome => DuoChrome.Plain;
 
         internal CompetitionHub Hub => _hub == null || _hub.Disposed ? (_hub = CompetitionHub.Acquire()) : _hub;
         internal PhoneShell Shell => Phone;
@@ -195,7 +257,8 @@ namespace CTLife.Competition
         {
             Closed();
             _view = CreateView(Hub);
-            return _view.Root;
+            _view.Shell = Shell;
+            return _view.Page;
         }
 
         internal abstract CompScreen CreateView(CompetitionHub hub);

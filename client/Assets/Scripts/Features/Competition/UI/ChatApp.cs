@@ -27,23 +27,26 @@ namespace CTLife.Competition
     {
         private string _archetype;
         private string _npcId;
-        private readonly VisualElement _tabs = El.Div(), _log = El.Div(), _form = El.Div();
+        private readonly VisualElement _tabs = El.Div(), _log = El.Div("duo-thread"), _form = El.Div("duo-composer");
         private TextField _input;
         private Label _status, _counter;
         private Button _send;
         private string _draft = "";
         private int _rendered;
-        private string _reporting;
 
-        public ChatScreen(CompetitionHub hub) : base(hub)
+        public ChatScreen(CompetitionHub hub) : base(hub, CompStrings.T("app.chat"))
         {
             CompetitionLinks.TakePendingChat(out var arch, out _npcId);
             _archetype = ChatSession.IsLlmNpc(arch) ? arch : ChatSession.Archetypes[0];
-            Root.Add(CompUi.H1(CompStrings.T("app.chat")));
-            Root.Add(_tabs);
-            Root.Add(CompUi.Small(CompStrings.T("chat.safety")));
-            Root.Add(_log);
-            Root.Add(_form);
+            Page.name = "npc-chat-page";
+            // Messages' bubble and composer styles (board #4); the composer floats over a fade at the bottom.
+            Page.AddToClassList("duo-messages");
+            Page.AddToClassList("duo-npc-chat");
+            Body.Add(_tabs);
+            Body.Add(CompUi.Small(CompStrings.T("chat.safety")));
+            Body.Add(_log);
+            _form.style.backgroundImage = Background.FromTexture2D(Duo.Fade);
+            Page.Add(_form);
             Select(_archetype);
         }
 
@@ -53,7 +56,6 @@ namespace CTLife.Competition
         {
             _archetype = archetype;
             _draft = "";
-            _reporting = null;
             _tabs.Clear();
             _tabs.Add(CompUi.Tabs(ChatSession.Archetypes.Select(a => CompStrings.T("npc." + a)).ToArray(), Array.IndexOf(ChatSession.Archetypes, archetype),
                 i => { if (!Session.InFlight) Select(ChatSession.Archetypes[i]); }));
@@ -76,14 +78,21 @@ namespace CTLife.Competition
         private void BuildForm()
         {
             _form.Clear();
-            _input = CompUi.Field(CompStrings.T("chat.input"), _draft, v => { _draft = v; RefreshStatus(); }, ChatSession.MaxChars);
-            _counter = CompUi.Small("");
-            _status = CompUi.Small("");
-            _send = CompUi.Btn(CompStrings.T("chat.send"), Send);
-            _form.Add(_input);
-            _form.Add(_counter);
-            _form.Add(_send);
-            _form.Add(_status);
+            _input = new TextField { value = _draft ?? "", isDelayed = false, maxLength = ChatSession.MaxChars, multiline = true };
+            _input.name = "npc-chat-input";
+            _input.AddToClassList("duo-composer-input");
+            _input.textEdition.placeholder = CompStrings.F("chat.placeholder", CompStrings.T("npc." + _archetype));
+            _input.RegisterValueChangedCallback(e => { _draft = e.newValue ?? ""; RefreshStatus(); });
+            _counter = El.Text("", "duo-composer-error duo-composer-count");
+            _status = El.Text("", "duo-composer-error duo-npc-status");
+            _send = new Button(Send) { name = "npc-chat-send", tooltip = CompStrings.T("chat.send") };
+            _send.AddToClassList("duo-composer-send");
+            _send.Add(El.PassThrough(El.Div("duo-composer-send-face", new DuoGlyph(DuoGlyph.Kind.Send))));
+            var field = El.Div("duo-composer-field");
+            Duo.AddShadow(field, "pill");
+            field.Add(El.Div("duo-composer-field-face", _input, _send));
+            _form.Add(El.Div("duo-npc-meta", _status, _counter));
+            _form.Add(El.Div("duo-composer-row", field));
             RefreshStatus();
         }
 
@@ -102,39 +111,57 @@ namespace CTLife.Competition
         {
             _log.Clear();
             var s = Session;
-            if (s.Lines.Count == 0) _log.Add(CompUi.Small(CompStrings.F("chat.empty.thread", CompStrings.T("npc." + _archetype))));
-            foreach (var line in s.Lines) _log.Add(Bubble(line));
+            if (s.Lines.Count == 0) _log.Add(Duo.Footnote(CompStrings.F("chat.empty.thread", CompStrings.T("npc." + _archetype))));
+            ChatWho? last = null;
+            for (int i = 0; i < s.Lines.Count; i++)
+            {
+                var line = s.Lines[i];
+                bool tail = i == s.Lines.Count - 1 || s.Lines[i + 1].Who != line.Who;
+                _log.Add(Bubble(line, last != line.Who, tail));
+                last = line.Who;
+            }
             _rendered = s.Lines.Count;
+            Root.schedule.Execute(() => Root.scrollOffset = new UnityEngine.Vector2(0, float.MaxValue));
         }
 
-        private VisualElement Bubble(ChatLine l)
+        private VisualElement Bubble(ChatLine l, bool gap, bool tail)
         {
-            var who = l.Who == ChatWho.Me ? CompStrings.T("common.you") : l.Who == ChatWho.Npc ? CompStrings.T("npc." + _archetype) : "";
-            var card = CompUi.Card();
-            if (!string.IsNullOrEmpty(who)) card.Add(CompUi.Small(l.Who == ChatWho.Npc ? who + "  ·  " + CompStrings.T("chat.ai") : who));
-            card.Add(CompUi.Text(l.Text, l.Kind == ChatKind.Pending ? "ct-body ct-muted" : "ct-body"));
+            bool mine = l.Who == ChatWho.Me;
+            var wrap = El.Div("duo-npc-line");
+            if (gap && l.Who == ChatWho.Npc) wrap.Add(El.Text(CompStrings.T("npc." + _archetype) + "  ·  " + CompStrings.T("chat.ai"), "duo-npc-who"));
+            var bubble = El.Div("duo-bubble " + (mine ? "duo-bubble-out" : "duo-bubble-in") + (tail ? " duo-bubble-tail" : "") + (l.Kind == ChatKind.Failed ? " duo-bubble-failed" : ""),
+                CompUi.Text(l.Text, "duo-bubble-text"));
+            if (l.Kind == ChatKind.Pending) bubble.AddToClassList("duo-npc-pending");
+            wrap.Add(El.Div("duo-bubble-row " + (mine ? "duo-bubble-row-out" : "duo-bubble-row-in") + (gap ? " duo-bubble-row-gap" : ""), bubble));
+            string status = null;
             switch (l.Kind)
             {
-                case ChatKind.Filtered: card.Add(CompUi.Small(CompStrings.T("chat.filtered"))); break;
-                case ChatKind.Pending: card.Add(CompUi.Small(CompStrings.T("chat.thinking"))); break;
-                case ChatKind.Failed: card.Add(CompUi.Error(CompStrings.T(l.ErrorKey ?? "err.generic").Replace("{0}", "—"))); break;
+                case ChatKind.Filtered: status = CompStrings.T("chat.filtered"); break;
+                case ChatKind.Pending: status = CompStrings.T("chat.thinking"); break;
+                case ChatKind.Failed: status = CompStrings.T(l.ErrorKey ?? "err.generic").Replace("{0}", "—"); break;
             }
-            if (l.Who == ChatWho.Npc && !string.IsNullOrEmpty(l.ReplyId)) card.Add(ReportRow(l));
-            return card;
+            if (status != null)
+                wrap.Add(El.Text(status, "duo-bubble-status" + (mine ? " duo-bubble-status-out" : "") + (l.Kind == ChatKind.Failed ? " duo-npc-failed" : "")));
+            if (l.Who == ChatWho.Npc && !string.IsNullOrEmpty(l.ReplyId))
+            {
+                var report = El.Btn(CompStrings.T("chat.report"), () => ReportSheet(l), "duo-link duo-npc-report");
+                report.name = "npc-chat-report-" + l.ReplyId;
+                wrap.Add(report);
+            }
+            return wrap;
         }
 
-        private VisualElement ReportRow(ChatLine l)
+        private void ReportSheet(ChatLine l)
         {
-            if (_reporting != l.ReplyId)
-                return CompUi.Btn(CompStrings.T("chat.report"), () => { _reporting = l.ReplyId; RenderLog(); }, "ct-btn");
-            var row = El.Div("ct-app-tabs");
-            row.Add(CompUi.Small(CompStrings.T("chat.report.why")));
+            var sheet = new DuoSheet(CompStrings.T("chat.report"), CompStrings.T("chat.report.why"));
+            sheet.name = "npc-chat-report-sheet";
             foreach (var reason in new[] { "spam", "scam", "harassment", "nsfw" })
             {
                 var r = reason;
-                row.Add(CompUi.Chip(CompStrings.T("report." + r), () => SendReport(l, r), false));
+                sheet.AddOption(CompStrings.T("report." + r), () => SendReport(l, r), r == "scam" || r == "harassment");
             }
-            return row;
+            sheet.AddSecondary(CompStrings.T("common.cancel"));
+            ShowSheet(sheet);
         }
 
         private void SendReport(ChatLine l, string reasonId)
@@ -144,13 +171,11 @@ namespace CTLife.Competition
             Run(ct => Hub.Api.ReportReply(l.ReplyId, reasonId, k, ct), _ =>
             {
                 key.Complete();
-                _reporting = null;
                 Bus.Publish(ToastSignal.Text(CompStrings.T("chat.reported"), ToastKind.Good));
                 RenderLog();
             }, e =>
             {
                 key.Settle(e);
-                _reporting = null;
                 Bus.Publish(ToastSignal.Text(e.Message, ToastKind.Bad));
                 RenderLog();
             }, true);

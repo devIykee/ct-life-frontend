@@ -36,6 +36,10 @@ namespace CTLife.Competition
         {
             var hub = CompetitionHub.Acquire();
             var screen = new XLinkScreen(hub, false);
+            // Embedded in a Settings group: the bare scroll view, without the Duo frame's nav padding.
+            screen.Root.RemoveFromHierarchy();
+            screen.Root.contentContainer.RemoveFromClassList("duo-scroll-content");
+            screen.Root.AddToClassList("duo-xlink-embedded");
             // The screen owns its lifetime through the panel detach event; release the hub reference with it.
             screen.Root.RegisterCallback<DetachFromPanelEvent>(e => { if (e.target == screen.Root) hub.Release(); });
             return screen.Root;
@@ -49,15 +53,16 @@ namespace CTLife.Competition
 
         private readonly VisualElement _body = El.Div();
         private int _ticks, _polls;
-        private bool _waiting, _confirmUnlink;
+        private bool _waiting;
         private Texture2D _avatar;
         private XLinkInfo _info;
         private Label _wait;
 
-        public XLinkScreen(CompetitionHub hub, bool title) : base(hub)
+        public XLinkScreen(CompetitionHub hub, bool title) : base(hub, title ? CompStrings.T("app.xlink") : "")
         {
-            if (title) Root.Add(CompUi.H1(CompStrings.T("app.xlink")));
-            Root.Add(_body);
+            Page.name = "xlink-page";
+            Page.AddToClassList("duo-xlink");
+            Body.Add(_body);
             Hub.Feed.XLinkEvent += OnUpdate;
             Reload();
         }
@@ -84,45 +89,55 @@ namespace CTLife.Competition
         {
             _info = info;
             _wait = null;
-            body.Add(CompUi.Small(CompStrings.T("x.note")));
             var failed = Hub.Feed.LastXLink;
             if (failed != null && failed.Status == "failed")
-                body.Add(CompUi.Error(failed.ReasonId == "X_ACCOUNT_ALREADY_LINKED" ? CompStrings.T("err.xAlreadyLinked") : CompStrings.T("x.failed")));
+                body.Add(Duo.Notice(failed.ReasonId == "X_ACCOUNT_ALREADY_LINKED" ? CompStrings.T("err.xAlreadyLinked") : CompStrings.T("x.failed"), Duo.Tone.Danger));
             if (info == null)
             {
-                body.Add(CompUi.Card(CompUi.H2(CompStrings.T("x.notLinked")), CompUi.Text(CompStrings.T("x.why"))));
                 var status = CompUi.Small("");
-                body.Add(CompUi.Btn(CompStrings.T(_waiting ? "x.waiting.retry" : "x.link"), () => StartLink(status)));
+                var empty = Duo.Empty(CompStrings.T("x.notLinked"), CompStrings.T("x.why"));
+                var link = CompUi.Btn(CompStrings.T(_waiting ? "x.waiting.retry" : "x.link"), () => StartLink(status));
+                link.name = "xlink-link";
+                empty.Add(link);
+                body.Add(empty);
                 if (_waiting)
                 {
                     _wait = CompUi.Small(CompStrings.T("x.waiting"));
                     body.Add(_wait);
                 }
                 body.Add(status);
+                body.Add(CompUi.Small(CompStrings.T("x.note")));
                 return;
             }
             _waiting = false;
-            var card = CompUi.Card();
-            var avatar = El.Div("ct-avatar");
-            avatar.style.width = 56;
-            avatar.style.height = 56;
-            avatar.style.borderTopLeftRadius = avatar.style.borderTopRightRadius = avatar.style.borderBottomLeftRadius = avatar.style.borderBottomRightRadius = 28;
-            avatar.style.backgroundColor = new Color(0.18f, 0.2f, 0.23f);
+            var avatar = El.Div("duo-xlink-avatar");
+            avatar.pickingMode = PickingMode.Ignore;
             var handle = XLinkRules.Display(info.XHandle);
-            card.Add(CompUi.Row(avatar, CompUi.H2(handle ?? CompStrings.T("x.handleUnknown"))));
-            card.Add(CompUi.Small(CompStrings.T("x.source")));
-            if (info.VerifiedAtMs.HasValue) card.Add(CompUi.Pair(CompStrings.T("x.verified"), CompTime.Date(info.VerifiedAtMs.Value)));
-            body.Add(card);
+            var row = new DuoRow().Leading(avatar).Title(handle ?? CompStrings.T("x.handleUnknown"), "duo-row-title-large").Subtitle(CompStrings.T("x.source"), twoLines: true);
+            row.AddToClassList("duo-row-static");
+            row.AddToClassList("duo-row-profile");
+            row.name = "xlink-account";
+            row.Trailing(CompUi.Tag(CompStrings.T("x.tag.linked"), "green"));
+            body.Add(row);
+            if (info.VerifiedAtMs.HasValue) body.Add(CompUi.Pair(CompStrings.T("x.verified"), CompTime.Date(info.VerifiedAtMs.Value)));
             if (info.XAvatarUrl != null) LoadAvatar(avatar, info.XAvatarUrl);
-            var unlinkStatus = CompUi.Small("");
-            if (!_confirmUnlink) body.Add(CompUi.Btn(CompStrings.T("x.unlink"), () => { _confirmUnlink = true; Reload(); }, "ct-btn ct-btn-danger"));
-            else
-            {
-                body.Add(CompUi.Text(CompStrings.T("x.unlink.confirm")));
-                body.Add(CompUi.Row(CompUi.Btn(CompStrings.T("x.unlink.yes"), () => Unlink(unlinkStatus), "ct-btn ct-btn-danger"),
-                    CompUi.Btn(CompStrings.T("common.cancel"), () => { _confirmUnlink = false; Reload(); }, "ct-btn")));
-            }
-            body.Add(unlinkStatus);
+            var unlink = CompUi.Btn(CompStrings.T("x.unlink"), UnlinkSheet, CompUi.Danger);
+            unlink.name = "xlink-unlink";
+            body.Add(CompUi.Row(unlink));
+            body.Add(CompUi.Small(CompStrings.T("x.note")));
+        }
+
+        private void UnlinkSheet()
+        {
+            var sheet = new DuoSheet(CompStrings.T("x.unlink"), CompStrings.T("x.unlink.confirm"));
+            sheet.name = "xlink-unlink-sheet";
+            var status = CompUi.Small("");
+            sheet.AddContent(status);
+            Button go = null;
+            go = CompUi.Btn(CompStrings.T("x.unlink.yes"), () => { go.SetEnabled(false); Unlink(status, sheet, go); }, CompUi.Danger);
+            sheet.AddContent(go);
+            sheet.AddSecondary(CompStrings.T("common.cancel"));
+            ShowSheet(sheet);
         }
 
         private void StartLink(Label status)
@@ -140,7 +155,7 @@ namespace CTLife.Competition
             }, e => status.text = e.Message, false);
         }
 
-        private void Unlink(Label status)
+        private void Unlink(Label status, DuoSheet sheet, Button go)
         {
             var key = Hub.KeyFor("x:unlink");
             var k = key.KeyFor("DELETE", "/x/link", "");
@@ -148,7 +163,7 @@ namespace CTLife.Competition
             Run(ct => Hub.Api.XUnlink(k, ct), _ =>
             {
                 key.Complete();
-                _confirmUnlink = false;
+                sheet.Close();
                 Hub.Feed.LastXLink = null;
                 Bus.Publish(ToastSignal.Text(CompStrings.T("feed.xUnlinked"), ToastKind.Info));
                 Reload();
@@ -156,8 +171,9 @@ namespace CTLife.Competition
             {
                 key.Settle(e);
                 // 404 on delete: nothing was linked any more, which is the state we wanted.
-                if (e.Is("NOT_FOUND")) { key.Complete(); _confirmUnlink = false; Reload(); return; }
+                if (e.Is("NOT_FOUND")) { key.Complete(); sheet.Close(); Reload(); return; }
                 status.text = e.Message;
+                go.SetEnabled(true);
             }, true);
         }
 

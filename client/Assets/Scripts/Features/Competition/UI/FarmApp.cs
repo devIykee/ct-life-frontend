@@ -31,19 +31,18 @@ namespace CTLife.Competition
         private FarmStatus _status;
         private Label _jailCountdown, _claimCountdown;
         private Button _claimBtn;
-        private bool _confirmBail;
 
-        public FarmScreen(CompetitionHub hub) : base(hub)
+        public FarmScreen(CompetitionHub hub) : base(hub, CompStrings.T("app.farm"))
         {
-            Root.Add(CompUi.H1(CompStrings.T("app.farm")));
-            Root.Add(CompUi.Small(CompStrings.T("farm.note")));
-            Root.Add(_jail);
-            Root.Add(_farm);
-            Root.Add(CompUi.H2(CompStrings.T("farm.history")));
-            Root.Add(_history);
-            Root.Add(CompUi.H2(CompStrings.T("sybil.barn")));
-            Root.Add(CompUi.Btn(CompStrings.T("sybil.barn.show"), LoadBarn, "ct-btn"));
-            Root.Add(_barn);
+            Page.name = "farm-page";
+            Page.AddToClassList("duo-farm");
+            Body.Add(_jail);
+            Body.Add(_farm);
+            Body.Add(CompUi.Small(CompStrings.T("farm.note")));
+            Body.Add(Duo.SectionHeader(CompStrings.T("farm.history")));
+            Body.Add(_history);
+            Body.Add(Duo.SectionHeader(CompStrings.T("sybil.barn"), CompStrings.T("sybil.barn.show"), LoadBarn));
+            Body.Add(_barn);
             Hub.Feed.SybilEvent += OnSybil;
             _sybil = FromFeed(Hub.Feed.Sybil);
             LoadAll();
@@ -58,7 +57,6 @@ namespace CTLife.Competition
 
         private void LoadAll()
         {
-            _confirmBail = false;
             Load(_jail, ct => Hub.Api.Sybil(ct), RenderJail);
             Load(_farm, ct => Hub.Api.Farm(ct), RenderFarm);
             Load(_history, ct => Hub.Api.Claims(ct), RenderHistory);
@@ -70,13 +68,9 @@ namespace CTLife.Competition
         {
             _sybil = s;
             _jailCountdown = null;
-            if (!s.Jailed)
-            {
-                body.Add(CompUi.Small(CompStrings.T("sybil.free")));
-                return;
-            }
-            var card = CompUi.Card(CompUi.H2(CompStrings.T("sybil.jailed")));
-            card.Add(CompUi.Text(FarmRules.JailReasonLabel(s.ReasonId)));
+            if (!s.Jailed) return;
+            var card = CompUi.Card(Duo.Notice(CompStrings.T("sybil.jailed") + " " + FarmRules.JailReasonLabel(s.ReasonId), Duo.Tone.Danger));
+            card.name = "farm-jail";
             if (s.ReleaseAtMs.HasValue)
             {
                 _jailCountdown = CompUi.Small("");
@@ -84,31 +78,31 @@ namespace CTLife.Competition
                 UpdateJail();
             }
             else card.Add(CompUi.Small(CompStrings.T("sybil.noRelease")));
-            card.Add(CompUi.Text(CompStrings.T("sybil.rules")));
+            card.Add(CompUi.Small(CompStrings.T("sybil.rules")));
             if (s.Bailable && s.BailCents.HasValue)
             {
-                var status = CompUi.Small("");
-                if (!_confirmBail)
-                    card.Add(CompUi.Btn(CompStrings.F("sybil.bail", Money.Cash(s.BailCents.Value)), () => { _confirmBail = true; Rerender(); }, "ct-btn"));
-                else
-                {
-                    card.Add(CompUi.Text(CompStrings.F("sybil.bail.confirm", Money.Cash(s.BailCents.Value))));
-                    card.Add(CompUi.Row(CompUi.Btn(CompStrings.T("sybil.bail.yes"), () => Bail(status)), CompUi.Btn(CompStrings.T("common.cancel"), () => { _confirmBail = false; Rerender(); }, "ct-btn")));
-                }
-                card.Add(status);
+                var bail = CompUi.Btn(CompStrings.F("sybil.bail", Money.Cash(s.BailCents.Value)), () => BailSheet(s.BailCents.Value), CompUi.Plain);
+                bail.name = "farm-bail";
+                card.Add(CompUi.Row(bail));
             }
             else card.Add(CompUi.Small(CompStrings.T("sybil.notBailable")));
             body.Add(card);
         }
 
-        private void Rerender()
+        private void BailSheet(long cents)
         {
-            if (_sybil == null) return;
-            _jail.Clear();
-            RenderJail(_jail, _sybil);
+            var sheet = new DuoSheet(CompStrings.T("sybil.jailed"), CompStrings.F("sybil.bail.confirm", Money.Cash(cents)));
+            sheet.name = "farm-bail-sheet";
+            var status = CompUi.Small("");
+            sheet.AddContent(status);
+            Button go = null;
+            go = CompUi.Btn(CompStrings.T("sybil.bail.yes"), () => { go.SetEnabled(false); Bail(status, sheet, go); });
+            sheet.AddContent(go);
+            sheet.AddSecondary(CompStrings.T("common.cancel"));
+            ShowSheet(sheet);
         }
 
-        private void Bail(Label status)
+        private void Bail(Label status, DuoSheet sheet, Button go)
         {
             var key = Hub.KeyFor("sybil:bail");
             var k = key.KeyFor("POST", "/me/sybil-status/bail", "");
@@ -116,7 +110,7 @@ namespace CTLife.Competition
             Run(ct => Hub.Api.Bail(k, ct), s =>
             {
                 key.Complete();
-                _confirmBail = false;
+                sheet.Close();
                 Hub.Profile?.Refresh();
                 Bus.Publish(ToastSignal.Text(CompStrings.T(s.Jailed ? "sybil.bail.partial" : "sybil.bail.done"), s.Jailed ? ToastKind.Info : ToastKind.Good));
                 LoadAll();
@@ -124,6 +118,7 @@ namespace CTLife.Competition
             {
                 key.Settle(e);
                 status.text = e.Message;
+                go.SetEnabled(true);
             }, true);
         }
 
@@ -141,21 +136,22 @@ namespace CTLife.Competition
             _status = f;
             _claimCountdown = null;
             if (_sybil == null && f.Sybil != null) _sybil = f.Sybil;
-            var card = CompUi.Card(CompUi.H2(CompStrings.T("farm.today")));
-            card.Add(CompUi.Pair(CompStrings.T("farm.day"), f.DayDate));
-            card.Add(CompUi.Pair(CompStrings.T("farm.base"), Money.Cash(f.BaseCents)));
-            if (f.SgtBonusBps != 0) card.Add(CompUi.Pair(CompStrings.T("farm.sgt"), Money.Bps(f.SgtBonusBps)));
-            if (f.TribeBonusBps != 0) card.Add(CompUi.Pair(CompStrings.T("farm.tribe"), Money.Bps(f.TribeBonusBps)));
-            card.Add(CompUi.Pair(CompStrings.T("farm.todayAmount"), Money.Cash(f.TodayAmountCents)));
-            if (f.DailyCapCents > 0) card.Add(CompUi.Pair(CompStrings.T("farm.cap"), Money.Cash(f.DailyCapCents)));
-            card.Add(CompUi.Pair(CompStrings.T("farm.streak"), CompStrings.F("farm.streakDays", f.StreakDays)));
+            // Hero: today's drop as the server computed it (base + bonuses, capped).
+            var hero = Duo.Hero(CompStrings.T("farm.today") + " · " + f.DayDate, Money.Cash(f.TodayAmountCents),
+                CompStrings.F("farm.streakDays", f.StreakDays), f.StreakDays > 0 ? true : (bool?)null, CompStrings.T("farm.streak"));
+            hero.name = "farm-hero";
+            body.Add(hero);
             _claimCountdown = CompUi.Small("");
-            card.Add(_claimCountdown);
+            body.Add(_claimCountdown);
             var status = CompUi.Small("");
             _claimBtn = CompUi.Btn(CompStrings.T("farm.claim"), () => Claim(status));
-            card.Add(_claimBtn);
-            card.Add(status);
-            body.Add(card);
+            _claimBtn.name = "farm-claim";
+            body.Add(_claimBtn);
+            body.Add(status);
+            body.Add(CompUi.Pair(CompStrings.T("farm.base"), Money.Cash(f.BaseCents)));
+            if (f.SgtBonusBps != 0) body.Add(CompUi.Pair(CompStrings.T("farm.sgt"), Money.Bps(f.SgtBonusBps), "duo-value-positive"));
+            if (f.TribeBonusBps != 0) body.Add(CompUi.Pair(CompStrings.T("farm.tribe"), Money.Bps(f.TribeBonusBps), "duo-value-positive"));
+            if (f.DailyCapCents > 0) body.Add(CompUi.Pair(CompStrings.T("farm.cap"), Money.Cash(f.DailyCapCents)));
             UpdateClaim();
         }
 
@@ -195,8 +191,16 @@ namespace CTLife.Competition
         private void RenderHistory(VisualElement body, List<AirdropClaim> claims)
         {
             if (claims.Count == 0) { body.Add(CompUi.Small(CompStrings.T("farm.history.empty"))); return; }
+            var list = El.Div("duo-list");
             foreach (var c in claims.OrderByDescending(x => x.DayDate, StringComparer.Ordinal).Take(30))
-                body.Add(CompUi.Pair(c.DayDate + (c.SgtBonus ? "  (" + CompStrings.T("farm.sgtShort") + ")" : ""), Money.Cash(c.AmountCents)));
+            {
+                var row = new DuoRow().Title(c.DayDate).Value(Money.Cash(c.AmountCents), "duo-value-positive");
+                if (c.SgtBonus) row.Subtitle(CompStrings.T("farm.sgtShort"));
+                row.AddToClassList("duo-row-static");
+                list.Add(row);
+            }
+            Duo.MarkLast(list);
+            body.Add(list);
         }
 
         // ---------------------------------------------------------------- barn
@@ -207,8 +211,16 @@ namespace CTLife.Competition
         {
             body.Add(CompUi.Pair(CompStrings.T("sybil.barn.count"), b.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)));
             if (b.Inmates.Count == 0) { body.Add(CompUi.Small(CompStrings.T("sybil.barn.empty"))); return; }
+            var list = El.Div("duo-list");
             foreach (var i in b.Inmates)
-                body.Add(CompUi.Pair(i.Alias, i.ReleaseAtMs.HasValue ? CompStrings.F("sybil.releaseAt", CompTime.When(i.ReleaseAtMs.Value)) : CompStrings.T("sybil.noRelease")));
+            {
+                var row = new DuoRow().Leading(Duo.Avatar(i.Alias, i.Alias, "duo-avatar-s")).Title(i.Alias)
+                    .Subtitle(i.ReleaseAtMs.HasValue ? CompStrings.F("sybil.releaseAt", CompTime.When(i.ReleaseAtMs.Value)) : CompStrings.T("sybil.noRelease"));
+                row.AddToClassList("duo-row-static");
+                list.Add(row);
+            }
+            Duo.MarkLast(list);
+            body.Add(list);
         }
 
         protected override void Tick()

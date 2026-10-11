@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CTLife.Core;
 using CTLife.UI;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace CTLife.Competition
@@ -35,15 +36,20 @@ namespace CTLife.Competition
         private bool _refetched;
         private string _opponentId, _opponentName;
 
-        public BeefScreen(CompetitionHub hub) : base(hub)
+        public BeefScreen(CompetitionHub hub) : base(hub, CompStrings.T("app.beef"))
         {
-            Root.Add(CompUi.H1(CompStrings.T("app.beef")));
-            Root.Add(_content);
+            Page.name = "beef-page";
+            Page.AddToClassList("duo-beef");
+            var start = Page.Nav.AddRight(DuoGlyph.Kind.Plus, CompStrings.T("beef.challenge"), ShowForm, "beef-start");
+            start.AddToClassList("duo-glass-circle");
+            Body.Add(_content);
             Hub.Feed.BeefUpdateEvent += OnUpdate;
             Hub.Feed.BeefResultEvent += OnResult;
             Hub.Feed.BeefChallengeEvent += OnChallenge;
             CompetitionLinks.TakePendingOpponent(out _opponentId, out _opponentName);
-            if (_opponentId != null) ShowForm(); else ShowList(0);
+            ShowList(0);
+            // A "call out" from a profile opens the form once the screen is on the phone (sheets need a panel).
+            if (_opponentId != null) Root.schedule.Execute(() => { if (Alive) ShowForm(); });
         }
 
         protected override void OnDisposed()
@@ -63,12 +69,22 @@ namespace CTLife.Competition
             else if (_detailId == null && _tab < 2) ShowList(_tab);
         }
 
-        private VisualElement Page(bool back)
+        protected override bool Back()
+        {
+            if (_detailId == null) return false;
+            ShowList(_tab);
+            return true;
+        }
+
+        private VisualElement Clear(bool detail)
         {
             _content.Clear();
             _detailId = null;
             _countdown = null;
-            if (back) _content.Add(CompUi.Btn(CompStrings.T("common.back"), () => ShowList(_tab), "ct-btn"));
+            Page.Title?.Show(!detail);
+            Page.Nav.SetTitle(CompStrings.T(detail ? "beef.detail" : "app.beef"));
+            Page.Nav.SetCollapsed(detail, instant: true);
+            Root.scrollOffset = Vector2.zero;
             return _content;
         }
 
@@ -77,77 +93,93 @@ namespace CTLife.Competition
         private void ShowList(int tab)
         {
             _tab = tab;
-            var page = Page(false);
-            page.Add(CompUi.Btn(CompStrings.T("beef.challenge"), ShowForm));
+            var page = Clear(false);
             page.Add(CompUi.Tabs(TabKeys.Select(CompStrings.T).ToArray(), tab, ShowList));
-            var body = El.Div();
+            var body = El.Div("duo-comp-body");
             page.Add(body);
             if (tab == 2) { Load(body, LoadElo, RenderElo); return; }
             if (tab == 0) RenderPendingChallenges(body);
-            var list = El.Div();
+            var list = El.Div("duo-comp-body");
             body.Add(list);
             Load(list, ct => Hub.Api.BeefList(tab == 0 ? "mine" : "all", null, null, ct), RenderMatches);
         }
 
         private void RenderPendingChallenges(VisualElement body)
         {
-            foreach (var c in Hub.Feed.BeefChallenges.Where(x => x.ExpiresAtMs == 0 || x.ExpiresAtMs > Hub.NowMs).ToList())
+            var pending = Hub.Feed.BeefChallenges.Where(x => x.ExpiresAtMs == 0 || x.ExpiresAtMs > Hub.NowMs).ToList();
+            if (pending.Count == 0) return;
+            body.Add(Duo.SectionHeader(CompStrings.T("beef.challenged")));
+            var list = El.Div("duo-list");
+            foreach (var c in pending)
             {
                 var ch = c;
-                var card = CompUi.Card(CompUi.H2(CompStrings.T("beef.challenged")));
-                var who = CompUi.Text("…");
-                FillAlias(who, ch.FromUserId, "beef.from");
-                card.Add(who);
-                card.Add(CompUi.Pair(CompStrings.T("beef.topic"), BeefRules.TopicLabel(ch.TopicId)));
-                card.Add(CompUi.Pair(CompStrings.T("beef.stake"), Money.Cash(ch.StakeCents)));
-                if (ch.ExpiresAtMs > 0) card.Add(CompUi.Small(CompStrings.F("beef.expires", CompTime.When(ch.ExpiresAtMs))));
-                card.Add(CompUi.Btn(CompStrings.T("beef.view"), () => ShowDetail(ch.MatchId), "ct-btn"));
-                body.Add(card);
+                var row = new DuoRow(() => ShowDetail(ch.MatchId)).Leading(Duo.IconSquare("league", "red"))
+                    .Title(BeefRules.TopicLabel(ch.TopicId), "duo-row-title-strong")
+                    .Subtitle(Money.Cash(ch.StakeCents) + (ch.ExpiresAtMs > 0 ? " · " + CompStrings.F("beef.expires", CompTime.When(ch.ExpiresAtMs)) : ""), twoLines: true);
+                FillAlias(row.SubtitleLabel, ch.FromUserId, "beef.fromLine", row.SubtitleLabel.text);
+                row.name = "beef-challenge-" + ch.MatchId;
+                row.Trailing(Duo.Pill(CompStrings.T("beef.view"), () => ShowDetail(ch.MatchId), Duo.PillKind.Primary));
+                list.Add(row);
             }
+            Duo.MarkLast(list);
+            body.Add(list);
         }
 
         private void RenderMatches(VisualElement body, BeefPage page)
         {
             var matches = BeefRules.Order(page.Matches);
-            if (matches.Count == 0) { body.Add(CompUi.Small(CompStrings.T(_tab == 0 ? "beef.empty.mine" : "beef.empty.arena"))); return; }
-            foreach (var m in matches) body.Add(MatchCard(m));
+            if (matches.Count == 0)
+            {
+                body.Add(_tab == 0 ? Duo.Empty(CompStrings.T("beef.empty.mine"), null, CompStrings.T("beef.challenge"), ShowForm) : Duo.Empty(CompStrings.T("beef.empty.arena")));
+                return;
+            }
+            var list = El.Div("duo-list");
+            foreach (var m in matches) list.Add(MatchRow(m));
+            Duo.MarkLast(list);
+            body.Add(list);
         }
 
-        private VisualElement MatchCard(BeefMatch m)
+        private VisualElement MatchRow(BeefMatch m)
         {
             var phase = BeefRules.PhaseOf(m.Status);
-            var card = CompUi.Card(CompUi.H2(BeefRules.TopicLabel(m.TopicId)));
-            var vs = CompUi.Text("…");
-            FillVs(vs, m);
-            card.Add(vs);
-            card.Add(CompUi.Pair(CompStrings.T("beef.stake"), Money.Cash(m.StakeCents)));
-            card.Add(CompUi.Pair(CompStrings.T("beef.status"), PhaseText(phase)));
+            var row = new DuoRow(() => ShowDetail(m.MatchId)).Leading(Duo.IconSquare("league", PhaseTint(phase)))
+                .Title(BeefRules.TopicLabel(m.TopicId), "duo-row-title-strong").Subtitle("…", twoLines: true);
+            row.name = "beef-match-" + m.MatchId;
+            var stake = Money.Cash(m.StakeCents);
             var role = BeefRules.RoleOf(m, Me);
-            if (role != BeefRole.Spectator) card.Add(CompUi.Small(CompStrings.T("beef.role." + role.ToString().ToLowerInvariant())));
             var outcome = BeefRules.OutcomeFor(m, Me);
-            if (outcome != "none") card.Add(CompUi.Small(CompStrings.T("beef.outcome." + outcome)));
-            card.Add(CompUi.Btn(CompStrings.T("beef.view"), () => ShowDetail(m.MatchId), "ct-btn"));
-            return card;
+            string extra = outcome != "none" ? CompStrings.T("beef.outcome." + outcome) : role != BeefRole.Spectator ? CompStrings.T("beef.role." + role.ToString().ToLowerInvariant()) : null;
+            FillVs(row.SubtitleLabel, m, vs => vs + " · " + stake + (extra != null ? "\n" + extra : ""));
+            row.Trailing(CompUi.Tag(PhaseText(phase), PhaseTone(phase)));
+            row.Chevron();
+            return row;
         }
 
         private static string PhaseText(BeefPhase p) => CompStrings.T("beef.phase." + (p == BeefPhase.Unknown ? "unknown" : p.ToString().ToLowerInvariant()));
 
-        private void FillAlias(Label target, string userId, string formatKey)
+        private static string PhaseTone(BeefPhase p) =>
+            p == BeefPhase.Active || p == BeefPhase.Voting ? "green" : p == BeefPhase.Open ? "orange" : p == BeefPhase.Closed ? "blue" : "gray";
+
+        private static string PhaseTint(BeefPhase p) =>
+            p == BeefPhase.Active || p == BeefPhase.Voting ? "red" : p == BeefPhase.Open ? "orange" : "graphite";
+
+        private void FillAlias(Label target, string userId, string formatKey, string suffix = null)
         {
+            string Line(string a) => CompStrings.F(formatKey, a) + (string.IsNullOrEmpty(suffix) ? "" : " · " + suffix);
             var cached = Hub.AliasCached(userId);
-            if (cached != null) { target.text = CompStrings.F(formatKey, cached); return; }
-            Run(ct => Hub.AliasOf(userId, ct), a => target.text = CompStrings.F(formatKey, a), null, false);
+            if (cached != null) { target.text = Line(cached); return; }
+            Run(ct => Hub.AliasOf(userId, ct), a => target.text = Line(a), null, false);
         }
 
-        private void FillVs(Label target, BeefMatch m)
+        private void FillVs(Label target, BeefMatch m, Func<string, string> format = null)
         {
             Run(async ct =>
             {
-                var a = await Hub.AliasOf(m.ChallengerUserId, ct);
+                var a = m.ChallengerUserId == Me ? CompStrings.T("common.you") : await Hub.AliasOf(m.ChallengerUserId, ct);
                 var other = m.AccepterUserId ?? m.InvitedUserId;
-                var b = string.IsNullOrEmpty(other) ? CompStrings.T("beef.anyone") : await Hub.AliasOf(other, ct);
+                var b = string.IsNullOrEmpty(other) ? CompStrings.T("beef.anyone") : other == Me ? CompStrings.T("common.you") : await Hub.AliasOf(other, ct);
                 return a + "  vs  " + b;
-            }, s => target.text = s, null, false);
+            }, s => target.text = format != null ? format(s) : s, null, false);
         }
 
         // ---------------------------------------------------------------- elo
@@ -164,59 +196,57 @@ namespace CTLife.Competition
 
         private void RenderElo(VisualElement body, EloData d)
         {
-            var c = CompUi.Card(CompUi.H2(CompStrings.T("beef.elo.mine")));
-            c.Add(CompUi.Pair(CompStrings.T("beef.elo"), d.Mine.Elo.ToString(System.Globalization.CultureInfo.InvariantCulture)));
-            c.Add(CompUi.Pair(CompStrings.T("beef.elo.record"), CompStrings.F("beef.elo.wld", d.Mine.Wins, d.Mine.Losses, d.Mine.Draws)));
-            c.Add(CompUi.Pair(CompStrings.T("beef.elo.played"), d.Mine.MatchesPlayed.ToString(System.Globalization.CultureInfo.InvariantCulture)));
-            body.Add(c);
-            body.Add(CompUi.H2(CompStrings.T("beef.elo.board")));
+            var hero = Duo.Hero(CompStrings.T("beef.elo.mine"), d.Mine.Elo.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                CompStrings.F("beef.elo.wld", d.Mine.Wins, d.Mine.Losses, d.Mine.Draws), null, CompStrings.T("beef.elo.record"));
+            hero.name = "beef-elo-hero";
+            body.Add(hero);
+            body.Add(CompUi.Pair(CompStrings.T("beef.elo.played"), d.Mine.MatchesPlayed.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+            body.Add(Duo.SectionHeader(CompStrings.T("beef.elo.board")));
             if (d.BoardError != null) { body.Add(CompUi.ErrorBlock(d.BoardError, () => ShowList(2))); return; }
-            if (d.Board.Entries.Count == 0) { body.Add(CompUi.Small(CompStrings.T("beef.elo.empty"))); return; }
-            foreach (var e in d.Board.Entries)
-                body.Add(CompUi.Pair("#" + e.Rank + "  " + (e.UserId == Me ? CompStrings.T("common.you") : e.Alias), e.Value.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+            if (d.Board.Entries.Count == 0) { body.Add(Duo.Empty(CompStrings.T("beef.elo.empty"))); return; }
+            string N(long v) => v.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            body.Add(DuoBoard.Board(d.Board.Entries.Select(e => new DuoRank(e.Rank, e.UserId == Me ? CompStrings.T("common.you") : e.Alias, e.UserId, N(e.Value), e.UserId == Me)).ToList(), "beef-elo-board"));
             if (d.Board.Me != null && d.Board.Entries.All(e => e.UserId != d.Board.Me.UserId))
-                body.Add(CompUi.Pair("#" + d.Board.Me.Rank + "  " + CompStrings.T("common.you"), d.Board.Me.Value.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+                body.Add(DuoBoard.Row(new DuoRank(d.Board.Me.Rank, CompStrings.T("common.you"), Me, N(d.Board.Me.Value), true)));
         }
 
-        // ---------------------------------------------------------------- challenge form
+        // ---------------------------------------------------------------- challenge form (sheet)
 
         private void ShowForm()
         {
-            var page = Page(true);
-            page.Add(CompUi.H2(CompStrings.T("beef.form.title")));
-            page.Add(CompUi.Small(CompStrings.T("beef.form.note")));
+            var sheet = new DuoSheet(CompStrings.T("beef.form.title"), CompStrings.T("beef.form.note"));
+            sheet.name = "beef-form-sheet";
             string topic = null, stakeText = "";
             bool invite = _opponentId != null;
             var status = CompUi.Small("");
-            var topicRow = El.Div("ct-app-tabs");
             var chips = new List<Button>();
+            var topicRow = CompUi.ChipRow();
             foreach (var t in CompStrings.BeefTopics)
             {
                 var id = t;
-                Button chip = null;
-                chip = CompUi.Chip(BeefRules.TopicLabel(id), () =>
+                var chip = CompUi.Chip(BeefRules.TopicLabel(id), () =>
                 {
                     topic = id;
-                    for (int i = 0; i < chips.Count; i++) chips[i].EnableInClassList("ct-chip-on", CompStrings.BeefTopics[i] == id);
+                    for (int i = 0; i < chips.Count; i++) chips[i].EnableInClassList("duo-chip-on", CompStrings.BeefTopics[i] == id);
                 }, false);
                 chips.Add(chip);
                 topicRow.Add(chip);
             }
-            page.Add(CompUi.Text(CompStrings.T("beef.form.topic"), "ct-section-title"));
-            page.Add(topicRow);
-            page.Add(CompUi.Text(CompStrings.T("beef.form.stake"), "ct-section-title"));
-            page.Add(CompUi.Field(CompStrings.T("beef.form.stakeField"), "", v => stakeText = v, 12));
+            sheet.AddContent(CompUi.Label(CompStrings.T("beef.form.topic")));
+            sheet.AddContent(topicRow);
+            sheet.AddContent(CompUi.Label(CompStrings.T("beef.form.stake")));
+            var stake = CompUi.Field(CompStrings.T("beef.form.stakeField"), "", v => stakeText = v, 12);
+            stake.name = "beef-form-stake";
+            sheet.AddContent(stake);
             if (_opponentId != null)
             {
-                page.Add(CompUi.Text(CompStrings.T("beef.form.opponent"), "ct-section-title"));
-                var row = El.Div("ct-app-tabs");
+                sheet.AddContent(CompUi.Label(CompStrings.T("beef.form.opponent")));
                 Button inv = null, open = null;
-                inv = CompUi.Chip(CompStrings.F("beef.form.invite", _opponentName), () => { invite = true; inv.EnableInClassList("ct-chip-on", true); open.EnableInClassList("ct-chip-on", false); }, true);
-                open = CompUi.Chip(CompStrings.T("beef.form.openToAll"), () => { invite = false; inv.EnableInClassList("ct-chip-on", false); open.EnableInClassList("ct-chip-on", true); }, false);
-                row.Add(inv);
-                row.Add(open);
-                page.Add(row);
+                inv = CompUi.Chip(CompStrings.F("beef.form.invite", _opponentName), () => { invite = true; inv.EnableInClassList("duo-chip-on", true); open.EnableInClassList("duo-chip-on", false); }, true);
+                open = CompUi.Chip(CompStrings.T("beef.form.openToAll"), () => { invite = false; inv.EnableInClassList("duo-chip-on", false); open.EnableInClassList("duo-chip-on", true); }, false);
+                sheet.AddContent(CompUi.ChipRow(inv, open));
             }
+            sheet.AddContent(status);
             Button submit = null;
             submit = CompUi.Btn(CompStrings.T("beef.form.submit"), () =>
             {
@@ -231,6 +261,7 @@ namespace CTLife.Competition
                 {
                     key.Complete();
                     _opponentId = _opponentName = null;
+                    sheet.Close();
                     Bus.Publish(ToastSignal.Text(CompStrings.T("beef.form.sent"), ToastKind.Good));
                     Hub.Profile?.Refresh();
                     ShowDetail(m.MatchId);
@@ -241,18 +272,20 @@ namespace CTLife.Competition
                     status.text = e.Message;
                 }, true);
             });
-            page.Add(submit);
-            page.Add(status);
+            submit.name = "beef-form-submit";
+            sheet.AddContent(submit);
+            sheet.AddSecondary(CompStrings.T("common.cancel"));
+            ShowSheet(sheet);
         }
 
         // ---------------------------------------------------------------- detail
 
         private void ShowDetail(string matchId)
         {
-            var page = Page(true);
+            var page = Clear(true);
             _detailId = matchId;
             _refetched = false;
-            var body = El.Div();
+            var body = El.Div("duo-comp-body");
             page.Add(body);
             Load(body, ct => Hub.Api.Beef(matchId, ct), RenderDetail);
         }
@@ -261,14 +294,19 @@ namespace CTLife.Competition
         {
             _detail = m;
             var phase = BeefRules.PhaseOf(m.Status);
-            body.Add(CompUi.H2(BeefRules.TopicLabel(m.TopicId)));
-            var vs = CompUi.Text("…");
+            body.Add(Duo.LargeTitle(BeefRules.TopicLabel(m.TopicId)));
+            var tags = El.Div("duo-comp-tags", CompUi.Tag(PhaseText(phase), PhaseTone(phase)));
+            body.Add(tags);
+            var vs = CompUi.Text("…", "duo-beef-vs");
             FillVs(vs, m);
             body.Add(vs);
-            body.Add(CompUi.Pair(CompStrings.T("beef.status"), PhaseText(phase)));
+            // Hero: the pot the vote decides (estimate from the server's stake and fee), else the stake.
+            var hero = m.FeeBps > 0
+                ? Duo.Hero(CompStrings.T("beef.pot"), Money.Cash(BeefRules.EstimatedPayoutCents(m)), CompStrings.F("beef.feeLine", Money.Bps(m.FeeBps, false)))
+                : Duo.Hero(CompStrings.T("beef.stake"), Money.Cash(m.StakeCents));
+            hero.name = "beef-hero";
+            body.Add(hero);
             body.Add(CompUi.Pair(CompStrings.T("beef.stake"), Money.Cash(m.StakeCents)));
-            if (m.FeeBps > 0)
-                body.Add(CompUi.Pair(CompStrings.T("beef.pot"), CompStrings.F("beef.potValue", Money.Cash(BeefRules.EstimatedPayoutCents(m)), Money.Bps(m.FeeBps, false))));
             if (!BeefRules.IsFinished(phase) && m.PhaseEndsAtMs.HasValue)
             {
                 _countdown = CompUi.Small("");
@@ -291,32 +329,36 @@ namespace CTLife.Competition
             var outcome = BeefRules.OutcomeFor(m, Me);
             if (outcome != "none")
             {
-                body.Add(CompUi.Text(CompStrings.T("beef.outcome." + outcome)));
+                body.Add(Duo.Notice(CompStrings.T("beef.outcome." + outcome), outcome == "won" ? Duo.Tone.Success : outcome == "lost" ? Duo.Tone.Danger : Duo.Tone.Neutral));
                 var delta = BeefRules.EloDeltaFor(m, Me);
-                if (delta.HasValue) body.Add(CompUi.Pair(CompStrings.T("beef.elo"), BeefRules.SignedElo(delta.Value)));
+                if (delta.HasValue) body.Add(CompUi.Pair(CompStrings.T("beef.elo"), BeefRules.SignedElo(delta.Value), delta.Value >= 0 ? "duo-value-positive" : "duo-value-negative"));
             }
             else if (phase == BeefPhase.Closed && string.IsNullOrEmpty(m.WinnerUserId)) body.Add(CompUi.Small(CompStrings.T("beef.outcome.draw")));
             else if (phase == BeefPhase.Closed) body.Add(CompUi.Small(CompStrings.T("beef.closed")));
 
             var actions = BeefRules.ActionsFor(m, Me);
             var status = CompUi.Small("");
-            if (actions.CanAccept) body.Add(CompUi.Btn(CompStrings.F("beef.accept", Money.Cash(m.StakeCents)), () => Act("accept", m, (id, k, ct) => Hub.Api.AcceptBeef(id, k, ct), status)));
-            if (actions.CanDecline) body.Add(CompUi.Btn(CompStrings.T("beef.decline"), () => Act("decline", m, (id, k, ct) => Hub.Api.DeclineBeef(id, k, ct), status), "ct-btn"));
-            if (actions.CanCancel) body.Add(CompUi.Btn(CompStrings.T("beef.cancel"), () => Act("cancel", m, (id, k, ct) => Hub.Api.CancelBeef(id, k, ct), status), "ct-btn"));
+            var row = CompUi.Row();
+            if (actions.CanAccept) row.Add(CompUi.Btn(CompStrings.F("beef.accept", Money.Cash(m.StakeCents)), () => Act("accept", m, (id, k, ct) => Hub.Api.AcceptBeef(id, k, ct), status)));
+            if (actions.CanDecline) row.Add(CompUi.Btn(CompStrings.T("beef.decline"), () => Act("decline", m, (id, k, ct) => Hub.Api.DeclineBeef(id, k, ct), status), CompUi.Plain));
+            if (actions.CanCancel) row.Add(CompUi.Btn(CompStrings.T("beef.cancel"), () => Act("cancel", m, (id, k, ct) => Hub.Api.CancelBeef(id, k, ct), status), CompUi.Danger));
+            if (row.childCount > 0) body.Add(row);
             if (actions.CanVote)
             {
-                body.Add(CompUi.Text(CompStrings.T("beef.vote.title"), "ct-section-title"));
+                body.Add(Duo.SectionHeader(CompStrings.T("beef.vote.title")));
                 body.Add(CompUi.Small(CompStrings.T("beef.vote.note")));
                 var accepter = m.AccepterUserId;
-                var a = CompUi.Btn("…", () => Vote(m, m.ChallengerUserId, status), "ct-btn");
+                var votes = CompUi.Row();
+                var a = CompUi.Btn("…", () => Vote(m, m.ChallengerUserId, status), CompUi.Plain);
                 FillBtn(a, m.ChallengerUserId);
-                body.Add(a);
+                votes.Add(a);
                 if (!string.IsNullOrEmpty(accepter))
                 {
-                    var b = CompUi.Btn("…", () => Vote(m, accepter, status), "ct-btn");
+                    var b = CompUi.Btn("…", () => Vote(m, accepter, status), CompUi.Plain);
                     FillBtn(b, accepter);
-                    body.Add(b);
+                    votes.Add(b);
                 }
+                body.Add(votes);
             }
             body.Add(status);
         }
