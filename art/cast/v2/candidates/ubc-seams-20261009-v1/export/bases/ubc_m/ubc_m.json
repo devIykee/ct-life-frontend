@@ -1,0 +1,449 @@
+{
+ "id": "ubc_m",
+ "label": "Athletic base (M)",
+ "gender": "m",
+ "source": "Quaternius Universal Base Characters [Standard] Superhero_Male",
+ "licence": "CC0 1.0 (bundled License_Standard.txt)",
+ "archetypes": [
+  "customisation blank"
+ ],
+ "tiers": {
+  "hero": {
+   "triangles": 10041,
+   "vertices": 5585,
+   "max_influences": 4
+  },
+  "lod0": {
+   "triangles": 5330,
+   "vertices": 3101,
+   "max_influences": 4
+  },
+  "lod1": {
+   "triangles": 2662,
+   "vertices": 1623,
+   "max_influences": 4
+  },
+  "lod2": {
+   "triangles": 1064,
+   "vertices": 705,
+   "max_influences": 2
+  }
+ },
+ "files": {
+  "crowd_fbx": "bases/ubc_m/ubc_m.fbx",
+  "hero_fbx": "bases/ubc_m/ubc_m_Hero.fbx"
+ },
+ "textures": {
+  "albedo": "bases/ubc_m/ubc_m_Albedo.png",
+  "mask0": "bases/ubc_m/ubc_m_TintMask0.png",
+  "mask1": "bases/ubc_m/ubc_m_TintMask1.png",
+  "emission": "bases/ubc_m/ubc_m_Emission.png"
+ },
+ "tint_defaults": {
+  "skin": "#a26643",
+  "hair": "#392418",
+  "top": "#aba9a6",
+  "bottom": "#9f9d9a",
+  "shoes": "#d5d2d0",
+  "accent": "#7a4842"
+ },
+ "look_defaults": {
+  "hair": "dark_brown",
+  "top": "charcoal",
+  "bottom": "denim",
+  "shoes": "white"
+ },
+ "hair_library": {
+  "hair": {
+   "Hair_SimpleParted": {
+    "part": "hair",
+    "fbx": "bases/ubc_m/parts/ubc_m__hair.fbx",
+    "default": true,
+    "fit": "native"
+   },
+   "Hair_Buzzed": {
+    "part": "hair_Hair_Buzzed",
+    "fbx": "bases/ubc_m/parts/ubc_m__hair_Hair_Buzzed.fbx",
+    "default": false,
+    "fit": "native"
+   },
+   "Hair_Long": {
+    "part": "hair_Hair_Long",
+    "fbx": "bases/ubc_m/parts/ubc_m__hair_Hair_Long.fbx",
+    "default": false,
+    "fit": "cross-fitted"
+   },
+   "Hair_Buns": {
+    "part": "hair_Hair_Buns",
+    "fbx": "bases/ubc_m/parts/ubc_m__hair_Hair_Buns.fbx",
+    "default": false,
+    "fit": "cross-fitted"
+   }
+  },
+  "facial": {
+   "Hair_Beard": {
+    "part": "facial_Hair_Beard",
+    "fbx": "bases/ubc_m/parts/ubc_m__facial_Hair_Beard.fbx",
+    "default": false,
+    "fit": "native"
+   }
+  }
+ },
+ "parts": {
+  "eyes": {
+   "fbx": "bases/ubc_m/parts/ubc_m__eyes.fbx",
+   "slot": "head",
+   "triangles": {
+    "hero": 450,
+    "lod0": 224,
+    "lod1": 112,
+    "lod2": 45
+   }
+  },
+  "head": {
+   "fbx": "bases/ubc_m/parts/ubc_m__head.fbx",
+   "slot": "head",
+   "triangles": {
+    "hero": 1366,
+    "lod0": 636,
+    "lod1": 308,
+    "lod2": 111
+   }
+  },
+  "top": {
+   "fbx": "bases/ubc_m/parts/ubc_m__top.fbx",
+   "slot": "top",
+   "triangles": {
+    "hero": 3772,
+    "lod0": 1936,
+    "lod1": 984,
+    "lod2": 399
+   }
+  },
+  "bottom": {
+   "fbx": "bases/ubc_m/parts/ubc_m__bottom.fbx",
+   "slot": "bottom",
+   "triangles": {
+    "hero": 1838,
+    "lod0": 934,
+    "lod1": 466,
+    "lod2": 196
+   }
+  },
+  "feet": {
+   "fbx": "bases/ubc_m/parts/ubc_m__feet.fbx",
+   "slot": "feet",
+   "triangles": {
+    "hero": 738,
+    "lod0": 350,
+    "lod1": 168,
+    "lod2": 64
+   }
+  },
+  "hair": {
+   "fbx": "bases/ubc_m/parts/ubc_m__hair.fbx",
+   "slot": "hair",
+   "triangles": {
+    "hero": 1301,
+    "lod0": 962,
+    "lod1": 480,
+    "lod2": 192
+   }
+  },
+  "brows": {
+   "fbx": "bases/ubc_m/parts/ubc_m__brows.fbx",
+   "slot": "head",
+   "triangles": {
+    "hero": 576,
+    "lod0": 288,
+    "lod1": 144,
+    "lod2": 57
+   }
+  },
+  "hair_Hair_Buzzed": {
+   "fbx": "bases/ubc_m/parts/ubc_m__hair_Hair_Buzzed.fbx",
+   "slot": "hair",
+   "kind": "hair",
+   "style": "Hair_Buzzed",
+   "triangles": {
+    "hero": 830,
+    "lod0": 830,
+    "lod1": 480,
+    "lod2": 191
+   }
+  },
+  "hair_Hair_Long": {
+   "fbx": "bases/ubc_m/parts/ubc_m__hair_Hair_Long.fbx",
+   "slot": "hair",
+   "kind": "hair",
+   "style": "Hair_Long",
+   "triangles": {
+    "hero": 1926,
+    "lod0": 963,
+    "lod1": 481,
+    "lod2": 192
+   }
+  },
+  "hair_Hair_Buns": {
+   "fbx": "bases/ubc_m/parts/ubc_m__hair_Hair_Buns.fbx",
+   "slot": "hair",
+   "kind": "hair",
+   "style": "Hair_Buns",
+   "triangles": {
+    "hero": 1926,
+    "lod0": 963,
+    "lod1": 480,
+    "lod2": 192
+   }
+  },
+  "facial_Hair_Beard": {
+   "fbx": "bases/ubc_m/parts/ubc_m__facial_Hair_Beard.fbx",
+   "slot": "hair",
+   "kind": "facial",
+   "style": "Hair_Beard",
+   "triangles": {
+    "hero": 606,
+    "lod0": 303,
+    "lod1": 150,
+    "lod2": 60
+   }
+  }
+ },
+ "accessories": {
+  "pixel_face_mask": {
+   "fbx": "bases/ubc_m/accessories/ubc_m__pixel_face_mask.fbx",
+   "socket": "face",
+   "bone": "Head",
+   "flags": {
+    "occludes_face": true
+   },
+   "triangles": 272
+  },
+  "tv_head": {
+   "fbx": "bases/ubc_m/accessories/ubc_m__tv_head.fbx",
+   "socket": "head_top",
+   "bone": "Head",
+   "flags": {
+    "replaces_head": true,
+    "hides_hair": true,
+    "occludes_face": true
+   },
+   "triangles": 100
+  },
+  "visor": {
+   "fbx": "bases/ubc_m/accessories/ubc_m__visor.fbx",
+   "socket": "face",
+   "bone": "Head",
+   "flags": {
+    "double_sided": true
+   },
+   "triangles": 240
+  },
+  "helmet": {
+   "fbx": "bases/ubc_m/accessories/ubc_m__helmet.fbx",
+   "socket": "head_top",
+   "bone": "Head",
+   "flags": {
+    "hides_hair": true,
+    "occludes_face": true
+   },
+   "triangles": 520
+  },
+  "laser_eyes": {
+   "fbx": "bases/ubc_m/accessories/ubc_m__laser_eyes.fbx",
+   "socket": "face",
+   "bone": "Head",
+   "flags": {
+    "emissive": true
+   },
+   "triangles": 272
+  },
+  "chain": {
+   "fbx": "bases/ubc_m/accessories/ubc_m__chain.fbx",
+   "socket": "neck",
+   "bone": "spine_03",
+   "flags": {},
+   "triangles": 396
+  },
+  "headphones": {
+   "fbx": "bases/ubc_m/accessories/ubc_m__headphones.fbx",
+   "socket": "head_top",
+   "bone": "Head",
+   "flags": {},
+   "triangles": 344
+  },
+  "small_wings": {
+   "fbx": "bases/ubc_m/accessories/ubc_m__small_wings.fbx",
+   "socket": "back",
+   "bone": "spine_03",
+   "flags": {
+    "double_sided": true
+   },
+   "triangles": 60
+  },
+  "shoulder_drone": {
+   "fbx": "bases/ubc_m/accessories/ubc_m__shoulder_drone.fbx",
+   "socket": "shoulder_r",
+   "bone": "clavicle_r",
+   "flags": {
+    "emissive": true
+   },
+   "triangles": 400
+  }
+ },
+ "sockets": {
+  "head_top": {
+   "bone": "Head",
+   "humanoid": "Head",
+   "position_character_m": [
+    0.0,
+    -0.0003,
+    1.8397
+   ],
+   "offset_in_bone_space_m": [
+    -0.0,
+    0.2403,
+    0.0107
+   ]
+  },
+  "face": {
+   "bone": "Head",
+   "humanoid": "Head",
+   "position_character_m": [
+    0.0,
+    -0.1087,
+    1.7292
+   ],
+   "offset_in_bone_space_m": [
+    -0.0,
+    0.133,
+    0.1223
+   ]
+  },
+  "neck": {
+   "bone": "spine_03",
+   "humanoid": "UpperChest",
+   "position_character_m": [
+    0.0,
+    -0.1183,
+    1.5005
+   ],
+   "offset_in_bone_space_m": [
+    -0.0,
+    0.1597,
+    0.1511
+   ]
+  },
+  "back": {
+   "bone": "spine_03",
+   "humanoid": "UpperChest",
+   "position_character_m": [
+    -0.0,
+    0.1664,
+    1.3109
+   ],
+   "offset_in_bone_space_m": [
+    0.0,
+    0.0389,
+    -0.1689
+   ]
+  },
+  "shoulder_l": {
+   "bone": "clavicle_l",
+   "humanoid": "LeftShoulder",
+   "position_character_m": [
+    0.212,
+    0.0654,
+    1.5155
+   ],
+   "offset_in_bone_space_m": [
+    -0.0091,
+    0.2057,
+    0.0203
+   ]
+  },
+  "shoulder_r": {
+   "bone": "clavicle_r",
+   "humanoid": "RightShoulder",
+   "position_character_m": [
+    -0.212,
+    0.0654,
+    1.5155
+   ],
+   "offset_in_bone_space_m": [
+    0.0091,
+    0.2057,
+    0.0203
+   ]
+  },
+  "hand_l": {
+   "bone": "hand_l",
+   "humanoid": "LeftHand",
+   "position_character_m": [
+    0.7642,
+    0.0578,
+    1.4532
+   ],
+   "offset_in_bone_space_m": [
+    0.0023,
+    0.0577,
+    0.0076
+   ]
+  },
+  "hand_r": {
+   "bone": "hand_r",
+   "humanoid": "RightHand",
+   "position_character_m": [
+    -0.7642,
+    0.0578,
+    1.4532
+   ],
+   "offset_in_bone_space_m": [
+    -0.0023,
+    0.0577,
+    0.0076
+   ]
+  }
+ },
+ "measurements": {
+  "head_center": [
+   0.0,
+   -0.0003,
+   1.7292
+  ],
+  "top_z": 1.8397,
+  "chin_z": 1.5766,
+  "eye_z": 1.7292,
+  "half_w": 0.0783,
+  "half_d": 0.1084,
+  "front_y": -0.1087,
+  "back_y": 0.1082,
+  "neck_z": 1.5205,
+  "neck_y": 0.0414,
+  "chest_front_y": -0.1283,
+  "chest_back_y": 0.1664,
+  "chest_z": 1.3109,
+  "chest_half_w": 0.1976,
+  "shoulder_l": [
+   0.212,
+   0.0654,
+   1.4555
+  ],
+  "shoulder_r": [
+   -0.212,
+   0.0654,
+   1.4555
+  ],
+  "hand_l": [
+   0.7642,
+   0.0578,
+   1.4532
+  ],
+  "hand_r": [
+   -0.7642,
+   0.0578,
+   1.4532
+  ]
+ },
+ "height_m": 1.84
+}

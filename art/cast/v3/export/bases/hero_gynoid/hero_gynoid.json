@@ -1,0 +1,428 @@
+{
+ "id": "hero_gynoid",
+ "label": "Gynoid 2000",
+ "gender": "f",
+ "family": null,
+ "source": "Sketchfab CC-BY (row 16)",
+ "licence": "CC BY 4.0",
+ "credit_required": true,
+ "archetypes": [
+  "ai_agent",
+  "sniper_bot"
+ ],
+ "rare_masked_look": true,
+ "geometry": "v2 export, unchanged (paths relative to art/cast/v2/export, sha256-pinned)",
+ "geometry_root": "art/cast/v2/export",
+ "files": {
+  "crowd_fbx": "bases/hero_gynoid/hero_gynoid.fbx",
+  "hero_fbx": "bases/hero_gynoid/hero_gynoid_Hero.fbx"
+ },
+ "parts": {
+  "head": {
+   "fbx": "bases/hero_gynoid/parts/hero_gynoid__head.fbx",
+   "slot": "head",
+   "triangles": {
+    "hero": 1087,
+    "lod0": 542,
+    "lod1": 271,
+    "lod2": 108
+   }
+  },
+  "top": {
+   "fbx": "bases/hero_gynoid/parts/hero_gynoid__top.fbx",
+   "slot": "top",
+   "triangles": {
+    "hero": 7454,
+    "lod0": 3726,
+    "lod1": 1862,
+    "lod2": 745
+   }
+  },
+  "bottom": {
+   "fbx": "bases/hero_gynoid/parts/hero_gynoid__bottom.fbx",
+   "slot": "bottom",
+   "triangles": {
+    "hero": 2621,
+    "lod0": 1309,
+    "lod1": 655,
+    "lod2": 261
+   }
+  },
+  "feet": {
+   "fbx": "bases/hero_gynoid/parts/hero_gynoid__feet.fbx",
+   "slot": "feet",
+   "triangles": {
+    "hero": 114,
+    "lod0": 57,
+    "lod1": 28,
+    "lod2": 24
+   }
+  }
+ },
+ "tiers": {
+  "hero": {
+   "triangles": 11276,
+   "vertices": 5811,
+   "max_influences": 4
+  },
+  "lod0": {
+   "triangles": 5634,
+   "vertices": 2962,
+   "max_influences": 4
+  },
+  "lod1": {
+   "triangles": 2816,
+   "vertices": 1525,
+   "max_influences": 4
+  },
+  "lod2": {
+   "triangles": 1138,
+   "vertices": 653,
+   "max_influences": 2
+  }
+ },
+ "sockets": {
+  "head_top": {
+   "bone": "Head",
+   "humanoid": "Head",
+   "position_character_m": [
+    -0.0,
+    0.0133,
+    1.72
+   ],
+   "offset_in_bone_space_m": [
+    -0.0,
+    0.2253,
+    0.004
+   ]
+  },
+  "face": {
+   "bone": "Head",
+   "humanoid": "Head",
+   "position_character_m": [
+    -0.0,
+    -0.099,
+    1.6204
+   ],
+   "offset_in_bone_space_m": [
+    -0.0,
+    0.1257,
+    0.1163
+   ]
+  },
+  "neck": {
+   "bone": "spine_03",
+   "humanoid": "UpperChest",
+   "position_character_m": [
+    0.0,
+    -0.1873,
+    1.4257
+   ],
+   "offset_in_bone_space_m": [
+    0.0,
+    0.0462,
+    0.1992
+   ]
+  },
+  "back": {
+   "bone": "spine_03",
+   "humanoid": "UpperChest",
+   "position_character_m": [
+    0.0,
+    0.0879,
+    1.3557
+   ],
+   "offset_in_bone_space_m": [
+    0.0,
+    0.01,
+    -0.0825
+   ]
+  },
+  "shoulder_l": {
+   "bone": "clavicle_l",
+   "humanoid": "LeftShoulder",
+   "position_character_m": [
+    0.1366,
+    0.016,
+    1.4749
+   ],
+   "offset_in_bone_space_m": [
+    0.0118,
+    0.0814,
+    0.0576
+   ]
+  },
+  "shoulder_r": {
+   "bone": "clavicle_r",
+   "humanoid": "RightShoulder",
+   "position_character_m": [
+    -0.1366,
+    0.0157,
+    1.4749
+   ],
+   "offset_in_bone_space_m": [
+    -0.0118,
+    0.0814,
+    0.0576
+   ]
+  },
+  "hand_l": {
+   "bone": "hand_l",
+   "humanoid": "LeftHand",
+   "position_character_m": [
+    0.5835,
+    0.016,
+    1.1569
+   ],
+   "offset_in_bone_space_m": [
+    0.0066,
+    0.0592,
+    -0.0033
+   ]
+  },
+  "hand_r": {
+   "bone": "hand_r",
+   "humanoid": "RightHand",
+   "position_character_m": [
+    -0.5826,
+    0.0157,
+    1.1574
+   ],
+   "offset_in_bone_space_m": [
+    -0.0067,
+    0.0581,
+    -0.003
+   ]
+  }
+ },
+ "accessories": {
+  "pixel_face_mask": {
+   "fbx": "bases/hero_gynoid/accessories/hero_gynoid__pixel_face_mask.fbx",
+   "socket": "face",
+   "bone": "Head",
+   "flags": {
+    "occludes_face": true
+   },
+   "triangles": 272
+  },
+  "visor": {
+   "fbx": "bases/hero_gynoid/accessories/hero_gynoid__visor.fbx",
+   "socket": "face",
+   "bone": "Head",
+   "flags": {
+    "double_sided": true
+   },
+   "triangles": 240
+  },
+  "helmet": {
+   "fbx": "bases/hero_gynoid/accessories/hero_gynoid__helmet.fbx",
+   "socket": "head_top",
+   "bone": "Head",
+   "flags": {
+    "hides_hair": true,
+    "occludes_face": true
+   },
+   "triangles": 520
+  },
+  "laser_eyes": {
+   "fbx": "bases/hero_gynoid/accessories/hero_gynoid__laser_eyes.fbx",
+   "socket": "face",
+   "bone": "Head",
+   "flags": {
+    "emissive": true
+   },
+   "triangles": 272
+  },
+  "chain": {
+   "fbx": "bases/hero_gynoid/accessories/hero_gynoid__chain.fbx",
+   "socket": "neck",
+   "bone": "spine_03",
+   "flags": {},
+   "triangles": 396
+  },
+  "headphones": {
+   "fbx": "bases/hero_gynoid/accessories/hero_gynoid__headphones.fbx",
+   "socket": "head_top",
+   "bone": "Head",
+   "flags": {},
+   "triangles": 344
+  },
+  "small_wings": {
+   "fbx": "bases/hero_gynoid/accessories/hero_gynoid__small_wings.fbx",
+   "socket": "back",
+   "bone": "spine_03",
+   "flags": {
+    "double_sided": true
+   },
+   "triangles": 60
+  },
+  "shoulder_drone": {
+   "fbx": "bases/hero_gynoid/accessories/hero_gynoid__shoulder_drone.fbx",
+   "socket": "shoulder_r",
+   "bone": "clavicle_r",
+   "flags": {
+    "emissive": true
+   },
+   "triangles": 400
+  }
+ },
+ "textures": {
+  "albedo": "bases/hero_gynoid/hero_gynoid_v3_Albedo.png",
+  "mask0": "bases/hero_gynoid/hero_gynoid_v3_TintMask0.png",
+  "mask1": "bases/hero_gynoid/hero_gynoid_v3_TintMask1.png",
+  "emission": "bases/hero_gynoid/hero_gynoid_v3_Emission.png"
+ },
+ "tint_reference": {
+  "top": "#bebbb9",
+  "bottom": "#cbc8c6",
+  "accent": "#b2aeae",
+  "shoes": "#cbcac6"
+ },
+ "look_defaults": {
+  "top": "#b9bfcf",
+  "bottom": "#b9bfcf",
+  "accent": "#b2aeae",
+  "shoes": "#b9bfcf"
+ },
+ "material_pass": {
+  "contrast": 1.1,
+  "saturation": 1.0,
+  "gamma": 1.0,
+  "gain": 0.6,
+  "regions": {
+   "top": {
+    "clusters": [
+     "#cbc8c5",
+     "#c1bebe",
+     "#a19f9f",
+     "#5d5c5e"
+    ],
+    "share": [
+     0.525,
+     0.209,
+     0.146,
+     0.12
+    ],
+    "assigned": {
+     "#cbc8c5": "top"
+    }
+   },
+   "bottom": {
+    "clusters": [
+     "#cac7c4",
+     "#b1aeb0",
+     "#616263",
+     "#282d32"
+    ],
+    "share": [
+     0.586,
+     0.183,
+     0.123,
+     0.108
+    ],
+    "assigned": {
+     "#cac7c4": "bottom",
+     "#b1aeb0": "accent"
+    }
+   },
+   "feet": {
+    "clusters": [
+     "#cbcac6",
+     "#b1aead",
+     "#817f81",
+     "#525153"
+    ],
+    "share": [
+     0.718,
+     0.153,
+     0.067,
+     0.062
+    ],
+    "assigned": {
+     "#cbcac6": "shoes"
+    }
+   },
+   "body": {
+    "clusters": [
+     "#b2aeae",
+     "#7c7b7c",
+     "#4f4e50",
+     "#c8c5c2"
+    ],
+    "share": [
+     0.961,
+     0.017,
+     0.016,
+     0.006
+    ],
+    "assigned": {
+     "#b2aeae": "top"
+    }
+   },
+   "skin": "skin mask dropped (median #575659 is not skin)"
+  },
+  "emission": "kept (0.0% of body texels emissive)",
+  "v2_inputs": {
+   "Albedo": "95eceab7598cf2f4fa126f7522140996d8cd6dc7ce771cfdff64268fcfa8283d",
+   "TintMask0": "2e7c31b730e6aadc7844536f402e5f630e5dafe8d542b766bee2fa55374a942e",
+   "TintMask1": "c32a1a1457fcbcad4d853207946662783358fc56b03d7fc3a84b031cae2c47c3"
+  }
+ },
+ "pinned_v2_files_sha256": {
+  "bases/hero_gynoid/hero_gynoid.fbx": "e6ae61f85aa4358b6c988c2f894292a83546222a25e1655569ed9f277eedbfa0",
+  "bases/hero_gynoid/hero_gynoid_Hero.fbx": "8140ba8f006affa869e0d23866b4607c62b30a400931778c9b37e99583d28b54",
+  "bases/hero_gynoid/parts/hero_gynoid__head.fbx": "17583452b8fb16d735db5ed6d3eeaf69acb8d413af4cc7eb207a8996916bd83b",
+  "bases/hero_gynoid/parts/hero_gynoid__top.fbx": "783256aa29ada981d1901cc78f25275ec3e7066d5af3fd733c83aa007d39ef87",
+  "bases/hero_gynoid/parts/hero_gynoid__bottom.fbx": "657744f65cc1a29c06989b6674e702a4f40640aa188da79bb93fd02efac4c833",
+  "bases/hero_gynoid/parts/hero_gynoid__feet.fbx": "33544451e5536efe9a5bcba60fb3a6cfad2aa3eea1adb0f70b2424d8d937fb09",
+  "bases/hero_gynoid/accessories/hero_gynoid__pixel_face_mask.fbx": "18999ec1a66ee6cc1b223d8d7b3492924522fcf0c2f246f247e5b8a335b05f1a",
+  "bases/hero_gynoid/accessories/hero_gynoid__visor.fbx": "3a4660cbde3a33a426f0cc5a4a942517388c78686daa5c5f6b5d8be000304efd",
+  "bases/hero_gynoid/accessories/hero_gynoid__helmet.fbx": "eff5c361cb48ac6e515fd9e28badcb2891755f83465229067f14992ee1539837",
+  "bases/hero_gynoid/accessories/hero_gynoid__laser_eyes.fbx": "826093315c55be0fbf947d91a06556ed0d6dc700d4574d0ef516130bf46df539",
+  "bases/hero_gynoid/accessories/hero_gynoid__chain.fbx": "f5bf716b224b0c4b07feb338f94a6d40e3f6e80e3deb38c17610964b37a7c051",
+  "bases/hero_gynoid/accessories/hero_gynoid__headphones.fbx": "5093dc48bb6de574aebf3ff9934665b006d47932bb9a7b5d491d2e92a2a3ae1e",
+  "bases/hero_gynoid/accessories/hero_gynoid__small_wings.fbx": "4b2a74b25ec2b02f849cf12183c49063cd1338372bc1cfacdbba1826d7764932",
+  "bases/hero_gynoid/accessories/hero_gynoid__shoulder_drone.fbx": "b68d60bdfba6cf511e447526e5d2e21ce61999bbc9cefbc71beee3d2f418a45d"
+ },
+ "height_m": 1.72,
+ "measurements": {
+  "head_center": [
+   -0.0,
+   0.0133,
+   1.6204
+  ],
+  "top_z": 1.72,
+  "chin_z": 1.4828,
+  "eye_z": 1.6204,
+  "half_w": 0.108,
+  "half_d": 0.1123,
+  "front_y": -0.099,
+  "back_y": 0.1256,
+  "neck_z": 1.4457,
+  "neck_y": 0.0158,
+  "chest_front_y": -0.1973,
+  "chest_back_y": 0.0879,
+  "chest_z": 1.3557,
+  "chest_half_w": 0.1228,
+  "shoulder_l": [
+   0.1366,
+   0.016,
+   1.4149
+  ],
+  "shoulder_r": [
+   -0.1366,
+   0.0157,
+   1.4149
+  ],
+  "hand_l": [
+   0.5835,
+   0.016,
+   1.1569
+  ],
+  "hand_r": [
+   -0.5826,
+   0.0157,
+   1.1574
+  ]
+ }
+}
