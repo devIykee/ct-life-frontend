@@ -111,7 +111,7 @@ namespace CTLife.UI.Map
                 var layers = new List<MapSurface.Layer>();
                 var atlasTex = MapCatalog.Texture(atlas.Texture);
                 if (atlasTex != null && MapCatalog.PlacementOf(a) != null) layers.Add(new MapSurface.Layer { Texture = atlasTex, AtlasRect = atlas.Rect, Alpha = 1f, Grid = 1 });
-                layers.Add(new MapSurface.Layer { Texture = MapCatalog.Texture(a.Texture), AtlasRect = MapSurface.AreaAtlasRect(a, _placement), Alpha = 1f, Grid = 1 });
+                layers.Add(MapSurface.AreaLayer(a, _placement, MapCatalog.Texture(a.Texture), 1));
                 _surface.SetLayers(layers);
                 _hasHeading = false;
             }
@@ -140,7 +140,7 @@ namespace CTLife.UI.Map
                 if (tex != null) layers.Add(new MapSurface.Layer { Texture = tex, AtlasRect = atlas.Rect, Alpha = 1f, Grid = 1 });
                 foreach (var p in atlas.Placements.Values)
                     if (MapCatalog.Areas.TryGetValue(p.AreaId, out var a))
-                        layers.Add(new MapSurface.Layer { Texture = MapCatalog.Texture(a.Texture), AtlasRect = MapSurface.AreaAtlasRect(a, p), Alpha = 1f, Grid = 1 });
+                        layers.Add(MapSurface.AreaLayer(a, p, MapCatalog.Texture(a.Texture), 1));
                 _surface.SetLayers(layers);
                 _hasHeading = false;
             }
