@@ -15,7 +15,8 @@ namespace CTLife.UI
             AddToClassList("ct-icon");
             AddToClassList("ct-icon-" + kind);
             pickingMode = PickingMode.Ignore;
-            string asset = kind switch
+            // "duo-<name>": a Phosphor fill file bundled for the Solana Duo kit (asset-sources.json duoAdditions).
+            string asset = kind != null && kind.StartsWith("duo-", System.StringComparison.Ordinal) ? kind.Substring(4) : kind switch
             {
                 "close" => "x",
                 "edit" => "pencil-simple",

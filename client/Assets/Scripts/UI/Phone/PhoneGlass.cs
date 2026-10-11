@@ -97,7 +97,7 @@ namespace CTLife.UI
             var patch = _wallpaper.WorldToLocal(worldBound);
             if (!ValidSize(wallpaperRect.size) || !ValidSize(patch.size)) return;
 
-            _source ??= Resources.Load<Texture2D>("UI/PhoneOS/Wallpaper/Dunes");
+            _source ??= Resources.Load<Texture2D>(PhoneWallpaper.ResourcePath);
             if (_source == null) return;
             if (_material == null)
             {
