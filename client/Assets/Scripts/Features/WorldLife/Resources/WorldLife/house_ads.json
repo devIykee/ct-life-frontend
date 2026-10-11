@@ -1,0 +1,166 @@
+{
+  "version": "1.0.0",
+  "_note": "House ads shown on billboards, kiosks and the Pixel Wall when GET /ads/live has no creative for the slot. Parody names only (no real brands, people or projects). The baked house art on each screen stays in the rotation as entry 0.",
+  "rotationSeconds": 12,
+  "surfaces": {
+    "_note": "Screen materials are named Screen_<screenId> by VenueContentBuilder. First matching prefix wins; unmatched screens (shop signs) are left alone.",
+    "rules": [
+      {
+        "prefix": "Screen_timeline_screen",
+        "kind": "timeline"
+      },
+      {
+        "prefix": "Screen_pixel_wall",
+        "kind": "pixel_wall"
+      },
+      {
+        "prefix": "Screen_bb_",
+        "kind": "billboard"
+      },
+      {
+        "prefix": "Screen_kiosk_",
+        "kind": "kiosk"
+      }
+    ],
+    "maxPerVenue": 6
+  },
+  "billboard": [
+    {
+      "headline": "POMP.FUN",
+      "sub": "263,000 coins a day. Now with Holder Rewards.",
+      "tag": "house ad"
+    },
+    {
+      "headline": "BITGOT EXCHANGE",
+      "sub": "Withdrawals paused for maintenance. Again.",
+      "tag": "house ad"
+    },
+    {
+      "headline": "REKT CLINIC",
+      "sub": "Walk-ins welcome. Stimmy not guaranteed.",
+      "tag": "house ad"
+    },
+    {
+      "headline": "PERP PIT",
+      "sub": "25x leverage. 0x sleep.",
+      "tag": "house ad"
+    },
+    {
+      "headline": "COPE BAKERY",
+      "sub": "Fresh copium, baked every red day.",
+      "tag": "house ad"
+    },
+    {
+      "headline": "TERMINAL CAFE",
+      "sub": "8 terminals. 0 profitable traders. Great coffee.",
+      "tag": "house ad"
+    },
+    {
+      "headline": "AUDIT ROW",
+      "sub": "Audited by a guy. He seemed nice.",
+      "tag": "house ad"
+    },
+    {
+      "headline": "THE CABAL LOUNGE",
+      "sub": "You are not on the list.",
+      "tag": "house ad"
+    },
+    {
+      "headline": "TOUCH GRASS PARK",
+      "sub": "Open 24/7. Nobody comes.",
+      "tag": "house ad"
+    },
+    {
+      "headline": "$TIPZ",
+      "sub": "Send money to billionaires and hope they tweet back.",
+      "tag": "house ad"
+    },
+    {
+      "headline": "AIRDROP FARM",
+      "sub": "Season 2 points are live. TGE wen? Yes.",
+      "tag": "house ad"
+    },
+    {
+      "headline": "HYPERLIQUOR",
+      "sub": "Oil perps. Gold perps. Rent perps.",
+      "tag": "house ad"
+    },
+    {
+      "headline": "BLOOMBAG TERMINAL",
+      "sub": "Now streaming memecoin charts to your boss.",
+      "tag": "house ad"
+    },
+    {
+      "headline": "ROBBINGHOOD",
+      "sub": "24/7 perps up to 10x. For your safety.",
+      "tag": "house ad"
+    },
+    {
+      "headline": "COIN2050 SINGAPURA",
+      "sub": "1,000 side events. 0 sessions attended.",
+      "tag": "house ad"
+    },
+    {
+      "headline": "CHECKPOINT LONDON",
+      "sub": "The Token Supercycle. Bring a hoodie.",
+      "tag": "house ad"
+    },
+    {
+      "headline": "ADVERTISE HERE",
+      "sub": "Billboard 20 USDC / 7 days. Every creative is reviewed by a human.",
+      "tag": "your ad here"
+    }
+  ],
+  "kiosk": [
+    {
+      "headline": "GM",
+      "sub": "Coffee first. Charts later.",
+      "tag": "house ad"
+    },
+    {
+      "headline": "NFA · DYOR",
+      "sub": "You won't, but we said it.",
+      "tag": "house ad"
+    },
+    {
+      "headline": "SEEKER SEASON",
+      "sub": "Quests, badges, a seed vault in your pocket.",
+      "tag": "house ad"
+    },
+    {
+      "headline": "PRICE: UP?",
+      "sub": "Down. It was down.",
+      "tag": "house ad"
+    }
+  ],
+  "pixelTiles": [
+    "$FROGE",
+    "gm",
+    "WAGMI",
+    "few",
+    "ser",
+    "NFA",
+    "LFG",
+    "ngmi",
+    "1 tile = 2 USDC",
+    "ur ad here",
+    "DYOR",
+    "bags",
+    "$PURR",
+    "cope",
+    "zoom out",
+    "TGE wen",
+    "it's so over",
+    "we're so back",
+    "touch grass",
+    "$DESKTOP",
+    "CTO",
+    "cooked",
+    "send it",
+    "holder rewards"
+  ],
+  "timeline": {
+    "title": "THE TIMELINE",
+    "empty": "Quiet on the Timeline. Too quiet."
+  }
+}

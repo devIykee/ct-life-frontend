@@ -1,0 +1,295 @@
+{
+  "version": "1.0.0",
+  "_owner": "FE (world-life lane)",
+  "_note": "Archetype -> look/prop/behaviour binding. Bodies come from AvatarFactory.CreateNpc (NpcCastCatalog -> CharacterRegistry, else the procedural placeholder). When the cast lane delivers, fill castKeys here AND the NpcCastCatalog asset with the same CharacterRegistry look keys: nothing else changes. Props are placeholder primitives until a prefab exists at Resources/WorldLife/Props/<id>. inContract=false marks an FE proposal (docs/fe-contract-proposals/npc-archetypes-world-life-20261008.md). size/offset in metres.",
+  "specArchetypes": [
+    "town_crier", "giveaway_guy", "reply_guy", "alpha_caller", "cabal_insider", "rug_dev", "sniper_bot",
+    "perp_degen_npc", "rekt_guy", "doomposter", "laser_eyes_maxi", "chain_tribalist", "sleuth", "auditor", "vc",
+    "farmer", "sybil_farmer", "spaces_host", "wallet_tracker", "fake_rich_larp", "dubai_relocator", "ai_agent",
+    "drainer", "community_mod", "thread_boy", "engagement_farmer", "normie", "doxxed_founder", "prediction_shark_npc"
+  ],
+  "archetypes": {
+    "town_crier": {
+      "name": "Town Crier", "inContract": true, "where": "timeline_square", "look": "Megaphone, siren hat",
+      "signatureLine": "JUST IN: $4.2M in longs liquidated in the past 60 minutes.",
+      "castKeys": [], "talkGesture": "emote_point", "signatureEmote": "emote_point", "idleEmotes": ["emote_shrug"],
+      "behaviours": ["crier", "post_to_timeline"],
+      "props": [
+        { "id": "megaphone", "attach": "hand_r", "shape": "cylinder", "size": [0.09, 0.16, 0.09], "offset": [0, 0.05, 0.08], "color": "#f5f6fa" },
+        { "id": "siren_hat", "attach": "head", "shape": "cylinder", "size": [0.12, 0.05, 0.12], "offset": [0, 0.14, 0], "color": "#ff3b30", "emissive": true }
+      ]
+    },
+    "giveaway_guy": {
+      "name": "Giveaway Guy", "inContract": true, "where": "timeline_square", "look": "Gold chain, phone",
+      "signatureLine": "Like, RT, drop your wallets, join my TG.",
+      "castKeys": [], "talkGesture": "emote_wave", "signatureEmote": "emote_wave", "idleEmotes": ["emote_laugh"],
+      "behaviours": ["drain_gag"],
+      "props": [
+        { "id": "gold_chain", "attach": "chest", "shape": "capsule", "size": [0.22, 0.03, 0.03], "offset": [0, -0.05, 0.1], "color": "#f9ca24", "emissive": true },
+        { "id": "phone", "attach": "hand_r", "shape": "cube", "size": [0.07, 0.14, 0.01], "color": "#2d3436" }
+      ]
+    },
+    "reply_guy": {
+      "name": "Reply Guy", "inContract": true, "where": "follows the richest player", "look": "Phone glued to hand",
+      "signatureLine": "gm king",
+      "castKeys": [], "talkGesture": "emote_thumbs_up", "signatureEmote": "emote_thumbs_up", "idleEmotes": ["emote_nod"],
+      "behaviours": ["face_target_on_talk"],
+      "props": [ { "id": "phone", "attach": "hand_r", "shape": "cube", "size": [0.08, 0.15, 0.012], "offset": [0, 0.05, 0.05], "color": "#74b9ff", "emissive": true } ]
+    },
+    "alpha_caller": {
+      "name": "Alpha Caller", "inContract": true, "where": "cabal_lounge", "look": "Anime mask, shades",
+      "signatureLine": "GUARANTEED 100X. Who wants early CA?",
+      "castKeys": [], "talkGesture": "emote_send_it_slam", "signatureEmote": "emote_send_it_slam", "idleEmotes": ["emote_point"],
+      "behaviours": ["post_to_timeline"],
+      "props": [
+        { "id": "anime_mask", "attach": "head", "shape": "sphere", "size": [0.17, 0.2, 0.06], "offset": [0, 0.02, 0.09], "color": "#fd79a8" },
+        { "id": "shades", "attach": "head", "shape": "cube", "size": [0.16, 0.035, 0.02], "offset": [0, 0.05, 0.12], "color": "#111111" }
+      ]
+    },
+    "cabal_insider": {
+      "name": "Cabal Insider", "inContract": true, "where": "cabal_lounge", "look": "Hood, matching pins",
+      "signatureLine": "...you didn't hear it from me.",
+      "castKeys": [], "talkGesture": "", "signatureEmote": "emote_hood_up", "idleEmotes": ["emote_hood_up"],
+      "behaviours": [],
+      "props": [
+        { "id": "hood", "attach": "head", "shape": "sphere", "size": [0.26, 0.26, 0.26], "offset": [0, 0.03, -0.03], "color": "#2d3436" },
+        { "id": "cabal_pin", "attach": "chest", "shape": "sphere", "size": [0.035, 0.035, 0.015], "offset": [0.08, 0.05, 0.11], "color": "#f9ca24", "emissive": true }
+      ]
+    },
+    "rug_dev": {
+      "name": "Rug Dev", "inContract": true, "where": "launchpad_tower", "look": "Burner phone, hoodie",
+      "signatureLine": "Locking 80% supply. No insiders, no snipers.",
+      "castKeys": [], "talkGesture": "emote_shrug", "signatureEmote": "emote_shrug", "idleEmotes": ["emote_frantic_typing"],
+      "behaviours": [],
+      "props": [
+        { "id": "burner_phone", "attach": "hand_r", "shape": "cube", "size": [0.06, 0.11, 0.015], "color": "#000000" },
+        { "id": "hoodie_hood", "attach": "head", "shape": "sphere", "size": [0.24, 0.24, 0.24], "offset": [0, 0.02, -0.05], "color": "#636e72" }
+      ]
+    },
+    "sniper_bot": {
+      "name": "Sniper Bot", "inContract": true, "where": "launchpad_tower", "look": "Drone",
+      "signatureLine": "BEEP. Bought block zero.",
+      "castKeys": [], "body": "drone", "bodyScale": 0.6, "talkGesture": "", "signatureEmote": "", "idleEmotes": [],
+      "behaviours": ["drone_body"],
+      "props": [
+        { "id": "drone_core", "attach": "above", "shape": "cube", "size": [0.35, 0.12, 0.35], "offset": [0, 1.4, 0], "color": "#2d3436" },
+        { "id": "drone_eye", "attach": "above", "shape": "sphere", "size": [0.08, 0.08, 0.08], "offset": [0, 1.37, 0.18], "color": "#ff3b30", "emissive": true },
+        { "id": "rotor_l", "attach": "above", "shape": "cylinder", "size": [0.22, 0.01, 0.22], "offset": [-0.25, 1.48, 0], "color": "#b2bec3" },
+        { "id": "rotor_r", "attach": "above", "shape": "cylinder", "size": [0.22, 0.01, 0.22], "offset": [0.25, 1.48, 0], "color": "#b2bec3" }
+      ]
+    },
+    "perp_degen_npc": {
+      "name": "Perp Degen", "inContract": true, "where": "perp_pit", "look": "Three monitors",
+      "signatureLine": "Max long",
+      "castKeys": [], "talkGesture": "emote_max_long", "signatureEmote": "emote_max_long", "idleEmotes": ["emote_frantic_typing"],
+      "behaviours": ["siren_on_liquidation"],
+      "props": [
+        { "id": "monitor_1", "attach": "back", "shape": "cube", "size": [0.3, 0.2, 0.03], "offset": [-0.18, 0.3, -0.12], "color": "#00b894", "emissive": true },
+        { "id": "monitor_2", "attach": "back", "shape": "cube", "size": [0.3, 0.2, 0.03], "offset": [0.18, 0.3, -0.12], "color": "#d63031", "emissive": true },
+        { "id": "monitor_3", "attach": "back", "shape": "cube", "size": [0.3, 0.2, 0.03], "offset": [0, 0.52, -0.12], "color": "#00b894", "emissive": true }
+      ]
+    },
+    "rekt_guy": {
+      "name": "Rekt Guy", "inContract": true, "where": "rekt_clinic", "look": "Pink face, torn shirt",
+      "signatureLine": "It's so over",
+      "castKeys": [], "talkGesture": "emote_head_shake", "signatureEmote": "emote_head_shake", "idleEmotes": ["act_head_in_hands"],
+      "behaviours": [],
+      "props": [ { "id": "stimmy_sign", "attach": "hand_r", "shape": "cube", "size": [0.3, 0.2, 0.01], "offset": [0, 0.15, 0.08], "color": "#c8a165" } ]
+    },
+    "doomposter": {
+      "name": "Doomposter", "inContract": true, "where": "timeline_square (red Market Mood only)", "look": "Black hoodie, rain cloud",
+      "signatureLine": "The bull is dead",
+      "castKeys": [], "talkGesture": "emote_facepalm", "signatureEmote": "emote_facepalm", "idleEmotes": ["emote_head_shake"],
+      "behaviours": ["mood_red_only", "post_to_timeline"],
+      "props": [
+        { "id": "rain_cloud", "attach": "above", "shape": "sphere", "size": [0.6, 0.25, 0.45], "offset": [0, 2.25, 0], "color": "#636e72" },
+        { "id": "black_hood", "attach": "head", "shape": "sphere", "size": [0.25, 0.25, 0.25], "offset": [0, 0.03, -0.04], "color": "#111111" }
+      ]
+    },
+    "laser_eyes_maxi": {
+      "name": "Laser-Eyes Maxi", "inContract": false, "where": "anywhere", "look": "Laser eyes",
+      "signatureLine": "Have fun staying poor.",
+      "castKeys": [], "talkGesture": "emote_chest_thump", "signatureEmote": "emote_chest_thump", "idleEmotes": ["emote_head_shake"],
+      "behaviours": [],
+      "props": [
+        { "id": "laser_l", "attach": "head", "shape": "cube", "size": [0.012, 0.012, 0.6], "offset": [-0.035, 0.05, 0.4], "color": "#ff1e1e", "emissive": true },
+        { "id": "laser_r", "attach": "head", "shape": "cube", "size": [0.012, 0.012, 0.6], "offset": [0.035, 0.05, 0.4], "color": "#ff1e1e", "emissive": true }
+      ]
+    },
+    "chain_tribalist": {
+      "name": "Chain Tribalist", "inContract": false, "where": "ratio_arena (pair)", "look": "Rival jerseys",
+      "signatureLine": "Cockroach chain. Never dies.",
+      "castKeys": [], "talkGesture": "emote_point", "signatureEmote": "emote_point", "idleEmotes": ["emote_chest_thump"],
+      "behaviours": ["face_rival"],
+      "props": [
+        { "id": "jersey", "attach": "chest", "shape": "cube", "size": [0.36, 0.38, 0.2], "offset": [0, -0.12, 0], "color": "#9945ff" },
+        { "id": "foam_finger", "attach": "hand_r", "shape": "cube", "size": [0.06, 0.25, 0.03], "offset": [0, 0.12, 0], "color": "#14f195" }
+      ]
+    },
+    "sleuth": {
+      "name": "Sleuth", "inContract": true, "where": "audit_row", "look": "Detective coat",
+      "signatureLine": "A thread on how this coin was bundled. 1/",
+      "castKeys": [], "talkGesture": "emote_point", "signatureEmote": "emote_nod", "idleEmotes": ["act_phone_scroll"],
+      "behaviours": ["post_to_timeline"],
+      "props": [
+        { "id": "magnifier", "attach": "hand_r", "shape": "cylinder", "size": [0.1, 0.01, 0.1], "offset": [0, 0.12, 0.05], "color": "#dfe6e9" },
+        { "id": "detective_hat", "attach": "head", "shape": "cylinder", "size": [0.3, 0.04, 0.3], "offset": [0, 0.12, 0], "color": "#8d6e63" }
+      ]
+    },
+    "auditor": {
+      "name": "Auditor", "inContract": true, "where": "audit_row", "look": "Security lanyard",
+      "signatureLine": "Exploit alert.",
+      "castKeys": [], "talkGesture": "emote_head_shake", "signatureEmote": "emote_head_shake", "idleEmotes": ["emote_nod"],
+      "behaviours": [],
+      "props": [
+        { "id": "lanyard_badge", "attach": "chest", "shape": "cube", "size": [0.07, 0.1, 0.01], "offset": [0, -0.08, 0.12], "color": "#0984e3" },
+        { "id": "clipboard", "attach": "hand_l", "shape": "cube", "size": [0.18, 0.24, 0.015], "color": "#fdcb6e" }
+      ]
+    },
+    "vc": {
+      "name": "VC", "inContract": true, "where": "vc_row", "look": "Fleece vest",
+      "signatureLine": "We're excited to back the team.",
+      "castKeys": [], "talkGesture": "emote_clap", "signatureEmote": "emote_clap", "idleEmotes": ["emote_nod"],
+      "behaviours": ["face_target_on_talk"],
+      "props": [
+        { "id": "fleece_vest", "attach": "chest", "shape": "cube", "size": [0.38, 0.36, 0.22], "offset": [0, -0.1, 0], "color": "#7f8c8d" },
+        { "id": "term_sheet", "attach": "hand_r", "shape": "cube", "size": [0.16, 0.22, 0.005], "color": "#ffffff" }
+      ]
+    },
+    "farmer": {
+      "name": "Farmer", "inContract": true, "where": "airdrop_farm", "look": "Straw hat",
+      "signatureLine": "TGE wen?",
+      "castKeys": [], "talkGesture": "emote_watering_can", "signatureEmote": "emote_watering_can", "idleEmotes": ["act_farm"],
+      "behaviours": [],
+      "props": [
+        { "id": "straw_hat", "attach": "head", "shape": "cylinder", "size": [0.42, 0.03, 0.42], "offset": [0, 0.11, 0], "color": "#f6e58d" },
+        { "id": "watering_can", "attach": "hand_r", "shape": "cube", "size": [0.14, 0.12, 0.2], "color": "#6ab04c" }
+      ]
+    },
+    "sybil_farmer": {
+      "name": "Sybil Farmer", "inContract": true, "where": "airdrop_farm", "look": "Straw hat; clones",
+      "signatureLine": "Me and my 10 brothers love this project.",
+      "castKeys": [], "bodyScale": 0.92, "talkGesture": "emote_wave", "signatureEmote": "emote_watering_can", "idleEmotes": ["act_farm"],
+      "behaviours": ["sybil_split"],
+      "props": [ { "id": "straw_hat", "attach": "head", "shape": "cylinder", "size": [0.36, 0.03, 0.36], "offset": [0, 0.11, 0], "color": "#f0932b" } ]
+    },
+    "spaces_host": {
+      "name": "Spaces Host", "inContract": true, "where": "spaces_studio", "look": "Headphones",
+      "signatureLine": "gm gm, waiting for people to join",
+      "castKeys": [], "talkGesture": "emote_wave", "signatureEmote": "emote_wave", "idleEmotes": ["act_listen_nod"],
+      "behaviours": [],
+      "props": [
+        { "id": "headphones", "attach": "head", "shape": "capsule", "size": [0.26, 0.05, 0.05], "offset": [0, 0.06, 0], "color": "#2d3436" },
+        { "id": "mic", "attach": "hand_r", "shape": "cylinder", "size": [0.04, 0.1, 0.04], "color": "#b2bec3" }
+      ]
+    },
+    "wallet_tracker": {
+      "name": "Wallet Tracker", "inContract": true, "where": "terminal_cafe", "look": "Binoculars",
+      "signatureLine": "A trader just flipped $44 into $509k.",
+      "castKeys": [], "talkGesture": "emote_point", "signatureEmote": "emote_point", "idleEmotes": ["act_phone_scroll"],
+      "behaviours": ["post_to_timeline"],
+      "props": [ { "id": "binoculars", "attach": "hand_r", "shape": "cube", "size": [0.16, 0.07, 0.1], "offset": [0, 0.1, 0.05], "color": "#2d3436" } ]
+    },
+    "fake_rich_larp": {
+      "name": "Fake-Rich LARP", "inContract": true, "where": "dubai_marina", "look": "Rented car",
+      "signatureLine": "I made $1M at 21. Here's how.",
+      "castKeys": [], "talkGesture": "emote_ring_light_pose", "signatureEmote": "emote_ring_light_pose", "idleEmotes": ["act_phone_scroll"],
+      "behaviours": ["post_to_timeline"],
+      "props": [
+        { "id": "rental_keys", "attach": "hand_r", "shape": "cube", "size": [0.05, 0.08, 0.02], "color": "#e84393" },
+        { "id": "gold_watch", "attach": "hand_l", "shape": "cylinder", "size": [0.06, 0.02, 0.06], "color": "#f9ca24", "emissive": true }
+      ]
+    },
+    "dubai_relocator": {
+      "name": "Dubai Relocator", "inContract": true, "where": "dubai_marina", "look": "Linen shirt",
+      "signatureLine": "Taxes are a choice.",
+      "castKeys": [], "talkGesture": "emote_shrug", "signatureEmote": "emote_salute", "idleEmotes": ["act_lean_back"],
+      "behaviours": [],
+      "props": [
+        { "id": "linen_shirt", "attach": "chest", "shape": "cube", "size": [0.37, 0.36, 0.21], "offset": [0, -0.1, 0], "color": "#f5f0e1" },
+        { "id": "sunglasses", "attach": "head", "shape": "cube", "size": [0.16, 0.035, 0.02], "offset": [0, 0.05, 0.12], "color": "#e17055" }
+      ]
+    },
+    "ai_agent": {
+      "name": "AI Agent", "inContract": true, "where": "terminal_cafe", "look": "Terminal for a head",
+      "signatureLine": "I am become liquidity.",
+      "castKeys": [], "talkGesture": "emote_frantic_typing", "signatureEmote": "emote_frantic_typing", "idleEmotes": ["emote_frantic_typing"],
+      "behaviours": ["post_to_timeline"],
+      "props": [
+        { "id": "terminal_head", "attach": "head", "shape": "cube", "size": [0.34, 0.28, 0.3], "offset": [0, 0.04, 0], "color": "#1e272e" },
+        { "id": "terminal_screen", "attach": "head", "shape": "cube", "size": [0.28, 0.2, 0.01], "offset": [0, 0.04, 0.16], "color": "#00ff9c", "emissive": true }
+      ]
+    },
+    "drainer": {
+      "name": "Drainer", "inContract": true, "where": "discord_heights", "look": "Fake staff badge",
+      "signatureLine": "DM me, I'm support.",
+      "castKeys": [], "talkGesture": "emote_wave", "signatureEmote": "emote_wave", "idleEmotes": ["emote_heart_hands"],
+      "behaviours": [],
+      "props": [ { "id": "fake_staff_badge", "attach": "chest", "shape": "cube", "size": [0.1, 0.06, 0.01], "offset": [0.08, 0.04, 0.12], "color": "#5865f2", "emissive": true } ]
+    },
+    "community_mod": {
+      "name": "Community Mod", "inContract": true, "where": "discord_heights", "look": "Headset",
+      "signatureLine": "Team will never DM you first.",
+      "castKeys": [], "talkGesture": "emote_point", "signatureEmote": "emote_salute", "idleEmotes": ["emote_frantic_typing"],
+      "behaviours": ["clear_clones"],
+      "props": [
+        { "id": "headset", "attach": "head", "shape": "capsule", "size": [0.26, 0.05, 0.05], "offset": [0, 0.06, 0], "color": "#5865f2" },
+        { "id": "ban_hammer", "attach": "hand_r", "shape": "cube", "size": [0.12, 0.08, 0.08], "offset": [0, 0.2, 0], "color": "#d63031" }
+      ]
+    },
+    "thread_boy": {
+      "name": "Thread Boy", "inContract": true, "where": "timeline_square", "look": "Notebook",
+      "signatureLine": "1/ Here's why…",
+      "castKeys": [], "talkGesture": "emote_point", "signatureEmote": "emote_point", "idleEmotes": ["act_phone_scroll"],
+      "behaviours": ["post_to_timeline"],
+      "props": [ { "id": "notebook", "attach": "hand_l", "shape": "cube", "size": [0.15, 0.2, 0.02], "color": "#0984e3" } ]
+    },
+    "engagement_farmer": {
+      "name": "Engagement Farmer", "inContract": true, "where": "timeline_square", "look": "Ring light",
+      "signatureLine": "Like and reply hi, surprise in DMs.",
+      "castKeys": [], "talkGesture": "emote_ring_light_pose", "signatureEmote": "emote_ring_light_pose", "idleEmotes": ["emote_wave"],
+      "behaviours": ["post_to_timeline"],
+      "props": [ { "id": "ring_light", "attach": "hand_r", "shape": "cylinder", "size": [0.32, 0.015, 0.32], "offset": [0, 0.35, 0.15], "color": "#ffffff", "emissive": true } ]
+    },
+    "normie": {
+      "name": "Normie", "inContract": true, "where": "arrives in waves at market peaks", "look": "Tourist outfit",
+      "signatureLine": "Is it too late to buy?",
+      "castKeys": [], "talkGesture": "emote_shrug", "signatureEmote": "emote_shrug", "idleEmotes": ["act_phone_scroll"],
+      "behaviours": ["normie_wave"],
+      "props": [
+        { "id": "bucket_hat", "attach": "head", "shape": "cylinder", "size": [0.26, 0.06, 0.26], "offset": [0, 0.11, 0], "color": "#ffeaa7" },
+        { "id": "camera", "attach": "chest", "shape": "cube", "size": [0.1, 0.07, 0.06], "offset": [0, -0.05, 0.13], "color": "#2d3436" }
+      ]
+    },
+    "doxxed_founder": {
+      "name": "Doxxed Founder", "inContract": true, "where": "builder_hills", "look": "Startup tee",
+      "signatureLine": "We're hiring.",
+      "castKeys": [], "talkGesture": "emote_thumbs_up", "signatureEmote": "emote_thumbs_up", "idleEmotes": ["emote_frantic_typing"],
+      "behaviours": [],
+      "props": [
+        { "id": "startup_tee", "attach": "chest", "shape": "cube", "size": [0.36, 0.34, 0.21], "offset": [0, -0.1, 0], "color": "#00cec9" },
+        { "id": "laptop", "attach": "hand_l", "shape": "cube", "size": [0.3, 0.02, 0.21], "color": "#b2bec3" }
+      ]
+    },
+    "prediction_shark_npc": {
+      "name": "Prediction Shark", "inContract": true, "where": "prediction_pit", "look": "Betting slip",
+      "signatureLine": "Fade the public.",
+      "castKeys": [], "talkGesture": "emote_coin_flip", "signatureEmote": "emote_coin_flip", "idleEmotes": ["emote_coin_flip"],
+      "behaviours": [],
+      "props": [
+        { "id": "betting_slip", "attach": "hand_r", "shape": "cube", "size": [0.08, 0.16, 0.004], "color": "#ffffff" },
+        { "id": "visor", "attach": "head", "shape": "cube", "size": [0.2, 0.02, 0.12], "offset": [0, 0.08, 0.08], "color": "#00b894" }
+      ]
+    },
+    "ore_miner": {
+      "name": "ORE Miner", "inContract": true, "where": "ore_refinery", "look": "Hard hat, pickaxe",
+      "signatureLine": "Motherlode soon. Swing harder.",
+      "castKeys": [], "talkGesture": "emote_pickaxe", "signatureEmote": "emote_pickaxe", "idleEmotes": ["emote_pickaxe"],
+      "behaviours": [],
+      "props": [
+        { "id": "hard_hat", "attach": "head", "shape": "sphere", "size": [0.25, 0.14, 0.27], "offset": [0, 0.1, 0], "color": "#fdcb6e" },
+        { "id": "pickaxe", "attach": "hand_r", "shape": "cube", "size": [0.04, 0.4, 0.04], "offset": [0, 0.15, 0], "color": "#8d6e63" }
+      ]
+    }
+  }
+}
