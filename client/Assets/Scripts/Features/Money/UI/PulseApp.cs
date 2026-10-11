@@ -168,7 +168,9 @@ namespace CTLife.Economy
             var stage = _tabs.Current == TabLaunch ? "new" : _stage;
             if (Hub.Market.RoomLive) return MoneyStrings.T("pulse.live");
             var age = Hub.Market.Age(stage);
-            return double.IsNaN(age) ? MoneyStrings.T("common.loading") : MoneyStrings.F("pulse.polled", MoneyFormat.Ago(age));
+            if (double.IsNaN(age)) return MoneyStrings.T("common.loading");
+            var refreshed = age < 5 ? MoneyStrings.T("pulse.refreshedNow") : MoneyStrings.F("pulse.refreshedAgo", MoneyFormat.Ago(age));
+            return MoneyStrings.F(Hub.Market.RoomJoined ? "pulse.joinedEmpty" : "pulse.polled", refreshed);
         }
 
         // ------------------------------------------------------------------ rendering

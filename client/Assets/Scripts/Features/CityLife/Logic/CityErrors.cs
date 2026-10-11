@@ -97,9 +97,12 @@ namespace CTLife.CityLife
                 err.OutcomeUnknown = write;
                 return err;
             }
-            if ((a.Status == 404 && !a.Is("NOT_FOUND")) || a.Status == 405 || a.Status == 501)
+            var details = a.Details as JObject;
+            bool noRoute = a.Is("NOT_FOUND") && a.ServerMessage == "No route for this path and method." &&
+                !string.IsNullOrEmpty(CityWire.Str(details?["path"])) && !string.IsNullOrEmpty(CityWire.Str(details?["method"]));
+            if ((a.Status == 404 && (!a.Is("NOT_FOUND") || noRoute)) || a.Status == 405 || a.Status == 501)
             {
-                // A 404 without the contract error body means the route itself is missing on this server.
+                // Recognize the server's explicit route-missing envelope, not an entity NOT_FOUND.
                 err.Code = "UNAVAILABLE";
                 err.Key = "err.unavailable";
                 return err;

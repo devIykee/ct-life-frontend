@@ -29,6 +29,7 @@ namespace CTLife.UI
         private readonly EmotePicker _emotes;
         private readonly MovementControls _movement;
         private readonly InteractionPrompt _interact;
+        private readonly Func<IVenueMic> _venueMic;
 
         public Action OpenPhone;
         public Action OpenMap;
@@ -36,8 +37,10 @@ namespace CTLife.UI
 
         public VisualElement Element => _root;
 
-        public Hud()
+        /// <param name="venueMic">The venue microphone; defaults to the registered VoiceService (tests pass a fake).</param>
+        public Hud(Func<IVenueMic> venueMic = null)
         {
+            _venueMic = venueMic ?? (() => Services.TryGet<VoiceService>(out var service) ? service : null);
             _cash = El.Text("$0.00", "ct-cash");
             _online = El.Text(Strings.T("hud.onlineWaiting"), "ct-pill");
             _mood = El.Text(Strings.T("hud.moodWaiting"), "ct-pill");
@@ -112,14 +115,29 @@ namespace CTLife.UI
         {
             _root.Show(on);
             _movement.SetEnabled(on);
-            if (!on) { _chat.Hide(); _emotes.Hide(); }
+            if (!on) { _chat.Hide(); _emotes.Hide(); TurnMicOff(); }
+        }
+
+        /// <summary>
+        /// The HUD hides only for the Lobby (the phone hides its layer instead), and the Lobby has no mic control. A live venue
+        /// mic is turned off there rather than left recording out of sight (Seeker: still recording 8+ s on the Lobby).
+        /// No owner token: turning a mic off can never act wrongly for a successor visit.
+        /// </summary>
+        private async void TurnMicOff()
+        {
+            var mic = _venueMic();
+            if (_disposed || mic == null || !mic.MicOn) return;
+            try { await mic.SetMic(false, CancellationToken.None, _life.Token); }
+            catch (OperationCanceledException) { }
+            catch (Exception error) { Log.Warn("voice", "Microphone off failed: " + error.GetType().Name); }
+            finally { if (!_disposed) RefreshDegraded(); }
         }
 
         private void RefreshDegraded()
         {
             bool voice = Features.IsAvailable(Features.Voice);
             _mic.SetEnabled(voice && !(VenueSession.Current?.IsOwnHome ?? false) && !_micPending && !_disposed);
-            bool on = voice && Services.TryGet<VoiceService>(out var service) && service.MicOn;
+            bool on = voice && _venueMic()?.MicOn == true;
             _micLabel.text = Strings.T(!voice ? "hud.voiceUnavailable" : on ? "hud.micOn" : "hud.micOff");
             _mic.EnableInClassList("ct-btn-live", on);
         }
@@ -215,14 +233,28 @@ namespace CTLife.UI
         }
     }
 
+    /// <summary>The room the chat bar speaks in: the current venue visit in the game, a fake in EditMode tests.</summary>
+    public interface IChatRoom
+    {
+        /// <summary>Our session in the room; a `said` carrying it is our own line coming back.</summary>
+        string SessionId { get; }
+        /// <summary>Sends one line: 0 when sent, else the seconds to wait.</summary>
+        float Say(string text);
+        /// <summary>The local avatar's head, where our own speech bubble sits; null without an avatar.</summary>
+        Transform OwnBubbleAnchor { get; }
+    }
+
     /// <summary>"Say something out loud" (feature #6): 140 chars, once per 2 s, bubble over your avatar.</summary>
     public sealed class ChatBar
     {
         public VisualElement Element { get; }
         private readonly TextField _field;
+        private readonly Func<IChatRoom> _room;
 
-        public ChatBar()
+        /// <param name="room">The room to speak in; defaults to the current venue visit (tests pass a fake).</param>
+        public ChatBar(Func<IChatRoom> room = null)
         {
+            _room = room ?? VenueChatRoom.Current;
             _field = new TextField { maxLength = 140 };
             _field.AddToClassList("ct-chat-field");
             // Device QA: the keyboard covered the chat input. Keep the OS input line visible above the keyboard,
@@ -236,8 +268,13 @@ namespace CTLife.UI
                 { Send(); e.StopImmediatePropagation(); }
             }, TrickleDown.TrickleDown);
             _history = El.Div("ct-chat-history");
+            var say = El.Btn(Strings.T("hud.say"), Send, "ct-btn ct-btn-primary");
+            // Pressing "Say it" must not take focus from the field. Unity 6000.3 (TouchScreenTextEditor.OnFocusOutEvent) only
+            // partially dismisses the soft keyboard when focus moves to a TextElement with the field's keyboard settings, and
+            // a Button is one, so nothing closed it after the send (Seeker). Send blurs the field instead, which closes it.
+            say.RegisterCallback<PointerDownEvent>(e => say.focusController?.IgnoreEvent(e), TrickleDown.TrickleDown);
             // Input first: while the keyboard is up the panel docks at the top and its lower part is covered.
-            Element = El.Div("ct-chat", El.Div("ct-row", _field, El.Btn(Strings.T("hud.say"), Send, "ct-btn ct-btn-primary")),
+            Element = El.Div("ct-chat", El.Div("ct-row", _field, say),
                 El.Text(Strings.T("hud.chatPrompt"), "ct-small ct-muted"), _history);
             Element.Show(false);
             // The Android keyboard's Done/Enter does not reach UI Toolkit as a KeyDown; send when it reports Done.
@@ -261,10 +298,12 @@ namespace CTLife.UI
 
         private void OnSaid(CTLife.Realtime.SaidMessage m)
         {
+            var room = _room();
+            // Our own line was shown when it was sent; a server that echoes it to the sender must not show it twice.
+            if (room != null && !string.IsNullOrEmpty(room.SessionId) && m.sessionId == room.SessionId) return;
             var visit = VenueSession.Current;
             string who = "Someone";
-            if (visit?.Channel != null && m.sessionId == visit.Channel.SessionId) who = Strings.T("hud.you");
-            else if (visit != null && visit.Players.TryGetValue(m.sessionId ?? "", out var rp) && rp != null)
+            if (visit != null && visit.Players.TryGetValue(m.sessionId ?? "", out var rp) && rp != null)
                 who = rp.GetComponent<AvatarView>()?.displayName ?? who;
             AddLine(who + ": " + m.text);
         }
@@ -281,20 +320,25 @@ namespace CTLife.UI
 
         public void Toggle()
         {
-            bool on = Element.resolvedStyle.display == DisplayStyle.None;
-            Element.Show(on);
-            if (on) _field.Focus();
+            if (Element.resolvedStyle.display != DisplayStyle.None) { Hide(); return; }
+            Element.Show(true);
+            _field.Focus();
         }
 
-        public void Hide() => Element.Show(false);
+        /// <summary>Hides the bar and releases the field, so the soft keyboard closes with it.</summary>
+        public void Hide()
+        {
+            _field.Blur();
+            Element.Show(false);
+        }
 
         private void Send()
         {
             var text = _field.value?.Trim();
             if (string.IsNullOrEmpty(text)) return;
-            var ch = VenueSession.Current?.Channel;
-            if (ch == null) return;
-            float wait = ch.Say(text);
+            var room = _room();
+            if (room == null) return;
+            float wait = room.Say(text);
             if (wait > 0f)
             {
                 Bus.Publish(ToastSignal.Text(Strings.F("hud.wait", wait), ToastKind.Bad));
@@ -302,7 +346,38 @@ namespace CTLife.UI
             }
             _field.value = "";
             AddLine(Strings.T("hud.you") + ": " + text);
-            Element.Show(false);
+            // The room's `said` goes to everyone except the sender (backend venue.ts `except: client`): our bubble is ours to show.
+            var head = room.OwnBubbleAnchor;
+            if (head != null) Bus.Publish(new BubbleSignal { anchor = head, text = text, isNpc = false, seconds = 4.5f });
+            Hide();
+        }
+    }
+
+    /// <summary>The current VenueSession's joined room as the chat bar's room; null without one.</summary>
+    internal sealed class VenueChatRoom : IChatRoom
+    {
+        private readonly VenueSession _visit;
+        private readonly VenueChannel _channel;
+
+        private VenueChatRoom(VenueSession visit, VenueChannel channel) { _visit = visit; _channel = channel; }
+
+        public static IChatRoom Current()
+        {
+            var visit = VenueSession.Current;
+            var channel = visit != null ? visit.Channel : null;
+            return channel != null ? new VenueChatRoom(visit, channel) : null;
+        }
+
+        public string SessionId => _channel.SessionId;
+        public float Say(string text) => _channel.Say(text);
+        public Transform OwnBubbleAnchor
+        {
+            get
+            {
+                var local = _visit != null ? _visit.LocalPlayer : null;
+                var view = local != null ? local.GetComponent<AvatarView>() : null;
+                return view != null ? view.HeadAnchor : null;
+            }
         }
     }
 

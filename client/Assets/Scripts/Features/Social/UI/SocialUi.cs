@@ -152,7 +152,8 @@ namespace CTLife.SocialFeatures
                 if ((_dirty || (NeedsClockRender && Now - _lastRender >= 1000)) && !_pressing)
                 {
                     var focused = Root.panel?.focusController?.focusedElement as VisualElement;
-                    if (focused != null && Body.Contains(focused)) return; // typing: render after the field loses focus
+                    if (focused != null && Body.Contains(focused) &&
+                        (focused is TextField || focused.GetFirstAncestorOfType<TextField>() != null)) return; // typing: render after the field loses focus
                     _dirty = false;
                     _lastRender = Now;
                     var scroll = Root.scrollOffset;

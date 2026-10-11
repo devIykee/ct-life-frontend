@@ -191,6 +191,12 @@ namespace CTLife.Competition.Tests
             StringAssert.Contains("Sybil", GateRules.Message(new VenueAccess { ReasonCode = "SYBIL_JAILED" }));
             Assert.AreEqual(CompStrings.T("gate.denied"), GateRules.Message(new VenueAccess { ReasonCode = "SOMETHING_NEW" }));
         }
+        // Device (Railway staging, backend 91c0edc venues-gating.ts): the server's own codes for cabal_lounge and sybil_barn
+        // fell through to the generic "Closed to you right now."
+        [Test] public void ServerNotAMemberReadsLikeTheInviteGate() =>
+            Assert.AreEqual(CompStrings.T("gate.invite"), GateRules.Message(new VenueAccess { Allowed = false, ReasonCode = "NOT_A_MEMBER" }));
+        [Test] public void ServerNotJailedExplainsWhoTheBarnIsFor() =>
+            Assert.AreEqual("Only players caught in a sybil sweep end up here.", GateRules.Message(new VenueAccess { Allowed = false, ReasonCode = "NOT_JAILED" }));
         [Test] public void Shortfall()
         {
             Assert.AreEqual(7500000, GateRules.Shortfall(new VenueAccess { RequiredNetWorthCents = 10000000, NetWorthCents = 2500000 }));
