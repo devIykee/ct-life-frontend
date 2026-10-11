@@ -1,0 +1,7 @@
+# Presentation audio selection — 2026-10-06
+
+`mus_terminal_cafe` is a proposed FE-only music-map identifier for the existing `terminal_cafe` venue override. It selects the licensed Airport Lounge full arrangement. It is not a new server SFX ID or backend event. No contract snapshot was changed, and no server acknowledgement/approval is claimed. Other music selections retain their previous music IDs. All six Kenney UI replacements retain existing FE-proposed SFX IDs.
+
+The full arrangements deliberately replace the old synthetic stem selections under the user's brighter/social audio direction. They do not implement the original per-district four-stem/market-mood arrangement or claim exact original genre targets (phonk, banjo lo-fi, Amapiano). The original stems remain in the source tree but are no longer mapped. Licensed full arrangements retain their music content under red/green mood, with user gain, venue transition and voice ducking still applied.
+
+Known integration coverage, not new runtime requests: Core/UI own venue/network event routing. Existing server SFX events already reach AudioManager via SfxSignal. The audio map contains many proposed trading/phone/voice-room IDs that are not proven to fire in the current UI. This content pass does not add speculative event sounds or fake incoming-call audio. Dashboard resource/story/player/settings card actions still produce both the generic click and PhoneShell open; root owns the narrow UI suppression correction. Movement intentionally has no thumb-drag tick spam.

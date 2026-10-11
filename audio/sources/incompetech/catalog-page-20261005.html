@@ -1,0 +1,824 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>incompetech Music</title>
+  <meta name="description" content="Custom graph paper generators and royalty-free music.">
+  <link rel="icon" href="/images/zicon.ico" type="image/x-icon">
+  <link rel="describedby" href="/llms.txt">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=PT+Sans+Narrow:wght@700&family=Droid+Sans:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- New CSS -->
+  <link rel="stylesheet" href="/2025css/base.css">
+  <link rel="stylesheet" href="/2025css/layout.css">
+  <link rel="stylesheet" href="/2025css/components.css">
+  <link rel="stylesheet" href="/2025css/graphpaper.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="container header-inner">
+<a href="/" class="logo" aria-label="Incompetech">
+  <span class="logo-word">INC</span>
+  <span class="play-badge" aria-hidden="true">
+    <!-- Square badge; large centered triangle -->
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true">
+  <!-- smaller badge -->
+  <rect x="18" y="18" width="64" height="64" rx="10" class="badge-rect"/>
+  <!-- same triangle size -->
+  <polygon points="34,24 34,76 78,50" class="badge-play"/>
+</svg>
+  </span>
+  <span class="logo-word">MPETECH</span>
+</a>
+
+    <!-- Main nav: keeps your existing UL structure -->
+    <nav class="main-nav">
+      <ul id="menu-main-menu" class="menu">
+        <li><a href="/music/royalty-free/music.html">Royalty-Free Music</a></li>
+        <li><a href="/music/royalty-free/faq.html">Music FAQ</a></li>
+        <li><a href="/music/royalty-free/licenses/">Music Licenses</a></li>
+        <li><a href="/graphpaper/">Graph Paper</a></li>
+        <li><a href="/calendars/">Calendars</a></li>
+        <li><a href="/gallimaufry/">and More</a></li>
+        <li><a href="/email.html">Contact</a></li>
+      </ul>
+    </nav>
+
+    <!-- Dark-mode toggle -->
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">🌙</button>
+  </div>
+</header>
+<main class="site-content container">
+
+
+
+
+
+<style>
+	body { font-family: system-ui, sans-serif; margin: 0; padding: 0 0 90px; }
+	input[type="text"], select { padding: .4em; font-size: 1em; }
+	.feel-buttons { display: flex; flex-wrap: wrap; gap: .3em; margin-top: .3em; }
+	.feel-buttons button {
+    	padding: .3em .6em; border: 1px solid #ccc; border-radius: 999px; cursor: pointer;
+    	background: inherit; color: inherit;
+  	}
+  	.feel-buttons button.active { background: #444; color: #fff; }
+	.item { width: 100%; display: block; } 
+	.dim { opacity: 0.5;  } 
+	.smalldim { opacity: 0.5; font-size: .7rem;  margin: 1.5em; padding: 1.5em;   line-height: 2;} 
+  
+
+	.item-header { width: 100%; max-width: none; }   
+	.item-header .col { min-width: 0; }   
+
+	.item-header .length { text-align: right; }
+	.item-header .bpm { opacity: 0.4; text-align: right; padding-right: 2.2em}
+
+	.details { margin-top: .5em; padding-left: .5em; font-size: .9rem; }
+	.details div { margin-bottom: .3em; }
+	.betterbutton { margin-left: 4em; margin-top: 1em; padding-left: .5em; font-size: .9rem; }  
+	.description  { margin: 1.5em; padding: 1.5em; font-size: .9rem; }
+
+	button.show-more { display: block; margin: 1em auto; padding: .6em 1.2em; font-size: 1em; }
+
+	.item-title {
+	  display: grid;
+	  grid-template-columns: 2fr 1fr 1fr 1fr; /* or tweak ratios as you like */
+	  gap: .5em;
+	  align-items: baseline;
+	}
+	.item-title .col {
+	  overflow: hidden;
+	  text-overflow: ellipsis;
+	  white-space: nowrap;
+	  font-size: .90em;
+	}
+	.item-title .title { font-weight: 600; } /* Bold titles */
+
+	.item:nth-child(even) { /* zebra row striping */
+	  background-color: color-mix(in srgb, currentColor 5%, transparent);
+	}
+
+	.list-header {
+	  position: sticky;      /* optional, makes it stay at the top when scrolling */
+	  top: 0;
+	  font-weight: bold;
+	  border-bottom: 2px solid currentColor;
+	  padding-bottom: .25em;
+	  margin-bottom: .25em;
+	  z-index: 2;
+	  background-color: var(--surface);
+	  font-size: 1.30em;
+	  opacity: 0.9;
+	}
+	.list-header .item-title {
+		display: grid;
+		grid-template-columns: minmax(0, 2fr) 90px minmax(0, 1fr) 80px;
+		gap: .75em;
+		align-items: baseline;
+		width: 100%;
+	}
+	.list-header .title { text-align: center; }
+	.list-header .genre { text-align: center; }
+	.list-header .length { text-align: right; }
+	.list-header .bpm { text-align: right; opacity: 0.4;}
+	.list-header .col {
+		font-weight: normal;
+		font-size: .85em;
+		opacity: 1;
+	}  
+  
+</style>
+
+
+<div>
+  <h1>Music by Kevin MacLeod</h1>
+  <H3><A HREF="Downloads/allthemusic.html">Download all the files at once</A></H3>
+  <div>
+
+<div style="display:flex; align-items:center; gap:.5em;">
+  <input id="search" type="text" placeholder="Search title, instruments, description" style="flex:1; min-width:10ch;">
+  </div>
+  
+  
+
+  
+  <DIV>
+<button id="genre-toggle" class="betterbutton" type="button" aria-controls="genre-panel" aria-expanded="false">
+   Filter by Genre
+</button>
+
+<div id="genre-panel" hidden>
+  <div class="feel-buttons"  style="display:grid;
+grid-auto-flow: column;
+grid-template-rows: repeat(7, auto);">
+    <button>All Genres</button>
+    <button>African</button>
+    <button>Blues</button>
+    <button>Classical</button>
+    <button>Contemporary</button>
+    <button>Disco</button>
+    <button>Electronica</button>
+    <button>Funk</button>
+    <button>Holiday</button>
+    <button>Horror</button>
+    <button>Jazz</button>
+    <button>Latin</button>
+    <button>Modern</button>
+    <button>Polka</button>
+    <button>Pop</button>
+    <button>Reggae</button>
+    <button>Rock</button>
+    <button>Silent Film Score</button>
+    <button>Ska</button>
+    <button>Soundtrack</button>
+    <button>Stings</button>
+    <button>Unclassifiable</button>
+    <button>Urban</button>
+    <button>World</button>
+  </div>
+</div>
+</DIV>
+
+
+
+
+  
+  
+  
+<!-- Feels: toggle + panel (starts hidden) -->
+<button id="feels-toggle" class="betterbutton" type="button" aria-controls="feels-panel" aria-expanded="false">
+   Filter by Feel
+</button>
+
+<div id="feels-panel" hidden>
+  <!-- 3+ columns, column-wise order; same look as Genre buttons -->
+  <div id="feels-grid" class="feel-buttons"
+       style="display:grid; grid-auto-flow:column; grid-template-rows:repeat(6,auto); gap:.3em;">
+    <button data-feel="__ALL__">All Feels</button>
+    <button data-feel="Action">Action</button>
+    <button data-feel="Aggressive">Aggressive</button>
+    <button data-feel="Bouncy">Bouncy</button>
+    <button data-feel="Bright">Bright</button>
+    <button data-feel="Calming">Calming</button>
+    <button data-feel="Dark">Dark</button>
+    <button data-feel="Driving">Driving</button>
+    <button data-feel="Eerie">Eerie</button>
+    <button data-feel="Epic">Epic</button>
+    <button data-feel="Grooving">Grooving</button>
+    <button data-feel="Humorous">Humorous</button>
+    <button data-feel="Intense">Intense</button>
+    <button data-feel="Mysterious">Mysterious</button>
+    <button data-feel="Mystical">Mystical</button>
+    <button data-feel="Relaxed">Relaxed</button>
+    <button data-feel="Somber">Somber</button>
+    <button data-feel="Suspenseful">Suspenseful</button>
+    <button data-feel="Unnerving">Unnerving</button>
+    <button data-feel="Uplifting">Uplifting</button>
+  </div>
+</div>
+  
+  
+<!-- THE MAIN SHOW! The big list --> 
+  <div id="list"></div>
+
+
+
+
+  <button id="show-more" class="show-more">Show More</button>
+</div>
+
+
+
+<!-- Floating Player -->
+
+
+<script>
+
+function escapeHtml(str){
+  return str.replace(/[&<>'"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;","\"":"&quot;"}[c]));
+}
+
+
+
+// ======= STATIC LOOKUPS =======
+const genres = [
+  { "id": 2, "genre": "African" },
+  { "id": 3, "genre": "Blues" },
+  { "id": 4, "genre": "Classical" },
+  { "id": 5, "genre": "Contemporary" },
+  { "id": 6, "genre": "Disco" },
+  { "id": 7, "genre": "Electronica" },
+  { "id": 8, "genre": "Funk" },
+  { "id": 9, "genre": "Holiday" },
+  { "id": 10, "genre": "Horror" },
+  { "id": 11, "genre": "Jazz" },
+  { "id": 12, "genre": "Latin" },
+  { "id": 13, "genre": "Modern" },
+  { "id": 14, "genre": "Musical" },
+  { "id": 15, "genre": "Polka" },
+  { "id": 16, "genre": "Pop" },
+  { "id": 18, "genre": "Reggae" },
+  { "id": 19, "genre": "Rock" },
+  { "id": 20, "genre": "Silent Film Score" },
+  { "id": 21, "genre": "Ska" },
+  { "id": 22, "genre": "Soundtrack" },
+  { "id": 23, "genre": "Stings" },
+  { "id": 24, "genre": "Unclassifiable" },
+  { "id": 25, "genre": "World" },
+  { "id": 26, "genre": "Urban" }
+];
+const collections = [
+  {"id":"1","collection_name":"Hard Electronic","collection_category":"Electronic and Rock","code":"12"},
+  {"id":"2","collection_name":"Medium Electronic","collection_category":"Electronic and Rock","code":"18"},
+  {"id":"3","collection_name":"Video Classica","collection_category":"Electronic and Rock","code":"29"},
+  {"id":"4","collection_name":"Disco and Lounge","collection_category":"Electronic and Rock","code":"7"},
+  {"id":"5","collection_name":"Rock Classic","collection_category":"Electronic and Rock","code":"24"},
+  {"id":"6","collection_name":"Rock Medium","collection_category":"Electronic and Rock","code":"25"},
+  {"id":"7","collection_name":"Rock Harder","collection_category":"Electronic and Rock","code":"26"},
+  {"id":"8","collection_name":"Funk and Blues","collection_category":"Electronic and Rock","code":"11"},
+  {"id":"9","collection_name":"African","collection_category":"World","code":"1"},
+  {"id":"10","collection_name":"Middle East Inspired","collection_category":"World","code":"46"},
+  {"id":"11","collection_name":"Reggae and Ska","collection_category":"World","code":"23"},
+  {"id":"12","collection_name":"Polka","collection_category":"World","code":"22"},
+  {"id":"13","collection_name":"Celtic and Folk","collection_category":"World","code":"3"},
+  {"id":"14","collection_name":"Native American","collection_category":"World","code":"19"},
+  {"id":"15","collection_name":"Latin Sounds","collection_category":"World","code":"15"},
+  {"id":"16","collection_name":"Jazz","collection_category":"Everything Else","code":"14"},
+  {"id":"17","collection_name":"Far East Inspired","collection_category":"World","code":"10"},
+  {"id":"18","collection_name":"Silent Film - Bright","collection_category":"Film Scoring Moods","code":"31"},
+  {"id":"19","collection_name":"Silent Film - Dark","collection_category":"Film Scoring Moods","code":"32"},
+  {"id":"20","collection_name":"Action","collection_category":"Film Scoring Moods","code":"33"},
+  {"id":"21","collection_name":"Comedic","collection_category":"Film Scoring Moods","code":"34"},
+  {"id":"22","collection_name":"Darkness and Unease","collection_category":"Film Scoring Moods","code":"35"},
+  {"id":"23","collection_name":"Gloom and Sadness","collection_category":"Film Scoring Moods","code":"36"},
+  {"id":"24","collection_name":"Horror Soundscapes","collection_category":"Film Scoring Moods","code":"37"},
+  {"id":"25","collection_name":"Horror Themes","collection_category":"Film Scoring Moods","code":"38"},
+  {"id":"26","collection_name":"Misc","collection_category":"Film Scoring Moods","code":"39"},
+  {"id":"27","collection_name":"Mystery","collection_category":"Film Scoring Moods","code":"40"},
+  {"id":"28","collection_name":"Noire","collection_category":"Film Scoring Moods","code":"41"},
+  {"id":"29","collection_name":"Transitions","collection_category":"Film Scoring Moods","code":"42"},
+  {"id":"30","collection_name":"Aspiring","collection_category":"Film Scoring Moods","code":"43"},
+  {"id":"31","collection_name":"Tension","collection_category":"Film Scoring Moods","code":"44"},
+  {"id":"32","collection_name":"Wonder","collection_category":"Film Scoring Moods","code":"45"},
+  {"id":"33","collection_name":"Bright Piano","collection_category":"Lighter Faire","code":"2"},
+  {"id":"37","collection_name":"Light","collection_category":"Lighter Faire","code":"17"},
+  {"id":"38","collection_name":"Elegant Piano","collection_category":"Lighter Faire","code":"16"},
+  {"id":"39","collection_name":"Heartfelt Melodies","collection_category":"Lighter Faire","code":"13"},
+  {"id":"40","collection_name":"Thoughtful","collection_category":"Lighter Faire","code":"20"},
+  {"id":"41","collection_name":"Serenity","collection_category":"Lighter Faire","code":"27"},
+  {"id":"42","collection_name":"Touching Moments","collection_category":"Lighter Faire","code":"28"},
+  {"id":"43","collection_name":"Christmas","collection_category":"Everything Else","code":"4"},
+  {"id":"44","collection_name":"Danse Macabre","collection_category":"Everything Else","code":"5"},
+  {"id":"45","collection_name":"Dark World","collection_category":"Everything Else","code":"6"},
+  {"id":"46","collection_name":"Famous Classics","collection_category":"Everything Else","code":"8"},
+  {"id":"47","collection_name":"Mad Pianist","collection_category":"Everything Else","code":"9"},
+  {"id":"48","collection_name":"Oddities","collection_category":"Everything Else","code":"21"},
+  {"id":"49","collection_name":"Wonders of Other Worlds","collection_category":"Everything Else","code":"30"},
+  {"id":"52","collection_name":"Western European","collection_category":"World","code":"50"},
+  {"id":"54","collection_name":"Polynesian","collection_category":"World","code":"47"},
+  {"id":"56","collection_name":"Brazilian","collection_category":"World","code":"49"},
+  {"id":"999","collection_name":"not in a collection","collection_category":"not in a collection","code":"999"}
+];
+const feelsList = [
+  "Action","Aggressive","Bouncy","Bright","Calm","Calming","Dark","Driving","Eerie",
+  "Epic","Grooving","Humorous","Intense","Mysterious","Mystical","Relaxed","Somber",
+  "Suspenseful","Unnerving","Uplifting"
+];
+
+
+
+
+
+
+// ======= STATE =======
+let allPieces = [];
+let filtered = [];
+let visibleCount = 50;
+let activeFeels = new Set();
+let selectedGenre = "";
+let currentAudio = null;
+
+// ======= DOM REFS =======
+const listEl = document.getElementById('list');
+const searchEl = document.getElementById('search');
+const genreSelect = document.getElementById('genre-select');
+const showMoreBtn = document.getElementById('show-more');
+const audio = document.getElementById('audio');
+const playpause = document.getElementById('playpause');
+const seek = document.getElementById('seek');
+const playerTitle = document.getElementById('player-title');
+const playerTime = document.getElementById('player-time');
+const genreToggle = document.getElementById('genre-toggle');
+const genrePanel  = document.getElementById('genre-panel');
+
+
+
+// ===== Feels toggle + behavior =====
+const feelsToggle = document.getElementById('feels-toggle');
+const feelsPanel  = document.getElementById('feels-panel');
+const feelsGrid   = document.getElementById('feels-grid');
+
+
+
+function setGenrePanel(open) {
+  genrePanel.hidden = !open;
+  genreToggle.setAttribute('aria-expanded', String(open));
+}
+
+
+function getGenreName(id) {
+  const g = genres.find(x => String(x.id) === String(id));
+  return g ? g.genre : 'unknown';
+}
+
+
+function getCollectionName(code) {
+  const c = collections.find(x => String(x.code) === String(code));
+  return c ? `${c.collection_name} (${c.collection_category})` : 'unknown';
+}
+
+function formatLength(str) {
+  if (!str) return '';
+  const parts = str.split(':').map(x => parseInt(x, 10) || 0);
+  // parts is [hours, minutes, seconds]
+  const [h, m, s] = parts;
+  if (h > 0) {
+    // show h:mm:ss
+    return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  }
+  // show m:ss (even if minutes = 0)
+  return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+function setFeelsPanel(open) {
+  feelsPanel.hidden = !open;
+  feelsToggle.setAttribute('aria-expanded', String(open));
+}
+
+function updateFeelsToggleLabel() {
+  const n = activeFeels.size;
+  if (n === 0) {
+    feelsToggle.textContent = 'Filter by Feel';
+    return;
+  }
+  // Get all selected feels as a sorted array for consistency
+  const selected = Array.from(activeFeels).sort();
+  // If there are many, trim and indicate more
+  const labelList = selected.length > 5
+    ? selected.slice(0, 5).join(', ') + ', …'
+    : selected.join(', ');
+  feelsToggle.textContent = `Filtering by Feels: ${labelList}`;
+}
+
+function highlightFeels() {
+  feelsGrid.querySelectorAll('button').forEach(b => {
+    const val = b.dataset.feel;
+    const isAll = val === '__ALL__';
+    b.classList.toggle('active', isAll ? activeFeels.size === 0 : activeFeels.has(val));
+  });
+}
+
+
+
+genreToggle.addEventListener('click', (e) => {
+  e.preventDefault();
+  setGenrePanel(genrePanel.hidden); // toggle
+});
+
+genrePanel.addEventListener('click', (e) => {
+  const btn = e.target.closest('button');
+  if (!btn) return;
+  const name = btn.textContent.trim();
+  // “All Genres” clears the filter
+  if (/^all genres$/i.test(name)) {
+    selectedGenre = '';
+  } else {
+    // Map the button text to the genre id using your existing `genres` array
+    const g = genres.find(x => x.genre === name);
+    selectedGenre = g ? String(g.id) : '';
+  }
+  // Update the toggle label
+  if (selectedGenre) {
+    genreToggle.textContent = `Filtering by Genre "${name}"`;
+  } else {
+    genreToggle.textContent = 'Filter by Genre';
+  }
+  refresh();            // re-run your filtering logic
+  setGenrePanel(false); // collapse panel
+});
+
+
+
+listEl.addEventListener('click', (e) => {
+  const btn = e.target.closest('button');
+  if (!btn) return;
+
+  if (btn.classList.contains('js-listen')) {
+    const url = btn.dataset.url;
+    const title = btn.dataset.title || 'Untitled';
+    listenNow(url, title);
+    return;
+  }
+
+  if (btn.classList.contains('js-download')) {
+    const url = btn.dataset.url;
+    location.href = url;
+    return;
+  }
+
+  if (btn.classList.contains('js-video') || btn.classList.contains('js-itunes')) {
+    const url = btn.dataset.url;
+    window.open(url, '_blank');
+    return;
+  }
+});
+
+
+
+
+
+
+
+feelsToggle.addEventListener('click', (e) => {
+  e.preventDefault();
+  setFeelsPanel(feelsPanel.hidden); // manual open/close, does NOT auto-close on button clicks
+});
+
+feelsGrid.addEventListener('click', (e) => {
+  const btn = e.target.closest('button');
+  if (!btn) return;
+  const val = btn.dataset.feel;
+
+  if (val === '__ALL__') {
+    activeFeels.clear(); // clear all selections
+  } else {
+    if (activeFeels.has(val)) activeFeels.delete(val);
+    else activeFeels.add(val);
+  }
+  highlightFeels();
+  updateFeelsToggleLabel();
+  refresh(); // re-run your filtering pass
+});
+
+// initialize once
+highlightFeels();
+updateFeelsToggleLabel();
+
+searchEl.oninput = ()=>refresh();
+// genreSelect.onchange = ()=>{ selectedGenre = genreSelect.value; refresh(); };
+showMoreBtn.onclick = ()=>{ visibleCount += 50; renderList(); };
+
+// ======= LOAD DATA =======
+fetch('pieces.json')
+  .then(r=>r.json())
+  .then(data=>{
+    allPieces = data;
+    refresh();
+  })
+  .catch(e=>{
+    listEl.textContent = "Error loading pieces.json: "+e;
+  });
+
+// ======= FILTERING =======
+function refresh(){
+  const q = searchEl.value.trim().toLowerCase();
+  filtered = allPieces.filter(p=>{
+    // Search
+    const hay = [p.title, p.instruments, p.description].join(' ').toLowerCase();
+    if(q && !hay.includes(q)) return false;
+    // Genre
+    if(selectedGenre && String(p.genre)!==String(selectedGenre)) return false;
+    // Feels
+    if(activeFeels.size){
+      const pf = (p.feel||"").split(',').map(x=>x.trim());
+      for(let f of activeFeels){ if(!pf.includes(f)) return false; }
+    }
+    return true;
+  });
+  visibleCount = 50;
+  renderList();
+}
+
+// ======= RENDER LIST =======
+function renderList(){
+  listEl.innerHTML = '';
+    // ===== Add header row =====
+  const headerRow = document.createElement('div');
+  headerRow.className = 'list-header';
+  headerRow.innerHTML = `
+    <div class="item-title">
+      <span class="col title">Title</span>
+      <span class="col bpm"></span>
+      <span class="col genre">Genre</span>
+      <span class="col length">Length</span>
+    </div>`;
+  listEl.appendChild(headerRow);
+  const visible = filtered.slice(0, visibleCount);
+  visible.forEach(p=>{
+    const item = document.createElement('div');
+    item.className='item';
+    const header = document.createElement('div');
+    header.className='item-header';
+	header.innerHTML = `
+	  <div class="item-title">
+	    <span class="col title">${p.title || '(untitled)'}</span>
+	    <span class="col bpm">${p.bpm || 'na'} bpm</span>
+	    <span class="col genre">${getGenreName(p.genre)}</span>
+	    <span class="col length">${formatLength(p.length)}</span>
+	  </div>`;
+    item.appendChild(header);
+    const details = document.createElement('div');
+    details.className='details';
+    details.style.display='none';
+    header.onclick = ()=>{ details.style.display = details.style.display==='none'?'block':'none'; };
+    let html='';
+
+	html += `
+		<div style="border:1px solid var(--border, #ccc); border-top:none; border-left:none; padding:12px; margin-bottom:80px;">
+			<div style="display:flex; flex-wrap:wrap; gap:12px; align-items:flex-start;">
+		    <!-- Column A (~67%): description + instruments + license -->
+		    <div style="flex:2 1 420px; min-width:260px;">
+		    	<h3>${p.title || ''}</h3>
+		      <div>${p.description || ''}</div>
+		      <div><b>Instruments:</b> ${p.instruments || ''}</div>
+		      <div style="opacity:.6; font-size:.85em; line-height:1.3; margin-top:8px;">
+		        <b>Attribution Code</b><br>
+		        <tt>
+		          "${p.title}" Kevin MacLeod (incompetech.com)<br>
+		          Licensed under Creative Commons: By Attribution 4.0 License<br>
+		          http://creativecommons.org/licenses/by/4.0/
+		        </tt>
+		      </div>
+		    </div>
+		    <!-- Column B (~33%): actions + stats -->
+		    <div style="flex:1 1 280px; min-width:220px;">`;
+		
+	// BUTTONS SECTION
+	// Listen Now
+	html += `<div> <button type="button" class="js-listen" data-url="/music/royalty-free/mp3-royaltyfree/${encodeURIComponent(p.filename)}" data-title="${escapeHtml(p.title || '')}">	► Listen Now  </button>	</div>`;
+	// Download
+	html += `<div> <button type="button" class="js-download" data-url="/music/royalty-free/mp3-royaltyfree/${encodeURIComponent(p.filename)}">⬇ Download</button>	</div>`;
+	// YouTube (if present)
+	if (p.video) {
+	  html += `<div><button type="button" class="js-video" data-url="${escapeHtml(encodeURI(p.video))}">⧉ YouTube Video </button>	  </div>`;
+	}
+	// iTunes (if present)
+	if (p.itunes) {
+	  html += `<div> <button type="button" class="js-itunes" data-url="${escapeHtml(encodeURI(p.itunes))}">⧉ iTunes Track </button> </div>`;
+	}
+
+	html += `
+      <hr style="margin:8px 0; border:none; border-top:1px solid rgba(0,0,0,.15);">
+      <div><b>Genre:</b> ${getGenreName(p.genre)}</div>
+      <div><b>Album:</b> ${getCollectionName(p.collection)}</div>
+      <div><b>Length:</b> ${formatLength(p.length)}</div>
+      <div><b>Feel:</b> ${p.feel || ''}</div>
+      <div><b>Tempo:</b> ${p.bpm || ''}bpm</div>
+      <div style="opacity:.7;"><b>ISRC:</b> ${p.isrc || ''}</div>
+      <div style="opacity:.7;"><b>Uploaded:</b> ${p.uploaded || ''}</div>
+    </div> </div> </div>`;
+
+    details.innerHTML = html;
+    item.appendChild(details);
+    listEl.appendChild(item);
+  });
+  showMoreBtn.style.display = filtered.length>visibleCount ? 'block':'none';
+}
+
+
+
+</script>
+
+
+<BR STYLE="clear:both;">
+<UL>
+<LI><A HREF="/music/royalty-free/isrc_to_name.php">All Tracks Listed by ISRC Number</A></LI>
+<LI><A HREF="/music/royalty-free/full_list.php">All Tracks Listed Alphbetically</A></LI>
+</UL>
+
+
+
+
+
+
+<!-- Floating mini-player (UI shell only) -->
+<div id="mini-player"
+     style="position:fixed; inset:auto 16px 16px auto; z-index:1000;
+            width:320px; max-width:92vw;
+            background:var(--surface,#f9f9f9); color:var(--text,#222);
+            border:1px solid var(--border,#ccc); border-radius:12px;
+            box-shadow:0 8px 24px rgba(0,0,0,.18);
+            display:flex; flex-direction:column; gap:8px; padding:10px;">
+	<audio id="mini-audio" preload="none" style="display:none;"></audio>
+	<!-- drag handle / header -->
+	<div id="mini-player-handle" style="display:flex; align-items:center; gap:8px; cursor:grab; user-select:none;">
+    <div aria-hidden="true" style="font-size:18px; line-height:1;">⋮⋮</div>
+    <div id="mini-player-title" style="flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+      <span class="dim">No Track selected</span>
+    </div>
+    
+    <input type="range" id="mini-player-volume" min="0" max="1" step="0.01" value="1" title="Volume" style="width:80px; accent-color:var(--accent,#1565c0); cursor:pointer;">
+</div>
+
+
+<div style="display:flex; align-items:center; gap:8px;">
+    <button type="button" id="mini-player-play"             style="min-width:2.25rem; height:2.25rem; border:1px solid var(--border,#ccc);  border-radius:999px; background:transparent; cursor:pointer;">►</button>
+    <input id="mini-player-seek" type="range" min="0" value="0" step="0.01"
+           style="flex:1;">
+    <div id="mini-player-time"
+         style="font-size:.85em; opacity:.8; white-space:nowrap;">0:00 / 0:00</div>
+  </div>
+</div>
+
+
+<script>
+(() => {
+  const box = document.getElementById('mini-player');
+  const handle = document.getElementById('mini-player-handle');
+  const closeBtn = document.getElementById('mini-player-close');
+
+
+  // Dragging
+  let dragging = false, startX = 0, startY = 0, startLeft = 0, startTop = 0;
+
+  function onPointerDown(e) {
+    const rect = box.getBoundingClientRect();
+    dragging = true;
+    box.style.cursor = 'grabbing';
+    handle.style.cursor = 'grabbing';
+    startX = e.clientX;
+    startY = e.clientY;
+    // compute current offset from viewport
+    startLeft = rect.left;
+    startTop = rect.top;
+    window.addEventListener('pointermove', onPointerMove, { passive: true });
+    window.addEventListener('pointerup', onPointerUp, { once: true });
+  }
+
+  function onPointerMove(e) {
+    if (!dragging) return;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const rect = box.getBoundingClientRect();
+    // new desired position
+    let left = startLeft + dx;
+    let top = startTop + dy;
+    // clamp to viewport with small margin
+    const margin = 8;
+    left = Math.max(margin, Math.min(left, vw - rect.width - margin));
+    top = Math.max(margin, Math.min(top, vh - rect.height - margin));
+    // switch to top/left positioning
+    box.style.left = left + 'px';
+    box.style.top = top + 'px';
+    box.style.right = 'auto';
+    box.style.bottom = 'auto';
+  }
+
+  function onPointerUp() {
+    dragging = false;
+    box.style.cursor = '';
+    handle.style.cursor = 'grab';
+    window.removeEventListener('pointermove', onPointerMove);
+  }
+
+  handle.addEventListener('pointerdown', onPointerDown);
+})();
+</script>
+<script>
+(() => {
+  const box    = document.getElementById('mini-player');
+  const title  = document.getElementById('mini-player-title');
+  const play   = document.getElementById('mini-player-play');
+  const seek   = document.getElementById('mini-player-seek');
+  const timeEl = document.getElementById('mini-player-time');
+  const audio  = document.getElementById('mini-audio');
+  const volume = document.getElementById('mini-player-volume');
+  
+  volume.addEventListener('input', () => { audio.volume = volume.value; });
+
+  // Toggle play/pause button
+  play.addEventListener('click', () => {
+    if (!audio.src) return;
+    if (audio.paused) audio.play(); else audio.pause();
+  });
+
+  // Seek bar → audio
+  seek.addEventListener('input', () => {
+    if (isFinite(audio.duration)) audio.currentTime = +seek.value;
+  });
+
+  // Audio → UI
+  audio.addEventListener('timeupdate', () => {
+    if (isFinite(audio.duration)) {
+      seek.max = audio.duration;
+      seek.value = audio.currentTime;
+      timeEl.textContent = `${fmt(audio.currentTime)} / ${fmt(audio.duration)}`;
+    }
+  });
+  audio.addEventListener('play',  () => { play.textContent = '❚❚'; });
+  audio.addEventListener('pause', () => { play.textContent = '►';  });
+  audio.addEventListener('ended', () => { play.textContent = '►';  });
+
+  // Expose a global hook for your inline onclick
+  window.listenNow = (url, trackTitle) => {
+    // show the mini-player if hidden
+    box.style.display = '';
+    // set title
+    title.innerHTML = ("<A HREF=\"" + url + "\">" + trackTitle + "</A>") || 'Untitled';
+    // load/replace source and play
+    if (audio.src !== url) {
+      audio.src = url;        // percent-encoded URL is fine here
+    }
+    audio.play().catch(() => {/* ignore autoplay block; user just clicked */});
+  };
+
+  function fmt(s) {
+    if (!isFinite(s)) return '0:00';
+    const m = Math.floor(s/60), ss = Math.floor(s%60);
+    return `${m}:${String(ss).padStart(2,'0')}`;
+  }
+})();
+</script>
+
+
+
+</main>
+<footer class="site-footer">
+  <div class="container">
+    <p>&copy; 1997–2026 Incompetech Inc.</p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  const root = document.documentElement;
+  const btn  = document.getElementById('theme-toggle');
+  const key  = 'theme';
+
+  const sysPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const initial = localStorage.getItem(key) || (sysPrefersDark ? 'dark' : 'light');
+  setTheme(initial);
+
+  btn.addEventListener('click', () => setTheme(root.dataset.theme === 'dark' ? 'light' : 'dark'));
+
+  function setTheme(mode) {
+    root.dataset.theme = mode;
+    localStorage.setItem(key, mode);
+    btn.textContent = mode === 'dark' ? '🌙' : '☀️';
+    btn.setAttribute('aria-label', mode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+  }
+})();
+</script>
+</body>
+</html>
+
+
+
+
