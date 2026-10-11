@@ -46,6 +46,7 @@ namespace CTLife.World.Vehicles
             if (_car != null) _skid = Source("skid", true, 4f, 70f);
             if (s.kind == VehicleKind.Roadstar) { _hum = Source("hover_hum", true, 3f, 80f); _thrust = Source("jet_thrust", true, 4f, 120f); }
             _oneShot = Source(null, false, 3f, 90f);
+            _hornPitch = Random.Range(0.88f, 1.12f);
         }
 
         private float Gain => AudioManager.Instance != null ? AudioManager.Instance.SfxGain : 1f;
@@ -59,6 +60,20 @@ namespace CTLife.World.Vehicles
         public void StopEngine() { }
 
         public void Door(bool open) => Play(open ? "door_open" : "door_close", 0.8f);
+
+        /// <summary>A honk (traffic at the player); each car's horn sits at its own pitch.</summary>
+        public void Horn(float volume = 0.9f)
+        {
+            var c = Clip("horn");
+            if (c == null || _oneShot == null) return;
+            _oneShot.pitch = _hornPitch;
+            _oneShot.PlayOneShot(c, volume * Gain);
+        }
+
+        private float _hornPitch = 1f;
+
+        /// <summary>Distant traffic: every loop off (the voices go back to the pool); one-shots still play.</summary>
+        public bool Quiet { get; set; }
 
         public void Play(string clip, float volume)
         {
@@ -90,6 +105,12 @@ namespace CTLife.World.Vehicles
         {
             var s = _v.Spec;
             if (s == null) return;
+            if (Quiet)
+            {
+                Hush(_engine); Hush(_skid); Hush(_hum); Hush(_thrust);
+                _engineVol = 0f;
+                return;
+            }
             float gain = Gain;
             bool on = _v.EngineOn;
             float rpm, open;
@@ -113,6 +134,8 @@ namespace CTLife.World.Vehicles
                 if (_engine != null && f > 0.01f) _engine.volume *= 1f - f;   // the road motor gives way to the pads
             }
         }
+
+        private static void Hush(AudioSource src) { if (src != null && src.isPlaying) src.Stop(); }
 
         private static void Loop(AudioSource src, float volume, float pitch)
         {

@@ -65,6 +65,29 @@ namespace CTLife.World
         private float _ceilingCheckAt;
 
         public static int CollisionMask => CharacterLayers.BodyMask & ~((1 << 13) | (1 << 14)); // not props or vegetation (World v2 13, 14)
+        /// <summary>World v2 Building 12, Prop 13, Vegetation 14 (tree trunks): the boom keeps a thin margin from these too.</summary>
+        public static int ThinMask => (1 << 12) | (1 << 13) | (1 << 14);
+        public const float ThinRadius = 0.1f;
+
+        /// <summary>
+        /// Boom clearance: solid world with the full camera radius, plus a thin cast against buildings, props and trunks, so
+        /// lamp posts, benches and hedges with colliders no longer end up inside the lens. <paramref name="thinOnly"/>: only the
+        /// thin cast is in the way (a pole passing between), which the callers ease in on instead of snapping.
+        /// </summary>
+        public static float Clearance(Vector3 pivot, Vector3 back, float want, int mask, out bool thinOnly)
+        {
+            float main = ClearDistance(pivot, back, want, CollisionRadius, mask);
+            float thin = ClearDistance(pivot, back, want, ThinRadius, ThinMask);
+            thinOnly = thin < main - 0.05f;
+            return Mathf.Min(main, thin);
+        }
+
+        /// <summary>The boom length this frame: solid surfaces pull it in at once, thin ones quickly but smoothly; it eases out.</summary>
+        private static float Boom(float boom, float clear, bool thinOnly, float outRate, float dt)
+        {
+            if (clear >= boom) return Mathf.Lerp(boom, clear, 1f - Mathf.Exp(-outRate * dt));
+            return thinOnly ? Mathf.Lerp(boom, clear, 1f - Mathf.Exp(-22f * dt)) : clear;
+        }
 
         public void ConfigureVenue(VenueSceneRoot venue)
         {
@@ -244,8 +267,9 @@ namespace CTLife.World
             if ((_pivot - pivotTarget).sqrMagnitude > 400f) _pivot = pivotTarget;   // a respawn: no swoop
             var rot = Quaternion.Euler(pitch, yaw, 0f);
             float want = spec.camDistance * (1f + 0.18f * k) * _zoom;
+            // (buildings and terrain only: at driving speed a row of lamp posts would make the boom bob in and out)
             float clear = ClearDistance(_pivot, rot * Vector3.back, want, CollisionRadius, VehicleCameraMask);
-            _boom = clear < _boom ? clear : Mathf.Lerp(_boom, clear, 1f - Mathf.Exp(-2.5f * dt));
+            _boom = Boom(_boom, clear, false, 2.5f, dt);
             var position = _pivot + rot * Vector3.back * _boom;
             if (_shake > 0f)
             {
@@ -284,9 +308,9 @@ namespace CTLife.World
             if (idle > RecenterDelay + 0.8f && speed > 0.5f) pitch = Mathf.Lerp(pitch, DefaultPitch, 1f - Mathf.Exp(-1.2f * dt));
             var rot = Quaternion.Euler(pitch, yaw, 0f);
             float want = DesiredDistance();
-            float clear = ClearDistance(_pivot, rot * Vector3.back, want, CollisionRadius, CollisionMask);
-            // Pull in at once when something solid comes between; ease back out.
-            _boom = clear < _boom ? clear : Mathf.Lerp(_boom, clear, 1f - Mathf.Exp(-3f * dt));
+            float clear = Clearance(_pivot, rot * Vector3.back, want, CollisionMask, out bool thinOnly);
+            // Pull in at once when something solid comes between (quickly but smoothly for a pole or a trunk); ease back out.
+            _boom = Boom(_boom, clear, thinOnly, 3f, dt);
             // Backed against something: rise over the head and look past it (seeing the inside of the head is not a view).
             float lift = MaxLift * Mathf.Clamp01((CloseBoom - _boom) / (CloseBoom - 0.35f));
             if (lift > 0f && Physics.SphereCast(_pivot, CollisionRadius, Vector3.up, out var roof, lift + 0.1f, CollisionMask, QueryTriggerInteraction.Ignore))

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Vehicle sounds for CT Life (Feel lane F2, 2026-10-17): real recordings only, all CC0 on Freesound.
+"""Vehicle sounds for CT Life (Feel lane F2/F3, 2026-10-17): real recordings only, all CC0 on Freesound.
 
 Downloads the HQ previews (see freesound.py: originals need a login; previews carry the same licence), cuts loops from the
 steadiest stretch of each recording with an equal-power crossfade, trims one-shots, normalises (loops to an RMS target,
@@ -40,6 +40,8 @@ SOURCES = {
     "impact": (592388, "oneshot", 2.2, "car crash with glass"),
     "door_open": (556691, "event1", 1.0, "car door open (first event)"),
     "door_close": (556691, "event_last", 1.0, "car door shut (loudest later event)"),
+    # Feel lane F3: traffic
+    "horn": (871628, "oneshot", 0.9, "car horn, Skoda Fabia (traffic honks at the player)"),
 }
 LOOP_RMS_DB = -20.0
 XFADE = 0.25
