@@ -35,7 +35,7 @@ namespace CTLife.UI
             _host.pickingMode = PickingMode.Ignore;
             toastLayer.Insert(0, _host);
             _queue.Changed += Render;
-            _tick = _host.schedule.Execute(() => _queue.Tick(Time.unscaledTime)).Every(100);
+            _tick = _host.schedule.Execute(() => { ShiftReadyNotice.Poll((long)ServerClock.NowMs); _queue.Tick(Time.unscaledTime); }).Every(100);
             Render();
         }
 
