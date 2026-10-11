@@ -225,6 +225,23 @@ namespace CTLife.Tests
         }
 
         [Test]
+        public void PaintedBadge_DrawsNoToneFillOrBorderBehindTheArt()
+        {
+            var tex = new UnityEngine.Texture2D(4, 4);
+            try
+            {
+                var badge = new UI.Kit.IconBadge("map", "cyan", tex);
+                Assert.IsTrue(badge.ClassListContains("kit-badge--painted"));
+                Assert.AreEqual(UnityEngine.Color.clear, badge.style.backgroundColor.value);
+                Assert.AreEqual(0f, badge.style.borderTopWidth.value);
+                Assert.AreEqual(0f, badge.style.borderRightWidth.value);
+                Assert.AreEqual(0f, badge.style.borderBottomWidth.value);
+                Assert.AreEqual(0f, badge.style.borderLeftWidth.value);
+            }
+            finally { UnityEngine.Object.DestroyImmediate(tex); }
+        }
+
+        [Test]
         public void IconTileAndBadge_Build()
         {
             int opened = 0;

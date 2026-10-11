@@ -591,6 +591,7 @@ namespace CTLife.UI
                 var trait = t;
                 var card = new ChoiceCard(t.id, OnboardingCopy.TraitName(t), OnboardingCopy.TraitEffect(t), _ => PickTrait(trait), ChoiceCard.Layout.Horizontal,
                     KitIcons.Load(OnboardingCopy.TraitArt(t.id)), OnboardingCopy.TraitIcon(t.id), "purple");
+                card.AddToClassList("ob-trait-card");
                 _traitCards.Add(card);
             }
             _traitDots = El.Div("ob-dots", El.Div("ob-dot"), El.Div("ob-dot"));

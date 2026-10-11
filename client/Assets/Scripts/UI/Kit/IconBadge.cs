@@ -21,6 +21,14 @@ namespace CTLife.UI.Kit
                 // A painted badge (e.g. a tribe medallion) replaces the drawn one entirely.
                 AddToClassList("kit-badge--painted");
                 style.backgroundImage = new StyleBackground(painted);
+                // Inline, so no context rule can draw behind the art: the tone fill (.kit-badge--cyan etc. comes later
+                // in kit.uss than --painted) and chip/card borders (.kit-chip .kit-badge, .ob-card-trait > .kit-badge)
+                // otherwise turned every glossy icon into a disc on a coloured square (device 2026-10-10).
+                style.backgroundColor = Color.clear;
+                style.borderTopWidth = 0;
+                style.borderRightWidth = 0;
+                style.borderBottomWidth = 0;
+                style.borderLeftWidth = 0;
                 return;
             }
             var inset = new VisualElement { pickingMode = PickingMode.Ignore };
