@@ -65,8 +65,7 @@ namespace CTLife.EditorTools.VenueBuild
             Model(dress, "potted_plant", new Vector3(2.6f, 0, -8.6f), 0f, 1.2f);
             Model(dress, "home_houseplant_5", new Vector3(0f, 0, 5.6f), 0f, 1.0f);
             Model(dress, "home_houseplant_5", new Vector3(-10.4f, 0, -0.2f), 0f, 0.9f);
-            // Lounge: bookshelves and standing lamps beside the sofas.
-            Model(dress, "home_bookshelf", new Vector3(-8.2f, 0, -8.7f), 0f, 1.0f);
+            // Lounge: a bookshelf by the east sofa (the west corner stays open: it is the barista's way behind the counter).
             Model(dress, "home_bookshelf", new Vector3(8.2f, 0, -8.7f), 0f, 1.0f);
             // Framed pictures on the side walls, between the shelf stacks and the terminals.
             Model(dress, "home_pictureframe_large_a", new Vector3(11.9f, 1.5f, -4.6f), -90f, 1.0f);

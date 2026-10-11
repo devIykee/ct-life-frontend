@@ -67,7 +67,7 @@ MOVES = {
         "seat_13": (0.0, -6.0, 0.0), "seat_14": (2.82, -5.67, -0.234), "seat_15": (5.49, -4.69, -0.467), "seat_16": (-5.55, -6.87, 0.401),
         "seat_17": (-2.83, -7.71, 0.201), "seat_18": (0.0, -8.0, 0.0), "seat_19": (2.83, -7.71, -0.201), "seat_20": (5.55, -6.87, -0.401),
         "stage_1": (-4.99, 3.55, 1.082), "stage_2": (-5.63, 5.71, 1.484), "stage_3": (-5.37, 7.95, 1.885),
-        "stage_4": (-3.0, 5.2, 2.88), "stage_5": (-1.0, 5.75, 3.002), "stage_6": (1.0, 5.75, -3.002), "stage_7": (3.0, 5.2, -2.88),
+        "stage_4": (-3.0, 5.2, 2.88), "stage_5": (-1.3, 5.75, 3.002), "stage_6": (1.3, 5.75, -3.002), "stage_7": (3.0, 5.2, -2.88),
         "stage_8": (5.37, 7.95, -1.885), "stage_9": (5.63, 5.71, -1.484), "stage_10": (4.99, 3.55, -1.082),
     },
     # Timeline Square v2: the fountain now stands on the square's centre, so `center` and `square_center` move just south
@@ -77,7 +77,16 @@ MOVES = {
         "center": (0.0, -5.6, 0.0), "square_center": (0.0, -7.0, 0.0),
         "bench_1": (4.5, 7.79, -2.618), "bench_2": (-4.5, 7.79, 2.618), "bench_3": (-9.0, 0.0, 1.571),
         "bench_4": (-4.5, -7.79, 0.524), "bench_5": (4.5, -7.79, -0.524), "bench_6": (9.0, -0.0, -1.571),
+        # fe.5 (Timeline Square v3, compact square): only the spots that stood outside the new 23 x 22 m plaza move.
+        "crier_1": (-8.0, 8.6, 0.0), "crier_2": (8.0, 8.6, 0.0), "crier_3": (0.0, 11.0, 0.0),
+        "entrance": (0.0, -10.9, 0.0), "exit": (0.0, -11.9, 3.142),
+        "pixel_wall": (-9.6, 6.2, 1.571), "billboard_view": (6.2, -9.6, 0.0),
     },
+}
+
+# fe.5: walkable rectangles that change with a venue rebuild (the venue's own NavMesh is built from these).
+WALKABLE = {
+    "timeline_square": [{"x0": -11.5, "z0": -12.4, "x1": 11.5, "z1": 9.8}, {"x0": -3.5, "z0": 9.8, "x1": 3.5, "z1": 12.0}],
 }
 
 NEW_VENUES = {
@@ -129,6 +138,10 @@ def main():
                     venues[vid]["spots"].append(s)
                     added += 1
     moved = 0
+    for vid, rects in WALKABLE.items():
+        if venues[vid]["walkable"] != rects:
+            venues[vid]["walkable"] = rects
+            moved += 1
     for vid, moves in MOVES.items():
         for s in venues[vid]["spots"]:
             local = s["id"].split(".", 1)[1]
@@ -138,7 +151,7 @@ def main():
                     s["x"], s["z"], s["rotY"] = x, z, rot
                     moved += 1
     if added or moved or " fe.4 " in doc["_note"]:
-        doc["version"] = "1.0.0-rc1+fe.4"
+        doc["version"] = "1.0.0-rc1+fe.5"
         cut = doc["_note"].find(" fe.4 ")
         if cut >= 0:
             doc["_note"] = doc["_note"][:cut]  # fe.4 notes are rewritten whole on every run
@@ -147,7 +160,12 @@ def main():
                      " into pods round the stage (ids, kinds and anims unchanged; positions and rotY only). stage_host stands and stage_4..7"
                      " sit on the raised stage (floor y 0.22 m); seat_11..15 / 16..20 sit on risers (0.12 / 0.24 m).",
                      " fe.4 also (Timeline Square v2): timeline_square.center -> (0, -5.6) and square_center -> (0, -7.0), off the new"
-                     " central fountain; bench_1..6 rotY now face the fountain (positions unchanged)."):
+                     " central fountain; bench_1..6 rotY now face the fountain (positions unchanged).",
+                     " fe.5 (venue builder, 2026-10-08, Timeline Square v3): the square is compact (walkable 23 x 22.2 m plaza plus the"
+                     " street to the town hall steps, x -3.5..3.5 z 9.8..12); crier_1/2/3, entrance, exit, pixel_wall and billboard_view"
+                     " move inside it (ids, kinds, anims and rotY unchanged); center, square_center and the benches are unchanged.",
+                     " fe.5 also (Spaces Studio): stage_5/stage_6 move 0.3 m apart (x -1.3 / 1.3) so the walkable gap between the"
+                     " talk-show chairs keeps their side-step approach points reachable now that seat furniture is carved from the NavMesh."):
             if note.strip() not in doc["_note"]:
                 doc["_note"] += note
     out = json.dumps(doc, indent=2, ensure_ascii=False) + "\n"
@@ -163,7 +181,7 @@ def main():
                 assert {k: v for k, v in new[sid].items() if k not in ("x", "z", "rotY")} == keep, f"changed id/kind/anim of {sid}"
                 continue
             assert new.get(sid) == rec, f"changed existing spot {sid}"
-        assert doc["venues"][vid]["walkable"] == body["walkable"], f"changed walkable {vid}"
+        assert vid in WALKABLE or doc["venues"][vid]["walkable"] == body["walkable"], f"changed walkable {vid}"
     with open(PROPOSAL, "w") as f:
         f.write(out)
     print(f"added {added} spots, moved {moved}")

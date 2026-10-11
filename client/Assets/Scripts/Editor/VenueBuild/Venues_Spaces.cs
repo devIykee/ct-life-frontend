@@ -26,6 +26,9 @@ namespace CTLife.EditorTools.VenueBuild
         private const float Tier1 = 0.12f, Tier2 = 0.24f, T1In = 11.15f, T1Out = 13.2f, T2Out = 14.9f, TierSpan = 34f;
         private const float BackZ = 1.6f, BackX = -7.4f, BackH = 3.4f, DoorX = -9.0f, DoorW = 1.3f, DoorH = 2.25f;
         private const float PartX = -7.6f, PartZ0 = -3.6f, PartZ1 = 0.2f;
+        /// <summary>Round 4: the east glazing moved in to x = 8.6 so the walk-out terrace (x 8.6..12.2) is inside the room's
+        /// footprint and in the default camera's frame, with the city below beyond its parapet.</summary>
+        private const float GlassX = 8.6f, ParapetX = 12.3f;
 
         /// <summary>Polar angle of a point round the stage centre, 0 = due south, positive towards +x (degrees).</summary>
         private static float Phi(Vector3 p) => Mathf.Atan2(p.x - C.x, C.z - p.z) * Mathf.Rad2Deg;
@@ -53,7 +56,7 @@ namespace CTLife.EditorTools.VenueBuild
         public static void SpacesStudio(VB vb)
         {
             vb.GroundAt = Ground;
-            vb.InteriorShell("floor_wood_2m", "walnut", wallHeight: 6.4f, westHeight: 5.0f, eastHeight: 0.25f, frontHeight: 0.9f, trim: "darkwood");
+            vb.InteriorShell("floor_wood_2m", "walnut", wallHeight: 6.4f, westHeight: 5.0f, eastHeight: 0f, frontHeight: 0.9f, trim: "darkwood");
             var inn = vb.Inner;
             Glazing(vb, inn);
             Terrace(vb, inn);
@@ -70,7 +73,7 @@ namespace CTLife.EditorTools.VenueBuild
             // House light (baked): warm fill over the audience, cyan wash from the LED wall.
             vb.PointLight(new Vector3(0, 3.8f, -4.0f), "glowamber", 0.75f, 12f);
             // Dusk sky light through the open east side and a violet bounce on the west (the concept's cool shadows).
-            vb.PointLight(new Vector3(10.5f, 3.4f, 0f), "lavender", 0.7f, 11f);
+            vb.PointLight(new Vector3(7.5f, 3.4f, 0f), "lavender", 0.6f, 10f);
             vb.PointLight(new Vector3(-6f, 4.5f, -2f), "glowpurple", 0.35f, 9f);
             vb.PointLight(new Vector3(-5.5f, 3.0f, -5.5f), "glowamber", 0.8f, 7f);
             vb.PointLight(new Vector3(5.5f, 3.0f, -5.5f), "glowamber", 0.8f, 7f);
@@ -81,81 +84,117 @@ namespace CTLife.EditorTools.VenueBuild
 
         private static void Glazing(VB vb, Rect inn)
         {
-            float x = inn.xMax + 0.15f;
+            // Open sliding-door glazing between the studio and the terrace: posts every 2.5 m (walk-through gaps), a deep
+            // header with an amber reveal, slim transoms.
             for (float z = -10f; z <= 10.01f; z += 2.5f)
-                vb.Box(new Vector3(x, 2.55f, z), new Vector3(0.16f, 4.6f, 0.16f), "darkwood", collider: true);
-            vb.Box(new Vector3(x, 5.6f, 0), new Vector3(0.45f, 1.6f, 20.6f), "walnut");
-            vb.Box(new Vector3(x - 0.2f, 4.82f, 0), new Vector3(0.06f, 0.05f, 20.4f), "glowamber", glow: true);
-            vb.Box(new Vector3(x, 0.27f, 0), new Vector3(0.4f, 0.06f, 20.6f), "honey");
+                vb.Box(new Vector3(GlassX, 2.4f, z), new Vector3(0.16f, 4.8f, 0.16f), "darkwood", collider: true);
+            vb.Box(new Vector3(GlassX, 5.6f, 0), new Vector3(0.45f, 1.6f, 20.6f), "walnut");
+            vb.Box(new Vector3(GlassX - 0.24f, 4.78f, 0), new Vector3(0.05f, 0.05f, 20.4f), "glowamber", glow: true);
+            vb.Box(new Vector3(GlassX, 3.2f, 0), new Vector3(0.06f, 0.05f, 20.4f), "darkwood");
             // Wood slats on the west wall above the backstage block and lounge.
             for (int i = 0; i < 62; i++)
                 vb.Box(new Vector3(inn.xMin + 0.05f, 4.2f, -9.6f + i * 0.31f), new Vector3(0.1f, 1.6f, 0.12f), i % 5 == 0 ? "darkwood" : "walnut");
         }
 
-        // ------------------------------------------------------------------ terrace and city (east, outside the walkable area)
+        // ------------------------------------------------------------------ terrace (inside the walkable area) and the city below
 
         private static void Terrace(VB vb, Rect inn)
         {
-            float x0 = inn.xMax + 0.4f, x1 = x0 + 5.0f;
-            vb.Floor("floor_concrete_2m", Rect.MinMaxRect(x0 - 0.1f, -10.6f, x1 + 0.6f, 10.6f), -0.02f);
-            vb.Box(new Vector3(x1, 0.5f, 0), new Vector3(0.35f, 1.0f, 21.2f), "concrete");
-            vb.Box(new Vector3(x1, 1.03f, 0), new Vector3(0.45f, 0.06f, 21.3f), "offwhite");
-            // Cushioned benches along the parapet with throw pillows, lanterns between them.
-            string[] seat = { "velvetpurple", "petrol", "velvetpurple", "petrol", "velvetpurple" };
-            for (int i = 0; i < 5; i++)
+            float x0 = GlassX + 0.1f, x1 = ParapetX;
+            vb.Floor("plaza_paving_2m", Rect.MinMaxRect(x0, inn.yMin, x1 + 0.4f, inn.yMax), 0.012f);
+            // Parapet (the room's east edge) with a stone cap; the rooftop drops away behind it.
+            vb.Box(new Vector3(x1, 0.52f, 0), new Vector3(0.32f, 1.04f, 21.4f), "concrete", collider: true);
+            vb.Box(new Vector3(x1, 1.07f, 0), new Vector3(0.46f, 0.06f, 21.5f), "offwhite");
+            vb.Obstacle(new Vector3(x1, 0.4f, 0), new Vector3(0.5f, 1.8f, 21.4f));
+            // Cushioned benches along the parapet with throw pillows (decor, collided), lanterns between them.
+            string[] seat = { "velvetpurple", "petrol", "velvetpurple", "petrol" };
+            for (int i = 0; i < 4; i++)
             {
-                float z = -8.4f + i * 4.2f;
-                vb.Box(new Vector3(x1 - 0.55f, 0.21f, z), new Vector3(0.72f, 0.42f, 3.3f), "honey");
-                vb.Box(new Vector3(x1 - 0.55f, 0.47f, z), new Vector3(0.68f, 0.1f, 3.2f), seat[i]);
-                vb.Box(new Vector3(x1 - 0.27f, 0.72f, z), new Vector3(0.16f, 0.42f, 3.1f), seat[(i + 1) % 5]);
+                float z = -7.6f + i * 4.9f;
+                float bx = x1 - 0.55f;
+                vb.Box(new Vector3(bx, 0.21f, z), new Vector3(0.72f, 0.42f, 3.2f), "honey");
+                vb.Box(new Vector3(bx, 0.47f, z), new Vector3(0.68f, 0.1f, 3.1f), seat[i]);
+                vb.Box(new Vector3(x1 - 0.27f, 0.72f, z), new Vector3(0.16f, 0.42f, 3.0f), seat[(i + 1) % 4]);
                 vb.Box(new Vector3(x1 - 0.42f, 0.72f, z + 0.9f), new Vector3(0.14f, 0.36f, 0.48f), "terracotta", 12f);
                 vb.Box(new Vector3(x1 - 0.42f, 0.7f, z - 1.0f), new Vector3(0.14f, 0.34f, 0.44f), "dustpink", -10f);
-                Lantern(vb, new Vector3(x1 - 0.55f, 0f, z + 2.1f));
+                vb.RegisterProp("terrace_bench", new Vector3(bx, 0.3f, z), new Vector3(0.75f, 0.6f, 3.2f));
+                Lantern(vb, new Vector3(bx, 0f, z + 2.1f));
+                Lantern(vb, new Vector3(x1, 1.1f, z - 1.6f));
             }
-            // Planters with greenery by the glazing, palms at the ends.
-            foreach (float z in new[] { -6.3f, 0.2f, 6.6f })
+            // Planters with greenery against the glazing, palms in the corners.
+            foreach (float z in new[] { -5.0f, 0.0f, 5.0f })
             {
-                vb.Box(new Vector3(x0 + 0.75f, 0.3f, z), new Vector3(0.9f, 0.6f, 1.6f), "darkconcrete");
-                vb.Model("houseplant_bush", x0 + 0.75f, z - 0.35f, 0f, y: 0.6f, scale: 0.75f);
-                vb.Model("houseplant_bush", x0 + 0.75f, z + 0.4f, 90f, y: 0.6f, scale: 0.65f);
+                vb.Box(new Vector3(x0 + 0.5f, 0.3f, z), new Vector3(0.8f, 0.6f, 1.4f), "darkconcrete");
+                vb.Model("houseplant_bush", x0 + 0.5f, z - 0.3f, 0f, y: 0.6f, scale: 0.7f);
+                vb.Model("home_houseplant_1", x0 + 0.5f, z + 0.35f, 90f, y: 0.6f, scale: 0.6f);
+                vb.RegisterProp("planter", new Vector3(x0 + 0.5f, 0.3f, z), new Vector3(0.8f, 0.6f, 1.4f));
             }
-            vb.Model("palm_2", x0 + 3.1f, 9.6f, 0f, scale: 0.5f);
-            vb.Model("palm_1", x0 + 3.3f, -9.8f, 0f, scale: 0.45f);
-            vb.Model("palm_1", x1 + 1.6f, 3.4f, 40f, scale: 0.55f);
-            // Zig-zag string lights from the glazing header to posts on the parapet.
-            for (int i = 0; i < 8; i++)
+            foreach (var (z, id, sc) in new[] { (9.0f, "palm_2", 0.42f), (-9.2f, "palm_1", 0.4f) })
             {
-                float zp = -9.8f + i * 2.8f;
-                vb.Pipe(new Vector3(x1, 1.06f, zp), new Vector3(x1, 3.3f, zp), 0.03f, "black", 6);
-                var a = new Vector3(x0 - 0.15f, 4.75f, zp - 1.4f);
-                var b = new Vector3(x1, 3.25f, zp);
-                foreach (var (p, q) in new[] { (a, b), (b, a + new Vector3(0, 0, 2.8f)) })
+                vb.Cylinder(new Vector3(10.6f, 0f, z), 0.6f, 0.55f, "darkconcrete", 16);
+                vb.Model(id, 10.6f, z, 30f, y: 0.5f, scale: sc);
+                vb.RegisterProp("palm_planter", new Vector3(10.6f, 0.3f, z), new Vector3(1.2f, 0.6f, 1.2f));
+            }
+            // Zig-zag string lights from the glazing header to iron posts on the parapet.
+            for (int i = 0; i < 9; i++)
+            {
+                float zp = -10f + i * 2.5f;
+                vb.Pipe(new Vector3(x1, 1.1f, zp), new Vector3(x1, 3.2f, zp), 0.03f, "black", 6);
+                var a = new Vector3(GlassX + 0.1f, 4.7f, zp - 1.25f);
+                var b = new Vector3(x1, 3.15f, zp);
+                foreach (var (p, q) in new[] { (a, b), (b, a + new Vector3(0, 0, 2.5f)) })
                 {
                     vb.Pipe(p, q, 0.007f, "black", 4);
                     for (int k = 1; k < 6; k++)
                     {
                         float t = k / 6f;
-                        vb.Sphere(Vector3.Lerp(p, q, t) + Vector3.down * (0.25f * Mathf.Sin(t * Mathf.PI) + 0.05f), 0.05f, "glowwhite", glow: true, rings: 3, segments: 5);
+                        vb.Sphere(Vector3.Lerp(p, q, t) + Vector3.down * (0.22f * Mathf.Sin(t * Mathf.PI) + 0.05f), 0.055f, "glowwhite", glow: true, rings: 3, segments: 5);
                     }
                 }
             }
-            // One multi-country flag bunting across the terrace (each flag turned towards the room and the camera).
-            Bunting(vb, new Vector3(x0 - 0.1f, 4.6f, -4.5f), new Vector3(x1 + 0.4f, 3.7f, 9.8f), 23);
-            vb.PointLight(new Vector3(x0 + 2.5f, 2.4f, -3f), "glowamber", 1.0f, 8f);
-            vb.PointLight(new Vector3(x0 + 2.5f, 2.4f, 5f), "glowamber", 1.0f, 8f);
-
-            // Evening city east and north (backdrop: not lightmapped) under the painted sky with the mountain range.
-            vb.Backdrop = true;
-            string[] towers = { "tower_glass_a", "building_low_a", "tower_glass_b", "building_low_d", "tower_glass_c", "tower_glass_d", "building_low_b", "tower_glass_e" };
-            int n = 0;
-            for (float z = -34f; z <= 46f; z += 8.5f)
+            // The multi-country flag bunting runs along the terrace (zig-zag under the string lights, flags turned to the camera).
+            for (int i = 0; i < 4; i++)
             {
-                vb.Model(towers[n % towers.Length], 31f + (n % 3) * 8f, z, -90f, scale: 0.5f + (n % 4) * 0.1f);
-                n++;
+                float zs = -9.6f + i * 5f;
+                Bunting(vb, new Vector3(GlassX + 0.15f, 4.25f, zs), new Vector3(x1, 2.95f, zs + 2.5f), 7, i * 7);
+                Bunting(vb, new Vector3(x1, 2.95f, zs + 2.5f), new Vector3(GlassX + 0.15f, 4.25f, zs + 5f), 7, i * 7 + 3);
             }
-            for (float xx = -40f; xx <= 40f; xx += 11f) vb.Model(towers[n++ % towers.Length], xx, 50f + (n % 2) * 8f, 180f, scale: 0.75f);
-            vb.Sign("ss_sky", new Vector3(95f, -8f, 8f), 240f, -90f, 110f);
-            vb.Sign("ss_sky", new Vector3(0f, -8f, 86f), 240f, 180f, 110f);
+            vb.PointLight(new Vector3(10.6f, 2.4f, -4.5f), "glowamber", 0.9f, 6f);
+            vb.PointLight(new Vector3(10.6f, 2.4f, 3.5f), "glowamber", 0.9f, 6f);
+            City(vb);
+        }
+
+        /// <summary>
+        /// The evening city: the studio is on a rooftop, so the nearer blocks stand below the terrace (roofs at -2..-12 m,
+        /// seen over the parapet from the gameplay camera) and glass towers rise beyond. Backdrop: not lightmapped.
+        /// </summary>
+        private static void City(VB vb)
+        {
+            vb.Backdrop = true;
+            vb.Box(new Vector3(40f, -26.05f, 0f), new Vector3(70f, 0.1f, 140f), "asphalt");
+            string[] low = { "building_low_a", "building_low_b", "building_low_c", "building_low_d", "building_low_e", "building_low_f", "building_low_g", "building_low_h" };
+            string[] towers = { "tower_glass_a", "tower_glass_b", "tower_glass_c", "tower_glass_d", "tower_glass_e" };
+            var rnd = new System.Random(23);
+            int n = 0;
+            for (float x = 17f; x < 45f; x += 10.5f)
+                for (float z = -30f; z < 38f; z += 10.5f)
+                {
+                    float d = x - 12f;
+                    bool tower = (n % 5 == 2 && d > 25f) || rnd.NextDouble() < (d > 30f ? 0.35 : 0.08);
+                    string id = tower ? towers[n % towers.Length] : low[n % low.Length];
+                    float sc = tower ? 0.85f + (float)rnd.NextDouble() * 0.5f : 1.3f + (float)rnd.NextDouble() * 0.8f;
+                    vb.Model(id, x + (float)rnd.NextDouble() * 2f, z + (float)rnd.NextDouble() * 2f, -90f + 90f * (n % 4), y: -26f, scale: sc);
+                    n++;
+                }
+            // Rooftop details close to the parapet: water tanks, AC units, a lit billboard frame (no letters).
+            foreach (var (x, z, y) in new[] { (18.5f, -6f, -4.8f), (19.5f, 7f, -6.6f), (21f, -18f, -3.9f) })
+            {
+                vb.Cylinder(new Vector3(x, y, z), 1.1f, 2.2f, "rust", 12);
+                vb.Cylinder(new Vector3(x, y + 2.2f, z), 1.15f, 0.6f, "darkwood", 12, topRadius: 0.2f);
+            }
+            for (float xx = -30f; xx <= 40f; xx += 14f) vb.Model(towers[n++ % towers.Length], xx, 52f + (n % 2) * 8f, 180f, scale: 0.75f);
+            vb.Sign("ss_sky", new Vector3(110f, -30f, 8f), 260f, -90f, 150f);
+            vb.Sign("ss_sky", new Vector3(0f, -10f, 90f), 260f, 180f, 120f);
             vb.Backdrop = false;
         }
 
@@ -170,15 +209,21 @@ namespace CTLife.EditorTools.VenueBuild
             vb.PointLight(floor + new Vector3(0, 0.35f, 0), "glowamber", 0.5f, 2.2f);
         }
 
-        private static void Bunting(VB vb, Vector3 a, Vector3 b, int flags)
+        private static void Bunting(VB vb, Vector3 a, Vector3 b, int flags, int seed)
         {
-            Vector3 Cord(float t) => Vector3.Lerp(a, b, t) + Vector3.down * (0.8f * (1f - (2f * t - 1f) * (2f * t - 1f)));
-            for (int i = 0; i < 24; i++) vb.Pipe(Cord(i / 24f), Cord((i + 1) / 24f), 0.008f, "offwhite", 4);
+            Vector3 Cord(float t) => Vector3.Lerp(a, b, t) + Vector3.down * (0.45f * (1f - (2f * t - 1f) * (2f * t - 1f)));
+            for (int i = 0; i < 12; i++) vb.Pipe(Cord(i / 12f), Cord((i + 1) / 12f), 0.008f, "offwhite", 4);
+            // Flags hang in the cord's plane, front side towards the camera (south-west of the terrace).
+            var along = (b - a); along.y = 0; along.Normalize();
+            var normal = new Vector3(-along.z, 0f, along.x);
+            if (Vector3.Dot(normal, new Vector3(-0.45f, 0f, -0.9f)) < 0) normal = -normal;
+            float facing = Mathf.Atan2(normal.x, normal.z) * Mathf.Rad2Deg;
             for (int i = 0; i < flags; i++)
             {
                 var p = Cord((i + 0.5f) / flags);
-                string id = "ss_flag_" + (i % 4 == 0 ? (i / 4) % 2 : 2 + (i * 5) % 14);
-                vb.Sign(id, p - new Vector3(0, 0.36f, 0), 0.5f, 215f, 0.34f, lit: true);
+                int k = i + seed;
+                string id = "ss_flag_" + (k % 4 == 0 ? (k / 4) % 2 : 2 + (k * 5) % 14);
+                vb.Sign(id, p - new Vector3(0, 0.42f, 0), 0.6f, facing, 0.4f, lit: true);
             }
         }
 
@@ -187,16 +232,22 @@ namespace CTLife.EditorTools.VenueBuild
         private static void NorthWall(VB vb, Rect inn)
         {
             float z = inn.yMax;
-            vb.OnWall('N', 0f, 1.35f, 8.0f, "ss_waveform_idle", hook: "SpacesWaveform", frame: "black");
-            vb.Box(new Vector3(0, 0.9f, z - 0.2f), new Vector3(8.4f, 0.9f, 0.3f), "darkwood");
-            vb.Box(new Vector3(0, 5.15f, z - 0.25f), new Vector3(8.6f, 0.4f, 0.5f), "darkwood");
+            // LED wall lowered in round 4 so its top stays inside the default camera's frame.
+            vb.OnWall('N', 0f, 1.0f, 7.6f, "ss_waveform_idle", hook: "SpacesWaveform", frame: "black");
+            vb.Box(new Vector3(0, 0.5f, z - 0.2f), new Vector3(8.0f, 0.9f, 0.3f), "darkwood");
+            vb.Box(new Vector3(0, 4.65f, z - 0.25f), new Vector3(8.2f, 0.36f, 0.5f), "darkwood");
+            vb.Box(new Vector3(0, 4.45f, z - 0.5f), new Vector3(7.8f, 0.04f, 0.04f), "glowcyan", glow: true);
             // Walnut slat field across the wall.
             foreach (float sx in new[] { -1f, 1f })
                 for (int i = 0; i < 40; i++)
-                    vb.Box(new Vector3(sx * (4.3f + i * 0.2f), 3.1f, z - 0.05f), new Vector3(0.09f, 6.0f, 0.1f), i % 4 == 0 ? "darkwood" : "walnut");
+                {
+                    float x = sx * (4.3f + i * 0.2f);
+                    if (x > GlassX - 0.2f) break;
+                    vb.Box(new Vector3(x, 3.1f, z - 0.05f), new Vector3(0.09f, 6.0f, 0.1f), i % 4 == 0 ? "darkwood" : "walnut");
+                }
             // Fluted fabric acoustic panels flanking the LED wall (purple west, teal + purple east) and outer pairs.
             foreach (var (px, col, trim) in new[] { (-4.95f, "velvetpurple", "plum"), (-6.2f, "plum", "velvetpurple"), (4.95f, "petrol", "teal2"), (6.2f, "velvetpurple", "plum"),
-                                                     (-9.6f, "petrol", "teal2"), (9.6f, "velvetpurple", "plum") })
+                                                     (-9.6f, "petrol", "teal2"), (7.45f, "petrol", "teal2") })
             {
                 vb.Box(new Vector3(px, 2.75f, z - 0.16f), new Vector3(1.12f, 3.7f, 0.1f), trim);
                 for (int f = 0; f < 5; f++)
@@ -205,7 +256,7 @@ namespace CTLife.EditorTools.VenueBuild
                 vb.Box(new Vector3(px, 4.62f, z - 0.2f), new Vector3(1.16f, 0.06f, 0.22f), "darkwood");
             }
             // Spot cans along the header, aimed down the wall.
-            for (int i = 0; i < 8; i++)
+            for (int i = 0; i < 7; i++)
             {
                 float x = -10.5f + i * 3f;
                 vb.Box(new Vector3(x, 5.45f, z - 0.35f), new Vector3(0.08f, 0.25f, 0.08f), "black");
@@ -213,8 +264,10 @@ namespace CTLife.EditorTools.VenueBuild
                 vb.Cylinder(new Vector3(x, 5.06f, z - 0.42f), 0.075f, 0.02f, "glowwhite", 10, glow: true);
             }
             // On-air lamp: housing + tintable red dome (idle dim; integration lights it only when a Space is live).
-            vb.Cylinder(new Vector3(5.0f, 5.3f, z - 0.5f), 0.3f, 0.06f, "black", 18);
-            vb.HookGlow("OnAirLamp", new Vector3(5.0f, 5.62f, z - 0.55f), new Vector3(0.44f, 0.44f, 0.3f), "crimson", sphere: true);
+            // Mounted on the first teal panel right of the LED wall at 3.3 m, inside the default camera's frame.
+            vb.CylinderRot(new Vector3(4.95f, 3.3f, z - 0.36f), Quaternion.Euler(90f, 0f, 0f), 0.32f, 0.08f, "black", 18);
+            vb.HookGlow("OnAirLamp", new Vector3(4.95f, 3.3f, z - 0.5f), new Vector3(0.5f, 0.5f, 0.26f), "crimson", sphere: true);
+            vb.PointLight(new Vector3(4.95f, 3.3f, z - 1.0f), "glowred", 0.35f, 2.5f);
             // Speakers on tripod stands flanking the stage.
             foreach (float x in new[] { -4.2f, 4.2f })
             {
@@ -299,16 +352,16 @@ namespace CTLife.EditorTools.VenueBuild
                 MicStand(vb, p + fwd * 0.6f + right * 0.25f + Vector3.up * StageH, p + fwd * 0.35f + Vector3.up * (StageH + 1.1f), phone: false);
             }
             // Low round table in front of the guests: mugs, a small plant, a book stack.
-            var table = new Vector3(0f, StageH, 4.0f);
-            vb.Cylinder(table, 0.42f, 0.36f, "walnut", 20);
-            vb.Cylinder(table + Vector3.up * 0.36f, 0.5f, 0.045f, "oak", 24);
-            vb.RegisterProp("coffee_table", table + Vector3.up * 0.2f, new Vector3(1.0f, 0.42f, 1.0f));
+            var table = new Vector3(0f, StageH, 3.25f);
+            vb.Cylinder(table, 0.38f, 0.36f, "walnut", 20);
+            vb.Cylinder(table + Vector3.up * 0.36f, 0.46f, 0.045f, "oak", 24);
+            vb.RegisterProp("coffee_table", table + Vector3.up * 0.2f, new Vector3(0.92f, 0.42f, 0.92f));
             float tt = StageH + 0.405f;
-            vb.Cylinder(new Vector3(-0.22f, tt, 4.08f), 0.045f, 0.09f, "offwhite", 10);
-            vb.Cylinder(new Vector3(0.24f, tt, 3.9f), 0.045f, 0.09f, "charcoal", 10);
-            vb.ModelAt("plant_small", new Vector3(0.05f, tt, 4.15f), 0f, 1.3f);
-            vb.Box(new Vector3(0.12f, tt + 0.02f, 3.78f), new Vector3(0.26f, 0.04f, 0.2f), "barnred", 18f);
-            vb.Box(new Vector3(0.12f, tt + 0.055f, 3.78f), new Vector3(0.24f, 0.03f, 0.18f), "cream", 10f);
+            vb.Cylinder(new Vector3(-0.22f, tt, 3.33f), 0.045f, 0.09f, "offwhite", 10);
+            vb.Cylinder(new Vector3(0.24f, tt, 3.15f), 0.045f, 0.09f, "charcoal", 10);
+            vb.ModelAt("plant_small", new Vector3(0.05f, tt, 3.4f), 0f, 1.3f);
+            vb.Box(new Vector3(0.12f, tt + 0.02f, 3.03f), new Vector3(0.26f, 0.04f, 0.2f), "barnred", 18f);
+            vb.Box(new Vector3(0.12f, tt + 0.055f, 3.03f), new Vector3(0.24f, 0.03f, 0.18f), "cream", 10f);
             // Cable runs (flush), plants at the back of the stage.
             vb.Decal(-1.5f, 6.5f, 2.6f, 0.03f, "black", 18f, StageH + 0.008f);
             vb.Decal(1.5f, 6.5f, 2.6f, 0.03f, "black", -18f, StageH + 0.008f);
@@ -415,6 +468,17 @@ namespace CTLife.EditorTools.VenueBuild
             vb.Arc(C, T1Out - 0.03f, T1Out + 0.02f, a0, a1, Tier2 - 0.02f, Tier2 + 0.003f, "honey", 40);
             vb.Arc(C, T1In - 0.02f, T1In - 0.005f, a0, a1, Tier1 - 0.05f, Tier1 - 0.025f, "glowamber", 40, glow: true);
             vb.Arc(C, T1Out - 0.02f, T1Out - 0.005f, a0, a1, Tier2 - 0.05f, Tier2 - 0.025f, "glowamber", 40, glow: true);
+            // Round 4: warm LED lines along the top edge of each tier and the back edge (seen from the gameplay camera, as in
+            // the concept), plus vertical strips on the riser ends.
+            vb.Arc(C, T1In + 0.03f, T1In + 0.09f, a0, a1, Tier1, Tier1 + 0.006f, "glowamber", 40, glow: true);
+            vb.Arc(C, T1Out + 0.03f, T1Out + 0.09f, a0, a1, Tier2, Tier2 + 0.006f, "glowamber", 40, glow: true);
+            vb.Arc(C, T2Out + 0.005f, T2Out + 0.02f, a0, a1, 0.03f, 0.07f, "glowamber", 40, glow: true);
+            foreach (float phi in new[] { -TierSpan, TierSpan })
+                foreach (var (r, h) in new[] { (T1In + 0.1f, Tier1), (T1Out + 0.1f, Tier2) })
+                {
+                    var e = Polar(r, phi, 0f);
+                    vb.Box(e + Vector3.up * h * .5f + Polar(0.02f, phi + Mathf.Sign(phi) * 90f) - Polar(0f, 0f), new Vector3(0.03f, h - 0.02f, 0.03f), "glowamber", glow: true);
+                }
             for (int i = 0; i < 6; i++)
             {
                 float phi = -TierSpan + 4f + i * (2f * TierSpan - 8f) / 5f;
@@ -439,7 +503,7 @@ namespace CTLife.EditorTools.VenueBuild
                     string col = bags[k % bags.Length];
                     vb.Blob(p - fwd * 0.08f + Vector3.up * 0.34f, new Vector3(1.3f, 0.7f, 1.2f), col, yaw: VB.Deg(s), rings: 9, segments: 16);
                     vb.Blob(p - fwd * 0.5f + Vector3.up * 0.62f, new Vector3(1.15f, 0.7f, 0.5f), col, yaw: VB.Deg(s), rings: 8, segments: 14);
-                    vb.RegisterProp("bean_bag", p - fwd * 0.15f + Vector3.up * 0.34f, new Vector3(1.2f, 0.68f, 1.2f), VB.Deg(s));
+                    vb.RegisterProp("bean_bag", p - fwd * 0.15f + Vector3.up * 0.49f, new Vector3(1.2f, 0.98f, 1.2f), VB.Deg(s));
                     vb.SeatCollider(s, new Vector3(0, 0.35f, -0.08f), new Vector3(0.9f, 0.5f, 0.9f));
                     vb.Approach(s, p + Right(s) * 0.95f); // fitted social exit steps right on seat_*
                 }
@@ -464,7 +528,7 @@ namespace CTLife.EditorTools.VenueBuild
             foreach (var (r, phi) in new[] { (14.15f, -15.3f), (14.15f, 19.2f), (12.25f, 9.0f) })
                 SideTable(vb, Polar(r, phi, r < 13f ? Tier1 : Tier2), "darkwood", true);
             // A big decor bean bag by the east front corner.
-            DecorBag(vb, new Vector3(8.6f, 0f, -0.8f), "rose", -65f);
+            DecorBag(vb, new Vector3(7.4f, 0f, -1.2f), "rose", -65f);
         }
 
         private static void DecorBag(VB vb, Vector3 p, string col, float facing)
@@ -472,7 +536,7 @@ namespace CTLife.EditorTools.VenueBuild
             var fwd = Quaternion.Euler(0, facing, 0) * Vector3.forward;
             vb.Blob(p - fwd * 0.08f + Vector3.up * 0.34f, new Vector3(1.25f, 0.68f, 1.15f), col, yaw: facing, rings: 9, segments: 16);
             vb.Blob(p - fwd * 0.48f + Vector3.up * 0.6f, new Vector3(1.1f, 0.66f, 0.48f), col, yaw: facing, rings: 8, segments: 14);
-            vb.RegisterProp("bean_bag", p - fwd * 0.15f + Vector3.up * 0.34f, new Vector3(1.15f, 0.68f, 1.15f), facing);
+            vb.RegisterProp("bean_bag", p - fwd * 0.15f + Vector3.up * 0.48f, new Vector3(1.15f, 0.96f, 1.15f), facing);
         }
 
         private static void SideTable(VB vb, Vector3 floor, string wood, bool drink)
@@ -627,20 +691,8 @@ namespace CTLife.EditorTools.VenueBuild
         {
             // Broadcast camera on a tripod aimed at the stage.
             BroadcastCamera(vb, new Vector3(7.2f, 0f, 2.6f), C + Vector3.up * 1.0f);
-            // Window nook: rug, two bean bags, a side table, a floor lamp.
-            vb.FloorSign("ss_rug_grey", 10.2f, 0.6f, 3.6f, 90f, 2.6f, 0f, lit: true);
-            DecorBag(vb, new Vector3(10.3f, 0f, 1.6f), "petrol", -110f);
-            DecorBag(vb, new Vector3(10.4f, 0f, -0.5f), "dustpink", -70f);
-            SideTable(vb, new Vector3(11.3f, 0f, 0.55f), "oak", true);
-            vb.Model("floor_lamp", 11.55f, -1.9f, -90f);
-            vb.PointLight(new Vector3(11.3f, 1.55f, -1.8f), "glowamber", 1.0f, 4.5f);
-            // Plants along the glazing and in the corners.
-            vb.Plant(11.4f, 9.35f, "houseplant_bush", 1.1f);
-            vb.Plant(8.9f, 9.5f, "houseplant_bush", 0.8f);
-            vb.Plant(11.45f, 4.3f, "houseplant_bush", 0.95f);
-            vb.Plant(11.5f, -4.4f, "houseplant_bush", 0.9f);
-            // Bar cart with bottles and glasses.
-            var cart = new Vector3(10.9f, 0f, 6.6f);
+            // Bar cart by the glazing, plants inside the glass line.
+            var cart = new Vector3(7.7f, 0f, 8.8f);
             vb.Box(cart + new Vector3(0, 0.45f, 0), new Vector3(0.5f, 0.03f, 0.9f), "brass");
             vb.Box(cart + new Vector3(0, 0.85f, 0), new Vector3(0.5f, 0.03f, 0.9f), "brass");
             foreach (var (dx, dz) in new[] { (-0.23f, -0.43f), (0.23f, -0.43f), (-0.23f, 0.43f), (0.23f, 0.43f) })
@@ -648,15 +700,9 @@ namespace CTLife.EditorTools.VenueBuild
             string[] bottle = { "forest", "barnred", "mustard", "denim", "charcoal" };
             for (int i = 0; i < 5; i++) vb.Cylinder(cart + new Vector3(-0.1f + (i % 2) * 0.2f, 0.865f, -0.3f + i * 0.15f), 0.04f, 0.26f, bottle[i], 8, topRadius: 0.025f);
             vb.RegisterProp("bar_cart", cart + Vector3.up * 0.45f, new Vector3(0.5f, 0.9f, 0.9f));
-            // South-east corner: big concrete planter, pouf and side table.
-            var pl = new Vector3(10.9f, 0f, -8.3f);
-            vb.Box(pl + new Vector3(0, 0.45f, 0), new Vector3(1.5f, 0.9f, 1.5f), "concrete");
-            vb.Box(pl + new Vector3(0, 0.9f, 0), new Vector3(1.6f, 0.05f, 1.6f), "offwhite");
-            vb.Model("houseplant_bush", pl.x, pl.z, 0f, y: 0.92f, scale: 1.3f);
-            vb.RegisterProp("planter_big", pl + Vector3.up * 0.45f, new Vector3(1.5f, 0.9f, 1.5f));
-            vb.Cylinder(new Vector3(9.3f, 0f, -8.9f), 0.3f, 0.4f, "velvetpurple", 16);
-            vb.RegisterProp("pouf_decor", new Vector3(9.3f, 0.2f, -8.9f), new Vector3(0.6f, 0.4f, 0.6f));
-            SideTable(vb, new Vector3(9.4f, 0f, -7.6f), "oak", true);
+            vb.Plant(7.9f, -9.3f, "houseplant_bush", 0.9f);
+            vb.Plant(7.9f, -4.6f, "houseplant_bush", 0.7f);
+            SideTable(vb, new Vector3(7.7f, 0f, -6.6f), "oak", true);
         }
 
         private static void BroadcastCamera(VB vb, Vector3 floor, Vector3 target)
@@ -686,7 +732,7 @@ namespace CTLife.EditorTools.VenueBuild
             // Inside along the front wall, and a lusher row outside it (the camera foreground, as in the concept).
             foreach (var (z, h, outside) in new[] { (inn.yMin + 0.4f, 0.6f, false), (inn.yMin - 0.75f, 0.75f, true) })
                 foreach (float sx in new[] { -1f, 1f })
-                    foreach (var (x0, x1) in outside ? new[] { (2.6f, 7.2f), (7.6f, 12.6f) } : new[] { (2.7f, 6.5f), (7.4f, 11.6f) })
+                    foreach (var (x0, x1) in outside ? new[] { (2.6f, 7.2f), (7.6f, 12.6f) } : new[] { (2.7f, 6.5f), (7.0f, sx > 0 ? 8.3f : 11.6f) })
                     {
                         float cx = sx * (x0 + x1) * .5f, len = x1 - x0;
                         vb.Box(new Vector3(cx, h * .5f, z), new Vector3(len, h, 0.6f), outside ? "darkconcrete" : "walnut");
