@@ -53,6 +53,9 @@ namespace CTLife.SocialFeatures
             {
                 _hub = SocialHub.Acquire();
                 if (_hub != null) _hub.Changed += Render;
+#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
+                if (_hub != null) ReplayDevDm();
+#endif
             }
             Render();
         }
@@ -125,6 +128,31 @@ namespace CTLife.SocialFeatures
             if (inc.Paid != null) _ringPaidCountdown.text = SocialStrings.F("paid.creatorCountdown", (int)Math.Ceiling(inc.Paid.AcceptSecondsLeft(now)));
             _ringRow.SetEnabled(!inc.Working && inc.Call.CanAccept(now));
         }
+
+#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
+        private bool _devDmReplayed;
+
+        /// <summary>
+        /// Dev builds only (launch extras need the automation key): the local backend stores DMs but does not yet push
+        /// the realtime `dm` (its sendDm never calls publishToUser). For device QA of the banner, a DM that a second
+        /// account really sent through POST /v1/dms is replayed once onto the Bus as that missing push
+        /// (extras devDmFrom, devDmId, devDmText URL-encoded), 8 s after sign-in. It then takes the shipping path:
+        /// MessagesController.OnRealtime → DmBannerPolicy → banner/badge.
+        /// </summary>
+        private void ReplayDevDm()
+        {
+            if (_devDmReplayed || !LaunchArgs.TryGet("devDmFrom", out var from) || !SocialWire.IsSafeId(from)) return;
+            _devDmReplayed = true;
+            string id = LaunchArgs.Get("devDmId", Guid.NewGuid().ToString("N"));
+            string text = Uri.UnescapeDataString(LaunchArgs.Get("devDmText", "gm"));
+            Log.Info("social", "Dev: replaying stored DM " + id + " from " + from + " as the realtime push the backend omits");
+            _layer.schedule.Execute(() =>
+            {
+                if (_disposed) return;
+                Bus.Publish(new CTLife.Realtime.DmMessage { messageId = id, fromUserId = from, text = text, at = ServerClock.NowMs });
+            }).ExecuteLater(8000);
+        }
+#endif
 
         public void Dispose()
         {
