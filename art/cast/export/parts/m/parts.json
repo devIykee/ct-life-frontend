@@ -571,102 +571,6 @@
     "Mask": "bottom_shorts_Mask.png"
    }
   },
-  "bottom_skirt": {
-   "part": "bottom_skirt",
-   "slot": "BOTTOM",
-   "hides_body_regions": [],
-   "needs": [
-    "legs"
-   ],
-   "triangles": {
-    "hero": 336,
-    "lod0": 336,
-    "lod1": 152,
-    "lod2": 64
-   },
-   "fbx": "bottom_skirt.fbx",
-   "hero_fbx": "bottom_skirt_Hero.fbx",
-   "license": "cc0-ctlife",
-   "notes": "Procedural skirt/wrapper (CT Life original geometry).",
-   "textures": {
-    "BaseColor": "bottom_skirt_BaseColor.png",
-    "Normal": "bottom_skirt_Normal.png",
-    "MetallicSmoothness": "bottom_skirt_MetallicSmoothness.png",
-    "Mask": "bottom_skirt_Mask.png"
-   }
-  },
-  "bottom_skirt_waist": {
-   "part": "bottom_skirt",
-   "slot": "BOTTOM",
-   "hides_body_regions": [],
-   "needs": [
-    "legs"
-   ],
-   "triangles": {
-    "hero": 48,
-    "lod0": 48,
-    "lod1": 48,
-    "lod2": 14
-   },
-   "fbx": "bottom_skirt_waist.fbx",
-   "hero_fbx": "bottom_skirt_waist_Hero.fbx",
-   "license": "cc0-ctlife",
-   "notes": "Procedural skirt/wrapper (CT Life original geometry).",
-   "textures": {
-    "BaseColor": "bottom_skirt_BaseColor.png",
-    "Normal": "bottom_skirt_Normal.png",
-    "MetallicSmoothness": "bottom_skirt_MetallicSmoothness.png",
-    "Mask": "bottom_skirt_Mask.png"
-   }
-  },
-  "bottom_wrap": {
-   "part": "bottom_wrap",
-   "slot": "BOTTOM",
-   "hides_body_regions": [],
-   "needs": [
-    "legs"
-   ],
-   "triangles": {
-    "hero": 336,
-    "lod0": 336,
-    "lod1": 164,
-    "lod2": 60
-   },
-   "fbx": "bottom_wrap.fbx",
-   "hero_fbx": "bottom_wrap_Hero.fbx",
-   "license": "cc0-ctlife",
-   "notes": "Procedural skirt/wrapper (CT Life original geometry).",
-   "textures": {
-    "BaseColor": "bottom_wrap_BaseColor.png",
-    "Normal": "bottom_wrap_Normal.png",
-    "MetallicSmoothness": "bottom_wrap_MetallicSmoothness.png",
-    "Mask": "bottom_wrap_Mask.png"
-   }
-  },
-  "bottom_wrap_waist": {
-   "part": "bottom_wrap",
-   "slot": "BOTTOM",
-   "hides_body_regions": [],
-   "needs": [
-    "legs"
-   ],
-   "triangles": {
-    "hero": 48,
-    "lod0": 48,
-    "lod1": 36,
-    "lod2": 18
-   },
-   "fbx": "bottom_wrap_waist.fbx",
-   "hero_fbx": "bottom_wrap_waist_Hero.fbx",
-   "license": "cc0-ctlife",
-   "notes": "Procedural skirt/wrapper (CT Life original geometry).",
-   "textures": {
-    "BaseColor": "bottom_wrap_BaseColor.png",
-    "Normal": "bottom_wrap_Normal.png",
-    "MetallicSmoothness": "bottom_wrap_MetallicSmoothness.png",
-    "Mask": "bottom_wrap_Mask.png"
-   }
-  },
   "hair": {
    "part": "hair",
    "slot": "HAIR",
@@ -1419,32 +1323,6 @@
     "Mask": "top_Mask.png"
    }
   },
-  "top_coat": {
-   "part": "top_coat",
-   "slot": "TOP",
-   "hides_body_regions": [
-    "forearm",
-    "upperarm",
-    "waist"
-   ],
-   "needs": [],
-   "triangles": {
-    "hero": 2499,
-    "lod0": 1198,
-    "lod1": 559,
-    "lod2": 220
-   },
-   "fbx": "top_coat.fbx",
-   "hero_fbx": "top_coat_Hero.fbx",
-   "license": "derivative-ccby",
-   "notes": "Knee-length coat; skirt weights blended toward Hips.",
-   "textures": {
-    "BaseColor": "top_coat_BaseColor.png",
-    "Normal": "top_coat_Normal.png",
-    "MetallicSmoothness": "top_coat_MetallicSmoothness.png",
-    "Mask": "top_coat_Mask.png"
-   }
-  },
   "top_hoodie": {
    "part": "top_hoodie",
    "slot": "TOP",
@@ -1523,32 +1401,6 @@
     "Mask": "top_jacket_Mask.png"
    }
   },
-  "top_kaftan": {
-   "part": "top_kaftan",
-   "slot": "TOP",
-   "hides_body_regions": [
-    "forearm",
-    "upperarm",
-    "waist"
-   ],
-   "needs": [],
-   "triangles": {
-    "hero": 2399,
-    "lod0": 1148,
-    "lod1": 539,
-    "lod2": 210
-   },
-   "fbx": "top_kaftan.fbx",
-   "hero_fbx": "top_kaftan_Hero.fbx",
-   "license": "derivative-ccby",
-   "notes": "Senator/kaftan-style long tunic (round neck, embroidery painted).",
-   "textures": {
-    "BaseColor": "top_kaftan_BaseColor.png",
-    "Normal": "top_kaftan_Normal.png",
-    "MetallicSmoothness": "top_kaftan_MetallicSmoothness.png",
-    "Mask": "top_kaftan_Mask.png"
-   }
-  },
   "top_long": {
    "part": "top_long",
    "slot": "TOP",
@@ -1619,6 +1471,204 @@
     "Normal": "hair_afro_Normal.png",
     "MetallicSmoothness": "hair_afro_MetallicSmoothness.png",
     "Mask": "hair_afro_Mask.png"
+   }
+  },
+  "bottom_skirt": {
+   "part": "bottom_skirt",
+   "slot": "BOTTOM",
+   "hides_body_regions": [],
+   "needs": [
+    "legs"
+   ],
+   "triangles": {
+    "hero": 640,
+    "lod0": 324,
+    "lod1": 159,
+    "lod2": 56
+   },
+   "fbx": "bottom_skirt.fbx",
+   "hero_fbx": "bottom_skirt_Hero.fbx",
+   "license": "cc0-ctlife",
+   "notes": "Procedural skirt/wrapper with folds, flare and a turned-back hem (CT Life original).",
+   "textures": {
+    "BaseColor": "bottom_skirt_BaseColor.png",
+    "Normal": "bottom_skirt_Normal.png",
+    "MetallicSmoothness": "bottom_skirt_MetallicSmoothness.png",
+    "Mask": "bottom_skirt_Mask.png"
+   }
+  },
+  "bottom_skirt_waist": {
+   "part": "bottom_skirt",
+   "slot": "BOTTOM",
+   "hides_body_regions": [],
+   "needs": [
+    "legs"
+   ],
+   "triangles": {
+    "hero": 160,
+    "lod0": 111,
+    "lod1": 59,
+    "lod2": 25
+   },
+   "fbx": "bottom_skirt_waist.fbx",
+   "hero_fbx": "bottom_skirt_waist_Hero.fbx",
+   "license": "cc0-ctlife",
+   "notes": "Procedural skirt/wrapper with folds, flare and a turned-back hem (CT Life original).",
+   "textures": {
+    "BaseColor": "bottom_skirt_BaseColor.png",
+    "Normal": "bottom_skirt_Normal.png",
+    "MetallicSmoothness": "bottom_skirt_MetallicSmoothness.png",
+    "Mask": "bottom_skirt_Mask.png"
+   }
+  },
+  "bottom_skirt_hip": {
+   "part": "bottom_skirt",
+   "slot": "BOTTOM",
+   "hides_body_regions": [],
+   "needs": [
+    "legs"
+   ],
+   "triangles": {
+    "hero": 160,
+    "lod0": 85,
+    "lod1": 31,
+    "lod2": 9
+   },
+   "fbx": "bottom_skirt_hip.fbx",
+   "hero_fbx": "bottom_skirt_hip_Hero.fbx",
+   "license": "cc0-ctlife",
+   "notes": "Procedural skirt/wrapper with folds, flare and a turned-back hem (CT Life original).",
+   "textures": {
+    "BaseColor": "bottom_skirt_BaseColor.png",
+    "Normal": "bottom_skirt_Normal.png",
+    "MetallicSmoothness": "bottom_skirt_MetallicSmoothness.png",
+    "Mask": "bottom_skirt_Mask.png"
+   }
+  },
+  "bottom_wrap": {
+   "part": "bottom_wrap",
+   "slot": "BOTTOM",
+   "hides_body_regions": [],
+   "needs": [
+    "legs"
+   ],
+   "triangles": {
+    "hero": 800,
+    "lod0": 432,
+    "lod1": 206,
+    "lod2": 73
+   },
+   "fbx": "bottom_wrap.fbx",
+   "hero_fbx": "bottom_wrap_Hero.fbx",
+   "license": "cc0-ctlife",
+   "notes": "Procedural skirt/wrapper with folds, flare and a turned-back hem (CT Life original).",
+   "textures": {
+    "BaseColor": "bottom_wrap_BaseColor.png",
+    "Normal": "bottom_wrap_Normal.png",
+    "MetallicSmoothness": "bottom_wrap_MetallicSmoothness.png",
+    "Mask": "bottom_wrap_Mask.png"
+   }
+  },
+  "bottom_wrap_waist": {
+   "part": "bottom_wrap",
+   "slot": "BOTTOM",
+   "hides_body_regions": [],
+   "needs": [
+    "legs"
+   ],
+   "triangles": {
+    "hero": 80,
+    "lod0": 45,
+    "lod1": 29,
+    "lod2": 14
+   },
+   "fbx": "bottom_wrap_waist.fbx",
+   "hero_fbx": "bottom_wrap_waist_Hero.fbx",
+   "license": "cc0-ctlife",
+   "notes": "Procedural skirt/wrapper with folds, flare and a turned-back hem (CT Life original).",
+   "textures": {
+    "BaseColor": "bottom_wrap_BaseColor.png",
+    "Normal": "bottom_wrap_Normal.png",
+    "MetallicSmoothness": "bottom_wrap_MetallicSmoothness.png",
+    "Mask": "bottom_wrap_Mask.png"
+   }
+  },
+  "bottom_wrap_hip": {
+   "part": "bottom_wrap",
+   "slot": "BOTTOM",
+   "hides_body_regions": [],
+   "needs": [
+    "legs"
+   ],
+   "triangles": {
+    "hero": 80,
+    "lod0": 43,
+    "lod1": 13,
+    "lod2": 3
+   },
+   "fbx": "bottom_wrap_hip.fbx",
+   "hero_fbx": "bottom_wrap_hip_Hero.fbx",
+   "license": "cc0-ctlife",
+   "notes": "Procedural skirt/wrapper with folds, flare and a turned-back hem (CT Life original).",
+   "textures": {
+    "BaseColor": "bottom_wrap_BaseColor.png",
+    "Normal": "bottom_wrap_Normal.png",
+    "MetallicSmoothness": "bottom_wrap_MetallicSmoothness.png",
+    "Mask": "bottom_wrap_Mask.png"
+   }
+  },
+  "top_coat": {
+   "part": "top_coat",
+   "slot": "TOP",
+   "hides_body_regions": [
+    "forearm",
+    "upperarm",
+    "waist",
+    "hip"
+   ],
+   "needs": [],
+   "triangles": {
+    "hero": 2499,
+    "lod0": 1200,
+    "lod1": 559,
+    "lod2": 220
+   },
+   "fbx": "top_coat.fbx",
+   "hero_fbx": "top_coat_Hero.fbx",
+   "license": "derivative-ccby",
+   "notes": "Knee-length coat; skirt weights blended toward Hips.",
+   "textures": {
+    "BaseColor": "top_coat_BaseColor.png",
+    "Normal": "top_coat_Normal.png",
+    "MetallicSmoothness": "top_coat_MetallicSmoothness.png",
+    "Mask": "top_coat_Mask.png"
+   }
+  },
+  "top_kaftan": {
+   "part": "top_kaftan",
+   "slot": "TOP",
+   "hides_body_regions": [
+    "forearm",
+    "upperarm",
+    "waist",
+    "hip"
+   ],
+   "needs": [],
+   "triangles": {
+    "hero": 2397,
+    "lod0": 1148,
+    "lod1": 539,
+    "lod2": 209
+   },
+   "fbx": "top_kaftan.fbx",
+   "hero_fbx": "top_kaftan_Hero.fbx",
+   "license": "derivative-ccby",
+   "notes": "Senator/kaftan-style long tunic (round neck, embroidery painted).",
+   "textures": {
+    "BaseColor": "top_kaftan_BaseColor.png",
+    "Normal": "top_kaftan_Normal.png",
+    "MetallicSmoothness": "top_kaftan_MetallicSmoothness.png",
+    "Mask": "top_kaftan_Mask.png"
    }
   }
  },

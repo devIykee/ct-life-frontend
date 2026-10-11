@@ -372,6 +372,46 @@ def push_outside(o, target, margin, zmin=-1e9, zmax=1e9):
     o.data.update()
     return n
 
+
+def hem_vertex_mask(o):
+    subs = get_face_attr(o, 'sub')
+    m = np.zeros(len(o.data.vertices), dtype=bool)
+    for p in o.data.polygons:
+        if subs[p.index] == SUB['hem']:
+            m[list(p.vertices)] = True
+    return m
+
+def dress_weights(o, z_top, z_hem, vmask=None, calf=False):
+    """Long hems (coats, kaftans, skirts, wrappers): blend Hips -> Thigh.L/R (soft split at the centre
+    line) with depth below z_top, and toward the calves below the knee for long garments, so the hem
+    follows the legs when walking or sitting instead of hanging from the pelvis."""
+    W = weights_matrix(o, BONES)
+    co = mesh_arrays(o)
+    iH = BONES.index('Hips')
+    iT = (BONES.index('Thigh.L'), BONES.index('Thigh.R'))
+    iC = (BONES.index('Calf.L'), BONES.index('Calf.R'))
+    xs = 1.0 if BH['Thigh.L'].x > 0 else -1.0
+    span = max(z_top - z_hem, 0.05)
+    n = 0
+    for i, c in enumerate(co):
+        if c[2] >= z_top or (vmask is not None and not vmask[i]):
+            continue
+        t = min(1.0, max(0.0, (z_top - c[2]) / span))
+        a = 0.8 * min(1.0, t / 0.7) ** 0.8
+        u = min(1.0, max(0.0, (c[0] * xs + 0.035) / 0.07)); sL = u * u * (3 - 2 * u)
+        cs = 0.0
+        if calf:
+            cs = 0.6 * min(1.0, max(0.0, (KNEE_Z - c[2]) / max(KNEE_Z - ANKLE_Z, 0.05)))
+        new = np.zeros(len(BONES), dtype=np.float32)
+        new[iH] = 1 - a
+        new[iT[0]] = a * (1 - cs) * sL; new[iT[1]] = a * (1 - cs) * (1 - sL)
+        new[iC[0]] = a * cs * sL; new[iC[1]] = a * cs * (1 - sL)
+        b = min(1.0, t / 0.15)
+        W[i] = (1 - b) * W[i] + b * new
+        n += 1
+    set_weights_matrix(o, W, BONES, 4)
+    return n
+
 # ------------------------------------------------------------------ registry + bake
 REG = {}
 BUILT = []
@@ -722,6 +762,9 @@ def build_tops():
         o = join([torso_shell(0.013, 2, conform=0.014), arm_shell(0.014)], 'x')
         hem_extend(o, max(0.2, (HIPS_Z - KNEE_Z) * 0.95 + 0.06), 0.07)
         log('coat hem pushed', push_outside(o, P['bottom'], 0.014, zmax=HIPS_Z + 0.25))
+        _hm = hem_vertex_mask(o)
+        _zt = float(top_fd['c'][:, 2].min())
+        log('coat hem weights', dress_weights(o, _zt, float(mesh_arrays(o)[_hm][:, 2].min()), _hm))
         register(join([o, collar_band(0.045, 0.035, 0.02, z0=NECK_Z + 0.008, rx_add=0.012)] + dickey(), 'x'), 'top_coat', 'TOP', (2500, 1200, 560, 220),
                  hides=hides_long, notes='Knee-length coat; skirt weights blended toward Hips.')
     # 7. kaftan / senator style tunic
@@ -729,6 +772,9 @@ def build_tops():
         o = join([torso_shell(0.010, 2, conform=0.014), arm_shell(0.014)], 'x')
         hem_extend(o, max(0.2, (HIPS_Z - KNEE_Z) * 0.85), 0.03)
         log('kaftan hem pushed', push_outside(o, P['bottom'], 0.012, zmax=HIPS_Z + 0.25))
+        _hm = hem_vertex_mask(o)
+        _zt = float(top_fd['c'][:, 2].min())
+        log('kaftan hem weights', dress_weights(o, _zt, float(mesh_arrays(o)[_hm][:, 2].min()), _hm))
         register(join([o] + dickey(), 'x'), 'top_kaftan', 'TOP', (2400, 1150, 540, 210), hides=hides_long,
                  notes='Senator/kaftan-style long tunic (round neck, embroidery painted).')
 
@@ -948,8 +994,8 @@ def build_bottoms():
             face_attr(o, 'sub', subs)
             cyl_uv(o, center=(0, prof[0][0]))
             push_outside(o, P['bottom'], 0.008)
-            span = max(ztop - hem_z, 0.1)
-            weights_nearest(o, mix=lambda c: ('Hips', 0.55 * np.clip((ztop - c[2]) / span, 0, 1)))
+            weights_nearest(o)
+            log(nm, 'hem weights', dress_weights(o, HIPS_Z - 0.02, hem_z, calf=(nm == 'bottom_wrap')))
             register(o, nm, 'BOTTOM', (1000, 520, 250, 90), needs=['legs'],
                      notes='Procedural skirt/wrapper with folds, flare and a turned-back hem (CT Life original).', license='cc0-ctlife')
 

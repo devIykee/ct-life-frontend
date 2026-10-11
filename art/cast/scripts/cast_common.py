@@ -65,7 +65,8 @@ FAMILIES = {
     },
     'f': {
         'label': 'Rain-derived adult frame',
-        'blend': CAND / 'rain-adult-production/RainAdult_Unity.blend',
+        # weight-corrected creator (stale DEF-COR-* groups no longer mapped to Head); geometry/UVs identical
+        'blend': CAND / 'rain-weight-correction/RainAdult_WeightsCorrected.blend',
         'mesh': 'RainAdult_CreatorMesh', 'rig': 'RainAdult_Rig',
         'tex': {'base': CAND / 'rain-adult-production/exports/RainAdult_BaseColor.png',
                 'normal': CAND / 'rain-adult-production/exports/RainAdult_Normal.png',

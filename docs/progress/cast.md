@@ -1,14 +1,14 @@
-READY TO COMMIT: art/cast/export/ art/cast/previews/ art/cast/scripts/ docs/progress/cast.md docs/progress/requests.md — CT cast export (75 looks, 142 part FBX chunks, manifest.json, validation.json) + contact sheets, after the afro/gele/skirt/hood/hem fix pass
+READY TO COMMIT: art/cast/export/looks/{rain_breeze,npc_auditor,npc_chain_tribalist_b,npc_clip_farmer,npc_community_mod,npc_dubai_relocator,npc_engagement_farmer,npc_hackathon_grinder,npc_hiring_bait_farmer,npc_odds_crier,npc_prediction_shark,npc_privacy_maxi,npc_seeker_farmer,npc_side_event_hopper,npc_spaces_host,npc_tip_coin_pilgrim,npc_tradfi_suit,npc_wallet_tracker,player_f_anon,player_f_blazer,player_f_builder,player_f_coat,player_f_farmer,player_f_kol,player_f_lagos_ankara,player_f_lagos_kaftan,player_f_perp,player_f_shark,player_f_trencher,npc_sleuth,player_m_coat,player_m_lagos_kaftan}/ art/cast/export/parts/f/ art/cast/export/parts/m/{top_coat*,top_kaftan*,bottom_skirt*,bottom_wrap*,parts.json} art/cast/export/manifest.json art/cast/export/validation.json art/cast/previews/cast_lineup_f.jpg art/cast/previews/cast_lineup_m.jpg art/cast/scripts/{cast_common,cast_extract,cast_wardrobe,cast_validate}.py art/LICENSES.md docs/progress/cast.md docs/progress/requests.md — cast weight fix: Rain family rebuilt from the weight-corrected creator (no lower-body Head weights) + dress/coat/skirt hems weighted to the thighs (if the earlier fix-pass READY line was not committed yet, commit all of art/cast/export/ art/cast/previews/ art/cast/scripts/ instead)
 
 # CAST lane — progress log
 
 Owner: CAST agent (Blender 5.1.2 headless only; no Unity, adb or git). Intermediates (blends, maps,
 logs, Poly Haven downloads): `/Users/mac/Documents/codes/projects/ct-life-evidence/cast/` (not in the repo,
-so no `.gitignore` change is needed). Export size: 186 MB in 1,127 files, all under 10 MB (plain git; LFS blocked).
+so no `.gitignore` change is needed). Export size: 190 MB in 1,133 files, all under 10 MB (plain git; LFS blocked).
 
 ## Status (2026-10-08): stable, awaiting the user's look approval
 
-**Budgets (fresh-FBX validation, `art/cast/export/validation.json`: 383 files, 0 failures).**
+**Budgets (fresh-FBX validation, `art/cast/export/validation.json`: 389 files, 0 failures, incl. a new check: no Head/Jaw/Eye weight below 1.1 m).**
 Every look: one mesh per tier, one material, one atlas (1024² hero looks, 512² NPC looks), ≤4 weights
 (≤2 at LOD2), both 55-bone skeletons identical to the shipped Snow/Rain creator FBX (max rest-matrix
 delta 0.0). Worst offenders: hero 11,988 (`player_f_shark`), LOD0 5,988 / LOD1 2,836 / LOD2 1,093
@@ -24,12 +24,33 @@ delta 0.0). Worst offenders: hero 11,988 (`player_f_shark`), LOD0 5,988 / LOD1 2
 ids are bound; 22 further ids (Laser-Eyes Maxi, Chain Tribalist pair, 19 dossier archetypes) are labelled
 `proposed id (not in contract)`. Wardrobe: 55 parts per family (tops, vest, bottoms, boots, hair, beards,
 hats, face/neck/back/hand accessories incl. every requested CT signature item) exported as runtime parts
-(`art/cast/export/parts/{m,f}/parts.json`, 68 + 74 FBX chunks with all tiers).
+(`art/cast/export/parts/{m,f}/parts.json`, 70 + 75 FBX chunks with all tiers).
 
 **Contact sheets:** `art/cast/previews/cast_lineup_m.jpg`, `cast_lineup_f.jpg` (full body + head, every
 look), `cast_lod_comparison.jpg` (original creator mesh vs hero/LOD0/LOD1/LOD2 for Snow and Rain).
 
 **Integration:** Unity import steps are in `docs/progress/requests.md` (2026-10-08 cast -> integration lead).
+
+## Weight fix (character-feel lane report, 2026-10-08)
+- **Cause of the Head weights on Rain-family shoes/ankles/hips:** the cast pipeline extracted from the
+  historical `rain-adult-production/RainAdult_Unity.blend`, whose creator mesh still carries the old
+  stale `DEF-COR-*` groups mapped to Head (the defect documented in
+  `art/character-candidates/rain-weight-correction/README.md`). Every garment/legs/skirt part derived
+  from it inherited them. **Fix at the source:** `cast_common.FAMILIES['f']` now reads
+  `rain-weight-correction/RainAdult_WeightsCorrected.blend` (same geometry/UVs/rig, corrected weights);
+  `cast_extract.py` asserts 0 source vertices below 0.62×height with Head/Jaw/Eye weight; `cast_validate.py`
+  fails any exported mesh with Head/Jaw/Eye weight below 1.1 m. The whole Rain family (29 looks, all f
+  parts) was rebuilt; Snow-family meshes were already clean (same check).
+- **Dress / long-coat hems** (`top_coat`, `top_kaftan`, `bottom_skirt`, `bottom_wrap`, both families):
+  new `dress_weights()` blends Hips → Thigh.L/R with depth below the hip (soft 50/50 split at the centre
+  line, ~20% Hips left at the hem), plus Calf below the knee for the ankle-length wrapper. Measured at
+  LOD0 between 0.45-0.70 m: max Hips weight 0.20-0.28 (wrapper 0.56), 0 pelvis-only vertices, mean leg
+  weight 0.82-0.96 (`ct-life-evidence/cast/hemcheck.json`). Re-exported: all 29 Rain looks +
+  npc_sleuth, player_m_coat, player_m_lagos_kaftan; parts f/* and m/{top_coat,top_kaftan,bottom_skirt,bottom_wrap}.
+- Triangle counts unchanged for the Rain looks (same geometry); m coat/kaftan looks now: npc_sleuth LOD0
+  5,906, player_m_coat hero 11,987 / LOD0 5,867, player_m_lagos_kaftan hero 10,656 / LOD0 5,154 (all within caps).
+- The feel lane's `CastWeightRepair` should now be a no-op on this export (no lower-body Head weights,
+  hems already thigh-weighted). Not verified in Unity by this lane.
 
 ## Fix pass (coordinator review, 2026-10-08) — 15 looks rebuilt, nothing else touched
 - **Afro (both families):** rebuilt as the scalp offset by a thickness field: 0 at a forehead/temple/
@@ -123,6 +144,7 @@ or abstract marks.
 - 2026-10-08: read brief/spec/QA/handoff/ledgers; inspected compiled Snow (43,478 tris) and Rain (76,974;
   11.5k tris of mouth interior removed). Neither base has skin under clothes, so garments derive from the
   authored garment/skin surfaces. Built extract → wardrobe → tiered LODs → looks → parts → validation.
+- 2026-10-08: weight fix — Rain family rebuilt from the weight-corrected creator; dress/coat hems thigh-weighted; validator checks lower-body Head weights (389/389 pass).
 - 2026-10-08: folded in the CT-now dossier; fixed Rain inner tank shell, hair far-tier hulls, crotch leg
   tubes, inward-wound hems/boot shafts/hats (would be back-face culled in Unity), jeans poke-through
   (waist chunk hidden under tops + hip push-out). Final validation 375/375 FBX pass.

@@ -73,8 +73,14 @@ for f in files:
             W[v.index] = sum(g.weight for g in v.groups)
         unweighted = int((W < 1e-4).sum())
         badnorm = int((np.abs(W - 1) > 2e-3).sum())
+        hh = [o.vertex_groups[n].index for n in ('Head', 'Jaw', 'Eye.L', 'Eye.R') if n in o.vertex_groups]
+        mw = o.matrix_world
+        low_head = 0
+        for v in me.vertices:
+            if (mw @ v.co).z < 1.10 and sum(g.weight for g in v.groups if g.group in hh) > 0.01:
+                low_head += 1   # nothing legitimately Head-weighted hangs below the chin (~1.4 m)
         r['meshes'][o.name] = {'tier': tier, 'triangles': tris, 'max_influences': infl, 'materials': nmat, 'uv_layers': nuv,
-                               'unweighted_vertices': unweighted, 'non_normalised': badnorm, 'shape_keys': len(me.shape_keys.key_blocks) if me.shape_keys else 0}
+                               'unweighted_vertices': unweighted, 'non_normalised': badnorm, 'head_weight_below_1_1m': low_head, 'shape_keys': len(me.shape_keys.key_blocks) if me.shape_keys else 0}
         if 'looks/' in rel and tier and tris > CAPS[tier]:
             r['errors'].append(f'{o.name} {tris} > {CAPS[tier]}')
         if tier and infl > MAX_INFL[tier]:
@@ -85,6 +91,8 @@ for f in files:
             r['errors'].append(f'{o.name} {nuv} uv layers')
         if unweighted:
             r['errors'].append(f'{o.name} {unweighted} unweighted vertices')
+        if low_head:
+            r['errors'].append(f'{o.name} {low_head} lower-body vertices with Head/Jaw/Eye weight')
     r['ok'] = not r['errors']
     results['files'][rel] = r
     if not r['ok']:

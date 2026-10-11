@@ -19,6 +19,9 @@ bpy.ops.wm.open_mainfile(filepath=str(cfg['blend']), load_ui=False, use_scripts=
 scene = bpy.context.scene
 src = bpy.data.objects[cfg['mesh']]
 rig = bpy.data.objects[cfg['rig']]
+for _o in list(bpy.data.objects):
+    if _o.type == 'MESH' and _o is not src:
+        bpy.data.objects.remove(_o, do_unlink=True)
 rig.data.pose_position = 'REST'
 BONES = [b.name for b in rig.data.bones]
 me = src.data
@@ -42,6 +45,12 @@ for part in sorted({p for p, _ in cfg['parts'].values() if p}):
     face_attr(o, 'region', default=0)
     parts[part] = o
     log('part', part, tri_count(o))
+_Wsrc = weights_matrix(src, BONES)
+_co = mesh_arrays(src)
+_hh = [BONES.index(n) for n in ('Head', 'Jaw', 'Eye.L', 'Eye.R')]
+_bad = int(((_Wsrc[:, _hh].sum(1) > 0.01) & (_co[:, 2] < 0.62 * _co[:, 2].max())).sum())
+log('source head-weight below 0.62H vertices:', _bad)
+assert _bad == 0, 'source mesh carries Head weights on the lower body (use the weight-corrected creator)'
 bpy.data.objects.remove(src, do_unlink=True)
 
 # double-walled garments: drop inner walls (they poke through once the outer wall is reduced)
