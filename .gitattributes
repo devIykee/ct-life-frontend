@@ -8,3 +8,6 @@
 # LFS: models / textures / audio / video / fonts / archives / native libs
 # Binaries are plain git for now (GitHub LFS blocked by the account's $0 LFS budget).
 # Re-enable LFS patterns here once billing allows, then run: git lfs migrate import --above=1mb
+
+# Binary-serialized generated assets (TerrainData, NavMeshData): never touch line endings.
+client/Assets/World/Island/*.asset binary
