@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#197bd4">
+  <meta name="description" content="CT Life is a 3D Crypto Twitter life-sim being built for Solana Seeker. Explore the city, meet the characters, and see the game taking shape.">
+  <title>CT Life — The timeline has a new address.</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="assets/fonts/LilitaOne-Regular.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+  <a class="wordmark" href="#top" aria-label="CT Life home"><span class="brand-symbol" aria-hidden="true">CT</span><span>CT<span class="wordmark-life">LIFE</span></span></a>
+  <button class="menu-toggle tactile" aria-expanded="false" aria-controls="main-nav"><span class="menu-lines" aria-hidden="true"></span><span>Menu</span></button>
+  <nav id="main-nav" aria-label="Main navigation">
+    <a href="#city">The city</a><a href="#characters">Your character</a><a href="#inside">Inside the game</a>
+    <a href="#building" class="tactile nav-cta">What’s building <span aria-hidden="true">↗</span></a>
+  </nav>
+</header>
+<main id="main">
+<section class="hero" id="top" aria-labelledby="hero-title">
+  <div class="hero-grain" aria-hidden="true"></div>
+  <div class="hero-copy">
+    <p class="eyebrow pill"><span class="status-dot" aria-hidden="true"></span> A new life on Solana Mobile</p>
+    <h1 id="hero-title">The timeline<br>has a new <em>address.</em></h1>
+    <p class="hero-intro">The group chat got a city.<br>A 3D life-sim where CT culture becomes a place to live, work and make a little chaos.</p>
+    <div class="hero-actions"><a class="tactile button button-gold" href="#city">Explore CT City <img src="assets/icons/caret-right.png" alt=""></a><a class="text-link" href="#inside">See the game <span aria-hidden="true">↘</span></a></div>
+    <p class="release-note"><img src="assets/icons/device-mobile.png" alt=""> In development for Seeker. Public release coming later.</p>
+  </div>
+  <figure class="hero-art">
+    <div class="island-orbit" aria-hidden="true"></div>
+    <img class="island" src="assets/city-diorama.png" width="1254" height="1254" fetchpriority="high" alt="An illustrated island of colorful city buildings, a café, a fountain and residents.">
+    <span class="art-sticker sticker-gm" aria-hidden="true">gm, neighbour.</span>
+    <span class="art-sticker sticker-city" aria-hidden="true"><img src="assets/icons/map-trifold.png" alt=""> CT CITY</span>
+    <figcaption>City illustration · the playable world is still growing.</figcaption>
+  </figure>
+  <a class="hero-scroll" href="#city"><span aria-hidden="true">↓</span> Find your corner</a>
+</section>
+<div class="ticker" aria-label="CT Life themes"><span>TOUCH GRASS</span><img src="assets/icons/star-four.png" alt=""><span>FIND YOUR PEOPLE</span><img src="assets/icons/star-four.png" alt=""><span>BUILD YOUR OWN STORY</span><img src="assets/icons/star-four.png" alt=""><span>GM ALL OVER AGAIN</span></div>
+<section class="section city-section" id="city" aria-labelledby="city-title">
+  <div class="section-heading"><div><p class="eyebrow">01 / Your new neighbourhood</p><h2 id="city-title">Every corner.<br>A different kind of CT.</h2></div><p>The square. The café. The room where everyone has an opinion. Get to know the places we’re building.</p></div>
+  <div class="district-explorer">
+    <div class="district-tabs" role="tablist" aria-label="Explore city districts">
+      <button class="district-tab" id="tab-timeline" role="tab" aria-selected="true" aria-controls="district-panel" data-district="timeline"><span class="tab-icon tone-cyan"><img src="assets/icons/buildings.png" alt=""></span><span>Timeline Square<small>Where it all starts</small></span><span class="tab-arrow" aria-hidden="true">↗</span></button>
+      <button class="district-tab" id="tab-cafe" role="tab" aria-selected="false" aria-controls="district-panel" tabindex="-1" data-district="cafe"><span class="tab-icon tone-coral"><img src="assets/icons/coins.png" alt=""></span><span>Terminal Café<small>Alpha with your coffee</small></span><span class="tab-arrow" aria-hidden="true">↗</span></button>
+      <button class="district-tab" id="tab-ore" role="tab" aria-selected="false" aria-controls="district-panel" tabindex="-1" data-district="ore"><span class="tab-icon tone-gold"><img src="assets/icons/hexagon.png" alt=""></span><span>ORE Refinery<small>A place for real ORE</small></span><span class="tab-arrow" aria-hidden="true">↗</span></button>
+      <button class="district-tab" id="tab-spaces" role="tab" aria-selected="false" aria-controls="district-panel" tabindex="-1" data-district="spaces"><span class="tab-icon tone-purple"><img src="assets/icons/broadcast.png" alt=""></span><span>Spaces Studio<small>You’re on the mic</small></span><span class="tab-arrow" aria-hidden="true">↗</span></button>
+    </div>
+    <article class="district-panel" id="district-panel" role="tabpanel" aria-labelledby="tab-timeline" tabindex="0" data-tone="cyan">
+      <div class="district-number" aria-hidden="true">01</div>
+      <span class="status-label" id="district-status">In development</span>
+      <div class="district-symbol" aria-hidden="true"><img id="district-icon" src="assets/icons/buildings.png" alt=""></div>
+      <p class="district-kicker" id="district-kicker">THE CITY’S FRONT DOOR</p>
+      <h3 id="district-name">Timeline Square</h3>
+      <p id="district-description">Start in the square. Walk the streets, find your bearings and open your in-game phone. Your first corner of CT City is taking shape.</p>
+      <div class="district-detail"><span id="district-detail-label">Taking shape</span><p id="district-detail">3D streets · direct movement · map and phone</p></div>
+      <a href="#inside" class="text-link ink-link">Look inside the build <span aria-hidden="true">→</span></a>
+    </article>
+  </div>
+  <p class="section-footnote">CT City is in development. Explore the plans here; the game is being built for Seeker.</p>
+</section>
+<section class="characters-section" id="characters" aria-labelledby="characters-title">
+  <div class="section characters-inner">
+    <div class="character-copy"><p class="eyebrow">02 / Main character energy</p><h2 id="characters-title">Bring your<br>whole personality.</h2><p>A look is just the start. Your alias, tribe and ambitions make your place in CT City your own.</p><div class="look-switch" role="tablist" aria-label="Character look studies"><button class="tactile look-tab" id="look-everyday" role="tab" aria-selected="true" aria-controls="look-panel" data-look="everyday">Everyday</button><button class="tactile look-tab" id="look-breeze" role="tab" aria-selected="false" aria-controls="look-panel" tabindex="-1" data-look="breeze">Breeze</button></div><div id="look-panel" role="tabpanel" aria-labelledby="look-everyday" tabindex="0"><h3 id="look-name">Everyday</h3><p id="look-description">Charcoal tee. Light denim. Blue sneakers. An everyday look for a not-so-everyday city.</p></div><p class="small-note">Character studies · two looks today, with a wider cast and wardrobe in development.</p></div>
+    <div class="character-gallery" aria-label="Two character studies">
+      <figure class="character-card character-everyday is-selected" data-character-card="everyday"><span class="character-tag">01 / EVERYDAY</span><img src="assets/everyday-study.png" width="700" height="1100" loading="lazy" alt="Everyday character study: adult Snow adaptation with a bun, charcoal T-shirt, jeans and blue sneakers."><figcaption><span>Everyday</span><span class="character-seal" aria-hidden="true">CT</span></figcaption></figure>
+      <figure class="character-card character-breeze" data-character-card="breeze"><span class="character-tag">02 / BREEZE</span><img src="assets/breeze-study.png" width="900" height="1100" loading="lazy" alt="Breeze character study: adult Rain adaptation with a blue scarf, white top, jeans and tan shoes."><figcaption><span>Breeze</span><span class="character-seal" aria-hidden="true">CT</span></figcaption></figure>
+    </div>
+    <div class="creator-note"><img src="assets/icons/user-circle.png" alt=""><div><strong>More ways to make it yours.</strong><p>Standard creation is planned as the free option. Personalized-avatar generation is being explored as an optional paid extra.</p></div></div>
+  </div>
+</section>
+<section class="section inside-section" id="inside" aria-labelledby="inside-title">
+  <div class="section-heading"><div><p class="eyebrow">03 / From the actual build</p><h2 id="inside-title">Small screen.<br>A whole other life.</h2></div><p>A real look at the game taking shape on Seeker. Tap a screen to get closer.</p></div>
+  <div class="screen-gallery">
+    <button class="screen-card screen-lobby" data-screenshot="dashboard" aria-label="Enlarge the game lobby screenshot"><span class="screen-label"><b>Your home base</b><span>01</span></span><span class="phone-frame"><img src="assets/game-dashboard.png" width="1200" height="2670" loading="lazy" alt="CT Life development lobby with a city illustration, Game Cash, energy and an Enter the City button."></span><span class="screen-caption">The lobby <span aria-hidden="true">↗</span></span></button>
+    <button class="screen-card screen-city" data-screenshot="city" aria-label="Enlarge the city screenshot"><span class="screen-label"><b>Get out there</b><span>02</span></span><span class="phone-frame"><img src="assets/game-city.png" width="1200" height="2670" loading="lazy" alt="CT Life development city with a playable character, a movement stick and phone controls."></span><span class="screen-caption">Timeline Square <span aria-hidden="true">↗</span></span></button>
+    <button class="screen-card screen-phone" data-screenshot="phone" aria-label="Enlarge the phone screenshot"><span class="screen-label"><b>Your city, one tap away</b><span>03</span></span><span class="phone-frame"><img src="assets/game-phone.png" width="1200" height="2670" loading="lazy" alt="In-game phone with Map, Jobs, Bank, Home, Profile and Settings, alongside clearly marked future apps."></span><span class="screen-caption">The in-game phone <span aria-hidden="true">↗</span></span></button>
+  </div>
+  <p class="section-footnote">Actual Seeker development captures · sample profile and balances.</p>
+</section>
+<section class="building-section" id="building" aria-labelledby="building-title">
+  <div class="section">
+    <div class="section-heading"><div><p class="eyebrow">04 / Built for Solana Mobile</p><h2 id="building-title">Big city plans.<br>Clear about what’s here.</h2></div><p>A native game for Seeker. First the streets and your identity. Then the markets, conversations and city life that make it yours.</p></div>
+    <div class="build-tabs" role="tablist" aria-label="Development status"><button class="tactile build-tab" role="tab" id="build-now" aria-selected="true" aria-controls="build-panel" data-build="now">Taking shape</button><button class="tactile build-tab" role="tab" id="build-next" aria-selected="false" aria-controls="build-panel" tabindex="-1" data-build="next">What’s coming</button></div>
+    <div class="build-panel" id="build-panel" role="tabpanel" aria-labelledby="build-now" tabindex="0">
+      <article><span class="build-index">01</span><div><h3>City & identity</h3><p>Explore a 3D city, choose your look and carry your world in an in-game phone.</p></div><span class="status-label">In development</span></article>
+      <article><span class="build-index">02</span><div><h3>Solana sign-in</h3><p>Your Solana wallet is your way into CT Life. Wallet sign-in is being built into the Seeker experience.</p></div><span class="status-label">In development</span></article>
+      <article><span class="build-index">03</span><div><h3>Game Cash</h3><p>Cash is an in-game balance for the simulation. It is separate from your wallet assets and has no cash-out route.</p></div><span class="status-label">Game economy</span></article>
+    </div>
+    <div class="token-pair"><article class="token-card token-ore"><span class="token-word">ORE</span><div><span class="status-label">Planned</span><h3>More than a cameo.</h3><p>A Refinery district, ORE board and staking are on the roadmap, with ORE as a planned payment option.</p></div></article><article class="token-card token-skr"><span class="token-word">SKR</span><div><span class="status-label">Planned payments</span><h3>Part of the city.</h3><p>SKR stays a planned payment option, alongside SOL, USDC and ORE. Your .skr name can appear with your profile when available.</p></div></article></div>
+    <div class="release-card"><div><p class="eyebrow">The city isn’t open to the public yet</p><h3>Your next gm is taking shape.</h3><p>No public download or release date has been announced here.</p></div><a class="tactile button button-gold" href="#inside">See the current build <span aria-hidden="true">↑</span></a></div>
+  </div>
+</section>
+<section class="section faq-section" id="questions" aria-labelledby="faq-title"><div><p class="eyebrow">A few things to know</p><h2 id="faq-title">Before you<br>move in.</h2></div><div class="faq-list">
+<details><summary>Can I play in the browser?<span aria-hidden="true">+</span></summary><p>This site is a guide to CT Life. The game is a native Android app being built for Solana Seeker, with wallet sign-in. There is no public browser demo.</p></details>
+<details><summary>Is this connected to X?<span aria-hidden="true">+</span></summary><p>CT Life is an independent parody of Crypto Twitter culture. There is no Sign in with X in the current plan, and in-game activities do not reward actions on X.</p></details>
+<details><summary>Does Game Cash become real money?<span aria-hidden="true">+</span></summary><p>No. Game Cash stays inside the simulation and cannot be withdrawn. Future wallet payments are separate features and are not available on this website.</p></details>
+<details><summary>What about calls, projects and the wider city?<span aria-hidden="true">+</span></summary><p>They remain part of the plan: voice and video, paid calls, city life, player projects, ads and competition. The full scope is still being built; the screenshots show a development slice.</p></details>
+<details><summary>Are these final characters?<span aria-hidden="true">+</span></summary><p>Everyday and Breeze are our first two authored looks. A broader cast, mix-and-match customization and more animation are still being built. The images here are character studies.</p></details>
+</div></section>
+</main>
+<footer class="site-footer"><a class="wordmark" href="#top" aria-label="Back to CT Life home"><span class="brand-symbol" aria-hidden="true">CT</span><span>CT<span class="wordmark-life">LIFE</span></span></a><p>A new life. Same timeline.<small>Independent project · in development · 2026</small></p><div class="footer-links"><a href="credits.html">Art & licenses</a><a href="#questions">Questions</a><button class="motion-toggle" aria-pressed="false">Pause motion</button></div></footer>
+<dialog id="image-viewer" aria-labelledby="viewer-title"><div class="viewer-bar"><h2 id="viewer-title">The lobby</h2><button class="tactile viewer-close" aria-label="Close image viewer"><img src="assets/icons/x.png" alt=""></button></div><img id="viewer-image" src="assets/game-dashboard.png" alt=""><p>Actual Seeker development capture · sample profile and balances.</p></dialog>
+</body>
+</html>
