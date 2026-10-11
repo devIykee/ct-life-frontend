@@ -1,0 +1,19 @@
+--- a/Assets/Scripts/App/Review/FrontendReviewController.cs
++++ b/Assets/Scripts/App/Review/FrontendReviewController.cs
+@@ -90,6 +90,16 @@
+                 }
+ #endif
+ #if UNITY_EDITOR
++                if (LaunchArgs.Flag("reviewPrivateHomeChecks"))
++                {
++                    if (!LaunchArgs.TryGet("reviewCapture", out var privateHomeDirectory))
++                        throw new ArgumentException("Private Home review requires reviewCapture.");
++                    _phone.Close(); _hud.Show(false);
++                    try { await HomePrivateEntryReview.Run(privateHomeDirectory, destroyCancellationToken); }
++                    finally { if (!_disposed) _hud.Show(true); }
++                    if (LaunchArgs.Flag("reviewExit")) Finish(0);
++                    return;
++                }
+                 if (LaunchArgs.Flag("reviewVenueLifetimeChecks"))
+                 {
+                     if (!LaunchArgs.TryGet("reviewCapture", out var venueLifetimeDirectory))

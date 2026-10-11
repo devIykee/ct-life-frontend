@@ -1,0 +1,71 @@
+{
+  "status": "private_compilation_only_native_pending",
+  "sources": {
+    "LocalPlayerController.cs": "09e740dc5f2a3f696e121a0d909c8d61554b29e698890556eb095c8270ec9447",
+    "SavedVenueFlowReview.cs": "fdff003815154b2b3a29b98be58b75c711348dfa6135d10165d15018a0c8b235",
+    "FrontendReviewController.cs": "a36e9ca4d2530ad18e05f538397780e48338f31211700237172674cf4f09e6c8"
+  },
+  "runs": [
+    {
+      "mode": "candidate-world",
+      "exit_code": 0,
+      "native_rsp": "/Users/mac/Documents/codes/projects/ct-life/client/Library/Bee/artifacts/1300b0aE.dag/CTLife.World.rsp",
+      "removed_outputs": [
+        "-out:\"Library/Bee/artifacts/1300b0aE.dag/CTLife.World.dll\"",
+        "-refout:\"Library/Bee/artifacts/1300b0aE.dag/CTLife.World.ref.dll\""
+      ],
+      "sole_output": "/tmp/ct-arrival-hardening-v1-compile/candidate-world/CTLife.World.dll",
+      "actual_substitutions": [],
+      "log": "/tmp/ct-arrival-hardening-v1-compile/candidate-world/compile.log"
+    },
+    {
+      "mode": "reference-app",
+      "exit_code": 0,
+      "native_rsp": "/Users/mac/Documents/codes/projects/ct-life/client/Library/Bee/artifacts/1300b0aE.dag/CTLife.App.rsp",
+      "removed_outputs": [
+        "-out:\"Library/Bee/artifacts/1300b0aE.dag/CTLife.App.dll\"",
+        "-refout:\"Library/Bee/artifacts/1300b0aE.dag/CTLife.App.ref.dll\""
+      ],
+      "sole_output": "/tmp/ct-arrival-hardening-v1-compile/reference-app/CTLife.App.dll",
+      "actual_substitutions": [],
+      "log": "/tmp/ct-arrival-hardening-v1-compile/reference-app/compile.log"
+    },
+    {
+      "mode": "actual-app",
+      "exit_code": 0,
+      "native_rsp": "/Users/mac/Documents/codes/projects/ct-life/client/Library/Bee/artifacts/1300b0aE.dag/CTLife.App.rsp",
+      "removed_outputs": [
+        "-out:\"Library/Bee/artifacts/1300b0aE.dag/CTLife.App.dll\"",
+        "-refout:\"Library/Bee/artifacts/1300b0aE.dag/CTLife.App.ref.dll\""
+      ],
+      "sole_output": "/tmp/ct-arrival-hardening-v1-compile/actual-app/CTLife.App.dll",
+      "actual_substitutions": [
+        {
+          "reference": "-r:\"Library/Bee/artifacts/1300b0aE.dag/CTLife.Audio.ref.dll\"",
+          "actual": "-r:\"Library/Bee/artifacts/1300b0aE.dag/CTLife.Audio.dll\""
+        },
+        {
+          "reference": "-r:\"Library/Bee/artifacts/1300b0aE.dag/CTLife.Core.ref.dll\"",
+          "actual": "-r:\"Library/Bee/artifacts/1300b0aE.dag/CTLife.Core.dll\""
+        },
+        {
+          "reference": "-r:\"Library/Bee/artifacts/1300b0aE.dag/CTLife.Generated.ref.dll\"",
+          "actual": "-r:\"Library/Bee/artifacts/1300b0aE.dag/CTLife.Generated.dll\""
+        },
+        {
+          "reference": "-r:\"Library/Bee/artifacts/1300b0aE.dag/CTLife.Net.ref.dll\"",
+          "actual": "-r:\"Library/Bee/artifacts/1300b0aE.dag/CTLife.Net.dll\""
+        },
+        {
+          "reference": "-r:\"Library/Bee/artifacts/1300b0aE.dag/CTLife.Solana.ref.dll\"",
+          "actual": "-r:\"Library/Bee/artifacts/1300b0aE.dag/CTLife.Solana.dll\""
+        },
+        {
+          "reference": "-r:\"Library/Bee/artifacts/1300b0aE.dag/CTLife.UI.ref.dll\"",
+          "actual": "-r:\"Library/Bee/artifacts/1300b0aE.dag/CTLife.UI.dll\""
+        }
+      ],
+      "log": "/tmp/ct-arrival-hardening-v1-compile/actual-app/compile.log"
+    }
+  ]
+}

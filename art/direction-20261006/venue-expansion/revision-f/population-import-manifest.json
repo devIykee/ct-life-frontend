@@ -1,0 +1,33 @@
+{
+  "status": "frozen_staged_only_native_unrun",
+  "files": [
+    {
+      "source": "art/direction-20261006/venue-expansion/revision-f/SpacesStudioSharedChairPopulationReview.cs",
+      "destination": "client/Assets/Scripts/Editor/SpacesStudioSharedChairPopulationReview.cs",
+      "sha256": "705b19a4b2b697d577a5fd0df6640fed4512bde0bfab5a2f6e3b17add4806a5d",
+      "expected_destination": "absent; new unique helper"
+    }
+  ],
+  "compile_exit": 0,
+  "compile_warning": "Existing standalone CS1701 Newtonsoft/netstandard reference warning",
+  "review": "CTLife.EditorTools.SpacesStudioSharedChairPopulationReview.Launch",
+  "requires_graphics": true,
+  "requires_play_mode": true,
+  "required_dynamic_args": {
+    "-ctlife-studioPrefabHash": "exact current F baked prefab SHA from passing bake and independent post-exit audit",
+    "-ctlife-studioBakeHash": "exact current F BakeReceipt.json SHA"
+  },
+  "args": [
+    "-openfile",
+    "/Users/mac/Documents/codes/projects/ct-life/client/Assets/Scenes/Bootstrap.unity",
+    "-ctlife-studioPopulationOutput",
+    "/tmp/ct-studio-shared-chair-population-native-20261007",
+    "-ctlife-studioPopulationExit",
+    "1"
+  ],
+  "source_receipt": {
+    "path": "art/character-candidates/motion-review-20261006/native-cafe-seat-controller-v1/receipt.json",
+    "sha256": "d120c156e3073298561b242c0f90c365119220e766c829f44e8c9f6a29c7c65a"
+  },
+  "scope": "Same 12 synthetic actors as E2: 11 preview-only saved fitted social states plus host. Exact controller/social clip hashes hard-checked; no runtime profile or authority assignment. Native current-pose CPU geometry and original materials; four observer walks, no seat commands."
+}

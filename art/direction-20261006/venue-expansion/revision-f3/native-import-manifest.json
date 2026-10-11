@@ -1,0 +1,74 @@
+{
+  "status": "frozen_staged_only_native_unrun",
+  "files": [
+    {
+      "source": "art/direction-20261006/venue-expansion/revision-f3/SpacesStudioSharedChairCandidate3.cs",
+      "destination": "client/Assets/Scripts/Editor/SpacesStudioSharedChairCandidate3.cs",
+      "sha256": "f7f2b37d68deb19f8fa6b0293d1b4b6ca6c6a180bf0855cd23866789d94762c4",
+      "expected_destination": "absent; preserve failed F2 room review and all previous candidates"
+    },
+    {
+      "source": "art/direction-20261006/venue-expansion/revision-f3/SpacesStudioSharedChairRoomReview3.cs",
+      "destination": "client/Assets/Scripts/Editor/SpacesStudioSharedChairRoomReview3.cs",
+      "sha256": "f029fbc506bf5d6ded76a8e38f44c553f265a10ef7439ae9c91760d25e27bf85",
+      "expected_destination": "absent; preserve failed F2 room review and all previous candidates"
+    },
+    {
+      "source": "art/direction-20261006/venue-expansion/revision-f3/SpacesStudioSharedChairPopulationReview3.cs",
+      "destination": "client/Assets/Scripts/Editor/SpacesStudioSharedChairPopulationReview3.cs",
+      "sha256": "27e558f3b226899faeb4631a40550ffcc36149bb546062afd0fa03d399ef9bda",
+      "expected_destination": "absent; preserve failed F2 room review and all previous candidates"
+    }
+  ],
+  "compile_exit": 0,
+  "compile_warning": "Existing CS1701 Newtonsoft/netstandard standalone reference warning",
+  "build": "CTLife.EditorTools.SpacesStudioSharedChairCandidate3.BuildCandidate",
+  "bake": null,
+  "bake_scope": "No new bake: exact F2 rendered surfaces/materials/lighting bindings and textures are reused. Build saves an explicit reuse receipt.",
+  "room_review": "CTLife.EditorTools.SpacesStudioSharedChairRoomReview3.Launch",
+  "population_review": "CTLife.EditorTools.SpacesStudioSharedChairPopulationReview3.Launch",
+  "prefab": "Assets/Art/Candidates/SpacesStudio20261007F3/SpacesStudioF3.prefab",
+  "dependencies": [
+    {
+      "path": "client/Assets/Art/Candidates/SpacesStudio20261007F2/SpacesStudioF2.prefab",
+      "sha256": "b51823fb2c9f05ad39cb00b8f1a8906524d73898c88967e44a46b0dad7149f75"
+    },
+    {
+      "path": "client/Assets/Art/Candidates/SpacesStudio20261007F2/BakeReceipt.json",
+      "sha256": "d02dede7cceb5ae15801fc38707fcef717ef19caf68f4161be772cc1fae69f4d"
+    },
+    {
+      "path": "client/Assets/Art/Candidates/SpacesStudio20261007F2/StageReceipt.json",
+      "sha256": "b9cffae1879c0b28cd67964bedaabbf2fa41fb75a1f0ae7efc19eaac49542b7f"
+    },
+    {
+      "path": "client/Assets/Art/Candidates/SpacesStudio20261007F2/NavigationDiagnostics.json",
+      "sha256": "f7e0d9e366defcf5efdbef2eebcaff250e007882f8d279ed9fa2890bb3570fb1"
+    },
+    {
+      "path": "client/Assets/Resources/Contract/config_snapshot.json",
+      "sha256": "3a54ec2117e03fd3e456355e8fe407e5889d10790def5f4863d2163e970a9b56"
+    }
+  ],
+  "room_args": [
+    "-openfile",
+    "/Users/mac/Documents/codes/projects/ct-life/client/Assets/Scenes/Bootstrap.unity",
+    "-ctlife-studioOutput",
+    "/tmp/ct-studio-shared-chair-f3-room-native-20261007",
+    "-ctlife-studioExit",
+    "1"
+  ],
+  "population_args": [
+    "-openfile",
+    "/Users/mac/Documents/codes/projects/ct-life/client/Assets/Scenes/Bootstrap.unity",
+    "-ctlife-studioPopulationOutput",
+    "/tmp/ct-studio-shared-chair-f3-population-native-20261007",
+    "-ctlife-studioPopulationExit",
+    "1",
+    "-ctlife-studioPrefabHash",
+    "<exact generated F3 prefab hash>",
+    "-ctlife-studioBakeHash",
+    "<exact generated F3 reuse receipt hash>"
+  ],
+  "independent_review": "Source compiled and author-reviewed. ct_research was occupied by higher-priority work; no independent source approval claimed."
+}

@@ -1,0 +1,14 @@
+--- a/client/Assets/Scripts/UI/Phone/PhoneShell.cs
++++ b/client/Assets/Scripts/UI/Phone/PhoneShell.cs
+@@ -85,6 +85,11 @@
+                 if (_hiddenHud != null)
+                 {
+                     _previousHudDisplay = _hiddenHud.style.display;
++                    // Restore the state this phone actually hid. The native Unity 6.3 phone review
++                    // left resolved display at None after restoring a Null inline value.
++                    // Explicit caller-owned None/Flex values remain unchanged.
++                    if (_previousHudDisplay.keyword == StyleKeyword.Null)
++                        _previousHudDisplay = _hiddenHud.resolvedStyle.display;
+                     _hiddenHud.Show(false);
+                 }
+                 Bus.Publish(new SfxSignal("sfx_ui_open"));

@@ -1,0 +1,34 @@
+{
+  "revision": "saved-venue-flow-review-import-v1",
+  "status": "frozen_private_compiles_pass_native_pending",
+  "files": [
+    {
+      "source": "art/direction-20261006/venue-integration-20261007/runtime-review/SavedVenueFlowReview.cs",
+      "destination": "client/Assets/Scripts/App/Review/SavedVenueFlowReview.cs",
+      "baseline_sha256": null,
+      "requires_destination_absent": true,
+      "candidate_sha256": "7930d6dec6252a11473efd16bb8702c8689d8e162f08af768624f359842c73ca"
+    },
+    {
+      "source": "art/direction-20261006/venue-integration-20261007/runtime-review/FrontendReviewController.cs",
+      "destination": "client/Assets/Scripts/App/Review/FrontendReviewController.cs",
+      "baseline_sha256": "d3711bc2c391e373df7ccbc08930429b264a0abd3b7ea3a2137d168183780bd7",
+      "candidate_sha256": "a36e9ca4d2530ad18e05f538397780e48338f31211700237172674cf4f09e6c8"
+    }
+  ],
+  "input_manifest": {
+    "path": "art/direction-20261006/venue-integration-20261007/runtime-review/review-inputs.completed-v1.json",
+    "sha256": "1e76e50d4c752a5b372f01f98987aecd5988ea7ff912c648025226928be11267"
+  },
+  "reference_compile": {
+    "path": "art/direction-20261006/venue-integration-20261007/runtime-review/compile-receipt.json",
+    "sha256": "29ad1ee4159564e8352c502ba0fab9b6b01c7b4aa08ca6973b5a51c17cb65810"
+  },
+  "actual_compile": {
+    "path": "art/direction-20261006/venue-integration-20261007/runtime-review/compile-actual-receipt.json",
+    "sha256": "1e10b75211c75ecab9371b4e6788122d694ab2b2ce793ce92e0074eec28cd8fe"
+  },
+  "root_source_review": "Root inspected current source end to end; no blocking ownership/catalog/transport/routes/count issue reported. Deliberate early-arrival consumption remains an unresolved runtime defect.",
+  "peer_review": "Requested; pending at freeze.",
+  "no_live_or_native_actions": true
+}

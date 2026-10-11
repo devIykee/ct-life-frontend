@@ -1,0 +1,320 @@
+--- art/direction-20261006/terminal-cafe-b3-tables/TerminalCafeCandidateB3Tables.cs
++++ art/direction-20261006/terminal-cafe-final/TerminalCafeCandidateFinal.cs
+@@ -1,6 +1,8 @@
+ using System;
+ using System.Collections.Generic;
+ using System.IO;
++using System.IO.Compression;
++using System.Globalization;
+ using System.Linq;
+ using System.Security.Cryptography;
+ using CTLife.Core;
+@@ -20,10 +22,10 @@
+     /// overwrite original assets or imply that the illustrated activity pockets are live services.
+     /// Stage and bake in separate coordinator-owned batch processes; verify external hashes after exit.
+     /// </summary>
+-    public static class TerminalCafeCandidateB3Tables
++    public static class TerminalCafeCandidateFinal
+     {
+-        public const string Output = "Assets/Art/Candidates/TerminalCafe20261006B3Tables";
+-        public const string PrefabPath = Output + "/TerminalCafeB3Tables.prefab";
++        public const string Output = "Assets/Art/Candidates/TerminalCafe20261006Final";
++        public const string PrefabPath = Output + "/TerminalCafeFinal.prefab";
+         private const string Canonical = "Assets/Art/Generated/Venues/TimelineSquare.prefab";
+         private const string Snapshot = "Assets/Resources/Contract/config_snapshot.json";
+         private const string Manifest = "Assets/Art/environment/manifest.json";
+@@ -35,16 +37,24 @@
+         private static Transform _root;
+         private static ProtectedFiles _protection;
+         private static int _joineryTriangles;
+-
+-        [MenuItem("CT Life/Candidates/Stage Terminal Cafe B3 Tables")]
++        private static JObject _evidence;
++        private static string EvidenceRoot => Path.GetFullPath(Path.Combine(Application.dataPath,"../../art/direction-20261006/terminal-cafe-b3-fit"));
++        private static readonly Dictionary<string,string> TargetHashes = new Dictionary<string,string> {
++            { "adult_depth_48cm-office-target.obj.gz", "c9090cabcd8e3f77a27cfa512f638b764b352cc041b063d9f0b6700cb0310157" },
++            { "shared-typing-desk-target.obj.gz", "2164c82b921f1870ead8b117b3d5baa61981d8fa5e2c1acf32c7389afbc8ee9f" },
++            { "keyboard/shared-typing-keyboard-target.obj.gz", "9b7c02535527e6e7e5e1e327715fea950d383c9954ba27797002f81857920eaf" } };
++
++        [MenuItem("CT Life/Candidates/Stage Terminal Cafe Final")]
+         public static void BuildCandidate() => Protected("stage", Stage);
+ 
+-        [MenuItem("CT Life/Candidates/Bake Terminal Cafe B3 Tables")]
++        [MenuItem("CT Life/Candidates/Bake Terminal Cafe Final")]
+         public static void BakeCandidate() => Protected("bake", () =>
+         {
+             var receipt = JObject.Parse(File.ReadAllText(Output + "/StageReceipt.json"));
+             if ((string)receipt["status"] != "staged_unbaked_not_published" || (string)receipt["snapshot_sha256"] != Hash(Snapshot))
+                 throw new InvalidDataException("Stage receipt missing or contract snapshot changed.");
++            RequireEvidence();
++            RequireAttachedProfile(AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath));
+             VenueLightingBuilder.BakeVenue(PrefabPath, Output + "/Lighting");
+             var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);
+             var maps = prefab != null ? prefab.GetComponent<VenueLightmaps>() : null;
+@@ -58,6 +68,7 @@
+ 
+         private static void Stage()
+         {
++            _evidence = RequireEvidence(); // No candidate output before the preserved native evidence passes.
+             foreach (string sub in new[] { "Materials", "Meshes", "Textures" }) Directory.CreateDirectory(Output + "/" + sub);
+             AssetDatabase.Refresh();
+             _manifest = JObject.Parse(File.ReadAllText(Manifest)); Materials.Clear(); Solids.Clear(); SeatFurniture.Clear(); Placements.Clear(); _joineryTriangles=0;
+@@ -114,12 +125,17 @@
+                 {
+                     if (!spot.hasPosition || Mathf.Abs(spot.rotY) > .001f || spot.anim != "act_type")
+                         throw new InvalidDataException("Cafe station layout expects positioned north-facing act_type anchors: " + spot.id);
+-                    SeatFurniture[spot.id] = new List<GameObject> {
+-                        Add("home_desk",spot.x,spot.z+.86f,solid:true),
+-                        Add("office_chair",spot.x,spot.z-.10f,yaw:180,solid:true) };
+-                    Add("monitor_triple",spot.x,spot.z+1.03f,y:.76f,screen:charts[index%charts.Length]);
+-                    Add("laptop",spot.x-.40f,spot.z+.69f,y:.76f,yaw:14);
+-                    Add("cup_coffee",spot.x+.60f,spot.z+.68f,y:.76f);
++                    var desk = Add("home_desk",spot.x,spot.z+.5487464f,heightScale:.74f/.76f,solid:true);
++                    var chair = Add("office_chair",spot.x,spot.z-.31f,yaw:180,depthScale:.8f,solid:true);
++                    SeatFurniture[spot.id] = new List<GameObject> { desk,chair };
++                    var actorOrigin = new Vector3(spot.x,0,spot.z);
++                    RequireFrozenMesh(chair,actorOrigin,"adult_depth_48cm-office-target.obj.gz");
++                    RequireFrozenMesh(desk,actorOrigin,"shared-typing-desk-target.obj.gz");
++                    var keyboard = AddKeyboard(actorOrigin,desk.transform);
++                    var monitor = Add("monitor_triple",spot.x,spot.z+.7187464f,y:.74f,screen:charts[index%charts.Length]);
++                    var laptop = Add("laptop",spot.x-.52f,spot.z+.40f,y:.74f,yaw:0);
++                    var cup = Add("cup_coffee",spot.x+.60f,spot.z+.38f,y:.74f);
++                    RequireDesktopComposition(desk,keyboard,monitor,laptop,cup);
+                     Add("desk_lamp",spot.x-.60f,spot.z+1.0f,y:.76f);
+                     terminalRows.Add(new JObject { ["spot"]=spot.id,["x"]=spot.x,["z"]=spot.z,["yaw_radians"]=spot.rotY,["animation"]=spot.anim });
+                     index++;
+@@ -242,11 +258,12 @@
+                     ["status"]="staged_unbaked_not_published",["prefab"]=PrefabPath,["snapshot_sha256"]=Hash(Snapshot),
+                     ["positioned_anchors"]=Anchors(go).Count,["navigation"]=navigation,["terminal_stations"]=terminalRows,
+                     ["placements"]=Placements.DeepClone(),["source_lod0_triangles_manifest_estimate"]=Placements.Sum(p=>(int)p["lod0_triangles"]),
++                    ["native_input_evidence"]=_evidence.DeepClone(),["motion_profile_status"]="pending_guarded_attachment_and_native_transitions_before_bake",["centered_keyboards"]=8,
+                     ["interaction_tagged_spots"]=SeatFurniture.Count,["interaction_mesh_colliders"]=go.GetComponentsInChildren<MeshCollider>(true).Length,
+                     ["additional_joinery_triangles"]=_joineryTriangles,["static_mesh_renderers"]=go.GetComponentsInChildren<MeshRenderer>(true).Length,["baked_only_lights"]=6,
+-                    ["limitations"]="B3 SOCIAL TABLE COMPOSITION + HIT GEOMETRY CANDIDATE ONLY. Four social tables and their top decorations moved -.20m Z; all chairs, anchors, approaches and work furniture unchanged. Native placement/path/render checks remain required. Tall navigation bounds never become invisible furniture colliders. Existing SpotAnchor ancestry tags real chair/table geometry; requires explicit-target WorldInput patch and native camera-ray review.  Shared social chair top .450m and center z=anchor-.30m require corrected per-look clips and native contact review. Workstation furniture remains B2 pending hand/foot solve. Chairs now exclude walking navigation; 12 authored approaches require native runtime seat review. Identity, menu and coffee screensavers are decorative artwork. Reading sofas add no claimed seats. No registry promotion, server change or performance acceptance."
++                    ["limitations"]="FINAL COMBINED GEOMETRY, NOT REGISTERED. Shared office support/desk/keyboard match proven targets; social chairs/tables retain B3Tables. Final profile attachment, actual full-controller transitions, final-room ray/walk/stand, native visual review, bake and phone acceptance remain required. Existing IDs/roots are unchanged; decorative screens do not imply live data. No fabricated offline seating authority or economic action."
+                 }.ToString());
+-                Debug.Log("CTLIFE [terminal-cafe-b3-tables] 8 terminal stations and 4 social seats staged at exact contract anchors; bake required: "+PrefabPath);
++                Debug.Log("CTLIFE [terminal-cafe-final] 8 terminal stations and 4 social seats staged at exact contract anchors; bake required: "+PrefabPath);
+             }
+             finally { _root=null; EditorSceneManager.ClosePreviewScene(preview); Materials.Clear(); }
+         }
+@@ -390,7 +407,7 @@
+             foreach(var copy in copies.Values)Object.DestroyImmediate(copy);
+             Object.DestroyImmediate(group.gameObject);
+         }
+-        private static GameObject Add(string id, float x, float z, float yaw = 0, float y = 0, float scale = 1, string screen = null, bool solid = false, Transform parent = null, float heightScale = 1)
++        private static GameObject Add(string id, float x, float z, float yaw = 0, float y = 0, float scale = 1, string screen = null, bool solid = false, Transform parent = null, float heightScale = 1, float depthScale = 1)
+         {
+             var row = _manifest[id] ?? throw new InvalidDataException("Unknown sourced asset " + id);
+             string path = "Assets/Art/" + (string)row["fbx"];
+@@ -400,7 +417,7 @@
+             item.name = "Direction_" + id;
+             item.transform.localPosition = new Vector3(x,y,z);
+             item.transform.localRotation = Quaternion.Euler(0,yaw,0);
+-            item.transform.localScale = new Vector3(scale, scale * heightScale, scale);
++            item.transform.localScale = new Vector3(scale, scale * heightScale, scale * depthScale);
+             foreach (var c in item.GetComponentsInChildren<Collider>(true)) Object.DestroyImmediate(c);
+             foreach (var group in item.GetComponentsInChildren<LODGroup>(true)) Object.DestroyImmediate(group);
+             var renderers = item.GetComponentsInChildren<MeshRenderer>(true);
+@@ -432,7 +449,7 @@
+                     collider.sharedMesh = filter.sharedMesh; collider.convex = false;
+                 }
+             }
+-            Placements.Add(new JObject { ["id"] = id, ["x"] = x, ["y"] = y, ["z"] = z, ["yaw"] = yaw, ["scale"] = scale, ["height_scale"] = heightScale,
++            Placements.Add(new JObject { ["id"] = id, ["x"] = x, ["y"] = y, ["z"] = z, ["yaw"] = yaw, ["scale"] = scale, ["height_scale"] = heightScale, ["depth_scale"] = depthScale,
+                 ["screen"] = screen, ["solid"] = solid, ["source"] = (string)row["source"], ["lod0_triangles"] = (int)row["tris"][0] });
+             return item;
+         }
+@@ -490,6 +507,141 @@
+             importer.SetPlatformTextureSettings(android); importer.SaveAndReimport();
+             return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+         }
++        private static GameObject AddKeyboard(Vector3 actorOrigin, Transform desk)
++        {
++            const string relative = "keyboard/shared-typing-keyboard-target.obj.gz";
++            CafeKeyboardAppearance.RequireSources();
++            string texturePath=Output+"/Textures/KeyboardKeys.png";
++            if(!File.Exists(texturePath))File.Copy(CafeKeyboardAppearance.TexturePath,texturePath);
++            if(Hash(texturePath)!=CafeKeyboardAppearance.TextureSha256)throw new InvalidDataException("Candidate keyboard artwork differs from reviewed appearance.");
++            AssetDatabase.ImportAsset(texturePath,ImportAssetOptions.ForceSynchronousImport);
++            var importer=AssetImporter.GetAtPath(texturePath) as TextureImporter;
++            if(importer==null)throw new InvalidDataException("Candidate keyboard texture importer missing.");
++            importer.textureType=TextureImporterType.Default;importer.sRGBTexture=true;importer.mipmapEnabled=true;
++            importer.wrapMode=TextureWrapMode.Clamp;importer.filterMode=FilterMode.Trilinear;importer.anisoLevel=4;
++            importer.textureCompression=TextureImporterCompression.Uncompressed;importer.maxTextureSize=1024;
++            importer.SaveAndReimport(); // Narrow candidate-local importer only.
++            var texture=AssetDatabase.LoadAssetAtPath<Texture2D>(texturePath);
++            var mesh=AssetDatabase.LoadAssetAtPath<Mesh>(Output+"/Meshes/SharedTypingKeyboard.asset");
++            if(mesh==null)mesh=Save(CafeKeyboardAppearance.CreateMesh(),Output+"/Meshes/SharedTypingKeyboard.asset");
++            var materials=new[]{AssetDatabase.LoadAssetAtPath<Material>(Output+"/Materials/KeyboardCasing.mat"),AssetDatabase.LoadAssetAtPath<Material>(Output+"/Materials/KeyboardKeys.mat")};
++            if(materials.Any(m=>m==null))
++            {
++                var created=CafeKeyboardAppearance.CreateMaterials(texture);
++                materials[0]=Save(created[0],Output+"/Materials/KeyboardCasing.mat");materials[1]=Save(created[1],Output+"/Materials/KeyboardKeys.mat");
++            }
++            var go=new GameObject("Direction_computer_keyboard");go.transform.SetParent(_root,false);go.transform.position=actorOrigin;
++            go.AddComponent<MeshFilter>().sharedMesh=mesh;var renderer=go.AddComponent<MeshRenderer>();renderer.sharedMaterials=materials;
++            renderer.shadowCastingMode=ShadowCastingMode.Off;renderer.receiveShadows=false;renderer.lightProbeUsage=LightProbeUsage.Off;renderer.reflectionProbeUsage=ReflectionProbeUsage.Off;
++            go.isStatic=true;go.AddComponent<MeshCollider>().sharedMesh=mesh;
++            RequireFrozenMesh(go,actorOrigin,relative);
++            go.transform.SetParent(desk,true); // Preserves root-local target geometry; inherits exact existing spot ancestry.
++            Placements.Add(new JObject { ["id"]="computerKeyboard",["x"]=actorOrigin.x,["y"]=actorOrigin.y,["z"]=actorOrigin.z,["yaw"]=0,["scale"]=1,["height_scale"]=1,["depth_scale"]=1,
++                ["solid"]=false,["hit_geometry"]=true,["source"]="kenney/furniture-kit::computerKeyboard CC0",["lod0_triangles"]=mesh.triangles.Length/3,["frozen_mesh_sha256"]=TargetHashes[relative],["original_material_groups"]=2,["detail_texture_sha256"]=CafeKeyboardAppearance.TextureSha256 });
++            string license=Output+"/Keyboard-LICENSE.txt";
++            if(!File.Exists(license))File.Copy(Path.Combine(EvidenceRoot,"keyboard/License.txt"),license);
++            return go;
++        }
++        private static Bounds RenderBounds(GameObject item)
++        {
++            var rows=item.GetComponentsInChildren<MeshRenderer>(true);if(rows.Length==0)throw new InvalidDataException("No furniture renderer: "+item.name);
++            var b=rows[0].bounds;foreach(var r in rows.Skip(1))b.Encapsulate(r.bounds);return b;
++        }
++        private static void RequireDesktopComposition(GameObject desk,GameObject keyboard,GameObject monitor,GameObject laptop,GameObject cup)
++        {
++            // Keyboard is a child but stays within the actual support bounds; compare the source desk mesh itself.
++            var deskRows=desk.GetComponentsInChildren<MeshRenderer>(true).Where(r=>!r.transform.IsChildOf(keyboard.transform)).ToArray();
++            var support=deskRows[0].bounds;foreach(var r in deskRows.Skip(1))support.Encapsulate(r.bounds);
++            foreach(var prop in new[]{keyboard,laptop,cup})
++            {
++                var b=RenderBounds(prop);
++                if(b.min.x<support.min.x+.01f || b.max.x>support.max.x-.01f || b.min.z<support.min.z-.002f || b.max.z>support.max.z-.01f || Mathf.Abs(b.min.y-support.max.y)>.002f)
++                    throw new InvalidDataException("Desktop prop is not supported by actual desk bounds: "+prop.name+" "+b);
++            }
++            var key=RenderBounds(keyboard);var lap=RenderBounds(laptop);var drink=RenderBounds(cup);var screen=RenderBounds(monitor);
++            if(key.Intersects(lap)||key.Intersects(drink)||key.Intersects(screen)||lap.Intersects(screen))
++                throw new InvalidDataException("Workstation source bounds overlap the accepted keyboard/laptop field; inspect actual meshes before moving contact targets.");
++        }
++        private static (Vector3[] vertices,int[] triangles) ReadTarget(string relative)
++        {
++            string path=Path.Combine(EvidenceRoot,relative);if(!TargetHashes.TryGetValue(relative,out var hash)||Hash(path)!=hash)throw new InvalidDataException("Frozen physical target changed: "+relative);
++            var vertices=new List<Vector3>();var triangles=new List<int>();
++            using var file=File.OpenRead(path);using var zip=new GZipStream(file,CompressionMode.Decompress);using var reader=new StreamReader(zip);
++            while(!reader.EndOfStream)
++            {
++                var p=(reader.ReadLine()??"").Split(new[]{' '},StringSplitOptions.RemoveEmptyEntries);
++                if(p.Length==4&&p[0]=="v")vertices.Add(new Vector3(float.Parse(p[1],CultureInfo.InvariantCulture),float.Parse(p[2],CultureInfo.InvariantCulture),float.Parse(p[3],CultureInfo.InvariantCulture)));
++                else if(p.Length==4&&p[0]=="f")for(int i=1;i<=3;i++)triangles.Add(int.Parse(p[i],CultureInfo.InvariantCulture)-1);
++            }
++            if(vertices.Count==0||triangles.Count==0)throw new InvalidDataException("Empty target mesh");return(vertices.ToArray(),triangles.ToArray());
++        }
++        private static void RequireFrozenMesh(GameObject item,Vector3 actorOrigin,string relative)
++        {
++            CafeFurnitureGeometry.RequireExactSurface(item,actorOrigin,ReadTarget(relative),item.name+"_"+actorOrigin.x.ToString("R",CultureInfo.InvariantCulture)+"_"+actorOrigin.z.ToString("R",CultureInfo.InvariantCulture),
++                Path.Combine(Output,"GeometryEvidence"));
++        }
++        private static JObject RequireEvidence()
++        {
++            string root=Path.GetFullPath(Path.Combine(Application.dataPath,"../../art"));
++            var recorded=new JObject();
++            JObject Read(string label,string path)
++            {
++                if(!File.Exists(path))throw new FileNotFoundException("Required native evidence missing: "+label,path);
++                recorded[label]=new JObject { ["path"]=path,["sha256"]=Hash(path) };return JObject.Parse(File.ReadAllText(path));
++            }
++            var replay=Read("persistent_typing",Path.Combine(root,"character-candidates/motion-review-20261006/native-typing-persistent-replay-v1/receipt.json"));
++            if((string)replay["review_revision"]!="fresh-process-persistent-replay-v3"||(bool?)replay["all_pass"]!=true||replay["protected_drift"] is not JArray rd||rd.Count!=0)
++                throw new InvalidDataException("Fresh-process typing replay must pass before final geometry staging.");
++            var expected=new Dictionary<string,string>{{"snow","6cc4de1ff564ac7b4acd83a6849c406e11db8cb44858de5a68e214080c6576cc"},{"rain","8b86b3b985f0e138d1f07bc027e4a6a3433b21ccf99fbcfdaed992fb0de98ad1"}};
++            foreach(var pair in expected)
++            {
++                var c=((JArray)replay["cases"]).Single(x=>(string)x["character"]==pair.Key);string clip=(string)c["candidate_asset"];
++                if((bool?)c["all_pass"]!=true||(bool?)c["persisted_replay_verified"]!=true||(string)c["replay_source"]!="saved-asset-loaded-in-distinct-fresh-process"||
++                    (bool?)c["playback_foot_ik"]!=false||(bool?)c["playback_hand_ik_pass"]!=false||(int?)c["playback_ik_callback_count"]!=0||(string)c["candidate_sha256"]!=pair.Value||!File.Exists(clip)||Hash(clip)!=pair.Value)
++                    throw new InvalidDataException("Exact saved typing clip not independently accepted: "+pair.Key);
++            }
++            var fit=Read("combined_typing_furniture",Path.Combine(EvidenceRoot,"native-typing-fit-review-v2/receipt.json"));
++            if((string)fit["status"]!="captured_not_combined_furniture_accepted"||(bool?)fit["render_requested"]!=true||fit["protected_drift"] is not JArray fd||fd.Count!=0||
++                fit["cases"] is not JArray fc||fc.Count!=2||fc.Any(c=>(int?)c["samples"]!=241||(int?)c["images"]!=9))
++                throw new InvalidDataException("Native combined furniture capture is required; source compilation is insufficient.");
++            var beauty=Read("actual_pose_keyboard_beauty",Path.Combine(EvidenceRoot,"native-typing-fit-review-v3/receipt.json"));
++            if((string)beauty["review_revision"]!="original-keyboard-materials-cpu-pose-snapshots-v3"||(string)beauty["status"]!="captured_not_combined_furniture_accepted"||
++                (bool?)beauty["render_requested"]!=true||(string)beauty["keyboard_texture_sha256"]!=CafeKeyboardAppearance.TextureSha256||
++                beauty["protected_drift"] is not JArray bd||bd.Count!=0||beauty["cases"] is not JArray bc||bc.Count!=2||
++                bc.Any(c=>(int?)c["samples"]!=241||(int?)c["images"]!=12||(bool?)c["snapshot_images_verified"]!=true||c["visuals"] is not JArray vs||vs.Count!=3||vs.Any(v=>(float?)v["snapshot_vertex_error_m"]==null||(float?)v["snapshot_vertex_error_m"]> .00001f)))
++                throw new InvalidDataException("Native original-material keyboard beauty with verified current-pose snapshots is required.");
++            foreach(var c in bc)foreach(var v in (JArray)c["visuals"])foreach(string view in new[]{"front","side","keyboard","gameplay"})
++            {
++                string file=(string)v[view+"_file"],hash=(string)v[view+"_sha256"];
++                if(string.IsNullOrEmpty(file)||Path.GetFileName(file)!=file||string.IsNullOrEmpty(hash))throw new InvalidDataException("Beauty capture image record is incomplete.");
++                string path=Path.Combine(EvidenceRoot,"native-typing-fit-review-v3",file);
++                if(!File.Exists(path)||Hash(path)!=hash)throw new InvalidDataException("Actual-pose beauty image differs from its native receipt: "+file);
++            }
++            CafeKeyboardAppearance.RequireSources();foreach(string path in CafeKeyboardAppearance.SourcePaths)recorded["appearance_"+Path.GetFileName(path)]=Hash(path);
++            string hitsPath=Argument("cafeHitsReceipt")??"/tmp/ct-cafe-seat-hit-native-20261006/receipt.json";
++            var hits=Read("actual_camera_seat_rays",hitsPath);var drift=Read("actual_camera_seat_rays_protected",Path.Combine(Path.GetDirectoryName(hitsPath),"protected-drift.json"));
++            if((string)hits["status"]!="camera_ray_selection_passed_connected_claims_unverified"||drift["drift"] is not JArray hd||hd.Count!=0)
++                throw new InvalidDataException("Actual gameplay-camera hit fixture must pass.");
++            var candidate=((JArray)hits["rays"]).Where(r=>(string)r["variant"]=="candidate").ToArray();
++            if(candidate.Length!=24||candidate.Any(r=>(string)r["selected"]!=(string)r["expected"]||(int?)r["eventCount"]!=1))throw new InvalidDataException("All24 real seat/table rays must select the exact existing spot.");
++            if(Hash("Assets/Scripts/World/Input/WorldInput.cs")!="d9fa2cf17862619fc0404b25214c9aa6b2863de5e7c43a52881c16b623d0f052")throw new InvalidDataException("Review changed WorldInput before final stage; do not silently use obsolete selection code.");
++            foreach(var target in TargetHashes)if(Hash(Path.Combine(EvidenceRoot,target.Key))!=target.Value)throw new InvalidDataException("Physical target changed: "+target.Key);
++            recorded["scope"]="Native source/capture/ray prerequisites only; manual art acceptance and final profile/transition/room/device review remain distinct.";return recorded;
++        }
++        private static void RequireAttachedProfile(GameObject prefab)
++        {
++            if(prefab==null)throw new InvalidDataException("Final candidate prefab missing.");
++            var profile=prefab.GetComponents<Component>().SingleOrDefault(c=>c!=null&&c.GetType().FullName=="CTLife.World.CafeSeatMotionProfile");
++            if(profile==null)throw new InvalidDataException("Attach the independently accepted final Café motion profile before baking; no empty placeholder is added.");
++            var serialized=new SerializedObject(profile);var bindings=serialized.FindProperty("bindings");
++            if(bindings==null||bindings.arraySize!=2)throw new InvalidDataException("Final Café profile must contain exactly two accepted look bindings.");
++            for(int i=0;i<bindings.arraySize;i++)foreach(string name in new[]{"baselineController","ownAvatar","cafeController"})
++                if(bindings.GetArrayElementAtIndex(i).FindPropertyRelative(name)?.objectReferenceValue==null)throw new InvalidDataException("Incomplete accepted Café profile binding.");
++        }
++        private static string Argument(string key)
++        {
++            var args=Environment.GetCommandLineArgs();for(int i=0;i+1<args.Length;i++)if(args[i]=="-ctlife-"+key)return args[i+1];return null;
++        }
+         private static void SolidHit(Bounds bounds)
+         {
+             var go = new GameObject("Direction actual block hit"); go.transform.SetParent(_root, false); go.transform.localPosition = bounds.center;
+@@ -584,17 +736,29 @@
+                 var paths=AssetDatabase.GetDependencies(sourceModels,true).Concat(AssetDatabase.GetDependencies(Canonical,true))
+                     .Concat(Directory.GetFiles("Assets/Art/Candidates/TerminalCafe20261006B3Social","*",SearchOption.AllDirectories))
+                     .Concat(Directory.Exists("Assets/Art/Candidates/TerminalCafe20261006B3Hits") ? Directory.GetFiles("Assets/Art/Candidates/TerminalCafe20261006B3Hits","*",SearchOption.AllDirectories) : Array.Empty<string>())
++                    .Concat(Directory.Exists("Assets/Art/Candidates/TerminalCafe20261006B3Tables") ? Directory.GetFiles("Assets/Art/Candidates/TerminalCafe20261006B3Tables","*",SearchOption.AllDirectories) : Array.Empty<string>())
++                    .Concat(TargetHashes.Keys.Select(p=>Path.Combine(EvidenceRoot,p))).Concat(CafeKeyboardAppearance.SourcePaths)
+                     .Concat(new[] { Canonical,Snapshot,Manifest,"Assets/Resources/World/VenueContentRegistry.asset","Packages/manifest.json","Packages/packages-lock.json" })
+                     .Concat(Directory.GetFiles("ProjectSettings","*",SearchOption.AllDirectories)).Where(File.Exists).Distinct().ToList();
+                 paths.AddRange(paths.Where(p => File.Exists(p + ".meta")).Select(p => p + ".meta").ToArray());
+                 foreach (string path in paths.Distinct())
+                 {
+-                    string copy = Path.Combine(_backup,"before",path); Directory.CreateDirectory(Path.GetDirectoryName(copy));
++                    string copy = BackupPath("before",path); Directory.CreateDirectory(Path.GetDirectoryName(copy));
+                     File.Copy(path,copy); _hashes[path] = Hash(path);
+                     if (Hash(copy) != _hashes[path]) throw new IOException("Cannot snapshot " + path);
+                 }
+                 Record("captured_after_editor_startup_before_candidate",null);
+             }
++            private string BackupPath(string phase,string source)
++            {
++                string relative=source;
++                if(Path.IsPathRooted(source)||source.Split('/').Contains(".."))
++                {
++                    using var sha=SHA256.Create();string key=BitConverter.ToString(sha.ComputeHash(System.Text.Encoding.UTF8.GetBytes(source))).Replace("-","");
++                    relative=Path.Combine("external",key,Path.GetFileName(source));
++                }
++                return Path.Combine(_backup,phase,relative);
++            }
+             public void ClearDirty()
+             {
+                 foreach (string path in _hashes.Keys.Where(p => p.StartsWith("Assets/",StringComparison.Ordinal) && !p.EndsWith(".meta",StringComparison.Ordinal)))
+@@ -610,8 +774,8 @@
+                 ClearDirty();
+                 foreach (var p in _hashes.Where(p => !File.Exists(p.Key) || Hash(p.Key) != p.Value))
+                 {
+-                    if (File.Exists(p.Key)) { string failed = Path.Combine(_backup,"after-failure",p.Key); Directory.CreateDirectory(Path.GetDirectoryName(failed)); File.Copy(p.Key,failed); }
+-                    string source = Path.Combine(_backup,"before",p.Key);
++                    if (File.Exists(p.Key)) { string failed = BackupPath("after-failure",p.Key); Directory.CreateDirectory(Path.GetDirectoryName(failed)); File.Copy(p.Key,failed); }
++                    string source = BackupPath("before",p.Key);
+                     if (Hash(source) != p.Value) throw new IOException("Snapshot corrupted: " + p.Key);
+                     Directory.CreateDirectory(Path.GetDirectoryName(p.Key)); File.Copy(source,p.Key,true);
+                 }
+@@ -625,7 +789,7 @@
+                     ["status"] = status, ["error"] = error, ["post_editor_exit_hash_check_required"] = true,
+                     ["files"] = new JArray(_hashes.Select(p => new JObject { ["path"] = p.Key,["sha256"] = p.Value }))
+                 }.ToString());
+-                Debug.Log("CTLIFE [terminal-cafe-b3-tables] protection receipt: " + Path.Combine(_backup,"transaction.json"));
++                Debug.Log("CTLIFE [terminal-cafe-final] protection receipt: " + Path.Combine(_backup,"transaction.json"));
+             }
+         }
+         private static string Hash(string path)

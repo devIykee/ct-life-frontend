@@ -1,0 +1,30 @@
+{
+  "sources": {
+    "LocalPlayerController.cs": "09e740dc5f2a3f696e121a0d909c8d61554b29e698890556eb095c8270ec9447",
+    "SavedVenueFlowReview.cs": "8ea3fff484d21479b21be302ee429cc70d2001e2287adf6b857c74c94c51c364"
+  },
+  "runs": [
+    {
+      "mode": "candidate-world",
+      "exit_code": 0,
+      "rsp": "/tmp/ct-arrival-hud-v2-compile/candidate-world/compile.rsp",
+      "sole_output": "/tmp/ct-arrival-hud-v2-compile/candidate-world/CTLife.World.dll",
+      "log": "/tmp/ct-arrival-hud-v2-compile/candidate-world/compile.log"
+    },
+    {
+      "mode": "reference-app",
+      "exit_code": 0,
+      "rsp": "/tmp/ct-arrival-hud-v2-compile/reference-app/compile.rsp",
+      "sole_output": "/tmp/ct-arrival-hud-v2-compile/reference-app/CTLife.App.dll",
+      "log": "/tmp/ct-arrival-hud-v2-compile/reference-app/compile.log"
+    },
+    {
+      "mode": "actual-app",
+      "exit_code": 0,
+      "rsp": "/tmp/ct-arrival-hud-v2-compile/actual-app/compile.rsp",
+      "sole_output": "/tmp/ct-arrival-hud-v2-compile/actual-app/CTLife.App.dll",
+      "log": "/tmp/ct-arrival-hud-v2-compile/actual-app/compile.log"
+    }
+  ],
+  "scope": "Private exact World and App scopes; all output flags stripped; no native."
+}

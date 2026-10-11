@@ -1,0 +1,17 @@
+--- a/client/Assets/Scripts/World/Input/WorldInput.cs
++++ b/client/Assets/Scripts/World/Input/WorldInput.cs
+@@ -41,6 +41,14 @@
+             for (int i = 0; i < n; i++)
+             {
+                 if (_hits[i].collider.isTrigger) continue;
++                // Authored furniture can live under its existing immutable spot anchor.
++                // Resolve the touched seat directly; a chair back may be above the legacy floor-radius test.
++                var tagged = _hits[i].collider.GetComponentInParent<SpotAnchor>();
++                if (tagged != null)
++                {
++                    if (!string.IsNullOrEmpty(tagged.anim)) SpotTapped?.Invoke(tagged);
++                    return;
++                }
+                 var spot = NearestClaimableSpot(_hits[i].point, 0.9f);
+                 if (spot != null)
+                 {

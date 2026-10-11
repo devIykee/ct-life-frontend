@@ -1,0 +1,56 @@
+--- client/Assets/Scripts/Editor/SpacesStudioRoomReviewD.cs
++++ client/Assets/Scripts/Editor/SpacesStudioRoomReviewD.cs
+@@ -64,6 +64,14 @@
+             if((string)stage["status"]!="staged_unbaked_not_published"||(int)stage["positioned_anchors"]!=34||(int)stage["authored_approaches"]!=31||(int)stage["tagged_geometry_spots"]!=31||(string)stage["snapshot_sha256"]!=Hash("Assets/Resources/Contract/config_snapshot.json"))
+                 throw new InvalidDataException("Studio stage/anchor/interaction receipt no longer matches.");
+             SessionState.SetString(Key+"candidateHash",Hash(Candidate));
++            string bakePath="Assets/Art/Candidates/SpacesStudio20261006D/BakeReceipt.json";
++            SessionState.SetString(Key+"bakeReceiptHash",File.Exists(bakePath)?Hash(bakePath):"");
++            if(File.Exists(bakePath))
++            {
++                var bake=JObject.Parse(File.ReadAllText(bakePath));
++                if((string)bake["status"]!="baked_not_published_requires_visual_and_device_review"||(string)bake["prefab_sha256"]!=Hash(Candidate))
++                    throw new InvalidDataException("D bake receipt does not match the exact current prefab.");
++            }
+             var setup = EditorSceneManager.GetSceneManagerSetup();
+             SessionState.SetString(Key + "scenes", JsonConvert.SerializeObject(setup.Select(s => new SavedScene
+                 { path = s.path, isLoaded = s.isLoaded, isActive = s.isActive })));
+@@ -158,6 +166,15 @@
+             _navigation=NavMesh.AddNavMeshData(venue.navigation,_root.transform.position,_root.transform.rotation);
+             Require(_navigation.valid,"actual final saved navigation is registered");
+             _root.GetComponent<VenueContentLighting>()?.Apply();
++            var installedMaps=_root.GetComponent<VenueLightmaps>();
++            if(!string.IsNullOrEmpty(SessionState.GetString(Key+"bakeReceiptHash","")))
++            {
++                Require(installedMaps!=null&&installedMaps.colors.Length>0&&installedMaps.bindings.Length>0,"baked D carries maps and renderer bindings");
++                foreach(var binding in installedMaps.bindings)
++                    Require(binding.renderer!=null&&binding.renderer.lightmapIndex>=0&&binding.renderer.lightmapIndex<LightmapSettings.lightmaps.Length&&
++                        LightmapSettings.lightmaps[binding.renderer.lightmapIndex].lightmapColor==installedMaps.colors[binding.lightmap]&&
++                        Vector4.Distance(binding.renderer.lightmapScaleOffset,binding.scaleOffset)<.00001f,"native installed renderer lightmap "+binding.renderer.name);
++            }
+             _rig.ConfigureVenue(venue);_rig.Camera.enabled=true;_rig.Camera.aspect=16f/9f;
+             if(_rig.Camera.GetComponent<UniversalAdditionalCameraData>()==null)_rig.Camera.gameObject.AddComponent<UniversalAdditionalCameraData>();
+             var registry=AssetDatabase.LoadAssetAtPath<CharacterRegistry>("Assets/Resources/Characters/CharacterRegistry.asset");
+@@ -244,7 +261,9 @@
+                 Captures.Add(new{label,file=Path.GetFileName(path),sha256=Hash(path),nativeFrame=Time.frameCount,
+                     player=new[]{_player.transform.position.x,_player.transform.position.y,_player.transform.position.z},camera=new[]{camera.transform.position.x,camera.transform.position.y,camera.transform.position.z},
+                     pitch=_rig.pitch,yaw=_rig.yaw,distance=_rig.distance,fov=camera.fieldOfView,aspect=camera.aspect,
+-                    boundLightmapCount=maps?.colors?.Length??0,scope="Actual Studio room Play camera and original materials; unbaked output is spatial evidence only. No UI, confirmed seated pose, animated contact or final lighting approval."});
++                    boundLightmapCount=maps?.colors?.Length??0,boundRendererCount=maps?.bindings?.Length??0,
++                    installedLightmapCount=LightmapSettings.lightmaps.Length,bakeReceiptSha256=SessionState.GetString(Key+"bakeReceiptHash",""),
++                    scope=(maps!=null&&maps.colors.Length>0?"Actual baked Studio D materials and verified installed lightmap bindings; candidate lighting/art review, not production acceptance.":"Actual unbaked Studio D materials; spatial evidence only, not lighting acceptance.")+" No UI, confirmed seat/host role, animated contact or phone acceptance."});
+             }
+             finally{RenderTexture.active=previous;Object.Destroy(tex);rt.Release();Object.Destroy(rt);}
+         }
+@@ -332,9 +351,9 @@
+             File.WriteAllText(Path.Combine(output, "receipt.json"), JsonConvert.SerializeObject(new
+             {
+                 status = failure == null ? "studio_camera_rays_and_sampled_walking_passed_roles_and_seating_unverified" : "failed",
+-                candidatePrefab = Candidate, candidatePrefabSha256 = SessionState.GetString(Key+"candidateHash",""),
++                candidatePrefab = Candidate, candidatePrefabSha256 = SessionState.GetString(Key+"candidateHash",""), bakeReceiptSha256=SessionState.GetString(Key+"bakeReceiptHash",""),
+                 checks = Checks, diagnostics = Commands, rays = Rays, walks = Walks, captures = Captures, observedMoveIntents = _moveIntents, networkChannel = "none; actual public GoSit through WorldInput event, no server confirmations",
+-                limitations = "Actual Studio CameraRig16:9, Physics, WorldInput.Tap and LocalPlayer walking/arrival on saved NavMesh. Null-channel intents are not network calls or ownership. No UI touch, server seat/stand, motion bridge, full skinned contact, final unbaked lighting or phone acceptance. Only five representative walks are exercised; all31 rays are sampled. No baseline Studio prefab exists for a negative control. Host/speaker permissions and correct authoritative actions remain separate integration gates.",
++                limitations = "Actual Studio CameraRig16:9, Physics, WorldInput.Tap and LocalPlayer walking/arrival on saved NavMesh. Null-channel intents are not network calls or ownership. No UI touch, server seat/stand, motion bridge, full skinned contact, final visual production or phone acceptance. Captures explicitly record whether baked maps were installed. Only five representative walks are exercised; all31 rays are sampled. No baseline Studio prefab exists for a negative control. Host/speaker permissions and correct authoritative actions remain separate integration gates.",
+                 failure = failure?.ToString()
+             }, Formatting.Indented));
+             SessionState.SetInt(Key + "result", failure == null ? 0 : 1);

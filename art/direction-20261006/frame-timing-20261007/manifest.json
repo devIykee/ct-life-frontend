@@ -1,0 +1,13 @@
+{
+  "status": "staged_not_compiled_or_native_verified",
+  "baseline": "c1fca94ce734ce685ddee4d341acd13a88fb59a68b2898b4e8b8f25ba3405827",
+  "candidate": "422eaa976b53440041ed8ac5671ed6e5f7d482a3b6c6b181dbc461ab661d68a0",
+  "destination": "client/Assets/Scripts/World/Perf/FpsMeter.cs",
+  "purpose": "Measure high-level CPU/GPU contributions before selecting an optimization. No thermal-policy or quality changes. Existing enableFrameTimingStats already enabled.",
+  "docs": [
+    "https://docs.unity3d.com/6000.3/Documentation/Manual/frame-timing-manager.html",
+    "https://docs.unity3d.com/6000.3/Documentation/ScriptReference/FrameTiming.html",
+    "https://docs.unity3d.com/6000.3/Documentation/ScriptReference/FrameTimingManager.GetLatestTimings.html"
+  ],
+  "limits": "Delayed single completed-frame samples; not five-second peaks, compositor trace, definitive CPU/GPU bottleneck classification or a thermal diagnosis. API can affect GPU workload, particularly GLES. Development/Editor-only calls; future controlled device comparisons must use like-for-like instrumentation."
+}

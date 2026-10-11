@@ -1,0 +1,9 @@
+# Art2: select the visible floor finish precisely
+
+Original Art failed the64m² gate with128m². The actual saved partial native meshes establish the cause (`../native-floor-selection-diagnosis.json`):32 triangles/64m² belong to the visible textured top atY−7.45e−9; a separate32/64m² belong to the underlying slab top atY−.001000009. The source `floor_piece` intentionally authors these two surfaces. They are neither repeated LODs nor coincident double-sided geometry.
+
+Art2 selects only the existing `wood_floor_diff_1k` finish material and records every included/excluded native floor mesh before asserting exactly32 triangles/64m². It retains the slab geometry/material unchanged. The all-rendered-triangle and collider signatures must still equal the final baseline. No threshold was widened and the target area was not doubled.
+
+It also explicitly restores copied materials' original semantic names after CreateAsset (which otherwise uses the indexed filename). This keeps the precise `Screen_` lookup valid while all copied materials remain isolated. The failed Art receipt and assets remain preserved; unique class names and output are in the frozen manifest. All original artwork and the bounded lighting design remain unchanged.
+
+Both sources compile0 against the actual Editor reference set (existing CS1701 harness warning only). Native methods: `CTLife.EditorTools.TerminalCafeVisualCandidate2.BuildCandidate`, then `BakeCandidate`. Graphics: `CTLife.EditorTools.CafeArtRoomReview2.Launch` with `-openfile /Users/mac/Documents/codes/projects/ct-life/client/Assets/Scenes/Bootstrap.unity -ctlife-cafeArtOutput /tmp/ct-cafe-art2-room-native-20261007 -ctlife-cafeArtExit 1`. Use no combined `-projectPath` and no async `-quit`. Art2 has no profile/registry mutation path; the main README's visual/interaction scope remains applicable.

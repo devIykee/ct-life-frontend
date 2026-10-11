@@ -1,0 +1,50 @@
+{
+  "status": "frozen_staged_only_native_unrun",
+  "files": [
+    {
+      "source": "art/direction-20261006/terminal-cafe-visual-20261007/revision-5/finalization/CafeArt5BakeFinalization.cs",
+      "destination": "client/Assets/Scripts/Editor/CafeArt5BakeFinalization.cs",
+      "sha256": "4b78a5bfe4c166d8aaf4f54e2a84bc88916fd9a6f270e91c0c5b1f36d7f7cd87",
+      "expected_destination": "absent; preserve Art5 original wrappers and failed BakeReceipt"
+    },
+    {
+      "source": "art/direction-20261006/terminal-cafe-visual-20261007/revision-5/finalization/CafeArtRoomReview5Finalized.cs",
+      "destination": "client/Assets/Scripts/Editor/CafeArtRoomReview5Finalized.cs",
+      "sha256": "30d737d343b192e3cfd7d3890ee26ac021a1048f36bcf11c27f45e6167ec3b08",
+      "expected_destination": "absent; preserve Art5 original wrappers and failed BakeReceipt"
+    }
+  ],
+  "dependencies": [
+    {
+      "path": "client/Assets/Art/Candidates/TerminalCafe20261007Art5/TerminalCafeArt5.prefab",
+      "sha256": "728bc17e662a48f95cd0c1a6f6ad1d4d6bfcb968a2b0501607c544586e296673"
+    },
+    {
+      "path": "client/Assets/Art/Candidates/TerminalCafe20261007Art5/StageReceipt.json",
+      "sha256": "41d7728bf5508a35c24b9f5c1aeb24208790f7711efbc5d6d6668e00059edbb1"
+    },
+    {
+      "path": "client/Assets/Art/Candidates/TerminalCafe20261007Art5/BakeReceipt.json",
+      "sha256": "68deddcfa643adca13ee2e82ff8ce2c2a15107d4e453b117b9343000cd0e68cf"
+    },
+    {
+      "path": "client/Assets/Art/Candidates/TerminalCafe20261007Art5/Lighting/LastBake.txt",
+      "sha256": "42435e476cc769e62f2454272397252e2f36953a3641874988e9445a9efd0d83"
+    }
+  ],
+  "compile_exit": 0,
+  "compile_warning": "Existing standalone CS1701 Newtonsoft/netstandard warning",
+  "compiler_outputs": "Private /tmp DLLs only; no refout/generatedfilesout/pdb/errorlog/nested rsp flags",
+  "finalize": "CTLife.EditorTools.CafeArt5BakeFinalization.FinalizeExistingBake",
+  "review": "CTLife.EditorTools.CafeArtRoomReview5Finalized.Launch",
+  "new_receipt": "Assets/Art/Candidates/TerminalCafe20261007Art5/BakeFinalizationReceipt.json",
+  "no_rebuild_or_rebake": true,
+  "review_args": [
+    "-openfile",
+    "/Users/mac/Documents/codes/projects/ct-life/client/Assets/Scenes/Bootstrap.unity",
+    "-ctlife-cafeArtOutput",
+    "/tmp/ct-cafe-art5-finalized-room-native-20261007",
+    "-ctlife-cafeArtExit",
+    "1"
+  ]
+}

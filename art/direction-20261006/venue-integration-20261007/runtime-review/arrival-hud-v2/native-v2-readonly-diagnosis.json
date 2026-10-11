@@ -1,0 +1,194 @@
+{
+  "scope": "Read-only completed receipt diagnosis; root owns native process and whole-tree post-exit audit. No UI/navigation production change staged from this observation.",
+  "receipt": "/tmp/ct-saved-venue-flow-arrival-hud-v2-native-20261007/saved-venue-flow-review.json",
+  "receipt_sha256": "b51bec9e28ca276cc94102c0de581c4808cf8b7e8139204bdeb641c7acc6a49b",
+  "failure": "InvalidOperationException: Saved-room Flow review: Actual retained/newest approach must dispatch exactly once: newer-target",
+  "cleanup_complete": true,
+  "errors": 0,
+  "known_pass": [
+    "early rejected arrival retains exact fields",
+    "terminal_1 real arrival once in3.09s",
+    "repeat valid calls emit no duplicate",
+    "cancel clears intent without dispatch"
+  ],
+  "new_failure": {
+    "scope": "Actual same-frame GoSit terminal_2 then terminal_3 returned accepted; no injection of agent properties. No full integration acceptance.",
+    "rows": 1063,
+    "wall_seconds": 18.003563291999995,
+    "first": {
+      "frame": 204,
+      "wall_seconds": 2.1669999981099863e-06,
+      "position": [
+        -6.137522,
+        0.0,
+        2.87139773
+      ],
+      "next_position": [
+        -6.137522,
+        0.0,
+        2.87139773
+      ],
+      "velocity": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "desired_velocity": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "destination": [
+        3.85,
+        0.049999997,
+        2.9
+      ],
+      "distance_to_destination": 9.987563,
+      "remaining": 0.0,
+      "has_path": false,
+      "path_pending": false,
+      "path_status": "PathComplete",
+      "is_stopped": false,
+      "has_destination": true,
+      "pending_spot": "terminal_3",
+      "app_focused": true
+    },
+    "last": {
+      "frame": 1266,
+      "wall_seconds": 18.003563291999995,
+      "position": [
+        -6.137522,
+        0.0,
+        2.87139773
+      ],
+      "next_position": [
+        -6.137522,
+        0.0,
+        2.87139773
+      ],
+      "velocity": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "desired_velocity": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "destination": [
+        3.85,
+        0.049999997,
+        2.9
+      ],
+      "distance_to_destination": 9.987563,
+      "remaining": 0.0,
+      "has_path": false,
+      "path_pending": false,
+      "path_status": "PathComplete",
+      "is_stopped": false,
+      "has_destination": true,
+      "pending_spot": "terminal_3",
+      "app_focused": true
+    },
+    "constant_position": true,
+    "all_no_path_no_pending": true
+  },
+  "hud": {
+    "captures_reached": 0,
+    "actual_arrival_states": [
+      {
+        "label": "after-map-arrival-timeline_square",
+        "owned_hud": {
+          "name": "",
+          "classes": [
+            "ct-hud"
+          ],
+          "attached": true,
+          "inline_display_value": "Flex",
+          "inline_display_keyword": "Undefined",
+          "display": "Flex",
+          "visibility": "Visible",
+          "opacity": 1.0,
+          "bounds": [
+            0.0,
+            0.0,
+            2401.499,
+            1079.32544
+          ],
+          "children": 8
+        },
+        "hud_layer": {
+          "name": "layer-hud",
+          "classes": [
+            "ct-layer",
+            "layer-hud"
+          ],
+          "attached": true,
+          "inline_display_value": "Flex",
+          "inline_display_keyword": "Null",
+          "display": "Flex",
+          "visibility": "Visible",
+          "opacity": 1.0,
+          "bounds": [
+            0.0,
+            0.0,
+            2401.499,
+            1079.32544
+          ],
+          "children": 3
+        },
+        "phone_open": false,
+        "screens": [],
+        "phones": []
+      },
+      {
+        "label": "after-map-arrival-terminal_cafe",
+        "owned_hud": {
+          "name": "",
+          "classes": [
+            "ct-hud"
+          ],
+          "attached": true,
+          "inline_display_value": "Flex",
+          "inline_display_keyword": "Undefined",
+          "display": "Flex",
+          "visibility": "Visible",
+          "opacity": 1.0,
+          "bounds": [
+            0.0,
+            0.0,
+            2401.499,
+            1079.32544
+          ],
+          "children": 8
+        },
+        "hud_layer": {
+          "name": "layer-hud",
+          "classes": [
+            "ct-layer",
+            "layer-hud"
+          ],
+          "attached": true,
+          "inline_display_value": "Flex",
+          "inline_display_keyword": "Null",
+          "display": "Flex",
+          "visibility": "Visible",
+          "opacity": 1.0,
+          "bounds": [
+            0.0,
+            0.0,
+            2401.499,
+            1079.32544
+          ],
+          "children": 3
+        },
+        "phone_open": false,
+        "screens": [],
+        "phones": []
+      }
+    ],
+    "conclusion": "Both recorded actual arrivals show attached/full-bounds/Flex HUD and layer, no phone/screens. These rows do not identify a normal UI writer bug; capture checks were not reached. No force-show or production UI correction justified.",
+    "next_bounded_probe": "Move existing first Cafe arrival capture before arrival controls; record actual top/social control child styles/bounds alongside owned root to distinguish rendered/layer issue."
+  }
+}

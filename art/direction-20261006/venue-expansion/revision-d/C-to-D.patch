@@ -1,0 +1,100 @@
+--- art/direction-20261006/venue-expansion/revision-c/SpacesStudioCandidateC.cs
++++ art/direction-20261006/venue-expansion/revision-d/SpacesStudioCandidateD.cs
+@@ -16,19 +16,19 @@
+ namespace CTLife.EditorTools
+ {
+     /// <summary>Staged outside Assets. Root may import after stability gates; these never publish a venue.</summary>
+-    public static class SpacesStudioCandidateC
++    public static class SpacesStudioCandidateD
+     {
+-        public const string PrefabPath = "Assets/Art/Candidates/SpacesStudio20261006C/SpacesStudioC.prefab";
+-        public static void BuildCandidate() => VenueExpansionCandidateC.Build("spaces_studio");
+-        public static void BakeCandidate() => VenueExpansionCandidateC.Bake("spaces_studio");
++        public const string PrefabPath = "Assets/Art/Candidates/SpacesStudio20261006D/SpacesStudioD.prefab";
++        public static void BuildCandidate() => VenueExpansionCandidateD.Build("spaces_studio");
++        public static void BakeCandidate() => VenueExpansionCandidateD.Bake("spaces_studio");
+     }
+-    internal static class VenueExpansionCandidateC
++    internal static class VenueExpansionCandidateD
+     {
+         private static string VenueId;
+         private static bool IsStudio => VenueId == "spaces_studio";
+         private static float HalfWidth => IsStudio ? 12 : 14;
+-        private static string Output => "Assets/Art/Candidates/"+(IsStudio ? "SpacesStudio20261006C" : "PerpPit20261006C");
+-        private static string PrefabPath => SpacesStudioCandidateC.PrefabPath;
++        private static string Output => "Assets/Art/Candidates/"+(IsStudio ? "SpacesStudio20261006D" : "PerpPit20261006C");
++        private static string PrefabPath => SpacesStudioCandidateD.PrefabPath;
+         private static string ProposalRoot => Path.GetFullPath(Path.Combine(Application.dataPath,"../../art/direction-20261006/venue-expansion"));
+         private const string Canonical = "Assets/Art/Generated/Venues/TimelineSquare.prefab";
+         private const string Snapshot = "Assets/Resources/Contract/config_snapshot.json";
+@@ -600,33 +600,54 @@
+                 size = new Vector3(Mathf.Abs(r.x1-r.x0),.2f,Mathf.Abs(r.z1-r.z0)) });
+             foreach (var b in Solids) sources.Add(new NavMeshBuildSource { shape = NavMeshBuildSourceShape.ModifierBox, area = 1,
+                 transform = Matrix4x4.TRS(b.center,Quaternion.identity,Vector3.one), size = b.size });
+-            var nav = NavMeshBuilder.BuildNavMeshData(NavMesh.GetSettingsByID(0),sources,new Bounds(new Vector3(0,1,0),new Vector3(HalfWidth*2+4,8,24)),Vector3.zero,Quaternion.identity);
++            // Candidate-only radius matches the actual LocalPlayerController agent. Height stays conservative at the default2m.
++            var settings=NavMesh.GetSettingsByID(0);
++            if(!Mathf.Approximately(settings.agentRadius,.5f))throw new InvalidDataException("Default bake settings changed since failed C; refresh the comparison deliberately.");
++            settings.agentRadius=.3f;
++            var nav = NavMeshBuilder.BuildNavMeshData(settings,sources,new Bounds(new Vector3(0,1,0),new Vector3(HalfWidth*2+4,8,24)),Vector3.zero,Quaternion.identity);
+             if (nav == null) throw new InvalidDataException("Candidate navigation generation failed.");
+             nav.name = VenueId+" navigation";
+             return Save(nav,Output + "/Meshes/Navigation.asset");
+         }
+         private static JArray CheckNavigation(VenueSceneRoot venue, VenueSpots spots)
+         {
+-            var offset = new Vector3(10000,0,10000);
+-            var instance = NavMesh.AddNavMeshData(venue.navigation,offset,Quaternion.identity);
+-            var rows = new JArray();
++            const string previous="Assets/Art/Candidates/SpacesStudio20261006C/Meshes/Navigation.asset";
++            var baseline=AssetDatabase.LoadAssetAtPath<NavMeshData>(previous);
++            if(baseline==null)throw new InvalidDataException("Preserve C's failed .5m navigation for the paired diagnostic.");
++            var oldRows=ReadPathSet(baseline,spots);var rows=ReadPathSet(venue.navigation,spots);
++            File.WriteAllText(Output+"/NavigationDiagnostics.json",new JObject
++            {
++                ["status"]="native_same_anchor_path_comparison_not_body_collision_acceptance",
++                ["baseline_source"]=previous,["baseline_sha256"]=Hash(previous),["baseline_bake_radius_m"]=.5f,
++                ["candidate_bake_radius_m"]=.3f,["runtime_agent_radius_m"]=.3f,
++                ["baseline"]=oldRows,["candidate"]=rows,
++                ["nav_exclusion_bounds"]=new JArray(Solids.Select(v=>new JObject{["min"]=Vector(v.min),["max"]=Vector(v.max)}))
++            }.ToString());
++            foreach(var row in rows)
++                if((string)row["path"]!="PathComplete")throw new InvalidDataException("No complete path to "+(string)row["spot"]+"; paired diagnostics preserved.");
++            return rows;
++        }
++        private static JArray ReadPathSet(NavMeshData data,VenueSpots spots)
++        {
++            var offset=new Vector3(10000,0,10000);var instance=NavMesh.AddNavMeshData(data,offset,Quaternion.identity);var rows=new JArray();
+             try
+             {
+-                var p = new Vector3(spots.Entrance.x,0,spots.Entrance.z) + offset;
+-                if (!NavMesh.SamplePosition(p,out var start,.75f,NavMesh.AllAreas)) throw new InvalidDataException("Entrance blocked.");
+-                foreach (var spot in spots.spots.Values.Distinct().Where(s => s.hasPosition))
+-                {
+-                    var anchor=SpotAnchors[spot.id];
+-                    var point = (anchor.approach!=null?anchor.approach.position:new Vector3(spot.x,0,spot.z)) + offset;
++                var p=new Vector3(spots.Entrance.x,0,spots.Entrance.z)+offset;
++                if(!NavMesh.SamplePosition(p,out var start,.75f,NavMesh.AllAreas))throw new InvalidDataException("Entrance blocked.");
++                foreach(var spot in spots.spots.Values.Distinct().Where(s=>s.hasPosition))
++                {
++                    var anchor=SpotAnchors[spot.id];var point=(anchor.approach!=null?anchor.approach.position:new Vector3(spot.x,0,spot.z))+offset;
+                     float sampleRadius=anchor.approach!=null?.15f:.75f;
+-                    if (!NavMesh.SamplePosition(point,out var hit,sampleRadius,NavMesh.AllAreas)) throw new InvalidDataException("Blocked spot " + spot.id);
+-                    var path = new NavMeshPath();
+-                    if (!NavMesh.CalculatePath(start.position,hit.position,NavMesh.AllAreas,path) || path.status != NavMeshPathStatus.PathComplete)
+-                        throw new InvalidDataException("No complete path to " + spot.id);
+-                    rows.Add(new JObject { ["spot"] = spot.id, ["target_kind"]=anchor.approach!=null?"frontend_approach":"wire_anchor",["target"]=Vector(point-offset),["wire_anchor"]=Vector(new Vector3(spot.x,0,spot.z)),["sample_distance_m"] = Vector3.Distance(point,hit.position), ["path"] = "PathComplete" });
++                    bool sampled=NavMesh.SamplePosition(point,out var hit,sampleRadius,NavMesh.AllAreas);var path=new NavMeshPath();
++                    bool calculated=sampled&&NavMesh.CalculatePath(start.position,hit.position,NavMesh.AllAreas,path);
++                    rows.Add(new JObject { ["spot"]=spot.id,["target_kind"]=anchor.approach!=null?"frontend_approach":"wire_anchor",
++                        ["target"]=Vector(point-offset),["wire_anchor"]=Vector(new Vector3(spot.x,0,spot.z)),
++                        ["sampled"]=sampled,["sample_distance_m"]=sampled?Vector3.Distance(point,hit.position):-1,
++                        ["calculated"]=calculated,["path"]=calculated?path.status.ToString():"NoPath",
++                        ["corners"]=new JArray(path.corners.Select(v=>Vector(v-offset))) });
+                 }
+             }
+-            finally { if (instance.valid) NavMesh.RemoveNavMeshData(instance); }
++            finally{if(instance.valid)NavMesh.RemoveNavMeshData(instance);}
+             return rows;
+         }
+         private static Dictionary<string,Vector3> Anchors(GameObject root) => root.GetComponentsInChildren<SpotAnchor>(true).ToDictionary(a => a.spotId,a => a.transform.position);

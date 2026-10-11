@@ -1,0 +1,113 @@
+{
+  "status": "concrete_final_builder_patch_plan_native_gates_pending",
+  "parent_source": "art/direction-20261006/terminal-cafe-b3-tables/TerminalCafeCandidateB3Tables.cs",
+  "parent_sha256": "b4346ca4b39e15ba169344f095729d0ea8434aae9f272917b803d3c2b859e662",
+  "planned_class": "TerminalCafeCandidateFinal",
+  "planned_output": "Assets/Art/Candidates/TerminalCafe20261006Final",
+  "planned_prefab": "Assets/Art/Candidates/TerminalCafe20261006Final/TerminalCafeFinal.prefab",
+  "immutable": {
+    "venueId": "terminal_cafe",
+    "positioned_anchors": 17,
+    "claimable_spots": 12,
+    "wire_positions_yaws_ids": "unchanged snapshot",
+    "authored_approaches": "retain B3Tables offsets"
+  },
+  "work_furniture": {
+    "office_chair": {
+      "center_xyz_relative_anchor": [
+        0,
+        0,
+        -0.31
+      ],
+      "yaw_degrees": 180,
+      "scale_xyz": [
+        1,
+        1,
+        0.8
+      ],
+      "frozen_mesh_sha256": "c9090cabcd8e3f77a27cfa512f638b764b352cc041b063d9f0b6700cb0310157"
+    },
+    "home_desk": {
+      "center_xyz_relative_anchor": [
+        0,
+        0,
+        0.5487464
+      ],
+      "scale_xyz": [
+        1,
+        0.9736842105263158,
+        1
+      ],
+      "top_y": 0.74,
+      "front_z": 0.2,
+      "back_z": 0.89749283,
+      "frozen_mesh_sha256": "2164c82b921f1870ead8b117b3d5baa61981d8fa5e2c1acf32c7389afbc8ee9f"
+    },
+    "computerKeyboard": {
+      "mesh_coordinate_frame": "already actor-root local; place mesh at each immutable anchor",
+      "frozen_mesh": "../terminal-cafe-b3-fit/keyboard/shared-typing-keyboard-target.obj.gz",
+      "sha256": "9b7c02535527e6e7e5e1e327715fea950d383c9954ba27797002f81857920eaf",
+      "mesh_instances": 8,
+      "source_license": "Kenney Furniture Kit 2.0 CC0; source record retained",
+      "physics": "exact keyboard mesh under the associated existing desk/SpotAnchor, no additional navigation exclusion"
+    },
+    "monitor_triple": {
+      "center_xyz_relative_anchor": [
+        0,
+        0.74,
+        0.7187464
+      ],
+      "change": "translate original monitor with desk by Z-.3112536 and Y-.02; do not change screens or claim they are live"
+    },
+    "laptop": {
+      "center_xyz_relative_anchor": [
+        -0.52,
+        0.74,
+        0.4
+      ],
+      "yaw_degrees": 0,
+      "status": "proposed decorative position; actual native bounds/intersection gate required"
+    },
+    "cup_coffee": {
+      "center_xyz_relative_anchor": [
+        0.6,
+        0.74,
+        0.38
+      ],
+      "status": "proposed decorative position; actual native bounds gate required"
+    }
+  },
+  "profile": {
+    "binding": "explicit final VenueSceneRoot reference only, supplied by motion integration",
+    "whitelist": {
+      "table_1": "act_sit",
+      "table_2": "act_sit",
+      "table_3": "act_sit",
+      "table_4": "act_sit",
+      "terminal_1": "act_type",
+      "terminal_2": "act_type",
+      "terminal_3": "act_type",
+      "terminal_4": "act_type",
+      "terminal_5": "act_type",
+      "terminal_6": "act_type",
+      "terminal_7": "act_type",
+      "terminal_8": "act_type"
+    },
+    "source_of_truth": "exact actual snapshot IDs verified during build; do not infer replacement IDs from this plan"
+  },
+  "source_patch_sections": [
+    "Rename class/output; preserve previous candidate outputs in protection",
+    "Add depthScale default1 argument to existing Add helper and record in placements; office chair uses .8",
+    "Update two workstation body-support transforms, monitor/desktop decorative placement and add exact frozen keyboard mesh",
+    "Keep explicit SpotAnchor parenting/hit meshes and regenerate NavMesh sources after all final placements",
+    "Attach only accepted final venue motion profile and validate exact anchor/action whitelist",
+    "Save one fresh prefab; native final exact-geometry/path/ray/contact gates precede bake and registration"
+  ],
+  "registration": "Root adds exactly one terminal_cafe reference to existing Resource registry only after final native/device candidate gates; preserve Timeline entry and original candidates",
+  "not_in_scope": [
+    "backend contract/economy changes",
+    "fabricated seat authority in offline review",
+    "new decorative chair claims",
+    "reusing stale B2 colliders/NavMesh/lightmaps"
+  ]
+}

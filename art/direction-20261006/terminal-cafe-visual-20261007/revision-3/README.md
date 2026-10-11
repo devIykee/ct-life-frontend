@@ -1,0 +1,15 @@
+# Café Art3 — bounded visual correction
+
+Staged only. Art2 stage/bake passed, and its native room run produced all seven images plus seven arrived walks/three exact tap intents, but exited 1 on an inherited final twelve-intent assertion. That failed receipt is preserved unchanged. The actual scoped probe array now determines the count; each individual arrival is still checked. Root declined an otherwise unchanged Art2 rerun.
+
+Art2 visual rejection: the 64 m² social finish reads as mottled mud rather than a calm surface; both chandelier shades clip to white. The original desktop triptych panel order/readability is correct in the real camera and close-up.
+
+Art3 keeps all room geometry, collider world surfaces, immutable anchors, approaches, camera and NavMesh exactly held against Final. It changes only the same selected floor material and two existing baked point-light intensities. The existing original Studio quiet-weave texture is reused verbatim with warm gray base color (0.63,0.64,0.57), smoothness0.02, mips/trilinear/ASTC8x8. Same32 triangles/64m², underlying slab unchanged. Its source and exact SHA are in the manifest/provenance. No new dependency or third-party image.
+
+The lamp correction follows source evidence: every Art2 copied material's emission RGB is zero. The two `Cafe pendant` point lights are intensity2.5, range8 at their original fixture positions. Art3 lowers only those two baked light sources to0.65; light positions/ranges and lamp geometry/materials remain unchanged. This is reduced baked illumination, not an emissive-material edit. Actual rebaked native views must establish whether highlight detail and warmth are acceptable.
+
+Close-up monitor bars are a documented existing authored source limitation. `art/pipeline/env_custom.py:251–261` builds the straight support behind the center display but the angled wing inner edges cross it. Reversing the whole model would face screens away. No verified equivalent alternative was found in the processed inventory, so Art3 leaves this geometry and all colliders intact rather than introducing a render/collision mismatch. It is not a UV seam or source image problem.
+
+Root import set: `TerminalCafeVisualCandidate3.cs` and `CafeArtRoomReview3.cs` as unique Editor files; exact hashes in native-import-manifest.json. Run BuildCandidate then BakeCandidate in coordinator-owned idle batch; then graphics Launch with saved Bootstrap through `-openfile` alone, `-ctlife-cafeArtOutput /tmp/ct-cafe-art3-room-native-20261007 -ctlife-cafeArtExit 1`. Do not add `-quit` to async graphics review. Both sources compile with actual Editor references, no Net reference added.
+
+This remains an isolated art-only prefab with no seat motion profile or registry assignment. Native art acceptance, integrated actual exits and selected final-room registration remain pending. Do not repeat unchanged full geometry/contact matrices; reuse their exact signatures and current source hashes. Compare actual arrival/social/work/desktop frames to Art2, judge the floor and lamp highlights, and preserve any failure honestly.

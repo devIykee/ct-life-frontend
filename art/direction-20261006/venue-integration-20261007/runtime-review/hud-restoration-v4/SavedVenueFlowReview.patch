@@ -1,0 +1,76 @@
+--- a/client/Assets/Scripts/App/Review/SavedVenueFlowReview.cs
++++ b/client/Assets/Scripts/App/Review/SavedVenueFlowReview.cs
+@@ -89,7 +89,7 @@
+             directory = Path.GetFullPath(directory); Directory.CreateDirectory(directory);
+             var receipt = new JObject
+             {
+-                ["revision"] = "saved-playable-venue-flow-arrival-queue-v3", ["pass"] = false,
++                ["revision"] = "saved-playable-venue-flow-arrival-queue-hud-v4", ["pass"] = false,
+                 ["checks"] = new JArray(), ["visits"] = new JArray(), ["seat_cases"] = new JArray(),
+                 ["captures"] = new JArray(), ["cleanup_errors"] = new JArray(), ["ui_trace"] = new JArray(), ["hud_capture_checks"] = new JArray(),
+                 ["limits"] = "Actual Flow EnterGame, MapApp/Home UI callbacks, VenueSession/Loader, persisted profiles/controllers/motions, two approaches per family per look, injected seat confirmations and real stand presentation. Public joins are counted failures and use Flow's existing offline fallback; no HTTP/RTC/mic/server success or economy mutation. Instant entry is the selected game interaction. No new full-pose, all-seat-exit, remote, device, touch or frame-rate acceptance. Deliberate early private arrival calls test request retention, followed by real arrival, cancellation and newer-target controls. They are not a reproduction or diagnosis of the earlier intermittent natural failure."
+@@ -169,7 +169,7 @@
+                     var local = VenueSession.Current.LocalPlayer;
+                     CheckSelectedLook(local, look, proof);
+                     await Capture(directory, look + "-cafe-arrival", receipt, flow, phone, ct);
+-                    if (look == "snow") await ArrivalPreservationReview(local, directory, receipt, ct);
++                    if (look == "snow") { await PhoneHudRestorationReview(flow, phone, receipt, ct); await ArrivalPreservationReview(local, directory, receipt, ct); }
+                     foreach (string spot in new[] { "terminal_1", "table_1" })
+                         for (int repeat = 0; repeat < 2; repeat++)
+                         { phase = look + "-" + spot + "-" + repeat; await SeatCase(local, spot, look, repeat, directory, receipt, flow, phone, ct); completedSeatCases++; }
+@@ -415,6 +415,55 @@
+                 record["arrival_trace"] = label + "-arrival.json"; record["exit_trace"] = label + "-exit.json";
+             }
+         }
++        private static async Task PhoneHudRestorationReview(FlowController flow, PhoneShell phone, JObject receipt, CancellationToken ct)
++        {
++            var layer = UiRoot.Instance.HudLayer; var hud = Field<Hud>(flow, "_hud");
++            var evidence = new JObject { ["pass"] = false, ["cases"] = new JArray(),
++                ["scope"] = "Actual PhoneShell Open/Close/reopen/Dispose. Explicitly hidden-layer controls are isolated test setup, restored in finally; no force-show in the ordinary capture path." };
++            receipt["phone_hud_restoration_review"] = evidence;
++            var firstOpen = ((JArray)receipt["ui_trace"]).First(x => (string)x["label"] == "after-map-open-timeline_square");
++            var beforeOpen = ((JArray)receipt["ui_trace"]).First(x => (string)x["label"] == "before-map-open-timeline_square");
++            Need((string)beforeOpen["hud_layer"]?["display"] == "Flex" && (string)firstOpen["phone_previous_hud_value"] == "Flex" &&
++                (string)firstOpen["phone_previous_hud_keyword"] == "Undefined", "Normal first phone must preserve an explicit effective visible state.");
++            evidence["initial_normal_phone_restore"] = new JObject { ["before_inline_keyword"] = (string)beforeOpen["hud_layer"]["inline_display_keyword"],
++                ["stored_keyword"] = (string)firstOpen["phone_previous_hud_keyword"], ["stored_display"] = (string)firstOpen["phone_previous_hud_value"], ["pass"] = true };
++            var savedStyle = layer.style.display;
++            PhoneShell temporary = null;
++            async Task Cycle(PhoneShell current, string label, bool dispose, DisplayStyle expected, string app)
++            {
++                Need(!current.IsOpen && layer.resolvedStyle.display == expected, "Phone visibility control baseline differs: " + label);
++                var before = UiElement(layer); current.Open(app); await Frames(2, ct);
++                Need(current.IsOpen && layer.resolvedStyle.display == DisplayStyle.None, "Open phone did not hide HUD: " + label);
++                if (dispose) current.Dispose(); else current.Close();
++                await Frames(2, ct);
++                Need(!current.IsOpen && layer.resolvedStyle.display == expected, "Phone did not restore its prior display: " + label);
++                if (expected == DisplayStyle.Flex)
++                    Need(Visible(hud.Element.Q<VisualElement>(className: "ct-hud-top")) && Visible(hud.Element.Q<VisualElement>(className: "ct-hud-social")), "Restored HUD controls have no rendered layout: " + label);
++                else Need(!Visible(hud.Element), "An explicitly hidden prior HUD was force-shown: " + label);
++                ((JArray)evidence["cases"]).Add(new JObject { ["label"] = label, ["pass"] = true, ["before"] = before, ["after"] = UiElement(layer), ["disposed"] = dispose });
++            }
++            try
++            {
++                await Cycle(phone, "visible-close", false, DisplayStyle.Flex, "map");
++                await Cycle(phone, "visible-reopen-close", false, DisplayStyle.Flex, "map");
++                layer.style.display = DisplayStyle.None; await Frames(2, ct);
++                await Cycle(phone, "prior-explicit-none-close", false, DisplayStyle.None, "map");
++                layer.style.display = savedStyle; await Frames(2, ct);
++                temporary = new PhoneShell(UiRoot.Instance.PhoneLayer);
++                await Cycle(temporary, "visible-dispose", true, DisplayStyle.Flex, null); temporary = null;
++                layer.style.display = DisplayStyle.None; await Frames(2, ct);
++                temporary = new PhoneShell(UiRoot.Instance.PhoneLayer);
++                await Cycle(temporary, "prior-explicit-none-dispose", true, DisplayStyle.None, null); temporary = null;
++                evidence["pass"] = true;
++            }
++            finally
++            {
++                temporary?.Dispose(); phone.Close(); layer.style.display = savedStyle;
++            }
++            await Frames(2, ct);
++            Need(Visible(hud.Element.Q<VisualElement>(className: "ct-hud-top")) && Visible(hud.Element.Q<VisualElement>(className: "ct-hud-social")), "Phone controls did not restore their fixture baseline.");
++        }
++
+         private static async Task ArrivalPreservationReview(LocalPlayerController local, string directory, JObject receipt, CancellationToken ct)
+         {
+             var venue = VenueSession.Current.Venue; var intents = new List<string>(); var submissions = new List<string>();

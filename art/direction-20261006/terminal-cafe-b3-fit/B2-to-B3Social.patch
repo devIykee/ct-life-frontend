@@ -1,0 +1,114 @@
+--- TerminalCafeCandidateB2.cs
++++ TerminalCafeCandidateB3Social.cs
+@@ -20,10 +20,10 @@
+     /// overwrite original assets or imply that the illustrated activity pockets are live services.
+     /// Stage and bake in separate coordinator-owned batch processes; verify external hashes after exit.
+     /// </summary>
+-    public static class TerminalCafeCandidateB2
++    public static class TerminalCafeCandidateB3Social
+     {
+-        public const string Output = "Assets/Art/Candidates/TerminalCafe20261006B2";
+-        public const string PrefabPath = Output + "/TerminalCafeB2.prefab";
++        public const string Output = "Assets/Art/Candidates/TerminalCafe20261006B3Social";
++        public const string PrefabPath = Output + "/TerminalCafeB3Social.prefab";
+         private const string Canonical = "Assets/Art/Generated/Venues/TimelineSquare.prefab";
+         private const string Snapshot = "Assets/Resources/Contract/config_snapshot.json";
+         private const string Manifest = "Assets/Art/environment/manifest.json";
+@@ -35,10 +35,10 @@
+         private static ProtectedFiles _protection;
+         private static int _joineryTriangles;
+ 
+-        [MenuItem("CT Life/Candidates/Stage Terminal Cafe B2")]
++        [MenuItem("CT Life/Candidates/Stage Terminal Cafe B3 Social")]
+         public static void BuildCandidate() => Protected("stage", Stage);
+ 
+-        [MenuItem("CT Life/Candidates/Bake Terminal Cafe B2")]
++        [MenuItem("CT Life/Candidates/Bake Terminal Cafe B3 Social")]
+         public static void BakeCandidate() => Protected("bake", () =>
+         {
+             var receipt = JObject.Parse(File.ReadAllText(Output + "/StageReceipt.json"));
+@@ -114,7 +114,7 @@
+                     if (!spot.hasPosition || Mathf.Abs(spot.rotY) > .001f || spot.anim != "act_type")
+                         throw new InvalidDataException("Cafe station layout expects positioned north-facing act_type anchors: " + spot.id);
+                     Add("home_desk",spot.x,spot.z+.86f,solid:true);
+-                    Add("office_chair",spot.x,spot.z-.10f,yaw:180);
++                    Add("office_chair",spot.x,spot.z-.10f,yaw:180,solid:true);
+                     Add("monitor_triple",spot.x,spot.z+1.03f,y:.76f,screen:charts[index%charts.Length]);
+                     Add("laptop",spot.x-.40f,spot.z+.69f,y:.76f,yaw:14);
+                     Add("cup_coffee",spot.x+.60f,spot.z+.68f,y:.76f);
+@@ -127,7 +127,9 @@
+                 foreach(var spot in seats)
+                 {
+                     if(!spot.hasPosition||Mathf.Abs(spot.rotY)>.001f)throw new InvalidDataException("Unexpected social seat orientation "+spot.id);
+-                    Add("home_chair_1",spot.x,spot.z-.10f,yaw:180,scale:1.08f);
++                    // One shared physical chair for both looks. Native support target=.450m, fixed floor contact.
++                    // Pose contact remains a separate joint motion/art gate; no actor/wire-anchor offset.
++                    Add("home_chair_1",spot.x,spot.z-.30f,yaw:180,scale:1.08f,heightScale:.450f/.428800762f,solid:true);
+                     Add("home_table_roundsmall",spot.x,spot.z+1.20f,solid:true);
+                     Add("cup_coffee",spot.x-.22f,spot.z+.99f,y:.75f);
+                     Add("croissant",spot.x+.17f,spot.z+1.17f,y:.75f);
+@@ -212,6 +214,14 @@
+                     anchor.transform.localPosition = new Vector3(spot.x,0,spot.z);
+                     anchor.transform.localRotation = Quaternion.Euler(0,spot.rotY*Mathf.Rad2Deg,0);
+                     var a = anchor.AddComponent<SpotAnchor>(); a.spotId=spot.id; a.kind=spot.kind; a.anim=spot.anim??"";
++                    if (spot.Claimable)
++                    {
++                        var approach = new GameObject("Approach_" + spot.id);
++                        approach.transform.SetParent(_root, false);
++                        approach.transform.localPosition = new Vector3(spot.x + (spot.kind == "terminal" ? 1.35f : .95f), 0,
++                            spot.z + (spot.kind == "terminal" ? -.10f : -.30f));
++                        a.approach = approach.transform;
++                    }
+                 }
+                 venue.navigation=Navigation(spots); venue.Init(spots);
+                 var navigation=CheckNavigation(venue,spots); CheckMaterials(go);
+@@ -226,9 +236,9 @@
+                     ["positioned_anchors"]=Anchors(go).Count,["navigation"]=navigation,["terminal_stations"]=terminalRows,
+                     ["placements"]=Placements.DeepClone(),["source_lod0_triangles_manifest_estimate"]=Placements.Sum(p=>(int)p["lod0_triangles"]),
+                     ["additional_joinery_triangles"]=_joineryTriangles,["static_mesh_renderers"]=go.GetComponentsInChildren<MeshRenderer>(true).Length,["baked_only_lights"]=6,
+-                    ["limitations"]="Seats require native animation/clearance checks. Identity, menu and coffee screensavers are decorative artwork. Reading sofas add no claimed seats. No registry promotion, server change or performance acceptance."
++                    ["limitations"]="B3 SOCIAL JOINT TARGET ONLY. Shared social chair top .450m and center z=anchor-.30m require corrected per-look clips and native contact review. Workstation furniture remains B2 pending hand/foot solve. Chairs now exclude walking navigation; 12 authored approaches require native runtime seat review. Identity, menu and coffee screensavers are decorative artwork. Reading sofas add no claimed seats. No registry promotion, server change or performance acceptance."
+                 }.ToString());
+-                Debug.Log("CTLIFE [terminal-cafe-b2] 8 terminal stations and 4 social seats staged at exact contract anchors; bake required: "+PrefabPath);
++                Debug.Log("CTLIFE [terminal-cafe-b3-social] 8 terminal stations and 4 social seats staged at exact contract anchors; bake required: "+PrefabPath);
+             }
+             finally { _root=null; EditorSceneManager.ClosePreviewScene(preview); Materials.Clear(); }
+         }
+@@ -402,7 +412,7 @@
+                 // Renderer bounds include every LOD; y is deliberately tall for nav exclusion, while XZ retain real source size.
+                 Solid(new Bounds(new Vector3(bounds.center.x, 1.2f, bounds.center.z), new Vector3(bounds.size.x, 2.4f, bounds.size.z)));
+             }
+-            Placements.Add(new JObject { ["id"] = id, ["x"] = x, ["y"] = y, ["z"] = z, ["yaw"] = yaw, ["scale"] = scale,
++            Placements.Add(new JObject { ["id"] = id, ["x"] = x, ["y"] = y, ["z"] = z, ["yaw"] = yaw, ["scale"] = scale, ["height_scale"] = heightScale,
+                 ["screen"] = screen, ["solid"] = solid, ["source"] = (string)row["source"], ["lod0_triangles"] = (int)row["tris"][0] });
+             return item;
+         }
+@@ -490,12 +500,16 @@
+                 if (!NavMesh.SamplePosition(p,out var start,.75f,NavMesh.AllAreas)) throw new InvalidDataException("Entrance blocked.");
+                 foreach (var spot in spots.spots.Values.Distinct().Where(s => s.hasPosition))
+                 {
+-                    var point = new Vector3(spot.x,0,spot.z) + offset;
+-                    if (!NavMesh.SamplePosition(point,out var hit,.75f,NavMesh.AllAreas)) throw new InvalidDataException("Blocked spot " + spot.id);
++                    if (!venue.TryGetSpotApproach(spot.id, out var approach)) throw new InvalidDataException("No approach for " + spot.id);
++                    var point = approach + offset;
++                    if (!NavMesh.SamplePosition(point,out var hit, spot.Claimable ? .35f : .75f,NavMesh.AllAreas))
++                        throw new InvalidDataException("Blocked approach " + spot.id);
+                     var path = new NavMeshPath();
+                     if (!NavMesh.CalculatePath(start.position,hit.position,NavMesh.AllAreas,path) || path.status != NavMeshPathStatus.PathComplete)
+                         throw new InvalidDataException("No complete path to " + spot.id);
+-                    rows.Add(new JObject { ["spot"] = spot.id, ["sample_distance_m"] = Vector3.Distance(point,hit.position), ["path"] = "PathComplete" });
++                    rows.Add(new JObject { ["spot"] = spot.id, ["sample_distance_m"] = Vector3.Distance(point,hit.position), ["path"] = "PathComplete",
++                        ["target"] = spot.Claimable ? "authored_frontend_approach" : "original_anchor",
++                        ["approach_x"] = approach.x, ["approach_z"] = approach.z });
+                 }
+             }
+             finally { if (instance.valid) NavMesh.RemoveNavMeshData(instance); }
+@@ -590,7 +604,7 @@
+                     ["status"] = status, ["error"] = error, ["post_editor_exit_hash_check_required"] = true,
+                     ["files"] = new JArray(_hashes.Select(p => new JObject { ["path"] = p.Key,["sha256"] = p.Value }))
+                 }.ToString());
+-                Debug.Log("CTLIFE [terminal-cafe-b2] protection receipt: " + Path.Combine(_backup,"transaction.json"));
++                Debug.Log("CTLIFE [terminal-cafe-b3-social] protection receipt: " + Path.Combine(_backup,"transaction.json"));
+             }
+         }
+         private static string Hash(string path)

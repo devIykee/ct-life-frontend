@@ -1,0 +1,15 @@
+--- art/direction-20261006/revision-b2/lamp-amendment/CityDirectionCandidateB2Lamp.cs
++++ art/direction-20261006/revision-b2/lamp-amendment/CityDirectionCandidateB2Lamp.cs
+@@ -34,10 +34,10 @@
+         private static Transform _root;
+         private static ProtectedFiles _protection;
+ 
+-        [MenuItem("CT Life/Candidates/Stage city street direction B2")]
++        [MenuItem("CT Life/Candidates/Stage city street direction B2 lamp amendment")]
+         public static void BuildCandidate() => Protected("stage", Stage);
+ 
+-        [MenuItem("CT Life/Candidates/Bake city street direction B2")]
++        [MenuItem("CT Life/Candidates/Bake city street direction B2 lamp amendment")]
+         public static void BakeCandidate() => Protected("bake", () =>
+         {
+             if (!File.Exists(Output + "/StageReceipt.json")) throw new FileNotFoundException("Stage the candidate first.");

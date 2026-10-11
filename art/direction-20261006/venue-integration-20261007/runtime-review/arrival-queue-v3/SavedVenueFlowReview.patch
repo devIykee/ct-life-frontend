@@ -1,0 +1,84 @@
+--- a/client/Assets/Scripts/App/Review/SavedVenueFlowReview.cs
++++ b/client/Assets/Scripts/App/Review/SavedVenueFlowReview.cs
+@@ -89,7 +89,7 @@
+             directory = Path.GetFullPath(directory); Directory.CreateDirectory(directory);
+             var receipt = new JObject
+             {
+-                ["revision"] = "saved-playable-venue-flow-arrival-v2", ["pass"] = false,
++                ["revision"] = "saved-playable-venue-flow-arrival-queue-v3", ["pass"] = false,
+                 ["checks"] = new JArray(), ["visits"] = new JArray(), ["seat_cases"] = new JArray(),
+                 ["captures"] = new JArray(), ["cleanup_errors"] = new JArray(), ["ui_trace"] = new JArray(), ["hud_capture_checks"] = new JArray(),
+                 ["limits"] = "Actual Flow EnterGame, MapApp/Home UI callbacks, VenueSession/Loader, persisted profiles/controllers/motions, two approaches per family per look, injected seat confirmations and real stand presentation. Public joins are counted failures and use Flow's existing offline fallback; no HTTP/RTC/mic/server success or economy mutation. Instant entry is the selected game interaction. No new full-pose, all-seat-exit, remote, device, touch or frame-rate acceptance. Deliberate early private arrival calls test request retention, followed by real arrival, cancellation and newer-target controls. They are not a reproduction or diagnosis of the earlier intermittent natural failure."
+@@ -168,8 +168,8 @@
+                     await TravelByMap("terminal_cafe");
+                     var local = VenueSession.Current.LocalPlayer;
+                     CheckSelectedLook(local, look, proof);
++                    await Capture(directory, look + "-cafe-arrival", receipt, flow, phone, ct);
+                     if (look == "snow") await ArrivalPreservationReview(local, directory, receipt, ct);
+-                    await Capture(directory, look + "-cafe-arrival", receipt, flow, phone, ct);
+                     foreach (string spot in new[] { "terminal_1", "table_1" })
+                         for (int repeat = 0; repeat < 2; repeat++)
+                         { phase = look + "-" + spot + "-" + repeat; await SeatCase(local, spot, look, repeat, directory, receipt, flow, phone, ct); completedSeatCases++; }
+@@ -417,8 +417,8 @@
+         }
+         private static async Task ArrivalPreservationReview(LocalPlayerController local, string directory, JObject receipt, CancellationToken ct)
+         {
+-            var venue = VenueSession.Current.Venue; var intents = new List<string>();
+-            void Observe(string command) { if (command.StartsWith("sit:", StringComparison.Ordinal)) intents.Add(command); }
++            var venue = VenueSession.Current.Venue; var intents = new List<string>(); var submissions = new List<string>();
++            void Observe(string command) { if (command.StartsWith("sit:", StringComparison.Ordinal)) intents.Add(command); if (command.StartsWith("path-assigned:", StringComparison.Ordinal)) submissions.Add(command); }
+             local.ReviewCommandObserved += Observe;
+             var evidence = new JObject { ["pass"] = false, ["trials"] = new JArray(),
+                 ["scope"] = "Only real GoSit/CancelMovement/arrival plus deliberately early private ArriveAtDestination calls. No agent property injection. Observed consume-before-validation behavior is corrected; earlier intermittent failure's cause remains unknown." };
+@@ -456,15 +456,23 @@
+             {
+                 Need(local.GoSit("terminal_1"), "Retained-request control could not start."); Early("retained-first");
+                 await Arrival("terminal_1", "retained-first", 0);
++                int beforeCancelledSubmission = submissions.Count;
+                 Need(local.GoSit("terminal_2"), "Cancellation control could not start."); Early("before-cancel");
+                 local.CancelMovement(); int afterCancel = intents.Count;
+                 Need(!Field<bool>(local, "_hasDestination") && Field<string>(local, "_pendingSpot") == null, "Cancellation did not release queued intent.");
+                 Invoke(local, "ArriveAtDestination"); await Frames(2, ct);
+-                Need(intents.Count == afterCancel && string.IsNullOrEmpty(local.SeatedSpot), "Cancelled intent dispatched after early retry.");
++                Need(intents.Count == afterCancel && submissions.Count == beforeCancelledSubmission && !Field<bool>(local, "_pathSubmissionQueued") && string.IsNullOrEmpty(local.SeatedSpot), "Cancelled intent reached native submission or dispatched after early retry.");
+                 ((JArray)evidence["trials"]).Add(new JObject { ["label"] = "cancel", ["pending_cleared"] = true, ["no_dispatch"] = true });
++                int submittedBefore = submissions.Count; int replaceFrame = Time.frameCount;
++                var replacePosition = local.transform.position;
+                 Need(local.GoSit("terminal_2") && local.GoSit("terminal_3"), "Newer-target control could not replace destination.");
++                Need(submissions.Count == submittedBefore && Field<bool>(local, "_pathSubmissionQueued"), "Repeated same-frame target submitted before actual Update.");
+                 Need(Field<string>(local, "_pendingSpot") == "terminal_3", "Newest spot does not own destination."); Early("newer-target");
+                 await Arrival("terminal_3", "newer-target", afterCancel);
++                Need(submissions.Count == submittedBefore + 1 && submissions.Last().Contains("spot=terminal_3;") && Vector3.Distance(local.transform.position, replacePosition) > 1f,
++                    "Latest target must submit once and actually move; no stale native request.");
++                evidence["latest_update_submission"] = new JObject { ["pass"] = true, ["request_frame"] = replaceFrame, ["submission"] = submissions.Last(), ["submission_count"] = submissions.Count - submittedBefore,
++                    ["movement_m"] = Vector3.Distance(local.transform.position, replacePosition) };
+                 Need(!intents.Contains(Wire("terminal_2")), "Superseded/cancelled target dispatched.");
+                 int immediate = intents.Count; Need(local.GoSit("terminal_3"), "Validated immediate-arrival branch rejected.");
+                 Need(intents.Count == immediate + 1 && intents.Last() == Wire("terminal_3") && !Field<bool>(local, "_hasDestination") && Field<string>(local, "_pendingSpot") == null,
+@@ -475,7 +483,7 @@
+             }
+             finally
+             {
+-                evidence["observed_sit_intents"] = JArray.FromObject(intents);
++                evidence["observed_sit_intents"] = JArray.FromObject(intents); evidence["native_submissions"] = JArray.FromObject(submissions);
+                 local.CancelMovement(); local.ReviewCommandObserved -= Observe;
+             }
+         }
+@@ -486,7 +494,7 @@
+                 ["position"] = V(local.transform.position), ["next_position"] = V(a.nextPosition), ["velocity"] = V(a.velocity), ["desired_velocity"] = V(a.desiredVelocity),
+                 ["destination"] = V(destination), ["distance_to_destination"] = Xz(a.nextPosition, destination), ["remaining"] = float.IsFinite(a.remainingDistance) ? (JToken)a.remainingDistance : a.remainingDistance.ToString(),
+                 ["has_path"] = a.hasPath, ["path_pending"] = a.pathPending, ["path_status"] = a.pathStatus.ToString(), ["is_stopped"] = a.isStopped,
+-                ["has_destination"] = Field<bool>(local, "_hasDestination"), ["pending_spot"] = Field<string>(local, "_pendingSpot"), ["app_focused"] = Application.isFocused };
++                ["has_destination"] = Field<bool>(local, "_hasDestination"), ["submission_queued"] = Field<bool>(local, "_pathSubmissionQueued"), ["pending_spot"] = Field<string>(local, "_pendingSpot"), ["app_focused"] = Application.isFocused };
+         }
+         private static JObject ExitRow(AvatarView view, double start) => new JObject
+         {
+@@ -556,7 +564,7 @@
+             var hud = flow != null ? Field<Hud>(flow, "_hud") : null; var ui = UiRoot.Instance;
+             var ancestors = new JArray(); for (var p = hud?.Element; p != null; p = p.parent) ancestors.Add(UiElement(p));
+             var previous = phone != null ? Field<StyleEnum<DisplayStyle>>(phone, "_previousHudDisplay") : default;
+-            var row = new JObject { ["label"] = label, ["frame"] = Time.frameCount, ["owned_hud"] = UiElement(hud?.Element),
++            var row = new JObject { ["label"] = label, ["frame"] = Time.frameCount, ["owned_hud"] = UiElement(hud?.Element), ["owned_hud_controls"] = hud != null ? new JArray(hud.Element.Children().Select(UiElement)) : new JArray(),
+                 ["hud_ancestors"] = ancestors, ["hud_layer"] = UiElement(ui?.HudLayer), ["hud_children"] = ui != null ? new JArray(ui.HudLayer.Children().Select(UiElement)) : new JArray(),
+                 ["phone_open"] = phone?.IsOpen ?? false, ["phone_hidden_hud"] = UiElement(phone != null ? Field<VisualElement>(phone, "_hiddenHud") : null),
+                 ["phone_previous_hud_value"] = previous.value.ToString(), ["phone_previous_hud_keyword"] = previous.keyword.ToString(),

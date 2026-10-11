@@ -1,0 +1,247 @@
+--- a/client/Assets/Scripts/App/Review/SavedVenueFlowReview.cs
++++ b/client/Assets/Scripts/App/Review/SavedVenueFlowReview.cs
+@@ -89,10 +89,10 @@
+             directory = Path.GetFullPath(directory); Directory.CreateDirectory(directory);
+             var receipt = new JObject
+             {
+-                ["revision"] = "saved-playable-venue-flow-v1", ["pass"] = false,
++                ["revision"] = "saved-playable-venue-flow-arrival-v2", ["pass"] = false,
+                 ["checks"] = new JArray(), ["visits"] = new JArray(), ["seat_cases"] = new JArray(),
+-                ["captures"] = new JArray(), ["cleanup_errors"] = new JArray(),
+-                ["limits"] = "Actual Flow EnterGame, MapApp/Home UI callbacks, VenueSession/Loader, persisted profiles/controllers/motions, two approaches per family per look, injected seat confirmations and real stand presentation. Public joins are counted failures and use Flow's existing offline fallback; no HTTP/RTC/mic/server success or economy mutation. Instant entry is the selected game interaction. No new full-pose, all-seat-exit, remote, device, touch or frame-rate acceptance. The deliberately early private arrival call is an isolated negative experiment, not a natural-race reproduction."
++                ["captures"] = new JArray(), ["cleanup_errors"] = new JArray(), ["ui_trace"] = new JArray(), ["hud_capture_checks"] = new JArray(),
++                ["limits"] = "Actual Flow EnterGame, MapApp/Home UI callbacks, VenueSession/Loader, persisted profiles/controllers/motions, two approaches per family per look, injected seat confirmations and real stand presentation. Public joins are counted failures and use Flow's existing offline fallback; no HTTP/RTC/mic/server success or economy mutation. Instant entry is the selected game interaction. No new full-pose, all-seat-exit, remote, device, touch or frame-rate acceptance. Deliberate early private arrival calls test request retention, followed by real arrival, cancellation and newer-target controls. They are not a reproduction or diagnosis of the earlier intermittent natural failure."
+             };
+             using var deadline = CancellationTokenSource.CreateLinkedTokenSource(owner);
+             deadline.CancelAfter(TimeSpan.FromSeconds(600)); var ct = deadline.Token;
+@@ -143,21 +143,23 @@
+                 host = new GameObject("ReviewSavedVenueFlow"); flow = host.AddComponent<FlowController>(); flow.enabled = false;
+                 await (Task)Invoke(flow, "EnterGame"); phone = Field<PhoneShell>(flow, "_phone"); Need(phone != null, "Actual EnterGame phone missing.");
+                 Check("actual EnterGame used isolated GET /me and built the ordinary phone/HUD");
++                UiTrace(flow, phone, receipt, "after-EnterGame-dashboard");
+ 
+                 async Task TravelByMap(string id)
+                 {
+                     phase = "map-to-" + id;
+                     var old = VenueSession.Current; var oldPlayer = old != null ? old.LocalPlayer : null;
+                     int oldScene = old != null ? old.Venue.gameObject.scene.handle : -1;
+-                    phone.Open("map"); await Frames(2, ct);
++                    UiTrace(flow, phone, receipt, "before-map-open-" + id);
++                    phone.Open("map"); await Frames(2, ct); UiTrace(flow, phone, receipt, "after-map-open-" + id);
+                     var button = Button(phone, "map-venue-" + id); Need(button.enabledInHierarchy, "Ordinary map destination is locked: " + id);
+-                    Submit(button); buttonCallbacks++;
++                    Submit(button); buttonCallbacks++; UiTrace(flow, phone, receipt, "after-map-submit-" + id);
+                     await Until(() => VenueSession.Current != null && VenueSession.Current.IsActive && VenueSession.Current.VenueId == id && !Field<bool>(flow, "_travelling"), ct, 30, "Map travel " + id);
+                     await Frames(2, ct);
+                     Need(!phone.IsOpen && (old == null || !ReferenceEquals(old, VenueSession.Current)), "Actual map callback did not replace visit.");
+                     if (oldScene >= 0) Need(old == null && oldPlayer == null && !Scenes().Contains(oldScene), "Old room/avatar scene survived map travel.");
+                     CheckRoom(VenueSession.Current, content.TryGetValue(id, out var expected) ? expected : catalog.Find(id), baselineScenes, baselineMaps, receipt);
+-                    visits++;
++                    visits++; UiTrace(flow, phone, receipt, "after-map-arrival-" + id);
+                 }
+                 foreach (string look in new[] { "snow", "rain" })
+                 {
+@@ -166,16 +168,16 @@
+                     await TravelByMap("terminal_cafe");
+                     var local = VenueSession.Current.LocalPlayer;
+                     CheckSelectedLook(local, look, proof);
+-                    if (look == "snow") await EarlyArrivalNegative(local, "terminal_1", directory, receipt, ct);
+-                    await Capture(directory, look + "-cafe-arrival", receipt, ct);
++                    if (look == "snow") await ArrivalPreservationReview(local, directory, receipt, ct);
++                    await Capture(directory, look + "-cafe-arrival", receipt, flow, phone, ct);
+                     foreach (string spot in new[] { "terminal_1", "table_1" })
+                         for (int repeat = 0; repeat < 2; repeat++)
+-                        { phase = look + "-" + spot + "-" + repeat; await SeatCase(local, spot, look, repeat, directory, receipt, ct); completedSeatCases++; }
++                        { phase = look + "-" + spot + "-" + repeat; await SeatCase(local, spot, look, repeat, directory, receipt, flow, phone, ct); completedSeatCases++; }
+                     await TravelByMap("spaces_studio"); local = VenueSession.Current.LocalPlayer;
+-                    CheckSelectedLook(local, look, proof); await Capture(directory, look + "-studio-arrival", receipt, ct);
++                    CheckSelectedLook(local, look, proof); await Capture(directory, look + "-studio-arrival", receipt, flow, phone, ct);
+                     foreach (string spot in new[] { "seat_1", "stage_1" })
+                         for (int repeat = 0; repeat < 2; repeat++)
+-                        { phase = look + "-" + spot + "-" + repeat; await SeatCase(local, spot, look, repeat, directory, receipt, ct); completedSeatCases++; }
++                        { phase = look + "-" + spot + "-" + repeat; await SeatCase(local, spot, look, repeat, directory, receipt, flow, phone, ct); completedSeatCases++; }
+                     phase = look + "-private-home-and-public-return";
+                     var studio = VenueSession.Current; var studioPlayer = studio.LocalPlayer; int studioScene = studio.Venue.gameObject.scene.handle;
+                     int joins = realtime.PublicJoins; phone.Open("home"); await Frames(2, ct);
+@@ -186,7 +188,7 @@
+                     var home = VenueSession.Current; var homePlayer = home.LocalPlayer; int homeScene = home.Venue.gameObject.scene.handle;
+                     Need(home.HomeId == "parents_basement", "HomeId route changed.");
+                     CheckRoom(home, catalog.FindHome("parents_basement"), baselineScenes, baselineMaps, receipt); visits++;
+-                    await Capture(directory, look + "-home-arrival", receipt, ct);
++                    await Capture(directory, look + "-home-arrival", receipt, flow, phone, ct);
+                     phone.Open("home"); await Frames(2, ct); Submit(Button(phone, "home-return-city")); buttonCallbacks++;
+                     await Until(() => VenueSession.Current != null && VenueSession.Current.IsActive && VenueSession.Current.VenueId == "spaces_studio" && !Field<bool>(flow, "_travelling"), ct, 30, "Remembered public return");
+                     await Frames(2, ct);
+@@ -206,6 +208,8 @@
+                 Need(!phone.IsOpen && VenueSession.Current == null && realtime.PublicJoins == finalJoins, "Obsolete map callback reopened a visit.");
+                 Check("Destroy cancels an actual pending map→public join, drains loaded scene/maps/input and leaves stale MapApp callback inert");
+                 Need(completedSeatCases == 16 && buttonCallbacks == 11 && visits == 10 && realtime.PublicJoins == 9 && realtime.PrivateJoins == 0 && realtime.Leaves == 0 && realtime.Disconnects == 0 && transport.Mutations == 0 && errors == 0, "Fixture command or ownership boundary failed.");
++                receipt["hud_visibility_pass"] = ((JArray)receipt["hud_capture_checks"]).Count == 22 && ((JArray)receipt["hud_capture_checks"]).All(x => (bool?)x["pass"] == true);
++                Need((bool)receipt["hud_visibility_pass"], "All 22 actual gameplay captures require visible owned HUD.");
+                 receipt["pass"] = true;
+             }
+             catch (Exception e) { receipt["failure"] = e.GetType().Name + ": " + e.Message; throw; }
+@@ -351,7 +355,7 @@
+             ((JArray)receipt["visits"]).Add(new JObject { ["venue"] = visit.VenueId, ["home"] = visit.HomeId, ["scene"] = (int)visit.Venue.gameObject.scene.handle,
+                 ["maps"] = maps.colors.Length, ["bindings"] = maps.bindings.Length, ["complete_route_paths"] = routes, ["input_owners"] = InputSubscriptions() });
+         }
+-        private static async Task SeatCase(LocalPlayerController local, string spot, string look, int repeat, string directory, JObject receipt, CancellationToken ct)
++        private static async Task SeatCase(LocalPlayerController local, string spot, string look, int repeat, string directory, JObject receipt, FlowController flow, PhoneShell phone, CancellationToken ct)
+         {
+             var venue = VenueSession.Current.Venue; var view = local.GetComponent<AvatarView>(); var agent = local.GetComponent<NavMeshAgent>();
+             string label = look + "-" + venue.venueId + "-" + spot + "-repeat" + repeat;
+@@ -383,7 +387,7 @@
+                 float initialTime = view.Animator.GetCurrentAnimatorStateInfo(0).normalizedTime; await PlaySeconds(.18f, ct);
+                 Need(view.Animator.GetCurrentAnimatorStateInfo(0).normalizedTime > initialTime, "Actual fitted animation did not advance.");
+                 int seatedMoves = moves; await Frames(3, ct); Need(moves == seatedMoves, "Movement intent published while seated.");
+-                if (repeat == 0) await Capture(directory, label + "-seated", receipt, ct);
++                if (repeat == 0) await Capture(directory, label + "-seated", receipt, flow, phone, ct);
+                 local.StandIfSeated();
+                 Need(view.SeatExitActive && agent.enabled && agent.isOnNavMesh && string.IsNullOrEmpty(local.SeatedSpot), "Actual stand did not start saved exit profile.");
+                 Need(Vector3.Distance(view.PresentationPosition, seat) < .00001f, "Visible body snapped away in stand call.");
+@@ -398,7 +402,7 @@
+                 if (settle != null) Need(settle.GetType().GetProperty("Failure")?.GetValue(settle) == null, "Exit contact driver reported failure.");
+                 Need(exitRows.Count >= 4 && exitRows.Any(r => (bool)r["active"] && Vector3.Distance(new Vector3((float)r["presentation"][0], (float)r["presentation"][1], (float)r["presentation"][2]), seat) > .1f), "No actual multi-frame emergence travel was observed.");
+                 await PlaySeconds(.12f, ct);
+-                if (repeat == 0) await Capture(directory, label + "-stood", receipt, ct);
++                if (repeat == 0) await Capture(directory, label + "-stood", receipt, flow, phone, ct);
+                 record["controller"] = UnityEditor.AssetDatabase.GetAssetPath(view.Animator.runtimeAnimatorController);
+                 record["fitted_state"] = fitted; record["normalized_time_before"] = initialTime; record["pass"] = true;
+                 record["limits"] = "Saved-profile functional routing, real approach and visible stand ownership; no repeated triangle/sole/remote/Android acceptance.";
+@@ -411,25 +415,69 @@
+                 record["arrival_trace"] = label + "-arrival.json"; record["exit_trace"] = label + "-exit.json";
+             }
+         }
+-        private static async Task EarlyArrivalNegative(LocalPlayerController local, string spot, string directory, JObject receipt, CancellationToken ct)
+-        {
+-            int sits = 0; void Observe(string command) { if (command.StartsWith("sit:", StringComparison.Ordinal)) sits++; }
++        private static async Task ArrivalPreservationReview(LocalPlayerController local, string directory, JObject receipt, CancellationToken ct)
++        {
++            var venue = VenueSession.Current.Venue; var intents = new List<string>();
++            void Observe(string command) { if (command.StartsWith("sit:", StringComparison.Ordinal)) intents.Add(command); }
+             local.ReviewCommandObserved += Observe;
++            var evidence = new JObject { ["pass"] = false, ["trials"] = new JArray(),
++                ["scope"] = "Only real GoSit/CancelMovement/arrival plus deliberately early private ArriveAtDestination calls. No agent property injection. Observed consume-before-validation behavior is corrected; earlier intermittent failure's cause remains unknown." };
++            receipt["arrival_preservation_review"] = evidence;
++            string Wire(string spot) => "sit:" + venue.WireSpotId(spot);
++            JObject Early(string label)
++            {
++                double time = Time.realtimeSinceStartupAsDouble; var before = NavRow(local, time);
++                bool hasDestination = Field<bool>(local, "_hasDestination"); string pending = Field<string>(local, "_pendingSpot"); var destination = Field<Vector3>(local, "_destination");
++                Need(hasDestination && pending != null && (float)before["distance_to_destination"] > .3f, "Early control must be outside arrival radius: " + label);
++                int count = intents.Count; bool arrived = (bool)Invoke(local, "ArriveAtDestination");
++                var trial = new JObject { ["label"] = label, ["before"] = before, ["after"] = NavRow(local, time), ["returned"] = arrived };
++                ((JArray)evidence["trials"]).Add(trial);
++                Need(!arrived && intents.Count == count && Field<bool>(local, "_hasDestination") == hasDestination && Field<string>(local, "_pendingSpot") == pending && Field<Vector3>(local, "_destination") == destination,
++                    "Rejected early arrival consumed/replaced an accepted request: " + label);
++                trial["retained_pending_request"] = true; return trial;
++            }
++            async Task Arrival(string spot, string label, int before)
++            {
++                double began = Time.realtimeSinceStartupAsDouble; var rows = new JArray { NavRow(local, began) };
++                try
++                {
++                    while (intents.Count == before && Time.realtimeSinceStartupAsDouble - began < 18)
++                    { await Awaitable.NextFrameAsync(ct); rows.Add(NavRow(local, began)); }
++                    Need(intents.Count == before + 1 && intents.Last() == Wire(spot) && string.IsNullOrEmpty(local.SeatedSpot), "Actual retained/newest approach must dispatch exactly once: " + label);
++                    Need(!Field<bool>(local, "_hasDestination") && Field<string>(local, "_pendingSpot") == null, "Validated arrival did not consume its request.");
++                    Need(venue.TryGetSpotApproach(spot, out var approach) && Xz(local.GetComponent<NavMeshAgent>().nextPosition, approach) <= .1f, "Retained intent dispatched away from exact approach.");
++                    int once = intents.Count; Invoke(local, "ArriveAtDestination"); Invoke(local, "ArriveAtDestination"); await Frames(2, ct);
++                    Need(intents.Count == once, "Repeated valid arrival emitted a duplicate seat request.");
++                    ((JArray)evidence["trials"]).Add(new JObject { ["label"] = label, ["actual_arrival_once"] = true, ["duplicate_calls_emit_nothing"] = true, ["final"] = NavRow(local, began), ["trace"] = "arrival-control-" + label + ".json" });
++                }
++                finally { File.WriteAllText(Path.Combine(directory, "arrival-control-" + label + ".json"), rows.ToString(Formatting.Indented)); }
++            }
+             try
+             {
+-                Need(local.GoSit(spot), "Negative setup needs actual accepted far approach.");
+-                double start = Time.realtimeSinceStartupAsDouble; var before = NavRow(local, start);
+-                Need((bool)before["has_destination"] && !string.IsNullOrEmpty((string)before["pending_spot"]) && (float)before["distance_to_destination"] > 1f, "Early-arrival negative was not far/pending.");
+-                bool result = (bool)Invoke(local, "ArriveAtDestination"); var after = NavRow(local, start);
+-                bool consumed = !Field<bool>(local, "_hasDestination") && Field<string>(local, "_pendingSpot") == null;
+-                Need(!result && sits == 0 && consumed, "Expected source-pinned consume-before-validation negative changed; review the runtime before updating this experiment.");
+-                receipt["early_arrival_negative"] = new JObject { ["before"] = before, ["after"] = after, ["returned"] = result, ["sit_intents"] = sits,
+-                    ["pending_intent_consumed"] = consumed, ["invocation"] = "Deliberate private method call while >1m away; no agent properties injected",
+-                    ["interpretation"] = "Demonstrates the current early-call consumption behavior. Does not diagnose the earlier intermittent natural arrival failure or approve that behavior." };
+-                // Stop the diagnostic request using the real public cancellation path; actual cases reissue GoSit.
+-                local.CancelMovement(); await Frames(2, ct);
+-            }
+-            finally { local.ReviewCommandObserved -= Observe; }
++                Need(local.GoSit("terminal_1"), "Retained-request control could not start."); Early("retained-first");
++                await Arrival("terminal_1", "retained-first", 0);
++                Need(local.GoSit("terminal_2"), "Cancellation control could not start."); Early("before-cancel");
++                local.CancelMovement(); int afterCancel = intents.Count;
++                Need(!Field<bool>(local, "_hasDestination") && Field<string>(local, "_pendingSpot") == null, "Cancellation did not release queued intent.");
++                Invoke(local, "ArriveAtDestination"); await Frames(2, ct);
++                Need(intents.Count == afterCancel && string.IsNullOrEmpty(local.SeatedSpot), "Cancelled intent dispatched after early retry.");
++                ((JArray)evidence["trials"]).Add(new JObject { ["label"] = "cancel", ["pending_cleared"] = true, ["no_dispatch"] = true });
++                Need(local.GoSit("terminal_2") && local.GoSit("terminal_3"), "Newer-target control could not replace destination.");
++                Need(Field<string>(local, "_pendingSpot") == "terminal_3", "Newest spot does not own destination."); Early("newer-target");
++                await Arrival("terminal_3", "newer-target", afterCancel);
++                Need(!intents.Contains(Wire("terminal_2")), "Superseded/cancelled target dispatched.");
++                int immediate = intents.Count; Need(local.GoSit("terminal_3"), "Validated immediate-arrival branch rejected.");
++                Need(intents.Count == immediate + 1 && intents.Last() == Wire("terminal_3") && !Field<bool>(local, "_hasDestination") && Field<string>(local, "_pendingSpot") == null,
++                    "Immediate validated arrival did not dispatch once and consume fields.");
++                Invoke(local, "ArriveAtDestination"); await Frames(2, ct); Need(intents.Count == immediate + 1, "Immediate-arrival repeated callback duplicated claim.");
++                evidence["immediate_positive_control"] = true; evidence["pass"] = true;
++                evidence["not_exercised"] = "An immediate preflight PathComplete followed synchronously by a failed fresh path check requires an actual changed path; this fixture does not inject NavMesh state to fabricate that branch. Rejected-immediate cleanup is source-reviewed only.";
++            }
++            finally
++            {
++                evidence["observed_sit_intents"] = JArray.FromObject(intents);
++                local.CancelMovement(); local.ReviewCommandObserved -= Observe;
++            }
+         }
+         private static JObject NavRow(LocalPlayerController local, double start)
+         {
+@@ -474,10 +522,47 @@
+         private static async Task Frames(int count, CancellationToken ct) { for (int i = 0; i < count; i++) await Awaitable.NextFrameAsync(ct); }
+         private static async Task PlaySeconds(float seconds, CancellationToken ct)
+         { float end = Time.time + seconds; int first = Time.frameCount; await Until(() => Time.time >= end && Time.frameCount - first >= 3, ct, 10, "Actual Play advancement"); }
+-        private static async Task Capture(string directory, string name, JObject receipt, CancellationToken ct)
+-        {
+-            await Awaitable.EndOfFrameAsync(ct); var image = ScreenCapture.CaptureScreenshotAsTexture(); Need(image != null, "Native screenshot missing.");
++        private static async Task Capture(string directory, string name, JObject receipt, FlowController flow, PhoneShell phone, CancellationToken ct)
++        {
++            await Awaitable.EndOfFrameAsync(ct);
++            var witness = UiTrace(flow, phone, receipt, "capture-" + name); witness["capture"] = name;
++            var hud = Field<Hud>(flow, "_hud"); bool visible = hud != null && !phone.IsOpen && Visible(hud.Element) &&
++                Visible(hud.Element.Q<VisualElement>(className: "ct-hud-top")) && Visible(hud.Element.Q<VisualElement>(className: "ct-hud-social")) &&
++                hud.Element.worldBound.width > 100f && hud.Element.worldBound.height > 100f;
++            witness["pass"] = visible; ((JArray)receipt["hud_capture_checks"]).Add(witness.DeepClone());
++            // Preserve the failing actual image and exact UI states before asserting; never force-show a layer.
++            var image = ScreenCapture.CaptureScreenshotAsTexture(); Need(image != null, "Native screenshot missing.");
+             try { File.WriteAllBytes(Path.Combine(directory, name + ".png"), image.EncodeToPNG()); ((JArray)receipt["captures"]).Add(name + ".png"); } finally { Object.Destroy(image); }
++            Need(visible, "Actual gameplay HUD is hidden/detached/outside layout at " + name + "; see UI state witness.");
++        }
++        private static bool Visible(VisualElement element)
++        {
++            if (element == null || element.panel == null || !float.IsFinite(element.worldBound.width) || !float.IsFinite(element.worldBound.height) || element.worldBound.width <= 0f || element.worldBound.height <= 0f) return false;
++            for (var p = element; p != null; p = p.parent)
++                if (p.resolvedStyle.display == DisplayStyle.None || p.resolvedStyle.visibility != Visibility.Visible || p.resolvedStyle.opacity <= .001f) return false;
++            return true;
++        }
++        private static JObject UiElement(VisualElement element)
++        {
++            if (element == null) return new JObject { ["missing"] = true };
++            var r = element.worldBound;
++            return new JObject { ["name"] = element.name, ["classes"] = new JArray(element.GetClasses()), ["attached"] = element.panel != null,
++                ["inline_display_value"] = element.style.display.value.ToString(), ["inline_display_keyword"] = element.style.display.keyword.ToString(),
++                ["display"] = element.resolvedStyle.display.ToString(), ["visibility"] = element.resolvedStyle.visibility.ToString(), ["opacity"] = element.resolvedStyle.opacity,
++                ["bounds"] = new JArray(r.x, r.y, r.width, r.height), ["children"] = element.childCount };
++        }
++        private static JObject UiTrace(FlowController flow, PhoneShell phone, JObject receipt, string label)
++        {
++            var hud = flow != null ? Field<Hud>(flow, "_hud") : null; var ui = UiRoot.Instance;
++            var ancestors = new JArray(); for (var p = hud?.Element; p != null; p = p.parent) ancestors.Add(UiElement(p));
++            var previous = phone != null ? Field<StyleEnum<DisplayStyle>>(phone, "_previousHudDisplay") : default;
++            var row = new JObject { ["label"] = label, ["frame"] = Time.frameCount, ["owned_hud"] = UiElement(hud?.Element),
++                ["hud_ancestors"] = ancestors, ["hud_layer"] = UiElement(ui?.HudLayer), ["hud_children"] = ui != null ? new JArray(ui.HudLayer.Children().Select(UiElement)) : new JArray(),
++                ["phone_open"] = phone?.IsOpen ?? false, ["phone_hidden_hud"] = UiElement(phone != null ? Field<VisualElement>(phone, "_hiddenHud") : null),
++                ["phone_previous_hud_value"] = previous.value.ToString(), ["phone_previous_hud_keyword"] = previous.keyword.ToString(),
++                ["screens"] = ui != null ? new JArray(ui.ScreenLayer.Children().Select(UiElement)) : new JArray(),
++                ["phones"] = ui != null ? new JArray(ui.PhoneLayer.Children().Select(UiElement)) : new JArray() };
++            ((JArray)receipt["ui_trace"]).Add(row); return row;
+         }
+         private static string Resolve(string path)
+         {

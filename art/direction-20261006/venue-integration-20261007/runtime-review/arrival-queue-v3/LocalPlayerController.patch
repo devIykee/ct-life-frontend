@@ -1,0 +1,141 @@
+--- a/client/Assets/Scripts/World/Players/LocalPlayerController.cs
++++ b/client/Assets/Scripts/World/Players/LocalPlayerController.cs
+@@ -29,7 +29,7 @@
+         private bool _dirty;
+         private string _pendingSpot;
+         private string _seatedSpot;
+-        private bool _hasDestination;
++        private bool _hasDestination, _pathSubmissionQueued;
+         private string _requestedSpot;
+         // A locally released claim must not be revived by an older state echo. A new explicit claim
+         // removes its key. The protocol has no request ID, so overlapping same-seat claims are not correlated.
+@@ -149,7 +149,7 @@
+                 CancelRequestedSeat();
+                 _agent.ResetPath();
+                 _agent.velocity = Vector3.zero;
+-                _hasDestination = false;
++                _hasDestination = false; _pathSubmissionQueued = false;
+                 _pendingSpot = null;
+                 _directControl = true;
+                 _agent.speed = RunSpeed;
+@@ -184,16 +184,16 @@
+             StopMovement();
+         }
+ 
+-        private void StopMovement()
++        private void StopMovement(bool resetPath = true)
+         {
+             _exitPathQueued = false; _exitThenSit = null;
+             InputEpoch++;
+             StopDirectInput();
+-            _hasDestination = false;
++            _hasDestination = false; _pathSubmissionQueued = false;
+             _pendingSpot = null;
+             if (AgentReady)
+             {
+-                _agent.ResetPath();
++                if (resetPath) _agent.ResetPath();
+                 _agent.velocity = Vector3.zero;
+                 _agent.isStopped = true;
+             }
+@@ -220,7 +220,10 @@
+                 _agent.isStopped = true;
+                 return true; // The newest path replaces pending direct/path intent while rise/step completes.
+             }
+-            CancelMovement();
++            CancelRequestedSeat();
++            // Pause the old path immediately, but coalesce native path replacement in Update.
++            // Repeated valid intents in this frame replace only these owned queued fields.
++            StopMovement(resetPath: false);
+             _pendingSpot = thenSitAt;
+             _destination = hit.position;
+             float dist = Vector3.Distance(transform.position, hit.position);
+@@ -235,20 +238,15 @@
+                 if (!arrived)
+                 {
+                     // This immediate request returned false; do not retain a queued seat intent.
+-                    _hasDestination = false;
++                    _hasDestination = false; _pathSubmissionQueued = false;
+                     _pendingSpot = null;
+                 }
+                 return arrived;
+             }
+-            _agent.isStopped = false;
+-            // Native controls after seat Warp/re-enable rejected SetPath for complete paths in
+-            // both the same and next Play frame. SetDestination accepted both; retain the complete
+-            // preflight above and the independent complete-path/endpoint check at actual arrival.
+-            _hasDestination = _agent.SetDestination(hit.position);
+-            ObserveReviewCommand($"path-assigned:{_hasDestination}; status={_agent.pathStatus}; hasPath={_agent.hasPath}; " +
+-                $"remaining={_agent.remainingDistance:F6}; pending={_agent.pathPending}");
+-            if (!_hasDestination) _pendingSpot = null;
+-            return _hasDestination;
++            _hasDestination = true;
++            _pathSubmissionQueued = true;
++            ObserveReviewCommand($"path-queued:frame={Time.frameCount}; target={_destination:F6}; spot={_pendingSpot}");
++            return true; // Accepted local intent; native submission happens once in Update.
+         }
+ 
+         /// <summary>Walk to the frontend approach, then send the unchanged authoritative spot ID.</summary>
+@@ -427,6 +425,7 @@
+                     SetMoveInput(_moveInput);
+                 else StopDirectInput();
+             }
++            SubmitQueuedDestination();
+             var displacement = transform.position - _lastMotionPosition;
+             displacement.y = 0f;
+             _lastMotionPosition = transform.position;
+@@ -475,10 +474,44 @@
+                 if (_agent.pathStatus == NavMeshPathStatus.PathComplete) ArriveAtDestination();
+                 else
+                 {
+-                    _hasDestination = false;
++                    _hasDestination = false; _pathSubmissionQueued = false;
+                     _pendingSpot = null;
+                 }
+             }
++        }
++
++        private void SubmitQueuedDestination()
++        {
++            if (!_pathSubmissionQueued) return;
++            _pathSubmissionQueued = false; // At most one submission; no per-frame retry loop.
++            if (!_hasDestination || _appPaused || _directControl || !AgentReady || !string.IsNullOrEmpty(_seatedSpot))
++            {
++                _hasDestination = false; _pendingSpot = null;
++                return;
++            }
++            // Revalidate from the actual current point after any intervening callback/correction.
++            var path = new NavMeshPath();
++            if (!_agent.CalculatePath(_destination, path) || path.status != NavMeshPathStatus.PathComplete)
++            {
++                _hasDestination = false; _pendingSpot = null;
++                _agent.ResetPath(); _agent.isStopped = true;
++                ObserveReviewCommand("path-rejected:queued-preflight");
++                return;
++            }
++            if (AtDestination())
++            {
++                _agent.isStopped = true;
++                if (!ArriveAtDestination()) { _hasDestination = false; _pendingSpot = null; }
++                return;
++            }
++            _agent.ResetPath();
++            _agent.isStopped = false;
++            // Native SetDestination accepts a request, not proof of a completed path. Update still
++            // waits for pathPending to clear and arrival keeps its independent complete-path check.
++            _hasDestination = _agent.SetDestination(_destination);
++            ObserveReviewCommand($"path-assigned:{_hasDestination}; frame={Time.frameCount}; target={_destination:F6}; spot={_pendingSpot}; status={_agent.pathStatus}; hasPath={_agent.hasPath}; " +
++                $"remaining={_agent.remainingDistance:F6}; pending={_agent.pathPending}");
++            if (!_hasDestination) _pendingSpot = null;
+         }
+ 
+         private bool AtDestination()
+@@ -496,7 +529,7 @@
+             var check = new NavMeshPath();
+             if (!_agent.CalculatePath(_destination, check) || check.status != NavMeshPathStatus.PathComplete) return false;
+             // An early or unvalidated arrival must leave the accepted request available to retry.
+-            _hasDestination = false;
++            _hasDestination = false; _pathSubmissionQueued = false;
+             var spot = _pendingSpot;
+             _pendingSpot = null; // Consume only a validated arrival, including an immediate one.
+             if (spot == null) return true;

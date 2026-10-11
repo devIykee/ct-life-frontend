@@ -1,0 +1,30 @@
+{
+  "status": "frozen_staged_only_native_visual_review_pending",
+  "files": [
+    {
+      "source": "art/direction-20261006/venue-expansion/revision-e/SpacesStudioCandidateE.cs",
+      "destination": "client/Assets/Scripts/Editor/SpacesStudioCandidateE.cs",
+      "sha256": "8768213500bb5abd5d9b9ac50e5df8b0270fa281c542d0558a1f2b9ed27889be",
+      "existing_destination_required": "absent; unique E class preserves C/D"
+    },
+    {
+      "source": "art/direction-20261006/venue-expansion/revision-e/SpacesStudioRoomReviewE.cs",
+      "destination": "client/Assets/Scripts/Editor/SpacesStudioRoomReviewE.cs",
+      "sha256": "4af6476aa6755d2d6b6cd56704baf08fb46bbc6ca64009ee5383f81aa0d6b9fd",
+      "existing_destination_required": "absent; unique E class preserves C/D"
+    }
+  ],
+  "build_method": "CTLife.EditorTools.SpacesStudioCandidateE.BuildCandidate",
+  "bake_method": "CTLife.EditorTools.SpacesStudioCandidateE.BakeCandidate",
+  "review_method": "CTLife.EditorTools.SpacesStudioRoomReviewE.Launch",
+  "output_prefab": "Assets/Art/Candidates/SpacesStudio20261006E/SpacesStudioE.prefab",
+  "compile": {
+    "builder_exit": 0,
+    "review_exit": 0,
+    "warning": "existing CS1701 Newtonsoft/netstandard standalone-reference warning; native compilation still required"
+  },
+  "baseline": {
+    "prefab_sha256": "2b6f84d80ce7df1977675d9911c5dbe3c6bdb4ad12012892f5548ee1f0f8e288",
+    "navigation_sha256": "767cc92c6623316a7ab49544f0943c9440fb824f1d091c16ab260c10e40a1c48"
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "scope": "Read-only exact preimage/current bytes; original whole-tree audit remains non-clean with root-reviewed two-property exception. No restore, rewrite, native launch or rebake.",
+  "material": "Assets/Art/Candidates/CityDirection20261006B2Lamp/Lighting/Materials/Baked_Baseline_f81aae198e7ae49928d1f6575e25e5a5.mat",
+  "baseline_sha256": "3ecc281501293c6868669bf0864a3e4274c37d1b8800bfc9750789ebc23ec81a",
+  "current_sha256": "84ab3a79b033cf6b833e9d319105dfa1c715fe4d0cb053ab7ab6c9d0cc1dfa9f",
+  "exact_backup": "/var/folders/zm/v0w94xb95p11_5df6rxm0js80000gp/T/ctlife-spaces_studio-stage-f720253b7dbb4edf9b630fecf97a206d/before/Assets/Art/Candidates/CityDirection20261006B2Lamp/Lighting/Materials/Baked_Baseline_f81aae198e7ae49928d1f6575e25e5a5.mat",
+  "only_changes": {
+    "m_DoubleSidedGI": {
+      "before": 0,
+      "after": 1
+    },
+    "_AlphaToMask": {
+      "before": 0,
+      "after": 1
+    }
+  },
+  "unchanged": "Every other byte, including identical AssetVersion v10 subasset ID; shader, texture GUID, color, cutoff, queue, keywords and blend fields.",
+  "source_shader_guid": "0ca6dca7396eb48e5849247ffd444914",
+  "source_material_guid": "f81aae198e7ae49928d1f6575e25e5a5",
+  "source_material": "Assets/Art/Generated/Venues/Lighting/Materials/Baked_M_stylized_nature_megakit__Leaves_NormalTree_C.mat",
+  "derived_rules": [
+    {
+      "source": "client/Library/PackageCache/com.unity.render-pipelines.universal@a0dd9d2bd983/Editor/ShaderGUI/Shaders/UnlitShader.cs",
+      "line": 9,
+      "rule": "ValidateMaterial invokes SetMaterialKeywords."
+    },
+    {
+      "source": "client/Library/PackageCache/com.unity.render-pipelines.universal@a0dd9d2bd983/Editor/ShaderGUI/BaseShaderGUI.cs",
+      "line": 930,
+      "rule": "Cull=0 differs from Front, therefore doubleSidedGI=true."
+    },
+    {
+      "source": "client/Library/PackageCache/com.unity.render-pipelines.universal@a0dd9d2bd983/Editor/ShaderGUI/BaseShaderGUI.cs",
+      "line": 1125,
+      "rule": "Opaque + AlphaClip enabled derives AlphaToMask=1."
+    }
+  ],
+  "official_load_callback": "https://docs.unity3d.com/6000.3/Documentation/ScriptReference/ShaderGUI.ValidateMaterial.html",
+  "initiator_limit": "No initiating load/save call stack was captured. Installed derived rules and exact delta establish the normalization; do not invent which specific loader/save call persisted it. This is not an AssetVersion migration.",
+  "root_disposition": "Root accepted current normalized state; no automatic restoration. Next native whole-tree audit must start from current bytes and demonstrate no further drift."
+}

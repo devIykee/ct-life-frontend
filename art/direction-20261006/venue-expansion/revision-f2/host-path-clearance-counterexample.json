@@ -1,0 +1,56 @@
+{
+  "status": "native_saved_path_and_collider_read_only_counterexample",
+  "candidate": "SpacesStudio20261007F2",
+  "native_path_spot": "stage_host",
+  "path_segment": [
+    [
+      1.5,
+      0.049999997,
+      6
+    ],
+    [
+      1.5,
+      0.049999997,
+      6.59960938
+    ]
+  ],
+  "chair_spot": "stage_6",
+  "proxy_radius_m": 0.3,
+  "axis_relative_y": [
+    0.32,
+    1.43
+  ],
+  "closest_sample": {
+    "distance_m": 0.29038607283744056,
+    "axis_point": [
+      1.5,
+      0.42,
+      6.489680993666667
+    ],
+    "triangle_point": [
+      1.2096139512833488,
+      0.42,
+      6.489799351944876
+    ],
+    "triangle_index": 102,
+    "triangle": [
+      [
+        1.2096147721118276,
+        0.45,
+        6.491813213098094
+      ],
+      [
+        1.2096147721118276,
+        0.410132438,
+        6.491813213098094
+      ],
+      [
+        1.2094440620485851,
+        0.410132438,
+        6.072984707887899
+      ]
+    ],
+    "penetration_lower_bound_m": 0.009613927162559432
+  },
+  "limitations": "This is an exact triangle distance at sampled points on a saved native stage-host path, proving insufficient proxy clearance there. The failed runtime path started at stage_10 and recorded no contact positions; it is not asserted to be this exact contact. The next native helper must record actual collider anchor/position/path and verify the correction."
+}

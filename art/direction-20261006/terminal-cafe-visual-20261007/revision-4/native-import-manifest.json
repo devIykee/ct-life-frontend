@@ -1,0 +1,50 @@
+{
+  "status": "frozen_staged_only_native_unrun",
+  "files": [
+    {
+      "source": "art/direction-20261006/terminal-cafe-visual-20261007/revision-4/TerminalCafeVisualCandidate4.cs",
+      "destination": "client/Assets/Scripts/Editor/TerminalCafeVisualCandidate4.cs",
+      "sha256": "0077393ed9279bdcdec1068363022d5ae3b14d01bfaf699db25402ce1e3f2502",
+      "expected_destination": "absent; preserve Art3 and all earlier versions"
+    },
+    {
+      "source": "art/direction-20261006/terminal-cafe-visual-20261007/revision-4/CafeArtRoomReview4.cs",
+      "destination": "client/Assets/Scripts/Editor/CafeArtRoomReview4.cs",
+      "sha256": "bc8a5ddab5e58528d555e40490e924da6ccb6cd39f0a6b4dcfe0404bc167ec54",
+      "expected_destination": "absent; preserve Art3 and all earlier versions"
+    }
+  ],
+  "compile_exit": 0,
+  "compile_warning": "Existing CS1701 Newtonsoft/netstandard standalone reference warning",
+  "build": "CTLife.EditorTools.TerminalCafeVisualCandidate4.BuildCandidate",
+  "bake": "CTLife.EditorTools.TerminalCafeVisualCandidate4.BakeCandidate",
+  "review": "CTLife.EditorTools.CafeArtRoomReview4.Launch",
+  "prefab": "Assets/Art/Candidates/TerminalCafe20261007Art4/TerminalCafeArt4.prefab",
+  "dependencies": [
+    {
+      "path": "client/Assets/Art/Candidates/TerminalCafe20261007Art3/TerminalCafeArt3.prefab",
+      "sha256": "80ee1475262cbbbf69cfaaddcf5d0705d93a65f27446b6c843d2d2bfee7a2065"
+    },
+    {
+      "path": "client/Assets/Art/Candidates/TerminalCafe20261007Art3/BakeReceipt.json",
+      "sha256": "4985c199eb696b19927b0651ee1e865b0d4c3d87b997bb4335eaf663813e8bfb"
+    },
+    {
+      "path": "client/Assets/Art/Candidates/TerminalCafe20261007Art3/StageReceipt.json",
+      "sha256": "ad7dc264deb159d00bd1507555ec2a87a458fcc751ba27e31a61f5aedf82155f"
+    },
+    {
+      "path": "client/Assets/Art/Candidates/TerminalCafe20261007Art3/Meshes/Navigation.asset",
+      "sha256": "b9033beff4817f674d75775fc9c961cd957bcca68548fa748fb33cd15c8d0318"
+    }
+  ],
+  "requires_graphics_for_review": true,
+  "review_args": [
+    "-openfile",
+    "/Users/mac/Documents/codes/projects/ct-life/client/Assets/Scenes/Bootstrap.unity",
+    "-ctlife-cafeArtOutput",
+    "/tmp/ct-cafe-art4-room-native-20261007",
+    "-ctlife-cafeArtExit",
+    "1"
+  ]
+}

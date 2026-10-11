@@ -1,0 +1,45 @@
+{
+  "status": "frozen_staged_only_native_pending",
+  "files": [
+    {
+      "source": "art/direction-20261006/venue-expansion/revision-f/SpacesStudioSharedChairCandidate.cs",
+      "destination": "client/Assets/Scripts/Editor/SpacesStudioSharedChairCandidate.cs",
+      "sha256": "ef9a06c1224dd47453a128713d12b49f4783a19b0d371c884b56ddb65cdcdb4c",
+      "expected_destination": "absent; preserve all E2 and previous frozen helpers/output"
+    },
+    {
+      "source": "art/direction-20261006/venue-expansion/revision-f/SpacesStudioSharedChairRoomReview.cs",
+      "destination": "client/Assets/Scripts/Editor/SpacesStudioSharedChairRoomReview.cs",
+      "sha256": "47e25ea7882935dc7f660a18c78bdb88a8b79d8a10315de5b7487abae2cddaff",
+      "expected_destination": "absent; preserve all E2 and previous frozen helpers/output"
+    }
+  ],
+  "compile_exit": 0,
+  "compile_warning": "Existing CS1701 Newtonsoft/netstandard standalone-reference warning; actual native import remains required",
+  "build": "CTLife.EditorTools.SpacesStudioSharedChairCandidate.BuildCandidate",
+  "bake": "CTLife.EditorTools.SpacesStudioSharedChairCandidate.BakeCandidate",
+  "review": "CTLife.EditorTools.SpacesStudioSharedChairRoomReview.Launch",
+  "prefab": "Assets/Art/Candidates/SpacesStudio20261007F/SpacesStudioF.prefab",
+  "dependencies": [
+    {
+      "path": "client/Assets/Art/Candidates/SpacesStudio20261006E2/SpacesStudioE2.prefab",
+      "sha256": "860dfe5fedec81123427f9d057faae4ea03ab010a71711836be01f8115695a5a"
+    },
+    {
+      "path": "client/Assets/Art/Candidates/SpacesStudio20261006E2/BakeReceipt.json",
+      "sha256": "c0b60527e739a28d1e5f93ebe40b6e5df114d9902722085c8a5fc4c349e377e6"
+    },
+    {
+      "path": "client/Assets/Art/Candidates/SpacesStudio20261006E2/NavigationDiagnostics.json",
+      "sha256": "77972b951052b09fd16e70daa4f0341d9b97130aef7bd60cbda9b755ebc1073e"
+    },
+    {
+      "path": "client/Assets/Art/Candidates/TerminalCafe20261006Final/TerminalCafeFinal.prefab",
+      "sha256": "a7be079bdad8883b0fbeff0dada062d37387f71f3c4b5d4343e939478bb1fa32"
+    },
+    {
+      "path": "client/Assets/Art/Candidates/SpacesStudio20261006E2/Textures/OriginalQuietWeave.png",
+      "sha256": "8abf62a46d2db993e39188dafb451887c82a7ac31bb8ed2b77d4c278bc080935"
+    }
+  ]
+}

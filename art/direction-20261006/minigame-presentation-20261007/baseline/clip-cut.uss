@@ -1,0 +1,62 @@
+/* Original storyboard editing bench. No acquired video or media assets. */
+.ct-clip-panel { width: 96%; height: 100%; max-width: 2600px; max-height: 1080px; padding: 20px 40px; background-color: var(--ct-ink); border-width: 2px; border-color: var(--ct-control-ring-active); border-radius: 24px; }
+.ct-clip-panel .ct-desk-header { margin-bottom: 8px; align-items: center; }
+.ct-clip-title { color: var(--ct-card); font-size: 44px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); white-space: nowrap; flex-shrink: 0; }
+.ct-clip-score { color: var(--ct-card); font-size: 38px; white-space: nowrap; flex-shrink: 0; margin: 0 24px; }
+.ct-clip-panel .ct-desk-timer { background-color: var(--ct-accent); color: var(--ct-ink); font-size: 36px; white-space: nowrap; flex-shrink: 0; padding: 12px 24px; border-radius: 20px; }
+.ct-clip-panel .ct-desk-progress { height: 6px; margin-bottom: 8px; background-color: var(--ct-deep); }
+.ct-clip-panel .ct-desk-progress-fill { background-color: var(--ct-game-cyan); }
+.ct-clip-meta { flex-direction: row; align-items: center; justify-content: space-between; margin-bottom: 4px; flex-shrink: 0; }
+.ct-clip-reel-title { color: var(--ct-card); font-size: 30px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); white-space: nowrap; flex-shrink: 0; }
+.ct-clip-counter { color: var(--ct-game-blue-light); font-size: 20px; letter-spacing: 2px; white-space: nowrap; flex-shrink: 0; }
+.ct-clip-brief { color: var(--ct-game-blue-light); font-size: 24px; white-space: nowrap; flex-shrink: 0; margin-bottom: 8px; }
+.ct-clip-strip { flex-direction: row; flex-grow: 1; flex-shrink: 0; min-height: 220px; padding: 12px; background-color: var(--ct-game-outline); border-width: 2px; border-bottom-width: 8px; border-color: var(--ct-control-ring-active); border-radius: 20px; margin-bottom: 8px; }
+.ct-clip-frame { flex-grow: 1; flex-basis: 0; min-width: 124px; min-height: 196px; align-self: stretch; margin: 0 8px 0 0; padding: 12px; background-color: var(--ct-deep); border-width: 2px; border-color: var(--ct-control-ring-active); border-radius: 12px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-text-outline-width: 0; }
+.ct-clip-last { margin-right: 0; }
+.ct-clip-frame > .ct-button-depth, .ct-clip-frame > .ct-button-glint { display: none; }
+.ct-clip-frame:hover { background-color: var(--ct-deep); border-color: var(--ct-card); }
+.ct-clip-frame:focus { border-width: 2px; border-color: var(--ct-card); }
+.ct-clip-panel .ct-clip-frame:active { translate: 0 0; scale: 1 1; }
+.ct-clip-frame:disabled { opacity: 1; }
+.ct-clip-frame.ct-clip-excluded { opacity: .6; background-color: var(--ct-ink); }
+.ct-clip-frame.ct-clip-boundary { border-color: var(--ct-accent); }
+.ct-clip-frame.ct-clip-previewing { background-color: var(--ct-game-blue); border-color: var(--ct-game-cyan); }
+.ct-clip-frame-face { align-self: stretch; flex-grow: 1; }
+.ct-clip-holes { flex-direction: row; justify-content: space-between; margin-bottom: 12px; }
+.ct-clip-hole { width: 16px; height: 8px; border-radius: 4px; background-color: var(--ct-game-outline); }
+.ct-clip-frame-meta { flex-direction: row; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.ct-clip-frame-number { font-size: 18px; color: var(--ct-game-blue-light); white-space: nowrap; flex-shrink: 0; }
+.ct-clip-marker { font-size: 18px; color: var(--ct-accent); white-space: nowrap; flex-shrink: 0; }
+.ct-clip-frame-kind { color: var(--ct-game-cyan); font-size: 18px; white-space: nowrap; flex-shrink: 0; margin-bottom: 8px; -unity-text-align: middle-left; }
+.ct-clip-frame-copy { color: var(--ct-card); font-size: 22px; white-space: normal; flex-shrink: 0; -unity-text-align: upper-left; }
+.ct-clip-handles { flex-direction: row; align-items: center; flex-shrink: 0; margin-bottom: 8px; }
+.ct-clip-range-info { flex-grow: 1; min-width: 0; margin-left: 16px; align-items: flex-end; }
+.ct-clip-range { color: var(--ct-accent); font-size: 28px; white-space: nowrap; flex-shrink: 0; align-self: stretch; -unity-text-align: middle-right; }
+.ct-clip-kept, .ct-clip-instruction { color: var(--ct-game-blue-light); font-size: 20px; white-space: nowrap; flex-shrink: 0; align-self: stretch; -unity-text-align: middle-right; }
+.ct-clip-preview { min-height: 156px; flex-direction: row; align-items: center; flex-shrink: 0; border-left-width: 4px; border-left-color: var(--ct-game-cyan); padding: 12px 20px; background-color: var(--ct-game-outline); border-radius: 12px; margin-bottom: 8px; }
+.ct-clip-preview-copy-area { flex-grow: 1; min-width: 0; }
+.ct-clip-preview-label { color: var(--ct-game-blue-light); font-size: 18px; letter-spacing: 2px; white-space: nowrap; flex-shrink: 0; }
+.ct-clip-preview-frame { color: var(--ct-game-cyan); font-size: 22px; white-space: nowrap; flex-shrink: 0; margin: 4px 0; }
+.ct-clip-preview-copy { color: var(--ct-card); font-size: 30px; white-space: normal; flex-shrink: 0; }
+.ct-clip-feedback { color: var(--ct-game-green); font-size: 24px; white-space: nowrap; flex-shrink: 0; min-height: 34px; margin-bottom: 8px; }
+.ct-clip-mistake { color: var(--ct-game-coral); }
+.ct-clip-controls { flex-direction: row; align-items: center; flex-shrink: 0; }
+.ct-clip-spacer { flex-grow: 1; }
+.ct-clip-control { min-width: 240px; min-height: 124px; flex-shrink: 0; margin: 0 16px 0 0; padding: 16px 24px; border-width: 2px; border-color: var(--ct-control-ring-active); border-radius: 20px; background-color: var(--ct-deep); color: var(--ct-card); font-size: 26px; white-space: nowrap; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-text-outline-width: 0; }
+.ct-clip-control > .ct-button-depth { height: 8px; background-color: var(--ct-resource-depth); }
+.ct-clip-control > .ct-button-glint { display: none; }
+.ct-clip-control:hover { background-color: var(--ct-deep); border-color: var(--ct-card); }
+.ct-clip-control:focus { border-width: 2px; border-color: var(--ct-card); }
+.ct-clip-panel .ct-clip-control:active { translate: 0 4px; scale: 1 1; }
+.ct-clip-handle { min-width: 320px; }
+.ct-clip-active-handle { background-color: var(--ct-accent); border-color: var(--ct-accent); color: var(--ct-ink); }
+.ct-clip-control.ct-clip-active-handle:disabled { opacity: 1; }
+.ct-clip-primary { min-width: 360px; margin-right: 0; background-color: var(--ct-accent); border-color: var(--ct-accent); color: var(--ct-ink); }
+.ct-clip-primary:hover { background-color: var(--ct-accent-hover); }
+.ct-clip-end { min-width: 320px; }
+.ct-clip-preview-button { min-width: 360px; margin-left: 24px; margin-right: 0; }
+.ct-clip-footnote { color: var(--ct-line); font-size: 18px; white-space: nowrap; flex-shrink: 0; -unity-text-align: middle-center; margin-top: 8px; }
+.ct-clip-paused { position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: var(--ct-scrim); border-radius: 24px; align-items: center; justify-content: center; }
+.ct-clip-pause-panel { width: 1040px; padding: 40px; background-color: var(--ct-ink); border-width: 2px; border-color: var(--ct-control-ring-active); border-radius: 24px; }
+.ct-clip-pause-panel .ct-desk-title { color: var(--ct-card); }
+.ct-clip-pause-copy { font-size: 28px; color: var(--ct-card); white-space: normal; margin: 16px 0 32px 0; }

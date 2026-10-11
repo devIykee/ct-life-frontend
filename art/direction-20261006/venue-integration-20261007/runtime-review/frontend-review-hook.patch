@@ -1,0 +1,20 @@
+--- a/client/Assets/Scripts/App/Review/FrontendReviewController.cs
++++ b/client/Assets/Scripts/App/Review/FrontendReviewController.cs
+@@ -90,6 +90,17 @@
+                 }
+ #endif
+ #if UNITY_EDITOR
++                if (LaunchArgs.Flag("reviewSavedVenueChecks"))
++                {
++                    if (!LaunchArgs.TryGet("reviewCapture", out var savedVenueDirectory) ||
++                        !LaunchArgs.TryGet("reviewSavedVenueManifest", out var savedVenueManifest))
++                        throw new ArgumentException("Saved-room Flow review requires reviewCapture and reviewSavedVenueManifest.");
++                    _phone.Close(); _hud.Show(false);
++                    try { await SavedVenueFlowReview.Run(savedVenueDirectory, savedVenueManifest, destroyCancellationToken); }
++                    finally { if (!_disposed) _hud.Show(true); }
++                    if (LaunchArgs.Flag("reviewExit")) Finish(0);
++                    return;
++                }
+                 if (LaunchArgs.Flag("reviewPrivateHomeChecks"))
+                 {
+                     if (!LaunchArgs.TryGet("reviewCapture", out var privateHomeDirectory))

@@ -1,0 +1,226 @@
+--- TerminalCafeCandidateB.cs
++++ TerminalCafeCandidateB2.cs
+@@ -20,10 +20,10 @@
+     /// overwrite original assets or imply that the illustrated activity pockets are live services.
+     /// Stage and bake in separate coordinator-owned batch processes; verify external hashes after exit.
+     /// </summary>
+-    public static class TerminalCafeCandidateB
++    public static class TerminalCafeCandidateB2
+     {
+-        public const string Output = "Assets/Art/Candidates/TerminalCafe20261006B";
+-        public const string PrefabPath = Output + "/TerminalCafeB.prefab";
++        public const string Output = "Assets/Art/Candidates/TerminalCafe20261006B2";
++        public const string PrefabPath = Output + "/TerminalCafeB2.prefab";
+         private const string Canonical = "Assets/Art/Generated/Venues/TimelineSquare.prefab";
+         private const string Snapshot = "Assets/Resources/Contract/config_snapshot.json";
+         private const string Manifest = "Assets/Art/environment/manifest.json";
+@@ -35,10 +35,10 @@
+         private static ProtectedFiles _protection;
+         private static int _joineryTriangles;
+ 
+-        [MenuItem("CT Life/Candidates/Stage Terminal Cafe B")]
++        [MenuItem("CT Life/Candidates/Stage Terminal Cafe B2")]
+         public static void BuildCandidate() => Protected("stage", Stage);
+ 
+-        [MenuItem("CT Life/Candidates/Bake Terminal Cafe B")]
++        [MenuItem("CT Life/Candidates/Bake Terminal Cafe B2")]
+         public static void BakeCandidate() => Protected("bake", () =>
+         {
+             var receipt = JObject.Parse(File.ReadAllText(Output + "/StageReceipt.json"));
+@@ -86,9 +86,9 @@
+                 var lighting = go.AddComponent<VenueContentLighting>();
+                 lighting.sunIntensity=.72f;lighting.sunColor=new Color(1,.91f,.81f);lighting.sunAngles=new Vector3(42,-25,0);
+                 lighting.sky=new Color(.54f,.63f,.68f);lighting.equator=new Color(.55f,.53f,.47f);lighting.ground=new Color(.28f,.24f,.20f);
+-                var floor = Group("Wood floor and tiled coffee apron");
++                var floor = Group("Warm wood floor and stone coffee apron");
+                 for (int x = -11; x < 12; x += 2) for (int z = -8; z < 9; z += 2)
+-                    Add(x <= -9 && z < 0 ? "floor_concrete_2m" : "floor_wood_2m",x,z,y:-.101f,parent:floor);
++                    Add("floor_wood_2m",x,z,y:-.101f,parent:floor);
+                 var ground = new GameObject("Contract floor collision"); ground.transform.SetParent(_root,false);
+                 ground.transform.localPosition = new Vector3(0,-.1f,0); ground.AddComponent<BoxCollider>().size = new Vector3(24,.2f,18);
+ 
+@@ -107,7 +107,7 @@
+ 
+                 // All eight claimed terminal anchors are seated typing stations, not standing kiosk art.
+                 var terminalRows = new JArray();
+-                string[] charts = { "IdlePanel" };
++                string[] charts = { "CafeDesktop" };
+                 int index = 0;
+                 foreach (var spot in terminals.OrderBy(s => s.id))
+                 {
+@@ -122,28 +122,20 @@
+                     terminalRows.Add(new JObject { ["spot"]=spot.id,["x"]=spot.x,["z"]=spot.z,["yaw_radians"]=spot.rotY,["animation"]=spot.anim });
+                     index++;
+                 }
+-                // Pair the fixed terminals into four coherent work counters; the 3.5 m center lane stays open.
+-                var joinery=Group("Walnut work counters and architectural reveals");
+-                foreach(float z in new[]{3.86f,7.86f})foreach(float x in new[]{-5f,5f})
+-                {
+-                    Block("Desk bridge",new Vector3(x,.72f,z),new Vector3(3.50f,.08f,.697f),"Walnut",new Color(.39f,.29f,.20f),joinery,true);
+-                    Block("Cable shelf",new Vector3(x,.22f,z+.26f),new Vector3(3.50f,.12f,.14f),"Charcoal",new Color(.12f,.16f,.16f),joinery);
+-                }
+-                // All four exact social anchors face paired communal tables, using the same adult-scale home furniture family.
++                // Compact adult tables retain all four fixed social seats without a classroom-sized bridge.
++                var joinery=Group("Cafe architectural joinery and quiet floor zones");
+                 foreach(var spot in seats)
+                 {
+                     if(!spot.hasPosition||Mathf.Abs(spot.rotY)>.001f)throw new InvalidDataException("Unexpected social seat orientation "+spot.id);
+                     Add("home_chair_1",spot.x,spot.z-.10f,yaw:180,scale:1.08f);
+-                    NeutralSurface(Add("home_table_medium",spot.x,spot.z+1.28f,solid:true),"SocialWalnut",new Color(.39f,.29f,.20f));
+-                    Add("cup_coffee",spot.x-.23f,spot.z+1.0f,y:.76f);
+-                    Add("croissant",spot.x+.16f,spot.z+1.16f,y:.76f);
+-                }
+-                foreach(float x in new[]{-4f,4f})
+-                {
+-                    Block("Communal table bridge",new Vector3(x,.72f,-2.72f),new Vector3(2.48f,.08f,1.52f),"Walnut",new Color(.39f,.29f,.20f),joinery,true);
+-                    Add("plant_small",x,-2.3f,y:.76f,scale:.7f);
+-                    Add("desk_lamp",x,-2.83f,y:.76f);
+-                }
++                    Add("home_table_roundsmall",spot.x,spot.z+1.20f,solid:true);
++                    Add("cup_coffee",spot.x-.22f,spot.z+.99f,y:.75f);
++                    Add("croissant",spot.x+.17f,spot.z+1.17f,y:.75f);
++                    Add("plant_small",spot.x,spot.z+1.48f,y:.75f,scale:.60f);
++                }
++                // Workstations are individual furniture; tall greenery breaks up the rigid back rows.
++                foreach(float z in new[]{4.0f,8.0f})foreach(float x in new[]{-5f,5f})
++                    Add("houseplant_tall",x,z,scale:.85f,solid:true);
+                 // Sage cabinetry and stone worktop replace the oversized orange restaurant display.
+                 for(int i=0;i<9;i++)Add("home_kitchen_cabinet1",-8.9f,-7.15f+i*.61f,yaw:90,solid:true);
+                 Block("Coffee counter worktop",new Vector3(-8.9f,.98f,-4.71f),new Vector3(.78f,.06f,5.55f),"WarmStone",new Color(.76f,.74f,.66f),joinery);
+@@ -151,8 +143,12 @@
+                 Add("cash_register",-8.9f,-2.3f,y:1.01f,yaw:90);
+                 foreach(float z in new[]{-4.6f,-4.3f,-4.0f})Add("croissant",-8.85f,z,y:1.01f,yaw:90);
+                 Add("home_kitchen_fridge",-11.35f,-2.2f,yaw:90,solid:true);
+-                Add("home_shelf_b_large_decorated",-11.85f,-5.3f,y:1.8f,yaw:-90);
+-                Fascia("Counter",-11.83f,3.4f,-5.0f,-90,3.5f,"sign_terminal_cafe");
++                // A shallow backbar gives the counter a readable backdrop; the existing NPC foot anchor stays clear.
++                Block("Backbar return",new Vector3(-10.35f,1.45f,-1.34f),new Vector3(3.20f,2.90f,.14f),"BackbarSage",new Color(.25f,.33f,.29f),joinery,true);
++                Block("Counter stone apron",new Vector3(-9.85f,.004f,-4.7f),new Vector3(3.60f,.008f,6.65f),"WarmStone",new Color(.76f,.74f,.66f),joinery);
++                Panel("CounterMenu",-9.63f,1.10f,-1.44f,0,1.36f,1.904f,"CafeMenu");
++                foreach(float y in new[]{.68f,1.34f})
++                    Add("home_shelf_b_large_decorated",-11.20f,-1.46f,y:y,yaw:180,scale:.82f);
+ 
+                 // Lower wall joinery and repeated window reveals give this large contract room a clear interior envelope.
+                 foreach(float x in new[]{-11.92f,11.92f})
+@@ -161,32 +157,43 @@
+                 for(int i=0;i<5;i++)Block("Window timber mullion",new Vector3(-11.93f,2.025f,-8+i*4),new Vector3(.08f,4.05f,.06f),"Walnut",new Color(.39f,.29f,.20f),joinery);
+                 foreach(float x in new[]{-5f,5f})
+                 {
+-                    Block("Terminal carpet field",new Vector3(x,.003f,5.25f),new Vector3(8,.006f,7.25f),"PetrolCarpet",new Color(.24f,.32f,.31f),joinery);
+-                    Add("home_light_chandelier",x,-.4f,y:3.55f,scale:.65f);
+-                    BakedPoint("Cafe pendant",new Vector3(x,3.45f,-.4f),new Color(1,.83f,.63f),2.2f,9);
+-                }
++                    foreach(float z in new[]{3.5f,7.5f})
++                        Block("Terminal carpet field",new Vector3(x,.003f,z),new Vector3(7,.006f,2.30f),"PetrolCarpet",new Color(.24f,.32f,.31f),joinery);
++                    Add("home_light_chandelier",x,-2.85f,y:3.20f,scale:.80f);
++                    BakedPoint("Cafe pendant",new Vector3(x,3.14f,-2.85f),new Color(1,.83f,.63f),2.5f,8);
++                }
++                // One primary identity, intentionally low enough to remain in the arrival frame.
++                Panel("CoffeeIdentity",0,.48f,8.98f,0,5.50f,2.40625f,"CafeIdentity");
++                foreach(float x in new[]{-11.83f,11.83f})
++                {
++                    Block("Reading shelf backing",new Vector3(x,1.35f,.7f),new Vector3(.10f,2.70f,1.65f),"Walnut",new Color(.39f,.29f,.20f),joinery,true);
++                    foreach(float y in new[]{.40f,1.10f,1.80f})
++                        Add("home_shelf_b_large_decorated",x+(x<0?.13f:-.13f),.7f,y:y,yaw:x<0?90:-90,scale:1.10f);
++                    Add("houseplant_tall",x<0?-10.65f:10.65f,7.6f,scale:.95f,solid:true);
++                }
++                // These reading sofas are decorative furniture, not additional claimed multiplayer seats.
++                foreach(float side in new[]{-1f,1f})
++                {
++                    Block("Reading rug",new Vector3(side*4.95f,.006f,-7.0f),new Vector3(3.30f,.012f,3.30f),"ReadingPetrol",new Color(.28f,.34f,.33f),joinery);
++                    Add("home_couch_medium1",side*5.6f,-7.0f,yaw:side<0?90:-90,solid:true);
++                    Add("home_table_roundsmall",side*4.12f,-7.0f,scale:.70f,solid:true);
++                    Add("cup_coffee",side*4.12f,-7.0f,y:.525f);
++                    Add("home_light_floor1",side*6.5f,-8.15f,solid:true);
++                    Add("home_houseplant_1",side*6.65f,-5.2f,scale:.80f,solid:true);
++                    BakedPoint("Reading lamp",new Vector3(side*6.5f,1.7f,-8.15f),new Color(1,.79f,.56f),1.7f,5.5f);
++                }
++                // Walnut lower walls soften the room without obstructing its windows or the central route.
++                foreach(float x in new[]{-11.99f,11.99f})
++                    Block("Timber wainscot",new Vector3(x,.42f,0),new Vector3(.06f,.84f,18),"Walnut",new Color(.39f,.29f,.20f),joinery);
++                Block("Rear timber wainscot",new Vector3(0,.22f,8.99f),new Vector3(24,.44f,.06f),"Walnut",new Color(.39f,.29f,.20f),joinery);
+                 CombineStatic(joinery,"CafeJoinery");
+-                Add("wall_screen_large",0,9.00f,y:.65f,scale:1.08f,screen:"IdlePanel");
+-                Fascia("RoomIdentity",0,3.32f,8.98f,0,4.2f,"sign_terminal_cafe");
+-                foreach(float x in new[]{-10.65f,10.65f})
+-                {
+-                    Add("home_bookshelf",x,1.0f,yaw:x<0?90:-90,solid:true);
+-                    Add("houseplant_tall",x,7.6f,scale:.95f,solid:true);
+-                }
+-                // Near-entry reading pocket is visible at human scale; no bright pink/yellow furniture palette.
+-                Add("home_couch_medium1",9.4f,-5.9f,yaw:-90,solid:true);
+-                Add("home_table_roundsmall",7.85f,-5.9f,scale:.75f,solid:true);
+-                Add("cup_coffee",7.85f,-5.9f,y:.5625f);
+-                Add("home_light_floor1",10.7f,-7.5f,solid:true);
+-                Add("houseplant_tall",11,-3.4f,scale:.9f,solid:true);
+-                BakedPoint("Reading lamp",new Vector3(10.7f,1.7f,-7.5f),new Color(1,.79f,.56f),1.7f,5.5f);
+-                BakedPoint("Counter practical",new Vector3(-9.0f,3.4f,-4.8f),new Color(1,.83f,.62f),2.0f,7);
++                BakedPoint("Counter practical",new Vector3(-9.0f,3.4f,-4.8f),new Color(1,.83f,.62f),2.4f,7);
+                 BakedSpot("Window fill",new Vector3(-11.5f,3.4f,-1),new Vector3(0,.5f,0),new Color(.65f,.78f,1),2.1f,22,95);
+ 
+                 // A grounded street threshold/window garden surrounds the cutaway; only the unchanged contract floor is navigable.
+                 var outside=Group("Grounded cafe threshold and window garden");
+                 for(int x=-17;x<=17;x+=2)for(int z=-16;z<=10;z+=2)
+-                    if(x < -12 || x > 12 || z < -9 || z > 9)Add("floor_concrete_2m",x,z,y:-.105f,parent:outside);
++                    if(x < -12 || x > 12 || z < -9 || z > 9)Add("plaza_hexpaving_2m",x,z,y:-.105f,parent:outside);
+                 CombineStatic(outside,"CafeSurroundings");
+                 foreach(float z in new[]{-6f,1f,7f})
+                 {
+@@ -218,16 +225,15 @@
+                     ["status"]="staged_unbaked_not_published",["prefab"]=PrefabPath,["snapshot_sha256"]=Hash(Snapshot),
+                     ["positioned_anchors"]=Anchors(go).Count,["navigation"]=navigation,["terminal_stations"]=terminalRows,
+                     ["placements"]=Placements.DeepClone(),["source_lod0_triangles_manifest_estimate"]=Placements.Sum(p=>(int)p["lod0_triangles"]),
+-                    ["additional_joinery_triangles"]=_joineryTriangles,["static_mesh_renderers"]=go.GetComponentsInChildren<MeshRenderer>(true).Length,["baked_only_lights"]=5,
+-                    ["limitations"]="Seats require native animation/clearance checks. Charts are artwork, not live market data. No registry promotion, server change or performance acceptance."
++                    ["additional_joinery_triangles"]=_joineryTriangles,["static_mesh_renderers"]=go.GetComponentsInChildren<MeshRenderer>(true).Length,["baked_only_lights"]=6,
++                    ["limitations"]="Seats require native animation/clearance checks. Identity, menu and coffee screensavers are decorative artwork. Reading sofas add no claimed seats. No registry promotion, server change or performance acceptance."
+                 }.ToString());
+-                Debug.Log("CTLIFE [terminal-cafe-b] 8 terminal stations and 4 social seats staged at exact contract anchors; bake required: "+PrefabPath);
++                Debug.Log("CTLIFE [terminal-cafe-b2] 8 terminal stations and 4 social seats staged at exact contract anchors; bake required: "+PrefabPath);
+             }
+             finally { _root=null; EditorSceneManager.ClosePreviewScene(preview); Materials.Clear(); }
+         }
+-        private static void Fascia(string name, float x, float y, float z, float yaw, float width, string screen)
+-        {
+-            float height = width / 6f;
++        private static void Panel(string name, float x, float y, float z, float yaw, float width, float height, string screen)
++        {
+             var group = new GameObject("Fascia_" + name);
+             group.transform.SetParent(_root, false);
+             group.transform.localPosition = new Vector3(x,y,z);
+@@ -264,7 +270,7 @@
+             }
+             Placements.Add(new JObject { ["id"] = "authored_fascia_" + name, ["x"] = x, ["y"] = y, ["z"] = z,
+                 ["yaw"] = yaw, ["width"] = width, ["height"] = height, ["screen"] = screen, ["solid"] = false,
+-                ["source"] = "project-authored shallow fascia trim and existing 6:1 shop graphic", ["lod0_triangles"] = 14 });
++                ["source"] = "project-authored shallow frame and original Cafe B2 artwork at source aspect ratio", ["lod0_triangles"] = 14 });
+         }
+ 
+         private static GameObject Block(string name,Vector3 position,Vector3 size,string key,Color color,Transform parent,bool solid=false)
+@@ -443,7 +449,7 @@
+         private static Texture2D Screen(string id)
+         {
+             string path = Output + "/Textures/" + id + ".png";
+-            string source = Path.GetFullPath(Path.Combine(Application.dataPath, id == "IdlePanel" ? "../../art/direction-20261006/venue-expansion/Textures" : "../../art/lookdev/tex", id + ".png"));
++            string source = Path.GetFullPath(Path.Combine(Application.dataPath, "../../art/direction-20261006/terminal-cafe-b2/Textures", id + ".png"));
+             File.Copy(source, path, true);
+             AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceSynchronousImport);
+             var importer = AssetImporter.GetAtPath(path) as TextureImporter;
+@@ -540,7 +546,7 @@
+             private readonly string _backup;
+             public ProtectedFiles(string phase)
+             {
+-                _backup = Path.Combine(Path.GetTempPath(),"ctlife-terminal-cafe-b-" + phase + "-" + Guid.NewGuid().ToString("N"));
++                _backup = Path.Combine(Path.GetTempPath(),"ctlife-terminal-cafe-b2-" + phase + "-" + Guid.NewGuid().ToString("N"));
+                 var sourceModels=JObject.Parse(File.ReadAllText(Manifest)).Properties().Select(p=>"Assets/Art/"+(string)p.Value["fbx"]).Where(File.Exists).ToArray();
+                 var paths=AssetDatabase.GetDependencies(sourceModels,true).Concat(AssetDatabase.GetDependencies(Canonical,true))
+                     .Concat(new[] { Canonical,Snapshot,Manifest,"Assets/Resources/World/VenueContentRegistry.asset","Packages/manifest.json","Packages/packages-lock.json" })
+@@ -584,7 +590,7 @@
+                     ["status"] = status, ["error"] = error, ["post_editor_exit_hash_check_required"] = true,
+                     ["files"] = new JArray(_hashes.Select(p => new JObject { ["path"] = p.Key,["sha256"] = p.Value }))
+                 }.ToString());
+-                Debug.Log("CTLIFE [terminal-cafe-b] protection receipt: " + Path.Combine(_backup,"transaction.json"));
++                Debug.Log("CTLIFE [terminal-cafe-b2] protection receipt: " + Path.Combine(_backup,"transaction.json"));
+             }
+         }
+         private static string Hash(string path)

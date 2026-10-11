@@ -1,0 +1,36 @@
+{
+  "status": "joint_candidate_target_not_native_accepted",
+  "chair_source": "native imported home_chair_1 B2 mesh",
+  "yaw_degrees": 180,
+  "center_relative_anchor_m": [
+    0,
+    0,
+    -0.3
+  ],
+  "scale_x_z": 1.08,
+  "scale_y": 1.1333935082885886,
+  "support_top_y_m": 0.45,
+  "support_x_bounds_m": [
+    -0.209414,
+    0.209414
+  ],
+  "support_z_bounds_m": [
+    -0.49189825,
+    -0.07307
+  ],
+  "bearing_region_xz_m": [
+    -0.145,
+    -0.42,
+    0.145,
+    -0.15
+  ],
+  "contact_underside_target_y_m": 0.452,
+  "approach_relative_anchor_m": [
+    0.95,
+    0,
+    -0.3
+  ],
+  "collider": "actual imported renderer AABB XZ; 2.4m tall navigation exclusion, same source bounds; no false walk-through chair",
+  "evidence": "At original seat height, corrected social tier0 eight phases/look have zero triangle intersections at deltaZ\u2212.20. Raised seat + per-look pelvis correction still require joint native recheck.",
+  "immutable": "Actor root and every wire anchor/rotation are unchanged. Both looks see one shared chair."
+}
