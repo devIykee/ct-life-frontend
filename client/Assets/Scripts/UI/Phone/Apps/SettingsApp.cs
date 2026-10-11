@@ -112,7 +112,10 @@ namespace CTLife.UI
             var credits = new DuoRow(() => Show(BuildCredits())).Leading(Duo.IconSquare("duo-info", "gray"))
                 .Title(Strings.T("settings.credits")).Chevron();
             credits.name = "settings-credits";
-            body.Add(Duo.Group(wallet, credits));
+            // Icons8's free licence asks for a visible link to icons8.com (the lobby icons).
+            var icons8 = new DuoRow(() => UnityEngine.Application.OpenURL(AssetCredits.Icons8Url)).Title(Strings.T("credits.icons8")).Value("icons8.com").Chevron();
+            icons8.name = "settings-icons8";
+            body.Add(Duo.Group(wallet, credits, icons8));
 
             var extra = ExtraSection?.Invoke();
             if (extra != null) body.Add(El.Div("duo-group duo-group-padded duo-group-legacy", extra));

@@ -359,7 +359,15 @@ The 29 Rain-derived cast appearances retain their existing Blender Foundation / 
 
 ## Lobby courtyard — 2026-10-12
 
-`client/Assets/Resources/UI/Onboarding/lobby-rooftop.png` — original generated CT Life lobby illustration, built-in OpenAI imagegen, 12 October 2026. No downloaded third-party game art is embedded. Source: `exec-7ef7fca0-58e2-421c-b204-6b05b18a5762.png`; exact prompt: `docs/research/lobby-rooftop-image-prompt-20261012.txt`. Reference/layout discussion: `docs/research/lobby-solana-duo-20261012.md`. This is background artwork, not a newly playable map.
+`client/Assets/Resources/UI/Onboarding/lobby-rooftop.png` — original generated CT Life lobby illustration, built-in OpenAI imagegen, 12 October 2026. No downloaded third-party game art is embedded. Source: `exec-7ef7fca0-58e2-421c-b204-6b05b18a5762.png`; exact prompt: `docs/research/lobby-rooftop-image-prompt-20261012.txt`. Reference/layout discussion: `docs/research/lobby-solana-duo-20261012.md`. This is background artwork, not a newly playable map. **Removed from the build 2026-10-16** (Arena lobby below replaced it; nothing else used it).
+
+## Lobby "Arena" — 2026-10-16
+
+| Name | Source | Licence / usage terms | Author | Date | Use |
+|---|---|---|---|---|---|
+| `client/Assets/Resources/UI/Lobby/lobby-plaza.png` (3840×1726, SHA-256 `c58d9ed6a2e81499a5651ba102687fda5fbcb09a96e439d0342afc5f18979923`) | Copied unchanged from `ct-life-evidence/title-keyart-20261016/blender/unity-bg/bg-dof.png`: a Unity render of the shipped Timeline Square venue by `TitleKeyArtCapture` (no actors, depth of field). | Our own render of the shipped venue (venue models keep the licences in their sections above). No AI image generation, no third-party imagery. | CT Life | 2026-10-16 | Signed-in lobby backdrop |
+| `client/Assets/Resources/UI/Lobby/invite-silhouette.png` (520×1000 white silhouette, SHA-256 `ccaf237c9cd1e4ab12677ef7a3fdb604e40ce12fc85ef0b7b1312250ebbb20a1`) | Flat white mask (brightness 0, invert) of `ct-life-evidence/lobby-redesign-20261016/man.png`, a render of our cast look `player_m_kol`, made in headless Chrome. | Outline of a derivative of the CC-BY 4.0 Snow Rig ((CC) Blender Foundation \| studio.blender.org, credited in the app). | CT Life | 2026-10-16 | "Invite fren" slot |
+| `client/Assets/Resources/UI/Lobby/Icons/*.png` — treasure-map, briefcase, bank, shop, coins, lightning-bolt, brain, crown, calendar, chat, smartphone (256×256 RGBA) | Icons8 "Windows 11 Color" style (API code `fluent`), each downloaded from `https://img.icons8.com/fluent/256/<name>.png` (e.g. https://img.icons8.com/fluent/256/treasure-map.png); per-icon URL list in `client/Assets/Resources/UI/Licenses/Icons8.txt`. Unmodified. | Icons8 free licence with attribution: link to https://icons8.com. Credited in the app (Settings → Credits & Licences → "Icons by Icons8", and a Settings row linking icons8.com); the Google Play description must also credit Icons8 (`docs/SUBMISSION-KIT.md`). Licence terms as stated by the coordinator; the Icons8 licence page could not be fetched here (Cloudflare), not re-verified in this task. | Icons8 | 2026-10-16 | Lobby rail, pills, meters, tiles, corner buttons |
 
 ## CTOS original app icon artwork — 12 October 2026
 

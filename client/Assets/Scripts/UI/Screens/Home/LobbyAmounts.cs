@@ -16,5 +16,14 @@ namespace CTLife.UI
                     return (decimal.Truncate(amount / unit.Item1 * 100m) / 100m).ToString("0.##", CultureInfo.InvariantCulture) + unit.Item2;
             return amount.ToString("0.####", CultureInfo.InvariantCulture);
         }
+
+        /// <summary>Lobby Cash: "$303.50" below $10,000, then compact ("$12.34K"); negative keeps its sign.</summary>
+        public static string Cash(long cents)
+        {
+            decimal amount = cents / 100m;
+            string sign = amount < 0 ? "-" : "";
+            decimal m = Math.Abs(amount);
+            return sign + "$" + (m >= 10000m ? Compact(m) : m.ToString("#,0.00", CultureInfo.InvariantCulture));
+        }
     }
 }

@@ -147,7 +147,7 @@ namespace CTLife.EditorTools
                     transport.Profile = Profile(head, i == 0 ? "Amara" : head == "head_hero_gynoid" ? "joel" : "city_regular",
                         debt: lobbyHook != null ? hookDebtCents : 0);
                     await profile.Refresh();
-                    home = new DashboardScreen(() => { }, id => phone.Open(id)) { OfflineOverride = false };
+                    home = new DashboardScreen(() => { }, id => phone.Open(id)) { OfflineOverride = false, DailyClue = _ => Task.FromResult("Red planet?") };
                     home.Show();
                     Bus.Publish(new MoodSignal { bps = 420 });
                     if (lobbyHook != null) { await wait(1.6f); await lobbyHook(phone); return; }
@@ -172,11 +172,29 @@ namespace CTLife.EditorTools
                         }
                     }
                 }
+                // Zero Cash, no debt, badges on Messages / Duo (real notification-center counts), Invite fren opens Calls.
+                home.Close();
+                transport.Profile = Profile("head_ubc_f", "nova", 0, 0, 100, 0);
+                await profile.Refresh();
+                DuoNotificationCenter.SetBadge("messages", 3);
+                DuoNotificationCenter.SetBadge("calls", 1);
+                home = new DashboardScreen(() => { }, id => phone.Open(id)) { OfflineOverride = false, DailyClue = _ => Task.FromResult("Red planet?") };
+                home.Show();
+                await shot("lobby-04b-zero-cash-no-debt-badges", 1.6f);
+                Inspect(home, "zero-cash-badges", report, expect);
+                expect(home.Element.Q("home-chip-debt")?.resolvedStyle.display == DisplayStyle.None, "no debt: the Owe pill is hidden");
+                expect(home.Element.Q<Label>("home-phone-badge")?.text == "4", "Duo sticker shows the notification total");
+                home.PressInvite();
+                await shot("lobby-04c-invite-opens-calls", .9f);
+                expect(phone.IsOpen, "Invite fren opens the Duo (Calls)");
+                phone.Close();
+                DuoNotificationCenter.SetBadge("messages", 0);
+                DuoNotificationCenter.SetBadge("calls", 0);
                 home.Close();
                 transport.Profile = Profile("head_rain", new string('W', 20), 123456789000L, 72000, 7, 22);
                 await profile.Refresh();
                 rpc.Large = true; now += TimeSpan.FromSeconds(31); await wallet.Refresh();
-                home = new DashboardScreen(() => { }, id => phone.Open(id)) { OfflineOverride = false };
+                home = new DashboardScreen(() => { }, id => phone.Open(id)) { OfflineOverride = false, DailyClue = _ => Task.FromResult("Red planet?") };
                 home.Show();
                 await shot("lobby-05-long-identity-debt-large-wallet", 1.6f);
                 Inspect(home, "long-identity-debt-large-wallet", report, expect);
@@ -222,7 +240,7 @@ namespace CTLife.EditorTools
                 }
 
                 // The production shell keeps the lobby underneath, with its real outside-dismiss scrim.
-                foreach (var app in new[] { "phone", "map", "jobs", "bank", "profile", "home", "settings" })
+                foreach (var app in new[] { "phone", "map", "jobs", "bank", "shop", "profile", "home", "week", "messages" })
                 {
                     phone.Open(app == "phone" ? null : app);
                     await shot("lobby-app-" + app, .8f);
@@ -266,12 +284,13 @@ namespace CTLife.EditorTools
             return new JObject
             {
                 ["user"] = new JObject { ["id"] = Owner, ["wallet"] = Wallet, ["isSeeker"] = true, ["hasCharacter"] = true },
-                ["character"] = new JObject { ["alias"] = alias, ["tribeId"] = "builder", ["dreamId"] = "build_a_project",
+                ["character"] = new JObject { ["alias"] = alias, ["tribeId"] = "builder", ["dreamId"] = "make_10k",
                     ["traitIds"] = new JArray("fast_talker", "iron_will"),
                     ["look"] = new JObject { ["skinTone"] = look[0], ["headId"] = look[1], ["hairId"] = look[2], ["topId"] = look[3], ["bottomId"] = look[4], ["shoesId"] = look[5], ["accId"] = look[6] } },
                 ["needs"] = new JObject { ["energy"] = energy, ["hunger"] = 50, ["fun"] = 50, ["hygiene"] = 50, ["sanity"] = sanity },
                 ["skills"] = new JObject { ["clout"] = 1, ["coding"] = 1, ["trading"] = 1, ["writing"] = 1, ["design"] = 1, ["security"] = 1 },
-                ["cashCents"] = cash, ["debtCents"] = debt, ["homeId"] = "studio", ["minerTier"] = "none", ["flags"] = new JObject { ["lotteryRolled"] = true }
+                ["cashCents"] = cash, ["debtCents"] = debt, ["homeId"] = "studio", ["minerTier"] = "none", ["flags"] = new JObject { ["lotteryRolled"] = true,
+                    ["dreamProgress"] = new JObject { ["current"] = Math.Max(0, cash), ["target"] = 1000000, ["unit"] = "cents" } }
             };
         }
 
@@ -283,9 +302,11 @@ namespace CTLife.EditorTools
             expect = (pass, message) => { checks++; if (!pass) emit(false, message); };
             var root = home.Element;
             var controls = root.Query<VisualElement>().ToList().Where(e =>
-                (e.name == "home-identity" || e.name == "home-wallet" || e.name == "home-enter" ||
-                 e.name.StartsWith("home-tile-", StringComparison.Ordinal) || e.name.StartsWith("home-chip-", StringComparison.Ordinal) ||
-                 e.ClassListContains("home-settings") || e.ClassListContains("home-card") || e.ClassListContains("home-today-chip")) && e.resolvedStyle.display != DisplayStyle.None).ToList();
+                (e.name == "home-identity" || e.name == "home-wallet" || e.name == "home-enter" || e.name == "home-invite" ||
+                 e.name == "home-messages" || e.name == "home-week" ||
+                 e.name.StartsWith("home-tile-", StringComparison.Ordinal) || (e.name.StartsWith("home-chip-", StringComparison.Ordinal) && e.name != "home-chip-wallet") ||
+                 e.ClassListContains("home-card") || e.ClassListContains("home-today-chip")) && e.resolvedStyle.display != DisplayStyle.None
+                 && e.GetFirstAncestorOfType<CTLife.UI.Kit.Popover>() == null).ToList();
             expect(controls.Any(e => e.name == "home-wallet") && controls.Any(e => e.name == "home-identity"), name + ": top identity and wallet present");
             var rectangles = new JArray();
             foreach (var element in controls)
@@ -309,7 +330,7 @@ namespace CTLife.EditorTools
             var wallet = root.Q("home-wallet");
             if (wallet != null)
             {
-                var amounts = wallet.Query<Label>(className: "home-wallet-amount").ToList();
+                var amounts = wallet.Query<Label>(className: "home-pill-value").ToList();
                 for (int i = 0; i < amounts.Count; i++)
                 {
                     expect(Contains(wallet.worldBound, amounts[i].worldBound, 1f), name + ": wallet amount is inside its card");
