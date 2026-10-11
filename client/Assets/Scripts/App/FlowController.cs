@@ -129,7 +129,7 @@ namespace CTLife.App
         /// <summary>One attempt at config → resume or sign-in → profile/onboarding → rooms. Throws on any failure.</summary>
         private async Task StartSession()
         {
-            var splash = new SplashScreen();
+            var splash = SplashScreen.TakeBoot() ?? new SplashScreen();
             ShowFlow(splash);
             try
             {

@@ -15,4 +15,6 @@ rsync -a --delete --delete-excluded ${EXCL[@]+"${EXCL[@]}"} "$REPO/client/Assets
 
 rsync -a --delete "$REPO/client/ProjectSettings/" "$B/ProjectSettings/"
 rsync -a --delete "$REPO/client/Packages/" "$B/Packages/"
+# Brand source for BrandAssets.Apply (resolved as ../../art/branding/logo from Assets).
+mkdir -p "$B/../art/branding" && rsync -a --delete "$REPO/art/branding/logo/" "$B/../art/branding/logo/"
 echo "synced to $B (lanes excluded: ${EXCL[*]+${EXCL[*]}})"

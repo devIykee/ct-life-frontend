@@ -126,6 +126,7 @@ namespace CTLife.EditorTools
 
         private static bool BuildPlayer(string outPath, bool development, string[] extraDefines)
         {
+            BrandAssets.Apply(); // icons + splash regenerated from art/branding/logo on every build
             ProjectSetup.ConfigureAndroid();
             if (File.Exists(AuthoredCharacterImport.PrefabPath))
                 CharacterValidation.ValidateSnowAsset(AuthoredCharacterImport.PrefabPath);

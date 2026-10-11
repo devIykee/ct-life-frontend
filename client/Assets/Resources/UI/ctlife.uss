@@ -518,3 +518,16 @@
 .ct-stepper { align-items: center; margin-top: 12px; margin-bottom: 12px; }
 .ct-stepper-btn { min-width: 112px; min-height: 96px; font-size: 40px; }
 .ct-stepper-value { min-width: 120px; -unity-text-align: middle-center; font-size: 32px; }
+
+/* Brand (art/branding/logo): the official CT mark replaces the old building icon at the same sizes. Fonts unchanged.
+   Only the loading screen takes the brand purple (sampled from ct-mark-on-purple), matching the Android splash. */
+.ct-brand-logo { width: 84px; height: 84px; margin-right: 20px; -unity-background-scale-mode: scale-to-fit; flex-shrink: 0; }
+.ct-brand-compact .ct-brand-logo { width: 68px; height: 68px; }
+.ct-splash-mark { width: 192px; height: 192px; margin-bottom: 36px; -unity-background-scale-mode: scale-to-fit; }
+.ct-busy-mark { width: 52px; height: 52px; -unity-background-scale-mode: scale-to-fit; flex-shrink: 0; }
+.ct-brand-screen { background-color: rgb(32, 4, 82); }
+.ct-root .layer-screen-backdrop.ct-backdrop-brand { background-color: rgb(32, 4, 82); } /* full-bleed behind safe-area insets */
+.ct-brand-screen .ct-logo { color: rgb(255, 255, 255); }
+.ct-brand-screen .ct-tagline, .ct-brand-screen .ct-splash-status { color: rgba(255, 255, 255, 0.78); }
+.ct-brand-screen .ct-loading-track { background-color: rgba(255, 255, 255, 0.22); overflow: hidden; }
+.ct-brand-screen .ct-loading-accent { position: absolute; width: 40%; background-color: rgb(255, 255, 255); }

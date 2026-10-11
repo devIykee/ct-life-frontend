@@ -1,3 +1,4 @@
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace CTLife.UI
@@ -5,16 +6,30 @@ namespace CTLife.UI
     public sealed class SplashScreen : UiScreen
     {
         private Label _status;
+        private static SplashScreen _boot;
+
+        /// <summary>Shown by GameBootstrap on the first frame, so launch never shows an empty scene; the flow adopts it.</summary>
+        public static void ShowBoot() { if (_boot == null) { _boot = new SplashScreen(); _boot.Show(); } }
+        public static SplashScreen TakeBoot() { var s = _boot; _boot = null; return s; }
 
         protected override VisualElement Build()
         {
             _status = El.Text(Strings.T("splash.gm"), "ct-splash-status");
-            return El.Div("ct-splash",
-                El.Div("ct-splash-emblem", new UiIcon("city")),
+            var accent = El.Div("ct-loading-accent");
+            var root = El.Div("ct-splash ct-brand-screen",
+                El.LogoMark("ct-splash-mark"),
                 El.Text(Strings.Brand, "ct-logo"),
                 El.Text(Strings.T("splash.tagline"), "ct-tagline"),
-                El.Div("ct-loading-track", El.Div("ct-loading-accent")),
+                El.Div("ct-loading-track", accent),
                 _status);
+            // Indeterminate progress: the accent sweeps across the track.
+            float t = 0f;
+            root.schedule.Execute(() =>
+            {
+                t = (t + 0.035f) % 1.35f;
+                accent.style.left = Length.Percent(Mathf.Lerp(-40f, 100f, Mathf.Clamp01(t)));
+            }).Every(33);
+            return root;
         }
 
         public void SetStatus(string text)

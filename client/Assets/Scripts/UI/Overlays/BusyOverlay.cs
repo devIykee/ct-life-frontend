@@ -24,7 +24,7 @@ namespace CTLife.UI
             _ui = UiRoot.Instance;
             _label = El.Text("", "ct-body");
             _root = El.Div("ct-modal-backdrop ct-busy",
-                El.Div("ct-card ct-busy-card", new UiIcon("city"), El.Text(Strings.T("busy.title"), "ct-h1"), _label,
+                El.Div("ct-card ct-busy-card", El.LogoMark("ct-busy-mark"), El.Text(Strings.T("busy.title"), "ct-h1"), _label,
                     El.Text(Strings.T("busy.body"), "ct-small ct-muted")));
             _root.pickingMode = PickingMode.Position;
             _root.Show(false);

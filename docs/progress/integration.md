@@ -220,6 +220,106 @@ the client code would be unverifiable, so it waits for the room.
   NPCs, sees bot move (2.0 m) and chat, bot sees our move/emote/say, shift pays Cash (30000→34000), block/report/
   unblock, token refresh + rejoin. FAIL: venue isolation (backend item 39; client guard refuses the wrong room).
 
+## 2026-10-08: Branding (official CT mark in the app)
+
+Scope after the user's correction: only the CT mark (`art/branding/logo/ct-mark-*.png`, c3a17bb) is approved. The
+website draft is not approved. So there is no DynaPuff or Chakra Petch, no new lockup, and no other layout, colour or font changes.
+
+**Generator.** `client/Assets/Scripts/Editor/BrandAssets.cs` produces every brand asset from the source.
+- Run it from the menu (CT Life → Build → Apply brand assets) or in batch
+  (`-executeMethod CTLife.EditorTools.BrandAssets.ApplyBatch`).
+- `BuildScript.BuildPlayer` calls it before every build, so icons and splash always match the source.
+- It rewrites only files whose bytes changed, and reimports only when importer settings changed.
+- `sync_build_clone.sh` now copies `art/branding/logo` next to the build clone.
+- If the source is missing, it keeps the committed outputs and logs a warning.
+
+**Colour and icons**
+- **Brand purple** sampled from `ct-mark-on-purple-1254.png`: rgb(32,4,82) = `#200452`.
+- **Android icons** live in `client/Assets/Art/branding/generated/`:
+  - Adaptive icon: 432 px solid purple background, transparent-mark foreground. The mark's farthest opaque pixel sits at
+    0.96 × the 66 % safe-circle radius (108 dp layer, 66 dp safe zone).
+  - Legacy icon: 192 px, mark on purple (radius 78 %).
+  - Round icon: 192 px, the same, circle-masked (radius 82 %).
+  - All 6 densities of each kind are set through `PlayerSettings.SetPlatformIcons` (adaptive = [background, foreground]).
+  - The APK carries `mipmap-anydpi-v26/app_icon.xml`, `app_icon_round`, `ic_launcher_foreground/background` and
+    `drawable/unity_static_splash.png`.
+
+**Splash.** Unity's "Made with Unity" splash is **off** (`SplashScreen.show = false`, `showUnityLogo = false`,
+background `#200452`). The Android static splash image is the mark centred on purple (2670×1200, scale-to-fill).
+Sources:
+- Unity 6.2 Manual, Splash Image Player settings,
+  https://docs.unity3d.com/6000.2/Documentation/Manual/class-PlayerSettingsSplashScreen.html: "Use the Splash Image
+  Player settings to customize or disable the Unity logo, add your own logos, or disable the splash screen entirely."
+- 6000.3 Scripting API `PlayerSettings.SplashScreen.show`: "Set this property to false to disable the Splash Screen".
+  Also `showUnityLogo`.
+- Unity blog, 2024-09-12, https://unity.com/blog/unity-is-canceling-the-runtime-fee: "The Made with Unity splash
+  screen will become optional for Unity Personal games made with Unity 6 when it launches later this year."
+- [Unverified] The 6000.3 Manual page returned 404 at both URLs I tried, so the exact 6.3 Manual wording is
+  unconfirmed. The 6.3 API and the policy above are confirmed.
+
+**In app.** The mark replaces the old building icon at the same sizes:
+- `El.Brand()` (sign-in, character creator, connection-retry, update-required). The "CT LIFE" wordmark beside it keeps
+  its current `.ct-brand-wordmark` font and colour.
+- Loading-screen emblem, 192 px.
+- Busy overlay, 52 px.
+- Mark source: `client/Assets/Resources/UI/Brand/ct-mark.png` (512 px, ASTC 4x4).
+
+No lockup was added where none existed (lobby and phone home are unchanged).
+
+**Launch.** `GameBootstrap.Awake` now creates `UiRoot` and shows the loading screen before perf and audio init. The
+flow adopts that same screen (`SplashScreen.TakeBoot`), so the scene's empty sky is never shown. The loading screen is
+the only screen that takes the brand purple, so it matches the Android splash. Its text is white and its progress bar
+is an indeterminate sweep. Retry and update screens keep their colours.
+
+**Seeker (SM02G40619141343), dev APK env=local, cold launches.** Evidence is in `../ct-life-evidence/branding/`.
+
+| Stage | Result | Evidence |
+|---|---|---|
+| Launcher icon | CT mark on brand purple, inside the launcher's squircle mask, label "CT Life" | `01-launcher-icon.png`, `01-launcher-icon-crop.png` |
+| Splash | Tap → purple window (≈1.1 s) → mark centred on purple (1.35–4.38 s). No Unity logo, no empty sky. [Unverified] whether that frame is drawn by Android's 12+ system splash or by Unity's static splash; both are branded. | `02-splash-static.png`, `coldstart-fresh.mp4` |
+| Loading | On a local backend the static splash holds until the first UI is ready: frame-by-frame, sign-in follows the splash directly (`-e fresh 1` at 4.38 s; dev autologin at 4.55 s). With the backend unreachable, the in-app loading screen shows for 4–8 s (purple full-bleed, mark, existing "CT LIFE" font, tagline, sweeping bar, status), then the retry screen. | `03-loading.png`, `coldstart-offline.mp4` |
+| Sign-in (`seeker_launch.sh -e fresh 1`) | Header: mark + "CT LIFE" in the existing font. Nothing else changed. | `04-signin.png` |
+| Home / lobby (`-e autologin dev -e autocreate 1`) | Unchanged, as the correction requires (no lockup added) | `05-home-lobby.png`, `coldstart-autologin.mp4` |
+| Connection retry | Mark replaces the building icon | `06-retry-offline.png` |
+
+Notes for the coordinator:
+- The retry screen's "Try again" button renders as a narrow pill with the text wrapped ("a / g"); see `06-retry-offline.png`.
+  [Inference] It predates this change, because its button, classes and container styles are untouched. I did not fix it
+  because of the "no other layout changes" rule. It needs a go-ahead.
+- `-e fresh 1` cleared the user's real SIWS session on the Seeker. The device is now signed in as dev wallet
+  `dev67417`. The next real-wallet check needs the user's fingerprint sign-in again.
+- The dev APK is 213.5 MiB. The release-size budget (140.3 MiB last round) was not re-measured. The new assets add
+  [Inference] roughly 0.3 MiB of icon/splash PNGs plus a ≈0.33 MiB 512 px ASTC 4x4 mark with mipmaps (not measured).
+- Build logs: `../ct-life-evidence/branding/apply-brand.log` (one main-project batch run) and `build-dev.log`.
+  Compile check is green in all three passes. The single editor warning is in the venue lane's `VenueVerify.cs`.
+
+**READY TO COMMIT (branding).** These are all of this round's changes. Nothing else in the tree is mine.
+- Modified:
+  - `client/Assets/Resources/UI/ctlife.uss`
+  - `client/Assets/Scripts/App/FlowController.cs`
+  - `client/Assets/Scripts/App/GameBootstrap.cs`
+  - `client/Assets/Scripts/Editor/BuildScript.cs`
+  - `client/Assets/Scripts/UI/El.cs`
+  - `client/Assets/Scripts/UI/Overlays/BusyOverlay.cs`
+  - `client/Assets/Scripts/UI/Screens/SplashScreen.cs`
+  - `client/Assets/Scripts/UI/UiRoot.cs`
+  - `client/ProjectSettings/ProjectSettings.asset`
+  - `tools/integration/sync_build_clone.sh`
+  - `docs/progress/integration.md`
+- New:
+  - `client/Assets/Scripts/Editor/BrandAssets.cs` (+ `.meta`)
+  - `client/Assets/Resources/UI/Brand.meta`
+  - `client/Assets/Resources/UI/Brand/ct-mark.png` (+ `.meta`)
+  - `client/Assets/Art/branding.meta`
+  - `client/Assets/Art/branding/generated.meta`
+  - `client/Assets/Art/branding/generated/` files, each with its `.meta`:
+    - `icon_adaptive_background_432.png`
+    - `icon_adaptive_foreground_432.png`
+    - `icon_legacy_192.png`
+    - `icon_round_192.png`
+    - `splash_landscape_2670x1200.png`
+- Not included: DynaPuff and Chakra Petch (removed per the correction; no font files or USS references remain).
+
 ## Status
 
 - [x] Part A.1 backend up, tests run, commands documented

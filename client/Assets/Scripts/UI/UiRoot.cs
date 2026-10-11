@@ -128,6 +128,7 @@ namespace CTLife.UI
                 foreach (var screen in ScreenLayer.Children())
                     if (screen.resolvedStyle.display != DisplayStyle.None) topScreen = screen;
             _screenBackdrop.EnableInClassList("ct-backdrop-lobby", topScreen != null && topScreen.ClassListContains("ct-lobby"));
+            _screenBackdrop.EnableInClassList("ct-backdrop-brand", topScreen != null && topScreen.ClassListContains("ct-brand-screen"));
             _screenBackdrop.Show(topScreen != null);
         }
 

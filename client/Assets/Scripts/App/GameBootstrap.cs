@@ -53,9 +53,12 @@ namespace CTLife.App
             Services.Register<IWalletSignIn>(wallet);
             Services.Register<ITransactionSigner>(wallet);
 
+            // Brand first: the first rendered frame is the full-screen branded loading screen, never the
+            // scene's empty sky (launch showed 3-4 s of sky before the flow's first screen).
+            UiRoot.Create();
+            SplashScreen.ShowBoot();
             PerfManager.Ensure();
             AudioManager.Create();
-            UiRoot.Create();
             AvatarLod.Ensure();
         }
 
