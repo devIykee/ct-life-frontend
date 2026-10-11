@@ -1,3 +1,7 @@
+CHECKPOINT NOT PUSHED: committed locally on `dev` (last content commit ab203aa). GitHub rejected
+the push: "This repository exceeded its LFS budget." Waiting on the user to raise the GitHub LFS
+budget; see "Push" below. Do not force-push or rewrite history.
+
 # Repo steward log
 
 Agent: repo steward (authorized by the coordinator to stage, commit and push in this repo).
@@ -97,3 +101,42 @@ These follow, in order: docs, website, tools/backend-local.
 - Review harnesses are in their own commit (`b23bb72`). They depend on the symlinked evidence paths.
 - Runtime folders still contain probe code: `UI/Phone/Apps/PerpsReviewProbe.cs` and
   `Net/Voice/SpacesCaptureProbe.cs`.
+In addition to the 13 commits above:
+```
+ebaf25b docs: checkpoint progress logs, research, handoff, QA and proposals
+fb130fb feat(website): checkpoint landing page, assets and credits
+ab203aa chore(tools): checkpoint local backend run scripts (work in progress)
+```
+
+### Push: BLOCKED (2026-10-07 23:05 WAT)
+- Ran `git push -u origin dev`. Git LFS's pre-push upload was refused 23 times with:
+  `batch response: This repository exceeded its LFS budget. The account responsible for the budget should increase it to restore access.`
+  The run ended with `error: failed to push some refs to 'https://github.com/Immadominion/ct-life.git'`.
+- Nothing reached GitHub: `Uploading LFS objects: 0% (0/100)`, there is no remote `dev` branch,
+  and `origin/main` is still `95cd4b9`. I did not retry, force-push, or push without LFS.
+  `--no-verify` would leave dangling pointers.
+- The push would have sent about 24 MB of compressed git objects (11,068 objects) plus
+  2,240 unique LFS objects (1,019 MB).
+- [Inference] The repo had no LFS objects before this push, so the refusal comes from the
+  account's LFS budget or billing setting, not from this repo's size. I could not read billing
+  usage: `gh api /users/Immadominion/settings/billing/usage` needs the `user` scope, and I did not
+  change auth.
+- **To unblock (user action):** on GitHub, go to Settings → Billing and licensing → Budgets and
+  alerts, and raise or remove the Git LFS budget, or check the LFS quota for the account. Then
+  re-run `git push -u origin dev` from this repo. Nothing else needs to change.
+- Local sizes: `.git` is 1.2 GB (242 MB objects, 976 MB LFS store). HEAD has 3,375 LFS files.
+  The archive at `../ct-life-evidence` is 8.7 GB.
+
+### Left uncommitted, on purpose
+- `client/Assets/Scripts/Features/Money/**` (17 files, still being written by another agent at
+  22:53–23:0x, and no `.meta` files yet). Committing them now would break `.meta` pairing.
+- `art/character-candidates/raw/`, `**/archive/`, `*.obj.gz` frame dumps (direction, vincent-idle),
+  `*.log`, `client/Assets/_Recovery`: ignored by design, still on local disk only.
+
+### Licence and ledger gaps (re-checked 23:05, none fixed by me)
+- `AssetCredits.cs` has no Vincent entry, and `art/LICENSES.md` has no Vincent runtime-derivative row.
+- `art/LICENSES.md` still says the KayKit rows are "Outside-Assets" (4 rows), but 5 `Knight.fbx` copies are in `client/Assets`.
+- There are no rows for the Snow/Rain RelaxedIdle clips, `HomeWeave.png` or `HomeDetailAtlas.png`. HomeWeave is used by the build.
+- The AI image generator is recorded only as `"image_gen.imagegen built-in"` in `art/lobby/city-diorama.provenance.json`,
+  and the ClipCut and branding manifests have the same gap. No model is named and no terms are linked.
+- `art/branding/concepts` uses a Solana-mark silhouette and needs a trademark review before any public use.
