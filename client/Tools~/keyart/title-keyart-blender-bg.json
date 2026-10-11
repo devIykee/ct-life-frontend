@@ -1,0 +1,26 @@
+{
+  "venue": "timeline_square",
+  "light": {
+    "lightmaps": true,
+    "fog": false,
+    "sunEuler": [30, 40, 0],
+    "sunColor": [1.0, 0.76, 0.52],
+    "sunIntensity": 1.6,
+    "shadowDistance": 30,
+    "fill": { "euler": [10, 200, 0], "intensity": 0.4 }
+  },
+  "plates": [
+    {
+      "name": "BG_DOF", "file": "bg-dof.png", "width": 3840, "height": 1726, "supersample": 2,
+      "camera": { "pos": [0, 0.55, -11.4], "target": [0, 1.05, -6.2], "mm": 35 },
+      "post": { "focus": 4.9, "aperture": 1.2, "focal": 90, "vignette": 0.0, "bloom": 0.5 },
+      "actors": []
+    },
+    {
+      "name": "BG_SHARP", "file": "bg-sharp.png", "width": 3840, "height": 1726, "supersample": 2,
+      "camera": { "pos": [0, 0.55, -11.4], "target": [0, 1.05, -6.2], "mm": 35 },
+      "post": { "focus": 4.9, "aperture": 32, "focal": 10, "vignette": 0.0, "bloom": 0.5 },
+      "actors": []
+    }
+  ]
+}

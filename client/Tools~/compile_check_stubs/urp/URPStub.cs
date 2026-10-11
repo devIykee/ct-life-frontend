@@ -42,8 +42,14 @@ namespace UnityEngine.Rendering.Universal
     }
     // Mirrors URP 17.3.0 Runtime/UniversalAdditionalCameraData.cs (CameraExtensions line 171, class line 442,
     // renderPostProcessing line 789), used by World/Venue/VenueLook.cs.
+    // UniversalAdditionalCameraData.cs l.42 (AntialiasingMode), l.93 (AntialiasingQuality), l.799/809 (properties).
+    public enum AntialiasingMode { None, FastApproximateAntialiasing, SubpixelMorphologicalAntiAliasing, TemporalAntiAliasing }
+    public enum AntialiasingQuality { Low, Medium, High }
+
     public partial class UniversalAdditionalCameraData : MonoBehaviour
     {
+        public AntialiasingMode antialiasing { get; set; }
+        public AntialiasingQuality antialiasingQuality { get; set; }
         public bool renderPostProcessing { get; set; }
         public bool renderShadows { get; set; }
         public bool allowXRRendering { get; set; }
