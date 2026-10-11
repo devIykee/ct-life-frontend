@@ -22,7 +22,12 @@ for p in 4010 2567 3000 7880 7881; do "${ADB[@]}" reverse tcp:$p tcp:$p >/dev/nu
 "${ADB[@]}" logcat -v time -s Unity:V CRASH:E AndroidRuntime:E libc:F DEBUG:F > "$BASE.logcat.txt" &
 LOGPID=$!
 "${ADB[@]}" shell dumpsys gfxinfo $PKG reset >/dev/null 2>&1
-"${ADB[@]}" shell am start -W -n $PKG/$ACT "$@" | grep -E "Status|TotalTime|WaitTime"
+# Launch extras are honoured only with a key in the app's private files (LaunchArgs.cs); run-as works on
+# debuggable (development) builds only. A fresh key per run.
+KEY="$(openssl rand -hex 24)"
+"${ADB[@]}" shell "run-as $PKG sh -c 'mkdir -p files && echo $KEY > files/automation.key'" \
+  || echo "!! run-as failed (non-debuggable build?): launch extras will be ignored"
+"${ADB[@]}" shell am start -W -n $PKG/$ACT -e automationKey "$KEY" "$@" | grep -E "Status|TotalTime|WaitTime"
 sleep "$SECS"
 "${ADB[@]}" exec-out screencap -p > "$BASE.png"
 "${ADB[@]}" shell dumpsys gfxinfo $PKG > "$BASE.gfxinfo.txt"
