@@ -447,6 +447,7 @@ $A shell dumpsys activity activities | grep topResumedActivity              # ch
 ```
 
 ## 10. Exact next steps
+0. **Read `docs/handoff/DEEP-AUDIT-20261018.md` and fix its P0 list first.** The game isn't demo-ready until its hand-played route runs clean twice.
 1. Collect the Feel lane's F6 report (branch `feat/feel-v2-peds*`) and merge it if it compiles.
 2. Collision audit and fixes (§4.1.1): World lane for generator, colliders and shells; Feel lane for the controller,
    vehicles and pedestrians.
