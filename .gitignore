@@ -25,3 +25,62 @@ art/raw/
 audio/raw/
 # OS
 .DS_Store
+
+# ---------------------------------------------------------------------------
+# Added 2026-10-07 by repo steward (docs/qa/2026-10-07/repo-hygiene.md §1.5)
+# ---------------------------------------------------------------------------
+
+# Python (repo-wide)
+__pycache__/
+*.py[cod]
+.venv/
+
+# Unity extras
+client/.utmp/
+client/Assets/_Recovery/
+client/Assets/_Recovery.meta
+client/[Mm]emoryCaptures/
+client/.vs/
+client/*.userprefs
+client/Assets/Resources/PerformanceTestRun*.json*
+*_BurstDebugInformation_DoNotShip/
+*.apks
+*.symbols.zip
+
+# Blender autosaves
+*.blend1
+*.blend2
+
+# Logs / caches / raw downloads
+*.log
+# Third-party originals, incl. proprietary metaperson-evaluation-only/ — NEVER commit.
+art/character-candidates/raw/
+art/character-candidates/export-check
+art/character-candidates/**/archive/
+
+# Evidence — archived to ../ct-life-evidence/ (manifest: docs/evidence-archive-manifest.txt).
+# No trailing slash on purpose: some of these are now symlinks into the archive.
+docs/progress/screens
+docs/qa/*/device
+art/character-candidates/motion-review-*
+art/character-candidates/locomotion-quality-*
+art/character-candidates/comparisons
+art/character-candidates/evidence
+art/character-candidates/renders
+art/character-candidates/thumbs
+art/character-candidates/user-tabs-audit
+art/character-candidates/work
+art/character-candidates/male-source-audit
+art/character-candidates/snow-adult-proof
+art/character-candidates/snow-hand-quality
+art/character-candidates/unity-snow/calf-quality-candidate
+art/gameplay-candidates
+website/draft-01
+website/evidence
+*.obj.gz
+
+# macOS
+._*
+.AppleDouble
+.Spotlight-V100
+.Trashes
