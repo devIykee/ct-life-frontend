@@ -1,0 +1,67 @@
+# Changelog
+
+All notable changes to the Colyseus Unity SDK are documented in this file.
+
+## 0.18.8
+
+- New **Window > Colyseus > Game Server** panel: start and stop your Node.js server from inside Unity, with its output streamed into a searchable, colored console. The server survives script recompiles and Play mode, re-attaches after an editor restart, and stops when you quit Unity — there is a toggle if you would rather it didn't.
+- Schema Codegen gained a **Detect** button that finds the schema files in your server project, and now accepts `**` globs such as `src/rooms/**/*.ts`. [#260](https://github.com/colyseus/colyseus-unity-sdk/issues/260)
+- The editor windows no longer print a warning to the console every time you open them, and now show the Colyseus icon in their tab. "Report an Issue" moved into each window's overflow menu.
+
+## 0.18.7
+
+- Fix the Room Inspector showing "Error: Could not access MapSchema items" for every `MapSchema` field, and those maps coming out empty in "Copy State". Thanks @konistehrad for reporting! [#271](https://github.com/colyseus/colyseus-unity-sdk/issues/271)
+
+## 0.18.6
+
+- Fix arrays of strings or numbers showing duplicate entries right after joining a room, and `OnAdd` / `Listen` firing again for entries and fields that didn't change after joining or reconnecting. Both now match the JS SDK.
+
+## 0.18.5
+
+- `MapSchema` and `ArraySchema` now implement `IReadOnlyDictionary<string, T>` / `IReadOnlyList<T>`, so `foreach` and LINQ work on them directly, and maps iterate in insertion order like the JS SDK. Loop `map.Values` for the items — the obsolete `map.items` still works.
+- Fix callbacks never firing on a collection that starts empty rather than `null`, which is how `schema-codegen` 5.0.29+ generates collections.
+- `float32` fields and collections declared `double` now decode at full precision, matching what `schema-codegen` 5.0.29+ generates. Previously a `float32` collection declared `double` threw `InvalidCastException`.
+- The input render delay now follows the `Predict`'s lerp `Delay`, as in the JS SDK, so lag compensation rewinds to where remote entities are drawn. An explicit `InputOptions.RenderDelay` still wins; the field is now `double?`.
+- Add `ctx.TryMemo()`, which tells a stored `null` apart from nothing stored and never recomputes on replay; `AttachOptions`, to pass the field list and options to `Predict.AttachAll()` / `Attach()` in one object; and `PredictGetOptions.Name`, a label for logs and debug tooling.
+
+## 0.18.4
+
+- Fix `t.quantized()` fields on a range symmetric about zero (`min: -1, max: 1`) never decoding an exact `0`. A released input axis or a resting velocity arrived as one quantum above zero, so a `== 0` check never fired and anything integrating the value drifted. Requires a server on @colyseus/schema 5.0.27 — the wire mapping for these fields changed.
+
+## 0.18.3
+
+- Fix the SDK not compiling when installed from UPM or the released `.unitypackage`: four runtime files shipped without a `.meta`, so Unity skipped them and `Room.cs` itself failed to build with `RoomClock`, `InputHandle`, `InputOptions` and `QuantizeDescriptor` unresolved. Every 0.18 release so far was affected; installing from a clone was not. Thanks @byteflowx for the diagnosis! [#270](https://github.com/colyseus/colyseus-unity-sdk/issues/270)
+
+## 0.18.2
+
+- Fix prediction drifting on `t.quantized()` input fields. The input instance kept the raw assigned value while the wire carried the quantized one, so the reconciler replayed from a value the server never sees — a mispredict every frame. Assigned values are now snapped to their wire-exact value on encode, and a jitter landing in the same quantization bucket no longer re-transmits.
+- Fix input fields left at their default value never reaching the server. The first packet diffed against the construction defaults, so `input.moveR = 0` was silently dropped; with `defineInput({ sanitize })` the server then floor-clamped the never-received field to its minimum — an untouched `moveR: [-1, 1]` arriving as `-1`, i.e. a phantom held stick. The first `Encode()` after construction (or `Reset()`) now emits every field, matching the JS SDK, where a field initializer marks the field dirty.
+
+## 0.18.1
+
+- Fix the `Colyseus.MonoGame` NuGet package pulling in a 0.17 core, which cannot connect to a 0.18 server. It also targets `net8.0` again, so MonoGame's own project templates can reference it.
+
+## 0.18.0
+
+- Add `room.Request<TResponse>(type, payload)`: sends a message and awaits the value the server's `onMessage()` handler returns. A server-side rejection or fault throws `RequestError` (`Name`, `Code`, `Payload`, `Faulted`); no reply within `Room.DefaultRequestTimeout` (10s, or the per-call `timeoutMs`) throws `TimeoutException`. `room.Send(type, payload, callback)` is the callback form, receiving `(response, error)`.
+- Fix numeric message types of 128 and above being sent as a raw byte, which the server misread as a map/string prefix. `Send`, `SendBytes` and `Request` now encode them the way the JS SDK does.
+- `room.OnMessage()` now accepts multiple handlers for the same message type, and returns an `Action` that removes the handler — previously a second registration threw, and handlers could not be removed. Handlers run in registration order and must share the same `MessageType`. Thanks @sticmac! [#199](https://github.com/colyseus/colyseus-unity-sdk/pull/199)
+- `"number"` fields now keep full precision wherever the destination can hold it: fields declared `double`, every `DynamicSchema` field, and collections of `object` or `double`. Previously all of them decoded as `float`, silently quantising large values — epoch milliseconds lost up to 65536 ms — and `ArraySchema<double>` could not decode at all. Fields generated as `float` by `schema-codegen --csharp` are unaffected. Thanks @kuoder! [#267](https://github.com/colyseus/colyseus-unity-sdk/pull/267)
+- Update the bundled GameDevWare.Serialization to 3.0.0. **Breaking:** a `DateTime` written to JSON — join/matchmaking options and auth request bodies — now keeps its `Kind` instead of being reinterpreted as UTC and rendered in the client's local time, so an `Unspecified` value is now sent without a timezone (`2026-08-13T12:00:00.0000000`) rather than with the local offset. Pass `DateTimeKind.Utc` if the receiver expects an absolute instant. Room messages are unaffected — MessagePack output is byte-for-byte identical. Serializing a circular graph now throws `JsonSerializationException` instead of crashing the process — cycles are detected by object identity, so distinct objects that merely compare equal still serialize — and object graphs are capped at 64 levels. Serialization errors are now consistently `JsonSerializationException` (a `SerializationException` subclass, so existing catch blocks keep working). Thanks @deniszykov! [#265](https://github.com/colyseus/colyseus-unity-sdk/pull/265)
+
+## 0.17.20
+
+- Fix `"number"` fields declared `double` silently losing precision. `"number"` is variable-width, and the server emits the 8-byte float64 (`0xcb`) payload only after checking that the value does *not* survive a float32 round trip — so a `0xcb` on the wire is an assertion that float32 is insufficient for that value. The decoder cast it straight back down to `float`, discarding the precision before the field was assigned, so declaring the field `double` did not help. Epoch milliseconds are the common case: at ~1.79e12 one float32 ulp is 131072, so timestamps arrived quantised with up to 65536 ms of error, and two distinct timestamps could collapse onto the same value — which typically shows up as a deadline that never elapses. A `0xcb` payload is now decoded as `double` when the destination field is declared `double`; every other case decodes exactly as before, including `"number"` fields mapped to `float` by `schema-codegen --csharp` and primitive collections. Thanks @kuoder for the diagnosis, the fix and the tests! [#267](https://github.com/colyseus/colyseus-unity-sdk/pull/267)
+
+## 0.17.19
+
+- Fix `room.Leave()`, `room.Send()` and every other call guarded by `Connection.IsOpen` silently doing nothing on platforms without a `SynchronizationContext` (MonoGame, console apps, test hosts — Unity is unaffected). `Connection.IsOpen` is only set when the transport's `OnOpen` event is delivered, and the underlying `Colyseus.NativeWebSocket` dispatched queued messages before queued events, so `OnOpen` arrived *after* the first messages: a room could finish joining and start handling state while the connection still looked closed. A consented `room.Leave()` then returned without sending `LEAVE_ROOM`, leaving the room open until the server timed the connection out. Updates `Colyseus.NativeWebSocket` to [2.0.7](https://github.com/endel/NativeWebSocket/blob/master/CHANGELOG.md). Only 0.17.18 was affected — earlier releases pinned NativeWebSocket 2.0.0, before the regression.
+
+## 0.17.18
+
+- Fix server-side `client.leave(code)` being reported to the client as close code `1004`, and being treated as a dropped connection by the server. Any close code without a matching `WebSocketCloseCode` member — which is every application code, including all of Colyseus' — was collapsed into `WebSocketCloseCode.Undefined` (1004) before reaching `OnLeave`. The client also never replied to the server's close frame, so the server fell back to `1006` (abnormal closure) and ran `onDrop()` — opening a reconnection window — instead of treating a `client.leave(4000)` (`CloseCode.CONSENTED`) as a consented leave. Updates `Colyseus.NativeWebSocket` to [2.0.5](https://github.com/endel/NativeWebSocket/blob/master/CHANGELOG.md). Fixes [#948](https://github.com/colyseus/colyseus/issues/948) — thanks @trueicecold for reporting!
+- Rename the WebGL plugin files from `WebSocket.jslib` / `WebSocket.jspre` to `NativeWebSocket.jslib` / `NativeWebSocket.jspre`. Unity flattens WebGL plugins into a single output directory, so the previous generic name collided with identically named plugins from other packages (Photon ships a `WebSocket.jslib`), failing the build with `Plugin 'WebSocket.jslib' is used from several locations`. When upgrading via `.unitypackage`, delete the old `Assets/Colyseus/Runtime/WebSocket/WebSocket.jslib` and `WebSocket.jspre` — importing does not remove files, and the old and new plugins collide with each other. Installing via UPM is not affected. Thanks @Alaadel for reporting!
+
+## 0.17.17
+
+- Fix `Client.GetLatency()` (and therefore `Client.SelectByLatency()`) hanging on unresponsive endpoints. The measurement only settled on a pong or `OnError`, so a server that completed the WebSocket handshake then closed cleanly without replying (only `OnClose` fires) left the `Task` pending forever, and a blackholed/filtered host stalled until the OS-level TCP timeout. `GetLatency()` now also fails on `OnClose` and on a configurable timeout (`LatencyOptions.Timeout`, default `1500`ms, also forwarded through `SelectByLatency()`), so a single wedged endpoint can no longer stall the whole selection. Ports the JS SDK fix for [#941](https://github.com/colyseus/colyseus/issues/941) — thanks @TJEvans for reporting!
