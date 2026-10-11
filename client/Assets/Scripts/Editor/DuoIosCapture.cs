@@ -41,7 +41,7 @@ namespace CTLife.EditorTools
             {
                 Closed();
                 var type = typeof(SocialHub).Assembly.GetType("CTLife.SocialFeatures.MessagesApp+View", true);
-                _view = Activator.CreateInstance(type, Instance, null, new object[] { _hub, Phone, Peer, null }, null);
+                _view = Activator.CreateInstance(type, Instance, null, new object[] { _hub, Phone, Peer, null, false }, null);
                 Root = (ScrollView)type.BaseType.GetField("Root", Instance).GetValue(_view);
                 Frame = (VisualElement)type.GetProperty("Container", Instance).GetValue(_view);
                 return Frame;

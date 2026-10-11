@@ -250,16 +250,18 @@ namespace CTLife.SocialFeatures
             if (!SocialWire.SameId(Inbox.OpenPeer, m.fromUserId))
             {
                 Bus.Publish(new SfxSignal("sfx_dm_ping"));
-                var request = IsRequest(entry);
                 var from = m.fromUserId;
-                // iOS-style banner over the game (DuoNotificationCenter). No banner while the Duo shows this chat
-                // or the inbox; Do Not Disturb and the Settings switches silence it; the unread badge still counts.
-                DuoNotificationCenter.Post(new DuoNotification
-                {
-                    AppId = MessagesApp.AppId, ThreadKey = from, Title = _hub.Names.Name(from),
-                    Detail = request ? SocialStrings.T("dm.bannerRequest") : null,
-                    Body = SocialWire.Plain(m.text, 160), Open = () => MessagesApp.OpenThread(from),
-                });
+                // iOS-style banner over the game (DuoNotificationCenter), gated by DmBannerPolicy: never for a blocked
+                // sender or a message request (badge only: requests are read in the inbox under the scam warning);
+                // a scam-flagged text shows its hint instead. The center also suppresses it while the Duo shows this
+                // chat or the inbox, and under Do Not Disturb.
+                var banner = DmBannerPolicy.For(from, _hub.Names.Name(from), m.text, Hidden(from), IsRequest(entry));
+                if (banner.Show)
+                    DuoNotificationCenter.Post(new DuoNotification
+                    {
+                        AppId = MessagesApp.AppId, ThreadKey = from, Title = banner.Title, Body = banner.Body,
+                        Open = () => MessagesApp.OpenFromNotification(from),
+                    });
             }
             Notify();
         }

@@ -196,6 +196,30 @@ namespace CTLife.Tests
             Assert.AreEqual(DuoPostResult.Rejected, q.Post(new DuoNotification { Title = "x" }, 0f));
         }
 
+        [Test]
+        public void Banner_TextIsLiteralAndNothingInsideIsTappable()
+        {
+            // Rule 4 of the 2026-10-16 security review: rich text stays off and links are never tappable.
+            var q = new DuoNotificationQueue(new DuoNotificationSettings());
+            var layer = new VisualElement();
+            var banners = new DuoBannerLayer(layer, q);
+            try
+            {
+                const string body = "<color=red><b>claim</b></color> https://evil.example/<link=\"x\">here</link>";
+                q.Post(new DuoNotification { AppId = "messages", ThreadKey = "p", Title = "<size=99>kemi</size>", Body = body }, 0f);
+                var card = layer.Q("duo-banner");
+                Assert.IsNotNull(card);
+                var labels = card.Query<Label>().ToList();
+                Assert.IsTrue(labels.Count > 0 && labels.All(l => !l.enableRichText), "every banner label renders literally");
+                Assert.IsTrue(labels.Any(l => l.text == body), "the body is shown exactly as sent, tags and all");
+                Assert.IsTrue(labels.Any(l => l.text == "<size=99>kemi</size>"));
+                Assert.AreEqual(0, card.Query<Button>().ToList().Count, "no link or control inside the banner");
+                Assert.IsTrue(card.Query<VisualElement>().ToList().Where(e => e != card).All(e => e.pickingMode == PickingMode.Ignore),
+                    "only the card itself takes input (tap opens the Duo, swipe dismisses)");
+            }
+            finally { banners.Dispose(); }
+        }
+
         // ------------------------------------------------------------------ badges
 
         [Test]

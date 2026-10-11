@@ -293,7 +293,6 @@ namespace CTLife.SocialFeatures
             ["dm.call"] = "Call",
             ["dm.open"] = "Open",
             ["dm.unread"] = "{0} new",
-            ["dm.bannerRequest"] = "Message request",
             ["dm.search"] = "Search",
             ["dm.composer"] = "Message",
             ["dm.left"] = "{0} left",

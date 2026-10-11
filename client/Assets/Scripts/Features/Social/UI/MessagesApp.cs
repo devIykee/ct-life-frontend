@@ -25,25 +25,34 @@ namespace CTLife.SocialFeatures
         public override string Feature => Features.Dms;
         public override DuoChrome Chrome => DuoChrome.Plain;
 
-        /// <summary>Deep link: open this conversation next time the app opens (profile card, Timeline post, banner tap).</summary>
+        /// <summary>Deep link: open this conversation next time the app opens (profile card, Timeline post), which the
+        /// player starts, so it is never shown as a request.</summary>
         public static string PendingPeer, PendingAlias;
+
+        /// <summary>
+        /// Set by <see cref="OpenFromNotification"/>: the pending peer came from a notification, not from the player.
+        /// It opens only a known, accepted conversation; a request opens the inbox (requests apart, scam warning)
+        /// and is never accepted by the tap.
+        /// </summary>
+        public static bool PendingFromNotification;
 
         /// <summary>Opens a phone app by id; set by <see cref="SocialOverlay"/> so a banner tap can open the Duo.</summary>
         public static Action<string> Opener;
 
-        /// <summary>Banner tap: open the Duo straight into this conversation.</summary>
-        public static void OpenThread(string peer, string alias = null)
+        /// <summary>Banner tap: open the Duo at this conversation, through <see cref="DmBannerPolicy.DeepLink"/>.</summary>
+        public static void OpenFromNotification(string peer)
         {
             if (!SocialWire.IsSafeId(peer) || Opener == null) return;
             PendingPeer = peer;
-            PendingAlias = alias;
+            PendingAlias = null;
+            PendingFromNotification = true;
             Opener(AppId);
         }
 
         internal override SocialView CreateView(SocialHub hub, PhoneShell phone)
         {
-            var v = new View(hub, phone, PendingPeer, PendingAlias);
-            PendingPeer = null; PendingAlias = null;
+            var v = new View(hub, phone, PendingPeer, PendingAlias, PendingFromNotification);
+            PendingPeer = null; PendingAlias = null; PendingFromNotification = false;
             return v;
         }
 
@@ -61,7 +70,7 @@ namespace CTLife.SocialFeatures
             private string _draft = "", _query = "", _lastNewest, _headPeer;
             private bool _threadMode;
 
-            public View(SocialHub hub, PhoneShell phone, string peer, string alias) : base(hub, phone)
+            public View(SocialHub hub, PhoneShell phone, string peer, string alias, bool fromNotification = false) : base(hub, phone)
             {
                 _m = hub.Messages;
                 // The shipping scroll view stays the content owner; a Duo frame adds the nav bar and the composer.
@@ -112,7 +121,15 @@ namespace CTLife.SocialFeatures
                 _frame.Add(Footer);
                 SyncComposer();
 
-                if (SocialWire.IsSafeId(peer)) _m.Open(peer, alias, startedByMe: true);
+                if (fromNotification)
+                {
+                    var entry = SocialWire.IsSafeId(peer) ? _m.Inbox.Get(peer) : null;
+                    var target = DmBannerPolicy.DeepLink(peer, entry != null, SocialWire.IsSafeId(peer) && _m.Hidden(peer),
+                        entry != null && _m.IsRequest(entry));
+                    if (target == DmBannerPolicy.Target.Thread) _m.Open(peer, alias, startedByMe: false);
+                    else _m.CloseThread();
+                }
+                else if (SocialWire.IsSafeId(peer)) _m.Open(peer, alias, startedByMe: true);
                 else _m.CloseThread();
                 _m.WatchInbox(true);
             }

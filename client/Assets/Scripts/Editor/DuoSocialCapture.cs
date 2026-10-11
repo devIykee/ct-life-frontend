@@ -83,6 +83,7 @@ namespace CTLife.EditorTools
                 Closed();
                 var type = typeof(SocialHub).Assembly.GetType("CTLife.SocialFeatures." + _viewName + "+View", true);
                 object[] args = _id == "spaces" ? new object[] { _hub, Phone }
+                    : _id == "messages" ? new object[] { _hub, Phone, Thread ? Peer : null, Thread ? LongName : null, false }
                     : new object[] { _hub, Phone, Thread ? Peer : null, Thread ? LongName : null };
                 _view = Activator.CreateInstance(type, Instance, null, args, null);
                 Root = (ScrollView)type.BaseType.GetField("Root", Instance).GetValue(_view);
