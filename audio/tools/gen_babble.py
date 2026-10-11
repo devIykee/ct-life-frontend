@@ -79,8 +79,16 @@ P = {
     "prediction_shark_npc": dict(f0=115, tract=0.95, src="glottal", breath=0.08, contour=-0.5, speed=0.95, fx=["dark"], cps=16, jitter=1.0, vol=-6),
     "generic":             dict(f0=170, tract=1.10, src="glottal", breath=0.06, contour=0.0, speed=0.95, fx=[], cps=16, jitter=1.5, vol=-6),
 }
-PHASE1 = ["town_crier", "giveaway_guy", "reply_guy", "perp_degen_npc", "rekt_guy", "wallet_tracker", "doomposter",
-          "spaces_host", "ore_miner"]
+def _registry_phases() -> dict:
+    """Archetype id -> phase from contract/ids/archetypes.json (BE-owned, read only)."""
+    p = Path(__file__).resolve().parents[2] / "contract" / "ids" / "archetypes.json"
+    try:
+        return {a["id"]: a.get("phase") for a in json.loads(p.read_text())["archetypes"]}
+    except (OSError, ValueError, KeyError):
+        return {}
+
+
+REGISTRY = _registry_phases()
 
 
 # ------------------------------------------------------------------ synthesis
@@ -291,7 +299,9 @@ def build(name: str, prof: dict) -> dict:
     lens = [len(x) / SR for x in clips.values()]
     return {
         "files": files,
-        "phase": 1 if name in PHASE1 else ("fallback" if name == "generic" else "later (proposed id)"),
+        "phase": ("fallback" if name == "generic" else
+                  f"phase {REGISTRY[name]} (in contract/ids/archetypes.json)" if name in REGISTRY else
+                  "not in contract/ids/archetypes.json yet (proposed id)"),
         "base_f0_hz": prof["f0"], "chars_per_second": prof["cps"], "pitch_jitter_semitones": prof["jitter"],
         "npc_pitch_range_semitones": [-2.0, 2.0], "volume_db": prof["vol"],
         "syllable_ms": [round(min(lens) * 1000), round(max(lens) * 1000)],

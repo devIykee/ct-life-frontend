@@ -1,0 +1,4144 @@
+{
+  "version": 1,
+  "generated": "2026-10-06",
+  "paths_relative_to": "audio/processed/",
+  "_notes": [
+    "Shape follows the unity -> audio request (docs/progress/requests.md); extra keys are informational.",
+    "sfx keys are sfx ids. Only the five marked status=in_contract exist in contract/ids/sfx.json so far; the rest are proposals for FE to add. footsteps keys = surface, ambience keys = venue ids (plus club_doors), music keys = client district ids (timeline, trenches, builder_hills, airdrop_farm, dubai_marina) plus perp_pit and clubs, babble keys = archetype ids plus default.",
+    "volume is linear (0..1) = 10^(volume_db/20). Every entry also carries its prefixed id (sfx_, foot_, amb_, mus_, babble_).",
+    "One-shot SFX and footsteps are normalised to -1 dBTP true peak (consistent peaks); mix with volume.",
+    "Ambience loops: -24 LUFS integrated, true peak <= -3 dBTP (Spaces Studio room tone -36 LUFS).",
+    "Music: each set's full mix (pad+bass+drums+lead) is -17 LUFS integrated, true peak <= -2 dBTP; all stems of a set have identical sample length. market_mood rules: audio/README.md.",
+    "Entries with full_mix use a complete licensed composition, not stems; music-curation.json owns these overrides.",
+    "Babble: files are ordered a..z (letters map); play rules in audio/BABBLE.md and audio/unity/BabblePlayer.cs."
+  ],
+  "index": {
+    "amb_airdrop_farm": "ambience.airdrop_farm",
+    "amb_club_doors": "ambience.club_doors",
+    "amb_dubai_marina": "ambience.dubai_marina",
+    "amb_ore_refinery": "ambience.ore_refinery",
+    "amb_perp_pit": "ambience.perp_pit",
+    "amb_rekt_clinic": "ambience.rekt_clinic",
+    "amb_spaces_studio": "ambience.spaces_studio",
+    "amb_terminal_cafe": "ambience.terminal_cafe",
+    "amb_timeline_square": "ambience.timeline_square",
+    "babble_ai_agent": "babble.ai_agent",
+    "babble_alpha_caller": "babble.alpha_caller",
+    "babble_auditor": "babble.auditor",
+    "babble_cabal_insider": "babble.cabal_insider",
+    "babble_chain_tribalist": "babble.chain_tribalist",
+    "babble_community_mod": "babble.community_mod",
+    "babble_doomposter": "babble.doomposter",
+    "babble_doxxed_founder": "babble.doxxed_founder",
+    "babble_drainer": "babble.drainer",
+    "babble_dubai_relocator": "babble.dubai_relocator",
+    "babble_engagement_farmer": "babble.engagement_farmer",
+    "babble_fake_rich_larp": "babble.fake_rich_larp",
+    "babble_farmer": "babble.farmer",
+    "babble_generic": "babble.default",
+    "babble_giveaway_guy": "babble.giveaway_guy",
+    "babble_laser_eyes_maxi": "babble.laser_eyes_maxi",
+    "babble_normie": "babble.normie",
+    "babble_ore_miner": "babble.ore_miner",
+    "babble_perp_degen_npc": "babble.perp_degen_npc",
+    "babble_prediction_shark_npc": "babble.prediction_shark_npc",
+    "babble_rekt_guy": "babble.rekt_guy",
+    "babble_reply_guy": "babble.reply_guy",
+    "babble_rug_dev": "babble.rug_dev",
+    "babble_sleuth": "babble.sleuth",
+    "babble_sniper_bot": "babble.sniper_bot",
+    "babble_spaces_host": "babble.spaces_host",
+    "babble_sybil_farmer": "babble.sybil_farmer",
+    "babble_thread_boy": "babble.thread_boy",
+    "babble_town_crier": "babble.town_crier",
+    "babble_vc": "babble.vc",
+    "babble_wallet_tracker": "babble.wallet_tracker",
+    "foot_carpet": "footsteps.carpet",
+    "foot_concrete": "footsteps.concrete",
+    "foot_grass": "footsteps.grass",
+    "foot_metal_grate": "footsteps.metal_grate",
+    "foot_neon_tile": "footsteps.neon_tile",
+    "foot_wood": "footsteps.wood",
+    "mus_airdrop_farm": "music.airdrop_farm",
+    "mus_builder_hills": "music.builder_hills",
+    "mus_club": "music.clubs",
+    "mus_dubai_marina": "music.dubai_marina",
+    "mus_lobby": "music.lobby",
+    "mus_perp_pit": "music.perp_pit",
+    "mus_terminal_cafe": "music.terminal_cafe",
+    "mus_timeline_square": "music.timeline",
+    "mus_trenches": "music.trenches",
+    "sfx_buy": "sfx.sfx_buy",
+    "sfx_call_connect": "sfx.sfx_call_connect",
+    "sfx_call_end": "sfx.sfx_call_end",
+    "sfx_call_ring": "sfx.sfx_call_ring",
+    "sfx_dm_ping": "sfx.sfx_dm_ping",
+    "sfx_graduation": "sfx.sfx_graduation",
+    "sfx_liquidation": "sfx.sfx_liquidation",
+    "sfx_mention": "sfx.sfx_mention",
+    "sfx_moon_horn": "sfx.sfx_moon_horn",
+    "sfx_new_coin": "sfx.sfx_new_coin",
+    "sfx_ore_clink": "sfx.sfx_ore_clink",
+    "sfx_ore_furnace_whoosh": "sfx.sfx_ore_furnace_whoosh",
+    "sfx_pnl_card_flip": "sfx.sfx_pnl_card_flip",
+    "sfx_rank_up": "sfx.sfx_rank_up",
+    "sfx_rug": "sfx.sfx_rug",
+    "sfx_sell": "sfx.sfx_sell",
+    "sfx_space_started": "sfx.sfx_space_started",
+    "sfx_sunday_unlock": "sfx.sfx_sunday_unlock",
+    "sfx_take_profit": "sfx.sfx_take_profit",
+    "sfx_ui_close": "sfx.sfx_ui_close",
+    "sfx_ui_error": "sfx.sfx_ui_error",
+    "sfx_ui_open": "sfx.sfx_ui_open",
+    "sfx_ui_success": "sfx.sfx_ui_success",
+    "sfx_ui_tap": "sfx.sfx_ui_tap",
+    "sfx_ui_toast": "sfx.sfx_ui_toast",
+    "sfx_ui_toggle_off": "sfx.sfx_ui_toggle_off",
+    "sfx_ui_toggle_on": "sfx.sfx_ui_toggle_on",
+    "sfx_vr_join": "sfx.sfx_vr_join",
+    "sfx_vr_leave": "sfx.sfx_vr_leave",
+    "sfx_vr_promoted": "sfx.sfx_vr_promoted",
+    "sfx_vr_raise_hand": "sfx.sfx_vr_raise_hand",
+    "sfx_whale_horn": "sfx.sfx_whale_horn"
+  },
+  "sfx": {
+    "sfx_buy": {
+      "files": [
+        "sfx/sfx_buy.wav"
+      ],
+      "volume": 0.398,
+      "pitchJitter": 0.02,
+      "category": "trading",
+      "volume_db": -8,
+      "channels": 1,
+      "loop": false,
+      "duration_s": 0.844,
+      "true_peak_dbtp": -1.0,
+      "ducks_music": false,
+      "status": "in_contract",
+      "desc": "Buy filled: rising chime arpeggio + coin",
+      "sources": [
+        "own work (synthesised, tools/gen_sfx.py)"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true
+      }
+    },
+    "sfx_call_connect": {
+      "files": [
+        "sfx/sfx_call_connect.wav"
+      ],
+      "volume": 0.316,
+      "pitchJitter": 0.0,
+      "category": "phone",
+      "volume_db": -10,
+      "channels": 1,
+      "loop": false,
+      "duration_s": 0.537,
+      "true_peak_dbtp": -1.0,
+      "ducks_music": false,
+      "status": "proposed",
+      "desc": "Call connected: rising bloop + chime",
+      "sources": [
+        "own work (synthesised, tools/gen_sfx.py)"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true
+      }
+    },
+    "sfx_call_end": {
+      "files": [
+        "sfx/sfx_call_end.wav"
+      ],
+      "volume": 0.316,
+      "pitchJitter": 0.0,
+      "category": "phone",
+      "volume_db": -10,
+      "channels": 1,
+      "loop": false,
+      "duration_s": 0.369,
+      "true_peak_dbtp": -1.0,
+      "ducks_music": false,
+      "status": "proposed",
+      "desc": "Call ended: three falling beeps",
+      "sources": [
+        "own work (synthesised, tools/gen_sfx.py)"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true
+      }
+    },
+    "sfx_call_ring": {
+      "files": [
+        "sfx/sfx_call_ring.wav"
+      ],
+      "volume": 0.501,
+      "pitchJitter": 0.0,
+      "category": "phone",
+      "volume_db": -6,
+      "channels": 1,
+      "loop": true,
+      "duration_s": 3.0,
+      "true_peak_dbtp": -1.0,
+      "ducks_music": false,
+      "status": "in_contract",
+      "desc": "Incoming call ringtone, seamless 3.0 s loop",
+      "sources": [
+        "own work (synthesised, tools/gen_sfx.py)"
+      ],
+      "unity_import": {
+        "loadType": "CompressedInMemory",
+        "compressionFormat": "Vorbis",
+        "quality": 0.7,
+        "preloadAudioData": true
+      }
+    },
+    "sfx_dm_ping": {
+      "files": [
+        "sfx/sfx_dm_ping.wav"
+      ],
+      "volume": 0.316,
+      "pitchJitter": 0.0,
+      "category": "phone",
+      "volume_db": -10,
+      "channels": 1,
+      "loop": false,
+      "duration_s": 0.536,
+      "true_peak_dbtp": -1.0,
+      "ducks_music": false,
+      "status": "proposed",
+      "desc": "DM received: two soft pings",
+      "sources": [
+        "own work (synthesised, tools/gen_sfx.py)"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true
+      }
+    },
+    "sfx_graduation": {
+      "files": [
+        "sfx/sfx_graduation.wav"
+      ],
+      "volume": 0.708,
+      "pitchJitter": 0.0,
+      "category": "stinger",
+      "volume_db": -3,
+      "channels": 2,
+      "loop": false,
+      "duration_s": 3.44,
+      "true_peak_dbtp": -1.0,
+      "ducks_music": true,
+      "status": "proposed",
+      "desc": "Coin graduation fanfare: synth brass + timpani roll + crash",
+      "sources": [
+        "own work (synthesised, tools/gen_sfx.py)"
+      ],
+      "unity_import": {
+        "loadType": "CompressedInMemory",
+        "compressionFormat": "Vorbis",
+        "quality": 0.7,
+        "preloadAudioData": true
+      }
+    },
+    "sfx_liquidation": {
+      "files": [
+        "sfx/sfx_liquidation.wav"
+      ],
+      "volume": 0.708,
+      "pitchJitter": 0.0,
+      "category": "stinger",
+      "volume_db": -3,
+      "channels": 2,
+      "loop": false,
+      "duration_s": 3.851,
+      "true_peak_dbtp": -1.0,
+      "ducks_music": true,
+      "status": "in_contract",
+      "desc": "Liquidation: alarm, then glass break, then falling whoosh + thud",
+      "sources": [
+        "raw/freesound/221528.ogg",
+        "raw/kenney/impact-sounds/Audio/impactGlass_heavy_002.ogg"
+      ],
+      "unity_import": {
+        "loadType": "CompressedInMemory",
+        "compressionFormat": "Vorbis",
+        "quality": 0.7,
+        "preloadAudioData": true
+      }
+    },
+    "sfx_mention": {
+      "files": [
+        "sfx/sfx_mention.wav"
+      ],
+      "volume": 0.355,
+      "pitchJitter": 0.0,
+      "category": "phone",
+      "volume_db": -9,
+      "channels": 1,
+      "loop": false,
+      "duration_s": 0.567,
+      "true_peak_dbtp": -1.0,
+      "ducks_music": false,
+      "status": "proposed",
+      "desc": "@mention: three quick rising ticks",
+      "sources": [
+        "own work (synthesised, tools/gen_sfx.py)"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true
+      }
+    },
+    "sfx_moon_horn": {
+      "files": [
+        "sfx/sfx_moon_horn.wav"
+      ],
+      "volume": 0.631,
+      "pitchJitter": 0.0,
+      "category": "stinger",
+      "volume_db": -4,
+      "channels": 2,
+      "loop": false,
+      "duration_s": 2.917,
+      "true_peak_dbtp": -1.0,
+      "ducks_music": true,
+      "status": "proposed",
+      "desc": "Moon horn: three air-horn blasts, last one bends up",
+      "sources": [
+        "raw/freesound/131930.ogg"
+      ],
+      "unity_import": {
+        "loadType": "CompressedInMemory",
+        "compressionFormat": "Vorbis",
+        "quality": 0.7,
+        "preloadAudioData": true
+      }
+    },
+    "sfx_new_coin": {
+      "files": [
+        "sfx/sfx_new_coin.wav"
+      ],
+      "volume": 0.398,
+      "pitchJitter": 0.02,
+      "category": "trading",
+      "volume_db": -8,
+      "channels": 1,
+      "loop": false,
+      "duration_s": 0.534,
+      "true_peak_dbtp": -1.0,
+      "ducks_music": false,
+      "status": "proposed",
+      "desc": "New coin listed: bubble pop + twinkle",
+      "sources": [
+        "own work (synthesised, tools/gen_sfx.py)"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true
+      }
+    },
+    "sfx_ore_clink": {
+      "files": [
+        "sfx/sfx_ore_clink_01.wav",
+        "sfx/sfx_ore_clink_02.wav",
+        "sfx/sfx_ore_clink_03.wav",
+        "sfx/sfx_ore_clink_04.wav",
+        "sfx/sfx_ore_clink_05.wav"
+      ],
+      "volume": 0.316,
+      "pitchJitter": 0.04,
+      "category": "ore",
+      "volume_db": -10,
+      "channels": 1,
+      "loop": false,
+      "duration_s": 0.5,
+      "true_peak_dbtp": -1.0,
+      "ducks_music": false,
+      "status": "proposed",
+      "desc": "Ore nuggets clink (5 variations, synth + Kenney impactMining layer)",
+      "sources": [
+        "raw/kenney/impact-sounds/Audio/impactMining_000.ogg",
+        "raw/kenney/impact-sounds/Audio/impactMining_001.ogg",
+        "raw/kenney/impact-sounds/Audio/impactMining_002.ogg",
+        "raw/kenney/impact-sounds/Audio/impactMining_003.ogg",
+        "raw/kenney/impact-sounds/Audio/impactMining_004.ogg"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true
+      }
+    },
+    "sfx_ore_furnace_whoosh": {
+      "files": [
+        "sfx/sfx_ore_furnace_whoosh_01.wav",
+        "sfx/sfx_ore_furnace_whoosh_02.wav"
+      ],
+      "volume": 0.501,
+      "pitchJitter": 0.04,
+      "category": "ore",
+      "volume_db": -6,
+      "channels": 1,
+      "loop": false,
+      "duration_s": 2.2,
+      "true_peak_dbtp": -1.0,
+      "ducks_music": false,
+      "status": "proposed",
+      "desc": "Refinery furnace flares: fire whoosh + rumble (2 variations)",
+      "sources": [
+        "raw/freesound/447941.ogg",
+        "raw/freesound/459884.ogg"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true
+      }
+    },
+    "sfx_pnl_card_flip": {
+      "files": [
+        "sfx/sfx_pnl_card_flip.wav"
+      ],
+      "volume": 0.398,
+      "pitchJitter": 0.02,
+      "category": "trading",
+      "volume_db": -8,
+      "channels": 1,
+      "loop": false,
+      "duration_s": 0.7,
+      "true_peak_dbtp": -1.0,
+      "ducks_music": false,
+      "status": "proposed",
+      "desc": "PnL card flip: swish + card snap (Kenney card-place-1)",
+      "sources": [
+        "raw/kenney/casino-audio/Audio/card-place-1.ogg"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true
+      }
+    },
+    "sfx_rank_up": {
+      "files": [
+        "sfx/sfx_rank_up.wav"
+      ],
+      "volume": 0.562,
+      "pitchJitter": 0.0,
+      "category": "stinger",
+      "volume_db": -5,
+      "channels": 2,
+      "loop": false,
+      "duration_s": 2.184,
+      "true_peak_dbtp": -1.0,
+      "ducks_music": true,
+      "status": "proposed",
+      "desc": "Rank up: fast rising chime arpeggio + shimmer chord",
+      "sources": [
+        "own work (synthesised, tools/gen_sfx.py)"
+      ],
+      "unity_import": {
+        "loadType": "CompressedInMemory",
+        "compressionFormat": "Vorbis",
+        "quality": 0.7,
+        "preloadAudioData": true
+      }
+    },
+    "sfx_rug": {
+      "files": [
+        "sfx/sfx_rug.wav"
+      ],
+      "volume": 0.708,
+      "pitchJitter": 0.0,
+      "category": "stinger",
+      "volume_db": -3,
+      "channels": 2,
+      "loop": false,
+      "duration_s": 2.563,
+      "true_peak_dbtp": -1.7,
+      "ducks_music": true,
+      "status": "in_contract",
+      "desc": "Rug pull: carpet zip, then 808 bass drop",
+      "sources": [
+        "raw/freesound/555161.ogg"
+      ],
+      "unity_import": {
+        "loadType": "CompressedInMemory",
+        "compressionFormat": "Vorbis",
+        "quality": 0.7,
+        "preloadAudioData": true
+      }
+    },
+    "sfx_sell": {
+      "files": [
+        "sfx/sfx_sell.wav"
+      ],
+      "volume": 0.398,
+      "pitchJitter": 0.02,
+      "category": "trading",
+      "volume_db": -8,
+      "channels": 1,
+      "loop": false,
+      "duration_s": 0.69,
+      "true_peak_dbtp": -1.0,
+      "ducks_music": false,
+      "status": "in_contract",
+      "desc": "Sell filled: paper swish + falling two-note chime",
+      "sources": [
+        "own work (synthesised, tools/gen_sfx.py)"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true
+      }
+    },
+    "sfx_space_started": {
+      "files": [
+        "sfx/sfx_space_started.wav"
+      ],
+      "volume": 0.398,
+      "pitchJitter": 0.0,
+      "category": "phone",
+      "volume_db": -8,
+      "channels": 1,
+      "loop": false,
+      "duration_s": 1.585,
+      "true_peak_dbtp": -1.0,
+      "ducks_music": false,
+      "status": "proposed",
+      "desc": "A Space went live: pad swell into an on-air chime",
+      "sources": [
+        "own work (synthesised, tools/gen_sfx.py)"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true
+      }
+    },
+    "sfx_sunday_unlock": {
+      "files": [
+        "sfx/sfx_sunday_unlock.wav"
+      ],
+      "volume": 0.631,
+      "pitchJitter": 0.0,
+      "category": "stinger",
+      "volume_db": -4,
+      "channels": 2,
+      "loop": false,
+      "duration_s": 5.222,
+      "true_peak_dbtp": -1.0,
+      "ducks_music": true,
+      "status": "proposed",
+      "desc": "Sunday Unlock bell: two deep bell strikes",
+      "sources": [
+        "raw/freesound/857938.ogg"
+      ],
+      "unity_import": {
+        "loadType": "CompressedInMemory",
+        "compressionFormat": "Vorbis",
+        "quality": 0.7,
+        "preloadAudioData": true
+      }
+    },
+    "sfx_take_profit": {
+      "files": [
+        "sfx/sfx_take_profit.wav"
+      ],
+      "volume": 0.501,
+      "pitchJitter": 0.02,
+      "category": "trading",
+      "volume_db": -6,
+      "channels": 1,
+      "loop": false,
+      "duration_s": 1.064,
+      "true_peak_dbtp": -1.0,
+      "ducks_music": false,
+      "status": "proposed",
+      "desc": "Take-profit hit: ka-ching register bell + coins + chord",
+      "sources": [
+        "own work (synthesised, tools/gen_sfx.py)"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true
+      }
+    },
+    "sfx_ui_close": {
+      "files": [
+        "sfx/sfx_ui_close.wav"
+      ],
+      "volume": 0.2,
+      "pitchJitter": 0.0,
+      "category": "ui",
+      "volume_db": -14,
+      "channels": 1,
+      "loop": false,
+      "duration_s": 0.212,
+      "true_peak_dbtp": -1.0,
+      "ducks_music": false,
+      "status": "proposed",
+      "desc": "Panel / phone closes (Kenney minimize_003)",
+      "sources": [
+        "raw/kenney/interface-sounds/Audio/minimize_003.ogg"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true
+      }
+    },
+    "sfx_ui_error": {
+      "files": [
+        "sfx/licensed/sfx_ui_error_kenney.wav"
+      ],
+      "volume": 0.199526,
+      "pitchJitter": 0.0,
+      "category": "ui",
+      "volume_db": -14,
+      "channels": 1,
+      "loop": false,
+      "duration_s": 0.16166666666666665,
+      "sample_peak_dbfs": -6.010532855987549,
+      "ducks_music": false,
+      "status": "existing_FE_proposal_not_new_contract_id",
+      "desc": "error cue distinct from success and ordinary tap",
+      "sources": [
+        "raw/kenney/interface-sounds/Audio/error_001.ogg"
+      ],
+      "source_page": "https://kenney.nl/assets/interface-sounds",
+      "license": "CC0-1.0",
+      "processing": "Constant -6.704093dB gain; 48kHz mono PCM16, duration unchanged",
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
+        "forceToMono": true,
+        "preloadAudioData": true
+      }
+    },
+    "sfx_ui_open": {
+      "files": [
+        "sfx/sfx_ui_open.wav"
+      ],
+      "volume": 0.2,
+      "pitchJitter": 0.0,
+      "category": "ui",
+      "volume_db": -14,
+      "channels": 1,
+      "loop": false,
+      "duration_s": 0.232,
+      "true_peak_dbtp": -1.0,
+      "ducks_music": false,
+      "status": "proposed",
+      "desc": "Panel / phone opens (Kenney maximize_003 + soft swish)",
+      "sources": [
+        "raw/kenney/interface-sounds/Audio/maximize_003.ogg"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true
+      }
+    },
+    "sfx_ui_success": {
+      "files": [
+        "sfx/licensed/sfx_ui_success_kenney.wav"
+      ],
+      "volume": 0.199526,
+      "pitchJitter": 0.0,
+      "category": "ui",
+      "volume_db": -14,
+      "channels": 1,
+      "loop": false,
+      "duration_s": 0.2898541666666667,
+      "sample_peak_dbfs": -2.999987840652466,
+      "ducks_music": false,
+      "status": "existing_FE_proposal_not_new_contract_id",
+      "desc": "confirmation cue distinct from error and ordinary tap",
+      "sources": [
+        "raw/kenney/interface-sounds/Audio/confirmation_001.ogg"
+      ],
+      "source_page": "https://kenney.nl/assets/interface-sounds",
+      "license": "CC0-1.0",
+      "processing": "Constant -2.072576dB gain; 48kHz mono PCM16, duration unchanged",
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
+        "forceToMono": true,
+        "preloadAudioData": true
+      }
+    },
+    "sfx_ui_tap": {
+      "files": [
+        "sfx/licensed/sfx_ui_tap_kenney.wav"
+      ],
+      "volume": 0.158489,
+      "pitchJitter": 0.0,
+      "category": "ui",
+      "volume_db": -16,
+      "channels": 1,
+      "loop": false,
+      "duration_s": 0.007125,
+      "sample_peak_dbfs": -2.999987840652466,
+      "ducks_music": false,
+      "status": "existing_FE_proposal_not_new_contract_id",
+      "desc": "short dry interaction click",
+      "sources": [
+        "raw/kenney/interface-sounds/Audio/click_003.ogg"
+      ],
+      "source_page": "https://kenney.nl/assets/interface-sounds",
+      "license": "CC0-1.0",
+      "processing": "Constant -1.555996dB gain; 48kHz mono PCM16, duration unchanged",
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
+        "forceToMono": true,
+        "preloadAudioData": true
+      }
+    },
+    "sfx_ui_toast": {
+      "files": [
+        "sfx/licensed/sfx_ui_toast_kenney.wav"
+      ],
+      "volume": 0.125893,
+      "pitchJitter": 0.0,
+      "category": "ui",
+      "volume_db": -18,
+      "channels": 1,
+      "loop": false,
+      "duration_s": 0.02033333333333333,
+      "sample_peak_dbfs": -2.999987840652466,
+      "ducks_music": false,
+      "status": "existing_FE_proposal_not_new_contract_id",
+      "desc": "quiet notification tick",
+      "sources": [
+        "raw/kenney/interface-sounds/Audio/tick_002.ogg"
+      ],
+      "source_page": "https://kenney.nl/assets/interface-sounds",
+      "license": "CC0-1.0",
+      "processing": "Constant -4.091027dB gain; 48kHz mono PCM16, duration unchanged",
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
+        "forceToMono": true,
+        "preloadAudioData": true
+      }
+    },
+    "sfx_ui_toggle_off": {
+      "files": [
+        "sfx/licensed/sfx_ui_toggle_off_kenney.wav"
+      ],
+      "volume": 0.141254,
+      "pitchJitter": 0.0,
+      "category": "ui",
+      "volume_db": -17,
+      "channels": 1,
+      "loop": false,
+      "duration_s": 0.1364375,
+      "sample_peak_dbfs": -2.999987840652466,
+      "ducks_music": false,
+      "status": "existing_FE_proposal_not_new_contract_id",
+      "desc": "toggle-off cue from paired Kenney family",
+      "sources": [
+        "raw/kenney/interface-sounds/Audio/toggle_002.ogg"
+      ],
+      "source_page": "https://kenney.nl/assets/interface-sounds",
+      "license": "CC0-1.0",
+      "processing": "Constant -2.022649dB gain; 48kHz mono PCM16, duration unchanged",
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
+        "forceToMono": true,
+        "preloadAudioData": true
+      }
+    },
+    "sfx_ui_toggle_on": {
+      "files": [
+        "sfx/licensed/sfx_ui_toggle_on_kenney.wav"
+      ],
+      "volume": 0.141254,
+      "pitchJitter": 0.0,
+      "category": "ui",
+      "volume_db": -17,
+      "channels": 1,
+      "loop": false,
+      "duration_s": 0.1364375,
+      "sample_peak_dbfs": -2.999987840652466,
+      "ducks_music": false,
+      "status": "existing_FE_proposal_not_new_contract_id",
+      "desc": "toggle-on cue from paired Kenney family",
+      "sources": [
+        "raw/kenney/interface-sounds/Audio/toggle_001.ogg"
+      ],
+      "source_page": "https://kenney.nl/assets/interface-sounds",
+      "license": "CC0-1.0",
+      "processing": "Constant -2.061490dB gain; 48kHz mono PCM16, duration unchanged",
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
+        "forceToMono": true,
+        "preloadAudioData": true
+      }
+    },
+    "sfx_vr_join": {
+      "files": [
+        "sfx/sfx_vr_join.wav"
+      ],
+      "volume": 0.251,
+      "pitchJitter": 0.0,
+      "category": "voice_room",
+      "volume_db": -12,
+      "channels": 1,
+      "loop": false,
+      "duration_s": 0.431,
+      "true_peak_dbtp": -1.0,
+      "ducks_music": false,
+      "status": "proposed",
+      "desc": "Someone joined the room: rising bloop",
+      "sources": [
+        "own work (synthesised, tools/gen_sfx.py)"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true
+      }
+    },
+    "sfx_vr_leave": {
+      "files": [
+        "sfx/sfx_vr_leave.wav"
+      ],
+      "volume": 0.251,
+      "pitchJitter": 0.0,
+      "category": "voice_room",
+      "volume_db": -12,
+      "channels": 1,
+      "loop": false,
+      "duration_s": 0.465,
+      "true_peak_dbtp": -1.0,
+      "ducks_music": false,
+      "status": "proposed",
+      "desc": "Someone left the room: falling bloop",
+      "sources": [
+        "own work (synthesised, tools/gen_sfx.py)"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true
+      }
+    },
+    "sfx_vr_promoted": {
+      "files": [
+        "sfx/sfx_vr_promoted.wav"
+      ],
+      "volume": 0.398,
+      "pitchJitter": 0.0,
+      "category": "voice_room",
+      "volume_db": -8,
+      "channels": 1,
+      "loop": false,
+      "duration_s": 1.156,
+      "true_peak_dbtp": -1.0,
+      "ducks_music": false,
+      "status": "proposed",
+      "desc": "Promoted to speaker: little three-note fanfare",
+      "sources": [
+        "own work (synthesised, tools/gen_sfx.py)"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true
+      }
+    },
+    "sfx_vr_raise_hand": {
+      "files": [
+        "sfx/sfx_vr_raise_hand.wav"
+      ],
+      "volume": 0.316,
+      "pitchJitter": 0.0,
+      "category": "voice_room",
+      "volume_db": -10,
+      "channels": 1,
+      "loop": false,
+      "duration_s": 0.491,
+      "true_peak_dbtp": -1.0,
+      "ducks_music": false,
+      "status": "proposed",
+      "desc": "Hand raised: pop + two-note ping",
+      "sources": [
+        "own work (synthesised, tools/gen_sfx.py)"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true
+      }
+    },
+    "sfx_whale_horn": {
+      "files": [
+        "sfx/sfx_whale_horn.wav"
+      ],
+      "volume": 0.501,
+      "pitchJitter": 0.02,
+      "category": "trading",
+      "volume_db": -6,
+      "channels": 1,
+      "loop": false,
+      "duration_s": 3.576,
+      "true_peak_dbtp": -1.0,
+      "ducks_music": false,
+      "status": "proposed",
+      "desc": "Whale alert: deep ship horn (synth + CC0 fog horn layer)",
+      "sources": [
+        "raw/freesound/181949.ogg"
+      ],
+      "unity_import": {
+        "loadType": "CompressedInMemory",
+        "compressionFormat": "Vorbis",
+        "quality": 0.7,
+        "preloadAudioData": true
+      }
+    }
+  },
+  "footsteps": {
+    "carpet": {
+      "id": "foot_carpet",
+      "files": [
+        "sfx/foot_carpet_01.wav",
+        "sfx/foot_carpet_02.wav",
+        "sfx/foot_carpet_03.wav",
+        "sfx/foot_carpet_04.wav",
+        "sfx/foot_carpet_05.wav"
+      ],
+      "volume": 0.2,
+      "pitchJitter": 0.05,
+      "category": "footstep",
+      "volume_db": -14,
+      "channels": 1,
+      "status": "proposed",
+      "desc": "Single footsteps on carpet; pick at random, never the same twice in a row, volume +-2 dB, one per foot plant (anim event).",
+      "sources": [
+        "raw/kenney/impact-sounds/Audio/footstep_carpet_000.ogg",
+        "raw/kenney/impact-sounds/Audio/footstep_carpet_001.ogg",
+        "raw/kenney/impact-sounds/Audio/footstep_carpet_002.ogg",
+        "raw/kenney/impact-sounds/Audio/footstep_carpet_003.ogg",
+        "raw/kenney/impact-sounds/Audio/footstep_carpet_004.ogg"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true,
+        "forceToMono": true
+      }
+    },
+    "concrete": {
+      "id": "foot_concrete",
+      "files": [
+        "sfx/foot_concrete_01.wav",
+        "sfx/foot_concrete_02.wav",
+        "sfx/foot_concrete_03.wav",
+        "sfx/foot_concrete_04.wav",
+        "sfx/foot_concrete_05.wav"
+      ],
+      "volume": 0.2,
+      "pitchJitter": 0.05,
+      "category": "footstep",
+      "volume_db": -14,
+      "channels": 1,
+      "status": "proposed",
+      "desc": "Single footsteps on concrete; pick at random, never the same twice in a row, volume +-2 dB, one per foot plant (anim event).",
+      "sources": [
+        "raw/kenney/impact-sounds/Audio/footstep_concrete_000.ogg",
+        "raw/kenney/impact-sounds/Audio/footstep_concrete_001.ogg",
+        "raw/kenney/impact-sounds/Audio/footstep_concrete_002.ogg",
+        "raw/kenney/impact-sounds/Audio/footstep_concrete_003.ogg",
+        "raw/kenney/impact-sounds/Audio/footstep_concrete_004.ogg"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true,
+        "forceToMono": true
+      }
+    },
+    "grass": {
+      "id": "foot_grass",
+      "files": [
+        "sfx/foot_grass_01.wav",
+        "sfx/foot_grass_02.wav",
+        "sfx/foot_grass_03.wav",
+        "sfx/foot_grass_04.wav",
+        "sfx/foot_grass_05.wav"
+      ],
+      "volume": 0.2,
+      "pitchJitter": 0.05,
+      "category": "footstep",
+      "volume_db": -14,
+      "channels": 1,
+      "status": "proposed",
+      "desc": "Single footsteps on grass; pick at random, never the same twice in a row, volume +-2 dB, one per foot plant (anim event).",
+      "sources": [
+        "raw/kenney/impact-sounds/Audio/footstep_grass_000.ogg",
+        "raw/kenney/impact-sounds/Audio/footstep_grass_001.ogg",
+        "raw/kenney/impact-sounds/Audio/footstep_grass_002.ogg",
+        "raw/kenney/impact-sounds/Audio/footstep_grass_003.ogg",
+        "raw/kenney/impact-sounds/Audio/footstep_grass_004.ogg"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true,
+        "forceToMono": true
+      }
+    },
+    "metal_grate": {
+      "id": "foot_metal_grate",
+      "files": [
+        "sfx/foot_metal_grate_01.wav",
+        "sfx/foot_metal_grate_02.wav",
+        "sfx/foot_metal_grate_03.wav",
+        "sfx/foot_metal_grate_04.wav",
+        "sfx/foot_metal_grate_05.wav",
+        "sfx/foot_metal_grate_06.wav",
+        "sfx/foot_metal_grate_07.wav",
+        "sfx/foot_metal_grate_08.wav"
+      ],
+      "volume": 0.2,
+      "pitchJitter": 0.05,
+      "category": "footstep",
+      "volume_db": -14,
+      "channels": 1,
+      "status": "proposed",
+      "desc": "Single footsteps on metal grate; pick at random, never the same twice in a row, volume +-2 dB, one per foot plant (anim event).",
+      "sources": [
+        "raw/freesound/698697.ogg",
+        "raw/freesound/834029.ogg",
+        "raw/freesound/786977.ogg"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true,
+        "forceToMono": true
+      }
+    },
+    "neon_tile": {
+      "id": "foot_neon_tile",
+      "files": [
+        "sfx/foot_neon_tile_01.wav",
+        "sfx/foot_neon_tile_02.wav",
+        "sfx/foot_neon_tile_03.wav",
+        "sfx/foot_neon_tile_04.wav",
+        "sfx/foot_neon_tile_05.wav",
+        "sfx/foot_neon_tile_06.wav",
+        "sfx/foot_neon_tile_07.wav",
+        "sfx/foot_neon_tile_08.wav"
+      ],
+      "volume": 0.2,
+      "pitchJitter": 0.05,
+      "category": "footstep",
+      "volume_db": -14,
+      "channels": 1,
+      "status": "proposed",
+      "desc": "Single footsteps on neon tile; pick at random, never the same twice in a row, volume +-2 dB, one per foot plant (anim event).",
+      "sources": [
+        "raw/freesound/834027.ogg",
+        "raw/freesound/170506.ogg"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true,
+        "forceToMono": true
+      }
+    },
+    "wood": {
+      "id": "foot_wood",
+      "files": [
+        "sfx/foot_wood_01.wav",
+        "sfx/foot_wood_02.wav",
+        "sfx/foot_wood_03.wav",
+        "sfx/foot_wood_04.wav",
+        "sfx/foot_wood_05.wav"
+      ],
+      "volume": 0.2,
+      "pitchJitter": 0.05,
+      "category": "footstep",
+      "volume_db": -14,
+      "channels": 1,
+      "status": "proposed",
+      "desc": "Single footsteps on wood; pick at random, never the same twice in a row, volume +-2 dB, one per foot plant (anim event).",
+      "sources": [
+        "raw/kenney/impact-sounds/Audio/footstep_wood_000.ogg",
+        "raw/kenney/impact-sounds/Audio/footstep_wood_001.ogg",
+        "raw/kenney/impact-sounds/Audio/footstep_wood_002.ogg",
+        "raw/kenney/impact-sounds/Audio/footstep_wood_003.ogg",
+        "raw/kenney/impact-sounds/Audio/footstep_wood_004.ogg"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true,
+        "forceToMono": true
+      }
+    }
+  },
+  "ambience": {
+    "airdrop_farm": {
+      "id": "amb_airdrop_farm",
+      "file": "ambience/amb_airdrop_farm.wav",
+      "volume": 1.0,
+      "category": "ambience",
+      "venue_status": "venue id (later phase)",
+      "channels": 2,
+      "loop": true,
+      "loop_start_sample": 0,
+      "loop_end_sample": 1440000,
+      "duration_s": 30.0,
+      "loudness_lufs": -24.0,
+      "true_peak_dbtp": -14.3,
+      "status": "proposed",
+      "desc": "Farm birds and countryside",
+      "sources": [
+        "raw/freesound/488050.ogg",
+        "raw/freesound/488064.ogg"
+      ],
+      "unity_import": {
+        "loadType": "Streaming",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
+        "preloadAudioData": false
+      }
+    },
+    "club_doors": {
+      "id": "amb_club_doors",
+      "file": "ambience/amb_club_doors.wav",
+      "volume": 1.0,
+      "category": "ambience",
+      "venue_status": "not a venue id",
+      "channels": 2,
+      "loop": true,
+      "loop_start_sample": 0,
+      "loop_end_sample": 1645714,
+      "duration_s": 34.286,
+      "loudness_lufs": -24.0,
+      "true_peak_dbtp": -6.4,
+      "status": "proposed",
+      "desc": "Outside a club: bass muffled behind closed doors + crowd (built from mus_club). Not a venue id; play it near club entrances.",
+      "sources": [
+        "raw/freesound/640630.ogg"
+      ],
+      "unity_import": {
+        "loadType": "Streaming",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
+        "preloadAudioData": false
+      }
+    },
+    "dubai_marina": {
+      "id": "amb_dubai_marina",
+      "file": "ambience/amb_dubai_marina.wav",
+      "volume": 1.0,
+      "category": "ambience",
+      "venue_status": "venue id (later phase)",
+      "channels": 2,
+      "loop": true,
+      "loop_start_sample": 0,
+      "loop_end_sample": 1440000,
+      "duration_s": 30.0,
+      "loudness_lufs": -24.0,
+      "true_peak_dbtp": -7.9,
+      "status": "proposed",
+      "desc": "Marina water lapping, gulls, rigging in the wind",
+      "sources": [
+        "raw/freesound/328808.ogg",
+        "raw/freesound/360633.ogg",
+        "raw/freesound/457215.ogg"
+      ],
+      "unity_import": {
+        "loadType": "Streaming",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
+        "preloadAudioData": false
+      }
+    },
+    "ore_refinery": {
+      "id": "amb_ore_refinery",
+      "file": "ambience/amb_ore_refinery.wav",
+      "volume": 1.0,
+      "category": "ambience",
+      "venue_status": "venue id in contract",
+      "channels": 2,
+      "loop": true,
+      "loop_start_sample": 0,
+      "loop_end_sample": 1440000,
+      "duration_s": 30.0,
+      "loudness_lufs": -24.0,
+      "true_peak_dbtp": -12.0,
+      "status": "proposed",
+      "desc": "Industrial refinery: machine hum, compressor, furnace roar",
+      "sources": [
+        "raw/freesound/415156.ogg",
+        "raw/freesound/450126.ogg",
+        "raw/freesound/478118.ogg"
+      ],
+      "unity_import": {
+        "loadType": "Streaming",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
+        "preloadAudioData": false
+      }
+    },
+    "perp_pit": {
+      "id": "amb_perp_pit",
+      "file": "ambience/amb_perp_pit.wav",
+      "volume": 1.0,
+      "category": "ambience",
+      "venue_status": "venue id in contract",
+      "channels": 2,
+      "loop": true,
+      "loop_start_sample": 0,
+      "loop_end_sample": 1440000,
+      "duration_s": 30.0,
+      "loudness_lufs": -24.0,
+      "true_peak_dbtp": -10.2,
+      "status": "proposed",
+      "desc": "Busy trading floor crowd + keyboards + server hum",
+      "sources": [
+        "raw/freesound/546167.ogg",
+        "raw/freesound/640630.ogg",
+        "raw/freesound/757838.ogg"
+      ],
+      "unity_import": {
+        "loadType": "Streaming",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
+        "preloadAudioData": false
+      }
+    },
+    "rekt_clinic": {
+      "id": "amb_rekt_clinic",
+      "file": "ambience/amb_rekt_clinic.wav",
+      "volume": 1.0,
+      "category": "ambience",
+      "venue_status": "venue id in contract",
+      "channels": 2,
+      "loop": true,
+      "loop_start_sample": 0,
+      "loop_end_sample": 1440000,
+      "duration_s": 30.0,
+      "loudness_lufs": -24.1,
+      "true_peak_dbtp": -8.7,
+      "status": "proposed",
+      "desc": "Quiet ward: room tone, heart-monitor beeps, muffled voices",
+      "sources": [
+        "raw/freesound/437461.ogg"
+      ],
+      "unity_import": {
+        "loadType": "Streaming",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
+        "preloadAudioData": false
+      }
+    },
+    "spaces_studio": {
+      "id": "amb_spaces_studio",
+      "file": "ambience/amb_spaces_studio.wav",
+      "volume": 1.0,
+      "category": "ambience",
+      "venue_status": "venue id in contract",
+      "channels": 2,
+      "loop": true,
+      "loop_start_sample": 0,
+      "loop_end_sample": 1440000,
+      "duration_s": 30.0,
+      "loudness_lufs": -36.2,
+      "true_peak_dbtp": -22.9,
+      "status": "proposed",
+      "desc": "Treated studio room tone (voice-only venue, very quiet)",
+      "sources": [
+        "own work (synthesised)"
+      ],
+      "unity_import": {
+        "loadType": "Streaming",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
+        "preloadAudioData": false
+      }
+    },
+    "terminal_cafe": {
+      "id": "amb_terminal_cafe",
+      "file": "ambience/amb_terminal_cafe.wav",
+      "volume": 1.0,
+      "category": "ambience",
+      "venue_status": "venue id in contract",
+      "channels": 2,
+      "loop": true,
+      "loop_start_sample": 0,
+      "loop_end_sample": 1440000,
+      "duration_s": 30.0,
+      "loudness_lufs": -24.0,
+      "true_peak_dbtp": -3.2,
+      "status": "proposed",
+      "desc": "Cafe murmur + mechanical keyboard clatter (traders)",
+      "sources": [
+        "raw/freesound/437461.ogg",
+        "raw/freesound/450282.ogg",
+        "raw/freesound/546167.ogg",
+        "raw/freesound/626952.ogg"
+      ],
+      "unity_import": {
+        "loadType": "Streaming",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
+        "preloadAudioData": false
+      }
+    },
+    "timeline_square": {
+      "id": "amb_timeline_square",
+      "file": "ambience/amb_timeline_square.wav",
+      "volume": 1.0,
+      "category": "ambience",
+      "venue_status": "venue id in contract",
+      "channels": 2,
+      "loop": true,
+      "loop_start_sample": 0,
+      "loop_end_sample": 1440000,
+      "duration_s": 30.0,
+      "loudness_lufs": -24.0,
+      "true_peak_dbtp": -8.6,
+      "status": "proposed",
+      "desc": "City plaza crowd: chatter, footsteps, distant city",
+      "sources": [
+        "raw/freesound/640625.ogg",
+        "raw/freesound/757838.ogg"
+      ],
+      "unity_import": {
+        "loadType": "Streaming",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
+        "preloadAudioData": false
+      }
+    }
+  },
+  "music": {
+    "airdrop_farm": {
+      "id": "mus_airdrop_farm",
+      "bpm": 82.0,
+      "district": "Airdrop Farm",
+      "full_mix": "music/licensed/mus_airdrop_farm_easy_lemon.ogg",
+      "volume": 1.0,
+      "loop": true,
+      "loop_kind": "complete_composition_with_original_ending_and_intro",
+      "duration_seconds": 126.38041666666666,
+      "sample_rate": 48000,
+      "channels": 2,
+      "title": "Easy Lemon",
+      "artist": "Kevin MacLeod",
+      "license": "CC-BY-4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "source_url": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200076",
+      "source_file": "raw/incompetech/Easy Lemon.mp3",
+      "download_url": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Easy%20Lemon.mp3",
+      "processing": "Constant -2.45000dB gain, 48kHz stereo Vorbis q6; no tempo or arrangement change",
+      "selection_rationale": "light guitar/mallet contrast to city electronics; based on composer metadata, not audition approval",
+      "sources": [
+        "raw/incompetech/Easy Lemon.mp3"
+      ],
+      "date_downloaded": "2026-10-06",
+      "unity_import": {
+        "loadType": "Streaming",
+        "compressionFormat": "Vorbis",
+        "quality": 0.45,
+        "preloadAudioData": false,
+        "loadInBackground": true
+      }
+    },
+    "builder_hills": {
+      "id": "mus_builder_hills",
+      "bpm": 94.0,
+      "district": "Builder Hills",
+      "full_mix": "music/licensed/mus_builder_hills_pamgaea.ogg",
+      "volume": 1.0,
+      "loop": true,
+      "loop_kind": "complete_composition_with_original_ending_and_intro",
+      "duration_seconds": 168.56816666666666,
+      "sample_rate": 48000,
+      "channels": 2,
+      "title": "Pamgaea",
+      "artist": "Kevin MacLeod",
+      "license": "CC-BY-4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "source_url": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1300036",
+      "source_file": "raw/incompetech/Pamgaea.mp3",
+      "download_url": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Pamgaea.mp3",
+      "processing": "Constant -6.05000dB gain, 48kHz stereo Vorbis q6; no tempo or arrangement change",
+      "selection_rationale": "relaxed contrasting synth textures; based on composer metadata, not audition approval",
+      "sources": [
+        "raw/incompetech/Pamgaea.mp3"
+      ],
+      "date_downloaded": "2026-10-06",
+      "unity_import": {
+        "loadType": "Streaming",
+        "compressionFormat": "Vorbis",
+        "quality": 0.45,
+        "preloadAudioData": false,
+        "loadInBackground": true
+      }
+    },
+    "clubs": {
+      "id": "mus_club",
+      "bpm": 115.0,
+      "district": "Clubs and parties",
+      "full_mix": "music/licensed/mus_clubs_disco_con_tutti.ogg",
+      "volume": 1.0,
+      "loop": true,
+      "loop_kind": "complete_composition_with_original_ending_and_intro",
+      "duration_seconds": 236.352,
+      "sample_rate": 48000,
+      "channels": 2,
+      "title": "Disco con Tutti",
+      "artist": "Kevin MacLeod",
+      "license": "CC-BY-4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "source_url": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200091",
+      "source_file": "raw/incompetech/Disco con Tutti.mp3",
+      "download_url": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Disco%20con%20Tutti.mp3",
+      "processing": "Constant -5.58000dB gain, 48kHz stereo Vorbis q6; no tempo or arrangement change",
+      "selection_rationale": "funk/disco horns for social energy; based on composer metadata, not audition approval",
+      "sources": [
+        "raw/incompetech/Disco con Tutti.mp3"
+      ],
+      "date_downloaded": "2026-10-06",
+      "unity_import": {
+        "loadType": "Streaming",
+        "compressionFormat": "Vorbis",
+        "quality": 0.45,
+        "preloadAudioData": false,
+        "loadInBackground": true
+      }
+    },
+    "dubai_marina": {
+      "id": "mus_dubai_marina",
+      "bpm": 105.0,
+      "district": "Dubai Marina",
+      "full_mix": "music/licensed/mus_dubai_marina_paradise_found.ogg",
+      "volume": 1.0,
+      "loop": true,
+      "loop_kind": "complete_composition_with_original_ending_and_intro",
+      "duration_seconds": 187.48083333333332,
+      "sample_rate": 48000,
+      "channels": 2,
+      "title": "Paradise Found",
+      "artist": "Kevin MacLeod",
+      "license": "CC-BY-4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "source_url": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN2300000",
+      "source_file": "raw/incompetech/Paradise_Found.mp3",
+      "download_url": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Paradise_Found.mp3",
+      "processing": "Constant -6.46000dB gain, 48kHz stereo Vorbis q6; no tempo or arrangement change",
+      "selection_rationale": "bright tropical-house waterfront; based on composer metadata, not audition approval",
+      "sources": [
+        "raw/incompetech/Paradise_Found.mp3"
+      ],
+      "date_downloaded": "2026-10-06",
+      "unity_import": {
+        "loadType": "Streaming",
+        "compressionFormat": "Vorbis",
+        "quality": 0.45,
+        "preloadAudioData": false,
+        "loadInBackground": true
+      }
+    },
+    "lobby": {
+      "id": "mus_lobby",
+      "bpm": 115,
+      "district": "Lobby / character creation",
+      "full_mix": "music/licensed/mus_timeline_funky_chunk.ogg",
+      "volume": 1.0,
+      "loop": true,
+      "loop_kind": "complete_composition_with_original_ending_and_intro",
+      "duration_seconds": 239.020417,
+      "sample_rate": 48000,
+      "channels": 2,
+      "title": "Funky Chunk",
+      "artist": "Kevin MacLeod",
+      "license": "CC-BY-4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "source_url": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1500054",
+      "source_file": "raw/incompetech/Funky Chunk.mp3",
+      "processing": "Constant -4.57dB gain, 48kHz stereo Vorbis q6; no tempo or arrangement change",
+      "sources": [
+        "raw/incompetech/Funky Chunk.mp3"
+      ],
+      "unity_import": {
+        "loadType": "Streaming",
+        "compressionFormat": "Vorbis",
+        "quality": 0.45,
+        "preloadAudioData": false,
+        "loadInBackground": true
+      },
+      "date_downloaded": "2026-10-05"
+    },
+    "perp_pit": {
+      "id": "mus_perp_pit",
+      "bpm": 135.0,
+      "district": "Perp Pit",
+      "full_mix": "music/licensed/mus_perp_pit_getting_it_done.ogg",
+      "volume": 1.0,
+      "loop": true,
+      "loop_kind": "complete_composition_with_original_ending_and_intro",
+      "duration_seconds": 209.84164583333333,
+      "sample_rate": 48000,
+      "channels": 2,
+      "title": "Getting it Done",
+      "artist": "Kevin MacLeod",
+      "license": "CC-BY-4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "source_url": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1800004",
+      "source_file": "raw/incompetech/Getting it Done.mp3",
+      "download_url": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Getting%20it%20Done.mp3",
+      "processing": "Constant -7.33000dB gain, 48kHz stereo Vorbis q6; no tempo or arrangement change",
+      "selection_rationale": "light electronic dance pulse; based on composer metadata, not audition approval",
+      "sources": [
+        "raw/incompetech/Getting it Done.mp3"
+      ],
+      "date_downloaded": "2026-10-06",
+      "unity_import": {
+        "loadType": "Streaming",
+        "compressionFormat": "Vorbis",
+        "quality": 0.45,
+        "preloadAudioData": false,
+        "loadInBackground": true
+      }
+    },
+    "terminal_cafe": {
+      "id": "mus_terminal_cafe",
+      "bpm": 129.0,
+      "district": "Terminal Café",
+      "full_mix": "music/licensed/mus_terminal_cafe_airport_lounge.ogg",
+      "volume": 1.0,
+      "loop": true,
+      "loop_kind": "complete_composition_with_original_ending_and_intro",
+      "duration_seconds": 307.67020833333333,
+      "sample_rate": 48000,
+      "channels": 2,
+      "title": "Airport Lounge",
+      "artist": "Kevin MacLeod",
+      "license": "CC-BY-4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "source_url": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100806",
+      "source_file": "raw/incompetech/Airport Lounge.mp3",
+      "download_url": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Airport%20Lounge.mp3",
+      "processing": "Constant -2.64000dB gain, 48kHz stereo Vorbis q6; no tempo or arrangement change",
+      "selection_rationale": "airy electric-piano/vibraphone social background; based on composer metadata, not audition approval",
+      "sources": [
+        "raw/incompetech/Airport Lounge.mp3"
+      ],
+      "date_downloaded": "2026-10-06",
+      "unity_import": {
+        "loadType": "Streaming",
+        "compressionFormat": "Vorbis",
+        "quality": 0.45,
+        "preloadAudioData": false,
+        "loadInBackground": true
+      },
+      "status": "FE-only music selection proposal; not a server SFX/contract id"
+    },
+    "timeline": {
+      "id": "mus_timeline_square",
+      "bpm": 115,
+      "district": "Timeline Square / Timeline District",
+      "full_mix": "music/licensed/mus_timeline_funky_chunk.ogg",
+      "volume": 1.0,
+      "loop": true,
+      "loop_kind": "complete_composition_with_original_ending_and_intro",
+      "duration_seconds": 239.020417,
+      "sample_rate": 48000,
+      "channels": 2,
+      "title": "Funky Chunk",
+      "artist": "Kevin MacLeod",
+      "license": "CC-BY-4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "source_url": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1500054",
+      "source_file": "raw/incompetech/Funky Chunk.mp3",
+      "processing": "Constant -4.57dB gain, 48kHz stereo Vorbis q6; no tempo or arrangement change",
+      "sources": [
+        "raw/incompetech/Funky Chunk.mp3"
+      ],
+      "unity_import": {
+        "loadType": "Streaming",
+        "compressionFormat": "Vorbis",
+        "quality": 0.45,
+        "preloadAudioData": false,
+        "loadInBackground": true
+      },
+      "date_downloaded": "2026-10-05"
+    },
+    "trenches": {
+      "id": "mus_trenches",
+      "bpm": 98.0,
+      "district": "The Trenches",
+      "full_mix": "music/licensed/mus_trenches_got_funk.ogg",
+      "volume": 1.0,
+      "loop": true,
+      "loop_kind": "complete_composition_with_original_ending_and_intro",
+      "duration_seconds": 281.0775625,
+      "sample_rate": 48000,
+      "channels": 2,
+      "title": "Got Funk",
+      "artist": "Kevin MacLeod",
+      "license": "CC-BY-4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "source_url": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200005",
+      "source_file": "raw/incompetech/Got Funk.mp3",
+      "download_url": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Got%20Funk.mp3",
+      "processing": "Constant -7.74000dB gain, 48kHz stereo Vorbis q6; no tempo or arrangement change",
+      "selection_rationale": "grounded bass-and-horns groove; based on composer metadata, not audition approval",
+      "sources": [
+        "raw/incompetech/Got Funk.mp3"
+      ],
+      "date_downloaded": "2026-10-06",
+      "unity_import": {
+        "loadType": "Streaming",
+        "compressionFormat": "Vorbis",
+        "quality": 0.45,
+        "preloadAudioData": false,
+        "loadInBackground": true
+      }
+    }
+  },
+  "babble": {
+    "ai_agent": {
+      "id": "babble_ai_agent",
+      "files": [
+        "babble/babble_ai_agent_a.wav",
+        "babble/babble_ai_agent_b.wav",
+        "babble/babble_ai_agent_c.wav",
+        "babble/babble_ai_agent_d.wav",
+        "babble/babble_ai_agent_e.wav",
+        "babble/babble_ai_agent_f.wav",
+        "babble/babble_ai_agent_g.wav",
+        "babble/babble_ai_agent_h.wav",
+        "babble/babble_ai_agent_i.wav",
+        "babble/babble_ai_agent_j.wav",
+        "babble/babble_ai_agent_k.wav",
+        "babble/babble_ai_agent_l.wav",
+        "babble/babble_ai_agent_m.wav",
+        "babble/babble_ai_agent_n.wav",
+        "babble/babble_ai_agent_o.wav",
+        "babble/babble_ai_agent_p.wav",
+        "babble/babble_ai_agent_q.wav",
+        "babble/babble_ai_agent_r.wav",
+        "babble/babble_ai_agent_s.wav",
+        "babble/babble_ai_agent_t.wav",
+        "babble/babble_ai_agent_u.wav",
+        "babble/babble_ai_agent_v.wav",
+        "babble/babble_ai_agent_w.wav",
+        "babble/babble_ai_agent_x.wav",
+        "babble/babble_ai_agent_y.wav",
+        "babble/babble_ai_agent_z.wav"
+      ],
+      "letters": {
+        "a": "babble/babble_ai_agent_a.wav",
+        "b": "babble/babble_ai_agent_b.wav",
+        "c": "babble/babble_ai_agent_c.wav",
+        "d": "babble/babble_ai_agent_d.wav",
+        "e": "babble/babble_ai_agent_e.wav",
+        "f": "babble/babble_ai_agent_f.wav",
+        "g": "babble/babble_ai_agent_g.wav",
+        "h": "babble/babble_ai_agent_h.wav",
+        "i": "babble/babble_ai_agent_i.wav",
+        "j": "babble/babble_ai_agent_j.wav",
+        "k": "babble/babble_ai_agent_k.wav",
+        "l": "babble/babble_ai_agent_l.wav",
+        "m": "babble/babble_ai_agent_m.wav",
+        "n": "babble/babble_ai_agent_n.wav",
+        "o": "babble/babble_ai_agent_o.wav",
+        "p": "babble/babble_ai_agent_p.wav",
+        "q": "babble/babble_ai_agent_q.wav",
+        "r": "babble/babble_ai_agent_r.wav",
+        "s": "babble/babble_ai_agent_s.wav",
+        "t": "babble/babble_ai_agent_t.wav",
+        "u": "babble/babble_ai_agent_u.wav",
+        "v": "babble/babble_ai_agent_v.wav",
+        "w": "babble/babble_ai_agent_w.wav",
+        "x": "babble/babble_ai_agent_x.wav",
+        "y": "babble/babble_ai_agent_y.wav",
+        "z": "babble/babble_ai_agent_z.wav"
+      },
+      "volume": 0.398,
+      "volume_db": -8,
+      "chars_per_second": 18,
+      "pitch_jitter_semitones": 0.0,
+      "npc_pitch_range_semitones": [
+        -2.0,
+        2.0
+      ],
+      "syllable_ms": [
+        71,
+        131
+      ],
+      "archetype_status": "phase 2 (in contract/ids/archetypes.json)",
+      "status": "proposed",
+      "sources": [
+        "own work (formant synthesis, tools/gen_babble.py)"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true
+      }
+    },
+    "alpha_caller": {
+      "id": "babble_alpha_caller",
+      "files": [
+        "babble/babble_alpha_caller_a.wav",
+        "babble/babble_alpha_caller_b.wav",
+        "babble/babble_alpha_caller_c.wav",
+        "babble/babble_alpha_caller_d.wav",
+        "babble/babble_alpha_caller_e.wav",
+        "babble/babble_alpha_caller_f.wav",
+        "babble/babble_alpha_caller_g.wav",
+        "babble/babble_alpha_caller_h.wav",
+        "babble/babble_alpha_caller_i.wav",
+        "babble/babble_alpha_caller_j.wav",
+        "babble/babble_alpha_caller_k.wav",
+        "babble/babble_alpha_caller_l.wav",
+        "babble/babble_alpha_caller_m.wav",
+        "babble/babble_alpha_caller_n.wav",
+        "babble/babble_alpha_caller_o.wav",
+        "babble/babble_alpha_caller_p.wav",
+        "babble/babble_alpha_caller_q.wav",
+        "babble/babble_alpha_caller_r.wav",
+        "babble/babble_alpha_caller_s.wav",
+        "babble/babble_alpha_caller_t.wav",
+        "babble/babble_alpha_caller_u.wav",
+        "babble/babble_alpha_caller_v.wav",
+        "babble/babble_alpha_caller_w.wav",
+        "babble/babble_alpha_caller_x.wav",
+        "babble/babble_alpha_caller_y.wav",
+        "babble/babble_alpha_caller_z.wav"
+      ],
+      "letters": {
+        "a": "babble/babble_alpha_caller_a.wav",
+        "b": "babble/babble_alpha_caller_b.wav",
+        "c": "babble/babble_alpha_caller_c.wav",
+        "d": "babble/babble_alpha_caller_d.wav",
+        "e": "babble/babble_alpha_caller_e.wav",
+        "f": "babble/babble_alpha_caller_f.wav",
+        "g": "babble/babble_alpha_caller_g.wav",
+        "h": "babble/babble_alpha_caller_h.wav",
+        "i": "babble/babble_alpha_caller_i.wav",
+        "j": "babble/babble_alpha_caller_j.wav",
+        "k": "babble/babble_alpha_caller_k.wav",
+        "l": "babble/babble_alpha_caller_l.wav",
+        "m": "babble/babble_alpha_caller_m.wav",
+        "n": "babble/babble_alpha_caller_n.wav",
+        "o": "babble/babble_alpha_caller_o.wav",
+        "p": "babble/babble_alpha_caller_p.wav",
+        "q": "babble/babble_alpha_caller_q.wav",
+        "r": "babble/babble_alpha_caller_r.wav",
+        "s": "babble/babble_alpha_caller_s.wav",
+        "t": "babble/babble_alpha_caller_t.wav",
+        "u": "babble/babble_alpha_caller_u.wav",
+        "v": "babble/babble_alpha_caller_v.wav",
+        "w": "babble/babble_alpha_caller_w.wav",
+        "x": "babble/babble_alpha_caller_x.wav",
+        "y": "babble/babble_alpha_caller_y.wav",
+        "z": "babble/babble_alpha_caller_z.wav"
+      },
+      "volume": 0.501,
+      "volume_db": -6,
+      "chars_per_second": 20,
+      "pitch_jitter_semitones": 2.0,
+      "npc_pitch_range_semitones": [
+        -2.0,
+        2.0
+      ],
+      "syllable_ms": [
+        63,
+        117
+      ],
+      "archetype_status": "phase 2 (in contract/ids/archetypes.json)",
+      "status": "proposed",
+      "sources": [
+        "own work (formant synthesis, tools/gen_babble.py)"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true
+      }
+    },
+    "auditor": {
+      "id": "babble_auditor",
+      "files": [
+        "babble/babble_auditor_a.wav",
+        "babble/babble_auditor_b.wav",
+        "babble/babble_auditor_c.wav",
+        "babble/babble_auditor_d.wav",
+        "babble/babble_auditor_e.wav",
+        "babble/babble_auditor_f.wav",
+        "babble/babble_auditor_g.wav",
+        "babble/babble_auditor_h.wav",
+        "babble/babble_auditor_i.wav",
+        "babble/babble_auditor_j.wav",
+        "babble/babble_auditor_k.wav",
+        "babble/babble_auditor_l.wav",
+        "babble/babble_auditor_m.wav",
+        "babble/babble_auditor_n.wav",
+        "babble/babble_auditor_o.wav",
+        "babble/babble_auditor_p.wav",
+        "babble/babble_auditor_q.wav",
+        "babble/babble_auditor_r.wav",
+        "babble/babble_auditor_s.wav",
+        "babble/babble_auditor_t.wav",
+        "babble/babble_auditor_u.wav",
+        "babble/babble_auditor_v.wav",
+        "babble/babble_auditor_w.wav",
+        "babble/babble_auditor_x.wav",
+        "babble/babble_auditor_y.wav",
+        "babble/babble_auditor_z.wav"
+      ],
+      "letters": {
+        "a": "babble/babble_auditor_a.wav",
+        "b": "babble/babble_auditor_b.wav",
+        "c": "babble/babble_auditor_c.wav",
+        "d": "babble/babble_auditor_d.wav",
+        "e": "babble/babble_auditor_e.wav",
+        "f": "babble/babble_auditor_f.wav",
+        "g": "babble/babble_auditor_g.wav",
+        "h": "babble/babble_auditor_h.wav",
+        "i": "babble/babble_auditor_i.wav",
+        "j": "babble/babble_auditor_j.wav",
+        "k": "babble/babble_auditor_k.wav",
+        "l": "babble/babble_auditor_l.wav",
+        "m": "babble/babble_auditor_m.wav",
+        "n": "babble/babble_auditor_n.wav",
+        "o": "babble/babble_auditor_o.wav",
+        "p": "babble/babble_auditor_p.wav",
+        "q": "babble/babble_auditor_q.wav",
+        "r": "babble/babble_auditor_r.wav",
+        "s": "babble/babble_auditor_s.wav",
+        "t": "babble/babble_auditor_t.wav",
+        "u": "babble/babble_auditor_u.wav",
+        "v": "babble/babble_auditor_v.wav",
+        "w": "babble/babble_auditor_w.wav",
+        "x": "babble/babble_auditor_x.wav",
+        "y": "babble/babble_auditor_y.wav",
+        "z": "babble/babble_auditor_z.wav"
+      },
+      "volume": 0.447,
+      "volume_db": -7,
+      "chars_per_second": 16,
+      "pitch_jitter_semitones": 0.3,
+      "npc_pitch_range_semitones": [
+        -2.0,
+        2.0
+      ],
+      "syllable_ms": [
+        76,
+        137
+      ],
+      "archetype_status": "phase 2 (in contract/ids/archetypes.json)",
+      "status": "proposed",
+      "sources": [
+        "own work (formant synthesis, tools/gen_babble.py)"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true
+      }
+    },
+    "cabal_insider": {
+      "id": "babble_cabal_insider",
+      "files": [
+        "babble/babble_cabal_insider_a.wav",
+        "babble/babble_cabal_insider_b.wav",
+        "babble/babble_cabal_insider_c.wav",
+        "babble/babble_cabal_insider_d.wav",
+        "babble/babble_cabal_insider_e.wav",
+        "babble/babble_cabal_insider_f.wav",
+        "babble/babble_cabal_insider_g.wav",
+        "babble/babble_cabal_insider_h.wav",
+        "babble/babble_cabal_insider_i.wav",
+        "babble/babble_cabal_insider_j.wav",
+        "babble/babble_cabal_insider_k.wav",
+        "babble/babble_cabal_insider_l.wav",
+        "babble/babble_cabal_insider_m.wav",
+        "babble/babble_cabal_insider_n.wav",
+        "babble/babble_cabal_insider_o.wav",
+        "babble/babble_cabal_insider_p.wav",
+        "babble/babble_cabal_insider_q.wav",
+        "babble/babble_cabal_insider_r.wav",
+        "babble/babble_cabal_insider_s.wav",
+        "babble/babble_cabal_insider_t.wav",
+        "babble/babble_cabal_insider_u.wav",
+        "babble/babble_cabal_insider_v.wav",
+        "babble/babble_cabal_insider_w.wav",
+        "babble/babble_cabal_insider_x.wav",
+        "babble/babble_cabal_insider_y.wav",
+        "babble/babble_cabal_insider_z.wav"
+      ],
+      "letters": {
+        "a": "babble/babble_cabal_insider_a.wav",
+        "b": "babble/babble_cabal_insider_b.wav",
+        "c": "babble/babble_cabal_insider_c.wav",
+        "d": "babble/babble_cabal_insider_d.wav",
+        "e": "babble/babble_cabal_insider_e.wav",
+        "f": "babble/babble_cabal_insider_f.wav",
+        "g": "babble/babble_cabal_insider_g.wav",
+        "h": "babble/babble_cabal_insider_h.wav",
+        "i": "babble/babble_cabal_insider_i.wav",
+        "j": "babble/babble_cabal_insider_j.wav",
+        "k": "babble/babble_cabal_insider_k.wav",
+        "l": "babble/babble_cabal_insider_l.wav",
+        "m": "babble/babble_cabal_insider_m.wav",
+        "n": "babble/babble_cabal_insider_n.wav",
+        "o": "babble/babble_cabal_insider_o.wav",
+        "p": "babble/babble_cabal_insider_p.wav",
+        "q": "babble/babble_cabal_insider_q.wav",
+        "r": "babble/babble_cabal_insider_r.wav",
+        "s": "babble/babble_cabal_insider_s.wav",
+        "t": "babble/babble_cabal_insider_t.wav",
+        "u": "babble/babble_cabal_insider_u.wav",
+        "v": "babble/babble_cabal_insider_v.wav",
+        "w": "babble/babble_cabal_insider_w.wav",
+        "x": "babble/babble_cabal_insider_x.wav",
+        "y": "babble/babble_cabal_insider_y.wav",
+        "z": "babble/babble_cabal_insider_z.wav"
+      },
+      "volume": 0.355,
+      "volume_db": -9,
+      "chars_per_second": 16,
+      "pitch_jitter_semitones": 1.0,
+      "npc_pitch_range_semitones": [
+        -2.0,
+        2.0
+      ],
+      "syllable_ms": [
+        76,
+        139
+      ],
+      "archetype_status": "phase 2 (in contract/ids/archetypes.json)",
+      "status": "proposed",
+      "sources": [
+        "own work (formant synthesis, tools/gen_babble.py)"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true
+      }
+    },
+    "chain_tribalist": {
+      "id": "babble_chain_tribalist",
+      "files": [
+        "babble/babble_chain_tribalist_a.wav",
+        "babble/babble_chain_tribalist_b.wav",
+        "babble/babble_chain_tribalist_c.wav",
+        "babble/babble_chain_tribalist_d.wav",
+        "babble/babble_chain_tribalist_e.wav",
+        "babble/babble_chain_tribalist_f.wav",
+        "babble/babble_chain_tribalist_g.wav",
+        "babble/babble_chain_tribalist_h.wav",
+        "babble/babble_chain_tribalist_i.wav",
+        "babble/babble_chain_tribalist_j.wav",
+        "babble/babble_chain_tribalist_k.wav",
+        "babble/babble_chain_tribalist_l.wav",
+        "babble/babble_chain_tribalist_m.wav",
+        "babble/babble_chain_tribalist_n.wav",
+        "babble/babble_chain_tribalist_o.wav",
+        "babble/babble_chain_tribalist_p.wav",
+        "babble/babble_chain_tribalist_q.wav",
+        "babble/babble_chain_tribalist_r.wav",
+        "babble/babble_chain_tribalist_s.wav",
+        "babble/babble_chain_tribalist_t.wav",
+        "babble/babble_chain_tribalist_u.wav",
+        "babble/babble_chain_tribalist_v.wav",
+        "babble/babble_chain_tribalist_w.wav",
+        "babble/babble_chain_tribalist_x.wav",
+        "babble/babble_chain_tribalist_y.wav",
+        "babble/babble_chain_tribalist_z.wav"
+      ],
+      "letters": {
+        "a": "babble/babble_chain_tribalist_a.wav",
+        "b": "babble/babble_chain_tribalist_b.wav",
+        "c": "babble/babble_chain_tribalist_c.wav",
+        "d": "babble/babble_chain_tribalist_d.wav",
+        "e": "babble/babble_chain_tribalist_e.wav",
+        "f": "babble/babble_chain_tribalist_f.wav",
+        "g": "babble/babble_chain_tribalist_g.wav",
+        "h": "babble/babble_chain_tribalist_h.wav",
+        "i": "babble/babble_chain_tribalist_i.wav",
+        "j": "babble/babble_chain_tribalist_j.wav",
+        "k": "babble/babble_chain_tribalist_k.wav",
+        "l": "babble/babble_chain_tribalist_l.wav",
+        "m": "babble/babble_chain_tribalist_m.wav",
+        "n": "babble/babble_chain_tribalist_n.wav",
+        "o": "babble/babble_chain_tribalist_o.wav",
+        "p": "babble/babble_chain_tribalist_p.wav",
+        "q": "babble/babble_chain_tribalist_q.wav",
+        "r": "babble/babble_chain_tribalist_r.wav",
+        "s": "babble/babble_chain_tribalist_s.wav",
+        "t": "babble/babble_chain_tribalist_t.wav",
+        "u": "babble/babble_chain_tribalist_u.wav",
+        "v": "babble/babble_chain_tribalist_v.wav",
+        "w": "babble/babble_chain_tribalist_w.wav",
+        "x": "babble/babble_chain_tribalist_x.wav",
+        "y": "babble/babble_chain_tribalist_y.wav",
+        "z": "babble/babble_chain_tribalist_z.wav"
+      },
+      "volume": 0.501,
+      "volume_db": -6,
+      "chars_per_second": 21,
+      "pitch_jitter_semitones": 3.0,
+      "npc_pitch_range_semitones": [
+        -2.0,
+        2.0
+      ],
+      "syllable_ms": [
+        63,
+        117
+      ],
+      "archetype_status": "not in contract/ids/archetypes.json yet (proposed id)",
+      "status": "proposed",
+      "sources": [
+        "own work (formant synthesis, tools/gen_babble.py)"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true
+      }
+    },
+    "community_mod": {
+      "id": "babble_community_mod",
+      "files": [
+        "babble/babble_community_mod_a.wav",
+        "babble/babble_community_mod_b.wav",
+        "babble/babble_community_mod_c.wav",
+        "babble/babble_community_mod_d.wav",
+        "babble/babble_community_mod_e.wav",
+        "babble/babble_community_mod_f.wav",
+        "babble/babble_community_mod_g.wav",
+        "babble/babble_community_mod_h.wav",
+        "babble/babble_community_mod_i.wav",
+        "babble/babble_community_mod_j.wav",
+        "babble/babble_community_mod_k.wav",
+        "babble/babble_community_mod_l.wav",
+        "babble/babble_community_mod_m.wav",
+        "babble/babble_community_mod_n.wav",
+        "babble/babble_community_mod_o.wav",
+        "babble/babble_community_mod_p.wav",
+        "babble/babble_community_mod_q.wav",
+        "babble/babble_community_mod_r.wav",
+        "babble/babble_community_mod_s.wav",
+        "babble/babble_community_mod_t.wav",
+        "babble/babble_community_mod_u.wav",
+        "babble/babble_community_mod_v.wav",
+        "babble/babble_community_mod_w.wav",
+        "babble/babble_community_mod_x.wav",
+        "babble/babble_community_mod_y.wav",
+        "babble/babble_community_mod_z.wav"
+      ],
+      "letters": {
+        "a": "babble/babble_community_mod_a.wav",
+        "b": "babble/babble_community_mod_b.wav",
+        "c": "babble/babble_community_mod_c.wav",
+        "d": "babble/babble_community_mod_d.wav",
+        "e": "babble/babble_community_mod_e.wav",
+        "f": "babble/babble_community_mod_f.wav",
+        "g": "babble/babble_community_mod_g.wav",
+        "h": "babble/babble_community_mod_h.wav",
+        "i": "babble/babble_community_mod_i.wav",
+        "j": "babble/babble_community_mod_j.wav",
+        "k": "babble/babble_community_mod_k.wav",
+        "l": "babble/babble_community_mod_l.wav",
+        "m": "babble/babble_community_mod_m.wav",
+        "n": "babble/babble_community_mod_n.wav",
+        "o": "babble/babble_community_mod_o.wav",
+        "p": "babble/babble_community_mod_p.wav",
+        "q": "babble/babble_community_mod_q.wav",
+        "r": "babble/babble_community_mod_r.wav",
+        "s": "babble/babble_community_mod_s.wav",
+        "t": "babble/babble_community_mod_t.wav",
+        "u": "babble/babble_community_mod_u.wav",
+        "v": "babble/babble_community_mod_v.wav",
+        "w": "babble/babble_community_mod_w.wav",
+        "x": "babble/babble_community_mod_x.wav",
+        "y": "babble/babble_community_mod_y.wav",
+        "z": "babble/babble_community_mod_z.wav"
+      },
+      "volume": 0.501,
+      "volume_db": -6,
+      "chars_per_second": 17,
+      "pitch_jitter_semitones": 1.0,
+      "npc_pitch_range_semitones": [
+        -2.0,
+        2.0
+      ],
+      "syllable_ms": [
+        75,
+        130
+      ],
+      "archetype_status": "phase 2 (in contract/ids/archetypes.json)",
+      "status": "proposed",
+      "sources": [
+        "own work (formant synthesis, tools/gen_babble.py)"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true
+      }
+    },
+    "default": {
+      "id": "babble_generic",
+      "files": [
+        "babble/babble_generic_a.wav",
+        "babble/babble_generic_b.wav",
+        "babble/babble_generic_c.wav",
+        "babble/babble_generic_d.wav",
+        "babble/babble_generic_e.wav",
+        "babble/babble_generic_f.wav",
+        "babble/babble_generic_g.wav",
+        "babble/babble_generic_h.wav",
+        "babble/babble_generic_i.wav",
+        "babble/babble_generic_j.wav",
+        "babble/babble_generic_k.wav",
+        "babble/babble_generic_l.wav",
+        "babble/babble_generic_m.wav",
+        "babble/babble_generic_n.wav",
+        "babble/babble_generic_o.wav",
+        "babble/babble_generic_p.wav",
+        "babble/babble_generic_q.wav",
+        "babble/babble_generic_r.wav",
+        "babble/babble_generic_s.wav",
+        "babble/babble_generic_t.wav",
+        "babble/babble_generic_u.wav",
+        "babble/babble_generic_v.wav",
+        "babble/babble_generic_w.wav",
+        "babble/babble_generic_x.wav",
+        "babble/babble_generic_y.wav",
+        "babble/babble_generic_z.wav"
+      ],
+      "letters": {
+        "a": "babble/babble_generic_a.wav",
+        "b": "babble/babble_generic_b.wav",
+        "c": "babble/babble_generic_c.wav",
+        "d": "babble/babble_generic_d.wav",
+        "e": "babble/babble_generic_e.wav",
+        "f": "babble/babble_generic_f.wav",
+        "g": "babble/babble_generic_g.wav",
+        "h": "babble/babble_generic_h.wav",
+        "i": "babble/babble_generic_i.wav",
+        "j": "babble/babble_generic_j.wav",
+        "k": "babble/babble_generic_k.wav",
+        "l": "babble/babble_generic_l.wav",
+        "m": "babble/babble_generic_m.wav",
+        "n": "babble/babble_generic_n.wav",
+        "o": "babble/babble_generic_o.wav",
+        "p": "babble/babble_generic_p.wav",
+        "q": "babble/babble_generic_q.wav",
+        "r": "babble/babble_generic_r.wav",
+        "s": "babble/babble_generic_s.wav",
+        "t": "babble/babble_generic_t.wav",
+        "u": "babble/babble_generic_u.wav",
+        "v": "babble/babble_generic_v.wav",
+        "w": "babble/babble_generic_w.wav",
+        "x": "babble/babble_generic_x.wav",
+        "y": "babble/babble_generic_y.wav",
+        "z": "babble/babble_generic_z.wav"
+      },
+      "volume": 0.501,
+      "volume_db": -6,
+      "chars_per_second": 16,
+      "pitch_jitter_semitones": 1.5,
+      "npc_pitch_range_semitones": [
+        -2.0,
+        2.0
+      ],
+      "syllable_ms": [
+        77,
+        138
+      ],
+      "archetype_status": "fallback",
+      "status": "proposed",
+      "sources": [
+        "own work (formant synthesis, tools/gen_babble.py)"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true
+      }
+    },
+    "doomposter": {
+      "id": "babble_doomposter",
+      "files": [
+        "babble/babble_doomposter_a.wav",
+        "babble/babble_doomposter_b.wav",
+        "babble/babble_doomposter_c.wav",
+        "babble/babble_doomposter_d.wav",
+        "babble/babble_doomposter_e.wav",
+        "babble/babble_doomposter_f.wav",
+        "babble/babble_doomposter_g.wav",
+        "babble/babble_doomposter_h.wav",
+        "babble/babble_doomposter_i.wav",
+        "babble/babble_doomposter_j.wav",
+        "babble/babble_doomposter_k.wav",
+        "babble/babble_doomposter_l.wav",
+        "babble/babble_doomposter_m.wav",
+        "babble/babble_doomposter_n.wav",
+        "babble/babble_doomposter_o.wav",
+        "babble/babble_doomposter_p.wav",
+        "babble/babble_doomposter_q.wav",
+        "babble/babble_doomposter_r.wav",
+        "babble/babble_doomposter_s.wav",
+        "babble/babble_doomposter_t.wav",
+        "babble/babble_doomposter_u.wav",
+        "babble/babble_doomposter_v.wav",
+        "babble/babble_doomposter_w.wav",
+        "babble/babble_doomposter_x.wav",
+        "babble/babble_doomposter_y.wav",
+        "babble/babble_doomposter_z.wav"
+      ],
+      "letters": {
+        "a": "babble/babble_doomposter_a.wav",
+        "b": "babble/babble_doomposter_b.wav",
+        "c": "babble/babble_doomposter_c.wav",
+        "d": "babble/babble_doomposter_d.wav",
+        "e": "babble/babble_doomposter_e.wav",
+        "f": "babble/babble_doomposter_f.wav",
+        "g": "babble/babble_doomposter_g.wav",
+        "h": "babble/babble_doomposter_h.wav",
+        "i": "babble/babble_doomposter_i.wav",
+        "j": "babble/babble_doomposter_j.wav",
+        "k": "babble/babble_doomposter_k.wav",
+        "l": "babble/babble_doomposter_l.wav",
+        "m": "babble/babble_doomposter_m.wav",
+        "n": "babble/babble_doomposter_n.wav",
+        "o": "babble/babble_doomposter_o.wav",
+        "p": "babble/babble_doomposter_p.wav",
+        "q": "babble/babble_doomposter_q.wav",
+        "r": "babble/babble_doomposter_r.wav",
+        "s": "babble/babble_doomposter_s.wav",
+        "t": "babble/babble_doomposter_t.wav",
+        "u": "babble/babble_doomposter_u.wav",
+        "v": "babble/babble_doomposter_v.wav",
+        "w": "babble/babble_doomposter_w.wav",
+        "x": "babble/babble_doomposter_x.wav",
+        "y": "babble/babble_doomposter_y.wav",
+        "z": "babble/babble_doomposter_z.wav"
+      },
+      "volume": 0.501,
+      "volume_db": -6,
+      "chars_per_second": 11,
+      "pitch_jitter_semitones": 0.8,
+      "npc_pitch_range_semitones": [
+        -2.0,
+        2.0
+      ],
+      "syllable_ms": [
+        107,
+        190
+      ],
+      "archetype_status": "phase 1 (in contract/ids/archetypes.json)",
+      "status": "proposed",
+      "sources": [
+        "own work (formant synthesis, tools/gen_babble.py)"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true
+      }
+    },
+    "doxxed_founder": {
+      "id": "babble_doxxed_founder",
+      "files": [
+        "babble/babble_doxxed_founder_a.wav",
+        "babble/babble_doxxed_founder_b.wav",
+        "babble/babble_doxxed_founder_c.wav",
+        "babble/babble_doxxed_founder_d.wav",
+        "babble/babble_doxxed_founder_e.wav",
+        "babble/babble_doxxed_founder_f.wav",
+        "babble/babble_doxxed_founder_g.wav",
+        "babble/babble_doxxed_founder_h.wav",
+        "babble/babble_doxxed_founder_i.wav",
+        "babble/babble_doxxed_founder_j.wav",
+        "babble/babble_doxxed_founder_k.wav",
+        "babble/babble_doxxed_founder_l.wav",
+        "babble/babble_doxxed_founder_m.wav",
+        "babble/babble_doxxed_founder_n.wav",
+        "babble/babble_doxxed_founder_o.wav",
+        "babble/babble_doxxed_founder_p.wav",
+        "babble/babble_doxxed_founder_q.wav",
+        "babble/babble_doxxed_founder_r.wav",
+        "babble/babble_doxxed_founder_s.wav",
+        "babble/babble_doxxed_founder_t.wav",
+        "babble/babble_doxxed_founder_u.wav",
+        "babble/babble_doxxed_founder_v.wav",
+        "babble/babble_doxxed_founder_w.wav",
+        "babble/babble_doxxed_founder_x.wav",
+        "babble/babble_doxxed_founder_y.wav",
+        "babble/babble_doxxed_founder_z.wav"
+      ],
+      "letters": {
+        "a": "babble/babble_doxxed_founder_a.wav",
+        "b": "babble/babble_doxxed_founder_b.wav",
+        "c": "babble/babble_doxxed_founder_c.wav",
+        "d": "babble/babble_doxxed_founder_d.wav",
+        "e": "babble/babble_doxxed_founder_e.wav",
+        "f": "babble/babble_doxxed_founder_f.wav",
+        "g": "babble/babble_doxxed_founder_g.wav",
+        "h": "babble/babble_doxxed_founder_h.wav",
+        "i": "babble/babble_doxxed_founder_i.wav",
+        "j": "babble/babble_doxxed_founder_j.wav",
+        "k": "babble/babble_doxxed_founder_k.wav",
+        "l": "babble/babble_doxxed_founder_l.wav",
+        "m": "babble/babble_doxxed_founder_m.wav",
+        "n": "babble/babble_doxxed_founder_n.wav",
+        "o": "babble/babble_doxxed_founder_o.wav",
+        "p": "babble/babble_doxxed_founder_p.wav",
+        "q": "babble/babble_doxxed_founder_q.wav",
+        "r": "babble/babble_doxxed_founder_r.wav",
+        "s": "babble/babble_doxxed_founder_s.wav",
+        "t": "babble/babble_doxxed_founder_t.wav",
+        "u": "babble/babble_doxxed_founder_u.wav",
+        "v": "babble/babble_doxxed_founder_v.wav",
+        "w": "babble/babble_doxxed_founder_w.wav",
+        "x": "babble/babble_doxxed_founder_x.wav",
+        "y": "babble/babble_doxxed_founder_y.wav",
+        "z": "babble/babble_doxxed_founder_z.wav"
+      },
+      "volume": 0.501,
+      "volume_db": -6,
+      "chars_per_second": 16,
+      "pitch_jitter_semitones": 1.2,
+      "npc_pitch_range_semitones": [
+        -2.0,
+        2.0
+      ],
+      "syllable_ms": [
+        76,
+        133
+      ],
+      "archetype_status": "phase 2 (in contract/ids/archetypes.json)",
+      "status": "proposed",
+      "sources": [
+        "own work (formant synthesis, tools/gen_babble.py)"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true
+      }
+    },
+    "drainer": {
+      "id": "babble_drainer",
+      "files": [
+        "babble/babble_drainer_a.wav",
+        "babble/babble_drainer_b.wav",
+        "babble/babble_drainer_c.wav",
+        "babble/babble_drainer_d.wav",
+        "babble/babble_drainer_e.wav",
+        "babble/babble_drainer_f.wav",
+        "babble/babble_drainer_g.wav",
+        "babble/babble_drainer_h.wav",
+        "babble/babble_drainer_i.wav",
+        "babble/babble_drainer_j.wav",
+        "babble/babble_drainer_k.wav",
+        "babble/babble_drainer_l.wav",
+        "babble/babble_drainer_m.wav",
+        "babble/babble_drainer_n.wav",
+        "babble/babble_drainer_o.wav",
+        "babble/babble_drainer_p.wav",
+        "babble/babble_drainer_q.wav",
+        "babble/babble_drainer_r.wav",
+        "babble/babble_drainer_s.wav",
+        "babble/babble_drainer_t.wav",
+        "babble/babble_drainer_u.wav",
+        "babble/babble_drainer_v.wav",
+        "babble/babble_drainer_w.wav",
+        "babble/babble_drainer_x.wav",
+        "babble/babble_drainer_y.wav",
+        "babble/babble_drainer_z.wav"
+      ],
+      "letters": {
+        "a": "babble/babble_drainer_a.wav",
+        "b": "babble/babble_drainer_b.wav",
+        "c": "babble/babble_drainer_c.wav",
+        "d": "babble/babble_drainer_d.wav",
+        "e": "babble/babble_drainer_e.wav",
+        "f": "babble/babble_drainer_f.wav",
+        "g": "babble/babble_drainer_g.wav",
+        "h": "babble/babble_drainer_h.wav",
+        "i": "babble/babble_drainer_i.wav",
+        "j": "babble/babble_drainer_j.wav",
+        "k": "babble/babble_drainer_k.wav",
+        "l": "babble/babble_drainer_l.wav",
+        "m": "babble/babble_drainer_m.wav",
+        "n": "babble/babble_drainer_n.wav",
+        "o": "babble/babble_drainer_o.wav",
+        "p": "babble/babble_drainer_p.wav",
+        "q": "babble/babble_drainer_q.wav",
+        "r": "babble/babble_drainer_r.wav",
+        "s": "babble/babble_drainer_s.wav",
+        "t": "babble/babble_drainer_t.wav",
+        "u": "babble/babble_drainer_u.wav",
+        "v": "babble/babble_drainer_v.wav",
+        "w": "babble/babble_drainer_w.wav",
+        "x": "babble/babble_drainer_x.wav",
+        "y": "babble/babble_drainer_y.wav",
+        "z": "babble/babble_drainer_z.wav"
+      },
+      "volume": 0.447,
+      "volume_db": -7,
+      "chars_per_second": 15,
+      "pitch_jitter_semitones": 1.0,
+      "npc_pitch_range_semitones": [
+        -2.0,
+        2.0
+      ],
+      "syllable_ms": [
+        80,
+        147
+      ],
+      "archetype_status": "phase 2 (in contract/ids/archetypes.json)",
+      "status": "proposed",
+      "sources": [
+        "own work (formant synthesis, tools/gen_babble.py)"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true
+      }
+    },
+    "dubai_relocator": {
+      "id": "babble_dubai_relocator",
+      "files": [
+        "babble/babble_dubai_relocator_a.wav",
+        "babble/babble_dubai_relocator_b.wav",
+        "babble/babble_dubai_relocator_c.wav",
+        "babble/babble_dubai_relocator_d.wav",
+        "babble/babble_dubai_relocator_e.wav",
+        "babble/babble_dubai_relocator_f.wav",
+        "babble/babble_dubai_relocator_g.wav",
+        "babble/babble_dubai_relocator_h.wav",
+        "babble/babble_dubai_relocator_i.wav",
+        "babble/babble_dubai_relocator_j.wav",
+        "babble/babble_dubai_relocator_k.wav",
+        "babble/babble_dubai_relocator_l.wav",
+        "babble/babble_dubai_relocator_m.wav",
+        "babble/babble_dubai_relocator_n.wav",
+        "babble/babble_dubai_relocator_o.wav",
+        "babble/babble_dubai_relocator_p.wav",
+        "babble/babble_dubai_relocator_q.wav",
+        "babble/babble_dubai_relocator_r.wav",
+        "babble/babble_dubai_relocator_s.wav",
+        "babble/babble_dubai_relocator_t.wav",
+        "babble/babble_dubai_relocator_u.wav",
+        "babble/babble_dubai_relocator_v.wav",
+        "babble/babble_dubai_relocator_w.wav",
+        "babble/babble_dubai_relocator_x.wav",
+        "babble/babble_dubai_relocator_y.wav",
+        "babble/babble_dubai_relocator_z.wav"
+      ],
+      "letters": {
+        "a": "babble/babble_dubai_relocator_a.wav",
+        "b": "babble/babble_dubai_relocator_b.wav",
+        "c": "babble/babble_dubai_relocator_c.wav",
+        "d": "babble/babble_dubai_relocator_d.wav",
+        "e": "babble/babble_dubai_relocator_e.wav",
+        "f": "babble/babble_dubai_relocator_f.wav",
+        "g": "babble/babble_dubai_relocator_g.wav",
+        "h": "babble/babble_dubai_relocator_h.wav",
+        "i": "babble/babble_dubai_relocator_i.wav",
+        "j": "babble/babble_dubai_relocator_j.wav",
+        "k": "babble/babble_dubai_relocator_k.wav",
+        "l": "babble/babble_dubai_relocator_l.wav",
+        "m": "babble/babble_dubai_relocator_m.wav",
+        "n": "babble/babble_dubai_relocator_n.wav",
+        "o": "babble/babble_dubai_relocator_o.wav",
+        "p": "babble/babble_dubai_relocator_p.wav",
+        "q": "babble/babble_dubai_relocator_q.wav",
+        "r": "babble/babble_dubai_relocator_r.wav",
+        "s": "babble/babble_dubai_relocator_s.wav",
+        "t": "babble/babble_dubai_relocator_t.wav",
+        "u": "babble/babble_dubai_relocator_u.wav",
+        "v": "babble/babble_dubai_relocator_v.wav",
+        "w": "babble/babble_dubai_relocator_w.wav",
+        "x": "babble/babble_dubai_relocator_x.wav",
+        "y": "babble/babble_dubai_relocator_y.wav",
+        "z": "babble/babble_dubai_relocator_z.wav"
+      },
+      "volume": 0.501,
+      "volume_db": -6,
+      "chars_per_second": 14,
+      "pitch_jitter_semitones": 1.2,
+      "npc_pitch_range_semitones": [
+        -2.0,
+        2.0
+      ],
+      "syllable_ms": [
+        89,
+        156
+      ],
+      "archetype_status": "phase 2 (in contract/ids/archetypes.json)",
+      "status": "proposed",
+      "sources": [
+        "own work (formant synthesis, tools/gen_babble.py)"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true
+      }
+    },
+    "engagement_farmer": {
+      "id": "babble_engagement_farmer",
+      "files": [
+        "babble/babble_engagement_farmer_a.wav",
+        "babble/babble_engagement_farmer_b.wav",
+        "babble/babble_engagement_farmer_c.wav",
+        "babble/babble_engagement_farmer_d.wav",
+        "babble/babble_engagement_farmer_e.wav",
+        "babble/babble_engagement_farmer_f.wav",
+        "babble/babble_engagement_farmer_g.wav",
+        "babble/babble_engagement_farmer_h.wav",
+        "babble/babble_engagement_farmer_i.wav",
+        "babble/babble_engagement_farmer_j.wav",
+        "babble/babble_engagement_farmer_k.wav",
+        "babble/babble_engagement_farmer_l.wav",
+        "babble/babble_engagement_farmer_m.wav",
+        "babble/babble_engagement_farmer_n.wav",
+        "babble/babble_engagement_farmer_o.wav",
+        "babble/babble_engagement_farmer_p.wav",
+        "babble/babble_engagement_farmer_q.wav",
+        "babble/babble_engagement_farmer_r.wav",
+        "babble/babble_engagement_farmer_s.wav",
+        "babble/babble_engagement_farmer_t.wav",
+        "babble/babble_engagement_farmer_u.wav",
+        "babble/babble_engagement_farmer_v.wav",
+        "babble/babble_engagement_farmer_w.wav",
+        "babble/babble_engagement_farmer_x.wav",
+        "babble/babble_engagement_farmer_y.wav",
+        "babble/babble_engagement_farmer_z.wav"
+      ],
+      "letters": {
+        "a": "babble/babble_engagement_farmer_a.wav",
+        "b": "babble/babble_engagement_farmer_b.wav",
+        "c": "babble/babble_engagement_farmer_c.wav",
+        "d": "babble/babble_engagement_farmer_d.wav",
+        "e": "babble/babble_engagement_farmer_e.wav",
+        "f": "babble/babble_engagement_farmer_f.wav",
+        "g": "babble/babble_engagement_farmer_g.wav",
+        "h": "babble/babble_engagement_farmer_h.wav",
+        "i": "babble/babble_engagement_farmer_i.wav",
+        "j": "babble/babble_engagement_farmer_j.wav",
+        "k": "babble/babble_engagement_farmer_k.wav",
+        "l": "babble/babble_engagement_farmer_l.wav",
+        "m": "babble/babble_engagement_farmer_m.wav",
+        "n": "babble/babble_engagement_farmer_n.wav",
+        "o": "babble/babble_engagement_farmer_o.wav",
+        "p": "babble/babble_engagement_farmer_p.wav",
+        "q": "babble/babble_engagement_farmer_q.wav",
+        "r": "babble/babble_engagement_farmer_r.wav",
+        "s": "babble/babble_engagement_farmer_s.wav",
+        "t": "babble/babble_engagement_farmer_t.wav",
+        "u": "babble/babble_engagement_farmer_u.wav",
+        "v": "babble/babble_engagement_farmer_v.wav",
+        "w": "babble/babble_engagement_farmer_w.wav",
+        "x": "babble/babble_engagement_farmer_x.wav",
+        "y": "babble/babble_engagement_farmer_y.wav",
+        "z": "babble/babble_engagement_farmer_z.wav"
+      },
+      "volume": 0.447,
+      "volume_db": -7,
+      "chars_per_second": 19,
+      "pitch_jitter_semitones": 3.0,
+      "npc_pitch_range_semitones": [
+        -2.0,
+        2.0
+      ],
+      "syllable_ms": [
+        71,
+        121
+      ],
+      "archetype_status": "phase 2 (in contract/ids/archetypes.json)",
+      "status": "proposed",
+      "sources": [
+        "own work (formant synthesis, tools/gen_babble.py)"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true
+      }
+    },
+    "fake_rich_larp": {
+      "id": "babble_fake_rich_larp",
+      "files": [
+        "babble/babble_fake_rich_larp_a.wav",
+        "babble/babble_fake_rich_larp_b.wav",
+        "babble/babble_fake_rich_larp_c.wav",
+        "babble/babble_fake_rich_larp_d.wav",
+        "babble/babble_fake_rich_larp_e.wav",
+        "babble/babble_fake_rich_larp_f.wav",
+        "babble/babble_fake_rich_larp_g.wav",
+        "babble/babble_fake_rich_larp_h.wav",
+        "babble/babble_fake_rich_larp_i.wav",
+        "babble/babble_fake_rich_larp_j.wav",
+        "babble/babble_fake_rich_larp_k.wav",
+        "babble/babble_fake_rich_larp_l.wav",
+        "babble/babble_fake_rich_larp_m.wav",
+        "babble/babble_fake_rich_larp_n.wav",
+        "babble/babble_fake_rich_larp_o.wav",
+        "babble/babble_fake_rich_larp_p.wav",
+        "babble/babble_fake_rich_larp_q.wav",
+        "babble/babble_fake_rich_larp_r.wav",
+        "babble/babble_fake_rich_larp_s.wav",
+        "babble/babble_fake_rich_larp_t.wav",
+        "babble/babble_fake_rich_larp_u.wav",
+        "babble/babble_fake_rich_larp_v.wav",
+        "babble/babble_fake_rich_larp_w.wav",
+        "babble/babble_fake_rich_larp_x.wav",
+        "babble/babble_fake_rich_larp_y.wav",
+        "babble/babble_fake_rich_larp_z.wav"
+      ],
+      "letters": {
+        "a": "babble/babble_fake_rich_larp_a.wav",
+        "b": "babble/babble_fake_rich_larp_b.wav",
+        "c": "babble/babble_fake_rich_larp_c.wav",
+        "d": "babble/babble_fake_rich_larp_d.wav",
+        "e": "babble/babble_fake_rich_larp_e.wav",
+        "f": "babble/babble_fake_rich_larp_f.wav",
+        "g": "babble/babble_fake_rich_larp_g.wav",
+        "h": "babble/babble_fake_rich_larp_h.wav",
+        "i": "babble/babble_fake_rich_larp_i.wav",
+        "j": "babble/babble_fake_rich_larp_j.wav",
+        "k": "babble/babble_fake_rich_larp_k.wav",
+        "l": "babble/babble_fake_rich_larp_l.wav",
+        "m": "babble/babble_fake_rich_larp_m.wav",
+        "n": "babble/babble_fake_rich_larp_n.wav",
+        "o": "babble/babble_fake_rich_larp_o.wav",
+        "p": "babble/babble_fake_rich_larp_p.wav",
+        "q": "babble/babble_fake_rich_larp_q.wav",
+        "r": "babble/babble_fake_rich_larp_r.wav",
+        "s": "babble/babble_fake_rich_larp_s.wav",
+        "t": "babble/babble_fake_rich_larp_t.wav",
+        "u": "babble/babble_fake_rich_larp_u.wav",
+        "v": "babble/babble_fake_rich_larp_v.wav",
+        "w": "babble/babble_fake_rich_larp_w.wav",
+        "x": "babble/babble_fake_rich_larp_x.wav",
+        "y": "babble/babble_fake_rich_larp_y.wav",
+        "z": "babble/babble_fake_rich_larp_z.wav"
+      },
+      "volume": 0.501,
+      "volume_db": -6,
+      "chars_per_second": 18,
+      "pitch_jitter_semitones": 2.0,
+      "npc_pitch_range_semitones": [
+        -2.0,
+        2.0
+      ],
+      "syllable_ms": [
+        68,
+        124
+      ],
+      "archetype_status": "phase 2 (in contract/ids/archetypes.json)",
+      "status": "proposed",
+      "sources": [
+        "own work (formant synthesis, tools/gen_babble.py)"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true
+      }
+    },
+    "farmer": {
+      "id": "babble_farmer",
+      "files": [
+        "babble/babble_farmer_a.wav",
+        "babble/babble_farmer_b.wav",
+        "babble/babble_farmer_c.wav",
+        "babble/babble_farmer_d.wav",
+        "babble/babble_farmer_e.wav",
+        "babble/babble_farmer_f.wav",
+        "babble/babble_farmer_g.wav",
+        "babble/babble_farmer_h.wav",
+        "babble/babble_farmer_i.wav",
+        "babble/babble_farmer_j.wav",
+        "babble/babble_farmer_k.wav",
+        "babble/babble_farmer_l.wav",
+        "babble/babble_farmer_m.wav",
+        "babble/babble_farmer_n.wav",
+        "babble/babble_farmer_o.wav",
+        "babble/babble_farmer_p.wav",
+        "babble/babble_farmer_q.wav",
+        "babble/babble_farmer_r.wav",
+        "babble/babble_farmer_s.wav",
+        "babble/babble_farmer_t.wav",
+        "babble/babble_farmer_u.wav",
+        "babble/babble_farmer_v.wav",
+        "babble/babble_farmer_w.wav",
+        "babble/babble_farmer_x.wav",
+        "babble/babble_farmer_y.wav",
+        "babble/babble_farmer_z.wav"
+      ],
+      "letters": {
+        "a": "babble/babble_farmer_a.wav",
+        "b": "babble/babble_farmer_b.wav",
+        "c": "babble/babble_farmer_c.wav",
+        "d": "babble/babble_farmer_d.wav",
+        "e": "babble/babble_farmer_e.wav",
+        "f": "babble/babble_farmer_f.wav",
+        "g": "babble/babble_farmer_g.wav",
+        "h": "babble/babble_farmer_h.wav",
+        "i": "babble/babble_farmer_i.wav",
+        "j": "babble/babble_farmer_j.wav",
+        "k": "babble/babble_farmer_k.wav",
+        "l": "babble/babble_farmer_l.wav",
+        "m": "babble/babble_farmer_m.wav",
+        "n": "babble/babble_farmer_n.wav",
+        "o": "babble/babble_farmer_o.wav",
+        "p": "babble/babble_farmer_p.wav",
+        "q": "babble/babble_farmer_q.wav",
+        "r": "babble/babble_farmer_r.wav",
+        "s": "babble/babble_farmer_s.wav",
+        "t": "babble/babble_farmer_t.wav",
+        "u": "babble/babble_farmer_u.wav",
+        "v": "babble/babble_farmer_v.wav",
+        "w": "babble/babble_farmer_w.wav",
+        "x": "babble/babble_farmer_x.wav",
+        "y": "babble/babble_farmer_y.wav",
+        "z": "babble/babble_farmer_z.wav"
+      },
+      "volume": 0.501,
+      "volume_db": -6,
+      "chars_per_second": 14,
+      "pitch_jitter_semitones": 1.5,
+      "npc_pitch_range_semitones": [
+        -2.0,
+        2.0
+      ],
+      "syllable_ms": [
+        82,
+        151
+      ],
+      "archetype_status": "phase 2 (in contract/ids/archetypes.json)",
+      "status": "proposed",
+      "sources": [
+        "own work (formant synthesis, tools/gen_babble.py)"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true
+      }
+    },
+    "giveaway_guy": {
+      "id": "babble_giveaway_guy",
+      "files": [
+        "babble/babble_giveaway_guy_a.wav",
+        "babble/babble_giveaway_guy_b.wav",
+        "babble/babble_giveaway_guy_c.wav",
+        "babble/babble_giveaway_guy_d.wav",
+        "babble/babble_giveaway_guy_e.wav",
+        "babble/babble_giveaway_guy_f.wav",
+        "babble/babble_giveaway_guy_g.wav",
+        "babble/babble_giveaway_guy_h.wav",
+        "babble/babble_giveaway_guy_i.wav",
+        "babble/babble_giveaway_guy_j.wav",
+        "babble/babble_giveaway_guy_k.wav",
+        "babble/babble_giveaway_guy_l.wav",
+        "babble/babble_giveaway_guy_m.wav",
+        "babble/babble_giveaway_guy_n.wav",
+        "babble/babble_giveaway_guy_o.wav",
+        "babble/babble_giveaway_guy_p.wav",
+        "babble/babble_giveaway_guy_q.wav",
+        "babble/babble_giveaway_guy_r.wav",
+        "babble/babble_giveaway_guy_s.wav",
+        "babble/babble_giveaway_guy_t.wav",
+        "babble/babble_giveaway_guy_u.wav",
+        "babble/babble_giveaway_guy_v.wav",
+        "babble/babble_giveaway_guy_w.wav",
+        "babble/babble_giveaway_guy_x.wav",
+        "babble/babble_giveaway_guy_y.wav",
+        "babble/babble_giveaway_guy_z.wav"
+      ],
+      "letters": {
+        "a": "babble/babble_giveaway_guy_a.wav",
+        "b": "babble/babble_giveaway_guy_b.wav",
+        "c": "babble/babble_giveaway_guy_c.wav",
+        "d": "babble/babble_giveaway_guy_d.wav",
+        "e": "babble/babble_giveaway_guy_e.wav",
+        "f": "babble/babble_giveaway_guy_f.wav",
+        "g": "babble/babble_giveaway_guy_g.wav",
+        "h": "babble/babble_giveaway_guy_h.wav",
+        "i": "babble/babble_giveaway_guy_i.wav",
+        "j": "babble/babble_giveaway_guy_j.wav",
+        "k": "babble/babble_giveaway_guy_k.wav",
+        "l": "babble/babble_giveaway_guy_l.wav",
+        "m": "babble/babble_giveaway_guy_m.wav",
+        "n": "babble/babble_giveaway_guy_n.wav",
+        "o": "babble/babble_giveaway_guy_o.wav",
+        "p": "babble/babble_giveaway_guy_p.wav",
+        "q": "babble/babble_giveaway_guy_q.wav",
+        "r": "babble/babble_giveaway_guy_r.wav",
+        "s": "babble/babble_giveaway_guy_s.wav",
+        "t": "babble/babble_giveaway_guy_t.wav",
+        "u": "babble/babble_giveaway_guy_u.wav",
+        "v": "babble/babble_giveaway_guy_v.wav",
+        "w": "babble/babble_giveaway_guy_w.wav",
+        "x": "babble/babble_giveaway_guy_x.wav",
+        "y": "babble/babble_giveaway_guy_y.wav",
+        "z": "babble/babble_giveaway_guy_z.wav"
+      },
+      "volume": 0.501,
+      "volume_db": -6,
+      "chars_per_second": 18,
+      "pitch_jitter_semitones": 3.0,
+      "npc_pitch_range_semitones": [
+        -2.0,
+        2.0
+      ],
+      "syllable_ms": [
+        68,
+        124
+      ],
+      "archetype_status": "phase 1 (in contract/ids/archetypes.json)",
+      "status": "proposed",
+      "sources": [
+        "own work (formant synthesis, tools/gen_babble.py)"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true
+      }
+    },
+    "laser_eyes_maxi": {
+      "id": "babble_laser_eyes_maxi",
+      "files": [
+        "babble/babble_laser_eyes_maxi_a.wav",
+        "babble/babble_laser_eyes_maxi_b.wav",
+        "babble/babble_laser_eyes_maxi_c.wav",
+        "babble/babble_laser_eyes_maxi_d.wav",
+        "babble/babble_laser_eyes_maxi_e.wav",
+        "babble/babble_laser_eyes_maxi_f.wav",
+        "babble/babble_laser_eyes_maxi_g.wav",
+        "babble/babble_laser_eyes_maxi_h.wav",
+        "babble/babble_laser_eyes_maxi_i.wav",
+        "babble/babble_laser_eyes_maxi_j.wav",
+        "babble/babble_laser_eyes_maxi_k.wav",
+        "babble/babble_laser_eyes_maxi_l.wav",
+        "babble/babble_laser_eyes_maxi_m.wav",
+        "babble/babble_laser_eyes_maxi_n.wav",
+        "babble/babble_laser_eyes_maxi_o.wav",
+        "babble/babble_laser_eyes_maxi_p.wav",
+        "babble/babble_laser_eyes_maxi_q.wav",
+        "babble/babble_laser_eyes_maxi_r.wav",
+        "babble/babble_laser_eyes_maxi_s.wav",
+        "babble/babble_laser_eyes_maxi_t.wav",
+        "babble/babble_laser_eyes_maxi_u.wav",
+        "babble/babble_laser_eyes_maxi_v.wav",
+        "babble/babble_laser_eyes_maxi_w.wav",
+        "babble/babble_laser_eyes_maxi_x.wav",
+        "babble/babble_laser_eyes_maxi_y.wav",
+        "babble/babble_laser_eyes_maxi_z.wav"
+      ],
+      "letters": {
+        "a": "babble/babble_laser_eyes_maxi_a.wav",
+        "b": "babble/babble_laser_eyes_maxi_b.wav",
+        "c": "babble/babble_laser_eyes_maxi_c.wav",
+        "d": "babble/babble_laser_eyes_maxi_d.wav",
+        "e": "babble/babble_laser_eyes_maxi_e.wav",
+        "f": "babble/babble_laser_eyes_maxi_f.wav",
+        "g": "babble/babble_laser_eyes_maxi_g.wav",
+        "h": "babble/babble_laser_eyes_maxi_h.wav",
+        "i": "babble/babble_laser_eyes_maxi_i.wav",
+        "j": "babble/babble_laser_eyes_maxi_j.wav",
+        "k": "babble/babble_laser_eyes_maxi_k.wav",
+        "l": "babble/babble_laser_eyes_maxi_l.wav",
+        "m": "babble/babble_laser_eyes_maxi_m.wav",
+        "n": "babble/babble_laser_eyes_maxi_n.wav",
+        "o": "babble/babble_laser_eyes_maxi_o.wav",
+        "p": "babble/babble_laser_eyes_maxi_p.wav",
+        "q": "babble/babble_laser_eyes_maxi_q.wav",
+        "r": "babble/babble_laser_eyes_maxi_r.wav",
+        "s": "babble/babble_laser_eyes_maxi_s.wav",
+        "t": "babble/babble_laser_eyes_maxi_t.wav",
+        "u": "babble/babble_laser_eyes_maxi_u.wav",
+        "v": "babble/babble_laser_eyes_maxi_v.wav",
+        "w": "babble/babble_laser_eyes_maxi_w.wav",
+        "x": "babble/babble_laser_eyes_maxi_x.wav",
+        "y": "babble/babble_laser_eyes_maxi_y.wav",
+        "z": "babble/babble_laser_eyes_maxi_z.wav"
+      },
+      "volume": 0.501,
+      "volume_db": -6,
+      "chars_per_second": 17,
+      "pitch_jitter_semitones": 1.5,
+      "npc_pitch_range_semitones": [
+        -2.0,
+        2.0
+      ],
+      "syllable_ms": [
+        76,
+        139
+      ],
+      "archetype_status": "not in contract/ids/archetypes.json yet (proposed id)",
+      "status": "proposed",
+      "sources": [
+        "own work (formant synthesis, tools/gen_babble.py)"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true
+      }
+    },
+    "normie": {
+      "id": "babble_normie",
+      "files": [
+        "babble/babble_normie_a.wav",
+        "babble/babble_normie_b.wav",
+        "babble/babble_normie_c.wav",
+        "babble/babble_normie_d.wav",
+        "babble/babble_normie_e.wav",
+        "babble/babble_normie_f.wav",
+        "babble/babble_normie_g.wav",
+        "babble/babble_normie_h.wav",
+        "babble/babble_normie_i.wav",
+        "babble/babble_normie_j.wav",
+        "babble/babble_normie_k.wav",
+        "babble/babble_normie_l.wav",
+        "babble/babble_normie_m.wav",
+        "babble/babble_normie_n.wav",
+        "babble/babble_normie_o.wav",
+        "babble/babble_normie_p.wav",
+        "babble/babble_normie_q.wav",
+        "babble/babble_normie_r.wav",
+        "babble/babble_normie_s.wav",
+        "babble/babble_normie_t.wav",
+        "babble/babble_normie_u.wav",
+        "babble/babble_normie_v.wav",
+        "babble/babble_normie_w.wav",
+        "babble/babble_normie_x.wav",
+        "babble/babble_normie_y.wav",
+        "babble/babble_normie_z.wav"
+      ],
+      "letters": {
+        "a": "babble/babble_normie_a.wav",
+        "b": "babble/babble_normie_b.wav",
+        "c": "babble/babble_normie_c.wav",
+        "d": "babble/babble_normie_d.wav",
+        "e": "babble/babble_normie_e.wav",
+        "f": "babble/babble_normie_f.wav",
+        "g": "babble/babble_normie_g.wav",
+        "h": "babble/babble_normie_h.wav",
+        "i": "babble/babble_normie_i.wav",
+        "j": "babble/babble_normie_j.wav",
+        "k": "babble/babble_normie_k.wav",
+        "l": "babble/babble_normie_l.wav",
+        "m": "babble/babble_normie_m.wav",
+        "n": "babble/babble_normie_n.wav",
+        "o": "babble/babble_normie_o.wav",
+        "p": "babble/babble_normie_p.wav",
+        "q": "babble/babble_normie_q.wav",
+        "r": "babble/babble_normie_r.wav",
+        "s": "babble/babble_normie_s.wav",
+        "t": "babble/babble_normie_t.wav",
+        "u": "babble/babble_normie_u.wav",
+        "v": "babble/babble_normie_v.wav",
+        "w": "babble/babble_normie_w.wav",
+        "x": "babble/babble_normie_x.wav",
+        "y": "babble/babble_normie_y.wav",
+        "z": "babble/babble_normie_z.wav"
+      },
+      "volume": 0.501,
+      "volume_db": -6,
+      "chars_per_second": 14,
+      "pitch_jitter_semitones": 1.5,
+      "npc_pitch_range_semitones": [
+        -2.0,
+        2.0
+      ],
+      "syllable_ms": [
+        90,
+        150
+      ],
+      "archetype_status": "phase 2 (in contract/ids/archetypes.json)",
+      "status": "proposed",
+      "sources": [
+        "own work (formant synthesis, tools/gen_babble.py)"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true
+      }
+    },
+    "ore_miner": {
+      "id": "babble_ore_miner",
+      "files": [
+        "babble/babble_ore_miner_a.wav",
+        "babble/babble_ore_miner_b.wav",
+        "babble/babble_ore_miner_c.wav",
+        "babble/babble_ore_miner_d.wav",
+        "babble/babble_ore_miner_e.wav",
+        "babble/babble_ore_miner_f.wav",
+        "babble/babble_ore_miner_g.wav",
+        "babble/babble_ore_miner_h.wav",
+        "babble/babble_ore_miner_i.wav",
+        "babble/babble_ore_miner_j.wav",
+        "babble/babble_ore_miner_k.wav",
+        "babble/babble_ore_miner_l.wav",
+        "babble/babble_ore_miner_m.wav",
+        "babble/babble_ore_miner_n.wav",
+        "babble/babble_ore_miner_o.wav",
+        "babble/babble_ore_miner_p.wav",
+        "babble/babble_ore_miner_q.wav",
+        "babble/babble_ore_miner_r.wav",
+        "babble/babble_ore_miner_s.wav",
+        "babble/babble_ore_miner_t.wav",
+        "babble/babble_ore_miner_u.wav",
+        "babble/babble_ore_miner_v.wav",
+        "babble/babble_ore_miner_w.wav",
+        "babble/babble_ore_miner_x.wav",
+        "babble/babble_ore_miner_y.wav",
+        "babble/babble_ore_miner_z.wav"
+      ],
+      "letters": {
+        "a": "babble/babble_ore_miner_a.wav",
+        "b": "babble/babble_ore_miner_b.wav",
+        "c": "babble/babble_ore_miner_c.wav",
+        "d": "babble/babble_ore_miner_d.wav",
+        "e": "babble/babble_ore_miner_e.wav",
+        "f": "babble/babble_ore_miner_f.wav",
+        "g": "babble/babble_ore_miner_g.wav",
+        "h": "babble/babble_ore_miner_h.wav",
+        "i": "babble/babble_ore_miner_i.wav",
+        "j": "babble/babble_ore_miner_j.wav",
+        "k": "babble/babble_ore_miner_k.wav",
+        "l": "babble/babble_ore_miner_l.wav",
+        "m": "babble/babble_ore_miner_m.wav",
+        "n": "babble/babble_ore_miner_n.wav",
+        "o": "babble/babble_ore_miner_o.wav",
+        "p": "babble/babble_ore_miner_p.wav",
+        "q": "babble/babble_ore_miner_q.wav",
+        "r": "babble/babble_ore_miner_r.wav",
+        "s": "babble/babble_ore_miner_s.wav",
+        "t": "babble/babble_ore_miner_t.wav",
+        "u": "babble/babble_ore_miner_u.wav",
+        "v": "babble/babble_ore_miner_v.wav",
+        "w": "babble/babble_ore_miner_w.wav",
+        "x": "babble/babble_ore_miner_x.wav",
+        "y": "babble/babble_ore_miner_y.wav",
+        "z": "babble/babble_ore_miner_z.wav"
+      },
+      "volume": 0.501,
+      "volume_db": -6,
+      "chars_per_second": 14,
+      "pitch_jitter_semitones": 1.0,
+      "npc_pitch_range_semitones": [
+        -2.0,
+        2.0
+      ],
+      "syllable_ms": [
+        86,
+        153
+      ],
+      "archetype_status": "phase 1 (in contract/ids/archetypes.json)",
+      "status": "proposed",
+      "sources": [
+        "own work (formant synthesis, tools/gen_babble.py)"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true
+      }
+    },
+    "perp_degen_npc": {
+      "id": "babble_perp_degen_npc",
+      "files": [
+        "babble/babble_perp_degen_npc_a.wav",
+        "babble/babble_perp_degen_npc_b.wav",
+        "babble/babble_perp_degen_npc_c.wav",
+        "babble/babble_perp_degen_npc_d.wav",
+        "babble/babble_perp_degen_npc_e.wav",
+        "babble/babble_perp_degen_npc_f.wav",
+        "babble/babble_perp_degen_npc_g.wav",
+        "babble/babble_perp_degen_npc_h.wav",
+        "babble/babble_perp_degen_npc_i.wav",
+        "babble/babble_perp_degen_npc_j.wav",
+        "babble/babble_perp_degen_npc_k.wav",
+        "babble/babble_perp_degen_npc_l.wav",
+        "babble/babble_perp_degen_npc_m.wav",
+        "babble/babble_perp_degen_npc_n.wav",
+        "babble/babble_perp_degen_npc_o.wav",
+        "babble/babble_perp_degen_npc_p.wav",
+        "babble/babble_perp_degen_npc_q.wav",
+        "babble/babble_perp_degen_npc_r.wav",
+        "babble/babble_perp_degen_npc_s.wav",
+        "babble/babble_perp_degen_npc_t.wav",
+        "babble/babble_perp_degen_npc_u.wav",
+        "babble/babble_perp_degen_npc_v.wav",
+        "babble/babble_perp_degen_npc_w.wav",
+        "babble/babble_perp_degen_npc_x.wav",
+        "babble/babble_perp_degen_npc_y.wav",
+        "babble/babble_perp_degen_npc_z.wav"
+      ],
+      "letters": {
+        "a": "babble/babble_perp_degen_npc_a.wav",
+        "b": "babble/babble_perp_degen_npc_b.wav",
+        "c": "babble/babble_perp_degen_npc_c.wav",
+        "d": "babble/babble_perp_degen_npc_d.wav",
+        "e": "babble/babble_perp_degen_npc_e.wav",
+        "f": "babble/babble_perp_degen_npc_f.wav",
+        "g": "babble/babble_perp_degen_npc_g.wav",
+        "h": "babble/babble_perp_degen_npc_h.wav",
+        "i": "babble/babble_perp_degen_npc_i.wav",
+        "j": "babble/babble_perp_degen_npc_j.wav",
+        "k": "babble/babble_perp_degen_npc_k.wav",
+        "l": "babble/babble_perp_degen_npc_l.wav",
+        "m": "babble/babble_perp_degen_npc_m.wav",
+        "n": "babble/babble_perp_degen_npc_n.wav",
+        "o": "babble/babble_perp_degen_npc_o.wav",
+        "p": "babble/babble_perp_degen_npc_p.wav",
+        "q": "babble/babble_perp_degen_npc_q.wav",
+        "r": "babble/babble_perp_degen_npc_r.wav",
+        "s": "babble/babble_perp_degen_npc_s.wav",
+        "t": "babble/babble_perp_degen_npc_t.wav",
+        "u": "babble/babble_perp_degen_npc_u.wav",
+        "v": "babble/babble_perp_degen_npc_v.wav",
+        "w": "babble/babble_perp_degen_npc_w.wav",
+        "x": "babble/babble_perp_degen_npc_x.wav",
+        "y": "babble/babble_perp_degen_npc_y.wav",
+        "z": "babble/babble_perp_degen_npc_z.wav"
+      },
+      "volume": 0.501,
+      "volume_db": -6,
+      "chars_per_second": 22,
+      "pitch_jitter_semitones": 2.5,
+      "npc_pitch_range_semitones": [
+        -2.0,
+        2.0
+      ],
+      "syllable_ms": [
+        59,
+        108
+      ],
+      "archetype_status": "phase 1 (in contract/ids/archetypes.json)",
+      "status": "proposed",
+      "sources": [
+        "own work (formant synthesis, tools/gen_babble.py)"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true
+      }
+    },
+    "prediction_shark_npc": {
+      "id": "babble_prediction_shark_npc",
+      "files": [
+        "babble/babble_prediction_shark_npc_a.wav",
+        "babble/babble_prediction_shark_npc_b.wav",
+        "babble/babble_prediction_shark_npc_c.wav",
+        "babble/babble_prediction_shark_npc_d.wav",
+        "babble/babble_prediction_shark_npc_e.wav",
+        "babble/babble_prediction_shark_npc_f.wav",
+        "babble/babble_prediction_shark_npc_g.wav",
+        "babble/babble_prediction_shark_npc_h.wav",
+        "babble/babble_prediction_shark_npc_i.wav",
+        "babble/babble_prediction_shark_npc_j.wav",
+        "babble/babble_prediction_shark_npc_k.wav",
+        "babble/babble_prediction_shark_npc_l.wav",
+        "babble/babble_prediction_shark_npc_m.wav",
+        "babble/babble_prediction_shark_npc_n.wav",
+        "babble/babble_prediction_shark_npc_o.wav",
+        "babble/babble_prediction_shark_npc_p.wav",
+        "babble/babble_prediction_shark_npc_q.wav",
+        "babble/babble_prediction_shark_npc_r.wav",
+        "babble/babble_prediction_shark_npc_s.wav",
+        "babble/babble_prediction_shark_npc_t.wav",
+        "babble/babble_prediction_shark_npc_u.wav",
+        "babble/babble_prediction_shark_npc_v.wav",
+        "babble/babble_prediction_shark_npc_w.wav",
+        "babble/babble_prediction_shark_npc_x.wav",
+        "babble/babble_prediction_shark_npc_y.wav",
+        "babble/babble_prediction_shark_npc_z.wav"
+      ],
+      "letters": {
+        "a": "babble/babble_prediction_shark_npc_a.wav",
+        "b": "babble/babble_prediction_shark_npc_b.wav",
+        "c": "babble/babble_prediction_shark_npc_c.wav",
+        "d": "babble/babble_prediction_shark_npc_d.wav",
+        "e": "babble/babble_prediction_shark_npc_e.wav",
+        "f": "babble/babble_prediction_shark_npc_f.wav",
+        "g": "babble/babble_prediction_shark_npc_g.wav",
+        "h": "babble/babble_prediction_shark_npc_h.wav",
+        "i": "babble/babble_prediction_shark_npc_i.wav",
+        "j": "babble/babble_prediction_shark_npc_j.wav",
+        "k": "babble/babble_prediction_shark_npc_k.wav",
+        "l": "babble/babble_prediction_shark_npc_l.wav",
+        "m": "babble/babble_prediction_shark_npc_m.wav",
+        "n": "babble/babble_prediction_shark_npc_n.wav",
+        "o": "babble/babble_prediction_shark_npc_o.wav",
+        "p": "babble/babble_prediction_shark_npc_p.wav",
+        "q": "babble/babble_prediction_shark_npc_q.wav",
+        "r": "babble/babble_prediction_shark_npc_r.wav",
+        "s": "babble/babble_prediction_shark_npc_s.wav",
+        "t": "babble/babble_prediction_shark_npc_t.wav",
+        "u": "babble/babble_prediction_shark_npc_u.wav",
+        "v": "babble/babble_prediction_shark_npc_v.wav",
+        "w": "babble/babble_prediction_shark_npc_w.wav",
+        "x": "babble/babble_prediction_shark_npc_x.wav",
+        "y": "babble/babble_prediction_shark_npc_y.wav",
+        "z": "babble/babble_prediction_shark_npc_z.wav"
+      },
+      "volume": 0.501,
+      "volume_db": -6,
+      "chars_per_second": 16,
+      "pitch_jitter_semitones": 1.0,
+      "npc_pitch_range_semitones": [
+        -2.0,
+        2.0
+      ],
+      "syllable_ms": [
+        80,
+        133
+      ],
+      "archetype_status": "phase 2 (in contract/ids/archetypes.json)",
+      "status": "proposed",
+      "sources": [
+        "own work (formant synthesis, tools/gen_babble.py)"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true
+      }
+    },
+    "rekt_guy": {
+      "id": "babble_rekt_guy",
+      "files": [
+        "babble/babble_rekt_guy_a.wav",
+        "babble/babble_rekt_guy_b.wav",
+        "babble/babble_rekt_guy_c.wav",
+        "babble/babble_rekt_guy_d.wav",
+        "babble/babble_rekt_guy_e.wav",
+        "babble/babble_rekt_guy_f.wav",
+        "babble/babble_rekt_guy_g.wav",
+        "babble/babble_rekt_guy_h.wav",
+        "babble/babble_rekt_guy_i.wav",
+        "babble/babble_rekt_guy_j.wav",
+        "babble/babble_rekt_guy_k.wav",
+        "babble/babble_rekt_guy_l.wav",
+        "babble/babble_rekt_guy_m.wav",
+        "babble/babble_rekt_guy_n.wav",
+        "babble/babble_rekt_guy_o.wav",
+        "babble/babble_rekt_guy_p.wav",
+        "babble/babble_rekt_guy_q.wav",
+        "babble/babble_rekt_guy_r.wav",
+        "babble/babble_rekt_guy_s.wav",
+        "babble/babble_rekt_guy_t.wav",
+        "babble/babble_rekt_guy_u.wav",
+        "babble/babble_rekt_guy_v.wav",
+        "babble/babble_rekt_guy_w.wav",
+        "babble/babble_rekt_guy_x.wav",
+        "babble/babble_rekt_guy_y.wav",
+        "babble/babble_rekt_guy_z.wav"
+      ],
+      "letters": {
+        "a": "babble/babble_rekt_guy_a.wav",
+        "b": "babble/babble_rekt_guy_b.wav",
+        "c": "babble/babble_rekt_guy_c.wav",
+        "d": "babble/babble_rekt_guy_d.wav",
+        "e": "babble/babble_rekt_guy_e.wav",
+        "f": "babble/babble_rekt_guy_f.wav",
+        "g": "babble/babble_rekt_guy_g.wav",
+        "h": "babble/babble_rekt_guy_h.wav",
+        "i": "babble/babble_rekt_guy_i.wav",
+        "j": "babble/babble_rekt_guy_j.wav",
+        "k": "babble/babble_rekt_guy_k.wav",
+        "l": "babble/babble_rekt_guy_l.wav",
+        "m": "babble/babble_rekt_guy_m.wav",
+        "n": "babble/babble_rekt_guy_n.wav",
+        "o": "babble/babble_rekt_guy_o.wav",
+        "p": "babble/babble_rekt_guy_p.wav",
+        "q": "babble/babble_rekt_guy_q.wav",
+        "r": "babble/babble_rekt_guy_r.wav",
+        "s": "babble/babble_rekt_guy_s.wav",
+        "t": "babble/babble_rekt_guy_t.wav",
+        "u": "babble/babble_rekt_guy_u.wav",
+        "v": "babble/babble_rekt_guy_v.wav",
+        "w": "babble/babble_rekt_guy_w.wav",
+        "x": "babble/babble_rekt_guy_x.wav",
+        "y": "babble/babble_rekt_guy_y.wav",
+        "z": "babble/babble_rekt_guy_z.wav"
+      },
+      "volume": 0.447,
+      "volume_db": -7,
+      "chars_per_second": 12,
+      "pitch_jitter_semitones": 1.0,
+      "npc_pitch_range_semitones": [
+        -2.0,
+        2.0
+      ],
+      "syllable_ms": [
+        104,
+        178
+      ],
+      "archetype_status": "phase 1 (in contract/ids/archetypes.json)",
+      "status": "proposed",
+      "sources": [
+        "own work (formant synthesis, tools/gen_babble.py)"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true
+      }
+    },
+    "reply_guy": {
+      "id": "babble_reply_guy",
+      "files": [
+        "babble/babble_reply_guy_a.wav",
+        "babble/babble_reply_guy_b.wav",
+        "babble/babble_reply_guy_c.wav",
+        "babble/babble_reply_guy_d.wav",
+        "babble/babble_reply_guy_e.wav",
+        "babble/babble_reply_guy_f.wav",
+        "babble/babble_reply_guy_g.wav",
+        "babble/babble_reply_guy_h.wav",
+        "babble/babble_reply_guy_i.wav",
+        "babble/babble_reply_guy_j.wav",
+        "babble/babble_reply_guy_k.wav",
+        "babble/babble_reply_guy_l.wav",
+        "babble/babble_reply_guy_m.wav",
+        "babble/babble_reply_guy_n.wav",
+        "babble/babble_reply_guy_o.wav",
+        "babble/babble_reply_guy_p.wav",
+        "babble/babble_reply_guy_q.wav",
+        "babble/babble_reply_guy_r.wav",
+        "babble/babble_reply_guy_s.wav",
+        "babble/babble_reply_guy_t.wav",
+        "babble/babble_reply_guy_u.wav",
+        "babble/babble_reply_guy_v.wav",
+        "babble/babble_reply_guy_w.wav",
+        "babble/babble_reply_guy_x.wav",
+        "babble/babble_reply_guy_y.wav",
+        "babble/babble_reply_guy_z.wav"
+      ],
+      "letters": {
+        "a": "babble/babble_reply_guy_a.wav",
+        "b": "babble/babble_reply_guy_b.wav",
+        "c": "babble/babble_reply_guy_c.wav",
+        "d": "babble/babble_reply_guy_d.wav",
+        "e": "babble/babble_reply_guy_e.wav",
+        "f": "babble/babble_reply_guy_f.wav",
+        "g": "babble/babble_reply_guy_g.wav",
+        "h": "babble/babble_reply_guy_h.wav",
+        "i": "babble/babble_reply_guy_i.wav",
+        "j": "babble/babble_reply_guy_j.wav",
+        "k": "babble/babble_reply_guy_k.wav",
+        "l": "babble/babble_reply_guy_l.wav",
+        "m": "babble/babble_reply_guy_m.wav",
+        "n": "babble/babble_reply_guy_n.wav",
+        "o": "babble/babble_reply_guy_o.wav",
+        "p": "babble/babble_reply_guy_p.wav",
+        "q": "babble/babble_reply_guy_q.wav",
+        "r": "babble/babble_reply_guy_r.wav",
+        "s": "babble/babble_reply_guy_s.wav",
+        "t": "babble/babble_reply_guy_t.wav",
+        "u": "babble/babble_reply_guy_u.wav",
+        "v": "babble/babble_reply_guy_v.wav",
+        "w": "babble/babble_reply_guy_w.wav",
+        "x": "babble/babble_reply_guy_x.wav",
+        "y": "babble/babble_reply_guy_y.wav",
+        "z": "babble/babble_reply_guy_z.wav"
+      },
+      "volume": 0.447,
+      "volume_db": -7,
+      "chars_per_second": 20,
+      "pitch_jitter_semitones": 1.5,
+      "npc_pitch_range_semitones": [
+        -2.0,
+        2.0
+      ],
+      "syllable_ms": [
+        67,
+        116
+      ],
+      "archetype_status": "phase 1 (in contract/ids/archetypes.json)",
+      "status": "proposed",
+      "sources": [
+        "own work (formant synthesis, tools/gen_babble.py)"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true
+      }
+    },
+    "rug_dev": {
+      "id": "babble_rug_dev",
+      "files": [
+        "babble/babble_rug_dev_a.wav",
+        "babble/babble_rug_dev_b.wav",
+        "babble/babble_rug_dev_c.wav",
+        "babble/babble_rug_dev_d.wav",
+        "babble/babble_rug_dev_e.wav",
+        "babble/babble_rug_dev_f.wav",
+        "babble/babble_rug_dev_g.wav",
+        "babble/babble_rug_dev_h.wav",
+        "babble/babble_rug_dev_i.wav",
+        "babble/babble_rug_dev_j.wav",
+        "babble/babble_rug_dev_k.wav",
+        "babble/babble_rug_dev_l.wav",
+        "babble/babble_rug_dev_m.wav",
+        "babble/babble_rug_dev_n.wav",
+        "babble/babble_rug_dev_o.wav",
+        "babble/babble_rug_dev_p.wav",
+        "babble/babble_rug_dev_q.wav",
+        "babble/babble_rug_dev_r.wav",
+        "babble/babble_rug_dev_s.wav",
+        "babble/babble_rug_dev_t.wav",
+        "babble/babble_rug_dev_u.wav",
+        "babble/babble_rug_dev_v.wav",
+        "babble/babble_rug_dev_w.wav",
+        "babble/babble_rug_dev_x.wav",
+        "babble/babble_rug_dev_y.wav",
+        "babble/babble_rug_dev_z.wav"
+      ],
+      "letters": {
+        "a": "babble/babble_rug_dev_a.wav",
+        "b": "babble/babble_rug_dev_b.wav",
+        "c": "babble/babble_rug_dev_c.wav",
+        "d": "babble/babble_rug_dev_d.wav",
+        "e": "babble/babble_rug_dev_e.wav",
+        "f": "babble/babble_rug_dev_f.wav",
+        "g": "babble/babble_rug_dev_g.wav",
+        "h": "babble/babble_rug_dev_h.wav",
+        "i": "babble/babble_rug_dev_i.wav",
+        "j": "babble/babble_rug_dev_j.wav",
+        "k": "babble/babble_rug_dev_k.wav",
+        "l": "babble/babble_rug_dev_l.wav",
+        "m": "babble/babble_rug_dev_m.wav",
+        "n": "babble/babble_rug_dev_n.wav",
+        "o": "babble/babble_rug_dev_o.wav",
+        "p": "babble/babble_rug_dev_p.wav",
+        "q": "babble/babble_rug_dev_q.wav",
+        "r": "babble/babble_rug_dev_r.wav",
+        "s": "babble/babble_rug_dev_s.wav",
+        "t": "babble/babble_rug_dev_t.wav",
+        "u": "babble/babble_rug_dev_u.wav",
+        "v": "babble/babble_rug_dev_v.wav",
+        "w": "babble/babble_rug_dev_w.wav",
+        "x": "babble/babble_rug_dev_x.wav",
+        "y": "babble/babble_rug_dev_y.wav",
+        "z": "babble/babble_rug_dev_z.wav"
+      },
+      "volume": 0.501,
+      "volume_db": -6,
+      "chars_per_second": 19,
+      "pitch_jitter_semitones": 2.0,
+      "npc_pitch_range_semitones": [
+        -2.0,
+        2.0
+      ],
+      "syllable_ms": [
+        68,
+        123
+      ],
+      "archetype_status": "phase 2 (in contract/ids/archetypes.json)",
+      "status": "proposed",
+      "sources": [
+        "own work (formant synthesis, tools/gen_babble.py)"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true
+      }
+    },
+    "sleuth": {
+      "id": "babble_sleuth",
+      "files": [
+        "babble/babble_sleuth_a.wav",
+        "babble/babble_sleuth_b.wav",
+        "babble/babble_sleuth_c.wav",
+        "babble/babble_sleuth_d.wav",
+        "babble/babble_sleuth_e.wav",
+        "babble/babble_sleuth_f.wav",
+        "babble/babble_sleuth_g.wav",
+        "babble/babble_sleuth_h.wav",
+        "babble/babble_sleuth_i.wav",
+        "babble/babble_sleuth_j.wav",
+        "babble/babble_sleuth_k.wav",
+        "babble/babble_sleuth_l.wav",
+        "babble/babble_sleuth_m.wav",
+        "babble/babble_sleuth_n.wav",
+        "babble/babble_sleuth_o.wav",
+        "babble/babble_sleuth_p.wav",
+        "babble/babble_sleuth_q.wav",
+        "babble/babble_sleuth_r.wav",
+        "babble/babble_sleuth_s.wav",
+        "babble/babble_sleuth_t.wav",
+        "babble/babble_sleuth_u.wav",
+        "babble/babble_sleuth_v.wav",
+        "babble/babble_sleuth_w.wav",
+        "babble/babble_sleuth_x.wav",
+        "babble/babble_sleuth_y.wav",
+        "babble/babble_sleuth_z.wav"
+      ],
+      "letters": {
+        "a": "babble/babble_sleuth_a.wav",
+        "b": "babble/babble_sleuth_b.wav",
+        "c": "babble/babble_sleuth_c.wav",
+        "d": "babble/babble_sleuth_d.wav",
+        "e": "babble/babble_sleuth_e.wav",
+        "f": "babble/babble_sleuth_f.wav",
+        "g": "babble/babble_sleuth_g.wav",
+        "h": "babble/babble_sleuth_h.wav",
+        "i": "babble/babble_sleuth_i.wav",
+        "j": "babble/babble_sleuth_j.wav",
+        "k": "babble/babble_sleuth_k.wav",
+        "l": "babble/babble_sleuth_l.wav",
+        "m": "babble/babble_sleuth_m.wav",
+        "n": "babble/babble_sleuth_n.wav",
+        "o": "babble/babble_sleuth_o.wav",
+        "p": "babble/babble_sleuth_p.wav",
+        "q": "babble/babble_sleuth_q.wav",
+        "r": "babble/babble_sleuth_r.wav",
+        "s": "babble/babble_sleuth_s.wav",
+        "t": "babble/babble_sleuth_t.wav",
+        "u": "babble/babble_sleuth_u.wav",
+        "v": "babble/babble_sleuth_v.wav",
+        "w": "babble/babble_sleuth_w.wav",
+        "x": "babble/babble_sleuth_x.wav",
+        "y": "babble/babble_sleuth_y.wav",
+        "z": "babble/babble_sleuth_z.wav"
+      },
+      "volume": 0.501,
+      "volume_db": -6,
+      "chars_per_second": 13,
+      "pitch_jitter_semitones": 1.0,
+      "npc_pitch_range_semitones": [
+        -2.0,
+        2.0
+      ],
+      "syllable_ms": [
+        94,
+        166
+      ],
+      "archetype_status": "phase 2 (in contract/ids/archetypes.json)",
+      "status": "proposed",
+      "sources": [
+        "own work (formant synthesis, tools/gen_babble.py)"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true
+      }
+    },
+    "sniper_bot": {
+      "id": "babble_sniper_bot",
+      "files": [
+        "babble/babble_sniper_bot_a.wav",
+        "babble/babble_sniper_bot_b.wav",
+        "babble/babble_sniper_bot_c.wav",
+        "babble/babble_sniper_bot_d.wav",
+        "babble/babble_sniper_bot_e.wav",
+        "babble/babble_sniper_bot_f.wav",
+        "babble/babble_sniper_bot_g.wav",
+        "babble/babble_sniper_bot_h.wav",
+        "babble/babble_sniper_bot_i.wav",
+        "babble/babble_sniper_bot_j.wav",
+        "babble/babble_sniper_bot_k.wav",
+        "babble/babble_sniper_bot_l.wav",
+        "babble/babble_sniper_bot_m.wav",
+        "babble/babble_sniper_bot_n.wav",
+        "babble/babble_sniper_bot_o.wav",
+        "babble/babble_sniper_bot_p.wav",
+        "babble/babble_sniper_bot_q.wav",
+        "babble/babble_sniper_bot_r.wav",
+        "babble/babble_sniper_bot_s.wav",
+        "babble/babble_sniper_bot_t.wav",
+        "babble/babble_sniper_bot_u.wav",
+        "babble/babble_sniper_bot_v.wav",
+        "babble/babble_sniper_bot_w.wav",
+        "babble/babble_sniper_bot_x.wav",
+        "babble/babble_sniper_bot_y.wav",
+        "babble/babble_sniper_bot_z.wav"
+      ],
+      "letters": {
+        "a": "babble/babble_sniper_bot_a.wav",
+        "b": "babble/babble_sniper_bot_b.wav",
+        "c": "babble/babble_sniper_bot_c.wav",
+        "d": "babble/babble_sniper_bot_d.wav",
+        "e": "babble/babble_sniper_bot_e.wav",
+        "f": "babble/babble_sniper_bot_f.wav",
+        "g": "babble/babble_sniper_bot_g.wav",
+        "h": "babble/babble_sniper_bot_h.wav",
+        "i": "babble/babble_sniper_bot_i.wav",
+        "j": "babble/babble_sniper_bot_j.wav",
+        "k": "babble/babble_sniper_bot_k.wav",
+        "l": "babble/babble_sniper_bot_l.wav",
+        "m": "babble/babble_sniper_bot_m.wav",
+        "n": "babble/babble_sniper_bot_n.wav",
+        "o": "babble/babble_sniper_bot_o.wav",
+        "p": "babble/babble_sniper_bot_p.wav",
+        "q": "babble/babble_sniper_bot_q.wav",
+        "r": "babble/babble_sniper_bot_r.wav",
+        "s": "babble/babble_sniper_bot_s.wav",
+        "t": "babble/babble_sniper_bot_t.wav",
+        "u": "babble/babble_sniper_bot_u.wav",
+        "v": "babble/babble_sniper_bot_v.wav",
+        "w": "babble/babble_sniper_bot_w.wav",
+        "x": "babble/babble_sniper_bot_x.wav",
+        "y": "babble/babble_sniper_bot_y.wav",
+        "z": "babble/babble_sniper_bot_z.wav"
+      },
+      "volume": 0.251,
+      "volume_db": -12,
+      "chars_per_second": 14,
+      "pitch_jitter_semitones": 4.0,
+      "npc_pitch_range_semitones": [
+        -2.0,
+        2.0
+      ],
+      "syllable_ms": [
+        45,
+        65
+      ],
+      "archetype_status": "phase 2 (in contract/ids/archetypes.json)",
+      "status": "proposed",
+      "sources": [
+        "own work (formant synthesis, tools/gen_babble.py)"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true
+      }
+    },
+    "spaces_host": {
+      "id": "babble_spaces_host",
+      "files": [
+        "babble/babble_spaces_host_a.wav",
+        "babble/babble_spaces_host_b.wav",
+        "babble/babble_spaces_host_c.wav",
+        "babble/babble_spaces_host_d.wav",
+        "babble/babble_spaces_host_e.wav",
+        "babble/babble_spaces_host_f.wav",
+        "babble/babble_spaces_host_g.wav",
+        "babble/babble_spaces_host_h.wav",
+        "babble/babble_spaces_host_i.wav",
+        "babble/babble_spaces_host_j.wav",
+        "babble/babble_spaces_host_k.wav",
+        "babble/babble_spaces_host_l.wav",
+        "babble/babble_spaces_host_m.wav",
+        "babble/babble_spaces_host_n.wav",
+        "babble/babble_spaces_host_o.wav",
+        "babble/babble_spaces_host_p.wav",
+        "babble/babble_spaces_host_q.wav",
+        "babble/babble_spaces_host_r.wav",
+        "babble/babble_spaces_host_s.wav",
+        "babble/babble_spaces_host_t.wav",
+        "babble/babble_spaces_host_u.wav",
+        "babble/babble_spaces_host_v.wav",
+        "babble/babble_spaces_host_w.wav",
+        "babble/babble_spaces_host_x.wav",
+        "babble/babble_spaces_host_y.wav",
+        "babble/babble_spaces_host_z.wav"
+      ],
+      "letters": {
+        "a": "babble/babble_spaces_host_a.wav",
+        "b": "babble/babble_spaces_host_b.wav",
+        "c": "babble/babble_spaces_host_c.wav",
+        "d": "babble/babble_spaces_host_d.wav",
+        "e": "babble/babble_spaces_host_e.wav",
+        "f": "babble/babble_spaces_host_f.wav",
+        "g": "babble/babble_spaces_host_g.wav",
+        "h": "babble/babble_spaces_host_h.wav",
+        "i": "babble/babble_spaces_host_i.wav",
+        "j": "babble/babble_spaces_host_j.wav",
+        "k": "babble/babble_spaces_host_k.wav",
+        "l": "babble/babble_spaces_host_l.wav",
+        "m": "babble/babble_spaces_host_m.wav",
+        "n": "babble/babble_spaces_host_n.wav",
+        "o": "babble/babble_spaces_host_o.wav",
+        "p": "babble/babble_spaces_host_p.wav",
+        "q": "babble/babble_spaces_host_q.wav",
+        "r": "babble/babble_spaces_host_r.wav",
+        "s": "babble/babble_spaces_host_s.wav",
+        "t": "babble/babble_spaces_host_t.wav",
+        "u": "babble/babble_spaces_host_u.wav",
+        "v": "babble/babble_spaces_host_v.wav",
+        "w": "babble/babble_spaces_host_w.wav",
+        "x": "babble/babble_spaces_host_x.wav",
+        "y": "babble/babble_spaces_host_y.wav",
+        "z": "babble/babble_spaces_host_z.wav"
+      },
+      "volume": 0.501,
+      "volume_db": -6,
+      "chars_per_second": 15,
+      "pitch_jitter_semitones": 1.2,
+      "npc_pitch_range_semitones": [
+        -2.0,
+        2.0
+      ],
+      "syllable_ms": [
+        83,
+        146
+      ],
+      "archetype_status": "phase 2 (in contract/ids/archetypes.json)",
+      "status": "proposed",
+      "sources": [
+        "own work (formant synthesis, tools/gen_babble.py)"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true
+      }
+    },
+    "sybil_farmer": {
+      "id": "babble_sybil_farmer",
+      "files": [
+        "babble/babble_sybil_farmer_a.wav",
+        "babble/babble_sybil_farmer_b.wav",
+        "babble/babble_sybil_farmer_c.wav",
+        "babble/babble_sybil_farmer_d.wav",
+        "babble/babble_sybil_farmer_e.wav",
+        "babble/babble_sybil_farmer_f.wav",
+        "babble/babble_sybil_farmer_g.wav",
+        "babble/babble_sybil_farmer_h.wav",
+        "babble/babble_sybil_farmer_i.wav",
+        "babble/babble_sybil_farmer_j.wav",
+        "babble/babble_sybil_farmer_k.wav",
+        "babble/babble_sybil_farmer_l.wav",
+        "babble/babble_sybil_farmer_m.wav",
+        "babble/babble_sybil_farmer_n.wav",
+        "babble/babble_sybil_farmer_o.wav",
+        "babble/babble_sybil_farmer_p.wav",
+        "babble/babble_sybil_farmer_q.wav",
+        "babble/babble_sybil_farmer_r.wav",
+        "babble/babble_sybil_farmer_s.wav",
+        "babble/babble_sybil_farmer_t.wav",
+        "babble/babble_sybil_farmer_u.wav",
+        "babble/babble_sybil_farmer_v.wav",
+        "babble/babble_sybil_farmer_w.wav",
+        "babble/babble_sybil_farmer_x.wav",
+        "babble/babble_sybil_farmer_y.wav",
+        "babble/babble_sybil_farmer_z.wav"
+      ],
+      "letters": {
+        "a": "babble/babble_sybil_farmer_a.wav",
+        "b": "babble/babble_sybil_farmer_b.wav",
+        "c": "babble/babble_sybil_farmer_c.wav",
+        "d": "babble/babble_sybil_farmer_d.wav",
+        "e": "babble/babble_sybil_farmer_e.wav",
+        "f": "babble/babble_sybil_farmer_f.wav",
+        "g": "babble/babble_sybil_farmer_g.wav",
+        "h": "babble/babble_sybil_farmer_h.wav",
+        "i": "babble/babble_sybil_farmer_i.wav",
+        "j": "babble/babble_sybil_farmer_j.wav",
+        "k": "babble/babble_sybil_farmer_k.wav",
+        "l": "babble/babble_sybil_farmer_l.wav",
+        "m": "babble/babble_sybil_farmer_m.wav",
+        "n": "babble/babble_sybil_farmer_n.wav",
+        "o": "babble/babble_sybil_farmer_o.wav",
+        "p": "babble/babble_sybil_farmer_p.wav",
+        "q": "babble/babble_sybil_farmer_q.wav",
+        "r": "babble/babble_sybil_farmer_r.wav",
+        "s": "babble/babble_sybil_farmer_s.wav",
+        "t": "babble/babble_sybil_farmer_t.wav",
+        "u": "babble/babble_sybil_farmer_u.wav",
+        "v": "babble/babble_sybil_farmer_v.wav",
+        "w": "babble/babble_sybil_farmer_w.wav",
+        "x": "babble/babble_sybil_farmer_x.wav",
+        "y": "babble/babble_sybil_farmer_y.wav",
+        "z": "babble/babble_sybil_farmer_z.wav"
+      },
+      "volume": 0.398,
+      "volume_db": -8,
+      "chars_per_second": 22,
+      "pitch_jitter_semitones": 2.0,
+      "npc_pitch_range_semitones": [
+        -2.0,
+        2.0
+      ],
+      "syllable_ms": [
+        57,
+        100
+      ],
+      "archetype_status": "phase 2 (in contract/ids/archetypes.json)",
+      "status": "proposed",
+      "sources": [
+        "own work (formant synthesis, tools/gen_babble.py)"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true
+      }
+    },
+    "thread_boy": {
+      "id": "babble_thread_boy",
+      "files": [
+        "babble/babble_thread_boy_a.wav",
+        "babble/babble_thread_boy_b.wav",
+        "babble/babble_thread_boy_c.wav",
+        "babble/babble_thread_boy_d.wav",
+        "babble/babble_thread_boy_e.wav",
+        "babble/babble_thread_boy_f.wav",
+        "babble/babble_thread_boy_g.wav",
+        "babble/babble_thread_boy_h.wav",
+        "babble/babble_thread_boy_i.wav",
+        "babble/babble_thread_boy_j.wav",
+        "babble/babble_thread_boy_k.wav",
+        "babble/babble_thread_boy_l.wav",
+        "babble/babble_thread_boy_m.wav",
+        "babble/babble_thread_boy_n.wav",
+        "babble/babble_thread_boy_o.wav",
+        "babble/babble_thread_boy_p.wav",
+        "babble/babble_thread_boy_q.wav",
+        "babble/babble_thread_boy_r.wav",
+        "babble/babble_thread_boy_s.wav",
+        "babble/babble_thread_boy_t.wav",
+        "babble/babble_thread_boy_u.wav",
+        "babble/babble_thread_boy_v.wav",
+        "babble/babble_thread_boy_w.wav",
+        "babble/babble_thread_boy_x.wav",
+        "babble/babble_thread_boy_y.wav",
+        "babble/babble_thread_boy_z.wav"
+      ],
+      "letters": {
+        "a": "babble/babble_thread_boy_a.wav",
+        "b": "babble/babble_thread_boy_b.wav",
+        "c": "babble/babble_thread_boy_c.wav",
+        "d": "babble/babble_thread_boy_d.wav",
+        "e": "babble/babble_thread_boy_e.wav",
+        "f": "babble/babble_thread_boy_f.wav",
+        "g": "babble/babble_thread_boy_g.wav",
+        "h": "babble/babble_thread_boy_h.wav",
+        "i": "babble/babble_thread_boy_i.wav",
+        "j": "babble/babble_thread_boy_j.wav",
+        "k": "babble/babble_thread_boy_k.wav",
+        "l": "babble/babble_thread_boy_l.wav",
+        "m": "babble/babble_thread_boy_m.wav",
+        "n": "babble/babble_thread_boy_n.wav",
+        "o": "babble/babble_thread_boy_o.wav",
+        "p": "babble/babble_thread_boy_p.wav",
+        "q": "babble/babble_thread_boy_q.wav",
+        "r": "babble/babble_thread_boy_r.wav",
+        "s": "babble/babble_thread_boy_s.wav",
+        "t": "babble/babble_thread_boy_t.wav",
+        "u": "babble/babble_thread_boy_u.wav",
+        "v": "babble/babble_thread_boy_v.wav",
+        "w": "babble/babble_thread_boy_w.wav",
+        "x": "babble/babble_thread_boy_x.wav",
+        "y": "babble/babble_thread_boy_y.wav",
+        "z": "babble/babble_thread_boy_z.wav"
+      },
+      "volume": 0.447,
+      "volume_db": -7,
+      "chars_per_second": 20,
+      "pitch_jitter_semitones": 1.5,
+      "npc_pitch_range_semitones": [
+        -2.0,
+        2.0
+      ],
+      "syllable_ms": [
+        63,
+        116
+      ],
+      "archetype_status": "phase 2 (in contract/ids/archetypes.json)",
+      "status": "proposed",
+      "sources": [
+        "own work (formant synthesis, tools/gen_babble.py)"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true
+      }
+    },
+    "town_crier": {
+      "id": "babble_town_crier",
+      "files": [
+        "babble/babble_town_crier_a.wav",
+        "babble/babble_town_crier_b.wav",
+        "babble/babble_town_crier_c.wav",
+        "babble/babble_town_crier_d.wav",
+        "babble/babble_town_crier_e.wav",
+        "babble/babble_town_crier_f.wav",
+        "babble/babble_town_crier_g.wav",
+        "babble/babble_town_crier_h.wav",
+        "babble/babble_town_crier_i.wav",
+        "babble/babble_town_crier_j.wav",
+        "babble/babble_town_crier_k.wav",
+        "babble/babble_town_crier_l.wav",
+        "babble/babble_town_crier_m.wav",
+        "babble/babble_town_crier_n.wav",
+        "babble/babble_town_crier_o.wav",
+        "babble/babble_town_crier_p.wav",
+        "babble/babble_town_crier_q.wav",
+        "babble/babble_town_crier_r.wav",
+        "babble/babble_town_crier_s.wav",
+        "babble/babble_town_crier_t.wav",
+        "babble/babble_town_crier_u.wav",
+        "babble/babble_town_crier_v.wav",
+        "babble/babble_town_crier_w.wav",
+        "babble/babble_town_crier_x.wav",
+        "babble/babble_town_crier_y.wav",
+        "babble/babble_town_crier_z.wav"
+      ],
+      "letters": {
+        "a": "babble/babble_town_crier_a.wav",
+        "b": "babble/babble_town_crier_b.wav",
+        "c": "babble/babble_town_crier_c.wav",
+        "d": "babble/babble_town_crier_d.wav",
+        "e": "babble/babble_town_crier_e.wav",
+        "f": "babble/babble_town_crier_f.wav",
+        "g": "babble/babble_town_crier_g.wav",
+        "h": "babble/babble_town_crier_h.wav",
+        "i": "babble/babble_town_crier_i.wav",
+        "j": "babble/babble_town_crier_j.wav",
+        "k": "babble/babble_town_crier_k.wav",
+        "l": "babble/babble_town_crier_l.wav",
+        "m": "babble/babble_town_crier_m.wav",
+        "n": "babble/babble_town_crier_n.wav",
+        "o": "babble/babble_town_crier_o.wav",
+        "p": "babble/babble_town_crier_p.wav",
+        "q": "babble/babble_town_crier_q.wav",
+        "r": "babble/babble_town_crier_r.wav",
+        "s": "babble/babble_town_crier_s.wav",
+        "t": "babble/babble_town_crier_t.wav",
+        "u": "babble/babble_town_crier_u.wav",
+        "v": "babble/babble_town_crier_v.wav",
+        "w": "babble/babble_town_crier_w.wav",
+        "x": "babble/babble_town_crier_x.wav",
+        "y": "babble/babble_town_crier_y.wav",
+        "z": "babble/babble_town_crier_z.wav"
+      },
+      "volume": 0.631,
+      "volume_db": -4,
+      "chars_per_second": 18,
+      "pitch_jitter_semitones": 1.0,
+      "npc_pitch_range_semitones": [
+        -2.0,
+        2.0
+      ],
+      "syllable_ms": [
+        70,
+        123
+      ],
+      "archetype_status": "phase 1 (in contract/ids/archetypes.json)",
+      "status": "proposed",
+      "sources": [
+        "own work (formant synthesis, tools/gen_babble.py)"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true
+      }
+    },
+    "vc": {
+      "id": "babble_vc",
+      "files": [
+        "babble/babble_vc_a.wav",
+        "babble/babble_vc_b.wav",
+        "babble/babble_vc_c.wav",
+        "babble/babble_vc_d.wav",
+        "babble/babble_vc_e.wav",
+        "babble/babble_vc_f.wav",
+        "babble/babble_vc_g.wav",
+        "babble/babble_vc_h.wav",
+        "babble/babble_vc_i.wav",
+        "babble/babble_vc_j.wav",
+        "babble/babble_vc_k.wav",
+        "babble/babble_vc_l.wav",
+        "babble/babble_vc_m.wav",
+        "babble/babble_vc_n.wav",
+        "babble/babble_vc_o.wav",
+        "babble/babble_vc_p.wav",
+        "babble/babble_vc_q.wav",
+        "babble/babble_vc_r.wav",
+        "babble/babble_vc_s.wav",
+        "babble/babble_vc_t.wav",
+        "babble/babble_vc_u.wav",
+        "babble/babble_vc_v.wav",
+        "babble/babble_vc_w.wav",
+        "babble/babble_vc_x.wav",
+        "babble/babble_vc_y.wav",
+        "babble/babble_vc_z.wav"
+      ],
+      "letters": {
+        "a": "babble/babble_vc_a.wav",
+        "b": "babble/babble_vc_b.wav",
+        "c": "babble/babble_vc_c.wav",
+        "d": "babble/babble_vc_d.wav",
+        "e": "babble/babble_vc_e.wav",
+        "f": "babble/babble_vc_f.wav",
+        "g": "babble/babble_vc_g.wav",
+        "h": "babble/babble_vc_h.wav",
+        "i": "babble/babble_vc_i.wav",
+        "j": "babble/babble_vc_j.wav",
+        "k": "babble/babble_vc_k.wav",
+        "l": "babble/babble_vc_l.wav",
+        "m": "babble/babble_vc_m.wav",
+        "n": "babble/babble_vc_n.wav",
+        "o": "babble/babble_vc_o.wav",
+        "p": "babble/babble_vc_p.wav",
+        "q": "babble/babble_vc_q.wav",
+        "r": "babble/babble_vc_r.wav",
+        "s": "babble/babble_vc_s.wav",
+        "t": "babble/babble_vc_t.wav",
+        "u": "babble/babble_vc_u.wav",
+        "v": "babble/babble_vc_v.wav",
+        "w": "babble/babble_vc_w.wav",
+        "x": "babble/babble_vc_x.wav",
+        "y": "babble/babble_vc_y.wav",
+        "z": "babble/babble_vc_z.wav"
+      },
+      "volume": 0.501,
+      "volume_db": -6,
+      "chars_per_second": 15,
+      "pitch_jitter_semitones": 1.0,
+      "npc_pitch_range_semitones": [
+        -2.0,
+        2.0
+      ],
+      "syllable_ms": [
+        79,
+        143
+      ],
+      "archetype_status": "phase 2 (in contract/ids/archetypes.json)",
+      "status": "proposed",
+      "sources": [
+        "own work (formant synthesis, tools/gen_babble.py)"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true
+      }
+    },
+    "wallet_tracker": {
+      "id": "babble_wallet_tracker",
+      "files": [
+        "babble/babble_wallet_tracker_a.wav",
+        "babble/babble_wallet_tracker_b.wav",
+        "babble/babble_wallet_tracker_c.wav",
+        "babble/babble_wallet_tracker_d.wav",
+        "babble/babble_wallet_tracker_e.wav",
+        "babble/babble_wallet_tracker_f.wav",
+        "babble/babble_wallet_tracker_g.wav",
+        "babble/babble_wallet_tracker_h.wav",
+        "babble/babble_wallet_tracker_i.wav",
+        "babble/babble_wallet_tracker_j.wav",
+        "babble/babble_wallet_tracker_k.wav",
+        "babble/babble_wallet_tracker_l.wav",
+        "babble/babble_wallet_tracker_m.wav",
+        "babble/babble_wallet_tracker_n.wav",
+        "babble/babble_wallet_tracker_o.wav",
+        "babble/babble_wallet_tracker_p.wav",
+        "babble/babble_wallet_tracker_q.wav",
+        "babble/babble_wallet_tracker_r.wav",
+        "babble/babble_wallet_tracker_s.wav",
+        "babble/babble_wallet_tracker_t.wav",
+        "babble/babble_wallet_tracker_u.wav",
+        "babble/babble_wallet_tracker_v.wav",
+        "babble/babble_wallet_tracker_w.wav",
+        "babble/babble_wallet_tracker_x.wav",
+        "babble/babble_wallet_tracker_y.wav",
+        "babble/babble_wallet_tracker_z.wav"
+      ],
+      "letters": {
+        "a": "babble/babble_wallet_tracker_a.wav",
+        "b": "babble/babble_wallet_tracker_b.wav",
+        "c": "babble/babble_wallet_tracker_c.wav",
+        "d": "babble/babble_wallet_tracker_d.wav",
+        "e": "babble/babble_wallet_tracker_e.wav",
+        "f": "babble/babble_wallet_tracker_f.wav",
+        "g": "babble/babble_wallet_tracker_g.wav",
+        "h": "babble/babble_wallet_tracker_h.wav",
+        "i": "babble/babble_wallet_tracker_i.wav",
+        "j": "babble/babble_wallet_tracker_j.wav",
+        "k": "babble/babble_wallet_tracker_k.wav",
+        "l": "babble/babble_wallet_tracker_l.wav",
+        "m": "babble/babble_wallet_tracker_m.wav",
+        "n": "babble/babble_wallet_tracker_n.wav",
+        "o": "babble/babble_wallet_tracker_o.wav",
+        "p": "babble/babble_wallet_tracker_p.wav",
+        "q": "babble/babble_wallet_tracker_q.wav",
+        "r": "babble/babble_wallet_tracker_r.wav",
+        "s": "babble/babble_wallet_tracker_s.wav",
+        "t": "babble/babble_wallet_tracker_t.wav",
+        "u": "babble/babble_wallet_tracker_u.wav",
+        "v": "babble/babble_wallet_tracker_v.wav",
+        "w": "babble/babble_wallet_tracker_w.wav",
+        "x": "babble/babble_wallet_tracker_x.wav",
+        "y": "babble/babble_wallet_tracker_y.wav",
+        "z": "babble/babble_wallet_tracker_z.wav"
+      },
+      "volume": 0.447,
+      "volume_db": -7,
+      "chars_per_second": 18,
+      "pitch_jitter_semitones": 1.0,
+      "npc_pitch_range_semitones": [
+        -2.0,
+        2.0
+      ],
+      "syllable_ms": [
+        67,
+        122
+      ],
+      "archetype_status": "phase 1 (in contract/ids/archetypes.json)",
+      "status": "proposed",
+      "sources": [
+        "own work (formant synthesis, tools/gen_babble.py)"
+      ],
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "ADPCM",
+        "preloadAudioData": true
+      }
+    }
+  }
+}

@@ -3,7 +3,7 @@
 NPC voices are babble, not text-to-speech (spec, "NPCs and AI"). Every archetype has a bank of 26
 syllables, one per letter: `processed/babble/babble_<archetype>_<a..z>.wav` (48 kHz, 16-bit mono,
 all syllables at the same RMS, true peak <= -1.5 dBTP). Per-bank numbers are in
-`processed/babble/babble-banks.json` and in `sfx-map.json` under `babble_<archetype>`.
+`processed/babble/babble-banks.json` and in `sfx-map.json` under `babble.<archetype>` (`files` ordered a..z, plus a `letters` map).
 
 Reference code: `unity/BabblePlayer.cs` (compiles against Unity 6000.3.25f1's engine assemblies; not yet
 run inside the game). Python twin for auditioning: `tools/babble_preview.py <archetype> "<line>" [npcId]`.
@@ -28,17 +28,15 @@ run inside the game). Python twin for auditioning: `tools/babble_preview.py <arc
 6. **Voices:** 4 round-robin 3D `AudioSource`s on the NPC, started with `PlayScheduled` about 0.1 s ahead on the
    DSP clock. Syllables may overlap slightly; do not cut the previous one (cutting clicks).
 7. **Volume:** `volume_db` from the bank (−4 to −12 dB). Babble goes on the SFX bus, not the music bus.
-8. **Fallbacks:** unknown archetype → `babble_generic`. Missing clip → skip that syllable, never crash.
+8. **Fallbacks:** unknown archetype → the `default` bank (files `babble_generic_*`). Missing clip → skip that syllable, never crash.
 
 ## Banks
 
-Phase 1 archetypes (IDs from `contract/ids/archetypes.json` as listed in contract.md): `town_crier`
-(megaphone), `giveaway_guy`, `reply_guy` (nasal), `perp_degen_npc` (fast, driven), `rekt_guy` (slow, shaky,
-falling), `wallet_tracker`, `doomposter` (low, dark), `spaces_host` (radio voice), `ore_miner` (gravel).
+All 28 archetype IDs in `contract/ids/archetypes.json` have a bank (`babble.<id>` in `sfx-map.json`), plus
+`default` (files `babble_generic_*`) and two not yet in the registry: `laser_eyes_maxi` and `chain_tribalist`
+(spec NPC table; use two npcIds for the pair so they differ in pitch).
 
-Later phases, **proposed IDs** (BE owns archetype IDs; rename the files if BE picks other names):
-`alpha_caller`, `cabal_insider` (whisper), `rug_dev`, `sniper_bot` (beeps, not speech), `laser_eyes_maxi`,
-`chain_tribalist` (use two NPC ids so the pair differs in pitch), `sleuth`, `auditor` (monotone), `vc`,
-`farmer` (twang), `sybil_farmer` (tiny, chipmunk; clones get random npcIds), `fake_rich_larp`, `dubai_relocator`,
-`ai_agent` (ring-mod robot), `drainer` (breathy), `community_mod` (headset band-pass), `thread_boy`,
-`engagement_farmer`, `normie`, `doxxed_founder`, `prediction_shark_npc`. Plus `generic`.
+Voices: `town_crier` megaphone; `reply_guy` nasal; `perp_degen_npc` fast, driven; `rekt_guy` slow, shaky,
+falling; `doomposter` low, dark; `spaces_host` and `vc` radio voice; `ore_miner` gravel; `cabal_insider` whisper;
+`sniper_bot` beeps, not speech; `auditor` monotone; `farmer` twang; `sybil_farmer` tiny chipmunk (give clones random
+npcIds); `ai_agent` ring-mod robot; `drainer` breathy; `community_mod` headset band-pass; `normie` rising, unsure.
