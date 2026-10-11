@@ -1,6 +1,6 @@
 # Solana Duo: current iPhone visual reference — 12 October 2026
 
-Status: implemented, native-tested and installed on the Seeker. Ready to commit and push.
+Status: implemented, native-tested, installed on the Seeker and pushed to `origin/dev` in `d610187b`.
 
 The user rejected the earlier launcher because its icon construction and typography still looked like the game. This pass follows the supplied fold-leaf image and current Apple references, preserving the approved hardware and existing app routes. Primary research: [iPhone fidelity](../research/ctos-iphone-fidelity-20261012.md), [icon construction](../research/ctos-app-icons-20261012.md).
 
@@ -48,4 +48,3 @@ Final native run:26captures; runtimeErrors0, layoutMessages0, failures[]. Review
 - Evidence: `seeker-home.png`, `seeker-page-two.png`, `seeker-search-keyboard.png`, `seeker-search-opened-wallet.png`, `seeker-search-scrim-closed.png`, `seeker-widget-map.png`, `seeker-widget-week.png`, `seeker-final.png`, accompanying QA snapshots and`device-checks.json`.
 
 The UI remains a fictional OS rendered in Unity, using original assets and an Android system keyboard. It is not Apple's OS, font, symbols or native dynamic Liquid Glass implementation. No iOS build was applicable to this Android-only target.
-
