@@ -318,6 +318,8 @@ rebuild the tree in a temporary index (`GIT_INDEX_FILE=… git read-tree $T; git
 
 ## 7. THE DEMO VIDEO (the next big job)
 
+> **The authoritative plan is now `docs/video/DEMO-VIDEO-BIBLE.md`**: a frame-by-frame study of the reference, the @twoclipping code-render method, the CT Life film system, a beat-grid script, the capture list, sound and agent order. The section below is the older summary; where they disagree, the bible wins.
+
 This is the user's top priority: the submission video for the Solana Mobile hackathon, plus a waitlist cut. The user's
 own brief for it is quoted at the end of this section. **Taste over speed.** The coordinator is the lead
 (director/editor). Agents do the capture, motion, sound and QA.

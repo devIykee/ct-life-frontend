@@ -149,6 +149,25 @@ fix isn't done until it passes on the Seeker by hand (§6).
 - Test: a fresh account sees no fleet and no drone button. A test account given `gadget_drone_cam` sees the button.
   `showcaseFleet=1` in a dev build restores the old behaviour for filming.
 
+
+### 2.1 The drone as a rare owned asset: what it's for (user, 18 Oct: "would be nice to be an ingame asset that few people can own, and what's the utility")
+- **Scarcity**: a limited-supply Shop item, `gadget_drone_cam`, e.g. 500 units per season, priced high in Cash (or
+  a staking unlock, as the user floated for non-human characters). The server enforces supply and ownership.
+  Show the owner's drone with a nameplate tag ("@alias's drone") to others once vehicles sync.
+- **Utility** (things only drone owners can do):
+  1. **Scout**: the drone reveals venue occupancy, live events and other players on the minimap within 150 m for
+     the flight (a "radar ping"). That's useful for finding Spaces, beef matches and job desks.
+  2. **Content**: a photo/clip mode (free camera, filters, the CT LIFE watermark) that saves 10 s clips and PnL-card
+     shots to share on X. A growth loop: every share is an ad.
+  3. **Airdrop hunting**: daily "drop crates" spawn on rooftops and hills reachable only by air (the drone, Roadstar
+     or helicopter). The drone can tag a crate for its owner to collect on foot (the server validates the
+     claim; small Cash or cosmetic rewards).
+  4. **Paid drone-cam gig**: in Spaces and live events, a drone owner can be hired as "event cam". Their feed shows on
+     the venue screen, and they earn Cash from the host. A real job that needs the asset.
+  5. **Status**: the drone's colour and lights are cosmetic slots (Shop items), visible to everyone.
+- The client still gates the HUD button on `/inventory` (see the fix list above). The utility features need backend
+  support (crate spawns and claims, the gig contract, supply caps). Add them to Iyke round 3.
+
 ## 3. "I couldn't use the helicopter properly" [User + Code]
 Why it feels broken:
 - **A dead stick at start-up with no feedback**: `FlightPhysics.cs` 128 spins the rotor up over **3.2 s**, and lift
