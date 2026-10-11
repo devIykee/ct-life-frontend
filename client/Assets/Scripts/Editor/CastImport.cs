@@ -33,6 +33,14 @@ namespace CTLife.EditorTools
         private const string CreatorCatalogPath = "Assets/Resources/UI/CreatorLookCatalog.asset";
         public const string SnowAvatarFbx = "Assets/Art/characters/authored/Snow/SnowAdult_Creator.fbx";
         public const string RainAvatarFbx = "Assets/Art/characters/authored/Rain/RainAdult_Creator.fbx";
+        // Codex-tuned family motion (Snow: contact-fitted walk; Rain: own relaxed idle). Humanoid muscle clips, so they
+        // drive every look of the family; the cast import used to clear them.
+        public const string SnowControllerPath = "Assets/Resources/Characters/SnowController.overrideController";
+        public const string RainControllerPath = "Assets/Resources/Characters/RainController.overrideController";
+        /// <summary>userData of a cast model whose own Humanoid Avatar was built by <see cref="ConfigureAvatar"/>.</summary>
+        public const string AvatarTag = "ct-life:cast-own-avatar-v1";
+        /// <summary>Models being re-read for their rest skeleton: the postprocessor imports them unoptimized, no rig.</summary>
+        internal static readonly HashSet<string> RestProbe = new HashSet<string>(StringComparer.Ordinal);
         // Existing saved characters use these keys; they now resolve to the cast identity looks.
         private const string SnowKey = "skin_tone3|head_snow|hair_snow_bun|top_vneck_charcoal|bottom_denim_light|shoes_sneakers_blue|acc_none";
         private const string RainKey = "skin_tone3|head_rain|hair_rain_ponytail|top_sleeveless_white|bottom_denim_fitted|shoes_canvas_ochre|acc_scarf_sky";
@@ -90,6 +98,10 @@ namespace CTLife.EditorTools
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
             Debug.Log($"CTLIFE [cast] copied {copied} files; importing with CastPostprocessor");
 
+            // 1b) Every look gets its own Humanoid Avatar (stored in its .meta; no cross-asset import dependency).
+            int avatars = ConfigureAvatars(force: false);
+            Debug.Log($"CTLIFE [cast] {avatars} look Avatars (re)built");
+
             // 2) Materials and prefabs.
             Directory.CreateDirectory(PrefabRoot);
             Directory.CreateDirectory(MaterialRoot);
@@ -117,11 +129,11 @@ namespace CTLife.EditorTools
             {
                 var first = (kv.Value as JArray)?.FirstOrDefault()?.ToString();
                 if (first == null || !crowd.TryGetValue(first, out var prefab) || prefab == null) continue;
-                Upsert(registry.archetypes, kv.Key, prefab, null);
+                Upsert(registry.archetypes, kv.Key, prefab, null, FamilyController(first));
                 archetypes++;
             }
-            if (crowd.TryGetValue("snow_everyday", out var snow)) Upsert(registry.looks, SnowKey, snow, hero.GetValueOrDefault("snow_everyday"));
-            if (crowd.TryGetValue("rain_breeze", out var rain)) Upsert(registry.looks, RainKey, rain, hero.GetValueOrDefault("rain_breeze"));
+            if (crowd.TryGetValue("snow_everyday", out var snow)) Upsert(registry.looks, SnowKey, snow, hero.GetValueOrDefault("snow_everyday"), FamilyController("snow_everyday"));
+            if (crowd.TryGetValue("rain_breeze", out var rain)) Upsert(registry.looks, RainKey, rain, hero.GetValueOrDefault("rain_breeze"), FamilyController("rain_breeze"));
             if (crowd.TryGetValue("snow_everyday", out var defaultPlayer)) registry.defaultPlayer = defaultPlayer;
             var catalog = AssetDatabase.LoadAssetAtPath<CreatorLookCatalog>(CreatorCatalogPath) ?? throw new FileNotFoundException(CreatorCatalogPath);
             int players = 0;
@@ -129,7 +141,7 @@ namespace CTLife.EditorTools
             {
                 if ((string)kv.Value["kind"] != "player" || !crowd.TryGetValue(kv.Key, out var prefab)) continue;
                 var ids = PlayerLookIds(kv.Key, (JObject)kv.Value);
-                Upsert(registry.looks, string.Join("|", ids), prefab, hero.GetValueOrDefault(kv.Key));
+                Upsert(registry.looks, string.Join("|", ids), prefab, hero.GetValueOrDefault(kv.Key), FamilyController(kv.Key));
                 var entry = catalog.looks.FirstOrDefault(e => e.look != null && string.Join("|", e.look) == string.Join("|", ids));
                 if (entry == null) catalog.looks.Add(entry = new CreatorLookCatalog.Entry());
                 entry.look = ids;
@@ -141,7 +153,118 @@ namespace CTLife.EditorTools
             EditorUtility.SetDirty(registry);
             EditorUtility.SetDirty(catalog);
             AssetDatabase.SaveAssets();
+            var report = CastValidation.Report(out int unanimatable);
+            problems += unanimatable;
             Debug.Log($"CTLIFE [cast] {crowd.Count} looks ({hero.Count} hero), {archetypes} archetypes bound, {players} player looks in the creator, {problems} problems");
+            if (unanimatable > 0) throw new InvalidDataException($"{unanimatable} spawnable characters cannot animate: " + CastValidation.Summary(report));
+        }
+
+        /// <summary>Family motion override for a look (m → Snow, f → Rain); null keeps the shared controller.</summary>
+        internal static RuntimeAnimatorController FamilyController(string lookId)
+        {
+            var family = (string)Look(lookId)?["family"];
+            var path = family == "f" ? RainControllerPath : family == "m" ? SnowControllerPath : null;
+            return path == null ? null : AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(path);
+        }
+
+        /// <summary>Cast model FBX paths (crowd and hero) listed by the manifest.</summary>
+        internal static IEnumerable<string> ModelPaths()
+        {
+            foreach (var kv in (JObject)Manifest["looks"])
+                foreach (var key in new[] { "crowd_fbx", "hero_fbx" })
+                    if (kv.Value["files"]?[key] != null)
+                        yield return $"{LooksRoot}/{kv.Key}/{Path.GetFileName(kv.Value["files"][key].ToString())}";
+        }
+
+        [MenuItem("CT Life/Cast/Rebuild look Avatars")]
+        public static void RebuildAvatars() => Debug.Log($"CTLIFE [cast] {ConfigureAvatars(force: true)} look Avatars rebuilt");
+
+        /// <summary>Batch: rebuild every look Avatar, then every prefab and registry binding (no file copy needed).</summary>
+        public static void RepairBatch()
+        {
+            int code = 0;
+            try { _manifest = null; ConfigureAvatars(force: true); Run(); }
+            catch (Exception e) { Debug.LogException(e); code = 1; }
+            if (Application.isBatchMode) EditorApplication.Exit(code);
+        }
+
+        internal static int ConfigureAvatars(bool force)
+        {
+            int n = 0;
+            foreach (var path in ModelPaths())
+            {
+                var mi = AssetImporter.GetAtPath(path) as ModelImporter;
+                if (mi == null) throw new FileNotFoundException("Cast model not imported", path);
+                if (!force && mi.userData == AvatarTag && ModelAvatarValid(path)) continue;
+                ConfigureAvatar(path, mi);
+                n++;
+            }
+            return n;
+        }
+
+        private static bool ModelAvatarValid(string path)
+        {
+            var model = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+            var animator = model != null ? model.GetComponent<Animator>() : null;
+            return animator != null && animator.avatar != null && animator.avatar.isValid && animator.avatar.isHuman;
+        }
+
+        /// <summary>
+        /// Builds the look's own Humanoid Avatar exactly the way Snow and Rain build theirs (AuthoredCharacterImport /
+        /// RainCharacterImport): the family's explicit 54-bone map, and a skeleton description captured from THIS
+        /// model's rest transforms after Unity's Enforce T-Pose. Copy From Other Avatar cannot work here: Snow/Rain's
+        /// skeleton description names their own root and mesh nodes (SnowAdult_Creator, SnowAdult_CreatorMesh), which no
+        /// cast look has, so Unity silently builds no Avatar and adds no Animator (the 2026-10-08 T-pose).
+        /// </summary>
+        internal static void ConfigureAvatar(string path, ModelImporter mi)
+        {
+            // 1) Re-read the rest hierarchy unoptimized (no rig), so every bone transform is present.
+            RestProbe.Add(path);
+            try { AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate | ImportAssetOptions.ForceSynchronousImport); }
+            finally { RestProbe.Remove(path); }
+            var model = AssetDatabase.LoadAssetAtPath<GameObject>(path) ?? throw new InvalidDataException("Cast model did not import: " + path);
+            var human = new HumanDescription();
+            var reference = UnityEngine.Object.Instantiate(model);
+            try
+            {
+                reference.name = model.name;
+                var map = CharacterValidation.SnowBoneMap(); // Snow and Rain share the 55-bone naming
+                var transforms = new Dictionary<string, Transform>(StringComparer.Ordinal);
+                foreach (var t in reference.GetComponentsInChildren<Transform>(true)) if (!transforms.ContainsKey(t.name)) transforms[t.name] = t;
+                var missing = map.Values.Where(b => !transforms.ContainsKey(b)).ToList();
+                if (missing.Count > 0) throw new InvalidDataException($"{path}: bones missing from the cast rig: {string.Join(", ", missing)}");
+                // Unity's Enforce T-Pose (AvatarSetupTool.MakePoseValid), as in AuthoredCharacterImport (pinned to 6000.3).
+                var setup = typeof(UnityEditor.Editor).Assembly.GetType("UnityEditor.AvatarSetupTool", true);
+                var wrapper = setup.GetNestedType("BoneWrapper", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic);
+                var enforce = setup.GetMethod("MakePoseValid", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+                if (wrapper == null || enforce == null) throw new MissingMethodException("Unity Avatar T-pose tooling changed.");
+                var bones = Array.CreateInstance(wrapper, HumanTrait.BoneCount);
+                for (int i = 0; i < HumanTrait.BoneCount; i++)
+                {
+                    Transform bone = map.TryGetValue((HumanBodyBones)i, out var boneName) ? transforms[boneName] : null;
+                    bones.SetValue(Activator.CreateInstance(wrapper, new object[] { HumanTrait.BoneName[i], bone }), i);
+                }
+                enforce.Invoke(null, new object[] { bones });
+                human.skeleton = reference.GetComponentsInChildren<Transform>(true).Select(t => new SkeletonBone
+                {
+                    name = t.name, position = t.localPosition, rotation = t.localRotation, scale = t.localScale,
+                }).ToArray();
+                human.human = map.Select(pair => new HumanBone
+                {
+                    boneName = pair.Value, humanName = HumanTrait.BoneName[(int)pair.Key], limit = new HumanLimit { useDefaultValues = true },
+                }).ToArray();
+            }
+            finally { UnityEngine.Object.DestroyImmediate(reference); }
+            human.upperArmTwist = 0.5f; human.lowerArmTwist = 0.5f; human.upperLegTwist = 0.5f; human.lowerLegTwist = 0.5f;
+            human.armStretch = 0.05f; human.legStretch = 0.05f; human.feetSpacing = 0; human.hasTranslationDoF = false;
+            // 2) Own Avatar from that description; the postprocessor then optimizes the hierarchy as usual.
+            mi.animationType = ModelImporterAnimationType.Human;
+            mi.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
+            mi.sourceAvatar = null;
+            mi.humanDescription = human;
+            mi.userData = AvatarTag;
+            mi.SaveAndReimport();
+            if (!ModelAvatarValid(path)) throw new InvalidDataException("Cast look did not build a valid Humanoid Avatar: " + path);
         }
 
         public static void RunBatch()
@@ -163,13 +286,14 @@ namespace CTLife.EditorTools
             };
         }
 
-        private static void Upsert(List<CharacterRegistry.Entry> list, string key, GameObject prefab, GameObject preview)
+        private static void Upsert(List<CharacterRegistry.Entry> list, string key, GameObject prefab, GameObject preview,
+            RuntimeAnimatorController controller)
         {
             var e = list.FirstOrDefault(x => x != null && string.Equals(x.key, key, StringComparison.OrdinalIgnoreCase));
             if (e == null) list.Add(e = new CharacterRegistry.Entry { key = key });
             e.prefab = prefab;
             e.previewPrefab = preview;
-            e.controllerOverride = null;
+            e.controllerOverride = controller;
             e.height = 0f;
         }
 
@@ -223,7 +347,13 @@ namespace CTLife.EditorTools
                     r.receiveShadows = false;
                     if (r is SkinnedMeshRenderer smr) smr.updateWhenOffscreen = false;
                 }
-                var animator = go.GetComponentInChildren<Animator>() ?? go.AddComponent<Animator>();
+                // The model's own Animator carries its Humanoid Avatar. Never add one: an Animator without an Avatar on
+                // an optimized hierarchy cannot pose the mesh, which then renders in its bind (T) pose.
+                var animators = go.GetComponentsInChildren<Animator>(true);
+                var animator = go.GetComponent<Animator>();
+                if (animators.Length != 1 || animator == null || animator.avatar == null || !animator.avatar.isValid || !animator.avatar.isHuman)
+                    throw new InvalidDataException($"{fbx}: needs exactly one root Animator with a valid Humanoid Avatar " +
+                        $"(found {animators.Length}; avatar={(animator != null && animator.avatar != null ? animator.avatar.name : "none")}). Run CT Life > Cast > Rebuild look Avatars.");
                 animator.applyRootMotion = false;
                 animator.cullingMode = AnimatorCullingMode.CullCompletely;
                 if (!hero)
@@ -267,21 +397,24 @@ namespace CTLife.EditorTools
             mi.isReadable = false;
             mi.materialImportMode = ModelImporterMaterialImportMode.None;
             mi.importAnimation = false;
-            mi.animationType = ModelImporterAnimationType.Human;
-            mi.optimizeGameObjects = true;
+            mi.bakeAxisConversion = true; // as the Snow/Rain sources (AuthoredCharacterImport); keeps the stored rest pose
+            mi.useFileScale = true;
             mi.skinWeights = ModelImporterSkinWeights.Standard;
             mi.meshCompression = ModelImporterMeshCompression.Medium; // APK budget: quantized positions/normals/uvs
             mi.meshOptimizationFlags = MeshOptimizationFlags.Everything;
-            var lookId = CastImport.LookIdFromPath(assetPath);
-            var family = (string)CastImport.Look(lookId ?? "")?["family"];
-            var source = family == "f" ? CastImport.RainAvatarFbx : CastImport.SnowAvatarFbx;
-            var avatar = AssetDatabase.LoadAllAssetsAtPath(source).OfType<Avatar>().FirstOrDefault();
-            if (avatar != null)
+            if (CastImport.RestProbe.Contains(assetPath))
             {
-                mi.avatarSetup = ModelImporterAvatarSetup.CopyFromOther;
-                mi.sourceAvatar = avatar;
+                // CastImport.ConfigureAvatar is re-reading the full rest hierarchy.
+                mi.animationType = ModelImporterAnimationType.None;
+                mi.optimizeGameObjects = false;
+                return;
             }
-            else Debug.LogWarning("CTLIFE [cast] source avatar missing: " + source);
+            // The Avatar is the look's own (CreateFromThisModel + the HumanDescription that CastImport.ConfigureAvatar
+            // stored in this .meta). Nothing here reads another asset, so a fresh Library imports identically.
+            mi.animationType = ModelImporterAnimationType.Human;
+            mi.optimizeGameObjects = mi.userData == CastImport.AvatarTag; // optimize only once the Avatar is configured
+            if (mi.userData != CastImport.AvatarTag)
+                Debug.LogWarning("CTLIFE [cast] look Avatar not configured yet (CT Life > Cast > Rebuild look Avatars): " + assetPath);
         }
 
         private void OnPreprocessTexture()

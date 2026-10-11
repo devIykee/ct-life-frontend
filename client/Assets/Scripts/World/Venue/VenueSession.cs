@@ -313,6 +313,8 @@ namespace CTLife.World
             view.transform.position = placed ? Venue.ToWorld((float)state.x, (float)state.z) : Venue.EntrancePosition;
             LocalPlayer = view.gameObject.AddComponent<LocalPlayerController>();
             LocalPlayer.Init(Venue, Channel);
+            // Player-chosen interactions (CTA): nothing sits or uses anything until the player presses it.
+            view.gameObject.AddComponent<InteractionController>().Init(Venue, Channel, this);
             if (state != null) LocalPlayer.OnServerSeat(state.spotId, state.anim);
             if (!string.IsNullOrEmpty(view.userId)) _byUserId[view.userId] = view;
             var rig = CameraRig.Ensure();
@@ -450,8 +452,8 @@ namespace CTLife.World
         {
             if (!OwnsVisit || IsOwnHome) return;
             // Own Home currently supports exploration and the existing phone needs actions.
-            // A null channel is not authority to fabricate a seated furniture confirmation.
-            if (LocalPlayer != null) LocalPlayer.GoSit(spot.spotId);
+            // A tap only offers the seat (the CTA, from farther away); the player chooses to sit with the button.
+            InteractionController.Current?.Focus(spot);
         }
 
         // ---------------------------------------------------------------- voice

@@ -14,7 +14,7 @@ namespace CTLife.World
     /// should already be, using `startedAt` in server time.
     /// </summary>
     [RequireComponent(typeof(AvatarView))]
-    public sealed class NpcController : MonoBehaviour
+    public sealed class NpcController : MonoBehaviour, IKnockdownOwner
     {
         public const float WalkSpeed = 1.6f;
 
@@ -52,6 +52,10 @@ namespace CTLife.World
         private bool _followPathRequested;
         private float _nextBindAttempt;
         private NavMeshPath _validatedPath;
+        // Seat presentation: an NPC acting at a seat-like spot walks to its approach, then sits down onto the seat.
+        private bool _arriveSeated;
+        private Vector3 _seatPosition, _seatApproach;
+        private bool _seated;
 #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
         private bool _reportedStopOrder;
         public bool ReviewHasLeaveReceipt { get; private set; }
@@ -70,6 +74,7 @@ namespace CTLife.World
             _view = GetComponent<AvatarView>();
             _view.npcId = npcId;
             CTLife.Audio.Footsteps.Attach(gameObject, 0.6f);
+            AvatarFactory.AddBodyCollider(gameObject);
             // NavMeshPath allocates native state and cannot run in a MonoBehaviour constructor.
             _validatedPath = new NavMeshPath();
             // Binding starts when the component is added. Place the actor first, rather than
@@ -117,6 +122,7 @@ namespace CTLife.World
         private void ApplyState(NpcState s)
         {
             State = s;
+            if (_knocked) { _lastKey = null; return; } // applied when it is back on its feet
             // A newly enabled agent can bind on the next navigation tick. Keep the latest
             // replicated state pending; do not deduplicate an entry whose Stop/path never ran.
             if (!AgentReady)
@@ -141,6 +147,8 @@ namespace CTLife.World
                 return;
             }
             _lastKey = key;
+            // Leaving a seat: stand up there, then step to the approach before any new path starts.
+            if (_seated && !(s.state == "act" && IsSeatAnim(s.animId))) StandFromSeat();
             // A state owns its path. Do not resume a stale destination after talk/idle, or carry
             // a pending leave into the next state and hide the NPC at an unrelated arrival.
             Stop();
@@ -190,6 +198,20 @@ namespace CTLife.World
             if (!string.IsNullOrEmpty(s.emoteId) && s.state != "react") _view.PlayOneShot(s.emoteId, -since);
         }
 
+        private static bool IsSeatAnim(string anim) => anim == "act_sit" || anim == "act_type" || anim == "act_frantic_type" ||
+                                                        anim == "act_lean_back" || anim == "act_head_in_hands" || anim == "act_sit_talk";
+
+        private void StandFromSeat()
+        {
+            _seated = false;
+            var seatRotation = transform.rotation;
+            if (_agent != null && _agent.isActiveAndEnabled && NavMesh.SamplePosition(_seatApproach, out var hit, 0.75f, _agent.areaMask))
+            {
+                _agent.Warp(hit.position);
+                _view.BeginSeatLeave(_seatPosition, seatRotation, hit.position, seatRotation);
+            }
+        }
+
         private void GoToSpot(string spotId, float secondsSinceStart, string thenAnim, bool loop)
         {
             if (!_venue.TryGetSpot(spotId, out var target, out var rot))
@@ -197,6 +219,11 @@ namespace CTLife.World
                 FailPath("missing spot " + spotId);
                 return;
             }
+            // Seat-like acts path to the authored approach, then sit down onto the seat (SeatPresenter).
+            Vector3 approach = target;
+            _arriveSeated = loop && IsSeatAnim(thenAnim) && _venue.TryGetSpotApproach(spotId, out approach) &&
+                            (approach - target).sqrMagnitude > 0.01f;
+            if (_arriveSeated) { _seatPosition = target; _seatApproach = approach; target = approach; }
             if (!AgentReady || !NavMesh.SamplePosition(target, out var navTarget, 0.75f, _agent.areaMask))
             {
                 FailPath("no navigation at spot " + spotId);
@@ -224,7 +251,7 @@ namespace CTLife.World
                 {
                     _nextGroundCheck = 0f;
                     RefreshGrounding();
-                    Arrive();
+                    Arrive(snapped: shouldHaveArrived); // late joiners see the NPC already seated
                 }
                 else FailPath("warp rejected at " + spotId);
                 return;
@@ -239,8 +266,9 @@ namespace CTLife.World
             _view.SetBase("loco_walk");
         }
 
-        private void Arrive()
+        private void Arrive(bool snapped = false)
         {
+            var arrivedFrom = _view.PresentationPosition; var arrivedRotation = transform.rotation;
             Stop();
             transform.rotation = Quaternion.Euler(0, _arriveRotation * Mathf.Rad2Deg, 0);
             if (_leaving)
@@ -262,6 +290,15 @@ namespace CTLife.World
             }
             if (_arriveAnim != null)
             {
+                if (_arriveSeated)
+                {
+                    // From the approach onto the seat: the actor's logical root goes to the seat; the model sits down.
+                    var seatRotation = transform.rotation;
+                    if (!_agent.Warp(_seatPosition)) transform.position = _seatPosition;
+                    if (!snapped) _view.BeginSeatEnter(arrivedFrom, arrivedRotation, _seatPosition, seatRotation);
+                    _seated = true;
+                    _arriveSeated = false;
+                }
                 if (_arriveLoop) _view.SetBase(_arriveAnim);
                 else _view.PlayOneShot(_arriveAnim);
                 _arriveAnim = null;
@@ -335,9 +372,27 @@ namespace CTLife.World
             _view.PlayOneShot("emote_point");
         }
 
+        private bool _knocked;
+
+        void IKnockdownOwner.PlaceRoot(Vector3 position, Quaternion rotation)
+        {
+            if (AgentReady && NavMesh.SamplePosition(position, out var hit, 1.2f, _agent.areaMask)) _agent.Warp(hit.position);
+            else transform.position = position;
+            transform.rotation = rotation;
+        }
+
+        void IKnockdownOwner.SetControl(bool enabled)
+        {
+            _knocked = !enabled;
+            if (_knocked) { Stop(); return; }
+            // Back on its feet: carry on with the latest replicated state from here.
+            _lastKey = null;
+            if (State != null) ApplyState(State);
+        }
+
         private void Update()
         {
-            if (_agent == null) return;
+            if (_agent == null || _knocked) return;
             if (!AgentReady)
             {
                 _view.SetSpeed(0f);
@@ -426,7 +481,7 @@ namespace CTLife.World
             // Match the local player's collider-based correction for voxelized navigation height.
             if (!NavMesh.SamplePosition(transform.position, out var nav, 0.75f, _agent.areaMask) ||
                 !Physics.Raycast(nav.position + Vector3.up * 0.35f, Vector3.down, out var floor, 0.85f,
-                    _venue.groundMask.value, QueryTriggerInteraction.Ignore) || floor.normal.y < 0.7f) return;
+                    _venue.groundMask.value & CharacterLayers.WorldMask, QueryTriggerInteraction.Ignore) || floor.normal.y < 0.7f) return;
             float offset = floor.point.y - nav.position.y;
             if (Mathf.Abs(offset) <= 0.35f) _agent.baseOffset = offset;
         }

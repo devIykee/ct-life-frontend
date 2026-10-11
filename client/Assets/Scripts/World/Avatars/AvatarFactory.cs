@@ -46,15 +46,38 @@ namespace CTLife.World
             if (entry?.prefab != null)
             {
                 // 1) Any Humanoid prefab from the registry (single mesh or pre-assembled).
-                go = Object.Instantiate(forPreview && entry.previewPrefab != null ? entry.previewPrefab : entry.prefab, parent);
-                go.name = name;
+                var source = forPreview && entry.previewPrefab != null ? entry.previewPrefab : entry.prefab;
+                if (!forPreview && source.GetComponent<Animator>() != null)
+                {
+                    // Logical root (server/NavMesh-owned position, colliders, voice, name tag) above the visual model
+                    // (Animator): seat/fall presentation moves only the model, never the actor (as the authored Snow world
+                    // prefab is built; CafeSeatExitPresentation and SeatPresenter rely on it).
+                    go = new GameObject(name);
+                    if (parent != null) go.transform.SetParent(parent, false);
+                    var model = Object.Instantiate(source, go.transform, false);
+                    model.name = source.name;
+                }
+                else
+                {
+                    go = Object.Instantiate(source, parent);
+                    go.name = name;
+                }
                 animator = go.GetComponentInChildren<Animator>();
                 if (animator == null) animator = go.AddComponent<Animator>();
+#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
+                // Humanoid clips cannot pose a body without a valid Humanoid Avatar: it renders in its bind (T) pose.
+                // CastValidation blocks such prefabs at build time; this makes any that slip through visible in logs.
+                if (animator.avatar == null || !animator.avatar.isValid || !animator.avatar.isHuman)
+                    CTLife.Core.Log.Warn("avatar", $"'{entry.key}' ({entry.prefab.name}) has no valid Humanoid Avatar; it will T-pose");
+#endif
                 var ctrl = entry.controllerOverride != null ? entry.controllerOverride :
                     reg.controller != null ? reg.controller : ItemCatalog.AvatarController;
                 if (ctrl != null) animator.runtimeAnimatorController = ctrl;
                 animator.applyRootMotion = false;
                 animator.cullingMode = AnimatorCullingMode.CullCompletely;
+                // Grounding/attention IK (feet on the real ground, look-at, hands on tables); near characters only.
+                if (!forPreview && animator.avatar != null && animator.avatar.isHuman && animator.GetComponent<CharacterIK>() == null)
+                    animator.gameObject.AddComponent<CharacterIK>();
                 body = LargestSkinnedRenderer(go);
                 height = entry.height > 0 ? entry.height : MeasureHeight(go, 1.75f);
             }
@@ -128,6 +151,24 @@ namespace CTLife.World
             foreach (var r in renderers) b.Encapsulate(r.bounds);
             float h = b.max.y - go.transform.position.y;
             return h > 0.5f && h < 4f ? h : fallback;
+        }
+
+        /// <summary>
+        /// A solid capsule (Characters layer, kinematic) so the local player's CharacterController bumps into other
+        /// people instead of walking through them. The root's trigger capsule stays the tap target.
+        /// </summary>
+        public static void AddBodyCollider(GameObject root)
+        {
+            if (root == null || root.transform.Find("body_collider") != null) return;
+            var go = new GameObject("body_collider") { layer = CharacterLayers.Characters };
+            go.transform.SetParent(root.transform, false);
+            var c = go.AddComponent<CapsuleCollider>();
+            c.center = new Vector3(0f, 0.88f, 0f);
+            c.height = 1.72f;
+            c.radius = 0.24f;
+            var rb = go.AddComponent<Rigidbody>();
+            rb.isKinematic = true;
+            rb.useGravity = false;
         }
 
         /// <summary>Deterministic NPC outfit from the archetype id until NPC prefabs exist.</summary>

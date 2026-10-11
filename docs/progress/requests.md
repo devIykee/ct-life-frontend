@@ -857,3 +857,50 @@ through your combine/bake pipeline (merged meshes per material, baked lightmaps)
 Runtime-instantiated prefabs get no static batching, so the combine has to happen at build time.
 
 Status: open
+
+## 2026-10-08 character-feel → venue builder: solid props for character physicality
+
+The local player now moves with a CharacterController on top of the NavMesh (it collides with every solid collider),
+and NPCs/remote players are NavMesh-driven. So a prop needs **both** a solid collider (the player) **and** NavMesh
+carving / `solid: true` in the builder (NPCs). Seats stay claimable: carve the furniture, never the seat anchor or its
+approach (VenueKit already guarantees that for `solid` placements).
+
+Validator (read-only, re-run after each rebuild):
+`Unity -batchmode -nographics -projectPath client -executeMethod CTLife.EditorTools.VenueFeelAudit.RunBatch -ctlife-auditOut <abs>.json`
+(menu: CT Life > Venues > Audit physicality). It samples the merged render meshes on a 0.2 m grid at body height
+(0.25–1.9 m above the floor) and reports clusters where geometry stands on walkable NavMesh **without** a solid collider
+("no collider": the player and NPCs walk through it) and **with** a collider but uncarved NavMesh (NPCs walk through it).
+Coordinates are venue-local (x, z); full list: `ct-life-evidence/character-feel/venue-physicality-audit.json`.
+
+Priority venues: Terminal Café and Spaces Studio are clean (Café: one sliver at the counter end). **Timeline Square:
+23 regions without colliders**, including all 6 benches (`bench_1..6`, seat 0.48 m + back 0.91 m), the A-frame signs,
+bins and the kiosk.
+
+| Venue | No collider | Largest (centre x,z · extent · height · nearest anchor) | Collider, NavMesh not carved | Examples |
+| --- | --- | --- | --- | --- |
+| `timeline_square` | 23 | (13.70,14.10) 2.40x0.80 m, h 0.89 m, near crier_2; (-16.80,11.60) 0.60x1.80 m, h 1.0 m, near crier_1; (-9.00,-0.10) 1.80x0.40 m, h 0.48 m, near bench_3; (9.00,0.10) 1.80x0.40 m, h 0.48 m, near bench_6 | 0 | - |
+| `terminal_cafe` | 0 | - | 1 | (-11.00,-1.40) near counter |
+| `perp_pit` | 0 | - | 8 | (-9.00,3.90) near terminal_1; (-9.00,7.90) near terminal_5 |
+| `rekt_clinic` | 0 | - | 6 | (-5.90,1.80) near bed_1; (-5.90,5.80) near bed_4 |
+| `launchpad_tower` | 1 | (9.50,-6.40) 0.40x0.60 m, h 1.03 m, near terminal_4 | 5 | (-9.00,-3.10) near terminal_1; (-3.00,-3.10) near terminal_2 |
+| `prediction_pit` | 0 | - | 10 | (-3.00,3.60) near booth_1; (3.00,3.60) near booth_2 |
+| `ratio_arena` | 16 | (-6.40,8.10) 0.60x0.40 m, h 0.4 m, near bleacher_1; (-4.40,8.10) 0.60x0.40 m, h 0.4 m, near bleacher_2; (-2.40,8.10) 0.60x0.40 m, h 0.4 m, near bleacher_3; (-0.40,8.10) 0.60x0.40 m, h 0.4 m, near bleacher_4 | 8 | (-7.00,8.10) near bleacher_1; (-5.00,8.10) near bleacher_2 |
+| `ct_jail` | 1 | (9.30,-1.50) 0.40x0.80 m, h 0.96 m, near mugshot | 4 | (-10.10,8.80) near bunk_1; (-4.10,8.80) near bunk_2 |
+| `discord_heights` | 0 | - | 4 | (-4.50,-3.00) near sofa_1; (-3.50,-3.00) near sofa_2 |
+| `conference_hall` | 0 | - | 12 | (-7.50,-2.50) near seat_7; (-7.50,-0.10) near seat_1 |
+| `hackathon_house` | 1 | (-8.70,6.20) 0.40x0.20 m, h 0.56 m, near couch_2 | 10 | (-6.00,-2.80) near desk_1; (-6.00,-0.20) near desk_5 |
+| `audit_row` | 0 | - | 4 | (-7.50,7.40) near audit_desk_1; (-2.50,7.40) near audit_desk_2 |
+| `vc_row` | 0 | - | 7 | (-9.00,-4.20) near partner_desk; (-2.00,6.40) near pitch_1 |
+| `ore_refinery` | 1 | (-7.60,8.70) 2.60x0.80 m, h 1.85 m, near miner_post | 4 | (-9.00,-4.10) near terminal_1; (-3.00,-4.10) near terminal_2 |
+| `airdrop_fields` | 8 | (2.20,-7.00) 1.40x0.20 m, h 1.83 m, near entrance; (2.20,-3.00) 1.40x0.20 m, h 1.83 m, near center; (2.20,1.00) 1.40x0.20 m, h 1.83 m, near center; (-8.10,-5.70) 0.40x0.40 m, h 0.48 m, near bench_1 | 2 | (-8.10,-5.00) near bench_1; (8.10,-5.00) near bench_2 |
+| `sybil_barn` | 34 | (-10.10,8.70) 0.40x0.40 m, h 0.82 m, near spot_1; (-2.50,8.70) 0.40x0.40 m, h 0.82 m, near spot_2; (2.50,8.70) 0.40x0.40 m, h 0.82 m, near spot_3; (10.10,8.70) 0.40x0.40 m, h 0.82 m, near spot_4 | 2 | (-9.10,-3.00) near hay_1; (9.10,-3.00) near hay_2 |
+| `checker_kiosk` | 12 | (-1.80,-3.20) 3.00x0.20 m, h 1.02 m, near entrance; (-1.80,-1.60) 3.00x0.20 m, h 1.02 m, near center; (-1.80,0.00) 3.00x0.20 m, h 1.02 m, near center; (1.80,-3.20) 3.00x0.20 m, h 1.02 m, near entrance | 2 | (-6.10,-2.00) near bench_1; (6.10,-2.00) near bench_2 |
+| `cabal_lounge` | 9 | (-2.60,-7.80) 1.80x0.20 m, h 1.02 m, near entrance; (2.60,-7.80) 1.80x0.20 m, h 1.02 m, near entrance; (-6.50,8.30) 0.80x0.40 m, h 0.49 m, near booth_1; (6.50,8.30) 0.80x0.40 m, h 0.49 m, near booth_5 | 6 | (-0.70,8.30) near booth_3; (0.70,8.30) near booth_4 |
+| `yacht_club` | 12 | (-0.60,5.90) 0.20x1.20 m, h 0.69 m, near gangway; (0.60,5.90) 0.20x1.20 m, h 0.69 m, near gangway; (-8.20,5.90) 0.20x0.80 m, h 0.69 m, near lounger_1; (-6.80,5.90) 0.20x0.80 m, h 0.69 m, near lounger_2 | 10 | (-9.00,5.30) near lounger_1; (-6.00,5.30) near lounger_2 |
+| `penthouse_row` | 1 | (-9.60,-2.10) 0.20x0.80 m, h 0.49 m, near sofa_1 | 6 | (3.30,-4.60) near lounger_1; (3.30,-3.00) near lounger_2 |
+| `home:hacker_house` | 4 | (-4.50,-1.60) 0.40x0.60 m, h 0.46 m, near bed; (-0.90,1.90) 0.40x0.40 m, h 0.79 m, near sofa; (0.90,1.90) 0.40x0.40 m, h 0.79 m, near sofa; (-3.30,2.80) 0.40x0.20 m, h 1.55 m, near bed | 2 | (0.00,1.90) near sofa; (4.00,2.90) near desk |
+| `home:studio` | 2 | (0.00,2.20) 1.40x0.20 m, h 0.9 m, near sofa; (2.30,4.30) 0.80x0.40 m, h 0.59 m, near desk | 3 | (0.00,1.90) near sofa; (-4.00,2.80) near bed |
+| `home:penthouse` | 2 | (-0.80,2.10) 1.00x0.80 m, h 0.45 m, near sofa; (-5.20,2.60) 0.20x0.60 m, h 0.68 m, near bed | 3 | (-3.90,2.60) near bed; (4.00,2.80) near desk |
+| `home:marina_villa` | 2 | (-0.80,2.10) 1.00x0.80 m, h 0.45 m, near sofa; (-5.20,2.60) 0.20x0.60 m, h 0.68 m, near bed | 3 | (-3.90,2.60) near bed; (4.00,2.80) near desk |
+
+Status: open

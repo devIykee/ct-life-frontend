@@ -57,6 +57,12 @@ namespace CTLife.UI
                 "dream" => "star-four",
                 "energy" => "lightning",
                 "lobby" => "squares-four",
+                "seat" => "armchair",
+                "terminal" => "desktop",
+                "mic_stage" => "microphone-stage",
+                "counter" => "coffee",
+                "door" => "door-open",
+                "stand" => "person-simple-walk",
                 _ => "dots-three",
             };
             if (!Textures.TryGetValue(asset, out var texture))

@@ -132,6 +132,8 @@ namespace CTLife.EditorTools
                 CharacterValidation.ValidateSnowAsset(AuthoredCharacterImport.PrefabPath);
             if (File.Exists(AuthoredCharacterImport.WorldPrefabPath))
                 CharacterValidation.ValidateSnowAsset(AuthoredCharacterImport.WorldPrefabPath);
+            // Every registry/cast character must own a valid Humanoid Avatar and sample real poses (no T-pose ships).
+            CastValidation.RequireAnimatable();
             Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(outPath)) ?? ".");
 
             // Shipped venue prefabs/scenes need no Addressables catalog. Build configured Addressables explicitly
