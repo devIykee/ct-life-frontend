@@ -1,5 +1,8 @@
 # CT Life backend feedback — prioritized summary (2026-10-08, main @ 9f3e5ef)
 
+> **Update for main @ 7243073:** section G at the end lists only what is still broken or newly broken after your
+> 77 commits. The summary below is the 9f3e5ef state and is kept for reference.
+
 From the Unity client, run against your stack locally (editor + Seeker). One line each; numbers point to the detailed
 entries below (reproductions included there). Everything here was reproduced live unless marked (source).
 
@@ -519,3 +522,114 @@ Lane logs with the full proposal-vs-main tables: `docs/progress/phase5-ventures.
 81. **Unknown routes answer with the contract body** `404 NOT_FOUND "No route for this path and method."`, the same code as
     a missing record. The client now tells them apart by that message text. Ask: a distinct code (e.g. `ROUTE_NOT_FOUND`)
     or `501` for proposal routes that are not built yet.
+
+---
+
+## G. After 7243073 — still broken or newly broken (integration lead, local run 2026-10-08)
+
+Run: your `main` @ 7243073 locally (`tools/backend-local/up.sh`), migrations through `1700000070000_add_lottery_rolled`,
+api + realtime + workers all start. Evidence: `../ct-life-evidence/backend-7243073/`. Items are added as the re-run
+reaches them; anything not listed was either fixed or not re-checked yet (marked when known).
+
+82. **SIWS domain default is `ctlife.dev`.** `.env.example` and `server/shared/config/config.ts` default `SIWS_DOMAIN` /
+    `SIWS_URI` to `ctlife.dev` / `https://ctlife.dev`. We will not use `.dev`, and the real domain (a .fun or gaming TLD)
+    is not bought yet. Ask: make the default a placeholder until we pick it, e.g. `ctlife.invalid` /
+    `https://ctlife.invalid/`, which is the client's MWA identity today. The client keeps the identity in one line
+    (`EnvConfig.AppIdentityUri`) and derives the expected SIWS domain from it; when the domain exists, that line and
+    your two env vars change together. Locally both already agree: `GET /v1/auth/challenge` →
+    `{domain:"ctlife.invalid", uri:"https://ctlife.invalid/", nonce:"c911559f…" (32 alphanumeric), chainId:"solana:devnet"}`.
+83. **Newly broken: every `venue` join fails.** `VenueRoom.fetchPlayerProfile` (`server/realtime/rooms/venue.ts`, from
+    2cb4bcd "B5") runs `SELECT c.name, c.skr_name, … FROM characters c JOIN users u …`, but `characters` has `alias`, not
+    `name`, and `skr_name` lives on `users`. Repro: any client `joinOrCreate('venue', {token, venueId})` →
+    `MatchMakeError: column c.name does not exist` (realtime log: `VenueRoom.onJoin` → `fetchPlayerProfile`). Expected:
+    the join succeeds with the DB profile. Fix: `SELECT c.alias AS name, u.skr_name, u.is_seeker, c.tribe_id, c.look`.
+    Second bug in the same function: `characters.look` is stored as the contract `Look` object
+    (`{skinTone, headId, …}`), but the code only accepts an array, so every player's `look` in the room is
+    `["0","0","0","0","0","0","0"]` and other players never see anyone's chosen look. Expected: the room's string[7] in
+    contract order `[skinTone, headId, hairId, topId, bottomId, shoesId, accId]`. We run both fixes locally
+    (`tools/backend-local/patches/0001-venue-profile.patch`, FE repo); with them, players and NPCs sync, `userId` is the
+    real user id, and a spoofed `name`/`look` in the join options is ignored (B5 works). Also: `minerTier` is hardcoded
+    `'none'` although `users.miner_tier` exists.
+84. **Newly broken: `POST /v1/characters` rejects every look.** `CharacterService.validateInput`
+    (`server/application/character.ts`, from 8377ffb "B13") reads `items.items[id]` as a map, but
+    `contract/ids/items.json` is `{items: [{id, slot, …}]}`, an array, so every id is unknown. Repro: dev sign-in,
+    `POST /v1/lottery/roll` (200), then `POST /v1/characters {alias, look:{skinTone:"skin_tone3", headId:"head_rain",
+    hairId:"hair_rain_ponytail", topId:"top_hoodie_black", bottomId:"bottom_jeans_indigo", shoesId:"shoes_sneakers_white",
+    accId:"acc_none"}, traitIds:["fast_talker","iron_will"], dreamId:"make_10k", tribeId:"trencher", ageConfirmed:true}` →
+    `400 VALIDATION_FAILED {reason:"invalid_look_item", itemId:"head_rain"}`. The same happens with ids that are in
+    `items.json` (`head_skull_visor`, `hair_mohawk_pink`, `acc_aviators`, …): `itemId:"head_skull_visor"`. Expected: 201. Second half: even indexed
+    by id, `items.json` holds 12 shop items and none of the creator's base-look ids (`head_<look>`, `hair_<look>`,
+    `top_<look>`, `bottom_<look>`, `shoes_<look>`, `acc_none`; the creator offers 24 looks), so every real creator
+    submit would still fail. Ask: validate only shop items (ids present in `items.json`) and accept base-look ids, or let
+    us add the base looks to `items.json` (we can send the list). Third part: `skinTone` must match `/^skin_tone[1-6]$/`,
+    but the contract's `Look.skinTone` is a free string and its own example is `'tan'`: `skinTone:"tan"` and
+    `"skin_tan"` (what the creator sends for its cast looks) both → `400 {reason:"invalid_skin_tone"}`. Seen on the
+    Seeker: creator look `player_f_kol` → `POST /characters → 400`. Effect today: no new player can finish onboarding, and
+    bots join as `Anon`. Seen through the real client too: editor run `editor-20261008-151018`, `POST /characters → 400`.
+    Locally we skip ids that are not in the catalog and accept any non-empty skin tone
+    (`patches/0002-character-look-validation.patch`) so the rest can be tested.
+85. **FYI, no action needed: CoinState `bigint64`.** e69bf64 is right for your server (the values are `bigint`), but the
+    Colyseus Unity SDK (0.18.8, the latest) cannot decode `bigint64`: it reads nothing and misaligns the rest of the patch.
+    We patched our vendored SDK copy to read it as int64 (same wire format). Please tell us before moving other fields to
+    `bigint64`/`biguint64`, and keep them out of rooms the Unity client joins if you can.
+86. **Newly broken: `GET /v1/config` is always 500.** `server/api/routes/core.ts` (415d355 "B34") adds
+    `emotes: cache.load('emotes') ?? null`, but there is no `contract/ids/emotes.json` and `ConfigCache.load` throws
+    rather than returning null. Repro: `GET /v1/config` → `500 INTERNAL_ERROR` (api log: `Config file not found:
+    emotes.json`). Expected: 200. The client survives on its bundled snapshot, so no server-side config change can reach
+    it. Same handler: the ETag is the constant `"1.0.0-rc1"`, so once a client sends `If-None-Match` it gets 304 forever,
+    even after `economy.json` etc. change; please hash the payload. Local fix: `patches/0003-config-emotes.patch`.
+87. **Newly broken: `POST /v1/payments/intents` is always 500.** `server/application/topup.ts` (B19) does
+    `new PublicKey(input.userId)`, but the route passes `req.user.sub`, the user UUID → `Non-base58 character`.
+    `referencePubkey` is also built from a base64 string (`new PublicKey(Buffer.from(reference,'hex').toString('base64'))`),
+    which is not base58 either. Repro: dev sign-in, `POST /v1/payments/intents` with the client's top-up body → 500
+    (api log `Non-base58 character`). Expected: 201 with the unsigned `tx`. Look up `users.wallet` as `/ore/stake/tx` does,
+    and use 32 random bytes for the reference key. Not patched locally (money path).
+88. **`POST /v1/rtc/token` exists now, but rejects the contract body.** The contract request is `{kind, id}`
+    (`kind: venue | space | call`); the route's zod schema requires `roomId`, so every contract client gets
+    `400 VALIDATION_FAILED` (editor feature row `social.space_audio`). Expected: accept `id` (the response shape already
+    matches). Second mismatch: `expiresAt` comes back as epoch seconds (`1791474257`), the contract says a date-time
+    string, so the client cannot decode the reply ("Voice unavailable"). Local fix for both:
+    `patches/0004-rtc-token-contract-id.patch`; with it, a Space audio token mints (editor run `editor-20261008-152406`)
+    and the Seeker joins proximity voice in Terminal Café (LiveKit room `venue:<instanceId>`, active speaker).
+89. **Still open from the 9f3e5ef list (re-checked live on 7243073):**
+    - City room is still a stub (#16, #54, #64): `mood` is a sine, no `event`, no targeted `toast`/`dm`/`call_invite`/
+      `space_update`/`payment_confirmed`/`liquidated`. `POST /video-calls` now returns only `callId` (#68 fixed), but the
+      callee is never rung.
+    - Homes (#75): `POST /homes/{homeId}/rent` looks up a home *instance* (`studio` → 404); `POST /homes/{ownerId}/visit`
+      looks up `home_id = ownerId` (user id → 404) and there is still no `home` room. `GET /homes` works (#40 part fixed).
+    - `GET /me` `user` still has no `hasCharacter` (it moved to `flags`) (#48); `/auth/verify` and `/auth/dev` answer
+      flat, `/auth/refresh` has no user (#45); `POST /careers/{id}/apply` returns `{id, level}` (#49).
+    - Phase 5/6: `POST /projects` still 400 `VALIDATION_FAILED` for cash (#77); still 404 "No route": `GET /projects?scope=mine`,
+      `/me/project-offers`, `/vc-row/deals`, `/beef`, `/airdrop/farm`, `/me/sybil-status`, `/venues/{id}/access`, `/me/cabal`,
+      `/llm/quota` (#78, #79); `GET /districts` still 0 (#79); no Phase 5/6 realtime messages (#80).
+    - NPC brains are still not fed mood or events (`tickNpcs`: `moodBps: 0`, `recentEvents: []`) (#17).
+    - The `market` room is a stub: `onCreate` leaves `state.coins` empty ("M3 reads from Redis" TODO), so no live
+      prices reach clients although `GET /market/coins` lists coins and buys fill. (This also means the CoinState
+      `bigint64` fields of item 85 never travel yet.)
+90. **B17, venue patrons (still open).** `VenueRoom.npcArchetypesFor` still gives `terminal_cafe` only
+    `['wallet_tracker']` (which only stands and talks at `cafe_terminal`) and `spaces_studio` nothing. Ask: seat NPCs at
+    the global spot ids from `spots.json` (1.0.0-rc1+fe.8; every seat below is fitted on the client) with these states:
+
+    | Venue | Who | Spot(s) | State / anim |
+    | --- | --- | --- | --- |
+    | terminal_cafe | barista | `terminal_cafe.counter`, behind the bar facing the room | stand, `loco_idle` (or a serve beat) |
+    | terminal_cafe | 2–3 laptop patrons | `terminal_cafe.terminal_1..4` (communal laptop table) | `act` + `act_type` |
+    | terminal_cafe | 1 trader | one of `terminal_cafe.terminal_5..8` (twin-monitor desks) | `act` + `act_type` |
+    | terminal_cafe | 1–2 coffee drinkers (optional) | `terminal_cafe.table_1..4` | `act` + `act_sit` |
+    | spaces_studio | host | `spaces_studio.stage_host` | stand, talk beats |
+    | spaces_studio | 2 guests | `spaces_studio.stage_4..7` | `act` + `act_sit` |
+    | spaces_studio | 3–5 audience | `spaces_studio.seat_1..20` (bean bags 1–10, poufs 11–20) | `act` + `act_sit` |
+
+    Send `spotId` (the global id) and `animId` in `NpcState`; the client walks an NPC with a seat anim to the seat's
+    approach point and sits it. New archetypes (barista, patron) need a line in `archetypes.json`; we add their looks.
+91. **B10, venue room routing: fixed.** `define('venue').filterBy(['venueId'])` is in; two café joins share one room and
+    Timeline Square gets its own (verified with bots and the editor run). The client's wrong-room guard is removed.
+
+Fixed and verified live on 7243073 (no action): B0 SIWS verify (local ed25519 round trip: base64 → 200, text → 401);
+B6/#43 verify checks every SIWS field against the nonce and domain (source; the round trip passes); #59 alphanumeric nonce; #46 base64 `signedMessage`;
+#47 rooms serve `contract/realtime/states.ts` (venue, city, market checked field by field); #39 filterBy; #32/#33
+realtime starts and syncs with your own tsconfig; #34 workers start; #41 `flags.lotteryRolled`, second roll → 409
+`ALREADY_ROLLED`; #50 a bodiless POST is now 400, not 500; #76 spot buy fills; #55 `POST /ore/stake/tx` returns a v0 `tx`
+(with a working devnet RPC; an off-curve wallet gives a 500 with an empty message, low priority); #68 call start returns
+only `callId`; #40 `GET /homes` and `POST /rtc/token` exist (see 88).
+

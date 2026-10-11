@@ -11,10 +11,10 @@ namespace CTLife.Net
     ///
     /// Why by name: the Colyseus C# SDK binds a typed client schema only when every field name, index and type
     /// matches the server's reflection exactly (SchemaSerializer.CompareTypes). Any additive server field, a reorder,
-    /// or `number` vs `float32` silently disables decoding ("Local schema mismatch"). Backend main @ 9f3e5ef serves
-    /// `server/realtime/schemas.ts`, which differs from `contract/realtime/states.ts` in order, types and names
-    /// (`archetype` vs `archetypeId`, no `look`), feedback item 47. Decoding with <c>DynamicSchema</c> and mapping by
-    /// name keeps the client working across additive contract changes and tolerates both shapes.
+    /// or `number` vs `float32` silently disables decoding ("Local schema mismatch"). Since backend 7243073 every room
+    /// serves `contract/realtime/states.ts` itself (item 47 fixed; the 9f3e5ef `archetype` alias is gone), but the
+    /// contract allows additive changes, and an installed app cannot regenerate its classes when the server adds a
+    /// field. Decoding with <c>DynamicSchema</c> and mapping by name keeps older app versions working through them.
     /// </summary>
     public static class StateMapper
     {
@@ -40,7 +40,7 @@ namespace CTLife.Net
 
         public static void ApplyNpc(Func<string, object> get, NpcState n)
         {
-            n.archetypeId = Str(get("archetypeId") ?? get("archetype"), n.archetypeId);
+            n.archetypeId = Str(get("archetypeId"), n.archetypeId);
             n.state = Str(get("state"), n.state);
             n.spotId = Str(get("spotId"), n.spotId);
             n.animId = Str(get("animId"), n.animId);
@@ -103,6 +103,11 @@ namespace CTLife.Net
         public static long Long(object v, long fallback)
         {
             if (v == null) return fallback;
+            // Integral values (bigint64/int64 fields decode as long/ulong) stay exact; only the rest go through double.
+            if (v is long l) return l;
+            if (v is int i) return i;
+            if (v is ulong u) return u <= long.MaxValue ? (long)u : fallback;
+            if (v is uint ui) return ui;
             try { return Convert.ToInt64(Num(v, fallback)); }
             catch (Exception) { return fallback; }
         }

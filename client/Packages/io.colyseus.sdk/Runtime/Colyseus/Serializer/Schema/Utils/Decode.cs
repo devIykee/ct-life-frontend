@@ -92,6 +92,20 @@ namespace Colyseus.Schema.Utils
                 return DecodeUint64(bytes, it);
             }
 
+            // CT Life vendor patch (2026-10-08): @colyseus/schema 5's "bigint64"/"biguint64" use the same 8-byte
+            // little-endian wire format as int64/uint64, but SDK 0.18.8 (latest upstream) has no case for them and
+            // returns null without reading, which misaligns the rest of the patch. Backend main @ 7243073 declares
+            // CoinState's 64-bit fields as bigint64 (market room). See docs/progress/integration.md.
+            if (type == "bigint64")
+            {
+                return DecodeInt64(bytes, it);
+            }
+
+            if (type == "biguint64")
+            {
+                return DecodeUint64(bytes, it);
+            }
+
             if (type == "float32")
             {
                 // boxed as the destination's type: unboxing never converts

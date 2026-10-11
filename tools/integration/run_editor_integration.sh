@@ -19,9 +19,10 @@ trap 'kill $BOT 2>/dev/null' EXIT
 sleep 3
 
 # A fresh wallet per run so onboarding (lottery + creator) is exercised every time; WALLET=<base58> reuses one.
-WALLET="${WALLET:-$(python3 -c 'import os;a="123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";n=int.from_bytes(os.urandom(32),"big");s="";
-while n: n,r=divmod(n,58); s=a[r]+s
-print(s)')}"
+# A real ed25519 public key (on the curve): random 32 bytes are usually off-curve, and the server's token-account
+# derivation (ORE stake tx) rejects those with a 500, which is not what a real wallet would see.
+BACKEND="${CTLIFE_BACKEND_DIR:-$REPO/../ct-life-backend}"
+WALLET="${WALLET:-$(node -e "const r=require('node:module').createRequire(process.argv[1]+'/package.json');console.log(r('@solana/web3.js').Keypair.generate().publicKey.toBase58())" "$BACKEND")}"
 echo "wallet $WALLET"
 EXTRA=()
 [[ "${1:-}" == "--keep-open" ]] && EXTRA+=(-ctlife-integrationKeepOpen 1)

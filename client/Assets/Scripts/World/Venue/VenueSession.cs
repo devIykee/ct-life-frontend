@@ -179,7 +179,6 @@ namespace CTLife.World
                 var rt = Services.Get<IRealtimeService>();
                 Channel = await VenueWait.Run(rt.JoinVenue(venueId, LifetimeToken), LifetimeToken);
                 LifetimeToken.ThrowIfCancellationRequested();
-                await RequireRequestedVenue(Channel, venueId);
                 Channel.PlayerAdded += OnPlayerAdded;
                 Channel.PlayerChanged += OnPlayerChanged;
                 Channel.PlayerRemoved += OnPlayerRemoved;
@@ -199,22 +198,6 @@ namespace CTLife.World
                 SpawnLocal(null);
                 Bus.Publish(new VenueChangedSignal { venueId = venueId });
             }
-        }
-
-        /// <summary>
-        /// The room must be the venue we asked for. A server without `filterBy(['venueId'])` (backend main, feedback
-        /// item 39) can put a Terminal Café join into the Timeline Square room; rendering those players in the café
-        /// would be wrong, so the join is treated as failed (the caller enters offline and says so).
-        /// </summary>
-        private async Task RequireRequestedVenue(VenueChannel channel, string venueId)
-        {
-            float deadline = Time.realtimeSinceStartup + 2f;
-            while (string.IsNullOrEmpty(channel.VenueId) && Time.realtimeSinceStartup < deadline)
-                await Awaitable.WaitForSecondsAsync(0.05f, LifetimeToken);
-            var actual = channel.VenueId;
-            if (VenueRoomCheck.Matches(venueId, actual)) return;
-            Log.Warn("venue", $"Joined room {channel.InstanceId} is venue '{actual}', not '{venueId}'; leaving it");
-            throw new InvalidOperationException($"The server put this visit in '{actual}' instead of '{venueId}'.");
         }
 
         public Task Exit()

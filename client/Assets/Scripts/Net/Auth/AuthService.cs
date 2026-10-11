@@ -46,28 +46,18 @@ namespace CTLife.Net
                 expirationTime = challenge.Str("expirationTime"),
             };
             Log.Info("auth", $"SIWS challenge for {req.domain} on {req.chainId}");
-            var forWallet = SiwsWalletCompat.ForWallet(req, Env.Current.walletIdentityUri, out var adjusted);
-            if (adjusted != null) Log.Warn("auth", "SIWS challenge fields not wallet-valid, adjusted for the wallet: " + adjusted + " (backend items 43/59)");
+            var expected = Env.Current.SiwsDomain;
+            if (!string.Equals(req.domain, expected, StringComparison.OrdinalIgnoreCase))
+                Log.Warn("auth", $"SIWS domain mismatch: the server issued '{req.domain}', the app identity is '{expected}' (EnvConfig.AppIdentityUri). " +
+                                 "Set the server's SIWS_DOMAIN/SIWS_URI to the identity; the wallet shows the identity, the server checks its own domain.");
 
-            var signed = await wallet.SignIn(forWallet, ct);
+            var signed = await wallet.SignIn(req, ct);
             if (signed == null || string.IsNullOrEmpty(signed.address))
                 throw new WalletException("The wallet returned no sign-in result.");
             Log.Info("auth", $"Wallet signed SIWS for {signed.address} ({signed.signatureType})");
 
-            JToken response;
-            try
-            {
-                response = await Verify(signed, signed.signedMessageBase64, req.nonce, ct);
-            }
-            catch (ApiException e) when (e.Is("SIGNATURE_INVALID"))
-            {
-                // Contract: signedMessage is base64. A server that reads it as UTF-8 text rejects that. The nonce is
-                // only consumed after a successful verify, so one retry with the decoded text costs no new prompt.
-                var text = SiwsEncoding.Base64ToUtf8Text(signed.signedMessageBase64);
-                if (text == null) throw;
-                Log.Warn("auth", "verify rejected the base64 signedMessage; retrying once with the UTF-8 SIWS text (backend item 46)");
-                response = await Verify(signed, text, req.nonce, ct);
-            }
+            // Contract: signedMessage is base64 (backend 7243073 decodes base64 and checks every SIWS field).
+            var response = await Verify(signed, signed.signedMessageBase64, req.nonce, ct);
             var session = AuthResult.Parse(response, knownWallet: signed.address);
             Apply(session, "siws");
             return session;

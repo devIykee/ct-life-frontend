@@ -132,7 +132,8 @@ namespace CTLife.App.Dev
             {
                 if (string.IsNullOrEmpty(peerUserId)) return Fail("no peer user id");
                 var call = await social.StartVideoCall(new[] { peerUserId }, Services.Get<Session>().UserId, new RetainedKey(), ct);
-                return Blocked("54/68", "call " + call.CallId + " created; city room never sends call_invite, server returns every token");
+                // 7243073: the start reply carries only callId (#68 fixed); the city room still never sends call_invite (#54).
+                return Blocked("54", "call " + call.CallId + " created; city room never sends call_invite");
             });
             await Check("world.city_events", () => Task.FromResult(_cityEvents > 0 ? Pass(_cityEvents + " city events") :
                 Blocked("64", "no city `event` during the run")));
@@ -236,10 +237,21 @@ namespace CTLife.App.Dev
                 (failed.Count > 0 ? " FAILED " + string.Join(" ", failed) : ""), null);
             try
             {
+                // Each venue must get its own room (filterBy venueId, item 39; fixed in backend 7243073).
+                async Task<string> StateVenue(VenueChannel ch)
+                {
+                    for (int i = 0; i < 40 && ch != null && string.IsNullOrEmpty(ch.VenueId); i++) await Awaitable.WaitForSecondsAsync(0.05f, ct);
+                    return ch?.VenueId;
+                }
+                var cafe = await VenueSession.Enter("terminal_cafe", joinRoom: true, owner: ct);
+                string cafeRoom = cafe.Channel?.InstanceId, cafeVenue = await StateVenue(cafe.Channel);
                 var back = await VenueSession.Enter("timeline_square", joinRoom: true, owner: ct);
-                Add("venues.rooms", "blocked", "timeline_square room joined (" + back.Channel?.InstanceId + "); other venues share it (no filterBy venueId)", "39");
+                string tsRoom = back.Channel?.InstanceId, tsVenue = await StateVenue(back.Channel);
+                bool split = cafeVenue == "terminal_cafe" && tsVenue == "timeline_square" && !string.IsNullOrEmpty(cafeRoom) && cafeRoom != tsRoom;
+                Add("venues.rooms", split ? "pass" : "fail",
+                    $"terminal_cafe → room {cafeRoom} (venue {cafeVenue}); timeline_square → room {tsRoom} (venue {tsVenue})", split ? null : "39");
             }
-            catch (Exception e) { Add("venues.rooms", "fail", "rejoin timeline_square: " + e.Message, null); }
+            catch (Exception e) { Add("venues.rooms", "fail", "venue rooms: " + e.Message, null); }
         }
 
         private static (string result, string detail, string item) Pass(string d) => ("pass", d, null);

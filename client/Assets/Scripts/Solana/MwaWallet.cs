@@ -24,10 +24,9 @@ namespace CTLife.Solana
         private readonly string _iconUri;
         private Web3 _web3;
 
-        public MwaWallet(string identityName = "CT Life", string identityUri = "https://ctlife.invalid/", string iconUri = "/favicon.ico")
+        public MwaWallet(string identityName = "CT Life", string identityUri = CTLife.Core.EnvConfig.AppIdentityUri, string iconUri = "/favicon.ico")
         {
-            // [Unverified] The Build Spec's open question "which domain goes in the SIWS domain field" is unanswered;
-            // identityUri should become that domain once bought.
+            // The identity is EnvConfig.AppIdentityUri (placeholder until the domain is bought); the SIWS domain is its authority.
             _identityName = identityName;
             _identityUri = identityUri;
             _iconUri = iconUri;

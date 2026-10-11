@@ -71,12 +71,32 @@ namespace CTLife.Tests
             Assert.IsNotNull(EnvConfig.CreateDefault(EnvId.Staging).PlaceholderProblem());
             Assert.IsNotNull(EnvConfig.CreateDefault(EnvId.Prod).PlaceholderProblem());
             var real = EnvConfig.CreateDefault(EnvId.Prod);
+            real.restBaseUrl = "https://api.example.com/v1";
             real.realtimeUrl = "wss://realtime.example.com";
             real.walletIdentityUri = "https://example.com/";
             Assert.IsNull(real.PlaceholderProblem());
             real.allowDevAuth = true;
             Assert.IsNotNull(real.PlaceholderProblem(), "prod must never allow dev auth");
             Assert.IsFalse(EnvConfig.CreateDefault(EnvId.Prod).allowDevAuth);
+        }
+
+        [Test]
+        public void IdentityAndSiwsDomainComeFromOneValue()
+        {
+            // User decision 2026-10-08: one identity value (no .dev), so switching to the real domain is one line.
+            foreach (EnvId id in System.Enum.GetValues(typeof(EnvId)))
+            {
+                var asset = UnityEngine.Resources.Load<EnvConfig>("Env/EnvConfig_" + id);
+                if (asset == null) continue;
+                Assert.IsTrue(string.IsNullOrEmpty(asset.walletIdentityUri), $"{asset.name} overrides the identity; leave it empty to use EnvConfig.AppIdentityUri");
+                Assert.AreEqual(EnvConfig.AppIdentityUri, asset.IdentityUri);
+                StringAssert.DoesNotContain(".dev/", asset.restBaseUrl + "/", asset.name);
+            }
+            var c = EnvConfig.CreateDefault(EnvId.Local);
+            Assert.AreEqual("https://ctlife.invalid/", c.IdentityUri);
+            Assert.AreEqual("ctlife.invalid", c.SiwsDomain);
+            c.walletIdentityUri = "https://ctlife.example:8443/";
+            Assert.AreEqual("ctlife.example:8443", c.SiwsDomain);
         }
 
         [Test]
@@ -109,11 +129,8 @@ namespace CTLife.Tests
         }
 
         [Test]
-        public void VenueRoomMustMatchTheRequest()
+        public void UnplacedMeansTheSchemaDefault()
         {
-            Assert.IsTrue(VenueRoomCheck.Matches("terminal_cafe", "terminal_cafe"));
-            Assert.IsFalse(VenueRoomCheck.Matches("terminal_cafe", "timeline_square"));
-            Assert.IsFalse(VenueRoomCheck.Matches("terminal_cafe", null));
             Assert.IsTrue(VenueRoomCheck.IsUnplaced(0, 0));
             Assert.IsFalse(VenueRoomCheck.IsUnplaced(0.5, 0));
         }

@@ -1,0 +1,41 @@
+diff --git a/server/application/character.ts b/server/application/character.ts
+index 7c4eee0..1ecd13e 100644
+--- a/server/application/character.ts
++++ b/server/application/character.ts
+@@ -29,7 +29,7 @@ interface TraitsConfig {
+ }
+ 
+ interface ItemsConfig {
+-  items: Record<string, { slot: string }>;
++  items: Array<{ id: string; slot: string }>;
+ }
+ 
+ export interface CharacterInput {
+@@ -96,11 +96,12 @@ export class CharacterService {
+       { id: input.look.accId, slot: 'acc' },
+     ];
+ 
++    // LOCAL PATCH (ct-life tools/backend-local, feedback item 84): items.json is an array, and the creator's base-look
++    // ids are not in it, so only ids present in the catalog are checked (slot must match); other ids pass.
++    const byId = new Map(items.items.map((i) => [i.id, i]));
+     for (const { id, slot } of lookItems) {
+-      const item = items.items[id];
+-      if (!item) {
+-        throw new ValidationFailedError({ reason: 'invalid_look_item', itemId: id });
+-      }
++      const item = byId.get(id);
++      if (!item) continue;
+       if (item.slot !== slot) {
+         throw new ValidationFailedError({
+           reason: 'look_item_wrong_slot',
+@@ -112,7 +113,9 @@ export class CharacterService {
+     }
+ 
+     // Validate skinTone (skin_tone1 through skin_tone6)
+-    if (!/^skin_tone[1-6]$/.test(input.look.skinTone)) {
++    // LOCAL PATCH (ct-life feedback item 84): the contract's skinTone is a free string (its own example is 'tan');
++    // the creator sends skin_<tone>. Only reject empty or oversized values.
++    if (!input.look.skinTone || input.look.skinTone.length > 64) {
+       throw new ValidationFailedError({ reason: 'invalid_skin_tone', skinTone: input.look.skinTone });
+     }
+   }

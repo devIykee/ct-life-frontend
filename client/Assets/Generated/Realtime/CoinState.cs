@@ -24,13 +24,13 @@ namespace CTLife.Realtime {
 		[global::Colyseus.Schema.Type(3, "string")]
 		public string stage = "new";
 
-		[global::Colyseus.Schema.Type(4, "int64")]
+		[global::Colyseus.Schema.Type(4, "bigint64")]
 		public long priceMicros = default(long);
 
-		[global::Colyseus.Schema.Type(5, "int64")]
+		[global::Colyseus.Schema.Type(5, "bigint64")]
 		public long mcapCents = default(long);
 
-		[global::Colyseus.Schema.Type(6, "int64")]
+		[global::Colyseus.Schema.Type(6, "bigint64")]
 		public long vol5mCents = default(long);
 
 		[global::Colyseus.Schema.Type(7, "int32")]
@@ -39,7 +39,7 @@ namespace CTLife.Realtime {
 		[global::Colyseus.Schema.Type(8, "int32")]
 		public int holders = 0;
 
-		[global::Colyseus.Schema.Type(9, "int64")]
+		[global::Colyseus.Schema.Type(9, "bigint64")]
 		public long launchedAt = default(long);
 	}
 }

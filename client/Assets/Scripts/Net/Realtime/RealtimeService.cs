@@ -37,13 +37,6 @@ namespace CTLife.Net
         /// <summary>Refreshes the access token when stale. Set by the composition root (AuthService.EnsureFresh).</summary>
         public Func<CancellationToken, Task> EnsureFreshToken { get; set; }
 
-        /// <summary>
-        /// Extra join options (display name, look, tribe...). The contract's join options are `{token, venueId}`;
-        /// backend main @ 9f3e5ef reads these profile fields from the join options instead of the database
-        /// (feedback item 38), so they are sent too. A compliant server ignores unknown options.
-        /// </summary>
-        public Func<IDictionary<string, object>> ExtraJoinOptions { get; set; }
-
         public RealtimeService(Session session) { _session = session; }
 
         private Client Client
@@ -63,13 +56,9 @@ namespace CTLife.Net
         {
             if (EnsureFreshToken != null) await EnsureFreshToken(ct);
             ct.ThrowIfCancellationRequested();
+            // Contract join options only: the server reads the profile from the JWT's user (feedback item 38, fixed in
+            // backend 7243073; verified: a spoofed name/look in the options is ignored).
             var o = new Dictionary<string, object>();
-            try
-            {
-                var extra = ExtraJoinOptions?.Invoke();
-                if (extra != null) foreach (var kv in extra) if (kv.Value != null) o[kv.Key] = kv.Value;
-            }
-            catch (Exception e) { Log.Warn("rt", "Join options from profile failed: " + e.Message); }
             o["token"] = _session.AccessToken ?? "";
             if (venueId != null) o["venueId"] = venueId;
             return o;
@@ -265,7 +254,11 @@ namespace CTLife.Net
         }
     }
 
-    /// <summary>Profile fields sent with room joins (see <see cref="RealtimeService.ExtraJoinOptions"/>).</summary>
+    /// <summary>
+    /// Profile fields sent with a `home` room join (HomeRoomClient only). Venue, city and market joins stopped sending
+    /// them once backend 7243073 read profiles from the database; the home room does not exist on that backend yet, so
+    /// its join keeps them until it can be checked live.
+    /// </summary>
     public static class RealtimeJoinOptions
     {
         public static IDictionary<string, object> FromProfile(PlayerProfile profile)

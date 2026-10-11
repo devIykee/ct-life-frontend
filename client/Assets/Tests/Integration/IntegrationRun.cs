@@ -218,16 +218,19 @@ namespace CTLife.Tests.Integration
             bool refreshed = await auth.Refresh();
             Check("token_refresh", refreshed && session.AccessToken != oldToken, $"refreshed={refreshed} rotated={session.AccessToken != oldToken}");
 
-            // Venue isolation: Terminal Café must not render Timeline Square's room.
+            // Venue isolation: Terminal Café gets its own room, not Timeline Square's (server filterBy venueId, item 39).
             try
             {
+                var squareRoom = VenueSession.Current?.Channel?.InstanceId;
                 var cafe = await VenueSession.Enter("terminal_cafe", joinRoom: true);
-                Check("venue_isolation", cafe.Channel != null && cafe.Channel.VenueId == "terminal_cafe",
-                    $"cafe room venue={cafe.Channel?.VenueId}");
+                for (int i = 0; i < 40 && cafe.Channel != null && string.IsNullOrEmpty(cafe.Channel.VenueId); i++)
+                    await Awaitable.WaitForSecondsAsync(0.05f);
+                Check("venue_isolation", cafe.Channel != null && cafe.Channel.VenueId == "terminal_cafe" && cafe.Channel.InstanceId != squareRoom,
+                    $"cafe room {cafe.Channel?.InstanceId} venue={cafe.Channel?.VenueId}; square room was {squareRoom}");
             }
             catch (Exception e)
             {
-                Blocked("venue_isolation", "39", "client guard refused the wrong room: " + e.Message);
+                Check("venue_isolation", false, e.GetType().Name + ": " + e.Message);
                 try { await VenueSession.Enter("timeline_square", joinRoom: true); } catch { /* best effort */ }
             }
             var again = VenueSession.Current;

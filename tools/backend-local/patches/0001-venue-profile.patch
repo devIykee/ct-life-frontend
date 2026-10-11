@@ -1,0 +1,27 @@
+diff --git a/server/realtime/rooms/venue.ts b/server/realtime/rooms/venue.ts
+index a570dd6..ba51a29 100644
+--- a/server/realtime/rooms/venue.ts
++++ b/server/realtime/rooms/venue.ts
+@@ -524,7 +524,7 @@ export class VenueRoom extends Room {
+     const ctx = buildContext();
+     const result = await ctx.db.withConnection(async (c) => {
+       return c.query(
+-        `SELECT c.name, c.skr_name, u.is_seeker, c.tribe_id, c.look
++        `SELECT c.alias AS name, u.skr_name, u.is_seeker, c.tribe_id, c.look
+          FROM characters c
+          JOIN users u ON u.id = c.user_id
+          WHERE c.user_id = $1
+@@ -552,7 +552,12 @@ export class VenueRoom extends Room {
+       isSeeker: row.is_seeker || false,
+       tribeId: row.tribe_id || '',
+       minerTier: 'none', // TODO: fetch from ore balances
+-      look: Array.isArray(row.look) ? row.look : ['0', '0', '0', '0', '0', '0', '0'],
++      // LOCAL PATCH (ct-life feedback item 83): characters.look is the contract Look object; rooms carry string[7].
++      look: Array.isArray(row.look)
++        ? row.look
++        : row.look && typeof row.look === 'object'
++          ? ['skinTone', 'headId', 'hairId', 'topId', 'bottomId', 'shoesId', 'accId'].map((k) => String(row.look[k] ?? ''))
++          : ['0', '0', '0', '0', '0', '0', '0'],
+     };
+   }
+ 

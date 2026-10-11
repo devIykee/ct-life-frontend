@@ -31,6 +31,14 @@ namespace CTLife.Core
     {
         public const string PlaceholderHost = ".invalid";
 
+        /// <summary>
+        /// The app's one identity: the dApp identity the MWA wallet shows AND the SIWS domain/uri the server must issue
+        /// (domain = this URI's authority). A placeholder until the real domain is bought (user decision 2026-10-08:
+        /// no .dev; a .fun or gaming TLD later). Switching domains is this one line; env assets leave
+        /// walletIdentityUri empty. tools/backend-local/up.sh reads this line to set the local server's SIWS_DOMAIN/URI.
+        /// </summary>
+        public const string AppIdentityUri = "https://ctlife.invalid/";
+
         public EnvId id = EnvId.Mock;
 
         [Tooltip("REST base including /v1, as in the backend contract's `servers` (e.g. http://localhost:4010/v1).")]
@@ -50,8 +58,8 @@ namespace CTLife.Core
 
         [Header("Mobile Wallet Adapter identity (shown by the wallet; should match the SIWS domain)")]
         public string walletIdentityName = "CT Life";
-        [Tooltip("Absolute https URI of the dApp identity. Placeholder until the domain is decided (build-spec open question).")]
-        public string walletIdentityUri = "https://ctlife.invalid/";
+        [Tooltip("Per-env override of the dApp identity URI. Leave empty to use EnvConfig.AppIdentityUri (one value for all envs).")]
+        public string walletIdentityUri = "";
         [Tooltip("Icon path relative to walletIdentityUri.")]
         public string walletIconUri = "/favicon.ico";
 
@@ -60,6 +68,12 @@ namespace CTLife.Core
 
         [Tooltip("Optional pre-minted LiveKit dev token (local LiveKit --dev keys only). Never ship a real secret.")]
         [TextArea] public string liveKitDevToken = "";
+
+        /// <summary>The MWA identity URI for this env: the override, or the app-wide AppIdentityUri.</summary>
+        public string IdentityUri => string.IsNullOrWhiteSpace(walletIdentityUri) ? AppIdentityUri : walletIdentityUri.Trim();
+
+        /// <summary>The SIWS domain the server must put in its challenge: the identity URI's authority (host[:port]).</summary>
+        public string SiwsDomain => Uri.TryCreate(IdentityUri, UriKind.Absolute, out var u) ? u.Authority : "";
 
         /// <summary>Hard-coded defaults so the client boots before any asset is authored.</summary>
         public static EnvConfig CreateDefault(EnvId env)
@@ -87,14 +101,15 @@ namespace CTLife.Core
                     break;
                 case EnvId.Staging:
                     // REST from the contract's `servers`; realtime not issued yet (Railway URLs are set at deploy).
-                    c.restBaseUrl = "https://staging-api.ctlife.dev/v1";
+                    // Not hosted and no domain yet (no .dev): placeholders until Railway URLs and the domain exist.
+                    c.restBaseUrl = "https://staging-api" + PlaceholderHost + "/v1";
                     c.realtimeUrl = "wss://staging-realtime" + PlaceholderHost;
                     c.cluster = SolanaCluster.Devnet;
                     c.allowDevAuth = false;
                     c.livePhase = 1;
                     break;
                 case EnvId.Prod:
-                    c.restBaseUrl = "https://api.ctlife.dev/v1";
+                    c.restBaseUrl = "https://api" + PlaceholderHost + "/v1";
                     c.realtimeUrl = "wss://realtime" + PlaceholderHost;
                     c.cluster = SolanaCluster.Mainnet;
                     c.allowDevAuth = false;
@@ -110,7 +125,7 @@ namespace CTLife.Core
             if (string.IsNullOrWhiteSpace(realtimeUrl) || realtimeUrl.Contains(PlaceholderHost)) return "realtimeUrl is a placeholder";
             if (id == EnvId.Prod || id == EnvId.Staging)
             {
-                if (string.IsNullOrWhiteSpace(walletIdentityUri) || walletIdentityUri.Contains(PlaceholderHost))
+                if (string.IsNullOrWhiteSpace(IdentityUri) || IdentityUri.Contains(PlaceholderHost))
                     return "walletIdentityUri is a placeholder";
                 if (!restBaseUrl.StartsWith("https://", StringComparison.Ordinal)) return "restBaseUrl must be https";
                 if (!realtimeUrl.StartsWith("wss://", StringComparison.Ordinal)) return "realtimeUrl must be wss";

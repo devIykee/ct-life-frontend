@@ -101,15 +101,6 @@ namespace CTLife.Tests
             var e = Assert.Throws<ApiException>(() => AuthResult.Parse(new JObject { ["refreshToken"] = "r" }));
             Assert.AreEqual("DECODE_FAILED", e.Code);
         }
-
-        [Test]
-        public void SignedMessageBase64DecodesToSiwsText()
-        {
-            const string text = "ct-life wants you to sign in with your Solana account:\nABC\n\nSign in to CT Life.";
-            Assert.AreEqual(text, SiwsEncoding.Base64ToUtf8Text(Convert.ToBase64String(Encoding.UTF8.GetBytes(text))));
-            Assert.IsNull(SiwsEncoding.Base64ToUtf8Text(Convert.ToBase64String(new byte[] { 0xff, 0xfe, 0x00 })));
-            Assert.IsNull(SiwsEncoding.Base64ToUtf8Text("%%%"));
-        }
     }
 }
 
@@ -131,40 +122,6 @@ namespace CTLife.Tests
         {
             NUnit.Framework.Assert.IsFalse(CTLife.Core.Base58.IsPublicKeyLength("zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz"));
             NUnit.Framework.Assert.IsTrue(CTLife.Core.Base58.IsPublicKeyLength(CTLife.Core.Base58.Encode(new byte[32])));
-        }
-    }
-}
-
-namespace CTLife.Tests
-{
-    public class SiwsWalletCompatTests
-    {
-        private static CTLife.Core.SiwsRequest Server() => new CTLife.Core.SiwsRequest
-        {
-            domain = "ct-life", statement = "Sign in to CT Life.", uri = "ct-life", version = "1", chainId = "solana:devnet",
-            nonce = "44bec0b3-27c5-41b5-93fe-99bac5a309e0", issuedAt = "2026-10-07T21:59:07.136Z", expirationTime = "2026-10-07T22:04:07.136Z",
-        };
-
-        [Test]
-        public void HyphenatedUuidNonceAndRelativeUriAreFixedForTheWallet()
-        {
-            var r = CTLife.Net.SiwsWalletCompat.ForWallet(Server(), "https://ctlife.invalid/", out var changed);
-            NUnit.Framework.Assert.AreEqual("44bec0b327c541b593fe99bac5a309e0", r.nonce);
-            NUnit.Framework.Assert.AreEqual("https://ctlife.invalid/", r.uri);
-            NUnit.Framework.Assert.AreEqual("nonce,uri", changed);
-            NUnit.Framework.Assert.AreEqual("ct-life", r.domain);
-        }
-
-        [Test]
-        public void ValidChallengeIsUntouched()
-        {
-            var s = Server();
-            s.nonce = "a1b2c3d4e5";
-            s.uri = "https://ct.life/login";
-            var r = CTLife.Net.SiwsWalletCompat.ForWallet(s, "https://ctlife.invalid/", out var changed);
-            NUnit.Framework.Assert.IsNull(changed);
-            NUnit.Framework.Assert.AreEqual("a1b2c3d4e5", r.nonce);
-            NUnit.Framework.Assert.AreEqual("https://ct.life/login", r.uri);
         }
     }
 }

@@ -40,7 +40,16 @@ done
 echo "[db] migrations"
 (cd "$BE" && pnpm -s db:migrate >"$LOGS/migrate.log" 2>&1) || { echo "migrations failed, see $LOGS/migrate.log"; exit 1; }
 
-export TSX_TSCONFIG_PATH="$HERE/tsconfig.backend.json"   # see tsconfig.backend.json
+# No tsconfig override: from backend 7243073 its own tsconfig compiles contract/realtime with legacy decorators.
+
+# Local fixes for backend bugs that block the client (each reported in docs/progress/backend-dev-feedback.md).
+# Applied to the backend working tree only when they apply cleanly; skipped once upstream has the fix.
+for p in "$HERE"/patches/*.patch; do
+  [[ -f "$p" ]] || continue
+  if (cd "$BE" && git apply --reverse --check "$p" >/dev/null 2>&1); then echo "[patch] $(basename "$p") already applied"
+  elif (cd "$BE" && git apply --check "$p" >/dev/null 2>&1); then (cd "$BE" && git apply "$p") && echo "[patch] $(basename "$p") applied"
+  else echo "[patch] $(basename "$p") does not apply (fixed upstream? check and delete it)"; fi
+done
 
 start() { # name, entry, extra env...   (PRELOAD=<file> adds a --import before tsx)
   local name="$1" entry="$2"; shift 2
@@ -55,12 +64,17 @@ start() { # name, entry, extra env...   (PRELOAD=<file> adds a --import before t
   echo "[$name] pid $(cat "$RUN/$name.pid"), log $LOGS/$name.log"
 }
 
-start api      server/api/main.ts      PORT_API=4010
+# One identity value: the client's EnvConfig.AppIdentityUri (the MWA dApp identity) also sets the local server's
+# SIWS_DOMAIN (its authority) and SIWS_URI, so wallet and server always agree. Process env beats the backend .env.
+IDENTITY_URI="$(sed -n 's/.*const string AppIdentityUri = "\([^"]*\)".*/\1/p' "$HERE/../../client/Assets/Scripts/Core/Env/EnvConfig.cs")"
+[[ -n "$IDENTITY_URI" ]] || { echo "could not read EnvConfig.AppIdentityUri"; exit 1; }
+SIWS_DOMAIN="$(echo "$IDENTITY_URI" | sed -E 's#^[a-zA-Z][a-zA-Z0-9+.-]*://([^/?#]+).*#\1#')"
+echo "[siws] domain $SIWS_DOMAIN, uri $IDENTITY_URI (from EnvConfig.AppIdentityUri)"
+
+start api      server/api/main.ts      PORT_API=4010 SIWS_DOMAIN="$SIWS_DOMAIN" SIWS_URI="$IDENTITY_URI"
 start realtime server/realtime/main.ts PORT_REALTIME=2567
-# Workers are not started: at backend 9f3e5ef server/workers/main.ts crashes at startup
-# (new URL(<bare redis host>) throws, and BullMQ 6 rejects the ':' in its queue names).
-# See docs/progress/backend-dev-feedback.md. Opt in with CTLIFE_WORKERS=1 once fixed.
-if [[ "${CTLIFE_WORKERS:-0}" == "1" ]]; then start workers server/workers/main.ts PORT_WORKERS=0; fi
+# Workers start fine from backend 7243073 (they crashed at 9f3e5ef). Opt out with CTLIFE_WORKERS=0.
+if [[ "${CTLIFE_WORKERS:-1}" == "1" ]]; then start workers server/workers/main.ts PORT_WORKERS=0; fi
 
 for i in $(seq 1 40); do
   if curl -fsS http://localhost:4010/healthz >/dev/null 2>&1; then break; fi

@@ -44,17 +44,16 @@ namespace CTLife.App
             var api = Services.Register(new Api(rest, config));
             var auth = new AuthService(rest, session);
             Services.Register<IAuthService>(auth);
-            var profile = Services.Register(new PlayerProfile(api));
+            Services.Register(new PlayerProfile(api));
             var realtime = new RealtimeService(session)
             {
                 // Rooms verify the JWT at join time; never join with a token that is about to expire.
                 EnsureFreshToken = auth.EnsureFresh,
-                ExtraJoinOptions = () => RealtimeJoinOptions.FromProfile(profile),
             };
             Services.Register<IRealtimeService>(realtime);
             Services.Register(new VoiceService());
             var env = Env.Current;
-            var wallet = new MwaWallet(env.walletIdentityName, env.walletIdentityUri, env.walletIconUri);
+            var wallet = new MwaWallet(env.walletIdentityName, env.IdentityUri, env.walletIconUri);
             Services.Register<IWalletSignIn>(wallet);
             Services.Register<ITransactionSigner>(wallet);
 

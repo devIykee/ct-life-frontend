@@ -1,4 +1,4 @@
-READY TO COMMIT (HUD chips on dev 6aa8bb3): client/Assets/Resources/UI/city-hud.uss, docs/progress/integration.md. NOT mine, leave out: client/Assets/Art/characters/cast/materials/snow_everyday.mat. Commit message: "fix(hud): presence chips stay on one line, never under the Explore/Lobby dock". Seeker: ../ct-life-evidence/device-round-20261008c/4-hud-chips-three-venues.png.
+READY TO COMMIT (2 commits, in order). [1] (checkpoint: cast re-import + device round d, on dev 82c380a): client/Assets/Art/characters/cast/ (every change under it: looks/*/*.fbx|png (+metas), materials/*.mat incl. snow_everyday.mat, prefabs/*.prefab, manifest.json — all written by CastImport from art/cast/export @658cb8b), client/Assets/Scripts/Editor/CastWeightRepair.cs + .meta (DELETED), client/Assets/Tests/EditMode/SeatFitTests.cs, client/Assets/Scripts/UI/Screens/CharacterCreatorScreen.cs, client/Assets/Scripts/App/FlowController.cs, client/Assets/Scripts/Core/Env/LaunchArgs.cs, docs/progress/requests.md (incl. the cast-lane note). Commit message: "cast: re-import the corrected export, drop the import-time weight patch (it mislabelled Spine as Hips); dev spot/stand/look launch extras". Checks: compile_check dev/release/editor 0 errors; EditMode 1360/1360 (cast weight test now covers every look). [2] (backend main 7243073 reconciliation, steps 1-3 as ONE commit: the steps edit the same files, e.g. AuthService.cs, GameBootstrap.cs, NetPolicyTests.cs, StateMapper.cs, so split commits would not build or test on their own): tools/backend-local/up.sh, tools/backend-local/down.sh, tools/backend-local/patches/0001-siws-ed25519-spki-key.patch (DELETED), tools/backend-local/tsconfig.backend.json (DELETED), tools/backend-local/patches/0001-venue-profile.patch (NEW), tools/backend-local/patches/0002-character-look-validation.patch (NEW), tools/backend-local/patches/0003-config-emotes.patch (NEW), tools/backend-local/patches/0004-rtc-token-contract-id.patch (NEW), tools/integration/run_editor_integration.sh, contract/SOURCE.md, contract/ids/venues.json, contract/realtime/states.ts, client/Tools~/codegen_realtime.sh, client/Packages/io.colyseus.sdk/Runtime/Colyseus/Serializer/Schema/Utils/Decode.cs, client/Assets/Generated/Realtime/CoinState.cs, client/Assets/Resources/Contract/config_snapshot.json, client/Assets/Resources/Env/EnvConfig_Local.asset, client/Assets/Resources/Env/EnvConfig_Mock.asset, client/Assets/Resources/Env/EnvConfig_Staging.asset, client/Assets/Resources/Env/EnvConfig_Prod.asset, client/Assets/Scripts/Core/Env/EnvConfig.cs, client/Assets/Scripts/Solana/MwaWallet.cs, client/Assets/Scripts/App/GameBootstrap.cs, client/Assets/Scripts/App/Dev/FeatureProbe.cs, client/Assets/Scripts/Net/Auth/AuthService.cs, client/Assets/Scripts/Net/Auth/AuthResponse.cs, client/Assets/Scripts/Net/Realtime/RealtimeService.cs, client/Assets/Scripts/Net/Realtime/StateMapper.cs, client/Assets/Scripts/World/Venue/VenueSession.cs, client/Assets/Scripts/World/Venue/VenueRoomCheck.cs, client/Assets/Tests/EditMode/AuthTests.cs, client/Assets/Tests/EditMode/NetPolicyTests.cs, client/Assets/Tests/EditMode/StateMapperTests.cs, client/Assets/Tests/Integration/IntegrationRun.cs, docs/progress/backend-dev-feedback.md, docs/progress/integration.md. Commit message: "reconcile with backend main 7243073: backend-local runs it (workers on, tsconfig override and SIWS patch gone, local patches for 4 new backend bugs); one SIWS identity (EnvConfig.AppIdentityUri, no .dev); contract re-sync (venues B27, CoinState bigint64; codegen + vendored SDK decode bigint64); drop the SIWS nonce/uri adjust, base64 text retry, venue wrong-room guard and profile join options; feedback section G". Checks: compile_check dev/release/editor compile; EditMode 1359/1359; editor integration 13/13 (editor-20261008-153125). Device round + fingerprint sign-in: next.
 
 # Integration lead log
 
@@ -8,28 +8,39 @@ Backend: devIykee's `ct-life-backend`, cloned read-only beside this repo.
 
 ## Local backend: start / stop (exact commands)
 
-One-time setup (done 2026-10-07 on this Mac):
+One-time setup (done 2026-10-07 on this Mac; moved to main @ 7243073 on 2026-10-08):
 
 ```sh
 cd ../ct-life-backend
-git fetch origin && git checkout --detach origin/main     # main @ 9f3e5ef; history was rewritten upstream
+git fetch origin && git checkout --detach origin/main     # main @ 7243073; history was rewritten upstream
 pnpm install --frozen-lockfile                             # Node 24.5 locally; engines >=22
 cp .env.example .env                                       # gitignored; then set (values are local throwaways):
 #   DATABASE_URL=postgres://ctlife:ctlife@localhost:5434/ctlife   REDIS_URL=redis://localhost:6381/0
 #   JWT_PRIVATE_KEY=~/.ctlife-local/jwt-private.pem                 ENABLE_DEV_AUTH=true
 #   TREASURY_PUBKEY_DEVNET / SETTLE_AUTHORITY_KEYPAIR_DEVNET / ADMIN_KEYPAIR_DEVNET -> ~/.ctlife-local/*-devnet.json
 #   HELIUS_API_KEY=local-dev-no-helius  HELIUS_WEBHOOK_SECRET / LIVEKIT_WEBHOOK_SECRET = random hex
+#   (7243073 keys) SIWS_DOMAIN=ctlife.invalid  SIWS_URI=https://ctlife.invalid/  ADMIN_WALLETS=   (empty)
+#   SOLANA_RPC_URL=https://api.devnet.solana.com  TEST_DATABASE_URL=postgres://ctlife:ctlife@localhost:5434/ctlife_test
+#   TEST_SCHEMA=test   (ctlife_test created with `createdb` in the ctlife-postgres container)
 ```
+
+SIWS identity: one value. `EnvConfig.AppIdentityUri` in `client/Assets/Scripts/Core/Env/EnvConfig.cs` is the MWA
+dApp identity, and the client expects the SIWS domain to be its authority. `up.sh` reads that line and starts the api
+with `SIWS_DOMAIN`/`SIWS_URI` from it (process env beats `.env`). Today it is the placeholder `https://ctlife.invalid/`.
+User decision 2026-10-08: no `.dev`; the real domain (a .fun or gaming TLD) is not bought yet. Switching later means
+changing that line (and the hosted backend's two env vars).
 
 Keys live in `~/.ctlife-local/` (outside both repos, chmod 700). Throwaway devnet keys only.
 
 Every time:
 
 ```sh
-tools/backend-local/up.sh             # infra in Docker + migrations + api + realtime on the host
-tools/backend-local/up.sh --bots 5    # + headless bots (note: backend bots leave after 200 ms)
-tools/backend-local/down.sh           # stop node processes, stop containers (keeps DB volume)
-tools/backend-local/down.sh --wipe    # also drop the Postgres/Redis volumes
+tools/backend-local/up.sh                 # infra in Docker + migrations + local patches + api + realtime + workers
+CTLIFE_WORKERS=0 tools/backend-local/up.sh  # same without workers
+tools/backend-local/up.sh --bots 5        # + headless bots (note: backend bots leave after 200 ms)
+tools/backend-local/down.sh               # stop node processes only (other agents share Postgres/Redis)
+tools/backend-local/down.sh --containers  # also stop the containers (keeps the DB volume)
+tools/backend-local/down.sh --wipe        # also drop the Postgres/Redis volumes
 ```
 
 | Service | Where | Port |
@@ -39,14 +50,20 @@ tools/backend-local/down.sh --wipe    # also drop the Postgres/Redis volumes
 | LiveKit dev | Docker `livekit/livekit-server:v1.13.7 --dev --node-ip 127.0.0.1` | 7880 ws, 7881 ICE/TCP, 7882 udp |
 | Postgres 16 | Docker | 5434 |
 | Redis 7 | Docker | 6381 |
-| Workers | **not started** (crash at startup, feedback item 34) | — |
+| Workers | host node, `server/workers/main.ts` (start fine from 7243073) | none |
 | MinIO | **not started** (image tags missing, feedback item 35; only ad uploads need it) | — |
 
-Logs: `~/.ctlife-local/logs/{api,realtime,migrate}.log`. PIDs: `~/.ctlife-local/run/`.
+Logs: `~/.ctlife-local/logs/{api,realtime,workers,migrate}.log`. PIDs: `~/.ctlife-local/run/`.
 Why api/realtime run on the host and not in Docker: the backend uses one `LIVEKIT_URL` for server calls
 and for the URL it hands clients, and its compose `env_file` URLs point at `localhost`; on the host both work.
-`tools/backend-local/tsconfig.backend.json` (via `TSX_TSCONFIG_PATH`) works around two realtime bugs
-(feedback items 32-33); without it realtime does not start, or starts and never syncs state.
+The old `tsconfig.backend.json` override (feedback items 32-33) is gone: at 7243073 the backend's own tsconfig includes
+`contract/realtime/**` with legacy decorators, and players (moves, emotes) and NPCs sync without it (observer + 3 bots,
+`../ct-life-evidence/backend-7243073/bot2.json`). `tools/backend-local/patches/*.patch` are local fixes for backend bugs
+that block the client; `up.sh` applies each one that applies cleanly and says so when upstream has made it obsolete.
+Each is reported in `backend-dev-feedback.md` section G. Today: `0001-venue-profile.patch` (item 83: profile query
+columns + look object → string[7]), `0002-character-look-validation.patch` (item 84: catalog ids and skin tones), `0003-config-emotes.patch`
+(item 86), `0004-rtc-token-contract-id.patch` (item 88: body `id` and ISO `expiresAt`). Local `.env` also points `HELIUS_RPC_URL_DEVNET` at the public
+devnet RPC (no Helius key locally), so `POST /ore/stake/tx` can fetch a blockhash.
 
 Seeker over USB: `adb -s SM02G40619141343 reverse tcp:4010 tcp:4010; adb reverse tcp:2567 tcp:2567;
 adb reverse tcp:7880 tcp:7880; adb reverse tcp:7881 tcp:7881` (adb reverse is TCP only; LiveKit media then
@@ -702,6 +719,180 @@ Evidence: `../ct-life-evidence/device-round-20261008c/`.
 - Fix (`city-hud.uss`): the row no longer wraps and the chips don't shrink. The location block now ends at ~150 units,
   above the dock. No other styling changed.
 - Seeker, all three venues: `../ct-life-evidence/device-round-20261008c/4-hud-chips-three-venues.png`.
+
+## 2026-10-08: Device round d (venues rounds 5–7, character feel round 2, cast re-import): checkpoint
+
+Evidence: `../ct-life-evidence/device-round-20261008d/` (`r5/` = round 5 on aa1685a; `r6-*` = round 6 on f3f4fce + the cast
+re-import).
+
+**Cast re-import (658cb8b export), and the weight patch removed.**
+- `CastImport.RunBatch` copied 109 files; 75 looks, 50 archetypes, 22 creator looks, 0 problems.
+- `CastWeightRepair` still "repaired" 41 meshes, every Rain-family look: 290–872 vertices each.
+- Blender on the export finds **0** vertices with both Head and pelvis/leg weight in all 41 files, using the real bone
+  names. The cause is that **Hips and Spine share a position** in the export rig. The patch names bones by bind-pose
+  position, so it labelled Spine as Hips and stripped legitimate Head weight from spine-following vertices (long hair,
+  collars).
+- The patch is removed. The validator stays as a test: `SeatFitTests.CastFFamilyShoesCarryNoHeadWeight` (no Head
+  weight below 0.6 m, real bone names) now covers **every** cast look, and it passes.
+- EditMode **1360/1360**. Release APK with round 6 + cast: **143.6 MiB**.
+
+**New dev launch options** (dev builds only):
+- `spot=<id>` focuses a seat/terminal/mic and presses its CTA; `stand=<s>` stands up after that many seconds.
+- `look=<cast look>` picks the creator look for `autocreate`.
+
+**Device results:**
+
+| Check | Round 5 (aa1685a) | Round 6 (f3f4fce) |
+|---|---|---|
+| Café look | v2 to the concept (`r5/1-cafe-v2-look.png`) | real furniture (`r6-cafe-*`) |
+| Café table sit / stand | pass; fit on chair | pass; bentwood chair fit good |
+| Café terminal sit | pass; hands on laptop | pass; hands at keyboard |
+| Spaces bean bag | pass (sinks in) | pass |
+| Spaces bar / pod stool | first tries failed, retries pass | pass |
+| Spaces stage armchair | – | pass |
+| Spaces green-room sofa | **server `SPOT_NOT_FOUND`** (backend spots lack `greenroom_*`) | local engage only |
+| Spaces mic | pass, truss gone from the view | pass ("Step away") |
+| Timeline bench | pass | – |
+| Timeline crowd of 35 | **60.2 / 60.3 fps** (normal / cap lifted); 87 draws; 217k tris; CPU 11.4–11.9 ms; GPU 12.4–14.5 ms | pending |
+| Release APK | 140.6 MiB | 143.6 MiB |
+
+- **Round 5 stool failures:** "Can't get there from here" once and "The room didn't answer" once.
+- **Round 6 runs were offline:** realtime was deliberately pointed at a dead port (see below), so seats engaged locally
+  without a server echo.
+- **adb is restarted by something outside this session every ~30 s.** The server pid changes; [Inference] it is Android
+  Studio, which has been open for 1.5 h. Each restart drops the port reverses and the app's realtime connection. That
+  explains the intermittent seat failures, and it makes any check that needs realtime (server seat echo, the crowd)
+  unreliable until it stops.
+- **Female walk:** inconclusive. At spawn the player was boxed in by bodies standing on the same entrance spot.
+- **After Stand up (round 5):** the player plays an arms-up stretch while stepping. Possibly an idle variation; check
+  that it is intended.
+- **Pending (paused for the backend reconciliation):** café v3 (round 7, 82c380a; build ready), sprint trip vs
+  knockdown, run stop, female dress walk/sit on device (`look=player_f_kol`), crowd on rounds 6/7.
+- **NPC patrons:** B17/B10 go to `backend-dev-feedback.md` in the "after 7243073" section. The client-side "seat the
+  NPC at its spot" presentation rule (world-life `npc_presentation.json` + `NpcBeatInterpreter`) is designed but not
+  started.
+- Note: I ran `git rm --cached` and then a path-limited `git reset` on `CastWeightRepair.cs` to undo it. The index is
+  back to HEAD and the file is deleted in the working tree only.
+
+## 2026-10-08: Reconcile with backend main 7243073
+
+### Step 1: backend on 7243073 (done)
+
+- `../ct-life-backend`: our local `auth.ts` patch discarded (B0 is upstream), detached at `origin/main` 7243073,
+  `pnpm install --frozen-lockfile`, migrations through `1700000070000_add_lottery_rolled`, `.env` extended with the
+  new `.env.example` keys (local section above; backup of the old `.env` in `~/.ctlife-local/`).
+- Workers start and stay up, so `up.sh` starts them by default (`CTLIFE_WORKERS=0` opts out). `down.sh` no longer stops
+  the shared containers unless asked (`--containers`).
+- The tsconfig override is removed; players and NPCs sync without it (observer + 3 bots: 3 players moving and waving,
+  5 NPCs; `../ct-life-evidence/backend-7243073/bot2.json`).
+- **Newly broken, patched locally:** every `venue` join failed with `column c.name does not exist` (feedback item 83).
+  `tools/backend-local/patches/0001-venue-profile.patch`, applied by `up.sh`.
+- **Newly broken:** `POST /v1/characters` rejects every look, including ids in `items.json` (item 84). No new player can
+  finish onboarding against this backend; bots join as `Anon`. Patched locally in step 3 so the rest could be tested.
+- **SIWS identity, one value (user decision):** `EnvConfig.AppIdentityUri` (`https://ctlife.invalid/`, no `.dev`) is the
+  MWA identity in every env; the four env assets leave `walletIdentityUri` empty. `EnvConfig.SiwsDomain` is its authority.
+  `AuthService` warns when a challenge's `domain` differs. `up.sh` starts the api with `SIWS_DOMAIN`/`SIWS_URI` read from
+  that line. Live: `GET /v1/auth/challenge` → `domain "ctlife.invalid"`, `uri "https://ctlife.invalid/"`, nonce 32
+  alphanumeric. Staging/prod REST URLs were `*.ctlife.dev`; they are now `.invalid` placeholders too (not hosted, no
+  domain), which the build's placeholder check already refuses for shipping. Feedback item 82 asks Iyke for the same
+  placeholder default.
+- Checks: compile_check dev / release / editor all compile (the one editor warning is the venue lane's
+  `VenueVerify.cs:58` unused `nav`); EditMode **1361/1361** (new `NetPolicyTests.IdentityAndSiwsDomainComeFromOneValue`).
+
+### Step 2: contract re-sync + codegen (done)
+
+- `contract/` re-synced from 7243073 per `contract/SOURCE.md` (SOURCE.md restored and updated). Only two files changed:
+  `ids/venues.json` (B27 sync with spots: +`airdrop_fields`, `club_liquidity`, `conference_hall`, `ct_jail`,
+  `hackathon_house`, `home`, `sybil_barn`, `the_trenches`; −`airdrop_farm`, `builder_hills`, which are districts) and
+  `realtime/states.ts` (CoinState `priceMicros`, `mcapCents`, `vol5mCents`, `launchedAt`: `int64` → `bigint64`).
+  `openapi.yaml` is unchanged, so the REST codegen was not rerun (nothing to regenerate).
+- `python3 client/Tools~/sync_contract.py` → `config_snapshot.json` (19 registries, 14 config files).
+- `client/Tools~/codegen_realtime.sh` → only `CoinState.cs` changed. schema-codegen 5.0.36 writes C# type `undefined`
+  for `bigint64`; the script now maps it to `long` (`biguint64` → `ulong`) and fails if any `undefined` remains.
+- **Unity SDK gap, patched in our vendored copy:** Colyseus Unity SDK 0.18.8 (latest release, 2026-09-23; our
+  `Packages/io.colyseus.sdk/.../Utils/Decode.cs` is identical to upstream HEAD) has no `bigint64` case:
+  `DecodePrimitiveType` returns null and reads nothing, so every field after a coin's `priceMicros` would be misread
+  in the market room (we decode every room with `DynamicSchema`, which takes the server's type names). The wire format
+  is the int64 one (`@colyseus/schema` 5.0.36 `encode.ts`: two little-endian int32), so the patch reads
+  `bigint64`/`biguint64` with the existing int64/uint64 decoders. `StateMapper.Long` now keeps integral values exact
+  instead of going through double. Test: `StateMapperTests.Bigint64FieldsDecodeAndKeepTheStreamAligned`.
+  Live market-room check: step 4.
+- Checks: compile_check dev / release / editor compile (editor warning: venue lane's `VenueVerify.cs:58`);
+  EditMode **1362/1362**.
+
+### Step 3: client workarounds (verified live, then removed or kept)
+
+Evidence: `../ct-life-evidence/backend-7243073/` (`siws-local-roundtrip.txt`, `room-*.json`, `room-state-shapes.json`,
+`join-profile-from-db*.json`, `me-auth-shapes.txt`).
+
+| Workaround | Live check on 7243073 | Result |
+| --- | --- | --- |
+| SIWS nonce/uri adjustment (`SiwsWalletCompat`) | challenge nonce = 32 alphanumeric, `uri` absolute (`https://ctlife.invalid/`) | **removed**; the wallet signs the server's challenge as issued. Seed Vault check: device round (fingerprint) |
+| base64 → UTF-8 verify retry (`SiwsEncoding`) | local ed25519 round trip: base64 `signedMessage` → 200; UTF-8 text → 401 | **removed** (the retry could only fail now) |
+| Venue wrong-room guard (`RequireRequestedVenue`, `VenueRoomCheck.Matches`) | bots: two café joins share one room, Timeline Square gets another; editor `venue_isolation` pass | **removed**; `FeatureProbe` `venues.rooms` and `IntegrationRun` `venue_isolation` now test the split |
+| Profile fields in join options (`ExtraJoinOptions`, item 38) | venue join with a spoofed name/look: the room shows the DB alias and look | **removed** for venue/city/market. **Kept** for the `home` room join (no home room on the server to check) |
+| Tolerant room parsing (`DynamicSchema` + `StateMapper`) | venue, city, market states match `states.ts` field for field | 9f3e5ef alias (`archetype`) **removed**. Name-based decoding **kept**: the contract allows additive schema fields, and an installed app cannot regenerate typed classes; a typed schema stops decoding on any mismatch |
+| `/homes` errors | `GET /homes` 200 | nothing to remove: errors keep the registry rows (generic error handling, not a 404 special case). Rent/visit still 404 (item 89) |
+| "No route" handling (`RouteMissing`, "Not available yet") | Phase 5/6 routes still 404 | **kept**: honest empty states, never fake data |
+| `MeCompat` (`user.hasCharacter`), flat auth parsing, `{id, level}` apply | still the 9f3e5ef shapes (`flags.hasCharacter`, flat auth, no user on refresh) | **kept** (items 45, 48, 49 still open) |
+| Creator-look fallback for remote players without a look | upstream rooms still send `["0",…]` (item 83) | **kept** until upstream maps the look |
+| `livekitToken` dev launch extra (pre-minted LiveKit token) | `/rtc/token` exists but rejects the contract body upstream (item 88) | **kept** (dev builds only) until item 88 is fixed upstream |
+
+Also: `StateMapper.Long` keeps 64-bit integers exact; `run_editor_integration.sh` now makes the dev wallet a real ed25519
+key (random 32 bytes are usually off-curve, and the ORE stake builder 500s on those).
+
+Local backend patches added in this step (reported in feedback section G): `0002-character-look-validation`,
+`0003-config-emotes`, `0004-rtc-token-contract-id`; `0001-venue-profile` now also maps the stored look object.
+
+### Step 4a: editor integration on 7243073 (+ local patches 0001-0004)
+
+`tools/integration/run_editor_integration.sh` → **13/13 core checks pass**
+(`../ct-life-evidence/backend-7243073/editor-20261008-153125/receipt.json`). Without patch 0002 the run stops at
+`lottery_then_character` (`POST /characters → 400 invalid_look_item`, `editor-20261008-151018`).
+
+Feature table, main @ 7243073 (editor). "blocked #N" = backend gap, item N in `backend-dev-feedback.md`.
+
+| Feature | 9f3e5ef | 7243073 (editor) |
+| --- | --- | --- |
+| Sign-in: dev auth | pass | pass |
+| Onboarding: lottery → creator | pass | **fail upstream #84** (every look rejected); pass with local patch 0002 |
+| City + market rooms | pass | pass (market `coins` always empty, #89) |
+| Timeline Square presence, NPCs, chat, seen by bot | pass | pass (5 NPCs; profile from the DB) |
+| Shift pays Cash; block/report/unblock; token refresh + rejoin | pass | pass |
+| Venue rooms other than Timeline Square | blocked #39 | **pass** (own room per venue) |
+| All 21 venues + own home load offline | pass | pass (21/21) |
+| Money: top-up intent | blocked #52 (no tx) | **fail #87** (500 `Non-base58 character`) |
+| Money: spot buy | blocked #76 | **pass** |
+| Money: perp open + close | pass | pass |
+| Money: ORE stake tx | blocked #55 (500) | **pass** (v0 tx built, not signed; needs a working devnet RPC) |
+| City life: needs, shop | pass | pass |
+| City life: homes list | blocked #40 | **pass** |
+| City life: rent / visit | blocked #75 | blocked #89/#75 (`POST /homes/studio/rent` 404, `POST /homes/{ownerId}/visit` 404) |
+| Careers: list + gig | pass | pass |
+| Social: DM, feed post | pass | pass |
+| Social: Space audio token | blocked #40 (no route) | **fail upstream #88** (400, body field `roomId` vs contract `id`); pass with local patch 0004 |
+| Social: call ring | blocked #54/#68 | blocked #54 (call starts, only `callId` returned; city room never sends `call_invite`) |
+| World life: city events | blocked #64 | blocked #64 (city room still a stub) |
+| World life: live ads | pass | pass (no bookings) |
+| Ventures: ad slots / bookings | pass | pass (4 slots, 0 bookings) |
+| Ventures: project create | blocked #77 | blocked #77 (400 `insufficient cash for project seed`) |
+| Ventures: projects mine / hire offers / VC deals | n/a #78 | n/a #78 (404 No route) |
+| Competition: tribes, leagues, my league, beef open, Elo, cabal invites, X link | pass | pass (0 districts, #79) |
+| Competition: beef list, farm, sybil status, venue access, cabal, LLM quota | n/a #79 | n/a #79 (404 No route) |
+| `GET /config` | 200 | **fail upstream #86** (always 500; client uses its bundled snapshot); 200 with local patch 0003 |
+
+### Step 4b: Seeker round on 7243073 (+ local patches; dev APK from the build clone, 217.4 MiB)
+
+Evidence: `../ct-life-evidence/backend-7243073/device/`.
+
+| Check | Result |
+| --- | --- |
+| Fresh dev account → lottery → creator (`player_f_kol`, dress) | first try **fail upstream #84**: `POST /characters → 400` (`invalid_skin_tone`, `skin_tan`); pass after extending patch 0002 (`a-kol-cafe-log.txt`) |
+| `GET /config` | 200 (patch 0003), later 304 |
+| City, market, Terminal Café rooms | pass; café gets its own room, the observer bot in the same room sees the Seeker player walk (`a-kol-cafe-bot.json`) |
+| Café v3 seat online (`terminal_2`, laptop table) | **pass**: walks over, sits with hands on the laptop, "Stand up" CTA, stands on cue (`b-terminal2-online.mp4`, `b-t2-strip.png`, `b-t2-zoom.png`); female dress look sits cleanly |
+| Proximity voice (real `POST /rtc/token`, no dev token) | upstream **fail #88** (400 body, then undecodable `expiresAt` → "Voice unavailable: ApiException"); with patch 0004: **pass**, LiveKit room `venue:<instanceId>`, active speaker level 0.125. Mic turned off again afterwards |
+| Real SIWS via Seed Vault (fingerprint) | waiting for the user (USER ACTION NEEDED below) |
 
 ## Status
 

@@ -45,15 +45,12 @@ namespace CTLife.Tests
         }
 
         [Test]
-        public void NpcArchetypeAcceptsBothFieldNames()
+        public void NpcMapsContractFields()
         {
-            var contract = new NpcState();
-            StateMapper.ApplyNpc(k => k == "archetypeId" ? "town_crier" : null, contract);
-            Assert.AreEqual("town_crier", contract.archetypeId);
-            var server = new NpcState();
-            StateMapper.ApplyNpc(k => k == "archetype" ? "reply_guy" : k == "startedAt" ? (object)42.0 : null, server);
-            Assert.AreEqual("reply_guy", server.archetypeId);
-            Assert.AreEqual(42.0, server.startedAt);
+            var npc = new NpcState();
+            StateMapper.ApplyNpc(k => k == "archetypeId" ? "town_crier" : k == "startedAt" ? (object)42.0 : null, npc);
+            Assert.AreEqual("town_crier", npc.archetypeId);
+            Assert.AreEqual(42.0, npc.startedAt);
         }
 
         [Test]
@@ -75,6 +72,30 @@ namespace CTLife.Tests
             Assert.AreEqual(9007199254740L, c.priceMicros);
             Assert.AreEqual(-250, c.change5mBps);
             Assert.AreEqual(12, c.holders);
+        }
+
+        [Test]
+        public void Bigint64FieldsDecodeAndKeepTheStreamAligned()
+        {
+            // Backend 7243073 declares CoinState's 64-bit fields "bigint64" (@colyseus/schema 5: two little-endian int32,
+            // the int64 layout). The vendored SDK's Decode.cs reads them (CT Life patch); without it the decoder returned
+            // null and read nothing, so every later field in the patch was misread.
+            long big = -9007199254740993L; // below -2^53: a double could not hold it
+            var bytes = new List<byte>(System.BitConverter.GetBytes(big)); // test hosts are little-endian
+            bytes.AddRange(System.BitConverter.GetBytes(18446744073709551615UL));
+            bytes.Add(0x2a); // a positive fixint after both, to prove the iterator advanced 8 + 8 bytes
+            var it = new Colyseus.Schema.Iterator { Offset = 0 };
+            var arr = bytes.ToArray();
+            Assert.AreEqual(big, Colyseus.Schema.Utils.Decode.DecodePrimitiveType("bigint64", arr, it));
+            Assert.AreEqual(18446744073709551615UL, Colyseus.Schema.Utils.Decode.DecodePrimitiveType("biguint64", arr, it));
+            Assert.AreEqual(16, it.Offset);
+            Assert.AreEqual(42f, System.Convert.ToSingle(Colyseus.Schema.Utils.Decode.DecodePrimitiveType("number", arr, it)));
+
+            var fields = new Dictionary<string, object> { ["coinId"] = "c1", ["priceMicros"] = big, ["launchedAt"] = 1791468213069L };
+            var c = new CoinState();
+            StateMapper.ApplyCoin(k => fields.TryGetValue(k, out var v) ? v : null, c);
+            Assert.AreEqual(big, c.priceMicros);
+            Assert.AreEqual(1791468213069L, c.launchedAt);
         }
 
         [Test]

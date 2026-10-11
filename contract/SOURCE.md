@@ -3,11 +3,14 @@
 This folder is a read-only copy of the backend developer's contract. Do not edit it here.
 
 - Repo: https://github.com/devIykee/ct-life-backend (private)
-- Branch: `main` at commit `9f3e5ef` (2026-10-06 05:59 +0100, "Finish: port ORE stake instruction builders from Rust")
+- Branch: `main` at commit `7243073` (2026-10-08 12:30 +0100, "chore: move eslintignore into flat config and clear lint errors")
 - Contract version: still `1.0.0-rc1` plus **additive** changes listed under "Unreleased" in `CHANGELOG.md`
   (FE registries anims/sfx/spots 1.1.0 from PR #1; M4 realtime states `SpaceState`, `SpeakerState`,
   `VideoCallState`; `idl/ct_escrow.json`).
-- Synced: 2026-10-07 (integration lead)
+- Synced: 2026-10-08 (integration lead). Changes since `9f3e5ef`: only `ids/venues.json` (B27: synced with spots.json:
+  `builder_hills`/`airdrop_farm` venue rows gone, `airdrop_farm` → `airdrop_fields`, new `club_liquidity`,
+  `conference_hall`, `ct_jail`, `hackathon_house`, `home`, `sybil_barn`, `the_trenches`) and `realtime/states.ts` (CoinState 64-bit
+  fields `int64` → `bigint64`, e69bf64). `openapi.yaml` is unchanged, so the REST codegen is unchanged.
 
 Note: the remote history was rewritten after the rc1 tag. The tag `contract-v1.0.0-rc1` still points
 at `160d59e`, which is no longer an ancestor of `main`; its contract content is identical to `main`'s
