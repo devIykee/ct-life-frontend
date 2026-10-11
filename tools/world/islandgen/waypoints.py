@@ -1,7 +1,9 @@
 """Demo-route waypoints (World lane, W3; docs/design/demo-route.md): one standing spot per shot, snapped to a sidewalk
 (or the verge of a road without one) or kept on its helipad, facing what the shot films. Written to
 client/Assets/Resources/World/Island/demo_route.json for the dev-only `islandWaypoints` launch extra (IslandWaypoints).
-Run after islandgen.py (needs out/roads.json and out/plan.json).
+Run after islandgen.py (needs out/roads.json and out/plan.json). The camera set-ups drive `islandShot=<shot|id>`
+(IslandShots: the player on the spot, the camera held on the authored pose until the player moves) and the editor
+capture `-ctlife-shots`.
 """
 import json
 import math
@@ -16,17 +18,19 @@ import numpy as np
 REPO = os.path.abspath(os.path.join(HERE, '..', '..', '..'))
 OUT = os.path.join(REPO, 'client', 'Assets', 'Resources', 'World', 'Island', 'demo_route.json')
 
-# (shot, id, title, near (x, z), look at (x, z), snap): snap 'sidewalk' moves to the nearest sidewalk or verge, 'pad'
-# keeps the exact point (a helipad or plaza).
+# W4: every shot is authored like a camera set-up: where the player stands (snapped to a sidewalk, or on the ground),
+# the hero subject the shot is about, and the camera: 'dist' m behind the player on the line to the subject, 'side' m to
+# the right (so the player sits off-centre), 'height' m above the player's feet, aimed at the subject; 'fov' degrees.
+# (shot, id, title, player (x, z), subject (x, y, z), snap, camera {dist, side, height, fov})
 SHOTS = [
-    (1, 'timeline_plaza', 'Timeline Square plaza', (0.0, 6.0), (-5.0, 49.0), 'pad'),
-    (2, 'consensus_boulevard', 'Consensus Boulevard roundabout', (100.0, 92.0), (115.7, 104.7), 'sidewalk'),
-    (3, 'ocean_drive', 'Ocean Drive', (-180.0, -220.0), (200.0, -220.0), 'sidewalk'),
-    (4, 'marina_promenade', 'Marina promenade', (372.0, -284.0), (600.0, -300.0), 'sidewalk'),
-    (5, 'marina_helipad', 'Marina helipad', (640.0, -262.0), (-180.0, 515.0), 'pad'),
-    (6, 'lodge_helipad', 'MtnDAO lodge helipad', (-226.0, 428.0), (-180.0, 515.0), 'pad'),
-    (7, 'builder_hills', 'Builder Hills', (380.0, 352.0), (392.0, 372.0), 'sidewalk'),
-    (8, 'breakpoint_helipad', 'Breakpoint Park helipad', (-300.0, 214.0), (-217.0, 295.0), 'pad'),
+    (1, 'timeline_plaza', 'Timeline Square plaza', (0.0, 6.0), (-5.0, 8.0, 49.0), 'ground', dict(dist=5.6, side=1.5, height=2.4, fov=56)),
+    (2, 'consensus_boulevard', 'Consensus Boulevard', (88.0, 80.0), (10.0, 22.0, 8.0), 'sidewalk', dict(dist=4.6, side=1.4, height=1.8, fov=56)),
+    (3, 'ocean_drive', 'Ocean Drive promenade', (-136.0, -228.0), (60.0, 6.0, -225.0), 'sidewalk', dict(dist=4.4, side=1.2, height=2.1, fov=54)),
+    (4, 'marina', 'Marina basin', (618.0, -412.0), (505.0, 10.0, -300.0), 'ground', dict(dist=4.6, side=1.3, height=2.4, fov=52)),
+    (5, 'marina_helipad', 'Marina helipad', (652.0, -250.0), (600.0, 0.0, -330.0), 'ground', dict(dist=6.0, side=-1.6, height=3.6, fov=58)),
+    (6, 'mtndao_lodge', 'MtnDAO lodge vista', (-232.0, 426.0), (-300.0, 60.0, 396.0), 'ground', dict(dist=7.5, side=1.8, height=3.0, fov=62)),
+    (7, 'builder_hills', 'Builder HQ', (360.0, 335.0), (392.0, 42.0, 372.0), 'sidewalk', dict(dist=7.0, side=1.6, height=1.3, fov=64)),
+    (8, 'breakpoint', 'Breakpoint convention centre', (-276.0, 278.0), (-262.0, 7.0, 315.0), 'ground', dict(dist=5.0, side=1.6, height=1.9, fov=56)),
 ]
 
 
@@ -58,14 +62,14 @@ def main():
     plan = json.load(open(os.path.join(HERE, 'out', 'plan.json')))
     pads = {(round(h[0]), round(h[2])): h[1] for h in plan['helipads']}
     wps = []
-    for shot, wid, title, (x, z), (lx, lz), mode in SHOTS:
+    for shot, wid, title, (x, z), (sx, sy, sz), mode, cam in SHOTS:
         if mode == 'sidewalk':
             x, y, z = snap(roads, x, z)
         else:
             y = pads.get((round(x), round(z)))                   # None: the runtime samples the ground
-        yaw = math.degrees(math.atan2(lx - x, lz - z)) % 360.0    # clockwise from north
+        yaw = math.degrees(math.atan2(sx - x, sz - z)) % 360.0    # clockwise from north
         wps.append(dict(shot=shot, id=wid, title=title, x=round(x, 2), y=None if y is None else round(y + 0.3, 2), z=round(z, 2),
-                        yaw=round(yaw, 1)))
+                        yaw=round(yaw, 1), subject=[sx, sy, sz], camera=cam))
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     json.dump(dict(version=1, source='tools/world/islandgen/waypoints.py', waypoints=wps), open(OUT, 'w'), indent=1)
     print(f'[waypoints] {len(wps)} -> {OUT}')

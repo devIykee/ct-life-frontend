@@ -240,6 +240,19 @@ namespace CTLife.EditorTools.IslandV2
             foreach (var f in System.IO.Directory.GetFiles(IslandV2Paths.Textures + "/Signs", "*.png")) Set("Signs/" + System.IO.Path.GetFileName(f), true, false, 512);
         }
 
+        /// <summary>Import settings for a W4 dressing texture: mipmapped, clamped, alpha kept, ASTC 6x6 up to maxSize on Android.</summary>
+        private static void DecorTexture(string file, int maxSize)
+        {
+            var path = IslandV2Paths.Textures + "/" + file;
+            if (!(AssetImporter.GetAtPath(path) is TextureImporter ti)) return;
+            ti.textureType = TextureImporterType.Default; ti.sRGBTexture = true; ti.mipmapEnabled = true; ti.wrapMode = TextureWrapMode.Clamp;
+            ti.alphaSource = TextureImporterAlphaSource.FromInput; ti.alphaIsTransparency = true; ti.mipMapsPreserveCoverage = true; ti.alphaTestReferenceValue = 0.5f;
+            ti.maxTextureSize = maxSize;
+            var a = ti.GetPlatformTextureSettings("Android"); a.overridden = true; a.maxTextureSize = maxSize; a.format = TextureImporterFormat.ASTC_6x6;
+            ti.SetPlatformTextureSettings(a);
+            ti.SaveAndReimport();
+        }
+
         private static Texture2D Tex(string file) => AssetDatabase.LoadAssetAtPath<Texture2D>(IslandV2Paths.Textures + "/" + file);
 
         private static Dictionary<string, Material> Materials()
@@ -273,10 +286,10 @@ namespace CTLife.EditorTools.IslandV2
             {
                 x.SetTexture("_Detail", Tex("dirt_detail.png")); x.SetColor("_Color", new Color(0.62f, 0.50f, 0.36f)); x.SetFloat("_Tracks", 0.18f); x.SetFloat("_Contrast", 1.1f);
             });
-            Mk(Mat.Sidewalk, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Tex("pavers.png")); x.EnableKeyword("_WORLDUV"); x.SetFloat("_UseWorldUV", 1); x.SetFloat("_WorldScale", 0.42f); x.SetFloat("_Toon", 0.3f); });
-            Mk(Mat.Plaza, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Tex("pavers.png")); x.EnableKeyword("_WORLDUV"); x.SetFloat("_UseWorldUV", 1); x.SetFloat("_WorldScale", 0.3f); x.SetColor("_BaseColor", new Color(1.0f, 0.97f, 0.92f)); x.SetFloat("_Toon", 0.3f); });
-            Mk(Mat.Kerb, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Tex("concrete.png")); x.EnableKeyword("_WORLDUV"); x.SetFloat("_UseWorldUV", 1); x.SetFloat("_WorldScale", 0.5f); x.SetColor("_BaseColor", new Color(0.93f, 0.91f, 0.88f)); });
-            Mk(Mat.Concrete, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Tex("concrete.png")); x.EnableKeyword("_WORLDUV"); x.SetFloat("_UseWorldUV", 1); x.SetFloat("_WorldScale", 0.25f); x.SetColor("_BaseColor", new Color(0.86f, 0.84f, 0.8f)); });
+            Mk(Mat.Sidewalk, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Tex("pavers.png")); x.EnableKeyword("_WORLDUV"); x.SetFloat("_UseWorldUV", 1); x.SetFloat("_WorldScale", 0.42f); x.SetFloat("_Toon", 0.3f); x.SetVector("_TileVar", new Vector4(1.7f, 0.11f, 0.18f, 0f)); });
+            Mk(Mat.Plaza, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Tex("pavers.png")); x.EnableKeyword("_WORLDUV"); x.SetFloat("_UseWorldUV", 1); x.SetFloat("_WorldScale", 0.3f); x.SetColor("_BaseColor", new Color(1.0f, 0.97f, 0.92f)); x.SetFloat("_Toon", 0.3f); x.SetVector("_TileVar", new Vector4(1.25f, 0.1f, 0.15f, 0f)); });
+            Mk(Mat.Kerb, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Tex("concrete.png")); x.EnableKeyword("_WORLDUV"); x.SetFloat("_UseWorldUV", 1); x.SetFloat("_WorldScale", 0.5f); x.SetColor("_BaseColor", new Color(0.93f, 0.91f, 0.88f)); x.SetVector("_TileVar", new Vector4(1.0f, 0.16f, 0.22f, 0f)); });
+            Mk(Mat.Concrete, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Tex("concrete.png")); x.EnableKeyword("_WORLDUV"); x.SetFloat("_UseWorldUV", 1); x.SetFloat("_WorldScale", 0.25f); x.SetColor("_BaseColor", new Color(0.86f, 0.84f, 0.8f)); x.SetVector("_TileVar", new Vector4(0.45f, 0.1f, 0.22f, 0f)); });
             Mk(Mat.Tunnel, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Tex("concrete.png")); x.EnableKeyword("_WORLDUV"); x.SetFloat("_UseWorldUV", 1); x.SetFloat("_WorldScale", 0.25f); x.SetColor("_BaseColor", new Color(0.62f, 0.6f, 0.57f)); x.SetFloat("_Cull", 0f); });
             Mk(Mat.Rail, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Texture2D.whiteTexture); x.SetColor("_BaseColor", new Color(0.78f, 0.80f, 0.82f)); x.SetVector("_Spec", new Vector4(0.25f, 40f, 0, 0)); x.SetFloat("_Cull", 0f); });
             Mk(Mat.Paint, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Tex("asphalt_detail.png")); x.SetColor("_BaseColor", new Color(1.0f, 1.0f, 0.98f)); x.SetFloat("_Toon", 0.1f); });
@@ -295,6 +308,32 @@ namespace CTLife.EditorTools.IslandV2
             Mk(Mat.Timber, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Texture2D.whiteTexture); x.SetColor("_BaseColor", new Color(0.50f, 0.38f, 0.27f)); x.SetFloat("_Toon", 0.35f); });
             Mk(Mat.Lighthouse, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Texture2D.whiteTexture); x.SetColor("_BaseColor", Color.white); x.SetFloat("_Toon", 0.4f); });
             Mk(Mat.LighthouseLamp, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Texture2D.whiteTexture); x.SetColor("_BaseColor", new Color(1f, 0.93f, 0.66f)); x.SetColor("_Emission", new Color(1.6f, 1.35f, 0.8f)); x.SetFloat("_Cull", 0f); });
+            // W4 eye-level dressing (textures from tools/world/islandgen/decor.py)
+            DecorTexture("wall_decor.png", 2048); DecorTexture("bus_ads.png", 1024); DecorTexture("helipad.png", 512);
+            Mk(IslandV2Dress.WallDecor, "CT Life/World/Toon", x =>
+            {
+                x.SetTexture("_BaseMap", Tex("wall_decor.png")); x.DisableKeyword("_WORLDUV"); x.SetFloat("_UseWorldUV", 0); x.SetColor("_BaseColor", Color.white);
+                x.SetFloat("_Toon", 0.35f); x.SetFloat("_Cutoff", 0.5f);
+            });
+            Mk(IslandV2Dress.BusAds, "CT Life/World/Toon", x =>
+            {
+                x.SetTexture("_BaseMap", Tex("bus_ads.png")); x.DisableKeyword("_WORLDUV"); x.SetFloat("_UseWorldUV", 0); x.SetColor("_BaseColor", Color.white);
+                x.SetFloat("_Toon", 0.15f); x.SetColor("_Emission", new Color(0.55f, 0.55f, 0.55f));          // backlit poster
+            });
+            Mk(IslandV2Dress.Glass, "CT Life/World/Toon", x =>
+            {
+                x.SetTexture("_BaseMap", Texture2D.whiteTexture); x.DisableKeyword("_WORLDUV"); x.SetColor("_BaseColor", new Color(0.62f, 0.78f, 0.86f));
+                x.SetVector("_Spec", new Vector4(0.7f, 70f, 0, 0)); x.SetFloat("_Toon", 0.2f);
+            });
+            Mk(IslandV2Dress.TreePit, "CT Life/World/Toon", x =>
+            {
+                x.SetTexture("_BaseMap", Tex("dirt_detail.png")); x.EnableKeyword("_WORLDUV"); x.SetFloat("_UseWorldUV", 1); x.SetFloat("_WorldScale", 0.6f);
+                x.SetColor("_BaseColor", new Color(0.42f, 0.32f, 0.24f));
+            });
+            Mk("helipad", "CT Life/World/Toon", x =>
+            {
+                x.SetTexture("_BaseMap", Tex("helipad.png")); x.DisableKeyword("_WORLDUV"); x.SetFloat("_UseWorldUV", 0); x.SetColor("_BaseColor", Color.white); x.SetFloat("_Toon", 0.3f);
+            });
             Mk(IslandV2Dress.ShopSigns, "CT Life/World/Toon", x =>
             {
                 x.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>(IslandV2Paths.Textures + "/Signs/shop_signs.png") ?? Texture2D.whiteTexture);
@@ -353,6 +392,8 @@ namespace CTLife.EditorTools.IslandV2
             { Mat.Kerb, (Layers.Road, false) }, { Mat.Concrete, (Layers.Road, true) }, { Mat.Tunnel, (Layers.Road, true) },
             { Mat.Rail, (Layers.Prop, false) }, { Mat.Paint, (Layers.Road, false) }, { Mat.Grass, (Layers.Prop, false) },
             { IslandV2Dress.ShopSigns, (Layers.Prop, false) },
+            { IslandV2Dress.WallDecor, (Layers.Building, false) }, { IslandV2Dress.BusAds, (Layers.Prop, false) },
+            { IslandV2Dress.Glass, (Layers.Prop, true) }, { IslandV2Dress.TreePit, (Layers.Road, false) },
         };
 
         private static (int objects, int colliders, int renderers, int bays) WriteCell(CellGeo g, Dictionary<string, Material> mats, List<Mesh> roadSurfaces)
@@ -585,14 +626,14 @@ namespace CTLife.EditorTools.IslandV2
                 go.transform.localPosition = p;
                 go.AddComponent<HeliPad>().radius = 9f;
                 var pad = new MeshBuilder();
-                Disc(pad, Vector3.zero, 9f, 0.25f);
+                Disc(pad, Vector3.zero, 9f, 0.25f, true);
                 var pm = pad.ToMesh("helipad_" + pads);
                 meshes.Add(pm);
                 var vis = new GameObject("pad") { layer = Layers.Road };
                 vis.transform.SetParent(go.transform, false);
                 vis.AddComponent<MeshFilter>().sharedMesh = pm;
                 var padMr = vis.AddComponent<MeshRenderer>();
-                padMr.sharedMaterial = mats[Mat.Concrete];
+                padMr.sharedMaterial = mats.TryGetValue("helipad", out var hm) ? hm : mats[Mat.Concrete];
                 padMr.lightProbeUsage = LightProbeUsage.Off; padMr.reflectionProbeUsage = ReflectionProbeUsage.Off;
                 vis.AddComponent<MeshCollider>().sharedMesh = pm;
                 pads++;
@@ -685,15 +726,16 @@ namespace CTLife.EditorTools.IslandV2
             return (AssetDatabase.LoadAssetAtPath<TextAsset>(hp), AssetDatabase.LoadAssetAtPath<TextAsset>(op));
         }
 
-        private static void Disc(MeshBuilder b, Vector3 c, float r, float y)
+        private static void Disc(MeshBuilder b, Vector3 c, float r, float y, bool planarUv = false)
         {
-            int ci = b.Add(c + Vector3.up * y, Vector3.up, Vector2.zero);
+            Vector2 Uv(float x, float z) => planarUv ? new Vector2(0.5f + x / (2f * r), 0.5f + z / (2f * r)) : Vector2.zero;
+            int ci = b.Add(c + Vector3.up * y, Vector3.up, Uv(0f, 0f));
             const int S = 32;
             int b0 = b.Count;
             for (int i = 0; i <= S; i++)
             {
                 float a = -i / (float)S * Mathf.PI * 2f;
-                b.Add(c + new Vector3(Mathf.Cos(a) * r, y, Mathf.Sin(a) * r), Vector3.up, Vector2.zero);
+                b.Add(c + new Vector3(Mathf.Cos(a) * r, y, Mathf.Sin(a) * r), Vector3.up, Uv(Mathf.Cos(a) * r, Mathf.Sin(a) * r));
             }
             for (int i = 0; i < S; i++) b.Tri(ci, b0 + i, b0 + i + 1);
         }

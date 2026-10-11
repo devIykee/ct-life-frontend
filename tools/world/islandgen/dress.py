@@ -165,8 +165,13 @@ class Dress:
         self.occ = Occupancy()
         self.inst = {}                 # proto id -> list of [x, y, z, yaw, sxz, sy, r, g, b, a]
         self.boxes = []                # building colliders [cx, cy, cz, w, h, d, yaw]
+        self.box_ids = []              # the kit model of each box (W4 wall dressing)
         self.signals = []              # traffic light heads
         self.shop_signs = []           # W3 blade signs [x, y, z, facade yaw, atlas cell]
+        self.tree_pits = []            # W4 street tree pits [x, y, z, yaw] (Unity builds the grate and soil)
+        self.bus_shelters = []         # W4 [x, y, z, yaw (open side faces the road), ad poster]
+        self.wall_decor = []           # W4 dressing on exposed side and back walls [x, y, z, yaw, w, h, kind, variant]
+        self.hero_plazas = []          # W4 paved clearings round the statues [x, y, z, radius, statue yaw]
         self.power = []                # power line pole runs
         self.billboards = []           # live ad boards
         self.heroes = []               # W3 statues
@@ -242,10 +247,14 @@ class Dress:
             if len(p) < 2:
                 continue
             wr, wl = s['widthRight'] + s['sidewalk'] - 0.5, s['widthLeft'] + s['sidewalk'] - 0.5
-            if s['kind'] == 'tunnel':
-                continue
-            poly = np.vstack([p + rn * wr, (p - rn * wl)[::-1]])
-            o.poly([tuple(q) for q in poly], Occupancy.ROAD)
+            under = s.get('underground') or [s['kind'] == 'tunnel'] * len(p)     # tunnel segments are open road outside the bore
+            # one quad per sample step: a single long polygon self-overlaps on tight curves and PIL's fill then leaves
+            # holes in the road (W4: trees and a statue were placed on the coast highway's bends)
+            R_, L_ = p + rn * wr, p - rn * wl
+            for i in range(len(p) - 1):
+                if i + 1 < len(under) and under[i] and under[i + 1]:
+                    continue
+                o.poly([tuple(R_[i]), tuple(R_[i + 1]), tuple(L_[i + 1]), tuple(L_[i])], Occupancy.ROAD)
         for j in self.roads['intersections']:
             parts = j.get('parts') or [j]
             for part in parts:
@@ -416,6 +425,7 @@ class Dress:
                     self.add(pid, c[0], ybase, c[1], yaw, sc, sy, tint)
                     self.boxes.append([round(float(c[0]), 2), round(ybase + hh / 2, 2), round(float(c[1]), 2), round(w, 2), round(hh, 2),
                                        round(d, 2), round(yaw % 360, 1)])
+                    self.box_ids.append(pid)
                     self.occ.rect(c[0], c[1], w, d, yaw, Occupancy.BUILDING, margin=0.05)
                     self.shopfront(pid, it, c, yaw, w, d, ybase, -n_, t_, s, setback)
                     recent.append(pid)
@@ -468,6 +478,7 @@ class Dress:
             self.add(pid, x, ybase, z, yaw, sc, sy, tint)
             self.boxes.append([round(float(x), 2), round(ybase + hh / 2, 2), round(float(z), 2), round(w, 2), round(hh, 2), round(d, 2),
                                round(yaw % 360, 1)])
+            self.box_ids.append(pid)
             self.occ.rect(x, z, w, d, yaw, Occupancy.BUILDING, margin=0.6)
             n += 1
         self.stats['infill_buildings'] = n
@@ -493,9 +504,9 @@ class Dress:
                 yq = float(self.g.y([q[0]], [q[1]])[0]) + 0.08
                 if k % 3 == 1 and 'bench_city' in K:
                     self.add('bench_city', q[0], yq, q[1], face)
-                elif 'kf_tree_2_b' in K:
-                    tree = ['kf_tree_2_a', 'kf_tree_2_b', 'kf_tree_3_a'][k % 3]
-                    self.add(tree, q[0], yq, q[1], RNG.uniform(0, 360), RNG.uniform(0.9, 1.05), 1.0, self.foliage_tint(tree, q[0], q[1]))
+                elif self.pick(self.STREET):
+                    tree = self.STREET[k % 3]
+                    self.add(tree, q[0], yq, q[1], RNG.uniform(0, 360), RNG.uniform(0.75, 0.85), 1.0, self.foliage_tint(tree, q[0], q[1]))
                     if 'planter_round' in K:
                         self.add('planter_round', q[0], yq, q[1], 0.0, 1.6, 1.0)
                 n += 1
@@ -653,7 +664,8 @@ class Dress:
             for r in np.arange(0.0, 40.0, 1.5):
                 for a in np.linspace(0, 2 * math.pi, max(1, int(r * 1.5)), endpoint=False):
                     x, z = hdef['near'][0] + r * math.cos(a), hdef['near'][1] + r * math.sin(a)
-                    if self.occ.rect_free(x, z, pw + 1.0, pd + 1.0, 0.0, margin=0.5, allow=(Occupancy.FREE, Occupancy.PARK)):
+                    side = 2 * (max(pw, pd) / 2 + 4.6) - 1.5           # W4: the whole paved plaza stays off roads and buildings
+                    if self.occ.rect_free(x, z, side, side, 0.0, margin=0.3, allow=(Occupancy.FREE, Occupancy.PARK)):
                         gy = self.g.y([x - pw / 2, x + pw / 2, x - pw / 2, x + pw / 2], [z - pd / 2, z - pd / 2, z + pd / 2, z + pd / 2])
                         if float(gy.max() - gy.min()) > 0.9:          # level ground only: a plinth, not a tower
                             continue
@@ -679,9 +691,68 @@ class Dress:
                                plinth=[pw, pd, round(hh, 2)] if ph else None, egg=hdef.get('egg')))
             # a clear ring for the statue to read: no trees, benches or lamps within ~5 m of the plinth
             self.occ.rect(x, z, pw + 10.0, pd + 10.0, face, Occupancy.PROP)
+            # W4: the clearing is a small paved plaza (Unity drapes the paving and its edging on the ground), with benches
+            # facing the statue, flower beds and a lamp
+            R = max(pw, pd) / 2 + 4.6
+            self.hero_plazas.append([round(x, 2), round(float(ys.mean()), 2), round(z, 2), round(R, 2), round(face, 1)])
+            K = self.kit.items
+            for k, da in enumerate((-62.0, 62.0)):
+                a = math.radians(face + 180.0 + da)                # benches on the far side, looking at the statue's front
+                bq = (x + math.sin(a) * (R - 1.3), z + math.cos(a) * (R - 1.3))
+                if 'bench_city' in K:
+                    self.add('bench_city', bq[0], float(self.g.y([bq[0]], [bq[1]])[0]) + 0.04, bq[1], math.degrees(a) + 180.0)
+            for k in range(6):
+                a = math.radians(face + 30.0 + k * 60.0 + RNG.uniform(-8, 8))
+                if abs(((k * 60.0 + 30.0) % 360.0) - 0.0) < 40.0:
+                    continue                                       # keep the approach from the road open
+                fq = (x + math.sin(a) * (R - 0.55), z + math.cos(a) * (R - 0.55))
+                fy = float(self.g.y([fq[0]], [fq[1]])[0])
+                for proto, sc in (('bush_flowers', RNG.uniform(0.8, 1.1)), ('flowers_pink_group', 1.4), ('flowers_yellow_group', 1.4)):
+                    if proto in K:
+                        off = RNG.uniform(-0.5, 0.5, 2)
+                        self.add(proto, fq[0] + off[0], fy, fq[1] + off[1], RNG.uniform(0, 360), sc, 1.0)
+            if 'street_lamp_single' in K:
+                a = math.radians(face + 135.0)
+                lq = (x + math.sin(a) * (R - 0.4), z + math.cos(a) * (R - 0.4))
+                self.add('street_lamp_single', lq[0], float(self.g.y([lq[0]], [lq[1]])[0]), lq[1], face)
         self.heroes = heroes
         self.stats['heroes'] = len(heroes)
         log(f'heroes: {[h["id"] for h in heroes]}')
+
+    # -------------------------------------------------------------- W4: no blank walls from public space
+    DECOR_KITS = ('qtb', 'ki')       # kit buildings whose sides and backs are blank (Quaternius brick, Kenney industrial)
+
+    def place_wall_decor(self):
+        """Side and back walls that a road, park or plaza can see (open ground within ~24 m, not a party wall) get
+        dressing that Unity builds from dress.json wallDecor: painted windows per floor (most walls), a mural (big blank
+        walls), or climbing ivy. Kinds: 0 windows, 1 mural, 2 ivy; variant picks the atlas cell."""
+        public = (Occupancy.ROAD, Occupancy.PARK, Occupancy.VENUE)
+        n = {0: 0, 1: 0, 2: 0}
+        for box, pid in zip(self.boxes, self.box_ids):
+            it = self.kit.items.get(pid)
+            if it is None or it['kit'] not in self.DECOR_KITS:
+                continue
+            cx, cy, cz, w, h, d, yaw = box
+            a = math.radians(yaw)
+            ex, ez = np.array([math.cos(a), -math.sin(a)]), np.array([math.sin(a), math.cos(a)])   # local +x, +z in world
+            ybase = cy - h / 2
+            for nrm, half, length in ((-ez, d / 2, w), (ex, w / 2, d), (-ex, w / 2, d)):
+                c = np.array([cx, cz]) + nrm * half
+                if self.occ.codes([c[0] + nrm[0] * 1.3], [c[1] + nrm[1] * 1.3])[0] == Occupancy.BUILDING:
+                    continue                                   # party wall against a neighbour
+                ts = np.array([3.0, 6.0, 10.0, 15.0, 20.0, 24.0])
+                codes = self.occ.codes(c[0] + nrm[0] * ts, c[1] + nrm[1] * ts)
+                blocked = np.argmax(codes == Occupancy.BUILDING) if (codes == Occupancy.BUILDING).any() else len(ts)
+                if not np.isin(codes[:blocked], public).any() or length < 3.0 or h < 3.5:
+                    continue
+                r = RNG.random()
+                kind = 1 if (length >= 7.0 and h >= 7.0 and r < 0.32) else (2 if r > 0.84 else 0)
+                face = math.degrees(math.atan2(nrm[0], nrm[1]))
+                self.wall_decor.append([round(float(c[0]), 2), round(float(ybase), 2), round(float(c[1]), 2), round(face % 360, 1),
+                                        round(float(length), 2), round(float(h), 2), kind, int(RNG.integers(8 if kind == 0 else (4 if kind == 1 else 2)))])
+                n[kind] += 1
+        self.stats.update(wall_windows=n[0], wall_murals=n[1], wall_ivy=n[2])
+        log(f'wall decor: {n[0]} window walls, {n[1]} murals, {n[2]} ivy walls')
 
     # -------------------------------------------------------------- shopfronts (W3 street life)
     SHOP_DISTRICTS = ('timeline', 'trenches', 'dubai_marina', 'boardwalk')
@@ -717,6 +788,12 @@ class Dress:
                     self.add(['kc_detail_parasol_a', 'kc_detail_parasol_b'][RNG.integers(2)], q[0], y, q[1], RNG.uniform(0, 360))
                     self.occ.rect(q[0], q[1], 3.0, 3.0, yaw, Occupancy.PROP)
                     self.stats['parasols'] = self.stats.get('parasols', 0) + 1
+        if r >= 0.72 and r < 0.86 and 'pp_vending_machine' in K and w >= 6.0:
+            # a vending machine against the wall beside the shop window (modelled facing +z, like the building)
+            q = front + tan * (w / 2 - 1.1) * (1 if RNG.random() < 0.5 else -1) + out * 0.45
+            self.add('pp_vending_machine', q[0], y, q[1], yaw)
+            self.occ.rect(q[0], q[1], 1.2, 1.2, yaw, Occupancy.PROP)
+            self.stats['vending_machines'] = self.stats.get('vending_machines', 0) + 1
         if RNG.random() < 0.75 and w >= 4.5:
             side = 1.0 if RNG.random() < 0.5 else -1.0
             q = front + tan * side * (w / 2 - 0.7) + out * 0.62
@@ -771,33 +848,49 @@ class Dress:
                         face = math.degrees(math.atan2(-rn[k][0] * side, -rn[k][1] * side))
                         r = RNG.random()
                         yk = y[k] + 0.15
+                        shop = self.district_at(*p[k]) in self.SHOP_DISTRICTS
                         if self.occ.codes([inner[0]], [inner[1]])[0] in (Occupancy.PROP, Occupancy.BUILDING):
                             pos += RNG.uniform(4, 7)
                             continue
-                        if s['base'] == 'avenue' and r < 0.45:
-                            tree = ['kf_tree_2_a', 'kf_tree_2_b', 'kf_tree_1_a', 'kf_tree_3_a'][RNG.integers(4)]
-                            if tree in K:
-                                self.add(tree, kerb[0], yk, kerb[1], RNG.uniform(0, 360), RNG.uniform(0.85, 1.1), 1.0)
+                        if (s['base'] == 'avenue' and r < 0.45) or (r < 0.26 and self.district_at(*p[k]) in self.SHOP_DISTRICTS):
+                            tree = self.pick(self.STREET)
+                            if tree:
+                                self.add(tree, kerb[0], yk - 0.1, kerb[1], RNG.uniform(0, 360), RNG.uniform(0.7, 0.85), 1.0, self.foliage_tint(tree, kerb[0], kerb[1]))
+                                self.tree_pits.append([round(float(kerb[0]), 2), round(float(yk) - 0.13, 2), round(float(kerb[1]), 2), round(face % 360, 1)])
                                 n_tr += 1
-                        elif r < 0.62 and 'bench_city' in K:
+                        elif r < 0.56 and 'bench_city' in K:
                             self.add('bench_city', inner[0], yk, inner[1], face)
                             if 'trash_can' in K:
                                 tq = inner + tan[k] * 1.6
                                 self.add('trash_can', tq[0], yk, tq[1], face)
                             n_f += 2
-                        elif r < 0.74 and 'kyc_firehydrant' in K:
+                        elif r < 0.62 and 'kyc_firehydrant' in K:
                             self.add('kyc_firehydrant', kerb[0], yk, kerb[1], face)
                             n_f += 1
-                        elif r < 0.84 and 'planter_round' in K:
+                        elif r < 0.68 and 'planter_round' in K:
                             self.add('planter_round', inner[0], yk, inner[1], RNG.uniform(0, 90))
                             n_f += 1
-                        elif r < 0.93 and 'kyc_box_a' in K:
-                            # a pair of newspaper / parcel boxes at the kerb
-                            for k2 in range(2):
-                                bq = kerb + tan[k] * (k2 * 1.4)
-                                self.add('kyc_box_a', bq[0], yk, bq[1], face + 180.0)
-                            n_f += 2
-                        elif 'kyc_trash_b' in K:
+                        elif r < 0.80 and shop:
+                            # parked two-wheelers: a row of 2-4 scooters, mopeds and bicycles at the kerb, angled in
+                            kinds = [q for q in ('pp_scooter', 'pp_moped', 'pp_bicycle') if q in K]
+                            if kinds:
+                                cnt = int(RNG.integers(2, 5))
+                                along = math.degrees(math.atan2(tan[k][0], tan[k][1]))
+                                for k2 in range(cnt):
+                                    bq = kerb + tan[k] * (k2 * 0.95) - rn[k] * side * 0.35
+                                    kq = kinds[RNG.integers(len(kinds))]
+                                    # scooters and mopeds are modelled along +z, the bicycle along +x
+                                    self.add(kq, bq[0], yk, bq[1], along + 90.0 * side + (90.0 if kq == 'pp_bicycle' else 0.0) + RNG.uniform(-14, 14))
+                                self.occ.rect(kerb[0] + tan[k][0] * cnt * 0.45, kerb[1] + tan[k][1] * cnt * 0.45, 1.8, cnt * 1.0 + 0.6,
+                                              along, Occupancy.PROP)
+                                n_f += cnt
+                                self.stats['two_wheelers'] = self.stats.get('two_wheelers', 0) + cnt
+                        elif r < 0.87 and shop and s['sidewalk'] >= 2.6 and 'pp_vendor_cart' in K:
+                            self.add('pp_vendor_cart', inner[0], yk, inner[1], face + RNG.uniform(-8, 8))   # modelled along +x: lies along the kerb
+                            self.occ.rect(inner[0], inner[1], 2.8, 2.2, face, Occupancy.PROP)
+                            self.stats['vendor_carts'] = self.stats.get('vendor_carts', 0) + 1
+                            n_f += 1
+                        elif r < 0.93 and 'kyc_trash_b' in K:
                             self.add('kyc_trash_b', inner[0], yk, inner[1], face)
                             n_f += 1
                         pos += RNG.uniform(9, 15) if self.district_at(*p[k]) in self.SHOP_DISTRICTS else RNG.uniform(14, 22)
@@ -829,6 +922,54 @@ class Dress:
         self.stats.update(lamps=n_l, furniture=n_f, signals_and_signs=n_t, street_trees=n_tr)
         log(f'street: {n_l} lamps, {n_f} furniture, {n_t} signals/signs, {n_tr} street trees ({time.time() - t0:.1f}s)')
 
+    def place_transit(self):
+        """W4: bus shelters with ad panels (built by Unity from dress.json busShelters) on avenue and downtown sidewalks
+        every ~170 m, alternating sides, backs to the buildings; a small market of stalls in each park."""
+        K = self.kit.items
+        n = 0
+        for s in self.roads['segments']:
+            if s['kind'] in ('tunnel', 'bridge') or s['sidewalk'] < 2.4:
+                continue
+            p, y, tan, rn = self.frame(s['samples'])
+            if len(p) < 4:
+                continue
+            mid = p[len(p) // 2]
+            if not (s['base'] == 'avenue' or self.district_at(*mid) in self.SHOP_DISTRICTS):
+                continue
+            sl = G.arc_lengths(p)
+            side = 1.0 if RNG.random() < 0.5 else -1.0
+            pos = RNG.uniform(30, 70)
+            while pos < sl[-1] - 25:
+                k = min(max(int(np.searchsorted(sl, pos)), 1), len(p) - 1)
+                edge = s['widthRight'] if side > 0 else s['widthLeft']
+                q = p[k] + rn[k] * side * (edge + s['sidewalk'] * 0.6)
+                face = math.degrees(math.atan2(-rn[k][0] * side, -rn[k][1] * side))      # open side towards the road
+                if self.occ.rect_free(q[0], q[1], 4.6, 1.8, face, margin=0.2, allow=(Occupancy.FREE, Occupancy.ROAD, Occupancy.PARK)):
+                    yq = float(y[k]) + 0.15
+                    self.bus_shelters.append([round(float(q[0]), 2), round(yq, 2), round(float(q[1]), 2), round(face % 360, 1), int(RNG.integers(8))])
+                    self.occ.rect(q[0], q[1], 4.6, 1.8, face, Occupancy.PROP)
+                    n += 1
+                    side = -side
+                    pos += RNG.uniform(150, 190)
+                else:
+                    pos += 12.0
+        m = 0
+        if 'pp_market_stalls' in K:
+            for name, poly in L.PARKS:
+                P = np.array(poly, float)
+                c = P.mean(axis=0)
+                for k in range(2):
+                    for t in range(14):
+                        q = c + RNG.uniform(-18, 18, 2)
+                        if G.point_in_poly(q[0], q[1], P) and self.occ.rect_free(q[0], q[1], 9.0, 9.0, 0.0, margin=0.5, allow=(Occupancy.PARK, Occupancy.FREE)):
+                            yaw = RNG.uniform(0, 360)
+                            self.add('pp_market_stalls', q[0], float(self.g.y([q[0]], [q[1]])[0]) - 0.05, q[1], yaw)
+                            self.occ.rect(q[0], q[1], 9.0, 9.0, yaw, Occupancy.PROP)
+                            m += 1
+                            break
+        self.stats.update(bus_shelters=n, market_stalls=m)
+        log(f'transit: {n} bus shelters, {m} market stalls')
+
     # -------------------------------------------------------------- promenade, power lines, billboards
     def place_promenade(self):
         """Ocean Drive: palms, lamps and benches along the seaward edge, facing the bay; on the boardwalk when there is one."""
@@ -848,7 +989,7 @@ class Dress:
                     q = A[k] + (B[k] - A[k]) * 0.3
                     palm = 'palm_1' if (k // 6) % 2 else 'palm_2'
                     if palm in K:
-                        self.add(palm, q[0], Y[k], q[1], RNG.uniform(0, 360), RNG.uniform(0.95, 1.2))
+                        self.add(palm, q[0], Y[k], q[1], RNG.uniform(0, 360), RNG.uniform(1.4, 1.8))
                         n += 1
                 elif k % 6 == 3 and 'bench_city' in K:
                     q = A[k] + (B[k] - A[k]) * 0.62
@@ -876,7 +1017,7 @@ class Dress:
                 q = p[k] + rn[k] * side * (edge - 1.0)
                 palm = 'palm_1' if RNG.random() < 0.5 else 'palm_2'
                 if palm in K:
-                    self.add(palm, q[0], y[k] + 0.15, q[1], RNG.uniform(0, 360), RNG.uniform(0.9, 1.2))
+                    self.add(palm, q[0], y[k] + 0.15, q[1], RNG.uniform(0, 360), RNG.uniform(1.4, 1.8))
                     n += 1
                 pos += RNG.uniform(10, 14)
         self.stats['promenade_palms'] = n
@@ -889,20 +1030,25 @@ class Dress:
             return
         n = 0
         for s in self.roads['segments']:
-            if s['route'] not in ('farm_road', 'res_spine', 'res_crescent', 'res_link', 'res_cliff', 'farm_track', 'farm_lane', 'hills_drive'):
-                continue
             p, y, tan, rn = self.frame(s['samples'])
+            if len(p) < 4:
+                continue
+            # W4: about half of downtown's side streets (not the avenues) get overhead lines too, poles at the kerb
+            urban = (s['base'] == 'street' and s['sidewalk'] > 1.5 and s['kind'] not in ('bridge', 'tunnel')
+                     and self.district_at(*p[len(p) // 2]) in ('timeline', 'trenches') and (int(s['id'][1:]) * 7919) % 10 < 5)
+            if s['route'] not in ('farm_road', 'res_spine', 'res_crescent', 'res_link', 'res_cliff', 'farm_track', 'farm_lane', 'hills_drive') and not urban:
+                continue
             sl = G.arc_lengths(p)
             side = 1.0
-            edge = s['widthRight'] + s['sidewalk'] + 3.0
+            edge = s['widthRight'] + (s['sidewalk'] - 0.5 if urban else s['sidewalk'] + 3.0)
             run = []
             pos = 6.0
             while pos < sl[-1] - 6:
                 k = min(max(int(np.searchsorted(sl, pos)), 1), len(p) - 1)
                 q = p[k] + rn[k] * side * edge
                 code = self.occ.codes([q[0]], [q[1]])[0]
-                if code in (Occupancy.FREE, Occupancy.FIELD, Occupancy.PARK):
-                    yq = float(self.g.y([q[0]], [q[1]])[0])
+                if code in (Occupancy.FREE, Occupancy.FIELD, Occupancy.PARK) or (urban and code == Occupancy.ROAD):
+                    yq = float(self.g.y([q[0]], [q[1]])[0]) + (0.15 if urban else 0.0)
                     face = math.degrees(math.atan2(tan[k][0], tan[k][1]))
                     self.add(pole, q[0], yq, q[1], face + 90.0)
                     run.append([round(float(q[0]), 2), round(yq, 2), round(float(q[1]), 2), round(face + 90.0, 1)])
@@ -949,10 +1095,24 @@ class Dress:
             n += 1
         return n
 
+    # W4 species per biome (Quaternius Stylized Nature MegaKit trees, 10-18 m mature; palms and blossom from the env set)
+    BROAD = ['w_tree_common_1', 'w_tree_common_2', 'w_tree_common_3', 'w_tree_common_4', 'w_tree_common_5']
+    PINES = ['w_pine_1', 'w_pine_2', 'w_pine_3', 'w_pine_4', 'w_pine_5']
+    AUTUMN = ['w_tree_twisted_1', 'w_tree_twisted_3']
+    STREET = ['w_tree_common_3', 'w_tree_common_4', 'w_tree_common_5']
+    BLOSSOM = ['tree_blossom_1', 'tree_blossom_2', 'tree_blossom_3', 'tree_blossom_4']
+    PALMS = ['palm_1', 'palm_2']
+    BUSHES = ['bush_round', 'bush_flowers', 'bush_large_flowers', 'bush_small']
+    COAST_DISTRICTS = ('boardwalk', 'dubai_marina', 'islet')
+
+    def pick(self, pool):
+        live = [q for q in pool if q in self.kit.items]
+        return live[RNG.integers(len(live))] if live else None
+
     def foliage_tint(self, proto, x, z):
         """Per-tree colour drift (the kit shader multiplies foliage by it): mostly deeper greens, some olive and blue-green,
         a few autumn crowns in the groves; large-scale noise keeps neighbours related, so stands read as one wood."""
-        if not (proto.startswith('kf_tree') or proto.startswith('kf_bush')):
+        if not (proto.startswith(('kf_tree', 'kf_bush', 'w_tree_common', 'w_pine', 'bush_'))):
             return None
         n = G.fbm(np.array([x / 70.0]), np.array([z / 70.0]))[0]
         base = np.array([0.74, 0.80, 0.66]) + (n - 0.5) * np.array([0.28, 0.18, 0.12]) + RNG.uniform(-0.05, 0.05, 3)
@@ -964,9 +1124,7 @@ class Dress:
         t0 = time.time()
         g = self.g
         region = (-900.0, 940.0, -780.0, 720.0)
-        pines = ['kf_tree_4_a', 'kf_tree_4_b', 'kf_tree_4_c']
-        broad = ['kf_tree_2_a', 'kf_tree_2_b', 'kf_tree_2_c', 'kf_tree_2_d', 'kf_tree_2_e', 'kf_tree_1_a', 'kf_tree_1_b', 'kf_tree_1_c',
-                 'kf_tree_3_a', 'kf_tree_3_b']
+        pines, broad = self.PINES, self.BROAD
 
         dmap = self.district_raster()
         road_d = ndimage.distance_transform_edt(self.occ.arr() != Occupancy.ROAD)      # metres from the nearest road
@@ -986,9 +1144,13 @@ class Dress:
         def forest_pick(x, z, y):
             sl = float(g.sample(g.slope, [x], [z])[0])
             high = y > 55 or sl > 0.6
-            if RNG.random() < (0.78 if high else 0.32):
-                return pines[RNG.integers(len(pines))], RNG.uniform(0.8, 1.35), RNG.uniform(0.95, 1.15)
-            return broad[RNG.integers(len(broad))], RNG.uniform(0.85, 1.3), 1.0
+            if y < L.SEA + 9 and self.district_at(x, z) in self.COAST_DISTRICTS:
+                return self.pick(self.PALMS), RNG.uniform(1.45, 1.85), RNG.uniform(0.95, 1.1)     # coast: palms, 9-14 m
+            if RNG.random() < (0.86 if high else 0.3):
+                return self.pick(pines), RNG.uniform(0.75, 1.15), RNG.uniform(0.95, 1.1)
+            if RNG.random() < 0.015:
+                return self.pick(self.AUTUMN), RNG.uniform(0.8, 1.0), 1.0
+            return self.pick(broad), RNG.uniform(0.75, 1.1), 1.0
         n_forest = self.scatter(6.0, region, forest_p, forest_pick)
 
         # meadow trees: lone trees and small groves in open country (not towns, not forest)
@@ -998,11 +1160,13 @@ class Dress:
             return np.where((f < 0.1) & (y > L.SEA + 3) & (y < 90), 0.05 + 0.1 * (G.fbm(X / 60.0, Z / 60.0) > 0.58), 0.0)
 
         def meadow_pick(x, z, y):
-            return broad[RNG.integers(len(broad))], RNG.uniform(0.9, 1.4), 1.0
+            if RNG.random() < 0.05:
+                return self.pick(self.AUTUMN), RNG.uniform(0.85, 1.05), 1.0
+            return self.pick(broad), RNG.uniform(0.85, 1.15), 1.0
         n_meadow = self.scatter(16.0, region, meadow_p, meadow_pick)
 
         # bushes: forest edges and rural verges
-        bushes = [k for k in self.kit.items if k.startswith('kf_bush_')]
+        bushes = [k for k in self.BUSHES if k in self.kit.items] or [k for k in self.kit.items if k.startswith('kf_bush_')]
 
         def bush_p(X, Z):
             f = g.sample(g.forest, X, Z)
@@ -1011,7 +1175,7 @@ class Dress:
             return np.where((y > L.SEA + 2) & (y < 110), edge * 0.5 + 0.04, 0.0)
 
         def bush_pick(x, z, y):
-            return bushes[RNG.integers(len(bushes))], RNG.uniform(0.8, 1.6), RNG.uniform(0.9, 1.2)
+            return bushes[RNG.integers(len(bushes))], RNG.uniform(1.0, 1.9), RNG.uniform(0.9, 1.2)
         n_bush = self.scatter(5.0, region, bush_p, bush_pick, margin=0.8)
 
         # rocks: rocky and scree ground, cliff tops
@@ -1038,9 +1202,12 @@ class Dress:
                 return np.where(inside, 0.55 * (G.fbm(X / 30.0 + 5, Z / 30.0) > 0.46), 0.0)
 
             def park_pick(x, z, y):
-                if RNG.random() < 0.3:
-                    return blossom[RNG.integers(len(blossom))], RNG.uniform(0.9, 1.2), 1.0
-                return broad[RNG.integers(len(broad))], RNG.uniform(0.9, 1.3), 1.0
+                r = RNG.random()
+                if r < 0.4:
+                    return self.pick(blossom), RNG.uniform(1.35, 1.6), 1.0          # cherry blossom, 8-10 m
+                if r < 0.5:
+                    return self.pick(self.AUTUMN), RNG.uniform(0.8, 0.95), 1.0
+                return self.pick(broad), RNG.uniform(0.75, 1.0), 1.0
             n_park += self.scatter(9.0, (x0, x1, z0, z1), park_p, park_pick, cull_codes=(Occupancy.PARK,))
         # crops in the fields: rows along each field's direction
         n_crop = 0
@@ -1063,9 +1230,45 @@ class Dress:
                     yq = float(self.g.y([q[0]], [q[1]])[0])
                     self.add(proto, q[0], yq - 0.05, q[1], ang + RNG.uniform(-12, 12), RNG.uniform(0.85, 1.15), RNG.uniform(0.85, 1.15))
                     n_crop += 1
-        self.stats.update(forest_trees=n_forest, meadow_trees=n_meadow, bushes=n_bush, rocks=n_rock, park_trees=n_park, crops=n_crop)
+        n_detail = self.place_ground_detail(road_d)
+        self.stats.update(forest_trees=n_forest, meadow_trees=n_meadow, bushes=n_bush, rocks=n_rock, park_trees=n_park, crops=n_crop,
+                          ground_detail=n_detail)
         log(f'vegetation: {n_forest} forest, {n_meadow} meadow, {n_bush} bushes, {n_rock} rocks, {n_park} park, {n_crop} crops '
             f'({time.time() - t0:.1f}s)')
+
+    def place_ground_detail(self, road_d):
+        """W4 eye-level ground: grass clumps, clover, flowers, ferns and pebbles on the green within ~14 m of roads,
+        plazas and paths, and through the parks (drawn only within ~38 m of the camera)."""
+        g = self.g
+        region = (-900.0, 940.0, -780.0, 720.0)
+
+        def near_road(X, Z):
+            ox = np.clip(np.round(X - Occupancy.X0).astype(int), 0, Occupancy.W - 1)
+            oy = np.clip(np.round(Occupancy.H - 1 - (Z - Occupancy.Z0)).astype(int), 0, Occupancy.H - 1)
+            return road_d[oy, ox]
+
+        def detail_p(X, Z):
+            d = near_road(X, Z)
+            y = g.y(X, Z)
+            grassy = (g.sample(g.rock, X, Z) < 0.35) & (y > L.SEA + 1.2) & (y < 120)
+            return np.where(grassy, np.clip(0.85 - (d - 2.5) / 30.0, 0.0, 0.85), 0.0)
+
+        def detail_pick(x, z, y):
+            r = RNG.random()
+            if r < 0.42:
+                return self.pick(['w_grass_wispy_short', 'w_grass_wispy_tall', 'w_grass_common_short']), RNG.uniform(0.9, 1.6), RNG.uniform(0.8, 1.3)
+            if r < 0.56:
+                return self.pick(['w_clover_1', 'w_clover_2']), RNG.uniform(1.2, 2.2), 1.0
+            if r < 0.74:
+                return self.pick(['w_flower_3_group', 'w_flower_4_group', 'w_flower_3_single', 'flowers_pink_group', 'flowers_yellow_group']), RNG.uniform(1.0, 1.6), 1.0
+            if r < 0.84:
+                return self.pick(['w_pebble_round_1', 'w_pebble_round_3', 'w_pebble_square_2', 'w_pebble_square_5']), RNG.uniform(0.7, 1.6), RNG.uniform(0.6, 1.2)
+            if r < 0.93:
+                return self.pick(['w_fern_1', 'w_plant_7']), RNG.uniform(0.8, 1.3), 1.0
+            return self.pick(['w_mushroom_common', 'w_grass_wispy_tall']), RNG.uniform(0.8, 1.2), 1.0
+        n = self.scatter(2.3, region, detail_p, detail_pick, cull_codes=(Occupancy.FREE, Occupancy.PARK), margin=0.4, jitter=1.0)
+        log(f'ground detail: {n}')
+        return n
 
     # -------------------------------------------------------------- output
     def write(self, path):
@@ -1074,7 +1277,8 @@ class Dress:
                    record='x, y, z, yaw (deg), scale xz, scale y, tint r, g, b, a',
                    instances=[dict(proto=p, n=len(self.inst[p]), d=[c for r in self.inst[p] for c in r]) for p in protos],
                    buildingBoxes=self.boxes, signals=self.signals, power=self.power, billboards=self.billboards, heroes=self.heroes,
-                   shopSigns=self.shop_signs)
+                   shopSigns=self.shop_signs, treePits=self.tree_pits, busShelters=self.bus_shelters, wallDecor=self.wall_decor,
+                   heroPlazas=self.hero_plazas)
         txt = json.dumps(doc, separators=(',', ':'))
         open(path, 'w').write(txt)
         log(f'wrote {path} ({len(txt) / 1e6:.1f} MB, {sum(len(v) for v in self.inst.values())} instances of {len(protos)} models)')
@@ -1087,10 +1291,12 @@ def main():
     d.place_heroes()
     d.place_buildings()
     d.infill_blocks()
+    d.place_wall_decor()
     d.place_promenade()
     d.place_plaza()
     d.place_billboards()
     d.place_boats()
+    d.place_transit()
     d.place_street()
     d.place_power()
     d.place_vegetation()
