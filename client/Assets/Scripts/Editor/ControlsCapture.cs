@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using CTLife.World;
 using Newtonsoft.Json.Linq;
@@ -201,6 +202,32 @@ namespace CTLife.EditorTools
                 o["orbit"] = new JObject { ["yawOffsetDeg"] = R(Mathf.DeltaAngle(p.transform.eulerAngles.y, rig.yaw)), ["pitch"] = R(rig.pitch) };
                 await shot("controls-11-orbit", .05f);
                 p.StopDirectInput();
+
+                // Optional film strip for the review (no device attached): 30 fps frames of a walk → jog → sprint → stop
+                // with the follow camera, then an orbit drag. -ctlife-controlsClip 1; frames controls-clip-NNNN.
+                if (Environment.GetCommandLineArgs().Contains("-ctlife-controlsClip"))
+                {
+                    await Place(new Vector3(-35f, 0f, -25f), 90f);
+                    int n = 0;
+                    async Task Film(float seconds, Vector3 dir, float strength, Vector2 orbit = default)
+                    {
+                        for (float t = 0f; t < seconds; t += 1f / 60f)
+                        {
+                            p.SetMoveInput(strength > 0f ? Stick(dir, strength) : Vector2.zero);
+                            if (orbit != default) rig.Orbit(orbit / 60f);
+                            await Awaitable.NextFrameAsync();
+                            if ((n++ & 1) == 0) await shot($"controls-clip-{n / 2:0000}", 0f);
+                        }
+                    }
+                    await Film(0.6f, east, 0f);
+                    await Film(1.6f, east, 0.56f);
+                    await Film(1.6f, east, 0.75f);
+                    await Film(2.2f, (east + north * 0.35f).normalized, 1f);
+                    await Film(1.0f, east, 0f);
+                    await Film(1.6f, east, 0f, new Vector2(-520f, 120f));
+                    await Film(2.0f, east, 0.75f);
+                    o["clipFrames"] = n / 2;
+                }
 
                 // 7) A seat on the plaza: walk to its approach (NavMesh corners where there is one), sit, stand with the stick.
                 await visit.FastTravel("timeline_square");
