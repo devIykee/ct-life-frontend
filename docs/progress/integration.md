@@ -1,4 +1,4 @@
-READY TO COMMIT (item 1: NPC spawn + speech bubbles): client/Assets/Scripts/World/Npcs/NpcSpawnPlanner.cs + .meta (NEW), client/Assets/Scripts/World/Npcs/NpcController.cs, client/Assets/Scripts/World/Venue/VenueSceneRoot.cs, client/Assets/Scripts/Features/WorldLife/Runtime/NpcPresenter.cs (respawn fallback only), client/Assets/Scripts/UI/Overlays/BubbleStacker.cs + .meta (NEW), client/Assets/Scripts/UI/Overlays/WorldLabels.cs, client/Assets/Tests/EditMode/NpcSpawnAndBubbleTests.cs + .meta (NEW), docs/progress/backend-dev-feedback.md (item 93), docs/progress/integration.md (section "NPC spawn, speech bubbles, Solana SDK splash size"). Commit message: "npc: spot-less NPCs get their own home spot away from the player spawn and the camera centre line; speech bubbles stack instead of overlapping; feedback 93 (NPCs have no starting spot)". Checks: compile_check dev/release/editor compile; EditMode 1370/1370; editor integration 13/13 with NPC spawn positions logged. Device visual check pending (phone unauthorized). Item 2: nothing to commit (measured ~10 KB in the APK). NOT included: client/Assets/Scripts/UI/Screens/SignInScreen.cs (item 3, waiting for the phone).
+READY TO COMMIT (3 commits; integration.md section "Onboarding UI on the Seeker" goes with the first). [1] full-bleed backgrounds in reverse landscape: client/Assets/Scripts/UI/SafeAreaBleed.cs + .meta (NEW), client/Assets/Scripts/UI/Screens/SignInScreen.cs, client/Assets/Scripts/UI/Screens/Onboarding/OnboardingFrame.cs, docs/progress/integration.md. Message: "ui: one safe-area bleed helper for the title and onboarding backgrounds (measured from world rects; fixes the right-edge strip with the camera cutout on the right)". [2] name step: client/Assets/Scripts/UI/SoftKeyboard.cs + .meta (NEW), client/Assets/Scripts/UI/Screens/CharacterCreatorScreen.cs. Message: "creator: DONE closes the Android soft keyboard (UI Toolkit left it up; InputMethodManager fallback); a restored name no longer renders as a placeholder". [3] NPC homes: client/Assets/Scripts/World/Venue/VenueSceneRoot.cs, client/Assets/Tests/EditMode/NpcSpawnAndBubbleTests.cs. Message: "npc: home spots de-duplicated by local id (each spot is indexed under two names)". Checks: compile_check dev/release/editor compile; EditMode 1393/1393; all four fixes verified on the Seeker (see the section). Do not commit website/ or docs/design/website-campaign-20261008.md (another session).
 
 # Integration lead log
 
@@ -1131,6 +1131,74 @@ APK.
 ### 3. Title art bleed in reverse landscape: still unverified
 
 The `SignInScreen.Bleed` fix is in the tree, not committed. The phone is `unauthorized` over USB right now.
+
+## 2026-10-08: Onboarding UI on the Seeker (dev 5ad4bf45), fixes
+
+Evidence: `../ct-life-evidence/onboarding-device/`. The phone was held the other way (ROTATION_270, camera cutout on the
+right) for the whole run. Media volume was 0 on the phone and I left it that way.
+
+**Captures (fresh dev wallet, nothing auto-advanced):**
+
+| Files | Screen |
+| --- | --- |
+| 01-04 | Lottery: idle (odds 20% / 80%), shuffle, reveal, Insider result |
+| 05-08 | Look; next look (Breeze); face framing with folded arms; resumed after HOME |
+| 09-11 | Tribe; chosen; resumed |
+| 12-14 | Traits (effects shown); two chosen; resumed |
+| 15-17 | Dream; chosen; resumed |
+| 18-23 | Name: empty; keyboard open; typed; DONE (bug, below); keyboard ✓; resumed |
+| 24-26 | Confirm; 18+ ticked; resumed |
+| 27-28 | Celebration ("Welcome to CT, newbie2024!") |
+| 29-31 | Lobby, then Timeline Square arrival |
+| 32-34 | Exit Liquidity: reveal, result with "$720 to pay back" and the supportive line |
+| 35 | Title in ROTATION_270 (bleed fix) |
+| 36 | Seeker-holder attempt (see below) |
+| 40-47 | After the fixes: lottery bleed, DONE closes the keyboard, NPC arrival, name restored after the process was killed |
+
+Recordings: `rec-card-flip.mp4` (Insider), `rec-card-flip-exit.mp4` (Exit Liquidity), `rec-celebration.mp4`,
+`rec-npc-arrival.mp4`. Contact strips: `strip-rec-*.png`.
+
+**Checks:**
+- **Keyboard height:** Gboard in landscape is 783 of 1200 px tall, **65.2%** of the screen. The 65% assumption holds. The
+  name field, its status and DONE stay visible above it, and typed text shows in our field (`hideMobileInput` works).
+- **Haptics fire:** the vibrator history has 100 entries from the app in the session: 18-19 ms ticks, 48-51 ms confirm,
+  85-88 ms reject and celebration (`vibrator-session.txt`). The shuffle ticks decelerate as designed.
+- **Sounds play but were not audible:** the app's AAudio player is `started` (USAGE_MEDIA), but the phone's media volume
+  is 0 and the stream is muted (`audio-after-lottery.txt`). Judging the `sfx_rug` / `sfx_graduation` mix needs the user
+  to turn the volume up.
+- **Frame rate and heat in the creator:** a steady 30.2 fps with p99 33 ms. Thermal status was 3 the whole time, so the
+  game holds 30 fps. CPU/GPU 51-54 °C, battery 38 °C. There were single-frame hitches (min 2.5-11 fps, 82-92 ms) on step
+  changes, about one per step (`fps-creator.txt`). Status was already 3 when I started, so this run does not isolate how
+  much heat the 3D preview adds.
+- **Resume after HOME on every step:** the state is kept every time (08, 11, 14, 17, 23, 26). After HOME and then a
+  process kill, the draft comes back on relaunch (44, 47). A kill without a pause first (`am force-stop` straight away)
+  loses unsaved changes, by design: the draft is flushed on pause.
+- **Exit Liquidity path:** works (32-34). 4 of the 5 random rolls in this run were Exit Liquidity.
+- **Insider via the Seeker holder card: not testable locally.** The backend's `/auth/dev` ignores the client's
+  `isSeeker`, so the user comes back `seeker=False`. Real wallets get `seeker=False` too without a Helius key, so the
+  3-card holder layout cannot be reached on this setup.
+- **NPC arrival:** Timeline Square NPCs now stand on their own spots, and the player arrives clear (31, 46).
+- **Title in reverse landscape:** the art now reaches the right edge (35).
+- **Release APK: 147.3 MiB** (154,410,837 bytes), +1.1 MiB over 146.2. The estimate was +1.3; the budget is 150.
+
+**Fixes (each in the READY line):**
+1. **Full-bleed backgrounds in reverse landscape.** The lottery and creator had a light strip about 78 px wide down the
+   right edge in ROTATION_270. `OnboardingFrame` carried the same `resolvedStyle` bleed code as the old title. New
+   `UI/SafeAreaBleed`: one helper used by the title and the onboarding frame. It measures the insets from world rects
+   and re-measures when the screen layer moves. Verified at 35 and 40.
+2. **DONE left the keyboard up.** DONE restored the normal layout under a keyboard still covering 65% of the screen,
+   hiding the field and NEXT (21). `Blur()` did not close it, and the field's `textEdition.touchScreenKeyboard` was
+   null while `TouchScreenKeyboard.visible` was true (logged on device). New `UI/SoftKeyboard.Hide` closes the field's
+   keyboard when Unity has one; otherwise it asks Android's InputMethodManager (`hideSoftInputFromWindow` on the UI
+   thread). Verified: `mInputShown=false` after DONE (42).
+3. **A restored name looked like a placeholder.** After a resume, the name showed in the faded placeholder colour,
+   because `SetValueWithoutNotify` does not refresh the placeholder class. The class is now set from the value.
+   Verified at 47.
+4. **Two NPCs on one home spot.** town_crier and doomposter both stood at crier_2: the registry indexes each spot under
+   its local and its wire id, so it was claimable twice. Candidates are now de-duplicated by local id. New test
+   `VenueNpcHomeTests.SpotsIndexedUnderTwoNamesAreClaimedOnce`. On device the five NPCs are on five spots (46).
+
+Checks: compile_check dev/release/editor compile; EditMode **1393/1393**.
 
 ## Status
 

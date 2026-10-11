@@ -57,7 +57,7 @@ namespace CTLife.UI
             Root = El.Div("ob-screen " + screenClass, _bg, _topBar, Content, _ctaZone, Overlay, Burst);
             AddSheet(Root, "UI/kit");
             AddSheet(Root, "UI/onboarding");
-            Root.RegisterCallback<GeometryChangedEvent>(_ => Bleed());
+            SafeAreaBleed.Attach(Root, _bg);
         }
 
         public static void AddSheet(VisualElement e, string resource)
@@ -90,18 +90,6 @@ namespace CTLife.UI
         {
             _ctaZone.EnableInClassList("ob-cta-zone--hidden", !on);
             if (on && animate) Kit.Motion.Enter(Cta, 0f, 60f, 0.4f);
-        }
-
-        /// <summary>The background reaches under the safe-area insets (the screen itself sits inside them), as on the title.</summary>
-        private void Bleed()
-        {
-            var layer = Root?.parent;
-            if (layer == null) return;
-            var s = layer.resolvedStyle;
-            _bg.style.left = -s.left;
-            _bg.style.top = -s.top;
-            _bg.style.right = -s.right;
-            _bg.style.bottom = -s.bottom;
         }
     }
 }

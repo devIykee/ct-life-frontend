@@ -75,7 +75,7 @@ namespace CTLife.UI
             else Log.Warn("ui", "Missing UI/title stylesheet");
 
             // Full bleed: the screen sits inside the safe area; the art extends under the cutout/edges.
-            _root.RegisterCallback<GeometryChangedEvent>(_ => Bleed());
+            SafeAreaBleed.Attach(_root, _bg);
             ApplyButtonArt(_walletBtn, "green");
             ApplyButtonArt(_playBtn, "purple");
             SetReturning(_returning);
@@ -145,17 +145,6 @@ namespace CTLife.UI
             {
                 if (e.newRect.height > 0f) b.style.unitySliceScale = e.newRect.height / tex.height;
             });
-        }
-
-        private void Bleed()
-        {
-            var layer = _root?.parent;
-            if (layer == null || _bg == null) return;
-            var s = layer.resolvedStyle;
-            _bg.style.left = -s.left;
-            _bg.style.top = -s.top;
-            _bg.style.right = -s.right;
-            _bg.style.bottom = -s.bottom;
         }
 
         /// <summary>
