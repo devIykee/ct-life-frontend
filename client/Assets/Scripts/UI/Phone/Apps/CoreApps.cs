@@ -166,7 +166,7 @@ namespace CTLife.UI
                 bool signed = board == "weekly_pnl";
                 Guid? me = lb.Me?.UserId;
                 var entries = (lb.Entries ?? new List<BoardEntry>())
-                    .Select(e => new DuoRank(e.Rank, e.Alias, e.UserId.ToString(), Money.Cash(e.Value, signed), me.HasValue && e.UserId == me.Value)).ToList();
+                    .Select(e => new DuoRank(e.Rank, string.IsNullOrWhiteSpace(e.Alias) ? Strings.T("rich.noAlias") : e.Alias, e.UserId.ToString(), Money.Cash(e.Value, signed), me.HasValue && e.UserId == me.Value)).ToList();
                 if (entries.Count == 0) list.Add(Duo.Empty(Strings.T("rich.empty")));
                 else list.Add(DuoBoard.Board(entries, "richlist-board"));
                 if (lb.Me != null && lb.Me.Rank > 0)

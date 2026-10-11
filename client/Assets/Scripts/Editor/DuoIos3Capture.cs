@@ -211,7 +211,8 @@ namespace CTLife.EditorTools
         /// <summary>The pre-Duo box/control classes the sweep must not find inside an open app.</summary>
         private static readonly string[] LegacyClasses =
         {
-            "ct-card", "ct-btn", "ct-chip", "ct-row-btn", "ct-app-page", "ct-app-tabs", "ct-field", "ct-badge", "ct-h1", "ct-h2",
+            // (ct-h1 is not listed: Spaces keeps it beside duo-large-title as a test hook; the kit styles the label.)
+            "ct-card", "ct-btn", "ct-chip", "ct-row-btn", "ct-app-page", "ct-app-tabs", "ct-field", "ct-badge", "ct-h2",
             "ct-duo-status", "ct-duo-metric", "ct-duo-card-footer", "ct-duo-segment", "ct-money-card", "ctc-card", "ctc-btn",
         };
 
@@ -253,7 +254,9 @@ namespace CTLife.EditorTools
                 PhoneCatalog.Register(phone, _ => { }, () => { });
                 VisualElement Layer() => UiRoot.Instance.PhoneLayer;
                 string[] apps = { "richlist", "league", "home", "predict", "shop", "biz", "builder", "ads", "ore", "pulse", "week", "profile",
-                    "topup", "map", "cabal", "beef", "farm", "vc", "npcchat", "xlink", "jobs", "perps" };
+                    "topup", "map", "cabal", "beef", "farm", "vc", "npcchat", "xlink", "jobs", "perps",
+                    // Waves 1–2 apps, opened for the old-style sweep too.
+                    "wallet", "bank", "messages", "timeline", "calls", "spaces", "settings" };
 
                 foreach (var size in new[] { DuoTextSize.L, DuoTextSize.XXL })
                 {

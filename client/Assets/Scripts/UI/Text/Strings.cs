@@ -383,7 +383,7 @@ namespace CTLife.UI
             ["bank.debt"] = "To pay back: {0}\n$120 is repaid each week.", ["bank.noDebt"] = "No debt. A fresh start.",
             ["bank.note"] = "Cash stays in CT Life. It can't be withdrawn.", ["bank.topup"] = "Cash top-ups are coming soon.",
             ["rich.title"] = "The city is watching", ["rich.netWorth"] = "Net worth", ["rich.weekly"] = "This week's PnL",
-            ["rich.you"] = "Your place: #{0} · {1}", ["rich.youRow"] = "You", ["rich.empty"] = "A fresh leaderboard. Your story belongs here.",
+            ["rich.you"] = "Your place: #{0} · {1}", ["rich.youRow"] = "You", ["rich.noAlias"] = "Unnamed player", ["rich.empty"] = "A fresh leaderboard. Your story belongs here.",
             ["home.title"] = "A moment for yourself", ["home.fallback"] = "Your place", ["home.done"] = "That's better.",
             ["home.eat"] = "Grab a bite", ["home.sleep"] = "Get some rest", ["home.shower"] = "Freshen up", ["home.touch_grass"] = "Touch grass",
             ["profile.seeker"] = "Seeker", ["profile.skill.clout"] = "Clout", ["profile.skill.coding"] = "Coding",

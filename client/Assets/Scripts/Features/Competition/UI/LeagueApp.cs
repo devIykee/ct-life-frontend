@@ -116,7 +116,7 @@ namespace CTLife.Competition
             else if (d.Board.Entries.Count == 0) body.Add(Duo.Empty(CompStrings.T("league.board.empty")));
             else
             {
-                var rows = d.Board.Entries.Select(e => new DuoRank(e.Rank, e.UserId == Me ? CompStrings.T("common.you") : e.Alias, e.UserId, Money.Cash(e.Value), e.UserId == Me)).ToList();
+                var rows = d.Board.Entries.Select(e => new DuoRank(e.Rank, e.UserId == Me ? CompStrings.T("common.you") : string.IsNullOrWhiteSpace(e.Alias) ? CompStrings.T("common.unnamed") : e.Alias, e.UserId, Money.Cash(e.Value), e.UserId == Me)).ToList();
                 body.Add(DuoBoard.Board(rows, "league-board"));
                 if (d.Board.Me != null)
                     DuoBoard.PinMe(Page, new DuoRank(d.Board.Me.Rank, CompStrings.T("common.you"), d.Board.Me.UserId ?? Me, Money.Cash(d.Board.Me.Value), true), CompStrings.T("common.you"));

@@ -41,6 +41,7 @@ namespace CTLife.Competition
             ["common.working"] = "Working…",
             ["common.you"] = "You",
             ["common.done"] = "Done",
+            ["common.unnamed"] = "Unnamed player",
             ["unavailable.title"] = "Not available yet",
             ["unavailable.body"] = "This server doesn't have this part of the city yet. Nothing is wrong with your account. Check again after the next update.",
 

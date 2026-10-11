@@ -108,8 +108,9 @@ namespace CTLife.CityLife
                 _unlock.text = WeekClock.Countdown(WeekClock.Next(_unlockAt, now), now);
                 _reset.text = WeekClock.Countdown(WeekClock.Next(_resetAt, now), now);
                 // Known: the mood and SOL's 24h move trail the row. Offline: the reason goes in the subtitle, nothing trails.
-                _mood.text = Hub.MoodKnown ? CityLifeStrings.T(MarketMood.Key(Hub.MoodBps)) + " · " + Money.Bps(Hub.MoodBps) : "";
-                if (_moodSub != null) _moodSub.text = Hub.MoodKnown ? CityLifeStrings.T("week.moodSub") : CityLifeStrings.T("week.moodOffline");
+                // Known: SOL's 24h move trails the row, the mood line is the subtitle. Offline: the reason is the subtitle.
+                _mood.text = Hub.MoodKnown ? Money.Bps(Hub.MoodBps) : "";
+                if (_moodSub != null) _moodSub.text = Hub.MoodKnown ? CityLifeStrings.T(MarketMood.Key(Hub.MoodBps)) + " · " + CityLifeStrings.T("week.moodSub") : CityLifeStrings.T("week.moodOffline");
                 _mood.EnableInClassList("duo-value-positive", Hub.MoodKnown && Hub.MoodBps > 0);
                 _mood.EnableInClassList("duo-value-negative", Hub.MoodKnown && Hub.MoodBps < 0);
                 if (_clueExpires != null && _clue.Clue?.ExpiresAtMs != null)

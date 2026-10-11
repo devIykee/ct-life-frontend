@@ -205,7 +205,7 @@ namespace CTLife.Competition
             if (d.BoardError != null) { body.Add(CompUi.ErrorBlock(d.BoardError, () => ShowList(2))); return; }
             if (d.Board.Entries.Count == 0) { body.Add(Duo.Empty(CompStrings.T("beef.elo.empty"))); return; }
             string N(long v) => v.ToString(System.Globalization.CultureInfo.InvariantCulture);
-            body.Add(DuoBoard.Board(d.Board.Entries.Select(e => new DuoRank(e.Rank, e.UserId == Me ? CompStrings.T("common.you") : e.Alias, e.UserId, N(e.Value), e.UserId == Me)).ToList(), "beef-elo-board"));
+            body.Add(DuoBoard.Board(d.Board.Entries.Select(e => new DuoRank(e.Rank, e.UserId == Me ? CompStrings.T("common.you") : string.IsNullOrWhiteSpace(e.Alias) ? CompStrings.T("common.unnamed") : e.Alias, e.UserId, N(e.Value), e.UserId == Me)).ToList(), "beef-elo-board"));
             if (d.Board.Me != null && d.Board.Entries.All(e => e.UserId != d.Board.Me.UserId))
                 body.Add(DuoBoard.Row(new DuoRank(d.Board.Me.Rank, CompStrings.T("common.you"), Me, N(d.Board.Me.Value), true)));
         }
