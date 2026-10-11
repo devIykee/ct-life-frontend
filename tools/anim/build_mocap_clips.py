@@ -267,6 +267,16 @@ def sel_hop_turn(m):
     return start, end, ev
 
 
+def sel_fixed(a, b, note):
+    """A fixed AMC window read off the per-frame wrist/torso trace (tools/anim scan, Feel lane F1 2026-10-17)."""
+    def sel(m):
+        seg = rng(m, a, b)
+        return a, b, {'rule': 'fixed window ' + note,
+                      'hips_speed_max_mps': r2(max(r['speed_h'] for r in seg), 2),
+                      'torso_pitch_max_deg': r2(max(r['torso_pitch'] for r in seg), 1)}
+    return sel
+
+
 CLIPS = [
     {'id': 'getup_face_down', 'subject': '140', 'take': '140_01', 'alt_take': '140_02', 'align': 'end',
      'cmu_title': 'Get Up Face Down', 'select': lambda m: sel_getup(m, 'down'), 'ortho': 2.8},
@@ -278,6 +288,13 @@ CLIPS = [
      'select': sel_jog_stop},
     {'id': 'turn_180', 'subject': '91', 'take': '91_54', 'align': 'start', 'cmu_title': '180',
      'select': sel_hop_turn},
+    # Feel lane F1 (2026-10-17): real gestures in place of the hand-keyed wave and shrug. Unity's EmoteBake keeps the
+    # upper body and stands it on the game's own idle legs. (Tried and dropped after the close-up review: 13_27 6.3-7.8 s
+    # as the point, a two-arm traffic gesture; 111_02 as the bow, whole-body retarget turned the body off its root.)
+    {'id': 'wave_hello', 'subject': '141', 'take': '141_16', 'align': 'start', 'cmu_title': 'Wave Hello',
+     'select': sel_fixed(1, 241, '0-2.0 s: right hand up from 0.2 s, waving above the shoulder, down by 1.8 s')},
+    {'id': 'shrug', 'subject': '141', 'take': '141_21', 'align': 'start', 'cmu_title': 'Shrug',
+     'select': sel_fixed(43, 223, '0.35-1.85 s: both forearms lift with the shoulders at 0.8-1.0 s and settle')},
 ]
 
 

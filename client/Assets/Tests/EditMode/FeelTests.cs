@@ -86,7 +86,7 @@ namespace CTLife.Tests
         {
             Assert.IsTrue(HandPoses.TryState("emote_thumbs_up", out var s) && s == "hand_relaxed_thumbs");
             Assert.IsTrue(HandPoses.TryState("emote_point", out s) && s == "hand_relaxed_point");
-            Assert.IsTrue(HandPoses.TryState("emote_wagmi_fist_pump", out s) && s == "hand_fist_fist");
+            Assert.IsTrue(HandPoses.TryState("emote_wagmi", out s) && s == "hand_fist_fist", "keyed by the state AvatarView plays");
             Assert.IsFalse(HandPoses.TryState("emote_nod", out _), "head-only emotes keep the clip's hands");
             var controller = Resources.Load<RuntimeAnimatorController>("Characters/AvatarController") as UnityEditor.Animations.AnimatorController;
             Assert.IsNotNull(controller);
@@ -96,6 +96,37 @@ namespace CTLife.Tests
             Assert.IsNotNull(layer.avatarMask);
             foreach (var combo in HandPoses.Map.Values.Distinct())
                 Assert.IsTrue(layer.stateMachine.states.Any(x => x.state.name == HandPoses.StateName(combo.left, combo.right)), combo.ToString());
+            var played = controller.layers[0].stateMachine.states.Select(x => x.state.name).ToHashSet();
+            foreach (var id in HandPoses.Map.Keys)
+                Assert.IsTrue(played.Contains(id), id + ": a hand pose must be keyed by a base-layer state (the id PlayOneShot plays)");
+        }
+
+        [Test]
+        public void Emotes_StandOnTheGameIdle_AndTheIdleNeverRaisesTheArms()
+        {
+            // Feel lane F1: the baked emotes take root and legs from the relaxed idle, the gesture from the upper body.
+            Assert.AreEqual(CTLife.EditorTools.EmoteBake.Group.Root, CTLife.EditorTools.EmoteBake.GroupOf("RootQ.w"));
+            Assert.AreEqual(CTLife.EditorTools.EmoteBake.Group.Legs, CTLife.EditorTools.EmoteBake.GroupOf("Left Upper Leg In-Out"));
+            Assert.AreEqual(CTLife.EditorTools.EmoteBake.Group.Legs, CTLife.EditorTools.EmoteBake.GroupOf("RightFootQ.y"));
+            Assert.AreEqual(CTLife.EditorTools.EmoteBake.Group.Legs, CTLife.EditorTools.EmoteBake.GroupOf("Right Toes Up-Down"));
+            Assert.AreEqual(CTLife.EditorTools.EmoteBake.Group.Fingers, CTLife.EditorTools.EmoteBake.GroupOf("LeftHand.Thumb.1 Stretched"));
+            Assert.AreEqual(CTLife.EditorTools.EmoteBake.Group.Upper, CTLife.EditorTools.EmoteBake.GroupOf("Left Hand Down-Up"), "the wrist is the gesture's");
+            Assert.AreEqual(CTLife.EditorTools.EmoteBake.Group.Upper, CTLife.EditorTools.EmoteBake.GroupOf("Right Arm Down-Up"));
+            Assert.AreEqual(CTLife.EditorTools.EmoteBake.Group.Upper, CTLife.EditorTools.EmoteBake.GroupOf("Spine Front-Back"));
+            Assert.AreEqual(0f, CTLife.EditorTools.EmoteBake.Weight(0f, 2f, 0.3f, 0.35f), 1e-5f);
+            Assert.AreEqual(1f, CTLife.EditorTools.EmoteBake.Weight(1f, 2f, 0.3f, 0.35f), 1e-5f);
+            Assert.AreEqual(0f, CTLife.EditorTools.EmoteBake.Weight(2f, 2f, 0.3f, 0.35f), 1e-5f);
+            var controller = Resources.Load<RuntimeAnimatorController>("Characters/AvatarController") as UnityEditor.Animations.AnimatorController;
+            var states = controller.layers[0].stateMachine.states.ToDictionary(x => x.state.name, x => x.state);
+            foreach (var spec in CTLife.EditorTools.EmoteBake.Specs)
+            {
+                var clip = states[spec.State].motion as AnimationClip;
+                Assert.IsNotNull(clip, spec.State);
+                StringAssert.StartsWith(CTLife.EditorTools.EmoteBake.Folder, UnityEditor.AssetDatabase.GetAssetPath(clip), spec.State + " plays its baked clip");
+                Assert.IsTrue(clip.humanMotion, spec.State + " is a Humanoid muscle clip");
+            }
+            Assert.IsFalse(CTLife.World.AvatarView.IdleVariationIds.Contains("idle_fidget_stretch"),
+                "standing still must not throw both arms overhead every few seconds");
         }
     }
 }

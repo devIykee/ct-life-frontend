@@ -31,6 +31,9 @@ namespace CTLife.EditorTools
             ("getup_face_down.fbx", "act_get_up_front"), // CMU 140_02 "Get Up Face Down"
             ("trip.fbx", "react_trip"),                  // CMU 104_13 "StumbleWalk", trimmed to one stumble and recovery
             ("jog_stop.fbx", "loco_run_stop"),           // CMU 104_09 "JogStop"
+            // Feel lane F1 gesture sources: EmoteBake puts their upper body on the game idle.
+            ("wave_hello.fbx", "emote_wave"),            // CMU 141_16 "Wave Hello"
+            ("shrug.fbx", "emote_shrug"),                // CMU 141_21 "Shrug"
         };
 
         /// <summary>

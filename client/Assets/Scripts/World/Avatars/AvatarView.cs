@@ -112,7 +112,10 @@ namespace CTLife.World
         private float _speed;
         private float _nextIdleVariation;
         private float _lastYaw, _turnShuffleUntil;
-        private static readonly string[] IdleVariations = { "idle_fidget_lookaround", "idle_fidget_stretch", "idle_fidget_foldarms" };
+        // Subtle variations only (Feel lane F1): the overhead stretch read as the character randomly throwing its arms up
+        // ("when it raises its hands it feels very weird"); it stays a state for anything that asks for it explicitly.
+        private static readonly string[] IdleVariations = { "idle_fidget_lookaround", "idle_fidget_foldarms" };
+        public static System.Collections.Generic.IReadOnlyList<string> IdleVariationIds => IdleVariations;
 
         public void Init(Animator animator, ProceduralAnimator procedural, SkinnedMeshRenderer body, Mesh[] lods, float height)
         {
@@ -634,7 +637,7 @@ namespace CTLife.World
                 if (idleBase) AnimationLibrary.TryPlay(Animator, "loco_idle", 0.2f);
             }
             if (!idleBase || Talking || LodTier > 0 || _speed > 0.1f || Time.time < _nextIdleVariation) return;
-            _nextIdleVariation = Time.time + Random.Range(9f, 18f);
+            _nextIdleVariation = Time.time + Random.Range(14f, 28f);
             var id = IdleVariations[Random.Range(0, IdleVariations.Length)];
             if (!Animator.HasState(0, AnimationLibrary.Hash(id))) return;
             float length = LocomotionTuning.Instance != null ? LocomotionTuning.Instance.LengthOf(id, 3f) : 3f;
