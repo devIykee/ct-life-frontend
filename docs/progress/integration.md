@@ -1,4 +1,4 @@
-READY TO COMMIT: client/Assets/Art/characters/cast/ (+cast.meta; 75 looks, materials, prefabs, manifest.json), client/Assets/Resources/Characters/CharacterRegistry.asset, client/Assets/Resources/UI/CreatorLookCatalog.asset, client/Assets/Resources/UI/Art/CityDiorama.png.meta, client/Assets/World/Venues/*/Textures/*.png.meta (Android 1024 caps), client/Assets/Scripts/{Editor/{CastImport,SizeBudget,BuildScript}.cs,App/FlowController.cs,UI/Screens/{CharacterCreatorScreen,CreatorLookCatalog}.cs,World/Avatars/AvatarView.cs,World/Venue/VenueSession.cs} (+ new .meta), client/Assets/Tests/EditMode/LaunchArgsTests.cs.meta, client/ProjectSettings/ProjectSettings.asset (Android: managed stripping Medium, R8 minify release, IL2CPP OptimizeSize), tools/integration/{crowd-bots.mjs,seeker_launch.sh}, docs/progress/{integration,requests}.md — "integration: cast imported (75 looks, LOD crowd), creator + NPCs on cast, release APK 140 MiB, device pass after real SIWS". Checks: compile_check dev/editor 0 errors; Seeker feature pass on the stripped build = same results as editor.
+READY TO COMMIT (device round on dev 456ad50): client/Assets/Scripts/UI/El.cs, docs/progress/integration.md. Commit message: "fix(ui): buttons no parent sizes keep their text width (connection-retry Try again); device round: venues, release size, EditMode". Checks: compile_check dev/release/editor 0 errors; EditMode 793/793; Seeker retry screen verified.
 
 # Integration lead log
 
@@ -319,6 +319,94 @@ Notes for the coordinator:
     - `icon_round_192.png`
     - `splash_landscape_2670x1200.png`
 - Not included: DynaPuff and Chakra Petch (removed per the correction; no font files or USS references remain).
+
+## 2026-10-08: Device round on dev 456ad50 (repacked venues, retry button)
+
+### 1. Connection-retry "Try again" button (user-approved fix)
+- **Cause, confirmed in Unity 6000.3.25f1's C# source** (`Modules/UIElements/Core/VisualElementHierarchy.cs`,
+  UnityCsReference tag 6000.3.25f1):
+  - Adding a child to an element calls `RemoveMeasureFunction()`. It is restored only when the child count drops back to 0.
+  - Every `El.Btn` adds two decorative children (`ct-button-depth`, `ct-button-glint`), so no button measures its own text.
+  - A button that its parent sizes (stretch, flex-grow, explicit width) looks right. One that no parent sizes collapses
+    to its padding and wraps one letter per line. Example: retry in `.ct-splash`, a centre-aligned column; the pill was
+    80 ref px = 72 padding + 8 border.
+- **Fix** (`client/Assets/Scripts/UI/El.cs`, `KeepTextWidth`, called from `El.Btn`):
+  - It acts only when a button is laid out (border box > 0) but its content box is empty.
+  - It then sets `min-width` = the single-line text width (`TextElement.MeasureTextSize`) + padding + border, capped to the parent.
+  - It re-checks on geometry and text changes (`ChangeEvent<string>`).
+  - Buttons a parent already sizes, and hidden ones, are untouched, so nothing else changes look.
+  - Dev builds log each corrected button (`CTLIFE [ui] button "…" had no width from its parent`).
+- **Other buttons with the same bug.** Code check of the text buttons' containers:
+  - The Social lane's "ongoing call / space" button sits in `.ct-social-chip-bar`, also a centre-aligned column. It has
+    the same collapse and the generic fix covers it.
+  - Lottery, sign-in, lobby, app pages, sheets and HUD stretch or size their buttons. The HUD chat button already had a
+    `min-width: 240px` workaround.
+  - Device logs from this round's launches name no other corrected button. The first version had two false positives
+    on hidden buttons (lobby "OPENING THE CITY…" and the incident history button); the border-box guard removed them.
+- Device check: verified on the Seeker by launching with the backend unreachable. "Try again" is one line with its yellow fill, outline and depth unchanged; the log shows `min-width 249 from its text`. Evidence: `../ct-life-evidence/perf-venues-20261008/07-retry-fixed.png` (before: `../ct-life-evidence/branding/06-retry-offline.png`).
+
+### 2. Venue perf on the Seeker
+Dev APK env=local, dev account session. Median of 5 s `[fps]` windows; CPU main / GPU are frame timings of the last frame.
+- "Normal" means the Seeker's own thermal state, status 2–3, where the game caps at 30.
+- "Lifted" means `cmd thermalservice override-status 0`, restored with `reset` afterwards. Only windows where the game's
+  target is 60 are kept. `ThermalBudget` holds the 30 cap for 30 s after cooling (`RecoverySeconds`), so a 45 s override
+  yields only 2–3 windows at 60; I re-ran the lifted phase for 95 s.
+
+| Venue | avatars | phase | windows | fps | p99 ms | draw calls | triangles | CPU main ms | GPU ms |
+|---|---|---|---|---|---|---|---|---|---|
+| Timeline Square, 30-bot crowd | 35 | normal | 11 | 30.1 (cap) | 33.3 | 105 | 237k | 16.3 | 18.4 |
+| Timeline Square, 30-bot crowd | 35 | lifted | 17 | **60.3** (min 59.3) | 16.6 | 104 | 230k | 9.8 | 14.2 |
+| Timeline Square, alone | 1 | lifted | 12 | 60.3 | 16.6 | 36 | 120k | 8.7 | 12.5 |
+| Terminal Café | 2 | normal | 11 | 30.2 (cap) | 33.4 | 37 | 74k | 8.8 | 10.7 |
+| Terminal Café | 2 | lifted | 12 | 60.3 | 16.6 | 35 | 74k | 8.7 | 11.6 |
+| Spaces Studio | 1 | normal | 11 | 30.1 (cap) | 33.3 | 25 | 30k | 8.1 | 9.7 |
+| Spaces Studio | 1 | lifted | 12 | 60.3 | 16.6 | 25 | 30k | 7.7 | 10.0 |
+
+**Compared with last round**
+
+| | Before | Now |
+|---|---|---|
+| Timeline crowd, normal | 30.1 fps, 256 draws, 238k triangles, GPU 17.7 ms | 30.1 fps, 105 draws (−59 %), 237k triangles, GPU 18.4 ms |
+| Timeline crowd, lifted | 60.3 fps, 253 draws, 228k triangles, CPU 10.8 / GPU 13.9 ms | 60.3 fps (17 windows), 104 draws (−59 %), 230k triangles, CPU 9.8 / GPU 14.2 ms |
+| Terminal Café | 202 draws, 56k triangles, CPU 9.9 / GPU 10.6 ms | 37 draws (−82 %), 74k triangles (+32 %), CPU 8.8 / GPU 10.7 ms |
+
+- **Triangles vs draws saved.** The triangles do **not** cost more than the draws saved:
+  - Timeline's triangle count is unchanged.
+  - The café's +18k triangles show no GPU change at the cap, and 11.6 ms at 60 fps, well inside 16.6.
+  - No cell-size change is needed in `VenueCatalog.cs`.
+- With 35 avatars the city is 105 draws, inside the < 150 budget. Avatars are now the largest share: about 69 draws,
+  and most of the 16 ms of CPU main.
+- Spaces Studio had no earlier measurement.
+- Evidence: `../ct-life-evidence/perf-venues-20261008/` (raw logcat per venue and phase, screenshots, crowd logs).
+
+### 3. Release APK size
+**148.4 MiB** (was 140.3; budget 150; `Builds/ctlife-local-release.apk`, env=local, built in the build clone).
+
+Build-report diff of used assets, uncompressed:
+
+| Change | Size |
+|---|---|
+| Repacked venues added | +55.8 MB |
+| Old venue sources and candidates removed | about −29 MB |
+| Unity splash removed (branding) | −2.7 MB |
+
+The new venue weight breaks down as:
+
+| Part | Size |
+|---|---|
+| Baked-lighting uv2 meshes (`*/Lighting/Meshes`) | 32.9 MB |
+| Atlases | 21.2 MB |
+| Lightmaps | 1.4 MB |
+
+Headroom is now 1.6 MiB. [Inference] The largest lever is the uv2 lighting meshes, which are `.asset` meshes and so get
+no importer mesh compression (venue lane, `VenueRepack.cs`).
+
+The dev APK's file size is not a usable metric this round. It holds 171.9 MiB of entries in a 232.3 MiB file.
+[Inference] The rest is dead space from Gradle's incremental packaging in the reused build clone.
+
+### 4. EditMode suite
+**793/793 passed** (7 assemblies, same `-assemblyNames` as last round; was 792/792). Results:
+`../ct-life-evidence/perf-venues-20261008/editmode-results.xml`.
 
 ## Status
 
