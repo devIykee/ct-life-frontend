@@ -31,6 +31,10 @@ def tier_of(name):
 
 results = {'files': {}, 'failures': []}
 files = sorted(EXPORT.glob('looks/*/*.fbx')) + sorted(EXPORT.glob('parts/*/*.fbx'))
+FILT = [a for a in (sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else [])]
+if FILT:
+    # filters: look ids, or fam/part prefixes for runtime parts (e.g. f/hair_afro)
+    files = [f for f in files if any(('looks/' + x + '/') in str(f) or ('parts/' + x) in str(f) for x in FILT)]
 for f in files:
     rel = str(f.relative_to(EXPORT))
     fam = 'f' if '/f/' in rel or rel.startswith('parts/f') else None
@@ -85,6 +89,14 @@ for f in files:
     results['files'][rel] = r
     if not r['ok']:
         results['failures'].append({rel: r['errors']})
-results['summary'] = {'files': len(files), 'failed': len(results['failures'])}
+if FILT and (EXPORT / 'validation.json').exists():
+    prev = json.loads((EXPORT / 'validation.json').read_text())
+    # drop entries for files that no longer exist, replace re-validated ones
+    prev['files'] = {k: v for k, v in prev['files'].items() if (EXPORT / k).exists()}
+    prev['files'].update(results['files'])
+    results['files'] = prev['files']
+    results['last_partial_run'] = {'filters': FILT, 'files': len(files), 'failed': len(results['failures'])}
+results['failures'] = [{k: v['errors']} for k, v in results['files'].items() if not v['ok']]
+results['summary'] = {'files': len(results['files']), 'failed': len(results['failures'])}
 (EXPORT / 'validation.json').write_text(json.dumps(results, indent=1))
 log('VALIDATE_DONE', json.dumps(results['summary']), results['failures'][:10])

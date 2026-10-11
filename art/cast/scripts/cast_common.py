@@ -89,7 +89,7 @@ SUB_IDS = {'face': 1, 'eyes': 2, 'brows': 3, 'lashes': 4, 'hair': 5, 'ponytail':
            'acc_screen': 57, 'acc_strap': 58, 'acc_lens': 59, 'acc_tex': 60, 'acc_glow2': 61}
 SUB_NAME = {v: k for k, v in SUB_IDS.items()}
 # Body-chunk regions on SKIN faces
-REGION = {'hand': 1, 'forearm': 2, 'upperarm': 3, 'torso': 4, 'ankle': 5, 'legs': 6, 'waist': 7}
+REGION = {'hand': 1, 'forearm': 2, 'upperarm': 3, 'torso': 4, 'ankle': 5, 'legs': 6, 'waist': 7, 'hip': 8}
 
 def fam_dir(fam):
     d = EVID / 'families' / fam

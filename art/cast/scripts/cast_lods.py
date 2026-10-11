@@ -221,6 +221,8 @@ for part, src in sorted(sources.items()):
         for p in src.data.polygons:
             if p.center.z > hem_z:
                 reg[p.index] = REGION['waist']
+            elif p.center.z > hem_z - 0.105:
+                reg[p.index] = REGION['hip']   # hidden under hem-extended tops (jacket/coat/kaftan)
         face_attr(src, 'region', reg)
     report[part] = {'flipped_faces': flipped} if flipped else {}
     prev = None
@@ -289,7 +291,35 @@ for o in list(bpy.data.objects):
     if o.type == 'MESH' and o not in out_objs:
         bpy.data.objects.remove(o, do_unlink=True)
 bpy.ops.outliner.orphans_purge(do_recursive=True)
-name = 'lods.blend' if not only else 'lods_partial.blend'
-bpy.ops.wm.save_as_mainfile(filepath=str(d / name), compress=True)
-(d / ('lods_report.json' if not only else 'lods_partial_report.json')).write_text(json.dumps(report, indent=1))
+if not only:
+    bpy.ops.wm.save_as_mainfile(filepath=str(d / 'lods.blend'), compress=True)
+    (d / 'lods_report.json').write_text(json.dumps(report, indent=1))
+else:
+    # merge the rebuilt parts into the existing lods.blend (other parts untouched)
+    bpy.ops.wm.save_as_mainfile(filepath=str(d / '__lods_new.blend'), compress=True)
+    names = [o.name for o in out_objs]
+    bpy.ops.wm.open_mainfile(filepath=str(d / 'lods.blend'), load_ui=False, use_scripts=False)
+    for o in list(bpy.data.objects):
+        if o.type == 'MESH' and '|' in o.name and o.name.split('|')[1] in only:
+            bpy.data.objects.remove(o, do_unlink=True)
+    rig2 = next(o for o in bpy.data.objects if o.type == 'ARMATURE')
+    with bpy.data.libraries.load(str(d / '__lods_new.blend'), link=False) as (src_, dst_):
+        dst_.objects = [n for n in src_.objects if n in names]
+    for o in dst_.objects:
+        if o:
+            bpy.context.scene.collection.objects.link(o)
+            o.parent = rig2
+            for m in o.modifiers:
+                if m.type == 'ARMATURE':
+                    m.object = rig2
+    for o in list(bpy.data.objects):
+        if o.type == 'ARMATURE' and o is not rig2:
+            bpy.data.objects.remove(o, do_unlink=True)
+    bpy.ops.outliner.orphans_purge(do_recursive=True)
+    bpy.ops.wm.save_as_mainfile(filepath=str(d / 'lods.blend'), compress=True)
+    (d / '__lods_new.blend').unlink()
+    rp = d / 'lods_report.json'
+    old = json.loads(rp.read_text()) if rp.exists() else {}
+    old.update(report)
+    rp.write_text(json.dumps(old, indent=1))
 log('LODS_DONE', fam, len(out_objs))

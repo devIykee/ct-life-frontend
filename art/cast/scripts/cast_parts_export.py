@@ -14,7 +14,9 @@ from cast_common import *
 import cast_tex as T
 import cast_spec as S
 
-fam = sys.argv[sys.argv.index('--') + 1]
+_args = sys.argv[sys.argv.index('--') + 1:]
+fam = _args[0]
+ONLY = set(_args[1:])
 d = fam_dir(fam)
 out = EXPORT / 'parts' / fam
 out.mkdir(parents=True, exist_ok=True)
@@ -25,6 +27,8 @@ meta = json.loads((d / 'meta.json').read_text())
 BONES = meta['bones']
 TN = {'hero': 'Hero', 'lod0': 'LOD0', 'lod1': 'LOD1', 'lod2': 'LOD2'}
 parts = sorted({o.name.split('|')[1] for o in bpy.data.objects if '|' in o.name})
+if ONLY:
+    parts = [p for p in parts if p in ONLY]
 exp = dict(use_selection=True, object_types={'MESH', 'ARMATURE'}, add_leaf_bones=False, use_armature_deform_only=True,
            bake_anim=False, axis_forward='-Z', axis_up='Y', global_scale=1, apply_unit_scale=True,
            apply_scale_options='FBX_SCALE_UNITS', use_mesh_modifiers=False, path_mode='STRIP', use_tspace=False)
@@ -38,7 +42,7 @@ for part in parts:
     if part == 'skin':
         chunks = {f'skin_{REGION_NAMES[r]}': r for r in (1, 2, 3, 4, 5)}
     elif part.startswith('bottom'):
-        chunks = {part: -REGION['waist'], f'{part}_waist': REGION['waist']}
+        chunks = {part: ('not', (REGION['waist'], REGION['hip'])), f'{part}_waist': REGION['waist'], f'{part}_hip': REGION['hip']}
     for cname, region in chunks.items():
         objs = []
         tris = {}
@@ -50,8 +54,8 @@ for part in parts:
             o.parent = rig
             if region is not None:
                 rg = get_face_attr(o, 'region')
-                if region < 0:
-                    keep_faces(o, lambda f: rg[f.index] != -region)
+                if isinstance(region, tuple):
+                    keep_faces(o, lambda f: rg[f.index] not in region[1])
                 else:
                     keep_faces(o, lambda f: rg[f.index] == region)
                 if len(o.data.polygons) == 0:
@@ -73,7 +77,7 @@ for part in parts:
         if hero:
             select_only(hero + [rig], rig)
             bpy.ops.export_scene.fbx(filepath=str(out / f'{cname}_Hero.fbx'), **exp)
-        hides = list(info['hides']) + (['waist'] if part.startswith(('top', 'outer')) else [])
+        hides = list(info['hides']) + (['waist'] if part.startswith(('top', 'outer')) else []) + (['hip'] if part in ('top_jacket', 'top_coat', 'top_kaftan') else [])
         index['parts'][cname] = {'part': part, 'slot': info['slot'], 'hides_body_regions': hides, 'needs': info['needs'],
                                  'triangles': tris, 'fbx': f'{cname}.fbx', 'hero_fbx': f'{cname}_Hero.fbx' if hero else None,
                                  'license': reg.get(part, {}).get('license', 'derivative-ccby'), 'notes': reg.get(part, {}).get('notes', '')}
@@ -92,7 +96,14 @@ for part in parts:
         if index['parts'][cname]['part'] == part:
             index['parts'][cname]['textures'] = {k: f'{part}_{k}.png' for k in ('BaseColor', 'Normal', 'MetallicSmoothness', 'Mask')}
     log('part exported', part)
-index['region_note'] = 'hides_body_regions names skin chunks (skin_<region>) and, for waist, the <bottom>_waist chunk of the worn bottom.'
+if ONLY and (out / 'parts.json').exists():
+    prev = json.loads((out / 'parts.json').read_text())
+    for k, v in list(prev['parts'].items()):
+        if v['part'] in ONLY:
+            del prev['parts'][k]
+    prev['parts'].update(index['parts'])
+    index['parts'] = prev['parts']
+index['region_note'] = 'hides_body_regions names skin chunks (skin_<region>); waist/hip name the <bottom>_waist / <bottom>_hip chunks of the worn bottom.'
 index['mask_encoding'] = 'R = sub id / 64 (see cast_common.SUB_IDS); tint garments/accessories per sub id at runtime'
 index['sub_ids'] = SUB_IDS
 (out / 'parts.json').write_text(json.dumps(index, indent=1))

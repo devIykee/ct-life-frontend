@@ -39,9 +39,10 @@ def assemble(look, tier):
             raise RuntimeError(f'missing part {part} {tier}')
         o = duplicate(src, f'__{look["id"]}_{part}_{tier}')
         o.parent = rig
-        if part.startswith('bottom') and 'waist' in hides:
+        hid_b = {REGION[h] for h in ('waist', 'hip') if h in hides}
+        if part.startswith('bottom') and hid_b:
             reg = get_face_attr(o, 'region')
-            keep_faces(o, lambda f: reg[f.index] != REGION['waist'])
+            keep_faces(o, lambda f: reg[f.index] not in hid_b)
         if part == 'skin' and hides:
             reg = get_face_attr(o, 'region')
             hid = {REGION[h] for h in hides if h in REGION}

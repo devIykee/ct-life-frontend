@@ -839,7 +839,8 @@ Import steps (proposal; Unity 6.3 behaviour not exercised by this lane):
 9. Runtime wardrobe (players): merge the chosen parts into one SkinnedMeshRenderer (same rig), copy each
    part's slot texture into its fixed rect of one atlas (8x8 grid in `parts.json` → `slots`), drop body
    chunks named in `hides_body_regions` (skin is split into `skin_hand/forearm/upperarm/torso/ankle`;
-   `waist` = the `<bottom>_waist` chunk, hidden under any top/outer layer), include `needs` (e.g. shorts
+   `waist` = the `<bottom>_waist` chunk, hidden under any top/outer layer; `hip` = `<bottom>_hip`, hidden under
+   top_jacket/top_coat/top_kaftan), include `needs` (e.g. shorts
    need `legs`). Tint per sub id with `<part>_Mask.png`. Part FBX keep all 55 bones even when unweighted.
 10. Credits screen must carry: "Snow Rig (CC) Blender Foundation | studio.blender.org" and
     "Rain Rig (CC) Blender Foundation | studio.blender.org", CC BY 4.0, with "modified by CT Life".

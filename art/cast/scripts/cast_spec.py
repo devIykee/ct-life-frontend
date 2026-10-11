@@ -44,6 +44,8 @@ def hides_for(look):
         h |= set(part_info(look['fam'], part)['hides'])
         if part.startswith(('top', 'outer')) and look.get('kind') != 'identity':
             h.add('waist')  # hanging tops cover the trouser waistband (region 7 on bottoms)
+        if part in ('top_jacket', 'top_coat', 'top_kaftan'):
+            h.add('hip')    # hem-extended tops also cover the hip band (region 8 on bottoms)
     return h
 
 def resolved_parts(look):
@@ -414,7 +416,19 @@ def hair_tex(look, fam, part):
         lb[scalp] = mix[scalp] * np.clip(t.ao[scalp], 0.4, 1)[:, None]
         t.normal[scalp] = height_to_normal(nz, 1.0)[scalp]
         T.set_ms(t, scalp, 0, 0.2)
-    for sname, freq in (('afro', 900), ('loc', 300), ('hair', 600)):
+    afro = t.mask('afro')
+    if afro.any():
+        # coils: domain-warped sine cells (~1 cm) give curl relief, gaps darken like AO
+        k = 520.0
+        w = p + 0.004 * (T.noise3(p, 150, seed=33, octaves=1)[..., None] - 0.5)
+        cell = np.sin(k * w[..., 0]) * np.sin(k * 1.07 * w[..., 1] + 1.3) * np.sin(k * 0.93 * w[..., 2] + 0.7)
+        h = np.clip(0.5 + 0.5 * cell, 0, 1) ** 0.8
+        low = T.noise3(p, 60, seed=34, octaves=2)
+        sh = (0.42 + 0.58 * h) * (0.85 + 0.3 * low) * np.clip(t.ao, 0.45, 1)
+        lb[afro] = col[None, :] * sh[afro][:, None]
+        t.normal[afro] = height_to_normal(h, 6.0)[afro]
+        T.set_ms(t, afro, 0, 0.18)
+    for sname, freq in (('loc', 300), ('hair', 600)):
         m = t.mask(sname) & ~orig
         if m.any():
             nn = T.noise3(p, freq, seed=31, octaves=2)
@@ -692,7 +706,7 @@ LOOKS += [
     L_('player_f_trencher', 'f', {'head': {}, 'hair': {}, 'skin': {}, 'top_hoodie': hoodie('#b4a0e5', PR('TRENCHES', w=0.17, color='#2b2b2b')), 'bottom_shorts': JEANS(),
         'shoes': SNEAK()}, kind=P_, tribe='trencher', label='Trencher', skin_tone='warm', hair_color='brown', tiers=TIERS),
     L_('player_f_lagos_ankara', 'f', {'head': {}, 'hair_buzz': {}, 'skin': {}, 'top_tee': dict(ANKARA, color='#e2582b'), 'bottom_wrap': dict(ANKARA, color='#e2582b'),
-        'shoes': SNEAK('#b48a5a'), 'hat_gele': dict({'acc_a': '#f2b632', 'acc_b': '#f2b632'}, pattern_acc_b=ANKARA)}, kind=P_, label='Lagos ankara + gele', skin_tone='deep', hair_color='black', tiers=TIERS),
+        'shoes': SNEAK('#b48a5a'), 'hat_gele': dict({'acc_a': '#e2582b', 'acc_b': '#e2582b', 'smooth': 0.3}, pattern_acc_a=ANKARA, pattern_acc_b=ANKARA)}, kind=P_, label='Lagos ankara + gele', skin_tone='deep', hair_color='black', tiers=TIERS),
     L_('player_f_blazer', 'f', {'head': {}, 'hair_long': {}, 'skin': {}, 'top_jacket': suit('#e9dfcc', shirt='#141416'), 'bottom': trousers('#141416'), 'shoes': SNEAK('#141416'),
         'acc_lanyard': badge('CHECKPOINT', '#6b3fd1')}, kind=P_, label='Blazer + Checkpoint lanyard', skin_tone='light', hair_color='black', tiers=TIERS),
     L_('player_f_kol', 'f', {'head': {}, 'hair_long': {}, 'skin': {}, 'top_tee': TEE('#141416', prints=[PR('ALPHA', w=0.13)]), 'bottom_skirt': trousers('#141416', kind='leather'),

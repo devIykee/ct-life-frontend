@@ -119,7 +119,9 @@ def new_mesh_obj(name, bm, sub):
     o.parent = rig
     for p in me.polygons:
         p.use_smooth = True
-    face_attr(o, 'sub', [sub] * len(me.polygons))
+    cur = get_face_attr(o, 'sub') if 'sub' in me.attributes else np.zeros(len(me.polygons), dtype=np.int32)
+    cur[cur == 0] = sub   # keep sub ids assigned in the bmesh (e.g. hood rim lining)
+    face_attr(o, 'sub', cur)
     face_attr(o, 'region', default=0)
     o.modifiers.new('Game skin', 'ARMATURE').object = rig
     return o
@@ -216,7 +218,7 @@ def smart_uv(o, angle=60, only_new=False):
     bpy.ops.uv.smart_project(angle_limit=math.radians(angle), island_margin=0.02, scale_to_bounds=False)
     bpy.ops.object.mode_set(mode='OBJECT')
 
-def double_sided(o, inner_sub):
+def double_sided(o, inner_sub, inset=0.0012):
     """Append a flipped copy so open cloth/hair shells render from both sides."""
     bm = bmesh.new(); bm.from_mesh(o.data)
     sub_l = bm.faces.layers.int.get('sub')
@@ -228,7 +230,7 @@ def double_sided(o, inner_sub):
             f[sub_l] = inner_sub
     bm.normal_update()
     for v in {v for f in newf for v in f.verts}:
-        v.co += v.normal * 0.0012  # normals now point inward: move the back layer inside
+        v.co += v.normal * inset  # normals now point inward: move the back layer inside
     bm.to_mesh(o.data); bm.free(); o.data.update()
 
 # ------------------------------------------------------------------ primitives
@@ -334,6 +336,41 @@ def prop_obj(name, build, sub_default=SUB['acc_a']):
     for p in me.polygons:
         p.use_smooth = True
     return o
+
+
+def orient_out(bm, faces, axis_xy=None, center=None):
+    """Flip faces so normals point away from a vertical axis (axis_xy) or a point (center)."""
+    flip = []
+    for f in faces:
+        if not f.is_valid:
+            continue
+        c = f.calc_center_median()
+        if center is not None:
+            r = c - Vector(center)
+        else:
+            r = Vector((c.x - axis_xy[0], c.y - axis_xy[1], 0))
+        if f.normal.dot(r) < 0:
+            flip.append(f)
+    if flip:
+        bmesh.ops.reverse_faces(bm, faces=flip, flip_multires=False)
+    bm.normal_update()
+
+def push_outside(o, target, margin, zmin=-1e9, zmax=1e9):
+    """Move vertices of o that are inside/too close to target's surface out to margin."""
+    bm = bmesh.new(); bm.from_mesh(target.data); bvh = BVHTree.FromBMesh(bm); bm.free()
+    n = 0
+    for v in o.data.vertices:
+        if not (zmin < v.co.z < zmax):
+            continue
+        loc, nrm, idx, dist = bvh.find_nearest(v.co)
+        if loc is None or dist > 0.10:
+            continue
+        h = (v.co - loc).dot(nrm)
+        if h < margin:
+            v.co = v.co + nrm * (margin - h)
+            n += 1
+    o.data.update()
+    return n
 
 # ------------------------------------------------------------------ registry + bake
 REG = {}
@@ -557,6 +594,29 @@ def hem_extend(o, length, flare, sub=SUB['hem'], zcut=None):
         if sub_l:
             f[sub_l] = sub
     bm.normal_update()
+    # consistent winding across torso + hem (radial tests fail on the flared first ring), then make
+    # each island face outward by majority vote around the body axis
+    bmesh.ops.recalc_face_normals(bm, faces=list(bm.faces))
+    bm.faces.index_update()
+    seen = set()
+    for f0 in bm.faces:
+        if f0.index in seen:
+            continue
+        isl, stack = [], [f0]
+        seen.add(f0.index)
+        while stack:
+            f = stack.pop(); isl.append(f)
+            for e in f.edges:
+                for f2 in e.link_faces:
+                    if f2.index not in seen:
+                        seen.add(f2.index); stack.append(f2)
+        vote = 0.0
+        for f in isl:
+            c_ = f.calc_center_median()
+            vote += f.normal.dot(Vector((c_.x - cx, c_.y - cy, 0))) * f.calc_area()
+        if vote < 0:
+            bmesh.ops.reverse_faces(bm, faces=isl, flip_multires=False)
+    bm.normal_update()
     bm.to_mesh(o.data); bm.free(); o.data.update()
     mask = get_face_attr(o, 'sub') == sub
     cyl_uv(o, mask, center=(cx, cy))
@@ -604,6 +664,9 @@ def conform_sleeves(o, arm_offset):
 
 def torso_shell(offset, smooth=1, sleeves=True, sub=None, conform=None):
     m = np.ones(len(top_fd['c']), dtype=bool) if sleeves else ~top_arm
+    if F:
+        zt = float(top_fd['c'][:, 2].min()) + 0.03
+        m = m & ~((top_fd['n'][:, 2] < -0.45) & (top_fd['c'][:, 2] < zt))
     o = derive(P['top'], '__torso', m, offset=offset, smooth=smooth, sub=sub, keep_sub=sub is None)
     if conform is not None and not F:
         conform_sleeves(o, conform)
@@ -650,19 +713,22 @@ def build_tops():
     # 5. jacket / blazer
     if want('top_jacket'):
         o = join([torso_shell(0.011, 2, conform=0.012), arm_shell(0.012)], 'x')
-        hem_extend(o, 0.10, 0.012)
+        hem_extend(o, 0.10, 0.018)
+        log('jacket hem pushed', push_outside(o, P['bottom'], 0.012, zmax=HIPS_Z + 0.25))
         register(join([o, collar_band(0.026, 0.035, 0.008, z0=NECK_Z + 0.012, rx_add=0.008)] + dickey(), 'x'), 'top_jacket', 'TOP', (2300, 1100, 520, 210),
                  hides=hides_long, notes='Suit jacket over shirt-front (dickey) with collar band.')
     # 6. long coat (detective / trench)
     if want('top_coat'):
         o = join([torso_shell(0.013, 2, conform=0.014), arm_shell(0.014)], 'x')
         hem_extend(o, max(0.2, (HIPS_Z - KNEE_Z) * 0.95 + 0.06), 0.07)
+        log('coat hem pushed', push_outside(o, P['bottom'], 0.014, zmax=HIPS_Z + 0.25))
         register(join([o, collar_band(0.045, 0.035, 0.02, z0=NECK_Z + 0.008, rx_add=0.012)] + dickey(), 'x'), 'top_coat', 'TOP', (2500, 1200, 560, 220),
                  hides=hides_long, notes='Knee-length coat; skirt weights blended toward Hips.')
     # 7. kaftan / senator style tunic
     if want('top_kaftan'):
         o = join([torso_shell(0.010, 2, conform=0.014), arm_shell(0.014)], 'x')
         hem_extend(o, max(0.2, (HIPS_Z - KNEE_Z) * 0.85), 0.03)
+        log('kaftan hem pushed', push_outside(o, P['bottom'], 0.012, zmax=HIPS_Z + 0.25))
         register(join([o] + dickey(), 'x'), 'top_kaftan', 'TOP', (2400, 1150, 540, 210), hides=hides_long,
                  notes='Senator/kaftan-style long tunic (round neck, embroidery painted).')
 
@@ -673,30 +739,124 @@ def build_hood(up):
         def keep(p):
             return p.y > c[1] - 0.006 and p.z < c[2] + 0.055
         bm_sphere(bm, c, (NECK_RX + 0.038, 0.042, 0.075), 16, 10, keep)
-    else:
-        top = HEAD_TOP + 0.03
-        c = (0, HEAD_CY + 0.022, (top + NECK_Z) / 2 + 0.01)
-        rx = SKULL_HALF_W + 0.032
-        ry = (HEAD_BACK - FACE_FRONT) / 2 + 0.028
-        rz = (top - NECK_Z) / 2 + 0.02
-        def keep(p):
-            face_hole = (p.y < c[1] - ry * 0.12) and ((p.x / (rx * 0.80)) ** 2 + ((p.z - (EYE_Z - 0.03)) / (rz * 0.74)) ** 2 < 1)
-            return not face_hole and p.z > NECK_Z - 0.02
-        bm_sphere(bm, c, (rx, ry, rz), 20, 14, keep)
+        o = new_mesh_obj('__hood', bm, SUB['hood'])
+        bm.free()
+        smart_uv(o)
+        rigid(o, {'Neck': 0.4, 'Chest': 0.6})
+        double_sided(o, SUB['hood_in'])
+        return o
+    return build_hood_up(bm)
+
+def build_hood_up(bm):
+    """Fabric hood worn up: roomy crown with a soft peak and centre seam, an oval opening framing the
+    face with a rolled rim, folds on the back/sides and a drape that settles onto the shoulders."""
+    sub_l = bm.faces.layers.int['sub']
+    top = HEAD_TOP + 0.028 * S
+    hd = (HEAD_BACK - FACE_FRONT) / 2
+    side = max(SKULL_HALF_W + 0.03, HEAD_HALF_W + 0.014)
+    z_bot = NECK_Z - 0.075
+    SEG, ROWS = 36, 18
+    rng = np.random.default_rng(11)
+    phase = rng.uniform(0, 6.28, 3)
+    grid = []
+    for i in range(ROWS + 1):
+        t = i / ROWS                       # 0 = drape bottom, 1 = crown
+        z = z_bot + (top - z_bot) * t
+        if z > EYE_Z:                      # crown: ellipsoid cap over the skull
+            u = (z - EYE_Z) / (top + 0.014 - EYE_Z)
+            k = math.sqrt(max(0.0, 1 - u ** 2.2))
+            rx, ry = side * k, (hd + 0.03) * k
+            cy = HEAD_CY + 0.012 - 0.01 * u
+        elif z > NECK_Z + 0.02:            # around the face / ears
+            rx, ry = side, hd + 0.03
+            cy = HEAD_CY + 0.014
+        else:                              # drape onto the neck/shoulders
+            u = (NECK_Z + 0.02 - z) / (NECK_Z + 0.02 - z_bot)
+            rx = side + (NECK_RX + 0.10 - side) * u ** 1.2
+            ry = hd + 0.03 + (NECK_RY + 0.09 - hd - 0.03) * u ** 1.2
+            cy = HEAD_CY + 0.014 + (NECK_CY + 0.012 - HEAD_CY - 0.014) * u
+        row = []
+        for k_ in range(SEG):
+            a = 2 * math.pi * k_ / SEG           # 0 = front (-Y)
+            back = 0.5 - 0.5 * math.cos(a)       # 0 front .. 1 back
+            fold_w = (0.25 + 0.75 * back) * (1.0 if z < EYE_Z else 0.4)
+            fold = 0.035 * fold_w * (0.6 * math.sin(5 * a + phase[0] + 4 * t) + 0.4 * math.sin(9 * a + phase[1]))
+            r = 1 + fold
+            x = math.sin(a) * rx * r
+            y = cy - math.cos(a) * ry * r
+            zz = z
+            if z > EYE_Z:                        # centre seam ridge and a soft peak at the front-top
+                x_seam = abs(math.sin(a)) * rx
+                if x_seam < 0.012:
+                    zz += 0.004 * (1 - x_seam / 0.012)
+            row.append(bm.verts.new((x, y, zz)))
+        grid.append(row)
+    capv = bm.verts.new((0, HEAD_CY + 0.004, top + 0.004))
+    faces = []
+    for i in range(ROWS):
+        for k_ in range(SEG):
+            k2 = (k_ + 1) % SEG
+            faces.append(bm.faces.new([grid[i + 1][k_], grid[i][k_], grid[i][k2], grid[i + 1][k2]]))
+    for k_ in range(SEG):
+        faces.append(bm.faces.new([capv, grid[ROWS][k_], grid[ROWS][(k_ + 1) % SEG]]))
+    bm.normal_update()
+    orient_out(bm, faces, center=(0, HEAD_CY, (top + NECK_Z) / 2))
+    # face opening: oval in front, framed from the forehead to below the chin
+    oz_top, oz_bot = EYE_Z + 0.062 * S, CHIN_Z - 0.018
+    oc = (oz_top + oz_bot) / 2
+    oh = (oz_top - oz_bot) / 2
+    ow = SKULL_HALF_W * 0.98
+    kill = []
+    for f in bm.faces:
+        c = f.calc_center_median()
+        if c.y < HEAD_CY - 0.02 and (c.x / ow) ** 2 + ((c.z - oc) / oh) ** 2 < 1.0:
+            kill.append(f)
+    bmesh.ops.delete(bm, geom=kill, context='FACES')
+    # smooth the opening rim, then roll it inward (visible lining thickness)
+    rim = [e for e in bm.edges if e.is_boundary and min(v.co.z for v in e.verts) > z_bot + 0.01]
+    rim_v = {v for e in rim for v in e.verts}
+    for _ in range(4):
+        new = {}
+        for v in rim_v:
+            nb = [e.other_vert(v) for e in v.link_edges if e.is_boundary]
+            if len(nb) == 2:
+                new[v] = v.co * 0.5 + (nb[0].co + nb[1].co) * 0.25
+        for v, co in new.items():
+            v.co = co
+    r = bmesh.ops.extrude_edge_only(bm, edges=rim)
+    nv = [g for g in r['geom'] if isinstance(g, bmesh.types.BMVert)]
+    for v in nv:
+        d = Vector((v.co.x * 0.15, v.co.y - (HEAD_CY + 0.01), 0)).normalized()
+        v.co += -d * 0.010 + Vector((0, 0.006, 0))
+    for g in r['geom']:
+        if isinstance(g, bmesh.types.BMFace):
+            g[sub_l] = SUB['hood_in']
+    bm.normal_update()
     o = new_mesh_obj('__hood', bm, SUB['hood'])
     bm.free()
     smart_uv(o)
-    if up:
-        weights = lambda: None
-        W = np.zeros((len(o.data.vertices), len(BONES)), dtype=np.float32)
-        co = mesh_arrays(o)
-        t = np.clip((co[:, 2] - NECK_Z) / max(EYE_Z - NECK_Z, 0.05), 0, 1)
-        W[:, BONES.index('Head')] = t
-        W[:, BONES.index('Neck')] = 1 - t
-        set_weights_matrix(o, W, BONES, 4)
-    else:
-        rigid(o, {'Neck': 0.4, 'Chest': 0.6})
-    double_sided(o, SUB['hood_in'])
+    # stay clear of head (ears) and the hoodie torso under the drape
+    push_outside(o, P['head'], 0.010)
+    push_outside(o, P['top'], 0.016, zmax=NECK_Z + 0.02)
+    # weights: Head over the crown, Neck below, torso weights in the drape
+    co = mesh_arrays(o)
+    Wh = np.zeros((len(co), len(BONES)), dtype=np.float32)
+    t = np.clip((co[:, 2] - NECK_Z) / max(EYE_Z - NECK_Z, 0.05), 0, 1)
+    Wh[:, BONES.index('Head')] = t
+    Wh[:, BONES.index('Neck')] = 1 - t
+    kd, Ws = weight_sources()
+    a_ = np.clip((co[:, 2] - (NECK_Z - 0.07)) / 0.07, 0, 1)
+    W = np.zeros_like(Wh)
+    for i, c in enumerate(co):
+        if a_[i] >= 1:
+            W[i] = Wh[i]
+            continue
+        hits = kd.find_n(c, 5)
+        ws = np.array([1 / max(dd, 1e-4) ** 2 for _, _, dd in hits])
+        wn = sum(Ws[j] * w for (_, j, _), w in zip(hits, ws)) / ws.sum()
+        W[i] = a_[i] * Wh[i] + (1 - a_[i]) * wn
+    set_weights_matrix(o, W, BONES, 4)
+    double_sided(o, SUB['hood_in'], inset=0.006)
     return o
 
 def build_outer():
@@ -722,34 +882,76 @@ def build_bottoms():
         bm.to_mesh(o.data); bm.free(); o.data.update()
         register(o, 'bottom_shorts', 'BOTTOM', (1100, 520, 260, 100), needs=['legs'], notes='Shorts cut from authored trousers above the knee.')
     if want('bottom_skirt') or want('bottom_wrap'):
-        for nm, hem_z, flare in (('bottom_skirt', KNEE_Z + 0.06, 0.05), ('bottom_wrap', ANKLE_Z + 0.09, 0.03)):
+        for nm, hem_z, flare, famp in (('bottom_skirt', KNEE_Z + 0.06, 0.09, 0.07), ('bottom_wrap', ANKLE_Z + 0.09, 0.04, 0.035)):
             if not want(nm):
                 continue
             pts = mesh_arrays(P['bottom'])
             ztop = pts[:, 2].max() - 0.015
-            rings = []
-            n = 9
+            prof = []
+            n = 12
             maxr = [0, 0]
             for i in range(n):
                 z = ztop + (hem_z - ztop) * i / (n - 1)
-                s = pts[np.abs(pts[:, 2] - z) < 0.025]
-                if len(s) < 8:
-                    s = pts[np.argsort(np.abs(pts[:, 2] - z))[:60]]
-                cx = 0.0
-                cy = float((s[:, 1].min() + s[:, 1].max()) / 2)
-                rx = float(np.abs(s[:, 0]).max()) + 0.012
-                ry = float((s[:, 1].max() - s[:, 1].min()) / 2) + 0.014
+                s_ = pts[np.abs(pts[:, 2] - z) < 0.025]
+                if len(s_) < 8:
+                    s_ = pts[np.argsort(np.abs(pts[:, 2] - z))[:60]]
+                cy = float((s_[:, 1].min() + s_[:, 1].max()) / 2)
+                rx = float(np.abs(s_[:, 0]).max()) + 0.012
+                ry = float((s_[:, 1].max() - s_[:, 1].min()) / 2) + 0.014
                 maxr = [max(maxr[0], rx), max(maxr[1], ry)]
                 t = i / (n - 1)
-                rings.append((cx, cy, z, maxr[0] + flare * t * t, maxr[1] + flare * 0.6 * t * t))
-            bm = bmesh.new(); bm.faces.layers.int.new('sub'); bm.loops.layers.uv.new('AtlasUV')
-            bm_tube(bm, rings, seg=24)
-            o = new_mesh_obj('__skirt', bm, SUB['skirt']); bm.free()
-            cyl_uv(o, center=(0, rings[0][1]))
+                prof.append((cy, z, maxr[0] + flare * t ** 1.6, maxr[1] + flare * 0.7 * t ** 1.6, t))
+            rng = np.random.default_rng(5 if nm == 'bottom_skirt' else 9)
+            ph = rng.uniform(0, 6.28, 3)
+            SEG = 40
+            bm = bmesh.new(); sub_l = bm.faces.layers.int.new('sub'); bm.loops.layers.uv.new('AtlasUV')
+            rows = []
+            for cy, z, rx, ry, t in prof:
+                amp = famp * t ** 1.3
+                row = []
+                for k_ in range(SEG):
+                    a = 2 * math.pi * k_ / SEG
+                    fold = 0.65 * math.sin(9 * a + ph[0]) + 0.35 * math.sin(14 * a + ph[1] + 2 * t)
+                    r = 1 + amp * fold
+                    zz = z + 0.010 * t * t * math.sin(5 * a + ph[2])
+                    row.append(bm.verts.new((math.sin(a) * rx * r, cy - math.cos(a) * ry * r, zz)))
+                rows.append(row)
+            body = []
+            for i in range(len(rows) - 1):
+                for k_ in range(SEG):
+                    k2 = (k_ + 1) % SEG
+                    body.append(bm.faces.new([rows[i][k_], rows[i + 1][k_], rows[i + 1][k2], rows[i][k2]]))
+            # hem thickness: fold the hem back up inside by 2.5 cm, 6 mm in
+            last = rows[-1]
+            cyl = prof[-1][0]
+            inner = []
+            for v in last:
+                d = Vector((v.co.x, v.co.y - cyl, 0)).normalized()
+                inner.append(bm.verts.new(v.co - d * 0.011 + Vector((0, 0, 0.022))))
+            lining = []
+            for k_ in range(SEG):
+                k2 = (k_ + 1) % SEG
+                lining.append(bm.faces.new([last[k_], inner[k_], inner[k2], last[k2]]))
+            bm.normal_update()
+            orient_out(bm, body, axis_xy=(0, cyl))
+            # fold-back faces point inward (seen from below / inside)
+            flip = [f for f in lining if f.normal.dot(Vector((f.calc_center_median().x, f.calc_center_median().y - cyl, 0))) > 0]
+            if flip:
+                bmesh.ops.reverse_faces(bm, faces=flip, flip_multires=False)
+            for f in body:
+                f[sub_l] = SUB['skirt']
+            for f in lining:
+                f[sub_l] = SUB['lining']
+            o = new_mesh_obj('__skirt', bm, SUB['skirt'])
+            subs = [SUB['skirt']] * len(body) + [SUB['lining']] * len(lining)
+            bm.free()
+            face_attr(o, 'sub', subs)
+            cyl_uv(o, center=(0, prof[0][0]))
+            push_outside(o, P['bottom'], 0.008)
             span = max(ztop - hem_z, 0.1)
             weights_nearest(o, mix=lambda c: ('Hips', 0.55 * np.clip((ztop - c[2]) / span, 0, 1)))
-            register(o, nm, 'BOTTOM', (900, 420, 200, 80), needs=['legs'],
-                     notes='Procedural skirt/wrapper (CT Life original geometry).', license='cc0-ctlife')
+            register(o, nm, 'BOTTOM', (1000, 520, 250, 90), needs=['legs'],
+                     notes='Procedural skirt/wrapper with folds, flare and a turned-back hem (CT Life original).', license='cc0-ctlife')
 
 def build_shoes():
     if want('shoes_boots'):
@@ -828,29 +1030,63 @@ def build_hair():
         bpy.data.objects.remove(sc, do_unlink=True)
     if want('hair_afro'):
         bm = bmesh.new(); bm.faces.layers.int.new('sub'); bm.loops.layers.uv.new('AtlasUV')
-        c = (0, HEAD_CY + 0.012, HEAD_TOP - 0.045 * S)
-        rad = (SKULL_HALF_W + 0.055 * S, (HEAD_BACK - FACE_FRONT) / 2 + 0.05 * S, 0.12 * S)
-        def keep(p):
-            if p.z < EYE_Z + 0.01 * S and p.y < HEAD_CY:
-                return False
-            if p.z < EYE_Z - 0.035 * S:
-                return False
-            return True
-        bm_sphere(bm, c, rad, 24, 16, keep)
+        bmesh.ops.create_icosphere(bm, subdivisions=4, radius=1.0, calc_uvs=False)
+        # Hair volume = scalp surface offset by a thickness field that is 0 at the hairline and grows
+        # to a rounded puff (thicker on top/back), broken up by clumps and coils.
+        c = Vector((0, HEAD_CY + 0.004, EYE_Z + 0.012 * S))
+        hb = bmesh.new(); hb.from_mesh(P['head'].data); bvh = BVHTree.FromBMesh(hb); hb.free()
         rng = np.random.default_rng(3)
+        nb = 110
+        bd = rng.normal(size=(nb, 3)); bd /= np.linalg.norm(bd, axis=1, keepdims=True)
+        bw = rng.uniform(0.14, 0.26, nb)
+        ba = rng.uniform(0.006, 0.016, nb) * S
+        def hairline(x, y):
+            a = abs(math.atan2(x, -(y - HEAD_CY)))           # 0 front .. pi back
+            pts_ = [(0.0, EYE_Z + 0.050 * S), (0.55, EYE_Z + 0.044 * S), (0.95, EYE_Z + 0.024 * S),
+                    (1.45, EYE_Z + 0.030 * S), (1.85, EYE_Z + 0.010 * S), (2.5, EYE_Z - 0.045 * S), (math.pi, EYE_Z - 0.075 * S)]
+            for (a0, z0), (a1, z1) in zip(pts_, pts_[1:]):
+                if a <= a1:
+                    u = (a - a0) / (a1 - a0)
+                    return z0 + (z1 - z0) * (u * u * (3 - 2 * u))
+            return pts_[-1][1]
+        kill_v = []
         for v in bm.verts:
-            v.co += (v.co - Vector(c)).normalized() * 0.006 * S * float(rng.random())
+            d = v.co.normalized()
+            hit, nrm, idx, dist = bvh.ray_cast(c, d, 0.4)
+            if hit is None:
+                loc, nrm, idx, dist = bvh.find_nearest(c + d * 0.12)
+                hit = loc
+            h = hairline(hit.x, hit.y)
+            if hit.z < h - 0.006:
+                kill_v.append(v)
+                v.co = hit
+                continue
+            back = max(0.0, d.y)
+            front = max(0.0, -d.y)
+            T = (0.030 + 0.030 * max(0.0, d.z) + 0.012 * back) * S * (1 - 0.35 * front)
+            ramp = min(1.0, max(0.0, (hit.z - h) / ((0.05 + 0.08 * front) * S))) ** (1 + 0.6 * front)
+            ramp = ramp * ramp * (3 - 2 * ramp)
+            dn = np.array(d)
+            bump = float((ba * np.exp(-((1 - np.clip(bd @ dn, -1, 1)) / (bw ** 2 / 2)))).sum())
+            bump = min(bump, 0.022 * S)
+            coil = 0.0025 * S * math.sin(41 * d.x + 3) * math.sin(37 * d.y + 1) * math.sin(43 * d.z + 2)
+            v.co = hit + d * (0.004 + ramp * (T + bump + coil))
+        kill = list({f for v in kill_v for f in v.link_faces})
+        bmesh.ops.delete(bm, geom=kill, context='FACES')
+        loose = [v for v in bm.verts if not v.link_faces]
+        bmesh.ops.delete(bm, geom=loose, context='VERTS')
+        for v in bm.verts:   # final clearance from the head surface
+            loc, nrm, idx, dist = bvh.find_nearest(v.co)
+            if loc is not None and (v.co - loc).dot(nrm) < 0.003:
+                v.co = loc + nrm * 0.004
+        bm.normal_update()
+        orient_out(bm, list(bm.faces), center=tuple(c))
         o = new_mesh_obj('__afro', bm, SUB['afro']); bm.free()
         smart_uv(o)
-        # push out of the head
-        bvh = BVHTree.FromObject(P['head'], bpy.context.evaluated_depsgraph_get())
-        for v in o.data.vertices:
-            loc, nrm, idx, dist = bvh.find_nearest(v.co)
-            if loc is not None and (v.co - loc).dot(nrm) < 0.004:
-                v.co = loc + nrm * 0.006
         rigid(o, {'Head': 1.0})
         sc2 = derive(P['head'], '__afroscalp', scalp_mask(hfd, lo=0.0), offset=0.0015, sub=SUB['scalp'])
-        register(join([o, sc2], 'x'), 'hair_afro', 'HAIR', (1300, 650, 300, 120), notes='Rounded afro volume (CT Life procedural) + scalp shell.', license='mixed')
+        register(join([o, sc2], 'x'), 'hair_afro', 'HAIR', (1500, 700, 330, 130),
+                 notes='Afro with clumped silhouette, tapered hairline and coil texture (CT Life procedural) + scalp shell.', license='mixed')
     if want('hair_long') and F:
         hair = P['hair']
         m = FD['hair']['sub'] != SUB['ponytail']
@@ -1007,29 +1243,82 @@ def build_accessories():
     hat('hat_fila', fila, notes='Fila-style soft cap (Yoruba menswear reference).')
 
     def gele(bm):
-        base = bm_tube(bm, [(0, HEAD_CY + 0.005, brim_z - 0.02, hw + 0.018, hd + 0.018), (0, HEAD_CY + 0.01, brim_z + 0.08, hw + 0.03, hd + 0.03)], seg=20, close_top=True)
-        assign_sub(bm, [v for r in base for v in r], SUB['acc_a'])
-        for i, (ang, h, w) in enumerate(((-0.5, 0.13, 0.17), (0.0, 0.16, 0.19), (0.5, 0.13, 0.17))):
-            rows = []
-            for j in range(4):
-                t = j / 3
+        sub_l = bm.faces.layers.int['sub']
+        seg, nr = 28, 6
+        rows = []
+        for j in range(nr):
+            t = j / (nr - 1)
+            row = []
+            for k_ in range(seg):
+                a = 2 * math.pi * k_ / seg
+                back = 0.5 - 0.5 * math.cos(a)
+                pleat = 1 + 0.07 * math.sin(3 * a + 5 * t) * (0.4 + 0.6 * t)
+                dome = math.sqrt(max(0.0, 1 - (max(0.0, t - 0.55) / 0.45) ** 2 * 0.65))
+                rx_ = (hw + 0.018 + 0.016 * t) * pleat * dome
+                ry_ = (hd + 0.018 + 0.020 * t) * pleat * dome
+                z = brim_z - 0.035 + (HEAD_TOP + 0.012 - brim_z + 0.035) * t + 0.025 * back * t
+                row.append(bm.verts.new((math.sin(a) * rx_, HEAD_CY + 0.006 - math.cos(a) * ry_, z)))
+            rows.append(row)
+        wrap = []
+        for j in range(nr - 1):
+            for k_ in range(seg):
+                k2 = (k_ + 1) % seg
+                wrap.append(bm.faces.new([rows[j][k_], rows[j][k2], rows[j + 1][k2], rows[j + 1][k_]]))
+        topc = bm.verts.new((0, HEAD_CY + 0.016, HEAD_TOP + 0.034))
+        for k_ in range(seg):
+            wrap.append(bm.faces.new([rows[-1][k_], rows[-1][(k_ + 1) % seg], topc]))
+        bm.normal_update()
+        orient_out(bm, wrap, center=(0, HEAD_CY, brim_z))
+        for f in wrap:
+            f[sub_l] = SUB['acc_a']
+        fans = []
+        # accordion-pleated fan crests (main, then a smaller one behind for volume)
+        for (R, tilt, yoff, zoff, span) in ((0.165 * S, -18, 0.012, 0.055, (12, 168)), (0.125 * S, -48, 0.045, 0.045, (22, 158))):
+            npl, nrad = 22, 4
+            q = Matrix.Rotation(math.radians(tilt), 3, 'X')
+            o3 = Vector((0, HEAD_CY + yoff, brim_z + zoff))
+            grid = []
+            for ri in range(nrad + 1):
+                rr = R * (0.22 + 0.78 * ri / nrad)
                 row = []
-                for k in range(9):
-                    u = -1 + 2 * k / 8
-                    x = u * w * (0.35 + 0.65 * t)
-                    y = 0.035 * math.sin(u * 3.5 + j) + 0.03 * t
-                    z = brim_z + 0.06 + h * t * (1 - 0.35 * u * u)
-                    p = Matrix.Rotation(ang * 0.8, 3, 'Z') @ Vector((x, y, z - brim_z)) + Vector((0, HEAD_CY + 0.035, brim_z))
-                    row.append(bm.verts.new(p))
-                rows.append(row)
-            for j in range(3):
-                for k in range(8):
-                    bm.faces.new([rows[j][k], rows[j][k + 1], rows[j + 1][k + 1], rows[j + 1][k]])
-            assign_sub(bm, [v for r in rows for v in r], SUB['acc_b'])
+                for k_ in range(npl + 1):
+                    ang = math.radians(span[0] + (span[1] - span[0]) * k_ / npl)
+                    depth = (0.010 + 0.012 * ri / nrad) * (1 if k_ % 2 == 0 else -1)
+                    p = Vector((math.cos(ang) * rr, depth, math.sin(ang) * rr * 0.78))
+                    row.append(bm.verts.new(q @ p + o3))
+                grid.append(row)
+            for ri in range(nrad):
+                for k_ in range(npl):
+                    fans.append(bm.faces.new([grid[ri][k_], grid[ri][k_ + 1], grid[ri + 1][k_ + 1], grid[ri + 1][k_]]))
+        for f in fans:
+            f[sub_l] = SUB['acc_b']
+        # knot at the back with two short tails
+        kc = Vector((0, HEAD_BACK + 0.012, brim_z + 0.02))
+        knot = bm_sphere(bm, tuple(kc), (0.034, 0.024, 0.026), 12, 8)
+        for f in {f for v in knot for f in v.link_faces}:
+            f[sub_l] = SUB['acc_a']
+        for sx in (-1, 1):
+            tail = bm_cyl(bm, kc + Vector((sx * 0.012, 0.004, -0.01)), kc + Vector((sx * 0.03, 0.012, -0.095)), 0.016, 0.022, seg=6, caps=False)
+            for v in tail:
+                v.co.y = kc.y + 0.004 + (v.co.y - kc.y - 0.004) * 0.3   # flatten into a fabric strip
+            for f in {f for v in tail for f in v.link_faces}:
+                f[sub_l] = SUB['acc_a']
+        bm.normal_update()
     if want('hat_gele'):
         o = prop_obj('__gele', gele); smart_uv(o); head_rigid(o)
-        double_sided(o, SUB['acc_b'])
-        register(o, 'hat_gele', 'ACC_A', (800, 400, 190, 70), notes='Gele head tie (Yoruba womenswear reference).', license='cc0-ctlife')
+        # only the fan sheets need a back side
+        bmd = bmesh.new(); bmd.from_mesh(o.data)
+        subl = bmd.faces.layers.int['sub']
+        fan = [f for f in bmd.faces if f[subl] == SUB['acc_b']]
+        geom = bmesh.ops.duplicate(bmd, geom=fan)
+        newf = [g for g in geom['geom'] if isinstance(g, bmesh.types.BMFace)]
+        bmesh.ops.reverse_faces(bmd, faces=newf, flip_multires=False)
+        bmd.normal_update()
+        for v in {v for f in newf for v in f.verts}:
+            v.co -= v.normal * 0.0015
+        bmd.to_mesh(o.data); bmd.free(); o.data.update()
+        push_outside(o, P['head'], 0.012)
+        register(o, 'hat_gele', 'ACC_A', (1000, 460, 210, 80), notes='Gele: pleated wrap, accordion fan crests, knot and tails at the back (Yoruba womenswear reference).', license='cc0-ctlife')
 
     def headphones(bm, mic=False, one=False):
         rows = bm_torus(bm, (0, HEAD_CY, EYE_Z + 0.01), 1.0, 0.009, 20, 6, normal=(0, 1, 0), scale=(hw + 0.03, (HEAD_TOP - EYE_Z) + 0.03, 1), arc=0.5)
