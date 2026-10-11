@@ -40,4 +40,15 @@ namespace UnityEngine.Rendering.Universal
             public int slice = 0;
         }
     }
+    // Mirrors URP 17.3.0 Runtime/UniversalAdditionalCameraData.cs (CameraExtensions line 171, class line 442,
+    // renderPostProcessing line 789), used by World/Venue/VenueLook.cs.
+    public partial class UniversalAdditionalCameraData : MonoBehaviour
+    {
+        public bool renderPostProcessing { get; set; }
+    }
+
+    public static class CameraExtensions
+    {
+        public static UniversalAdditionalCameraData GetUniversalAdditionalCameraData(this Camera camera) => null;
+    }
 }
