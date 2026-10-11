@@ -1,0 +1,12 @@
+# Local overrides for devIykee's ct-life-backend docker-compose.yml (read-only clone).
+# Used by tools/backend-local/up.sh. Only fixes what does not run as published:
+#  - livekit/livekit:v1.13.7 does not exist on Docker Hub; the image is livekit/livekit-server.
+#  - --node-ip 127.0.0.1 so ICE candidates point at localhost, which works for the editor
+#    and for the Seeker through `adb reverse tcp:7880 tcp:7881` (adb reverse is TCP only,
+#    so the phone uses LiveKit's ICE/TCP port 7881).
+#  - MinIO tags RELEASE.2026-01-01T00-00-00Z do not exist and minio/minio is no longer
+#    pullable anonymously, so up.sh does not start minio (only needed for ad uploads).
+services:
+  livekit:
+    image: livekit/livekit-server:v1.13.7
+    command: ["--dev", "--bind", "0.0.0.0", "--node-ip", "127.0.0.1"]

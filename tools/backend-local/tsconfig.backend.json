@@ -1,0 +1,15 @@
+{
+  "//": "Workaround for two backend bugs (see docs/progress/backend-dev-feedback.md): (1) the backend tsconfig.json excludes contract/, so tsx compiles contract/realtime/states.ts with TC39 decorators and @colyseus/schema crashes at import; (2) target ES2022 implies useDefineForClassFields=true, which overwrites the @type accessors, so the first state patch throws 'reading Symbol(Symbol.metadata)' and players/npcs never sync. Used via TSX_TSCONFIG_PATH in up.sh.",
+  "extends": "../../../ct-life-backend/tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "useDefineForClassFields": false,
+    "experimentalDecorators": true
+  },
+  "include": [
+    "../../../ct-life-backend/**/*.ts"
+  ],
+  "exclude": [
+    "../../../ct-life-backend/node_modules"
+  ]
+}
