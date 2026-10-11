@@ -89,7 +89,7 @@ namespace CTLife.CityLife
 
             private VisualElement OwnedCard(OwnedBusiness o)
             {
-                var card = CityUi.Card(CityUi.H2(NameOf(o.KindId)), CityUi.Text(CityLifeStrings.T("biz.owned"), "ct-badge"));
+                var card = CityUi.Card(PhonePresentation.Status(CityLifeStrings.T("biz.owned"), PhonePresentation.Tone.Success), CityUi.Text(NameOf(o.KindId), "ct-duo-card-title"));
                 if (o.LastDay != null)
                 {
                     card.Add(CityUi.Small(CityLifeStrings.F("biz.lastDay", CityLifeStrings.T("biz.day." + o.LastDay.Kind)) + " · " + Money.Cash(o.LastDay.PayCents)));
@@ -105,7 +105,7 @@ namespace CTLife.CityLife
                 var sell = CityUi.Btn(sf.Stage == WriteStage.Unknown ? CityLifeStrings.T("common.retry") : CityLifeStrings.T("biz.sell")
                     + (o.SellBackCents >= 0 ? " (" + Money.Cash(o.SellBackCents) + ")" : ""), () => Sell(o), "ct-btn ct-btn-danger");
                 sell.SetEnabled(sf.Stage != WriteStage.Sending);
-                card.Add(CityUi.Row(collect, sell));
+                card.Add(PhonePresentation.Footer(collect, sell));
                 return card;
             }
 

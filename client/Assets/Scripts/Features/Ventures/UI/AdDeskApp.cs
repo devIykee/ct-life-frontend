@@ -125,7 +125,7 @@ namespace CTLife.Ventures
                 _dirty = false;
                 _body.Clear();
                 if (_flow.SlotId != null) { RenderBooking(); return; }
-                _body.Add(VUi.Row(VUi.Chip(VStrings.T("ads.tab.slots"), () => { _tab = Tab.Slots; Render(); }, _tab == Tab.Slots),
+                _body.Add(PhonePresentation.Segment(VUi.Chip(VStrings.T("ads.tab.slots"), () => { _tab = Tab.Slots; Render(); }, _tab == Tab.Slots),
                     VUi.Chip(VStrings.T("ads.tab.mine"), () => { _tab = Tab.Mine; _ = Hub.RefreshBoard(); Render(); }, _tab == Tab.Mine)));
                 if (!string.IsNullOrEmpty(_note)) _body.Add(VUi.Text(_note));
                 if (_tab == Tab.Slots) RenderSlots(); else RenderMine();
@@ -157,14 +157,15 @@ namespace CTLife.Ventures
 
             private VisualElement SlotCard(AdSlot s)
             {
-                var card = VUi.Card(VUi.H2(VStrings.AdKind(s.Kind)), VUi.Small(s.SlotId));
+                var card = VUi.Card(VUi.Text(VStrings.AdKind(s.Kind), "ct-duo-card-title"), VUi.Text(s.SlotId, "ct-duo-card-kicker"));
                 if (s.Terms.Count == 0) card.Add(VUi.Small(VStrings.T("ads.slot.noTerms")));
                 foreach (var t in s.Terms) card.Add(VUi.Text(TermLine(t)));
                 if (s.NextFreeAtMs.HasValue)
-                    card.Add(VUi.Small(s.NextFreeAtMs.Value > Hub.NowMs ? VStrings.F("ads.slot.nextFree", VUi.When(s.NextFreeAtMs.Value)) : VStrings.T("ads.slot.free")));
+                    card.Add(PhonePresentation.Status(s.NextFreeAtMs.Value > Hub.NowMs ? VStrings.F("ads.slot.nextFree", VUi.When(s.NextFreeAtMs.Value)) : VStrings.T("ads.slot.free"),
+                        s.NextFreeAtMs.Value > Hub.NowMs ? PhonePresentation.Tone.Neutral : PhonePresentation.Tone.Success));
                 var book = VUi.Btn(VStrings.T("ads.slot.book"), () => BeginBook(s));
                 book.SetEnabled(s.Terms.Count > 0);
-                card.Add(book);
+                card.Add(PhonePresentation.Footer(book));
                 return card;
             }
 
@@ -551,7 +552,9 @@ namespace CTLife.Ventures
 
             private VisualElement BookingCard(AdBooking b)
             {
-                var card = VUi.Card(VUi.H2(SlotTitle(b)), VUi.Text(b.Status == AdStatus.Unknown && !string.IsNullOrEmpty(b.StatusRaw) ? b.StatusRaw : VStrings.AdStatusText(b.Status), "ct-badge"));
+                var card = VUi.Card(PhonePresentation.Status(
+                    b.Status == AdStatus.Unknown && !string.IsNullOrEmpty(b.StatusRaw) ? b.StatusRaw : VStrings.AdStatusText(b.Status), BookingTone(b.Status)),
+                    VUi.Text(SlotTitle(b), "ct-duo-card-title"));
                 if (b.StartsAtMs.HasValue && b.EndsAtMs.HasValue) card.Add(VUi.Text(VStrings.F("mine.runs", VUi.Day(b.StartsAtMs.Value), VUi.Day(b.EndsAtMs.Value))));
                 else if (b.Status == AdStatus.PendingReview || b.Status == AdStatus.AwaitingPayment) card.Add(VUi.Small(VStrings.T("mine.datesLater")));
                 if (b.Amount != null) card.Add(VUi.Small(VStrings.F("mine.amount", AdMoney.Format(b.Amount, b.Currency, _decimals))));
@@ -581,6 +584,17 @@ namespace CTLife.Ventures
                 }
                 return card;
             }
+
+            private static PhonePresentation.Tone BookingTone(AdStatus status) => status switch
+            {
+                AdStatus.Live => PhonePresentation.Tone.Success,
+                AdStatus.Refunded => PhonePresentation.Tone.Success,
+                AdStatus.PendingReview => PhonePresentation.Tone.Accent,
+                AdStatus.Scheduled => PhonePresentation.Tone.Info,
+                AdStatus.AwaitingPayment => PhonePresentation.Tone.Warning,
+                AdStatus.Rejected => PhonePresentation.Tone.Danger,
+                _ => PhonePresentation.Tone.Neutral,
+            };
 
             private string SlotTitle(AdBooking b)
             {

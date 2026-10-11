@@ -30,6 +30,7 @@ namespace CTLife.SocialFeatures
             public View(SocialHub hub, PhoneShell phone) : base(hub, phone)
             {
                 _s = hub.Spaces;
+                Root.AddToClassList("ct-social-spaces");
                 _s.Watch(true);
             }
 
@@ -53,7 +54,7 @@ namespace CTLife.SocialFeatures
 
             private void RenderList()
             {
-                Body.Add(SocialUi.Row(SocialUi.H1(SocialStrings.T("spaces.heading")), El.Div("ct-grow"), SocialUi.Btn("common.refresh", _s.RefreshList)));
+                Body.Add(SocialUi.Row(SocialUi.H1(SocialStrings.T("spaces.heading")), El.Div("ct-grow"), SocialUi.Action("common.refresh", "rotate", _s.RefreshList)));
                 Body.Add(SocialUi.Copy("spaces.intro", "ct-small ct-muted"));
                 var current = _s.Session;
                 if (current != null && current.InSpace)
@@ -90,17 +91,19 @@ namespace CTLife.SocialFeatures
                 var list = _s.List;
                 if (list == null || list.Count == 0)
                 {
-                    if (_s.ListError == null) Body.Add(SocialUi.Card(SocialUi.H2(SocialStrings.T("spaces.empty")), SocialUi.Small(SocialStrings.T("spaces.emptyDetail"))));
+                    if (_s.ListError == null) Body.Add(SocialUi.Empty("spaces", SocialStrings.T("spaces.empty"), SocialStrings.T("spaces.emptyDetail")));
                     return;
                 }
                 foreach (var sp in list.Take(50))
                 {
                     var id = sp.Id; var known = sp;
                     var hostName = Hub.Names.Name(sp.HostId);
-                    var card = SocialUi.Card(SocialUi.H2(sp.Title),
-                        SocialUi.Small(SocialStrings.T("spaces.roleHost") + ": " + hostName + " · " + SocialStrings.F("spaces.listeners", sp.ListenerCount)));
+                    var card = SocialUi.Card(SocialUi.Status(SocialStrings.T("spaces.live"), "live", "spaces"), SocialUi.H2(sp.Title),
+                        SocialUi.Row(SocialUi.Avatar(hostName), El.Div("ct-grow", SocialUi.Text(hostName),
+                            SocialUi.Small(SocialStrings.F("spaces.listeners", sp.ListenerCount)))));
+                    card.AddToClassList("ct-social-space-card");
                     if (Hub.Blocks.Contains(sp.HostId)) card.Add(SocialUi.Small(SocialStrings.T("spaces.blockedLabel")));
-                    var join = SocialUi.Btn("spaces.join", () => _s.Open(id, known), true);
+                    var join = SocialUi.Action("spaces.join", "speaker", () => _s.Open(id, known), true);
                     join.SetEnabled(Features.IsAvailable(Features.Voice));
                     card.Add(join);
                     Body.Add(card);
@@ -116,9 +119,9 @@ namespace CTLife.SocialFeatures
                 {
                     if (session.InSpace) _showList = true; else _s.Close();
                     _report = false; _confirmEnd = false; MarkDirty();
-                })));
+                }).With("ct-social-back")));
                 Body.Add(SocialUi.H1(sp?.Title ?? SocialStrings.T("common.loading")));
-                var status = SocialUi.Row(SocialUi.Badge(SocialStrings.T("common.notRecorded")));
+                var status = SocialUi.Row(SocialUi.Status(SocialStrings.T("common.notRecorded")));
                 if (sp != null) status.Add(SocialUi.Small(SocialStrings.F("spaces.listeners", sp.ListenerCount)));
                 Body.Add(status);
                 Message();
@@ -140,33 +143,34 @@ namespace CTLife.SocialFeatures
                 var audio = session.Phase == SpacePhase.Live && _s.AudioConnected ? "spaces.connected"
                     : session.Phase == SpacePhase.Reconnecting ? "spaces.reconnecting" : "spaces.connecting";
                 var me = SpaceSession.CanTalk(session.Role) ? (_s.MicOn ? "spaces.micLive" : "spaces.micOff") : null;
-                var state = SocialUi.Row(SocialUi.Badge(SocialStrings.T(audio)));
-                if (_s.Muted) state.Add(SocialUi.Badge(SocialStrings.T("spaces.silenced")));
-                if (me != null) state.Add(SocialUi.Badge(SocialStrings.T(me)));
-                state.Add(SocialUi.Badge(SocialStrings.T(RoleKey(session.Role))));
+                var state = SocialUi.Row(SocialUi.Status(SocialStrings.T(audio), audio == "spaces.connected" ? "success" : "info", "spaces"));
+                if (_s.Muted) state.Add(SocialUi.Status(SocialStrings.T("spaces.silenced"), "neutral"));
+                if (me != null) state.Add(SocialUi.Status(SocialStrings.T(me), _s.MicOn ? "success" : "neutral", "mic"));
+                state.Add(SocialUi.Status(SocialStrings.T(RoleKey(session.Role)), session.Role == SpaceRole.Host ? "live" : "neutral"));
                 Body.Add(state);
 
                 var controls = SocialUi.Row();
+                controls.AddToClassList("ct-social-media-controls");
                 if (SpaceSession.CanTalk(session.Role))
                 {
-                    var mic = SocialUi.Btn(_s.MicOn ? "spaces.muteMic" : "spaces.unmute", _s.ToggleMic, !_s.MicOn);
+                    var mic = SocialUi.Action(_s.MicOn ? "spaces.muteMic" : "spaces.unmute", "mic", _s.ToggleMic, !_s.MicOn);
                     mic.SetEnabled(_s.MicOn || (!_s.MicBusy && session.CanPublish(now)));
                     controls.Add(mic);
                 }
                 else if (session.Role == SpaceRole.Requested)
                 {
-                    var w = SocialUi.Btn("spaces.withdraw", _s.WithdrawRequest);
+                    var w = SocialUi.Action("spaces.withdraw", "mic", _s.WithdrawRequest);
                     w.SetEnabled(session.CanWithdraw(now));
                     controls.Add(w);
                 }
                 else
                 {
-                    var r = SocialUi.Btn("spaces.request", _s.RequestToSpeak, true);
+                    var r = SocialUi.Action("spaces.request", "mic", _s.RequestToSpeak, true);
                     r.SetEnabled(session.CanRequest(now));
                     controls.Add(r);
                 }
-                controls.Add(SocialUi.Btn(_s.Muted ? "spaces.speakerOn" : "spaces.speakerOff", _s.ToggleSpeakerMute));
-                controls.Add(SocialUi.Ghost("spaces.leave", () => { _s.Leave(); MarkDirty(); }));
+                controls.Add(SocialUi.Action(_s.Muted ? "spaces.speakerOn" : "spaces.speakerOff", _s.Muted ? "speaker-off" : "speaker", _s.ToggleSpeakerMute));
+                controls.Add(SocialUi.Action("spaces.leave", "door", () => { _s.Leave(); MarkDirty(); }));
                 Body.Add(controls);
                 if (session.Role == SpaceRole.Requested) Body.Add(SocialUi.Small(SocialStrings.T("spaces.requestedNote")));
                 if (sp == null) return;
@@ -224,7 +228,9 @@ namespace CTLife.SocialFeatures
                 var info = El.Div("ct-grow", SocialUi.H2(name), SocialUi.Small(SocialStrings.T(roleKey)));
                 if (Hub.Blocks.Contains(userId)) info.Add(SocialUi.Small(SocialStrings.T("spaces.blockedLabel")));
                 else if (_s.IsSpeaking(userId)) info.Add(SocialUi.Text(SocialStrings.T("spaces.speaking"), "ct-social-speaking"));
-                var row = El.Div("ct-social-person", info);
+                var avatar = SocialUi.Avatar(name);
+                avatar.EnableInClassList("ct-social-avatar-speaking", !Hub.Blocks.Contains(userId) && _s.IsSpeaking(userId));
+                var row = El.Div("ct-social-person", avatar, info);
                 if (action != null) row.Add(action);
                 Body.Add(row);
             }

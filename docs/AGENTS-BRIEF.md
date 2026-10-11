@@ -85,6 +85,12 @@ Phase 6 = Competition. Every phase must end in something that runs. Do NOT reduc
 "MVP"; build the phase completely, then continue to the next.
 
 ## Art direction (updated 2026-10-05 from the user's references: The Sims 4)
+- **2026-10-15 Duo interiors / toast review:** the user supplied eight component references and
+  explicitly excluded the phone launcher/home screen. Study and adapt each reference to a real
+  feature; do not copy the screenshots. Toasts use quiet white cards, semantic symbols, concise
+  title/detail and a dismiss control. Internal phone pages use white content, restrained pastel
+  status tags, coherent account rows, actual-value metric cards, separated task actions and
+  purposeful message/media controls. Preserve the approved hardware, launcher, dock and search.
 - **Sims-style stylized realism**, not chibi: real human proportions, soft stylized faces,
   warm saturated palette, lush trees (incl. pink blossom trees), clean brick/stucco/glass
   buildings, golden-hour sun, soft shadows, a high 3/4 "tilt" camera over a living city.

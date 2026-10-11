@@ -17,7 +17,7 @@ namespace CTLife.UI
         private readonly IncidentPresentation _incidents;
         private bool _disposed;
         private readonly VisualElement _layer;
-        private readonly Queue<(string text, ToastKind kind)> _queue = new Queue<(string, ToastKind)>();
+        private readonly Queue<(string text, string detail, ToastKind kind)> _queue = new Queue<(string, string, ToastKind)>();
         private readonly List<(VisualElement el, float until)> _live = new List<(VisualElement, float)>();
         private readonly Subscriptions _subs = new Subscriptions();
 
@@ -35,15 +35,16 @@ namespace CTLife.UI
         {
             if (_disposed) return;
             var text = t.literal ?? Strings.Toast(t.textId, t.@params);
+            if (string.IsNullOrWhiteSpace(text)) return;
             var kind = t.kind;
             if (t.textId == "toast_drained") kind = ToastKind.Bad;
-            Enqueue(text, kind);
+            Enqueue(text, t.detail, kind);
             Bus.Publish(new SfxSignal(kind == ToastKind.Bad ? "sfx_ui_error" : "sfx_ui_toast"));
         }
 
-        private void Enqueue(string text, ToastKind kind)
+        private void Enqueue(string text, string detail, ToastKind kind)
         {
-            _queue.Enqueue((text, kind));
+            _queue.Enqueue((text, detail, kind));
             Pump();
         }
 
@@ -51,11 +52,26 @@ namespace CTLife.UI
         {
             while (_live.Count < MaxVisible && _queue.Count > 0)
             {
-                var (text, kind) = _queue.Dequeue();
-                var el = El.Div("ct-toast ct-toast-" + kind.ToString().ToLowerInvariant(), El.Text(text, "ct-toast-text"));
+                var (text, detail, kind) = _queue.Dequeue();
+                ToastNotice el = null;
+                el = new ToastNotice(text, detail, kind, () => Dismiss(el));
                 _layer.Add(el);
                 _live.Add((el, Time.unscaledTime + (kind == ToastKind.Event ? 5f : 3.5f)));
+                el.Reveal();
             }
+        }
+
+        private void Dismiss(VisualElement element)
+        {
+            if (_disposed) return;
+            for (int i = _live.Count - 1; i >= 0; i--)
+                if (_live[i].el == element)
+                {
+                    element.RemoveFromHierarchy();
+                    _live.RemoveAt(i);
+                    break;
+                }
+            Pump();
         }
 
         private void OnDetached(DetachFromPanelEvent e)

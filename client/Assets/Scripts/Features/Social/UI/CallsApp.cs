@@ -42,6 +42,7 @@ namespace CTLife.SocialFeatures
             public View(SocialHub hub, PhoneShell phone, string callee, string paidCreator) : base(hub, phone)
             {
                 _c = hub.Calls;
+                Root.AddToClassList("ct-social-calls");
                 if (SocialWire.IsSafeId(callee)) _selected.Add(callee);
                 if (SocialWire.IsSafeId(paidCreator)) _c.BeginPaid(paidCreator);
                 var saved = _c.Creator;
@@ -101,7 +102,7 @@ namespace CTLife.SocialFeatures
                     Body.Add(done);
                     return;
                 }
-                var head = SocialUi.Row(SocialUi.H2(StatusText(call, now)), El.Div("ct-grow"), SocialUi.Badge(SocialStrings.T("common.notRecorded")));
+                var head = SocialUi.Row(SocialUi.H2(StatusText(call, now)), El.Div("ct-grow"), SocialUi.Status(SocialStrings.T("common.notRecorded")));
                 Body.Add(head);
                 if (call.Paid && _c.Paid != null) Body.Add(SocialUi.Small(SocialStrings.F("paid.with", Hub.Names.Name(_c.Paid.PeerId))));
 
@@ -116,15 +117,16 @@ namespace CTLife.SocialFeatures
                 Body.Add(tiles);
 
                 var controls = SocialUi.Row();
+                controls.AddToClassList("ct-social-media-controls");
                 var connected = media != null && media.Connected;
-                var mic = SocialUi.Btn(media?.MicOn == true ? "calls.micOn" : "calls.micOff", _c.ToggleMic, media?.MicOn != true);
+                var mic = SocialUi.Action(media?.MicOn == true ? "calls.micOn" : "calls.micOff", "mic", _c.ToggleMic, media?.MicOn != true);
                 mic.SetEnabled(connected && !media.MicBusy);
-                var cam = SocialUi.Btn(media?.CameraOn == true ? "calls.camOn" : "calls.camOff", _c.ToggleCamera);
+                var cam = SocialUi.Action(media?.CameraOn == true ? "calls.camOn" : "calls.camOff", "calls", _c.ToggleCamera);
                 cam.SetEnabled(connected && !media.CameraBusy);
-                var spk = SocialUi.Btn(media?.SpeakerMuted == true ? "calls.speakerUnmute" : "calls.speakerMute", _c.ToggleSpeaker);
+                var spk = SocialUi.Action(media?.SpeakerMuted == true ? "calls.speakerUnmute" : "calls.speakerMute", media?.SpeakerMuted == true ? "speaker-off" : "speaker", _c.ToggleSpeaker);
                 spk.SetEnabled(connected);
                 controls.Add(mic); controls.Add(cam); controls.Add(spk);
-                controls.Add(SocialUi.Danger("calls.hangup", _c.Hangup));
+                controls.Add(SocialUi.Action("calls.hangup", "close", _c.Hangup, danger: true));
                 Body.Add(controls);
             }
 
@@ -172,7 +174,10 @@ namespace CTLife.SocialFeatures
             {
                 var card = SocialUi.Card(SocialUi.Eyebrow("paid.title"), SocialUi.H2(SocialStrings.F("paid.with", Hub.Names.Name(flow.PeerId))));
                 var stageKey = "paid.stage." + flow.Stage;
-                card.Add(SocialUi.Badge(flow.Stage == PaidStage.Ringing ? SocialStrings.F(stageKey, (int)Math.Ceiling(flow.AcceptSecondsLeft(now))) : SocialStrings.T(stageKey)));
+                var tone = flow.Stage == PaidStage.Failed ? "error"
+                    : flow.Stage == PaidStage.Settled || flow.Stage == PaidStage.Refunded ? "success"
+                    : flow.Stage == PaidStage.Draft ? "neutral" : "info";
+                card.Add(SocialUi.Status(flow.Stage == PaidStage.Ringing ? SocialStrings.F(stageKey, (int)Math.Ceiling(flow.AcceptSecondsLeft(now))) : SocialStrings.T(stageKey), tone, "calls"));
                 if (flow.ErrorKey != null) card.Add(SocialUi.Notice(SocialStrings.T(flow.ErrorKey), flow.ErrorKey.StartsWith("err.") ? "error" : "warn"));
                 if (flow.CallId != null) card.Add(SocialUi.Small(SocialStrings.F("paid.callId", flow.CallId)));
                 var blocker = _c.SignBlocker();
@@ -235,24 +240,23 @@ namespace CTLife.SocialFeatures
 
             private void RenderPeople()
             {
-                Body.Add(SocialUi.H1(SocialStrings.T("calls.heading")));
                 Body.Add(SocialUi.Small(SocialStrings.T("calls.intro")));
-                Body.Add(SocialUi.Eyebrow("calls.contacts"));
                 var people = People().ToList();
-                if (people.Count == 0) { Body.Add(SocialUi.Small(SocialStrings.T("calls.contactsEmpty"))); return; }
+                if (people.Count == 0) { Body.Add(SocialUi.Empty("calls", SocialStrings.T("calls.contactsEmptyTitle"), SocialStrings.T("calls.contactsEmpty"))); return; }
+                Body.Add(SocialUi.Eyebrow("calls.contacts"));
                 foreach (var id in people)
                 {
                     var user = id;
                     var on = _selected.Contains(user);
-                    var row = El.Div("ct-social-person", El.Div("ct-grow", SocialUi.H2(Hub.Names.Name(user)), SocialUi.Small(Hub.Follows.Contains(user) ? SocialStrings.T("feed.following") : "")));
+                    var row = El.Div("ct-social-person", SocialUi.Avatar(Hub.Names.Name(user)), El.Div("ct-grow", SocialUi.H2(Hub.Names.Name(user)), SocialUi.Small(Hub.Follows.Contains(user) ? SocialStrings.T("feed.following") : "")));
                     row.Add(SocialUi.Chip(on ? "✓" : "+", () => { if (!_selected.Remove(user) && _selected.Count < CallSession.MaxInvitees) _selected.Add(user); MarkDirty(); }, on));
-                    var paid = SocialUi.Btn("paid.book", () => _c.BeginPaid(user));
+                    var paid = SocialUi.Action("paid.book", "calls", () => _c.BeginPaid(user));
                     paid.SetEnabled(CallController.PaidCallsAllowedHere && (_c.Paid == null || _c.Paid.Terminal || _c.Paid.Stage == PaidStage.Draft));
                     row.Add(paid);
                     Body.Add(row);
                 }
                 Body.Add(SocialUi.Small(SocialStrings.F("calls.selected", _selected.Count)));
-                var start = SocialUi.Btn("calls.start", () => { _c.StartCall(_selected.ToList()); }, true);
+                var start = SocialUi.Action("calls.start", "calls", () => { _c.StartCall(_selected.ToList()); }, true);
                 start.SetEnabled(_selected.Count > 0 && !_c.Busy && !_c.Dialing && Features.IsAvailable(Features.Voice));
                 Body.Add(start);
                 var recents = Hub.Calls.Recents.Take(8).ToList();

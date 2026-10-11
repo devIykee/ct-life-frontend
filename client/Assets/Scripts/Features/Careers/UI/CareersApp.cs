@@ -197,9 +197,10 @@ namespace CTLife.Careers
         {
             string title = CareerFlavor.LevelTitle(c.Id, c.Level) ?? "";
             var row = CUi.Div("ctc-card ctc-career " + (c.Status == CareerStatus.Hired ? "ctc-hired" : ""),
-                CUi.Div("ctc-row", CUi.L(c.Name, "ctc-card-title"), CUi.Div("ctc-grow"), CUi.Chip(StatusText(c))),
+                PhonePresentation.Status(StatusText(c), CareerTone(c.Status)),
+                CUi.L(c.Name, "ctc-card-title"),
                 CUi.L(CareersStrings.F("level", c.Level, title) + " · " + CareersStrings.F("xp", c.Xp), "ctc-muted"),
-                CUi.L(PayLine(c), "ctc-body-text"));
+                CUi.L(PayLine(c), "ct-duo-pay-line"));
             var blurb = CareerFlavor.Blurb(c.Id);
             if (blurb != null) row.Add(CUi.L(blurb, "ctc-muted"));
             var actions = CUi.Div("ctc-actions");
@@ -211,6 +212,14 @@ namespace CTLife.Careers
             row.Add(actions);
             return row;
         }
+
+        private static PhonePresentation.Tone CareerTone(CareerStatus status) => status switch
+        {
+            CareerStatus.Hired => PhonePresentation.Tone.Success,
+            CareerStatus.CanApply => PhonePresentation.Tone.Info,
+            CareerStatus.SkillGated => PhonePresentation.Tone.Warning,
+            _ => PhonePresentation.Tone.Neutral,
+        };
 
         private Button PrimaryAction(CareerCard c)
         {
@@ -244,7 +253,7 @@ namespace CTLife.Careers
             if (venue != null) _content.Add(CUi.L(CareersStrings.F("venue", venue), "ctc-muted"));
             var blurb = CareerFlavor.Blurb(c.Id);
             if (blurb != null) _content.Add(CUi.L(blurb, "ctc-body-text"));
-            _content.Add(CUi.Chip(StatusText(c)));
+            _content.Add(PhonePresentation.Status(StatusText(c), CareerTone(c.Status)));
             var primary = PrimaryAction(c);
             if (primary != null) _content.Add(CUi.Div("ctc-actions", primary));
 

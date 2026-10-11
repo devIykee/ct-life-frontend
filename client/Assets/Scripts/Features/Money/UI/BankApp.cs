@@ -90,11 +90,14 @@ namespace CTLife.Economy
         {
             _hero.Clear();
             if (!Services.TryGet<PlayerProfile>(out var p)) return;
-            _hero.Add(El.Div("ct-bank-hero",
-                MoneyUi.Text(MoneyStrings.T("bank.balance"), "ct-eyebrow"),
+            var balance = El.Div("ct-bank-hero",
+                El.Div("ct-duo-balance-heading", new UiIcon("bank"), MoneyUi.Text(MoneyStrings.T("bank.balance"), "ct-eyebrow")),
                 MoneyUi.Text(MoneyFormat.Cash(p.CashCents), "ct-big-number"),
-                MoneyUi.Small(MoneyStrings.T("bank.note"))));
-            _hero.Add(MoneyUi.Card(MoneyUi.Text(p.DebtCents > 0 ? MoneyStrings.F("bank.debt", MoneyFormat.Cash(p.DebtCents)) : MoneyStrings.T("bank.noDebt"))));
+                MoneyUi.Small(MoneyStrings.T("bank.note")));
+            balance.Add(El.Div("ct-duo-bank-debt", PhonePresentation.Status(
+                p.DebtCents > 0 ? MoneyStrings.F("bank.debt", MoneyFormat.Cash(p.DebtCents)) : MoneyStrings.T("bank.noDebt"),
+                p.DebtCents > 0 ? PhonePresentation.Tone.Warning : PhonePresentation.Tone.Success)));
+            _hero.Add(balance);
         }
 
         private bool WalletAvailable => Services.TryGet<IWalletSignIn>(out var w) && w.IsAvailable && Services.TryGet<ITransactionSigner>(out _);
@@ -126,25 +129,24 @@ namespace CTLife.Economy
                     AddSignature();
                     break;
                 case TopUpStage.Confirmed:
-                    _topUp.Add(MoneyUi.Card(
-                        MoneyUi.Text(MoneyStrings.T("topup.confirmed"), "ct-h2 ct-money-up"),
-                        MoneyUi.Text(_flow.CreditedCashCents.HasValue ? MoneyStrings.F("topup.credited", MoneyFormat.Cash(_flow.CreditedCashCents.Value)) : MoneyStrings.T("topup.creditedSoon"))));
+                    _topUp.Add(PhonePresentation.StatePanel(MoneyStrings.T("topup.confirmed"),
+                        _flow.CreditedCashCents.HasValue ? MoneyStrings.F("topup.credited", MoneyFormat.Cash(_flow.CreditedCashCents.Value)) : MoneyStrings.T("topup.creditedSoon"),
+                        PhonePresentation.Tone.Success));
                     AddSignature();
                     _topUp.Add(MoneyUi.Btn(MoneyStrings.T("common.done"), () => _flow.Reset()));
                     break;
                 case TopUpStage.Pending:
-                    _topUp.Add(MoneyUi.Card(
-                        MoneyUi.Text(MoneyStrings.T("topup.pending"), "ct-h2"),
-                        MoneyUi.Text(MoneyStrings.T(_flow.SignUncertain ? "topup.pendingUnsure" : "topup.pendingBody")),
-                        _flow.StatusUnavailable ? MoneyUi.Small(MoneyStrings.T("topup.statusUnavailable")) : null));
+                    _topUp.Add(PhonePresentation.StatePanel(MoneyStrings.T("topup.pending"),
+                        MoneyStrings.T(_flow.SignUncertain ? "topup.pendingUnsure" : "topup.pendingBody"), PhonePresentation.Tone.Warning));
+                    if (_flow.StatusUnavailable) _topUp.Add(MoneyUi.Small(MoneyStrings.T("topup.statusUnavailable")));
                     AddSignature();
                     _topUp.Add(MoneyUi.Btn(MoneyStrings.T("topup.checkAgain"), () => _ = Check()));
                     break;
                 case TopUpStage.Expired:
                 case TopUpStage.Failed:
-                    _topUp.Add(MoneyUi.Card(
-                        MoneyUi.Text(MoneyStrings.T(_flow.Stage == TopUpStage.Expired ? "topup.expired" : "topup.failedTitle"), "ct-h2 ct-money-down"),
-                        MoneyUi.Text(MoneyStrings.Err(_flow.Error))));
+                    _topUp.Add(PhonePresentation.StatePanel(
+                        MoneyStrings.T(_flow.Stage == TopUpStage.Expired ? "topup.expired" : "topup.failedTitle"),
+                        MoneyStrings.Err(_flow.Error), _flow.Stage == TopUpStage.Expired ? PhonePresentation.Tone.Neutral : PhonePresentation.Tone.Danger));
                     _topUp.Add(MoneyUi.Btn(MoneyStrings.T("topup.newTopup"), () => _flow.Reset()));
                     break;
             }
@@ -197,11 +199,13 @@ namespace CTLife.Economy
                 // Creating an intent moves nothing, so it is allowed without a wallet (editor verification against a local
                 // backend); "Pay with wallet" stays disabled until MWA is available.
                 button.SetEnabled(paymentsOn && avail.CanPay && _flow.CanStartNew);
-                _topUp.Add(MoneyUi.Card(
-                    MoneyUi.Row(MoneyUi.Text(p.Label, "ct-h2"), El.Div("ct-grow"), p.BestValue ? MoneyUi.Text(MoneyStrings.T("topup.best"), "ct-badge") : null),
-                    MoneyUi.Text(MoneyStrings.F("topup.get", MoneyFormat.Cash(p.CashCents))),
-                    MoneyUi.Small(price),
-                    button));
+                var copy = El.Div("ct-duo-pack-copy",
+                    p.BestValue ? PhonePresentation.Status(MoneyStrings.T("topup.best"), PhonePresentation.Tone.Accent) : null,
+                    MoneyUi.Text(p.Label, "ct-h2"),
+                    MoneyUi.Text(MoneyStrings.F("topup.get", MoneyFormat.Cash(p.CashCents))), MoneyUi.Small(price));
+                var packCard = MoneyUi.Card(copy, button);
+                packCard.AddToClassList("ct-duo-pack");
+                _topUp.Add(packCard);
             }
         }
 

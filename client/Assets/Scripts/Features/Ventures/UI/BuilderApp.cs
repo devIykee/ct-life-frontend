@@ -97,7 +97,7 @@ namespace CTLife.Ventures
                 _dirty = false;
                 _body.Clear();
                 if (_hqId != null) { RenderHq(); return; }
-                var tabs = VUi.Row();
+                var tabs = PhonePresentation.Segment();
                 void Add(Tab t, string key) => tabs.Add(VUi.Chip(VStrings.T(key), () => { _tab = t; _note = ""; OnTab(t); Render(); }, _tab == t));
                 Add(Tab.Mine, "builder.tab.mine");
                 Add(Tab.Hiring, "builder.tab.hiring");
@@ -150,13 +150,26 @@ namespace CTLife.Ventures
 
             private VisualElement ProjectCard(ProjectSummary p)
             {
-                var card = VUi.Card(VUi.H2(p.Name), VUi.Small(VStrings.F("project.card.line", VStrings.Kind(p.Kind), VStrings.ProjectStatus(p.Status), p.MemberCount)));
-                card.Add(VUi.Text(VStrings.F("project.card.treasury", Money.Cash(p.TreasuryCents))));
+                var card = VUi.Card(PhonePresentation.Status(VStrings.ProjectStatus(p.Status), ProjectTone(p.Status)),
+                    VUi.Text(VStrings.Kind(p.Kind), "ct-duo-card-kicker"), VUi.Text(p.Name, "ct-duo-card-title"));
+                card.Add(PhonePresentation.Metric(VStrings.T("hq.treasury"), Money.Cash(p.TreasuryCents), "bank", PhonePresentation.Tone.Neutral));
+                card.Add(VUi.Small(VStrings.F("project.card.people", p.MemberCount)));
                 if (!string.IsNullOrEmpty(p.OwnerAlias)) card.Add(VUi.Small(VStrings.F("project.by", p.OwnerAlias)));
                 if (p.OpenRoles.Count > 0) card.Add(VUi.Small(VStrings.F("project.card.open", string.Join(", ", p.OpenRoles.Select(VStrings.Role)))));
-                card.Add(VUi.Btn(VStrings.T("project.open"), () => OpenHq(p.ProjectId)));
+                card.Add(PhonePresentation.Footer(VUi.Btn(VStrings.T("project.open"), () => OpenHq(p.ProjectId), "ct-btn")));
                 return card;
             }
+
+            private static PhonePresentation.Tone ProjectTone(string status) => status switch
+            {
+                "live" => PhonePresentation.Tone.Success,
+                "launching" => PhonePresentation.Tone.Info,
+                "paused" => PhonePresentation.Tone.Warning,
+                "rugged" => PhonePresentation.Tone.Danger,
+                "dead" => PhonePresentation.Tone.Neutral,
+                "founded" => PhonePresentation.Tone.Accent,
+                _ => PhonePresentation.Tone.Neutral,
+            };
 
             private void RenderHiring()
             {
@@ -201,7 +214,7 @@ namespace CTLife.Ventures
                 bool sending = accept.Stage == WriteStage.Sending || decline.Stage == WriteStage.Sending;
                 a.SetEnabled(!sending && !expired);
                 d.SetEnabled(!sending);
-                card.Add(VUi.Row(a, d));
+                card.Add(PhonePresentation.Footer(a, d));
                 if (expired) card.Add(VUi.Small(VStrings.T("time.expired")));
                 return card;
             }
@@ -315,8 +328,10 @@ namespace CTLife.Ventures
                 if (_detail == null) { _body.Add(VUi.Small(VStrings.T("common.loading"))); return; }
                 var p = _detail.Project;
                 var standing = ProjectRules.StandingOf(_detail, Hub.UserId);
-                var card = VUi.Card(VUi.H1(p.Name), VUi.Text(VStrings.F("project.card.line", VStrings.Kind(p.Kind), VStrings.ProjectStatus(p.Status), p.MemberCount)));
-                card.Add(VUi.Text(VStrings.T("hq.treasury") + ": " + Money.Cash(p.TreasuryCents)));
+                var card = VUi.Card(PhonePresentation.Status(VStrings.ProjectStatus(p.Status), ProjectTone(p.Status)),
+                    VUi.Text(VStrings.Kind(p.Kind), "ct-duo-card-kicker"), VUi.Text(p.Name, "ct-duo-card-title"));
+                card.Add(PhonePresentation.Metric(VStrings.T("hq.treasury"), Money.Cash(p.TreasuryCents), "bank", PhonePresentation.Tone.Neutral,
+                    VStrings.F("project.card.people", p.MemberCount)));
                 if (!string.IsNullOrEmpty(p.OwnerAlias)) card.Add(VUi.Small(VStrings.F("project.by", p.OwnerAlias)));
                 if (_detail.PayrollCentsPerWeek > 0) card.Add(VUi.Small(VStrings.F("hq.payroll", Money.Cash(_detail.PayrollCentsPerWeek))));
                 if (_detail.NextPayrollAtMs.HasValue) card.Add(VUi.Small(VStrings.F("hq.nextPayroll", VUi.When(_detail.NextPayrollAtMs.Value))));

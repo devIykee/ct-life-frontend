@@ -152,6 +152,13 @@ namespace CTLife.EditorTools
                 {
                     await LobbyFlowCapture.Run(Shot, Wait, Expect, Step, Receipt);
                 }
+                else if (Set == "duointeriors")
+                {
+                    await ToastCapture.Run(Shot, Wait, Expect, Step, Receipt);
+                    await LobbyFlowCapture.Run(Shot, Wait, Expect, Step, Receipt);
+                    await DuoSocialCapture.Run(Shot, Wait, Expect, Step, Receipt);
+                    await DuoInteriorChipCapture.Run(Shot, Wait, Expect, Step, Receipt);
+                }
                 else if (Set == "hud")
                 {
                     await CityHudCapture.Run(Shot, Wait, Expect, Step, Receipt);

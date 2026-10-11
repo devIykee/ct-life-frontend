@@ -111,7 +111,10 @@ namespace CTLife.CityLife
                 var me = Hub.Profile?.Me;
                 if (me == null) return;
                 var r = Hub.RentNow();
-                var card = CityUi.Card(CityUi.H2(CityLifeStrings.T("rent.title")), CityUi.Text(CityLifeStrings.T(r.Key)));
+                var card = CityUi.Card(CityUi.H2(CityLifeStrings.T("rent.title")),
+                    PhonePresentation.Status(CityLifeStrings.T(r.Key), r.State == RentState.Paid ? PhonePresentation.Tone.Success
+                        : r.State == RentState.Unknown ? PhonePresentation.Tone.Neutral
+                        : r.State >= RentState.Overdue ? PhonePresentation.Tone.Danger : PhonePresentation.Tone.Warning));
                 if (r.RentCents >= 0) card.Add(CityUi.Pair(CityLifeStrings.T("rent.title"), CityLifeStrings.F("home.rentPerWeek", Money.Cash(r.RentCents))));
                 _rentDue = CityUi.Small("");
                 card.Add(_rentDue);

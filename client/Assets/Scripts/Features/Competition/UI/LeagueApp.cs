@@ -98,8 +98,9 @@ namespace CTLife.Competition
             {
                 var card = CompUi.Card(CompUi.H2(LeagueRules.LeagueLabel(d.Leagues, m.LeagueId)));
                 card.Add(CompUi.Pair(CompStrings.T("league.season"), m.SeasonIso));
-                card.Add(CompUi.Pair(CompStrings.T("league.rank"), m.Rank > 0 ? "#" + m.Rank : "—"));
-                card.Add(CompUi.Pair(CompStrings.T("league.netWorth"), Money.Cash(m.NetWorthCents)));
+                card.Add(El.Div("ct-duo-metrics",
+                    PhonePresentation.Metric(CompStrings.T("league.rank"), m.Rank > 0 ? "#" + m.Rank : "—", "league", PhonePresentation.Tone.Accent),
+                    PhonePresentation.Metric(CompStrings.T("league.netWorth"), Money.Cash(m.NetWorthCents), "bank", PhonePresentation.Tone.Info)));
                 if (!string.IsNullOrEmpty(m.PromotedFromLeagueId))
                     card.Add(CompUi.Small(CompStrings.F("league.promotedFrom", LeagueRules.LeagueLabel(d.Leagues, m.PromotedFromLeagueId))));
                 body.Add(card);

@@ -47,7 +47,7 @@ namespace CTLife.Competition
 
         public static Button Chip(string text, Action onClick, bool on)
         {
-            var b = El.Btn(text, onClick, "ct-chip");
+            var b = PhonePresentation.SizeToText(El.Btn(text, onClick, "ct-chip"));
             b.EnableInClassList("ct-chip-on", on);
             return b;
         }

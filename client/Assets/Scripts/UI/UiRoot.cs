@@ -99,6 +99,11 @@ namespace CTLife.UI
             if (phoneSheet != null) Root.styleSheets.Add(phoneSheet);
             var landscapeSheet = Resources.Load<StyleSheet>("UI/landscape");
             if (landscapeSheet != null) Root.styleSheets.Add(landscapeSheet);
+            foreach (var name in new[] { "phone-social", "phone-account", "toast" })
+            {
+                var detailSheet = Resources.Load<StyleSheet>("UI/" + name);
+                if (detailSheet != null) Root.styleSheets.Add(detailSheet);
+            }
 
             WorldLayer = Layer("layer-world", PickingMode.Position);
             LabelLayer = Layer("layer-labels", PickingMode.Ignore);

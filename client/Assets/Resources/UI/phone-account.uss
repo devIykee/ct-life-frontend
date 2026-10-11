@@ -1,0 +1,33 @@
+/* Profile and Settings: grouped white surfaces, actual skill values and intentional audio controls. */
+.ct-phone .ct-phone-body .ct-account-card {
+    background-color: var(--ct-duo-paper); border-radius: var(--ct-duo-radius);
+    border-width: 1px; border-color: var(--ct-duo-edge); border-bottom-width: 2px;
+    padding: var(--ct-duo-space); margin: 4px 0 20px; flex-shrink: 0;
+}
+.ct-phone .ct-account-identity { flex-direction: row; align-items: center; margin-bottom: 24px; }
+.ct-phone .ct-account-avatar { width: 100px; height: 100px; border-radius: 50px; background-color: var(--ct-duo-purple-soft); align-items: center; justify-content: center; margin-right: 24px; flex-shrink: 0; }
+.ct-phone .ct-account-avatar .ct-icon { width: 56px; height: 56px; -unity-background-image-tint-color: var(--ct-duo-purple); }
+.ct-phone .ct-account-name { font-size: 38px; color: var(--ct-duo-ink); white-space: normal; -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); }
+.ct-phone .ct-account-subtitle { font-size: 26px; color: var(--ct-duo-muted); margin-top: 6px; }
+.ct-phone .ct-account-wallet { font-size: 24px; color: var(--ct-duo-muted); margin-top: 20px; white-space: normal; }
+.ct-phone .ct-account-badges { flex-direction: row; flex-wrap: wrap; }
+.ct-phone .ct-account-badges > .ct-duo-status { margin-right: 12px; margin-bottom: 4px; }
+.ct-phone .ct-account-section { flex-direction: row; align-items: center; margin-bottom: 20px; }
+.ct-phone .ct-account-section .ct-icon { width: 30px; height: 30px; margin-right: 14px; -unity-background-image-tint-color: var(--ct-duo-muted); }
+.ct-phone .ct-phone-body .ct-account-section .ct-h2 { margin: 0; font-size: 28px; }
+.ct-phone .ct-account-skill { margin: 8px 0 18px; }
+.ct-phone .ct-account-skill-heading { flex-direction: row; align-items: center; margin-bottom: 12px; }
+.ct-phone .ct-account-skill-value { font-size: 24px; color: var(--ct-duo-muted); }
+.ct-phone .ct-account-skill-track { height: 8px; border-radius: 4px; background-color: var(--ct-duo-inset); }
+.ct-phone .ct-account-skill-fill { height: 100%; border-radius: 4px; background-color: var(--ct-duo-purple); }
+.ct-phone .ct-phone-body .ct-account-page .ct-stepper { margin: 0; padding: 10px 0; border-top-width: 1px; border-top-color: var(--ct-duo-edge); }
+.ct-phone .ct-phone-body .ct-account-page .ct-stepper-btn { width: 96px; height: 96px; min-width: 96px; min-height: 96px; padding: 0; margin: 0; font-size: 32px; border-width: 0; background-color: var(--ct-duo-inset); color: var(--ct-duo-ink); }
+.ct-phone .ct-account-page .ct-stepper-value { width: 88px; font-size: 24px; -unity-text-align: middle-center; color: var(--ct-duo-muted); }
+.ct-phone .ct-phone-body .ct-account-signout { background-color: var(--ct-duo-paper); border-color: var(--ct-duo-edge); color: var(--ct-duo-red); -unity-text-align: middle-left; padding-left: 28px; border-radius: var(--ct-duo-radius); }
+.ct-phone .ct-phone-body .ct-account-credits { padding-top: 0; padding-bottom: 0; }
+.ct-phone .ct-phone-body .ct-account-credits > .ct-row-btn {
+    background-color: transparent; border-width: 0; border-radius: 0;
+    min-height: 96px; margin: 0; padding: 0; font-size: 28px;
+    color: var(--ct-duo-ink); -unity-text-align: middle-left;
+}
+.ct-phone .ct-phone-body .ct-account-credits > .ct-row-btn:hover { color: var(--ct-duo-purple); }

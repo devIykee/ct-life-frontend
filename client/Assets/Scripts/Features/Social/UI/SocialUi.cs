@@ -7,7 +7,7 @@ using UnityEngine.UIElements;
 
 namespace CTLife.SocialFeatures
 {
-    /// <summary>Small UI Toolkit builders on top of CTLife.UI's El and the ct-* theme. Functional, unstyled beyond the theme.</summary>
+    /// <summary>Shared social layouts; phone-local presentation lives in phone-social.uss.</summary>
     internal static class SocialUi
     {
         private static StyleSheet _sheet;
@@ -63,6 +63,49 @@ namespace CTLife.SocialFeatures
         }
 
         public static Label Badge(string text) => Text(text, "ct-social-badge");
+
+        public static VisualElement Status(string text, string tone = "neutral", string icon = null)
+        {
+            var status = El.Div("ct-social-status ct-social-status-" + tone);
+            if (icon != null) status.Add(new UiIcon(icon));
+            status.Add(Text(text, "ct-social-status-copy"));
+            return status;
+        }
+
+        public static VisualElement Avatar(string name)
+        {
+            var initials = string.IsNullOrWhiteSpace(name) ? "?" : System.Globalization.StringInfo.GetNextTextElement(name.Trim()).ToUpperInvariant();
+            return El.PassThrough(El.Div("ct-social-avatar", Text(initials, "ct-social-avatar-letter")));
+        }
+
+        /// <summary>Visible icon + label: use only for actions the service actually supports.</summary>
+        public static Button Action(string key, string icon, Action clicked, bool primary = false, bool danger = false)
+        {
+            var cls = "ct-btn ct-social-action" + (primary ? " ct-btn-primary" : "") + (danger ? " ct-btn-danger" : "");
+            var button = El.Btn("", clicked, cls);
+            button.tooltip = SocialStrings.T(key);
+            button.name = "social-" + key.Replace('.', '-');
+            button.Add(icon == "send" || icon == "speaker" || icon == "speaker-off"
+                ? (VisualElement)new SocialControlIcon(icon) : new UiIcon(icon));
+            button.Add(El.PassThrough(Text(SocialStrings.T(key), "ct-social-action-label")));
+            return button;
+        }
+
+        public static VisualElement Composer(TextField field, VisualElement detail, Button send)
+        {
+            field.AddToClassList("ct-social-compose-field");
+            detail.AddToClassList("ct-social-compose-detail");
+            var tools = El.Div("ct-social-compose-tools", detail, send);
+            return El.Div("ct-social-composer", field, tools);
+        }
+
+        public static VisualElement Empty(string icon, string title, string detail = null)
+        {
+            var card = Card(El.Div("ct-social-empty-symbol", new UiIcon(icon)), H2(title));
+            card.AddToClassList("ct-social-empty");
+            if (!string.IsNullOrEmpty(detail)) card.Add(Small(detail));
+            return card;
+        }
 
         public static TextField Field(string labelKey, string value, int maxLength, Action<string> changed, bool multiline = false)
         {

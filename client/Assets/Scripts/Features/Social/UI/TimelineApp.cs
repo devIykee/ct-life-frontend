@@ -44,21 +44,24 @@ namespace CTLife.SocialFeatures
             public View(SocialHub hub, PhoneShell phone, string tipUser, string tipName) : base(hub, phone)
             {
                 _t = hub.Timeline;
+                Root.AddToClassList("ct-social-timeline");
                 if (SocialWire.IsSafeId(tipUser) && !SocialWire.SameId(tipUser, hub.Me)) { _tipUser = tipUser; _tipUserName = tipName ?? hub.Names.Name(tipUser); }
                 _compose = SocialUi.Field("feed.compose", _t.PendingPost ?? "", FeedTimeline.MaxLength + 40, v => { _draft = v; UpdateLeft(); }, multiline: true);
                 _draft = _compose.value;
                 _left = SocialUi.Small("");
                 _composeMsg = SocialUi.Small("");
-                var starters = SocialUi.Row(SocialUi.Small(SocialStrings.T("feed.starters")));
+                var starters = SocialUi.Row();
+                starters.AddToClassList("ct-social-formats");
                 foreach (var k in PostKinds.Starters)
                 {
                     var kind = k;
                     starters.Add(SocialUi.Chip(SocialStrings.T("feed.kind." + kind), () => { _draft = SocialStrings.T("feed.starter." + kind); _compose.value = _draft; }, false));
                 }
                 Header.Add(SocialUi.H1(SocialStrings.T("feed.title")));
-                Header.Add(_compose);
-                Header.Add(SocialUi.Row(SocialUi.Btn("feed.post", Post, true), _left, _composeMsg));
-                Header.Add(starters);
+                var composer = SocialUi.Composer(_compose, _left, SocialUi.Action("feed.post", "send", Post, true));
+                composer.Insert(1, starters);
+                composer.Add(_composeMsg);
+                Header.Add(composer);
                 Header.Add(SocialUi.Small(SocialStrings.T("feed.notAdvice")));
                 UpdateLeft();
                 _t.Watch(true);
@@ -98,7 +101,8 @@ namespace CTLife.SocialFeatures
                 var scope = SocialUi.Row(
                     SocialUi.Chip(SocialStrings.T("feed.global"), () => _t.SetScope("global"), _t.Scope == "global"),
                     SocialUi.Chip(SocialStrings.T("feed.following"), () => _t.SetScope("following"), _t.Scope == "following"),
-                    El.Div("ct-grow"), SocialUi.Btn("common.refresh", _t.Refresh));
+                    El.Div("ct-grow"), SocialUi.Action("common.refresh", "rotate", _t.Refresh));
+                scope.AddToClassList("ct-social-scope");
                 Body.Add(scope);
                 if (_tipUser != null)
                 {
@@ -115,7 +119,7 @@ namespace CTLife.SocialFeatures
                 if (_t.Error != null) Body.Add(SocialUi.Notice(SocialStrings.T(_t.Error), "error"));
                 var posts = _t.Visible;
                 if (_t.Loading && !_t.Feed.Loaded) { Body.Add(SocialUi.Copy("common.loading")); return; }
-                if (posts.Count == 0) { Body.Add(SocialUi.Card(SocialUi.Copy(_t.Scope == "following" ? "feed.noneFollowing" : "feed.none"))); return; }
+                if (posts.Count == 0) { Body.Add(SocialUi.Empty("timeline", SocialStrings.T(_t.Scope == "following" ? "feed.noneFollowing" : "feed.none"))); return; }
                 foreach (var p in posts.Take(100)) RenderPost(p);
             }
 
@@ -124,22 +128,27 @@ namespace CTLife.SocialFeatures
                 var author = p.UserId;
                 var mine = SocialWire.SameId(author, Hub.Me);
                 var name = string.IsNullOrWhiteSpace(p.Alias) ? Hub.Names.Name(author) : p.Alias;
-                var head = SocialUi.Row(SocialUi.H2(mine ? SocialStrings.F("common.you", name) : name), SocialUi.Small(" · " + Ago.Short(p.AtMs, ServerClock.NowMs)));
+                var head = SocialUi.Row(SocialUi.Avatar(name), El.Div("ct-grow",
+                    SocialUi.H2(mine ? SocialStrings.F("common.you", name) : name), SocialUi.Small(Ago.Short(p.AtMs, ServerClock.NowMs))));
+                head.AddToClassList("ct-social-post-head");
                 var kind = PostKinds.Detect(p.Text);
-                if (kind != PostKind.Plain) head.Add(SocialUi.Badge(SocialStrings.T("feed.kind." + kind)));
+                if (kind != PostKind.Plain) head.Add(SocialUi.Status(SocialStrings.T("feed.kind." + kind), "info"));
                 var card = SocialUi.Card(head, SocialUi.Text(p.Text));
+                card.AddToClassList("ct-social-post");
                 var tickers = PostKinds.Tickers(p.Text);
                 if (tickers.Count > 0) card.Add(SocialUi.Small(string.Join("  ", tickers)));
                 var flag = SocialUi.Flag(p.Text);
                 if (flag != null && !mine) card.Add(flag);
                 if (!mine)
                 {
-                    var follow = SocialUi.Btn(_t.Following(author) ? "feed.unfollow" : "feed.follow", () => _t.ToggleFollow(author), !_t.Following(author));
+                    var follow = SocialUi.Action(_t.Following(author) ? "feed.unfollow" : "feed.follow", "contacts", () => _t.ToggleFollow(author));
                     follow.SetEnabled(!_t.FollowBusy(author));
-                    card.Add(SocialUi.Row(follow,
-                        SocialUi.Btn("feed.message", () => { MessagesApp.PendingPeer = author; MessagesApp.PendingAlias = p.Alias; Phone?.Open("messages"); }),
-                        SocialUi.Btn("feed.tip", () => { _tipFor = _tipFor == p.PostId ? null : p.PostId; _tipMsg = null; _tipKey = new RetainedKey(); _sigKey = new RetainedKey(); MarkDirty(); }),
-                        SocialUi.Ghost("feed.more", () => { _moreFor = _moreFor == p.PostId ? null : p.PostId; MarkDirty(); })));
+                    var actions = SocialUi.Row(follow,
+                        SocialUi.Action("feed.message", "chat", () => { MessagesApp.PendingPeer = author; MessagesApp.PendingAlias = p.Alias; Phone?.Open("messages"); }),
+                        SocialUi.Action("feed.tip", "cash", () => { _tipFor = _tipFor == p.PostId ? null : p.PostId; _tipMsg = null; _tipKey = new RetainedKey(); _sigKey = new RetainedKey(); MarkDirty(); }),
+                        SocialUi.Action("feed.more", "menu", () => { _moreFor = _moreFor == p.PostId ? null : p.PostId; MarkDirty(); }));
+                    actions.AddToClassList("ct-social-post-actions");
+                    card.Add(actions);
                     if (_tipFor == p.PostId) card.Add(TipPanel(author, name));
                     if (_moreFor == p.PostId)
                         card.Add(SocialUi.ReportPanel(name, reason => { _moreFor = null; Hub.Report("post", p.PostId, reason, null); MarkDirty(); }, () => { _moreFor = null; MarkDirty(); }));

@@ -132,7 +132,7 @@ namespace CTLife.Ventures
             ["builder.hiring.note"] = "Founders send the offers. Tell one you're available and they'll invite you.",
             ["builder.loadFailed"] = "Couldn't load projects.",
             ["builder.scope.hiring"] = "Open roles", ["builder.scope.all"] = "Everything",
-            ["project.card.line"] = "{0} · {1} · {2} people",
+            ["project.card.line"] = "{0} · {1} · {2} people", ["project.card.people"] = "{0} people",
             ["project.card.treasury"] = "Treasury {0}", ["project.card.open"] = "Hiring: {0}", ["project.by"] = "Founder: {0}",
             ["project.open"] = "Open HQ", ["project.someProject"] = "A project",
             ["kind.memecoin"] = "Memecoin", ["kind.dex"] = "DEX", ["kind.nft_studio"] = "NFT studio", ["kind.perps_venue"] = "Perps venue", ["kind.l2"] = "L2",

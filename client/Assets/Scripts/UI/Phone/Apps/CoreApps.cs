@@ -131,17 +131,30 @@ namespace CTLife.UI
             var p = Services.Get<PlayerProfile>();
             var me = p.Me;
             var reg = Services.Get<ConfigStore>().Registries;
-            var page = AppUi.Page(
-                El.Text(p.Alias + (me?.User?.IsSeeker == true ? " ✓" : ""), "ct-h1"),
-                El.Text(reg.Tribe(me?.Character?.TribeId)?.name ?? "", "ct-body"),
-                El.Text(Strings.F("profile.wallet", Short(me?.User?.Wallet)) + (string.IsNullOrEmpty(me?.User?.SkrName) ? "" : " · " + me.User.SkrName), "ct-small ct-muted"),
-                El.Text(Strings.F("profile.miner", Strings.ReadableId(me?.MinerTier.ToString())), "ct-small"));
+            var identity = El.Div("ct-account-identity",
+                El.Div("ct-account-avatar", new UiIcon("profile")),
+                El.Div("ct-grow", El.Text(p.Alias, "ct-account-name"),
+                    El.Text(reg.Tribe(me?.Character?.TribeId)?.name ?? "", "ct-account-subtitle")));
+            var badges = El.Div("ct-account-badges",
+                PhonePresentation.Status(Strings.F("profile.miner", Strings.ReadableId(me?.MinerTier.ToString())), PhonePresentation.Tone.Accent));
+            if (me?.User?.IsSeeker == true) badges.Add(PhonePresentation.Status(Strings.T("profile.seeker"), PhonePresentation.Tone.Success));
+            var page = AppUi.Page(El.Div("ct-account-card", identity, badges,
+                El.Text(Strings.F("profile.wallet", Short(me?.User?.Wallet)) + (string.IsNullOrEmpty(me?.User?.SkrName) ? "" : " · " + me.User.SkrName), "ct-account-wallet")));
+            page.AddToClassList("ct-account-page");
             if (me?.Skills != null)
             {
                 var s = me.Skills;
                 page.Add(El.Text(Strings.T("profile.skills"), "ct-h2"));
-                foreach (var (name, v) in new[] { ("Clout", s.Clout), ("Coding", s.Coding), ("Trading", s.Trading), ("Writing", s.Writing), ("Design", s.Design), ("Security", s.Security) })
-                    page.Add(El.Div("ct-lb-row", El.Text(name, "ct-lb-name"), El.Text(v + "/10", "ct-lb-value")));
+                var skills = El.Div("ct-account-card");
+                foreach (var (name, v) in new[] { ("clout", s.Clout), ("coding", s.Coding), ("trading", s.Trading), ("writing", s.Writing), ("design", s.Design), ("security", s.Security) })
+                {
+                    var fill = El.Div("ct-account-skill-fill");
+                    fill.style.width = Length.Percent(UnityEngine.Mathf.Clamp(v, 0, 10) * 10f);
+                    skills.Add(El.Div("ct-account-skill", El.Div("ct-account-skill-heading",
+                        El.Text(Strings.T("profile.skill." + name), "ct-body ct-grow"), El.Text(v + "/10", "ct-account-skill-value")),
+                        El.Div("ct-account-skill-track", fill)));
+                }
+                page.Add(skills);
             }
             return page;
         }
@@ -163,7 +176,8 @@ namespace CTLife.UI
         public override VisualElement Open()
         {
             var am = CTLife.Audio.AudioManager.Instance;
-            var page = AppUi.Page(El.Text(Strings.T("settings.note"), "ct-body ct-muted"));
+            var page = AppUi.Page();
+            page.AddToClassList("ct-account-page");
             var controls = El.Div("ct-app-tabs");
             var controlHelp = El.Text("", "ct-small ct-muted");
             Button analog = null, arrows = null;
@@ -179,23 +193,31 @@ namespace CTLife.UI
             controls.Add(analog);
             controls.Add(arrows);
             SelectControls(ControlSettings.MovementMode);
-            page.Add(El.Text(Strings.T("controls.title"), "ct-section-title"));
-            page.Add(controls);
-            page.Add(controlHelp);
+            controls.AddToClassList("ct-duo-segment");
+            page.Add(El.Div("ct-account-card", SectionTitle("body", Strings.T("controls.title")), controls, controlHelp));
             if (am != null)
             {
-                page.Add(Slider(Strings.T("settings.master"), am.masterVolume, v => am.masterVolume = v));
-                page.Add(Slider(Strings.T("settings.music"), am.musicVolume, v => am.musicVolume = v));
-                page.Add(Slider(Strings.T("settings.sound"), am.sfxVolume, v => am.sfxVolume = v));
-                page.Add(Slider(Strings.T("settings.voice"), am.voiceVolume, v => am.voiceVolume = v));
-                page.Add(Slider(Strings.T("settings.ambience"), am.ambienceVolume, v => am.ambienceVolume = v));
+                page.Add(El.Div("ct-account-card", SectionTitle("mic", Strings.T("settings.audio")),
+                    Slider(Strings.T("settings.master"), am.masterVolume, v => am.masterVolume = v),
+                    Slider(Strings.T("settings.music"), am.musicVolume, v => am.musicVolume = v),
+                    Slider(Strings.T("settings.sound"), am.sfxVolume, v => am.sfxVolume = v),
+                    Slider(Strings.T("settings.voice"), am.voiceVolume, v => am.voiceVolume = v),
+                    Slider(Strings.T("settings.ambience"), am.ambienceVolume, v => am.ambienceVolume = v)));
             }
             var extra = ExtraSection?.Invoke(); if (extra != null) page.Add(extra);
-            page.Add(AssetCredits.Build());
+            var credits = AssetCredits.Build();
+            credits.AddToClassList("ct-account-card");
+            credits.AddToClassList("ct-account-credits");
+            page.Add(credits);
             page.Add(El.Text(Strings.F("settings.version", Semver.ClientVersion), "ct-small ct-muted"));
-            page.Add(El.Btn(Strings.T("settings.signout"), () => { Phone.Close(); _signOut?.Invoke(); }, "ct-btn ct-btn-danger", sfx: null));
+            var signOut = El.Btn(Strings.T("settings.signout"), () => { Phone.Close(); _signOut?.Invoke(); }, "ct-btn ct-account-signout", sfx: null);
+            signOut.name = "settings-signout";
+            page.Add(signOut);
             return page;
         }
+
+        private static VisualElement SectionTitle(string icon, string title) =>
+            El.Div("ct-account-section", new UiIcon(icon), El.Text(title, "ct-h2"));
 
         /// <summary>
         /// Volume as a −/+ stepper (10% steps). Device QA: a Slider inside the scrolling settings page took vertical
@@ -213,6 +235,8 @@ namespace CTLife.UI
             }
             var minus = El.Btn("−", () => Apply(VolumeStep.Down(current)), "ct-btn ct-btn-ghost ct-stepper-btn");
             var plus = El.Btn("+", () => Apply(VolumeStep.Up(current)), "ct-btn ct-btn-ghost ct-stepper-btn");
+            minus.tooltip = Strings.F("settings.decrease", label);
+            plus.tooltip = Strings.F("settings.increase", label);
             readout.text = UnityEngine.Mathf.RoundToInt(current * 100f) + "%";
             var row = El.Div("ct-row ct-stepper", El.Text(label, "ct-body ct-grow"), minus, readout, plus);
             row.name = "volume-" + label;

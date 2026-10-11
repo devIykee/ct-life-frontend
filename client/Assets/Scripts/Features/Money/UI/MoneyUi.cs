@@ -56,7 +56,7 @@ namespace CTLife.Economy
 
         public static Button Chip(string text, Action onClick, bool on)
         {
-            var b = El.Btn(text, onClick, "ct-chip ct-money-chip");
+            var b = PhonePresentation.SizeToText(El.Btn(text, onClick, "ct-chip ct-money-chip"));
             b.EnableInClassList("ct-chip-on", on);
             return b;
         }
@@ -100,7 +100,7 @@ namespace CTLife.Economy
 
         public ChipTabs Add(string key, string label)
         {
-            var b = El.Btn(label, () => Select(key), "ct-chip ct-money-chip");
+            var b = PhonePresentation.SizeToText(El.Btn(label, () => Select(key), "ct-chip ct-money-chip"));
             _chips[key] = b;
             Root.Add(b);
             return this;

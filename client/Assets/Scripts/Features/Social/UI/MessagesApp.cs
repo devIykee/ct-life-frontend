@@ -40,10 +40,10 @@ namespace CTLife.SocialFeatures
             public View(SocialHub hub, PhoneShell phone, string peer, string alias) : base(hub, phone)
             {
                 _m = hub.Messages;
+                Root.AddToClassList("ct-social-messages");
                 _input = SocialUi.Field("dm.placeholder", "", DmThread.MaxLength, v => _draft = v, multiline: true);
                 _inputError = SocialUi.Small("");
-                Footer.Add(_input);
-                Footer.Add(SocialUi.Row(SocialUi.Btn("common.send", Send, true), _inputError));
+                Footer.Add(SocialUi.Composer(_input, _inputError, SocialUi.Action("common.send", "send", Send, true)));
                 if (SocialWire.IsSafeId(peer)) _m.Open(peer, alias, startedByMe: true);
                 else _m.CloseThread();
                 _m.WatchInbox(true);
@@ -74,7 +74,7 @@ namespace CTLife.SocialFeatures
 
             private void RenderInbox()
             {
-                Body.Add(SocialUi.Row(SocialUi.H1(SocialStrings.T("dm.inbox")), El.Div("ct-grow"), SocialUi.Btn("common.refresh", _m.RefreshInbox)));
+                Body.Add(SocialUi.Row(El.Div("ct-grow"), SocialUi.Action("common.refresh", "rotate", _m.RefreshInbox)));
                 Body.Add(SocialUi.Notice(SocialStrings.T("dm.safety"), "warn"));
                 if (!Features.IsAvailable(Features.Dms)) Body.Add(SocialUi.Notice(SocialStrings.T("dm.degraded"), "error"));
                 if (_m.ServerInboxUnavailable) Body.Add(SocialUi.Small(SocialStrings.T("dm.localOnly")));
@@ -89,7 +89,7 @@ namespace CTLife.SocialFeatures
                     foreach (var e in requests.Take(30)) Entry(e);
                 }
                 var convos = _m.Conversations.ToList();
-                if (convos.Count == 0 && requests.Count == 0) Body.Add(SocialUi.Card(SocialUi.Copy("dm.none")));
+                if (convos.Count == 0 && requests.Count == 0) Body.Add(SocialUi.Empty("messages", SocialStrings.T("dm.none"), SocialStrings.T("dm.noneHint")));
                 foreach (var e in convos.Take(100)) Entry(e);
             }
 
@@ -98,9 +98,9 @@ namespace CTLife.SocialFeatures
                 var user = e.UserId;
                 var name = string.IsNullOrEmpty(e.Alias) ? Hub.Names.Name(user) : e.Alias;
                 var info = El.Div("ct-grow", SocialUi.H2(name), SocialUi.Small((e.LastMessage ?? "") + (e.LastAtMs > 0 ? " · " + Ago.Short(e.LastAtMs, ServerClock.NowMs) : "")));
-                var row = El.Div("ct-social-person", info);
-                if (e.Unread > 0) row.Add(SocialUi.Badge(SocialStrings.F("dm.unread", e.Unread)));
-                row.Add(SocialUi.Btn("dm.open", () => { _m.Open(user, e.Alias); ScrollToEnd = true; _lastNewest = null; MarkDirty(); }));
+                var row = El.Div("ct-social-person", SocialUi.Avatar(name), info);
+                if (e.Unread > 0) row.Add(SocialUi.Status(SocialStrings.F("dm.unread", e.Unread), "info"));
+                row.Add(SocialUi.Action("dm.open", "next", () => { _m.Open(user, e.Alias); ScrollToEnd = true; _lastNewest = null; MarkDirty(); }));
                 Body.Add(row);
             }
 
@@ -111,7 +111,7 @@ namespace CTLife.SocialFeatures
                 var name = Hub.Names.Name(peer);
                 Body.Add(SocialUi.Row(SocialUi.Ghost("common.back", () => { _m.CloseThread(); _report = false; _confirmBlock = false; MarkDirty(); }),
                     SocialUi.H2(name), El.Div("ct-grow"),
-                    SocialUi.Btn("dm.call", () => { CallsApp.PendingCallee = peer; Phone?.Open("calls"); })));
+                    SocialUi.Action("dm.call", "calls", () => { CallsApp.PendingCallee = peer; Phone?.Open("calls"); })));
                 var request = entry != null && _m.IsRequest(entry);
                 if (request)
                 {
@@ -139,7 +139,9 @@ namespace CTLife.SocialFeatures
                     var meta = msg.State == DmSendState.Sending ? SocialStrings.T("dm.sending")
                         : msg.State == DmSendState.Failed ? SocialStrings.T("dm.failed") + (msg.FailureKey != null ? " · " + SocialStrings.T(msg.FailureKey) : "")
                         : Ago.Short(msg.AtMs, ServerClock.NowMs);
-                    bubble.Add(SocialUi.Small(meta));
+                    var stamp = SocialUi.Small(meta);
+                    stamp.AddToClassList("ct-social-message-meta");
+                    bubble.Add(stamp);
                     if (!mine) { var flag = SocialUi.Flag(msg.Text); if (flag != null) bubble.Add(flag); }
                     if (msg.State == DmSendState.Failed)
                     {

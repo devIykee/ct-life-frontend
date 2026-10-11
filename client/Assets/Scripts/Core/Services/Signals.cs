@@ -11,13 +11,15 @@ namespace CTLife.Core
         public string textId;
         public Dictionary<string, string> @params;
         public string literal;
+        /// <summary>Optional supporting copy supplied by the caller; never inferred from a receipt or transaction.</summary>
+        public string detail;
         public ToastKind kind;
 
-        public static ToastSignal Text(string text, ToastKind kind = ToastKind.Info) => new ToastSignal { literal = text, kind = kind };
+        public static ToastSignal Text(string text, ToastKind kind = ToastKind.Info, string detail = null) => new ToastSignal { literal = text, kind = kind, detail = detail };
         public static ToastSignal Id(string id, Dictionary<string, string> p, ToastKind kind = ToastKind.Info) => new ToastSignal { textId = id, @params = p, kind = kind };
     }
 
-    public enum ToastKind { Info, Good, Bad, Event }
+    public enum ToastKind { Info, Good, Bad, Event, Warning }
 
     /// <summary>Play a sound by sfx.json id (FE-owned registry).</summary>
     public struct SfxSignal

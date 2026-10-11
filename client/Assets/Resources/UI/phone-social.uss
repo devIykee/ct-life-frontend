@@ -1,0 +1,174 @@
+/* Duo social interiors — interpreted from the user's composer, tag and compact toolbar references.
+   Text, roles, counts, speaking state and settlement status remain controller-owned. */
+.ct-phone .ct-social {
+    --ct-social-blue: var(--ct-duo-blue);
+    --ct-social-blue-wash: var(--ct-duo-blue-soft);
+    --ct-social-green: var(--ct-duo-green);
+    --ct-social-green-wash: var(--ct-duo-green-soft);
+    --ct-social-violet: var(--ct-duo-purple);
+    --ct-social-violet-wash: var(--ct-duo-purple-soft);
+    --ct-social-red: var(--ct-duo-red);
+    --ct-social-red-wash: var(--ct-duo-red-soft);
+    --ct-social-amber: var(--ct-duo-amber);
+    --ct-social-amber-wash: var(--ct-duo-amber-soft);
+    --ct-social-muted: var(--ct-duo-muted);
+    --ct-social-surface: var(--ct-duo-inset);
+    --ct-social-edge: var(--ct-duo-edge);
+    --ct-social-radius: var(--ct-duo-radius);
+    color: var(--ct-os-ink);
+}
+.ct-phone .ct-social .ct-social-header { margin-bottom: 16px; }
+.ct-phone .ct-social .ct-social-body, .ct-phone .ct-social .ct-social-footer { min-width: 0; }
+.ct-phone .ct-social .ct-social-footer { margin-top: 20px; }
+.ct-phone .ct-social .ct-social-row { min-width: 0; }
+.ct-phone .ct-social .ct-grow { min-width: 0; }
+.ct-phone .ct-social .ct-h1 { margin: 0 0 20px; }
+.ct-phone .ct-social .ct-h2 { font-size: 31px; margin: 4px 0 10px; white-space: normal; }
+.ct-phone .ct-social .ct-small { font-size: 24px; color: var(--ct-social-muted); white-space: normal; }
+.ct-phone .ct-social .ct-eyebrow { font-size: 24px; color: var(--ct-social-muted); margin: 24px 0 12px; }
+.ct-phone .ct-social .ct-social-text { font-size: 28px; color: var(--ct-os-ink); white-space: normal; margin: 4px 0 10px; }
+.ct-phone .ct-social .ct-social-card {
+    border-radius: var(--ct-social-radius); border-color: var(--ct-social-edge); border-width: 1px;
+    padding: 26px; margin: 10px 0 18px; background-color: var(--ct-os-paper);
+}
+.ct-phone .ct-social .ct-btn {
+    border-radius: 48px; padding: 18px 26px; min-height: 96px;
+    border-width: 1px; border-color: var(--ct-social-edge); font-size: 27px;
+    background-color: var(--ct-os-paper); color: var(--ct-os-ink);
+}
+.ct-phone .ct-social .ct-btn-primary { background-color: var(--ct-social-blue); color: var(--ct-os-paper); border-color: var(--ct-social-blue); }
+.ct-phone .ct-social-spaces .ct-btn-primary { background-color: var(--ct-social-violet); border-color: var(--ct-social-violet); }
+.ct-phone .ct-social .ct-btn-danger { background-color: var(--ct-social-red-wash); color: var(--ct-social-red); border-color: var(--ct-social-red-wash); }
+.ct-phone .ct-social .ct-btn-ghost { background-color: rgba(0,0,0,0); border-color: rgba(0,0,0,0); color: var(--ct-social-muted); }
+.ct-phone .ct-social .ct-btn:hover { background-color: var(--ct-social-surface); }
+.ct-phone .ct-social .ct-btn-primary:hover { background-color: var(--ct-social-blue); opacity: 0.88; }
+.ct-phone .ct-social-spaces .ct-btn-primary:hover { background-color: var(--ct-social-violet); }
+.ct-phone .ct-social .ct-btn:focus { border-color: var(--ct-social-blue); border-width: 2px; }
+.ct-phone .ct-social .ct-btn:disabled { opacity: 0.45; }
+.ct-phone .ct-social .ct-chip {
+    min-height: 96px; padding: 16px 22px; margin: 6px; border-radius: 48px;
+    background-color: var(--ct-os-paper); color: var(--ct-social-muted);
+    border-width: 1px; border-color: var(--ct-social-edge); font-size: 25px;
+    -unity-font-definition: url("Fonts/Phone/Inter-Medium.ttf"); -unity-text-outline-width: 0;
+    justify-content: center; align-items: center;
+}
+.ct-phone .ct-social .ct-chip-on { background-color: var(--ct-social-blue-wash); color: var(--ct-social-blue); border-color: var(--ct-social-blue-wash); }
+.ct-phone .ct-social .ct-chip:focus { border-color: var(--ct-social-blue); }
+.ct-phone .ct-social .ct-social-action { flex-direction: row; justify-content: center; align-items: center; }
+.ct-phone .ct-social .ct-social-action .ct-icon, .ct-phone .ct-social .ct-social-control-icon {
+    width: 32px; height: 32px; min-width: 32px; flex-shrink: 0; margin: 0 12px 0 0;
+    -unity-background-image-tint-color: var(--ct-os-ink); color: var(--ct-os-ink);
+}
+.ct-phone .ct-social .ct-social-action-label {
+    font-size: 25px; margin: 0; white-space: nowrap; flex-shrink: 0;
+    -unity-font-definition: url("Fonts/Phone/Inter-Medium.ttf"); color: var(--ct-os-ink);
+}
+.ct-phone .ct-social .ct-btn-primary .ct-social-action-label,
+.ct-phone .ct-social .ct-btn-primary .ct-social-control-icon { color: var(--ct-os-paper); }
+.ct-phone .ct-social .ct-btn-primary .ct-icon { -unity-background-image-tint-color: var(--ct-os-paper); }
+.ct-phone .ct-social .ct-btn-danger .ct-social-action-label { color: var(--ct-social-red); }
+.ct-phone .ct-social .ct-btn-danger .ct-icon { -unity-background-image-tint-color: var(--ct-social-red); }
+/* A single composed surface; no nonfunctional attachment affordances. */
+.ct-phone .ct-social .ct-social-composer {
+    background-color: var(--ct-os-paper); border-width: 1px; border-color: var(--ct-social-edge);
+    border-radius: 34px; padding: 22px; margin: 4px 0 14px;
+}
+.ct-phone .ct-social .ct-social-input { margin: 10px 0; font-size: 28px; }
+.ct-phone .ct-social .ct-social-input > .unity-text-field__label {
+    font-size: 24px; margin: 0 0 12px; color: var(--ct-social-muted);
+    -unity-font-definition: url("Fonts/Phone/Inter-Medium.ttf");
+}
+.ct-phone .ct-social .ct-social-input .unity-text-field__input {
+    min-height: 100px; border-radius: 22px; border-width: 1px; border-color: var(--ct-social-edge);
+    background-color: var(--ct-social-surface); padding: 20px; font-size: 28px; color: var(--ct-os-ink); white-space: normal;
+}
+.ct-phone .ct-social .ct-social-input .unity-text-field__input:focus { border-color: var(--ct-social-blue); }
+.ct-phone .ct-social .ct-social-compose-field { margin: 0 0 12px; }
+.ct-phone .ct-social .ct-social-compose-field .unity-text-field__input { min-height: 136px; }
+.ct-phone .ct-social .ct-social-compose-tools {
+    flex-direction: row; align-items: center; padding-top: 14px; margin-top: 8px;
+    border-top-width: 1px; border-top-color: var(--ct-social-edge);
+}
+.ct-phone .ct-social .ct-social-compose-detail { flex-grow: 1; flex-shrink: 1; min-width: 0; margin-right: 16px; }
+.ct-phone .ct-social .ct-social-compose-tools > .ct-social-action { margin: 0; flex-shrink: 0; }
+.ct-phone .ct-social .ct-social-formats { margin: 0 -4px; }
+.ct-phone .ct-social .ct-social-formats .ct-chip {
+    min-width: 132px; flex-basis: 21%; flex-grow: 1; flex-shrink: 0;
+    padding: 12px 14px; font-size: 23px; white-space: nowrap;
+}
+.ct-phone .ct-social .ct-social-scope { margin: 0 0 14px; }
+.ct-phone .ct-social .ct-social-scope > .ct-chip { min-width: 174px; flex-shrink: 0; white-space: nowrap; }
+.ct-phone .ct-social .ct-social-back { min-width: 204px; flex-shrink: 0; white-space: nowrap; }
+/* Quiet, readable tags: colour reinforces the actual state instead of decorating each row. */
+.ct-phone .ct-social .ct-social-status {
+    flex-direction: row; align-items: center; align-self: flex-start; max-width: 100%;
+    background-color: var(--ct-social-surface); padding: 9px 14px; border-radius: 15px; margin: 4px 8px 8px 0;
+}
+.ct-phone .ct-social .ct-social-status-copy { font-size: 22px; color: var(--ct-social-muted); margin: 0; white-space: normal; flex-shrink: 1; }
+.ct-phone .ct-social .ct-social-status .ct-icon { width: 25px; height: 25px; flex-shrink: 0; margin: 0 8px 0 0; -unity-background-image-tint-color: var(--ct-social-muted); }
+.ct-phone .ct-social .ct-social-status-info { background-color: var(--ct-social-blue-wash); }
+.ct-phone .ct-social .ct-social-status-info .ct-social-status-copy { color: var(--ct-social-blue); }
+.ct-phone .ct-social .ct-social-status-info .ct-icon { -unity-background-image-tint-color: var(--ct-social-blue); }
+.ct-phone .ct-social .ct-social-status-success { background-color: var(--ct-social-green-wash); }
+.ct-phone .ct-social .ct-social-status-success .ct-social-status-copy { color: var(--ct-social-green); }
+.ct-phone .ct-social .ct-social-status-success .ct-icon { -unity-background-image-tint-color: var(--ct-social-green); }
+.ct-phone .ct-social .ct-social-status-error { background-color: var(--ct-social-red-wash); }
+.ct-phone .ct-social .ct-social-status-error .ct-social-status-copy { color: var(--ct-social-red); }
+.ct-phone .ct-social .ct-social-status-error .ct-icon { -unity-background-image-tint-color: var(--ct-social-red); }
+.ct-phone .ct-social .ct-social-status-live { background-color: var(--ct-social-violet-wash); }
+.ct-phone .ct-social .ct-social-status-live .ct-social-status-copy { color: var(--ct-social-violet); }
+.ct-phone .ct-social .ct-social-status-live .ct-icon { -unity-background-image-tint-color: var(--ct-social-violet); }
+.ct-phone .ct-social .ct-social-notice { padding: 20px 24px; font-size: 25px; border-width: 0; border-radius: 22px; background-color: var(--ct-social-blue-wash); color: var(--ct-social-blue); }
+.ct-phone .ct-social .ct-social-warn { background-color: var(--ct-social-amber-wash); color: var(--ct-social-amber); }
+.ct-phone .ct-social .ct-social-error { background-color: var(--ct-social-red-wash); color: var(--ct-social-red); }
+/* Contact identity comes from the player's name, never an invented photo. */
+.ct-phone .ct-social .ct-social-avatar {
+    width: 74px; height: 74px; min-width: 74px; flex-shrink: 0; border-radius: 37px;
+    align-items: center; justify-content: center; margin-right: 18px;
+    background-color: var(--ct-social-blue-wash); border-width: 2px; border-color: rgba(0,0,0,0);
+}
+.ct-phone .ct-social .ct-social-avatar-letter { font-size: 30px; color: var(--ct-social-blue); margin: 0; -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); }
+.ct-phone .ct-social-spaces .ct-social-avatar { background-color: var(--ct-social-violet-wash); }
+.ct-phone .ct-social-spaces .ct-social-avatar-letter { color: var(--ct-social-violet); }
+.ct-phone .ct-social .ct-social-avatar-speaking { border-color: var(--ct-social-green); background-color: var(--ct-social-green-wash); }
+.ct-phone .ct-social .ct-social-person {
+    min-width: 0; padding: 20px; margin: 6px 0; border-width: 1px; border-color: var(--ct-social-edge);
+    border-radius: 26px; background-color: var(--ct-os-paper); flex-wrap: wrap;
+}
+.ct-phone .ct-social .ct-social-person > .ct-grow { flex-basis: 180px; }
+.ct-phone .ct-social .ct-social-person .ct-h2 { font-size: 28px; margin-bottom: 6px; }
+.ct-phone .ct-social .ct-social-person > .ct-social-action { margin-left: 10px; }
+.ct-phone .ct-social .ct-social-msg { max-width: 88%; padding: 20px 24px; border-radius: 28px; margin: 8px 0; }
+.ct-phone .ct-social .ct-social-msg-me { background-color: var(--ct-social-blue-wash); border-bottom-right-radius: 9px; }
+.ct-phone .ct-social .ct-social-msg-them { background-color: var(--ct-os-paper); border-bottom-left-radius: 9px; }
+.ct-phone .ct-social .ct-social-message-meta { font-size: 21px; margin: 6px 0 0; }
+.ct-phone .ct-social .ct-social-post-head { flex-wrap: nowrap; margin-bottom: 14px; }
+.ct-phone .ct-social .ct-social-post-head .ct-h2 { font-size: 28px; margin: 0 0 6px; }
+.ct-phone .ct-social .ct-social-post-head > .ct-social-status { flex-shrink: 0; }
+.ct-phone .ct-social .ct-social-post-head .ct-social-status-copy { white-space: nowrap; flex-shrink: 0; }
+.ct-phone .ct-social .ct-social-post-actions {
+    padding-top: 12px; margin-top: 16px; border-top-width: 1px; border-top-color: var(--ct-social-edge);
+}
+.ct-phone .ct-social .ct-social-post-actions > .ct-social-action {
+    flex-grow: 1; flex-basis: 20%; min-width: 0; flex-direction: column; margin: 4px; background-color: var(--ct-social-surface); border-color: var(--ct-social-surface); padding: 12px 4px;
+}
+.ct-phone .ct-social .ct-social-post-actions .ct-social-action-label { font-size: 21px; }
+.ct-phone .ct-social .ct-social-post-actions .ct-icon { margin: 0 0 6px; }
+/* Compact pill controls wrap as a group; microphone activity is only shown from the real session. */
+.ct-phone .ct-social .ct-social-media-controls {
+    padding: 12px; margin: 18px 0 24px; border-radius: 32px;
+    background-color: var(--ct-os-paper); border-width: 1px; border-color: var(--ct-social-edge);
+}
+.ct-phone .ct-social .ct-social-media-controls > .ct-social-action { flex-grow: 1; flex-basis: 42%; min-width: 0; margin: 6px; background-color: var(--ct-social-surface); border-width: 0; }
+.ct-phone .ct-social .ct-social-media-controls > .ct-btn-primary { background-color: var(--ct-social-blue); }
+.ct-phone .ct-social-spaces .ct-social-media-controls > .ct-btn-primary { background-color: var(--ct-social-violet); }
+.ct-phone .ct-social .ct-social-media-controls > .ct-btn-danger { background-color: var(--ct-social-red-wash); }
+.ct-phone .ct-social .ct-social-tile { border-radius: 26px; }
+.ct-phone .ct-social .ct-social-tile-label { font-size: 22px; padding: 12px; }
+.ct-phone .ct-social .ct-social-empty { padding: 34px 28px; }
+.ct-phone .ct-social .ct-social-empty-symbol { width: 82px; height: 82px; border-radius: 26px; background-color: var(--ct-social-blue-wash); align-items: center; justify-content: center; margin-bottom: 18px; }
+.ct-phone .ct-social .ct-social-empty-symbol .ct-icon { width: 38px; height: 38px; -unity-background-image-tint-color: var(--ct-social-blue); }
+.ct-phone .ct-social-spaces .ct-social-empty-symbol { background-color: var(--ct-social-violet-wash); }
+.ct-phone .ct-social-spaces .ct-social-empty-symbol .ct-icon { -unity-background-image-tint-color: var(--ct-social-violet); }
+.ct-phone .ct-social .ct-social-space-card > .ct-h2 { margin: 12px 0 24px; font-size: 34px; }
+.ct-phone .ct-social .ct-social-space-card > .ct-social-action { margin: 22px 0 0; }

@@ -90,6 +90,7 @@ namespace CTLife.CityLife
         private readonly NeedsActionRunner _runner;
         private readonly VisualElement[] _fills = new VisualElement[5];
         private readonly Label[] _values = new Label[5];
+        private readonly VisualElement[] _tiles = new VisualElement[5];
         private readonly Label _hint, _status;
         private readonly List<(string id, Button button)> _buttons = new List<(string, Button)>();
         private readonly Func<bool> _alive;
@@ -102,15 +103,19 @@ namespace CTLife.CityLife
             _life = life;
             _runner = new NeedsActionRunner(hub);
             Root = CityUi.Card(CityUi.H2(CityLifeStrings.T("needs.title")));
+            var metrics = El.Div("ct-duo-metrics ct-duo-needs");
+            var icons = new[] { "energy", "counter", "emote", "profile", "needs" };
             for (int i = 0; i < 5; i++)
             {
                 var bar = CityUi.Bar(out _fills[i]);
-                _values[i] = CityUi.Text("—", "ct-small");
-                var label = CityUi.Text(CityLifeStrings.NeedName(NeedsConfig.Ids[i]), "ct-small");
-                label.style.width = 80;
-                _values[i].style.width = 36;
-                Root.Add(CityUi.Row(label, bar, _values[i]));
+                bar.AddToClassList("ct-duo-need-track");
+                _tiles[i] = PhonePresentation.Metric(CityLifeStrings.NeedName(NeedsConfig.Ids[i]), "—", icons[i], PhonePresentation.Tone.Neutral);
+                _tiles[i].AddToClassList("ct-duo-need");
+                _values[i] = _tiles[i].Q<Label>(className: "ct-duo-metric-value");
+                _tiles[i].Add(bar);
+                metrics.Add(_tiles[i]);
             }
+            Root.Add(metrics);
             _hint = CityUi.Small("");
             Root.Add(_hint);
             var cfg = hub.Needs.Config;
@@ -118,6 +123,7 @@ namespace CTLife.CityLife
             else
             {
                 var row = CityUi.Row();
+                row.AddToClassList("ct-duo-needs-actions");
                 foreach (var a in cfg.Actions)
                 {
                     var id = a.Id;
@@ -166,6 +172,10 @@ namespace CTLife.CityLife
                 var level = cfg.LevelOf(p[i]);
                 CityUi.SetBar(_fills[i], (p[i] - cfg.Min) / (cfg.Max - cfg.Min), level);
                 _values[i].text = ((int)Math.Floor(p[i])).ToString(System.Globalization.CultureInfo.InvariantCulture);
+                _tiles[i].EnableInClassList("ct-duo-tone-neutral", false);
+                _tiles[i].EnableInClassList("ct-duo-tone-success", level == NeedLevel.Ok);
+                _tiles[i].EnableInClassList("ct-duo-tone-warning", level == NeedLevel.Low);
+                _tiles[i].EnableInClassList("ct-duo-tone-danger", level != NeedLevel.Ok && level != NeedLevel.Low);
             }
             int u = NeedsProjection.MostUrgent(p, cfg);
             var need = NeedsConfig.Ids[u];
