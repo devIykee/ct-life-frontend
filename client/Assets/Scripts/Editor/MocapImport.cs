@@ -31,10 +31,15 @@ namespace CTLife.EditorTools
             ("getup_face_down.fbx", "act_get_up_front"), // CMU 140_02 "Get Up Face Down"
             ("trip.fbx", "react_trip"),                  // CMU 104_13 "StumbleWalk", trimmed to one stumble and recovery
             ("jog_stop.fbx", "loco_run_stop"),           // CMU 104_09 "JogStop"
-            // Feel lane F1 gesture sources: EmoteBake puts their upper body on the game idle.
-            ("wave_hello.fbx", "emote_wave"),            // CMU 141_16 "Wave Hello"
-            ("shrug.fbx", "emote_shrug"),                // CMU 141_21 "Shrug"
         };
+
+        /// <summary>
+        /// Feel lane F1 gesture sources, imported the same way but not states of their own: EmoteBake puts their upper body
+        /// on the game idles (emote_wave from CMU 141_16 "Wave Hello", emote_shrug from CMU 141_21 "Shrug").
+        /// </summary>
+        public static readonly string[] GestureSources = { "wave_hello.fbx", "shrug.fbx" };
+
+        private static IEnumerable<string> AllFiles => Clips.Select(c => c.file).Concat(GestureSources);
 
         /// <summary>
         /// CMU ASF bones → Humanoid. Every animated spine bone is mapped (an unmapped "in-between" bone's animation is
@@ -62,14 +67,14 @@ namespace CTLife.EditorTools
         {
             Directory.CreateDirectory(Root);
             string src = Path.GetFullPath(Path.Combine(Application.dataPath, "..", Source));
-            foreach (var (file, _) in Clips)
+            foreach (var file in AllFiles)
             {
                 string from = Path.Combine(src, file), to = PathOf(file);
                 if (!File.Exists(from)) throw new FileNotFoundException("Processed mocap clip missing (run tools/anim/build_mocap_clips.py)", from);
                 if (!File.Exists(to) || !File.ReadAllBytes(to).SequenceEqual(File.ReadAllBytes(from))) File.Copy(from, to, true);
             }
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
-            foreach (var (file, _) in Clips)
+            foreach (var file in AllFiles)
             {
                 var path = PathOf(file);
                 var mi = (ModelImporter)AssetImporter.GetAtPath(path);

@@ -5,17 +5,18 @@ using UnityEngine;
 namespace CTLife.World
 {
     /// <summary>
-    /// Speed-matched locomotion (no foot sliding). The shared controller's "Locomotion" tree blends walk → run by the
-    /// actor's real speed between the control's walk maximum and run minimum; "locoRate" plays the blend so a planted
-    /// foot travels backward exactly as fast as the body moves forward. Native ground speeds are measured per family on a
-    /// real cast look (CharacterFeelController; walk keeps Codex's accepted 1.0 m/s reference).
+    /// Speed-matched locomotion (no foot sliding). The shared controller's "Locomotion" tree blends walk → jog → sprint by
+    /// the actor's real speed at the control's gait speeds (Feel lane F1: 1.6 / 3.5 / 6 m/s); "locoRate" plays the blend so
+    /// a planted foot travels backward exactly as fast as the body moves forward. Native ground speeds are measured per
+    /// family on a real cast look (CharacterFeelController; walk keeps Codex's accepted 1.0 m/s reference).
     /// Resources/Characters/LocomotionTuning.
     /// </summary>
     public sealed class LocomotionTuning : ScriptableObject
     {
         public const string ResourcePath = "Characters/LocomotionTuning";
-        /// <summary>Blend thresholds = DirectMovementInput: walk tops out at 2.2 m/s, run starts at 3.6 m/s.</summary>
-        public const float BlendWalk = 2.2f, BlendRun = 3.6f;
+        /// <summary>Blend thresholds = the gait speeds (DirectMovementInput): walk, jog (the "run" band), sprint.</summary>
+        public const float BlendWalk = CTLife.Core.DirectMovementInput.WalkSpeed, BlendRun = CTLife.Core.DirectMovementInput.JogSpeed,
+            BlendSprint = CTLife.Core.DirectMovementInput.SprintSpeed;
 
         [Serializable]
         public sealed class Family
@@ -23,6 +24,8 @@ namespace CTLife.World
             [Tooltip("Family override controller (Snow m / Rain f); matches the registry entry's controller.")]
             public RuntimeAnimatorController controller;
             public float walk = 1f, run = 5.8f;
+            [Tooltip("Native ground speed of the sprint clip on this family (m/s; measured by CharacterFeelController).")]
+            public float sprint = 5.8f;
             [Tooltip("Planted-sole height above the ground in the walk / run-band clips on this family (m; measured by " +
                      "CharacterFeelController): CharacterIK lowers planted feet by it (the cast-wide run correction).")]
             public float walkSoleLift, runSoleLift;
@@ -40,7 +43,7 @@ namespace CTLife.World
             if (!string.IsNullOrEmpty(state)) foreach (var l in lengths) if (l != null && l.state == state && l.seconds > 0.05f) return l.seconds;
             return fallback;
         }
-        public float defaultWalk = 1f, defaultRun = 5.7f;
+        public float defaultWalk = 1f, defaultRun = 5.7f, defaultSprint = 5.8f;
 
         [Serializable]
         public sealed class StatePose { public string state; public Vector3 hipsStart, hipsEnd, headStart; }
@@ -74,12 +77,12 @@ namespace CTLife.World
             return (0f, 0f);
         }
 
-        public (float walk, float run) NativeFor(RuntimeAnimatorController controller)
+        public (float walk, float run, float sprint) NativeFor(RuntimeAnimatorController controller)
         {
             if (controller != null)
                 foreach (var f in families)
-                    if (f != null && f.controller == controller) return (f.walk, f.run);
-            return (defaultWalk, defaultRun);
+                    if (f != null && f.controller == controller) return (f.walk, f.run, f.sprint > 0.1f ? f.sprint : defaultSprint);
+            return (defaultWalk, defaultRun, defaultSprint);
         }
 
         /// <summary>
@@ -87,11 +90,15 @@ namespace CTLife.World
         /// (Codex's walk, unchanged); above the run threshold the run plays at speed/runNative; in between the tree blends
         /// both and the native speed blends with it. Clamped so a start/stop never freezes or races the cycle.
         /// </summary>
-        public static float Rate(float speed, float walkNative, float runNative)
+        public static float Rate(float speed, float walkNative, float runNative) => Rate(speed, walkNative, runNative, runNative);
+
+        /// <summary>Three bands: walk → jog between the walk and jog speeds, jog → sprint between the jog and sprint speeds.</summary>
+        public static float Rate(float speed, float walkNative, float runNative, float sprintNative)
         {
             if (speed <= 0.05f) return 1f;
-            float w = Mathf.InverseLerp(BlendWalk, BlendRun, speed);
-            float native = Mathf.Lerp(Mathf.Max(0.1f, walkNative), Mathf.Max(0.1f, runNative), w);
+            float walk = Mathf.Max(0.1f, walkNative), run = Mathf.Max(0.1f, runNative), sprint = Mathf.Max(0.1f, sprintNative);
+            float native = speed <= BlendRun ? Mathf.Lerp(walk, run, Mathf.InverseLerp(BlendWalk, BlendRun, speed))
+                : Mathf.Lerp(run, sprint, Mathf.InverseLerp(BlendRun, BlendSprint, speed));
             return Mathf.Clamp(speed / native, 0.3f, 2.4f);
         }
     }

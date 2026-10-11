@@ -33,28 +33,45 @@ namespace CTLife.Core
         }
     }
 
-    /// <summary>Shared analog/arrow gain and gait hysteresis, independent of frame rate and UI coordinates.</summary>
+    /// <summary>On-foot gaits (Feel lane F1): a human walk, a jog, and a sprint only with the stick pushed to its edge.</summary>
+    public enum Gait { Stop = 0, Walk = 1, Jog = 2, Sprint = 3 }
+
+    /// <summary>
+    /// Shared analog/arrow gain and gait hysteresis, independent of frame rate and UI coordinates (Feel lane F1, 2026-10-17:
+    /// "does it not feel a little bit too fast?"). Human speeds: walk up to 1.6 m/s, jog 3.5 m/s, sprint 6 m/s; the old
+    /// 2.2 m/s walk played Codex's 1.0 m/s walk cycle at 2.2x.
+    /// </summary>
     public static class DirectMovementInput
     {
-        public const float DeadZone = 0.14f;
-        public const float RunEnter = 0.82f;
-        public const float RunExit = 0.70f;
-        public const float WalkSpeed = 2.2f;
-        public const float RunSpeed = 4.5f;
-        public const float ArrowWalkStrength = 0.64f;
+        public const float DeadZone = 0.12f;
+        public const float JogEnter = 0.62f, JogExit = 0.52f;
+        public const float SprintEnter = 0.96f, SprintExit = 0.88f;
+        public const float MinWalkSpeed = 0.7f, WalkSpeed = 1.6f, JogSpeed = 3.5f, SprintSpeed = 6f;
+        /// <summary>Legacy name of the jog speed (editor import tools, the room's "run above 3.5" anim rule).</summary>
+        public const float RunSpeed = JogSpeed;
+        /// <summary>Arrow mode: a held arrow walks; dragging out from it jogs, then sprints.</summary>
+        public const float ArrowWalkStrength = 0.45f;
 
-        public static float Speed(float strength, ref bool running)
+        public static float Speed(float strength, ref Gait gait)
         {
             if (float.IsNaN(strength) || float.IsInfinity(strength) || strength <= DeadZone)
             {
-                running = false;
+                gait = Gait.Stop;
                 return 0f;
             }
             strength = Math.Min(1f, strength);
-            running = running ? strength >= RunExit : strength >= RunEnter;
-            if (running)
-                return 3.6f + 0.9f * Math.Max(0f, (strength - RunExit) / (1f - RunExit));
-            return 0.5f + (WalkSpeed - 0.5f) * Math.Min(1f, (strength - DeadZone) / (RunEnter - DeadZone));
+            gait = gait switch
+            {
+                Gait.Sprint => strength >= SprintExit ? Gait.Sprint : strength >= JogExit ? Gait.Jog : Gait.Walk,
+                Gait.Jog => strength >= SprintEnter ? Gait.Sprint : strength >= JogExit ? Gait.Jog : Gait.Walk,
+                _ => strength >= SprintEnter ? Gait.Sprint : strength >= JogEnter ? Gait.Jog : Gait.Walk,
+            };
+            return gait switch
+            {
+                Gait.Sprint => SprintSpeed,
+                Gait.Jog => JogSpeed,
+                _ => MinWalkSpeed + (WalkSpeed - MinWalkSpeed) * Math.Min(1f, (strength - DeadZone) / (JogExit - DeadZone)),
+            };
         }
     }
 }
