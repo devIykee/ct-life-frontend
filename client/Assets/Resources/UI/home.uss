@@ -1,88 +1,101 @@
-/* Home / lobby (DashboardScreen), redesign 2026-10-09: docs/progress/home-ui.md. Same identity as the title and onboarding:
-   the painted town (pre-blurred), Lilita One in white with a thick plum outline, no plates behind text, the kit's lipped
-   bodies. Landscape panel 2400 x 1080 units (Seeker: 1 unit = 1.112 px, 48 dp = 130 units). Content box: 72 units in from
-   the sides, 22 from the top, 30 from the bottom. Zones: status chips + settings across the top, icon tiles down the left,
-   the character centre-left, greeting / today / cards on the right, ENTER THE CITY bottom-right. */
-
-.home-screen { background-color: rgba(0, 0, 0, 0); overflow: visible; }
-.home-bg {
-    position: absolute; left: 0; top: 0; right: 0; bottom: 0; -unity-background-scale-mode: scale-and-crop;
-    transition-property: scale; transition-duration: 25s; transition-timing-function: ease-in-out;
+/* Lobby 2026-10-12. Landscape 2400 x 1080 reference. Live hero, edge navigation,
+   compact identity/currencies. White, plum and mint continue the approved card palette. */
+.home-screen { background-color: rgba(0,0,0,0); overflow: visible; }
+.home-bg { position: absolute; left: 0; top: 0; right: 0; bottom: 0; -unity-background-scale-mode: scale-and-crop; }
+.home-content { position: absolute; left: 44px; right: 44px; top: 28px; bottom: 28px; }
+.home-top { position: absolute; left: 0; right: 0; top: 0; height: 132px; }
+.home-identity, .home-identity:hover, .home-identity:focus, .home-identity:active {
+    position: absolute; left: 0; top: 0; width: 470px; height: 132px;
+    margin: 0; padding: 12px 26px; border-width: 0; border-left-width: 8px; border-color: rgb(146,88,220);
+    border-radius: 20px; background-color: rgb(255,255,255); justify-content: center;
 }
-.home-bg--zoom { scale: 1.05 1.05; }
-.home-content { position: absolute; left: 72px; right: 72px; top: 22px; bottom: 30px; }
-
-/* Top bar */
-.home-top { position: absolute; left: 0; right: 0; top: 0; height: 150px; flex-direction: row; align-items: flex-start; }
-.home-chips { flex-direction: row; flex-grow: 1; }
-.home-chips > .kit-chip { margin-right: 22px; }
+.home-identity:active { scale: .98 .98; }
+.home-greeting { -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 52px; color: rgb(58,20,64); margin: 0; padding: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.home-eyebrow-row { flex-direction: row; align-items: center; height: 42px; }
+.home-tribe-mark { width: 38px; height: 38px; margin-right: 10px; -unity-background-scale-mode: scale-to-fit; }
+.home-eyebrow { -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); font-size: 28px; color: rgb(96,52,104); margin: 0; padding: 0; }
+.home-chips { position: absolute; left: 495px; top: 0; flex-direction: row; }
 .home-settings { position: absolute; right: 0; top: 0; }
-
-/* Left rail: five tiles */
-.home-rail { position: absolute; left: 0; top: 176px; width: 176px; }
-.home-rail > .kit-tile { margin-bottom: 6px; }
-
-/* The character */
-.home-stage { position: absolute; left: 230px; top: 150px; width: 720px; height: 878px; }
-.home-stage-glow {
-    position: absolute; left: -36%; right: -36%; top: -10%; bottom: -4%; opacity: 0.8;
-    -unity-background-scale-mode: stretch-to-fill; -unity-background-image-tint-color: rgb(255, 250, 240);
+.home-wallet, .home-wallet:hover, .home-wallet:focus, .home-wallet:active {
+    position: absolute; right: 154px; top: 0; width: 620px; height: 132px; margin: 0; padding: 14px 26px;
+    background-color: rgb(255,255,255); border-width: 0; border-radius: 20px; justify-content: center;
 }
-.home-stage-shadow { position: absolute; left: 31%; right: 31%; bottom: 2.5%; height: 4.5%; border-radius: 40px; background-color: rgba(58, 20, 64, 0.42); }
+.home-wallet:active { scale: .98 .98; }
+.home-wallet-caption { color: rgb(96,52,104); font-size: 25px; letter-spacing: 1px; margin: 0; padding: 0; }
+.home-wallet-values { flex-direction: row; margin-top: 6px; justify-content: space-between; }
+.home-wallet-amount { -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); color: rgb(58,20,64); font-size: 38px; margin: 0; padding: 0; }
+/* Reuse status behavior while changing only this lobby's presentation. */
+.home-screen .kit-chip { width: 250px; min-width: 0; height: 132px; min-height: 0; padding: 0; margin-right: 16px; }
+.home-screen .kit-chip__lip { display: none; }
+.home-screen .kit-chip__face { padding: 14px 18px; border-width: 0; border-radius: 20px; }
+.home-screen .kit-chip .kit-badge { width: 62px; height: 62px; }
+.home-screen .kit-chip__copy { margin-left: 12px; }
+.home-screen .kit-chip__caption { font-size: 25px; letter-spacing: 0; }
+.home-screen .kit-chip__value { font-size: 42px; }
+.home-screen .kit-chip__bar { height: 9px; border-width: 0; margin-top: 2px; }
+.home-screen .kit-chip__pip { width: 36px; height: 36px; right: -6px; top: -6px; }
+.home-screen .kit-chip__pip-text { font-size: 28px; }
+.home-needs { position: absolute; left: 0; bottom: 0; flex-direction: row; }
+.home-needs .kit-chip { width: 232px; height: 130px; }
+.home-needs .kit-chip__value { font-size: 34px; }
+/* Each route retains its familiar icon and a real touch target. */
+.home-rail { position: absolute; left: 0; top: 194px; width: 154px; }
+.home-rail > .kit-tile { width: 154px; height: 142px; min-height: 142px; margin-bottom: 9px; }
+.home-rail .kit-tile__label { font-size: 32px; }
+.home-rail .kit-tile__badge { width: 90px; height: 90px; }
+/* Square render canvas reserves side-to-side arm reach. */
+.home-stage { position: absolute; left: 22%; top: 20px; width: 1080px; height: 1000px; }
+.home-stage-glow { display: none; }
+.home-stage-shadow { position: absolute; left: 36%; right: 36%; bottom: 9%; height: 3%; border-radius: 60px; background-color: rgba(58,20,64,.18); }
 .home-stage-model { position: absolute; left: 0; top: 0; right: 0; bottom: 0; -unity-background-scale-mode: scale-to-fit; }
-.home-bubble { left: 640px; top: 168px; max-width: 360px; }
-
-/* Right column */
-.home-right { position: absolute; left: 1010px; right: 0; top: 176px; }
-.home-eyebrow-row { flex-direction: row; align-items: center; height: 64px; }
-.home-tribe-mark { width: 64px; height: 64px; margin-right: 14px; -unity-background-scale-mode: scale-to-fit; }
-.home-eyebrow, .home-greeting, .home-sub, .home-today-caption, .home-today-value, .home-error {
-    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); color: rgb(255, 255, 255); margin: 0; padding: 0;
-    -unity-text-outline-color: rgb(58, 20, 64); white-space: normal;
-}
-.home-eyebrow { font-size: 40px; letter-spacing: 4px; -unity-text-outline-width: 3px; text-shadow: 0 3px 4px rgba(26, 8, 32, 0.85); }
-.home-greeting { font-size: 96px; -unity-text-outline-width: 6px; text-shadow: 0 6px 1px rgb(58, 20, 64); white-space: nowrap; margin-top: 2px; }
-.home-sub { font-size: 48px; -unity-text-outline-width: 4px; text-shadow: 0 4px 3px rgba(26, 8, 32, 0.85); margin-top: 4px; }
-
-/* Today row: small chips, only for what the server provides */
-.home-today { flex-direction: row; margin-top: 26px; min-height: 0; }
+.home-bubble { left: 46%; top: 165px; max-width: 360px; }
+.home-right { position: absolute; right: 0; top: 208px; width: 590px; }
+.home-today { flex-direction: column; }
 .home-today-chip, .home-today-chip:hover, .home-today-chip:focus, .home-today-chip:active {
-    flex-direction: row; align-items: center; margin: 0 20px 0 0; padding: 0 28px 0 14px; min-height: 130px; max-width: 720px;
-    background-color: rgb(84, 38, 92); border-width: 5px; border-color: rgb(58, 20, 64); border-radius: 65px;
+    flex-direction: row; align-items: center; margin: 0 0 16px 0; padding: 18px 22px; min-height: 118px;
+    background-color: rgb(58,20,64); border-width: 0; border-radius: 20px;
 }
-.home-today-chip:active { scale: 0.97 0.97; }
-.home-today-chip > .kit-badge { width: 92px; height: 92px; }
+.home-today-chip:active { scale: .98 .98; }
+.home-today-chip > .kit-badge { width: 68px; height: 68px; }
 .home-today-copy { margin-left: 18px; flex-shrink: 1; }
-.home-today-caption { font-size: 38px; letter-spacing: 2px; color: rgb(214, 196, 222); -unity-text-outline-width: 0; }
-.home-today-value { font-size: 48px; -unity-text-outline-width: 3px; white-space: nowrap; }
-.home-today-value--clue { font-size: 40px; white-space: normal; max-width: 520px; }
-.home-today--up .home-today-value { color: rgb(124, 255, 196); }
-.home-today--down .home-today-value { color: rgb(255, 170, 160); }
-/* Solid, never translucent: the user rejected see-through plates (title review 2026-10-08, ledger 2026-10-10). */
-.home-today--offline { background-color: rgb(128, 34, 56); }
+.home-today-caption { -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); color: rgb(214,196,222); font-size: 25px; margin: 0; padding: 0; }
+.home-today-value { -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); color: rgb(255,255,255); font-size: 38px; margin: 0; padding: 0; white-space: normal; }
+.home-today-value--clue { font-size: 32px; max-width: 440px; }
+.home-today--up .home-today-value { color: rgb(124,255,196); }
+.home-today--down .home-today-value { color: rgb(255,170,160); }
+.home-today--offline { background-color: rgb(128,34,56); }
+.home-cards { flex-direction: column; }
+.home-card { width: 100%; height: 146px; min-height: 146px; margin-top: 14px; padding: 0; }
+.home-card .kit-card__lip { display: none; }
+.home-card .kit-card__face { border-width: 0; border-radius: 20px; padding: 18px 22px; }
+.home-card .kit-card__disc { width: 72px; height: 72px; border-width: 0; }
+.home-card .kit-card__icon { width: 40px; height: 40px; }
+.home-card .kit-card__caption { font-size: 25px; letter-spacing: 1px; }
+.home-card .kit-card__title { font-size: 38px; }
+.home-card .kit-card__copy { margin-left: 18px; }
+.home-dream-progress { position: absolute; right: 0; top: 0; font-size: 25px; color: rgb(96,52,104); margin: 0; padding: 0; }
+.home-dream-bar { height: 7px; margin-top: 8px; border-radius: 4px; background-color: rgb(228,224,232); overflow: hidden; }
+.home-dream-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background-color: rgb(20,241,149); }
+.home-cta-zone { position: absolute; right: 0; bottom: 0; align-items: flex-end; }
+.home-enter { width: 590px; min-width: 590px; height: 146px; padding: 0; }
+.home-enter .kit-btn__lip { display: none; }
+.home-enter .kit-btn__shine-clip { display: none; }
+.home-enter .kit-btn__face { background-image: none; background-color: rgb(20,241,149); border-radius: 22px; border-width: 3px; border-color: rgb(58,20,64); padding: 0 26px; }
+.home-enter .kit-btn__label { font-size: 48px; color: rgb(58,20,64); -unity-text-outline-width: 0; text-shadow: 0 0 0 rgba(0,0,0,0); letter-spacing: 0; }
+.home-enter .kit-btn__icon-holder { width: 44px; height: 44px; margin-left: 22px; }
+.home-enter .kit-btn__icon { width: 44px; height: 44px; -unity-background-image-tint-color: rgb(58,20,64); }
+.home-enter .kit-btn__icon--drop { display: none; }
+.home-error { color: rgb(128,34,56); background-color: rgb(255,255,255); border-radius: 14px; font-size: 30px; max-width: 590px; padding: 16px 22px; margin-bottom: 16px; white-space: normal; }
 
-/* Dream and Home cards */
-.home-cards { flex-direction: row; margin-top: 30px; }
-.home-card { height: 214px; }
-.home-card--dream { width: 62%; margin-right: 2%; }
-.home-card--home { width: 36%; }
-.home-card .kit-card__title { font-size: 50px; }
-.home-card .kit-card__caption { font-size: 38px; }
-.home-dream-progress {
-    -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); font-size: 38px; color: rgb(96, 52, 104); margin: 4px 0 0 0; padding: 0;
-}
-.home-dream-bar {
-    height: 26px; margin-top: 8px; border-radius: 13px; background-color: rgba(58, 20, 64, 0.22); border-width: 3px;
-    border-color: rgb(58, 20, 64); overflow: hidden;
-}
-.home-dream-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; border-radius: 10px; background-color: rgb(20, 241, 149); }
+/* No inherited game-button depth bars on quiet identity and wallet surfaces. */
+.home-identity > .ct-button-depth, .home-identity > .ct-button-glint,
+.home-wallet > .ct-button-depth, .home-wallet > .ct-button-glint { display: none; }
+.home-greeting, .home-eyebrow, .home-wallet-caption, .home-wallet-amount,
+.home-today-caption, .home-today-value, .home-card .kit-card__title,
+.home-card .kit-card__caption { -unity-text-align: middle-left; }
+.home-rail .kit-badge { width: 98px; height: 98px; }
+.home-screen .kit-chip__bar { width: 108px; }
+.home-identity-copy { flex-grow: 1; }
 
-/* ENTER THE CITY: the one dominant action */
-.home-cta-zone { position: absolute; right: 0; bottom: 0; flex-direction: row; align-items: center; }
-.home-enter { height: 176px; min-width: 760px; }
-.home-enter .kit-btn__label { font-size: 70px; -unity-text-outline-width: 5px; text-shadow: 0 5px 1px rgb(58, 20, 64); }
-.home-error {
-    font-size: 42px; max-width: 470px; margin: 0 28px 10px 0; -unity-text-align: middle-right;
-    color: rgb(255, 216, 216); -unity-text-outline-width: 4px; -unity-text-outline-color: rgb(110, 12, 36);
-    text-shadow: 0 3px 4px rgba(26, 8, 32, 0.85);
-}
+.home-wallet-amount { flex-grow: 1; flex-shrink: 1; min-width: 0; }
+.home-screen .kit-chip__copy { flex-shrink: 1; min-width: 0; }

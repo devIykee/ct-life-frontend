@@ -41,6 +41,13 @@ namespace CTLife.UI
         private string _idleState;
         private AvatarPreviewPodium _podium;
         private bool _podiumEnabled;
+        private bool _fullBodyReach;
+        private bool ReachFraming => _podiumEnabled || _fullBodyReach;
+        // Lobby reactions and autonomous idle fidgets. Measure once at selection so the camera stays
+        // fixed when a greeting, tap or needs reaction begins; no per-frame mesh baking is performed.
+        private static readonly string[] FullBodyStates = { "idle_fidget_stretch", "idle_fidget_foldarms",
+            "emote_wave", "emote_thumbs_up", "emote_laugh", "emote_clap", "emote_point",
+            "emote_facepalm", "emote_shrug", "react_sad", "emote_head_shake", "emote_moon_jump" };
         private Bounds _creatorBounds;
         private float _creatorRadius;
         private readonly HashSet<string> _measuredStates = new HashSet<string>(StringComparer.Ordinal);
@@ -223,7 +230,7 @@ namespace CTLife.UI
                 if (string.IsNullOrEmpty(id) || !HasState(id)) continue;
                 // Fit the actual selected rig's reaction before its first rendered frame. Cached per look/state;
                 // nothing is baked every frame, and other preview consumers keep their existing camera behavior.
-                if (_podiumEnabled && !_portrait) IncludeAnimationEnvelope(id);
+                if (ReachFraming && !_portrait) IncludeAnimationEnvelope(id);
                 _avatar.PlayOneShot(id);
                 return id;
             }
@@ -315,7 +322,7 @@ namespace CTLife.UI
             _bodyBounds = bounds;
             _creatorBounds = bounds;
             _measuredStates.Clear();
-            if (_podiumEnabled) PrepareCreatorEnvelope();
+            if (ReachFraming) PrepareCreatorEnvelope();
             // Frame the face and shoulders, keeping the measured top of the hair.
             // Humanoid head position anchors the crop; an upper-body crop is the
             // fallback for a non-Humanoid asset, never a claim of editable faces.
@@ -368,11 +375,26 @@ namespace CTLife.UI
             {
                 _creatorBounds = _bodyBounds;
                 _measuredStates.Clear();
-                if (enabled) PrepareCreatorEnvelope();
+                if (ReachFraming) PrepareCreatorEnvelope();
                 PlacePodium();
                 ApplyFraming();
             }
             else _podium?.SetVisible(enabled && !_portrait);
+        }
+
+        /// <summary>
+        /// Opt-in full-body reaction framing without adding a podium or changing the front-facing camera.
+        /// Set before selecting the lobby's look. Other previews retain their existing framing.
+        /// </summary>
+        public void SetFullBodyReach(bool enabled)
+        {
+            if (_disposed || _fullBodyReach == enabled) return;
+            _fullBodyReach = enabled;
+            if (_avatar == null) return;
+            _creatorBounds = _bodyBounds;
+            _measuredStates.Clear();
+            if (ReachFraming) PrepareCreatorEnvelope();
+            ApplyFraming();
         }
 
         private void PrepareCreatorEnvelope()
@@ -389,6 +411,9 @@ namespace CTLife.UI
                 HumanBodyBones.LeftHand, HumanBodyBones.LeftMiddleDistal);
             IncludeArmReach(animator, HumanBodyBones.RightUpperArm, HumanBodyBones.RightLowerArm,
                 HumanBodyBones.RightHand, HumanBodyBones.RightMiddleDistal);
+            if (_fullBodyReach)
+                foreach (var state in FullBodyStates)
+                    if (HasState(state)) IncludeAnimationEnvelope(state, applyFraming: false);
         }
 
         private void IncludeArmReach(Animator animator, HumanBodyBones upperId, HumanBodyBones lowerId,
@@ -411,7 +436,7 @@ namespace CTLife.UI
                 new Vector2(origin.x - _bodyBounds.center.x, origin.z - _bodyBounds.center.z).magnitude + reach);
         }
 
-        private void IncludeAnimationEnvelope(string state)
+        private void IncludeAnimationEnvelope(string state, bool applyFraming = true)
         {
             if (!_measuredStates.Add(state)) return;
             var animator = _avatar.Animator;
@@ -453,7 +478,7 @@ namespace CTLife.UI
                 animator.Update(0f);
                 UnityEngine.Object.Destroy(baked);
             }
-            ApplyFraming();
+            if (applyFraming) ApplyFraming();
         }
 
         private void PlacePodium()
@@ -484,7 +509,7 @@ namespace CTLife.UI
         private void ApplyFraming()
         {
             if (_avatar == null) return;
-            var bounds = _portrait ? _portraitBounds : _podiumEnabled ? _creatorBounds : _bodyBounds;
+            var bounds = _portrait ? _portraitBounds : ReachFraming ? _creatorBounds : _bodyBounds;
 
             if (_portrait && _identityPortrait)
             {
@@ -503,6 +528,9 @@ namespace CTLife.UI
                 float podiumRadius = _podium.Radius / Mathf.Abs(_avatar.transform.lossyScale.x);
                 bounds.Encapsulate(bottom + new Vector3(podiumRadius, 0f, podiumRadius));
                 bounds.Encapsulate(bottom - new Vector3(podiumRadius, 0f, podiumRadius));
+            }
+            if (ReachFraming && !_portrait)
+            {
                 var centre = bounds.center;
                 centre.x = _bodyBounds.center.x; centre.z = _bodyBounds.center.z;
                 bounds.center = centre;
@@ -514,15 +542,15 @@ namespace CTLife.UI
             var scale = _avatar.transform.lossyScale;
             var extent = Vector3.Scale(bounds.extents, new Vector3(Mathf.Abs(scale.x), Mathf.Abs(scale.y), Mathf.Abs(scale.z)));
             float radius = Mathf.Max(0.1f, new Vector2(extent.x, extent.z).magnitude);
-            if (_podiumEnabled && !_portrait)
-                radius = Mathf.Max(_podium.Radius, _creatorRadius * Mathf.Max(Mathf.Abs(scale.x), Mathf.Abs(scale.z)));
+            if (ReachFraming && !_portrait)
+                radius = Mathf.Max(_podiumEnabled ? _podium.Radius : 0f, _creatorRadius * Mathf.Max(Mathf.Abs(scale.x), Mathf.Abs(scale.z)));
             float tanVertical = Mathf.Tan(_cam.fieldOfView * Mathf.Deg2Rad * 0.5f);
             float framingAspect = (float)_textureWidth / _textureHeight;
-            if (_podiumEnabled && !_portrait)
+            if (ReachFraming && !_portrait)
             {
                 // Fit the cylinder's actual projected silhouette, not a depth-padded box. This keeps the actor
                 // substantially larger while retaining all turntable angles and the elevated stage camera.
-                var backward = CreatorCameraBackward;
+                var backward = _podiumEnabled ? CreatorCameraBackward : Vector3.forward;
                 var up = new Vector3(0f, backward.z, -backward.y);
                 float required = 0f;
                 for (int i = 0; i < 32; i++)

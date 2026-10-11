@@ -30,6 +30,8 @@ later explicit user decisions, including the art direction below, supersede olde
 - Review character eyes in actual animated close portraits as well as full-body views. Clothing opacity checks do not establish that pupils have complete geometry.
 
 ## Current priorities (user decision, 2026-10-07) — read first
+Latest presentation scope (2026-10-12): research and redesign the signed-in lobby, in-game phone and its app presentation. Use the user's character-centred game-lobby references; show actual connected-wallet balances separately from fictional Cash. Name the fictional hinged phone **Solana Duo**, styled like one leaf of a folding device. This explicitly authorizes visual work on these surfaces while preserving game behavior.
+
 - **No deadline.** Ignore CLOCK IN and every hackathon date in older docs. Do not plan around it.
 - **Everything must work first.** Build the whole game robustly and properly, phase by phase:
   real wallet sign-in on the Seeker, real backend integration (devIykee's server, run locally

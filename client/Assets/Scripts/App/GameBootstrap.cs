@@ -62,6 +62,9 @@ namespace CTLife.App
             var wallet = new MwaWallet(env.walletIdentityName, env.IdentityUri, env.walletIconUri);
             Services.Register<IWalletSignIn>(wallet);
             Services.Register<ITransactionSigner>(wallet);
+            // Read-only mainnet holdings are separate from fictional Cash and the payment/test cluster.
+            if (Services.TryGet<WalletBalanceService>(out var previousBalances)) previousBalances.Dispose();
+            Services.Register(new WalletBalanceService(session, config));
 
             // Brand first: the first rendered frame is the full-screen branded loading screen, never the
             // scene's empty sky (launch showed 3-4 s of sky before the flow's first screen).

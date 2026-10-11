@@ -18,6 +18,7 @@ namespace CTLife.App
             phone.Register(new MapApp(travel));
             phone.Register(jobsOverride ?? new CareersApp());
             phone.Register(new MoneyBankApp());
+            phone.Register(new WalletApp());
             phone.Register(new RichListApp());
             phone.Register(homeOverride ?? new CityHomeApp());
             phone.Register(new ProfileApp());

@@ -345,3 +345,7 @@ Publisher release: https://github.com/PolygonalMind/100Avatars/releases/tag/v24.
 ## Rain pupil surface restoration — 2026-10-12
 
 The 29 Rain-derived cast appearances retain their existing Blender Foundation / Blender Studio Rain attribution and [CC-BY 4.0 source](https://studio.blender.org/characters/rain/v3/). `art/cast/scripts/repair_rain_pupil.py` restores the accidentally removed right pupil using the surviving authored left cap's geometry and atlas UVs. It adds four vertices/two triangles per existing mesh (99 meshes in 41 hero/world FBXs); all prior positions, UVs, weights, normals and skeleton transforms were preserved and checked through FBX round-trip. Both cast manifests record updated counts and hashes. The original clothing, textures, rig and source paintings are unchanged. Diagnosis and actual Unity close-eye validation: `docs/progress/rain-eye-surface-20261012.md`.
+
+## Lobby courtyard — 2026-10-12
+
+`client/Assets/Resources/UI/Onboarding/lobby-rooftop.png` — original generated CT Life lobby illustration, built-in OpenAI imagegen, 12 October 2026. No downloaded third-party game art is embedded. Source: `exec-7ef7fca0-58e2-421c-b204-6b05b18a5762.png`; exact prompt: `docs/research/lobby-rooftop-image-prompt-20261012.txt`. Reference/layout discussion: `docs/research/lobby-solana-duo-20261012.md`. This is background artwork, not a newly playable map.

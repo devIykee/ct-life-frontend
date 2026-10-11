@@ -96,6 +96,7 @@ namespace CTLife.UI.Kit
         private readonly Label _title, _body;
         private readonly LippedButton _action;
         private Action _onAction;
+        private Rect _anchor;
 
         public Popover()
         {
@@ -121,6 +122,8 @@ namespace CTLife.UI.Kit
             Add(_scrim);
             Add(_card);
             style.display = DisplayStyle.None;
+            _card.RegisterCallback<GeometryChangedEvent>(_ => PlaceMeasured());
+            RegisterCallback<GeometryChangedEvent>(_ => PlaceMeasured());
         }
 
         public bool IsOpen => resolvedStyle.display == DisplayStyle.Flex || style.display == DisplayStyle.Flex;
@@ -136,6 +139,7 @@ namespace CTLife.UI.Kit
             _action.style.display = string.IsNullOrEmpty(actionLabel) || onAction == null ? DisplayStyle.None : DisplayStyle.Flex;
             style.display = DisplayStyle.Flex;
             var local = this.WorldToLocal(anchorWorld);
+            _anchor = local;
             float width = 660f;
             float hostW = float.IsNaN(layout.width) || layout.width < 1f ? 2400f : layout.width;
             float left = Mathf.Clamp(local.center.x - width / 2f, 20f, hostW - width - 20f);
@@ -143,7 +147,23 @@ namespace CTLife.UI.Kit
             _card.style.top = local.yMax + 30f;
             _card.style.width = width;
             _tail.style.left = Mathf.Clamp(local.center.x - left - 22f, 30f, width - 74f);
+            _tail.style.display = DisplayStyle.Flex;
+            // Needs live at the foot of the lobby. Once text has laid out, lift the
+            // explainer above its anchor when opening downward would leave the screen.
+            _card.schedule.Execute(PlaceMeasured).StartingIn(1);
             Motion.Pop(_card, 1.03f, 0.18f);
+        }
+
+        private void PlaceMeasured()
+        {
+            if (!IsOpen || panel == null) return;
+            float available = layout.height, height = _card.layout.height;
+            if (available <= 0f || height <= 0f || float.IsNaN(available) || float.IsNaN(height)) return;
+            float below = _anchor.yMax + 30f;
+            bool above = below + height > available - 20f;
+            float top = above ? Mathf.Max(20f, _anchor.yMin - height - 20f) : below;
+            if (Mathf.Abs(_card.resolvedStyle.top - top) > .5f) _card.style.top = top;
+            _tail.style.display = above ? DisplayStyle.None : DisplayStyle.Flex;
         }
 
         public void Hide()

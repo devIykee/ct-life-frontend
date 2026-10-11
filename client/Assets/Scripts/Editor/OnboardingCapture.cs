@@ -148,6 +148,10 @@ namespace CTLife.EditorTools
                     await OnboardingCaptureHome.Run(Shot, Wait, Expect, Step);
                     await LookOrderShots();
                 }
+                else if (Set == "lobby")
+                {
+                    await LobbyFlowCapture.Run(Shot, Wait, Expect, Step, Receipt);
+                }
                 else
                 {
                     await Lottery();

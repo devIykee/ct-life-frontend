@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using CTLife.Core;
 using CTLife.Net;
+using CTLife.UI.Kit;
 using UnityEngine.UIElements;
 
 namespace CTLife.UI
@@ -32,7 +33,7 @@ namespace CTLife.UI
     {
         private readonly VisualElement _layer;
         private readonly VisualElement _frame, _grid, _body;
-        private readonly Button _scrim;
+        private readonly Button _scrim, _back;
         private readonly ScrollView _home;
         private readonly Label _title, _clock;
         private readonly List<PhoneApp> _apps = new List<PhoneApp>();
@@ -40,6 +41,8 @@ namespace CTLife.UI
         private bool _disposed;
         private VisualElement _hiddenHud;
         private StyleEnum<DisplayStyle> _previousHudDisplay;
+        private readonly IVisualElementScheduledItem _clockTick;
+        private Tween _entrance;
 
         public bool IsOpen => _frame.parent != null;
         /// <summary>Config-driven (GET /config livePhase → EnvConfig.livePhase). Not a constant.</summary>
@@ -60,10 +63,24 @@ namespace CTLife.UI
             _grid = El.Div("ct-phone-grid");
             _home = El.VerticalScroll("ct-phone-home");
             _body = El.Div("ct-phone-body");
-            var bar = El.Div("ct-phone-bar", El.IconButton("back", Strings.T("common.back"), Back, sfx: null), _title,
-                El.Div("ct-grow"), _clock, El.IconButton("close", Strings.T("phone.close"), Close, sfx: null));
-            _frame = El.Div("ct-phone", El.Div("ct-phone-handle"), bar, _home, _body, El.Div("ct-phone-home-line"));
+            _back = El.IconButton("back", Strings.T("common.back"), Back, sfx: null);
+            var bar = El.Div("ct-phone-bar", _back, _title,
+                El.Div("ct-grow"), El.IconButton("close", Strings.T("phone.close"), Close, sfx: null));
+            var status = El.Div("ct-phone-status", _clock,
+                El.PassThrough(El.Div("ct-phone-camera")),
+                El.PassThrough(El.Div("ct-phone-emblem", El.Div("ct-phone-stripe"), El.Div("ct-phone-stripe ct-phone-stripe-middle"), El.Div("ct-phone-stripe"))));
+            // The home indicator is a real, generously sized button; decoration never intercepts input.
+            var home = El.Btn("", () => { if (_current != null) Home(); }, "ct-phone-home-control");
+            home.tooltip = Strings.T("phone.home");
+            home.Add(El.PassThrough(El.Div("ct-phone-home-line")));
+            var glass = El.Div("ct-phone-glass", status, bar, _home, _body, home);
+            _frame = El.Div("ct-phone",
+                El.PassThrough(El.Div("ct-phone-hinge ct-phone-hinge-top")),
+                El.PassThrough(El.Div("ct-phone-hinge ct-phone-hinge-bottom")),
+                El.PassThrough(El.Div("ct-phone-side-key")), glass);
             _frame.pickingMode = PickingMode.Position;
+            _clockTick = _frame.schedule.Execute(() => _clock.text = DateTime.Now.ToString("HH:mm")).Every(1000);
+            _clockTick.Pause();
         }
 
         public void Register(PhoneApp app)
@@ -94,6 +111,9 @@ namespace CTLife.UI
                     _hiddenHud.Show(false);
                 }
                 Bus.Publish(new SfxSignal("sfx_ui_open"));
+                _entrance?.Cancel();
+                _entrance = Motion.Enter(_frame, 56f, 0f, 0.24f);
+                _clockTick.Resume();
             }
             _clock.text = DateTime.Now.ToString("HH:mm");
             if (appId != null)
@@ -113,6 +133,9 @@ namespace CTLife.UI
             try { current?.Closed(); }
             finally
             {
+                _entrance?.Cancel();
+                _entrance = null;
+                _clockTick.Pause();
                 _frame.RemoveFromHierarchy();
                 _scrim.RemoveFromHierarchy();
                 if (_hiddenHud != null) _hiddenHud.style.display = _previousHudDisplay;
@@ -155,11 +178,32 @@ namespace CTLife.UI
             "map" => "ct-tone-cyan",
             "jobs" => "ct-tone-coral",
             "bank" => "ct-tone-gold",
+            "wallet" => "ct-tone-green",
             "profile" => "ct-tone-violet",
             "home" => "ct-tone-green",
             "rich_list" => "ct-tone-violet",
             "richlist" => "ct-tone-violet",
+            "messages" => "ct-tone-cyan",
+            "calls" => "ct-tone-green",
+            "spaces" => "ct-tone-violet",
+            "shop" => "ct-tone-coral",
+            "ads" => "ct-tone-gold",
             _ => "", // Settings and future apps use the shared blue; unavailable apps remain muted by USS.
+        };
+
+        // Catalog route IDs stay unchanged. These aliases reuse the existing bundled Phosphor set.
+        private static string AppIcon(string appId) => appId switch
+        {
+            "week" => "rotate",      // Weekly reset / recurring city events.
+            "biz" => "city",         // Businesses and their premises.
+            "builder" => "projects", // Found and launch a project.
+            "vc" => "cash",          // Venture funding and deal terms.
+            "beef" => "mic_stage",   // Public verbal showdowns.
+            "farm" => "dream",       // Daily airdrop rewards.
+            "cabal" => "contacts",   // Player group.
+            "npcchat" => "chat",     // Conversation with an NPC.
+            "xlink" => "face",       // Linked social identity; not a misleading close/X button.
+            _ => appId,
         };
 
         private void Home()
@@ -167,15 +211,13 @@ namespace CTLife.UI
             if (_disposed) return;
             _current?.Closed();
             _current = null;
+            _frame.AddToClassList("ct-phone-at-home");
+            _back.Show(false);
             _title.text = Strings.T("phone.title");
             _body.Clear();
             _body.Show(false);
             _home.Show(true);
             _home.Clear();
-            string alias = Services.TryGet<PlayerProfile>(out var profile) ? profile.Alias : null;
-            _home.Add(El.Div("ct-phone-welcome", El.Text(string.IsNullOrEmpty(alias) ? Strings.T("phone.greetingDefault") : Strings.F("phone.greeting", alias), "ct-phone-greeting"),
-                El.Text(Strings.T("phone.subtitle"), "ct-small ct-muted")));
-            _home.Add(El.Text(Strings.T("phone.apps"), "ct-phone-section"));
             _grid.Clear();
             _home.Add(_grid);
             var later = El.Div("ct-phone-grid ct-phone-grid-later");
@@ -184,7 +226,7 @@ namespace CTLife.UI
                 bool open = app.Phase <= CurrentPhase;
                 bool available = Features.IsAvailable(app.Feature);
                 var a = app;
-                var icon = El.Div("ct-app-icon " + AppTone(app.Id), new UiIcon(app.Id));
+                var icon = El.Div("ct-app-icon " + AppTone(app.Id), new UiIcon(AppIcon(app.Id)));
                 var tile = El.Btn("", () =>
                 {
                     if (!open) Bus.Publish(ToastSignal.Text(Strings.F("phone.soon", a.Title)));
@@ -216,13 +258,19 @@ namespace CTLife.UI
             }
             _current?.Closed();
             _current = app;
+            _frame.RemoveFromClassList("ct-phone-at-home");
+            _back.Show(true);
             _title.text = app.Title;
             _home.Show(false);
             _body.Show(true);
             _body.Clear();
             try
             {
-                _body.Add(app.Open());
+                var page = app.Open();
+                var heading = page.Q<Label>(className: "ct-h1");
+                if (heading != null && heading.text == app.Title)
+                    heading.AddToClassList("ct-phone-repeated-title");
+                _body.Add(page);
             }
             catch (Exception e)
             {
