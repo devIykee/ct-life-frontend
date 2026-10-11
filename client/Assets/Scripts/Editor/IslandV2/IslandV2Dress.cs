@@ -18,7 +18,7 @@ namespace CTLife.EditorTools.IslandV2
     public static class IslandV2Dress
     {
         public const string ShopSigns = "shop_signs";
-        public const string WallDecor = "wall_decor", BusAds = "bus_ads", Glass = "glass", TreePit = "tree_pit";
+        public const string WallDecor = "wall_decor", BusAds = "bus_ads", Glass = "glass", TreePit = "tree_pit", EventBanners = "event_banners";
         public static IslandKit Kit;
         public static int[] CarProtos = Array.Empty<int>();
         /// <summary>Share of street bays with a decor car, by district (downtown busier than the hills).</summary>
@@ -326,6 +326,104 @@ namespace CTLife.EditorTools.IslandV2
                     }
                     walls++;
                 }
+            // W4.1 shot dressing: signposts, flag poles and the convention centre's event props
+            int posts = 0, flags = 0;
+            if (doc["signposts"] is JArray sps)
+                foreach (JArray t in sps)
+                {
+                    var c = new Vector3((float)t[0], (float)t[1], (float)t[2]);
+                    var n = Quaternion.Euler(0f, (float)t[3], 0f) * Vector3.forward;
+                    var right = Vector3.Cross(Vector3.up, -n);
+                    var cell = cells.At(c);
+                    var timber = cell.V(Mat.Timber);
+                    foreach (var sx in new[] { -1.15f, 1.15f }) timber.Box(c + right * sx + Vector3.up * 1.1f, right, Vector3.up, n, new Vector3(0.07f, 1.1f, 0.07f));
+                    Panel(cell.V("sign_post_" + (string)t[4]), c + Vector3.up * 1.75f, n, right, 1.2f, 0.6f, new Vector4(0, 0, 1, 1), true, 0.08f);
+                    cell.Boxes.Add(new CellGeo.BoxCol { Center = c + Vector3.up * 1.1f, Rotation = Quaternion.LookRotation(n), Size = new Vector3(2.5f, 2.2f, 0.2f), Layer = Layers.Prop, Name = "signpost" });
+                    posts++;
+                }
+            if (doc["flagPoles"] is JArray fps)
+                foreach (JArray t in fps)
+                {
+                    var c = new Vector3((float)t[0], (float)t[1], (float)t[2]);
+                    var fly = Quaternion.Euler(0f, (float)t[3], 0f) * Vector3.forward;   // the yaw is the direction the cloth flies
+                    var col = new Color((float)t[4], (float)t[5], (float)t[6]);
+                    var cell = cells.At(c);
+                    cell.V(Mat.Rail).Box(c + Vector3.up * 3.6f, Vector3.right, Vector3.up, Vector3.forward, new Vector3(0.05f, 3.6f, 0.05f));
+                    var cloth = cell.V(Mat.Lighthouse, color: true);
+                    var top = c + Vector3.up * 7.0f;
+                    var nrm = Vector3.Cross(fly, Vector3.up).normalized;
+                    // a cloth with a little wave in it: three panels, both sides
+                    for (int side = 0; side < 2; side++)
+                        for (int k = 0; k < 3; k++)
+                        {
+                            float u0 = k * 0.6f, u1 = (k + 1) * 0.6f;
+                            Vector3 w0 = nrm * Mathf.Sin(k * 1.4f) * 0.12f, w1 = nrm * Mathf.Sin((k + 1) * 1.4f) * 0.12f;
+                            var a = top + fly * u0 + w0; var b = top + fly * u1 + w1; var d = a - Vector3.up * 1.2f; var e = b - Vector3.up * 1.2f;
+                            var nn = side == 0 ? nrm : -nrm;
+                            int i0 = cloth.Add(a, nn, Vector2.zero, default, default, col), i1 = cloth.Add(b, nn, Vector2.zero, default, default, col);
+                            int i2 = cloth.Add(e, nn, Vector2.zero, default, default, col), i3 = cloth.Add(d, nn, Vector2.zero, default, default, col);
+                            if (side == 0) { cloth.Tri(i0, i1, i2); cloth.Tri(i0, i2, i3); } else { cloth.Tri(i0, i2, i1); cloth.Tri(i0, i3, i2); }
+                        }
+                    flags++;
+                }
+            int eventProps = 0;
+            if (doc["eventDress"] is JObject ev && ev.HasValues)
+            {
+                var navy = new Color(0.10f, 0.14f, 0.32f); var coral = new Color(0.98f, 0.50f, 0.40f);
+                if (ev["arch"] is JArray ar)
+                {
+                    var c = new Vector3((float)ar[0], (float)ar[1], (float)ar[2]);
+                    var n = Quaternion.Euler(0f, (float)ar[3], 0f) * Vector3.forward;
+                    var right = Vector3.Cross(Vector3.up, -n);
+                    float hw = (float)ar[4] / 2f;
+                    var cell = cells.At(c);
+                    var body = cell.V(Mat.Lighthouse, color: true);
+                    foreach (var sx in new[] { -hw, hw })
+                    {
+                        body.Box(c + right * sx + Vector3.up * 2.4f, right, Vector3.up, n, new Vector3(0.35f, 2.4f, 0.35f), navy);
+                        body.Box(c + right * sx + Vector3.up * 0.15f, right, Vector3.up, n, new Vector3(0.5f, 0.15f, 0.5f), coral);
+                        cell.Boxes.Add(new CellGeo.BoxCol { Center = c + right * sx + Vector3.up * 2.4f, Rotation = Quaternion.LookRotation(n), Size = new Vector3(0.7f, 4.8f, 0.7f), Layer = Layers.Prop, Name = "event_arch" });
+                    }
+                    body.Box(c + Vector3.up * 5.25f, right, Vector3.up, n, new Vector3(hw + 0.45f, 0.55f, 0.3f), navy);
+                    Panel(cell.V(EventBanners), c + Vector3.up * 5.25f, n, right, hw + 0.3f, 0.5f, new Vector4(0f, 0.75f, 1f, 1f), true, 0.32f);
+                    eventProps++;
+                }
+                if (ev["banners"] is JArray bns)
+                    foreach (JArray t in bns)
+                    {
+                        var c = new Vector3((float)t[0], (float)t[1], (float)t[2]);
+                        var n = Quaternion.Euler(0f, (float)t[3], 0f) * Vector3.forward;
+                        var right = Vector3.Cross(Vector3.up, -n);
+                        int k = (int)t[4];
+                        var cell = cells.At(c);
+                        cell.V(Mat.Rail).Box(c + Vector3.up * 2.2f, right, Vector3.up, n, new Vector3(0.05f, 2.2f, 0.05f));
+                        cell.V(Mat.Rail).Box(c + Vector3.up * 4.25f + right * 0.45f, right, Vector3.up, n, new Vector3(0.45f, 0.03f, 0.03f));
+                        // a vertical banner facing along the approach, both sides (atlas cell k: 256 x 768 below the arch banner)
+                        Panel(cell.V(EventBanners), c + right * 0.45f + Vector3.up * 2.95f, right, n, 0.42f, 1.25f,
+                              new Vector4(k * 0.25f, 0f, (k + 1) * 0.25f, 0.75f), true, 0.02f);
+                        eventProps++;
+                    }
+                if (ev["queues"] is JArray qs)
+                    foreach (JArray t in qs)
+                    {
+                        var c = new Vector3((float)t[0], (float)t[1], (float)t[2]);
+                        var along = Quaternion.Euler(0f, (float)t[3], 0f) * Vector3.forward;
+                        var side = Vector3.Cross(Vector3.up, along);
+                        float len = (float)t[4];
+                        var cell = cells.At(c);
+                        var body = cell.V(Mat.Lighthouse, color: true);
+                        int posts2 = Mathf.Max(2, Mathf.RoundToInt(len / 1.4f) + 1);
+                        for (int i = 0; i < posts2; i++)
+                        {
+                            var p0 = c + along * (-len / 2f + i * len / (posts2 - 1));
+                            body.Box(p0 + Vector3.up * 0.5f, side, Vector3.up, along, new Vector3(0.04f, 0.5f, 0.04f), new Color(0.82f, 0.80f, 0.70f));
+                            body.Box(p0 + Vector3.up * 0.02f, side, Vector3.up, along, new Vector3(0.17f, 0.02f, 0.17f), new Color(0.3f, 0.3f, 0.32f));
+                            if (i > 0) body.Box(p0 - along * (len / (posts2 - 1) / 2f) + Vector3.up * 0.88f, side, Vector3.up, along, new Vector3(0.012f, 0.035f, len / (posts2 - 1) / 2f), coral);
+                        }
+                        eventProps++;
+                    }
+            }
+            receipt["dressSignposts"] = posts; receipt["dressFlagPoles"] = flags; receipt["dressEventProps"] = eventProps;
             receipt["dressTreePits"] = pits; receipt["dressBusShelters"] = shelters; receipt["dressHeroPlazas"] = plazas;
             receipt["dressDecorWalls"] = walls; receipt["dressDecorQuads"] = quads;
         }

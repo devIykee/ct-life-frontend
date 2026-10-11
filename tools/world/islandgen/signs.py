@@ -43,6 +43,8 @@ def main():
         img.save(os.path.join(OUT, f'sign_{vid}.png'), optimize=True)
         n += 1
     shop_atlas()
+    post_signs()
+    event_banners()
     print(f'[signs] {n} signs + the shop-sign atlas in {OUT}', flush=True)
 
 
@@ -79,6 +81,54 @@ def shop_atlas():
             size -= 4
         d.text((x0 + CW / 2, y0 + CH / 2 + 2), name, font=f, fill=ink, anchor='mm')
     img.save(os.path.join(OUT, 'shop_signs.png'), optimize=True)
+
+
+
+# W4.1 signposts (512 x 256 each, Textures/Signs/sign_post_<id>.png) and the convention centre's event banners
+# (Textures/Signs/event_banners.png, 1024 x 1024: the arch banner 1024 x 256 on top, three vertical banners 256 x 768 below
+# at x = 0, 256, 512). 'CHECKPOINT' is our own name for the event: navy and coral, no logo (community-eggs rules).
+NAVY, CORAL, WHITE = (24, 34, 82), (250, 128, 104), (248, 248, 250)
+
+
+def post_signs():
+    for sid, lines, bg, ink in (('trail', ['SUMMIT TRAIL', '1.2 km  ^'], (110, 72, 44), (250, 240, 220)),
+                                ('checkpoint', ['CHECKPOINT 26', 'MAIN STAGE  >'], NAVY, WHITE)):
+        img = Image.new('RGB', (512, 256), bg)
+        d = ImageDraw.Draw(img)
+        if sid == 'trail':
+            for y in range(0, 256, 32):
+                d.line([(0, y), (512, y)], fill=tuple(max(0, c - 18) for c in bg), width=3)     # planks
+        else:
+            for x in range(512):
+                t = x / 511.0
+                d.line([(x, 220), (x, 256)], fill=tuple(int(CORAL[k] * t + NAVY[k] * (1 - t)) for k in range(3)))
+        d.rectangle([10, 10, 501, 245], outline=ink, width=6)
+        d.text((256, 96), lines[0], font=render.font(64, True), fill=ink, anchor='mm')
+        d.text((256, 170), lines[1], font=render.font(40, True), fill=ink, anchor='mm')
+        img.save(os.path.join(OUT, f'sign_post_{sid}.png'), optimize=True)
+
+
+def event_banners():
+    img = Image.new('RGB', (1024, 1024), NAVY)
+    d = ImageDraw.Draw(img)
+    for x in range(1024):                                   # arch banner: navy to coral sweep
+        t = x / 1023.0
+        d.line([(x, 0), (x, 255)], fill=tuple(int(NAVY[k] * (1 - t * 0.85) + CORAL[k] * t * 0.85) for k in range(3)))
+    d.text((512, 110), 'CHECKPOINT 26', font=render.font(120, True), fill=WHITE, anchor='mm')
+    d.text((512, 205), 'SHIP IT  /  MEET BUILDERS  /  GM', font=render.font(40, True), fill=WHITE, anchor='mm')
+    for k, (title, sub) in enumerate((('CHECK', 'POINT'), ('SHIP', 'IT'), ('GM', 'BUILDERS'))):
+        x0 = k * 256
+        for y in range(256, 1024):
+            t = (y - 256) / 767.0
+            c = tuple(int(NAVY[j] * (1 - t) + CORAL[j] * t) for j in range(3)) if k != 1 else tuple(int(CORAL[j] * (1 - t) + NAVY[j] * t) for j in range(3))
+            d.line([(x0, y), (x0 + 255, y)], fill=c)
+        for r in range(3):
+            d.ellipse([x0 + 128 - 70 - r * 26, 560 - 70 - r * 26, x0 + 128 + 70 + r * 26, 560 + 70 + r * 26], outline=WHITE, width=3)
+        d.text((x0 + 128, 360), title, font=render.font(62 if len(title) <= 5 else 54, True), fill=WHITE, anchor='mm')
+        d.text((x0 + 128, 430), sub, font=render.font(46 if len(sub) <= 5 else 34, True), fill=WHITE, anchor='mm')
+        d.text((x0 + 128, 930), '26', font=render.font(70, True), fill=WHITE, anchor='mm')
+        d.rectangle([x0 + 6, 262, x0 + 249, 1017], outline=WHITE, width=4)
+    img.save(os.path.join(OUT, 'event_banners.png'), optimize=True)
 
 
 if __name__ == '__main__':
