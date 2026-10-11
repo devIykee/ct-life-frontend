@@ -566,13 +566,17 @@ def rug(w, h, seed, base, accent, round_=False):
     d = ImageDraw.Draw(im)
     rnd = random.Random(seed)
     if round_:
+        # Square rug with a round medallion (sign panels are opaque, so no bare corners).
+        for k in range(3):
+            m = 8 + k * 14
+            d.rectangle([m, m, w - m, h - m], outline=accent if k != 1 else tuple(min(255, c + 30) for c in base), width=6)
         cx, cy = w / 2, h / 2
         for k, col in enumerate([accent, base, tuple(min(255, c + 25) for c in base), accent, base]):
-            r = w * (0.48 - k * 0.07)
+            r = w * (0.42 - k * 0.065)
             d.ellipse([cx - r, cy - r, cx + r, cy + r], outline=col, width=max(3, w // 60))
         for i in range(16):
             a = i * math.pi / 8
-            x, y = cx + math.cos(a) * w * .3, cy + math.sin(a) * w * .3
+            x, y = cx + math.cos(a) * w * .26, cy + math.sin(a) * w * .26
             d.ellipse([x - 6, y - 6, x + 6, y + 6], fill=accent)
     else:
         for k in range(3):
@@ -921,6 +925,201 @@ def window_pane(w, h, lit, seed):
     return im
 
 
+
+# ---------------------------------------------------------------------------------------------------------------
+# Terminal Café (round 5, to ingame-cafe-concept-v1.png): chalk doodles, candle charts, brick, tiles, the town outside.
+
+def _chalk(d, pts, w=4, col=(236, 234, 222)):
+    d.line(pts, fill=col, width=w, joint="curve")
+
+
+def chalk_menu(w, h):
+    """Chalkboard with doodles only (no letters): a steaming cup, a croissant, coffee beans, a sun over a cup, dots."""
+    rnd = random.Random(201)
+    im = Image.new("RGB", (w, h), (34, 44, 38))
+    d = ImageDraw.Draw(im)
+    for _ in range(140):  # chalk dust smudges
+        x, y, r = rnd.uniform(0, w), rnd.uniform(0, h), rnd.uniform(10, 60)
+        d.ellipse([x - r, y - r * .5, x + r, y + r * .5], fill=(40 + rnd.randint(0, 8), 52 + rnd.randint(0, 8), 45 + rnd.randint(0, 8)))
+    im = im.filter(ImageFilter.GaussianBlur(6))
+    d = ImageDraw.Draw(im)
+    W = (236, 234, 222)
+    # cup
+    cx, cy = w * .2, h * .6
+    d.rounded_rectangle([cx - 70, cy - 40, cx + 50, cy + 70], radius=24, outline=W, width=6)
+    d.arc([cx + 30, cy - 10, cx + 90, cy + 50], -90, 90, fill=W, width=6)
+    d.line([(cx - 90, cy + 80), (cx + 70, cy + 80)], fill=W, width=5)
+    for k in range(3):
+        x0 = cx - 40 + k * 35
+        _chalk(d, [(x0, cy - 60), (x0 + 12, cy - 85), (x0, cy - 110), (x0 + 12, cy - 135)], 5)
+    # croissant: a crescent of five segments
+    ox, oy = w * .5, h * .62
+    for k in range(5):
+        a0, a1 = 200 + k * 28, 200 + (k + 1) * 28
+        rr = 120 - abs(k - 2) * 14
+        d.pieslice([ox - rr, oy - rr * .8, ox + rr, oy + rr * .8], a0, a1, outline=W, width=5)
+    d.ellipse([ox - 50, oy - 46, ox + 50, oy + 10], fill=(34, 44, 38))
+    # coffee beans
+    for (bx, by, rot) in [(w * .78, h * .42, 20), (w * .86, h * .6, -30), (w * .74, h * .7, 60)]:
+        d.ellipse([bx - 40, by - 26, bx + 40, by + 26], outline=W, width=5)
+        _chalk(d, [(bx - 30, by - 4), (bx - 8, by + 6), (bx + 10, by - 6), (bx + 30, by + 4)], 4)
+    # little sun and dots border
+    for i in range(0, w, 34):
+        d.ellipse([i + 8, 16, i + 14, 22], fill=W)
+        d.ellipse([i + 8, h - 22, i + 14, h - 16], fill=W)
+    return im
+
+
+def chalk_sun(w, h):
+    """A-frame chalk board: a sun rising over a cup (no letters)."""
+    im = Image.new("RGB", (w, h), (36, 40, 38))
+    d = ImageDraw.Draw(im)
+    W = (238, 236, 226)
+    cx, cy = w / 2, h * .62
+    d.arc([cx - 120, cy - 120, cx + 120, cy + 120], 180, 360, fill=W, width=9)
+    for k in range(9):
+        a = math.radians(180 + k * 22.5)
+        d.line([(cx + math.cos(a) * 150, cy + math.sin(a) * 150), (cx + math.cos(a) * 200, cy + math.sin(a) * 200)], fill=W, width=8)
+    d.line([(cx - 190, cy + 4), (cx + 190, cy + 4)], fill=W, width=8)
+    d.rounded_rectangle([cx - 70, cy + 40, cx + 50, cy + 150], radius=20, outline=W, width=8)
+    d.arc([cx + 30, cy + 60, cx + 90, cy + 120], -90, 90, fill=W, width=8)
+    return im
+
+
+def candles(w, h, seed, accent=(20, 241, 149)):
+    """Trading monitor: dark chart with grid, green/red candles and a moving average (no letters or numbers)."""
+    rnd = random.Random(seed)
+    im = vgrad(w, h, (12, 16, 26), (18, 22, 36))
+    d = ImageDraw.Draw(im)
+    for gy in range(1, 6):
+        d.line([(0, gy * h / 6), (w, gy * h / 6)], fill=(30, 38, 56), width=1)
+    for gx in range(1, 10):
+        d.line([(gx * w / 10, 0), (gx * w / 10, h)], fill=(30, 38, 56), width=1)
+    n = 28
+    cw = w / (n + 2)
+    price = h * .6
+    ma = []
+    for i in range(n):
+        o = price
+        trend = (-1 if seed % 2 else 1) * h * .012
+        c = o + rnd.uniform(-h * .07, h * .07) - trend + (h * .55 - o) * .12
+        c = min(h * .88, max(h * .14, c))
+        hi, lo = min(o, c) - rnd.uniform(4, h * .05), max(o, c) + rnd.uniform(4, h * .05)
+        x = (i + 1.5) * cw
+        up = c < o
+        col = (38, 222, 129) if up else (255, 71, 87)
+        d.line([(x, hi), (x, lo)], fill=col, width=max(1, int(cw * .12)))
+        d.rectangle([x - cw * .32, min(o, c), x + cw * .32, max(o, c) + 1], fill=col)
+        price = c
+        ma.append((x, c))
+    for i in range(2, len(ma)):
+        a = sum(p[1] for p in ma[i - 2:i + 1]) / 3
+        b = sum(p[1] for p in ma[i - 3:i]) / 3 if i > 2 else a
+        d.line([(ma[i - 1][0], b), (ma[i][0], a)], fill=(255, 196, 61), width=2)
+    d.rectangle([0, 0, w, 10], fill=(28, 34, 52))
+    return im
+
+
+def brick_wall(w, h, seed=301):
+    """Exposed warm brick with soft mortar and a few darker and lighter bricks."""
+    rnd = random.Random(seed)
+    im = Image.new("RGB", (w, h), (188, 160, 136))
+    d = ImageDraw.Draw(im)
+    bh, bw = h / 16, w / 6
+    for r in range(16):
+        off = (r % 2) * bw * .5
+        for c in range(-1, 7):
+            x0 = c * bw + off
+            base = rnd.choice([(150, 72, 50), (162, 82, 56), (140, 66, 46), (172, 92, 62), (128, 60, 44)])
+            j = rnd.randint(-10, 10)
+            col = tuple(max(0, min(255, v + j)) for v in base)
+            d.rectangle([x0 + 3, r * bh + 3, x0 + bw - 3, (r + 1) * bh - 2], fill=col)
+            d.rectangle([x0 + 3, r * bh + 3, x0 + bw - 3, r * bh + 6], fill=tuple(min(255, v + 18) for v in col))
+    return _jitter(im.filter(ImageFilter.GaussianBlur(0.8)), rnd, 9, 3)
+
+
+def green_tiles(w, h, seed=302):
+    """Glossy deep-green subway tiles with pale grout."""
+    rnd = random.Random(seed)
+    im = Image.new("RGB", (w, h), (200, 206, 196))
+    d = ImageDraw.Draw(im)
+    th, tw = h / 8, w / 4
+    for r in range(8):
+        off = (r % 2) * tw * .5
+        for c in range(-1, 5):
+            x0 = c * tw + off
+            g = rnd.randint(-8, 8)
+            col = (52 + g, 104 + g, 78 + g)
+            d.rounded_rectangle([x0 + 2, r * th + 2, x0 + tw - 2, (r + 1) * th - 2], radius=3, fill=col)
+            d.line([(x0 + 6, r * th + 6), (x0 + tw * .45, r * th + 6)], fill=(110, 160, 134), width=2)
+    return im
+
+
+def town_view(w, h):
+    """The sunny town outside the café windows: warm sky, stucco houses with terracotta roofs, blue awnings, trees."""
+    rnd = random.Random(311)
+    im = vgrad(w, h, (156, 204, 236), (250, 226, 186))
+    d = ImageDraw.Draw(im)
+    for _ in range(8):
+        cx, cy = rnd.uniform(0, w), rnd.uniform(h * .05, h * .3)
+        for k in range(5):
+            rw, rh = rnd.uniform(40, 100), rnd.uniform(10, 20)
+            ox = rnd.uniform(-50, 50)
+            d.ellipse([cx + ox - rw, cy - rh, cx + ox + rw, cy + rh], fill=(255, 250, 240))
+    im = im.filter(ImageFilter.GaussianBlur(2))
+    d = ImageDraw.Draw(im)
+    base = h * .95
+    x = -20
+    walls = [(238, 222, 190), (230, 184, 118), (234, 180, 146), (226, 214, 196), (214, 196, 150)]
+    while x < w:
+        bw = rnd.uniform(110, 180)
+        bh = rnd.uniform(h * .38, h * .62)
+        col = rnd.choice(walls)
+        top = base - bh
+        d.rectangle([x, top, x + bw, base], fill=col)
+        d.polygon([(x - 8, top + 4), (x + bw / 2, top - bh * .18), (x + bw + 8, top + 4)], fill=(196, 98, 60))
+        for fy in range(2):
+            for fx in range(2):
+                wx, wy = x + bw * (.22 + fx * .4), top + bh * (.18 + fy * .3)
+                d.rectangle([wx, wy, wx + bw * .16, wy + bh * .16], fill=(72, 98, 128))
+                d.rectangle([wx - 6, wy, wx - 1, wy + bh * .16], fill=(74, 120, 168))
+                d.rectangle([wx + bw * .16 + 1, wy, wx + bw * .16 + 6, wy + bh * .16], fill=(74, 120, 168))
+        aw_y = base - bh * .32
+        for k in range(6):
+            sx = x + bw * .1 + k * bw * .8 / 6
+            d.polygon([(sx, aw_y), (sx + bw * .8 / 6, aw_y), (sx + bw * .8 / 6 + 4, aw_y + 26), (sx + 4, aw_y + 26)],
+                      fill=(60, 110, 182) if k % 2 == 0 else (246, 244, 236))
+        x += bw + rnd.uniform(0, 12)
+    for _ in range(9):
+        tx = rnd.uniform(0, w)
+        tr = rnd.uniform(26, 50)
+        d.rectangle([tx - 4, base - 70, tx + 4, base], fill=(96, 70, 48))
+        d.ellipse([tx - tr, base - 70 - tr * 1.6, tx + tr, base - 70 + tr * .2], fill=rnd.choice([(84, 140, 70), (70, 124, 60), (98, 152, 76)]))
+    d.rectangle([0, base, w, h], fill=(206, 186, 160))
+    return im
+
+
+def art_print(w, h, seed):
+    """Framed print: warm abstract hills under a sun, or colour blocks (no letters)."""
+    rnd = random.Random(seed)
+    if seed % 2 == 0:
+        im = vgrad(w, h, (246, 208, 150), (232, 140, 96))
+        d = ImageDraw.Draw(im)
+        d.ellipse([w * .55, h * .18, w * .85, h * .45], fill=(255, 238, 200))
+        for k, col in enumerate([(176, 96, 70), (120, 80, 70), (64, 92, 96)]):
+            y = h * (.5 + k * .15)
+            pts = [(0, h)] + [(x, y + math.sin(x / w * 6 + k) * h * .05) for x in range(0, w + 1, 8)] + [(w, h)]
+            d.polygon(pts, fill=col)
+    else:
+        im = Image.new("RGB", (w, h), (238, 230, 214))
+        d = ImageDraw.Draw(im)
+        for _ in range(6):
+            x0, y0 = rnd.uniform(0, w * .7), rnd.uniform(0, h * .7)
+            d.rectangle([x0, y0, x0 + rnd.uniform(w * .2, w * .5), y0 + rnd.uniform(h * .15, h * .4)],
+                        fill=rnd.choice([(46, 110, 118), (226, 132, 64), (238, 196, 92), (64, 82, 120), (190, 90, 80)]))
+    return im
+
+
 def common():
     return {"exit": floor_text(512, 192, "EXIT", WHITE, sub="BACK TO THE CITY MAP", arrow="down")}
 
@@ -1203,6 +1402,16 @@ def venue_signs(vid):
         })
         for i, (kind, colors) in enumerate(FLAG_SETS):
             s["tl_flag_%d" % i] = flag(kind, colors)
+    elif vid == "terminal_cafe":
+        s.update({
+            "cf_chalk_menu": chalk_menu(1024, 512), "cf_chalk_sun": chalk_sun(384, 512),
+            "cf_candles_1": candles(512, 320, 1), "cf_candles_2": candles(512, 320, 2), "cf_candles_3": candles(512, 320, 3),
+            "cf_candles_4": candles(512, 320, 4), "cf_brick": brick_wall(512, 512), "cf_tiles": green_tiles(256, 256),
+            "cf_town": town_view(1024, 512), "cf_art_1": art_print(256, 320, 2), "cf_art_2": art_print(256, 320, 3),
+            "cf_pastry": shop_window(512, 256, "bakery", 321),
+            "cf_rug_1": rug(768, 384, 31, (196, 176, 150), (150, 110, 84)), "cf_rug_2": rug(512, 512, 32, (206, 190, 166), (146, 112, 86), round_=True),
+            "cf_rug_3": rug(640, 384, 33, (176, 120, 96), (232, 214, 186)),
+        })
     elif vid.startswith("home_"):
         s.update({"hm_tv": screen(512, 288, "pulse", PURPLE, "CHART TV"), "hm_monitor": screen(512, 192, "code", GREEN, "~/side-project")})
         if vid == "home_hacker_house":
@@ -1309,7 +1518,7 @@ def build(vid):
     print(f"{vid}: {len(images)} signs, atlas {atlas.width}x{atlas.height}, decor scale {scale:.2f}")
 
 
-VENUES = ["timeline_square", "spaces_studio", "perp_pit", "rekt_clinic", "ore_refinery", "launchpad_tower", "prediction_pit", "ratio_arena", "conference_hall",
+VENUES = ["terminal_cafe", "timeline_square", "spaces_studio", "perp_pit", "rekt_clinic", "ore_refinery", "launchpad_tower", "prediction_pit", "ratio_arena", "conference_hall",
           "ct_jail", "hackathon_house", "audit_row", "discord_heights", "vc_row", "airdrop_fields", "sybil_barn", "checker_kiosk",
           "cabal_lounge", "yacht_club", "penthouse_row", "home_hacker_house", "home_studio", "home_penthouse", "home_marina_villa"]
 

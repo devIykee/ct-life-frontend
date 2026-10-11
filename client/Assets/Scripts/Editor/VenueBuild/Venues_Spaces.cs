@@ -751,36 +751,49 @@ namespace CTLife.EditorTools.VenueBuild
 
         // ------------------------------------------------------------------ truss
 
+        /// <summary>
+        /// Stage lighting without anything between the gameplay camera and the stage (round 5: on the mic, the follow camera
+        /// sat behind the old overhead ring and saw mostly truss). Front light comes from two truss towers at the downstage
+        /// corners, outside the pods; back light from a straight truss bar upstage above the LED wall.
+        /// </summary>
         private static void Truss(VB vb)
         {
-            var c = C + Vector3.up * 5.0f;
-            const float r = 4.9f;
-            Vector3 prev = c + new Vector3(r, 0, 0);
-            for (int i = 1; i <= 28; i++)
+            foreach (float sx in new[] { -1f, 1f })
             {
-                float a = i * Mathf.PI * 2f / 28f;
-                var p = c + new Vector3(Mathf.Cos(a) * r, 0, Mathf.Sin(a) * r);
-                vb.Pipe(prev, p, 0.05f, "black", 6);
-                vb.Pipe(prev + Vector3.up * 0.28f, p + Vector3.up * 0.28f, 0.035f, "black", 6);
-                prev = p;
+                var b = new Vector3(sx * 6.7f, 0f, 2.1f);
+                vb.Box(b + Vector3.up * 0.04f, new Vector3(0.7f, 0.08f, 0.7f), "black");
+                foreach (var (dx, dz) in new[] { (-0.14f, -0.14f), (0.14f, -0.14f), (-0.14f, 0.14f), (0.14f, 0.14f) })
+                    vb.Pipe(b + new Vector3(dx, 0.08f, dz), b + new Vector3(dx, 5.0f, dz), 0.025f, "black", 5);
+                for (float y = 0.5f; y < 5f; y += 0.55f)
+                {
+                    vb.Pipe(b + new Vector3(-0.14f, y, -0.14f), b + new Vector3(0.14f, y + 0.5f, -0.14f), 0.012f, "black", 4);
+                    vb.Pipe(b + new Vector3(-0.14f, y, 0.14f), b + new Vector3(0.14f, y + 0.5f, 0.14f), 0.012f, "black", 4);
+                }
+                vb.RegisterProp("truss_tower", b + Vector3.up * 1.0f, new Vector3(0.7f, 2.0f, 0.7f));
+                for (int k = 0; k < 3; k++)
+                {
+                    var p = b + new Vector3(-sx * 0.25f, 3.6f + k * 0.55f, 0.2f);
+                    var target = C + new Vector3(sx * (1.6f - k * 1.2f), StageH, -1.2f + k * 0.3f);
+                    Fixture(vb, p, target, k == 1 ? "glowwhite" : "glowamber", 3.2f);
+                }
             }
+            // Upstage bar above the LED wall with back lights.
+            var z = 9.2f;
+            vb.Pipe(new Vector3(-5.2f, 5.55f, z), new Vector3(5.2f, 5.55f, z), 0.05f, "black", 6);
+            vb.Pipe(new Vector3(-5.2f, 5.83f, z), new Vector3(5.2f, 5.83f, z), 0.035f, "black", 6);
             for (int i = 0; i < 4; i++)
             {
-                float a = i * Mathf.PI * .5f + Mathf.PI * .25f;
-                var p = c + new Vector3(Mathf.Cos(a) * r, 0.28f, Mathf.Sin(a) * r);
-                vb.Pipe(p, p + Vector3.up * 2.4f, 0.02f, "black", 4);
+                float x = -3.3f + i * 2.2f;
+                Fixture(vb, new Vector3(x, 5.35f, z - 0.15f), C + new Vector3(x * 0.4f, StageH, 0.6f), "glowamber", 2.4f);
             }
-            for (int i = 0; i < 6; i++)
-            {
-                float a = Mathf.PI * (1.1f + 0.16f * i);
-                var p = c + new Vector3(Mathf.Cos(a) * r, -0.2f, Mathf.Sin(a) * r);
-                var target = C + new Vector3((i - 2.5f) * 0.7f, StageH, i % 2 == 0 ? -0.9f : -1.6f);
-                var dir = (target - p).normalized;
-                vb.Pipe(p + Vector3.up * 0.2f, p, 0.015f, "black", 4);
-                vb.Pipe(p - dir * 0.15f, p + dir * 0.2f, 0.12f, "charcoal", 10);
-                vb.Sphere(p + dir * 0.21f, 0.09f, "glowwhite", glow: true, rings: 3, segments: 8);
-                vb.SpotLight(p + dir * 0.25f, target, i % 2 == 0 ? "glowamber" : "glowwhite", 3.0f, 10f, 46f);
-            }
+        }
+
+        private static void Fixture(VB vb, Vector3 p, Vector3 target, string light, float intensity)
+        {
+            var dir = (target - p).normalized;
+            vb.Pipe(p - dir * 0.15f, p + dir * 0.2f, 0.12f, "charcoal", 10);
+            vb.Sphere(p + dir * 0.21f, 0.09f, "glowwhite", glow: true, rings: 3, segments: 8);
+            vb.SpotLight(p + dir * 0.25f, target, light, intensity, 11f, 46f);
         }
     }
 }
