@@ -8,6 +8,8 @@ namespace CTLife.EditorTools
     /// </summary>
     public sealed class MapArtImporter : AssetPostprocessor
     {
+        public override uint GetVersion() => 2; // 2: power-of-two rounding so ASTC applies to the area maps
+
         private void OnPreprocessTexture()
         {
             if (!assetPath.StartsWith("Assets/Resources/UI/Map/", System.StringComparison.Ordinal)) return;
@@ -22,7 +24,9 @@ namespace CTLife.EditorTools
             ti.wrapMode = UnityEngine.TextureWrapMode.Clamp;
             ti.filterMode = UnityEngine.FilterMode.Trilinear;
             ti.anisoLevel = 2;
-            ti.npotScale = TextureImporterNPOTScale.None;
+            // Area maps are non-power-of-two and were left uncompressed (RGBA32) on Android; rounding to the nearest power of two
+            // lets ASTC apply. Safe: every map transform works in normalised uv, so a resample never moves a marker.
+            ti.npotScale = TextureImporterNPOTScale.ToNearest;
             ti.maxTextureSize = atlas ? 4096 : 1024;
             ti.textureCompression = TextureImporterCompression.Compressed;
             var android = ti.GetPlatformTextureSettings("Android");
