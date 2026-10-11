@@ -118,3 +118,31 @@ TR = 'tripo::'
 # nod to community mascots (docs/research/community-eggs-2026-10.md), never their art
 for n, h in (('black_bull', 2.6), ('chef_bull', 3.4), ('purple_ghost', 2.2), ('penguin_cart', 2.6), ('space_cat', 3.6)):
     add('hero_' + n, TR + n, H, fit=('z', h), tex_max=1024, tags=['hero'], lods=(0.4, 0.12))
+
+# ------------------------------------------------------------------ W4 beauty pass (2026-10-18)
+SN = 'quaternius/stylized_nature_megakit::'
+UN = 'quaternius/ultimate_nature::'
+USN = 'quaternius/ultimate_stylized_nature::'
+PP = 'polypizza::'
+# Mature stylised trees (Quaternius Stylized Nature MegaKit, CC0): textured bark and cut-out leaf cards replace the round
+# KayKit crowns at eye level. Broadleaf in town and the hills, pines up the mountain, a few twisted autumn trees in parks.
+for i, h in ((1, 14.0), (2, 15.5), (3, 12.5), (4, 13.5), (5, 11.0)):
+    add(f'w_tree_common_{i}', SN + f'CommonTree_{i}', N, fit=('z', h), tags=['tree', 'broadleaf'], lods=(0.3, 0.08))
+for i, h in ((1, 16.0), (2, 14.5), (3, 18.0), (4, 13.0), (5, 10.5)):
+    add(f'w_pine_{i}', SN + f'Pine_{i}', N, fit=('z', h), tags=['tree', 'pine'], lods=(0.3, 0.08))
+for i, h in ((1, 11.0), (3, 12.0)):
+    add(f'w_tree_twisted_{i}', SN + f'TwistedTree_{i}', N, fit=('z', h), tags=['tree', 'autumn'], lods=(0.22, 0.06))
+# eye-level ground detail: grass clumps, clover, ferns, flowers, pebbles (tiny, short draw range)
+for n, h in (('Grass_Wispy_Short', 0.35), ('Grass_Wispy_Tall', 0.7), ('Grass_Common_Short', 0.3), ('Clover_1', 0.18), ('Clover_2', 0.22),
+             ('Fern_1', 0.6), ('Plant_7', 0.35), ('Flower_3_Group', 0.4), ('Flower_4_Group', 0.42), ('Flower_3_Single', 0.35),
+             ('Mushroom_Common', 0.2)):
+    add('w_' + n.lower(), SN + n, N, fit=('z', h), tags=['ground_detail'])
+for n in ('Pebble_Round_1', 'Pebble_Round_3', 'Pebble_Square_2', 'Pebble_Square_5'):
+    add('w_' + n.lower(), SN + n, N, fit=('max', 0.35), tags=['ground_detail', 'pebble'])
+# street life (Poly Pizza model pages checked 2026-10-18; sources and licences in art/raw/polypizza/_manifest.json)
+add('pp_vendor_cart', PP + 'Street_Vendor_Cart__f_LuAcP2_Yh', P, fit=('z', 2.4), tags=['prop', 'street', 'vendor'])        # CC BY 3.0, Alan Zimmerman
+add('pp_vending_machine', PP + 'Vending_Machine__0CX6wj64Swu', P, fit=('z', 1.9), tags=['prop', 'street'])                 # CC BY 3.0, Don Carson
+add('pp_market_stalls', PP + 'Market_Stalls_Compact__fmHUuX9AS3', P, fit=('z', 2.6), tags=['prop', 'vendor'], decimate=0.4)  # CC0, Quaternius
+add('pp_scooter', PP + 'Scooter__3vLV1QtLFP', P, fit=('z', 1.15), tags=['prop', 'street', 'two_wheeler'])                    # CC BY 3.0, MiniPoly
+add('pp_moped', PP + 'Bike__DN6DCPopeH', P, fit=('z', 1.15), tags=['prop', 'street', 'two_wheeler'])                         # CC BY 3.0, MiniPoly
+add('pp_bicycle', PP + 'Bicycle__19VoUuA2pcN', P, fit=('x', 1.75), tags=['prop', 'street', 'two_wheeler'])                   # CC BY 3.0, Poly by Google

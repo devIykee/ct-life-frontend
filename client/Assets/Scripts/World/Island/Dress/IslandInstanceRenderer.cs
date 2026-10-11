@@ -19,6 +19,8 @@ namespace CTLife.World
         public static int LastDraws { get; private set; }
         /// <summary>Edit-time captures render through one camera; at runtime this stays null (every camera).</summary>
         public static Camera TargetCamera;
+        /// <summary>Dev builds: instance kinds not drawn (launch extra `islandSkip=tree,grass`), for frame-rate bisection.</summary>
+        public static readonly HashSet<string> SkipKinds = new HashSet<string>();
         public static int LastInstances { get; private set; }
 
         [Tooltip("Multiplies every prototype's LOD and cull distances (quality knob).")]
@@ -55,6 +57,7 @@ namespace CTLife.World
                 foreach (var g in set.Groups)
                 {
                     var p = kit.protos[g.Key];
+                    if (SkipKinds.Count > 0 && SkipKinds.Contains(p.kind)) continue;
                     int lodCount = Mathf.Min(p.lods.Length, p.lodEnd.Length);
                     if (lodCount == 0) continue;
                     float cull = p.lodEnd[lodCount - 1] * distanceScale;
@@ -91,7 +94,9 @@ namespace CTLife.World
                     }
                     for (int sm = 0; sm < subs; sm++)
                     {
-                        var mat = sm < p.materials.Length && p.materials[sm] != null ? p.materials[sm] : p.material;
+                        int lodI = kv.Key.Item2;
+                        var mat = lodI < p.lodMaterials.Length && p.lodMaterials[lodI] != null ? p.lodMaterials[lodI]
+                            : sm < p.materials.Length && p.materials[sm] != null ? p.materials[sm] : p.material;
                         var rp = new RenderParams(mat)
                         {
                             layer = p.layer, receiveShadows = true,
