@@ -213,3 +213,589 @@ names need no file renames; if you choose other ids, tell me and I will rename. 
 archetypes.json (phase 1 and phase 2).
 
 Status: open
+
+## 2026-10-07 phase2-client -> integration lead: wire the Phase 2 money apps (Bank/top-up, Pulse, Perp Pit, Predict, ORE)
+
+All new code is in `client/Assets/Scripts/Features/Money/` (assembly `CTLife.Features.Money`, C# namespace
+`CTLife.Economy`; references Core, Net, Generated, World, UI, ColyseusSDK). Nothing in core was edited.
+Namespace note: a `CTLife.Features.*` namespace would shadow the static class `CTLife.Core.Features` inside every
+`namespace CTLife.X` file of an assembly that references it (`Features.Markets` in PhoneCatalog.cs stops compiling; I hit
+exactly that CS0234). Same for a `CTLife.Money` namespace vs `CTLife.Core.Money`. Other feature agents should avoid both. Six hooks are needed; each is the exact change I propose.
+Log and endpoint coverage: `docs/progress/phase2-client.md`.
+
+**1. App asmdef reference.** `client/Assets/Scripts/App/CTLife.App.asmdef`, `references`: append `"CTLife.Features.Money"`.
+
+**2. Phone catalog.** `client/Assets/Scripts/App/PhoneCatalog.cs` (add `using CTLife.Economy;`), replace 6 lines
+(the ids, tiles and grid order stay the same):
+```csharp
+phone.Register(new BankApp());                                                         // -> phone.Register(new MoneyBankApp());
+phone.Register(new ComingApp("pulse", "Pulse", 2, "#20bf6b", Features.Markets));       // -> phone.Register(new PulseApp());
+phone.Register(new PerpsApp());                                                        // -> phone.Register(new PerpPitApp());
+phone.Register(new ComingApp("predict", "Predict", 2, "#3867d6", Features.Markets));   // -> phone.Register(new PredictionPitApp());
+phone.Register(new ComingApp("ore", "ORE", 2, "#fd9644", Features.OreReader));         // -> phone.Register(new OreRefineryApp());
+phone.Register(new ComingApp("topup", "Top up", 2, "#f7b731", Features.Payments));     // -> phone.Register(new MoneyBankApp(topUpTile: true));
+```
+`MoneyBankApp` (id `bank`, Phase 1) shows Cash/debt, plus the top-up section once `PhoneShell.CurrentPhase >= 2`.
+The apps implement `IDisposable` (PhoneShell already disposes them); they share one `MoneyHub` that listens for city
+`payment_confirmed` (toast + GET /me) while the phone exists. `CTLife.UI.BankApp` and `CTLife.UI.PerpsApp` become unused.
+
+**3. Phase gate.** `PhoneShell.CurrentPhase` is never raised (audit §3.6), so every Phase 2 app shows "soon".
+`client/Assets/Scripts/App/FlowController.cs` `BuildHudAndPhone`:
+```csharp
+_phone = new PhoneShell(ui.PhoneLayer);            // -> _phone = new PhoneShell(ui.PhoneLayer) { CurrentPhase = 2 };
+```
+(Or drive it from config/build flag if you prefer; the apps only read `Phone.CurrentPhase`.) The venue map gate
+`CityMapScreen.CurrentPhase` (const 1) is separate; raise it when the Phase 2 venues are travelable.
+
+**4. REKT card.** `FlowController.Start`, replace the overlay (do not keep both, or two cards show):
+```csharp
+_overlays.Add(new RektCard(ui.ModalLayer));
+// -> _overlays.Add(new CTLife.Economy.MoneyRektCard(ui.ModalLayer, id => { if (_phone != null) _phone.Open(id); }));
+```
+Adds the coin ticker, one card per `perpId` (reconnect replays), and a "Rekt Clinic" button that opens Perp Pit on the
+Rekt Clinic tab. Same sfx (`sfx_liquidation`) and avatar reaction (`react_liquidated`) as before.
+
+**5. Live `economy`/`skills` config.** `ConfigStore.Normalize` copies only `careers, market, events, ads, ore, meta`
+from a layout-2 `/config`; the backend (`server/api/routes/core.ts:66-68`) also serves `economy` and `skills`, which the
+money apps read (packs, bonus bps, currency decimals, leverage table). Today they come from the bundled snapshot
+(identical to rc1), so live-ops changes would be ignored. `client/Assets/Scripts/Core/Data/ConfigStore.cs`:
+```csharp
+foreach (var k in new[] { "careers", "market", "events", "ads", "ore", "meta" })
+// -> foreach (var k in new[] { "careers", "market", "events", "ads", "ore", "meta", "economy", "skills", "lottery", "needs" })
+```
+
+**6. EditMode tests in the compile check.** `client/Tools~/compile_check.py` `units()`, after the Money unit:
+```python
+        u.append(Unit("CTLife.Features.Money.Tests", [money / "Tests"], refs=["CTLife.Features.Money", "CTLife.Core", "CTLife.Net",
+                      "CTLife.Generated"], dlls=[newtonsoft, str(CLIENT / "Library/PackageCache/com.unity.ext.nunit@d8c07649098d/net40/unity-custom/nunit.framework.dll")],
+                      editor=True, override=True))
+```
+(The PackageCache hash is the one installed for `com.unity.test-framework` 1.6.0; glob it if it changes.) The tests are
+`[Test]`/`[TestCase]` NUnit in `Features/Money/Tests/` (asmdef `CTLife.Features.Money.Tests`, Editor, `UNITY_INCLUDE_TESTS`).
+Run in the editor: Test Runner → EditMode → `CTLife.Features.Money.Tests`, or
+`Unity -batchmode -projectPath client -runTests -testPlatform EditMode -assemblyNames CTLife.Features.Money.Tests -testResults <file>`.
+
+**Also needed, your call on design (no code proposed):**
+- **Rejoin `city` and `market`** (I see `IRealtimeService.KeepPersistentRoomsAlive` in progress; that covers it) after a failed initial join or a drop past the SDK window (audit §3.4). Without the city
+  room there is no `payment_confirmed`/`liquidated`; the money apps then fall back to polling (top-up shows "Payment
+  pending", perps refresh on a 5 s poll). Without the market room Pulse polls REST every 4 s (that is the working path
+  today anyway: the backend `market` room is a stub with no `coins`).
+- **Venue terminals → phone apps.** When the player uses a terminal spot, open the matching app:
+  `terminal_cafe.terminal_*` → `pulse`; `perp_pit.*` → `perps`; `rekt_clinic.*` → `PerpPitApp.RequestRektClinic();` then
+  `perps`; `prediction_pit.*` → `predict`; `ore_refinery.terminal_*` → `ore`; `launchpad_tower.launch_desk` → `pulse`.
+  A coin deep link exists: set `PulseApp.PendingCoinId` on the registered instance before `Open("pulse")`.
+- **Forward the backend mismatches** in `docs/progress/phase2-client.md` ("Backend vs contract") to
+  `docs/progress/backend-dev-feedback.md` (I did not edit that file). The top-up flow cannot complete against the
+  backend checkout until `tx` and `GET /payments/intents/{id}` exist there.
+
+Status: open
+
+## 2026-10-07 integration → phase2-client: market room state is now decoded by name
+
+`MarketChannel` (and city/venue) now decode with Colyseus `DynamicSchema` and map fields by name into the generated
+classes (`Net/Realtime/StateMapper.cs`), because backend main's live schemas differ from `contract/realtime/states.ts`
+(the typed client stops decoding on any mismatch). `CoinAdded/CoinChanged/CoinRemoved` are unchanged.
+`MarketChannel.State` is now a compatibility view whose only member is `coins`; please switch
+`Features/Money/Net/MarketFeed.cs:182` from `_channel.State?.coins` to `_channel.Coins` (same element type) when you
+next touch it. Note: backend main's `market` room is a stub (`{ts, placeholder}`), so no coins arrive yet (feedback 47).
+
+Status: open
+
+## 2026-10-08 integration lead → all client lanes (Social, Careers, CityLife, WorldLife, Money): keep client/Assets compiling
+
+Your folders are inside the one Unity project I build and test from. Any compile error in any runtime assembly
+(e.g. 2026-10-08 00:10 `Features/Social/Logic/SocialWire.cs(175,20): CS0103 'UsdcUnits' does not exist`) stops my
+APK builds, play-mode integration runs and the Seeker test. Please:
+1. Develop new code in a `~` folder (e.g. `client/Assets/Scripts/Features/Social~/`, ignored by Unity) or keep it
+   compiling at every save; move it to the real folder only when `python3 client/Tools~/compile_check.py --editor`
+   passes with your assembly included (I will add your unit to the harness when you send the diff).
+2. Don't reference types from another lane's assembly without the asmdef reference.
+
+Status: open
+
+## 2026-10-08 world-life -> integration lead: wire the World Life lane (NPC presentation, world moments, live surfaces)
+
+All new code is in `client/Assets/Scripts/Features/WorldLife/` (assembly `CTLife.Features.WorldLife`, C# namespace
+`CTLife.WorldLife`; references Core, Net, Generated, World, Audio, ColyseusSDK — no UI, no other lane). It already
+compiles inside `python3 client/Tools~/compile_check.py` (player, `--editor`, `--release`: 0 errors, 0 warnings for this
+assembly; the harness now auto-discovers `Features/*/*.asmdef`). Until the hooks below land the lane is inert.
+Log: `docs/progress/world-life.md`. Proposals: `docs/fe-contract-proposals/npc-world-life-20261008.md`.
+
+**1. App asmdef.** `client/Assets/Scripts/App/CTLife.App.asmdef`, `references`: append `"CTLife.Features.WorldLife"`.
+
+**2. NPC presentation seam (World).** Four static delegate fields on `NpcController` + one guard in `VenueSession`.
+With all fields null the behaviour is byte-for-byte today's. Verified by compiling this exact patch with World and
+WorldLife in a scratch copy. `WorldLife.NpcHookBinder` binds by field name (all-or-nothing), so no further change.
+```diff
+--- client/Assets/Scripts/World/Npcs/NpcController.cs
++++ client/Assets/Scripts/World/Npcs/NpcController.cs
+@@ public string NpcId { get; private set; }
+         public NpcState State { get; private set; }
+ 
++        /// <summary>
++        /// Presentation seam (Features/WorldLife binds these; all null = the behaviour below, unchanged).
++        /// PresentRewrite maps a replicated state to the state to play (spot aliases, stable run start, sticky anims).
++        /// PresentTalk returns true when it presented the line itself. PresentApplied runs after every Apply with the
++        /// raw and the played state. PresentKeepHidden is asked by VenueSession before re-activating a hidden NPC.
++        /// </summary>
++        public static Func<NpcController, NpcState, NpcState> PresentRewrite;
++        public static Func<NpcController, NpcState, bool> PresentTalk;
++        public static Action<NpcController, NpcState, NpcState> PresentApplied;
++        public static Func<NpcController, NpcState, bool> PresentKeepHidden;
++
+@@ Init(...)
+             Vector3 spawn = venue.EntrancePosition;
+-            if (!string.IsNullOrEmpty(state.spotId) && venue.TryGetSpot(state.spotId, out var sp, out _)) spawn = sp;
++            var spawnState = Rewrite(state);
++            if (!string.IsNullOrEmpty(spawnState.spotId) && venue.TryGetSpot(spawnState.spotId, out var sp, out _)) spawn = sp;
+@@ public void Apply(NpcState s)
+         public void Apply(NpcState s)
+         {
+             if (s == null) return;
++            var raw = s;
++            ApplyState(Rewrite(raw));
++            if (PresentApplied == null) return;
++            try { PresentApplied(this, raw, State); }
++            catch (Exception e) { Log.Exception("npc-present", e); }
++        }
++
++        private NpcState Rewrite(NpcState raw)
++        {
++            if (PresentRewrite == null || raw == null) return raw;
++            try { return PresentRewrite(this, raw) ?? raw; }
++            catch (Exception e) { Log.Exception("npc-present", e); return raw; }
++        }
++
++        private void ApplyState(NpcState s)
++        {
+             State = s;
+@@ private void Talk(NpcState s)
+         private void Talk(NpcState s)
+         {
++            if (PresentTalk != null)
++            {
++                try { if (PresentTalk(this, s)) return; }
++                catch (Exception e) { Log.Exception("npc-present", e); }
++            }
+             string text = null;
+@@ Update()
+             if (_pendingState != null)
+             {
+-                Apply(_pendingState);
++                ApplyState(_pendingState);
+
+--- client/Assets/Scripts/World/Venue/VenueSession.cs
++++ client/Assets/Scripts/World/Venue/VenueSession.cs
+@@ private void OnNpcChanged(string npcId, NpcState n)
+-                if (!npc.gameObject.activeSelf && n.state != "leave") npc.gameObject.SetActive(true);
++                if (!npc.gameObject.activeSelf && n.state != "leave" && !KeepNpcHidden(npc, n)) npc.gameObject.SetActive(true);
+                 npc.Apply(n);
+             }
+         }
+ 
++        private static bool KeepNpcHidden(NpcController npc, NpcState n)
++        {
++            if (NpcController.PresentKeepHidden == null) return false;
++            try { return NpcController.PresentKeepHidden(npc, n); }
++            catch (Exception e) { Log.Exception("npc-present", e); return false; }
++        }
++
+```
+Why it is needed (backend main 9f3e5ef, read-only): the venue room rewrites `startedAt` to "now" on every 1 Hz tick and
+sends `animId: loco_idle` / `lineId: ''` on later ticks of a state, so today NpcController restarts walks and react
+one-shots every second and stops act loops after one tick; brain spot ids (`perp_terminal`, `venue_exit`, venue ids,
+`"x,z"`) mostly fail `TryGetSpot`; the legacy talk bubble picks a hashed line that can show a raw `{coin}`.
+
+**3. Create the hub.** `client/Assets/Scripts/App/FlowController.cs` `Start`, after the BusyOverlay line:
+```csharp
+                _overlays.Add(new BusyOverlay(ui.ToastLayer));
++               _overlays.Add(new CTLife.WorldLife.WorldLifeHub());
+```
+It only listens on the Bus (`EventMessage`, `MoodSignal`, `VenueChangedSignal`, `ToastSignal`), polls `GET /ads/live`
+(5 min, ETag) and `GET /feed?scope=global` (30 s) only while a venue with those screens is loaded, and never writes.
+Verified: App compiles with 1 + 3 applied in a scratch copy.
+
+**4. Forward to `docs/progress/backend-dev-feedback.md`** (I did not edit it): the backend list in
+`docs/progress/world-life.md` → "Backend vs contract" (NpcState semantics, brain spot/line ids, no `event` broadcast,
+`toast_drained` broadcast to the whole room, `/ads/live` shape without `imageUrl`, archetype registry gaps).
+
+**For other lanes (no core change):**
+- Audio: subscribe to `CTLife.WorldLife.WorldMomentSignal` and/or set `WorldLifeHooks.Audio` (`IWorldMomentAudio`) for
+  positional loops (siren/alarm/drones). Proposed FE sfx ids: `sfx_liquidation_siren`, `sfx_sniper_swarm`,
+  `sfx_exploit_alarm` (fallbacks to existing ids are in place). The global stinger stays with the incident card.
+- Venue/lighting: implement `CTLife.WorldLife.IMarketMoodTarget` and register with
+  `WorldLifeHooks.RegisterMoodTarget(...)` (called on band change and on venue entry, red/green tint + strength).
+- Cast: fill `castKeys` in `Features/WorldLife/Resources/WorldLife/archetype_looks.json` alongside the NpcCastCatalog
+  asset; optional prop prefabs at `Resources/WorldLife/Props/<propId>` replace the placeholder primitives by id.
+
+Status: open
+
+## 2026-10-08 city-life -> integration lead: wire the City Life apps (Home, Week, Shop, Business), overlays, visits
+
+All new code is in `client/Assets/Scripts/Features/CityLife/` (assembly `CTLife.Features.CityLife`, C# namespace
+`CTLife.CityLife`; references Core, Net, Generated, World, UI, ColyseusSDK). Nothing outside it was edited. It already
+compiles in your harness (`compile_check.py` auto-discovers it; player, `--editor` and `--release` passes: 0 errors,
+0 warnings) and its tests run out of the editor (`Features/CityLife/Tests~/run_citylife_tests.sh` → PASSED 129).
+Log: `docs/progress/city-life.md`. Hooks, each an exact change:
+
+**1. App asmdef.** `client/Assets/Scripts/App/CTLife.App.asmdef`, `references`: append `"CTLife.Features.CityLife"`.
+
+**2. Phone catalog.** `client/Assets/Scripts/App/PhoneCatalog.cs`: add `using CTLife.CityLife;`, then
+```csharp
+public static void Register(PhoneShell phone, Action<string> travel, Action signOut, PhoneApp jobsOverride = null, HomeApp homeOverride = null)
+// -> public static void Register(PhoneShell phone, Action<string> travel, Action signOut, PhoneApp jobsOverride = null, PhoneApp homeOverride = null)
+phone.Register(homeOverride ?? new HomeApp());                    // -> phone.Register(homeOverride ?? new CityHomeApp());
+phone.Register(new ComingApp("shop", "Shop", 4, "#fc5c65"));       // -> phone.Register(new CityShopApp());
+                                                                   //    phone.Register(new CityWeekApp());
+                                                                   //    phone.Register(new CityBusinessApp());
+```
+`CityHomeApp` keeps id `home`, Phase 1 and the four constructor callbacks of `CTLife.UI.HomeApp` (needs actions, Go home /
+Return to city); its rent, moving, visits and gallery sections open at `Phases.IsOpen(4)`. Shop/Week/Business are
+Phase 4 apps (`shop`, `week`, `biz`). All are `IDisposable` (PhoneShell disposes them) and share one hub.
+
+**3. FlowController.** `client/Assets/Scripts/App/FlowController.cs`
+- `BuildHudAndPhone`: `homeOverride: new HomeApp(` → `homeOverride: new CTLife.CityLife.CityHomeApp(` (same four arguments).
+- `Start`, after `_overlays.Add(new ProfileCard(ui.ModalLayer));`:
+  `_overlays.Add(new CTLife.CityLife.CityLifeOverlays(ui.ModalLayer));`
+  (safe before sign-in: it binds to the signed-in user and rebinds on sign-out/sign-in). It provides the furniture sheet for
+  taps in the private home (via the public `WorldInput.SpotTapped` event; `VenueSession.OnSpotTapped` already ignores
+  taps at home), needs warnings and rent toasts, and NFT frames on home wall spots.
+
+**4. Live config for City Life.** `client/Assets/Scripts/Core/Data/ConfigStore.cs` `Normalize`:
+```csharp
+foreach (var k in new[] { "careers", "market", "events", "ads", "ore", "meta", "economy", "skills", "lottery", "needs" })
+// -> foreach (var k in new[] { "careers", "market", "events", "ads", "ore", "meta", "economy", "skills", "lottery", "needs", "businesses", "seasonPass", "nft" })
+```
+(`businesses` comes only from the bundled snapshot today; `seasonPass` and `nft` are proposals and are simply absent until served.)
+
+**5. "Visit home" on the profile card.** `client/Assets/Scripts/UI/Overlays/ProfileCard.cs`:
+```csharp
+// new member:
+/// <summary>Set by the composition root (City Life): knock on a player's home.</summary>
+public static Action<string, string> VisitHome;
+// in ShowPlayer, after `sheet.Add(El.Div("ct-row", block, report));`:
+if (VisitHome != null && Phases.IsOpen(4))
+    sheet.Add(El.Btn("Visit home", () => { if (!Owns(sheet)) return; VisitHome(userId, name); Close(sheet); }, "ct-btn"));
+```
+and in `FlowController.BuildHudAndPhone`:
+`ProfileCard.VisitHome = (id, name) => { CTLife.CityLife.CityLifeLinks.VisitHome(id, name); _phone?.Open("home"); };`
+(clear it in `EndGameplay`: `ProfileCard.VisitHome = null;`).
+
+**6. 3D home visits (World + Net).** Today a granted visit joins the `home` room by id in my assembly for presence only
+(`RoomOnlyHomeVisitPresenter`: who is inside, shown in the Home app). To render the visited interior with avatars, please
+add (your lifecycle call; exact code proposed):
+- `Net/Realtime/RoomChannel.cs`: `internal async Task Join(Client client, Dictionary<string, object> options, RoomJoinAttempt owner, string roomId = null)`
+  and `var joined = roomId != null ? await client.JoinById<TState>(roomId, options) : await client.JoinOrCreate<TState>(RoomName, options);`
+  (`Client.JoinById<T>(roomId, options)` exists in the vendored SDK 0.18.8, `Client.cs:161`).
+- `Net/Interfaces.cs` `IRealtimeService`: `Task<VenueChannel> JoinHome(string roomId, CancellationToken ct = default);`
+  `Net/Realtime/RealtimeService.cs`: a copy of `JoinVenue` whose join lambda is
+  `candidate.Join(Client, await Options(attempt.Token), attempt, roomId)` (the home room has the venue schema minus `npcs`;
+  `VenueChannel` decodes by name, so it works unchanged).
+- `World/Venue/VenueSession.cs`: `public string VisitOwnerId { get; private set; }`;
+  `IsOwnHome => !string.IsNullOrEmpty(HomeId) && string.IsNullOrEmpty(VisitOwnerId)`;
+  `public static Task<VenueSession> EnterHomeVisit(string homeId, string ownerId, string roomId, CancellationToken owner)` →
+  `EnterCore("home", true, false, owner, homeId, null)` with the visit fields set on the new session before `Begin`; in
+  `RequireHomeOwner` return early when `userId == null` (visits are not the profile's own home); in `Begin`, load
+  `LoadPrivateHome(HomeId)` when `HomeId` is set (own home or visit) and, for a visit, `Channel = await VenueWait.Run(rt.JoinHome(roomId, LifetimeToken), LifetimeToken)`
+  without `RequireRequestedVenue` (HomeState has `ownerId/homeId`, no `venueId`; compare `ownerId` instead).
+  Only `parents_basement` has playable content (`VenueContent.HasPlayableHome`), so other home types need art first.
+- App: a `WorldHomeVisitPresenter : CTLife.CityLife.IHomeVisitPresenter` that calls `EnterHomeVisit`, raises
+  `PresenceChanged` from `Channel.PlayerAdded/Removed`, `Closed` from `Channel.LostUnexpectedly`, `ShowsInterior => true`,
+  and on `Leave()` travels back like `ReturnFromHome`; register it at boot with
+  `Services.Register<CTLife.CityLife.IHomeVisitPresenter>(new WorldHomeVisitPresenter(...))` before the phone is built.
+
+**7. Forward the backend mismatches** in `docs/progress/city-life.md` ("Backend vs contract") to
+`docs/progress/backend-dev-feedback.md` (I did not edit that file), and the four proposals in
+`docs/fe-contract-proposals/city-life-*.md` + `ids/home-spots-city-life.md` to devIykee.
+
+Status: open
+
+## 2026-10-08 integration lead → all agents: do not run adb
+
+The adb server on this Mac was restarted three times between 00:20 and 00:55 by something other than the
+integration lead, which silently drops `adb reverse` and cuts the Seeker off from the local backend mid-test.
+Only the integration lead uses adb (AGENTS-BRIEF). If you need device data, ask in this file.
+A watchdog (`tools/integration/adb_reverse_watchdog.sh`) now re-applies the reverse mappings.
+
+Status: open
+
+## 2026-10-08 careers -> integration lead: wire the Jobs app (14 careers, 42 mini-games, gigs)
+
+All code is in `client/Assets/Scripts/Features/Careers/` (assembly `CTLife.Features.Careers`, C# namespace
+`CTLife.Careers`; references Core, Net, Generated, UI). Nothing in core was edited. `compile_check.py` already discovers
+the assembly and its tests (`Features/*/` and `Features/*/Tests/`): all three passes are green with them included.
+Log: `docs/progress/careers.md`. Contract proposal: `docs/fe-contract-proposals/careers-minigames-20261008.md`
++ `ids/mini_games.json`.
+
+**1. App asmdef reference.** `client/Assets/Scripts/App/CTLife.App.asmdef`, `references`: append `"CTLife.Features.Careers"`.
+
+**2. Phone catalog.** `client/Assets/Scripts/App/PhoneCatalog.cs`:
+```csharp
+using CTLife.Careers;                                          // add next to `using CTLife.Economy;`
+phone.Register(jobsOverride ?? new JobsApp());                 // -> phone.Register(jobsOverride ?? new CareersApp());
+```
+`CareersApp` keeps id `jobs`, so tiles and deep links are unchanged. It implements `IDisposable` (PhoneShell already disposes
+apps). I compiled a patched copy of `App/` with exactly these two changes against the current tree: OK, 0 errors.
+`CTLife.UI.JobsApp` becomes unused. Keep `CTLife.UI.MiniGameHost`: it stays the fallback for registry ids this build
+doesn't know.
+
+**3. Seeded entry points for the nine Phase 1 games (CTLife.UI, optional but needed for deterministic shifts).** Today they
+seed themselves from `Environment.TickCount`; their `PlayCore(..., seed, ...)` already exists but is private. Please add
+one public line to each (no behaviour change):
+```csharp
+// ModDesk.cs, EarningsDesk.cs, ThreadWorkshop.cs
+public static Task<int> PlaySeeded(MiniGameDef definition, int seed, bool practice, CancellationToken cancellation = default) => PlayCore(definition, cancellation, practice, seed);
+// RaidRouter.cs (RaidRouterResult), RoleLock.cs (RoleLockResult), ReceiptMatch.cs (ReceiptMatchResult),
+// RunwayPlan.cs (RunwayPlanResult), LiveCues.cs (LiveCuesResult), ClipCut.cs (ClipCutResult):
+public static Task<RaidRouterResult> PlaySeeded(int seed, CancellationToken cancellation = default) => PlayCore(cancellation, seed, true, false);
+```
+Once merged I'll switch `LegacyGames` (Careers/UI/MiniGameRunner.cs) to `PlaySeeded(MiniGameSeed.ForShift(...))`.
+
+**4. Forward to `docs/progress/backend-dev-feedback.md`** (I didn't edit it): section 6 of the proposal doc — apply
+returns `{id, level}`; skill gates never block (rc1 gate shape iterated as a map, `getUserSkill` returns 10);
+`GET /careers` level/xp fixed at 1/0, XP not persisted, `promoted` always false; `complete` accepts unassigned
+`miniGameId`s, which raise the pay ratio; `POST /shifts` doesn't require an applied job; gigs differ from contract
+`gigs.json` (ids, wrapped list, 201, pay set by client-supplied inputs, no cooldown). Also two contract questions:
+the meaning of `GET /careers` `active` and an `xpToNext` field (proposal section 4).
+
+**5. Your call, no code proposed:** world spots that start work (Discord Heights mod desk, Terminal Café analyst
+desk, Audit Row, Spaces Studio) could call `_phone.Open("jobs")`. Gigs show from `Phases.Live >= 4`; careers whose
+`phase` is above `Phases.Live` show "Opens in phase N". In dev builds every career's games can be practised (no server
+calls), so all 42 can be reviewed in the real flow. Release builds respect the phase gate.
+
+Status: open
+
+## 2026-10-08 audio-integration -> integration lead: wire the audio runtime (Core, Net, World, UI, Editor, Tools)
+
+Audio API v1 is in `client/Assets/Scripts/Audio/` (contract: `audio/RUNTIME_API.md`). Everything below is optional for
+compiling (the current tree compiles with it, `compile_audio.py --editor --release`: 0 errors, 0 audio warnings) but
+each item closes a QA gap. Exact diffs:
+
+**1. `client/Tools~/compile_check.py`** — three new audio assemblies (the shared check does not compile them yet):
+```python
+# after the CTLife.Audio unit in units():
+        Unit("CTLife.Audio.Cues", [ASSETS / S_ / "Audio/Cues"], refs=["CTLife.Core", "CTLife.Generated", "CTLife.Net", "CTLife.Audio"],
+             dlls=[newtonsoft], override=True),
+# in the `if editor:` block, next to CTLife.Editor:
+        u.append(Unit("CTLife.Audio.Editor", [ASSETS / S_ / "Audio/Editor"], refs=["CTLife.Audio"], editor=True))
+# in the nunit block:
+            u.append(Unit("CTLife.Audio.Tests", [ASSETS / S_ / "Audio/Tests"], refs=["CTLife.Audio"], dlls=[str(nunit[-1])],
+                          editor=True, override=True))
+```
+(`sources()` skips folders named `Tests`, so for the tests unit pass the folder's files explicitly, as
+`Audio/Tests~/compile_audio.py` does.)
+
+**2. World — footsteps by surface and speed** (`World/Players/LocalPlayerController.cs` ~l.453):
+```diff
+-            if (_footstepCadence.Advance(travelled.magnitude, Time.deltaTime, _seatedSpot == null && speed > 0.2f, _locomotion == "loco_run"))
+-                AudioManager.Instance?.PlayFootstep("concrete", pos);
++            if (_footstepCadence.AdvanceAtSpeed(travelled.magnitude, Time.deltaTime, _seatedSpot == null ? speed : 0f))
++                AudioManager.Instance?.PlayFootstep(null, pos);   // null = surface under the foot (tag/material/venue floor)
+```
+`World/Avatars/CafeSeatExitPresentation.cs` l.89: `audio.PlayFootstep("concrete", _position)` → `audio.PlayFootstep(null, _position)`.
+`World/Players/RemotePlayer.cs` `Init` after `_view = GetComponent<AvatarView>();` and `World/Npcs/NpcController.cs`
+after `_view.npcId = npcId;` add one line each: `CTLife.Audio.Footsteps.Attach(gameObject);` (NPC: `Attach(gameObject, 0.6f)`).
+Budgeted: ≤ 6 voices, silent beyond 12 m, every second step beyond 6 m.
+
+**3. World — one venue call** (`World/Venue/VenueSession.cs` l.168–173), so the footstep floor and club flag are set too:
+```diff
+-            if (AudioManager.Instance != null)
+-            {
+-                AudioManager.Instance.SetAmbience(venueId);
+-                var vdef = Services.Get<ConfigStore>().Registries.Venue(venueId);
+-                AudioManager.Instance.Music.SetMusic(venueId, Venue.districtId, vdef != null && vdef.isClub);
+-            }
++            var vdef = Services.Get<ConfigStore>().Registries.Venue(venueId);
++            CTLife.Audio.Music.SetVenue(venueId, Venue.districtId, vdef != null && vdef.isClub);
+```
+Venue scenes: add `CTLife.Audio.FootstepSurface` (field `surface`) to floor patches that differ from the venue default
+(`audio/sfx-map.json` `surfaces.venues`), or name their materials with the surface word (Wood/Carpet/Grate/Tile/Grass).
+
+**4. Core — voice ducking per source + voice volume** (`Core/Services/Signals.cs`). Three publishers share
+`VoiceActivitySignal` today (Net VoiceService, Net SpacesAudio, Social VideoRoom); a `false` from one clears the duck
+while another is still talking.
+```diff
+     public struct VoiceActivitySignal
+     {
+         public bool anyoneTalking;
++        /// <summary>"voice" (proximity, default when null), "spaces", "call". Audio ducks per source; deepest wins.</summary>
++        public string source;
+     }
++
++    /// <summary>Linear voice playback gain (Settings → Voice, after taper). LiveKit playback owners apply it to their AudioSources.</summary>
++    public struct VoiceVolumeSignal
++    {
++        public float gain;
++    }
+```
+Then (Net) `VoiceService.cs` l.41/49/72: `new VoiceActivitySignal { anyoneTalking = …, source = "voice" }`;
+`SpacesAudio.cs` l.268: `source = "spaces"`; both: keep the last `VoiceVolumeSignal.gain` (default
+`PlayerPrefs.GetFloat("ctlife.audio.voice", 1f)` squared) and set `source.volume` on every playback AudioSource they
+create (`VoiceService` fallback + `SpeakerResolver` result, `SpacesAudio.Subscribed`). Audio side (mine, applied as soon
+as the fields exist, or apply in the same commit): in `AudioManager.BindSignals`
+`SetVoiceDuck(string.IsNullOrEmpty(v.source) ? Ducker.VoiceKey : v.source, v.anyoneTalking)` and publish
+`new VoiceVolumeSignal { gain = BusGain(AudioBus.Voice) }` from `SetSetting` and `RestoreRuntime`.
+
+**5. UI — Settings** (`UI/Phone/Apps/CoreApps.cs` l.179–182 and `UI/Text/Strings.cs` l.196). Spec: master/music/sfx/voice.
+```diff
+             if (am != null)
+             {
++                page.Add(Slider(Strings.T("settings.master"), am.masterVolume, v => am.masterVolume = v));
+                 page.Add(Slider(Strings.T("settings.music"), am.musicVolume, v => am.musicVolume = v));
+                 page.Add(Slider(Strings.T("settings.sound"), am.sfxVolume, v => am.sfxVolume = v));
++                page.Add(Slider(Strings.T("settings.voice"), am.voiceVolume, v => am.voiceVolume = v));
++                page.Add(Slider(Strings.T("settings.ambience"), am.ambienceVolume, v => am.ambienceVolume = v));
+             }
+```
+```diff
+-            ["settings.music"] = "Music", ["settings.sound"] = "Sound effects", ["settings.signout"] = "Sign out",
++            ["settings.master"] = "Master volume", ["settings.music"] = "Music", ["settings.sound"] = "Sound effects",
++            ["settings.voice"] = "Voices", ["settings.ambience"] = "Ambience", ["settings.signout"] = "Sign out",
+```
+
+**6. UI — news cue and toggles.** `UI/Overlays/IncidentPresentation.cs` l.301 default receipt `Sfx = "sfx_ui_toast"` →
+`Sfx = "sfx_news_flash"` (CT-native "JUST IN" wire alert for news cards; liquidation/rug/coin/ORE cases keep theirs).
+Any on/off control: publish `sfx_ui_toggle_on` / `sfx_ui_toggle_off` by the new state (today only `_on` fires; e.g.
+`LotteryScreen.cs:106`, `CharacterCreatorScreen.cs:271`, Settings control-mode chips).
+
+**7. Editor — one audio import policy.** `Scripts/Editor/ContentImport.cs`: delete `CTLifeImportPostprocessor.OnPreprocessAudio`
+(l.306–318). `CTLife.Audio.Editor/AudioImportPostprocessor` (order 100) applies `ImportPolicy` (unit-tested): music
+Streaming q0.45; stems/beds Compressed-in-Memory q0.45; ambience Streaming q0.35; stingers CIM q0.6; footsteps
+DecompressOnLoad q0.5 32 kHz; babble DOL q0.5 24 kHz; other one-shots DOL q0.6; **no Force To Mono** (its downmix also
+peak-normalises, which undid per-file levels: equal-RMS babble, quiet UI ticks). After pulling: CT Life → Audio →
+Reimport Audio With Policy. In `SyncAll` replace the two audio lines with a note: audio ships through
+`python3 audio/tools/ship_audio.py --sync` (only map-referenced files; `SyncAll` would copy archive leftovers back).
+
+**8. Device check when you next build:** `ship_audio.py` estimates the audio payload at 21.5–22.6 MB (was 36.7 MB measured
+in `ctlife-local-dev.apk`). Please report the real `.resource` total; the tool reads any APK (`--apk`).
+
+Status: open
+
+## 2026-10-08 audio-integration -> phase2-client (Money): trading cues that still never fire
+
+Publish `SfxSignal`s (no audio reference needed). Cooldowns dedupe repeats (`audio/RUNTIME_API.md` §3).
+1. `UI/PulseApp.cs` l.563, take-profit instead of a plain sell when the fill realises profit:
+```diff
+-                Bus.Publish(new SfxSignal(side == "sell" ? "sfx_sell" : "sfx_buy"));
++                Bus.Publish(new SfxSignal(side != "sell" ? "sfx_buy"
++                    : receipt.RealizedCents.HasValue && receipt.RealizedCents.Value > 0 ? "sfx_take_profit" : "sfx_sell"));
+```
+   Same rule in `PerpPitApp.cs` l.324 when a close realises profit.
+2. PnL card: `PulseApp.cs` l.278 row button — when the card opens: `if (_openCard == pos.CoinId) Bus.Publish(new SfxSignal("sfx_pnl_card_flip"));`
+   after the toggle; also when `MoneyRektCard` / share cards appear.
+3. `Net/MarketFeed.cs` `OnCoin` (before `_room[c.CoinId] = c;`), new coins and graduations from the live market room:
+```csharp
+            _room.TryGetValue(c.CoinId, out var before);
+            if (_snapshotDone && before == null && c.Stage == "new") Bus.Publish(new SfxSignal("sfx_new_coin"));
+            if (before != null && before.Stage != "graduated" && c.Stage == "graduated" && IsHeldOrWatched(c.CoinId))
+                Bus.Publish(new SfxSignal("sfx_graduation"));
+```
+   (`_snapshotDone` = true after the initial `foreach (var kv in coins) OnCoin(...)` in `Bind`, so a join does not pop 40
+   coins; `IsHeldOrWatched` = in positions, or Pulse/Launchpad open on it — graduation is a stinger, not city-wide spam.)
+4. `UI/OreRefineryApp.cs` `FetchBoard` success: `if (_boardRow != null && b.RoundId != _boardRow.RoundId) Bus.Publish(new SfxSignal("sfx_ore_furnace_whoosh"));`
+   before `_boardRow = b;`.
+
+Status: open
+
+## 2026-10-08 audio-integration -> Social: Spaces/call cues and voice ducking
+
+1. Hand raised: when your own `RequestToSpeak` succeeds publish `sfx_vr_raise_hand`; for the host, when `Space.HandIds`
+   gains an id between two states. 2. Space started: when a followed account's Space goes live (or `SpaceUpdateMessage`
+   for a Space first seen as live) publish `sfx_space_started`. 3. `CallController.Decline` and missed/timeout paths: publish
+   `sfx_call_end` (stops the ring at once; otherwise it stops one 3 s cycle after your last ring signal). 4. `VideoRoom`
+   l.195/366/457: once Core has `VoiceActivitySignal.source` (request above) set `source = "call"`; until then the three
+   voice publishers share one duck key. Optional: hold a deeper music duck during calls with a reference to CTLife.Audio:
+   `Ducking.Hold("call", -12f)` / `Ducking.Release("call")`. 5. Apply Settings → Voice to LiveKit playback sources
+   (`VoiceVolumeSignal`, request above).
+
+Status: open
+
+## 2026-10-08 audio-integration -> CityLife: Sunday Unlock bell
+
+`UI/CityWeekApp.cs` `Tick` (and/or `Net/CityLifeHub.cs` where the unlock time is computed): when the countdown to
+`WeekClock.Next(_unlockAt, now)` crosses zero while the app runs, publish `Bus.Publish(new SfxSignal("sfx_sunday_unlock"))`
+once (keep the last fired unlock time). It is a stinger: it ducks the music 9 dB for ~4.4 s.
+
+Status: open
+
+## 2026-10-08 audio-integration -> WorldLife: positional moment sounds
+
+`WorldSfx.PlayAt` takes candidate ids from your moment data. Mapped ids that fit: `furnace_flash` → `sfx_ore_furnace_whoosh`;
+`carpet_yank` → `sfx_rug`; `siren` / `alarm` → `sfx_liquidation` (stinger: it also ducks the music); `sniper_swarm` →
+`sfx_new_coin`; Town Crier "JUST IN" lines → `sfx_news_flash`. NPC presenters: `Footsteps.Attach(view.gameObject, 0.6f)`
+gives budgeted footsteps. No `IWorldMomentAudio` implementation yet (looping positional sirens need a siren-loop asset;
+not in the spec list) — say if you want one.
+
+Status: open
+
+## 2026-10-08 phase3-client -> integration lead: wire the Phase 3 social apps (Spaces Studio, Calls, Messages, Timeline)
+
+All new code is in `client/Assets/Scripts/Features/Social/` (assembly `CTLife.Features.Social`, C# namespace
+`CTLife.SocialFeatures`; references Core, Net, Generated, World, UI, ColyseusSDK, LiveKit). Nothing outside that folder,
+`docs/progress/phase3-client.md` and this entry was edited. `compile_check.py` already discovers the assembly and its
+tests (player, `--editor`, `--release`: all CT Life assemblies compile, 0 warnings in Social). Log, endpoint coverage and
+backend mismatches: `docs/progress/phase3-client.md`. Five hooks, each the exact change I propose:
+
+**1. App asmdef reference.** `client/Assets/Scripts/App/CTLife.App.asmdef`, `references`: append `"CTLife.Features.Social"`.
+
+**2. Phone catalog.** `client/Assets/Scripts/App/PhoneCatalog.cs` (add `using CTLife.SocialFeatures;`), replace 4 lines
+(ids, tiles and grid order unchanged; no type-name clash with `CTLife.UI`):
+```csharp
+phone.Register(new ComingApp("timeline", "Timeline", 3, "#2d98da", Features.Feed));   // -> phone.Register(new TimelineApp());
+phone.Register(new ComingApp("messages", "Messages", 3, "#26de81", Features.Dms));    // -> phone.Register(new MessagesApp());
+phone.Register(new SpacesApp());                                                      // -> phone.Register(new SpacesStudioApp());
+phone.Register(new ComingApp("calls", "Calls", 3, "#0fb9b1", Features.Voice));        // -> phone.Register(new CallsApp());
+```
+`CTLife.UI.SpacesApp` becomes unused (`SpacesStudioApp` reuses its `SpacesAudio`/`SpacesApi` pieces from CTLife.Net and
+keeps the Space alive when the phone closes). The apps implement `IDisposable` (PhoneShell already disposes them).
+
+**3. Social overlay (incoming calls + "ongoing call / in a Space" chip).** `client/Assets/Scripts/App/FlowController.cs`
+`Start`, after the MoneyRektCard line:
+```csharp
+_overlays.Add(new CTLife.SocialFeatures.SocialOverlay(ui.ModalLayer, id => { if (_phone != null) _phone.Open(id); }));
+```
+It owns the session-wide social hub, so city `call_invite`, `dm` and `space_update` are handled while every social app is
+closed (they are already published on the Bus by `CityChannel`; no Net change needed). It binds/unbinds on
+`Session.Changed` by itself.
+
+**4. Profile card actions (Message, Follow, Video call, Paid call on devnet, Tip).** `client/Assets/Scripts/UI/Overlays/ProfileCard.cs`:
+```csharp
+// new member:
+/// <summary>Set by the composition root (Phase 3 social): extra actions under Block/Report. (userId, name, close) → row or null.</summary>
+public static Func<string, string, Action, VisualElement> PlayerActions;
+// in ShowPlayer, right after `sheet.Add(El.Div("ct-row", block, report));`:
+var extra = PlayerActions?.Invoke(userId, name, () => Close(sheet));
+if (extra != null) sheet.Add(extra);
+```
+and in `FlowController.BuildHudAndPhone` (after the phone is built):
+`ProfileCard.PlayerActions = (id, name, close) => CTLife.SocialFeatures.SocialProfileActions.Build(id, name, close, app => _phone?.Open(app));`
+(clear it in `EndGameplay`: `ProfileCard.PlayerActions = null;`). This is the same pattern as City Life's `ProfileCard.VisitHome`.
+
+**5. Blocks made on the profile card hide the user in the social apps.** The contract has no `GET /blocks`, so the
+social apps remember blocks they make; a block from the profile card is invisible to them. Proposed:
+`client/Assets/Scripts/Core/Services/Signals.cs`:
+```csharp
+/// <summary>A player was blocked (POST /blocks/{userId} succeeded).</summary>
+public struct UserBlockedSignal { public string userId; }
+```
+`ProfileCard.Block`, after `await Services.Get<Api>().Block(userId);`: `Bus.Publish(new UserBlockedSignal { userId = userId });`
+and, once that exists, one line in `Features/Social/Net/SocialHub.cs` constructor (I will add it, or you can):
+`_subs.On<UserBlockedSignal>(m => Guard(() => { Blocks.Set(m.userId, true); Messages.OnBlocked(m.userId); Changed?.Invoke(); }));`
+
+**Also (your call, no code proposed):**
+- **Phase gate.** The four apps are `Phase => 3`; `Phases.Live` must be ≥ 3 (mock/local EnvConfig default 6, staging 1).
+- **Core `MicPermission` can wait for its timeout**: it listens only to Granted/Denied (`Net/Voice/VoiceService.cs:384-387`),
+  so a dismissed dialog resolves only when the 20 s/45 s `SpacesRequest.Run` bound fires. Add
+  `cb.PermissionRequestDismissed += _ => tcs.TrySetResult(false);`. (The social apps request through their own
+  `MediaPermission` first, so they are not affected.) Note `PermissionDeniedAndDontAskAgain` is obsolete in 6000.3.25.
+- **Manifest.** CAMERA is added by Unity because `WebCamTexture` is used (Unity manual "Unity-handled permissions"); please
+  confirm with `aapt dump permissions` on the next APK.
+- **Proximity voice during a call/Space.** The social controllers disconnect `VoiceService` when a call or Space joins;
+  the HUD mic button can reconnect proximity voice meanwhile (two voice rooms). To prevent it, App could wrap the HUD's
+  voice action and skip it while `CTLife.SocialFeatures.SocialHub.Current?.Calls.Busy == true || ...Spaces.InSpace`.
+- **Forward the backend mismatches** in `docs/progress/phase3-client.md` ("Backend vs contract") to
+  `docs/progress/backend-dev-feedback.md`. Blocking: there is no `POST /rtc/token`, so no Space audio and no call media
+  for invitees against the backend checkout; the city room sends no `space_update`/`dm`/`call_invite`; paid calls have a
+  different API and no transaction to sign.
+
+Status: open
