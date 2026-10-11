@@ -17,6 +17,10 @@ namespace CTLife.UI
             => PlayCore(definition, cancellation, true, seed);
 #endif
 
+        /// <summary>Deterministic entry point for the Careers lane (same seed → same round).</summary>
+
+        public static Task<int> PlaySeeded(MiniGameDef definition, int seed, bool practice, CancellationToken cancellation = default) => PlayCore(definition, cancellation, practice, seed);
+
         private static Task<int> PlayCore(MiniGameDef definition, CancellationToken cancellation, bool practice, int seed)
         {
             cancellation.ThrowIfCancellationRequested();

@@ -14,9 +14,10 @@ using UnityEngine;
 namespace CTLife.App
 {
     /// <summary>
-    /// splash → sign-in → character creator → birth lottery → lobby → city. Each onboarding step is skipped when the
-    /// server says it's already done (`hasCharacter`, `flags.lotteryRolled`). Automated runs: launch extras
-    /// `autologin=dev` (and optional `wallet`, `seeker=1`, `venue=perp_pit`).
+    /// splash → sign-in → birth lottery → character creator → lobby → city. Each onboarding step is skipped when the
+    /// server's /me shows it is done (see <see cref="Onboarding"/>). Any start-up failure to reach the backend shows
+    /// <see cref="ConnectionRetryScreen"/> and resumes from the failed step. Development automation (never in prod):
+    /// launch extras `autologin=dev` (optional `wallet`, `seeker=1`), `autocreate=1`, `venue=terminal_cafe`.
     /// </summary>
     public sealed class FlowController : MonoBehaviour
     {
@@ -37,6 +38,9 @@ namespace CTLife.App
         private Action<KickedMessage> _kickHandler;
         private UiScreen _flowScreen, _updateScreen;
         private bool Alive => _owner != null && _owner.IsAlive;
+#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
+        private bool _freshApplied;
+#endif
 
         private void Awake()
         {
@@ -53,9 +57,12 @@ namespace CTLife.App
                 var ui = UiRoot.Instance;
                 _overlays.Add(new ToastLayer(ui.ToastLayer));
                 _overlays.Add(new WorldLabels(ui.LabelLayer));
-                _overlays.Add(new RektCard(ui.ModalLayer));
+                _overlays.Add(new CTLife.Economy.MoneyRektCard(ui.ModalLayer, id => { if (_phone != null) _phone.Open(id); }));
+                _overlays.Add(new CTLife.SocialFeatures.SocialOverlay(ui.ModalLayer, id => { if (_phone != null) _phone.Open(id); }));
                 _overlays.Add(new ProfileCard(ui.ModalLayer));
+                _overlays.Add(new CTLife.CityLife.CityLifeOverlays(ui.ModalLayer));
                 _overlays.Add(new BusyOverlay(ui.ToastLayer));
+                _overlays.Add(new CTLife.WorldLife.WorldLifeHub());
                 RunAction(ConfigRefreshLoop);
                 _subscriptions.On<UpdateRequiredSignal>(signal =>
                 {
@@ -102,6 +109,26 @@ namespace CTLife.App
 
         private async Task Run()
         {
+            while (true)
+            {
+                try
+                {
+                    await _owner.Wait(StartSession());
+                    return;
+                }
+                catch (OperationCanceledException) when (!Alive) { throw; }
+                catch (Exception e)
+                {
+                    if (_updateRequired) return;
+                    Log.Warn("flow", "Start-up failed, offering retry: " + e.Message);
+                    await _owner.Wait(WaitForRetry(e));
+                }
+            }
+        }
+
+        /// <summary>One attempt at config → resume or sign-in → profile/onboarding → rooms. Throws on any failure.</summary>
+        private async Task StartSession()
+        {
             var splash = new SplashScreen();
             ShowFlow(splash);
             try
@@ -115,13 +142,37 @@ namespace CTLife.App
                 }
                 _owner.ThrowIfClosed();
                 if (_updateRequired) return;
-                splash.SetStatus("Signing in…");
-                bool signedIn = await _owner.Wait(Services.Get<IAuthService>().TryResume(_owner.Token));
+                var session = Services.Get<Session>();
+#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
+                // Development automation: `fresh=1` ignores a stored session so onboarding runs for a new account.
+                if (LaunchArgs.Flag("fresh") && !_freshApplied) { _freshApplied = true; session.Clear(); }
+#endif
+                if (!session.IsSignedIn)
+                {
+                    splash.SetStatus("Signing in…");
+                    bool resumed = await _owner.Wait(Services.Get<IAuthService>().TryResume(_owner.Token));
+                    CloseFlow(splash);
+                    if (!resumed) await _owner.Wait(SignIn());
+                }
                 CloseFlow(splash);
-                if (!signedIn) await _owner.Wait(SignIn());
                 await _owner.Wait(EnterGame());
             }
             finally { CloseFlow(splash); }
+        }
+
+        private Task WaitForRetry(Exception error)
+        {
+            var tcs = new TaskCompletionSource<bool>();
+            string detail = error is ApiException api ? (api.IsNetwork ? Strings.T("common.offline") : api.Code) : error.GetType().Name;
+            ConnectionRetryScreen screen = null;
+            screen = new ConnectionRetryScreen(detail, () =>
+            {
+                if (!Owns(screen)) return;
+                CloseFlow(screen);
+                tcs.TrySetResult(true);
+            });
+            ShowFlow(screen);
+            return _owner.Wait(tcs.Task);
         }
 
         private Task SignIn()
@@ -204,14 +255,13 @@ namespace CTLife.App
         /// <summary>A stable per-install fake wallet for explicit development automation.</summary>
         private static string DevWallet()
         {
+            // A random 32-byte value in base58: the backend validates `wallet` as a Solana public key.
             const string key = "ctlife.devwallet";
             var w = PlayerPrefs.GetString(key, "");
-            if (!string.IsNullOrEmpty(w)) return w;
-            const string alphabet = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
-            var rng = new System.Random();
-            var chars = new char[44];
-            for (int i = 0; i < chars.Length; i++) chars[i] = alphabet[rng.Next(alphabet.Length)];
-            w = new string(chars);
+            if (Base58.IsPublicKeyLength(w)) return w;
+            var bytes = new byte[32];
+            new System.Random().NextBytes(bytes);
+            w = Base58.Encode(bytes);
             PlayerPrefs.SetString(key, w);
             PlayerPrefs.Save();
             return w;
@@ -241,6 +291,8 @@ namespace CTLife.App
             if (screen != null) CloseFlow(screen);
             if (ReferenceEquals(_travelGameplay, game)) { _travelGameplay = null; _travelling = false; }
             UnbindKick();
+            ProfileCard.PlayerActions = null;
+            ProfileCard.VisitHome = null;
         }
 
         private void RunGameAction(FlowLifetime game, Func<Task> action)
@@ -256,8 +308,9 @@ namespace CTLife.App
                 var profile = Services.Get<PlayerProfile>();
                 var session = Services.Get<Session>();
                 await game.Wait(profile.Refresh(game.Token));
-                if (!profile.HasCharacter) await game.Wait(CreateCharacter(game));
-                if (!profile.LotteryRolled) await game.Wait(Lottery(game, session.IsSeeker));
+                // The roll comes first: the server treats an existing character as "already rolled".
+                if (Onboarding.NeedsLottery(profile.Me)) await game.Wait(Lottery(game, session.IsSeeker));
+                if (Onboarding.NeedsCharacter(profile.Me)) await game.Wait(CreateCharacter(game));
 
                 var rt = Services.Get<IRealtimeService>();
                 try
@@ -266,16 +319,35 @@ namespace CTLife.App
                     BindKick(game, rt.City);
                 }
                 catch (OperationCanceledException) when (!GameAlive(game)) { throw; }
-                catch (Exception e) { Log.Warn("flow", "City room unavailable: " + e.Message); }
+                catch (Exception e) { Log.Warn("flow", "City room unavailable (will retry): " + e.Message); }
                 try { await game.Wait(rt.ConnectMarket(game.Token)); }
                 catch (OperationCanceledException) when (!GameAlive(game)) { throw; }
-                catch (Exception e) { Log.Warn("flow", "Market room unavailable: " + e.Message); }
+                catch (Exception e) { Log.Warn("flow", "Market room unavailable (will retry): " + e.Message); }
+                // Rejoins city/market after a failed first join or a drop the SDK could not recover.
+                rt.KeepPersistentRoomsAlive(game.Token);
+                if (rt is RealtimeService service)
+                {
+                    service.PersistentRoomRejoined -= OnPersistentRoomRejoined;
+                    service.PersistentRoomRejoined += OnPersistentRoomRejoined;
+                }
 
                 game.ThrowIfClosed();
                 BuildHudAndPhone(game);
                 ShowLobby();
+#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
+                if (LaunchArgs.Flag("autoenter")) RunGameAction(game, () => EnterCityFromLobby(game));
+#endif
             }
             catch (OperationCanceledException) when (!GameAlive(game)) { }
+        }
+
+        private void OnPersistentRoomRejoined(string room)
+        {
+            var game = _gameplay;
+            if (!GameAlive(game)) return;
+            var rt = Services.Get<IRealtimeService>();
+            if (room == "city" && rt.City != null) BindKick(game, rt.City);
+            Log.Info("flow", "Rejoined " + room);
         }
 
         private Task CreateCharacter(FlowLifetime game)
@@ -305,9 +377,16 @@ namespace CTLife.App
                     if (Owns(game, screen)) screen.SetBusy(false);
                 }
                 finally { pending = false; }
-            }, serverLookConfirmed: config.IsLookConfirmed);
+            }, serverLookConfirmed: look => CreatorLookPolicy.CanSubmit(look, isAuthoredLook: true, config.IsLookConfirmed));
             ShowFlow(screen);
             _gameplayScreen = screen;
+#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
+            if (LaunchArgs.Flag("autocreate"))
+            {
+                var alias = LaunchArgs.Get("alias", "dev" + UnityEngine.Random.Range(10000, 99999));
+                if (!screen.AutoSubmitForAutomation(alias)) Log.Warn("flow", "autocreate could not submit the creator");
+            }
+#endif
             return game.Wait(tcs.Task);
         }
 
@@ -316,19 +395,39 @@ namespace CTLife.App
             var tcs = new TaskCompletionSource<bool>();
             LotteryScreen screen = null;
             var api = Services.Get<Api>();
-            screen = new LotteryScreen(isSeeker, () =>
+            var profile = Services.Get<PlayerProfile>();
+            screen = new LotteryScreen(isSeeker, async () =>
             {
                 game.ThrowIfClosed();
-                return api.RollLottery(); // A started roll keeps its original economic lifetime.
+                try
+                {
+                    return await api.RollLottery(); // A started roll keeps its original economic lifetime.
+                }
+                catch (Exception e) when (!(e is OperationCanceledException))
+                {
+                    // A lost response, a retry after a committed roll, or 409: reconcile with the server's /me.
+                    Rest.Model.Me refreshed = null;
+                    try { refreshed = await profile.Refresh(game.Token); }
+                    catch (Exception refresh) when (!(refresh is OperationCanceledException)) { Log.Warn("lottery", "Profile refresh failed: " + refresh.Message); }
+                    if (Onboarding.RollFailureMeansDone(e, refreshed))
+                    {
+                        Log.Info("lottery", "Roll already recorded server-side (" + (e is ApiException a ? a.Code : e.GetType().Name) + "); continuing");
+                        return null;
+                    }
+                    throw;
+                }
             }, r =>
             {
                 if (!Owns(game, screen)) return;
-                Services.Get<PlayerProfile>().ApplyLottery(r);
+                if (r != null) profile.ApplyLottery(r);
                 CloseFlow(screen);
                 tcs.TrySetResult(true);
             });
             ShowFlow(screen);
             _gameplayScreen = screen;
+#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
+            if (LaunchArgs.Flag("autocreate")) screen.AutoRollForAutomation();
+#endif
             return game.Wait(tcs.Task);
         }
 
@@ -339,10 +438,13 @@ namespace CTLife.App
             _phone?.Dispose();
             _phone = new PhoneShell(ui.PhoneLayer);
             PhoneCatalog.Register(_phone, id => RunGameAction(game, () => Travel(game, id)), () => RunGameAction(game, SignOut),
-                homeOverride: new HomeApp(() => RunGameAction(game, () => EnterOwnHome(game)),
+                homeOverride: new CTLife.CityLife.CityHomeApp(() => RunGameAction(game, () => EnterOwnHome(game)),
                     () => RunGameAction(game, () => ReturnFromHome(game)),
                     () => GameAlive(game) && !_travelling && VenueSession.CanEnterOwnHome(),
                     () => GameAlive(game) && VenueSession.Current != null && VenueSession.Current.IsOwnHome));
+
+            ProfileCard.VisitHome = (id, name) => { CTLife.CityLife.CityLifeLinks.VisitHome(id, name); _phone?.Open("home"); };
+            ProfileCard.PlayerActions = (id, name, close) => CTLife.SocialFeatures.SocialProfileActions.Build(id, name, close, app => _phone?.Open(app));
 
             _hud?.Element.RemoveFromHierarchy();
             _hud?.Dispose();

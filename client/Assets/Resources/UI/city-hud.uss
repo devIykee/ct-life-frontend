@@ -56,3 +56,11 @@
 .ct-landscape .ct-hud .ct-move-controls { left: 40px; bottom: 16px; }
 .ct-landscape .ct-hud .ct-chat, .ct-landscape .ct-hud .ct-emotes { left: auto; right: 40px; width: 850px; bottom: 234px; max-height: 590px; }
 .ct-landscape .ct-phone { width: 980px; left: auto; right: 24px; top: 12px; bottom: 12px; }
+
+/* Device QA 2026-10-07: functional fixes only. */
+/* Chat: while the soft keyboard is up, dock the panel at the top so the input and history stay visible. */
+.ct-hud .ct-chat.ct-chat-keyboard, .ct-landscape .ct-hud .ct-chat.ct-chat-keyboard { top: 16px; bottom: auto; }
+.ct-hud .ct-chat-history { margin-bottom: 8px; }
+.ct-hud .ct-chat-line { white-space: normal; }
+/* Emotes: readable buttons (the picker wrapped one letter per line at ~20 dp). */
+.ct-hud .ct-emotes .ct-chips > .ct-chip { min-width: 30%; flex-basis: 30%; flex-grow: 1; min-height: 96px; align-items: center; white-space: normal; }

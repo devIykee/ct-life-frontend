@@ -316,3 +316,112 @@ Helper scripts: frontend `tools/backend-local/{up,down}.sh`. Every item below re
     the whole room with a `to` field; `rejected` codes `SPEED_EXCEEDED`, `OUT_OF_BOUNDS`, `SPOT_NOT_FOUND`,
     `NPC_NOT_FOUND`, `UNKNOWN_EMOTE` are not in the `RejectedMessage` enum (see item 11). The city room is a stub
     (no `event`, `toast`, `payment_confirmed`, `liquidated` sends).
+
+**Found while running the real Unity client (editor, 2026-10-07)**
+
+45. **Auth responses are flat, refresh has no user.** Contract `AuthVerifyResponse` is `{accessToken, refreshToken,
+    user:{id, wallet, isSeeker, hasCharacter}}`. `/auth/verify` and `/auth/dev` return the user fields at the top level;
+    `/auth/refresh` returns only the two tokens. A contract client gets `user = null` (no user id). FE now reads both
+    shapes and falls back to the JWT `sub`/`wal`/`skr` claims.
+46. **`signedMessage` encoding.** contract.md §3: "Both byte fields are base64". `verifySignature` does
+    `Buffer.from(signedMessage, 'utf8')`, so a base64 message never verifies (`SIGNATURE_INVALID`). FE retries once
+    with the decoded UTF-8 SIWS text (same nonce; it is only consumed on success). **Ask:** base64-decode it.
+47. **Live room schemas are not the contract's.** Rooms serve `server/realtime/schemas.ts`, not
+    `contract/realtime/states.ts`: PlayerState has no `look` and a different field order; NpcState has `npcId`,
+    `archetype` (contract `archetypeId`) and no `lineParams`; numbers are `number` (contract `float32`/`int32`);
+    MarketState is `{ts, placeholder}` with no `coins`. A codegen'd C# client binds a type only if every name, index
+    and type matches, so typed decoding silently fails. FE now decodes by name (`DynamicSchema`). **Ask:** have the
+    rooms `import { … } from 'contract/realtime/states'`.
+48. **`GET /me` `user` lacks `hasCharacter`** (required by the contract `User`). The generated client model throws,
+    so a contract client can never load the profile. Repro: `curl /v1/me` → `user` has `id, wallet, isSeeker, skrName,
+    isSybilJailed, sybilJailedAt`. FE derives it from `character`.
+49. **`POST /careers/{id}/apply` returns `{id, level}`**; contract `Job` is `{careerId, level, xp}`.
+50. **A POST without a JSON body is a 500.** Unity's bodiless POST carries a form content type; Fastify throws
+    "Unsupported Media Type", which the error envelope maps to `500 INTERNAL_ERROR` (should be 415/400). Repro:
+    `curl -X POST /v1/lottery/roll -H 'authorization: …' -H 'content-type: application/x-www-form-urlencoded'`.
+    FE now always sends `{}`.
+51. **`minClientVersion` is `1.0.0`** in `GET /config` while there is no released client; FE moved to 1.0.0 to pass
+    the gate. Please confirm the versioning you intend (FE sends `X-Client-Version`).
+
+### Phase 2 (money) — from the phase2-client lane, each re-verified against main @ 9f3e5ef on 2026-10-07
+
+52. **Top-up intent shape.** `POST /payments/intents {"kind":"topup","sku":"ramen","currency":"USDC"}` →
+    `{intentId, recipient, mint, amount:"0.000500", reference, memo, solanaPayUrl, expiresAt}`: no `tx` (required),
+    no `currency`, `cashCents`, `bonusBps`; `amount` is a decimal string derived from the pack's Cash, not base units
+    of the paid token (the ramen pack costs 0.0005 USDC). MWA `sign_and_send` needs `tx`.
+53. **No `GET /payments/intents/{id}`** (404 "No route"); the client cannot poll a pending top-up.
+54. **City room never sends `payment_confirmed` or `liquidated`; market room has no `coins` and never sends `tape`**
+    (`rooms/city.ts`, `rooms/market.ts`). Clients fall back to polling.
+55. **ORE stake.** `POST /ore/stake/tx {"action":"deposit","amount":"1000000000"}` → `500 INTERNAL_ERROR` on the local
+    stack; per source it returns `{txBase64}` (contract `{tx}`) built from a legacy message without fee payer or
+    blockhash, so MWA could not sign it anyway. `GET /ore/board` is a fixture (`roundId:"dev-fixture"`, 5 numeric
+    squares, `priceUsd:0`); `GET /ore/me` all zeros.
+56. **Predictions API differs.** `GET /predictions` → `{"predictions":[]}` (contract: `PredictionMarket[]`, open
+    markets); bets are `POST /predictions {outcomeId, stakeCents, horizon}` instead of `POST /predictions/{id}/bets`
+    (404). There is no market list, so the Pit is empty.
+57. **Alpha calls want strings.** `POST /alpha-calls` with integer `entryMicros/targetMicros/stopMicros` (contract) →
+    `VALIDATION_FAILED expected string`.
+58. **Top-up cap unit.** `economy.json topUpCapCentsPerDay = 1000000` is compared with credited Cash cents
+    (`topup.ts:138`), i.e. $10,000 Cash/day, so the Cabal pack (1,600,000 Cash cents) can never be bought; the spec
+    says "100 USDC per wallet per day" (a paid-value cap).
+    Other shape differences the client tolerates (no action needed unless you want the contract exact): bigint fields
+    as strings, `{coins|positions|perps|tombstones|trades}` wrappers instead of arrays, candles `{at, priceMicros}`,
+    trade receipt without `feeCents`, `POST /perps` 201 with leverage up to 25 and `FORBIDDEN insufficient_margin`.
+
+**Found on the Seeker (2026-10-08, local stack over adb reverse)**
+
+59. **SIWS nonce is not wallet-valid.** `GET /auth/challenge` issues a hyphenated UUID nonce. The Seeker's Seed Vault
+    wallet rejects it inside `authorize`: `IllegalArgumentException: nonce must be at least 8 alphanumeric characters`
+    (wallet logcat, 2026-10-08 00:14) and never answers, so SIWS cannot complete. `uri: "ct-life"` is also not an
+    RFC 3986 URI. **Ask:** alphanumeric nonce (e.g. UUID without hyphens) and real `domain`/`uri` (item 43). FE now
+    strips the hyphens for the wallet and sends the server's own nonce to `/auth/verify` (works only because the
+    server does not compare the signed message with the nonce, item 43).
+60. **Move velocity check is jitter-sensitive.** `handleMove` divides the distance by the gap between *arrival* times
+    of accepted moves; two moves that arrive close together after normal running (≈4 m/s, client sends ≤10/s)
+    trip `SPEED_EXCEEDED` (seen on the Seeker at 00:50:29). **Ask:** compare with the client's send interval or allow
+    a burst budget.
+
+### World life (from the world-life lane; items re-checked live 2026-10-08 against main @ 9f3e5ef)
+
+61. **NpcState semantics.** `tickNpcs` rewrites `startedAt = now` every second (sampled 75124 → 76121 → 77122 ms),
+    and later ticks of a state send `animId: loco_idle` (Giveaway Guy in `goto`) and `lineId: ''` (Town Crier,
+    Spaces Host one tick after the line). Clients restart walks/one-shots every second and lose the line.
+62. **Brain ids don't resolve.** Spot ids sent: `square_center`, `venue_exit`, and venue ids as spots (`spaces_studio`),
+    plus per source `perp_terminal`, `cafe_terminal`, `builder_hq_1/2` and `"x0,z0"` rect strings — none are in
+    `spots.json`. Line ids (`crier_air_thin`, `spaces_gm`, `giveaway_pitch`, …) are not ids in `npc_lines.json`
+    (its lines are unnamed arrays); `lineParams` is never set; `emote_moon` is not in `anims.json`.
+63. **Brains never see the world.** `VenueCtx.moodBps = 0`, `recentEvents = []`, `richestPlayers` sorts by
+    `netWorthCents: 0` → Town Crier never reacts, Doomposter is always `leave`, Reply Guy follows the first joiner.
+64. **City room**: never broadcasts `event`; `mood` is a synthetic sine (sampled −171, −169, −167 bps).
+65. **Giveaway Guy** `npc_tap` broadcasts `toast {to, textId:"toast_drained"}` to the whole room and debits nothing.
+66. **`GET /ads/live`** (per source) returns `{ads:[{slotId, bookingId, link, imageKey, mimeType}]}`: an S3 key, no
+    `imageUrl`/`sponsored`; contract is a slot map with `imageUrl`. (Live list was empty, so unverified by request.)
+    `GET /feed` returns `{posts:[…]}` (contract `FeedPost[]`).
+67. **Registry gaps.** `archetypes.json` lists `spaces_host` twice, `normie.venueId = market_room` (not a venue),
+    no `laser_eyes_maxi`/`chain_tribalist`; NPCs spawn in only 5 venues; `vc_npc`/`builder_npc` brains are not
+    archetype ids; Perp Degen's Rekt Clinic "respawn" is a spot id inside the Perp Pit room.
+    FE proposals: `docs/fe-contract-proposals/npc-world-life-20261008.md`.
+
+### Phase 3 social (from the phase3-client lane; key items re-checked live 2026-10-08 against main @ 9f3e5ef)
+
+68. **Security: `POST /video-calls` hands the caller every participant's LiveKit token.** Repro: two dev users;
+    A posts `{"userIds":["<B id>"]}` → `{call, tokens:[{userId:A, token}, {userId:B, token}]}` (verified: 2 tokens).
+    A can join the call as B. Contract: `{callId}`; each participant should fetch only its own token
+    (`POST /rtc/token {kind:"call"}`, which does not exist — item 40). Room is `video:{callId}` (contract `call:{callId}`).
+69. **No `POST /rtc/token`** (item 40) also blocks Space audio and call media for invitees; the city room sends no
+    `space_update`, `dm` or `call_invite` (item 54), so calls never ring and DMs/Spaces only poll.
+70. **Paid calls are a different API.** `POST /paid-calls {payeeUserId, pricePerMinuteCents, maxMinutes}` (fan sets the
+    price) instead of `{creatorId, minutes}`; returns `{call, livekit}` with no `tx`/`sessionPda`, so nothing to sign;
+    status never `ringing`; amounts are cent numbers (contract base-unit strings); fee 5% (`PLATFORM_FEE_BPS = 500`;
+    spec/IDL 10%); `/end` needs a client-reported `{secondsUsed}`; no accept-window refund job;
+    `onchain_session_id` never written; `submitOnChainSettle` does `new PublicKey(<user uuid>)`. (source review)
+71. **No `PUT /creator`** (there is `POST`/`PATCH /creator {handle, bio, categories}`; no rate or max minutes).
+72. **`GET /dms` requires `peerUserId`** → `VALIDATION_FAILED {"reason":"peerUserId required"}` (verified); no
+    thread list. `POST /dms` ignores the receiver's block (contract 403 `BLOCKED`); `GET /feed` does not hide
+    blocked authors.
+73. **Tips.** `POST /tips {toUserId, cashCents}` → `VALIDATION_FAILED expected amountCents` (verified); no new balance in
+    the response, insufficient Cash is `VALIDATION_FAILED` (contract 402 `INSUFFICIENT_CASH`), no daily cap.
+    `POST /tips/onchain` requires `amountLamports` and credits in-game Cash (spec: wallet-to-wallet).
+74. **Spaces shape.** `GET /spaces` → `{spaces:[…]}` (verified) with ids `space:{uuidv7}` (contract `format: uuid`),
+    `speakerUserIds`/`handUserIds`; promotion at `POST /spaces/{id}/speakers/{userId}`; stage cap 8 incl. host
+    (spec host + 10); several creates answer 201.

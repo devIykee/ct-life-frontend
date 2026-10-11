@@ -87,6 +87,8 @@ namespace CTLife.World
             RefreshGrounding(true);
             _lastSentPos = transform.position;
             _lastSentRot = transform.eulerAngles.y;
+            // Publish the spawn position once: until the first `move` the server shows this player at its default.
+            _dirty = channel != null;
             ResetFootsteps();
             BindListener();
         }

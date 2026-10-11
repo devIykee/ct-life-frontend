@@ -42,7 +42,8 @@ namespace CTLife.UI
         private StyleEnum<DisplayStyle> _previousHudDisplay;
 
         public bool IsOpen => _frame.parent != null;
-        public int CurrentPhase { get; set; } = 1;
+        /// <summary>Config-driven (GET /config livePhase → EnvConfig.livePhase). Not a constant.</summary>
+        public int CurrentPhase => Phases.Live;
 
         private readonly Subscriptions _subs = new Subscriptions();
 

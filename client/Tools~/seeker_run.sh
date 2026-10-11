@@ -2,7 +2,7 @@
 # Install + launch the client on the Seeker and capture perf evidence.
 #   client/Tools~/seeker_run.sh <label> <seconds> [extra am-start args...]
 # e.g. client/Tools~/seeker_run.sh spike 150 -e spike 1 -e livekitUrl ws://localhost:7880 -e livekitToken "$(python3 client/Tools~/livekit_dev_token.py)"
-# Output: docs/progress/screens/<label>-<time>.{png,logcat.txt,gfxinfo.txt}
+# Output: ../ct-life-evidence/device/<label>-<time>.{png,logcat.txt,gfxinfo.txt} (evidence stays out of the repo)
 set -uo pipefail
 REPO="$(cd "$(dirname "$0")/../.." && pwd)"
 SERIAL="${SEEKER_SERIAL:-SM02G40619141343}"
@@ -10,7 +10,7 @@ ADB=("$HOME/Library/Android/sdk/platform-tools/adb" -s "$SERIAL")
 PKG=com.ctlife.app
 ACT=com.unity3d.player.UnityPlayerGameActivity
 LABEL="$1"; SECS="$2"; shift 2
-OUT="$REPO/docs/progress/screens"; mkdir -p "$OUT"
+OUT="$REPO/../ct-life-evidence/device"; mkdir -p "$OUT"
 STAMP="$(date +%Y%m%d-%H%M%S)"; BASE="$OUT/$LABEL-$STAMP"
 APK="$REPO/client/Builds/ctlife-dev.apk"
 [ -f "$APK" ] && "${ADB[@]}" install -r -g "$APK" | tail -1

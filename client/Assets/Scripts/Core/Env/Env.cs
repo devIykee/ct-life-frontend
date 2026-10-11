@@ -33,6 +33,16 @@ namespace CTLife.Core
 
             var cfg = selection != null ? selection.Find(id) : null;
             if (cfg == null) cfg = EnvConfig.CreateDefault(id);
+#if !CTLIFE_PROD
+            // Development only: a pre-minted LiveKit token (local `livekit-server --dev` keys) for voice tests while
+            // the backend has no POST /rtc/token. Copy the asset so the editor never saves the override.
+            if (LaunchArgs.TryGet("livekitToken", out var lkToken))
+            {
+                cfg = UnityEngine.Object.Instantiate(cfg);
+                cfg.liveKitDevToken = lkToken;
+                if (LaunchArgs.TryGet("livekitUrl", out var lkUrl)) cfg.liveKitUrlOverride = lkUrl;
+            }
+#endif
             Log.Info("env", $"Environment {cfg.id}: rest={cfg.restBaseUrl} realtime={cfg.realtimeUrl} cluster={cfg.cluster}");
             return cfg;
         }

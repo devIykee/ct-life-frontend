@@ -1,3 +1,7 @@
+CHECKPOINT PUSHED: 7fb99fb on origin/dev (2026-10-07, by the coordinator). LFS is not used: the
+account's Git LFS budget is $0 with stop-usage, so the unpushed history was exported to plain git
+and rebased onto 95cd4b9 (dev descends from main). Binaries are regular blobs (largest 36.5 MB).
+
 CHECKPOINT NOT PUSHED: committed locally on `dev` (last content commit ab203aa). GitHub rejected
 the push: "This repository exceeded its LFS budget." Waiting on the user to raise the GitHub LFS
 budget; see "Push" below. Do not force-push or rewrite history.

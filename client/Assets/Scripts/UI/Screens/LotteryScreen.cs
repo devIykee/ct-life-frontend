@@ -11,6 +11,7 @@ namespace CTLife.UI
     /// <summary>
     /// The birth lottery (feature #3), forced once per account: Insider Baby, Exit Liquidity Baby, or (Seeker
     /// Genesis Token holders) Seeker Baby. The server rolls (`POST /v1/lottery/roll`); the client only animates.
+    /// The roll delegate returns null when the server shows the roll already happened (409 or reconciled /me).
     /// </summary>
     public sealed class LotteryScreen : UiScreen
     {
@@ -82,6 +83,12 @@ namespace CTLife.UI
             await spin;
             _rolling = false;
             if (Element?.parent == null) return;
+            if (_result == null)
+            {
+                // The roll had already happened (reconciled from /me). Nothing to reveal; continue onboarding.
+                _onDone?.Invoke(null);
+                return;
+            }
             Reveal(_result);
             _btn.text = Strings.T("lottery.enter");
             _btn.SetEnabled(true);
@@ -119,6 +126,22 @@ namespace CTLife.UI
                 (r.DebtCents > 0 ? "\n" + Strings.F("lottery.debt", Money.Cash(r.DebtCents)) : "");
             Bus.Publish(new SfxSignal(id == "exit_liquidity" ? "sfx_rug" : "sfx_moon_horn"));
         }
+
+#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
+        /// <summary>Development automation (`autocreate=1`): rolls, then continues after the reveal.</summary>
+        public async void AutoRollForAutomation()
+        {
+            try
+            {
+                await Awaitable.WaitForSecondsAsync(0.5f);
+                OnRoll();
+                while (_rolling) await Awaitable.WaitForSecondsAsync(0.25f);
+                await Awaitable.WaitForSecondsAsync(1f);
+                if (_result != null && Element?.parent != null) OnRoll();
+            }
+            catch (Exception e) { Log.Warn("lottery", "Automation roll failed: " + e.Message); }
+        }
+#endif
 
         public override void Close()
         {

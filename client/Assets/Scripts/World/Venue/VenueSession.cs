@@ -64,11 +64,9 @@ namespace CTLife.World
             if (!Services.TryGet<Session>(out var session) || !session.IsSignedIn || string.IsNullOrEmpty(session.UserId) ||
                 !Services.TryGet<PlayerProfile>(out var profile) || profile.UserId != session.UserId || profile.Me == null)
                 return false;
-            var catalog = Resources.Load<VenueContentRegistry>("World/VenueContentRegistry");
-            var prefab = catalog != null ? catalog.FindHome(profile.Me.HomeId) : null;
-            var maps = prefab != null ? prefab.GetComponent<VenueLightmaps>() : null;
-            return prefab != null && prefab.navigation != null && maps != null && maps.colors != null && maps.colors.Length > 0 &&
-                maps.bindings != null && maps.bindings.Length > 0;
+            // Index lookup only: navigation and lightmaps were verified when the catalog was synced, so this
+            // availability check (polled by the Home app) no longer loads any venue art.
+            return VenueContent.HasPlayableHome(profile.Me.HomeId);
         }
 
         public static Task<VenueSession> EnterOwnHome(CancellationToken owner = default)
@@ -182,6 +180,7 @@ namespace CTLife.World
                 var rt = Services.Get<IRealtimeService>();
                 Channel = await VenueWait.Run(rt.JoinVenue(venueId, LifetimeToken), LifetimeToken);
                 LifetimeToken.ThrowIfCancellationRequested();
+                await RequireRequestedVenue(Channel, venueId);
                 Channel.PlayerAdded += OnPlayerAdded;
                 Channel.PlayerChanged += OnPlayerChanged;
                 Channel.PlayerRemoved += OnPlayerRemoved;
@@ -191,11 +190,8 @@ namespace CTLife.World
                 Channel.Said += OnSaid;
                 Channel.Rejected += OnRejected;
                 // State that arrived before the handlers were attached.
-                if (Channel.State != null)
-                {
-                    foreach (var kv in Channel.State.players) if (!_players.ContainsKey(kv.Key)) OnPlayerAdded(kv.Key, kv.Value);
-                    foreach (var kv in Channel.State.npcs) if (!_npcs.ContainsKey(kv.Key)) OnNpcAdded(kv.Key, kv.Value);
-                }
+                foreach (var kv in new List<KeyValuePair<string, PlayerState>>(Channel.Players)) if (!_players.ContainsKey(kv.Key)) OnPlayerAdded(kv.Key, kv.Value);
+                foreach (var kv in new List<KeyValuePair<string, NpcState>>(Channel.Npcs)) if (!_npcs.ContainsKey(kv.Key)) OnNpcAdded(kv.Key, kv.Value);
                 if (LocalPlayer == null) SpawnLocal(null);
                 Bus.Publish(new VenueChangedSignal { venueId = venueId, instanceId = Channel.InstanceId });
             }
@@ -204,6 +200,22 @@ namespace CTLife.World
                 SpawnLocal(null);
                 Bus.Publish(new VenueChangedSignal { venueId = venueId });
             }
+        }
+
+        /// <summary>
+        /// The room must be the venue we asked for. A server without `filterBy(['venueId'])` (backend main, feedback
+        /// item 39) can put a Terminal Café join into the Timeline Square room; rendering those players in the café
+        /// would be wrong, so the join is treated as failed (the caller enters offline and says so).
+        /// </summary>
+        private async Task RequireRequestedVenue(VenueChannel channel, string venueId)
+        {
+            float deadline = Time.realtimeSinceStartup + 2f;
+            while (string.IsNullOrEmpty(channel.VenueId) && Time.realtimeSinceStartup < deadline)
+                await Awaitable.WaitForSecondsAsync(0.05f, LifetimeToken);
+            var actual = channel.VenueId;
+            if (VenueRoomCheck.Matches(venueId, actual)) return;
+            Log.Warn("venue", $"Joined room {channel.InstanceId} is venue '{actual}', not '{venueId}'; leaving it");
+            throw new InvalidOperationException($"The server put this visit in '{actual}' instead of '{venueId}'.");
         }
 
         public Task Exit()
@@ -291,11 +303,15 @@ namespace CTLife.World
         {
             var profile = Services.TryGet<PlayerProfile>(out var pp) ? pp : null;
             var look = state != null ? ToArray(state.look) : profile?.LookArray();
-            var name = state?.name ?? profile?.Alias ?? "you";
+            var name = !string.IsNullOrEmpty(state?.name) ? state.name : profile?.Alias ?? "you";
+            if (look == null || look.Length != 7 || string.IsNullOrEmpty(look[1])) look = profile?.LookArray();
             var view = AvatarFactory.Create(name, look, false, null, _avatarRoot);
-            view.userId = state?.userId ?? Services.Get<Session>().UserId;
+            // The session's own user id: a server that does not verify the JWT reports a placeholder (item 38).
+            view.userId = Services.Get<Session>().UserId ?? state?.userId;
             view.sessionId = Channel?.SessionId;
-            view.transform.position = state != null ? Venue.ToWorld((float)state.x, (float)state.z) : Venue.EntrancePosition;
+            // (0,0) is the schema default: the server has not placed us yet. Spawn at the entrance and publish it.
+            bool placed = state != null && !VenueRoomCheck.IsUnplaced(state.x, state.z);
+            view.transform.position = placed ? Venue.ToWorld((float)state.x, (float)state.z) : Venue.EntrancePosition;
             LocalPlayer = view.gameObject.AddComponent<LocalPlayerController>();
             LocalPlayer.Init(Venue, Channel);
             if (state != null) LocalPlayer.OnServerSeat(state.spotId, state.anim);
@@ -314,23 +330,23 @@ namespace CTLife.World
                 else
                 {
                     var v = LocalPlayer.GetComponent<AvatarView>();
-                    v.displayName = p.name;
-                    v.userId = p.userId;
+                    if (!string.IsNullOrEmpty(p.name)) v.displayName = p.name;
                     v.isSeeker = p.isSeeker;
                     v.minerTier = p.minerTier;
-                    _byUserId[p.userId] = v;
                     LocalPlayer.OnServerSeat(p.spotId, p.anim);
                 }
                 return;
             }
             if (_players.ContainsKey(sessionId)) return;
-            var view = AvatarFactory.Create(p.name, ToArray(p.look), false, null, _avatarRoot);
+            var view = AvatarFactory.Create(string.IsNullOrEmpty(p.name) ? "player" : p.name, ToArray(p.look), false, null, _avatarRoot);
             view.userId = p.userId;
             view.sessionId = sessionId;
             var rp = view.gameObject.AddComponent<RemotePlayer>();
             rp.Init(Venue, p);
             _players[sessionId] = rp;
-            if (!string.IsNullOrEmpty(p.userId)) _byUserId[p.userId] = view;
+            // Never let another player's identity overwrite ours (a non-verifying server gives everyone the same id).
+            if (!string.IsNullOrEmpty(p.userId) && p.userId != Services.Get<Session>().UserId && !_byUserId.ContainsKey(p.userId))
+                _byUserId[p.userId] = view;
         }
 
         private void OnPlayerChanged(string sessionId, PlayerState p)
@@ -356,7 +372,8 @@ namespace CTLife.World
             if (_players.TryGetValue(sessionId, out var rp))
             {
                 _players.Remove(sessionId);
-                if (p != null && !string.IsNullOrEmpty(p.userId)) _byUserId.Remove(p.userId);
+                if (p != null && !string.IsNullOrEmpty(p.userId) && _byUserId.TryGetValue(p.userId, out var mapped) &&
+                    rp != null && ReferenceEquals(mapped, rp.GetComponent<AvatarView>())) _byUserId.Remove(p.userId);
                 if (rp != null) Destroy(rp.gameObject);
             }
         }
@@ -379,9 +396,16 @@ namespace CTLife.World
             if (!OwnsVisit) return;
             if (_npcs.TryGetValue(npcId, out var npc) && npc != null)
             {
-                if (!npc.gameObject.activeSelf && n.state != "leave") npc.gameObject.SetActive(true);
+                if (!npc.gameObject.activeSelf && n.state != "leave" && !KeepNpcHidden(npc, n)) npc.gameObject.SetActive(true);
                 npc.Apply(n);
             }
+        }
+
+        private static bool KeepNpcHidden(NpcController npc, NpcState n)
+        {
+            if (NpcController.PresentKeepHidden == null) return false;
+            try { return NpcController.PresentKeepHidden(npc, n); }
+            catch (Exception e) { Log.Exception("npc-present", e); return false; }
         }
 
         private void OnNpcRemoved(string npcId, NpcState n)
@@ -415,8 +439,8 @@ namespace CTLife.World
         {
             if (!OwnsVisit) return;
             if (r.type == "sit") LocalPlayer?.OnSeatRejected();
-            if (r.type == "move" && LocalPlayer != null && Channel?.State != null &&
-                Channel.State.players.TryGetValue(Channel.SessionId, out var me))
+            if (r.type == "move" && LocalPlayer != null && Channel != null &&
+                Channel.TryGetPlayer(Channel.SessionId, out var me))
                 LocalPlayer.SnapTo(Venue.ToWorld((float)me.x, (float)me.z), (float)me.rotY);
             if (r.code == "SPOT_TAKEN") Bus.Publish(ToastSignal.Id("toast_spot_taken", new Dictionary<string, string>()));
             else if (r.code == "RATE_LIMITED") Bus.Publish(ToastSignal.Text("Slow down", ToastKind.Bad));
@@ -479,6 +503,12 @@ namespace CTLife.World
         private void OnLocalSpeaking(bool on) { if (IsActive) Channel?.Talking(on); }
 
         private static string[] ToArray(Colyseus.Schema.ArraySchema<string> a)
+        {
+            if (a == null || a.Count == 0) return null;
+            return ToArrayCore(a);
+        }
+
+        private static string[] ToArrayCore(Colyseus.Schema.ArraySchema<string> a)
         {
             var r = new string[7];
             if (a == null) return r;

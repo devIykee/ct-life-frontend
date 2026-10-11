@@ -21,6 +21,10 @@ namespace CTLife.UI
 #endif
         public static Task<RoleLockResult> Play(CancellationToken cancellation = default) => PlayCore(cancellation, Environment.TickCount, true, false);
 
+        /// <summary>Deterministic entry point for the Careers lane (same seed → same round).</summary>
+
+        public static Task<RoleLockResult> PlaySeeded(int seed, CancellationToken cancellation = default) => PlayCore(cancellation, seed, true, false);
+
         private static Task<RoleLockResult> PlayCore(CancellationToken cancellation, int seed, bool observeFocus, bool review)
         {
             cancellation.ThrowIfCancellationRequested();

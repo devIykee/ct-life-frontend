@@ -24,7 +24,6 @@ namespace CTLife.World
     {
 #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
         // Installed by the explicit review harness; never persists a catalog edit.
-        public static Func<string, VenueSceneRoot> ReviewPrefabResolver { get; set; }
 #endif
         private AsyncOperationHandle<SceneInstance> _addressableHandle;
         private Scene _scene;
@@ -44,8 +43,7 @@ namespace CTLife.World
         public Task<VenueSceneRoot> LoadPrivateHome(string homeId, CancellationToken owner = default)
         {
             owner.ThrowIfCancellationRequested();
-            var catalog = Resources.Load<VenueContentRegistry>("World/VenueContentRegistry");
-            var prefab = catalog != null ? catalog.FindHome(homeId) : null;
+            var prefab = VenueContent.FindHome(homeId);
             if (prefab == null || prefab.navigation == null || prefab.GetComponent<VenueLightmaps>() == null)
                 throw new InvalidOperationException("The selected private home has no inspected local content.");
             return LoadCore("home", prefab, owner);
@@ -64,12 +62,7 @@ namespace CTLife.World
             VenueSceneRoot root = null;
 
             // Local shipped content must not initialize Addressables or require a remote catalog/network.
-            var catalog = Resources.Load<VenueContentRegistry>("World/VenueContentRegistry");
-            var prefab = privateHome != null ? privateHome : catalog != null ? catalog.Find(venueId) : null;
-#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
-            if (privateHome == null && LaunchArgs.Flag("review") && ReviewPrefabResolver != null)
-                prefab = ReviewPrefabResolver(venueId) ?? prefab;
-#endif
+            var prefab = privateHome != null ? privateHome : VenueContent.Find(venueId);
             if (prefab != null)
             {
                 _scene = SceneManager.CreateScene("Venue_" + venueId + "_" + Time.frameCount);

@@ -20,7 +20,10 @@ namespace CTLife.UI
 
         public static string Err(Exception e)
         {
-            Log.Exception("phone", e);
+            // Expected API/network failures are shown in the app; logging them as exceptions popped the red
+            // development console over gameplay on the Seeker (device QA bug 8).
+            if (e is ApiException expected) Log.Warn("phone", expected.Message);
+            else Log.Exception("phone", e);
             return e is ApiException api ? Strings.Error(api.Code, api.ServerMessage) : Strings.T("common.error");
         }
     }
@@ -187,12 +190,38 @@ namespace CTLife.UI
             return page;
         }
 
+        /// <summary>
+        /// Volume as a −/+ stepper (10% steps). Device QA: a Slider inside the scrolling settings page took vertical
+        /// swipes that started near it as value drags (Sound effects jumped 100% → 50%). Buttons only react to taps.
+        /// </summary>
         private static VisualElement Slider(string label, float value, Action<float> set)
         {
-            var s = new Slider(label, 0f, 1f) { value = value, fill = true };
-            s.AddToClassList("ct-slider");
-            s.RegisterValueChangedCallback(e => set(e.newValue));
-            return s;
+            float current = UnityEngine.Mathf.Clamp01(value);
+            var readout = El.Text("", "ct-stepper-value");
+            void Apply(float next)
+            {
+                current = VolumeStep.Clamp(next);
+                readout.text = UnityEngine.Mathf.RoundToInt(current * 100f) + "%";
+                set(current);
+            }
+            var minus = El.Btn("−", () => Apply(VolumeStep.Down(current)), "ct-btn ct-btn-ghost ct-stepper-btn");
+            var plus = El.Btn("+", () => Apply(VolumeStep.Up(current)), "ct-btn ct-btn-ghost ct-stepper-btn");
+            readout.text = UnityEngine.Mathf.RoundToInt(current * 100f) + "%";
+            var row = El.Div("ct-row ct-stepper", El.Text(label, "ct-body ct-grow"), minus, readout, plus);
+            row.name = "volume-" + label;
+            return row;
         }
+    }
+}
+
+namespace CTLife.UI
+{
+    /// <summary>Pure volume stepping for the settings steppers (unit-tested).</summary>
+    public static class VolumeStep
+    {
+        public const float Step = 0.1f;
+        public static float Clamp(float v) => v < 0f ? 0f : v > 1f ? 1f : (float)System.Math.Round(v, 2);
+        public static float Up(float v) => Clamp((float)System.Math.Round(v / Step) * Step + Step);
+        public static float Down(float v) => Clamp((float)System.Math.Round(v / Step) * Step - Step);
     }
 }

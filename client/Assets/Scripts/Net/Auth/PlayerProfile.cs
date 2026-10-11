@@ -17,16 +17,8 @@ namespace CTLife.Net
             _api = api;
         }
 
-        public bool HasCharacter => Me?.Character != null && !string.IsNullOrEmpty(Me.Character.Alias);
-        public bool LotteryRolled
-        {
-            get
-            {
-                if (Me == null) return false;
-                if (Me.Flags != null && Me.Flags.TryGetValue("lotteryRolled", out var r) && r is bool b) return b;
-                return !string.IsNullOrEmpty(Me.HomeId);
-            }
-        }
+        public bool HasCharacter => Onboarding.HasCharacter(Me);
+        public bool LotteryRolled => Onboarding.LotteryRolled(Me);
         public long CashCents => Me?.CashCents ?? 0;
         public long DebtCents => Me?.DebtCents ?? 0;
         public string Alias => Me?.Character?.Alias ?? "anon";

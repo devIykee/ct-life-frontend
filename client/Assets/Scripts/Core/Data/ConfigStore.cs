@@ -184,7 +184,7 @@ namespace CTLife.Core
             var lines = r["npc_lines"] ?? r["npcLines"];
             if (lines is JObject lo && lo.Count > 0)
                 cfg["npc_lines"] = lo["archetypes"] != null ? lo.DeepClone() : new JObject { ["archetypes"] = lo.DeepClone() };
-            foreach (var k in new[] { "careers", "market", "events", "ads", "ore", "meta" })
+            foreach (var k in new[] { "careers", "market", "events", "ads", "ore", "meta", "economy", "skills", "lottery", "needs", "businesses", "seasonPass", "nft" })
                 if (r[k] is JObject o && o.Count > 0) cfg[k] = o.DeepClone();
             return root;
         }

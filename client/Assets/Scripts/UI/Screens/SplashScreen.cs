@@ -23,6 +23,39 @@ namespace CTLife.UI
         }
     }
 
+    /// <summary>
+    /// Shown when start-up cannot reach the backend (config, session resume, profile). Keeps the player on a clear
+    /// "try again" path instead of an empty screen (QA code-architecture §3 item 2).
+    /// </summary>
+    public sealed class ConnectionRetryScreen : UiScreen
+    {
+        private readonly string _detail;
+        private readonly System.Action _retry;
+        private Button _button;
+
+        public ConnectionRetryScreen(string detail, System.Action retry)
+        {
+            _detail = detail;
+            _retry = retry;
+        }
+
+        protected override VisualElement Build()
+        {
+            _button = El.Btn(Strings.T("common.retry"), () =>
+            {
+                _button.SetEnabled(false);
+                _retry?.Invoke();
+            }, "ct-btn ct-btn-primary ct-btn-big");
+            _button.name = "connection-retry";
+            return El.Div("ct-splash",
+                El.Brand(),
+                El.Text(Strings.T("connection.title"), "ct-h1"),
+                El.Text(Strings.T("connection.body"), "ct-body"),
+                El.Text(_detail ?? "", "ct-small ct-muted"),
+                _button);
+        }
+    }
+
     public sealed class UpdateRequiredScreen : UiScreen
     {
         private readonly string _min;

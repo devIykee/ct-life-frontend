@@ -438,7 +438,7 @@ namespace CTLife.EditorTools
                 _phase = phase;
                 _directory = Path.Combine(Path.GetTempPath(), "ctlife-timeline-polish-" + phase + "-" + DateTime.UtcNow.ToString("yyyyMMddTHHmmssfff") + "-" + Guid.NewGuid().ToString("N"));
                 Directory.CreateDirectory(_directory);
-                var paths = AssetDatabase.GetDependencies(Canonical, true).Concat(new[] { Canonical, Snapshot, "Assets/Resources/World/VenueContentRegistry.asset" })
+                var paths = AssetDatabase.GetDependencies(Canonical, true).Concat(new[] { Canonical, Snapshot, "Assets/Venues/VenueContentRegistry.asset" })
                     .Where(File.Exists).Distinct().ToList();
                 paths.AddRange(Directory.GetFiles("ProjectSettings", "*", SearchOption.AllDirectories));
                 paths.AddRange(paths.Where(p => File.Exists(p + ".meta")).Select(p => p + ".meta").ToArray());

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -44,7 +45,12 @@ namespace CTLife.Net
 
         // ---------------------------------------------------------------- player and life (Ph 1)
 
-        public Task<Me> GetMe(CancellationToken ct = default) => _rest.Get<Me>("/me", ct);
+        public async Task<Me> GetMe(CancellationToken ct = default)
+        {
+            var raw = await _rest.Get<JToken>("/me", ct);
+            try { return MeCompat.Normalize(raw).ToObject<Me>(Newtonsoft.Json.JsonSerializer.Create(Json.Settings)); }
+            catch (Exception e) { throw new ApiException(200, "DECODE_FAILED", "GET /me: " + e.Message); }
+        }
 
         /// <summary>
         /// Raw body on purpose: the generated CreateCharacterRequest maps `ageConfirmed: const true` to an enum
@@ -81,8 +87,18 @@ namespace CTLife.Net
         public Task<List<GetCareers200ResponseInner>> Careers(CancellationToken ct = default) =>
             _rest.Get<List<GetCareers200ResponseInner>>("/careers", ct);
 
-        public Task<Job> ApplyCareer(string careerId, CancellationToken ct = default) =>
-            _rest.Post<Job>($"/careers/{careerId}/apply", null, ct: ct);
+        /// <summary>
+        /// Contract `Job` is `{careerId, level, xp}`; backend main returns `{id, level}` (feedback item 49), which the
+        /// strict generated model rejects. Both are accepted.
+        /// </summary>
+        public async Task<Job> ApplyCareer(string careerId, CancellationToken ct = default)
+        {
+            var raw = await _rest.Post<JToken>($"/careers/{careerId}/apply", null, ct: ct);
+            var id = raw.Str("careerId", raw.Str("id", careerId));
+            int level = raw?["level"]?.Type == JTokenType.Integer ? raw["level"].Value<int>() : 1;
+            int xp = raw?["xp"]?.Type == JTokenType.Integer ? raw["xp"].Value<int>() : 0;
+            return new Job(id, Math.Max(1, level), Math.Max(0, xp));
+        }
 
         public Task<Shift> StartShift(string careerId, CancellationToken ct = default) =>
             _rest.Post<Shift>("/shifts", new JObject { ["careerId"] = careerId }.ToString(), ct: ct);

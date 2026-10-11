@@ -83,6 +83,9 @@ namespace CTLife.UI
             _subs.On<ProfileChangedSignal>(_ => RefreshProfile());
             _subs.On<DegradedChangedSignal>(_ => RefreshDegraded());
             _subs.On<OnlineCountSignal>(s => _online.text = Strings.F("hud.online", s.online));
+            // The count only changes on joins/leaves; show the value the city room already has.
+            if (Services.TryGet<IRealtimeService>(out var rt) && rt.City != null && rt.City.Online >= 0)
+                _online.text = Strings.F("hud.online", rt.City.Online);
             _subs.On<MoodSignal>(s =>
             {
                 _mood.text = Strings.F("hud.mood", Money.Bps(s.bps));
@@ -203,6 +206,7 @@ namespace CTLife.UI
             _disposed = true;
             _life.Cancel(); _life.Dispose();
             _movement.Dispose();
+            _chat.Dispose();
             _subs.Dispose();
         }
     }
@@ -217,6 +221,9 @@ namespace CTLife.UI
         {
             _field = new TextField { maxLength = 140 };
             _field.AddToClassList("ct-chat-field");
+            // Device QA: the keyboard covered the chat input. Keep the OS input line visible above the keyboard,
+            // and dock the panel to the top of the screen while the keyboard is up.
+            _field.textEdition.hideMobileInput = false;
             _field.tooltip = Strings.T("hud.chatPrompt");
             _field.RegisterCallback<KeyDownEvent>(e =>
             {
@@ -224,10 +231,49 @@ namespace CTLife.UI
                 else if (e.keyCode == KeyCode.Return || e.keyCode == KeyCode.KeypadEnter)
                 { Send(); e.StopImmediatePropagation(); }
             }, TrickleDown.TrickleDown);
-            Element = El.Div("ct-chat", El.Text(Strings.T("hud.chatPrompt"), "ct-small ct-muted"),
-                El.Div("ct-row", _field, El.Btn(Strings.T("hud.say"), Send, "ct-btn ct-btn-primary")));
+            _history = El.Div("ct-chat-history");
+            // Input first: while the keyboard is up the panel docks at the top and its lower part is covered.
+            Element = El.Div("ct-chat", El.Div("ct-row", _field, El.Btn(Strings.T("hud.say"), Send, "ct-btn ct-btn-primary")),
+                El.Text(Strings.T("hud.chatPrompt"), "ct-small ct-muted"), _history);
             Element.Show(false);
+            // The Android keyboard's Done/Enter does not reach UI Toolkit as a KeyDown; send when it reports Done.
+            _field.RegisterCallback<NavigationSubmitEvent>(_ => Send(), TrickleDown.TrickleDown);
+            Element.schedule.Execute(() =>
+            {
+                bool open = Element.resolvedStyle.display != DisplayStyle.None;
+                Element.EnableInClassList("ct-chat-keyboard", open && TouchScreenKeyboard.visible);
+                var kb = _field.textEdition.touchScreenKeyboard;
+                if (open && kb != null && kb.status == TouchScreenKeyboard.Status.Done && !_doneHandled) { _doneHandled = true; Send(); }
+                if (kb == null || kb.status == TouchScreenKeyboard.Status.Visible) _doneHandled = false;
+            }).Every(150);
+            _subs.On<CTLife.Realtime.SaidMessage>(OnSaid);
         }
+
+        private readonly VisualElement _history;
+        private bool _doneHandled;
+        private readonly Subscriptions _subs = new Subscriptions();
+        private readonly System.Collections.Generic.List<string> _lines = new System.Collections.Generic.List<string>();
+        public const int HistoryLines = 4;
+
+        private void OnSaid(CTLife.Realtime.SaidMessage m)
+        {
+            var visit = VenueSession.Current;
+            string who = "Someone";
+            if (visit?.Channel != null && m.sessionId == visit.Channel.SessionId) who = Strings.T("hud.you");
+            else if (visit != null && visit.Players.TryGetValue(m.sessionId ?? "", out var rp) && rp != null)
+                who = rp.GetComponent<AvatarView>()?.displayName ?? who;
+            AddLine(who + ": " + m.text);
+        }
+
+        public void AddLine(string line)
+        {
+            _lines.Add(line);
+            while (_lines.Count > HistoryLines) _lines.RemoveAt(0);
+            _history.Clear();
+            foreach (var l in _lines) _history.Add(El.Text(l, "ct-small ct-chat-line"));
+        }
+
+        public void Dispose() => _subs.Dispose();
 
         public void Toggle()
         {
@@ -251,6 +297,7 @@ namespace CTLife.UI
                 return;
             }
             _field.value = "";
+            AddLine(Strings.T("hud.you") + ": " + text);
             Element.Show(false);
         }
     }
@@ -286,7 +333,9 @@ namespace CTLife.UI
             foreach (var a in reg.Anims.Values.Where(a => a.kind == AnimKind.Emote))
             {
                 var id = a.id;
-                grid.Add(El.Btn(Strings.ReadableId(id.Replace("emote_", "")), () =>
+                var label = Strings.T("emote." + id);
+                if (label == "emote." + id) label = Strings.ReadableId(id.Replace("emote_", ""));
+                grid.Add(El.Btn(label, () =>
                 {
                     var s = VenueSession.Current;
                     if (s?.Channel == null) return;

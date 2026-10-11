@@ -97,4 +97,7 @@ namespace CTLife.Core
         public string venueId;
         public string instanceId;
     }
+
+    /// <summary>A player was blocked (POST /blocks/{userId} succeeded).</summary>
+    public struct UserBlockedSignal { public string userId; }
 }

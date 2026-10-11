@@ -1,3 +1,7 @@
+USER ACTION NEEDED (still open): sign in with your wallet on the Seeker. CT Life is open on the sign-in screen (fresh install of the local build, nonce fix included). Tap "Sign in with Solana", pick your wallet (Seed Vault reached the prompt at 00:26 with no error), approve with your fingerprint. A passive watcher records the result (../ct-life-evidence/integration/seeker-siws/); nothing approves on your behalf.
+
+READY TO COMMIT: client/Assets/Scripts (App, Core, Net, UI, World, Editor), client/Assets/Tests/, client/Assets/Resources/{Env,UI,World}, client/Assets/Generated/Realtime/{Space,Speaker,VideoCall}State.cs, client/Assets/Venues/VenueContentRegistry.asset(+meta, moved from Resources), client/Assets/Scenes (Spike removed), client/Assets/UniversalRenderPipelineGlobalSettings 1..9 (deleted, unreferenced), client/Experiments~/, client/ProjectSettings/{EditorBuildSettings,ProjectSettings}.asset, client/Tools~/{compile_check.py,codegen_realtime.sh,seeker_run.sh}, tools/backend-local/, tools/integration/, contract/, docs/progress/{integration,backend-dev-feedback,requests}.md — "integration: restructure to Experiments~, env/build config, real-backend fixes (auth, onboarding, realtime by name, rejoin, retry), Phase 2 wiring, EditMode + editor integration tests"
+
 # Integration lead log
 
 Agent: integration lead (only agent that runs the Unity editor and adb on the Seeker
@@ -87,8 +91,65 @@ not filtered by `venueId` (item 39).
 - Voice has no backend token route; a dev-only token path (local LiveKit dev keys) is the only way to test
   editor↔phone voice now.
 
+## 2026-10-07/08 — Part B (coordinator: proceed on local commits)
+
+### Restructure
+- 122 editor probe/candidate/review scripts → `client/Experiments~/Editor/` (kept in `Assets/Scripts/Editor`: build,
+  setup, importers/AssetPostprocessors, venue builders: 21 files). Runtime fixtures → `client/Experiments~/Runtime/`
+  (`App/Review` 36 files incl. `ReviewTransport`/`FrontendReviewController`/`PracticeJobsApp`, `App/Spike`,
+  `Net/Review`, `World/Review`, `PerpsReviewProbe`), `Scenes/Spike.unity` → `Experiments~/Scenes` and out of Build
+  Settings. No review fixture is kept: the real flow against the local backend replaces it (`review=1` is gone).
+- Evidence paths inside Experiments~ now point at `../ct-life-evidence/...`; no compiled code references the four
+  symlinked evidence folders any more (the QA report's own `device/` image links still use that symlink).
+- 9 unreferenced duplicate `UniversalRenderPipelineGlobalSettings N.asset` deleted (GraphicsSettings references the
+  unnumbered one, guid 532bd9ed…).
+- `client/Tools~/compile_check.py`: per-run output dir (parallel agents clobbered a shared one), `--editor` now
+  recompiles every runtime assembly with editor defines before `CTLife.Editor` (the old 14 CS0246 were a harness
+  defect), warnings on (`-warn:4`) and listed, `--warnaserror`, `--release` (CTLIFE_PROD, no DEVELOPMENT_BUILD),
+  Features.Money + both EditMode test assemblies + the integration driver included.
+  Result now: dev player, release player and editor passes all compile, 0 warnings.
+
+### Integration fixes (client)
+- Env/build: `BuildScript -ctlifeEnv mock|local|staging|prod` (selects EnvConfig for the build, restores the
+  committed selection), prod = release + `CTLIFE_PROD` via `extraScriptingDefines`, staging/prod refuse `.invalid`
+  hosts, dev auth and non-https. Local env REST fixed 3000 → 4010. MWA identity name/URI/icon now per EnvConfig.
+  `livePhase` per env (local/mock 6, staging/prod 1) + server `livePhase` wins (`Core/Data/Phases.cs`).
+- Auth: SIWS verify retries once with the UTF-8 SIWS text when the base64 body is rejected (backend item 46); auth
+  responses accepted in contract and flat shapes, refresh identity from JWT claims (item 45); access-token refresh
+  time from the JWT `exp`; `EnsureFresh` before every room join; stored wallet cleared on sign-out.
+- Start-up: any failure (config/resume//me/rooms) shows "Can't reach CT Life · Try again" and resumes.
+- Onboarding: lottery before creator; 409 or a reconciled /me = done (dead-end fixed); creator submits authored looks
+  (server is authoritative); `/me` decoded tolerantly (`user.hasCharacter` missing on backend main → DECODE_FAILED
+  blocked everyone, item 48); `/careers/{id}/apply` tolerant (item 49); bodiless POSTs send `{}` (415 → 500, item 50).
+- Realtime: all rooms decoded with `DynamicSchema` and mapped by name into the generated classes (server schema ≠
+  contract, item 47); one change subscription per live entity, released on remove (leak fix); city/market kept alive
+  with capped backoff; venue room must match the requested venue (item 39 guard); unplaced (0,0) spawn → entrance;
+  identity-safe player mapping (item 38); profile fields sent in join options. SERVER_BUSY capped (5) in REST and joins.
+- Content: `VenueContentRegistry` moved out of Resources to `Assets/Venues/`; runtime uses per-venue
+  `Resources/World/VenueContent/*.asset` + an id-only index (synced by `VenueContentCatalog.Sync`, also before builds).
+- UI (functional only): chat docks above the keyboard + OS input line + 4-line history; emote buttons ≥30% width with
+  labels; volume sliders → −/+ steppers; client version 1.0.0 (backend `minClientVersion` 1.0.0 showed "Update required").
+- Phase 2 lane wired per requests.md: App references CTLife.Features.Money, PhoneCatalog uses its apps, MoneyRektCard,
+  live economy/skills/lottery/needs config.
+
+### Tests
+- EditMode (`client/Assets/Tests/EditMode`, Unity Test Framework 1.6.0 = the editor's builtin package, verified in
+  packages-lock + PackageCache): auth/JWT/base58, onboarding + /me decode, retry/backoff/env/phase/build defines,
+  StateMapper. Run: `Unity -batchmode -projectPath client -runTests -testPlatform EditMode
+  -assemblyNames "CTLife.Tests.EditMode;CTLife.Features.Money.Tests" -testResults <xml>`.
+- Editor integration: `tools/integration/run_editor_integration.sh` (needs `tools/backend-local/up.sh`): real
+  FlowController in play mode (batchmode), env=local, fresh dev wallet, plus `tools/integration/observer-bot.mjs`
+  as the second client. Receipts in `../ct-life-evidence/integration/editor-*/`.
+  **Result 2026-10-07 23:53: 12/13 PASS** — sign-in, lottery→creator, city+market, Timeline Square join, 5 server
+  NPCs, sees bot move (2.0 m) and chat, bot sees our move/emote/say, shift pays Cash (30000→34000), block/report/
+  unblock, token refresh + rejoin. FAIL: venue isolation (backend item 39; client guard refuses the wrong room).
+
 ## Status
 
 - [x] Part A.1 backend up, tests run, commands documented
 - [x] Part A.2 contract diff + re-sync, PR #1 status
-- [ ] Part B (waiting for "CHECKPOINT PUSHED" in `docs/progress/steward.md`)
+- [x] B.3 restructure + compile harness
+- [x] B.4 integration blockers (see above; spawn shadow not yet checked on device)
+- [x] B.5 editor run against local backend
+- [ ] B.5 Seeker: dev APK env=local, adb reverse, real SIWS (in progress)
+- [x] B.6 EditMode tests + editor integration script

@@ -162,6 +162,8 @@ namespace CTLife.UI
         {
             var alias = new TextField(Strings.T("creator.alias")) { maxLength = 20 };
             alias.AddToClassList("ct-field");
+            // Device QA: the soft keyboard covered the field. Keep the OS input line above the keyboard visible.
+            alias.textEdition.hideMobileInput = false;
             alias.RegisterValueChangedCallback(e => { _draft.alias = e.newValue.Trim(); _reviewComplete = false; Validate(); });
             var age = new Toggle(Strings.T("creator.age")).With("ct-toggle");
             age.RegisterValueChangedCallback(e => { _draft.ageConfirmed = e.newValue; _reviewComplete = false; Validate(); });
@@ -348,6 +350,27 @@ namespace CTLife.UI
             _guidance.Show(problem != null || _step == 2);
             _error.Show(!string.IsNullOrEmpty(_error.text));
         }
+
+#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
+        /// <summary>
+        /// Development automation only (launch arg `autocreate=1`): picks the first tribe, two traits and dream,
+        /// sets the alias and age confirmation, and submits through the normal path. Returns false if not allowed.
+        /// </summary>
+        public bool AutoSubmitForAutomation(string alias)
+        {
+            if (SelectedLook == null || _busy) return false;
+            _draft.tribeId = _reg.TribeOrder.FirstOrDefault()?.id;
+            _draft.traitIds.Clear();
+            _draft.traitIds.AddRange(_reg.Traits.Take(2).Select(t => t.id));
+            _draft.dreamId = _reg.Dreams.FirstOrDefault()?.id;
+            _draft.alias = alias;
+            _draft.ageConfirmed = true;
+            Refresh();
+            if (DraftProblem() != null || !CanSubmitLook) { Log.Warn("creator", "Automation draft rejected: " + (DraftProblem() ?? "look not submittable")); return false; }
+            _onSubmit?.Invoke(_draft);
+            return true;
+        }
+#endif
 
         public void ShowError(string text) { if (_error != null) { _error.text = text; _error.Show(!string.IsNullOrEmpty(text)); } }
         public void SetBusy(bool busy) { _busy = busy; Validate(); }

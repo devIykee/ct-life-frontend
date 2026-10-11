@@ -8,9 +8,14 @@ assembly (and the third-party package sources it depends on, at the exact pinned
 Android IL2CPP player define symbols. It approximates Unity's player script compilation; it is not a substitute for
 the real editor (no ILPP/codegen, no asset import), but it catches C# and API errors before the licence lands.
 
-Usage:  python3 client/Tools~/compile_check.py [--editor] [--keep-going]
+Usage:  python3 client/Tools~/compile_check.py [--editor] [--keep-going] [--release] [--warnaserror]
+  (default)  Android player pass with DEVELOPMENT_BUILD (what a dev APK compiles).
+  --release  player pass without DEVELOPMENT_BUILD and with CTLIFE_PROD (what a prod APK compiles).
+  --editor   also an editor pass: every runtime assembly is recompiled with editor defines (UNITY_EDITOR...),
+             exactly as the Unity editor does, and CTLife.Editor is compiled against those.
+Warnings are on (-warn:4) and listed for CT Life assemblies; --warnaserror makes them fail the run.
 Cache:  $CTLIFE_CC_CACHE (default ~/.cache/ctlife-compile-check): package sources fetched once.
-Exit code 0 when every CT Life assembly compiles.
+Exit code 0 when every CT Life assembly compiles (and, with --warnaserror, has no warnings).
 """
 import argparse, json, os, pathlib, shutil, subprocess, sys, tarfile, urllib.request
 
@@ -26,7 +31,8 @@ EDITOR_TGZ = UNITY / "Resources/PackageManager/Editor"
 CLIENT = pathlib.Path(__file__).resolve().parents[1]
 ASSETS = CLIENT / "Assets"
 CACHE = pathlib.Path(os.environ.get("CTLIFE_CC_CACHE", pathlib.Path.home() / ".cache/ctlife-compile-check"))
-OUT = CACHE / "out"
+# Per-run output: several agents may run this harness at once, and a shared output dir made runs clobber each other.
+OUT = pathlib.Path(os.environ.get("CTLIFE_CC_OUT", CACHE / "out" / f"run-{os.getpid()}"))
 
 # Pins (keep in sync with client/Packages/manifest.json).
 COLYSEUS = ("https://github.com/colyseus/colyseus-unity-sdk.git", "7306c8ee4be7e78984baf0837df5ea8125154820")
@@ -34,6 +40,9 @@ SOLANA = ("https://github.com/magicblock-labs/Solana.Unity-SDK.git", "bd0d30f648
 LIVEKIT_TGZ = "https://package.openupm.com/io.livekit.livekit-sdk/-/io.livekit.livekit-sdk-2.1.0.tgz"
 TGZS = ["com.unity.addressables-2.10.3", "com.unity.scriptablebuildpipeline-2.6.2", "com.unity.profiling.core-1.0.3",
         "com.unity.nuget.newtonsoft-json-3.2.2"]
+
+
+RELEASE = False
 
 
 def defines(editor=False):
@@ -51,7 +60,8 @@ def defines(editor=False):
         d += ["UNITY_EDITOR", "UNITY_EDITOR_64", "UNITY_EDITOR_OSX", "UNITY_ANDROID", "PLATFORM_ANDROID", "UNITY_ANDROID_API",
               "ENABLE_MONO", "ENABLE_IL2CPP"]
     else:
-        d += ["UNITY_ANDROID", "UNITY_ANDROID_API", "PLATFORM_ANDROID", "ENABLE_IL2CPP", "UNITY_64", "DEVELOPMENT_BUILD"]
+        d += ["UNITY_ANDROID", "UNITY_ANDROID_API", "PLATFORM_ANDROID", "ENABLE_IL2CPP", "UNITY_64"]
+        d += ["CTLIFE_PROD"] if RELEASE else ["DEVELOPMENT_BUILD"]
     # Package presence defines that asmdef versionDefines would add for this manifest.
     d += ["UNITASK_ASSETBUNDLE_SUPPORT", "UNITASK_PHYSICS_SUPPORT", "UNITASK_PHYSICS2D_SUPPORT", "UNITASK_PARTICLESYSTEM_SUPPORT",
           "UNITASK_UGUI_SUPPORT", "UNITASK_WEBREQUEST_SUPPORT", "PACKAGE_PHYSICS", "PACKAGE_PHYSICS2D", "PACKAGE_ANIMATION",
@@ -67,7 +77,7 @@ def tmp_copy():
     """Harness-only: TMP_FontAsset calls an internal FontEngine overload exposed to Unity.TextMeshPro through
     InternalsVisibleTo, which this out-of-editor csc run cannot see. Compile a cached copy with that one call
     neutralised. TMP is only here because Solana.Unity-SDK and UniTask reference it."""
-    dst = CACHE / "ugui_tmp"
+    dst = OUT / "ugui_tmp"  # per run: concurrent runs raced on a shared copy
     src = BUILTIN / "com.unity.ugui/Runtime/TMP"
     shutil.rmtree(dst, ignore_errors=True)
     shutil.copytree(src, dst)
@@ -175,15 +185,18 @@ def reference_set(editor):
     return refs
 
 
-def compile_unit(u, built, editor_pass):
-    out = OUT / ("editor" if u.editor else "player") / f"{u.name}.dll"
+WARNINGS = {}
+
+
+def compile_unit(u, built, label):
+    out = OUT / label / f"{u.name}.dll"
     out.parent.mkdir(parents=True, exist_ok=True)
     files = []
     for r in u.roots:
         files += sources(r, extra_exclude=u.exclude)
     if not files:
-        print(f"  !! {u.name}: no sources")
-        return False
+        print(f"  -- {u.name}: no sources yet (skipped)")
+        return True
     dlls = list(u.dlls)
     if not u.override:
         names = {pathlib.Path(d).name for d in dlls}
@@ -192,9 +205,10 @@ def compile_unit(u, built, editor_pass):
     missing = [r for r in u.refs if r not in built]
     if missing:
         print(f"  !! {u.name}: missing built refs {missing}")
-    rsp = OUT / f"{u.name}{'.editor' if u.editor else ''}.rsp"
+    ours = u.name.startswith("CTLife")
+    rsp = OUT / f"{u.name}.{label}.rsp"
     lines = ["-nologo", "-noconfig", "-nostdlib+", "-target:library", "-langversion:9.0", "-deterministic", "-debug-",
-             "-warn:0", "-nowarn:CS0436,CS1701,CS1702" + "".join("," + w for w in u.nowarn), f"-out:{out}"]
+             "-warn:4" if ours else "-warn:0", "-nowarn:CS0436,CS1701,CS1702" + "".join("," + w for w in u.nowarn), f"-out:{out}"]
     if u.unsafe:
         lines.append("-unsafe")
     lines.append("-define:" + ";".join(defines(u.editor) + u.extra_defines))
@@ -202,18 +216,28 @@ def compile_unit(u, built, editor_pass):
     lines += [f'"{f}"' for f in files]
     rsp.write_text("\n".join(lines))
     res = subprocess.run([str(DOTNET), "exec", str(CSC), f"@{rsp}"], capture_output=True, text=True)
-    errs = [l for l in (res.stdout + res.stderr).splitlines() if " error " in l]
+    output = (res.stdout + res.stderr).splitlines()
+    errs = [l for l in output if " error " in l]
+    warns = sorted({l for l in output if " warning " in l}) if ours else []
     status = "ok" if res.returncode == 0 else f"FAILED ({len(errs)} errors)"
+    if warns:
+        status += f", {len(warns)} warnings"
+        WARNINGS[f"{label}/{u.name}"] = warns
     print(f"  {u.name:40s} {len(files):4d} files  {status}")
+    clean = lambda l: l.replace(str(CACHE), "$CACHE").replace(str(CLIENT), "client")
     if res.returncode != 0:
-        for l in errs[:60]:
-            print("     " + l.replace(str(CACHE), "$CACHE").replace(str(CLIENT), "client"))
+        for l in (errs or output[-8:] or ["(no compiler output)"])[:60]:
+            print("     " + clean(l))
         return False
+    for l in warns[:40]:
+        print("     " + clean(l))
     built[u.name] = out
     return True
 
 
 def units(editor):
+    """editor=True: the editor pass. Every unit (third-party and CT Life runtime) is compiled with editor defines
+    and UnityEditor references, as the Unity editor does, then CTLife.Editor is compiled against those."""
     S, C, LK, T = CACHE / "solana", CACHE / "colyseus", CACHE / "livekit/package", CACHE / "tgz"
     COLY = C if os.environ.get("CTLIFE_CC_COLYSEUS_UPSTREAM") else CLIENT / "Packages/io.colyseus.sdk"
     sol_dlls = sorted(str(p) for p in (S / "Packages").glob("*.dll"))
@@ -252,36 +276,84 @@ def units(editor):
         Unit("CTLife.Solana", [ASSETS / S_ / "Solana"], refs=["CTLife.Core", "com.solana.unity_sdk", "UniTask"], dlls=sol_dlls + [newtonsoft]),
         Unit("CTLife.UI", [ASSETS / S_ / "UI"], refs=["CTLife.Core", "CTLife.Net", "CTLife.Generated", "CTLife.World", "CTLife.Audio", "ColyseusSDK", "Unity.RenderPipelines.Universal.Runtime"],
              dlls=[newtonsoft]),
-        Unit("CTLife.App", [ASSETS / S_ / "App"], refs=["CTLife.Core", "CTLife.Net", "CTLife.Generated", "CTLife.World", "CTLife.Audio", "CTLife.UI",
-                                                        "CTLife.Solana", "ColyseusSDK", "LiveKit"], dlls=[newtonsoft]),
     ]
+    money = ASSETS / S_ / "Features/Money"
+    # Feature lanes: every client/Assets/Scripts/Features/<X>/*.asmdef, with references read from the asmdef
+    # (Money first: other lanes may reference it). Their test asmdefs are handled below.
+    features = sorted((ASSETS / S_ / "Features").glob("*/*.asmdef"), key=lambda a: (a.parent.name != "Money", a.parent.name))
+    for asm in features:
+        meta = json.loads(asm.read_text(encoding="utf-8-sig"))
+        u.append(Unit(meta["name"], [asm.parent], refs=list(meta.get("references", [])), dlls=[newtonsoft]))
+    app = json.loads((ASSETS / S_ / "App/CTLife.App.asmdef").read_text(encoding="utf-8-sig"))
+    u.append(Unit("CTLife.App", [ASSETS / S_ / "App"], refs=list(app.get("references", [])), dlls=[newtonsoft]))
     if editor:
+        for unit in u:
+            unit.editor = True
+        newtonsoft_editor = str(T / "com.unity.nuget.newtonsoft-json-3.2.2/package/Runtime/Newtonsoft.Json.dll")
+        for unit in u:
+            unit.dlls = [newtonsoft_editor if d == newtonsoft else d for d in unit.dlls]
         u.append(Unit("Unity.Addressables.Editor", [pathlib.Path(__file__).parent / "compile_check_stubs/addressables_editor"], editor=True))
         u.append(Unit("CTLife.Editor", [ASSETS / S_ / "Editor"], refs=["CTLife.Core", "CTLife.World", "CTLife.UI", "CTLife.App", "Unity.Addressables",
                                                                        "Unity.Addressables.Editor", "Unity.RenderPipelines.Universal.Runtime"],
                       dlls=[newtonsoft], editor=True))
+        # EditMode test assemblies (NUnit from the installed com.unity.ext.nunit; the test runner itself is not needed
+        # to compile [Test]/[TestCase] code).
+        integration = ASSETS / "Tests/Integration"
+        if integration.exists():
+            u.append(Unit("CTLife.Tests.Integration", [integration], refs=["CTLife.Core", "CTLife.Net", "CTLife.Generated", "CTLife.World", "CTLife.UI",
+                                                                          "CTLife.App", "ColyseusSDK"], dlls=[newtonsoft], editor=True, override=True))
+        nunit = sorted(CLIENT.glob("Library/PackageCache/com.unity.ext.nunit@*/net40/unity-custom/nunit.framework.dll"))
+        if nunit:
+            tests = ASSETS / "Tests/EditMode"
+            if tests.exists():
+                u.append(Unit("CTLife.Tests.EditMode", [tests], refs=["CTLife.Core", "CTLife.Net", "CTLife.Generated", "CTLife.World", "CTLife.UI",
+                                                                      "CTLife.Editor", "ColyseusSDK"],
+                              dlls=[newtonsoft, str(nunit[-1])], editor=True, override=True))
+            for tasm in sorted((ASSETS / S_ / "Features").glob("*/Tests/*.asmdef")):
+                meta = json.loads(tasm.read_text(encoding="utf-8-sig"))
+                refs = [r for r in meta.get("references", []) if not r.startswith(("UnityEngine.TestRunner", "UnityEditor.TestRunner"))]
+                u.append(Unit(meta["name"], [tasm.parent], refs=refs, dlls=[newtonsoft, str(nunit[-1])], editor=True, override=True))
+        else:
+            print("  !! nunit.framework.dll not found in client/Library/PackageCache; test assemblies skipped (open the project once)")
     return u
 
 
 def main():
+    global RELEASE
     ap = argparse.ArgumentParser()
-    ap.add_argument("--editor", action="store_true", help="also compile the editor assembly (CTLife.Editor)")
+    ap.add_argument("--editor", action="store_true", help="also run the editor pass (runtime assemblies with editor defines + CTLife.Editor)")
+    ap.add_argument("--release", action="store_true", help="player pass for a prod APK: no DEVELOPMENT_BUILD, CTLIFE_PROD defined")
+    ap.add_argument("--warnaserror", action="store_true", help="fail when a CT Life assembly has warnings")
     ap.add_argument("--keep-going", action="store_true")
     a = ap.parse_args()
+    RELEASE = a.release
     for p in (DOTNET, CSC, MODULES):
         if not p.exists():
             sys.exit(f"missing {p}")
     fetch()
     shutil.rmtree(OUT, ignore_errors=True)
-    built, ok_all = {}, True
-    print("Android IL2CPP player pass (Unity 6000.3.25f1 csc, .NET Standard 2.1):")
-    for u in units(a.editor):
-        ok = compile_unit(u, built, a.editor)
-        if not ok and u.name.startswith("CTLife"):
-            ok_all = False
-            if not a.keep_going:
-                break
+    ok_all = True
+    passes = [("player", False)] + ([("editor", True)] if a.editor else [])
+    for label, editor in passes:
+        built = {}
+        title = "Editor pass (editor defines on every assembly)" if editor else \
+            ("Android IL2CPP release player pass (CTLIFE_PROD)" if RELEASE else "Android IL2CPP dev player pass (DEVELOPMENT_BUILD)")
+        print(f"{title}, Unity 6000.3.25f1 csc, .NET Standard 2.1:")
+        for u in units(editor):
+            ok = compile_unit(u, built, label)
+            if not ok and u.name.startswith("CTLife"):
+                ok_all = False
+                if not a.keep_going:
+                    break
+        if not ok_all and not a.keep_going:
+            break
+    n_warn = sum(len(w) for w in WARNINGS.values())
+    print(f"WARNINGS: {n_warn} in CT Life assemblies" + (" (" + ", ".join(f"{k}: {len(v)}" for k, v in WARNINGS.items()) + ")" if n_warn else ""))
+    if a.warnaserror and n_warn:
+        ok_all = False
     print("RESULT:", "all CT Life assemblies compile" if ok_all else "errors above")
+    if "CTLIFE_CC_OUT" not in os.environ:
+        shutil.rmtree(OUT, ignore_errors=True)
     sys.exit(0 if ok_all else 1)
 
 

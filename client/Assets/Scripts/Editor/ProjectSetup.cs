@@ -279,20 +279,19 @@ namespace CTLife.EditorTools
         public static void CreateScenes()
         {
             var scenes = new List<EditorBuildSettingsScene>();
-            scenes.Add(new EditorBuildSettingsScene(MakeScene("Assets/Scenes/Bootstrap.unity", false), true));
-            scenes.Add(new EditorBuildSettingsScene(MakeScene("Assets/Scenes/Spike.unity", true), true));
+            // Only the game ships. The old engine-spike scene lives in client/Experiments~/Scenes.
+            scenes.Add(new EditorBuildSettingsScene(MakeScene("Assets/Scenes/Bootstrap.unity"), true));
             foreach (var venue in Directory.Exists("Assets/Venues") ? Directory.GetFiles("Assets/Venues", "*.unity", SearchOption.AllDirectories) : new string[0])
                 scenes.Add(new EditorBuildSettingsScene(venue.Replace('\\', '/'), true));
             EditorBuildSettings.scenes = scenes.ToArray();
         }
 
-        private static string MakeScene(string path, bool spike)
+        private static string MakeScene(string path)
         {
             if (File.Exists(path)) return path;
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
-            var go = new GameObject(spike ? "SpikeBootstrap" : "GameBootstrap");
-            var boot = go.AddComponent<GameBootstrap>();
-            boot.runSpike = spike;
+            var go = new GameObject("GameBootstrap");
+            go.AddComponent<GameBootstrap>();
             var cam = new GameObject("Main Camera") { tag = "MainCamera" };
             cam.AddComponent<Camera>();
             cam.AddComponent<AudioListener>();

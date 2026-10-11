@@ -22,6 +22,9 @@ namespace CTLife.Core
 
         public bool IsSignedIn => !string.IsNullOrEmpty(AccessToken);
 
+        /// <summary>Refresh this long before the JWT `exp` (contract section 3: access tokens live 15 minutes).</summary>
+        public static readonly TimeSpan RefreshMargin = TimeSpan.FromSeconds(90);
+
         public event Action Changed;
 
         private static string Key(string k) => $"ctlife.{Env.Current.id}.{k}";
@@ -35,8 +38,7 @@ namespace CTLife.Core
             IsSeeker = isSeeker;
             HasCharacter = hasCharacter;
             AuthMethod = method;
-            // The JWT lasts 15 min (contract section 3). Refresh a minute early.
-            AccessExpiresUtc = DateTime.UtcNow.AddMinutes(14);
+            AccessExpiresUtc = Jwt.RefreshAtUtc(access, DateTime.UtcNow, RefreshMargin);
             PlayerPrefs.SetString(Key("refresh"), refresh ?? "");
             PlayerPrefs.SetString(Key("wallet"), wallet ?? "");
             PlayerPrefs.SetString(Key("method"), method ?? "");
@@ -48,7 +50,7 @@ namespace CTLife.Core
         {
             AccessToken = access;
             RefreshToken = refresh;
-            AccessExpiresUtc = DateTime.UtcNow.AddMinutes(14);
+            AccessExpiresUtc = Jwt.RefreshAtUtc(access, DateTime.UtcNow, RefreshMargin);
             PlayerPrefs.SetString(Key("refresh"), refresh ?? "");
             PlayerPrefs.Save();
         }
@@ -70,6 +72,7 @@ namespace CTLife.Core
             AuthMethod = "none";
             PlayerPrefs.DeleteKey(Key("refresh"));
             PlayerPrefs.DeleteKey(Key("method"));
+            PlayerPrefs.DeleteKey(Key("wallet"));
             PlayerPrefs.Save();
             Changed?.Invoke();
         }

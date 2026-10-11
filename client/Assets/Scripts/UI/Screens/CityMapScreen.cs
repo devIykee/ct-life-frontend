@@ -13,7 +13,7 @@ namespace CTLife.UI
     /// </summary>
     public sealed class CityMapScreen : UiScreen
     {
-        public const int CurrentPhase = 1;
+        public static int CurrentPhase => Phases.Live;
 
         private readonly Registries _reg;
         private readonly Action<string> _onTravel;
@@ -36,9 +36,8 @@ namespace CTLife.UI
             // The rc1 registry lists planned venues without scene keys or phases. A listed ID
             // alone must not advertise an empty greybox as a destination. Later streamed venues
             // need a confirmed content-catalog entry before they become available in this guide.
-            var catalog = Resources.Load<VenueContentRegistry>("World/VenueContentRegistry");
             var available = reg.VenueOrder.Where(v => v.phase <= phase &&
-                ((catalog != null && catalog.Find(v.id) != null) ||
+                (VenueContent.Has(v.id) ||
                  (!string.IsNullOrEmpty(v.sceneKey) && Application.CanStreamedLevelBeLoaded(v.sceneKey))))
                 .Select(v => v.id).ToHashSet();
             int openCount = available.Count;

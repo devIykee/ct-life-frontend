@@ -48,10 +48,7 @@ namespace CTLife.Core
                 Log.Warn("args", "Could not read command line: " + e.Message);
             }
 #if UNITY_ANDROID && !UNITY_EDITOR
-            ReadAndroidExtras(new[] { "env", "autologin", "wallet", "venue", "spike", "seeker", "livekitToken", "livekitUrl" });
-#if DEVELOPMENT_BUILD
-            ReadAndroidExtras(new[] { "review", "reviewScreen", "reviewCapture", "reviewSequence", "reviewExit", "reviewChecks", "reviewNpcChecks", "reviewCastChecks", "reviewAudioChecks", "reviewGaitChecks", "reviewCrowd", "reviewControls", "reviewLook", "reviewTextStress", "reviewInputTrace", "reviewLandscape", "reviewCloseCamera", "reviewIncidentChecks", "reviewIncidentFixture" });
-#endif
+            ReadAndroidExtras(new[] { "env", "autologin", "autocreate", "autoenter", "fresh", "alias", "wallet", "venue", "seeker", "phase", "livekitToken", "livekitUrl" });
 #endif
 #endif
         }

@@ -27,6 +27,8 @@ namespace CTLife.Net
     {
         private const int TimeoutSeconds = 15;
         private const int MaxNetworkRetries = 2;
+        /// <summary>SERVER_BUSY / 503 retries before giving up (waits are capped by <see cref="RetryAfterSeconds"/>).</summary>
+        public const int MaxBusyAttempts = 5;
 
         private readonly Session _session;
 
@@ -148,6 +150,12 @@ namespace CTLife.Net
 
                 if (err.Is("SERVER_BUSY") || res.status == 503 && !string.IsNullOrEmpty(res.retryAfter))
                 {
+                    if (!ShouldRetryBusy(busyAttempts))
+                    {
+                        Log.Warn("rest", $"{method} {path}: SERVER_BUSY after {busyAttempts} retries, giving up");
+                        Bus.Publish(new ServerBusySignal { active = false, source = "rest" });
+                        throw err;
+                    }
                     busyAttempts++;
                     float wait = RetryAfterSeconds(res.retryAfter, busyAttempts);
                     Log.Warn("rest", $"{method} {path}: SERVER_BUSY, retry {busyAttempts} in {wait:0.#}s");
@@ -159,8 +167,7 @@ namespace CTLife.Net
                 if (res.status == 429 && !rateLimitedOnce)
                 {
                     rateLimitedOnce = true;
-                    float wait = 1f;
-                    if (float.TryParse(res.retryAfter, out var ra)) wait = Mathf.Clamp(ra, 0.2f, 5f);
+                    float wait = string.IsNullOrEmpty(res.retryAfter) ? 1f : Mathf.Clamp(RetryAfterSeconds(res.retryAfter, 1), 0.2f, 5f);
                     await Awaitable.WaitForSecondsAsync(wait, ct);
                     continue;
                 }
@@ -182,6 +189,9 @@ namespace CTLife.Net
                 timeout = TimeoutSeconds,
             };
             if (!followRedirects) req.redirectLimit = 0; // Opt-in orders must not be replayed at another URL.
+            // A bodiless POST/PUT/PATCH from UnityWebRequest carries a form content type that Fastify rejects
+            // ("Unsupported Media Type", surfaced as 500 by backend main). Send an empty JSON object instead.
+            if (jsonBody == null && (method == "POST" || method == "PUT" || method == "PATCH")) jsonBody = "{}";
             if (jsonBody != null)
             {
                 req.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(jsonBody)) { contentType = "application/json" };
@@ -220,6 +230,9 @@ namespace CTLife.Net
             Log.Debug("rest", $"{method} {path} → {res.status} in {(Time.realtimeSinceStartup - started) * 1000f:0} ms");
             return res;
         }
+
+        /// <summary>True while another SERVER_BUSY retry is allowed after <paramref name="attemptsSoFar"/> retries.</summary>
+        public static bool ShouldRetryBusy(int attemptsSoFar) => attemptsSoFar < MaxBusyAttempts;
 
         /// <summary>Retry-After is delta-seconds or an HTTP-date (RFC 9110). Missing → capped exponential backoff.</summary>
         public static float RetryAfterSeconds(string header, int attempt)

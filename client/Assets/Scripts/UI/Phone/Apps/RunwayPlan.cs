@@ -18,6 +18,8 @@ namespace CTLife.UI
         public static void ReviewPause(bool paused)=>_reviewPause?.Invoke(paused);
 #endif
         public static Task<RunwayPlanResult> Play(CancellationToken cancellation=default)=>PlayCore(cancellation,Environment.TickCount,true,false);
+        /// <summary>Deterministic entry point for the Careers lane (same seed → same round).</summary>
+        public static Task<RunwayPlanResult> PlaySeeded(int seed, CancellationToken cancellation = default) => PlayCore(cancellation, seed, true, false);
         private static Task<RunwayPlanResult> PlayCore(CancellationToken cancellation,int seed,bool observeFocus,bool review)
         {
             cancellation.ThrowIfCancellationRequested();var ui=UiRoot.Instance;

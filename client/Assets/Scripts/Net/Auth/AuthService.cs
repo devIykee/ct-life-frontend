@@ -2,7 +2,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using CTLife.Core;
-using CTLife.Rest.Model;
 using Newtonsoft.Json.Linq;
 
 namespace CTLife.Net
@@ -28,7 +27,7 @@ namespace CTLife.Net
         public bool DevAuthAllowed => Env.Current.allowDevAuth;
 
         /// <summary>Steps 1–7: challenge → MWA authorize with sign_in_payload → verify → tokens.</summary>
-        public async Task<AuthVerifyResponse> SignInWithWallet(IWalletSignIn wallet, CancellationToken ct = default)
+        public async Task<AuthResult> SignInWithWallet(IWalletSignIn wallet, CancellationToken ct = default)
         {
             if (wallet == null || !wallet.IsAvailable)
                 throw new WalletException("Mobile Wallet Adapter is not available on this device.");
@@ -47,35 +46,61 @@ namespace CTLife.Net
                 expirationTime = challenge.Str("expirationTime"),
             };
             Log.Info("auth", $"SIWS challenge for {req.domain} on {req.chainId}");
+            var forWallet = SiwsWalletCompat.ForWallet(req, Env.Current.walletIdentityUri, out var adjusted);
+            if (adjusted != null) Log.Warn("auth", "SIWS challenge fields not wallet-valid, adjusted for the wallet: " + adjusted + " (backend items 43/59)");
 
-            var signed = await wallet.SignIn(req, ct);
+            var signed = await wallet.SignIn(forWallet, ct);
             if (signed == null || string.IsNullOrEmpty(signed.address))
                 throw new WalletException("The wallet returned no sign-in result.");
+            Log.Info("auth", $"Wallet signed SIWS for {signed.address} ({signed.signatureType})");
 
-            var body = new JObject
+            JToken response;
+            try
             {
-                ["address"] = signed.address,
-                ["signedMessage"] = signed.signedMessageBase64,
-                ["signature"] = signed.signatureBase64,
-                ["nonce"] = req.nonce,
-            };
-            var session = await _rest.Post<AuthVerifyResponse>("/auth/verify", body.ToString(), auth: false, ct: ct);
+                response = await Verify(signed, signed.signedMessageBase64, req.nonce, ct);
+            }
+            catch (ApiException e) when (e.Is("SIGNATURE_INVALID"))
+            {
+                // Contract: signedMessage is base64. A server that reads it as UTF-8 text rejects that. The nonce is
+                // only consumed after a successful verify, so one retry with the decoded text costs no new prompt.
+                var text = SiwsEncoding.Base64ToUtf8Text(signed.signedMessageBase64);
+                if (text == null) throw;
+                Log.Warn("auth", "verify rejected the base64 signedMessage; retrying once with the UTF-8 SIWS text (backend item 46)");
+                response = await Verify(signed, text, req.nonce, ct);
+            }
+            var session = AuthResult.Parse(response, knownWallet: signed.address);
             Apply(session, "siws");
             return session;
         }
 
+        private Task<JToken> Verify(SiwsResponse signed, string signedMessage, string nonce, CancellationToken ct)
+        {
+            var body = new JObject
+            {
+                ["address"] = signed.address,
+                ["signedMessage"] = signedMessage,
+                ["signature"] = signed.signatureBase64,
+                ["nonce"] = nonce,
+            };
+            return _rest.Post<JToken>("/auth/verify", body.ToString(), auth: false, ct: ct);
+        }
+
         /// <summary>Dev bypass. Compiled out of staging/prod servers; the client also refuses unless the env allows it.</summary>
-        public async Task<AuthVerifyResponse> SignInDev(string wallet, bool isSeeker = false, CancellationToken ct = default)
+        public async Task<AuthResult> SignInDev(string wallet, bool isSeeker = false, CancellationToken ct = default)
         {
             if (!DevAuthAllowed) throw new InvalidOperationException("Dev auth is disabled for " + Env.Current.id);
             // Contract 1.0.0-rc1: body is {wallet} only; isSeeker is decided server-side.
             var body = new JObject { ["wallet"] = wallet };
-            var session = await _rest.Post<AuthVerifyResponse>("/auth/dev", body.ToString(), auth: false, ct: ct);
+            var response = await _rest.Post<JToken>("/auth/dev", body.ToString(), auth: false, ct: ct);
+            var session = AuthResult.Parse(response, knownWallet: wallet);
             Apply(session, "dev");
             return session;
         }
 
-        /// <summary>Resumes with the stored refresh token. Returns false if there is none or it was revoked.</summary>
+        /// <summary>
+        /// Resumes with the stored refresh token. Returns false if there is none or the server rejected it.
+        /// Network failures propagate so the caller can offer a retry instead of a fresh wallet prompt.
+        /// </summary>
         public async Task<bool> TryResume(CancellationToken ct = default)
         {
             var stored = _session.StoredRefreshToken;
@@ -83,16 +108,26 @@ namespace CTLife.Net
             try
             {
                 var body = new JObject { ["refreshToken"] = stored };
-                var s = await _rest.Post<AuthVerifyResponse>("/auth/refresh", body.ToString(), auth: false, ct: ct);
+                var response = await _rest.Post<JToken>("/auth/refresh", body.ToString(), auth: false, ct: ct);
+                var s = AuthResult.Parse(response, knownWallet: _session.StoredWallet);
                 Apply(s, _session.StoredMethod);
                 return true;
             }
-            catch (ApiException e) when (!e.IsNetwork)
+            catch (ApiException e) when (!e.IsNetwork && e.Status >= 400 && e.Status < 500)
             {
                 Log.Info("auth", "Stored session rejected: " + e.Code);
                 _session.Clear();
                 return false;
             }
+        }
+
+        /// <summary>Refreshes when the access token is within its refresh margin. Rooms call this before joining.</summary>
+        public async Task EnsureFresh(CancellationToken ct = default)
+        {
+            if (!_session.IsSignedIn || !_session.AccessTokenStale) return;
+            if (string.IsNullOrEmpty(_session.RefreshToken) && string.IsNullOrEmpty(_session.StoredRefreshToken)) return;
+            await Refresh();
+            ct.ThrowIfCancellationRequested();
         }
 
         /// <summary>Step 9. Concurrent callers share one refresh.</summary>
@@ -111,7 +146,7 @@ namespace CTLife.Net
             {
                 var body = new JObject { ["refreshToken"] = token };
                 var s = await _rest.SendRaw("POST", "/auth/refresh", body.ToString(), false, Ids.NewIdempotencyKey(), null, CancellationToken.None);
-                var parsed = Json.Deserialize<AuthVerifyResponse>(s.body);
+                var parsed = AuthResult.Parse(Json.ParseRaw(s.body), _session.UserId, _session.Wallet, _session.IsSeeker);
                 _session.UpdateTokens(parsed.AccessToken, parsed.RefreshToken);
                 return true;
             }
@@ -141,12 +176,10 @@ namespace CTLife.Net
             _session.Clear();
         }
 
-        private void Apply(AuthVerifyResponse s, string method)
+        private void Apply(AuthResult s, string method)
         {
-            var u = s.User;
-            _session.SetTokens(s.AccessToken, s.RefreshToken, u?.Id.ToString(), u?.Wallet, u != null && u.IsSeeker,
-                u != null && u.HasCharacter, method);
-            Log.Info("auth", $"Signed in ({method}) as {u?.Wallet} seeker={u?.IsSeeker} hasCharacter={u?.HasCharacter}");
+            _session.SetTokens(s.AccessToken, s.RefreshToken, s.UserId, s.Wallet, s.IsSeeker, s.HasCharacter ?? false, method);
+            Log.Info("auth", $"Signed in ({method}) as {s.Wallet} user={s.UserId} seeker={s.IsSeeker} hasCharacter={s.HasCharacter}");
         }
     }
 }

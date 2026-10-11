@@ -24,7 +24,7 @@ namespace CTLife.EditorTools
     public static class VenueContentBuilder
     {
         private const string Output = "Assets/Art/Generated/Venues";
-        private const string RegistryPath = "Assets/Resources/World/VenueContentRegistry.asset";
+        private const string RegistryPath = "Assets/Venues/VenueContentRegistry.asset";
         private const string ManifestPath = "Assets/Art/environment/manifest.json";
         private const string SnapshotPath = "Assets/Resources/Contract/config_snapshot.json";
         private static readonly Dictionary<string, Material> Materials = new Dictionary<string, Material>();
@@ -103,6 +103,7 @@ namespace CTLife.EditorTools
                 entry.prefab = prefab.GetComponent<VenueSceneRoot>();
                 EditorUtility.SetDirty(registry);
                 AssetDatabase.SaveAssets();
+                VenueContentCatalog.Sync();
                 Validate(prefab.GetComponent<VenueSceneRoot>(), spots);
                 ValidateCameraFraming(prefab.GetComponent<VenueSceneRoot>(), spots);
                 ValidateHeroDetail(prefab.GetComponent<VenueSceneRoot>(), spots);

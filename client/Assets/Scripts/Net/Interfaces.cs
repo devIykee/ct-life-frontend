@@ -27,10 +27,11 @@ namespace CTLife.Net
     public interface IAuthService
     {
         bool DevAuthAllowed { get; }
-        Task<AuthVerifyResponse> SignInWithWallet(IWalletSignIn wallet, CancellationToken ct = default);
-        Task<AuthVerifyResponse> SignInDev(string wallet, bool isSeeker = false, CancellationToken ct = default);
+        Task<AuthResult> SignInWithWallet(IWalletSignIn wallet, CancellationToken ct = default);
+        Task<AuthResult> SignInDev(string wallet, bool isSeeker = false, CancellationToken ct = default);
         Task<bool> TryResume(CancellationToken ct = default);
         Task<bool> Refresh();
+        Task EnsureFresh(CancellationToken ct = default);
         Task SignOut(IWalletSignIn wallet);
     }
 
@@ -41,6 +42,8 @@ namespace CTLife.Net
         MarketChannel Market { get; }
         VenueChannel Venue { get; }
         event Action<VenueChannel> VenueJoined;
+        /// <summary>Keep city and market joined (retry/rejoin with backoff) until the owner token ends.</summary>
+        void KeepPersistentRoomsAlive(CancellationToken owner);
         event Action VenueLeft;
         Task ConnectCity(CancellationToken ct = default);
         Task ConnectMarket(CancellationToken ct = default);

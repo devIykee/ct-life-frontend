@@ -5,7 +5,9 @@ namespace CTLife.Core
     /// <summary>Minimal semver compare for `minClientVersion` (contract section 7).</summary>
     public static class Semver
     {
-        public const string ClientVersion = "0.1.0";
+        /// <summary>Sent as X-Client-Version and compared with GET /config minClientVersion (backend main serves 1.0.0;
+        /// a 0.1.0 client stopped at "Update required"). Keep equal to PlayerSettings bundleVersion.</summary>
+        public const string ClientVersion = "1.0.0";
         public const string ContractVersion = "1.0.0";
 
         /// <summary>Returns -1, 0 or 1. Pre-release suffixes are ignored.</summary>

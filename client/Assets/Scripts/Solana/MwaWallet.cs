@@ -59,6 +59,10 @@ namespace CTLife.Solana
             _web3.autoConnectOnStartup = false;
             _web3.solanaWalletAdapterOptions ??= new SolanaWalletAdapterOptions();
             _web3.solanaWalletAdapterOptions.solanaMobileWalletAdapterOptions ??= new SolanaMobileWalletAdapterOptions();
+            // Web3.CreateWalletAdapter() dereferences the WebGL options on every platform; a component added from code
+            // (not deserialized from a scene) leaves them null, so sign-in threw NullReferenceException on the Seeker.
+            _web3.solanaWalletAdapterOptions.solanaWalletAdapterWebGLOptions ??= new SolanaWalletAdapterWebGLOptions();
+            _web3.solanaWalletAdapterOptions.phantomWalletOptions ??= new PhantomWalletOptions();
             var mwa = _web3.solanaWalletAdapterOptions.solanaMobileWalletAdapterOptions;
             mwa.name = _identityName;
             mwa.identityUri = _identityUri;
@@ -89,8 +93,12 @@ namespace CTLife.Solana
             }
             catch (Exception e)
             {
+                Log.Warn("wallet", "LoginWalletAdapter failed: " + e);
+                // The SDK reports a wallet that closed the session without answering as "Timeout or cancelled";
+                // only an explicit decline is the player's choice.
                 bool declined = e.Message.IndexOf("declin", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                                e.Message.IndexOf("cancel", StringComparison.OrdinalIgnoreCase) >= 0;
+                                e.Message.IndexOf("cancel", StringComparison.OrdinalIgnoreCase) >= 0 &&
+                                e.Message.IndexOf("timeout", StringComparison.OrdinalIgnoreCase) < 0;
                 throw new WalletException("Wallet sign-in failed: " + e.Message, declined, e);
             }
             ct.ThrowIfCancellationRequested();

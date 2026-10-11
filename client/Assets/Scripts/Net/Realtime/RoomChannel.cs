@@ -26,6 +26,9 @@ namespace CTLife.Net
 
         public event Action<RejectedMessage> Rejected;
         public event Action<int> Left;
+        /// <summary>The room ended without our own Leave(): server shutdown, kick, or a reconnect that failed.</summary>
+        public event Action<int> LostUnexpectedly;
+        private bool _leaving;
         public event Action Dropped;
         public event Action Reconnected;
 
@@ -38,6 +41,7 @@ namespace CTLife.Net
         {
             owner.ThrowIfObsolete();
             long revision = ++_joinRevision;
+            _leaving = false;
             var joined = await client.JoinOrCreate<TState>(RoomName, options);
             // The installed SDK has no CancellationToken join overload. Drain the exact raw result before
             // assigning Room or registering welcome/state/message handlers when its owner is obsolete.
@@ -61,10 +65,21 @@ namespace CTLife.Net
                 Log.Warn("rt", $"{RoomName} rejected {r.type}: {r.code}");
                 Rejected?.Invoke(r);
             });
+            var room = Room;
             Room.OnLeave += code =>
             {
-                Log.Info("rt", $"{RoomName} left ({code})");
+                bool expected = _leaving || !ReferenceEquals(Room, room);
+                Log.Info("rt", $"{RoomName} left ({code}){(expected ? "" : " unexpectedly")}");
+                if (!expected)
+                {
+                    // The SDK gave up (or the server closed the room). Mark this channel unjoined so the owner
+                    // can join a fresh room; the dead handle's listeners are released now.
+                    _joinRevision++;
+                    ReleaseListeners();
+                    Room = null;
+                }
                 Left?.Invoke(code);
+                if (!expected) LostUnexpectedly?.Invoke(code);
             };
             Room.OnDrop += code =>
             {
@@ -112,20 +127,32 @@ namespace CTLife.Net
             if (unsubscribe != null) _unsubscribe.Add(unsubscribe);
         }
 
+        protected Action TrackAndReturn(Action unsubscribe)
+        {
+            Track(unsubscribe);
+            return unsubscribe;
+        }
+
         public Task Send(string type, object payload)
         {
             if (Room == null) return Task.CompletedTask;
             return Room.Send(type, payload);
         }
 
-        public async Task Leave()
+        private void ReleaseListeners()
         {
-            _joinRevision++;
             foreach (var u in _unsubscribe)
             {
                 try { u(); } catch { /* ignore */ }
             }
             _unsubscribe.Clear();
+        }
+
+        public async Task Leave()
+        {
+            _leaving = true;
+            _joinRevision++;
+            ReleaseListeners();
             var r = Room;
             Room = null;
             if (r != null)

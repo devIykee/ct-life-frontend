@@ -21,6 +21,17 @@ namespace CTLife.World
         public string NpcId { get; private set; }
         public NpcState State { get; private set; }
 
+        /// <summary>
+        /// Presentation seam (Features/WorldLife binds these; all null = the behaviour below, unchanged).
+        /// PresentRewrite maps a replicated state to the state to play (spot aliases, stable run start, sticky anims).
+        /// PresentTalk returns true when it presented the line itself. PresentApplied runs after every Apply with the
+        /// raw and the played state. PresentKeepHidden is asked by VenueSession before re-activating a hidden NPC.
+        /// </summary>
+        public static Func<NpcController, NpcState, NpcState> PresentRewrite;
+        public static Func<NpcController, NpcState, bool> PresentTalk;
+        public static Action<NpcController, NpcState, NpcState> PresentApplied;
+        public static Func<NpcController, NpcState, bool> PresentKeepHidden;
+
         private AvatarView _view;
         private VenueSceneRoot _venue;
         private NavMeshAgent _agent;
@@ -63,7 +74,8 @@ namespace CTLife.World
             // Binding starts when the component is added. Place the actor first, rather than
             // creating an agent at the prefab origin and assuming a same-frame Warp has bound it.
             Vector3 spawn = venue.EntrancePosition;
-            if (!string.IsNullOrEmpty(state.spotId) && venue.TryGetSpot(state.spotId, out var sp, out _)) spawn = sp;
+            var spawnState = Rewrite(state);
+            if (!string.IsNullOrEmpty(spawnState.spotId) && venue.TryGetSpot(spawnState.spotId, out var sp, out _)) spawn = sp;
             bool sampledSpawn = NavMesh.SamplePosition(spawn, out var hit, 3f, NavMesh.AllAreas);
             transform.position = sampledSpawn ? hit.position : spawn;
             _agent = gameObject.AddComponent<NavMeshAgent>();
@@ -87,6 +99,22 @@ namespace CTLife.World
         public void Apply(NpcState s)
         {
             if (s == null) return;
+            var raw = s;
+            ApplyState(Rewrite(raw));
+            if (PresentApplied == null) return;
+            try { PresentApplied(this, raw, State); }
+            catch (Exception e) { Log.Exception("npc-present", e); }
+        }
+
+        private NpcState Rewrite(NpcState raw)
+        {
+            if (PresentRewrite == null || raw == null) return raw;
+            try { return PresentRewrite(this, raw) ?? raw; }
+            catch (Exception e) { Log.Exception("npc-present", e); return raw; }
+        }
+
+        private void ApplyState(NpcState s)
+        {
             State = s;
             // A newly enabled agent can bind on the next navigation tick. Keep the latest
             // replicated state pending; do not deduplicate an entry whose Stop/path never ran.
@@ -284,6 +312,11 @@ namespace CTLife.World
 
         private void Talk(NpcState s)
         {
+            if (PresentTalk != null)
+            {
+                try { if (PresentTalk(this, s)) return; }
+                catch (Exception e) { Log.Exception("npc-present", e); }
+            }
             string text = null;
             if (Services.TryGet<ConfigStore>(out var cfg)) text = cfg.Registries.FormatLine(s.lineId, s.lineParams, s.archetypeId);
             if (string.IsNullOrEmpty(text)) return;
@@ -325,7 +358,7 @@ namespace CTLife.World
             }
             if (_pendingState != null)
             {
-                Apply(_pendingState);
+                ApplyState(_pendingState);
 #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
                 Log.Info("npc-nav", "Deferred state applied; " + ReviewSnapshot());
 #endif

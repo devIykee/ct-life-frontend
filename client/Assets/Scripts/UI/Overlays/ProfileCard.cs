@@ -15,6 +15,11 @@ namespace CTLife.UI
     /// </summary>
     public sealed class ProfileCard : IDisposable
     {
+        /// <summary>Set by the composition root (Phase 3 social): extra actions under Block/Report. (userId, name, close) → row or null.</summary>
+        public static Func<string, string, Action, VisualElement> PlayerActions;
+        /// <summary>Set by the composition root (City Life): knock on a player's home.</summary>
+        public static Action<string, string> VisitHome;
+
         private readonly VisualElement _layer;
         private readonly Subscriptions _subs = new Subscriptions();
         private readonly Session _session;
@@ -131,6 +136,10 @@ namespace CTLife.UI
             var report = El.Btn(Strings.T("profile.report"), () => { if (Owns(sheet)) ShowReport("user", userId, name); }, "ct-btn ct-btn-danger");
             report.name = "profile-report";
             sheet.Add(El.Div("ct-row", block, report));
+            if (VisitHome != null && Phases.IsOpen(4))
+                sheet.Add(El.Btn("Visit home", () => { if (!Owns(sheet)) return; VisitHome(userId, name); Close(sheet); }, "ct-btn"));
+            var extra = PlayerActions?.Invoke(userId, name, () => Close(sheet));
+            if (extra != null) sheet.Add(extra);
             sheet.Add(El.Btn(Strings.T("common.close"), () => Close(sheet), "ct-btn ct-btn-ghost"));
             var read = new CancellationTokenSource();
             _read = read;
@@ -179,6 +188,7 @@ namespace CTLife.UI
             try
             {
                 await Services.Get<Api>().Block(userId);
+                Bus.Publish(new UserBlockedSignal { userId = userId });
                 if (!Owns(sheet)) return;
                 Bus.Publish(ToastSignal.Text(Strings.T("profile.blocked"), ToastKind.Good));
                 Close(sheet);

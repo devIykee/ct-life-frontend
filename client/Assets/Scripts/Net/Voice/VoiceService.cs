@@ -384,6 +384,8 @@ namespace CTLife.Net
             var cb = new UnityEngine.Android.PermissionCallbacks();
             cb.PermissionGranted += _ => tcs.TrySetResult(true);
             cb.PermissionDenied += _ => tcs.TrySetResult(false);
+            // A dismissed dialog raises neither callback; without this the request waited for its caller's timeout.
+            cb.PermissionRequestDismissed += _ => tcs.TrySetResult(false);
             UnityEngine.Android.Permission.RequestUserPermission(perm, cb);
             return await tcs.Task;
 #else
