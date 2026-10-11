@@ -218,3 +218,13 @@ Downloaded from Kay Lousberg’s first-party KayKit repository at commit `672074
 | README.md | [Pinned original](https://raw.githubusercontent.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0/672074b73ba276876a19e8816ecdc5241817ab47/README.md) | CC0 1.0 | Kay Lousberg | 2026-10-07 | Outside-Assets motion candidate/source record |
 | Knight.glb | [Pinned original](https://raw.githubusercontent.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0/672074b73ba276876a19e8816ecdc5241817ab47/addons/kaykit_character_pack_adventures/Characters/gltf/Knight.glb) | CC0 1.0 | Kay Lousberg | 2026-10-07 | Outside-Assets motion candidate/source record |
 | Knight.fbx | [Pinned original](https://raw.githubusercontent.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0/672074b73ba276876a19e8816ecdc5241817ab47/addons/kaykit_character_pack_adventures/Characters/fbx/Knight.fbx) | CC0 1.0 | Kay Lousberg | 2026-10-07 | Outside-Assets motion candidate/source record |
+
+## Venue dioramas (venue builder, 2026-10-08)
+
+No new third-party downloads. The 22 venue/home dioramas under `client/Assets/World/Venues/` place only models already
+listed above (environment manifest, CC0: Kenney, Quaternius, KayKit, Poly Haven textures, CT Life custom pieces).
+
+| Asset | Source | Licence | Author | Date | Used for |
+| --- | --- | --- | --- | --- | --- |
+| Venue signage atlases `client/Assets/World/Venues/<id>/Textures/<id>_signs.png` | `tools/venues/make_venue_signs.py` (original parody text and graphics; no third-party logos or product names) | CC0 (made by us); text rasterised from Lilita One and Manrope, SIL OFL 1.1, already bundled in `client/Assets/Resources/UI/Fonts` | CT Life venue builder | 2026-10-08 | venue signs, idle states of the live boards |
+| Venue block palette `client/Assets/World/Venues/_Shared/Textures/VenueBlockPalette.png`, ORE 5×5 idle texture | generated in `client/Assets/Scripts/Editor/VenueBuild/` | CC0 (made by us) | CT Life venue builder | 2026-10-08 | procedural trim, ORE board idle state |
