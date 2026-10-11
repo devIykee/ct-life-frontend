@@ -175,6 +175,14 @@ The current development build uses the adult Snow derivative in `character-candi
 
 The UI uses unmodified static **Manrope** and **Lilita One** fonts (SIL Open Font License 1.1), 44 active filled/bold **Phosphor** raster icons (MIT; +6 interaction CTA icons added 2026-10-08 by character-feel: armchair, desktop, microphone-stage, coffee, door-open, person-simple-walk), and one retained regular ranking raster. Exact pinned sources, hashes and complete notices are bundled in `client/Assets/Resources/UI/asset-sources.json`, `THIRD-PARTY-NOTICES.md` and `Licenses/`, and exposed in the in-app credits. Pinterest reference imagery is research only and is not included in the game.
 
+### CTOS phone typography — 2026-10-12
+
+| Name | Source URL | Licence | Author | Downloaded | Used for |
+| --- | --- | --- | --- | --- | --- |
+| Inter v4.1, unmodified static text-size Regular 400, Medium 500 and SemiBold 600 TTFs (`extras/ttf/Inter-*.ttf`) | https://rsms.me/inter/ ; pinned release https://github.com/rsms/inter/releases/tag/v4.1 ; download https://github.com/rsms/inter/releases/download/v4.1/Inter-4.1.zip | SIL Open Font License 1.1; complete upstream notice bundled in `client/Assets/Resources/UI/Fonts/Phone/Inter-OFL.txt` | Copyright (c) 2016 The Inter Project Authors | 2026-10-12 | Dedicated Solana Duo / CTOS interface typography; existing game fonts retained. Runtime files and exact SHA-256 hashes are recorded in `client/Assets/Resources/UI/Fonts/Phone/font-sources.json`. No Apple fonts are included. |
+
+The Inter source archive SHA-256 is `9883fdd4a49d4fb66bd8177ba6625ef9a64aa45899767dde3d36aa425756b11e`. These three TTFs are copied byte-for-byte from the release, not generated or renamed derivatives. The release is v4.1; its embedded font version string is `Version 4.001;git-9221beed3`. The bundled licence permits font embedding with its copyright and licence retained.
+
 
 ## Authored Rain / Breeze development import — 2026-10-06
 
@@ -349,3 +357,14 @@ The 29 Rain-derived cast appearances retain their existing Blender Foundation / 
 ## Lobby courtyard — 2026-10-12
 
 `client/Assets/Resources/UI/Onboarding/lobby-rooftop.png` — original generated CT Life lobby illustration, built-in OpenAI imagegen, 12 October 2026. No downloaded third-party game art is embedded. Source: `exec-7ef7fca0-58e2-421c-b204-6b05b18a5762.png`; exact prompt: `docs/research/lobby-rooftop-image-prompt-20261012.txt`. Reference/layout discussion: `docs/research/lobby-solana-duo-20261012.md`. This is background artwork, not a newly playable map.
+
+## CTOS original app icon artwork — 12 October 2026
+
+| Name | Source | Provenance | Author | Date | Use |
+|---|---|---|---|---|---|
+| CTOS layered app icon set (29 routes + neutral fallback) | `art/source/phoneos-icons/render-icons.swift` | Original geometry authored for CT Life with native CoreGraphics; no third-party icon, SF Symbol, Apple artwork or glyph font embedded. Primary design reference only: [Apple Icon Composer](https://developer.apple.com/icon-composer/), current official app-icon grid and WWDC26 lab. Reference images do not ship. | CT Life / Codex icon lane | 2026-10-12 | `client/Assets/Resources/UI/PhoneOS/Icons/*.png`; 192px RGBA, 794,745 bytes total; renderer and mapping research in `docs/research/ctos-app-icons-20261012.md` |
+
+
+## CTOS photographic wallpaper — 12 October 2026
+
+`client/Assets/Resources/UI/PhoneOS/Wallpaper/Dunes.png` — original built-in OpenAI imagegen photographic-style wallpaper created for CT Life. No Apple wallpaper, product photo, third-party photograph, UI or logo is embedded. Original 1024×1536 PNG copied unchanged; mobile texture import is bounded to2048, ASTC6×6. Prompt/source and validation: `docs/progress/ctos-iphone-20261012.md`.

@@ -217,6 +217,16 @@ namespace CTLife.EditorTools
                 Click(ui.PhoneLayer.Q<Button>("phone-home"));
                 await shot("hud-06e-ctos-home-from-wallet", .2f);
                 expect(Visible(launcher) && ui.PhoneLayer.Q(className: "ct-wallet-page") == null, "native Home returns from Wallet to CTOS launcher");
+                Click(ui.PhoneLayer.Q<Button>("phone-search"));
+                await wait(.1f);
+                ui.PhoneLayer.Q<TextField>("phone-search-input").value = "wallet";
+                await shot("hud-06f-ctos-search-wallet", .2f);
+                expect(launcher.IsSearching && ui.PhoneLayer.Q<ScrollView>("phone-search-results").Query<Button>(className: "ct-app").ToList().Count == 1, "search finds the real Wallet route");
+                Click(ui.PhoneLayer.Q<Button>("phone-search-cancel"));
+                Click(ui.PhoneLayer.Q<Button>("phone-widget-map"));
+                await shot("hud-06g-ctos-widget-map", .2f);
+                expect(Visible(ui.PhoneLayer.Q(className: "ct-map")), "city widget opens the real map");
+                Click(ui.PhoneLayer.Q<Button>("phone-home"));
                 phone.Close();
                 await shot("hud-07-ctos-closed", .2f);
                 expect(Visible(hud.Element), "closing CTOS restores the HUD");

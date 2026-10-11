@@ -26,6 +26,8 @@ namespace CTLife.UI
             entries.Add(El.Text(Strings.T("credits.section.audio"), "ct-eyebrow"));
             entries.Add(Credit("credits.music", "credits.musicSummary", null, "Audio/Music-Credits", "UI/Licenses/CC-BY-4.0"));
             entries.Add(El.Text(Strings.T("credits.section.type"), "ct-eyebrow"));
+            entries.Add(Credit("credits.inter", "credits.interSummary", "https://rsms.me/inter/",
+                "UI/Fonts/Phone/Inter-OFL"));
             entries.Add(Credit("credits.manrope", "credits.manropeSummary", "https://github.com/googlefonts/manrope",
                 "UI/Fonts/OFL"));
             entries.Add(Credit("credits.lilita", "credits.lilitaSummary", "https://github.com/google/fonts/tree/main/ofl/lilitaone",

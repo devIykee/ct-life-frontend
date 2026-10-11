@@ -55,9 +55,8 @@ namespace CTLife.Tests
             var wallpaper = _layer.Q<PhoneWallpaper>();
             Assert.AreEqual(DisplayStyle.Flex, wallpaper.resolvedStyle.display);
             Assert.Greater(wallpaper.layout.width, 0);
-            Assert.IsTrue(wallpaper.customStyle.TryGetValue(new CustomStyleProperty<Color>("--ct-wallpaper-sky"), out var sky),
-                "wallpaper must receive its theme color, rather than silently painting with white fallbacks");
-            Assert.AreNotEqual(Color.white, sky);
+            Assert.IsNotNull(wallpaper.resolvedStyle.backgroundImage.texture,
+                "the photographic wallpaper must load as a shipping resource");
             var dock = Launcher.Q(className: "ct-phone-dock");
             CollectionAssert.AreEqual(new[] { "phone-app-map", "phone-app-wallet", "phone-app-messages", "phone-app-spaces" },
                 dock.Query<Button>(className: "ct-app").ToList().Select(b => b.name).ToArray());
@@ -165,6 +164,69 @@ namespace CTLife.Tests
             Assert.IsTrue(viewport.HasPointerCapture(PointerId.mousePointerId));
             _phone.Close();
             Assert.IsFalse(viewport.HasPointerCapture(PointerId.mousePointerId));
+        }
+
+        [UnityTest]
+        public IEnumerator SearchFindsAppAcrossPagesAndOpensItsRoute()
+        {
+            _phone.Open(); yield return null;
+            Launcher.ShowPage(1, false);
+            Submit(Launcher.Q<Button>("phone-search"));
+            yield return null;
+            Assert.IsTrue(Launcher.IsSearching);
+            var field = Launcher.Q<TextField>("phone-search-input");
+            field.value = "TEST23";
+            var results = Launcher.Q<ScrollView>("phone-search-results");
+            Assert.AreEqual(1, results.Query<Button>(className: "ct-app").ToList().Count);
+            Submit(results.Q<Button>("phone-app-test23"));
+            Assert.AreEqual(1, _apps.Single(a => a.Id == "test23").Opened);
+            _phone.Back();
+            Assert.AreEqual(1, Launcher.PageIndex);
+            Assert.IsFalse(Launcher.IsSearching);
+        }
+
+        [UnityTest]
+        public IEnumerator EmptySearchAndHomeDismissalKeepPhoneAndSavedPage()
+        {
+            _phone.Open(); yield return null;
+            Launcher.ShowPage(1, false);
+            Launcher.OpenSearch(); yield return null;
+            Launcher.Q<TextField>("phone-search-input").value = "no matching app";
+            Assert.IsNotNull(Launcher.Q<Label>(className: "ct-phone-search-empty"));
+            Submit(_layer.Q<Button>("phone-home"));
+            Assert.IsFalse(Launcher.IsSearching);
+            Assert.IsTrue(_phone.IsOpen);
+            Assert.AreEqual(1, Launcher.PageIndex);
+            Assert.AreEqual(0, Launcher.Q<ScrollView>("phone-search-results").contentContainer.childCount);
+        }
+
+        [UnityTest]
+        public IEnumerator EscapeFromFocusedSearchInputDismissesSearchWithoutClosingPhone()
+        {
+            _phone.Open(); yield return null;
+            Launcher.OpenSearch(); yield return null; yield return null;
+            var field = Launcher.Q<TextField>("phone-search-input");
+            field.value = "wallet";
+            var target = field.Q<TextElement>();
+            Assert.IsNotNull(target);
+            using (var key = KeyDownEvent.GetPooled('\0', KeyCode.Escape, EventModifiers.None))
+            { key.target = target; target.SendEvent(key); }
+            Assert.IsFalse(Launcher.IsSearching);
+            Assert.IsTrue(_phone.IsOpen);
+        }
+
+        [UnityTest]
+        public IEnumerator ClosingPhoneDuringSearchCancelsDeferredFocusAndSearchState()
+        {
+            _phone.Open(); yield return null;
+            Launcher.OpenSearch();
+            var launcher = Launcher;
+            _phone.Close();
+            yield return null;
+            Assert.IsFalse(launcher.IsSearching);
+            Assert.IsFalse(_phone.IsOpen);
+            _phone.Open(); yield return null;
+            Assert.IsFalse(Launcher.IsSearching);
         }
 
         private static void Submit(Button button)
