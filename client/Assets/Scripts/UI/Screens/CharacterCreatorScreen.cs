@@ -54,6 +54,7 @@ namespace CTLife.UI
             _serverLookConfirmed = serverLookConfirmed;
             _readOnlyReview = readOnlyReview;
             _looks = CreatorLookCatalog.Available();
+            Log.Info("creator", _looks.Count + " looks available");
             if (SelectedLook != null) Array.Copy(SelectedLook.look, _draft.look, _draft.look.Length);
         }
 
@@ -188,7 +189,7 @@ namespace CTLife.UI
         private void RefreshLook()
         {
             var look = SelectedLook;
-            _lookName.text = look == null ? Strings.T("creator.look") : Strings.T(look.labelKey);
+            _lookName.text = look == null ? Strings.T("creator.look") : look.Display;
             _lookCount.text = _looks.Count > 1 ? Strings.F("creator.lookCount", _lookIndex + 1, _looks.Count) : Strings.T("creator.wholeLook");
             _lookCount.Show(look != null);
             if (look != null)
@@ -296,7 +297,7 @@ namespace CTLife.UI
             if (_identitySummary != null)
             {
                 var names = new List<string>();
-                if (SelectedLook != null) names.Add(Strings.T(SelectedLook.labelKey));
+                if (SelectedLook != null) names.Add(SelectedLook.Display);
                 var tribe = _reg.TribeOrder.FirstOrDefault(t => t.id == _draft.tribeId);
                 if (tribe != null) names.Add(tribe.name);
                 names.AddRange(_reg.Traits.Where(t => _draft.traitIds.Contains(t.id)).Select(t => t.name));

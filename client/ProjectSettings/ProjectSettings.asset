@@ -294,7 +294,7 @@ PlayerSettings:
     height: 180
     banner: {fileID: 0}
   androidGamepadSupportLevel: 0
-  AndroidMinifyRelease: 0
+  AndroidMinifyRelease: 1
   AndroidMinifyDebug: 0
   AndroidValidateAppBundleSize: 1
   AndroidAppBundleSizeToValidate: 200
@@ -695,10 +695,11 @@ PlayerSettings:
     Android: 1
   il2cppCompilerConfiguration:
     Android: 1
-  il2cppCodeGeneration: {}
+  il2cppCodeGeneration:
+    Android: 1
   il2cppStacktraceInformation: {}
   managedStrippingLevel:
-    Android: 1
+    Android: 2
   incrementalIl2cppBuild: {}
   suppressCommonWarnings: 1
   allowUnsafeCode: 0

@@ -21,6 +21,36 @@ namespace CTLife.EditorTools
     /// </summary>
     public static class BuildScript
     {
+        /// <summary>
+        /// Packed size per category and the 40 largest source assets, from the BuildReport (uncompressed packed sizes,
+        /// before APK zip). Written next to the APK as &lt;apk&gt;.sizes.txt and logged.
+        /// </summary>
+        public static void WriteSizeReport(BuildReport report, string apkPath)
+        {
+            var rows = report.packedAssets.SelectMany(p => p.contents).Where(c => c.packedSize > 0).ToList();
+            string Category(PackedAssetInfo c)
+            {
+                var path = c.sourceAssetPath ?? "";
+                var t = c.type?.Name ?? "?";
+                if (t == "AudioClip") return "audio";
+                if (t == "Texture2D" || t == "Cubemap") return path.Contains("Lightmap") || path.Contains("/Lightmaps/") || path.Contains("lightmap") ? "lightmaps" :
+                    path.Contains("/characters/") ? "textures:characters" : path.Contains("/Venues/") || path.Contains("/World/") ? "textures:venues" : "textures:other";
+                if (t == "Mesh") return path.Contains("/characters/") ? "meshes:characters" : "meshes:other";
+                if (t == "Shader" || t == "ComputeShader") return "shaders";
+                if (t == "AnimationClip") return "animation";
+                return "other:" + t;
+            }
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine($"packed assets total {rows.Sum(r => (long)r.packedSize) / 1048576.0:0.0} MiB");
+            foreach (var g in rows.GroupBy(Category).OrderByDescending(g => g.Sum(r => (long)r.packedSize)).Take(20))
+                sb.AppendLine($"{g.Key,-24} {g.Sum(r => (long)r.packedSize) / 1048576.0,8:0.0} MiB  {g.Count(),5} assets");
+            sb.AppendLine("largest:");
+            foreach (var r in rows.OrderByDescending(r => r.packedSize).Take(40))
+                sb.AppendLine($"{r.packedSize / 1048576.0,7:0.00} MiB  {r.type?.Name,-14} {r.sourceAssetPath}");
+            File.WriteAllText(apkPath + ".sizes.txt", sb.ToString());
+            Debug.Log("CTLIFE [build-size]\n" + sb);
+        }
+
         private const string SelectionPath = "Assets/Resources/Env/EnvSelection.asset";
 
         [MenuItem("CT Life/Build/Android APK (local, dev)")]
@@ -138,6 +168,7 @@ namespace CTLife.EditorTools
                 var s = report.summary;
                 double apkMb = File.Exists(outPath) ? new FileInfo(outPath).Length / (1024.0 * 1024.0) : 0;
                 Debug.Log($"CTLIFE [build] {s.result}: {outPath} APK {apkMb:0.0} MiB in {s.totalTime.TotalSeconds:0}s, {s.totalErrors} errors, {s.totalWarnings} warnings");
+                if (s.result == BuildResult.Succeeded) WriteSizeReport(report, outPath);
                 return s.result == BuildResult.Succeeded;
             }
             finally

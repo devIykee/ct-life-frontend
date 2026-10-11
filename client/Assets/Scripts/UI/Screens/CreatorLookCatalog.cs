@@ -17,12 +17,30 @@ namespace CTLife.UI
         public sealed class Entry
         {
             public string labelKey;
+            /// <summary>Literal label (cast looks from the manifest) used when labelKey has no string.</summary>
+            public string label;
             public string[] look = new string[7];
+            public string Display => Strings.T(labelKey) != labelKey ? Strings.T(labelKey) : (string.IsNullOrEmpty(label) ? labelKey : label);
             public float previewYaw = 180f;
         }
 
         public List<Entry> looks = new List<Entry>();
         private static readonly string[] Slots = { "skin", "head", "hair", "top", "bottom", "shoes", "acc" };
+
+        private static string[][] _fallbackLooks;
+
+        /// <summary>
+        /// A stable creator look for a player whose look the server did not send (backend main's PlayerState has no
+        /// `look`, feedback #47). Presentation only: picked from the shipped creator looks by a hash of the seed.
+        /// </summary>
+        public static string[] FallbackLook(string seed)
+        {
+            if (_fallbackLooks == null) _fallbackLooks = Available().ConvertAll(e => e.look).ToArray();
+            if (_fallbackLooks.Length == 0 || string.IsNullOrEmpty(seed)) return null;
+            uint h = 2166136261;
+            foreach (var c in seed) h = (h ^ c) * 16777619;
+            return _fallbackLooks[(int)(h % (uint)_fallbackLooks.Length)];
+        }
 
         public static List<Entry> Available()
         {
@@ -34,7 +52,7 @@ namespace CTLife.UI
             foreach (var choice in catalog.looks)
             {
                 if (choice?.look == null || choice.look.Length != Slots.Length || string.IsNullOrWhiteSpace(choice.labelKey)) continue;
-                if (Strings.T(choice.labelKey) == choice.labelKey) continue;
+                if (Strings.T(choice.labelKey) == choice.labelKey && string.IsNullOrWhiteSpace(choice.label)) continue;
                 bool complete = true;
                 foreach (var id in choice.look) if (string.IsNullOrWhiteSpace(id)) { complete = false; break; }
                 if (!complete) continue;

@@ -846,3 +846,14 @@ Import steps (proposal; Unity 6.3 behaviour not exercised by this lane):
     "Rain Rig (CC) Blender Foundation | studio.blender.org", CC BY 4.0, with "modified by CT Life".
 
 Status: open
+
+## 2026-10-08 integration lead → venue builder: Timeline Square and Terminal Café draw calls
+
+Measured on the Seeker (dev build, 2026-10-08): Timeline Square alone ≈ 200 draw calls / 161k triangles
+(5 NPCs + 1 player), Terminal Café 202 draws / 72k triangles, while your rebuilt venues are ~19–27 draws (Perp Pit
+27 / 49k). With a 35-avatar crowd the city is 253 draws against the < 150 budget (it holds 60 fps only with the thermal
+cap lifted: CPU main 10.8 ms, GPU 13.9 ms). Please rebuild `timeline_square` and `terminal_cafe` (and `spaces_studio`)
+through your combine/bake pipeline (merged meshes per material, baked lightmaps) and hand me the registry entries.
+Runtime-instantiated prefabs get no static batching, so the combine has to happen at build time.
+
+Status: open

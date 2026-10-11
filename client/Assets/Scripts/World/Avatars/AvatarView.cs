@@ -399,6 +399,9 @@ namespace CTLife.World
             }
         }
 
+        private LODGroup _lodGroup;
+        private bool _lodGroupChecked;
+
         public void ApplyLod(int tier, bool culled, float thermalScale)
         {
             HasLodAssignment = true;
@@ -408,6 +411,9 @@ namespace CTLife.World
                 if (_renderers[i] != null) _renderers[i].enabled = !culled && _rendererEnabledAtInit[i];
             if (PlaceholderLods != null && Body != null && tier < PlaceholderLods.Length && Body.sharedMesh != PlaceholderLods[tier])
                 Body.sharedMesh = PlaceholderLods[tier];
+            // Cast prefabs carry an LODGroup (LOD0/1/2): the crowd rank picks the tier, not screen size.
+            if (_lodGroup == null && !_lodGroupChecked) { _lodGroupChecked = true; _lodGroup = GetComponentInChildren<LODGroup>(); }
+            if (_lodGroup != null) _lodGroup.ForceLOD(culled ? -1 : Mathf.Min(tier, _lodGroup.lodCount - 1));
             int interval = tier == 0 ? 1 : tier == 1 ? 2 : 4;
             if (thermalScale < 1f) interval *= 2;
             if (Procedural != null)

@@ -451,6 +451,7 @@ namespace CTLife.App
                     () => GameAlive(game) && !_travelling && VenueSession.CanEnterOwnHome(),
                     () => GameAlive(game) && VenueSession.Current != null && VenueSession.Current.IsOwnHome));
 
+            VenueSession.RemoteLookFallback = CreatorLookCatalog.FallbackLook;
             ProfileCard.VisitHome = (id, name) => { CTLife.CityLife.CityLifeLinks.VisitHome(id, name); _phone?.Open("home"); };
             ProfileCard.PlayerActions = (id, name, close) => CTLife.SocialFeatures.SocialProfileActions.Build(id, name, close, app => _phone?.Open(app));
 

@@ -1,6 +1,4 @@
-USER ACTION NEEDED: fingerprint sign-in ready. CT Life (local dev build, 03:05) is open on the Seeker sign-in screen: tap "Sign in with Solana", choose your wallet, approve with your fingerprint. A passive watcher records the result and then runs the device feature pass; nothing approves on your behalf.
-
-READY TO COMMIT: (1) venue+audio wiring as listed before: client/Assets/Scripts/{Core/Data/Registries.cs,Core/Services/Signals.cs,Editor/ContentImport.cs,Editor/IntegrationBatch.cs,Net/Voice/{VoiceService,SpacesAudio,VoiceVolume}.cs,UI/Overlays/IncidentPresentation.cs,UI/Phone/Apps/CoreApps.cs,UI/Screens/{CharacterCreatorScreen,LotteryScreen}.cs,UI/Text/Strings.cs,World/Avatars/CafeSeatExitPresentation.cs,World/Npcs/NpcController.cs,World/Players/{LocalPlayerController,RemotePlayer}.cs,World/Venue/{VenueContent,VenueContentRegistry,VenueSession}.cs} (+ .meta of new files), client/Assets/Resources/Contract/config_snapshot.json, client/Assets/Resources/World/{VenueContentIndex.asset,VenueContent/*}, client/Assets/Venues/VenueContentRegistry.asset; (2) feature pass: client/Assets/Scripts/App/{Dev/FeatureProbe.cs,FlowController.cs}, client/Assets/Scripts/Core/Env/LaunchArgs.cs, client/Assets/Tests/Integration/{IntegrationRun.cs,CTLife.Tests.Integration.asmdef}, client/Tools~/compile_check.py, tools/integration/{run_editor_integration.sh,sync_build_clone.sh}; docs/progress/{integration,backend-dev-feedback}.md — "integration: venues + audio wired, device/editor feature probe, prioritized backend feedback". Checks: compile_check dev/release/editor 0 errors; lane Tests~ all pass; Unity EditMode 792/792; editor integration 13/13 (+ feature table).
+READY TO COMMIT: client/Assets/Art/characters/cast/ (+cast.meta; 75 looks, materials, prefabs, manifest.json), client/Assets/Resources/Characters/CharacterRegistry.asset, client/Assets/Resources/UI/CreatorLookCatalog.asset, client/Assets/Resources/UI/Art/CityDiorama.png.meta, client/Assets/World/Venues/*/Textures/*.png.meta (Android 1024 caps), client/Assets/Scripts/{Editor/{CastImport,SizeBudget,BuildScript}.cs,App/FlowController.cs,UI/Screens/{CharacterCreatorScreen,CreatorLookCatalog}.cs,World/Avatars/AvatarView.cs,World/Venue/VenueSession.cs} (+ new .meta), client/Assets/Tests/EditMode/LaunchArgsTests.cs.meta, client/ProjectSettings/ProjectSettings.asset (Android: managed stripping Medium, R8 minify release, IL2CPP OptimizeSize), tools/integration/{crowd-bots.mjs,seeker_launch.sh}, docs/progress/{integration,requests}.md — "integration: cast imported (75 looks, LOD crowd), creator + NPCs on cast, release APK 140 MiB, device pass after real SIWS". Checks: compile_check dev/editor 0 errors; Seeker feature pass on the stripped build = same results as editor.
 
 # Integration lead log
 
@@ -100,7 +98,7 @@ backend gap, item N in `backend-dev-feedback.md`; no client workaround fakes ser
 | Feature | Editor | Seeker |
 | --- | --- | --- |
 | Sign-in: dev auth | pass | pass (00:44, automation) |
-| Sign-in: real SIWS via MWA | n/a (no MWA in editor) | reaches Seed Vault prompt after nonce fix; **waiting for the user's fingerprint** |
+| Sign-in: real SIWS via MWA (Seed Vault) | n/a (no MWA in editor) | **pass** 03:24 (user fingerprint; backend verify patched locally, see handoff) |
 | Onboarding: lottery → creator (Snow/Rain look) | pass | pass |
 | City + market rooms, rejoin on drop | pass | pass (market dropped 01:01, rejoined in 0.1 s) |
 | Timeline Square presence: see/be seen move, emote, chat | pass | pass (bot heard Seeker chat, saw wave + walk) |
@@ -109,21 +107,21 @@ backend gap, item N in `backend-dev-feedback.md`; no client workaround fakes ser
 | Block / report / unblock | pass | not rerun on device |
 | Token refresh, then room rejoin | pass | – |
 | Venue rooms other than Timeline Square | blocked #39 (client refuses the wrong room, enters offline) | same |
-| All 21 built venues + own home load | pass (21/21, ~0.1-0.2 s each in editor) | pending device pass |
-| Money: top-up intent | blocked #52 (no tx) | pending |
-| Money: spot buy | blocked #76 (always SLIPPAGE_EXCEEDED) | pending |
-| Money: perp open + close (1x, Trading lv 1) | pass | pending |
-| Money: ORE stake tx | blocked #55 (500); never signed | pending |
-| City life: needs (eat) | pass | pending |
-| City life: shop purchase | pass | pending |
-| City life: homes list / rent / visit | blocked #40, #75 | pending |
-| Careers: list + gig pays | pass | pending |
-| Social: DM send + thread | pass | pending |
-| Social: feed post | pass | pending |
-| Social: Space create / audio | create pass; audio blocked #40 | pending |
-| Social: call ring | blocked #54/#68 | pending |
-| World life: city events (crier) | blocked #64 | pending |
-| World life: live ads | pass (no bookings) | pending |
+| All 21 built venues + own home load | pass (21/21, ~0.1-0.2 s each in editor) | pass (21/21, 0.1-0.3 s each) |
+| Money: top-up intent | blocked #52 (no tx) | same as editor (SIWS user, 03:35 and stripped build 04:3x) |
+| Money: spot buy | blocked #76 (always SLIPPAGE_EXCEEDED) | same as editor (SIWS user, 03:35 and stripped build 04:3x) |
+| Money: perp open + close (1x, Trading lv 1) | pass | same as editor (SIWS user, 03:35 and stripped build 04:3x) |
+| Money: ORE stake tx | blocked #55 (500); never signed | same as editor (SIWS user, 03:35 and stripped build 04:3x) |
+| City life: needs (eat) | pass | same as editor (SIWS user, 03:35 and stripped build 04:3x) |
+| City life: shop purchase | pass | same as editor (SIWS user, 03:35 and stripped build 04:3x) |
+| City life: homes list / rent / visit | blocked #40, #75 | same as editor (SIWS user, 03:35 and stripped build 04:3x) |
+| Careers: list + gig pays | pass | same as editor (SIWS user, 03:35 and stripped build 04:3x) |
+| Social: DM send + thread | pass | same as editor (SIWS user, 03:35 and stripped build 04:3x) |
+| Social: feed post | pass | same as editor (SIWS user, 03:35 and stripped build 04:3x) |
+| Social: Space create / audio | create pass; audio blocked #40 | same as editor (SIWS user, 03:35 and stripped build 04:3x) |
+| Social: call ring | blocked #54/#68 | same as editor (SIWS user, 03:35 and stripped build 04:3x) |
+| World life: city events (crier) | blocked #64 | same as editor (SIWS user, 03:35 and stripped build 04:3x) |
+| World life: live ads | pass (no bookings) | same as editor (SIWS user, 03:35 and stripped build 04:3x) |
 | Rich List | pass (core Api) | pass |
 | Home from phone → private home | pass | pass (Parent's Basement) |
 | Chat with soft keyboard, emote labels | – | pass (panel docks above keyboard; labels readable) |
@@ -132,7 +130,40 @@ backend gap, item N in `backend-dev-feedback.md`; no client workaround fakes ser
 
 APK (local dev, all lanes + 18 venues + 4 homes): 183.8 MiB (budget 150; was 159.5 before the venue merge).
 Audio payload measured 20.9 MB `.resource` (audio lane estimate 20.5-21.3; was 36.7 before the import policy).
-Perf (city + 2 venues, frame time / draw calls): pending the device pass after sign-in.
+Perf on the Seeker (dev build, thermal status 2-3 = game caps at 30 fps; CPU main / GPU ms of the last frame):
+| Scene | avatars | fps | draw calls | triangles | CPU main | GPU |
+| --- | --- | --- | --- | --- | --- | --- |
+| Timeline Square | 6 (5 NPC + me) | 30.1 | 202 | 156k | 14.6 | 13.9 |
+| Perp Pit (venue lane) | 1 | 30.1 | 27 | 33k | 10.1 | 9.7 |
+| Terminal Café | 1 | 30.1 | 202 | 56k | 9.9 | 10.6 |
+| Timeline Square, 30-bot crowd, cast LODs (12 LOD0 / 21 LOD1) | 35 | 30.1 (thermal cap) | 256 | 238k | 16.6 | 17.7 |
+| same, thermal override 0 for 45 s (restored) | 35 | **60.3** (p99 16.6 ms) | 253 | 228k | 10.8 | 13.9 |
+→ A 35-avatar crowd holds 60 fps once the thermal cap allows it, but the city is 253 draw calls (budget < 150): ~200 of
+them are the old Timeline Square/Terminal Café prefabs (rebuilt venues are 19-27). Asked the venue lane to rebuild them
+(requests.md). Avatars add ~50 (35 skinned + blob shadows).
+
+Cast import (2026-10-08): `CastImport.Run` (menu CT Life → Cast) copies art/cast/export looks into
+Assets/Art/characters/cast, imports Humanoid with Copy From Other (m → Snow, f → Rain avatars), mesh compression Medium,
+one URP/Lit material per look, prefabs with manifest scale + LODGroup (AvatarLod now forces the tier by crowd rank).
+50 archetypes bound (all contract ids), Snow/Rain look keys now point at the cast identity looks (light, LOD'd),
+22 player looks added to the creator (FE look ids `skin_*|head_<look>|...`, server accepts any ids today).
+Remote players without a server look (#47) get a stable creator look by session hash (presentation only).
+Not done: runtime wardrobe merge from the 138 part chunks (step 9 of the cast plan). Snow/Rain rig credits are already
+in AssetCredits (CC BY 4.0, studio.blender.org).
+
+APK size (local env; packed asset sizes from the build report, MiB):
+| Category | before (183.8 MiB dev APK + cast, 217.1) | after |
+| --- | --- | --- |
+| cast textures (ASTC 6x6; only hero BaseColor at 1024, rest 512) | 94.7 (all character textures) | 46.5 |
+| character meshes (mesh compression Medium) | 62.0 | 16.7 |
+| venue textures (Android cap 1024: 24 sign/UI atlases were 2048) | 36.7 | 10.4 |
+| venue meshes / lightmaps / audio / shaders | 63.0 / 6.8 / 21.0 / 5.4 | unchanged |
+| libunity.so (dev unstripped → release) | 36.6 | 20.9 |
+| classes.dex (R8 minify release) | 11.8 | 0.7 |
+| libil2cpp.so (managed stripping Low → Medium, OptimizeSize) | 55.9 (dev, uncompressed) | 55.2 |
+| **APK** | 217.1 dev / 183.8 dev pre-cast | **140.3 release** (216.7 dev) |
+The budget applies to the release APK: 140.3 MiB < 150. Remaining big items: venue meshes 63 MiB (venue lane),
+LiveKit native 18.7 MB, Solana SDK Resources textures 7.4 MB (package, not editable), Unity splash 2.7 MB.
 3D home visits (City Life hook 6): not wired — the backend has no `home` room and visits return no `roomId` (#75);
 the client code would be unverifiable, so it waits for the room.
 

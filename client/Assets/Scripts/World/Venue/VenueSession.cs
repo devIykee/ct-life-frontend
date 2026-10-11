@@ -19,6 +19,9 @@ namespace CTLife.World
     {
         public static VenueSession Current { get; private set; }
 
+        /// <summary>Look for a remote player whose state has no look (set by the composition root; presentation only).</summary>
+        public static Func<string, string[]> RemoteLookFallback;
+
         public string VenueId { get; private set; }
         public string HomeId { get; private set; }
         public bool IsOwnHome => !string.IsNullOrEmpty(HomeId);
@@ -334,7 +337,8 @@ namespace CTLife.World
                 return;
             }
             if (_players.ContainsKey(sessionId)) return;
-            var view = AvatarFactory.Create(string.IsNullOrEmpty(p.name) ? "player" : p.name, ToArray(p.look), false, null, _avatarRoot);
+            var look = ToArray(p.look) ?? RemoteLookFallback?.Invoke(sessionId);
+            var view = AvatarFactory.Create(string.IsNullOrEmpty(p.name) ? "player" : p.name, look, false, null, _avatarRoot);
             view.userId = p.userId;
             view.sessionId = sessionId;
             var rp = view.gameObject.AddComponent<RemotePlayer>();
