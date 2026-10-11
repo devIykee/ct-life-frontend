@@ -131,6 +131,7 @@ namespace CTLife.EditorTools.IslandV2
             public CellSet Cells;
             public List<Vector3> Doors = new List<Vector3>();
             public int Pieces, Bays, RailMetres, Crosswalks;
+            public float WallMetres;
         }
 
         public static void Build(List<Seg> segs, JObject roads, Context ctx)
@@ -144,6 +145,46 @@ namespace CTLife.EditorTools.IslandV2
                     RoundaboutIsland(x, segs, ctx);
                 }
                 else Junction((JArray)x["polygon"], (JArray)x["fillets"], (JArray)x["approaches"], (string)x["kind"], segs, ctx);
+            }
+            if (roads["walls"] is JArray walls) foreach (var w in walls) Wall(w, ctx);
+        }
+
+        /// <summary>
+        /// A retaining wall along a road edge (islandgen terrain.retaining_walls): a stone face from its bottom to its top
+        /// height, 0.5 m thick with a cap. Cut walls hold the slope above the road; fill walls hold the road above the
+        /// falling ground and stand 0.9 m above it as a parapet (they collide, so cars stay on the road).
+        /// </summary>
+        private static void Wall(JToken w, Context ctx)
+        {
+            var pts = ((JArray)w["points"]).Select(p => (JArray)p).ToArray();
+            if (pts.Length < 2) return;
+            bool right = (string)w["side"] == "right";
+            bool fill = (string)w["kind"] == "fill";
+            const float thick = 0.5f;
+            for (int i = 0; i < pts.Length - 1; i++)
+            {
+                var a = pts[i]; var b = pts[i + 1];
+                var p0 = new Vector3((float)a[0], 0f, (float)a[2]); var p1 = new Vector3((float)b[0], 0f, (float)b[2]);
+                var t = p1 - p0; if (t.sqrMagnitude < 0.01f) continue;
+                var rn = new Vector3(t.z, 0f, -t.x).normalized;          // right of travel
+                var toRoad = right ? -rn : rn;
+                var back = -toRoad * thick;
+                float b0 = (float)a[1], t0 = (float)a[3], b1 = (float)b[1], t1 = (float)b[3];
+                var cell = ctx.Cells.At((p0 + p1) * 0.5f);
+                var v = cell.V(Mat.Wall);
+                Vector3 B0 = p0 + Vector3.up * b0, T0 = p0 + Vector3.up * t0, B1 = p1 + Vector3.up * b1, T1 = p1 + Vector3.up * t1;
+                var uv = new Vector2(0.5f, 0.5f);
+                // front (faces the road), back, cap: FlatQuad wants clockwise seen from the front
+                if (right) { v.FlatQuad(B1, T1, T0, B0, uv); v.FlatQuad(B0 + back, T0 + back, T1 + back, B1 + back, uv); }
+                else { v.FlatQuad(B0, T0, T1, B1, uv); v.FlatQuad(B1 + back, T1 + back, T0 + back, B0 + back, uv); }
+                if (right) v.FlatQuad(T0, T1, T1 + back, T0 + back, uv); else v.FlatQuad(T1, T0, T0 + back, T1 + back, uv);
+                if (fill)
+                {
+                    var col = cell.Col(Layers.Road);
+                    if (right) { col.FlatQuad(B1, T1, T0, B0); col.FlatQuad(B0 + back, T0 + back, T1 + back, B1 + back); }
+                    else { col.FlatQuad(B0, T0, T1, B1); col.FlatQuad(B1 + back, T1 + back, T0 + back, B0 + back); }
+                }
+                ctx.WallMetres += Vector3.Distance(p0, p1);
             }
         }
 

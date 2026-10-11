@@ -31,19 +31,27 @@ namespace CTLife.EditorTools.IslandV2
         public static readonly View[] Views =
         {
             new View("overview", new Vector3(80f, 470f, -1050f), new Vector3(0f, 20f, 120f), 46f),
+            new View("range_from_downtown", new Vector3(30f, 22f, -70f), new Vector3(-140f, 80f, 480f), 55f),
+            new View("downtown_aerial", new Vector3(230f, 170f, -300f), new Vector3(0f, 0f, 10f), 50f),
             new View("bay", new Vector3(-30f, 60f, -520f), new Vector3(10f, 0f, -120f), 52f),
             new View("downtown_street", new Vector3(-150f, 1.9f, 30f), new Vector3(120f, 6f, 44f), 58f, true),
             new View("plaza", new Vector3(22f, 34f, -84f), new Vector3(0f, 0f, 8f), 55f),
             new View("ocean_drive", new Vector3(-170f, 2.2f, -226f), new Vector3(60f, 4f, -190f), 58f, true),
             new View("harbour_bridge", new Vector3(-400f, 16f, -486f), new Vector3(-510f, 2f, -400f), 55f),
             new View("trenches", new Vector3(-250f, 30f, -330f), new Vector3(-360f, 0f, -250f), 55f),
-            new View("summit_view", new Vector3(-221f, 92f, 455f), new Vector3(0f, 0f, -120f), 55f),
-            new View("switchbacks", new Vector3(-40f, 120f, 300f), new Vector3(-180f, 50f, 430f), 55f),
+            new View("summit_view", new Vector3(-250f, 96f, 414f), new Vector3(0f, 0f, -120f), 55f),
+            new View("mtndao_lodge", new Vector3(-170f, 96f, 360f), new Vector3(-255f, 74f, 412f), 55f),
+            new View("switchbacks", new Vector3(-40f, 120f, 250f), new Vector3(-210f, 45f, 380f), 55f),
+            new View("summit_aerial", new Vector3(-60f, 260f, 200f), new Vector3(-190f, 100f, 470f), 52f),
             new View("tunnel", new Vector3(752f, 22f, 196f), new Vector3(782f, 16f, 262f), 55f),
             new View("marina", new Vector3(470f, 46f, -500f), new Vector3(490f, 0f, -320f), 52f),
             new View("farm", new Vector3(520f, 40f, -60f), new Vector3(640f, 8f, 110f), 55f),
             new View("builder_hills", new Vector3(240f, 60f, 140f), new Vector3(380f, 20f, 320f), 55f),
             new View("breakpoint", new Vector3(-150f, 40f, 170f), new Vector3(-300f, 10f, 290f), 55f),
+            new View("timeline_screens", new Vector3(46f, 9f, 22f), new Vector3(-6f, 7f, 50f), 55f),
+            new View("boardwalk", new Vector3(-60f, 3.2f, -230f), new Vector3(60f, 0f, -222f), 58f, true),
+            new View("marina_quay", new Vector3(520f, 8f, -420f), new Vector3(470f, -3f, -360f), 55f),
+            new View("lighthouse", new Vector3(720f, 14f, -480f), new Vector3(676f, 12f, -532f), 50f),
         };
 
         public static void Run()
@@ -87,12 +95,36 @@ namespace CTLife.EditorTools.IslandV2
                 var go = (GameObject)PrefabUtility.InstantiatePrefab(e.prefab.gameObject);
                 go.transform.SetPositionAndRotation(v.Position, v.Rotation);
                 StripVenueLook(go);
-                IslandVenueTrim.Trim(go.transform, v.localFrame);
+                IslandVenueTrim.Trim(go.transform, v.localFrame, v.shellHeight > 0f ? 0.5f : 4f, v.shellHeight > 0f ? v.shellHeight + 0.4f : 400f);
                 venues++;
             }
             receipt["venues"] = venues;
+            // kit instances: edit mode has no OnEnable/LateUpdate, so decode and draw them for the capture camera here
+            var sets = Object.FindObjectsByType<IslandInstances>(FindObjectsSortMode.None);
+            foreach (var set in sets) { set.Decode(); IslandInstanceRenderer.Register(set); }
+            receipt["instanceSets"] = sets.Length;
+            receipt["instances"] = sets.Sum(x => x.Count);
+            _instanceRenderer = Arg("-ctlife-noinstances") == null && !Environment.GetCommandLineArgs().Contains("-ctlife-noinstances") ? root.GetComponent<IslandInstanceRenderer>() : null;
             var atm = root.GetComponent<IslandAtmosphere>();
+            if (Environment.GetCommandLineArgs().Contains("-ctlife-nohaze")) atm.hazeStrength = 0f;
             atm.Apply();
+            if (Environment.GetCommandLineArgs().Contains("-ctlife-nofog")) RenderSettings.fog = false;
+            if (Environment.GetCommandLineArgs().Contains("-ctlife-noshadows") && atm.Sun != null) atm.Sun.shadows = LightShadows.None;
+            if (Environment.GetCommandLineArgs().Contains("-ctlife-tagmats"))
+            {
+                void Tag(string m, Color c) { var mm = AssetDatabase.LoadAssetAtPath<Material>(IslandV2Paths.Materials + "/" + m + ".mat"); if (mm != null) { mm.SetColor("_Emission", c); mm.SetColor("_BaseColor", c); } }
+                Tag("sidewalk", new Color(1f, 0f, 0f)); Tag("kerb", new Color(0f, 0f, 1f)); Tag("concrete", new Color(1f, 1f, 0f));
+            }
+            if (Environment.GetCommandLineArgs().Contains("-ctlife-whitesidewalk"))
+            {
+                var sw = AssetDatabase.LoadAssetAtPath<Material>(IslandV2Paths.Materials + "/sidewalk.mat");
+                var tx = sw.GetTexture("_BaseMap") as Texture2D;
+                Debug.Log($"CTLIFE [islandv2-capture] sidewalk texture {tx?.name} {tx?.format} {tx?.width}x{tx?.height} mips {tx?.mipmapCount} filter {tx?.filterMode}");
+                sw.SetTexture("_BaseMap", Texture2D.whiteTexture);
+            }
+            if (Environment.GetCommandLineArgs().Contains("-ctlife-noterrain"))
+                foreach (var tc in Object.FindObjectsByType<IslandTerrainCell>(FindObjectsSortMode.None))
+                    foreach (var r in tc.GetComponentsInChildren<MeshRenderer>(true)) r.enabled = false;
             foreach (var l in Object.FindObjectsByType<Light>(FindObjectsSortMode.None))
                 if (l.type == LightType.Directional && l != atm.Sun) l.enabled = false;
             var camGo = new GameObject("CaptureCamera");
@@ -100,13 +132,15 @@ namespace CTLife.EditorTools.IslandV2
             cam.clearFlags = CameraClearFlags.Skybox;
             cam.nearClipPlane = 0.3f; cam.farClipPlane = 5200f;
             var data = cam.GetUniversalAdditionalCameraData();
-            data.renderPostProcessing = true;
+            data.renderPostProcessing = !Environment.GetCommandLineArgs().Contains("-ctlife-nopost");
             data.antialiasing = AntialiasingMode.FastApproximateAntialiasing;
             int W = 1780, H = 800;
             var rt = new RenderTexture(W, H, 24, RenderTextureFormat.ARGB32) { antiAliasing = 1 };
             cam.targetTexture = rt;
             var h = IslandV2Height.Load(IslandV2Paths.Out);
             var shots = new JArray();
+            var stats = new JObject();
+            receipt["renderStats"] = stats;
             foreach (var v in Views)
             {
                 if (only != null && !only.Contains(v.Name)) continue;
@@ -118,6 +152,28 @@ namespace CTLife.EditorTools.IslandV2
                 cam.transform.LookAt(v.Target);
                 Render(cam, rt, Path.Combine(outDir, "v2-" + v.Name + ".png"));
                 shots.Add(v.Name);
+                stats[v.Name] = new JObject
+                {
+                    ["batches"] = UnityEditor.UnityStats.batches, ["setPass"] = UnityEditor.UnityStats.setPassCalls,
+                    ["triangles"] = UnityEditor.UnityStats.triangles, ["kitDraws"] = IslandInstanceRenderer.LastDraws,
+                    ["kitInstances"] = IslandInstanceRenderer.LastInstances,
+                };
+            }
+            if (Environment.GetCommandLineArgs().Contains("-ctlife-venueviews"))
+            {
+                // every venue from the street, 35 m out from its door and 22 m up (shell and diorama checks)
+                foreach (var v in world.venues)
+                {
+                    var c = v.ToIsland(v.localFrame.center);
+                    var door = v.Rotation * Vector3.back;                     // the door side (local -Z)
+                    var eye = new Vector3(c.x, 0f, c.y) + door * 34f + Quaternion.Euler(0f, 35f, 0f) * door * 8f;
+                    eye.y = h.Sample(eye.x, eye.z) + 22f;
+                    cam.orthographic = false; cam.fieldOfView = 55f;
+                    cam.transform.position = eye;
+                    cam.transform.LookAt(new Vector3(c.x, v.elevation + 3f, c.y));
+                    Render(cam, rt, Path.Combine(outDir, "venue-" + v.venueId + ".png"));
+                    shots.Add("venue-" + v.venueId);
+                }
             }
             if (only == null || only.Contains("topdown"))
             {
@@ -148,8 +204,15 @@ namespace CTLife.EditorTools.IslandV2
             if (b != null) b.gameObject.SetActive(false);
         }
 
+        private static IslandInstanceRenderer _instanceRenderer;
+
         private static void Render(Camera cam, RenderTexture rt, string path)
         {
+            if (_instanceRenderer != null)
+            {
+                IslandInstanceRenderer.TargetCamera = cam;
+                _instanceRenderer.Render(cam);
+            }
             cam.Render();
             var prev = RenderTexture.active;
             RenderTexture.active = rt;

@@ -85,7 +85,7 @@ namespace CTLife.EditorTools.IslandV2
             receipt["venues"] = venues.Count;
             var ctx = new IslandV2Roads.Context { H = h, Cells = cells, Doors = doors.Select(d => d.pos).ToList() };
             IslandV2Roads.Build(segs, roads, ctx);
-            receipt["roadPieces"] = ctx.Pieces; receipt["parkingBays"] = ctx.Bays; receipt["railMetres"] = ctx.RailMetres; receipt["crosswalks"] = ctx.Crosswalks;
+            receipt["roadPieces"] = ctx.Pieces; receipt["parkingBays"] = ctx.Bays; receipt["railMetres"] = ctx.RailMetres; receipt["crosswalks"] = ctx.Crosswalks; receipt["wallMetres"] = Mathf.RoundToInt(ctx.WallMetres);
             foreach (var (pos, fwd) in doors)
             {
                 // a vehicle blocker across each venue doorway: people walk through it, cars stop
@@ -93,9 +93,33 @@ namespace CTLife.EditorTools.IslandV2
                 cells.At(c).Boxes.Add(new CellGeo.BoxCol { Center = c, Rotation = Quaternion.LookRotation(fwd, Vector3.up), Size = new Vector3(5.2f, 2.6f, 1.0f), Layer = Layers.VehicleBlocker, Name = "vehicle_blocker" });
             }
 
+            // paved plazas (Timeline Square's block): the block inset to its sidewalk edges, pavers on the ground
+            if (plan["plazas"] is JArray plazas)
+                foreach (var pz in plazas)
+                {
+                    var poly = ((JArray)pz["polygon"]).Select(q => new Vector2((float)q[0], (float)q[1])).ToArray();
+                    var inner = Inset(poly, 9.2f);
+                    var c = inner.Aggregate(Vector2.zero, (a, b) => a + b) / inner.Length;
+                    float y = inner.Concat(new[] { c }).Max(q => h.Sample(q.x, q.y)) + 0.05f;    // just above the graded ground
+                    var v = inner.Select(q => new Vector3(q.x, y, q.y)).ToArray();
+                    var geo = cells.At(new Vector3(c.x, 0f, c.y));
+                    geo.V(Mat.Plaza).FlatQuad(v[0], v[3], v[2], v[1]);         // clockwise from above
+                    receipt["plaza"] = $"{pz["id"]}: {string.Join(" ", v.Select(q => $"({q.x:0.0},{q.y:0.00},{q.z:0.0})"))}";
+                }
+
+            // waterfront: quay walls and paving, the bay boardwalk, the lighthouse
+            IslandV2Coast.Build(plan, h, cells, receipt);
+            // the venues' street-side buildings
+            IslandV2Shells.Build(plan, cells, mats, receipt);
+
+            // dressing: buildings, street furniture, trees, rocks, crops (dress.json) into their cells
+            IslandV2Dress.Place(cells, h, receipt);
+
             // write the streamed cells
             foreach (var old in Directory.GetFiles(IslandV2Paths.CellsDir, "*.prefab")) AssetDatabase.DeleteAsset(old.Replace('\\', '/'));
             foreach (var old in Directory.GetFiles(IslandV2Paths.Meshes, "*.asset")) AssetDatabase.DeleteAsset(old.Replace('\\', '/'));
+            if (Directory.Exists(IslandV2Paths.Data + "/Dress"))
+                foreach (var old in Directory.GetFiles(IslandV2Paths.Data + "/Dress", "*.bytes")) AssetDatabase.DeleteAsset(old.Replace('\\', '/'));
             var cellList = new List<IslandWorld.Cell>();
             var roadSurfaces = new List<Mesh>();
             int prefabs = 0, colliders = 0, renderers = 0, bays = 0;
@@ -119,6 +143,29 @@ namespace CTLife.EditorTools.IslandV2
             AssetDatabase.SaveAssets();
             EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             receipt["meshBytes"] = Directory.GetFiles(IslandV2Paths.Meshes, "*.asset").Sum(f => new FileInfo(f).Length);
+        }
+
+        /// <summary>A convex polygon (counter-clockwise from above) shrunk by d metres: each edge moves inward.</summary>
+        private static Vector2[] Inset(Vector2[] p, float d)
+        {
+            int n = p.Length;
+            var lines = new (Vector2 a, Vector2 dir)[n];
+            for (int i = 0; i < n; i++)
+            {
+                var a = p[i]; var b = p[(i + 1) % n];
+                var t = (b - a).normalized;
+                var inward = new Vector2(-t.y, t.x);                      // left of a counter-clockwise edge
+                lines[i] = (a + inward * d, t);
+            }
+            var r = new Vector2[n];
+            for (int i = 0; i < n; i++)
+            {
+                var (a1, d1) = lines[(i + n - 1) % n]; var (a2, d2) = lines[i];
+                float den = d1.x * d2.y - d1.y * d2.x;
+                float t = Mathf.Abs(den) < 1e-6f ? 0f : ((a2.x - a1.x) * d2.y - (a2.y - a1.y) * d2.x) / den;
+                r[i] = a1 + d1 * t;
+            }
+            return r;
         }
 
         // ------------------------------------------------------------------ project
@@ -187,8 +234,10 @@ namespace CTLife.EditorTools.IslandV2
             Set("pavers.png", true, true, 512);
             Set("concrete.png", true, true, 512);
             Set("water_ripples.png", false, true, 256, normal: true);
-            Set("water_depth.png", false, false, 1024, fmt: TextureImporterFormat.ASTC_6x6);
+            Set("water_depth.png", false, false, 1024, fmt: TextureImporterFormat.R8);   // smooth gradients, no ASTC blocks
             Set("clouds.png", false, true, 512, fmt: TextureImporterFormat.ASTC_6x6);
+            Set("boardwalk.png", true, true, 256);
+            foreach (var f in System.IO.Directory.GetFiles(IslandV2Paths.Textures + "/Signs", "*.png")) Set("Signs/" + System.IO.Path.GetFileName(f), true, false, 512);
         }
 
         private static Texture2D Tex(string file) => AssetDatabase.LoadAssetAtPath<Texture2D>(IslandV2Paths.Textures + "/" + file);
@@ -214,7 +263,7 @@ namespace CTLife.EditorTools.IslandV2
                 x.SetTexture("_Control", Tex("terrain_control.png")); x.SetTexture("_Detail", Tex("terrain_detail.png"));
                 x.SetColor("_RockColor", new Color(0.47f, 0.46f, 0.49f)); x.SetColor("_RockColorHigh", new Color(0.63f, 0.62f, 0.67f));
                 x.SetColor("_SandColor", new Color(0.92f, 0.83f, 0.62f)); x.SetColor("_DirtColor", new Color(0.56f, 0.43f, 0.30f));
-                x.SetVector("_Snow", new Vector4(112f, 130f, 0.40f, 0f)); x.SetVector("_DetailScale", new Vector4(0.16f, 0.035f, 0f, 0f));
+                x.SetVector("_Snow", new Vector4(138f, 156f, 0.45f, 0.6f)); x.SetVector("_Shore", new Vector4(-6f, 1.1f, 0f, 0f)); x.SetVector("_DetailScale", new Vector4(0.16f, 0.035f, 0f, 0f));
                 x.SetFloat("_Contrast", 0.65f); x.SetFloat("_Sharpness", 2.5f); x.SetFloat("_Toon", 0.3f);
             }
             Mk("terrain", "CT Life/World/Terrain", x => { Ground(x); x.SetTexture("_Macro", Tex("terrain_macro.png")); x.DisableKeyword("_FAR"); });
@@ -225,6 +274,7 @@ namespace CTLife.EditorTools.IslandV2
                 x.SetTexture("_Detail", Tex("dirt_detail.png")); x.SetColor("_Color", new Color(0.62f, 0.50f, 0.36f)); x.SetFloat("_Tracks", 0.18f); x.SetFloat("_Contrast", 1.1f);
             });
             Mk(Mat.Sidewalk, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Tex("pavers.png")); x.EnableKeyword("_WORLDUV"); x.SetFloat("_UseWorldUV", 1); x.SetFloat("_WorldScale", 0.42f); x.SetFloat("_Toon", 0.3f); });
+            Mk(Mat.Plaza, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Tex("pavers.png")); x.EnableKeyword("_WORLDUV"); x.SetFloat("_UseWorldUV", 1); x.SetFloat("_WorldScale", 0.3f); x.SetColor("_BaseColor", new Color(1.0f, 0.97f, 0.92f)); x.SetFloat("_Toon", 0.3f); });
             Mk(Mat.Kerb, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Tex("concrete.png")); x.EnableKeyword("_WORLDUV"); x.SetFloat("_UseWorldUV", 1); x.SetFloat("_WorldScale", 0.5f); x.SetColor("_BaseColor", new Color(0.93f, 0.91f, 0.88f)); });
             Mk(Mat.Concrete, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Tex("concrete.png")); x.EnableKeyword("_WORLDUV"); x.SetFloat("_UseWorldUV", 1); x.SetFloat("_WorldScale", 0.25f); x.SetColor("_BaseColor", new Color(0.86f, 0.84f, 0.8f)); });
             Mk(Mat.Tunnel, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Tex("concrete.png")); x.EnableKeyword("_WORLDUV"); x.SetFloat("_UseWorldUV", 1); x.SetFloat("_WorldScale", 0.25f); x.SetColor("_BaseColor", new Color(0.62f, 0.6f, 0.57f)); x.SetFloat("_Cull", 0f); });
@@ -238,6 +288,14 @@ namespace CTLife.EditorTools.IslandV2
                 x.SetColor("_Shallow", new Color(0.42f, 0.72f, 0.66f)); x.SetColor("_Deep", new Color(0.16f, 0.42f, 0.48f)); x.SetVector("_RippleScale", new Vector4(0.11f, 0.2f, 0, 0));
             });
             Mk("barrier", "CT Life/World/Toon", x => { x.SetColor("_BaseColor", Color.white); });
+            Mk("shell_roof", "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Tex("concrete.png")); x.EnableKeyword("_WORLDUV"); x.SetFloat("_UseWorldUV", 1); x.SetFloat("_WorldScale", 0.25f); x.SetColor("_BaseColor", Color.white); x.SetFloat("_Toon", 0.35f); x.SetFloat("_Cull", 0f); });
+            Mk("bird", "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Texture2D.whiteTexture); x.SetColor("_BaseColor", new Color(0.97f, 0.97f, 0.95f)); x.SetFloat("_Toon", 0.2f); x.SetFloat("_Cull", 0f); });
+            Mk(Mat.Quay, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Tex("concrete.png")); x.EnableKeyword("_WORLDUV"); x.SetFloat("_UseWorldUV", 1); x.SetFloat("_WorldScale", 0.3f); x.SetColor("_BaseColor", new Color(0.72f, 0.69f, 0.64f)); x.SetFloat("_Toon", 0.35f); });
+            Mk(Mat.Boardwalk, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Tex("boardwalk.png")); x.DisableKeyword("_WORLDUV"); x.SetFloat("_UseWorldUV", 0); x.SetColor("_BaseColor", Color.white); x.SetFloat("_Toon", 0.3f); });
+            Mk(Mat.Timber, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Texture2D.whiteTexture); x.SetColor("_BaseColor", new Color(0.50f, 0.38f, 0.27f)); x.SetFloat("_Toon", 0.35f); });
+            Mk(Mat.Lighthouse, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Texture2D.whiteTexture); x.SetColor("_BaseColor", Color.white); x.SetFloat("_Toon", 0.4f); });
+            Mk(Mat.LighthouseLamp, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Texture2D.whiteTexture); x.SetColor("_BaseColor", new Color(1f, 0.93f, 0.66f)); x.SetColor("_Emission", new Color(1.6f, 1.35f, 0.8f)); x.SetFloat("_Cull", 0f); });
+            Mk(Mat.Wall, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Tex("concrete.png")); x.EnableKeyword("_WORLDUV"); x.SetFloat("_UseWorldUV", 1); x.SetFloat("_WorldScale", 0.35f); x.SetColor("_BaseColor", new Color(0.74f, 0.70f, 0.64f)); x.SetFloat("_Toon", 0.35f); });
             AssetDatabase.SaveAssets();
             return m;
         }
@@ -259,6 +317,7 @@ namespace CTLife.EditorTools.IslandV2
                 {
                     venueId = (string)v["id"], district = (string)v["district"], origin = new Vector2(origin.x, origin.z), elevation = origin.y,
                     yaw = yaw, localFrame = new Rect(mn, sz), localWalk = localWalk,
+                    shellHeight = v["shell"] is JObject shj ? (float)shj["h"] : 0f,
                 };
                 iv.frame = Aabb(iv, iv.localFrame);
                 iv.walk = Aabb(iv, iv.localWalk);
@@ -283,7 +342,8 @@ namespace CTLife.EditorTools.IslandV2
 
         private static readonly Dictionary<string, (int layer, bool shadows)> MatLayer = new Dictionary<string, (int, bool)>
         {
-            { Mat.Road, (Layers.Road, false) }, { Mat.Dirt, (Layers.Road, false) }, { Mat.Sidewalk, (Layers.Road, false) },
+            { Mat.Road, (Layers.Road, false) }, { Mat.Dirt, (Layers.Road, false) }, { Mat.Sidewalk, (Layers.Road, false) }, { Mat.Plaza, (Layers.Road, false) }, { Mat.Quay, (Layers.Road, false) },
+            { Mat.Boardwalk, (Layers.Road, false) }, { Mat.Timber, (Layers.Prop, true) }, { Mat.Lighthouse, (Layers.Building, true) }, { Mat.LighthouseLamp, (Layers.Building, false) },
             { Mat.Kerb, (Layers.Road, false) }, { Mat.Concrete, (Layers.Road, true) }, { Mat.Tunnel, (Layers.Road, true) },
             { Mat.Rail, (Layers.Prop, false) }, { Mat.Paint, (Layers.Road, false) }, { Mat.Grass, (Layers.Prop, false) },
         };
@@ -295,6 +355,7 @@ namespace CTLife.EditorTools.IslandV2
             var meshes = new List<Mesh>();
             var root = new GameObject(id);
             int colliders = 0, renderers = 0, bays = 0;
+            var parkedCars = new List<ParkedCar>();
             // terrain: generated from the heightfield when the cell loads
             if (g.Chunks.Count > 0)
             {
@@ -358,6 +419,26 @@ namespace CTLife.EditorTools.IslandV2
                 mk.transform.SetParent(root.transform, false);
                 foreach (var m in g.Markers)
                 {
+                    if (m.Kind == "vehicle" && IslandV2Dress.Kit != null && IslandV2Dress.CarProtos.Length > 0 && IslandV2Dress.Hash01(m.Id) < IslandV2Dress.ParkedShare(m.Position))
+                    {
+                        // a decor car parks here (drawn instanced); Feel can swap it for a drivable one via ParkedCar
+                        int pick = IslandV2Dress.CarProtos[(int)(IslandV2Dress.Hash01(m.Id + "car") * IslandV2Dress.CarProtos.Length) % IslandV2Dress.CarProtos.Length];
+                        var kp = IslandV2Dress.Kit.protos[pick];
+                        float yaw = m.Rotation.eulerAngles.y + (IslandV2Dress.Hash01(m.Id + "flip") < 0.5f ? 0f : 180f);
+                        g.Instances.Add(new IslandV2Dress.Inst { Proto = pick, X = m.Position.x, Y = m.Position.y + 0.02f, Z = m.Position.z, Yaw = yaw, S = 1f, Sy = 1f });
+                        var pc = new GameObject("parked_" + m.Id) { layer = Layers.Prop };
+                        pc.transform.SetParent(mk.transform, false);
+                        pc.transform.SetPositionAndRotation(m.Position, Quaternion.Euler(0f, yaw, 0f));
+                        var car = pc.AddComponent<ParkedCar>();
+                        car.model = kp.id; car.segmentId = m.Segment;
+                        car.vehicleClass = kp.id.Contains("suv") || kp.id.Contains("van") || kp.id.Contains("delivery") ? VehicleClass.Suv : kp.id.Contains("sports") ? VehicleClass.Sports : VehicleClass.Compact;
+                        var bc = pc.AddComponent<BoxCollider>();
+                        bc.size = new Vector3(kp.bounds.size.x * 0.92f, kp.bounds.size.y * 0.9f, kp.bounds.size.z * 0.95f);
+                        bc.center = new Vector3(0f, kp.bounds.size.y * 0.45f, 0f);
+                        parkedCars.Add(car);
+                        colliders++;
+                        continue;
+                    }
                     var go = new GameObject("bay_" + m.Id) { layer = Layers.Road };
                     go.transform.SetParent(mk.transform, false);
                     go.transform.SetPositionAndRotation(m.Position, m.Rotation);
@@ -365,6 +446,47 @@ namespace CTLife.EditorTools.IslandV2
                     vs.classes = VehicleClass.Cars | VehicleClass.Moped;
                     vs.size = m.Size; vs.kind = "street"; vs.segmentId = m.Segment; vs.showcase = m.Showcase;
                     bays++;
+                }
+            }
+            // dressing: the instance file, trunk and post capsules
+            if (g.Instances.Count > 0 && IslandV2Dress.Kit != null)
+            {
+                Directory.CreateDirectory(IslandV2Paths.Data + "/Dress");
+                var dataPath = IslandV2Paths.Data + "/Dress/" + id + ".bytes";
+                File.WriteAllBytes(dataPath, IslandV2Dress.Encode(g.Instances));
+                AssetDatabase.ImportAsset(dataPath, ImportAssetOptions.ForceSynchronousImport);
+                var dress = new GameObject("Dress");
+                dress.transform.SetParent(root.transform, false);
+                var set = dress.AddComponent<IslandInstances>();
+                set.kit = IslandV2Dress.Kit;
+                set.data = AssetDatabase.LoadAssetAtPath<TextAsset>(dataPath);
+                foreach (var car in parkedCars) car.set = set;
+                renderers++;
+            }
+            if (g.Shells.Count > 0)
+            {
+                var shRoot = new GameObject("Shells") { layer = Layers.Building };
+                shRoot.transform.SetParent(root.transform, false);
+                foreach (var d in g.Shells) { IslandV2Shells.Write(d, shRoot.transform, meshes, id); renderers += 6; colliders += 5; }
+            }
+            if (g.Billboards.Count > 0)
+            {
+                var bbRoot = new GameObject("Billboards") { layer = Layers.Prop };
+                bbRoot.transform.SetParent(root.transform, false);
+                foreach (var bj in g.Billboards) if (IslandV2Dress.Billboard(bj, bbRoot.transform, Layers.Prop) != null) { renderers++; colliders++; }
+            }
+            if (g.Capsules.Count > 0)
+            {
+                foreach (var byLayer in g.Capsules.GroupBy(c => c.Layer))
+                {
+                    var cg = new GameObject(byLayer.Key == Layers.Vegetation ? "Trunks" : "Posts") { layer = byLayer.Key };
+                    cg.transform.SetParent(root.transform, false);
+                    foreach (var c in byLayer)
+                    {
+                        var cc = cg.AddComponent<CapsuleCollider>();
+                        cc.center = c.Center; cc.radius = c.Radius; cc.height = Mathf.Max(c.Height, c.Radius * 2f); cc.direction = 1;
+                        colliders++;
+                    }
                 }
             }
             int objects = root.transform.childCount;
@@ -503,8 +625,22 @@ namespace CTLife.EditorTools.IslandV2
             var atm = root.AddComponent<IslandAtmosphere>();
             atm.skybox = Skybox();
             root.AddComponent<IslandRenderSettings>();
-            var volume = tlPrefab.GetComponentInChildren<Volume>(true);
-            if (volume != null) { var v = Object.Instantiate(volume.gameObject, root.transform); v.name = "Look"; }
+            root.AddComponent<IslandInstanceRenderer>();
+            var birds = root.AddComponent<IslandBirds>();
+            birds.material = mats.TryGetValue("bird", out var bm) ? bm : null;
+            birds.flocks = new[]
+            {
+                new IslandBirds.Flock { center = new Vector3(480f, 22f, -390f), radius = 60f, count = 9 },     // the marina
+                new IslandBirds.Flock { center = new Vector3(0f, 26f, -300f), radius = 95f, count = 12 },      // the bay
+                new IslandBirds.Flock { center = new Vector3(-420f, 18f, -380f), radius = 45f, count = 7 },    // the harbour
+                new IslandBirds.Flock { center = new Vector3(760f, 30f, -560f), radius = 70f, count = 6 },     // the lighthouse
+            };
+            // the island's own look (golden hour grade, bloom, vignette; cool shadows, warm highlights)
+            var lookGo = new GameObject("Look");
+            lookGo.transform.SetParent(root.transform, false);
+            var vol = lookGo.AddComponent<Volume>();
+            vol.isGlobal = true; vol.priority = 5f; vol.weight = 1f;
+            vol.sharedProfile = LookProfile();
             // save meshes, then the prefab
             if (AssetDatabase.LoadAssetAtPath<Object>(basePath) != null) AssetDatabase.DeleteAsset(basePath);
             if (meshes.Count > 0)
@@ -551,6 +687,30 @@ namespace CTLife.EditorTools.IslandV2
                 b.Add(c + new Vector3(Mathf.Cos(a) * r, y, Mathf.Sin(a) * r), Vector3.up, Vector2.zero);
             }
             for (int i = 0; i < S; i++) b.Tri(ci, b0 + i, b0 + i + 1);
+        }
+
+        private static VolumeProfile LookProfile()
+        {
+            var path = IslandV2Paths.Root + "/IslandLook.asset";
+            var old = AssetDatabase.LoadAssetAtPath<VolumeProfile>(path);
+            if (old != null) AssetDatabase.DeleteAsset(path);
+            var profile = ScriptableObject.CreateInstance<VolumeProfile>();
+            profile.name = "IslandLook";
+            AssetDatabase.CreateAsset(profile, path);
+            var tm = profile.Add<Tonemapping>(true); tm.mode.Override(TonemappingMode.Neutral);
+            var wb = profile.Add<WhiteBalance>(true); wb.temperature.Override(6f); wb.tint.Override(2f);
+            var ca = profile.Add<ColorAdjustments>(true);
+            ca.postExposure.Override(0.08f); ca.contrast.Override(12f); ca.saturation.Override(14f); ca.colorFilter.Override(new Color(1f, 0.975f, 0.94f));
+            var st = profile.Add<SplitToning>(true);
+            st.shadows.Override(new Color(0.42f, 0.48f, 0.62f)); st.highlights.Override(new Color(0.64f, 0.56f, 0.44f)); st.balance.Override(-12f);
+            var bl = profile.Add<Bloom>(true);
+            bl.threshold.Override(1.0f); bl.intensity.Override(0.28f); bl.scatter.Override(0.6f); bl.highQualityFiltering.Override(false);
+            bl.downscale.Override(BloomDownscaleMode.Quarter);
+            var vg = profile.Add<Vignette>(true); vg.intensity.Override(0.18f); vg.smoothness.Override(0.42f);
+            foreach (var c in profile.components) { c.name = c.GetType().Name; AssetDatabase.AddObjectToAsset(c, profile); }
+            EditorUtility.SetDirty(profile);
+            AssetDatabase.SaveAssetIfDirty(profile);
+            return profile;
         }
 
         private static Material Skybox()

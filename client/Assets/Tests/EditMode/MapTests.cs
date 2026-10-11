@@ -239,8 +239,10 @@ namespace CTLife.Tests
                 for (int j = i + 1; j < rects.Count; j++)
                     Assert.IsFalse(QuadsOverlap(rects[i].q, rects[j].q), rects[i].AreaId + " / " + rects[j].AreaId + " do not overlap");
             Assert.IsNotNull(Resources.Load<Texture2D>(atlas.Texture), "atlas texture");
-            Assert.AreEqual(9, atlas.Plots.Count, "3 x 3 plot grid");
-            Assert.AreEqual(3, atlas.Plots.Count(p => p.Reserved), "three reserved lots for growth");
+            // atlas.json v2 (World lane): the plots are the island's districts, each with a name pill and a framing size.
+            Assert.GreaterOrEqual(atlas.Plots.Count, 9, "every district with venues is a plot");
+            Assert.IsTrue(atlas.Plots.All(p => p.Kind == "district" && !p.Reserved), "districts, no reserved lots");
+            Assert.Greater(atlas.PlotSize, 100f, "picking a district frames a district-sized view");
         }
 
         [Test]

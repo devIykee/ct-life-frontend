@@ -64,9 +64,10 @@ class Seg:
 
 
 def downtown_routes():
-    """Grid streets from layout.DT_*: rows 1..6 (row 0 is Ocean Drive, its own route), columns from Ocean Drive north."""
+    """Grid streets from layout.DT_*: rows 1..6 (row 0 is Ocean Drive, its own route), columns from Ocean Drive north,
+    and the diagonal boulevard pieces (they pass grid nodes only, so every crossing is a real junction)."""
     routes = []
-    nx, nz = len(L.DT_X), len(L.DT_Z)
+    nx, nz = len(L.DT_U), len(L.DT_V)
 
     def runs_of(cells, removed):
         runs, run = [], [cells[0]]
@@ -95,11 +96,13 @@ def downtown_routes():
             rid = 'timeline_ave' if avenue else f'dt_v{c}' + ('' if len(runs) == 1 else 'abc'[k])
             routes.append(dict(id=rid, name=L.DT_COL_NAMES[c], kind='avenue' if avenue else 'street',
                                lanes=(2, 2) if avenue else (1, 1), pts=[L.dt_node(c, r) for r in run]))
+    for rid, names in L.DT_DIAGONAL:
+        routes.append(dict(id=rid, name='Consensus Boulevard', kind='avenue', lanes=(2, 2), pts=list(names)))
     return routes
 
 
 def downtown_nodes():
-    return {L.dt_node(c, r): L.dt_pos(c, r) for c in range(len(L.DT_X)) for r in range(len(L.DT_Z))}
+    return {L.dt_node(c, r): L.dt_pos(c, r) for c in range(len(L.DT_U)) for r in range(len(L.DT_V))}
 
 
 def clean_polyline(p, min_step=0.5):
@@ -217,6 +220,8 @@ class Network:
         prev_leg = None
         for leg in range(sb['legs']):
             xt = sb['east'] if direction > 0 else sb['west']
+            if leg == sb['legs'] - 1 and sb.get('end_x') is not None:
+                xt = sb['end_x']
             this_leg = []
             while (xt - x) * direction > step * 0.5:
                 x2 = x + step * direction

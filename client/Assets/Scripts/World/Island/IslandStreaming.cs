@@ -22,6 +22,7 @@ namespace CTLife.World
         public float elevation;     // y of the venue's local ground
         public Rect localFrame;     // venue-local frame (min/size)
         public Rect localWalk;      // venue-local walkable rect
+        public float shellHeight;   // the street-side building's wall height (0 = open air): diorama content above is trimmed
 
         public bool HasLocal => localWalk.width > 0f && localWalk.height > 0f;
         public Quaternion Rotation => Quaternion.Euler(0f, yaw, 0f);

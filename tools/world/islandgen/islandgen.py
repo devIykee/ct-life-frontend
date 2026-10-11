@@ -93,13 +93,133 @@ def place(net, entry, areas, nat):
         road = dict(segment=seg.id, route=route, point=[float(P[0]), float(seg.y[j]), float(P[1])])
     door_local = (0.0, float(walk[1]))
     dx, dz = G.local_to_world(x, z, yaw, *door_local)
-    fx0, fz0, fx1, fz1 = mn[0] - 2.0, mn[1] - gap, mn[0] + sz[0] + 2.0, mn[1] + sz[1] + 2.0
+    fx0, fz0, fx1, fz1 = mn[0] - 5.0, mn[1] - gap, mn[0] + sz[0] + 5.0, mn[1] + sz[1] + 5.0   # diorama trim keeps frame + 4 m
     ccx, ccz = G.local_to_world(x, z, yaw, (fx0 + fx1) / 2, (fz0 + fz1) / 2)
     pad = dict(cx=ccx, cz=ccz, w=fx1 - fx0, d=fz1 - fz0, yaw=yaw, y=y)
     frame_c = G.local_to_world(x, z, yaw, mn[0] + sz[0] / 2, mn[1] + sz[1] / 2)
-    return dict(id=entry['id'], district=entry['district'], origin=[round(float(x), 3), round(y, 3), round(float(z), 3)],
+    shell = L.SHELLS.get(entry['id']) if hasattr(L, 'SHELLS') else None
+    return dict(id=entry['id'], district=entry['district'], shell=shell, origin=[round(float(x), 3), round(y, 3), round(float(z), 3)],
                 yaw=round(float(yaw), 3), door=[round(dx, 3), round(y, 3), round(dz, 3)], frame_min=mn, frame_size=sz,
                 walk=walk, center=[round(frame_c[0], 3), round(frame_c[1], 3)], road=road, pad=pad, title=a['title'])
+
+
+def venue_road_clashes(net, venues):
+    """Venues whose frame overlaps a road's carriageway or sidewalk (their own street's edge excluded by the gap)."""
+    out = {}
+    for v in venues:
+        mn, sz = v['frame_min'], v['frame_size']
+        us = np.linspace(mn[0], mn[0] + sz[0], 14)
+        ws = np.linspace(mn[1], mn[1] + sz[1], 14)
+        pts = np.array([G.local_to_world(v['origin'][0], v['origin'][2], v['yaw'], u, w) for u in us for w in ws])
+        worst = 0.0
+        for s in net.segs:
+            d = np.min(np.linalg.norm(pts[:, None, :] - s.pts[None, ::2, :], axis=2), axis=1)
+            over = max(s.out_r, s.out_l) - d.min()
+            if over > 0.3:
+                worst = max(worst, over)
+                out[v['id']] = (s.route['id'], round(float(over), 1))
+    return out
+
+
+def quays(coast, ctypes, h, width=7.5):
+    """Quay edges (coast type quay): wall line 0.8 m seaward of the coast, the paved strip back to `width` m inland.
+    Each run: points [x, z], top (paving height per point, from the flats behind it), and the inner line."""
+    out = []
+    n = len(coast)
+    q = ctypes == 3
+    if not q.any():
+        return out
+    start = int(np.argmin(q)) if not q.all() else 0           # begin outside a run so runs never wrap
+    order = np.roll(np.arange(n), -start)
+    run = []
+
+    def flush():
+        if len(run) < 4:
+            return
+        P = coast[run]
+        P = G.resample(P, 2.0)
+        tan = G.tangents(P)
+        sea = G.right_normals(tan)                              # right of the counter-clockwise outline = the sea
+        wall = P + sea * 0.8
+        inner = P - sea * width
+        top = ndimage.uniform_filter1d(T.sample(h, (P - sea * 2.5)[:, 0], (P - sea * 2.5)[:, 1]), 5, mode='nearest') + 0.06
+        inner_y = T.sample(h, inner[:, 0], inner[:, 1]) + 0.06
+        dry = top > L.SEA + 0.6                                   # no quay across the river mouth
+        k = 0
+        while k < len(P):
+            if not dry[k]:
+                k += 1
+                continue
+            j = k
+            while j < len(P) and dry[j]:
+                j += 1
+            if j - k >= 4:
+                sl = slice(k, j)
+                out.append(dict(wall=[[round(float(x), 2), round(float(z), 2)] for x, z in wall[sl]],
+                                edge=[[round(float(x), 2), round(float(z), 2)] for x, z in P[sl]],
+                                inner=[[round(float(x), 2), round(float(z), 2)] for x, z in inner[sl]],
+                                top=[round(float(y), 3) for y in top[sl]], innerTop=[round(float(y), 3) for y in inner_y[sl]],
+                                bottom=L.SEA - 3.0))
+            k = j
+    for i in order:
+        if q[i]:
+            run.append(i)
+        else:
+            flush()
+            run = []
+    flush()
+    return out
+
+
+def boardwalk(net, h, width=6.0):
+    """The crescent bay boardwalk: a timber deck on posts along Ocean Drive's seaward sidewalk, with steps down to the
+    beach where the beach paths start. Returns runs of {left, right (seaward edge), y, steps}."""
+    out = []
+    for s in net.segs:
+        if s.route['id'] != 'ocean_drive':
+            continue
+        pts, ys, ug = net.trimmed(s)
+        if len(pts) < 4:
+            continue
+        tan = G.tangents(pts)
+        rn = G.right_normals(tan)
+        mid = len(pts) // 2
+        probe_r = float(T.sample(h, np.array([pts[mid, 0] + rn[mid, 0] * 16]), np.array([pts[mid, 1] + rn[mid, 1] * 16]))[0])
+        probe_l = float(T.sample(h, np.array([pts[mid, 0] - rn[mid, 0] * 16]), np.array([pts[mid, 1] - rn[mid, 1] * 16]))[0])
+        side = 1.0 if probe_r < probe_l else -1.0
+        w0 = (s.out_r if side > 0 else s.out_l)
+        a = pts + rn * side * w0
+        b = pts + rn * side * (w0 + width)
+        y = ys + 0.15
+        under = T.sample(h, b[:, 0], b[:, 1])
+        out.append(dict(segment=s.id, inner=a, outer=b, y=y, side=side))
+    if not out:
+        return []
+    # one continuous deck along the bay: the runs joined across the junctions (Ocean Drive's segments go west to east)
+    out.sort(key=lambda r: float(r['inner'][0][0]))
+    A = np.vstack([r['inner'] for r in out]); B = np.vstack([r['outer'] for r in out]); Y = np.concatenate([r['y'] for r in out])
+    keep = np.ones(len(A), bool)
+    for k in range(1, len(A)):
+        if np.dot(A[k] - A[k - 1], A[min(k + 1, len(A) - 1)] - A[k]) < 0:
+            keep[k] = False                                       # tiny back-steps where runs meet
+    A, B, Y = A[keep], B[keep], Y[keep]
+    sl = G.arc_lengths(A)
+    t = np.arange(0.0, sl[-1], 2.0)
+    A = np.stack([np.interp(t, sl, A[:, 0]), np.interp(t, sl, A[:, 1])], 1)
+    B2 = np.stack([np.interp(t, sl, B[:, 0]), np.interp(t, sl, B[:, 1])], 1)
+    Y = ndimage.uniform_filter1d(np.interp(t, sl, Y), 3, mode='nearest')
+    ground = T.sample(h, B2[:, 0], B2[:, 1])
+    steps = []
+    for name, pts, w in L.TRACKS:
+        if not name.startswith('beach_path'):
+            continue
+        q = np.array(pts[0], float)
+        k = int(np.argmin(np.linalg.norm(B2 - q, axis=1)))
+        if np.linalg.norm(B2[k] - q) < 30:
+            steps.append(k)
+    return [dict(inner=[[round(float(x), 2), round(float(z), 2)] for x, z in A],
+                 outer=[[round(float(x), 2), round(float(z), 2)] for x, z in B2],
+                 y=[round(float(v), 3) for v in Y], ground=[round(float(v), 3) for v in ground], steps=steps)]
 
 
 def tunnel_holes(net, h):
@@ -137,8 +257,11 @@ def main():
     inland = ndimage.distance_transform_edt(land) * L.CELL
     seaward = ndimage.distance_transform_edt(~land) * L.CELL
     log(f'coast {len(coast)} samples, land {land.mean() * 4 * L.DOMAIN ** 2 / 1e6:.2f} km2 ({time.time() - t0:.1f}s)')
-    nat, coastw = T.natural_heights(land, inland, seaward, coast, ctypes, ccliff)
+    emaps = {}
+    nat, coastw = T.natural_heights(land, inland, seaward, coast, ctypes, ccliff, stats=emaps)
     log(f'relief y {nat[land].min():.1f}..{nat[land].max():.1f} ({time.time() - t0:.1f}s)')
+    T.fit_water_levels(nat)
+    log(f'river source y {L.RIVER[0][2]}, lakes {[l["level"] for l in L.LAKES]}')
     river = T.river_samples()
     net = NW.Network()
     net.build_routes(nat, T.sample)
@@ -152,9 +275,19 @@ def main():
         f'unused nodes {net.unused_nodes}; grade over limit {steep[:8]}')
     venues = [v for v in (place(net, e, areas, nat) for e in L.VENUES) if v]
     homes = [v for v in (place(net, e, areas, nat) for e in L.HOMES) if v]
+    clashes = venue_road_clashes(net, venues + homes)
+    log(f'venue frames on roads: {clashes or "none"}')
     h, river = T.carve_river(nat, land)
-    h = T.carve_roads(h, nat, net.carve_points())
-    h = T.carve_pads(h, [v['pad'] for v in venues + homes])
+    h, walls, road_core = T.carve_roads(h, net)
+    heli = resolve_helipads(venues, h)
+    for p in heli:                                   # a pad next to a venue sits at the venue's level
+        near = min(venues, key=lambda v: math.hypot(v['origin'][0] - p[0], v['origin'][2] - p[2]))
+        if math.hypot(near['origin'][0] - p[0], near['origin'][2] - p[2]) < 70:
+            p[1] = near['origin'][1]
+    heli_pads = [dict(cx=p[0], cz=p[2], w=24.0, d=24.0, yaw=0.0, y=float(p[1]) + 0.12) for p in heli]
+    h = T.carve_pads(h, heli_pads + [v['pad'] for v in venues + homes])      # venue pads last and exact ...
+    h = np.where(np.isfinite(road_core), road_core - 0.12, h)                   # ... roads stay on their profile
+    log(f'retaining walls: {len(walls)} runs, {sum(len(w["points"]) for w in walls) * 2} m')
     holes = tunnel_holes(net, h)
     gz, gx = np.gradient(h, L.CELL)
     slope = np.hypot(gx, gz)
@@ -162,7 +295,7 @@ def main():
     for d in L.FLATS:
         excl = np.maximum(excl, T.poly_mask(d[1], 20.0))
     forest = T.forest_mask(h, land, slope, excl)
-    ctl, macro, slope = T.ground_maps(h, land, coastw, inland, river, forest)
+    ctl, macro, slope = T.ground_maps(h, land, coastw, inland, river, forest, emaps)
     log(f'carved; terrain y {h.min():.1f}..{h.max():.1f}; holes {int(holes.sum())} cells ({time.time() - t0:.1f}s)')
 
     if '--plan-only' not in sys.argv:
@@ -174,11 +307,14 @@ def main():
         write_png(os.path.join(OUT, 'holes.png'), holes.astype(float), 'L')
         write_png(os.path.join(OUT, 'control.png'), T.resize(ctl, 1024), 'RGBA')
         write_png(os.path.join(OUT, 'macro.png'), T.resize(macro, 1024), 'RGBA')
-        write_roads(net, os.path.join(OUT, 'roads.json'))
-        write_plan(net, venues, homes, coast, river, os.path.join(OUT, 'plan.json'), h)
+        write_png(os.path.join(OUT, 'forest.png'), forest, 'L')                              # dress.py scatters trees here
+        write_png(os.path.join(OUT, 'ground.png'), np.stack([ctl[..., 1], ctl[..., 3], np.clip(emaps.get('talus', np.zeros_like(h)) * 2, 0, 1)], -1), 'RGB')
+        write_roads(net, os.path.join(OUT, 'roads.json'), walls)
+        write_plan(net, venues, homes, coast, river, os.path.join(OUT, 'plan.json'), h,
+                   extra=dict(quays=quays(coast, ctypes, h), boardwalk=boardwalk(net, h)))
         import textures
         tex_dir = os.path.join(REPO, 'client', 'Assets', 'World', 'Island', 'Textures')
-        textures.write_all(h, river, net, macro, tex_dir)
+        textures.write_all(h, river, net, macro, tex_dir, ctl=ctl)
         write_png(os.path.join(tex_dir, 'terrain_control.png'), T.resize(ctl, 1024), 'RGBA')
         write_png(os.path.join(tex_dir, 'terrain_macro.png'), T.resize(macro, 1024), 'RGBA')
         log(f'textures written ({time.time() - t0:.1f}s)')
@@ -192,7 +328,7 @@ def r3(v):
     return [round(float(c), 3) for c in v]
 
 
-def write_roads(net, path):
+def write_roads(net, path, walls=None):
     nodes = []
     for nid, p in net.nodes.items():
         if nid not in net.node_y:
@@ -238,7 +374,7 @@ def write_roads(net, path):
                            radius=L.ROUNDABOUTS[c], parts=[dict(node=j['node'], polygon=[r3(p) for p in j['polygon']],
                                                                    approaches=j['approaches'], fillets=j['fillets']) for j in js]))
     doc = dict(version=1, seaLevel=L.SEA, laneWidth=L.LANE, driving='right', laneIndexing='0..F-1 forward (from->to, right of centreline, 0 innermost); F..F+B-1 back (0 innermost)',
-               nodes=nodes, segments=segs, intersections=inters, lanes=lanes)
+               nodes=nodes, segments=segs, intersections=inters, lanes=lanes, walls=walls or [])
     txt = json.dumps(doc, separators=(',', ':')).replace('"from_"', '"from"')
     open(path, 'w').write(txt)
 
@@ -270,7 +406,7 @@ def resolve_helipads(venues, h):
     return out
 
 
-def write_plan(net, venues, homes, coast, river, path, h):
+def write_plan(net, venues, homes, coast, river, path, h, extra=None):
     line, level, hw, depth = river
     doc = dict(
         version=2, sea=L.SEA, flightCeiling=L.FLIGHT_CEILING,
@@ -280,7 +416,9 @@ def write_plan(net, venues, homes, coast, river, path, h):
         landmarks=resolve_landmarks(venues), helipads=resolve_helipads(venues, h), fields=L.FIELDS, parks=L.PARKS,
         river=dict(points=[r3([x, l, z]) for (x, z), l in zip(line[::2], level[::2])], halfWidth=[round(float(v), 2) for v in hw[::2]]),
         lakes=L.LAKES, islet=L.ISLET, causeway=L.CAUSEWAY,
+        plazas=[dict(id=L.DT_PLAZA[0], polygon=[[round(float(x), 3), round(float(z), 3)] for x, z in L.dt_block_poly(*L.DT_PLAZA[1])])],
     )
+    doc.update(extra or {})
     json.dump(doc, open(path, 'w'), indent=1)
 
 

@@ -1,0 +1,3044 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: db7e041f97a084f95a5eaaea2034cee8, type: 3}
+  m_Name: IslandKit
+  m_EditorClassIdentifier: CTLife.World::CTLife.World.IslandKit
+  protos:
+  - id: bench_city
+    lods:
+    - {fileID: -8165341406596699930, guid: 89bb0c18f195546bb8de5b5e2981e8bd, type: 3}
+    lodEnd:
+    - 130
+    material: {fileID: 2100000, guid: 6bf9122b717f6414294742c8b3eac306, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 6bf9122b717f6414294742c8b3eac306, type: 2}
+    shadowRange: 15
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 0.20000003, z: 0}
+      m_Extent: {x: 0.8, y: 0.20000003, z: 0.30000007}
+    kind: prop
+  - id: car_delivery
+    lods:
+    - {fileID: 5552737388472402811, guid: f0960e4b01831432b9865c8d5a7fe78e, type: 3}
+    - {fileID: 300298632655676791, guid: f0960e4b01831432b9865c8d5a7fe78e, type: 3}
+    - {fileID: 6202099553576238839, guid: f0960e4b01831432b9865c8d5a7fe78e, type: 3}
+    lodEnd:
+    - 35
+    - 110
+    - 320
+    material: {fileID: 2100000, guid: 56e2ff8ba75ea459688c8fba939de320, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 56e2ff8ba75ea459688c8fba939de320, type: 2}
+    shadowRange: 45
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 1.4519999, z: 0}
+      m_Extent: {x: 1.3200054, y: 1.4520054, z: 2.8600051}
+    kind: vehicle
+  - id: car_hatchback_sports
+    lods:
+    - {fileID: 7133208851936966651, guid: 12ec5325bbb4c458dbdc48cf68c8ac5e, type: 3}
+    - {fileID: 220667024580425581, guid: 12ec5325bbb4c458dbdc48cf68c8ac5e, type: 3}
+    - {fileID: 8423282472628733481, guid: 12ec5325bbb4c458dbdc48cf68c8ac5e, type: 3}
+    lodEnd:
+    - 35
+    - 110
+    - 320
+    material: {fileID: 2100000, guid: 56e2ff8ba75ea459688c8fba939de320, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 56e2ff8ba75ea459688c8fba939de320, type: 2}
+    shadowRange: 45
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 0.968, z: 0}
+      m_Extent: {x: 1.1440047, y: 0.96800476, z: 2.508005}
+    kind: vehicle
+  - id: car_police
+    lods:
+    - {fileID: -3447593669580187260, guid: 2128c221adadc4df2b346790df16b052, type: 3}
+    - {fileID: 8744998492751459751, guid: 2128c221adadc4df2b346790df16b052, type: 3}
+    - {fileID: -1235941691669794969, guid: 2128c221adadc4df2b346790df16b052, type: 3}
+    lodEnd:
+    - 35
+    - 110
+    - 320
+    material: {fileID: 2100000, guid: 56e2ff8ba75ea459688c8fba939de320, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 56e2ff8ba75ea459688c8fba939de320, type: 2}
+    shadowRange: 45
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 1.144, z: -0.00000023841858}
+      m_Extent: {x: 1.3200052, y: 1.1440053, z: 2.728005}
+    kind: vehicle
+  - id: car_sedan
+    lods:
+    - {fileID: 767842212192574137, guid: 81f09c04eb39641ad995d21be92b0a03, type: 3}
+    - {fileID: 695360515025935056, guid: 81f09c04eb39641ad995d21be92b0a03, type: 3}
+    - {fileID: 5100256274266984833, guid: 81f09c04eb39641ad995d21be92b0a03, type: 3}
+    lodEnd:
+    - 35
+    - 110
+    - 320
+    material: {fileID: 2100000, guid: 56e2ff8ba75ea459688c8fba939de320, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 56e2ff8ba75ea459688c8fba939de320, type: 2}
+    shadowRange: 45
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 1.1439999, z: 0}
+      m_Extent: {x: 1.3200042, y: 1.1440042, z: 2.2440042}
+    kind: vehicle
+  - id: car_sedan_sports
+    lods:
+    - {fileID: 8067663665428619933, guid: 6bfa99815277540eebcdbbf9eb78101e, type: 3}
+    - {fileID: -3038591036036501084, guid: 6bfa99815277540eebcdbbf9eb78101e, type: 3}
+    - {fileID: 7289341857143113442, guid: 6bfa99815277540eebcdbbf9eb78101e, type: 3}
+    lodEnd:
+    - 35
+    - 110
+    - 320
+    material: {fileID: 2100000, guid: 56e2ff8ba75ea459688c8fba939de320, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 56e2ff8ba75ea459688c8fba939de320, type: 2}
+    shadowRange: 45
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 0.96799994, z: 0}
+      m_Extent: {x: 1.1440042, y: 0.9680042, z: 2.2440042}
+    kind: vehicle
+  - id: car_suv
+    lods:
+    - {fileID: 7881222755436974781, guid: 0924c74accccd4a06b59fcbbb374c0b9, type: 3}
+    - {fileID: 2567976238548008582, guid: 0924c74accccd4a06b59fcbbb374c0b9, type: 3}
+    - {fileID: 9011060451653389190, guid: 0924c74accccd4a06b59fcbbb374c0b9, type: 3}
+    lodEnd:
+    - 35
+    - 110
+    - 320
+    material: {fileID: 2100000, guid: 56e2ff8ba75ea459688c8fba939de320, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 56e2ff8ba75ea459688c8fba939de320, type: 2}
+    shadowRange: 45
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 1.144, z: 0}
+      m_Extent: {x: 1.3200045, y: 1.1440046, z: 2.3760045}
+    kind: vehicle
+  - id: car_suv_luxury
+    lods:
+    - {fileID: 7716770929021828036, guid: ad295be41a78d4dc7a96b348c49dc0bb, type: 3}
+    - {fileID: 7451418775619513961, guid: ad295be41a78d4dc7a96b348c49dc0bb, type: 3}
+    - {fileID: 6083706403152718705, guid: ad295be41a78d4dc7a96b348c49dc0bb, type: 3}
+    lodEnd:
+    - 35
+    - 110
+    - 320
+    material: {fileID: 2100000, guid: 56e2ff8ba75ea459688c8fba939de320, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 56e2ff8ba75ea459688c8fba939de320, type: 2}
+    shadowRange: 45
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 1.1439999, z: 0}
+      m_Extent: {x: 1.3200047, y: 1.1440047, z: 2.508005}
+    kind: vehicle
+  - id: car_taxi
+    lods:
+    - {fileID: -4744652812722844788, guid: 06ac74295bdb64659b5609a32a83d3fe, type: 3}
+    - {fileID: -1899554412142314000, guid: 06ac74295bdb64659b5609a32a83d3fe, type: 3}
+    - {fileID: -2273800037779665491, guid: 06ac74295bdb64659b5609a32a83d3fe, type: 3}
+    lodEnd:
+    - 35
+    - 110
+    - 320
+    material: {fileID: 2100000, guid: 56e2ff8ba75ea459688c8fba939de320, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 56e2ff8ba75ea459688c8fba939de320, type: 2}
+    shadowRange: 45
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 1.3199999, z: 0}
+      m_Extent: {x: 1.3200047, y: 1.3200047, z: 2.4200046}
+    kind: vehicle
+  - id: car_van
+    lods:
+    - {fileID: 4357438984816868994, guid: 1c545b32e4d2449c8bd99807e6ac6da4, type: 3}
+    - {fileID: 4408155793503908383, guid: 1c545b32e4d2449c8bd99807e6ac6da4, type: 3}
+    - {fileID: 5801163646030823029, guid: 1c545b32e4d2449c8bd99807e6ac6da4, type: 3}
+    lodEnd:
+    - 35
+    - 110
+    - 320
+    material: {fileID: 2100000, guid: 56e2ff8ba75ea459688c8fba939de320, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 56e2ff8ba75ea459688c8fba939de320, type: 2}
+    shadowRange: 45
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 1.188, z: 0}
+      m_Extent: {x: 1.3200046, y: 1.1880046, z: 2.4200046}
+    kind: vehicle
+  - id: kc_building_a
+    lods:
+    - {fileID: 6854071043640083243, guid: 1e1f3015cc06e451486db3c71a943684, type: 3}
+    - {fileID: 1861127150522495610, guid: 1e1f3015cc06e451486db3c71a943684, type: 3}
+    - {fileID: 7499102299232004835, guid: 1e1f3015cc06e451486db3c71a943684, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: c80519f6cd6584537991b3cf0758ac08, type: 2}
+    materials:
+    - {fileID: 2100000, guid: c80519f6cd6584537991b3cf0758ac08, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: -0.00000023841858, y: 5.4952497, z: 0.00000035762787}
+      m_Extent: {x: 3.7552629, y: 5.495264, z: 3.9950142}
+    kind: building
+  - id: kc_building_b
+    lods:
+    - {fileID: -6953518413434345560, guid: 86758d04755d848dea176fb5757a574e, type: 3}
+    - {fileID: 3403508412438576233, guid: 86758d04755d848dea176fb5757a574e, type: 3}
+    - {fileID: 854474143882017007, guid: 86758d04755d848dea176fb5757a574e, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: c80519f6cd6584537991b3cf0758ac08, type: 2}
+    materials:
+    - {fileID: 2100000, guid: c80519f6cd6584537991b3cf0758ac08, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: -0.00000023841858, y: 5.4952497, z: 0.00000035762787}
+      m_Extent: {x: 4.1225147, y: 5.495264, z: 3.9950142}
+    kind: building
+  - id: kc_building_c
+    lods:
+    - {fileID: -5851638890994494445, guid: 3c349551e96544cb0a12aa89c8e5fb29, type: 3}
+    - {fileID: -1739045093223113254, guid: 3c349551e96544cb0a12aa89c8e5fb29, type: 3}
+    - {fileID: -7771244685938330268, guid: 3c349551e96544cb0a12aa89c8e5fb29, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: c80519f6cd6584537991b3cf0758ac08, type: 2}
+    materials:
+    - {fileID: 2100000, guid: c80519f6cd6584537991b3cf0758ac08, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: -0.00000023841858, y: 3.79525, z: 0.00000023841858}
+      m_Extent: {x: 3.7552602, y: 3.7952616, z: 4.632512}
+    kind: building
+  - id: kc_building_d
+    lods:
+    - {fileID: -6462883610523363486, guid: 38e003ee38fa04f069f85ad93f1fd8e7, type: 3}
+    - {fileID: 7734553864621014959, guid: 38e003ee38fa04f069f85ad93f1fd8e7, type: 3}
+    - {fileID: -5431378380796027476, guid: 38e003ee38fa04f069f85ad93f1fd8e7, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: c80519f6cd6584537991b3cf0758ac08, type: 2}
+    materials:
+    - {fileID: 2100000, guid: c80519f6cd6584537991b3cf0758ac08, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: -0.00000023841858, y: 5.4952497, z: -0.0000009536743}
+      m_Extent: {x: 3.5700142, y: 5.495264, z: 3.8250134}
+    kind: building
+  - id: kc_building_e
+    lods:
+    - {fileID: 3114291155718487547, guid: fae95219f7f53422892e778195a4361d, type: 3}
+    - {fileID: -2106506347751404945, guid: fae95219f7f53422892e778195a4361d, type: 3}
+    - {fileID: -2298454629516968928, guid: fae95219f7f53422892e778195a4361d, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: c80519f6cd6584537991b3cf0758ac08, type: 2}
+    materials:
+    - {fileID: 2100000, guid: c80519f6cd6584537991b3cf0758ac08, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 3.79525, z: 0}
+      m_Extent: {x: 6.970014, y: 3.7952638, z: 4.2835526}
+    kind: building
+  - id: kc_building_f
+    lods:
+    - {fileID: 723124409431191646, guid: dfa34a32da5d14b3d8f99137bb158615, type: 3}
+    - {fileID: -8446396999221924605, guid: dfa34a32da5d14b3d8f99137bb158615, type: 3}
+    - {fileID: -3319770725119667341, guid: dfa34a32da5d14b3d8f99137bb158615, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: c80519f6cd6584537991b3cf0758ac08, type: 2}
+    materials:
+    - {fileID: 2100000, guid: c80519f6cd6584537991b3cf0758ac08, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 7.1952505, z: 0.0000009536743}
+      m_Extent: {x: 3.570018, y: 7.1952686, z: 4.377519}
+    kind: building
+  - id: kc_building_g
+    lods:
+    - {fileID: -7946053362129505736, guid: 49b2b6df13439446f97fc5a31ec4cf4d, type: 3}
+    - {fileID: -4028682872334690379, guid: 49b2b6df13439446f97fc5a31ec4cf4d, type: 3}
+    - {fileID: 3397004522894884750, guid: 49b2b6df13439446f97fc5a31ec4cf4d, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: c80519f6cd6584537991b3cf0758ac08, type: 2}
+    materials:
+    - {fileID: 2100000, guid: c80519f6cd6584537991b3cf0758ac08, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 7.1952505, z: 0.0000009536743}
+      m_Extent: {x: 4.1225176, y: 7.195268, z: 3.9185185}
+    kind: building
+  - id: kc_building_h
+    lods:
+    - {fileID: 8990692626418783776, guid: f54d3f7c874e54d2299991afed4f00a6, type: 3}
+    - {fileID: 1458373238089965991, guid: f54d3f7c874e54d2299991afed4f00a6, type: 3}
+    - {fileID: -7139934609909330504, guid: f54d3f7c874e54d2299991afed4f00a6, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: c80519f6cd6584537991b3cf0758ac08, type: 2}
+    materials:
+    - {fileID: 2100000, guid: c80519f6cd6584537991b3cf0758ac08, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 5.4952497, z: -0.00000071525574}
+      m_Extent: {x: 3.7552629, y: 5.4952645, z: 4.2835517}
+    kind: building
+  - id: kc_building_i
+    lods:
+    - {fileID: -4723446205971573761, guid: dff5d332264eb443096d4e197c7409f8, type: 3}
+    - {fileID: -329679736929564844, guid: dff5d332264eb443096d4e197c7409f8, type: 3}
+    - {fileID: 6049525811087661103, guid: dff5d332264eb443096d4e197c7409f8, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: c80519f6cd6584537991b3cf0758ac08, type: 2}
+    materials:
+    - {fileID: 2100000, guid: c80519f6cd6584537991b3cf0758ac08, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: -0.00000023841858, y: 7.1400003, z: 0.00000023841858}
+      m_Extent: {x: 5.2700195, y: 7.1400194, z: 5.533519}
+    kind: building
+  - id: kc_building_j
+    lods:
+    - {fileID: -8484322946152328032, guid: 155cc56c2989143a19f18ff61f9a4061, type: 3}
+    - {fileID: -6777073025867037775, guid: 155cc56c2989143a19f18ff61f9a4061, type: 3}
+    - {fileID: 3565761228824253728, guid: 155cc56c2989143a19f18ff61f9a4061, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: c80519f6cd6584537991b3cf0758ac08, type: 2}
+    materials:
+    - {fileID: 2100000, guid: c80519f6cd6584537991b3cf0758ac08, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: -0.00000047683716, y: 7.1952505, z: 0}
+      m_Extent: {x: 8.855271, y: 7.1952724, z: 5.695022}
+    kind: building
+  - id: kc_building_k
+    lods:
+    - {fileID: 5999016079111510578, guid: f7392be072c2e44a6a8f3e71431495db, type: 3}
+    - {fileID: 6059732461305023010, guid: f7392be072c2e44a6a8f3e71431495db, type: 3}
+    - {fileID: 2466348445756739910, guid: f7392be072c2e44a6a8f3e71431495db, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: c80519f6cd6584537991b3cf0758ac08, type: 2}
+    materials:
+    - {fileID: 2100000, guid: c80519f6cd6584537991b3cf0758ac08, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: -0.00000047683716, y: 6.2475, z: -0.00000071525574}
+      m_Extent: {x: 8.855269, y: 6.2475204, z: 4.0035195}
+    kind: building
+  - id: kc_building_l
+    lods:
+    - {fileID: -7337429825064580005, guid: 9aaaa0a7f79524b23aa2ef2eb098655c, type: 3}
+    - {fileID: 1950404905417842664, guid: 9aaaa0a7f79524b23aa2ef2eb098655c, type: 3}
+    - {fileID: -1001893344981515561, guid: 9aaaa0a7f79524b23aa2ef2eb098655c, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: c80519f6cd6584537991b3cf0758ac08, type: 2}
+    materials:
+    - {fileID: 2100000, guid: c80519f6cd6584537991b3cf0758ac08, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 9.6475, z: 0.00000023841858}
+      m_Extent: {x: 5.8225245, y: 9.647524, z: 5.958524}
+    kind: building
+  - id: kc_building_m
+    lods:
+    - {fileID: -3076471525106363268, guid: 3d2d72a1a7835489298da3f1f4316e2d, type: 3}
+    - {fileID: -2747141652737184571, guid: 3d2d72a1a7835489298da3f1f4316e2d, type: 3}
+    - {fileID: 2167893960499304227, guid: 3d2d72a1a7835489298da3f1f4316e2d, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: c80519f6cd6584537991b3cf0758ac08, type: 2}
+    materials:
+    - {fileID: 2100000, guid: c80519f6cd6584537991b3cf0758ac08, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 13.387501, z: 0.00000071525574}
+      m_Extent: {x: 5.270031, y: 13.387531, z: 5.278531}
+    kind: building
+  - id: kc_building_n
+    lods:
+    - {fileID: 1690940876767408030, guid: 755c74d28918e4f6ab8670cb297b6447, type: 3}
+    - {fileID: -5519813890800314285, guid: 755c74d28918e4f6ab8670cb297b6447, type: 3}
+    - {fileID: 6263748972031164778, guid: 755c74d28918e4f6ab8670cb297b6447, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: c80519f6cd6584537991b3cf0758ac08, type: 2}
+    materials:
+    - {fileID: 2100000, guid: c80519f6cd6584537991b3cf0758ac08, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: -0.00000047683716, y: 10.54, z: 0}
+      m_Extent: {x: 9.86003, y: 10.54003, z: 7.7350297}
+    kind: building
+  - id: kc_tower_a
+    lods:
+    - {fileID: 7008283447261110530, guid: 2ad53f48348034b76b4576602b12c8c6, type: 3}
+    - {fileID: 1528437331694564563, guid: 2ad53f48348034b76b4576602b12c8c6, type: 3}
+    - {fileID: -4674591712244062742, guid: 2ad53f48348034b76b4576602b12c8c6, type: 3}
+    lodEnd:
+    - 120
+    - 420
+    - 2400
+    material: {fileID: 2100000, guid: c80519f6cd6584537991b3cf0758ac08, type: 2}
+    materials:
+    - {fileID: 2100000, guid: c80519f6cd6584537991b3cf0758ac08, type: 2}
+    shadowRange: 160
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 12.24, z: 0}
+      m_Extent: {x: 5.780028, y: 12.240028, z: 5.78003}
+    kind: building
+  - id: kc_tower_b
+    lods:
+    - {fileID: 8257565124272320191, guid: 5c053705e3f1949dbaf3a51bcbe89674, type: 3}
+    - {fileID: 9220515576229499027, guid: 5c053705e3f1949dbaf3a51bcbe89674, type: 3}
+    - {fileID: -6799378097505198107, guid: 5c053705e3f1949dbaf3a51bcbe89674, type: 3}
+    lodEnd:
+    - 120
+    - 420
+    - 2400
+    material: {fileID: 2100000, guid: c80519f6cd6584537991b3cf0758ac08, type: 2}
+    materials:
+    - {fileID: 2100000, guid: c80519f6cd6584537991b3cf0758ac08, type: 2}
+    shadowRange: 160
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 19.04, z: 0}
+      m_Extent: {x: 5.7800407, y: 19.040043, z: 5.7800417}
+    kind: building
+  - id: kc_tower_c
+    lods:
+    - {fileID: 3393407141150179213, guid: 9047bba7fc1ef4204952cdda66e284ac, type: 3}
+    - {fileID: -1917795292292964542, guid: 9047bba7fc1ef4204952cdda66e284ac, type: 3}
+    - {fileID: 2168575289216223446, guid: 9047bba7fc1ef4204952cdda66e284ac, type: 3}
+    lodEnd:
+    - 120
+    - 420
+    - 2400
+    material: {fileID: 2100000, guid: c80519f6cd6584537991b3cf0758ac08, type: 2}
+    materials:
+    - {fileID: 2100000, guid: c80519f6cd6584537991b3cf0758ac08, type: 2}
+    shadowRange: 160
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 17.34, z: 0}
+      m_Extent: {x: 5.4400373, y: 17.340038, z: 5.898577}
+    kind: building
+  - id: kc_tower_d
+    lods:
+    - {fileID: 3285816481073071967, guid: ac7ef66f4a83c411f83605d556890056, type: 3}
+    - {fileID: 3095121359718705132, guid: ac7ef66f4a83c411f83605d556890056, type: 3}
+    - {fileID: -8676620930485800705, guid: ac7ef66f4a83c411f83605d556890056, type: 3}
+    lodEnd:
+    - 120
+    - 420
+    - 2400
+    material: {fileID: 2100000, guid: c80519f6cd6584537991b3cf0758ac08, type: 2}
+    materials:
+    - {fileID: 2100000, guid: c80519f6cd6584537991b3cf0758ac08, type: 2}
+    shadowRange: 160
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 23.247498, z: 0}
+      m_Extent: {x: 5.440049, y: 23.247547, z: 5.8985887}
+    kind: building
+  - id: kc_tower_e
+    lods:
+    - {fileID: 7951598617970577672, guid: eca3683e0dad04add9c00d6417aaa9f7, type: 3}
+    - {fileID: -8699490331314228014, guid: eca3683e0dad04add9c00d6417aaa9f7, type: 3}
+    - {fileID: -2963477928863196644, guid: eca3683e0dad04add9c00d6417aaa9f7, type: 3}
+    lodEnd:
+    - 120
+    - 420
+    - 2400
+    material: {fileID: 2100000, guid: c80519f6cd6584537991b3cf0758ac08, type: 2}
+    materials:
+    - {fileID: 2100000, guid: c80519f6cd6584537991b3cf0758ac08, type: 2}
+    shadowRange: 160
+    layer: 12
+    bounds:
+      m_Center: {x: -0.0000009536743, y: 17.34, z: 0.00000047683716}
+      m_Extent: {x: 5.5037875, y: 17.340038, z: 5.278539}
+    kind: building
+  - id: kf_bush_1_a
+    lods:
+    - {fileID: 9111470627580862720, guid: ae21b56f6cc8e44f28c207178a5a1b01, type: 3}
+    lodEnd:
+    - 200
+    material: {fileID: 2100000, guid: 058809479f613496eb7b70e13678f3df, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 058809479f613496eb7b70e13678f3df, type: 2}
+    shadowRange: 25
+    layer: 14
+    bounds:
+      m_Center: {x: 0, y: 0.18132278, z: 0}
+      m_Extent: {x: 0.21374193, y: 0.18132333, z: 0.18726958}
+    kind: bush
+  - id: kf_bush_1_b
+    lods:
+    - {fileID: 7452037681102613951, guid: f0ae6c4fd00a441cbaf69b0136ea01aa, type: 3}
+    lodEnd:
+    - 200
+    material: {fileID: 2100000, guid: 058809479f613496eb7b70e13678f3df, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 058809479f613496eb7b70e13678f3df, type: 2}
+    shadowRange: 25
+    layer: 14
+    bounds:
+      m_Center: {x: 0, y: 0.3872896, z: 0}
+      m_Extent: {x: 0.57794136, y: 0.3872909, z: 0.5779414}
+    kind: bush
+  - id: kf_bush_1_c
+    lods:
+    - {fileID: -1922252676334813179, guid: 120e5424c79464f1aa31dc1485186bdb, type: 3}
+    lodEnd:
+    - 200
+    material: {fileID: 2100000, guid: 058809479f613496eb7b70e13678f3df, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 058809479f613496eb7b70e13678f3df, type: 2}
+    shadowRange: 25
+    layer: 14
+    bounds:
+      m_Center: {x: 0, y: 0.64593846, z: 0}
+      m_Extent: {x: 0.96330106, y: 0.6459406, z: 0.96330124}
+    kind: bush
+  - id: kf_bush_1_d
+    lods:
+    - {fileID: -3181108510449096882, guid: 5dbcecbd41e884d8eb9dd1f6e46ae619, type: 3}
+    lodEnd:
+    - 200
+    material: {fileID: 2100000, guid: 058809479f613496eb7b70e13678f3df, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 058809479f613496eb7b70e13678f3df, type: 2}
+    shadowRange: 25
+    layer: 14
+    bounds:
+      m_Center: {x: 0, y: 0.79498917, z: 0}
+      m_Extent: {x: 1.253484, y: 0.79499185, z: 1.2534841}
+    kind: bush
+  - id: kf_bush_1_e
+    lods:
+    - {fileID: 6022514392786173414, guid: 7b129247b88114dc4b83ccbfbaaea51e, type: 3}
+    - {fileID: -925688956222040892, guid: 7b129247b88114dc4b83ccbfbaaea51e, type: 3}
+    lodEnd:
+    - 30
+    - 200
+    material: {fileID: 2100000, guid: 058809479f613496eb7b70e13678f3df, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 058809479f613496eb7b70e13678f3df, type: 2}
+    shadowRange: 25
+    layer: 14
+    bounds:
+      m_Center: {x: 0, y: 0.6467375, z: 0}
+      m_Extent: {x: 1.2601159, y: 0.64673996, z: 1.053247}
+    kind: bush
+  - id: kf_bush_1_f
+    lods:
+    - {fileID: -6351801814043350260, guid: 7fa7653208aa7410997505c7eb5fbd21, type: 3}
+    - {fileID: 3502267278451494493, guid: 7fa7653208aa7410997505c7eb5fbd21, type: 3}
+    lodEnd:
+    - 30
+    - 200
+    material: {fileID: 2100000, guid: 058809479f613496eb7b70e13678f3df, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 058809479f613496eb7b70e13678f3df, type: 2}
+    shadowRange: 25
+    layer: 14
+    bounds:
+      m_Center: {x: 0, y: 0.79498917, z: 0}
+      m_Extent: {x: 1.8261995, y: 0.7949926, z: 1.503235}
+    kind: bush
+  - id: kf_bush_1_g
+    lods:
+    - {fileID: 8967037017697445950, guid: fb8eec3f784bd4c8397bd21bac6cdbc2, type: 3}
+    - {fileID: -7069510426047407542, guid: fb8eec3f784bd4c8397bd21bac6cdbc2, type: 3}
+    - {fileID: 6834790807626635396, guid: fb8eec3f784bd4c8397bd21bac6cdbc2, type: 3}
+    lodEnd:
+    - 30
+    - 80
+    - 200
+    material: {fileID: 2100000, guid: 058809479f613496eb7b70e13678f3df, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 058809479f613496eb7b70e13678f3df, type: 2}
+    shadowRange: 25
+    layer: 14
+    bounds:
+      m_Center: {x: 0, y: 0.79498917, z: 0}
+      m_Extent: {x: 2.4832623, y: 0.7949939, z: 1.3984542}
+    kind: bush
+  - id: kf_bush_2_a
+    lods:
+    - {fileID: -3352870773219338109, guid: 12f7c3f108686410299d573033da7d58, type: 3}
+    lodEnd:
+    - 200
+    material: {fileID: 2100000, guid: 058809479f613496eb7b70e13678f3df, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 058809479f613496eb7b70e13678f3df, type: 2}
+    shadowRange: 25
+    layer: 14
+    bounds:
+      m_Center: {x: 0, y: 0.42240003, z: 0}
+      m_Extent: {x: 0.42240122, y: 0.4224012, z: 0.42240122}
+    kind: bush
+  - id: kf_bush_2_b
+    lods:
+    - {fileID: 2506250371897206442, guid: 96e8ad4af76464187bf378119c6ec130, type: 3}
+    lodEnd:
+    - 200
+    material: {fileID: 2100000, guid: 058809479f613496eb7b70e13678f3df, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 058809479f613496eb7b70e13678f3df, type: 2}
+    shadowRange: 25
+    layer: 14
+    bounds:
+      m_Center: {x: 0, y: 0.68639976, z: 0}
+      m_Extent: {x: 0.68640196, y: 0.68640196, z: 0.68640196}
+    kind: bush
+  - id: kf_bush_2_c
+    lods:
+    - {fileID: 1350793582987617457, guid: f301c4cf06d7f415fa8e7b5b9e58874c, type: 3}
+    lodEnd:
+    - 200
+    material: {fileID: 2100000, guid: 058809479f613496eb7b70e13678f3df, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 058809479f613496eb7b70e13678f3df, type: 2}
+    shadowRange: 25
+    layer: 14
+    bounds:
+      m_Center: {x: -0.000000059604645, y: 1.0559999, z: 0}
+      m_Extent: {x: 1.056003, y: 1.0560031, z: 1.0560031}
+    kind: bush
+  - id: kf_bush_2_d
+    lods:
+    - {fileID: -8034420566020394919, guid: f289efbe8822b4ac2a0efe287d1de5e6, type: 3}
+    lodEnd:
+    - 200
+    material: {fileID: 2100000, guid: 058809479f613496eb7b70e13678f3df, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 058809479f613496eb7b70e13678f3df, type: 2}
+    shadowRange: 25
+    layer: 14
+    bounds:
+      m_Center: {x: 0, y: 0.6864, z: 0}
+      m_Extent: {x: 1.257835, y: 0.6864025, z: 0.81478024}
+    kind: bush
+  - id: kf_bush_2_e
+    lods:
+    - {fileID: -1250697638095145980, guid: e42f7249e13fc4c24a43db990cb6a9cf, type: 3}
+    - {fileID: 175104924829714230, guid: e42f7249e13fc4c24a43db990cb6a9cf, type: 3}
+    lodEnd:
+    - 30
+    - 200
+    material: {fileID: 2100000, guid: 058809479f613496eb7b70e13678f3df, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 058809479f613496eb7b70e13678f3df, type: 2}
+    shadowRange: 25
+    layer: 14
+    bounds:
+      m_Center: {x: 0, y: 1.0656, z: 0}
+      m_Extent: {x: 1.8784199, y: 1.0656039, z: 1.60503}
+    kind: bush
+  - id: kf_bush_2_f
+    lods:
+    - {fileID: -3759750160270577793, guid: 9852eef8a6e15411c88580afe9ce346c, type: 3}
+    - {fileID: -7653454733955453935, guid: 9852eef8a6e15411c88580afe9ce346c, type: 3}
+    lodEnd:
+    - 30
+    - 200
+    material: {fileID: 2100000, guid: 058809479f613496eb7b70e13678f3df, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 058809479f613496eb7b70e13678f3df, type: 2}
+    shadowRange: 25
+    layer: 14
+    bounds:
+      m_Center: {x: 0, y: 1.4335327, z: 0}
+      m_Extent: {x: 1.6059952, y: 1.433537, z: 1.2755623}
+    kind: bush
+  - id: kf_bush_3_a
+    lods:
+    - {fileID: 5228830971926413590, guid: 1c6c10255c50d46b4a18197df056ba64, type: 3}
+    lodEnd:
+    - 200
+    material: {fileID: 2100000, guid: 058809479f613496eb7b70e13678f3df, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 058809479f613496eb7b70e13678f3df, type: 2}
+    shadowRange: 25
+    layer: 14
+    bounds:
+      m_Center: {x: 0, y: 0.3882103, z: 0}
+      m_Extent: {x: 0.82644814, y: 0.38821188, z: 0.82644814}
+    kind: bush
+  - id: kf_bush_3_b
+    lods:
+    - {fileID: -7047063886410924361, guid: 2dfded433cc874698b9c9b9b582d428e, type: 3}
+    lodEnd:
+    - 200
+    material: {fileID: 2100000, guid: 058809479f613496eb7b70e13678f3df, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 058809479f613496eb7b70e13678f3df, type: 2}
+    shadowRange: 25
+    layer: 14
+    bounds:
+      m_Center: {x: 0, y: 0.64282763, z: 0}
+      m_Extent: {x: 1.3466716, y: 0.6428302, z: 1.3466716}
+    kind: bush
+  - id: kf_bush_3_c
+    lods:
+    - {fileID: -2186892570389166726, guid: e8a803dfef88f45b49aa3e34547c0beb, type: 3}
+    - {fileID: 7423274597315842761, guid: e8a803dfef88f45b49aa3e34547c0beb, type: 3}
+    lodEnd:
+    - 30
+    - 200
+    material: {fileID: 2100000, guid: 058809479f613496eb7b70e13678f3df, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 058809479f613496eb7b70e13678f3df, type: 2}
+    shadowRange: 25
+    layer: 14
+    bounds:
+      m_Center: {x: 0, y: 0.9205228, z: 0}
+      m_Extent: {x: 1.9920417, y: 0.9205266, z: 1.9920416}
+    kind: bush
+  - id: kf_bush_4_a
+    lods:
+    - {fileID: -5639128256438090845, guid: 35db97b0c676a4bdabe4420cc8f2d0aa, type: 3}
+    lodEnd:
+    - 200
+    material: {fileID: 2100000, guid: 058809479f613496eb7b70e13678f3df, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 058809479f613496eb7b70e13678f3df, type: 2}
+    shadowRange: 25
+    layer: 14
+    bounds:
+      m_Center: {x: 0, y: 0.34752047, z: 0}
+      m_Extent: {x: 0.46145782, y: 0.34752157, z: 0.46145788}
+    kind: bush
+  - id: kf_bush_4_b
+    lods:
+    - {fileID: 5960898003645946312, guid: 943acd18065de439bb436e42df177c4d, type: 3}
+    lodEnd:
+    - 200
+    material: {fileID: 2100000, guid: 058809479f613496eb7b70e13678f3df, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 058809479f613496eb7b70e13678f3df, type: 2}
+    shadowRange: 25
+    layer: 14
+    bounds:
+      m_Center: {x: 0, y: 0.5946864, z: 0}
+      m_Extent: {x: 0.7926712, y: 0.5946883, z: 0.7926713}
+    kind: bush
+  - id: kf_bush_4_c
+    lods:
+    - {fileID: 7238213667967763420, guid: 2b8954a4ea70d4551abd29027551169a, type: 3}
+    lodEnd:
+    - 200
+    material: {fileID: 2100000, guid: 058809479f613496eb7b70e13678f3df, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 058809479f613496eb7b70e13678f3df, type: 2}
+    shadowRange: 25
+    layer: 14
+    bounds:
+      m_Center: {x: 0, y: 1.0415905, z: 0}
+      m_Extent: {x: 1.264958, y: 1.0415937, z: 1.2649579}
+    kind: bush
+  - id: kf_bush_4_d
+    lods:
+    - {fileID: -8172657982734708108, guid: 8fd8b32e8d78c4334be32539fd196d17, type: 3}
+    lodEnd:
+    - 200
+    material: {fileID: 2100000, guid: 058809479f613496eb7b70e13678f3df, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 058809479f613496eb7b70e13678f3df, type: 2}
+    shadowRange: 25
+    layer: 14
+    bounds:
+      m_Center: {x: 0, y: 0.5946864, z: 0}
+      m_Extent: {x: 1.3925776, y: 0.5946891, z: 1.029797}
+    kind: bush
+  - id: kf_bush_4_e
+    lods:
+    - {fileID: -1760936399843823869, guid: 6414f99c976d74ede837a7f8b64c3c5e, type: 3}
+    - {fileID: 8576534852017996584, guid: 6414f99c976d74ede837a7f8b64c3c5e, type: 3}
+    lodEnd:
+    - 30
+    - 200
+    material: {fileID: 2100000, guid: 058809479f613496eb7b70e13678f3df, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 058809479f613496eb7b70e13678f3df, type: 2}
+    shadowRange: 25
+    layer: 14
+    bounds:
+      m_Center: {x: 0, y: 1.0415905, z: 0}
+      m_Extent: {x: 2.157041, y: 1.0415946, z: 1.8228717}
+    kind: bush
+  - id: kf_bush_4_f
+    lods:
+    - {fileID: 2142970336300051109, guid: a265fc4377ef74ee290a437cabf2135d, type: 3}
+    - {fileID: -4941179377016668697, guid: a265fc4377ef74ee290a437cabf2135d, type: 3}
+    lodEnd:
+    - 30
+    - 200
+    material: {fileID: 2100000, guid: 058809479f613496eb7b70e13678f3df, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 058809479f613496eb7b70e13678f3df, type: 2}
+    shadowRange: 25
+    layer: 14
+    bounds:
+      m_Center: {x: 0, y: 1.0415905, z: 0}
+      m_Extent: {x: 2.7139623, y: 1.0415956, z: 1.7112592}
+    kind: bush
+  - id: kf_rock_1_a
+    lods:
+    - {fileID: -7750770747519859998, guid: afc116f5096ef4fb4ba4e6947fc354dd, type: 3}
+    lodEnd:
+    - 420
+    material: {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    shadowRange: 40
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 0.64832157, z: 0}
+      m_Extent: {x: 0.69363767, y: 0.6483235, z: 0.7293337}
+    kind: rock
+  - id: kf_rock_1_b
+    lods:
+    - {fileID: -189635072884290092, guid: 825cabc46cd0743529b5fd6d3d0715d8, type: 3}
+    lodEnd:
+    - 420
+    material: {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    shadowRange: 40
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 0.64832157, z: 0}
+      m_Extent: {x: 0.661349, y: 0.6483235, z: 0.6933675}
+    kind: rock
+  - id: kf_rock_1_c
+    lods:
+    - {fileID: 8273772271942570687, guid: 9026cb36f6a9f42e291ad8b0e01552fb, type: 3}
+    lodEnd:
+    - 420
+    material: {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    shadowRange: 40
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 0.64832157, z: 0}
+      m_Extent: {x: 0.6226026, y: 0.6483235, z: 0.72610486}
+    kind: rock
+  - id: kf_rock_1_d
+    lods:
+    - {fileID: -8704465506347632421, guid: 6e9461690bc514f038d6d92ff122c5bb, type: 3}
+    lodEnd:
+    - 420
+    material: {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    shadowRange: 40
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 1.355968, z: 0}
+      m_Extent: {x: 1.1124778, y: 1.3559719, z: 1.3879442}
+    kind: rock
+  - id: kf_rock_1_e
+    lods:
+    - {fileID: -4469786710572392203, guid: 3ad2f0a463455490fabba56429b625d4, type: 3}
+    lodEnd:
+    - 420
+    material: {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    shadowRange: 40
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 1.355968, z: 0}
+      m_Extent: {x: 1.2000039, y: 1.3559718, z: 1.3024428}
+    kind: rock
+  - id: kf_rock_1_f
+    lods:
+    - {fileID: 6856610936083501284, guid: 000622a730eab43f8a75f28300ee9234, type: 3}
+    lodEnd:
+    - 420
+    material: {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    shadowRange: 40
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 1.355968, z: -0.000000059604645}
+      m_Extent: {x: 1.2000037, y: 1.3559717, z: 1.0392343}
+    kind: rock
+  - id: kf_rock_1_g
+    lods:
+    - {fileID: 6401736719354858943, guid: d75458f8a39f04e2dad9a5ca17a8e922, type: 3}
+    lodEnd:
+    - 420
+    material: {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    shadowRange: 40
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 2.2413025, z: 0}
+      m_Extent: {x: 2.0940447, y: 2.2413087, z: 1.980389}
+    kind: rock
+  - id: kf_rock_1_h
+    lods:
+    - {fileID: 1842755408145446583, guid: 690bf8ce133a9446f9f889430fcce824, type: 3}
+    lodEnd:
+    - 420
+    material: {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    shadowRange: 40
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 2.2413025, z: 0}
+      m_Extent: {x: 1.8383191, y: 2.2413085, z: 1.8383191}
+    kind: rock
+  - id: kf_rock_1_i
+    lods:
+    - {fileID: 7229940540208403739, guid: 14363a5f93d1d40b49d814afe23ec48a, type: 3}
+    lodEnd:
+    - 420
+    material: {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    shadowRange: 40
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 2.2413025, z: 0}
+      m_Extent: {x: 1.9264485, y: 2.2413092, z: 2.3982127}
+    kind: rock
+  - id: kf_rock_1_j
+    lods:
+    - {fileID: -4314917747015067931, guid: 5bafd97a3e33f4e608a82a69a8ff1368, type: 3}
+    - {fileID: 8061840612734044475, guid: 5bafd97a3e33f4e608a82a69a8ff1368, type: 3}
+    lodEnd:
+    - 45
+    - 420
+    material: {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    shadowRange: 40
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 4.0268908, z: 0}
+      m_Extent: {x: 4.069069, y: 4.0269027, z: 4.508448}
+    kind: rock
+  - id: kf_rock_2_a
+    lods:
+    - {fileID: 394315844621986841, guid: 9d5f962a368284c248ba3155a1417d61, type: 3}
+    lodEnd:
+    - 420
+    material: {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    shadowRange: 40
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 0.25867382, z: 0}
+      m_Extent: {x: 0.2586746, y: 0.25867456, z: 0.2586746}
+    kind: rock
+  - id: kf_rock_2_b
+    lods:
+    - {fileID: -2103976787629059293, guid: 37680b0fd01e847bfb62e3e8e9b43729, type: 3}
+    lodEnd:
+    - 420
+    material: {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    shadowRange: 40
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 0.77465457, z: 0}
+      m_Extent: {x: 0.7560931, y: 0.7746568, z: 0.7560931}
+    kind: rock
+  - id: kf_rock_2_c
+    lods:
+    - {fileID: -3799889522890805668, guid: ff46e3793e990495889a81d45ac26199, type: 3}
+    lodEnd:
+    - 420
+    material: {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    shadowRange: 40
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 1.5914425, z: 0}
+      m_Extent: {x: 1.5543194, y: 1.591447, z: 1.5543193}
+    kind: rock
+  - id: kf_rock_2_d
+    lods:
+    - {fileID: -9884447768960122, guid: a6f7ce775c1b6435485fb313d9d994af, type: 3}
+    lodEnd:
+    - 420
+    material: {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    shadowRange: 40
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 2.0877306, z: 0}
+      m_Extent: {x: 2.050609, y: 2.0877366, z: 2.050609}
+    kind: rock
+  - id: kf_rock_2_e
+    lods:
+    - {fileID: -6483441045584275983, guid: c69b6ff872a174eb68c8eebed35bc7cc, type: 3}
+    - {fileID: 2240223461832029047, guid: c69b6ff872a174eb68c8eebed35bc7cc, type: 3}
+    lodEnd:
+    - 45
+    - 420
+    material: {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    shadowRange: 40
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 3.4343295, z: 0}
+      m_Extent: {x: 3.801368, y: 3.4343398, z: 3.968166}
+    kind: rock
+  - id: kf_rock_2_f
+    lods:
+    - {fileID: -3816287106570647760, guid: 18988b2f7883b49869ad08b8d50c2a9a, type: 3}
+    - {fileID: 1859456505975207750, guid: 18988b2f7883b49869ad08b8d50c2a9a, type: 3}
+    lodEnd:
+    - 45
+    - 420
+    material: {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    shadowRange: 40
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 3.4343097, z: 0}
+      m_Extent: {x: 4.972119, y: 3.434321, z: 3.4427314}
+    kind: rock
+  - id: kf_rock_2_g
+    lods:
+    - {fileID: -2720716112428054675, guid: 23ae5573cfa8e4f55b228cf1f2e61b77, type: 3}
+    - {fileID: -3184653556120408332, guid: 23ae5573cfa8e4f55b228cf1f2e61b77, type: 3}
+    lodEnd:
+    - 45
+    - 420
+    material: {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    shadowRange: 40
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 3.8349786, z: 0}
+      m_Extent: {x: 3.7118123, y: 3.8349903, z: 4.474504}
+    kind: rock
+  - id: kf_rock_2_h
+    lods:
+    - {fileID: 1114222159111393716, guid: 7e671f77dd76548cf992684b2b59f3c3, type: 3}
+    - {fileID: -7804848038068918329, guid: 7e671f77dd76548cf992684b2b59f3c3, type: 3}
+    lodEnd:
+    - 45
+    - 420
+    material: {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    shadowRange: 40
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 3.3083436, z: 0}
+      m_Extent: {x: 4.436246, y: 3.3083541, z: 3.9726963}
+    kind: rock
+  - id: kf_rock_3_a
+    lods:
+    - {fileID: 4964619619236676330, guid: ce49b8fd70f1d4df98a2e517b199a20b, type: 3}
+    lodEnd:
+    - 420
+    material: {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    shadowRange: 40
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 1.0306426, z: 0}
+      m_Extent: {x: 1.1475561, y: 1.0306457, z: 0.96897763}
+    kind: rock
+  - id: kf_rock_3_b
+    lods:
+    - {fileID: -7489266312861679133, guid: f26fb5aa0c7e64e37ae42a28cb10e613, type: 3}
+    lodEnd:
+    - 420
+    material: {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    shadowRange: 40
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 1.2332065, z: 0}
+      m_Extent: {x: 0.9830008, y: 1.2332098, z: 1.016114}
+    kind: rock
+  - id: kf_rock_3_c
+    lods:
+    - {fileID: 7786826121894657439, guid: d66523899957b44d3aa9ebfcf693b7de, type: 3}
+    lodEnd:
+    - 420
+    material: {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    shadowRange: 40
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 1.1611185, z: 0}
+      m_Extent: {x: 0.96601915, y: 1.1611217, z: 1.0316237}
+    kind: rock
+  - id: kf_rock_3_d
+    lods:
+    - {fileID: 5989658491052727138, guid: 6575b29fbcd334b62b1c5476df2c0bfe, type: 3}
+    lodEnd:
+    - 420
+    material: {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    shadowRange: 40
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 1.1659603, z: 0}
+      m_Extent: {x: 1.1190132, y: 1.1659636, z: 0.95337087}
+    kind: rock
+  - id: kf_rock_3_e
+    lods:
+    - {fileID: 5207507042219605697, guid: dc9e109d0e33a4c1ba30adcbfcde4200, type: 3}
+    lodEnd:
+    - 420
+    material: {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    shadowRange: 40
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 1.5451653, z: 0}
+      m_Extent: {x: 1.3743341, y: 1.5451696, z: 1.4173775}
+    kind: rock
+  - id: kf_rock_3_f
+    lods:
+    - {fileID: 8627435777137621033, guid: 666de631b8f03445291d75024835f6f5, type: 3}
+    lodEnd:
+    - 420
+    material: {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    shadowRange: 40
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 1.4106069, z: 0}
+      m_Extent: {x: 1.3051257, y: 1.4106109, z: 1.4260101}
+    kind: rock
+  - id: kf_rock_3_g
+    lods:
+    - {fileID: -3685573802926795510, guid: 8224388fd7b5a4efa94171e87fb5fd21, type: 3}
+    lodEnd:
+    - 420
+    material: {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    shadowRange: 40
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 2.4001625, z: 0}
+      m_Extent: {x: 2.234804, y: 2.4001691, z: 2.080926}
+    kind: rock
+  - id: kf_rock_3_h
+    lods:
+    - {fileID: 1870745657419507634, guid: ace84315702fc4e309fad6f6f6c58290, type: 3}
+    lodEnd:
+    - 420
+    material: {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    shadowRange: 40
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 2.4700103, z: 0}
+      m_Extent: {x: 2.3456266, y: 2.4700172, z: 2.1102264}
+    kind: rock
+  - id: kf_rock_3_i
+    lods:
+    - {fileID: 58476117942647434, guid: 6344ef54754db45bc83df28b5473a01c, type: 3}
+    lodEnd:
+    - 420
+    material: {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    shadowRange: 40
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 2.5304017, z: 0}
+      m_Extent: {x: 2.3062546, y: 2.5304086, z: 1.9710802}
+    kind: rock
+  - id: kf_rock_3_j
+    lods:
+    - {fileID: -1722474643328521217, guid: 614420c03d7b94892a5fbad131eda7f9, type: 3}
+    lodEnd:
+    - 420
+    material: {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 967a4bfb5f74e4e98824d4e18defe319, type: 2}
+    shadowRange: 40
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 2.2748513, z: 0}
+      m_Extent: {x: 2.3674965, y: 2.274858, z: 2.0834405}
+    kind: rock
+  - id: kf_tree_1_a
+    lods:
+    - {fileID: 1096875443903222464, guid: e80ac53e3447b4a05b53c40714f1a251, type: 3}
+    - {fileID: -8861377571622174503, guid: e80ac53e3447b4a05b53c40714f1a251, type: 3}
+    - {fileID: 5838277870964901211, guid: e80ac53e3447b4a05b53c40714f1a251, type: 3}
+    lodEnd:
+    - 55
+    - 170
+    - 900
+    material: {fileID: 2100000, guid: 722abdcd4c6fb44bab4980f5c2b833e1, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 722abdcd4c6fb44bab4980f5c2b833e1, type: 2}
+    shadowRange: 70
+    layer: 14
+    bounds:
+      m_Center: {x: 0, y: 2.392402, z: 0}
+      m_Extent: {x: 1.8290774, y: 2.3924084, z: 1.8694042}
+    kind: tree
+  - id: kf_tree_1_b
+    lods:
+    - {fileID: -2626618582576633557, guid: 54b1a0e77827b44f2ac836e1385ffbf9, type: 3}
+    - {fileID: 734427486509518697, guid: 54b1a0e77827b44f2ac836e1385ffbf9, type: 3}
+    - {fileID: -7030857755345623505, guid: 54b1a0e77827b44f2ac836e1385ffbf9, type: 3}
+    lodEnd:
+    - 55
+    - 170
+    - 900
+    material: {fileID: 2100000, guid: 722abdcd4c6fb44bab4980f5c2b833e1, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 722abdcd4c6fb44bab4980f5c2b833e1, type: 2}
+    shadowRange: 70
+    layer: 14
+    bounds:
+      m_Center: {x: 0, y: 2.8345335, z: 0}
+      m_Extent: {x: 2.3039327, y: 2.834541, z: 1.9811628}
+    kind: tree
+  - id: kf_tree_1_c
+    lods:
+    - {fileID: 3448067448916447635, guid: f99a6da0d15cf423a944a5e5fb3a11fe, type: 3}
+    - {fileID: 1783401686193227280, guid: f99a6da0d15cf423a944a5e5fb3a11fe, type: 3}
+    - {fileID: 8718383909125596514, guid: f99a6da0d15cf423a944a5e5fb3a11fe, type: 3}
+    lodEnd:
+    - 55
+    - 170
+    - 900
+    material: {fileID: 2100000, guid: 722abdcd4c6fb44bab4980f5c2b833e1, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 722abdcd4c6fb44bab4980f5c2b833e1, type: 2}
+    shadowRange: 70
+    layer: 14
+    bounds:
+      m_Center: {x: 0, y: 4.493194, z: 0}
+      m_Extent: {x: 3.8475072, y: 4.4932065, z: 3.3081896}
+    kind: tree
+  - id: kf_tree_2_a
+    lods:
+    - {fileID: -2770294503355489927, guid: 84ffb616b94c2459dbed2551885987a2, type: 3}
+    - {fileID: 6190404116292975828, guid: 84ffb616b94c2459dbed2551885987a2, type: 3}
+    - {fileID: 3684060718287177671, guid: 84ffb616b94c2459dbed2551885987a2, type: 3}
+    lodEnd:
+    - 55
+    - 170
+    - 900
+    material: {fileID: 2100000, guid: 722abdcd4c6fb44bab4980f5c2b833e1, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 722abdcd4c6fb44bab4980f5c2b833e1, type: 2}
+    shadowRange: 70
+    layer: 14
+    bounds:
+      m_Center: {x: 0, y: 2.688002, z: 0}
+      m_Extent: {x: 1.4950064, y: 2.6880085, z: 1.1500064}
+    kind: tree
+  - id: kf_tree_2_b
+    lods:
+    - {fileID: -8572696017383902240, guid: bde55f08d934e45c8af4a4a9158d3c6f, type: 3}
+    - {fileID: 6314961838826846060, guid: bde55f08d934e45c8af4a4a9158d3c6f, type: 3}
+    - {fileID: -557115292382930834, guid: bde55f08d934e45c8af4a4a9158d3c6f, type: 3}
+    lodEnd:
+    - 55
+    - 170
+    - 900
+    material: {fileID: 2100000, guid: 722abdcd4c6fb44bab4980f5c2b833e1, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 722abdcd4c6fb44bab4980f5c2b833e1, type: 2}
+    shadowRange: 70
+    layer: 14
+    bounds:
+      m_Center: {x: 0, y: 3.4741967, z: 0}
+      m_Extent: {x: 2.1275086, y: 3.4742053, z: 1.2075086}
+    kind: tree
+  - id: kf_tree_2_c
+    lods:
+    - {fileID: 660680041307069692, guid: 77585d511f1e7421295fb6794f8fff8c, type: 3}
+    - {fileID: 513893453767009708, guid: 77585d511f1e7421295fb6794f8fff8c, type: 3}
+    - {fileID: -6940267000323963428, guid: 77585d511f1e7421295fb6794f8fff8c, type: 3}
+    lodEnd:
+    - 55
+    - 170
+    - 900
+    material: {fileID: 2100000, guid: 722abdcd4c6fb44bab4980f5c2b833e1, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 722abdcd4c6fb44bab4980f5c2b833e1, type: 2}
+    shadowRange: 70
+    layer: 14
+    bounds:
+      m_Center: {x: 0, y: 3.9792225, z: 0}
+      m_Extent: {x: 2.64501, y: 3.9792325, z: 1.95501}
+    kind: tree
+  - id: kf_tree_2_d
+    lods:
+    - {fileID: -8359027618636478727, guid: dd966293f4b664f7c9f51cb445a247f7, type: 3}
+    - {fileID: 5799447233025588865, guid: dd966293f4b664f7c9f51cb445a247f7, type: 3}
+    - {fileID: 1846768362398092179, guid: dd966293f4b664f7c9f51cb445a247f7, type: 3}
+    lodEnd:
+    - 55
+    - 170
+    - 900
+    material: {fileID: 2100000, guid: 722abdcd4c6fb44bab4980f5c2b833e1, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 722abdcd4c6fb44bab4980f5c2b833e1, type: 2}
+    shadowRange: 70
+    layer: 14
+    bounds:
+      m_Center: {x: 0, y: 4.650398, z: 0}
+      m_Extent: {x: 2.7252855, y: 4.650409, z: 2.3197703}
+    kind: tree
+  - id: kf_tree_2_e
+    lods:
+    - {fileID: 5357932323549489904, guid: 71ec0e673c1524059be6b6a736c236ab, type: 3}
+    - {fileID: -8718714601210354984, guid: 71ec0e673c1524059be6b6a736c236ab, type: 3}
+    - {fileID: -8654880591856634016, guid: 71ec0e673c1524059be6b6a736c236ab, type: 3}
+    lodEnd:
+    - 55
+    - 170
+    - 900
+    material: {fileID: 2100000, guid: 722abdcd4c6fb44bab4980f5c2b833e1, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 722abdcd4c6fb44bab4980f5c2b833e1, type: 2}
+    shadowRange: 70
+    layer: 14
+    bounds:
+      m_Center: {x: 0, y: 5.055279, z: 0}
+      m_Extent: {x: 3.4792824, y: 5.0552917, z: 3.264235}
+    kind: tree
+  - id: kf_tree_3_a
+    lods:
+    - {fileID: -1791152070008505935, guid: 6a0711b0ced9f4805ac4f9c736c3de96, type: 3}
+    - {fileID: 8593106855257516992, guid: 6a0711b0ced9f4805ac4f9c736c3de96, type: 3}
+    - {fileID: -7758608458912944985, guid: 6a0711b0ced9f4805ac4f9c736c3de96, type: 3}
+    lodEnd:
+    - 55
+    - 170
+    - 900
+    material: {fileID: 2100000, guid: 722abdcd4c6fb44bab4980f5c2b833e1, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 722abdcd4c6fb44bab4980f5c2b833e1, type: 2}
+    shadowRange: 70
+    layer: 14
+    bounds:
+      m_Center: {x: 0, y: 2.0162935, z: 0}
+      m_Extent: {x: 1.7785945, y: 2.016299, z: 1.7785943}
+    kind: tree
+  - id: kf_tree_3_b
+    lods:
+    - {fileID: -974812555458485553, guid: 727e54871100246b28362c7baac36a11, type: 3}
+    - {fileID: -1413741365691315156, guid: 727e54871100246b28362c7baac36a11, type: 3}
+    - {fileID: 4551844276816564679, guid: 727e54871100246b28362c7baac36a11, type: 3}
+    lodEnd:
+    - 55
+    - 170
+    - 900
+    material: {fileID: 2100000, guid: 722abdcd4c6fb44bab4980f5c2b833e1, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 722abdcd4c6fb44bab4980f5c2b833e1, type: 2}
+    shadowRange: 70
+    layer: 14
+    bounds:
+      m_Center: {x: 0, y: 2.5029025, z: 0}
+      m_Extent: {x: 2.3744216, y: 2.5029097, z: 2.3744216}
+    kind: tree
+  - id: kf_tree_4_a
+    lods:
+    - {fileID: -8794362921985264776, guid: fb30a3f1fed7b487b90b0fe2c9e4a462, type: 3}
+    - {fileID: -3959231860436958187, guid: fb30a3f1fed7b487b90b0fe2c9e4a462, type: 3}
+    - {fileID: -7643710661549670956, guid: fb30a3f1fed7b487b90b0fe2c9e4a462, type: 3}
+    lodEnd:
+    - 55
+    - 170
+    - 900
+    material: {fileID: 2100000, guid: 722abdcd4c6fb44bab4980f5c2b833e1, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 722abdcd4c6fb44bab4980f5c2b833e1, type: 2}
+    shadowRange: 70
+    layer: 14
+    bounds:
+      m_Center: {x: 0, y: 3.032777, z: 0}
+      m_Extent: {x: 1.1542339, y: 3.032784, z: 1.1525102}
+    kind: tree
+  - id: kf_tree_4_b
+    lods:
+    - {fileID: 482437316808909527, guid: ddcbfa1d58645491d8e9007254b04ba8, type: 3}
+    - {fileID: 7379445220691236602, guid: ddcbfa1d58645491d8e9007254b04ba8, type: 3}
+    - {fileID: 8712244687495327886, guid: ddcbfa1d58645491d8e9007254b04ba8, type: 3}
+    lodEnd:
+    - 55
+    - 170
+    - 900
+    material: {fileID: 2100000, guid: 722abdcd4c6fb44bab4980f5c2b833e1, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 722abdcd4c6fb44bab4980f5c2b833e1, type: 2}
+    shadowRange: 70
+    layer: 14
+    bounds:
+      m_Center: {x: 0, y: 3.9919896, z: 0}
+      m_Extent: {x: 1.480064, y: 3.9919987, z: 1.3054031}
+    kind: tree
+  - id: kf_tree_4_c
+    lods:
+    - {fileID: 969288049673798732, guid: 0393a1b1d2e424ed6807722079e546ee, type: 3}
+    - {fileID: 6416840669008321711, guid: 0393a1b1d2e424ed6807722079e546ee, type: 3}
+    - {fileID: 3209659279877167847, guid: 0393a1b1d2e424ed6807722079e546ee, type: 3}
+    lodEnd:
+    - 55
+    - 170
+    - 900
+    material: {fileID: 2100000, guid: 722abdcd4c6fb44bab4980f5c2b833e1, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 722abdcd4c6fb44bab4980f5c2b833e1, type: 2}
+    shadowRange: 70
+    layer: 14
+    bounds:
+      m_Center: {x: 0, y: 6.195068, z: 0}
+      m_Extent: {x: 2.1477306, y: 6.1950817, z: 1.6497419}
+    kind: tree
+  - id: ki_building_b
+    lods:
+    - {fileID: -1096740701740677556, guid: 47d425347ff1944ec87a58a7ae9f1869, type: 3}
+    - {fileID: -6274875270290798127, guid: 47d425347ff1944ec87a58a7ae9f1869, type: 3}
+    - {fileID: -3191288584309326978, guid: 47d425347ff1944ec87a58a7ae9f1869, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: e64ca8931c528498195877b16652e058, type: 2}
+    materials:
+    - {fileID: 2100000, guid: e64ca8931c528498195877b16652e058, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 6.2475, z: 0}
+      m_Extent: {x: 8.855269, y: 6.2475204, z: 5.3635206}
+    kind: building
+  - id: ki_building_c
+    lods:
+    - {fileID: -6555410640882990790, guid: 967b882fca1824a92899f39536fc2779, type: 3}
+    - {fileID: -4244792905228680031, guid: 967b882fca1824a92899f39536fc2779, type: 3}
+    - {fileID: -365643493679749774, guid: 967b882fca1824a92899f39536fc2779, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: e64ca8931c528498195877b16652e058, type: 2}
+    materials:
+    - {fileID: 2100000, guid: e64ca8931c528498195877b16652e058, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 5.3125, z: 0}
+      m_Extent: {x: 7.972742, y: 5.3125186, z: 8.959109}
+    kind: building
+  - id: ki_building_d
+    lods:
+    - {fileID: -217797063502881686, guid: 687505c43a7ec4b308e9addb336fa914, type: 3}
+    - {fileID: 2244760023231098954, guid: 687505c43a7ec4b308e9addb336fa914, type: 3}
+    - {fileID: 1968108112331569007, guid: 687505c43a7ec4b308e9addb336fa914, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: e64ca8931c528498195877b16652e058, type: 2}
+    materials:
+    - {fileID: 2100000, guid: e64ca8931c528498195877b16652e058, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 6.011847, z: 0}
+      m_Extent: {x: 3.7552657, y: 6.011864, z: 6.035018}
+    kind: building
+  - id: ki_building_g
+    lods:
+    - {fileID: 6972925257387540881, guid: c730dcb6d31b24ef7abcc9c90af6e703, type: 3}
+    - {fileID: 4895219401489624170, guid: c730dcb6d31b24ef7abcc9c90af6e703, type: 3}
+    - {fileID: -7574259680550043968, guid: c730dcb6d31b24ef7abcc9c90af6e703, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: e64ca8931c528498195877b16652e058, type: 2}
+    materials:
+    - {fileID: 2100000, guid: e64ca8931c528498195877b16652e058, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0.00000023841858, y: 5.4400005, z: 0.0000009536743}
+      m_Extent: {x: 7.132105, y: 5.4400177, z: 5.455267}
+    kind: building
+  - id: ki_building_j
+    lods:
+    - {fileID: 5567116432008541189, guid: 059a338d0f35c4b5a899ce4b963bffc6, type: 3}
+    - {fileID: 5789395001574312030, guid: 059a338d0f35c4b5a899ce4b963bffc6, type: 3}
+    - {fileID: -6755011840981804728, guid: 059a338d0f35c4b5a899ce4b963bffc6, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: e64ca8931c528498195877b16652e058, type: 2}
+    materials:
+    - {fileID: 2100000, guid: e64ca8931c528498195877b16652e058, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 3.6598697, z: 0.00000023841858}
+      m_Extent: {x: 4.3631554, y: 3.6598818, z: 5.525012}
+    kind: building
+  - id: ki_building_k
+    lods:
+    - {fileID: -8408787824746940954, guid: 0d7f1257492a444d1a3ed0701e9af957, type: 3}
+    - {fileID: 1875052080948285499, guid: 0d7f1257492a444d1a3ed0701e9af957, type: 3}
+    - {fileID: 3915507844468045520, guid: 0d7f1257492a444d1a3ed0701e9af957, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: e64ca8931c528498195877b16652e058, type: 2}
+    materials:
+    - {fileID: 2100000, guid: e64ca8931c528498195877b16652e058, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 3.284151, z: 0}
+      m_Extent: {x: 5.537163, y: 3.2841625, z: 3.88276}
+    kind: building
+  - id: ki_building_m
+    lods:
+    - {fileID: -6288020478108837065, guid: 822f5ac25f5b2482a8ac4bb6a1077ccb, type: 3}
+    - {fileID: -7083530898011445860, guid: 822f5ac25f5b2482a8ac4bb6a1077ccb, type: 3}
+    - {fileID: 4604492356116111155, guid: 822f5ac25f5b2482a8ac4bb6a1077ccb, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: e64ca8931c528498195877b16652e058, type: 2}
+    materials:
+    - {fileID: 2100000, guid: e64ca8931c528498195877b16652e058, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 6.455778, z: 0}
+      m_Extent: {x: 5.5941896, y: 6.455797, z: 7.2250195}
+    kind: building
+  - id: ki_building_o
+    lods:
+    - {fileID: 5113493945978409317, guid: 09880c87742834d9db9175ada278d98b, type: 3}
+    - {fileID: -8975502557459395465, guid: 09880c87742834d9db9175ada278d98b, type: 3}
+    - {fileID: -8090580577115488176, guid: 09880c87742834d9db9175ada278d98b, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: e64ca8931c528498195877b16652e058, type: 2}
+    materials:
+    - {fileID: 2100000, guid: e64ca8931c528498195877b16652e058, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 3.9015, z: 0}
+      m_Extent: {x: 3.7552614, y: 3.9015124, z: 5.2700124}
+    kind: building
+  - id: ki_building_p
+    lods:
+    - {fileID: -8691692821991517707, guid: 82d757b61e44f4e4381f8e4800e681cf, type: 3}
+    - {fileID: 4550773069691790578, guid: 82d757b61e44f4e4381f8e4800e681cf, type: 3}
+    - {fileID: 1683957415367124234, guid: 82d757b61e44f4e4381f8e4800e681cf, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: e64ca8931c528498195877b16652e058, type: 2}
+    materials:
+    - {fileID: 2100000, guid: e64ca8931c528498195877b16652e058, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: -0.00000047683716, y: 3.0368466, z: 0}
+      m_Extent: {x: 7.1552625, y: 3.0368602, z: 4.216014}
+    kind: building
+  - id: ki_building_s
+    lods:
+    - {fileID: -8164987539875696918, guid: cd2ebc2e9528a4b2bab9901b7ebb4135, type: 3}
+    - {fileID: -6199129378054885708, guid: cd2ebc2e9528a4b2bab9901b7ebb4135, type: 3}
+    - {fileID: -3026876988814974112, guid: cd2ebc2e9528a4b2bab9901b7ebb4135, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: e64ca8931c528498195877b16652e058, type: 2}
+    materials:
+    - {fileID: 2100000, guid: e64ca8931c528498195877b16652e058, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 3.556362, z: 0}
+      m_Extent: {x: 9.010017, y: 3.556379, z: 3.8941875}
+    kind: building
+  - id: kn_crop_pumpkin
+    lods:
+    - {fileID: -6987097327646246562, guid: 3de7e77251f7b4c42a9c659ffba76915, type: 3}
+    lodEnd:
+    - 260
+    material: {fileID: 2100000, guid: ba11800b6160943e8836e1548880113d, type: 2}
+    materials:
+    - {fileID: 2100000, guid: ba11800b6160943e8836e1548880113d, type: 2}
+    shadowRange: 0
+    layer: 14
+    bounds:
+      m_Center: {x: 0, y: 0.29999998, z: 0}
+      m_Extent: {x: 0.3965532, y: 0.30000094, z: 0.4061455}
+    kind: crop
+  - id: kn_crops_cornstagec
+    lods:
+    - {fileID: 8112551703699962435, guid: 93b245412652746d8b4ab22c1d515dd6, type: 3}
+    lodEnd:
+    - 260
+    material: {fileID: 2100000, guid: ba11800b6160943e8836e1548880113d, type: 2}
+    materials:
+    - {fileID: 2100000, guid: ba11800b6160943e8836e1548880113d, type: 2}
+    shadowRange: 0
+    layer: 14
+    bounds:
+      m_Center: {x: 0, y: 0.8, z: 0}
+      m_Extent: {x: 0.19469099, y: 0.80000174, z: 0.19469099}
+    kind: crop
+  - id: kn_crops_cornstaged
+    lods:
+    - {fileID: 2800983296408422531, guid: 9af54454d21584f28ba3674742b1e3f0, type: 3}
+    - {fileID: 3942857780113195295, guid: 9af54454d21584f28ba3674742b1e3f0, type: 3}
+    lodEnd:
+    - 40
+    - 260
+    material: {fileID: 2100000, guid: ba11800b6160943e8836e1548880113d, type: 2}
+    materials:
+    - {fileID: 2100000, guid: ba11800b6160943e8836e1548880113d, type: 2}
+    shadowRange: 0
+    layer: 14
+    bounds:
+      m_Center: {x: 0, y: 1.1, z: 0}
+      m_Extent: {x: 0.38858548, y: 1.1000025, z: 0.38858548}
+    kind: crop
+  - id: kn_crops_leafsstageb
+    lods:
+    - {fileID: -7588755431690239046, guid: d48af2a77517a442dbbee3f921875818, type: 3}
+    lodEnd:
+    - 260
+    material: {fileID: 2100000, guid: ba11800b6160943e8836e1548880113d, type: 2}
+    materials:
+    - {fileID: 2100000, guid: ba11800b6160943e8836e1548880113d, type: 2}
+    shadowRange: 0
+    layer: 14
+    bounds:
+      m_Center: {x: 0, y: 0.25, z: 0}
+      m_Extent: {x: 0.14377297, y: 0.25000063, z: 0.14377297}
+    kind: crop
+  - id: kn_crops_wheatstageb
+    lods:
+    - {fileID: -2064451194394627066, guid: 15456ddfdf6674d439f13c2aca184f9b, type: 3}
+    - {fileID: -8940667292062235375, guid: 15456ddfdf6674d439f13c2aca184f9b, type: 3}
+    lodEnd:
+    - 40
+    - 260
+    material: {fileID: 2100000, guid: ba11800b6160943e8836e1548880113d, type: 2}
+    materials:
+    - {fileID: 2100000, guid: ba11800b6160943e8836e1548880113d, type: 2}
+    shadowRange: 0
+    layer: 14
+    bounds:
+      m_Center: {x: 0, y: 0.5, z: 0}
+      m_Extent: {x: 0.50436854, y: 0.50000143, z: 0.4175275}
+    kind: crop
+  - id: kr_electricity_pole
+    lods:
+    - {fileID: -2146361811866292864, guid: 8a479030935684493ad6fb3ad1db5bae, type: 3}
+    - {fileID: -137464950592349930, guid: 8a479030935684493ad6fb3ad1db5bae, type: 3}
+    lodEnd:
+    - 70
+    - 600
+    material: {fileID: 2100000, guid: 9ae7865a3bfae47a0a1fddbe3d01dff1, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 9ae7865a3bfae47a0a1fddbe3d01dff1, type: 2}
+    shadowRange: 40
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 4.75, z: 0}
+      m_Extent: {x: 5.2393546, y: 4.750014, z: 1.9382404}
+    kind: pole
+  - id: kr_light_curved
+    lods:
+    - {fileID: 1906166010359878901, guid: ab87232c5f1824a06a147133fc9c3187, type: 3}
+    lodEnd:
+    - 380
+    material: {fileID: 2100000, guid: 9ae7865a3bfae47a0a1fddbe3d01dff1, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 9ae7865a3bfae47a0a1fddbe3d01dff1, type: 2}
+    shadowRange: 35
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 2.8687499, z: 0.000000029802322}
+      m_Extent: {x: 0.21250638, y: 2.8687563, z: 0.95625645}
+    kind: lamp
+  - id: kr_road_sign_stop
+    lods:
+    - {fileID: 1230031058871892323, guid: 676267d8aa1b34b05918aa342c8d22b5, type: 3}
+    lodEnd:
+    - 130
+    material: {fileID: 2100000, guid: 9ae7865a3bfae47a0a1fddbe3d01dff1, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 9ae7865a3bfae47a0a1fddbe3d01dff1, type: 2}
+    shadowRange: 15
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 2.0998185, z: 0}
+      m_Extent: {x: 0.3293796, y: 2.099823, z: 0.5874072}
+    kind: prop
+  - id: kr_traffic_light
+    lods:
+    - {fileID: 7204543320850750118, guid: f2f2e2292633649678f444780a4fac61, type: 3}
+    lodEnd:
+    - 380
+    material: {fileID: 2100000, guid: 9ae7865a3bfae47a0a1fddbe3d01dff1, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 9ae7865a3bfae47a0a1fddbe3d01dff1, type: 2}
+    shadowRange: 35
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 2.18875, z: 0}
+      m_Extent: {x: 0.49980465, y: 2.1887548, z: 0.38250464}
+    kind: lamp
+  - id: ks_house_a
+    lods:
+    - {fileID: 1861490271262264578, guid: 450191ed39c944670bed8b5138708783, type: 3}
+    - {fileID: 8728129225243544528, guid: 450191ed39c944670bed8b5138708783, type: 3}
+    - {fileID: -2586915815037923736, guid: 450191ed39c944670bed8b5138708783, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: aa71aca690f3844bcbb6852fb2c8326d, type: 2}
+    materials:
+    - {fileID: 2100000, guid: aa71aca690f3844bcbb6852fb2c8326d, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 3.5425491, z: 0}
+      m_Extent: {x: 5.5250115, y: 3.542561, z: 4.3695974}
+    kind: building
+  - id: ks_house_b
+    lods:
+    - {fileID: 1113640457958475250, guid: 8f3fb197f5ccf48089ddd6a23fad8203, type: 3}
+    - {fileID: 7150576021997969254, guid: 8f3fb197f5ccf48089ddd6a23fad8203, type: 3}
+    - {fileID: 5510058085004529378, guid: 8f3fb197f5ccf48089ddd6a23fad8203, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: aa71aca690f3844bcbb6852fb2c8326d, type: 2}
+    materials:
+    - {fileID: 2100000, guid: aa71aca690f3844bcbb6852fb2c8326d, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 4.8343754, z: 0}
+      m_Extent: {x: 7.7690167, y: 4.834392, z: 4.8450165}
+    kind: building
+  - id: ks_house_c
+    lods:
+    - {fileID: -6639909100840165234, guid: 37f2307ec297d460b9ed994637c9f2a2, type: 3}
+    - {fileID: 4173261835601223228, guid: 37f2307ec297d460b9ed994637c9f2a2, type: 3}
+    - {fileID: 4017552061836131799, guid: 37f2307ec297d460b9ed994637c9f2a2, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: aa71aca690f3844bcbb6852fb2c8326d, type: 2}
+    materials:
+    - {fileID: 2100000, guid: aa71aca690f3844bcbb6852fb2c8326d, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 4.392549, z: 0}
+      m_Extent: {x: 5.46713, y: 4.392563, z: 4.3695993}
+    kind: building
+  - id: ks_house_d
+    lods:
+    - {fileID: 139552474362650406, guid: 45e2969a6cc4a4fe2a6900b4a1dde72b, type: 3}
+    - {fileID: -3677760657468932763, guid: 45e2969a6cc4a4fe2a6900b4a1dde72b, type: 3}
+    - {fileID: -8419239236673081572, guid: 45e2969a6cc4a4fe2a6900b4a1dde72b, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: aa71aca690f3844bcbb6852fb2c8326d, type: 2}
+    materials:
+    - {fileID: 2100000, guid: aa71aca690f3844bcbb6852fb2c8326d, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 5.259375, z: 0}
+      m_Extent: {x: 7.4646335, y: 5.2593923, z: 4.369017}
+    kind: building
+  - id: ks_house_e
+    lods:
+    - {fileID: -849938138670117650, guid: 690d2187cbb304aab8daada2aa98054b, type: 3}
+    - {fileID: 975529284827833596, guid: 690d2187cbb304aab8daada2aa98054b, type: 3}
+    - {fileID: 2933898409992036369, guid: 690d2187cbb304aab8daada2aa98054b, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: aa71aca690f3844bcbb6852fb2c8326d, type: 2}
+    materials:
+    - {fileID: 2100000, guid: aa71aca690f3844bcbb6852fb2c8326d, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 4.8343754, z: 0}
+      m_Extent: {x: 5.525014, y: 4.8343897, z: 4.3690143}
+    kind: building
+  - id: ks_house_f
+    lods:
+    - {fileID: -4519079803260274129, guid: e910df2ff69f846e8b8a2d0f29637d83, type: 3}
+    - {fileID: -3280708874694464079, guid: e910df2ff69f846e8b8a2d0f29637d83, type: 3}
+    - {fileID: -3585920748807357428, guid: e910df2ff69f846e8b8a2d0f29637d83, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: aa71aca690f3844bcbb6852fb2c8326d, type: 2}
+    materials:
+    - {fileID: 2100000, guid: aa71aca690f3844bcbb6852fb2c8326d, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: -0.00000023841858, y: 4.8343754, z: 0.00000023841858}
+      m_Extent: {x: 6.069015, y: 4.83439, z: 5.9750524}
+    kind: building
+  - id: ks_house_g
+    lods:
+    - {fileID: 4710262361384928651, guid: a2e640ddc73014e868d8e1563217a083, type: 3}
+    - {fileID: -5216610476596482866, guid: a2e640ddc73014e868d8e1563217a083, type: 3}
+    - {fileID: 7570248837023971614, guid: a2e640ddc73014e868d8e1563217a083, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: aa71aca690f3844bcbb6852fb2c8326d, type: 2}
+    materials:
+    - {fileID: 2100000, guid: aa71aca690f3844bcbb6852fb2c8326d, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 3.2648911, z: 0}
+      m_Extent: {x: 6.1625123, y: 3.2649033, z: 5.0065117}
+    kind: building
+  - id: ks_house_h
+    lods:
+    - {fileID: 8701610000892504583, guid: b7b73be4d89f746789325a79f210d67b, type: 3}
+    - {fileID: 1630346390666673636, guid: b7b73be4d89f746789325a79f210d67b, type: 3}
+    - {fileID: 4239566907996699245, guid: b7b73be4d89f746789325a79f210d67b, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: aa71aca690f3844bcbb6852fb2c8326d, type: 2}
+    materials:
+    - {fileID: 2100000, guid: aa71aca690f3844bcbb6852fb2c8326d, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 3.1343749, z: 0}
+      m_Extent: {x: 5.525011, y: 3.134386, z: 3.8930113}
+    kind: building
+  - id: ks_house_i
+    lods:
+    - {fileID: 7536723742615395186, guid: 1b40421ec7765458893be9114a9474a1, type: 3}
+    - {fileID: -5179138207549610805, guid: 1b40421ec7765458893be9114a9474a1, type: 3}
+    - {fileID: 5130650266219675710, guid: 1b40421ec7765458893be9114a9474a1, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: aa71aca690f3844bcbb6852fb2c8326d, type: 2}
+    materials:
+    - {fileID: 2100000, guid: aa71aca690f3844bcbb6852fb2c8326d, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 3.1343749, z: 0}
+      m_Extent: {x: 5.4671273, y: 3.134386, z: 4.369011}
+    kind: building
+  - id: ks_house_j
+    lods:
+    - {fileID: -8131751953571578993, guid: 4c31fa229a1a541f88669f41849c631d, type: 3}
+    - {fileID: 7859956898548990318, guid: 4c31fa229a1a541f88669f41849c631d, type: 3}
+    - {fileID: 7450453092739343802, guid: 4c31fa229a1a541f88669f41849c631d, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: aa71aca690f3844bcbb6852fb2c8326d, type: 2}
+    materials:
+    - {fileID: 2100000, guid: aa71aca690f3844bcbb6852fb2c8326d, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 4.409375, z: 0}
+      m_Extent: {x: 5.822514, y: 4.409389, z: 3.8930142}
+    kind: building
+  - id: ks_house_k
+    lods:
+    - {fileID: 8216882874145239336, guid: 04190928232374d828c2c5e2eeb97f03, type: 3}
+    - {fileID: -5905758778248253543, guid: 04190928232374d828c2c5e2eeb97f03, type: 3}
+    - {fileID: -2201164834133038474, guid: 04190928232374d828c2c5e2eeb97f03, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: aa71aca690f3844bcbb6852fb2c8326d, type: 2}
+    materials:
+    - {fileID: 2100000, guid: aa71aca690f3844bcbb6852fb2c8326d, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: -0.00000023841858, y: 4.885784, z: 0}
+      m_Extent: {x: 3.9139998, y: 4.8857975, z: 4.3350134}
+    kind: building
+  - id: ks_house_l
+    lods:
+    - {fileID: 9065507666426024903, guid: 0db04d9e243da428f9f07e0912aa2cff, type: 3}
+    - {fileID: 6377740840964397782, guid: 0db04d9e243da428f9f07e0912aa2cff, type: 3}
+    - {fileID: -2438355967047345800, guid: 0db04d9e243da428f9f07e0912aa2cff, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: aa71aca690f3844bcbb6852fb2c8326d, type: 2}
+    materials:
+    - {fileID: 2100000, guid: aa71aca690f3844bcbb6852fb2c8326d, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 4.459072, z: 0.00000023841858}
+      m_Extent: {x: 4.3927617, y: 4.459085, z: 4.335013}
+    kind: building
+  - id: ks_house_m
+    lods:
+    - {fileID: 8721000399226820961, guid: ede28aa73dcd14d8790d3d69750347fa, type: 3}
+    - {fileID: -321264366637412357, guid: ede28aa73dcd14d8790d3d69750347fa, type: 3}
+    - {fileID: -7274882645137076607, guid: ede28aa73dcd14d8790d3d69750347fa, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: aa71aca690f3844bcbb6852fb2c8326d, type: 2}
+    materials:
+    - {fileID: 2100000, guid: aa71aca690f3844bcbb6852fb2c8326d, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 3.1343749, z: -0.00000023841858}
+      m_Extent: {x: 6.069012, y: 3.1343865, z: 6.069012}
+    kind: building
+  - id: ks_house_n
+    lods:
+    - {fileID: -6761410829243451794, guid: 161c7f7b7b2194f319b71e8518abf02a, type: 3}
+    - {fileID: -5030274315796536138, guid: 161c7f7b7b2194f319b71e8518abf02a, type: 3}
+    - {fileID: -7971066163562362083, guid: 161c7f7b7b2194f319b71e8518abf02a, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: aa71aca690f3844bcbb6852fb2c8326d, type: 2}
+    materials:
+    - {fileID: 2100000, guid: aa71aca690f3844bcbb6852fb2c8326d, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0.00000023841858, y: 4.8343754, z: -0.00000047683716}
+      m_Extent: {x: 7.5831704, y: 4.834392, z: 5.8560543}
+    kind: building
+  - id: ks_house_o
+    lods:
+    - {fileID: -6089756769356238475, guid: 3c0f188946216430da3d39490068466a, type: 3}
+    - {fileID: -5107626903616588052, guid: 3c0f188946216430da3d39490068466a, type: 3}
+    - {fileID: -2489367632703090159, guid: 3c0f188946216430da3d39490068466a, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: aa71aca690f3844bcbb6852fb2c8326d, type: 2}
+    materials:
+    - {fileID: 2100000, guid: aa71aca690f3844bcbb6852fb2c8326d, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0.00000023841858, y: 4.8343754, z: 0}
+      m_Extent: {x: 5.3975143, y: 4.8343897, z: 4.3690143}
+    kind: building
+  - id: ks_house_p
+    lods:
+    - {fileID: 4176197909886130048, guid: 641c44020c3704a0881aa2d59c748ce7, type: 3}
+    - {fileID: 5195513141983992566, guid: 641c44020c3704a0881aa2d59c748ce7, type: 3}
+    - {fileID: -7365311404876735427, guid: 641c44020c3704a0881aa2d59c748ce7, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: aa71aca690f3844bcbb6852fb2c8326d, type: 2}
+    materials:
+    - {fileID: 2100000, guid: aa71aca690f3844bcbb6852fb2c8326d, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 3.9015, z: 0.00000023841858}
+      m_Extent: {x: 5.270013, y: 3.9015124, z: 4.207513}
+    kind: building
+  - id: ks_house_q
+    lods:
+    - {fileID: -2144062551053349319, guid: bfdccbc6dccbb48308d0491753768834, type: 3}
+    - {fileID: 409935618170499165, guid: bfdccbc6dccbb48308d0491753768834, type: 3}
+    - {fileID: -6742787966062085611, guid: bfdccbc6dccbb48308d0491753768834, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: aa71aca690f3844bcbb6852fb2c8326d, type: 2}
+    materials:
+    - {fileID: 2100000, guid: aa71aca690f3844bcbb6852fb2c8326d, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 3.9015, z: 0}
+      m_Extent: {x: 5.2700124, y: 3.9015124, z: 3.763761}
+    kind: building
+  - id: ks_house_r
+    lods:
+    - {fileID: -3306283019568598537, guid: 28eccc78ee9124cfcb975ae02dfbf6fb, type: 3}
+    - {fileID: 1754984630226723096, guid: 28eccc78ee9124cfcb975ae02dfbf6fb, type: 3}
+    - {fileID: 3507293015132917948, guid: 28eccc78ee9124cfcb975ae02dfbf6fb, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: aa71aca690f3844bcbb6852fb2c8326d, type: 2}
+    materials:
+    - {fileID: 2100000, guid: aa71aca690f3844bcbb6852fb2c8326d, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 4.8498573, z: -0.00000023841858}
+      m_Extent: {x: 4.369014, y: 4.8498707, z: 4.3350134}
+    kind: building
+  - id: ks_house_s
+    lods:
+    - {fileID: 6081661692480781164, guid: e2c79b3ebba2b46d58e4cc7622086b15, type: 3}
+    - {fileID: 7668589335298641992, guid: e2c79b3ebba2b46d58e4cc7622086b15, type: 3}
+    - {fileID: 2565866140539182710, guid: e2c79b3ebba2b46d58e4cc7622086b15, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: aa71aca690f3844bcbb6852fb2c8326d, type: 2}
+    materials:
+    - {fileID: 2100000, guid: aa71aca690f3844bcbb6852fb2c8326d, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: -0.00000023841858, y: 4.8343754, z: 0.00000023841858}
+      m_Extent: {x: 5.975638, y: 4.83439, z: 4.6171317}
+    kind: building
+  - id: ks_house_t
+    lods:
+    - {fileID: -7109422186636760322, guid: 44160a183b5fd42b981704f6ea9b193f, type: 3}
+    - {fileID: 3992812485136160925, guid: 44160a183b5fd42b981704f6ea9b193f, type: 3}
+    - {fileID: -3516126588281969711, guid: 44160a183b5fd42b981704f6ea9b193f, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: aa71aca690f3844bcbb6852fb2c8326d, type: 2}
+    materials:
+    - {fileID: 2100000, guid: aa71aca690f3844bcbb6852fb2c8326d, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 4.914405, z: 0}
+      m_Extent: {x: 5.5827637, y: 4.91442, z: 5.9771314}
+    kind: building
+  - id: ks_house_u
+    lods:
+    - {fileID: -62263871365875434, guid: c3ce280ffcd734a7ca904a87e2eb07af, type: 3}
+    - {fileID: -2728920108711654277, guid: c3ce280ffcd734a7ca904a87e2eb07af, type: 3}
+    - {fileID: 7231622957563080136, guid: c3ce280ffcd734a7ca904a87e2eb07af, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: aa71aca690f3844bcbb6852fb2c8326d, type: 2}
+    materials:
+    - {fileID: 2100000, guid: aa71aca690f3844bcbb6852fb2c8326d, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0.0000009536743, y: 4.8343754, z: 0.00000023841858}
+      m_Extent: {x: 6.069016, y: 4.83439, z: 4.6194882}
+    kind: building
+  - id: kw_boat_fishing_small
+    lods:
+    - {fileID: 7771923366734656214, guid: 59b1aa9d660e34484b4b35a193bb17ab, type: 3}
+    lodEnd:
+    - 800
+    material: {fileID: 2100000, guid: 781f607e3f5174318a6abec270d86b47, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 781f607e3f5174318a6abec270d86b47, type: 2}
+    shadowRange: 45
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 2.9899998, z: 0}
+      m_Extent: {x: 2.05276, y: 2.9900098, z: 4.45051}
+    kind: boat
+  - id: kw_boat_house_a
+    lods:
+    - {fileID: 3067218843932569214, guid: 9c34f965f509a49c7b6896315d0ec446, type: 3}
+    - {fileID: 6775348595476051157, guid: 9c34f965f509a49c7b6896315d0ec446, type: 3}
+    lodEnd:
+    - 55
+    - 800
+    material: {fileID: 2100000, guid: 781f607e3f5174318a6abec270d86b47, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 781f607e3f5174318a6abec270d86b47, type: 2}
+    shadowRange: 45
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 2.6069999, z: 0}
+      m_Extent: {x: 3.2130108, y: 2.6070106, z: 5.57281}
+    kind: boat
+  - id: kw_boat_row_small
+    lods:
+    - {fileID: 686569553890685392, guid: 2ebbfa787d7bb4ca3ad8ac51cbc981ea, type: 3}
+    lodEnd:
+    - 800
+    material: {fileID: 2100000, guid: 781f607e3f5174318a6abec270d86b47, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 781f607e3f5174318a6abec270d86b47, type: 2}
+    shadowRange: 45
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 0.5933869, z: 0}
+      m_Extent: {x: 1.9239802, y: 0.5933906, z: 1.6605061}
+    kind: boat
+  - id: kw_boat_sail_a
+    lods:
+    - {fileID: 7682790708398916973, guid: 4224b030f796a462c81422666ff51097, type: 3}
+    - {fileID: 5128076537196812389, guid: 4224b030f796a462c81422666ff51097, type: 3}
+    lodEnd:
+    - 55
+    - 800
+    material: {fileID: 2100000, guid: 781f607e3f5174318a6abec270d86b47, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 781f607e3f5174318a6abec270d86b47, type: 2}
+    shadowRange: 45
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 6.160881, z: 0}
+      m_Extent: {x: 2.3205163, y: 6.1608973, z: 4.901016}
+    kind: boat
+  - id: kw_boat_sail_b
+    lods:
+    - {fileID: -1464703161776897235, guid: d89d1b5f6a4ad4d238de258b6cf2ec60, type: 3}
+    - {fileID: -1941039155503957211, guid: d89d1b5f6a4ad4d238de258b6cf2ec60, type: 3}
+    lodEnd:
+    - 55
+    - 800
+    material: {fileID: 2100000, guid: 781f607e3f5174318a6abec270d86b47, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 781f607e3f5174318a6abec270d86b47, type: 2}
+    shadowRange: 45
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 5.825124, z: 0}
+      m_Extent: {x: 2.320516, y: 5.82514, z: 5.291016}
+    kind: boat
+  - id: kw_boat_speed_a
+    lods:
+    - {fileID: -2356898787270372695, guid: 968aea4d83f2b4318b202fb714ba45ab, type: 3}
+    lodEnd:
+    - 800
+    material: {fileID: 2100000, guid: 781f607e3f5174318a6abec270d86b47, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 781f607e3f5174318a6abec270d86b47, type: 2}
+    shadowRange: 45
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 1.5749999, z: 0}
+      m_Extent: {x: 1.8742567, y: 1.5750067, z: 3.5385067}
+    kind: boat
+  - id: kw_boat_speed_b
+    lods:
+    - {fileID: -8142956524932693946, guid: 99942ab5501e44d209c41ff6f8bb4d50, type: 3}
+    lodEnd:
+    - 800
+    material: {fileID: 2100000, guid: 781f607e3f5174318a6abec270d86b47, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 781f607e3f5174318a6abec270d86b47, type: 2}
+    shadowRange: 45
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 1.6724614, z: -0.00000011920929}
+      m_Extent: {x: 1.8742565, y: 1.672468, z: 3.45578}
+    kind: boat
+  - id: kw_boat_speed_e
+    lods:
+    - {fileID: 1144566267515719276, guid: 774abb2500c1c44dc9fdee2cbd457e4f, type: 3}
+    - {fileID: -365973618218010234, guid: 774abb2500c1c44dc9fdee2cbd457e4f, type: 3}
+    lodEnd:
+    - 55
+    - 800
+    material: {fileID: 2100000, guid: 781f607e3f5174318a6abec270d86b47, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 781f607e3f5174318a6abec270d86b47, type: 2}
+    shadowRange: 45
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 1.5318557, z: 0}
+      m_Extent: {x: 2.0989556, y: 1.5318615, z: 3.0135055}
+    kind: boat
+  - id: kw_boat_speed_g
+    lods:
+    - {fileID: 2603449084768128160, guid: 91b075f4084094131bd35d9f89984a53, type: 3}
+    lodEnd:
+    - 800
+    material: {fileID: 2100000, guid: 781f607e3f5174318a6abec270d86b47, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 781f607e3f5174318a6abec270d86b47, type: 2}
+    shadowRange: 45
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 1.3649999, z: 0}
+      m_Extent: {x: 1.8742576, y: 1.3650075, z: 4.002886}
+    kind: boat
+  - id: kw_boat_tug_a
+    lods:
+    - {fileID: 7710106306163636500, guid: b324b450a1ad54f31a4e1ba06819e023, type: 3}
+    - {fileID: -9182937095865209547, guid: b324b450a1ad54f31a4e1ba06819e023, type: 3}
+    lodEnd:
+    - 55
+    - 800
+    material: {fileID: 2100000, guid: 781f607e3f5174318a6abec270d86b47, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 781f607e3f5174318a6abec270d86b47, type: 2}
+    shadowRange: 45
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 3.1318, z: 0}
+      m_Extent: {x: 2.4990103, y: 3.1318104, z: 4.8580103}
+    kind: boat
+  - id: kw_buoy_flag
+    lods:
+    - {fileID: 3999642997249096191, guid: 74f9b82b94f3540e2a25f7fcf640f72f, type: 3}
+    lodEnd:
+    - 800
+    material: {fileID: 2100000, guid: 781f607e3f5174318a6abec270d86b47, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 781f607e3f5174318a6abec270d86b47, type: 2}
+    shadowRange: 45
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 1.6305106, z: 0}
+      m_Extent: {x: 0.5569239, y: 1.6305144, z: 0.7735978}
+    kind: boat
+  - id: kw_ship_cargo_a
+    lods:
+    - {fileID: -7693884407213999059, guid: 21ad224ddede84ba9b7f9a28c6c19a35, type: 3}
+    - {fileID: 8946337751303051460, guid: 21ad224ddede84ba9b7f9a28c6c19a35, type: 3}
+    - {fileID: 7671829939757231558, guid: 21ad224ddede84ba9b7f9a28c6c19a35, type: 3}
+    lodEnd:
+    - 260
+    - 900
+    - 3600
+    material: {fileID: 2100000, guid: 781f607e3f5174318a6abec270d86b47, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 781f607e3f5174318a6abec270d86b47, type: 2}
+    shadowRange: 0
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 9.295862, z: 0}
+      m_Extent: {x: 10.772362, y: 9.2959175, z: 29.009033}
+    kind: ship
+  - id: kw_ship_large
+    lods:
+    - {fileID: -3350258196393274648, guid: f4d36b26587af4b55a168c32c5f2c617, type: 3}
+    - {fileID: -8755047143840917703, guid: f4d36b26587af4b55a168c32c5f2c617, type: 3}
+    - {fileID: -6516045574476144742, guid: f4d36b26587af4b55a168c32c5f2c617, type: 3}
+    lodEnd:
+    - 260
+    - 900
+    - 3600
+    material: {fileID: 2100000, guid: 781f607e3f5174318a6abec270d86b47, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 781f607e3f5174318a6abec270d86b47, type: 2}
+    shadowRange: 0
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 19.92704, z: 0}
+      m_Extent: {x: 9.600063, y: 19.927103, z: 26.200064}
+    kind: ship
+  - id: kw_ship_ocean_liner
+    lods:
+    - {fileID: 728264872186239114, guid: 8048a246dd85b406bab7408bdd0ebb46, type: 3}
+    - {fileID: -6534245458823946275, guid: 8048a246dd85b406bab7408bdd0ebb46, type: 3}
+    - {fileID: 5171548573531246639, guid: 8048a246dd85b406bab7408bdd0ebb46, type: 3}
+    lodEnd:
+    - 260
+    - 900
+    - 3600
+    material: {fileID: 2100000, guid: 781f607e3f5174318a6abec270d86b47, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 781f607e3f5174318a6abec270d86b47, type: 2}
+    shadowRange: 0
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 22.334501, z: 0}
+      m_Extent: {x: 11.900101, y: 22.334602, z: 53.200108}
+    kind: ship
+  - id: kyc_firehydrant
+    lods:
+    - {fileID: -3415047148218550632, guid: ca1f80d6304cc4e1dbf92cd8d2267ae3, type: 3}
+    lodEnd:
+    - 130
+    material: {fileID: 2100000, guid: 6bf9122b717f6414294742c8b3eac306, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 6bf9122b717f6414294742c8b3eac306, type: 2}
+    shadowRange: 15
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 0.4, z: 0}
+      m_Extent: {x: 0.24131563, y: 0.400001, z: 0.23388098}
+    kind: prop
+  - id: palm_1
+    lods:
+    - {fileID: -1321097363992580744, guid: b770002c7be774ef6baad9ffdc222fe0, type: 3}
+    - {fileID: -5524522564255459189, guid: b770002c7be774ef6baad9ffdc222fe0, type: 3}
+    - {fileID: -7785840134757210267, guid: b770002c7be774ef6baad9ffdc222fe0, type: 3}
+    lodEnd:
+    - 55
+    - 170
+    - 900
+    material: {fileID: 2100000, guid: 57210b03a885a47aba74f913af7e423b, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 57210b03a885a47aba74f913af7e423b, type: 2}
+    shadowRange: 70
+    layer: 14
+    bounds:
+      m_Center: {x: 0, y: 3.25, z: 0}
+      m_Extent: {x: 2.0910597, y: 3.25, z: 1.8963242}
+    kind: tree
+  - id: palm_2
+    lods:
+    - {fileID: -8511348562217889574, guid: df4d75d0afd614d0182987b2e846942b, type: 3}
+    - {fileID: -5268487633607437075, guid: df4d75d0afd614d0182987b2e846942b, type: 3}
+    - {fileID: 7910816411101313448, guid: df4d75d0afd614d0182987b2e846942b, type: 3}
+    lodEnd:
+    - 55
+    - 170
+    - 900
+    material: {fileID: 2100000, guid: 57210b03a885a47aba74f913af7e423b, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 57210b03a885a47aba74f913af7e423b, type: 2}
+    shadowRange: 70
+    layer: 14
+    bounds:
+      m_Center: {x: 0, y: 3.75, z: 0}
+      m_Extent: {x: 2.7461712, y: 3.75, z: 2.3997984}
+    kind: tree
+  - id: planter_round
+    lods:
+    - {fileID: 6103650155566778384, guid: 506805e9d32d4492ca2b654c06f7ccf9, type: 3}
+    lodEnd:
+    - 130
+    material: {fileID: 2100000, guid: f72550b793e1d48e6930be8c7ead81b0, type: 2}
+    materials:
+    - {fileID: 2100000, guid: f72550b793e1d48e6930be8c7ead81b0, type: 2}
+    - {fileID: 2100000, guid: 800ef02b000604eb4b53c4889d114a92, type: 2}
+    shadowRange: 15
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 0.3, z: 0}
+      m_Extent: {x: 1, y: 0.3, z: 1}
+    kind: prop
+  - id: qtb_1story
+    lods:
+    - {fileID: 889088538719449258, guid: 29c3e3e0a0325407d9676b46c484cca1, type: 3}
+    - {fileID: 2046622258251025511, guid: 29c3e3e0a0325407d9676b46c484cca1, type: 3}
+    - {fileID: 5669927378943969906, guid: 29c3e3e0a0325407d9676b46c484cca1, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 2.257532, z: 0}
+      m_Extent: {x: 2.908124, y: 2.257539, z: 2.9357662}
+    kind: building
+  - id: qtb_1story_gableroof
+    lods:
+    - {fileID: 993498093158209405, guid: f4d81adb7dce94756a479b8193482f71, type: 3}
+    - {fileID: 7867170469145780888, guid: f4d81adb7dce94756a479b8193482f71, type: 3}
+    - {fileID: -4635203506735845866, guid: f4d81adb7dce94756a479b8193482f71, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 2.733156, z: 0}
+      m_Extent: {x: 2.8420956, y: 2.7331643, z: 3.2131844}
+    kind: building
+  - id: qtb_1story_roundroof
+    lods:
+    - {fileID: 2889511969113584491, guid: 8c19b0cdfb3fc4315a067041c3a5715f, type: 3}
+    - {fileID: 4995074373785051823, guid: 8c19b0cdfb3fc4315a067041c3a5715f, type: 3}
+    - {fileID: -1931529725679978828, guid: 8c19b0cdfb3fc4315a067041c3a5715f, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 3.2172034, z: 0}
+      m_Extent: {x: 2.8170898, y: 3.2172122, z: 2.8698075}
+    kind: building
+  - id: qtb_1story_sign
+    lods:
+    - {fileID: 7293523558816175784, guid: 0fbca0f72e929485c9189396488c2032, type: 3}
+    - {fileID: 3073797929267706560, guid: 0fbca0f72e929485c9189396488c2032, type: 3}
+    - {fileID: -2999742850220293219, guid: 0fbca0f72e929485c9189396488c2032, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 2.4216063, z: 0}
+      m_Extent: {x: 2.9081244, y: 2.4216137, z: 2.9081244}
+    kind: building
+  - id: qtb_2story
+    lods:
+    - {fileID: 3673928634107681221, guid: 376eb9494a12b4a95b40aa9267867d0c, type: 3}
+    - {fileID: 2969765680683744340, guid: 376eb9494a12b4a95b40aa9267867d0c, type: 3}
+    - {fileID: 5970097521670486618, guid: 376eb9494a12b4a95b40aa9267867d0c, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 3.7062001, z: 0}
+      m_Extent: {x: 2.9141822, y: 3.7062104, z: 3.4184468}
+    kind: building
+  - id: qtb_2story_2
+    lods:
+    - {fileID: -2902183312524852098, guid: 77a24e3c6f5dc448d994c9fba318f3c8, type: 3}
+    - {fileID: 3514868818248897273, guid: 77a24e3c6f5dc448d994c9fba318f3c8, type: 3}
+    - {fileID: 7923220459342600762, guid: 77a24e3c6f5dc448d994c9fba318f3c8, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 3.729326, z: 0}
+      m_Extent: {x: 2.914182, y: 3.729336, z: 2.9360683}
+    kind: building
+  - id: qtb_2story_balcony
+    lods:
+    - {fileID: 5943786317524757694, guid: e4c25290f4d12462490dd1d72ddf8bfd, type: 3}
+    - {fileID: -8344468753429459961, guid: e4c25290f4d12462490dd1d72ddf8bfd, type: 3}
+    - {fileID: 7584948242830239738, guid: e4c25290f4d12462490dd1d72ddf8bfd, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 3.9744956, z: 0}
+      m_Extent: {x: 2.9141827, y: 3.9745064, z: 3.4184473}
+    kind: building
+  - id: qtb_2story_center
+    lods:
+    - {fileID: 1896100447271507211, guid: f1eee6d91d2774d578315eae88909556, type: 3}
+    - {fileID: -1659149535079145684, guid: f1eee6d91d2774d578315eae88909556, type: 3}
+    - {fileID: 5349238746103688154, guid: f1eee6d91d2774d578315eae88909556, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 3.6942837, z: 0}
+      m_Extent: {x: 3.2685614, y: 3.694294, z: 3.3729923}
+    kind: building
+  - id: qtb_2story_columns
+    lods:
+    - {fileID: -3756142249889068278, guid: 52d0f1d3c7edd479ebd35a1a68cb3ac8, type: 3}
+    - {fileID: 4199044390541416881, guid: 52d0f1d3c7edd479ebd35a1a68cb3ac8, type: 3}
+    - {fileID: 7822413715560026114, guid: 52d0f1d3c7edd479ebd35a1a68cb3ac8, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 3.7377667, z: 0}
+      m_Extent: {x: 2.9141822, y: 3.737777, z: 3.3598964}
+    kind: building
+  - id: qtb_2story_double
+    lods:
+    - {fileID: 2499359227052713410, guid: ed2acea7eae39499580268c3c607d070, type: 3}
+    - {fileID: 4447047100506193698, guid: ed2acea7eae39499580268c3c607d070, type: 3}
+    - {fileID: 5826904578985888794, guid: ed2acea7eae39499580268c3c607d070, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 3.7062004, z: 0}
+      m_Extent: {x: 3.268561, y: 3.7062106, z: 3.4184468}
+    kind: building
+  - id: qtb_2story_gableroof
+    lods:
+    - {fileID: 4474238704090053839, guid: 4f97658fb505a47538cb7d55a86051a3, type: 3}
+    - {fileID: 3180162566797146231, guid: 4f97658fb505a47538cb7d55a86051a3, type: 3}
+    - {fileID: 2694653535361617789, guid: 4f97658fb505a47538cb7d55a86051a3, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 4.229881, z: 0}
+      m_Extent: {x: 2.9141831, y: 4.229892, z: 3.2131872}
+    kind: building
+  - id: qtb_2story_roundroof
+    lods:
+    - {fileID: -6513152056827336503, guid: c868a1b7c08874972b1231e8183ca38c, type: 3}
+    - {fileID: -7704467249152175674, guid: c868a1b7c08874972b1231e8183ca38c, type: 3}
+    - {fileID: 3738045620324596376, guid: c868a1b7c08874972b1231e8183ca38c, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 3.914162, z: 0}
+      m_Extent: {x: 2.850516, y: 3.9141722, z: 2.8698087}
+    kind: building
+  - id: qtb_2story_sidehouse
+    lods:
+    - {fileID: -3378393722249606346, guid: 21074dfb3aa6b43588df263cc1e91a49, type: 3}
+    - {fileID: -6945661550970622205, guid: 21074dfb3aa6b43588df263cc1e91a49, type: 3}
+    - {fileID: 6869087377637484039, guid: 21074dfb3aa6b43588df263cc1e91a49, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 3.7223296, z: 0}
+      m_Extent: {x: 4.682109, y: 3.7223413, z: 3.4184482}
+    kind: building
+  - id: qtb_2story_sign
+    lods:
+    - {fileID: 521829069157412180, guid: 9d514797cbbd143d18dfe9cd4d8a8cba, type: 3}
+    - {fileID: 2849506875861845564, guid: 9d514797cbbd143d18dfe9cd4d8a8cba, type: 3}
+    - {fileID: 8943287953623621658, guid: 9d514797cbbd143d18dfe9cd4d8a8cba, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 3.72233, z: 0}
+      m_Extent: {x: 2.9081268, y: 3.7223399, z: 2.9081268}
+    kind: building
+  - id: qtb_2story_slim
+    lods:
+    - {fileID: 2422894973852578452, guid: 90dfd07c287cf436d9804dec3f7268a9, type: 3}
+    - {fileID: 8944315212156893727, guid: 90dfd07c287cf436d9804dec3f7268a9, type: 3}
+    - {fileID: 8284797670571597067, guid: 90dfd07c287cf436d9804dec3f7268a9, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 3.7223294, z: 0}
+      m_Extent: {x: 1.5060412, y: 3.7223392, z: 2.9087255}
+    kind: building
+  - id: qtb_2story_stairs
+    lods:
+    - {fileID: 4000807440518587742, guid: 04afd20f65f5f4581ba0bb637d82169f, type: 3}
+    - {fileID: -4773195440243082850, guid: 04afd20f65f5f4581ba0bb637d82169f, type: 3}
+    - {fileID: -2661096812740750234, guid: 04afd20f65f5f4581ba0bb637d82169f, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 3.7062004, z: 0}
+      m_Extent: {x: 2.9141822, y: 3.7062106, z: 3.4184468}
+    kind: building
+  - id: qtb_2story_wide
+    lods:
+    - {fileID: -1547063871833700786, guid: c5f963e49cde840faa61b203bad53a2b, type: 3}
+    - {fileID: 540022095554553806, guid: c5f963e49cde840faa61b203bad53a2b, type: 3}
+    - {fileID: -3731892916566670842, guid: c5f963e49cde840faa61b203bad53a2b, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 3.7097268, z: 0}
+      m_Extent: {x: 5.1640487, y: 3.7097387, z: 3.0446641}
+    kind: building
+  - id: qtb_2story_wide_2doors
+    lods:
+    - {fileID: -8453653298028145091, guid: 35013e956b3be4dda8167fd4dc32306a, type: 3}
+    - {fileID: -7142536726541198637, guid: 35013e956b3be4dda8167fd4dc32306a, type: 3}
+    - {fileID: 2763844571275989530, guid: 35013e956b3be4dda8167fd4dc32306a, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 3.7097268, z: 0}
+      m_Extent: {x: 9.217582, y: 3.7097445, z: 3.0446692}
+    kind: building
+  - id: qtb_3story_balcony
+    lods:
+    - {fileID: -7668759985448576240, guid: 7210a50a1108f4323ac89b45e9b73b0f, type: 3}
+    - {fileID: -4097196591597431370, guid: 7210a50a1108f4323ac89b45e9b73b0f, type: 3}
+    - {fileID: -8698974993520664369, guid: 7210a50a1108f4323ac89b45e9b73b0f, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 5.6869087, z: 0}
+      m_Extent: {x: 2.9141862, y: 5.686923, z: 3.3854487}
+    kind: building
+  - id: qtb_3story_slim
+    lods:
+    - {fileID: 2516909882073148899, guid: 827df94abb6594f87b9cd72281371b1a, type: 3}
+    - {fileID: -4533818947882316040, guid: 827df94abb6594f87b9cd72281371b1a, type: 3}
+    - {fileID: -7674090223506239866, guid: 827df94abb6594f87b9cd72281371b1a, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 5.3891473, z: 0}
+      m_Extent: {x: 1.5060443, y: 5.38916, z: 2.9087288}
+    kind: building
+  - id: qtb_3story_small
+    lods:
+    - {fileID: 4975505453040688286, guid: 3f766d81f25394af6a205633125a39b5, type: 3}
+    - {fileID: -7281350280284530286, guid: 3f766d81f25394af6a205633125a39b5, type: 3}
+    - {fileID: -1417716081658992940, guid: 3f766d81f25394af6a205633125a39b5, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 5.195528, z: -0.109873295}
+      m_Extent: {x: 2.576999, y: 5.1955404, z: 2.666042}
+    kind: building
+  - id: qtb_4story
+    lods:
+    - {fileID: 8245304318647398452, guid: 0629a8fd6ed3342ee9f6171b1df109ae, type: 3}
+    - {fileID: 5313614424461203940, guid: 0629a8fd6ed3342ee9f6171b1df109ae, type: 3}
+    - {fileID: 4361249522014487576, guid: 0629a8fd6ed3342ee9f6171b1df109ae, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 6.873981, z: 0}
+      m_Extent: {x: 3.2685673, y: 6.873997, z: 3.418453}
+    kind: building
+  - id: qtb_4story_center
+    lods:
+    - {fileID: -7987054208726368362, guid: baf01ab3d008d46e2aac8ff506d3686f, type: 3}
+    - {fileID: 8169656461509540061, guid: baf01ab3d008d46e2aac8ff506d3686f, type: 3}
+    - {fileID: -884117007853358352, guid: baf01ab3d008d46e2aac8ff506d3686f, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 6.8739815, z: 0}
+      m_Extent: {x: 3.2685678, y: 6.8739977, z: 3.418453}
+    kind: building
+  - id: qtb_4story_wide_2doors
+    lods:
+    - {fileID: 6870957371324784991, guid: 5ee44923a2d704bdcb16f69b53de1a40, type: 3}
+    - {fileID: 5970052976069042050, guid: 5ee44923a2d704bdcb16f69b53de1a40, type: 3}
+    - {fileID: 6063351867895319889, guid: 5ee44923a2d704bdcb16f69b53de1a40, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 6.954362, z: 0}
+      m_Extent: {x: 9.2175865, y: 6.954384, z: 3.6400592}
+    kind: building
+  - id: qtb_4story_wide_2doors_roof
+    lods:
+    - {fileID: -66181582744755901, guid: 3105402a4e43845f5974feaf34b7e4a2, type: 3}
+    - {fileID: 5799341245086707380, guid: 3105402a4e43845f5974feaf34b7e4a2, type: 3}
+    - {fileID: 6089344590858294676, guid: 3105402a4e43845f5974feaf34b7e4a2, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 7.6726727, z: 0}
+      m_Extent: {x: 9.217588, y: 7.672696, z: 3.64006}
+    kind: building
+  - id: qtb_6story_stack
+    lods:
+    - {fileID: -4001796769245608054, guid: dcf0a6e23214046bf9300f5c3140dc05, type: 3}
+    - {fileID: 5041882938694881211, guid: dcf0a6e23214046bf9300f5c3140dc05, type: 3}
+    - {fileID: -4419767020833554067, guid: dcf0a6e23214046bf9300f5c3140dc05, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 10.534544, z: 0}
+      m_Extent: {x: 2.9141955, y: 10.534567, z: 3.3730052}
+    kind: building
+  - id: street_lamp_double
+    lods:
+    - {fileID: 5978356116423837875, guid: b4e6ed0755e514357a4ca85a8af56f0e, type: 3}
+    - {fileID: 7353431002419327367, guid: b4e6ed0755e514357a4ca85a8af56f0e, type: 3}
+    - {fileID: -6656203989288886341, guid: b4e6ed0755e514357a4ca85a8af56f0e, type: 3}
+    lodEnd:
+    - 45
+    - 140
+    - 380
+    material: {fileID: 2100000, guid: 00a083187c6b94649a36f1854ba2ae94, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 00a083187c6b94649a36f1854ba2ae94, type: 2}
+    shadowRange: 35
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 2.2, z: 0}
+      m_Extent: {x: 0.2633568, y: 2.2, z: 0.6313081}
+    kind: lamp
+  - id: trash_can
+    lods:
+    - {fileID: -7715356985485625289, guid: d80378b276ef64f258df8ea70eab93ca, type: 3}
+    lodEnd:
+    - 130
+    material: {fileID: 2100000, guid: 00a083187c6b94649a36f1854ba2ae94, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 00a083187c6b94649a36f1854ba2ae94, type: 2}
+    shadowRange: 15
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 0.45000002, z: 0}
+      m_Extent: {x: 0.21843775, y: 0.45000002, z: 0.24623582}
+    kind: prop
+  - id: tree_blossom_1
+    lods:
+    - {fileID: -3968013026109870860, guid: b6d7a67cf3fcc4e88b1f48a4dcee33a5, type: 3}
+    - {fileID: -1629970724243750480, guid: b6d7a67cf3fcc4e88b1f48a4dcee33a5, type: 3}
+    - {fileID: 6114103104565988121, guid: b6d7a67cf3fcc4e88b1f48a4dcee33a5, type: 3}
+    lodEnd:
+    - 55
+    - 170
+    - 900
+    material: {fileID: 2100000, guid: b9e5d3012a71a416c8b70db61320f4b4, type: 2}
+    materials:
+    - {fileID: 2100000, guid: b9e5d3012a71a416c8b70db61320f4b4, type: 2}
+    - {fileID: 2100000, guid: b47f45ef3d4434f4491fc6264bba71ac, type: 2}
+    shadowRange: 70
+    layer: 14
+    bounds:
+      m_Center: {x: 0, y: 2.9, z: 0}
+      m_Extent: {x: 2.7188358, y: 2.9, z: 2.1403604}
+    kind: tree
+  - id: tree_blossom_2
+    lods:
+    - {fileID: 1280323456420554770, guid: 8955f811bd0f24cca805fa6508b944fb, type: 3}
+    - {fileID: -6000993147479033544, guid: 8955f811bd0f24cca805fa6508b944fb, type: 3}
+    - {fileID: -1039449810846306604, guid: 8955f811bd0f24cca805fa6508b944fb, type: 3}
+    lodEnd:
+    - 55
+    - 170
+    - 900
+    material: {fileID: 2100000, guid: b9e5d3012a71a416c8b70db61320f4b4, type: 2}
+    materials:
+    - {fileID: 2100000, guid: b9e5d3012a71a416c8b70db61320f4b4, type: 2}
+    - {fileID: 2100000, guid: b47f45ef3d4434f4491fc6264bba71ac, type: 2}
+    shadowRange: 70
+    layer: 14
+    bounds:
+      m_Center: {x: 0, y: 3.05, z: 0}
+      m_Extent: {x: 3.044074, y: 3.05, z: 2.836528}
+    kind: tree
+  - id: tree_blossom_3
+    lods:
+    - {fileID: -2835320820883716213, guid: 4d0aa9aa81b314fed8982530dc598120, type: 3}
+    - {fileID: -5243455339929389723, guid: 4d0aa9aa81b314fed8982530dc598120, type: 3}
+    - {fileID: -4554499681331387537, guid: 4d0aa9aa81b314fed8982530dc598120, type: 3}
+    lodEnd:
+    - 55
+    - 170
+    - 900
+    material: {fileID: 2100000, guid: b9e5d3012a71a416c8b70db61320f4b4, type: 2}
+    materials:
+    - {fileID: 2100000, guid: b9e5d3012a71a416c8b70db61320f4b4, type: 2}
+    - {fileID: 2100000, guid: b47f45ef3d4434f4491fc6264bba71ac, type: 2}
+    shadowRange: 70
+    layer: 14
+    bounds:
+      m_Center: {x: 0, y: 3.2, z: 0}
+      m_Extent: {x: 4.1128187, y: 3.2, z: 3.0290241}
+    kind: tree
+  - id: tree_blossom_4
+    lods:
+    - {fileID: -4421633327191691256, guid: e97f6591ddb404ad98d0cf63b1ebc7c8, type: 3}
+    - {fileID: -8710124750325889075, guid: e97f6591ddb404ad98d0cf63b1ebc7c8, type: 3}
+    - {fileID: 2023184079148900523, guid: e97f6591ddb404ad98d0cf63b1ebc7c8, type: 3}
+    lodEnd:
+    - 55
+    - 170
+    - 900
+    material: {fileID: 2100000, guid: b9e5d3012a71a416c8b70db61320f4b4, type: 2}
+    materials:
+    - {fileID: 2100000, guid: b9e5d3012a71a416c8b70db61320f4b4, type: 2}
+    - {fileID: 2100000, guid: b47f45ef3d4434f4491fc6264bba71ac, type: 2}
+    shadowRange: 70
+    layer: 14
+    bounds:
+      m_Center: {x: 0, y: 3.3500001, z: 0}
+      m_Extent: {x: 2.5816233, y: 3.3500001, z: 2.269333}
+    kind: tree

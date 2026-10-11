@@ -17,7 +17,9 @@ Shader "CT Life/World/Terrain"
         _SandColor("Sand", Color) = (0.93, 0.84, 0.62, 1)
         _DirtColor("Dirt", Color) = (0.58, 0.44, 0.30, 1)
         _SnowColor("Snow", Color) = (0.97, 0.97, 1.0, 1)
-        _Snow("Snow line (start y, full y, min normal y, 0)", Vector) = (116, 134, 0.42, 0)
+        _Snow("Snow (start y, full y, min normal y, north bias)", Vector) = (138, 156, 0.45, 0.6)
+        _WetSand("Wet sand (colour)", Color) = (0.60, 0.52, 0.40, 1)
+        _Shore("Shore (sea level y, wet band height m, 0, 0)", Vector) = (-6, 1.1, 0, 0)
         _Contrast("Detail contrast", Range(0, 2)) = 0.7
         _Sharpness("Blend sharpness", Range(1, 8)) = 2.5
         _Toon("Toon step", Range(0, 1)) = 0.35
@@ -31,8 +33,8 @@ Shader "CT Life/World/Terrain"
         TEXTURE2D(_Macro); SAMPLER(sampler_Macro);
         TEXTURE2D(_Detail); SAMPLER(sampler_Detail);
         CBUFFER_START(UnityPerMaterial)
-            float4 _Domain, _DetailScale, _Snow;
-            half4 _RockColor, _RockColorHigh, _SandColor, _DirtColor, _SnowColor;
+            float4 _Domain, _DetailScale, _Snow, _Shore;
+            half4 _RockColor, _RockColorHigh, _SandColor, _DirtColor, _SnowColor, _WetSand;
             half _Contrast, _Sharpness, _Toon;
         CBUFFER_END
 
@@ -67,6 +69,7 @@ Shader "CT Life/World/Terrain"
             ao = macro.a;
             #if defined(_FAR)
                 half4 det = half4(0.5h, 0.5h, 0.5h, 0.5h);
+                half4 d1 = det, d2 = det;
             #else
                 half4 d1 = SAMPLE_TEXTURE2D(_Detail, sampler_Detail, positionWS.xz * _DetailScale.x);
                 half4 d2 = SAMPLE_TEXTURE2D(_Detail, sampler_Detail, positionWS.xz * _DetailScale.y + 0.37);
@@ -77,12 +80,37 @@ Shader "CT Life/World/Terrain"
             w /= max(dot(w, half4(1, 1, 1, 1)), 1e-4h);
             half k = _Contrast;
             half3 grass = macro.rgb * (1.0h + (det.r - 0.5h) * k * 0.9h);
+            // hue drift in the grass (yellow-green <-> blue-green), from the dirt/sand detail channels at the far scale
+            #if !defined(_FAR)
+                half drift = (d2.a - d2.b) * 1.6h;
+                grass *= lerp(half3(1.0h, 1.0h, 1.0h), drift > 0 ? half3(1.10h, 1.04h, 0.72h) : half3(0.86h, 1.0h, 1.10h), saturate(abs(drift)));
+            #endif
             half rockHigh = saturate((positionWS.y - 40.0) / 110.0);
-            half3 rock = lerp(_RockColor.rgb, _RockColorHigh.rgb, rockHigh) * (1.0h + (det.g - 0.5h) * k * 1.1h) * lerp(1.0h, macro.rgb * 1.6h, 0.1h);
+            half rockDet = det.g;
+            #if !defined(_FAR)
+                // cliffs: tri-planar rock detail (no smearing down steep faces) and soft strata bands
+                half3 bw = pow(abs(normalWS), 4.0h); bw /= max(dot(bw, half3(1, 1, 1)), 1e-3h);
+                half rx = SAMPLE_TEXTURE2D(_Detail, sampler_Detail, positionWS.zy * _DetailScale.x * 0.8).g;
+                half rz = SAMPLE_TEXTURE2D(_Detail, sampler_Detail, positionWS.xy * _DetailScale.x * 0.8).g;
+                rockDet = rx * bw.x + d1.g * bw.y + rz * bw.z;
+                half strata = sin(positionWS.y * 0.55h + (rx + rz) * 5.0h + d2.g * 6.0h) * 0.5h + 0.5h;
+                rockDet = lerp(rockDet, rockDet * (0.9h + 0.2h * strata), saturate(1.0h - normalWS.y * 1.4h));
+            #endif
+            half3 rock = lerp(_RockColor.rgb, _RockColorHigh.rgb, rockHigh) * (1.0h + (rockDet - 0.5h) * k * 1.3h) * lerp(1.0h, macro.rgb * 1.6h, 0.06h);
+            rock *= lerp(0.72h, 1.0h, ao);                     // crevices darker
             half3 sand = _SandColor.rgb * (1.0h + (det.b - 0.5h) * k * 0.6h);
+            // wet sand: a darker band just above the waterline (follows the real shore height)
+            half wet = smoothstep(_Shore.x + _Shore.y, _Shore.x + 0.15h, positionWS.y + (det.b - 0.5h) * 0.3h);
+            sand = lerp(sand, _WetSand.rgb * (1.0h + (det.b - 0.5h) * k * 0.5h), wet);
             half3 dirt = _DirtColor.rgb * (1.0h + (det.a - 0.5h) * k) * lerp(1.0h, macro.rgb * 1.8h, 0.2h);
             half3 albedo = grass * w.r + rock * w.g + sand * w.b + dirt * w.a;
-            half snow = smoothstep(_Snow.x, _Snow.y, positionWS.y + (det.g - 0.5h) * 10.0h) * smoothstep(_Snow.z, _Snow.z + 0.15h, normalWS.y);
+            #if defined(_FAR)
+                albedo = macro.rgb;            // far terrain: islandgen bakes the composited ground colour (terrain_far_macro)
+            #endif
+            // snow only on the highest ground, mostly on the shaded north faces (normal +z = facing north), never on cliffs
+            half north = lerp(1.0h, smoothstep(-0.05h, 0.35h, normalWS.z), _Snow.w);
+            half cap = smoothstep(_Snow.y + 8.0h, _Snow.y + 16.0h, positionWS.y);
+            half snow = smoothstep(_Snow.x, _Snow.y, positionWS.y + (det.g - 0.5h) * 10.0h) * smoothstep(_Snow.z, _Snow.z + 0.15h, normalWS.y) * max(north, cap);
             albedo = lerp(albedo, _SnowColor.rgb * (0.94h + det.g * 0.08h), snow);
             return albedo;
         }

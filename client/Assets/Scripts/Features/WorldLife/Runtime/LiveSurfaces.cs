@@ -151,6 +151,23 @@ namespace CTLife.WorldLife
                 return k != 0 ? k : a.Position.z.CompareTo(b.Position.z);
             });
             if (list.Count > max) list.RemoveRange(max, list.Count - max);
+            // CT Island v2 (World lane): the street billboards nearest this venue join its rotation (they stream with the
+            // island's cells; their panels are Screen_bb_island_* materials, so the same rules classify them).
+            int islandMax = (int)WireText.Num(_data.HouseAds["surfaces"], "islandBillboards", 4);
+            foreach (var screen in IslandScreen.Near(root.transform.position, 360f, islandMax))
+            {
+                var mats = screen.screen.sharedMaterials;
+                for (int i = 0; i < mats.Length; i++)
+                {
+                    var m = mats[i];
+                    if (m == null || !m.name.StartsWith("Screen_bb_", StringComparison.Ordinal)) continue;
+                    var tex = m.HasProperty(BaseMap) ? m.GetTexture(BaseMap) : m.mainTexture;
+                    var s = new Surface { Key = "island#" + screen.GetInstanceID(), Kind = "billboard", ScreenId = m.name.Substring(7), Position = screen.transform.position };
+                    s.Targets.Add(new Target { Renderer = screen.screen, Index = i, Original = tex });
+                    list.Add(s);
+                    break;
+                }
+            }
             var billboardSlots = AdSlots.ForVenue(_data.AdSlots, _venueId, "billboard");
             var tileSlots = AdSlots.ForVenue(_data.AdSlots, _venueId, "pixel_tile");
             var perKind = new Dictionary<string, int>();

@@ -133,6 +133,7 @@ namespace CTLife.World
                 request.Token.ThrowIfCancellationRequested();
                 RequireHomeOwner(homeId, homeUserId);
                 session._ready = true;
+                if (island && !joinRoom && IslandDemo.Active) session.SpawnDemoNpcs(venueId);
                 if (voice) _ = session.ConnectVoice();
                 return session;
             }
@@ -372,6 +373,7 @@ namespace CTLife.World
                 LocalPlayer.GetComponent<InteractionController>()?.Rebind(root, next);
                 if (next != null) Attach(next);
                 Log.Info("island", $"Zone {zone.venueId}{(next != null ? " room " + next.InstanceId : " (no room)")}");
+                if (next == null && IslandDemo.Active) SpawnDemoNpcs(zone.venueId);
                 Bus.Publish(new VenueChangedSignal { venueId = zone.venueId, instanceId = next?.InstanceId, seamless = true });
             }
             catch (OperationCanceledException) { }
@@ -508,6 +510,27 @@ namespace CTLife.World
             var npc = view.gameObject.AddComponent<NpcController>();
             npc.Init(npcId, n, Venue, FindUser);
             _npcs[npcId] = npc;
+        }
+
+        /// <summary>
+        /// Offline demo (IslandDemo): the venue's registry NPCs, idle at their homes, with no room behind them. Local
+        /// presentation only; nothing is sent. Cleared like room NPCs when the player moves to another venue.
+        /// </summary>
+        private void SpawnDemoNpcs(string venueId)
+        {
+            if (!Services.TryGet<ConfigStore>(out var cfg) || Venue == null) return;
+            int k = 0;
+            foreach (var a in cfg.Registries.Archetypes.Values)
+            {
+                if (a.homeVenueIds == null || !a.homeVenueIds.Contains(venueId)) continue;
+                int n = Mathf.Clamp(a.maxPerInstance, 1, 2);
+                for (int i = 0; i < n && k < 8; i++, k++)
+                {
+                    try { OnNpcAdded($"demo_{a.id}_{i}", new NpcState { archetypeId = a.id, state = "idle" }); }
+                    catch (Exception e) { Log.Warn("island", $"demo NPC {a.id}: {e.Message}"); }
+                }
+            }
+            if (k > 0) Log.Info("island", $"islandDemo: {k} local NPCs at {venueId}");
         }
 
         private void OnNpcChanged(string npcId, NpcState n)

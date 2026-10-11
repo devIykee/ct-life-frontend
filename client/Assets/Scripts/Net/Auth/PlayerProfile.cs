@@ -39,6 +39,16 @@ namespace CTLife.Net
             return Me;
         }
 
+#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
+        /// <summary>Offline demo mode (islandDemo, development builds only): a read-only stand-in for /me.</summary>
+        public void UseOfflineFixture(Me me)
+        {
+            Me = me;
+            LikenessJobId = null;
+            Bus.Publish(new ProfileChangedSignal());
+        }
+#endif
+
         public void SetCash(long cents)
         {
             if (Me == null) return;

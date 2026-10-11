@@ -25,12 +25,25 @@ namespace CTLife.App
     {
         /// <summary>Dev builds only: `islandOffline` enters CT Island without joining venue rooms (no realtime server needed).</summary>
 #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
-        private static bool IslandOfflineDev => LaunchArgs.Flag("islandOffline");
+        private static bool IslandOfflineDev => LaunchArgs.Flag("islandOffline") || IslandDemo.Active;
 #else
         private const bool IslandOfflineDev = false;
 #endif
 
         public const string StartVenue = "timeline_square";
+
+#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
+        /// <summary>Offline demo (islandDemo): a fixed demo character, zero cash, onboarding done; never sent anywhere.</summary>
+        private static CTLife.Rest.Model.Me OfflineDemoMe()
+        {
+            var look = new CTLife.Rest.Model.Look("skin_04", "head_snow", "hair_villa_blonde", "top_hoodie_black", "bottom_jeans_indigo", "shoes_sneakers_white", "acc_aviators");
+            var character = new CTLife.Rest.Model.Character(LaunchArgs.Get("alias") ?? "demo", look, "trencher",
+                new System.Collections.Generic.List<string> { "fast_talker", "iron_will" }, "make_10k");
+            return new CTLife.Rest.Model.Me(new CTLife.Rest.Model.User(System.Guid.Empty, "offline-demo", false, true), character,
+                new CTLife.Rest.Model.Needs(), new CTLife.Rest.Model.Skills(), cashCents: 0, debtCents: 0, homeId: "parents_basement",
+                flags: new System.Collections.Generic.Dictionary<string, object> { ["lotteryRolled"] = true, ["hasCharacter"] = true });
+        }
+#endif
         private string _homeReturnVenueId;
 
         private readonly List<IDisposable> _overlays = new List<IDisposable>();
@@ -180,7 +193,7 @@ namespace CTLife.App
 #endif
                         steps.Begin(TitleBoot.Step.Session);
                         title.SetLoading(steps.Progress, Strings.T(steps.StatusKey));
-                        signedIn = session.IsSignedIn;
+                        signedIn = session.IsSignedIn || IslandDemo.Active;     // offline demo: no sign-in, no server
                         if (!signedIn) signedIn = await _owner.Wait(Services.Get<IAuthService>().TryResume(_owner.Token));
                         steps.Complete(TitleBoot.Step.Session);
                         break;
@@ -229,7 +242,7 @@ namespace CTLife.App
         private static bool SkipTitleForAutomation()
         {
 #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
-            return LaunchArgs.Get("autologin") != null || LaunchArgs.Flag("autoenter") || LaunchArgs.Flag("integration")
+            return LaunchArgs.Get("autologin") != null || LaunchArgs.Flag("autoenter") || LaunchArgs.Flag("integration") || IslandDemo.Active
                 || !string.IsNullOrEmpty(LaunchArgs.Get("app"));
 #else
             return false;
@@ -405,6 +418,10 @@ namespace CTLife.App
             try
             {
                 var profile = Services.Get<PlayerProfile>();
+#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
+                if (IslandDemo.Active) profile.UseOfflineFixture(OfflineDemoMe());
+                else
+#endif
                 await game.Wait(profile.Refresh(game.Token));
                 // Choices come first on screen; the lottery write still precedes character creation on the server.
                 _firstLobby = Onboarding.NeedsCharacter(profile.Me);
@@ -415,6 +432,8 @@ namespace CTLife.App
                     await game.Wait(CTLife.World.Likeness.LikenessAvatarCache.PrepareOwned(profile.LikenessJobId, game.Token));
 
                 var rt = Services.Get<IRealtimeService>();
+                if (!IslandDemo.Active)
+                {
                 try
                 {
                     await game.Wait(rt.ConnectCity(game.Token));
@@ -432,12 +451,13 @@ namespace CTLife.App
                     service.PersistentRoomRejoined -= OnPersistentRoomRejoined;
                     service.PersistentRoomRejoined += OnPersistentRoomRejoined;
                 }
+                }
 
                 game.ThrowIfClosed();
                 BuildHudAndPhone(game);
                 ShowLobby();
 #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
-                if (LaunchArgs.Flag("autoenter")) RunGameAction(game, () => EnterCityFromLobby(game));
+                if (LaunchArgs.Flag("autoenter") || IslandDemo.Active) RunGameAction(game, () => EnterCityFromLobby(game));
                 // Open-world device check (dev builds only): `islandWalk=terminal_cafe,airdrop_fields` walks there on foot.
                 if (!string.IsNullOrEmpty(LaunchArgs.Get("islandWalk"))) RunGameAction(game, async () =>
                 {
@@ -849,7 +869,7 @@ namespace CTLife.App
             {
                 // Phase 6 gated venues (dubai_marina net worth, cabal_lounge membership, sybil_barn jailed-only). Null = go ahead,
                 // including when the server cannot answer yet: the room's own check then decides.
-                var blocked = await game.Wait(CTLife.Competition.CompetitionLinks.BlockMessageBeforeJoin(venueId, game.Token));
+                var blocked = IslandDemo.Active ? null : await game.Wait(CTLife.Competition.CompetitionLinks.BlockMessageBeforeJoin(venueId, game.Token));
                 if (blocked != null) { Bus.Publish(ToastSignal.Text(blocked, ToastKind.Bad)); ReopenLobby(); lobby?.ShowError(blocked); return; }
                 try
                 {
