@@ -10,10 +10,11 @@ namespace CTLife.UI
     /// </summary>
     internal static class AssetCredits
     {
-        public static VisualElement Build()
+        /// <param name="expanded">Duo Settings → Credits &amp; Licences shows the notices directly, without the toggle row.</param>
+        public static VisualElement Build(bool expanded = false)
         {
             var entries = El.Div("ct-credits");
-            entries.Show(false);
+            entries.Show(expanded);
             var toggle = El.Btn(Strings.T("credits.title"), () => entries.Show(entries.resolvedStyle.display == DisplayStyle.None), "ct-row-btn");
             entries.Add(El.Text(Strings.T("credits.section.models"), "ct-eyebrow"));
             entries.Add(Credit("credits.snow", "credits.snowSummary", "https://studio.blender.org/characters/snow/v4/",
@@ -34,7 +35,7 @@ namespace CTLife.UI
                 "UI/Fonts/LilitaOne-OFL"));
             entries.Add(Credit("credits.phosphor", "credits.phosphorSummary", "https://github.com/phosphor-icons/core",
                 "UI/Icons/LICENSE"));
-            return El.Div("ct-col", toggle, entries);
+            return expanded ? entries : El.Div("ct-col", toggle, entries);
         }
 
         /// <summary>Optional notice from the cast lane (one block per model: title, author, source, licence, changes).</summary>
