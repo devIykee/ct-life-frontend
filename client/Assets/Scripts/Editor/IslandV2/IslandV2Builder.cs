@@ -330,6 +330,18 @@ namespace CTLife.EditorTools.IslandV2
                 x.SetTexture("_BaseMap", Tex("dirt_detail.png")); x.EnableKeyword("_WORLDUV"); x.SetFloat("_UseWorldUV", 1); x.SetFloat("_WorldScale", 0.6f);
                 x.SetColor("_BaseColor", new Color(0.42f, 0.32f, 0.24f));
             });
+            // W4.1 shot dressing: event banners and signposts (tools/world/islandgen/signs.py)
+            Mk(IslandV2Dress.EventBanners, "CT Life/World/Toon", x =>
+            {
+                x.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>(IslandV2Paths.Textures + "/Signs/event_banners.png") ?? Texture2D.whiteTexture);
+                x.DisableKeyword("_WORLDUV"); x.SetFloat("_UseWorldUV", 0); x.SetColor("_BaseColor", Color.white); x.SetFloat("_Toon", 0.2f); x.SetColor("_Emission", new Color(0.2f, 0.2f, 0.2f));
+            });
+            foreach (var sid in new[] { "trail", "checkpoint" })
+                Mk("sign_post_" + sid, "CT Life/World/Toon", x =>
+                {
+                    x.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>(IslandV2Paths.Textures + "/Signs/sign_post_" + sid + ".png") ?? Texture2D.whiteTexture);
+                    x.DisableKeyword("_WORLDUV"); x.SetFloat("_UseWorldUV", 0); x.SetColor("_BaseColor", Color.white); x.SetFloat("_Toon", 0.25f);
+                });
             Mk("helipad", "CT Life/World/Toon", x =>
             {
                 x.SetTexture("_BaseMap", Tex("helipad.png")); x.DisableKeyword("_WORLDUV"); x.SetFloat("_UseWorldUV", 0); x.SetColor("_BaseColor", Color.white); x.SetFloat("_Toon", 0.3f);
@@ -394,6 +406,7 @@ namespace CTLife.EditorTools.IslandV2
             { IslandV2Dress.ShopSigns, (Layers.Prop, false) },
             { IslandV2Dress.WallDecor, (Layers.Building, false) }, { IslandV2Dress.BusAds, (Layers.Prop, false) },
             { IslandV2Dress.Glass, (Layers.Prop, true) }, { IslandV2Dress.TreePit, (Layers.Road, false) },
+            { IslandV2Dress.EventBanners, (Layers.Prop, false) }, { "sign_post_trail", (Layers.Prop, false) }, { "sign_post_checkpoint", (Layers.Prop, false) },
         };
 
         private static (int objects, int colliders, int renderers, int bays) WriteCell(CellGeo g, Dictionary<string, Material> mats, List<Mesh> roadSurfaces)

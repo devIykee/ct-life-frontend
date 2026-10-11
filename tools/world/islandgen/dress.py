@@ -172,6 +172,9 @@ class Dress:
         self.bus_shelters = []         # W4 [x, y, z, yaw (open side faces the road), ad poster]
         self.wall_decor = []           # W4 dressing on exposed side and back walls [x, y, z, yaw, w, h, kind, variant]
         self.hero_plazas = []          # W4 paved clearings round the statues [x, y, z, radius, statue yaw]
+        self.signposts = []            # W4.1 [x, y, z, yaw (panel faces), sign id] -> Signs/sign_post_<id>.png
+        self.flag_poles = []           # W4.1 [x, y, z, yaw (cloth flies towards), r, g, b]
+        self.event_dress = None        # W4.1 convention centre event props
         self.power = []                # power line pole runs
         self.billboards = []           # live ad boards
         self.heroes = []               # W3 statues
@@ -1270,6 +1273,101 @@ class Dress:
         log(f'ground detail: {n}')
         return n
 
+    # -------------------------------------------------------------- W4.1 shot dressing
+    def place_shot_dressing(self):
+        """The lodge yard (shot 6): two parked cars, bicycles, a summit-trail signpost and three MtnDAO flags. The convention
+        centre (shot 8): a 'CHECKPOINT' entry arch (our own words, navy and coral per the community-eggs rules), banner
+        poles along the approach, flags on the frontage and queue barriers by the door. Unity builds the arch, banners,
+        flags, signposts and barriers from dress.json (signposts, flagPoles, eventDress)."""
+        K = self.kit.items
+        venues = {v['id']: v for v in self.plan['venues']}
+
+        def frame(vid):
+            v = venues[vid]
+            o = np.array([v['origin'][0], v['origin'][2]]); a = math.radians(v['yaw'])
+            out = np.array([-math.sin(a), -math.cos(a)])           # the door wall faces the venue's local -z
+            right = np.array([math.cos(a), -math.sin(a)])
+            half = v['frame_size'][1] / 2.0
+            return o + out * half, out, right, v['origin'][1]
+
+        def gy(q):
+            return float(self.g.y([q[0]], [q[1]])[0])
+
+        def face_of(d):
+            return math.degrees(math.atan2(d[0], d[1])) % 360.0
+
+        # lodge yard
+        if 'hackathon_house' in venues:
+            door, out, right, y0 = frame('hackathon_house')
+            for k, proto in enumerate(('car_suv', 'car_sedan')):
+                q = door + out * 6.5 - right * (8.0 + k * 3.0)
+                if proto in K:
+                    self.add(proto, q[0], gy(q), q[1], face_of(out) + 180.0, 1.0, 1.0, None)
+            for k in range(3):
+                q = door + out * 2.2 + right * (5.0 + k * 0.9)
+                if 'pp_bicycle' in K:
+                    self.add('pp_bicycle', q[0], gy(q) + 0.02, q[1], face_of(out) + 90.0 + RNG.uniform(-6, 6))
+            q = door + out * 7.0 + right * 9.5
+            self.signposts.append([round(q[0], 2), round(gy(q), 2), round(q[1], 2), round(face_of(out), 1), 'trail'])
+            for k, col in enumerate(((0.86, 0.32, 0.20), (0.96, 0.96, 0.94), (0.20, 0.30, 0.62))):
+                q = door + out * (3.5 + k * 1.6) + right * 11.5
+                self.flag_poles.append([round(q[0], 2), round(gy(q), 2), round(q[1], 2), round(face_of(right), 1), *col])
+        # convention centre
+        if 'conference_hall' in venues:
+            door, out, right, y0 = frame('conference_hall')
+            clear = 3.0                                          # free ground between the door and the road
+            for t in np.arange(1.0, 20.0, 0.5):
+                q = door + out * t
+                if self.occ.codes([q[0]], [q[1]])[0] == Occupancy.ROAD:
+                    break
+                clear = t
+            arch_t = max(2.5, min(clear - 1.2, 7.0))
+            ev = dict(arch=None, banners=[], queues=[])
+            q = door + out * arch_t
+            ev['arch'] = [round(q[0], 2), round(y0, 2), round(q[1], 2), round(face_of(out), 1), 7.5]
+            for t in np.arange(1.5, max(2.0, clear - 0.6), 3.0):
+                for sd in (-1.0, 1.0):
+                    q = door + out * t + right * sd * 5.2
+                    ev['banners'].append([round(q[0], 2), round(y0, 2), round(q[1], 2), round(face_of(out), 1), int(RNG.integers(3))])
+            for k in range(3):                                   # a three-lane queue to the right of the door
+                q = door + out * (1.4 + k * 1.2) + right * 4.0
+                ev['queues'].append([round(q[0], 2), round(y0, 2), round(q[1], 2), round(face_of(right), 1), 4.2])
+            for k, col in enumerate(((0.10, 0.14, 0.32), (0.98, 0.50, 0.40), (0.97, 0.97, 0.98), (0.98, 0.50, 0.40), (0.10, 0.14, 0.32))):
+                q = door + out * 0.9 + right * (-11.0 + k * 5.5)
+                self.flag_poles.append([round(q[0], 2), round(y0, 2), round(q[1], 2), round(face_of(out), 1), *col])
+            self.event_dress = ev
+            q = door + out * (arch_t + 1.0) - right * 7.5
+            self.signposts.append([round(q[0], 2), round(y0, 2), round(q[1], 2), round(face_of(out), 1), 'checkpoint'])
+        log(f'shot dressing: {len(self.signposts)} signposts, {len(self.flag_poles)} flags, event {"yes" if self.event_dress else "no"}')
+
+    def clear_shot_frames(self):
+        """W4.1: no tree trunk or palm fills the edge of an authored shot. Trees, palms and bushes within 12 m of a shot
+        camera and inside its view (plus a 3 m margin) are removed (same pose maths as IslandWaypoints.CameraPose)."""
+        import waypoints as W
+        roads = self.roads
+        cut = 0
+        for shot, wid, title, (x, z), (sx, sy, sz), mode, cam in W.SHOTS:
+            if mode == 'sidewalk':
+                x, _, z = W.snap(roads, x, z)
+            f = np.array([sx - x, sz - z]); f /= max(np.linalg.norm(f), 1e-6)
+            r = np.array([f[1], -f[0]])
+            c = np.array([x, z]) - f * cam['dist'] + r * cam['side']
+            half = math.tan(math.radians(cam['fov'] * 2.225 / 2.0))        # horizontal half-FOV at the Seeker's aspect (approx.)
+            for proto, rows in self.inst.items():
+                if not proto.startswith(('w_tree', 'w_pine', 'palm', 'tree_', 'kf_tree', 'bush_', 'kf_bush')):
+                    continue
+                keep = []
+                for row in rows:
+                    v = np.array([row[0], row[2]]) - c
+                    along, lat = float(v @ f), float(v @ r)
+                    if -1.5 < along < 12.0 and abs(lat) < max(along, 0.0) * min(half, 1.6) + 3.0:
+                        cut += 1
+                        continue
+                    keep.append(row)
+                self.inst[proto] = keep
+        self.stats['shot_frame_trees_removed'] = cut
+        log(f'shot frames: {cut} trees cleared')
+
     # -------------------------------------------------------------- output
     def write(self, path):
         protos = sorted(self.inst)
@@ -1278,7 +1376,7 @@ class Dress:
                    instances=[dict(proto=p, n=len(self.inst[p]), d=[c for r in self.inst[p] for c in r]) for p in protos],
                    buildingBoxes=self.boxes, signals=self.signals, power=self.power, billboards=self.billboards, heroes=self.heroes,
                    shopSigns=self.shop_signs, treePits=self.tree_pits, busShelters=self.bus_shelters, wallDecor=self.wall_decor,
-                   heroPlazas=self.hero_plazas)
+                   heroPlazas=self.hero_plazas, signposts=self.signposts, flagPoles=self.flag_poles, eventDress=self.event_dress)
         txt = json.dumps(doc, separators=(',', ':'))
         open(path, 'w').write(txt)
         log(f'wrote {path} ({len(txt) / 1e6:.1f} MB, {sum(len(v) for v in self.inst.values())} instances of {len(protos)} models)')
@@ -1300,6 +1398,8 @@ def main():
     d.place_street()
     d.place_power()
     d.place_vegetation()
+    d.place_shot_dressing()
+    d.clear_shot_frames()
     d.write(os.path.join(OUT, 'dress.json'))
     log(f'done ({time.time() - t0:.1f}s)')
 
