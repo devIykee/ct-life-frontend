@@ -261,3 +261,15 @@ Print text and marks are original parody (e.g. COIN2050, CHECKPOINT, POMP, WOTCH
 | Name | Source URL | Licence | Author | Date | Used for |
 | --- | --- | --- | --- | --- | --- |
 | CT Life "CT" mark (`art/branding/logo/`) | Generated in the user's Codex chat (built-in image generation), 2026-10-06 | Owned by the project (generated for CT Life) | CT Life | 2026-10-06 | Logo, app icon, splash, in-app brand mark |
+
+<!-- BEGIN animation-sources-20261008 -->
+## Source animation clips (2026-10-08, raw only, not yet imported into Unity)
+
+Catalogue: docs/progress/animation-sources-20261008.md. Evaluated and skipped: Bandai Namco Research Motiondataset (CC BY-NC 4.0, non-commercial per live GitHub page), Mixamo / ActorCore / Synty / Asset Store (banned).
+
+| Name | Source URL | Licence | Author | Downloaded | Used for |
+| --- | --- | --- | --- | --- | --- |
+| KayKit Character Animations 1.1 (FREE) -> art/raw/animations/kaykit_character_animations/ | https://kaylousberg.itch.io/kaykit-character-animations | CC0 1.0 (License.txt in zip: "This content is free to use in personal, educational and commercial projects.") | Kay Lousberg (kaylousberg.com) | 2026-10-08 | candidate clips: lie down / lie idle / lie stand-up, sit chair/floor, cheering, death A/B (falls), jumps, hit |
+| CMU Graphics Lab Motion Capture Database, subjects 13, 77, 90, 91, 104, 139, 140, 143 (ASF/AMC) -> art/raw/animations/cmu_mocap/ | https://mocap.cs.cmu.edu (FAQ https://mocap.cs.cmu.edu/faqs.php) | CMU FAQ: "The motion capture data may be copied, modified, or redistributed without permission." (no formal SPDX licence; treated as public-domain-like, see catalogue note) | Carnegie Mellon University Graphics Lab (NSF EIA-0196217) | 2026-10-08 | candidate clips: get up face-down / back / side, fall on face, rug-pull fall, stumble, turns 90/180, walk start/stop, sit/stand |
+| Quaternius UAL1 / UAL2 (full sets already in art/raw/quaternius/ual, ual2; row above under characters) | https://quaternius.itch.io/universal-animation-library , .../universal-animation-library-2 | CC0 1.0 | Quaternius | 2026-10-05 | unchanged |
+<!-- END animation-sources-20261008 -->
