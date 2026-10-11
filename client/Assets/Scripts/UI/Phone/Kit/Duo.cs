@@ -301,6 +301,8 @@ namespace CTLife.UI
             if (grouped) AddToClassList("duo-page-grouped");
             Scroll = El.VerticalScroll("duo-scroll");
             Scroll.mode = ScrollViewMode.Vertical;
+            // Own class on this page's content (a descendant selector would also pad nested scroll views).
+            Scroll.contentContainer.AddToClassList("duo-scroll-content");
             Nav = new DuoNav();
             Nav.SetTitle(title);
             Body = El.Div("duo-page-body");
@@ -405,6 +407,27 @@ namespace CTLife.UI
         {
             _value = value;
             EnableInClassList("duo-toggle-on", value);
+        }
+
+        /// <summary>Flips and notifies, as a tap would (the row around it calls this).</summary>
+        public void Flip()
+        {
+            SetValueWithoutNotify(!_value);
+            Changed?.Invoke(_value);
+        }
+
+        /// <summary>
+        /// A row whose whole width toggles this switch (a bigger touch target than the switch alone, like iOS).
+        /// The switch itself stops taking input so one tap never flips it twice.
+        /// </summary>
+        public DuoRow InRow(string title, VisualElement leading = null)
+        {
+            pickingMode = PickingMode.Ignore;
+            focusable = false;
+            var row = new DuoRow(Flip).Title(title).Trailing(this);
+            if (leading != null) row.Leading(leading);
+            row.tooltip = tooltip ?? title;
+            return row;
         }
     }
 

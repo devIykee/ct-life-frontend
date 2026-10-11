@@ -99,7 +99,7 @@ namespace CTLife.UI
                 .Title(Strings.T("settings.sounds")).Chevron();
             sounds.name = "settings-sounds";
             _dnd = new DuoToggle(Notify.DoNotDisturb, v => Notify.DoNotDisturb = v) { name = "settings-dnd-toggle", tooltip = Strings.T("settings.dnd") };
-            var dnd = new DuoRow().Leading(Duo.IconSquare("duo-moon", "indigo")).Title(Strings.T("settings.dnd")).Trailing(_dnd);
+            var dnd = _dnd.InRow(Strings.T("settings.dnd"), Duo.IconSquare("duo-moon", "indigo"));
             dnd.name = "settings-dnd";
             body.Add(Duo.Group(notifications, sounds, dnd));
 
@@ -170,7 +170,7 @@ namespace CTLife.UI
             var appRows = new System.Collections.Generic.List<DuoRow>();
             void SyncApps() { foreach (var r in appRows) r.SetEnabled(Notify.Banners); }
             var banners = new DuoToggle(Notify.Banners, v => { Notify.Banners = v; SyncApps(); }) { name = "settings-banners-toggle", tooltip = Strings.T("settings.allowBanners") };
-            page.Body.Add(Duo.Group(new DuoRow().Title(Strings.T("settings.allowBanners")).Trailing(banners)));
+            page.Body.Add(Duo.Group(banners.InRow(Strings.T("settings.allowBanners"))));
             page.Body.Add(Duo.GroupFooter(Strings.T("settings.bannersFooter")));
             // Only apps that actually post banners are listed (Messages today).
             page.Body.Add(Duo.GroupHeader(Strings.T("settings.bannersFrom")));
@@ -179,13 +179,13 @@ namespace CTLife.UI
                 var id = appId;
                 var toggle = new DuoToggle(Notify.AppBanners(id), v => Notify.SetAppBanners(id, v)) { name = "settings-banners-" + id };
                 var icon = El.Div("duo-row-app-icon", new PhoneAppIcon(id));
-                var row = new DuoRow().Leading(El.PassThrough(icon)).Title(AppTitle(id)).Trailing(toggle);
+                var row = toggle.InRow(AppTitle(id), El.PassThrough(icon));
                 appRows.Add(row);
             }
             page.Body.Add(Duo.Group(appRows.ToArray()));
             SyncApps();
             var dnd = new DuoToggle(Notify.DoNotDisturb, v => Notify.DoNotDisturb = v) { name = "settings-dnd-toggle-detail" };
-            page.Body.Add(Duo.Group(new DuoRow().Leading(Duo.IconSquare("duo-moon", "indigo")).Title(Strings.T("settings.dnd")).Trailing(dnd)));
+            page.Body.Add(Duo.Group(dnd.InRow(Strings.T("settings.dnd"), Duo.IconSquare("duo-moon", "indigo"))));
             page.Body.Add(Duo.GroupFooter(Strings.T("settings.dndFooter")));
             return page;
         }

@@ -101,13 +101,13 @@
 .ct-phone .duo-page { flex-grow: 1; min-height: 0; background-color: #ffffff; }
 .ct-phone .duo-page-grouped { background-color: #f2f2f7; }
 .ct-phone .duo-scroll { flex-grow: 1; min-height: 0; }
-.ct-phone .duo-scroll .unity-scroll-view__content-container { padding-top: 108px; padding-bottom: 72px; }
+.ct-phone .duo-scroll-content { padding-top: 108px; padding-bottom: 72px; }
 .ct-phone .duo-nav { position: absolute; left: 0; right: 0; top: 0; height: 108px; flex-direction: row; align-items: center; padding: 0 18px; }
 .ct-phone .duo-nav-backdrop {
-    position: absolute; left: 0; right: 0; top: 0; bottom: 0; opacity: 0; background-color: rgba(255,255,255,0.96);
+    position: absolute; left: 0; right: 0; top: 0; bottom: 0; opacity: 0; background-color: #ffffff;
     border-bottom-width: 1px; border-bottom-color: rgba(60,60,67,0.14); transition-property: opacity; transition-duration: 0.15s;
 }
-.ct-phone .duo-page-grouped .duo-nav-backdrop { background-color: rgba(242,242,247,0.96); }
+.ct-phone .duo-page-grouped .duo-nav-backdrop { background-color: #f2f2f7; }
 .ct-phone .duo-nav-collapsed .duo-nav-backdrop { opacity: 1; }
 .ct-phone .duo-nav-side { flex-direction: row; align-items: center; min-width: 96px; }
 .ct-phone .duo-nav-right { justify-content: flex-end; }
@@ -183,7 +183,11 @@
 .ct-phone .duo-icon-square { width: 58px; height: 58px; border-radius: 15px; align-items: center; justify-content: center; }
 .ct-phone .duo-icon-square .ct-icon { width: 34px; height: 34px; -unity-background-image-tint-color: #ffffff; }
 .ct-phone .duo-settings-version { margin: -16px 0 24px; }
+/* A feature lane's own section (X link) sits flat inside the group: no nested page padding, no card in a card. */
 .ct-phone .duo-group-legacy .ct-h2, .ct-phone .duo-group-legacy .ct-body { font-size: var(--duo-body); }
+.ct-phone .duo-group-legacy > .unity-scroll-view { flex-grow: 0; }
+.ct-phone .ct-phone-body .duo-group-legacy .ct-app-page { padding: 0; margin: 0; }
+.ct-phone .ct-phone-body .duo-group-legacy .ct-card { background-color: rgba(0,0,0,0); border-width: 0; padding: 0; margin: 14px 0; }
 
 /* tints shared by icon squares and avatars */
 .ct-phone .duo-tint-red { background-color: #ff3b30; }
@@ -279,7 +283,7 @@
 .ct-phone .duo-slider-end:active { opacity: 0.5; }
 .ct-phone .duo-slider-small { font-size: 26px; }
 .ct-phone .duo-slider-large { font-size: 46px; -unity-font-definition: url("Fonts/Phone/Inter-Medium.ttf"); }
-.ct-phone .duo-slider-track { flex-grow: 1; height: 96px; justify-content: center; margin: 0 16px; }
+.ct-phone .duo-slider-track { flex-grow: 1; height: 96px; justify-content: center; margin: 0 34px; }
 .ct-phone .duo-slider-rail { height: 8px; border-radius: 4px; background-color: #e3e3e8; }
 .ct-phone .duo-slider-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; background-color: var(--duo-blue); }
 .ct-phone .duo-slider-tick { position: absolute; top: -8px; width: 4px; height: 24px; margin-left: -2px; border-radius: 2px; background-color: #d1d1d6; }

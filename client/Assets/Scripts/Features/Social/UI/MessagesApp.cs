@@ -78,6 +78,7 @@ namespace CTLife.SocialFeatures
                 Root.RemoveFromClassList("ct-social");
                 Root.AddToClassList("duo-scroll");
                 Root.AddToClassList("duo-messages-scroll");
+                Root.contentContainer.AddToClassList("duo-scroll-content");
                 _frame = El.Div("duo-page duo-messages");
                 _frame.name = "messages-frame";
                 _frame.Add(Root);
