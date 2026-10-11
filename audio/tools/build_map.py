@@ -146,19 +146,32 @@ for d, m in mus.items():
     sections["music"][key] = e
     ids[f"mus_{d}"] = {"section": "music", "key": key, "sources": e["sources"]}
 
-# CT Life main theme (tools/gen_title.py): title screen + onboarding, own work, deliberately not mood-reactive.
-title = load("build_title.json")
-if title:
-    sections["music"]["title"] = {
-        "id": "mus_title", "bpm": title["bpm"], "bars": title["bars"], "time_signature": "4/4", "key": title["key"],
-        "district": "Title screen and onboarding (CT Life main theme)", "full_mix": rel(title["file"]), "volume": 1.0,
-        "mood_reactive": False, "loop": True, "loop_kind": "seamless (rendered circularly)",
-        "loop_samples": title["loop_samples"], "sample_rate": title["sr"], "loop_seconds": title["loop_seconds"],
-        "full_mix_lufs": qa_of(title["file"]).get("I"), "full_mix_true_peak_dbtp": qa_of(title["file"]).get("TP"),
-        "status": "client_only", "sources": ["own work (composed and synthesised, tools/gen_title.py + tools/theme.py)"],
-        "unity_import": UNITY["music"],
+# Human-made recordings for the onboarding cues (tools/curate_real_audio.py; user: "please don't synthesize").
+real = load("build_real.json")
+real_src = json.loads((ROOT / "sources" / "real-audio-20261009.json").read_text()) if (ROOT / "sources" / "real-audio-20261009.json").exists() else {}
+REAL_SFX = {  # id: (category, volume_db, description) — gains from tools/mix_audit.py
+    "sfx_origin_insider": ("stinger", -3, "Origin reveal: Insider / Seeker. Orchestral winning jingle ('you're in')"),
+    "sfx_origin_exit_liquidity": ("stinger", -4, "Origin reveal: Exit Liquidity. Comic falling sax 'wah' (playful fail)"),
+    "sfx_creator_complete": ("stinger", -3, "Character creation done: steel-drum win jingle (about 2.5 s)"),
+    "sfx_ui_next": ("ui", -2, "Onboarding step complete: a soft recorded pop"),
+    "sfx_card_shuffle": ("card", -6, "Origin draw: a real card riffle and bridge"),
+}
+for id_, (cat, vdb, desc) in REAL_SFX.items():
+    r = real.get(id_)
+    if not r:
+        continue
+    srec = real_src.get(r["source"], {})
+    lic = srec.get("licence", ["?", ""])
+    e = {
+        "files": [rel(r["path"])], "volume": lin(vdb), "pitchJitter": 0.0, "category": cat, "volume_db": vdb,
+        "channels": r["channels"], "loop": False, "duration_s": round(r["samples"] / r["sr"], 3), "true_peak_dbtp": -1.0,
+        "ducks_music": cat == "stinger", "status": "client_only_cue", "desc": desc,
+        "sources": [f"{srec.get('title')} — {srec.get('author')}"], "license": lic[0], "license_url": lic[1],
+        "source_page": srec.get("page"), "license_checked": srec.get("checked"), "processing": r["edit"],
+        "unity_import": UNITY["stinger" if cat == "stinger" else "short"],
     }
-    ids["mus_title"] = {"section": "music", "key": "title", "sources": sections["music"]["title"]["sources"]}
+    sections["sfx"][id_] = e
+    ids[id_] = {"section": "sfx", "key": id_, "sources": e["sources"]}
 
 # Authored/licensed music choices survive regeneration of the older synthesized build reports.
 curation_path = ROOT / "music-curation.json"
@@ -242,10 +255,6 @@ lines = [
     "- All NPC babble (`processed/babble/*`, 31 banks x 26 syllables) — `tools/gen_babble.py`.",
     "- Synthesised SFX layers (UI, trading, phone, voice rooms, stingers, ORE) — `tools/gen_sfx.py`.",
     "- Synthetic layers in ambience (hum, room tone, monitor beeps, club-through-wall) — `tools/gen_ambience.py`.",
-    "- Club music (Afropiano stems: log drum, shakers, 3-2 clave, talking-drum glides, highlife-style guitar, synth air horn) "
-    "— `tools/gen_music.py` `club()`; red-market tension bed for the licensed tracks — `tools/gen_mood_bed.py`.",
-    "- CT Life main theme `mus_title` (title + onboarding) and its quotes `sfx_origin_insider`, "
-    "`sfx_origin_exit_liquidity`, `sfx_creator_complete` — `tools/gen_title.py`, `tools/theme.py`, `tools/gen_sfx.py`.",
     "- CT-native cues `sfx_news_flash`, `sfx_gm`, `sfx_cash_in`, `sfx_rekt_phonk` and the revised `sfx_buy`/`sfx_sell`/`sfx_graduation`/"
     "`sfx_sunday_unlock` — `tools/gen_sfx.py` (no sampled meme audio; research notes in docs/progress/audio-integration.md).",
     "",
@@ -302,12 +311,25 @@ if curated_music:
         uses = ", ".join(key for key, other in curated_music.items() if other["full_mix"] == entry["full_mix"])
         lines.append(f"| {entry['title']} | {entry['artist']} | {entry['source_url']} | {entry['license']} | "
                      f"{entry.get('date_downloaded', '2026-10-05')} | {uses}; {entry['processing']} |")
-    lines.append("| Disco con Tutti | Kevin MacLeod | https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200091 | "
-                 "CC-BY-4.0 | 2026-10-06 | Not shipped since 2026-10-08: clubs use the own-work Afropiano stems (spec: Amapiano / "
-                 "Afrobeats). File kept in `archive/processed/music/licensed/` for an easy revert. |")
     lines.append("| Funkorama | Kevin MacLeod | https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100474 | "
                  "CC-BY-4.0 | 2026-10-05 | Downloaded candidate only, not shipped; source MP3 decoder overread warnings. |")
     lines += ["", "Required attribution ships in `processed/Music-Credits.txt` and the app's Settings → Credits & licenses. "
               "Original download hashes and current primary-source evidence are in `sources/incompetech/`.", ""]
+if real_src:
+    lines += ["", "## Human-made recordings and compositions (2026-10-09)", "",
+              "Replace every synthesized onboarding cue, the synthesized title theme, the synthesized club music and the "
+              "synthesized red-market layer (user: \"please don't synthesize\"). Each licence was read on its page on the "
+              "date shown; edits are trims, fades, loop crossfades, constant gain and resampling only (tools/curate_real_audio.py). "
+              "CC BY items are credited in `processed/Music-Credits.txt` (shipped, shown in Settings → Credits).", "",
+              "| Source | Author | Page | Licence | Checked | Used in | SHA-256 (download) |", "| --- | --- | --- | --- | --- | --- | --- |"]
+    used = {}
+    for k, v in real.items():
+        used.setdefault(v.get("source", ""), []).append(k)
+    used["thunder"] = used.get("thunder", []) + ["music.*.stems.tension"]
+    for key, v in real_src.items():
+        lic = v["licence"][0]
+        lines.append(f"| {v['title']} | {v['author']} | {v['page']} | {lic} | {v['checked']} | "
+                     f"{', '.join(sorted(set(used.get(key, []))))} | `{v.get('sha256', '')[:16]}…` |")
+    lines.append("")
 (ROOT / "LICENSES.md").write_text("\n".join(lines))
 print(f"sfx-map.json: {len(ids)} ids; LICENSES.md: {len(src.get('freesound', {}))} freesound + {len(src.get('kenney', {}))} kenney rows")

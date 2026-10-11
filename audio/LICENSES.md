@@ -11,8 +11,6 @@ Synthesised in Python (numpy/scipy) by the scripts in `audio/tools/`; no samples
 - All NPC babble (`processed/babble/*`, 31 banks x 26 syllables) — `tools/gen_babble.py`.
 - Synthesised SFX layers (UI, trading, phone, voice rooms, stingers, ORE) — `tools/gen_sfx.py`.
 - Synthetic layers in ambience (hum, room tone, monitor beeps, club-through-wall) — `tools/gen_ambience.py`.
-- Club music (Afropiano stems: log drum, shakers, 3-2 clave, talking-drum glides, highlife-style guitar, synth air horn) — `tools/gen_music.py` `club()`; red-market tension bed for the licensed tracks — `tools/gen_mood_bed.py`.
-- CT Life main theme `mus_title` (title + onboarding) and its quotes `sfx_origin_insider`, `sfx_origin_exit_liquidity`, `sfx_creator_complete` — `tools/gen_title.py`, `tools/theme.py`, `tools/gen_sfx.py`.
 - CT-native cues `sfx_news_flash`, `sfx_gm`, `sfx_cash_in`, `sfx_rekt_phonk` and the revised `sfx_buy`/`sfx_sell`/`sfx_graduation`/`sfx_sunday_unlock` — `tools/gen_sfx.py` (no sampled meme audio; research notes in docs/progress/audio-integration.md).
 
 ## Kenney (kenney.nl) — CC0 1.0
@@ -23,7 +21,7 @@ Licence evidence: each zip contains `License.txt`: "License: (Creative Commons Z
 | --- | --- | --- | --- | --- | --- | --- |
 | Kenney Impact Sounds | https://kenney.nl/assets/impact-sounds | [zip](https://kenney.nl/media/pages/assets/impact-sounds/87b4ddecda-1677589768/kenney_impact-sounds.zip) | CC0 1.0 | Kenney | 2026-10-05 | `footstep_carpet_000.ogg` → foot_carpet<br>`footstep_carpet_001.ogg` → foot_carpet<br>`footstep_carpet_002.ogg` → foot_carpet<br>`footstep_carpet_003.ogg` → foot_carpet<br>`footstep_carpet_004.ogg` → foot_carpet<br>`footstep_concrete_000.ogg` → foot_concrete<br>`footstep_concrete_001.ogg` → foot_concrete<br>`footstep_concrete_002.ogg` → foot_concrete<br>`footstep_concrete_003.ogg` → foot_concrete<br>`footstep_concrete_004.ogg` → foot_concrete<br>`footstep_grass_000.ogg` → foot_grass<br>`footstep_grass_001.ogg` → foot_grass<br>`footstep_grass_002.ogg` → foot_grass<br>`footstep_grass_003.ogg` → foot_grass<br>`footstep_grass_004.ogg` → foot_grass<br>`footstep_wood_000.ogg` → foot_wood<br>`footstep_wood_001.ogg` → foot_wood<br>`footstep_wood_002.ogg` → foot_wood<br>`footstep_wood_003.ogg` → foot_wood<br>`footstep_wood_004.ogg` → foot_wood<br>`impactGlass_heavy_002.ogg` → sfx_liquidation<br>`impactMining_000.ogg` → sfx_ore_clink<br>`impactMining_001.ogg` → sfx_ore_clink<br>`impactMining_002.ogg` → sfx_ore_clink<br>`impactMining_003.ogg` → sfx_ore_clink<br>`impactMining_004.ogg` → sfx_ore_clink |
 | Kenney Interface Sounds | https://kenney.nl/assets/interface-sounds | [zip](https://kenney.nl/media/pages/assets/interface-sounds/fa43c1dd4d-1677589452/kenney_interface-sounds.zip) | CC0 1.0 | Kenney | 2026-10-05 | `click_003.ogg` → sfx_ui_tap<br>`confirmation_001.ogg` → sfx_ui_success<br>`error_001.ogg` → sfx_ui_error<br>`maximize_003.ogg` → sfx_ui_open<br>`minimize_003.ogg` → sfx_ui_close<br>`tick_002.ogg` → sfx_ui_toast<br>`toggle_001.ogg` → sfx_ui_toggle_on<br>`toggle_002.ogg` → sfx_ui_toggle_off |
-| Kenney Casino Audio | https://kenney.nl/assets/casino-audio | [zip](https://kenney.nl/media/pages/assets/casino-audio/2472606a04-1721639069/kenney_casino-audio.zip) | CC0 1.0 | Kenney | 2026-10-05 | `card-place-1.ogg` → sfx_pnl_card_flip<br>`card-shuffle.ogg` → sfx_card_shuffle |
+| Kenney Casino Audio | https://kenney.nl/assets/casino-audio | [zip](https://kenney.nl/media/pages/assets/casino-audio/2472606a04-1721639069/kenney_casino-audio.zip) | CC0 1.0 | Kenney | 2026-10-05 | `card-place-1.ogg` → sfx_pnl_card_flip |
 | Kenney Ui Audio | https://kenney.nl/assets/ui-audio | [zip](https://kenney.nl/media/pages/assets/ui-audio/490d233f68-1677590494/kenney_ui-audio.zip) | CC0 1.0 | Kenney | 2026-10-05 | downloaded, not used in the current build |
 | Kenney Rpg Audio | https://kenney.nl/assets/rpg-audio | [zip](https://kenney.nl/media/pages/assets/rpg-audio/8e99002d76-1677590336/kenney_rpg-audio.zip) | CC0 1.0 | Kenney | 2026-10-05 | downloaded, not used in the current build |
 | Kenney Digital Audio | https://kenney.nl/assets/digital-audio | [zip](https://kenney.nl/media/pages/assets/digital-audio/216eac4753-1677590265/kenney_digital-audio.zip) | CC0 1.0 | Kenney | 2026-10-05 | downloaded, not used in the current build |
@@ -89,7 +87,23 @@ Found with the search filter `license:"Creative Commons 0"`; `tools/fetch_source
 | Paradise Found | Kevin MacLeod | https://incompetech.com/music/royalty-free/index.html?isrc=USUAN2300000 | CC-BY-4.0 | 2026-10-06 | dubai_marina; Constant -6.46000dB gain, 48kHz stereo Vorbis q6; no tempo or arrangement change |
 | Easy Lemon | Kevin MacLeod | https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200076 | CC-BY-4.0 | 2026-10-06 | airdrop_farm; Constant -2.45000dB gain, 48kHz stereo Vorbis q6; no tempo or arrangement change |
 | Airport Lounge | Kevin MacLeod | https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100806 | CC-BY-4.0 | 2026-10-06 | terminal_cafe; Constant -2.64000dB gain, 48kHz stereo Vorbis q6; no tempo or arrangement change |
-| Disco con Tutti | Kevin MacLeod | https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200091 | CC-BY-4.0 | 2026-10-06 | Not shipped since 2026-10-08: clubs use the own-work Afropiano stems (spec: Amapiano / Afrobeats). File kept in `archive/processed/music/licensed/` for an easy revert. |
+| Disco con Tutti | Kevin MacLeod | https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200091 | CC-BY-4.0 | 2026-10-06 | clubs; Constant -5.58000dB gain, 48kHz stereo Vorbis q6; no tempo or arrangement change |
+| Glitter Blast | Kevin MacLeod | https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1900001 | CC-BY-4.0 | 2026-10-09 | title; bars 31-63 of the original (76.675-153.475 s), 0.6 s equal-power loop crossfade, constant -1.49 dB gain, 48 kHz stereo Vorbis q6; no tempo, pitch or arrangement change |
 | Funkorama | Kevin MacLeod | https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100474 | CC-BY-4.0 | 2026-10-05 | Downloaded candidate only, not shipped; source MP3 decoder overread warnings. |
 
 Required attribution ships in `processed/Music-Credits.txt` and the app's Settings → Credits & licenses. Original download hashes and current primary-source evidence are in `sources/incompetech/`.
+
+
+## Human-made recordings and compositions (2026-10-09)
+
+Replace every synthesized onboarding cue, the synthesized title theme, the synthesized club music and the synthesized red-market layer (user: "please don't synthesize"). Each licence was read on its page on the date shown; edits are trims, fades, loop crossfades, constant gain and resampling only (tools/curate_real_audio.py). CC BY items are credited in `processed/Music-Credits.txt` (shipped, shown in Settings → Credits).
+
+| Source | Author | Page | Licence | Checked | Used in | SHA-256 (download) |
+| --- | --- | --- | --- | --- | --- | --- |
+| Glitter Blast | Kevin MacLeod | https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1900001 | CC-BY-4.0 | 2026-10-09 | mus_title | `6d24390bfe0dba51…` |
+| Won! (Orchestral winning jingle) | spuispuin | https://opengameart.org/content/won-orchestral-winning-jingle | CC-BY-4.0 | 2026-10-09 | sfx_origin_insider | `794b06cc8cc4d198…` |
+| Music Jingles (jingles_SAX01) | Kenney (Kenney Vleugels) | https://kenney.nl/assets/music-jingles | CC0-1.0 | 2026-10-09 | sfx_origin_exit_liquidity | `272b8160616d0f92…` |
+| Win Jingle (WinSteelDrums) | Fupi | https://opengameart.org/content/win-jingle | CC0-1.0 | 2026-10-09 | sfx_creator_complete | `fef26adc010e7e7d…` |
+| Pop Sounds (pop5) | cogitollc | https://opengameart.org/content/pop-sounds | CC0-1.0 | 2026-10-09 | sfx_ui_next | `0433b2f016b2521d…` |
+| Playing Card Sounds (shuffleandbridge) | BMacZero | https://opengameart.org/content/playing-card-sounds | CC0-1.0 | 2026-10-09 | sfx_card_shuffle | `7178fdd4b85875fc…` |
+| Thunder / Lightning Ambience (field recording) | Gregor Quendel | https://opengameart.org/content/thunder-lightning-ambience-field-recording | CC-BY-4.0 | 2026-10-09 | mus_mood_tension_bed, music.*.stems.tension | `996d34046faa8e3e…` |

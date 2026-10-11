@@ -167,35 +167,15 @@ def recipes() -> dict:
     studio = room_tone(L, 300) + np.concatenate([hum(L, 120.0, 0.02), hum(ns(XF), 120.0, 0.02)])
     out["amb_spaces_studio"] = finish("amb_spaces_studio", studio, L, target=-36.0)
 
-    club_doors(out)
+    # amb_club_doors: the licensed club track through a door — tools/curate_real_audio.py (no synthesized music).
     return out
-
-
-def club_doors(out: dict) -> None:
-    """Club bass behind closed doors: our own club mix (gen_music.club) through a wall + crowd outside."""
-    import gen_music
-    tr = gen_music.club()
-    mix = sum(tr.buf[s] for s in gen_music.MIX_STEMS)
-    CL = tr.L
-    thru = np.concatenate([mix, mix], axis=0)
-    thru = filt(thru, "lp", 160, order=4) + filt(filt(thru, "lp", 700, order=4), "hp", 160) * 0.12
-    thru = dsp.eq(thru, "peak", 70, 4.0, q=1.2)[CL:]
-    wall = thru * dsp.db(-24 - 1 - lufs(thru))
-    crowd = layer_src("amb_club_doors", 640630, CL + ns(XF), -7.0, lp=3500)
-    crowd = dsp.crossfade_loop(crowd, CL, ns(XF))
-    out["amb_club_doors"] = finish("amb_club_doors", wall + crowd, CL)
 
 
 def main(only: list[str]) -> None:
     p = Path(__file__).with_name("build_ambience.json")
-    if only == ["amb_club_doors"]:
-        # Re-render just the club-through-the-wall loop (after the club music changes) and keep every other report row.
-        rep = json.loads(p.read_text()) if p.exists() else {}
-        out: dict = {}
-        club_doors(out)
-        rep.update(out)
-    else:
-        rep = recipes()
+    rep = json.loads(p.read_text()) if p.exists() else {}
+    keep = {k: v for k, v in rep.items() if k == "amb_club_doors"}  # built by curate_real_audio.py
+    rep = recipes() | keep
     p.write_text(json.dumps(rep, indent=2))
 
 
