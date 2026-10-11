@@ -2,7 +2,7 @@
    (source compose.html, layout v3; 1 CSS px there = 2 device px on the 2670x1200 Seeker = 1.80 panel units, since the panel
    is 2400 units wide). Values below are the mock's device px divided by 1.1125. */
 
-.ct-title { background-color: rgb(20, 12, 30); overflow: hidden; }
+.ct-title { background-color: rgba(0, 0, 0, 0); overflow: visible; } /* visible: SafeAreaBleed extends the art under the cutout, outside the screen root */
 
 .ct-title-bg {
     position: absolute; left: 0; top: 0; right: 0; bottom: 0;
