@@ -1,0 +1,281 @@
+{
+  "status": "Frozen native-import candidate. Source/fresh-FBX/texture-coverage gates pass; native Unity retarget/material/animation/device review pending. World tiers are visual candidates, NOT final mobile/crowd budgets.",
+  "source": "https://studio.blender.org/characters/vincent/v1/",
+  "attribution": "Vincent (CC) Blender Foundation | studio.blender.org",
+  "licence": "https://creativecommons.org/licenses/by/4.0/",
+  "geometry": {
+    "mesh": "VincentAdult_CreatorMesh",
+    "triangles": 76772,
+    "vertices": 51948,
+    "material": "VincentAdult_Atlas",
+    "max_influences": 4,
+    "height_m": 1.7892162799835205,
+    "sole_z_m": 0.0,
+    "bones": 55,
+    "material_slots": 1
+  },
+  "source_parts": [
+    {
+      "part": "body",
+      "part_id": 0,
+      "vertices": 25423,
+      "triangles": 50534
+    },
+    {
+      "part": "button_01",
+      "part_id": 1,
+      "vertices": 230,
+      "triangles": 464
+    },
+    {
+      "part": "button_02",
+      "part_id": 2,
+      "vertices": 230,
+      "triangles": 464
+    },
+    {
+      "part": "button_03",
+      "part_id": 3,
+      "vertices": 226,
+      "triangles": 458
+    },
+    {
+      "part": "button_04",
+      "part_id": 4,
+      "vertices": 230,
+      "triangles": 464
+    },
+    {
+      "part": "eyeball_L",
+      "part_id": 5,
+      "vertices": 1362,
+      "triangles": 2720
+    },
+    {
+      "part": "eyeball_R",
+      "part_id": 6,
+      "vertices": 1362,
+      "triangles": 2720
+    },
+    {
+      "part": "eyeglasses",
+      "part_id": 7,
+      "vertices": 1438,
+      "triangles": 2880
+    },
+    {
+      "part": "hair",
+      "part_id": 8,
+      "vertices": 3345,
+      "triangles": 6568
+    },
+    {
+      "part": "head",
+      "part_id": 9,
+      "vertices": 16837,
+      "triangles": 32984
+    }
+  ],
+  "facial_morphs": [
+    "BlinkLeft",
+    "BlinkRight",
+    "Smile",
+    "BrowUp",
+    "MouthOpen"
+  ],
+  "source_material_conversion": [
+    {
+      "source_material": "vincent_shirt",
+      "albedo": "Original diffuse shader colour/texture/procedural network",
+      "metallic": 0.0,
+      "roughness": "Original primary glossy roughness, cloth/skin floor where specified",
+      "notes": []
+    },
+    {
+      "source_material": "vincent_pants",
+      "albedo": "Original diffuse shader colour/texture/procedural network",
+      "metallic": 0.0,
+      "roughness": "Original primary glossy roughness, cloth/skin floor where specified",
+      "notes": []
+    },
+    {
+      "source_material": "vincent_skin",
+      "albedo": "Original diffuse shader colour/texture/procedural network",
+      "metallic": 0.0,
+      "roughness": "Original primary glossy roughness, cloth/skin floor where specified",
+      "notes": []
+    },
+    {
+      "source_material": "vincent_belt_buckle",
+      "albedo": "Original diffuse shader colour/texture/procedural network",
+      "metallic": 1.0,
+      "roughness": "Original primary glossy roughness, cloth/skin floor where specified",
+      "notes": []
+    },
+    {
+      "source_material": "vincent_belt",
+      "albedo": "Original diffuse shader colour/texture/procedural network",
+      "metallic": 0.0,
+      "roughness": "Original primary glossy roughness, cloth/skin floor where specified",
+      "notes": []
+    },
+    {
+      "source_material": "vincent_socks",
+      "albedo": "Original diffuse shader colour/texture/procedural network",
+      "metallic": 0.0,
+      "roughness": "Original primary glossy roughness, cloth/skin floor where specified",
+      "notes": []
+    },
+    {
+      "source_material": "vincent_shoes",
+      "albedo": "Original diffuse shader colour/texture/procedural network",
+      "metallic": 0.0,
+      "roughness": "Original primary glossy roughness, cloth/skin floor where specified",
+      "notes": []
+    },
+    {
+      "source_material": "vincent_shoes_bright",
+      "albedo": "Original diffuse shader colour/texture/procedural network",
+      "metallic": 0.0,
+      "roughness": "Original primary glossy roughness, cloth/skin floor where specified",
+      "notes": []
+    },
+    {
+      "source_material": "vincent_buttons",
+      "albedo": "Original diffuse shader colour/texture/procedural network",
+      "metallic": 0.0,
+      "roughness": "Original primary glossy roughness, cloth/skin floor where specified",
+      "notes": []
+    },
+    {
+      "source_material": "vincent_eyeball",
+      "albedo": "Original diffuse shader colour/texture/procedural network",
+      "metallic": 0.0,
+      "roughness": "Original primary glossy roughness, cloth/skin floor where specified",
+      "notes": []
+    },
+    {
+      "source_material": "vincent_glasses",
+      "albedo": "Original diffuse shader colour/texture/procedural network",
+      "metallic": 0.0,
+      "roughness": "Original primary glossy roughness, cloth/skin floor where specified",
+      "notes": [
+        "Use original diffuse dark pigment; original view-dependent Facing ramp excluded from baked albedo."
+      ]
+    },
+    {
+      "source_material": "vincent_hair",
+      "albedo": "Original diffuse shader colour/texture/procedural network",
+      "metallic": 0.0,
+      "roughness": "Original primary glossy roughness, cloth/skin floor where specified",
+      "notes": []
+    },
+    {
+      "source_material": "vincent_teeth",
+      "albedo": "Original diffuse shader colour/texture/procedural network",
+      "metallic": 0.0,
+      "roughness": "Original primary glossy roughness, cloth/skin floor where specified",
+      "notes": []
+    }
+  ],
+  "atlas": {
+    "size": [
+      2048,
+      2048
+    ],
+    "uv": "AtlasUV / UV0",
+    "base_color": "sRGB",
+    "normal": "Non-Color tangent +Y",
+    "metallic_smoothness": "Linear R=Metallic, A=Smoothness; independent raw16-bit channels",
+    "packed_channel_readback_max_error": 5.960464477539063e-08,
+    "packing_padding_px": 16,
+    "packing_canvas_px": [
+      3295,
+      3295
+    ],
+    "effective_padding_at_2048_min_px": 9.944764795144158,
+    "bake_padding_px": 8
+  },
+  "export": {
+    "axis_forward": "-Z",
+    "axis_up": "Y",
+    "global_scale": 1,
+    "own_humanoid_mapping": "unity-humanoid-map.json",
+    "apply_mesh_modifiers": false,
+    "morph_export": true
+  },
+  "limitations": [
+    "Native Unity own-Humanoid avatar, retarget/idle hand clearance, material and device acceptance are still separate gates.",
+    "World tiers retain full source hands and shoes and are too expensive to claim final crowd/thermal budgets; next pass must use actual screen-size comparisons and reduce unseen detail.",
+    "LOD2 shirt/hair silhouette is visibly faceted in a large close-up. Use creator for all character-preview close-ups; LODs remain world visual candidates.",
+    "Five source-derived facial morphs are portable controls; no runtime blink, facial animation or lip-sync system is claimed. Jaw is a mapped reference bone, not a skinned jaw solution.",
+    "One complete source outfit/face/body, not a modular wardrobe or adjustable-body customizer.",
+    "Film skin/subsurface/glossy mix approximated with ordinary PBR; transparent lens/cornea reflection overlays omitted."
+  ],
+  "complete_look_proposal": {
+    "name": "Weekender",
+    "localization_key": "creator.look.weekender",
+    "backend": "New whole-look IDs require the formal backend registry proposal; no availability inferred."
+  },
+  "source_reference_geometry": {
+    "mesh": "VincentAdult_CreatorMesh",
+    "triangles": 100256,
+    "vertices": 50683,
+    "material_slots": 1,
+    "bones": 55,
+    "max_influences": 4,
+    "height_m": 1.7892162799835205,
+    "sole_z_m": 0.0
+  },
+  "tiers": {
+    "Creator": {
+      "fbx": "exports/VincentAdult_Creator.fbx",
+      "triangles": 76772,
+      "vertices": 51948,
+      "height_m": 1.7892162799835205,
+      "sole_z_m": 0.0,
+      "max_influences": 4
+    },
+    "LOD1": {
+      "fbx": "exports/VincentAdult_LOD1.fbx",
+      "triangles": 53216,
+      "vertices": 37832,
+      "height_m": 1.7892162799835205,
+      "sole_z_m": 0.0,
+      "max_influences": 4
+    },
+    "LOD2": {
+      "fbx": "exports/VincentAdult_LOD2.fbx",
+      "triangles": 42630,
+      "vertices": 31028,
+      "height_m": 1.7892162799835205,
+      "sole_z_m": 0.0,
+      "max_influences": 4
+    }
+  },
+  "authoring_file": "VincentAdult_Tiers.blend",
+  "cloth_micro_normal_adaptation": {
+    "all_pass": true,
+    "reason": "Source cloth micro-bump aliases visibly when converted into a 2048 runtime atlas; actual normal-disabled comparison isolated it.",
+    "changed_materials": [
+      "BAKE_vincent_shirt",
+      "BAKE_vincent_pants"
+    ],
+    "portable_cloth_displacement_bump_scale_multiplier": 0.12,
+    "unchanged": "Base colour, metallic/smoothness, all source geometry/weights/morphs and non-cloth normal inputs.",
+    "normal_space": "Tangent +Y, non-colour data",
+    "raw_rgba16_readback_max_error": 5.960464477539063e-08,
+    "prior_normal_sha256": "c2b89193bb97e3ed43ff0c886265310512a6297fac56d76c6b1ea6d5c69117b1",
+    "corrected_normal_sha256": "2feb76f67ac063f5a97a2ccc06251c11969dd41390a64fb88ec5d874639b2a21",
+    "proof": "renders/creator_flatnormal_front.png isolates the former moire; final tier proof uses the attenuated map."
+  },
+  "files_sha256": {
+    "VincentAdult_Creator.fbx": "7345d25ee8077a01dc00d70e796a6f05e835a048976fbd2c225567a759828c4f",
+    "VincentAdult_LOD1.fbx": "85a04baf762d1d4d5b4b5cc42924f7af11c87dab49de6dbd8be586127c399c3e",
+    "VincentAdult_LOD2.fbx": "e78f90b2d3efbdeebbefcd9d491023c0339593d367419df40677ac2d1e38c016",
+    "VincentAdult_BaseColor.png": "7210391b800edcc4bbef43e1de5f8741751dbf9f69e1b4fdb4bc67e2a915a066",
+    "VincentAdult_MetallicSmoothness.png": "8c9f2620cabc58049a7b2d229a4fad8c52046d1f44cc783e4c703bd73e7f4c18",
+    "VincentAdult_Normal.png": "2feb76f67ac063f5a97a2ccc06251c11969dd41390a64fb88ec5d874639b2a21",
+    "unity-humanoid-map.json": "0670f92eea8744b07ee5e935541b05536bf98554e91d6c35faa3d78bc5096897"
+  }
+}

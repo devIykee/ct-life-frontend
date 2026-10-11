@@ -1,0 +1,175 @@
+{
+  "status": "Corrected atlas and protected LODs passed Blender whole-look render review and fresh-FBX validation. Final Unity/device validation owned by coordinating agent.",
+  "source": "Blender Studio Snow CC-BY4.0, adapted adult proportions. Raw source unchanged.",
+  "source_page": "https://studio.blender.org/characters/snow/v4/",
+  "attribution": "Snow Rig (CC) Blender Foundation | studio.blender.org",
+  "files": {
+    "fbx": "exports/SnowAdult_Creator.fbx",
+    "base_color": "exports/SnowAdult_BaseColor.png",
+    "normal": "exports/SnowAdult_Normal.png",
+    "metallic_smoothness": "exports/SnowAdult_MetallicSmoothness.png"
+  },
+  "geometry": {
+    "mesh": "SnowAdult_CreatorMesh",
+    "triangles": 43478,
+    "vertices": 22639,
+    "skinned_mesh_count": 1,
+    "material_slots": 1,
+    "bones": 55,
+    "max_influences": 4,
+    "bounds_blender_metres": [
+      [
+        -0.9339160323143005,
+        0.9339154362678528
+      ],
+      [
+        -0.2099648118019104,
+        0.11459764093160629
+      ],
+      [
+        0.0,
+        1.848585844039917
+      ]
+    ],
+    "height_metres": 1.848585844039917,
+    "ground_offset_applied_m": 0.003749893046915531,
+    "sole_blender_z_m": 0.0,
+    "object_scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "textures": {
+    "size": [
+      2048,
+      2048
+    ],
+    "base_color_space": "sRGB",
+    "normal_space": "Tangent/OpenGL +Y, import as Unity Normal Map",
+    "metallic_smoothness_space": "Linear; R=Metallic, A=1-Roughness, G=1, B=0",
+    "atlas_padding_px": 8,
+    "island_gap_target_px": 16,
+    "uv_layer": "AtlasUV / exported UV0"
+  },
+  "unity_material": {
+    "shader": "Universal Render Pipeline/Lit",
+    "name": "SnowAdult_Atlas",
+    "base_tint": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "normal_scale": 1,
+    "metallic_map_multiplier": 1,
+    "smoothness_multiplier": 1,
+    "surface": "Opaque"
+  },
+  "unity_import": {
+    "avatar_setup": "CreateFromThisModel",
+    "mapping_file": "unity-humanoid-map.json",
+    "axis_forward": "-Z",
+    "axis_up": "Y",
+    "global_scale": 1,
+    "expected_sole_y_m": 0,
+    "animation_clips": []
+  },
+  "source_parts": [
+    {
+      "part": "body",
+      "part_id": 0,
+      "triangles": 6500,
+      "vertices": 3268,
+      "cleared_edit_hidden_faces": 0,
+      "cleared_edit_hidden_vertices": 0
+    },
+    {
+      "part": "eyebrows",
+      "part_id": 1,
+      "triangles": 376,
+      "vertices": 216,
+      "cleared_edit_hidden_faces": 0,
+      "cleared_edit_hidden_vertices": 0
+    },
+    {
+      "part": "eyes",
+      "part_id": 2,
+      "triangles": 2756,
+      "vertices": 1418,
+      "cleared_edit_hidden_faces": 0,
+      "cleared_edit_hidden_vertices": 0
+    },
+    {
+      "part": "hair_base",
+      "part_id": 3,
+      "triangles": 6345,
+      "vertices": 3418,
+      "cleared_edit_hidden_faces": 0,
+      "cleared_edit_hidden_vertices": 0
+    },
+    {
+      "part": "head",
+      "part_id": 4,
+      "triangles": 7264,
+      "vertices": 3719,
+      "cleared_edit_hidden_faces": 0,
+      "cleared_edit_hidden_vertices": 0
+    },
+    {
+      "part": "pants",
+      "part_id": 5,
+      "triangles": 5179,
+      "vertices": 2631,
+      "cleared_edit_hidden_faces": 0,
+      "cleared_edit_hidden_vertices": 0
+    },
+    {
+      "part": "shirt",
+      "part_id": 6,
+      "triangles": 3246,
+      "vertices": 1679,
+      "cleared_edit_hidden_faces": 0,
+      "cleared_edit_hidden_vertices": 0
+    },
+    {
+      "part": "shoes_base",
+      "part_id": 7,
+      "triangles": 4520,
+      "vertices": 2286,
+      "cleared_edit_hidden_faces": 1620,
+      "cleared_edit_hidden_vertices": 1602
+    },
+    {
+      "part": "shoes_bottom",
+      "part_id": 8,
+      "triangles": 1920,
+      "vertices": 1048,
+      "cleared_edit_hidden_faces": 0,
+      "cleared_edit_hidden_vertices": 0
+    },
+    {
+      "part": "shoes_parts",
+      "part_id": 9,
+      "triangles": 5372,
+      "vertices": 2956,
+      "cleared_edit_hidden_faces": 0,
+      "cleared_edit_hidden_vertices": 0
+    }
+  ],
+  "atlas_validation": "atlas-uv-validation.json",
+  "limitations": [
+    "No production facial-expression, gesture animation, body/face customization or photo-matching system.",
+    "Jaw is inactive.",
+    "LOD2 is a far tier with simplified eyes/hair/cloth/soles and local within-part UV folds; not a creator replacement.",
+    "Crowd/device frame-time budget requires measurement.",
+    "Source skin subsurface and hair anisotropy are reduced to ordinary PBR."
+  ],
+  "revision": "2026-10-05-atlas-reveal-nape-collar",
+  "world_lods": {
+    "manifest": "lod-manifest.json",
+    "validation": "lod-export-validation.json",
+    "LOD1_triangles": 21005,
+    "LOD2_triangles": 15436
+  }
+}

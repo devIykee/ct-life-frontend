@@ -1,0 +1,54 @@
+{
+  "all_pass": true,
+  "review_date": "2026-10-06",
+  "scope": "Actual Blender renders of frozen compiled creator and both world tiers, not Unity/device captures.",
+  "observations": [
+    "Original blue iris textures restored; face, hands, scarf and full clothing reviewed.",
+    "Final front/back/side/face/hand views retain connected arm, cheek, nape, shoulder, ankle and shoe silhouettes.",
+    "Open-wave and bent-knee diagnostic poses retain separated fingers and cloth/joint surfaces in reviewed creator/far-tier views.",
+    "Far shoes/hair/cloth are visibly simpler at close inspection; minor garment rim faceting remains a distance-tier limitation."
+  ],
+  "rejected_checkpoints": [
+    "Initial white-eye bake: explicit source TextureCoordinate UV outputs accidentally used target atlas UVs.",
+    "Initial lower world budgets: QEM consumed all remaining unprotected geometry after preserving hands/face, collapsing arm/cheek/neck regions.",
+    "Initial double-wall top reduction: inner garment wall intersected outer surface. Only hidden inner top wall removed in reduced copies; creator retained unchanged."
+  ],
+  "proofs": [
+    "rain-character-review.jpg",
+    "rain-world-lods.jpg",
+    "rain-deformation-review.jpg",
+    "renders_compiled/back.png",
+    "renders_compiled/face.png",
+    "renders_compiled/front.png",
+    "renders_compiled/hand.png",
+    "renders_compiled/side.png",
+    "renders_lods/lod0_back.png",
+    "renders_lods/lod0_face.png",
+    "renders_lods/lod0_front.png",
+    "renders_lods/lod0_hand.png",
+    "renders_lods/lod0_side.png",
+    "renders_lods/lod1_back.png",
+    "renders_lods/lod1_face.png",
+    "renders_lods/lod1_front.png",
+    "renders_lods/lod1_hand.png",
+    "renders_lods/lod1_side.png",
+    "renders_lods/lod2_back.png",
+    "renders_lods/lod2_face.png",
+    "renders_lods/lod2_front.png",
+    "renders_lods/lod2_hand.png",
+    "renders_lods/lod2_side.png",
+    "renders_deformation/lod0_bend.png",
+    "renders_deformation/lod0_wave.png",
+    "renders_deformation/lod1_bend.png",
+    "renders_deformation/lod1_wave.png",
+    "renders_deformation/lod2_bend.png",
+    "renders_deformation/lod2_wave.png"
+  ],
+  "limitations": [
+    "No production facial-expression, blink, gaze or garment-customization system. Jaw is an inactive placeholder.",
+    "The exported complete Breeze look is not a modular wardrobe or body/face editor.",
+    "41,416 / 34,817 triangle alternate tiers preserve reviewed anatomy; Seeker frame time and crowd capacity remain unmeasured.",
+    "Hair/scarf secondary motion is reduced to Head/body weighting. Source skin subsurface and hair anisotropy are reduced to ordinary atlas PBR.",
+    "Diagnostic Blender static poses are not gameplay animation acceptance. Shared Snow-native idle and body clips require Rain-specific Unity/device retarget, contact and transition review."
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "all_pass": true,
+  "scope": "Frozen source/export/resource candidate only. Native materials, near shoe/buckle lighting, actual animation and device/crowd thermal acceptance pending.",
+  "files": {
+    "exports/VincentAdult_WorldFar.fbx": "598ce99f356ab73fad8e1cbf5b6e5be6da0199650a55182343a1a3ba15cc1caa",
+    "exports/VincentAdult_WorldFar_BaseColor.png": "d274ec68adf69a5b371c2b8f77402b8b26e20fba6a9da81acb167754f7ffe81c",
+    "exports/VincentAdult_WorldFar_MetallicSmoothness.png": "18a3cccb1aaf334b286020bc594b5bff6852687400ce360a9a97c8cf200f5811",
+    "exports/VincentAdult_WorldFar_Normal.png": "bede4bb5e15fdb6ce53fc7a773a2807ca30184ffef5b8965447aa684ac9e92c2",
+    "exports/VincentAdult_WorldNear.fbx": "e4c3f25cb4b4a794c397294a32de090c53c6c4a6766b8ec265012f47d88081d2",
+    "exports/VincentAdult_WorldNear_BaseColor.png": "bd568d9b404cbaeb9473529093015f5e4365c236f6c6108b156a6fe8216ae106",
+    "exports/VincentAdult_WorldNear_MetallicSmoothness.png": "522a33fb49667803ed5e0641959f6f182398a8043c53b6052141cf8654f7dfa0",
+    "exports/VincentAdult_WorldNear_Normal.png": "f9ea8b4e6c614ecee2391e6a744af7191e33df0b6fbb805654e9d6b2f667f155",
+    "unity-humanoid-map.json": "0670f92eea8744b07ee5e935541b05536bf98554e91d6c35faa3d78bc5096897"
+  },
+  "checks": {
+    "fresh_fbx_gate": true,
+    "texture_reload_and_resource_gate": true,
+    "both_atlases_zero_interior_overlap": true,
+    "same_bind_as_frozen_creator": true,
+    "same_size_and_enlarged_visuals_reviewed": true,
+    "source_production_bundle_unchanged": true
+  },
+  "triangles": {
+    "WorldNear": 16557,
+    "WorldFar": 6801
+  },
+  "evidence_sha256": {
+    "VincentAdult_WorldAtlas.blend": "eb406859e0b8441e208a84d1f1440844ff67f6d10239ead572736571fdd0a5fc",
+    "world-topology.json": "858fbb9fed2fbbb01767ea3a332afe684bf40047b920f46645d72d7a8826095e",
+    "world-atlas.json": "fe0fb40a0ffbdf6a0bcf48157d596f2df2b1e5ed985f97b0049af4fdb032aa04",
+    "world-export-validation.json": "bf530a99c82da1e0013acb6fdf889d12a36bafd9bdb9c54227fa9a8c70a32953",
+    "world-resource-audit.json": "a1b2317e353fe8259353581bedf58a65b8a160bcccdc65525113a9c1df8cca9a",
+    "visual-review.json": "98fcaf0aeeeb68a2ff0a1e0022ca23dc9399de81179fb5de4c5f4bd4e2b1e5da",
+    "README.md": "be72823cf5de2ceb7c89dbfc1711e422eb9371acdbed94b61ce7ee79f64bd1e1"
+  },
+  "render_sha256": {
+    "city-160px.png": "e1ca4be73ffe766325afb8c54ea144764f9c7accdb8270867232aa70867e5c0a",
+    "far-64px.png": "24b8787ddb8c8825acd71e6453f72fa3555d15effc2211b9d1cd8685d00ec5c7",
+    "distant-32px.png": "24b8ffb9e09d99e826accc90ffa43afa2cb5821d76d461a71392f0044681156a",
+    "scrutiny-front.png": "9d006a198c2cd41e028478e057d25c9ff8806e8167219df5287d915331f07c49",
+    "scrutiny-back.png": "541529f61811dfacef62944ad18df420e44e1fd5b3da1b6003d59f236f984b5a",
+    "stress.png": "0bb9713ad865699ad571fc20cc7945f9c422209b129ba1e235829c7bdd58c568",
+    "shoe-normal.png": "2e8588b5f740babecf8111837cbc46255b2dd537ccdf8cf3e417202f97377d9a",
+    "shoe-flatnormal.png": "9b9160bcfa710b2e4d41f56e3255abda5da4bd9920dcc8cfb8e70c7686c174e2",
+    "shoe-albedo.png": "d2b7d586b8188f02b339134ccb4a3adfebee233fbb36f23c99f37d96e98a0aae",
+    "belt-normal.png": "125c4967618a15101a5d0bbbfbb5d6d3196933289e65150bd2b99bfed3f2d02b",
+    "belt-flatnormal.png": "a58788be9484520c4d1501082d488e5fb821377747a61cd86f12106be29af75a",
+    "belt-albedo.png": "ddbcabfab8d0a8b420ee469c4eb9bd333c9de4e6d75d9104be5ed3bb4264f8c1"
+  },
+  "not_accepted": [
+    "Native material/pose/device quality",
+    "Near shoe and buckle lighting under game lighting",
+    "Crowd triangle/thermal60fps gate"
+  ],
+  "canonical_creator_fbx_sha256": "7345d25ee8077a01dc00d70e796a6f05e835a048976fbd2c225567a759828c4f"
+}

@@ -1,0 +1,40 @@
+{
+  "source_scarf_shader_metallic": 0.4000000059604645,
+  "source_scarf_roughness": "ColorRamp from TEX-rain_scarf_cavity.png, endpoints .4479883 and1.0",
+  "delivered_scarf_surface_metal_min_median_max": [
+    0.4000000059604645,
+    1.0,
+    1.0
+  ],
+  "blender_float_png_reproduction": {
+    "input_rgba": [
+      0.4,
+      1,
+      0,
+      0.25
+    ],
+    "readback_rgba": [
+      1,
+      1,
+      0,
+      0.2500038146972656
+    ],
+    "alpha_modes_tested": [
+      "STRAIGHT",
+      "CHANNEL_PACKED"
+    ],
+    "result": "Both save paths unpremultiplied data RGB by smoothness A."
+  },
+  "unity_shader_evidence": "client/Library/PackageCache/com.unity.render-pipelines.universal*/Shaders/LitInput.hlsl: SampleMetallicSpecGloss directly reads map RGB under _METALLICSPECGLOSSMAP; _Metallic scalar is only read in the no-map branch.",
+  "unity_original_import_settings": {
+    "sRGBTexture": false,
+    "alphaIsTransparency": false,
+    "alphaSource": "FromInput",
+    "android": "ASTC_4x4"
+  },
+  "correction": "Scarf atlas surface plus eight-pixel gutter only; metal=0, smoothness=min(existing,.4). Explicit straight RGBA16 data writer bypasses Blender opacity conversion.",
+  "source_device_evidence": [
+    "docs/progress/screens/quality-rain-20261006l/touch/rain-creator-body.png",
+    "docs/progress/screens/quality-rain-20261006l/touch/rain-creator-face.png"
+  ]
+}

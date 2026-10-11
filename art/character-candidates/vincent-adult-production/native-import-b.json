@@ -1,0 +1,634 @@
+{
+  "all_pass": false,
+  "source": "/Users/mac/Documents/codes/projects/ct-life/art/character-candidates/vincent-adult-production/exports",
+  "source_fbx_gate": {
+    "scope": "Fresh Blender FBX equivalence, weights, UVs and actual posed/morphed vertex surfaces. Native Unity own-Humanoid retarget/material and device review still required.",
+    "tiers": {
+      "Creator": {
+        "checks": {
+          "one_mesh_one_material": true,
+          "exact55bone_names": true,
+          "same_bone_parents": true,
+          "source_rest_joint_positions_within10micrometres": true,
+          "source_rest_rotations_within0_01degree": true,
+          "source_rest_scales_within1e_5": true,
+          "same_rest_matrices_across_tiers": true,
+          "exact5_named_morphs": true,
+          "all30_digits_weighted": true,
+          "max4_normalized_weights": true,
+          "zero_head_weight_below1_30m": true,
+          "head_turn_keeps_lower_body": true,
+          "pose_and_morph_surface_roundtrip_under20micrometres": true,
+          "triangle_count_matches": true,
+          "rest_surface_and_uv_signature_matches": true,
+          "zero_atlas_interior_overlap_samples": true,
+          "zero_blank_atlas_samples": true,
+          "sole_grounded": true,
+          "height_matches": true
+        },
+        "sha256": "7345d25ee8077a01dc00d70e796a6f05e835a048976fbd2c225567a759828c4f",
+        "triangles": 76772,
+        "fbx_vertices_after_uv_seams": 51948,
+        "rest_matrix_max_delta": 5.5611133575439453E-05,
+        "rest_joint_position_max_delta_m": 2.026900291448536E-06,
+        "rest_rotation_max_delta_degrees": 0.004361186100021364,
+        "rest_scale_max_delta": 5.3921410148038973E-07,
+        "shared_rest_matrix_max_delta": 0,
+        "sample_surface_max_deltas_m": {
+          "rest": 6.6038586510330788E-07,
+          "arm_leg_digits": 7.9494589044770692E-07,
+          "head_only": 6.6223259409525781E-07,
+          "BlinkLeft": 6.6038586510330788E-07,
+          "BlinkRight": 6.6038586510330788E-07,
+          "Smile": 6.6038586510330788E-07,
+          "BrowUp": 6.6038586510330788E-07,
+          "MouthOpen": 6.6038586510330788E-07
+        },
+        "head_turn_lower_body_delta_m": 0.0,
+        "digit_weighted_vertex_counts": {
+          "Thumb1.L": 467,
+          "Thumb2.L": 345,
+          "Thumb3.L": 354,
+          "Index1.L": 484,
+          "Index2.L": 268,
+          "Index3.L": 378,
+          "Middle1.L": 511,
+          "Middle2.L": 251,
+          "Middle3.L": 344,
+          "Ring1.L": 530,
+          "Ring2.L": 283,
+          "Ring3.L": 364,
+          "Pinky1.L": 447,
+          "Pinky2.L": 256,
+          "Pinky3.L": 338,
+          "Thumb1.R": 484,
+          "Thumb2.R": 356,
+          "Thumb3.R": 354,
+          "Index1.R": 481,
+          "Index2.R": 271,
+          "Index3.R": 379,
+          "Middle1.R": 511,
+          "Middle2.R": 251,
+          "Middle3.R": 344,
+          "Ring1.R": 518,
+          "Ring2.R": 277,
+          "Ring3.R": 366,
+          "Pinky1.R": 438,
+          "Pinky2.R": 256,
+          "Pinky3.R": 338
+        },
+        "atlas_overlap_samples": 0
+      },
+      "LOD1": {
+        "checks": {
+          "one_mesh_one_material": true,
+          "exact55bone_names": true,
+          "same_bone_parents": true,
+          "source_rest_joint_positions_within10micrometres": true,
+          "source_rest_rotations_within0_01degree": true,
+          "source_rest_scales_within1e_5": true,
+          "same_rest_matrices_across_tiers": true,
+          "exact5_named_morphs": true,
+          "all30_digits_weighted": true,
+          "max4_normalized_weights": true,
+          "zero_head_weight_below1_30m": true,
+          "head_turn_keeps_lower_body": true,
+          "pose_and_morph_surface_roundtrip_under20micrometres": true,
+          "triangle_count_matches": true,
+          "rest_surface_and_uv_signature_matches": true,
+          "zero_atlas_interior_overlap_samples": true,
+          "zero_blank_atlas_samples": true,
+          "sole_grounded": true,
+          "height_matches": true
+        },
+        "sha256": "85a04baf762d1d4d5b4b5cc42924f7af11c87dab49de6dbd8be586127c399c3e",
+        "triangles": 53216,
+        "fbx_vertices_after_uv_seams": 37832,
+        "rest_matrix_max_delta": 5.5611133575439453E-05,
+        "rest_joint_position_max_delta_m": 2.026900291448536E-06,
+        "rest_rotation_max_delta_degrees": 0.004361186100021364,
+        "rest_scale_max_delta": 5.3921410148038973E-07,
+        "shared_rest_matrix_max_delta": 0.0,
+        "sample_surface_max_deltas_m": {
+          "rest": 6.6038586510330788E-07,
+          "arm_leg_digits": 7.9494589044770692E-07,
+          "head_only": 6.6223259409525781E-07,
+          "BlinkLeft": 6.6038586510330788E-07,
+          "BlinkRight": 6.6038586510330788E-07,
+          "Smile": 6.6038586510330788E-07,
+          "BrowUp": 6.6038586510330788E-07,
+          "MouthOpen": 6.6038586510330788E-07
+        },
+        "head_turn_lower_body_delta_m": 0.0,
+        "digit_weighted_vertex_counts": {
+          "Thumb1.L": 467,
+          "Thumb2.L": 345,
+          "Thumb3.L": 354,
+          "Index1.L": 484,
+          "Index2.L": 268,
+          "Index3.L": 378,
+          "Middle1.L": 511,
+          "Middle2.L": 251,
+          "Middle3.L": 344,
+          "Ring1.L": 530,
+          "Ring2.L": 283,
+          "Ring3.L": 364,
+          "Pinky1.L": 447,
+          "Pinky2.L": 256,
+          "Pinky3.L": 338,
+          "Thumb1.R": 484,
+          "Thumb2.R": 356,
+          "Thumb3.R": 354,
+          "Index1.R": 481,
+          "Index2.R": 271,
+          "Index3.R": 379,
+          "Middle1.R": 511,
+          "Middle2.R": 251,
+          "Middle3.R": 344,
+          "Ring1.R": 518,
+          "Ring2.R": 277,
+          "Ring3.R": 366,
+          "Pinky1.R": 438,
+          "Pinky2.R": 256,
+          "Pinky3.R": 338
+        },
+        "atlas_overlap_samples": 0
+      },
+      "LOD2": {
+        "checks": {
+          "one_mesh_one_material": true,
+          "exact55bone_names": true,
+          "same_bone_parents": true,
+          "source_rest_joint_positions_within10micrometres": true,
+          "source_rest_rotations_within0_01degree": true,
+          "source_rest_scales_within1e_5": true,
+          "same_rest_matrices_across_tiers": true,
+          "exact5_named_morphs": true,
+          "all30_digits_weighted": true,
+          "max4_normalized_weights": true,
+          "zero_head_weight_below1_30m": true,
+          "head_turn_keeps_lower_body": true,
+          "pose_and_morph_surface_roundtrip_under20micrometres": true,
+          "triangle_count_matches": true,
+          "rest_surface_and_uv_signature_matches": true,
+          "zero_atlas_interior_overlap_samples": true,
+          "zero_blank_atlas_samples": true,
+          "sole_grounded": true,
+          "height_matches": true
+        },
+        "sha256": "e78f90b2d3efbdeebbefcd9d491023c0339593d367419df40677ac2d1e38c016",
+        "triangles": 42630,
+        "fbx_vertices_after_uv_seams": 31028,
+        "rest_matrix_max_delta": 5.5611133575439453E-05,
+        "rest_joint_position_max_delta_m": 2.026900291448536E-06,
+        "rest_rotation_max_delta_degrees": 0.004361186100021364,
+        "rest_scale_max_delta": 5.3921410148038973E-07,
+        "shared_rest_matrix_max_delta": 0.0,
+        "sample_surface_max_deltas_m": {
+          "rest": 6.6038586510330788E-07,
+          "arm_leg_digits": 7.9494589044770692E-07,
+          "head_only": 6.6223259409525781E-07,
+          "BlinkLeft": 6.6038586510330788E-07,
+          "BlinkRight": 6.6038586510330788E-07,
+          "Smile": 6.6038586510330788E-07,
+          "BrowUp": 6.6038586510330788E-07,
+          "MouthOpen": 6.6038586510330788E-07
+        },
+        "head_turn_lower_body_delta_m": 0.0,
+        "digit_weighted_vertex_counts": {
+          "Thumb1.L": 467,
+          "Thumb2.L": 345,
+          "Thumb3.L": 354,
+          "Index1.L": 484,
+          "Index2.L": 268,
+          "Index3.L": 378,
+          "Middle1.L": 511,
+          "Middle2.L": 251,
+          "Middle3.L": 344,
+          "Ring1.L": 530,
+          "Ring2.L": 283,
+          "Ring3.L": 364,
+          "Pinky1.L": 447,
+          "Pinky2.L": 256,
+          "Pinky3.L": 338,
+          "Thumb1.R": 484,
+          "Thumb2.R": 356,
+          "Thumb3.R": 354,
+          "Index1.R": 481,
+          "Index2.R": 271,
+          "Index3.R": 379,
+          "Middle1.R": 511,
+          "Middle2.R": 251,
+          "Middle3.R": 344,
+          "Ring1.R": 518,
+          "Ring2.R": 277,
+          "Ring3.R": 366,
+          "Pinky1.R": 438,
+          "Pinky2.R": 256,
+          "Pinky3.R": 338
+        },
+        "atlas_overlap_samples": 0
+      }
+    },
+    "texture_sha256": {
+      "VincentAdult_MetallicSmoothness.png": "8c9f2620cabc58049a7b2d229a4fad8c52046d1f44cc783e4c703bd73e7f4c18",
+      "VincentAdult_BaseColor.png": "7210391b800edcc4bbef43e1de5f8741751dbf9f69e1b4fdb4bc67e2a915a066",
+      "VincentAdult_Normal.png": "2feb76f67ac063f5a97a2ccc06251c11969dd41390a64fb88ec5d874639b2a21"
+    },
+    "all_pass": true
+  },
+  "look": [
+    "skin_tone1",
+    "head_vincent",
+    "hair_vincent_swept",
+    "top_shirt_mustard",
+    "bottom_trousers_slate",
+    "shoes_slipon_white",
+    "acc_glasses_charcoal"
+  ],
+  "label_key": "creator.look.weekender",
+  "native_checks": [
+    {
+      "prefab": "Assets/Art/characters/authored/Vincent/Weekender.prefab",
+      "tier": "Creator",
+      "default_morph_weights": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "prefab": "Assets/Art/characters/authored/Vincent/Weekender.prefab",
+      "tier": "Creator",
+      "morph": "BlinkLeft",
+      "imported_frames": [
+        {
+          "weight": 100.0,
+          "raw_mesh_max_delta_m": 0.0254587773,
+          "vertices_above10micrometres": 21490
+        }
+      ],
+      "weight_at_sample": 100.0,
+      "native_max_delta_m": 0.0254587773
+    },
+    {
+      "prefab": "Assets/Art/characters/authored/Vincent/Weekender.prefab",
+      "tier": "Creator",
+      "morph": "BlinkRight",
+      "imported_frames": [
+        {
+          "weight": 100.0,
+          "raw_mesh_max_delta_m": 0.0254737753,
+          "vertices_above10micrometres": 21490
+        }
+      ],
+      "weight_at_sample": 100.0,
+      "native_max_delta_m": 0.0254737753
+    },
+    {
+      "prefab": "Assets/Art/characters/authored/Vincent/Weekender.prefab",
+      "tier": "Creator",
+      "morph": "Smile",
+      "imported_frames": [
+        {
+          "weight": 100.0,
+          "raw_mesh_max_delta_m": 0.02349784,
+          "vertices_above10micrometres": 21490
+        }
+      ],
+      "weight_at_sample": 100.0,
+      "native_max_delta_m": 0.0234978385
+    },
+    {
+      "prefab": "Assets/Art/characters/authored/Vincent/Weekender.prefab",
+      "tier": "Creator",
+      "morph": "BrowUp",
+      "imported_frames": [
+        {
+          "weight": 100.0,
+          "raw_mesh_max_delta_m": 0.0167191979,
+          "vertices_above10micrometres": 21490
+        }
+      ],
+      "weight_at_sample": 100.0,
+      "native_max_delta_m": 0.0167191979
+    },
+    {
+      "prefab": "Assets/Art/characters/authored/Vincent/Weekender.prefab",
+      "tier": "Creator",
+      "morph": "MouthOpen",
+      "imported_frames": [
+        {
+          "weight": 100.0,
+          "raw_mesh_max_delta_m": 0.02827808,
+          "vertices_above10micrometres": 21490
+        }
+      ],
+      "weight_at_sample": 100.0,
+      "native_max_delta_m": 0.0282780081
+    },
+    {
+      "prefab": "Assets/Art/characters/authored/Vincent/Weekender.prefab",
+      "tier": "Creator",
+      "rest_height_m": 1.789215,
+      "rest_sole_m": 7.5250864E-07,
+      "triangles": 76772,
+      "morphs": [
+        "BlinkLeft",
+        "BlinkRight",
+        "Smile",
+        "BrowUp",
+        "MouthOpen"
+      ]
+    },
+    {
+      "prefab": "Assets/Art/characters/authored/Vincent/WeekenderWorld.prefab",
+      "tier": "Creator",
+      "default_morph_weights": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "prefab": "Assets/Art/characters/authored/Vincent/WeekenderWorld.prefab",
+      "tier": "Creator",
+      "morph": "BlinkLeft",
+      "imported_frames": [
+        {
+          "weight": 100.0,
+          "raw_mesh_max_delta_m": 0.0254587773,
+          "vertices_above10micrometres": 21490
+        }
+      ],
+      "weight_at_sample": 100.0,
+      "native_max_delta_m": 0.0254587773
+    },
+    {
+      "prefab": "Assets/Art/characters/authored/Vincent/WeekenderWorld.prefab",
+      "tier": "Creator",
+      "morph": "BlinkRight",
+      "imported_frames": [
+        {
+          "weight": 100.0,
+          "raw_mesh_max_delta_m": 0.0254737753,
+          "vertices_above10micrometres": 21490
+        }
+      ],
+      "weight_at_sample": 100.0,
+      "native_max_delta_m": 0.0254737753
+    },
+    {
+      "prefab": "Assets/Art/characters/authored/Vincent/WeekenderWorld.prefab",
+      "tier": "Creator",
+      "morph": "Smile",
+      "imported_frames": [
+        {
+          "weight": 100.0,
+          "raw_mesh_max_delta_m": 0.02349784,
+          "vertices_above10micrometres": 21490
+        }
+      ],
+      "weight_at_sample": 100.0,
+      "native_max_delta_m": 0.0234978385
+    },
+    {
+      "prefab": "Assets/Art/characters/authored/Vincent/WeekenderWorld.prefab",
+      "tier": "Creator",
+      "morph": "BrowUp",
+      "imported_frames": [
+        {
+          "weight": 100.0,
+          "raw_mesh_max_delta_m": 0.0167191979,
+          "vertices_above10micrometres": 21490
+        }
+      ],
+      "weight_at_sample": 100.0,
+      "native_max_delta_m": 0.0167191979
+    },
+    {
+      "prefab": "Assets/Art/characters/authored/Vincent/WeekenderWorld.prefab",
+      "tier": "Creator",
+      "morph": "MouthOpen",
+      "imported_frames": [
+        {
+          "weight": 100.0,
+          "raw_mesh_max_delta_m": 0.02827808,
+          "vertices_above10micrometres": 21490
+        }
+      ],
+      "weight_at_sample": 100.0,
+      "native_max_delta_m": 0.0282780081
+    },
+    {
+      "prefab": "Assets/Art/characters/authored/Vincent/WeekenderWorld.prefab",
+      "tier": "Creator",
+      "rest_height_m": 1.789215,
+      "rest_sole_m": 7.5250864E-07,
+      "triangles": 76772,
+      "morphs": [
+        "BlinkLeft",
+        "BlinkRight",
+        "Smile",
+        "BrowUp",
+        "MouthOpen"
+      ]
+    },
+    {
+      "prefab": "Assets/Art/characters/authored/Vincent/WeekenderWorld.prefab",
+      "tier": "LOD1",
+      "default_morph_weights": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "prefab": "Assets/Art/characters/authored/Vincent/WeekenderWorld.prefab",
+      "tier": "LOD1",
+      "morph": "BlinkLeft",
+      "imported_frames": [
+        {
+          "weight": 100.0,
+          "raw_mesh_max_delta_m": 0.0254587773,
+          "vertices_above10micrometres": 12854
+        }
+      ],
+      "weight_at_sample": 100.0,
+      "native_max_delta_m": 0.0254587773
+    },
+    {
+      "prefab": "Assets/Art/characters/authored/Vincent/WeekenderWorld.prefab",
+      "tier": "LOD1",
+      "morph": "BlinkRight",
+      "imported_frames": [
+        {
+          "weight": 100.0,
+          "raw_mesh_max_delta_m": 0.0254737753,
+          "vertices_above10micrometres": 12854
+        }
+      ],
+      "weight_at_sample": 100.0,
+      "native_max_delta_m": 0.0254737753
+    },
+    {
+      "prefab": "Assets/Art/characters/authored/Vincent/WeekenderWorld.prefab",
+      "tier": "LOD1",
+      "morph": "Smile",
+      "imported_frames": [
+        {
+          "weight": 100.0,
+          "raw_mesh_max_delta_m": 0.02349784,
+          "vertices_above10micrometres": 12854
+        }
+      ],
+      "weight_at_sample": 100.0,
+      "native_max_delta_m": 0.0234978385
+    },
+    {
+      "prefab": "Assets/Art/characters/authored/Vincent/WeekenderWorld.prefab",
+      "tier": "LOD1",
+      "morph": "BrowUp",
+      "imported_frames": [
+        {
+          "weight": 100.0,
+          "raw_mesh_max_delta_m": 0.0167191979,
+          "vertices_above10micrometres": 12854
+        }
+      ],
+      "weight_at_sample": 100.0,
+      "native_max_delta_m": 0.0167191979
+    },
+    {
+      "prefab": "Assets/Art/characters/authored/Vincent/WeekenderWorld.prefab",
+      "tier": "LOD1",
+      "morph": "MouthOpen",
+      "imported_frames": [
+        {
+          "weight": 100.0,
+          "raw_mesh_max_delta_m": 0.02827808,
+          "vertices_above10micrometres": 12854
+        }
+      ],
+      "weight_at_sample": 100.0,
+      "native_max_delta_m": 0.0282780081
+    },
+    {
+      "prefab": "Assets/Art/characters/authored/Vincent/WeekenderWorld.prefab",
+      "tier": "LOD1",
+      "rest_height_m": 1.789215,
+      "rest_sole_m": 7.5250864E-07,
+      "triangles": 53216,
+      "morphs": [
+        "BlinkLeft",
+        "BlinkRight",
+        "Smile",
+        "BrowUp",
+        "MouthOpen"
+      ]
+    },
+    {
+      "prefab": "Assets/Art/characters/authored/Vincent/WeekenderWorld.prefab",
+      "tier": "LOD2",
+      "default_morph_weights": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "prefab": "Assets/Art/characters/authored/Vincent/WeekenderWorld.prefab",
+      "tier": "LOD2",
+      "morph": "BlinkLeft",
+      "imported_frames": [
+        {
+          "weight": 100.0,
+          "raw_mesh_max_delta_m": 0.0254587773,
+          "vertices_above10micrometres": 7756
+        }
+      ],
+      "weight_at_sample": 100.0,
+      "native_max_delta_m": 0.0254587773
+    },
+    {
+      "prefab": "Assets/Art/characters/authored/Vincent/WeekenderWorld.prefab",
+      "tier": "LOD2",
+      "morph": "BlinkRight",
+      "imported_frames": [
+        {
+          "weight": 100.0,
+          "raw_mesh_max_delta_m": 0.0254737753,
+          "vertices_above10micrometres": 7756
+        }
+      ],
+      "weight_at_sample": 100.0,
+      "native_max_delta_m": 0.0254737753
+    },
+    {
+      "prefab": "Assets/Art/characters/authored/Vincent/WeekenderWorld.prefab",
+      "tier": "LOD2",
+      "morph": "Smile",
+      "imported_frames": [
+        {
+          "weight": 100.0,
+          "raw_mesh_max_delta_m": 0.02349784,
+          "vertices_above10micrometres": 7756
+        }
+      ],
+      "weight_at_sample": 100.0,
+      "native_max_delta_m": 0.0234978385
+    },
+    {
+      "prefab": "Assets/Art/characters/authored/Vincent/WeekenderWorld.prefab",
+      "tier": "LOD2",
+      "morph": "BrowUp",
+      "imported_frames": [
+        {
+          "weight": 100.0,
+          "raw_mesh_max_delta_m": 0.0166901238,
+          "vertices_above10micrometres": 7756
+        }
+      ],
+      "weight_at_sample": 100.0,
+      "native_max_delta_m": 0.0166901238
+    },
+    {
+      "prefab": "Assets/Art/characters/authored/Vincent/WeekenderWorld.prefab",
+      "tier": "LOD2",
+      "morph": "MouthOpen",
+      "imported_frames": [
+        {
+          "weight": 100.0,
+          "raw_mesh_max_delta_m": 0.02827808,
+          "vertices_above10micrometres": 7756
+        }
+      ],
+      "weight_at_sample": 100.0,
+      "native_max_delta_m": 0.0282780081
+    },
+    {
+      "prefab": "Assets/Art/characters/authored/Vincent/WeekenderWorld.prefab",
+      "tier": "LOD2",
+      "rest_height_m": 1.789215,
+      "rest_sole_m": 7.5250864E-07,
+      "triangles": 42630,
+      "morphs": [
+        "BlinkLeft",
+        "BlinkRight",
+        "Smile",
+        "BrowUp",
+        "MouthOpen"
+      ]
+    }
+  ],
+  "failure": "System.IO.InvalidDataException: Vincent import: Cannot establish 10mm relaxed-idle lateral hand clearance: VincentAdult_CreatorMesh, phase=0/12, side=1, gap=-0.01780m. This is not an exact intersection test; review an isolated own idle before registration.\n  at CTLife.EditorTools.VincentCharacterImport.Require (System.Boolean value, System.String message) [0x00014] in /Users/mac/Documents/codes/projects/ct-life/client/Assets/Scripts/Editor/VincentCharacterImport.cs:466 \n  at CTLife.EditorTools.VincentCharacterImport.ValidateIdle (System.String path, UnityEngine.Avatar avatar, UnityEngine.RuntimeAnimatorController controller, Newtonsoft.Json.Linq.JArray receipt) [0x0066a] in /Users/mac/Documents/codes/projects/ct-life/client/Assets/Scripts/Editor/VincentCharacterImport.cs:423 \n  at CTLife.EditorTools.VincentCharacterImport.ImportVincentAll () [0x0049a] in /Users/mac/Documents/codes/projects/ct-life/client/Assets/Scripts/Editor/VincentCharacterImport.cs:133 ",
+  "published": false
+}

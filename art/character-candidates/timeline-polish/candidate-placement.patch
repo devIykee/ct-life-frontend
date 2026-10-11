@@ -1,0 +1,33 @@
+--- a/client/Assets/Scripts/Editor/VenueContentBuilder.cs
++++ b/client/Assets/Scripts/Editor/VenueContentBuilder.cs
+@@ -208,7 +208,7 @@
+             var gardens = Child("Blossom gardens", _root);
+             var positions = new[]
+             {
+-                new Vector2(-12f, -7f), new Vector2(12f, -7f), new Vector2(-13.8f, 1.7f),
++                new Vector2(-4.8f, -4.6f), new Vector2(4.8f, -4.6f), new Vector2(-13.8f, 1.7f),
+                 new Vector2(14f, 3f), new Vector2(-8.2f, 11.4f), new Vector2(8.5f, 11.6f),
+                 new Vector2(-18.5f, 11.4f), new Vector2(18.6f, 11.4f),
+             };
+@@ -236,15 +236,18 @@
+             foreach (var x in new[] { -17f, 17f })
+                 foreach (var z in new[] { -11f, 8f })
+                 {
+-                    Add("street_lamp_single", x, z, parent: gardens);
+-                    Contact(x, z, 0.6f, 0.6f, 0.3f);
++                    float lampX = z == -11f ? Mathf.Sign(x) * 3.2f : x;
++                    float lampZ = z == -11f ? -10.7f : z;
++                    Add("street_lamp_single", lampX, lampZ, parent: gardens);
++                    Contact(lampX, lampZ, 0.6f, 0.6f, 0.3f);
+                 }
+         }
+ 
+         private static void BuildLandmarks()
+         {
+             // The contract's center (0,0) stays clear. The fountain sits beyond the meeting area.
+-            Add("plaza_fountain", 0f, 7.5f);
++            Add("timeline_plaza_surface", 0f, 0f);
++            Add("plaza_fountain_polish", 0f, 7.5f);
+             Obstacle(new Vector3(0f, 1f, 7.5f), new Vector3(4.5f, 3f, 4.5f));
+             Contact(0f, 7.5f, 5.3f, 4.6f, 0.35f);
+             Add("pixel_wall", -20.1f, 0f, yaw: 90f, screen: "pixel_wall");

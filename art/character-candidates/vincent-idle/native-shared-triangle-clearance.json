@@ -1,0 +1,1774 @@
+{
+  "all_pass": true,
+  "coverage_complete": true,
+  "phases_per_skin": {
+    "world-VincentAdult_CreatorMesh": 13,
+    "creator-VincentAdult_CreatorMesh": 13,
+    "world-Vincent_LOD1": 13,
+    "world-Vincent_LOD2": 13
+  },
+  "engineering_surface_margin_m": 0.002,
+  "expected_unique_phases_per_skin": 12,
+  "expected_phases_with_loop_endpoint_per_skin": 13,
+  "actual_files": 52,
+  "scope": "Minimum finite-triangle feature distance on selected hand and hip/thigh surface regions, including triangles crossing the >0.5 bone-weight selection boundary. Tests vertex-face, edge-edge and edge-through-face crossings. BVH sphere pruning bounds possible closer pairs. A 2 mm engineering margin is independent of the prior10 mm axis proxy. Selected regions are not closed volumes: this does not prove whole-body containment/collision correctness, transitions, or unsampled times.",
+  "analytic_fixtures_pass": true,
+  "elapsed_analysis_seconds": 15.848354040994309,
+  "rows": [
+    {
+      "file": "creator-VincentAdult_CreatorMesh-phase00.obj.gz",
+      "thigh_triangles_including_boundary": 4071,
+      "hands": {
+        "leftHand": {
+          "surface_feature_distance_m": 0.006342779844999313,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7113,
+          "exact_triangle_pairs_tested": 101,
+          "closest_pair": null
+        },
+        "rightHand": {
+          "surface_feature_distance_m": 0.0063233034018970935,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7113,
+          "exact_triangle_pairs_tested": 131,
+          "closest_pair": {
+            "hand_triangle": [
+              2148,
+              2149,
+              2147
+            ],
+            "thigh_triangle": [
+              15783,
+              15778,
+              15781
+            ]
+          }
+        }
+      }
+    },
+    {
+      "file": "creator-VincentAdult_CreatorMesh-phase01.obj.gz",
+      "thigh_triangles_including_boundary": 4071,
+      "hands": {
+        "leftHand": {
+          "surface_feature_distance_m": 0.00464309798553586,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7113,
+          "exact_triangle_pairs_tested": 79,
+          "closest_pair": null
+        },
+        "rightHand": {
+          "surface_feature_distance_m": 0.0046157087199389935,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7113,
+          "exact_triangle_pairs_tested": 80,
+          "closest_pair": null
+        }
+      }
+    },
+    {
+      "file": "creator-VincentAdult_CreatorMesh-phase02.obj.gz",
+      "thigh_triangles_including_boundary": 4071,
+      "hands": {
+        "leftHand": {
+          "surface_feature_distance_m": 0.003397927386686206,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7113,
+          "exact_triangle_pairs_tested": 70,
+          "closest_pair": null
+        },
+        "rightHand": {
+          "surface_feature_distance_m": 0.0033713157489376182,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7113,
+          "exact_triangle_pairs_tested": 70,
+          "closest_pair": {
+            "hand_triangle": [
+              2148,
+              2149,
+              2147
+            ],
+            "thigh_triangle": [
+              15783,
+              15778,
+              15781
+            ]
+          }
+        }
+      }
+    },
+    {
+      "file": "creator-VincentAdult_CreatorMesh-phase03.obj.gz",
+      "thigh_triangles_including_boundary": 4071,
+      "hands": {
+        "leftHand": {
+          "surface_feature_distance_m": 0.002940711099654436,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7113,
+          "exact_triangle_pairs_tested": 69,
+          "closest_pair": null
+        },
+        "rightHand": {
+          "surface_feature_distance_m": 0.0029195546617134496,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7113,
+          "exact_triangle_pairs_tested": 68,
+          "closest_pair": {
+            "hand_triangle": [
+              2148,
+              2149,
+              2147
+            ],
+            "thigh_triangle": [
+              15783,
+              15778,
+              15781
+            ]
+          }
+        }
+      }
+    },
+    {
+      "file": "creator-VincentAdult_CreatorMesh-phase04.obj.gz",
+      "thigh_triangles_including_boundary": 4071,
+      "hands": {
+        "leftHand": {
+          "surface_feature_distance_m": 0.0033890274353325367,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7113,
+          "exact_triangle_pairs_tested": 71,
+          "closest_pair": null
+        },
+        "rightHand": {
+          "surface_feature_distance_m": 0.0033804279030927964,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7113,
+          "exact_triangle_pairs_tested": 68,
+          "closest_pair": {
+            "hand_triangle": [
+              2148,
+              2149,
+              2147
+            ],
+            "thigh_triangle": [
+              15783,
+              15778,
+              15781
+            ]
+          }
+        }
+      }
+    },
+    {
+      "file": "creator-VincentAdult_CreatorMesh-phase05.obj.gz",
+      "thigh_triangles_including_boundary": 4071,
+      "hands": {
+        "leftHand": {
+          "surface_feature_distance_m": 0.004626519868998341,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7113,
+          "exact_triangle_pairs_tested": 82,
+          "closest_pair": {
+            "hand_triangle": [
+              6398,
+              6397,
+              6399
+            ],
+            "thigh_triangle": [
+              15049,
+              16346,
+              16347
+            ]
+          }
+        },
+        "rightHand": {
+          "surface_feature_distance_m": 0.004632387310266495,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7113,
+          "exact_triangle_pairs_tested": 77,
+          "closest_pair": null
+        }
+      }
+    },
+    {
+      "file": "creator-VincentAdult_CreatorMesh-phase06.obj.gz",
+      "thigh_triangles_including_boundary": 4071,
+      "hands": {
+        "leftHand": {
+          "surface_feature_distance_m": 0.006322638131678104,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7113,
+          "exact_triangle_pairs_tested": 98,
+          "closest_pair": null
+        },
+        "rightHand": {
+          "surface_feature_distance_m": 0.006343474452331642,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7113,
+          "exact_triangle_pairs_tested": 133,
+          "closest_pair": {
+            "hand_triangle": [
+              2148,
+              2149,
+              2147
+            ],
+            "thigh_triangle": [
+              15783,
+              15778,
+              15781
+            ]
+          }
+        }
+      }
+    },
+    {
+      "file": "creator-VincentAdult_CreatorMesh-phase07.obj.gz",
+      "thigh_triangles_including_boundary": 4071,
+      "hands": {
+        "leftHand": {
+          "surface_feature_distance_m": 0.008012286859775576,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7113,
+          "exact_triangle_pairs_tested": 126,
+          "closest_pair": {
+            "hand_triangle": [
+              6398,
+              6397,
+              6399
+            ],
+            "thigh_triangle": [
+              15049,
+              16348,
+              16346
+            ]
+          }
+        },
+        "rightHand": {
+          "surface_feature_distance_m": 0.00805170332651964,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7113,
+          "exact_triangle_pairs_tested": 206,
+          "closest_pair": {
+            "hand_triangle": [
+              2148,
+              2149,
+              2147
+            ],
+            "thigh_triangle": [
+              15783,
+              15782,
+              15778
+            ]
+          }
+        }
+      }
+    },
+    {
+      "file": "creator-VincentAdult_CreatorMesh-phase08.obj.gz",
+      "thigh_triangles_including_boundary": 4071,
+      "hands": {
+        "leftHand": {
+          "surface_feature_distance_m": 0.00924147920165976,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7113,
+          "exact_triangle_pairs_tested": 131,
+          "closest_pair": {
+            "hand_triangle": [
+              6398,
+              6397,
+              6399
+            ],
+            "thigh_triangle": [
+              15049,
+              16348,
+              16346
+            ]
+          }
+        },
+        "rightHand": {
+          "surface_feature_distance_m": 0.009282906050218257,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7113,
+          "exact_triangle_pairs_tested": 225,
+          "closest_pair": {
+            "hand_triangle": [
+              2148,
+              2149,
+              2147
+            ],
+            "thigh_triangle": [
+              15783,
+              15782,
+              15778
+            ]
+          }
+        }
+      }
+    },
+    {
+      "file": "creator-VincentAdult_CreatorMesh-phase09.obj.gz",
+      "thigh_triangles_including_boundary": 4071,
+      "hands": {
+        "leftHand": {
+          "surface_feature_distance_m": 0.00969601795077324,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7113,
+          "exact_triangle_pairs_tested": 146,
+          "closest_pair": null
+        },
+        "rightHand": {
+          "surface_feature_distance_m": 0.009729670933800628,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7113,
+          "exact_triangle_pairs_tested": 252,
+          "closest_pair": {
+            "hand_triangle": [
+              2148,
+              2149,
+              2147
+            ],
+            "thigh_triangle": [
+              15783,
+              15782,
+              15778
+            ]
+          }
+        }
+      }
+    },
+    {
+      "file": "creator-VincentAdult_CreatorMesh-phase10.obj.gz",
+      "thigh_triangles_including_boundary": 4071,
+      "hands": {
+        "leftHand": {
+          "surface_feature_distance_m": 0.009254665975351154,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7113,
+          "exact_triangle_pairs_tested": 132,
+          "closest_pair": {
+            "hand_triangle": [
+              6398,
+              6397,
+              6399
+            ],
+            "thigh_triangle": [
+              15049,
+              16348,
+              16346
+            ]
+          }
+        },
+        "rightHand": {
+          "surface_feature_distance_m": 0.009269871585914555,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7113,
+          "exact_triangle_pairs_tested": 228,
+          "closest_pair": {
+            "hand_triangle": [
+              2148,
+              2149,
+              2147
+            ],
+            "thigh_triangle": [
+              15783,
+              15782,
+              15778
+            ]
+          }
+        }
+      }
+    },
+    {
+      "file": "creator-VincentAdult_CreatorMesh-phase11.obj.gz",
+      "thigh_triangles_including_boundary": 4071,
+      "hands": {
+        "leftHand": {
+          "surface_feature_distance_m": 0.008035792921420901,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7113,
+          "exact_triangle_pairs_tested": 129,
+          "closest_pair": {
+            "hand_triangle": [
+              6398,
+              6397,
+              6399
+            ],
+            "thigh_triangle": [
+              15049,
+              16348,
+              16346
+            ]
+          }
+        },
+        "rightHand": {
+          "surface_feature_distance_m": 0.008028672817313334,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7113,
+          "exact_triangle_pairs_tested": 204,
+          "closest_pair": {
+            "hand_triangle": [
+              2148,
+              2149,
+              2147
+            ],
+            "thigh_triangle": [
+              15783,
+              15782,
+              15778
+            ]
+          }
+        }
+      }
+    },
+    {
+      "file": "creator-VincentAdult_CreatorMesh-phase12.obj.gz",
+      "thigh_triangles_including_boundary": 4071,
+      "hands": {
+        "leftHand": {
+          "surface_feature_distance_m": 0.006342779844999313,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7113,
+          "exact_triangle_pairs_tested": 101,
+          "closest_pair": null
+        },
+        "rightHand": {
+          "surface_feature_distance_m": 0.0063233034018970935,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7113,
+          "exact_triangle_pairs_tested": 131,
+          "closest_pair": {
+            "hand_triangle": [
+              2148,
+              2149,
+              2147
+            ],
+            "thigh_triangle": [
+              15783,
+              15778,
+              15781
+            ]
+          }
+        }
+      }
+    },
+    {
+      "file": "world-VincentAdult_CreatorMesh-phase00.obj.gz",
+      "thigh_triangles_including_boundary": 4071,
+      "hands": {
+        "leftHand": {
+          "surface_feature_distance_m": 0.006342779844999313,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7113,
+          "exact_triangle_pairs_tested": 101,
+          "closest_pair": null
+        },
+        "rightHand": {
+          "surface_feature_distance_m": 0.0063233034018970935,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7113,
+          "exact_triangle_pairs_tested": 131,
+          "closest_pair": {
+            "hand_triangle": [
+              2148,
+              2149,
+              2147
+            ],
+            "thigh_triangle": [
+              15783,
+              15778,
+              15781
+            ]
+          }
+        }
+      }
+    },
+    {
+      "file": "world-VincentAdult_CreatorMesh-phase01.obj.gz",
+      "thigh_triangles_including_boundary": 4071,
+      "hands": {
+        "leftHand": {
+          "surface_feature_distance_m": 0.00464309798553586,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7113,
+          "exact_triangle_pairs_tested": 79,
+          "closest_pair": null
+        },
+        "rightHand": {
+          "surface_feature_distance_m": 0.0046157087199389935,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7113,
+          "exact_triangle_pairs_tested": 80,
+          "closest_pair": null
+        }
+      }
+    },
+    {
+      "file": "world-VincentAdult_CreatorMesh-phase02.obj.gz",
+      "thigh_triangles_including_boundary": 4071,
+      "hands": {
+        "leftHand": {
+          "surface_feature_distance_m": 0.003397927386686206,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7113,
+          "exact_triangle_pairs_tested": 70,
+          "closest_pair": null
+        },
+        "rightHand": {
+          "surface_feature_distance_m": 0.0033713157489376182,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7113,
+          "exact_triangle_pairs_tested": 70,
+          "closest_pair": {
+            "hand_triangle": [
+              2148,
+              2149,
+              2147
+            ],
+            "thigh_triangle": [
+              15783,
+              15778,
+              15781
+            ]
+          }
+        }
+      }
+    },
+    {
+      "file": "world-VincentAdult_CreatorMesh-phase03.obj.gz",
+      "thigh_triangles_including_boundary": 4071,
+      "hands": {
+        "leftHand": {
+          "surface_feature_distance_m": 0.002940711099654436,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7113,
+          "exact_triangle_pairs_tested": 69,
+          "closest_pair": null
+        },
+        "rightHand": {
+          "surface_feature_distance_m": 0.0029195546617134496,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7113,
+          "exact_triangle_pairs_tested": 68,
+          "closest_pair": {
+            "hand_triangle": [
+              2148,
+              2149,
+              2147
+            ],
+            "thigh_triangle": [
+              15783,
+              15778,
+              15781
+            ]
+          }
+        }
+      }
+    },
+    {
+      "file": "world-VincentAdult_CreatorMesh-phase04.obj.gz",
+      "thigh_triangles_including_boundary": 4071,
+      "hands": {
+        "leftHand": {
+          "surface_feature_distance_m": 0.0033890274353325367,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7113,
+          "exact_triangle_pairs_tested": 71,
+          "closest_pair": null
+        },
+        "rightHand": {
+          "surface_feature_distance_m": 0.0033804279030927964,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7113,
+          "exact_triangle_pairs_tested": 68,
+          "closest_pair": {
+            "hand_triangle": [
+              2148,
+              2149,
+              2147
+            ],
+            "thigh_triangle": [
+              15783,
+              15778,
+              15781
+            ]
+          }
+        }
+      }
+    },
+    {
+      "file": "world-VincentAdult_CreatorMesh-phase05.obj.gz",
+      "thigh_triangles_including_boundary": 4071,
+      "hands": {
+        "leftHand": {
+          "surface_feature_distance_m": 0.004626519868998341,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7113,
+          "exact_triangle_pairs_tested": 82,
+          "closest_pair": {
+            "hand_triangle": [
+              6398,
+              6397,
+              6399
+            ],
+            "thigh_triangle": [
+              15049,
+              16346,
+              16347
+            ]
+          }
+        },
+        "rightHand": {
+          "surface_feature_distance_m": 0.004632387310266495,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7113,
+          "exact_triangle_pairs_tested": 77,
+          "closest_pair": null
+        }
+      }
+    },
+    {
+      "file": "world-VincentAdult_CreatorMesh-phase06.obj.gz",
+      "thigh_triangles_including_boundary": 4071,
+      "hands": {
+        "leftHand": {
+          "surface_feature_distance_m": 0.006322638131678104,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7113,
+          "exact_triangle_pairs_tested": 98,
+          "closest_pair": null
+        },
+        "rightHand": {
+          "surface_feature_distance_m": 0.006343474452331642,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7113,
+          "exact_triangle_pairs_tested": 133,
+          "closest_pair": {
+            "hand_triangle": [
+              2148,
+              2149,
+              2147
+            ],
+            "thigh_triangle": [
+              15783,
+              15778,
+              15781
+            ]
+          }
+        }
+      }
+    },
+    {
+      "file": "world-VincentAdult_CreatorMesh-phase07.obj.gz",
+      "thigh_triangles_including_boundary": 4071,
+      "hands": {
+        "leftHand": {
+          "surface_feature_distance_m": 0.008012286859775576,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7113,
+          "exact_triangle_pairs_tested": 126,
+          "closest_pair": {
+            "hand_triangle": [
+              6398,
+              6397,
+              6399
+            ],
+            "thigh_triangle": [
+              15049,
+              16348,
+              16346
+            ]
+          }
+        },
+        "rightHand": {
+          "surface_feature_distance_m": 0.00805170332651964,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7113,
+          "exact_triangle_pairs_tested": 206,
+          "closest_pair": {
+            "hand_triangle": [
+              2148,
+              2149,
+              2147
+            ],
+            "thigh_triangle": [
+              15783,
+              15782,
+              15778
+            ]
+          }
+        }
+      }
+    },
+    {
+      "file": "world-VincentAdult_CreatorMesh-phase08.obj.gz",
+      "thigh_triangles_including_boundary": 4071,
+      "hands": {
+        "leftHand": {
+          "surface_feature_distance_m": 0.00924147920165976,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7113,
+          "exact_triangle_pairs_tested": 131,
+          "closest_pair": {
+            "hand_triangle": [
+              6398,
+              6397,
+              6399
+            ],
+            "thigh_triangle": [
+              15049,
+              16348,
+              16346
+            ]
+          }
+        },
+        "rightHand": {
+          "surface_feature_distance_m": 0.009282906050218257,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7113,
+          "exact_triangle_pairs_tested": 225,
+          "closest_pair": {
+            "hand_triangle": [
+              2148,
+              2149,
+              2147
+            ],
+            "thigh_triangle": [
+              15783,
+              15782,
+              15778
+            ]
+          }
+        }
+      }
+    },
+    {
+      "file": "world-VincentAdult_CreatorMesh-phase09.obj.gz",
+      "thigh_triangles_including_boundary": 4071,
+      "hands": {
+        "leftHand": {
+          "surface_feature_distance_m": 0.00969601795077324,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7113,
+          "exact_triangle_pairs_tested": 146,
+          "closest_pair": null
+        },
+        "rightHand": {
+          "surface_feature_distance_m": 0.009729670933800628,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7113,
+          "exact_triangle_pairs_tested": 252,
+          "closest_pair": {
+            "hand_triangle": [
+              2148,
+              2149,
+              2147
+            ],
+            "thigh_triangle": [
+              15783,
+              15782,
+              15778
+            ]
+          }
+        }
+      }
+    },
+    {
+      "file": "world-VincentAdult_CreatorMesh-phase10.obj.gz",
+      "thigh_triangles_including_boundary": 4071,
+      "hands": {
+        "leftHand": {
+          "surface_feature_distance_m": 0.009254665975351154,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7113,
+          "exact_triangle_pairs_tested": 132,
+          "closest_pair": {
+            "hand_triangle": [
+              6398,
+              6397,
+              6399
+            ],
+            "thigh_triangle": [
+              15049,
+              16348,
+              16346
+            ]
+          }
+        },
+        "rightHand": {
+          "surface_feature_distance_m": 0.009269871585914555,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7113,
+          "exact_triangle_pairs_tested": 228,
+          "closest_pair": {
+            "hand_triangle": [
+              2148,
+              2149,
+              2147
+            ],
+            "thigh_triangle": [
+              15783,
+              15782,
+              15778
+            ]
+          }
+        }
+      }
+    },
+    {
+      "file": "world-VincentAdult_CreatorMesh-phase11.obj.gz",
+      "thigh_triangles_including_boundary": 4071,
+      "hands": {
+        "leftHand": {
+          "surface_feature_distance_m": 0.008035792921420901,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7113,
+          "exact_triangle_pairs_tested": 129,
+          "closest_pair": {
+            "hand_triangle": [
+              6398,
+              6397,
+              6399
+            ],
+            "thigh_triangle": [
+              15049,
+              16348,
+              16346
+            ]
+          }
+        },
+        "rightHand": {
+          "surface_feature_distance_m": 0.008028672817313334,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7113,
+          "exact_triangle_pairs_tested": 204,
+          "closest_pair": {
+            "hand_triangle": [
+              2148,
+              2149,
+              2147
+            ],
+            "thigh_triangle": [
+              15783,
+              15782,
+              15778
+            ]
+          }
+        }
+      }
+    },
+    {
+      "file": "world-VincentAdult_CreatorMesh-phase12.obj.gz",
+      "thigh_triangles_including_boundary": 4071,
+      "hands": {
+        "leftHand": {
+          "surface_feature_distance_m": 0.006342779844999313,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7113,
+          "exact_triangle_pairs_tested": 101,
+          "closest_pair": null
+        },
+        "rightHand": {
+          "surface_feature_distance_m": 0.0063233034018970935,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7113,
+          "exact_triangle_pairs_tested": 131,
+          "closest_pair": {
+            "hand_triangle": [
+              2148,
+              2149,
+              2147
+            ],
+            "thigh_triangle": [
+              15783,
+              15778,
+              15781
+            ]
+          }
+        }
+      }
+    },
+    {
+      "file": "world-Vincent_LOD1-phase00.obj.gz",
+      "thigh_triangles_including_boundary": 2376,
+      "hands": {
+        "leftHand": {
+          "surface_feature_distance_m": 0.007258245773566968,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7111,
+          "exact_triangle_pairs_tested": 101,
+          "closest_pair": {
+            "hand_triangle": [
+              7065,
+              7064,
+              7066
+            ],
+            "thigh_triangle": [
+              18323,
+              18326,
+              18327
+            ]
+          }
+        },
+        "rightHand": {
+          "surface_feature_distance_m": 0.007793064039784446,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7111,
+          "exact_triangle_pairs_tested": 133,
+          "closest_pair": {
+            "hand_triangle": [
+              4175,
+              4179,
+              4177
+            ],
+            "thigh_triangle": [
+              14748,
+              14177,
+              14749
+            ]
+          }
+        }
+      }
+    },
+    {
+      "file": "world-Vincent_LOD1-phase01.obj.gz",
+      "thigh_triangles_including_boundary": 2376,
+      "hands": {
+        "leftHand": {
+          "surface_feature_distance_m": 0.005812400783355787,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7111,
+          "exact_triangle_pairs_tested": 79,
+          "closest_pair": {
+            "hand_triangle": [
+              7065,
+              7064,
+              7066
+            ],
+            "thigh_triangle": [
+              18323,
+              18326,
+              18327
+            ]
+          }
+        },
+        "rightHand": {
+          "surface_feature_distance_m": 0.006523601171099527,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7111,
+          "exact_triangle_pairs_tested": 128,
+          "closest_pair": {
+            "hand_triangle": [
+              38038,
+              38037,
+              38046
+            ],
+            "thigh_triangle": [
+              14744,
+              14747,
+              14748
+            ]
+          }
+        }
+      }
+    },
+    {
+      "file": "world-Vincent_LOD1-phase02.obj.gz",
+      "thigh_triangles_including_boundary": 2376,
+      "hands": {
+        "leftHand": {
+          "surface_feature_distance_m": 0.004747355220853879,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7111,
+          "exact_triangle_pairs_tested": 63,
+          "closest_pair": {
+            "hand_triangle": [
+              7065,
+              7064,
+              7066
+            ],
+            "thigh_triangle": [
+              18323,
+              18326,
+              18327
+            ]
+          }
+        },
+        "rightHand": {
+          "surface_feature_distance_m": 0.0050821006298065186,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7111,
+          "exact_triangle_pairs_tested": 74,
+          "closest_pair": null
+        }
+      }
+    },
+    {
+      "file": "world-Vincent_LOD1-phase03.obj.gz",
+      "thigh_triangles_including_boundary": 2376,
+      "hands": {
+        "leftHand": {
+          "surface_feature_distance_m": 0.004349383887718522,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7111,
+          "exact_triangle_pairs_tested": 58,
+          "closest_pair": {
+            "hand_triangle": [
+              7065,
+              7064,
+              7066
+            ],
+            "thigh_triangle": [
+              18323,
+              18326,
+              18327
+            ]
+          }
+        },
+        "rightHand": {
+          "surface_feature_distance_m": 0.004549245746594787,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7111,
+          "exact_triangle_pairs_tested": 53,
+          "closest_pair": {
+            "hand_triangle": [
+              38038,
+              38037,
+              38046
+            ],
+            "thigh_triangle": [
+              14744,
+              14747,
+              14748
+            ]
+          }
+        }
+      }
+    },
+    {
+      "file": "world-Vincent_LOD1-phase04.obj.gz",
+      "thigh_triangles_including_boundary": 2376,
+      "hands": {
+        "leftHand": {
+          "surface_feature_distance_m": 0.004720388446003199,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7111,
+          "exact_triangle_pairs_tested": 64,
+          "closest_pair": null
+        },
+        "rightHand": {
+          "surface_feature_distance_m": 0.005065806612764306,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7111,
+          "exact_triangle_pairs_tested": 72,
+          "closest_pair": {
+            "hand_triangle": [
+              38038,
+              38037,
+              38046
+            ],
+            "thigh_triangle": [
+              14744,
+              14747,
+              14748
+            ]
+          }
+        }
+      }
+    },
+    {
+      "file": "world-Vincent_LOD1-phase05.obj.gz",
+      "thigh_triangles_including_boundary": 2376,
+      "hands": {
+        "leftHand": {
+          "surface_feature_distance_m": 0.00576420585868727,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7111,
+          "exact_triangle_pairs_tested": 77,
+          "closest_pair": {
+            "hand_triangle": [
+              7065,
+              7064,
+              7066
+            ],
+            "thigh_triangle": [
+              18323,
+              18326,
+              18327
+            ]
+          }
+        },
+        "rightHand": {
+          "surface_feature_distance_m": 0.006496018095287705,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7111,
+          "exact_triangle_pairs_tested": 125,
+          "closest_pair": {
+            "hand_triangle": [
+              38038,
+              38037,
+              38046
+            ],
+            "thigh_triangle": [
+              14744,
+              14747,
+              14748
+            ]
+          }
+        }
+      }
+    },
+    {
+      "file": "world-Vincent_LOD1-phase06.obj.gz",
+      "thigh_triangles_including_boundary": 2376,
+      "hands": {
+        "leftHand": {
+          "surface_feature_distance_m": 0.00720128882676363,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7111,
+          "exact_triangle_pairs_tested": 101,
+          "closest_pair": null
+        },
+        "rightHand": {
+          "surface_feature_distance_m": 0.007839106292822784,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7111,
+          "exact_triangle_pairs_tested": 131,
+          "closest_pair": {
+            "hand_triangle": [
+              38076,
+              38072,
+              38075
+            ],
+            "thigh_triangle": [
+              14749,
+              14741,
+              14748
+            ]
+          }
+        }
+      }
+    },
+    {
+      "file": "world-Vincent_LOD1-phase07.obj.gz",
+      "thigh_triangles_including_boundary": 2376,
+      "hands": {
+        "leftHand": {
+          "surface_feature_distance_m": 0.008668199695913193,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7111,
+          "exact_triangle_pairs_tested": 112,
+          "closest_pair": {
+            "hand_triangle": [
+              7065,
+              7064,
+              7066
+            ],
+            "thigh_triangle": [
+              18323,
+              18326,
+              18327
+            ]
+          }
+        },
+        "rightHand": {
+          "surface_feature_distance_m": 0.008927500751372136,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7111,
+          "exact_triangle_pairs_tested": 113,
+          "closest_pair": {
+            "hand_triangle": [
+              38076,
+              38072,
+              38075
+            ],
+            "thigh_triangle": [
+              14748,
+              14177,
+              14749
+            ]
+          }
+        }
+      }
+    },
+    {
+      "file": "world-Vincent_LOD1-phase08.obj.gz",
+      "thigh_triangles_including_boundary": 2376,
+      "hands": {
+        "leftHand": {
+          "surface_feature_distance_m": 0.009942940717095622,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7111,
+          "exact_triangle_pairs_tested": 146,
+          "closest_pair": {
+            "hand_triangle": [
+              7067,
+              7065,
+              7066
+            ],
+            "thigh_triangle": [
+              18323,
+              18324,
+              18326
+            ]
+          }
+        },
+        "rightHand": {
+          "surface_feature_distance_m": 0.009774583391845226,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7111,
+          "exact_triangle_pairs_tested": 103,
+          "closest_pair": null
+        }
+      }
+    },
+    {
+      "file": "world-Vincent_LOD1-phase09.obj.gz",
+      "thigh_triangles_including_boundary": 2376,
+      "hands": {
+        "leftHand": {
+          "surface_feature_distance_m": 0.010430565645831157,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7111,
+          "exact_triangle_pairs_tested": 150,
+          "closest_pair": {
+            "hand_triangle": [
+              7067,
+              7065,
+              7066
+            ],
+            "thigh_triangle": [
+              18323,
+              18326,
+              18327
+            ]
+          }
+        },
+        "rightHand": {
+          "surface_feature_distance_m": 0.010142646631713206,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7111,
+          "exact_triangle_pairs_tested": 99,
+          "closest_pair": {
+            "hand_triangle": [
+              4175,
+              4179,
+              4177
+            ],
+            "thigh_triangle": [
+              14748,
+              14177,
+              14749
+            ]
+          }
+        }
+      }
+    },
+    {
+      "file": "world-Vincent_LOD1-phase10.obj.gz",
+      "thigh_triangles_including_boundary": 2376,
+      "hands": {
+        "leftHand": {
+          "surface_feature_distance_m": 0.009944663105854517,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7111,
+          "exact_triangle_pairs_tested": 142,
+          "closest_pair": {
+            "hand_triangle": [
+              7067,
+              7065,
+              7066
+            ],
+            "thigh_triangle": [
+              18323,
+              18326,
+              18327
+            ]
+          }
+        },
+        "rightHand": {
+          "surface_feature_distance_m": 0.009770945999223799,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7111,
+          "exact_triangle_pairs_tested": 102,
+          "closest_pair": {
+            "hand_triangle": [
+              4175,
+              4179,
+              4177
+            ],
+            "thigh_triangle": [
+              14748,
+              14177,
+              14749
+            ]
+          }
+        }
+      }
+    },
+    {
+      "file": "world-Vincent_LOD1-phase11.obj.gz",
+      "thigh_triangles_including_boundary": 2376,
+      "hands": {
+        "leftHand": {
+          "surface_feature_distance_m": 0.00870610772745967,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7111,
+          "exact_triangle_pairs_tested": 110,
+          "closest_pair": {
+            "hand_triangle": [
+              38326,
+              38325,
+              38322
+            ],
+            "thigh_triangle": [
+              18323,
+              18326,
+              18327
+            ]
+          }
+        },
+        "rightHand": {
+          "surface_feature_distance_m": 0.008889535158043837,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7111,
+          "exact_triangle_pairs_tested": 110,
+          "closest_pair": {
+            "hand_triangle": [
+              38076,
+              38072,
+              38075
+            ],
+            "thigh_triangle": [
+              14748,
+              14177,
+              14749
+            ]
+          }
+        }
+      }
+    },
+    {
+      "file": "world-Vincent_LOD1-phase12.obj.gz",
+      "thigh_triangles_including_boundary": 2376,
+      "hands": {
+        "leftHand": {
+          "surface_feature_distance_m": 0.007258245773566968,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7111,
+          "exact_triangle_pairs_tested": 101,
+          "closest_pair": {
+            "hand_triangle": [
+              7065,
+              7064,
+              7066
+            ],
+            "thigh_triangle": [
+              18323,
+              18326,
+              18327
+            ]
+          }
+        },
+        "rightHand": {
+          "surface_feature_distance_m": 0.007793064039784446,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7111,
+          "exact_triangle_pairs_tested": 133,
+          "closest_pair": {
+            "hand_triangle": [
+              4175,
+              4179,
+              4177
+            ],
+            "thigh_triangle": [
+              14748,
+              14177,
+              14749
+            ]
+          }
+        }
+      }
+    },
+    {
+      "file": "world-Vincent_LOD2-phase00.obj.gz",
+      "thigh_triangles_including_boundary": 2180,
+      "hands": {
+        "leftHand": {
+          "surface_feature_distance_m": 0.007424734532833099,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7110,
+          "exact_triangle_pairs_tested": 75,
+          "closest_pair": null
+        },
+        "rightHand": {
+          "surface_feature_distance_m": 0.007152274716645479,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7110,
+          "exact_triangle_pairs_tested": 110,
+          "closest_pair": null
+        }
+      }
+    },
+    {
+      "file": "world-Vincent_LOD2-phase01.obj.gz",
+      "thigh_triangles_including_boundary": 2180,
+      "hands": {
+        "leftHand": {
+          "surface_feature_distance_m": 0.005784779787063599,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7110,
+          "exact_triangle_pairs_tested": 50,
+          "closest_pair": null
+        },
+        "rightHand": {
+          "surface_feature_distance_m": 0.005446916316127439,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7110,
+          "exact_triangle_pairs_tested": 83,
+          "closest_pair": {
+            "hand_triangle": [
+              2038,
+              2039,
+              2037
+            ],
+            "thigh_triangle": [
+              14513,
+              14526,
+              14533
+            ]
+          }
+        }
+      }
+    },
+    {
+      "file": "world-Vincent_LOD2-phase02.obj.gz",
+      "thigh_triangles_including_boundary": 2180,
+      "hands": {
+        "leftHand": {
+          "surface_feature_distance_m": 0.004826519638299942,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7110,
+          "exact_triangle_pairs_tested": 47,
+          "closest_pair": null
+        },
+        "rightHand": {
+          "surface_feature_distance_m": 0.004204768507476389,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7110,
+          "exact_triangle_pairs_tested": 60,
+          "closest_pair": {
+            "hand_triangle": [
+              2038,
+              2039,
+              2037
+            ],
+            "thigh_triangle": [
+              14513,
+              14526,
+              14533
+            ]
+          }
+        }
+      }
+    },
+    {
+      "file": "world-Vincent_LOD2-phase03.obj.gz",
+      "thigh_triangles_including_boundary": 2180,
+      "hands": {
+        "leftHand": {
+          "surface_feature_distance_m": 0.004479286445679495,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7110,
+          "exact_triangle_pairs_tested": 48,
+          "closest_pair": {
+            "hand_triangle": [
+              7083,
+              7082,
+              7084
+            ],
+            "thigh_triangle": [
+              13658,
+              13659,
+              13656
+            ]
+          }
+        },
+        "rightHand": {
+          "surface_feature_distance_m": 0.0037551166024059057,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7110,
+          "exact_triangle_pairs_tested": 56,
+          "closest_pair": null
+        }
+      }
+    },
+    {
+      "file": "world-Vincent_LOD2-phase04.obj.gz",
+      "thigh_triangles_including_boundary": 2180,
+      "hands": {
+        "leftHand": {
+          "surface_feature_distance_m": 0.004786469507962465,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7110,
+          "exact_triangle_pairs_tested": 47,
+          "closest_pair": null
+        },
+        "rightHand": {
+          "surface_feature_distance_m": 0.004213001113384962,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7110,
+          "exact_triangle_pairs_tested": 59,
+          "closest_pair": null
+        }
+      }
+    },
+    {
+      "file": "world-Vincent_LOD2-phase05.obj.gz",
+      "thigh_triangles_including_boundary": 2180,
+      "hands": {
+        "leftHand": {
+          "surface_feature_distance_m": 0.005740837659686804,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7110,
+          "exact_triangle_pairs_tested": 50,
+          "closest_pair": null
+        },
+        "rightHand": {
+          "surface_feature_distance_m": 0.005461941473186016,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7110,
+          "exact_triangle_pairs_tested": 75,
+          "closest_pair": null
+        }
+      }
+    },
+    {
+      "file": "world-Vincent_LOD2-phase06.obj.gz",
+      "thigh_triangles_including_boundary": 2180,
+      "hands": {
+        "leftHand": {
+          "surface_feature_distance_m": 0.007412618459628297,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7110,
+          "exact_triangle_pairs_tested": 76,
+          "closest_pair": {
+            "hand_triangle": [
+              7083,
+              7082,
+              7084
+            ],
+            "thigh_triangle": [
+              13656,
+              13655,
+              13658
+            ]
+          }
+        },
+        "rightHand": {
+          "surface_feature_distance_m": 0.007170441560447216,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7110,
+          "exact_triangle_pairs_tested": 110,
+          "closest_pair": null
+        }
+      }
+    },
+    {
+      "file": "world-Vincent_LOD2-phase07.obj.gz",
+      "thigh_triangles_including_boundary": 2180,
+      "hands": {
+        "leftHand": {
+          "surface_feature_distance_m": 0.009156006731528563,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7110,
+          "exact_triangle_pairs_tested": 104,
+          "closest_pair": {
+            "hand_triangle": [
+              7083,
+              7082,
+              7084
+            ],
+            "thigh_triangle": [
+              13656,
+              13655,
+              13658
+            ]
+          }
+        },
+        "rightHand": {
+          "surface_feature_distance_m": 0.008914001487695182,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7110,
+          "exact_triangle_pairs_tested": 146,
+          "closest_pair": {
+            "hand_triangle": [
+              2038,
+              2040,
+              2039
+            ],
+            "thigh_triangle": [
+              14513,
+              14526,
+              14533
+            ]
+          }
+        }
+      }
+    },
+    {
+      "file": "world-Vincent_LOD2-phase08.obj.gz",
+      "thigh_triangles_including_boundary": 2180,
+      "hands": {
+        "leftHand": {
+          "surface_feature_distance_m": 0.010435388161065713,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7110,
+          "exact_triangle_pairs_tested": 120,
+          "closest_pair": {
+            "hand_triangle": [
+              7083,
+              7082,
+              7084
+            ],
+            "thigh_triangle": [
+              13656,
+              13655,
+              13658
+            ]
+          }
+        },
+        "rightHand": {
+          "surface_feature_distance_m": 0.009779402986168861,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7110,
+          "exact_triangle_pairs_tested": 130,
+          "closest_pair": null
+        }
+      }
+    },
+    {
+      "file": "world-Vincent_LOD2-phase09.obj.gz",
+      "thigh_triangles_including_boundary": 2180,
+      "hands": {
+        "leftHand": {
+          "surface_feature_distance_m": 0.010898690196947109,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7110,
+          "exact_triangle_pairs_tested": 120,
+          "closest_pair": {
+            "hand_triangle": [
+              7073,
+              7079,
+              7083
+            ],
+            "thigh_triangle": [
+              13656,
+              13655,
+              13658
+            ]
+          }
+        },
+        "rightHand": {
+          "surface_feature_distance_m": 0.010144627427322117,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7110,
+          "exact_triangle_pairs_tested": 127,
+          "closest_pair": {
+            "hand_triangle": [
+              3926,
+              3930,
+              3928
+            ],
+            "thigh_triangle": [
+              14533,
+              14534,
+              14513
+            ]
+          }
+        }
+      }
+    },
+    {
+      "file": "world-Vincent_LOD2-phase10.obj.gz",
+      "thigh_triangles_including_boundary": 2180,
+      "hands": {
+        "leftHand": {
+          "surface_feature_distance_m": 0.010442287661135197,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7110,
+          "exact_triangle_pairs_tested": 121,
+          "closest_pair": null
+        },
+        "rightHand": {
+          "surface_feature_distance_m": 0.00977530494590863,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7110,
+          "exact_triangle_pairs_tested": 130,
+          "closest_pair": {
+            "hand_triangle": [
+              3926,
+              3930,
+              3928
+            ],
+            "thigh_triangle": [
+              14513,
+              14526,
+              14533
+            ]
+          }
+        }
+      }
+    },
+    {
+      "file": "world-Vincent_LOD2-phase11.obj.gz",
+      "thigh_triangles_including_boundary": 2180,
+      "hands": {
+        "leftHand": {
+          "surface_feature_distance_m": 0.009168489836156368,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7110,
+          "exact_triangle_pairs_tested": 102,
+          "closest_pair": null
+        },
+        "rightHand": {
+          "surface_feature_distance_m": 0.008899719148911685,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7110,
+          "exact_triangle_pairs_tested": 148,
+          "closest_pair": {
+            "hand_triangle": [
+              3926,
+              3930,
+              3928
+            ],
+            "thigh_triangle": [
+              14533,
+              14534,
+              14513
+            ]
+          }
+        }
+      }
+    },
+    {
+      "file": "world-Vincent_LOD2-phase12.obj.gz",
+      "thigh_triangles_including_boundary": 2180,
+      "hands": {
+        "leftHand": {
+          "surface_feature_distance_m": 0.007424734532833099,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7110,
+          "exact_triangle_pairs_tested": 75,
+          "closest_pair": null
+        },
+        "rightHand": {
+          "surface_feature_distance_m": 0.007152274716645479,
+          "passes_2mm_margin": true,
+          "hand_triangles_including_boundary": 7110,
+          "exact_triangle_pairs_tested": 110,
+          "closest_pair": null
+        }
+      }
+    }
+  ]
+}
