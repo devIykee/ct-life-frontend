@@ -146,6 +146,12 @@ namespace CTLife.UI
         public static VisualElement BottomBar(params Button[] buttons)
         {
             var bar = El.Div("duo-bottom-bar");
+            // Docked to the page bottom: a fade from the bar's top down to the screen edge, so scrolled rows never show
+            // beneath the capsule (board #6). Pickable off so it never steals taps.
+            var dock = El.Div("duo-bottom-bar-dock");
+            dock.pickingMode = PickingMode.Ignore;
+            dock.style.backgroundImage = Background.FromTexture2D(Fade);
+            bar.Add(dock);
             AddShadow(bar, "bar");
             var face = El.Div("duo-bottom-bar-face");
             foreach (var b in buttons) { b.AddToClassList("duo-bottom-bar-button"); face.Add(b); }

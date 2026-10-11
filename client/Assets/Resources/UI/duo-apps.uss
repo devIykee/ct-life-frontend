@@ -170,7 +170,8 @@
 
 /* ================= Perp Pit (board #6) ================= */
 .ct-phone .duo-perps .duo-perp-tabs { margin: 0 30px 18px; }
-.ct-phone .duo-perps-trade .duo-scroll-content { padding-bottom: 200px; }
+/* Bar (136) + its bottom gap (24) + the dock fade (40): the last row scrolls clear of the docked capsule. */
+.ct-phone .duo-perps-trade .duo-scroll-content { padding-bottom: 220px; }
 .ct-phone .duo-perp-hero { flex-shrink: 0; }
 .ct-phone .duo-perp-asset { flex-direction: row; align-items: center; margin: 6px 38px 0; }
 .ct-phone .duo-perp-coin { width: 48px; height: 48px; border-radius: 24px; background-color: #8a55ff; border-width: 6px; border-color: #14f195; margin-right: 14px; }
@@ -190,7 +191,7 @@
 .ct-phone .duo-perp-quote { align-items: flex-end; }
 .ct-phone .duo-perp-quote .duo-perp-price { color: var(--duo-label); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); }
 .ct-phone .duo-perp-quote .duo-perp-change { font-size: var(--duo-footnote); margin: 2px 0 0; padding: 0; }
-.ct-phone .duo-perps .duo-bottom-bar { height: 136px; }
+.ct-phone .duo-perps .duo-bottom-bar { height: 136px; bottom: 24px; }
 .ct-phone .duo-perps .duo-bottom-bar-button { height: 112px; }
 .ct-phone .duo-perp-long, .ct-phone .duo-perp-long:hover { background-color: #22b35a; }
 .ct-phone .duo-perp-short, .ct-phone .duo-perp-short:hover { background-color: #ff3b30; }
@@ -206,7 +207,6 @@
 /* ================= Jobs (board #7) ================= */
 .ct-phone .duo-jobs-tabs { margin: 0 30px 18px; }
 .ct-phone .duo-jobs-content { flex-shrink: 0; }
-.ct-phone .duo-row-hired .duo-row-title { color: var(--duo-blue); }
 .ct-phone .duo-gig-action { align-items: flex-end; }
 .ct-phone .duo-gig-action .duo-gig-cooldown { font-size: var(--duo-caption); color: var(--duo-label2); margin: 18px 0 0; padding: 0; }
 .ct-phone .duo-row-text .duo-gig-result { font-size: var(--duo-footnote); color: var(--duo-orange); white-space: normal; margin: 8px 0 0; padding: 0; }
