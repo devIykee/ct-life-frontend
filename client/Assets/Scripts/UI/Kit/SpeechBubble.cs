@@ -3,7 +3,7 @@ using UnityEngine.UIElements;
 namespace CTLife.UI.Kit
 {
     /// <summary>
-    /// A short line from the character: cream bubble, plum outline, a tail pointing at the speaker. Pops in (220 ms
+    /// A short line from the character: white bubble, plum outline, a tail pointing at the speaker. Pops in (220 ms
     /// ease-out-back, scale 0.8 to 1, kit.uss) and never blocks input (picking ignored). Rich text is off: the line can
     /// contain the player's alias.
     /// </summary>

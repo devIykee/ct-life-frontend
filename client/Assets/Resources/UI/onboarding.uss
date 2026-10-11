@@ -2,7 +2,7 @@
    Layout for the 2400 x 1080-unit landscape panel (Seeker 2670 x 1200). Content box: 72 units in from the sides (the safe
    margin), 22 from the top, 30 from the bottom, so 2256 x 1028. Zones: the character on the left, one question and its
    choices on the right, the CTA always bottom-right with its hint above it, the back button and progress bar on top.
-   Text sits straight on the blurred painting: cream Lilita with a thick plum outline and a drop, never a plate. */
+   Text sits straight on the blurred painting: white Lilita with a thick plum outline and a drop, never a plate. */
 
 .ob-screen { background-color: rgba(0, 0, 0, 0); overflow: visible; }
 .ob-bg { position: absolute; left: 0; top: 0; right: 0; bottom: 0; -unity-background-scale-mode: scale-and-crop; }
@@ -17,7 +17,7 @@
 .ob-hint {
     display: none; margin: 0 6px 10px 0; padding: 0;
     -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 42px; -unity-text-align: middle-right; white-space: nowrap;
-    color: rgb(255, 246, 228); -unity-text-outline-width: 3px; -unity-text-outline-color: rgb(58, 20, 64);
+    color: rgb(255, 255, 255); -unity-text-outline-width: 3px; -unity-text-outline-color: rgb(58, 20, 64);
     text-shadow: 0 3px 4px rgba(26, 8, 32, 0.85);
 }
 .ob-hint--on { display: flex; }
@@ -26,7 +26,7 @@
 
 .ob-eyebrow, .ob-title, .ob-sub, .ob-line, .ob-note, .ob-result-name, .ob-result-home, .ob-look-name, .ob-look-count,
 .ob-drag-hint, .ob-alias-status, .ob-celebrate-title, .ob-celebrate-sub, .ob-card-odds, .ob-card-fallback {
-    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); color: rgb(255, 246, 228); margin: 0; padding: 0;
+    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); color: rgb(255, 255, 255); margin: 0; padding: 0;
     -unity-text-outline-color: rgb(58, 20, 64); white-space: normal;
 }
 .ob-eyebrow { font-size: 40px; letter-spacing: 4px; -unity-text-outline-width: 3px; text-shadow: 0 3px 4px rgba(26, 8, 32, 0.85); }
@@ -89,12 +89,15 @@
     position: absolute; left: 0; top: 330px; width: 520px; height: 698px;
     transition-property: left, top, width, height; transition-duration: 0.36s; transition-timing-function: ease-out-cubic;
 }
-.ob-mode-look .ob-stage { left: 200px; top: 150px; width: 760px; height: 770px; }
+.ob-mode-look .ob-stage { left: 40px; top: 150px; width: 780px; height: 770px; }
+/* The 2:3 preview needs 514px at this height. Reclaim its unused side gutters for the customizer, not its character scale. */
+.ob-mode-custom .ob-stage { width: 520px; }
+.ob-screen.ob-mode-confirm .ob-stage { left: 0; top: 0; width: 1px; height: 1px; opacity: 0; } /* the RT feeds the player card */
 .ob-screen.ob-typing .ob-stage { left: 0; top: 0; width: 340px; height: 330px; }
 .ob-screen.ob-mode-celebrate .ob-stage { left: 760px; top: 330px; width: 736px; height: 698px; }
 .ob-stage-glow {
     position: absolute; left: -40%; right: -40%; top: -16%; bottom: -6%; opacity: 0.75;
-    -unity-background-scale-mode: stretch-to-fill; -unity-background-image-tint-color: rgb(255, 238, 196);
+    -unity-background-scale-mode: stretch-to-fill; -unity-background-image-tint-color: rgb(255, 250, 240);
 }
 .ob-stage-shadow {
     position: absolute; left: 30%; right: 30%; bottom: 3%; height: 5%; border-radius: 40px;
@@ -111,16 +114,22 @@
 
 .ob-bubble { left: 0; top: 150px; max-width: 520px; }
 .ob-mode-side .ob-bubble .kit-bubble__tail--bottom-left { left: 190px; }
-.ob-mode-look .ob-bubble { left: 700px; top: 110px; max-width: 560px; }
+.ob-mode-look .ob-bubble { left: 520px; top: 120px; max-width: 420px; }
+.ob-mode-custom .ob-bubble { left: 40px; top: 120px; max-width: 420px; }
+.ob-mode-confirm .ob-bubble { display: none; }
 .ob-screen.ob-mode-celebrate .ob-bubble { left: 1250px; top: 380px; max-width: 560px; }
 .ob-typing .ob-bubble { display: none; }
 
 /* Look step: big painted arrows either side, the look's name underneath. */
 .ob-look-controls { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
-.ob-arrow { position: absolute; top: 460px; }
-.ob-arrow--prev { left: 110px; }
-.ob-arrow--next { left: 900px; }
-.ob-look-label { position: absolute; left: 200px; width: 760px; top: 930px; flex-direction: row; justify-content: center; align-items: center; }
+.ob-look-label { position: absolute; left: 40px; width: 780px; top: 930px; flex-direction: row; justify-content: center; align-items: center; }
+.ob-mode-custom .ob-look-label { width: 520px; }
+.ob-zoom-col { position: absolute; left: 760px; top: 360px; }
+.ob-mode-custom .ob-zoom-col { left: 560px; }
+.ob-zoom { margin-bottom: 18px; }
+.ob-zoom.ob-seg--on > .kit-btn__face { background-color: rgb(146, 88, 220); }
+.ob-zoom.ob-seg--on .kit-btn__icon { -unity-background-image-tint-color: rgb(255, 255, 255); }
+.ob-mode-confirm .ob-look-controls { display: none; }
 .ob-look-name { font-size: 66px; -unity-text-outline-width: 5px; text-shadow: 0 5px 1px rgb(58, 20, 64); white-space: nowrap; }
 .ob-look-count { font-size: 42px; -unity-text-outline-width: 3px; margin-left: 22px; white-space: nowrap; }
 .ob-tag {
@@ -131,27 +140,110 @@
 /* ------------------------------------------------------------------ creator: the question */
 
 .ob-right { position: absolute; left: 560px; right: 0; top: 160px; bottom: 0; }
-.ob-mode-look .ob-right { left: 1320px; }
+.ob-mode-look .ob-right { left: 920px; }
+.ob-mode-custom .ob-right { left: 720px; }
+.ob-mode-confirm .ob-right { left: 0; }
+
+/* Character step: the base-model portrait grid (scrolls when there are many) */
+.ob-model-scroll { height: 640px; }
+.ob-model-card > .kit-card__face { padding: 10px 10px 8px 10px; justify-content: flex-start; }
+.ob-model-card .kit-card__badge { width: 100%; height: 178px; -unity-background-scale-mode: scale-to-fit; }
+.ob-model-card .kit-card__disc { width: 150px; height: 150px; border-radius: 75px; margin-top: 12px; }
+.ob-model-card .kit-card__title { font-size: 38px; white-space: normal; -unity-text-align: upper-center; }
+
+/* Customize step: the category rail and its options */
+.ob-custom-body { flex-direction: row; height: 640px; }
+.ob-rail-scroll { width: 420px; height: 640px; flex-shrink: 0; }
+.ob-rail { width: 380px; padding-bottom: 12px; }
+.ob-rail-item, .ob-rail-item:hover, .ob-rail-item:focus, .ob-rail-item:active {
+    flex-direction: row; align-items: center; margin: 0 0 12px 0; padding: 0 18px 0 10px; min-height: 130px; flex-shrink: 0;
+    background-color: rgb(84, 38, 92); border-width: 5px; border-color: rgb(58, 20, 64); border-radius: 65px;
+}
+.ob-rail-item--on, .ob-rail-item--on:hover, .ob-rail-item--on:focus { background-color: rgb(255, 255, 255); }
+.ob-rail-item .kit-badge { width: 92px; height: 92px; }
+.ob-rail-label {
+    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 42px; color: rgb(255, 255, 255); margin: 0 0 0 16px; padding: 0;
+    -unity-text-outline-width: 3px; -unity-text-outline-color: rgb(58, 20, 64); white-space: normal; min-width: 0; flex-shrink: 1;
+}
+.ob-rail-item--on .ob-rail-label { color: rgb(58, 20, 64); -unity-text-outline-width: 0; }
+.ob-custom-options { flex-grow: 1; flex-shrink: 1; min-width: 0; margin-left: 26px; }
+.ob-option-scroll { height: 640px; }
+/* The selected badge extends 16px above / 14px right; the selection pop needs a little more room. */
+.ob-options { padding: 24px; }
+.ob-option-card > .kit-card__face { justify-content: center; padding: 12px; }
+.ob-option-card .kit-card__badge { width: 100%; height: 120px; -unity-background-scale-mode: scale-to-fit; }
+
+.ob-swatch { width: 96px; height: 96px; flex-shrink: 0; border-radius: 48px; border-width: 7px; border-color: rgb(58, 20, 64); margin-bottom: 6px; }
+.ob-option-card .kit-card__title { font-size: 36px; -unity-text-align: upper-center; }
+/* Keep scroll affordances visible without changing the native touch / wheel behaviour. */
+.ob-custom-body .unity-scroller--vertical { width: 24px; margin-left: 10px; }
+.ob-custom-body .unity-scroller__low-button, .ob-custom-body .unity-scroller__high-button { display: none; }
+.ob-custom-body .unity-base-slider__tracker { background-color: rgba(58, 20, 64, 0.4); border-radius: 12px; }
+.ob-custom-body .unity-base-slider__dragger { background-color: rgb(255, 255, 255); border-width: 4px; border-color: rgb(58, 20, 64); border-radius: 12px; }
+
+/* Confirm: one player card, "a look of yourself" */
+.ob-mode-confirm .ob-title-row { display: none; }
+.ob-idcard {
+    width: 1700px; height: 690px; margin-top: 0; overflow: hidden;
+    background-color: rgb(255, 255, 255); border-width: 8px; border-bottom-width: 20px; border-color: rgb(58, 20, 64); border-radius: 48px;
+}
+.ob-card-band {
+    height: 70px; padding: 0 40px; margin: 0; flex-direction: row; align-items: center; justify-content: space-between;
+    background-color: rgb(146, 88, 220); border-bottom-width: 6px; border-color: rgb(58, 20, 64);
+}
+.ob-card-band-text, .ob-card-band-hint {
+    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 38px; color: rgb(255, 255, 255); margin: 0; padding: 0;
+    -unity-text-outline-width: 3px; -unity-text-outline-color: rgb(58, 20, 64);
+}
+.ob-card-band-text { letter-spacing: 6px; }
+.ob-card-body { flex-direction: row; flex-grow: 1; }
+.ob-card-hit, .ob-card-hit:hover, .ob-card-hit:focus, .ob-card-hit:active {
+    margin: 0; padding: 0; border-width: 0; border-radius: 0; background-color: rgba(0, 0, 0, 0); align-items: stretch;
+}
+.ob-card-hit:active { opacity: 0.7; }
+.ob-card-portrait-hit, .ob-card-portrait-hit:hover, .ob-card-portrait-hit:focus, .ob-card-portrait-hit:active {
+    width: 470px; background-color: rgb(236, 226, 248); border-right-width: 6px; border-color: rgb(58, 20, 64); overflow: hidden;
+}
+.ob-card-portrait { position: absolute; left: 0; top: 0; right: 0; bottom: 0; -unity-background-scale-mode: scale-and-crop; }
+.ob-card-info { flex-grow: 1; padding: 14px 40px 10px 40px; }
+.ob-card-header { flex-direction: row; align-items: center; justify-content: space-between; min-height: 138px; }
+.ob-card-row--name { align-items: flex-start; justify-content: center; }
+.ob-card-row--name { flex-shrink: 1; }
+.ob-card-name {
+    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 92px; color: rgb(58, 20, 64); margin: 0; padding: 0; white-space: nowrap;
+}
+.ob-card-row--tribe { flex-direction: row; align-items: center; min-height: 130px; }
+.ob-card-tribe-badge { width: 110px; height: 110px; -unity-background-scale-mode: scale-to-fit; }
+.ob-card-tribe {
+    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 40px; letter-spacing: 3px; color: rgb(120, 86, 124);
+    margin: 0 0 0 12px; padding: 0;
+}
+.ob-card-row { min-height: 130px; justify-content: center; align-items: flex-start; border-top-width: 3px; border-color: rgba(58, 20, 64, 0.14); }
+.ob-card-caption {
+    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 38px; letter-spacing: 3px; color: rgb(146, 112, 150);
+    margin: 0; padding: 0;
+}
+.ob-card-line { flex-direction: row; align-items: center; }
+.ob-card-line > .kit-badge { width: 72px; height: 72px; border-width: 5px; }
+.ob-card-origin-art { width: 54px; height: 74px; -unity-background-scale-mode: scale-to-fit; }
+.ob-card-value {
+    -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); font-size: 44px; color: rgb(58, 20, 64); margin: 0 0 0 16px; padding: 0;
+}
+.ob-card-trait { flex-direction: row; align-items: center; margin-right: 34px; }
+.ob-card-trait > .kit-badge { width: 72px; height: 72px; border-width: 5px; }
+.ob-card-holo { position: absolute; left: 60%; top: -60%; width: 120px; height: 220%; rotate: 22deg; background-color: rgba(255, 255, 255, 0.16); }
+.ob-card-foot { flex-direction: row; align-items: center; margin-top: 6px; }
+.ob-note--card { margin-left: 46px; }
 .ob-screen.ob-typing .ob-right { left: 380px; top: 0; }
 .ob-page { flex-direction: column; }
 .ob-title-row { flex-direction: row; align-items: flex-end; margin-bottom: 12px; }
 .ob-title-row > .ob-sub { margin-bottom: 10px; }
-.ob-mode-look .ob-title-row { flex-direction: column; align-items: flex-start; }
-.ob-mode-look .ob-title-row > .ob-sub { margin: 10px 0 0 0; }
 .ob-typing .ob-title-row { display: none; }
 
-.ob-seg-row { flex-direction: row; margin-top: 40px; }
-.ob-seg { margin-right: 22px; }
-.ob-seg.kit-btn--purple:enabled > .kit-btn__face { background-image: none; background-color: rgb(255, 246, 228); border-width: 6px; border-color: rgb(58, 20, 64); border-radius: 34px; }
-.ob-seg.kit-btn--purple > .kit-btn__lip { background-color: rgb(120, 86, 124); }
-.ob-seg .kit-btn__label { color: rgb(58, 20, 64); -unity-text-outline-width: 0; text-shadow: 0 0 0 rgba(0, 0, 0, 0); }
-.ob-seg.ob-seg--on.kit-btn--purple > .kit-btn__face { background-image: url("Title/btn-purple-blank-sq.png"); background-color: rgba(0, 0, 0, 0); border-width: 0; }
-.ob-seg.ob-seg--on.kit-btn--purple > .kit-btn__lip { background-color: rgb(52, 22, 84); }
-.ob-seg.ob-seg--on .kit-btn__label { color: rgb(255, 246, 228); -unity-text-outline-width: 3px; text-shadow: 0 3px 1px rgb(58, 20, 64); }
 
 .ob-dots { flex-direction: row; margin: 0 0 18px 26px; }
-.ob-dot { width: 44px; height: 44px; border-radius: 22px; margin-right: 12px; border-width: 5px; border-color: rgb(58, 20, 64); background-color: rgba(255, 246, 228, 0.55); }
-.ob-dot--on { background-color: rgb(92, 196, 74); }
+.ob-dot { width: 44px; height: 44px; border-radius: 22px; margin-right: 12px; border-width: 5px; border-color: rgb(58, 20, 64); background-color: rgba(255, 255, 255, 0.55); }
+.ob-dot--on { background-color: rgb(20, 241, 149); }
 
 .ob-tribe-card .kit-card__badge { width: 108px; height: 108px; }
 .ob-tribe-card > .kit-card__face { padding-top: 14px; padding-bottom: 8px; }
@@ -164,34 +256,21 @@
 .ob-field { flex-grow: 1; max-width: 1180px; height: 150px; margin: 0; }
 .ob-field > .unity-base-text-field__input {
     margin: 0; padding: 0 40px; border-width: 6px; border-bottom-width: 14px; border-color: rgb(58, 20, 64); border-radius: 34px;
-    background-color: rgb(255, 246, 228); color: rgb(58, 20, 64);
+    background-color: rgb(255, 255, 255); color: rgb(58, 20, 64);
     -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 72px; -unity-text-align: middle-left;
 }
-.ob-field--ok > .unity-base-text-field__input { border-color: rgb(46, 128, 44); }
+.ob-field--ok > .unity-base-text-field__input { border-color: rgb(8, 168, 104); }
 .ob-field .unity-base-text-field__input--placeholder { color: rgba(58, 20, 64, 0.45); }
 .ob-done { margin-left: 24px; display: none; }
 .ob-typing .ob-done { display: flex; }
 .ob-alias-status { font-size: 46px; -unity-text-outline-width: 3px; text-shadow: 0 3px 4px rgba(26, 8, 32, 0.85); margin-top: 22px; }
-.ob-alias-status--ok { color: rgb(204, 255, 170); }
+.ob-alias-status--ok { color: rgb(124, 255, 196); }
 .ob-alias-status--warn { color: rgb(255, 214, 140); }
 .ob-typing .ob-topbar, .ob-typing .ob-cta-zone, .ob-typing .ob-creator-error { display: none; }
 .ob-typing .ob-field-row { margin-top: 0; }
 .ob-typing .ob-alias-status { margin-top: 14px; }
 
 /* Confirm: the summary chips (tap to change), the 18+ toggle card with its label, the money line. */
-.ob-summary { margin-top: 4px; }
-.ob-summary-card > .kit-card__face { padding: 8px 18px; }
-.ob-summary-card .kit-card__disc { width: 88px; height: 88px; border-radius: 44px; }
-.ob-summary-card .kit-card__icon { width: 48px; height: 48px; }
-.ob-summary-card .kit-card__badge { width: 96px; height: 96px; }
-.ob-summary-card .kit-card__title { font-size: 42px; }
-.ob-summary-card .kit-card__caption { font-size: 38px; }
-.ob-summary-card .kit-card__sub { font-size: 38px; }
-.ob-origin-host > .kit-card { flex-grow: 1; }
-.ob-origin-card .kit-card__badge { width: 92px; height: 120px; }
-.ob-age-card { width: 49%; height: 160px; margin-top: 18px; }
-.ob-age-card .kit-card__title { font-size: 50px; }
-.ob-note--inline { margin-top: 34px; }
 .ob-creator-error { position: absolute; left: 560px; right: 520px; bottom: 6px; }
 
 /* Celebration. */

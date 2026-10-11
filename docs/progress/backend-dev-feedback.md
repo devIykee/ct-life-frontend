@@ -666,3 +666,18 @@ only `callId`; #40 `GET /homes` and `POST /rtc/token` exist (see 88).
     that flag, or a typed `character.dreamProgress {current, target, unit, completedAt?}` in `Me`, plus the rule per dream
     id in `dreams.json` (`metric`, `target`). Debt is fine: `Me.debtCents` and `lottery.json debtRepayment.weeklyDueCents`
     are what the home shows ("$720 to pay back", "$120 is due each week").
+
+95. **Trait labels read as jargon to players (user review, 2026-10-09).** Players did not know what "Iron Will" or
+    "Sleuth" meant. The client now shows plain names and a one-line effect from its own copy (ids unchanged, they are the
+    contract):
+    - `fast_talker` "Fast Talker": chat cooldown 1.5s instead of 2s.
+    - `deep_pockets` "Deep Pockets": rent penalty halved.
+    - `iron_will` → **"Diamond Hands"**: Sanity drains 20% slower.
+    - `early_bird` "Early Bird": +10% shift pay before noon.
+    - `sleuth` → **"Tipster"**: the onchain detective NPC pays you for tips.
+    - `rug_veteran` "Rug Veteran": a special look on your REKT card.
+
+    Suggestion for Iyke: align `ids/traits.json` `label` with these, and give each trait a player-facing `effectText`
+    beside the machine `effect`. Then every screen (profile, other players' cards) shows the same words, not only the
+    creator. The client keeps the server's own `effect` text whenever it differs from the rc1 string it was written from,
+    so a changed effect is never contradicted.

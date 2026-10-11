@@ -134,6 +134,8 @@ namespace CTLife.UI
             return c;
         }
 
+        protected override void OnShown() => OnboardingAudio.StartTheme();
+
         /// <summary>Face-down cards breathe gently (offset phases) until the draw. Off under reduced motion.</summary>
         private void StartIdle()
         {
@@ -225,7 +227,7 @@ namespace CTLife.UI
             {
                 for (int k = 0; k < _cards.Count; k++) Hot(_cards[k], k == i % _cards.Count);
                 i++;
-                Kit.Cues.Hop();
+                Kit.Cues.Hop(i - 1);
                 float elapsed = Kit.Motion.Now - t0;
                 if (elapsed > 8f) _line.text = Strings.T("ob.lottery.slow");
                 await Kit.Motion.Delay(Mathf.Lerp(0.07f, 0.35f, Mathf.Clamp01(elapsed / 2.2f)));
@@ -242,7 +244,7 @@ namespace CTLife.UI
             {
                 await Kit.Motion.Delay(0.36f + 0.06f * h);
                 for (int k = 0; k < _cards.Count; k++) Hot(_cards[k], k == (current + h) % _cards.Count);
-                Kit.Cues.Hop();
+                Kit.Cues.Hop(Mathf.Min(6, h));
             }
             await Kit.Motion.Delay(0.3f);
         }
@@ -250,7 +252,7 @@ namespace CTLife.UI
         /// <summary>The cards gather to the centre and deal back out in a new order: two quick swaps (spec C1).</summary>
         private async Task Shuffle()
         {
-            Kit.Cues.Play(Kit.Cues.SfxFlip, 0.5f);
+            Kit.Cues.Play(Kit.Cues.SfxShuffle, 0.5f); // two riffles, ~1.1 s, both passes
             var starts = _cards.Select(c => c.homeX).ToArray();
             float w = _cards[0].root.resolvedStyle.width;
             for (int pass = 0; pass < 2; pass++)
@@ -302,7 +304,7 @@ namespace CTLife.UI
                 SetFront(winner, front, id);
                 winner.root.style.marginLeft = -winner.root.resolvedStyle.width / 2f;
                 Kit.Motion.Fade(winner.root, 0f, 1f, 0.2f);
-                Kit.Cues.Play(good ? Kit.Cues.SfxGood : Kit.Cues.SfxDebt, good ? 1f : 0.5f);
+                Kit.Cues.Play(Kit.Cues.Origin(id));
                 if (good) DeviceFeel.Confirm(); else DeviceFeel.Reject();
                 ShowResult(r, id, false);
                 return;
@@ -347,7 +349,7 @@ namespace CTLife.UI
             Phase?.Invoke("landed");
             if (good)
             {
-                Kit.Cues.Play(Kit.Cues.SfxGood);
+                Kit.Cues.Play(Kit.Cues.Origin(id));
                 DeviceFeel.Confirm();
                 Kit.Motion.Pop(winner.art, 1.06f, 0.24f);
                 _frame.Burst.Coins(centre, 26);
@@ -358,7 +360,7 @@ namespace CTLife.UI
             else
             {
                 // A comic "bonk": squash, a cloud puff and a slow muted shower; the rug sting mixed down so it is not punishing.
-                Kit.Cues.Play(Kit.Cues.SfxDebt, 0.5f);
+                Kit.Cues.Play(Kit.Cues.SfxDebt); // the comic bonk + hopeful tag, mixed 1 dB under the Insider stinger: full volume
                 DeviceFeel.Reject();
                 _ = Tween.Run(winner.art, 0.36f, t =>
                 {

@@ -80,7 +80,7 @@ namespace CTLife.UI
 
             _chips = El.Div("home-chips");
             _chips.pickingMode = PickingMode.Ignore;
-            _settings = new LippedButton("", () => OpenApp("settings"), LippedButton.Tone.Cream, LippedButton.Size.Round).WithIcon("settings");
+            _settings = new LippedButton("", () => OpenApp("settings"), LippedButton.Tone.White, LippedButton.Size.Round).WithIconArt("settings", "settings");
             _settings.tooltip = Strings.T("app.settings");
             _settings.AddToClassList("home-settings");
             var top = El.Div("home-top", _chips, _settings);
@@ -237,7 +237,7 @@ namespace CTLife.UI
 
         private IconTile Tile(string icon, string labelKey, string tone, string app)
         {
-            var t = new IconTile(icon, Strings.T(labelKey), tone, () => OpenApp(app));
+            var t = new IconTile(icon, Strings.T(labelKey), tone, () => OpenApp(app), art: KitIcons.ForRoute(app));
             t.name = "home-tile-" + (app ?? "phone");
             return t;
         }

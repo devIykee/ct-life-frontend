@@ -171,6 +171,8 @@ namespace CTLife.UI
             }).Every(33);
         }
 
+        protected override void OnShown() => OnboardingAudio.StartTheme();
+
         public void SetReturning(bool returning)
         {
             _returning = returning && _onPlay != null;

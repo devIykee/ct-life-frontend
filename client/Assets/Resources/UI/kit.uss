@@ -1,5 +1,5 @@
 /* CT Life UI kit (Scripts/UI/Kit): LippedButton, ChoiceCard, ProgressBar, SpeechBubble, CelebrationBurst.
-   Identity (approved title screen, 2026-10-08): painted squircle bodies, Lilita One, cream text rgb(255, 246, 228) with a
+   Identity (approved title screen, 2026-10-08): painted squircle bodies, Lilita One, white text rgb(255, 255, 255) (cream until 2026-10-09) with a
    thick plum outline rgb(58, 20, 64), no translucent plates behind text.
    Units: the landscape panel is 2400 x 1080 units; on the Seeker (2670 x 1200, 480 dpi) 1 unit = 1.112 px and
    1 dp = 2.7 units, so 48 dp = 130 units (minimum tap target) and 14 dp = 38 units (minimum text). Timings: spec B7. */
@@ -19,7 +19,7 @@
 .kit-btn__face {
     flex-grow: 1; flex-direction: row; justify-content: center; align-items: center;
     padding: 0 56px 8px 56px; overflow: hidden;
-    transition-property: translate; transition-duration: 0.14s; transition-timing-function: ease-out-back;
+    transition-property: translate, scale; transition-duration: 0.14s, 0.14s; transition-timing-function: ease-out-back, ease-out-back;
 }
 /* Press: the face travels the lip's depth in 60 ms and the lip disappears under it. */
 .kit-btn:active > .kit-btn__face, .kit-btn--pressed > .kit-btn__face {
@@ -29,7 +29,7 @@
 .kit-btn__label {
     -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 58px; white-space: nowrap;
     -unity-text-align: middle-center; letter-spacing: 1px; margin: 0; padding: 0;
-    color: rgb(255, 246, 228); -unity-text-outline-width: 4px; -unity-text-outline-color: rgb(58, 20, 64);
+    color: rgb(255, 255, 255); -unity-text-outline-width: 4px; -unity-text-outline-color: rgb(58, 20, 64);
     text-shadow: 0 4px 1px rgb(58, 20, 64);
 }
 
@@ -39,15 +39,15 @@
 .kit-btn--green > .kit-btn__lip { background-color: rgb(30, 70, 34); border-width: 4px; border-color: rgb(58, 20, 64); }
 .kit-btn--purple > .kit-btn__lip { background-color: rgb(52, 22, 84); border-width: 4px; border-color: rgb(58, 20, 64); }
 
-/* Cream: the secondary/neutral body drawn in USS (cream fill, plum outline), plum label without an outline. */
-.kit-btn--cream > .kit-btn__face {
-    background-color: rgb(255, 246, 228); border-width: 6px; border-color: rgb(58, 20, 64); border-radius: 34px;
+/* White: the secondary/neutral body drawn in USS (white fill, plum outline), plum label without an outline. */
+.kit-btn--white > .kit-btn__face {
+    background-color: rgb(255, 255, 255); border-width: 6px; border-color: rgb(58, 20, 64); border-radius: 34px;
 }
-.kit-btn--cream .kit-btn__label { color: rgb(58, 20, 64); -unity-text-outline-width: 0; text-shadow: 0 0 0 rgba(0, 0, 0, 0); }
+.kit-btn--white .kit-btn__label { color: rgb(58, 20, 64); -unity-text-outline-width: 0; text-shadow: 0 0 0 rgba(0, 0, 0, 0); }
 
 /* Disabled: a flat pale face, pressed in, no lip, no shine, muted label (spec B1). */
 .kit-btn:disabled > .kit-btn__face {
-    background-image: none; background-color: rgb(232, 222, 210); border-width: 6px; border-color: rgb(120, 92, 124);
+    background-image: none; background-color: rgb(228, 224, 232); border-width: 6px; border-color: rgb(120, 92, 124);
     border-radius: 34px; translate: 0 12px;
 }
 .kit-btn:disabled > .kit-btn__lip { display: none; }
@@ -70,11 +70,11 @@
 .kit-btn--round:active > .kit-btn__face, .kit-btn--round.kit-btn--pressed > .kit-btn__face, .kit-btn--round:disabled > .kit-btn__face { translate: 0 10px; }
 
 .kit-btn__icon-holder { width: 72px; height: 72px; }
-.kit-btn__icon { position: absolute; left: 0; top: 0; width: 72px; height: 72px; -unity-background-image-tint-color: rgb(255, 246, 228); }
+.kit-btn__icon { position: absolute; left: 0; top: 0; width: 72px; height: 72px; -unity-background-image-tint-color: rgb(255, 255, 255); }
 .kit-btn__icon--drop { top: 5px; -unity-background-image-tint-color: rgb(58, 20, 64); }
 .kit-btn--square .kit-btn__icon-holder, .kit-btn--square .kit-btn__icon { width: 84px; height: 84px; }
-.kit-btn--cream .kit-btn__icon { -unity-background-image-tint-color: rgb(58, 20, 64); }
-.kit-btn--cream .kit-btn__icon--drop { display: none; }
+.kit-btn--white .kit-btn__icon { -unity-background-image-tint-color: rgb(58, 20, 64); }
+.kit-btn--white .kit-btn__icon--drop { display: none; }
 
 /* The light sweep (as on the title button), clipped to the painted rounded shape. */
 .kit-btn__shine-clip { position: absolute; left: 6px; right: 6px; top: 6px; bottom: 10px; border-radius: 28px; overflow: hidden; }
@@ -93,7 +93,7 @@
 }
 .kit-card__face {
     flex-grow: 1; align-items: center; justify-content: center; padding: 18px 22px;
-    background-color: rgb(255, 246, 228); border-width: 6px; border-color: rgb(58, 20, 64); border-radius: 36px;
+    background-color: rgb(255, 255, 255); border-width: 6px; border-color: rgb(58, 20, 64); border-radius: 36px;
     transition-property: translate, background-color; transition-duration: 0.14s, 0.12s;
     transition-timing-function: ease-out-back, ease-out;
 }
@@ -127,23 +127,23 @@
     align-items: center; justify-content: center;
 }
 .kit-card__disc--purple { background-color: rgb(146, 88, 220); }
-.kit-card__disc--green { background-color: rgb(92, 196, 74); }
+.kit-card__disc--green { background-color: rgb(20, 241, 149); }
 .kit-card__disc--gold { background-color: rgb(255, 196, 64); }
-.kit-card__icon { width: 58px; height: 58px; -unity-background-image-tint-color: rgb(255, 246, 228); }
+.kit-card__icon { width: 58px; height: 58px; -unity-background-image-tint-color: rgb(255, 255, 255); }
 .kit-card__disc--gold .kit-card__icon { -unity-background-image-tint-color: rgb(58, 20, 64); }
 
 /* Selected: the green-tinted face, the green lip, the check badge and a 1.04 pop (code). Never colour alone. */
-.kit-card--selected > .kit-card__face { background-color: rgb(218, 246, 190); }
-.kit-card--selected > .kit-card__lip { background-color: rgb(46, 128, 44); }
+.kit-card--selected > .kit-card__face { background-color: rgb(214, 252, 234); }
+.kit-card--selected > .kit-card__lip { background-color: rgb(8, 168, 104); }
 .kit-card__check {
     position: absolute; top: -16px; right: -14px; width: 68px; height: 68px; border-radius: 34px;
-    background-color: rgb(92, 196, 74); border-width: 5px; border-color: rgb(58, 20, 64);
+    background-color: rgb(20, 241, 149); border-width: 5px; border-color: rgb(58, 20, 64);
     align-items: center; justify-content: center; display: none;
 }
 .kit-card--selected > .kit-card__check { display: flex; }
 .kit-card__tick {
-    width: 18px; height: 34px; border-right-width: 8px; border-bottom-width: 8px; border-color: rgb(255, 246, 228);
-    rotate: 45deg; translate: 0 -4px;
+    width: 18px; height: 34px; border-right-width: 8px; border-bottom-width: 8px; border-color: rgb(58, 20, 64);
+    rotate: 45deg; translate: 0 -4px; /* plum on Solana green: white on #14F195 is ~1.4:1 */
 }
 
 /* Error: red outline and a pink face (code adds a shake). */
@@ -159,8 +159,8 @@
     width: 22px; height: 42px; border-right-width: 9px; border-bottom-width: 9px; border-color: rgb(58, 20, 64);
     rotate: 45deg; translate: 0 -5px; display: none;
 }
-.kit-card--selected .kit-card__box { background-color: rgb(92, 196, 74); }
-.kit-card--selected .kit-card__box-tick { display: flex; border-color: rgb(255, 246, 228); }
+.kit-card--selected .kit-card__box { background-color: rgb(20, 241, 149); }
+.kit-card--selected .kit-card__box-tick { display: flex; border-color: rgb(58, 20, 64); }
 .kit-card--checkbox > .kit-card__check { display: none; }
 
 .kit-grid { flex-direction: row; flex-wrap: wrap; align-items: flex-start; }
@@ -173,7 +173,7 @@
 }
 .kit-progress__fill {
     position: absolute; left: 0; top: 0; bottom: 0; width: 0; border-radius: 17px;
-    background-color: rgb(92, 196, 74);
+    background-color: rgb(20, 241, 149);
     transition-property: width, background-color; transition-duration: 0.4s, 0.2s; transition-timing-function: ease-out-cubic, ease-out;
 }
 .kit-progress--instant .kit-progress__fill { transition-duration: 0s, 0s; }
@@ -185,7 +185,7 @@
 
 .kit-bubble {
     position: absolute; max-width: 580px; padding: 22px 32px 24px 32px;
-    background-color: rgb(255, 246, 228); border-width: 6px; border-color: rgb(58, 20, 64); border-radius: 40px;
+    background-color: rgb(255, 255, 255); border-width: 6px; border-color: rgb(58, 20, 64); border-radius: 40px;
     display: none; opacity: 0; scale: 0.8 0.8;
     transition-property: scale, opacity; transition-duration: 0.22s, 0.16s; transition-timing-function: ease-out-back, ease-out;
 }
@@ -196,7 +196,7 @@
     white-space: normal; margin: 0; padding: 0;
 }
 .kit-bubble__tail {
-    position: absolute; width: 44px; height: 44px; background-color: rgb(255, 246, 228);
+    position: absolute; width: 44px; height: 44px; background-color: rgb(255, 255, 255);
     border-color: rgb(58, 20, 64); rotate: 45deg;
 }
 .kit-bubble__tail--bottom-left { left: 64px; bottom: -26px; border-right-width: 6px; border-bottom-width: 6px; }
@@ -215,7 +215,7 @@
 .kit-burst__confetti { width: 20px; height: 34px; margin-left: -10px; margin-top: -17px; border-radius: 4px; }
 .kit-burst__puff {
     width: 230px; height: 230px; margin-left: -115px; margin-top: -115px;
-    background-image: url("Kit/soft-glow.png"); -unity-background-image-tint-color: rgb(244, 238, 250);
+    background-image: url("Kit/soft-glow.png"); -unity-background-image-tint-color: rgb(255, 255, 255);
 }
 
 /* ------------------------------------------------------------------ IconBadge (drawn medallion, like the tribe art) */
@@ -230,9 +230,9 @@
     position: absolute; left: 12%; top: 7%; width: 52%; height: 26%; border-radius: 40px; background-color: rgba(255, 255, 255, 0.28);
     rotate: -18deg;
 }
-.kit-badge__glyph { position: absolute; width: 56%; height: 56%; left: 22%; top: 20%; -unity-background-image-tint-color: rgb(255, 246, 228); }
+.kit-badge__glyph { position: absolute; width: 56%; height: 56%; left: 22%; top: 20%; -unity-background-image-tint-color: rgb(255, 255, 255); }
 .kit-badge__glyph--drop { top: 24%; -unity-background-image-tint-color: rgb(58, 20, 64); }
-.kit-badge--green { background-color: rgb(92, 196, 74); }
+.kit-badge--green { background-color: rgb(20, 241, 149); }
 .kit-badge--purple { background-color: rgb(146, 88, 220); }
 .kit-badge--gold { background-color: rgb(244, 186, 52); }
 .kit-badge--coral { background-color: rgb(240, 110, 90); }
@@ -254,7 +254,7 @@
 .kit-tile:active > .kit-tile__face { translate: 0 6px; scale: 0.95 0.95; transition-duration: 0.06s, 0.06s; }
 .kit-tile .kit-badge { width: 108px; height: 108px; }
 .kit-tile__label {
-    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 40px; color: rgb(255, 246, 228); margin: 2px 0 0 0; padding: 0;
+    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 40px; color: rgb(255, 255, 255); margin: 2px 0 0 0; padding: 0;
     -unity-text-outline-width: 3px; -unity-text-outline-color: rgb(58, 20, 64); text-shadow: 0 3px 3px rgba(26, 8, 32, 0.85);
     white-space: nowrap; -unity-text-align: upper-center;
 }
@@ -272,7 +272,7 @@
 }
 .kit-chip__face {
     flex-grow: 1; flex-direction: row; align-items: center; padding: 0 30px 0 12px;
-    background-color: rgb(255, 246, 228); border-width: 6px; border-color: rgb(58, 20, 64); border-radius: 34px;
+    background-color: rgb(255, 255, 255); border-width: 6px; border-color: rgb(58, 20, 64); border-radius: 34px;
     transition-property: translate; transition-duration: 0.14s; transition-timing-function: ease-out-back;
 }
 .kit-chip:active > .kit-chip__face { translate: 0 10px; transition-duration: 0.06s; }
@@ -290,7 +290,7 @@
     height: 18px; width: 150px; margin-top: 2px; border-radius: 9px; overflow: hidden;
     background-color: rgba(58, 20, 64, 0.2); border-width: 3px; border-color: rgb(58, 20, 64);
 }
-.kit-chip__fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 6px; background-color: rgb(92, 196, 74); }
+.kit-chip__fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 6px; background-color: rgb(20, 241, 149); }
 .kit-chip--warn > .kit-chip__face { background-color: rgb(255, 232, 178); }
 .kit-chip--warn .kit-chip__fill { background-color: rgb(244, 160, 40); }
 .kit-chip--bad > .kit-chip__face { background-color: rgb(255, 214, 204); }
@@ -304,7 +304,7 @@
 }
 .kit-chip--bad > .kit-chip__pip { background-color: rgb(222, 64, 64); }
 .kit-chip__pip-text {
-    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 38px; color: rgb(255, 246, 228); margin: 0; padding: 0;
+    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 38px; color: rgb(255, 255, 255); margin: 0; padding: 0;
     -unity-text-align: middle-center; -unity-text-outline-width: 2px; -unity-text-outline-color: rgb(58, 20, 64);
 }
 
@@ -314,10 +314,10 @@
 .kit-pop__scrim { position: absolute; left: -400px; top: -400px; right: -400px; bottom: -400px; background-color: rgba(20, 6, 26, 0.18); }
 .kit-pop__card {
     position: absolute; padding: 26px 34px 30px 34px;
-    background-color: rgb(255, 246, 228); border-width: 6px; border-bottom-width: 14px; border-color: rgb(58, 20, 64); border-radius: 36px;
+    background-color: rgb(255, 255, 255); border-width: 6px; border-bottom-width: 14px; border-color: rgb(58, 20, 64); border-radius: 36px;
 }
 .kit-pop__tail {
-    position: absolute; top: -28px; width: 44px; height: 44px; background-color: rgb(255, 246, 228);
+    position: absolute; top: -28px; width: 44px; height: 44px; background-color: rgb(255, 255, 255);
     border-color: rgb(58, 20, 64); border-left-width: 6px; border-top-width: 6px; rotate: 45deg;
 }
 .kit-pop__title { -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 52px; color: rgb(58, 20, 64); margin: 0; padding: 0; }
@@ -326,3 +326,32 @@
     margin: 8px 0 0 0; padding: 0;
 }
 .kit-pop__action { margin-top: 22px; align-self: flex-start; }
+
+/* Glossy icon-art buttons (KitIcons): the art is the whole button, so no lip, no drawn face; press sinks and shrinks. */
+.kit-btn--art > .kit-btn__lip { display: none; }
+.kit-btn--art > .kit-btn__face, .kit-btn--art:disabled > .kit-btn__face {
+    background-color: rgba(0, 0, 0, 0); border-width: 0; -unity-background-scale-mode: scale-to-fit; translate: 0 0;
+}
+.kit-btn--art:active > .kit-btn__face, .kit-btn--art.kit-btn--pressed > .kit-btn__face { translate: 0 6px; scale: 0.93 0.93; }
+.kit-btn--art:disabled { opacity: 0.5; }
+
+/* ------------------------------------------------------------------ CheckRow (plain checkbox + its text) */
+
+.kit-check, .kit-check:hover, .kit-check:focus, .kit-check:active {
+    flex-direction: row; align-items: center; margin: 0; padding: 0 20px 0 0; min-height: 130px;
+    background-color: rgba(0, 0, 0, 0); border-width: 0;
+}
+.kit-check__box {
+    width: 78px; height: 78px; border-radius: 18px; border-width: 7px; border-color: rgb(58, 20, 64);
+    background-color: rgb(255, 255, 255); align-items: center; justify-content: center;
+}
+.kit-check__tick {
+    width: 22px; height: 42px; border-right-width: 9px; border-bottom-width: 9px; border-color: rgb(58, 20, 64);
+    rotate: 45deg; translate: 0 -5px; display: none;
+}
+.kit-check--on .kit-check__box { background-color: rgb(20, 241, 149); }
+.kit-check--on .kit-check__tick { display: flex; }
+.kit-check__label {
+    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 50px; color: rgb(255, 255, 255); margin: 0 0 0 24px; padding: 0;
+    -unity-text-outline-width: 4px; -unity-text-outline-color: rgb(58, 20, 64); text-shadow: 0 4px 3px rgba(26, 8, 32, 0.85);
+}

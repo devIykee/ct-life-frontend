@@ -99,12 +99,12 @@ namespace CTLife.UI
         /// </summary>
         private static readonly Dictionary<string, (string registry, string friendly)> TraitEffects = new Dictionary<string, (string, string)>
         {
-            ["fast_talker"] = ("say cooldown 2s -> 1.5s", "Chat cooldown 1.5s, not 2s"),
+            ["fast_talker"] = ("say cooldown 2s -> 1.5s", "Chat cooldown 1.5s instead of 2s"),
             ["deep_pockets"] = ("rent penalty 0.5x", "Rent penalty halved"),
             ["iron_will"] = ("Sanity decay 0.8x", "Sanity drains 20% slower"),
             ["early_bird"] = ("shift pay +10% before noon", "+10% shift pay before noon"),
-            ["sleuth"] = ("Sleuth NPC pays you for tips", "The Sleuth pays you for tips"),
-            ["rug_veteran"] = ("REKT card visual variant", "A special REKT card look"),
+            ["sleuth"] = ("Sleuth NPC pays you for tips", "The detective pays for your tips"),
+            ["rug_veteran"] = ("REKT card visual variant", "A special look on your REKT card"),
         };
 
         public static string TraitEffect(SimpleDef trait)
@@ -115,6 +115,24 @@ namespace CTLife.UI
                 return copy.friendly;
             return string.IsNullOrWhiteSpace(raw) ? null : raw;
         }
+
+        /// <summary>
+        /// The trait's display name: plain words from our copy for known ids (user review 2026-10-09: "Iron Will" and "Sleuth"
+        /// read as jargon), else the registry label. Ids are the contract and never change (backend feedback #95).
+        /// </summary>
+        public static string TraitName(SimpleDef trait)
+        {
+            if (trait == null) return null;
+            var key = "ob.trait." + trait.id;
+            var name = Strings.T(key);
+            return name != key ? name : trait.name;
+        }
+
+        /// <summary>The glossy icon art name for a trait (Resources/UI/Kit/Icons/&lt;name&gt;.png), by contract id.</summary>
+        public static string TraitArt(string id) => id switch
+        {
+            "iron_will" => "diamond_hands", "sleuth" => "tipster", _ => id,
+        };
 
         // UiIcon kinds (UiIcon.cs maps them to the bundled Phosphor images).
         public static string TraitIcon(string id) => id switch

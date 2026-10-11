@@ -6,7 +6,7 @@ namespace CTLife.UI.Kit
 {
     /// <summary>
     /// A round badge built like the painted tribe medallions: a thick plum rim, a coloured field with a soft top-left bevel
-    /// highlight and a darker bottom inset, and a cream glyph with a plum drop. Drawn in USS (no texture), so any UiIcon kind
+    /// highlight and a darker bottom inset, and a white glyph with a plum drop. Drawn in USS (no texture), so any UiIcon kind
     /// becomes a badge at no APK cost. Tones: green, purple, gold, coral, cyan, orange, plum. Styles: Resources/UI/kit.uss.
     /// </summary>
     public sealed class IconBadge : VisualElement
@@ -47,7 +47,8 @@ namespace CTLife.UI.Kit
     {
         private readonly Action _activate;
 
-        public IconTile(string iconKind, string label, string tone, Action onClick, string sfx = Cues.SfxTap)
+        /// <param name="art">Glossy icon name (<see cref="KitIcons"/>); the drawn badge is the fallback while it is missing.</param>
+        public IconTile(string iconKind, string label, string tone, Action onClick, string sfx = Cues.SfxTap, string art = null)
         {
             enableRichText = false;
             text = "";
@@ -61,7 +62,7 @@ namespace CTLife.UI.Kit
             clicked += _activate;
             var face = new VisualElement { pickingMode = PickingMode.Ignore };
             face.AddToClassList("kit-tile__face");
-            face.Add(new IconBadge(iconKind, tone));
+            face.Add(new IconBadge(iconKind, tone, KitIcons.Load(art)));
             var l = new Label(label) { enableRichText = false, pickingMode = PickingMode.Ignore };
             l.AddToClassList("kit-tile__label");
             face.Add(l);

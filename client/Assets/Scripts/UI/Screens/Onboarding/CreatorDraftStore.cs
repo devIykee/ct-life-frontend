@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using CTLife.Core;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
@@ -12,7 +13,7 @@ namespace CTLife.UI
     /// </summary>
     public sealed class CreatorDraftStore
     {
-        public const int Version = 1;
+        public const int Version = 2; // 2: Customize step inserted; the full customized look is kept
         private readonly string _key;
 
         public CreatorDraftStore(string accountId) =>
@@ -22,16 +23,22 @@ namespace CTLife.UI
         {
             public CreatorStep step, furthest;
             public string lookKey, tribeId, dreamId, alias;
+            /// <summary>The customized look (seven ids), or null.</summary>
+            public string[] look;
+            /// <summary>The customizer spec (base, parts, tints, accessories), or null.</summary>
+            public AvatarSpec spec;
             public string[] traitIds = Array.Empty<string>();
             public float yaw;
             public bool portrait;
         }
 
-        public static string Serialize(CreatorFlow flow, string lookKey, float yaw, bool portrait)
+        public static string Serialize(CreatorFlow flow, string lookKey, float yaw, bool portrait, AvatarSpec spec = null)
         {
             var d = flow.Draft;
             var o = new JObject
             {
+                ["custom"] = new JArray(d.look.Select(x => (object)x ?? "").ToArray()),
+                ["spec"] = spec?.ToJson(),
                 ["v"] = Version, ["step"] = (int)flow.Step, ["furthest"] = (int)flow.Furthest, ["look"] = lookKey,
                 ["tribe"] = d.tribeId, ["traits"] = new JArray(d.traitIds.ToArray()), ["dream"] = d.dreamId, ["alias"] = d.alias,
                 ["yaw"] = yaw, ["portrait"] = portrait,
@@ -53,6 +60,8 @@ namespace CTLife.UI
                     yaw = (float?)o["yaw"] ?? 180f, portrait = (bool?)o["portrait"] ?? false,
                 };
                 if (o["traits"] is JArray traits) s.traitIds = traits.ToObject<string[]>() ?? Array.Empty<string>();
+                if (o["custom"] is JArray custom && custom.Count == 7) s.look = custom.ToObject<string[]>();
+                s.spec = AvatarSpec.FromJson(o["spec"]);
                 return s;
             }
             catch (Exception e)
@@ -82,9 +91,9 @@ namespace CTLife.UI
             catch (Exception e) { Log.Warn("creator", "Saved draft unavailable: " + e.Message); return null; }
         }
 
-        public void Save(CreatorFlow flow, string lookKey, float yaw, bool portrait)
+        public void Save(CreatorFlow flow, string lookKey, float yaw, bool portrait, AvatarSpec spec = null)
         {
-            try { PlayerPrefs.SetString(_key, Serialize(flow, lookKey, yaw, portrait)); }
+            try { PlayerPrefs.SetString(_key, Serialize(flow, lookKey, yaw, portrait, spec)); }
             catch (Exception e) { Log.Warn("creator", "Draft not saved: " + e.Message); }
         }
 
