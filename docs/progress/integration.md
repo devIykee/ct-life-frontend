@@ -1,6 +1,6 @@
-USER ACTION NEEDED (still open): sign in with your wallet on the Seeker. CT Life is open on the sign-in screen (fresh install of the local build, nonce fix included). Tap "Sign in with Solana", pick your wallet (Seed Vault reached the prompt at 00:26 with no error), approve with your fingerprint. A passive watcher records the result (../ct-life-evidence/integration/seeker-siws/); nothing approves on your behalf.
+USER ACTION NEEDED: fingerprint sign-in ready. CT Life (local dev build, 03:05) is open on the Seeker sign-in screen: tap "Sign in with Solana", choose your wallet, approve with your fingerprint. A passive watcher records the result and then runs the device feature pass; nothing approves on your behalf.
 
-READY TO COMMIT: client/Assets/Scripts (App, Core, Net, UI, World, Editor), client/Assets/Tests/, client/Assets/Resources/{Env,UI,World}, client/Assets/Generated/Realtime/{Space,Speaker,VideoCall}State.cs, client/Assets/Venues/VenueContentRegistry.asset(+meta, moved from Resources), client/Assets/Scenes (Spike removed), client/Assets/UniversalRenderPipelineGlobalSettings 1..9 (deleted, unreferenced), client/Experiments~/, client/ProjectSettings/{EditorBuildSettings,ProjectSettings}.asset, client/Tools~/{compile_check.py,codegen_realtime.sh,seeker_run.sh}, tools/backend-local/, tools/integration/, contract/, docs/progress/{integration,backend-dev-feedback,requests}.md — "integration: restructure to Experiments~, env/build config, real-backend fixes (auth, onboarding, realtime by name, rejoin, retry), Phase 2 wiring, EditMode + editor integration tests"
+READY TO COMMIT: (1) venue+audio wiring as listed before: client/Assets/Scripts/{Core/Data/Registries.cs,Core/Services/Signals.cs,Editor/ContentImport.cs,Editor/IntegrationBatch.cs,Net/Voice/{VoiceService,SpacesAudio,VoiceVolume}.cs,UI/Overlays/IncidentPresentation.cs,UI/Phone/Apps/CoreApps.cs,UI/Screens/{CharacterCreatorScreen,LotteryScreen}.cs,UI/Text/Strings.cs,World/Avatars/CafeSeatExitPresentation.cs,World/Npcs/NpcController.cs,World/Players/{LocalPlayerController,RemotePlayer}.cs,World/Venue/{VenueContent,VenueContentRegistry,VenueSession}.cs} (+ .meta of new files), client/Assets/Resources/Contract/config_snapshot.json, client/Assets/Resources/World/{VenueContentIndex.asset,VenueContent/*}, client/Assets/Venues/VenueContentRegistry.asset; (2) feature pass: client/Assets/Scripts/App/{Dev/FeatureProbe.cs,FlowController.cs}, client/Assets/Scripts/Core/Env/LaunchArgs.cs, client/Assets/Tests/Integration/{IntegrationRun.cs,CTLife.Tests.Integration.asmdef}, client/Tools~/compile_check.py, tools/integration/{run_editor_integration.sh,sync_build_clone.sh}; docs/progress/{integration,backend-dev-feedback}.md — "integration: venues + audio wired, device/editor feature probe, prioritized backend feedback". Checks: compile_check dev/release/editor 0 errors; lane Tests~ all pass; Unity EditMode 792/792; editor integration 13/13 (+ feature table).
 
 # Integration lead log
 
@@ -90,6 +90,51 @@ not filtered by `venueId` (item 39).
 - Local players must be identified by the `welcome`/session id, not `userId`, until item 38 is fixed.
 - Voice has no backend token route; a dev-only token path (local LiveKit dev keys) is the only way to test
   editor↔phone voice now.
+
+## Feature table (2026-10-08) — local backend main @ 9f3e5ef
+
+Editor = `tools/integration/run_editor_integration.sh` (real FlowController, env=local, dev auth, observer bot; feature
+rows via `App/Dev/FeatureProbe.cs`, the lanes' own APIs). Seeker = dev APK (env=local, adb reverse). "blocked #N" =
+backend gap, item N in `backend-dev-feedback.md`; no client workaround fakes server behaviour.
+
+| Feature | Editor | Seeker |
+| --- | --- | --- |
+| Sign-in: dev auth | pass | pass (00:44, automation) |
+| Sign-in: real SIWS via MWA | n/a (no MWA in editor) | reaches Seed Vault prompt after nonce fix; **waiting for the user's fingerprint** |
+| Onboarding: lottery → creator (Snow/Rain look) | pass | pass |
+| City + market rooms, rejoin on drop | pass | pass (market dropped 01:01, rejoined in 0.1 s) |
+| Timeline Square presence: see/be seen move, emote, chat | pass | pass (bot heard Seeker chat, saw wave + walk) |
+| Server NPCs visible | pass (5) | pass (5) |
+| Shift pays Cash | pass (30000→34000) | not rerun on device |
+| Block / report / unblock | pass | not rerun on device |
+| Token refresh, then room rejoin | pass | – |
+| Venue rooms other than Timeline Square | blocked #39 (client refuses the wrong room, enters offline) | same |
+| All 21 built venues + own home load | pass (21/21, ~0.1-0.2 s each in editor) | pending device pass |
+| Money: top-up intent | blocked #52 (no tx) | pending |
+| Money: spot buy | blocked #76 (always SLIPPAGE_EXCEEDED) | pending |
+| Money: perp open + close (1x, Trading lv 1) | pass | pending |
+| Money: ORE stake tx | blocked #55 (500); never signed | pending |
+| City life: needs (eat) | pass | pending |
+| City life: shop purchase | pass | pending |
+| City life: homes list / rent / visit | blocked #40, #75 | pending |
+| Careers: list + gig pays | pass | pending |
+| Social: DM send + thread | pass | pending |
+| Social: feed post | pass | pending |
+| Social: Space create / audio | create pass; audio blocked #40 | pending |
+| Social: call ring | blocked #54/#68 | pending |
+| World life: city events (crier) | blocked #64 | pending |
+| World life: live ads | pass (no bookings) | pending |
+| Rich List | pass (core Api) | pass |
+| Home from phone → private home | pass | pass (Parent's Basement) |
+| Chat with soft keyboard, emote labels | – | pass (panel docks above keyboard; labels readable) |
+| Proximity voice (local LiveKit, dev token; no /rtc/token #40) | – | mic track published (audio/red), seen by LiveKit |
+| EditMode tests (Unity) | 792/792 | – |
+
+APK (local dev, all lanes + 18 venues + 4 homes): 183.8 MiB (budget 150; was 159.5 before the venue merge).
+Audio payload measured 20.9 MB `.resource` (audio lane estimate 20.5-21.3; was 36.7 before the import policy).
+Perf (city + 2 venues, frame time / draw calls): pending the device pass after sign-in.
+3D home visits (City Life hook 6): not wired — the backend has no `home` room and visits return no `roomId` (#75);
+the client code would be unverifiable, so it waits for the room.
 
 ## 2026-10-07/08 — Part B (coordinator: proceed on local commits)
 

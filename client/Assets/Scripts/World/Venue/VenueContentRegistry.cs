@@ -31,8 +31,8 @@ namespace CTLife.World
 
         public VenueSceneRoot FindHome(string homeId)
         {
-            // Only the inspected basement is enabled in this release. Never substitute it for another home.
-            if (homeId != "parents_basement") return null;
+            // Only built, baked home types; never substitute one for another.
+            if (System.Array.IndexOf(VenueContent.BuiltHomes, homeId) < 0) return null;
             foreach (var entry in homes)
                 if (entry.homeId == homeId && entry.prefab != null && entry.prefab.venueId == "home") return entry.prefab;
             return null;

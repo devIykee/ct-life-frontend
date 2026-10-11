@@ -50,6 +50,14 @@ namespace CTLife.Core
     public struct VoiceActivitySignal
     {
         public bool anyoneTalking;
+        /// <summary>"voice" (proximity, default when null), "spaces", "call". Audio ducks per source; deepest wins.</summary>
+        public string source;
+    }
+
+    /// <summary>Linear voice playback gain (Settings → Voices, after taper). LiveKit playback owners apply it to their AudioSources.</summary>
+    public struct VoiceVolumeSignal
+    {
+        public float gain;
     }
 
     /// <summary>The thermal state changed (Adaptive Performance). Level: 0 none, 1 imminent, 2 throttling.</summary>

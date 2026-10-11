@@ -38,7 +38,7 @@ namespace CTLife.Net
             bool wasSpeaking = LocalSpeaking;
             long revision = ++_revision;
             if (wasSpeaking) LocalSpeakingChanged?.Invoke(false);
-            Bus.Publish(new VoiceActivitySignal { anyoneTalking = false });
+            Bus.Publish(new VoiceActivitySignal { anyoneTalking = false, source = "voice" });
             try
             {
                 await _connections.Join(roomLabel, owner, () => revision == _revision, false,
@@ -46,7 +46,7 @@ namespace CTLife.Net
                     {
                         var connection = new VoiceConnection(owner, SpeakerResolver, PositionResolver, ListenerPosition,
                             speaking => { if (revision == _revision) LocalSpeakingChanged?.Invoke(speaking); },
-                            active => { if (revision == _revision) Bus.Publish(new VoiceActivitySignal { anyoneTalking = active }); },
+                            active => { if (revision == _revision) Bus.Publish(new VoiceActivitySignal { anyoneTalking = active, source = "voice" }); },
                             error => { if (revision == _revision) Error?.Invoke(error); });
 #if UNITY_EDITOR && !CTLIFE_PROD
                         ReviewConnectionCreated?.Invoke(this, connection);
@@ -69,7 +69,7 @@ namespace CTLife.Net
             bool wasSpeaking = LocalSpeaking;
             _revision++;
             if (wasSpeaking) LocalSpeakingChanged?.Invoke(false);
-            Bus.Publish(new VoiceActivitySignal { anyoneTalking = false });
+            Bus.Publish(new VoiceActivitySignal { anyoneTalking = false, source = "voice" });
             var connection = _connections.Detach();
             var retired = _connections.RetiredCleanup;
             if (connection != null) await connection.Disconnect();
@@ -91,6 +91,8 @@ namespace CTLife.Net
     internal sealed class VoiceConnection
     {
         public CancellationToken Owner { get; }
+        private readonly System.Collections.Generic.Dictionary<string, AudioSource> _streamSources = new System.Collections.Generic.Dictionary<string, AudioSource>();
+        private void ApplyVoiceGain(float gain) { foreach (var src in _streamSources.Values) if (src != null) src.volume = gain; }
         private readonly Func<string, AudioSource> _speaker;
         private readonly Func<string, Vector3?> _position;
         private readonly Func<Vector3> _listener;
@@ -130,6 +132,7 @@ namespace CTLife.Net
             room.Disconnected += OnDisconnected;
             room.TrackPublished += OnTrackPublished; room.TrackUnpublished += OnTrackUnpublished;
             room.TrackSubscribed += OnTrackSubscribed; room.TrackUnsubscribed += OnTrackUnsubscribed;
+            VoiceVolume.Changed += ApplyVoiceGain;
             room.ActiveSpeakersChanged += OnActiveSpeakersChanged;
             using var cancellation = owner.Register(() =>
             {
@@ -175,6 +178,7 @@ namespace CTLife.Net
                 room.Disconnected -= OnDisconnected;
                 room.TrackPublished -= OnTrackPublished; room.TrackUnpublished -= OnTrackUnpublished;
                 room.TrackSubscribed -= OnTrackSubscribed; room.TrackUnsubscribed -= OnTrackUnsubscribed;
+                VoiceVolume.Changed -= ApplyVoiceGain;
                 room.ActiveSpeakersChanged -= OnActiveSpeakersChanged;
                 Cleanup(room.Disconnect);
             }
@@ -297,7 +301,9 @@ namespace CTLife.Net
                 source.spatialBlend = 0f;
                 _fallbackObjects[participant.Identity] = go;
             }
+            source.volume = VoiceVolume.Gain;
             _streams[participant.Identity] = new AudioStream(audio, source);
+            _streamSources[participant.Identity] = source;
             _streamPublications[participant.Identity] = pub;
         }
 
@@ -310,6 +316,7 @@ namespace CTLife.Net
         private void DropStream(string identity)
         {
             _streamPublications.Remove(identity);
+            _streamSources.Remove(identity);
             if (_streams.TryGetValue(identity, out var s))
             {
                 _streams.Remove(identity);

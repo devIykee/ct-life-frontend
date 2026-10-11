@@ -248,6 +248,7 @@ namespace CTLife.Net
             source.playOnAwake = false;
             source.spatialBlend = 0;
             source.mute = _muted;
+            source.volume = VoiceVolume.Gain;
             _streams[pub.Sid] = (new AudioStream(audio, source), go);
         }
         private void Unsubscribed(IRemoteTrack track, RemoteTrackPublication pub, RemoteParticipant participant) => Drop(pub.Sid);
@@ -265,7 +266,7 @@ namespace CTLife.Net
             PublishActivity();
             Changed?.Invoke();
         }
-        private void PublishActivity() => Bus.Publish(new VoiceActivitySignal { anyoneTalking = !_muted && Connected && _speaking.Count > 0 });
+        private void PublishActivity() => Bus.Publish(new VoiceActivitySignal { anyoneTalking = !_muted && Connected && _speaking.Count > 0, source = "spaces" });
         private void LocalUnpublished(TrackPublication publication, LocalParticipant participant)
         {
             if (_track != null && publication.Sid == _track.Sid) { InvalidateRoster(); _track = null; ReleaseCapture(); }

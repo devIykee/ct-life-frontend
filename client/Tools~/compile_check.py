@@ -277,6 +277,8 @@ def units(editor):
         Unit("CTLife.UI", [ASSETS / S_ / "UI"], refs=["CTLife.Core", "CTLife.Net", "CTLife.Generated", "CTLife.World", "CTLife.Audio", "ColyseusSDK", "Unity.RenderPipelines.Universal.Runtime"],
              dlls=[newtonsoft]),
     ]
+    u.append(Unit("CTLife.Audio.Cues", [ASSETS / S_ / "Audio/Cues"], refs=["CTLife.Core", "CTLife.Generated", "CTLife.Net", "CTLife.Audio"],
+                  dlls=[newtonsoft], override=True))
     money = ASSETS / S_ / "Features/Money"
     # Feature lanes: every client/Assets/Scripts/Features/<X>/*.asmdef, with references read from the asmdef
     # (Money first: other lanes may reference it). Their test asmdefs are handled below.
@@ -298,12 +300,15 @@ def units(editor):
                       dlls=[newtonsoft], editor=True))
         # EditMode test assemblies (NUnit from the installed com.unity.ext.nunit; the test runner itself is not needed
         # to compile [Test]/[TestCase] code).
+        u.append(Unit("CTLife.Audio.Editor", [ASSETS / S_ / "Audio/Editor"], refs=["CTLife.Audio"], editor=True))
         integration = ASSETS / "Tests/Integration"
         if integration.exists():
-            u.append(Unit("CTLife.Tests.Integration", [integration], refs=["CTLife.Core", "CTLife.Net", "CTLife.Generated", "CTLife.World", "CTLife.UI",
-                                                                          "CTLife.App", "ColyseusSDK"], dlls=[newtonsoft], editor=True, override=True))
+            imeta = json.loads((integration / "CTLife.Tests.Integration.asmdef").read_text(encoding="utf-8-sig"))
+            u.append(Unit("CTLife.Tests.Integration", [integration], refs=list(imeta.get("references", [])), dlls=[newtonsoft], editor=True, override=True))
         nunit = sorted(CLIENT.glob("Library/PackageCache/com.unity.ext.nunit@*/net40/unity-custom/nunit.framework.dll"))
         if nunit:
+            u.append(Unit("CTLife.Audio.Tests", [ASSETS / S_ / "Audio/Tests"], refs=["CTLife.Audio"], dlls=[str(nunit[-1])],
+                          editor=True, override=True))
             tests = ASSETS / "Tests/EditMode"
             if tests.exists():
                 u.append(Unit("CTLife.Tests.EditMode", [tests], refs=["CTLife.Core", "CTLife.Net", "CTLife.Generated", "CTLife.World", "CTLife.UI",

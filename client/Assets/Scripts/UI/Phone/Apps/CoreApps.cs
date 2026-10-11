@@ -181,8 +181,11 @@ namespace CTLife.UI
             page.Add(controlHelp);
             if (am != null)
             {
+                page.Add(Slider(Strings.T("settings.master"), am.masterVolume, v => am.masterVolume = v));
                 page.Add(Slider(Strings.T("settings.music"), am.musicVolume, v => am.musicVolume = v));
                 page.Add(Slider(Strings.T("settings.sound"), am.sfxVolume, v => am.sfxVolume = v));
+                page.Add(Slider(Strings.T("settings.voice"), am.voiceVolume, v => am.voiceVolume = v));
+                page.Add(Slider(Strings.T("settings.ambience"), am.ambienceVolume, v => am.ambienceVolume = v));
             }
             page.Add(AssetCredits.Build());
             page.Add(El.Text(Strings.F("settings.version", Semver.ClientVersion), "ct-small ct-muted"));

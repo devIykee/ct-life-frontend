@@ -86,7 +86,7 @@ namespace CTLife.World
                     {
                         if ((_previousClipTime < 1.33f && clipTime >= 1.33f) || (_previousClipTime < 1.61f && clipTime >= 1.61f) ||
                             (_previousClipTime < 1.82f && clipTime >= 1.82f) || (_previousClipTime < 2.03f && clipTime >= 2.03f))
-                            { var audio = CTLife.Audio.AudioManager.Instance; if (audio != null) audio.PlayFootstep("concrete", _position); }
+                            { var audio = CTLife.Audio.AudioManager.Instance; if (audio != null) audio.PlayFootstep(null, _position); }
                     }
                     _previousClipTime = clipTime;
                     SetAuthoredPosition(clipTime);

@@ -80,7 +80,9 @@ namespace CTLife.Core
             ["builder_hills"] = "builder_hills", ["audit_row"] = "builder_hills", ["vc_row"] = "builder_hills", ["hackathon_house"] = "builder_hills",
             ["conference_hall"] = "builder_hills",
             ["airdrop_farm"] = "airdrop_farm", ["ore_refinery"] = "airdrop_farm", ["airdrop_fields"] = "airdrop_farm", ["sybil_barn"] = "airdrop_farm",
+            ["checker_kiosk"] = "airdrop_farm",
             ["dubai_marina"] = "dubai_marina", ["club_liquidity"] = "dubai_marina", ["cabal_lounge"] = "dubai_marina",
+            ["yacht_club"] = "dubai_marina", ["penthouse_row"] = "dubai_marina",
         };
 
         private static readonly (string id, string name)[] FallbackDistrictNames =

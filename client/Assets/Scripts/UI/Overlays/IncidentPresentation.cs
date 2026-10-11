@@ -298,7 +298,7 @@ namespace CTLife.UI
             string Cash(string key) => Money.TryParseCents(P(key), out var cents) && cents >= 0 ? Money.Cash(cents, true) : null;
             string ticker = P("ticker");
             if (!string.IsNullOrEmpty(ticker)) ticker = "$" + ticker.TrimStart('$');
-            var r = new IncidentReceipt { Tone = "news", Icon = "timeline", Sfx = "sfx_ui_toast", Context = IncidentStrings.T("fictional") };
+            var r = new IncidentReceipt { Tone = "news", Icon = "timeline", Sfx = "sfx_news_flash", Context = IncidentStrings.T("fictional") };
             switch (e.eventId)
             {
                 case "evt_liquidation":

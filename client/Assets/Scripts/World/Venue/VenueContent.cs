@@ -34,9 +34,15 @@ namespace CTLife.World
         /// <summary>Is shipped art available for this public venue? Does not load any prefab.</summary>
         public static bool Has(string venueId) => Index != null && !string.IsNullOrEmpty(venueId) && Index.venueIds.Contains(venueId);
 
-        /// <summary>Only the inspected basement is enabled in this release; never substitute it for another home.</summary>
+        /// <summary>Home types with built, baked interiors (venue lane, feat/venues). Never substitute one for another.</summary>
+        public static readonly string[] BuiltHomes = { "parents_basement", "hacker_house", "studio", "penthouse", "marina_villa" };
+
         public static bool HasPlayableHome(string homeId) =>
-            homeId == "parents_basement" && Index != null && Index.playableHomeIds.Contains(homeId);
+            System.Array.IndexOf(BuiltHomes, homeId) >= 0 && Index != null && Index.playableHomeIds.Contains(homeId);
+
+        /// <summary>Public venue ids with shipped art (index only; loads no prefab).</summary>
+        public static System.Collections.Generic.IReadOnlyList<string> VenueIds =>
+            Index != null ? (System.Collections.Generic.IReadOnlyList<string>)Index.venueIds : System.Array.Empty<string>();
 
         public static VenueSceneRoot Find(string venueId) => Has(venueId) ? Load(venueId, false) : null;
 

@@ -103,7 +103,7 @@ namespace CTLife.UI
             {
                 for (int k = 0; k < cards.Count; k++) cards[k].EnableInClassList("ct-lottery-hot", k == i % cards.Count);
                 i++;
-                Bus.Publish(new SfxSignal("sfx_ui_toggle", 0.5f));
+                Bus.Publish(new SfxSignal("sfx_ui_toggle_on", 0.5f));
                 float elapsed = Time.unscaledTime - t0;
                 await Awaitable.WaitForSecondsAsync(Mathf.Lerp(0.07f, 0.35f, Mathf.Clamp01(elapsed / 2.2f)));
                 if (elapsed > 8f) break;

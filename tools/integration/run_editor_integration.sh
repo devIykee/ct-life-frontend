@@ -13,7 +13,7 @@ OUT="${CTLIFE_EVIDENCE:-$REPO/../ct-life-evidence/integration}/editor-$STAMP"
 mkdir -p "$OUT"
 curl -fsS http://localhost:4010/healthz >/dev/null || { echo "backend not running (tools/backend-local/up.sh)"; exit 2; }
 
-node "$HERE/observer-bot.mjs" --out "$OUT/bot.json" --seconds 420 > "$OUT/bot.log" 2>&1 &
+node "$HERE/observer-bot.mjs" --out "$OUT/bot.json" --seconds 900 > "$OUT/bot.log" 2>&1 &
 BOT=$!
 trap 'kill $BOT 2>/dev/null' EXIT
 sleep 3

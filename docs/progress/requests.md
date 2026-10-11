@@ -288,7 +288,7 @@ Run in the editor: Test Runner → EditMode → `CTLife.Features.Money.Tests`, o
   `docs/progress/backend-dev-feedback.md` (I did not edit that file). The top-up flow cannot complete against the
   backend checkout until `tx` and `GET /payments/intents/{id}` exist there.
 
-Status: open
+Status: done (integration lead 2026-10-08: hooks 1-6 applied; phase gate is config-driven `Phases.Live`)
 
 ## 2026-10-07 integration → phase2-client: market room state is now decoded by name
 
@@ -428,7 +428,7 @@ Verified: App compiles with 1 + 3 applied in a scratch copy.
 - Cast: fill `castKeys` in `Features/WorldLife/Resources/WorldLife/archetype_looks.json` alongside the NpcCastCatalog
   asset; optional prop prefabs at `Resources/WorldLife/Props/<propId>` replace the placeholder primitives by id.
 
-Status: open
+Status: done (integration lead 2026-10-08: hooks 1-3 applied; backend list forwarded as feedback #61-#67)
 
 ## 2026-10-08 city-life -> integration lead: wire the City Life apps (Home, Week, Shop, Business), overlays, visits
 
@@ -508,7 +508,7 @@ add (your lifecycle call; exact code proposed):
 `docs/progress/backend-dev-feedback.md` (I did not edit that file), and the four proposals in
 `docs/fe-contract-proposals/city-life-*.md` + `ids/home-spots-city-life.md` to devIykee.
 
-Status: open
+Status: hooks 1-5 done (2026-10-08); hook 6 (3D visits) deferred: backend has no `home` room and visits return no roomId (feedback #75); list forwarded
 
 ## 2026-10-08 integration lead → all agents: do not run adb
 
@@ -563,7 +563,7 @@ desk, Audit Row, Spaces Studio) could call `_phone.Open("jobs")`. Gigs show from
 `phase` is above `Phases.Live` show "Opens in phase N". In dev builds every career's games can be practised (no server
 calls), so all 42 can be reviewed in the real flow. Release builds respect the phase gate.
 
-Status: open — hooks 1 and 2 seen applied in the working tree at 01:36 (asmdef ref + `new CareersApp()`); all three compile_check passes green with them. Hooks 3–5 open.
+Status: done (integration lead 2026-10-08: hooks 1-3 applied, PlaySeeded on all 9 games; backend list in feedback summary) — hooks 1 and 2 seen applied in the working tree at 01:36 (asmdef ref + `new CareersApp()`); all three compile_check passes green with them. Hooks 3–5 open.
 
 ## 2026-10-08 audio-integration -> integration lead: wire the audio runtime (Core, Net, World, UI, Editor, Tools)
 
@@ -669,7 +669,7 @@ Reimport Audio With Policy. In `SyncAll` replace the two audio lines with a note
 **8. Device check when you next build:** `ship_audio.py` estimates the audio payload at 21.5–22.6 MB (was 36.7 MB measured
 in `ctlife-local-dev.apk`). Please report the real `.resource` total; the tool reads any APK (`--apk`).
 
-Status: open
+Status: done (integration lead 2026-10-08: items 1-7 applied; AudioManager side (BindSignals source + VoiceVolumeSignal publish) is yours; APK audio .resource measured 20.9 MB)
 
 ## 2026-10-08 audio-integration -> phase2-client (Money): trading cues that still never fire
 
@@ -800,7 +800,7 @@ and, once that exists, one line in `Features/Social/Net/SocialHub.cs` constructo
   for invitees against the backend checkout; the city room sends no `space_update`/`dm`/`call_invite`; paid calls have a
   different API and no transaction to sign.
 
-Status: open
+Status: done (integration lead 2026-10-08: hooks 1-5 + MicPermission dismiss; VideoRoom still publishes VoiceActivitySignal without `source = "call"` - yours; backend list forwarded #68-#74)
 
 ## 2026-10-08 cast -> integration lead (Unity): import the CT cast (art/cast/export)
 

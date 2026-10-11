@@ -451,8 +451,8 @@ namespace CTLife.World
             var travelled = pos - _lastFootstepPosition;
             travelled.y = 0f;
             _lastFootstepPosition = pos;
-            if (_footstepCadence.Advance(travelled.magnitude, Time.deltaTime, _seatedSpot == null && speed > 0.2f, _locomotion == "loco_run"))
-                AudioManager.Instance?.PlayFootstep("concrete", pos);
+            if (_footstepCadence.AdvanceAtSpeed(travelled.magnitude, Time.deltaTime, _seatedSpot == null ? speed : 0f))
+                AudioManager.Instance?.PlayFootstep(null, pos);   // null = surface under the foot (tag/material/venue floor)
             float yaw = transform.eulerAngles.y;
             if ((pos - _lastSentPos).sqrMagnitude > 0.0004f || Mathf.Abs(Mathf.DeltaAngle(yaw, _lastSentRot)) > 2f) _dirty = true;
 

@@ -38,6 +38,7 @@ namespace CTLife.World
         {
             _venue = venue;
             _view = GetComponent<AvatarView>();
+            CTLife.Audio.Footsteps.Attach(gameObject);
             if (venue != null) _view.BindSeatMotionProfile(venue.GetComponent<CafeSeatMotionProfile>());
             State = state;
             var p = venue.ToWorld((float)state.x, (float)state.z);

@@ -32,8 +32,8 @@ namespace CTLife.EditorTools
             n += Sync("art/processed/environment", "Assets/Art/environment");
             n += Sync("art/processed/props", "Assets/Art/props");
             n += Sync("art/processed/nature", "Assets/Art/nature");
-            n += Sync("audio/processed", "Assets/Resources/Audio");
-            n += CopyFile("audio/sfx-map.json", "Assets/Resources/Audio/sfx-map.json");
+            // Audio ships through `python3 audio/tools/ship_audio.py --sync` (only map-referenced files); import
+            // settings come from CTLife.Audio.Editor/AudioImportPostprocessor (one policy, unit-tested).
             Debug.Log($"CTLIFE [content] synced {n} changed files; importing");
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
             BuildAvatarController();
@@ -172,7 +172,6 @@ namespace CTLife.EditorTools
         private const string CharRoot = "Assets/Art/characters/";
         private const string AnimRoot = "Assets/Art/animations/";
         private const string EnvRoots = "Assets/Art/";
-        private const string AudioRoot = "Assets/Resources/Audio/";
 
         private static readonly Dictionary<string, bool> _loopCache = new Dictionary<string, bool>();
 
@@ -301,21 +300,6 @@ namespace CTLife.EditorTools
             s.format = fmt;
             s.maxTextureSize = max;
             ti.SetPlatformTextureSettings(s);
-        }
-
-        private void OnPreprocessAudio()
-        {
-            if (!assetPath.StartsWith(AudioRoot)) return;
-            var ai = (AudioImporter)assetImporter;
-            bool longForm = assetPath.Contains("/music/") || assetPath.Contains("/ambience/");
-            var s = ai.defaultSampleSettings;
-            s.loadType = longForm ? AudioClipLoadType.Streaming : AudioClipLoadType.DecompressOnLoad;
-            s.compressionFormat = AudioCompressionFormat.Vorbis;
-            s.quality = longForm ? 0.45f : 0.6f;
-            s.preloadAudioData = !longForm;
-            ai.defaultSampleSettings = s;
-            ai.forceToMono = !longForm;
-            ai.loadInBackground = longForm;
         }
 
         /// <summary>`ctl_alpha_clip` materials (leaves, grass, flowers) need Alpha Clipping on URP Lit.</summary>

@@ -1,3 +1,52 @@
+# CT Life backend feedback — prioritized summary (2026-10-08, main @ 9f3e5ef)
+
+From the Unity client, run against your stack locally (editor + Seeker). One line each; numbers point to the detailed
+entries below (reproductions included there). Everything here was reproduced live unless marked (source).
+
+**Security (fix first)**
+1. `POST /v1/beef/:id/settle` has no admin check: any signed-in player can settle a match and name the winner (source; Phase 4-6 README #1).
+2. `GET /v1/cabal/invites` returns every invite with its bearer `code`; `POST /v1/cabal/invites/:id/accept` accepts for anyone (source).
+3. `POST /v1/video-calls` returns every participant's LiveKit token to the caller → caller can join as anyone (#68, verified).
+4. `POST /v1/shifts/:id/complete` pays for unassigned `miniGameId`s (0/10 + invented game paid 3636¢) (careers proposal §6, verified).
+5. Realtime `venue` never verifies the JWT; every player's `userId` is `unverified-eyJhbGci`; profile fields come from join options (#38).
+6. `POST /v1/auth/verify` never ties the signed message to the nonce/domain; challenge `domain`/`uri` are `"ct-life"` (#43).
+
+**Blocks Phase 1 (city & identity)**
+7. Seed Vault rejects the SIWS nonce: `GET /v1/auth/challenge` nonce must be ≥8 alphanumeric (UUID hyphens fail) (#59). FE works around it.
+8. `POST /v1/auth/verify` reads `signedMessage` as UTF-8; contract says base64 (#46). FE retries with text.
+9. Rooms serve `server/realtime/schemas.ts`, not `contract/realtime/states.ts` → codegen'd clients can't decode (#47).
+10. `venue` room has no `filterBy(['venueId'])`: every venue joins the Timeline Square room (#39).
+11. Realtime can't start / never syncs as published: tsconfig excludes `contract/`, `useDefineForClassFields` (#32, #33).
+12. Workers crash at startup (redis URL + BullMQ `:` queue names) → no events, rollovers, Sunday Unlock (#34).
+13. `POST /v1/lottery/roll` after `POST /v1/characters` → 409 always; 2nd pre-character roll → 500; no `flags.lotteryRolled` (#41).
+14. `GET /v1/me` `user` lacks `hasCharacter`; auth responses flat; refresh has no user; `apply` returns `{id, level}` (#45, #48, #49).
+15. A bodiless POST is 500 (Fastify 415 mapped to INTERNAL_ERROR) (#50).
+16. City room is a stub: no `event` (mood is a sine), no `toast`, `dm`, `call_invite`, `space_update`, `payment_confirmed`, `liquidated` (#54, #64).
+17. NPC state: `startedAt` rewritten every tick, ids that aren't spots/lines, brains never fed mood/events (#61-#63, #67).
+18. Careers: skill gates never block, level/xp fixed 1/0, `POST /v1/shifts` without applying (careers proposal §6).
+
+**Blocks Phase 2 (money)**
+19. `POST /v1/payments/intents` has no `tx`/`cashCents`/`bonusBps`, amount not in base units; no `GET /v1/payments/intents/{id}` (#52, #53).
+20. `POST /v1/market/trades` buy always fails `SLIPPAGE_EXCEEDED` (execution price 40.8× list price, even at 10000 bps) (#76).
+21. `POST /v1/ore/stake/tx` → 500 locally; returns `{txBase64}` built without fee payer/blockhash; board/me are fixtures (#55).
+22. Predictions and alpha calls differ from the contract (`POST /predictions`, string micros) (#56, #57); top-up cap unit (#58).
+
+**Blocks Phase 3 (voice & social)**
+23. No `POST /v1/rtc/token` → no proximity voice, Space audio or call media for invitees (#40, #69).
+24. Paid calls: different request/response, no tx to sign, 5% fee vs 10%, no refund job (#70); no `PUT /v1/creator` (#71).
+25. `GET /v1/dms` requires `peerUserId` (no thread list); DMs/feed ignore blocks; tips body/status differ (#72, #73).
+
+**Blocks Phase 4 (city life)**
+26. No `GET /v1/homes`; `POST /v1/homes/:id/rent` takes an instance id; `POST /v1/homes/:ownerId/visit` → 404 / no `roomId`; no `home` room (#75).
+27. Venue rooms missing for 8 built venues: conference_hall, ct_jail, hackathon_house, airdrop_fields, sybil_barn, checker_kiosk, yacht_club, penthouse_row; please adopt spots `1.0.0-rc1+fe.2` (venues lane).
+28. Insufficient Cash answered as `VALIDATION_FAILED`/`FORBIDDEN` instead of 402 `INSUFFICIENT_CASH` (city-life #2, Phase 4-6 #6).
+
+**Tooling / hygiene**
+29. Compose images that don't exist (livekit, minio), migration 060 runs its down section, 6 failing tests, 3 typecheck errors (#35-#37).
+30. 61 of 135 registered routes have no rc1 operation although M8 says "no contract changes" (Phase 4-6 README #7).
+
+---
+
 # Feedback on CT Life REST API 1.0.0-rc1 (from the Unity client)
 
 For: deviykee (github.com/devIykee/ct-life-backend). Prepared by the Unity client agent on 2026-10-05; the user forwards it.
@@ -425,3 +474,15 @@ Helper scripts: frontend `tools/backend-local/{up,down}.sh`. Every item below re
 74. **Spaces shape.** `GET /spaces` → `{spaces:[…]}` (verified) with ids `space:{uuidv7}` (contract `format: uuid`),
     `speakerUserIds`/`handUserIds`; promotion at `POST /spaces/{id}/speakers/{userId}`; stage cap 8 incl. host
     (spec host + 10); several creates answer 201.
+
+**Found by the feature pass (2026-10-08, editor + local stack)**
+
+75. **Homes don't match the contract.** `GET /v1/homes` → 404 "No route". `POST /v1/homes/studio/rent` → `404 NOT_FOUND
+    {resource: home}`: the route treats `:homeId` as a *home instance* id and only pays rent on an owned instance
+    (contract: home *type* id, signs a lease). `POST /v1/homes/<ownerUserId>/visit` → `404 NOT_FOUND` (looks up
+    `homes.home_id = ownerId`); when it succeeds it returns a visit-log row, no `roomId`; `server/realtime/main.ts`
+    defines no `home` room. 3D visits and moving home cannot work end to end.
+76. **Every buy fails slippage.** Fresh dev user, coin `TRUST…` listed at `priceMicros 1000000`, mcap $1M:
+    `POST /v1/market/trades {coinId, side:"buy", cashCents:500, maxSlippageBps:10000}` →
+    `SLIPPAGE_EXCEEDED {expected:"1000000", actual:"40833374"}` (also at 500 and 2000 bps). The execution price for a
+    $5 buy is 40.8× the quoted price, so no spot trade can execute.

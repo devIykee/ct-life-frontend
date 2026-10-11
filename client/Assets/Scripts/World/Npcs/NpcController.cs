@@ -69,6 +69,7 @@ namespace CTLife.World
             _findUser = findUser;
             _view = GetComponent<AvatarView>();
             _view.npcId = npcId;
+            CTLife.Audio.Footsteps.Attach(gameObject, 0.6f);
             // NavMeshPath allocates native state and cannot run in a MonoBehaviour constructor.
             _validatedPath = new NavMeshPath();
             // Binding starts when the component is added. Place the actor first, rather than

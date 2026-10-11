@@ -336,6 +336,14 @@ namespace CTLife.App
                 ShowLobby();
 #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
                 if (LaunchArgs.Flag("autoenter")) RunGameAction(game, () => EnterCityFromLobby(game));
+                // Device feature pass (dev builds only): `integration=1 [peer=<userId>]`. The editor driver calls it directly.
+                if (LaunchArgs.Flag("integration") && !Application.isEditor) RunGameAction(game, async () =>
+                {
+                    float deadline = Time.realtimeSinceStartup + 90f;
+                    while (GameAlive(game) && (VenueSession.Current == null || !VenueSession.Current.IsActive) && Time.realtimeSinceStartup < deadline)
+                        await Awaitable.WaitForSecondsAsync(0.5f, game.Token);
+                    await Dev.FeatureProbe.Run(LaunchArgs.Get("peer"), game.Token);
+                });
 #endif
             }
             catch (OperationCanceledException) when (!GameAlive(game)) { }

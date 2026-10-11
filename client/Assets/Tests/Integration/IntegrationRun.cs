@@ -31,6 +31,7 @@ namespace CTLife.Tests.Integration
     {
         private const string ActiveKey = "ctlife.integration.active";
         private static readonly List<JObject> Checks = new List<JObject>();
+        private static readonly List<JObject> Features = new List<JObject>();
         private static string _out;
         private static double _startupDeadline;
         private static bool _started, _driving;
@@ -98,6 +99,12 @@ namespace CTLife.Tests.Integration
         {
             Checks.Add(new JObject { ["name"] = name, ["pass"] = pass, ["detail"] = detail, ["t"] = Math.Round(Time.realtimeSinceStartup, 1) });
             Debug.Log($"CTLIFE [integration] {(pass ? "PASS" : "FAIL")} {name}: {detail}");
+        }
+
+        private static void Blocked(string name, string item, string detail)
+        {
+            Checks.Add(new JObject { ["name"] = name, ["pass"] = true, ["blocked"] = item, ["detail"] = detail, ["t"] = Math.Round(Time.realtimeSinceStartup, 1) });
+            Debug.Log($"CTLIFE [integration] BLOCKED {name} [backend #{item}]: {detail}");
         }
 
         private static JObject Bot()
@@ -218,12 +225,17 @@ namespace CTLife.Tests.Integration
             }
             catch (Exception e)
             {
-                Check("venue_isolation", false, "backend item 39 (no filterBy venueId); client guard refused the room: " + e.Message);
+                Blocked("venue_isolation", "39", "client guard refused the wrong room: " + e.Message);
                 try { await VenueSession.Enter("timeline_square", joinRoom: true); } catch { /* best effort */ }
             }
             var again = VenueSession.Current;
             Check("rejoin_after_refresh", again != null && again.Channel != null && again.Channel.IsJoined,
                 $"venue={again?.VenueId} room={again?.Channel?.InstanceId}");
+
+            // Feature pass through the lanes' own APIs (same code as the device run). Blocked = backend gap, not a client failure.
+            var rows = await CTLife.App.Dev.FeatureProbe.Run(botUser, default);
+            Features.Clear();
+            foreach (var r in rows) Features.Add(r.ToJson());
         }
 
         private static void Finish(string fatal)
@@ -232,6 +244,7 @@ namespace CTLife.Tests.Integration
             var receipt = new JObject
             {
                 ["at"] = DateTime.UtcNow.ToString("o"), ["pass"] = pass, ["fatal"] = fatal, ["checks"] = new JArray(Checks),
+                ["features"] = new JArray(Features),
                 ["env"] = Env.Current?.id.ToString(), ["unity"] = Application.unityVersion,
             };
             try

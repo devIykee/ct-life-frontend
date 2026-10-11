@@ -165,12 +165,8 @@ namespace CTLife.World
             rig.Bounds = Venue.cameraBounds;
             AvatarLod.Ensure();
 
-            if (AudioManager.Instance != null)
-            {
-                AudioManager.Instance.SetAmbience(venueId);
-                var vdef = Services.Get<ConfigStore>().Registries.Venue(venueId);
-                AudioManager.Instance.Music.SetMusic(venueId, Venue.districtId, vdef != null && vdef.isClub);
-            }
+            var vdef = Services.Get<ConfigStore>().Registries.Venue(venueId);
+            CTLife.Audio.Music.SetVenue(venueId, Venue.districtId, vdef != null && vdef.isClub);
 
             _subs = new Subscriptions();
             WorldInput.SpotTapped += OnSpotTapped;

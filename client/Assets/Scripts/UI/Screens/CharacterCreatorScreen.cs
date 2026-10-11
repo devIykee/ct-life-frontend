@@ -268,7 +268,7 @@ namespace CTLife.UI
 
         private VisualElement Chip(string text, Action onClick, string id, string group, string sub = null)
         {
-            var button = El.Btn("", onClick, "ct-chip", "sfx_ui_toggle");
+            var button = El.Btn("", onClick, "ct-chip", "sfx_ui_toggle_on");
             button.Add(El.Text(text, "ct-chip-title"));
             button.userData = group + ":" + id;
             if (!string.IsNullOrEmpty(sub)) button.Add(El.Text(sub, "ct-chip-sub"));
