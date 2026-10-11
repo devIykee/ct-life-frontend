@@ -1,3 +1,37 @@
+## 2026-10-17 - DM push, debt repayment, cash history, live perp PnL
+
+- `POST /dms/{userId}` now pushes a realtime `dm` (`DmMessage`, `at` in epoch ms) to the recipient after the message commits. Blocked pairs still get `400` and nothing is pushed.
+- Added `POST /bank/repay {amountCents}` -> `{repaidCents, cashCents, debtCents}`. Overpayment is capped at the debt. Errors `402 INSUFFICIENT_CASH` and new `409 NOTHING_TO_REPAY`.
+- `GET /me` adds `debtDueAt` (next Sunday Unlock, Sun 20:00 UTC) and `debtWeeklyDueCents`, both null with no debt.
+- Added `GET /ledger?before=&limit=` -> `{items: [{id, kind, amountCents, label, at}], next}`. `kind` is the ledger reason code; amounts are signed.
+- Open perps in `GET /perps` carry `markMicros` and `unrealizedPnlCents`, computed with the same formula and price as close and liquidation.
+
+## 2026-10-12 - Server-derived Space grants, spot pricing, payment reconciliation, paid ads
+
+- `POST /rtc/token` derives Space publish rights from the stored role (host/speaker publish, everyone else subscribe-only), refuses ended or blocked Spaces, normalizes `space:` ids to one prefix and ignores client permission flags. Space tokens last 10 minutes.
+- Spot trades price `price_micros` as micro-USD per base unit on both sides; a small buy then sell passes the same slippage cap. Response shapes are unchanged.
+- `GET /payments/intents/{id}`: confirmed stays confirmed after expiry; a pending intent with a reported signature stays pending while it is reconciled from finalized chain data. 410 only when nothing was reported or found on chain.
+- `POST /uploads` takes the raw `image/png`/`image/jpeg` body (was 415), re-encodes it without metadata and binds it to the uploader. `POST /ads/bookings` returns `{bookingId, intent, booking}` with a server-priced USDC intent; bookings go `awaiting_payment` -> `pending_review` (after a verified payment) -> `live` (admin). Added `GET /ads/bookings/{id}`, `POST /ads/bookings/{id}/cancel` and `GET /ads/slots/{id}/availability`; live ads carry a signed `imageUrl`. Rejected or cancelled paid bookings expose an owed-refund receipt.
+
+## 2026-10-11 - Owned avatar delivery and dedicated USDC checkout
+
+Added owned job resume, validated manifest/acceptance and optional `character.likenessJobId` persistence. Added immutable3-USDC checkout, finalized receipt verification, interrupted-payment recovery and delivery-owed/manual-review states. New generation and checkout remain disabled pending explicit provider end-user permission and runtime/storage provisioning. No Cash top-up behavior changes.
+
+## 2026-10-11 - Private likeness pipeline contract
+
+Added authenticated, default-disabled private photo ingestion/deletion, exact-preview
+approval, job cancellation, private preview/result reads and durable job phase/hash
+fields. Writes require idempotency keys. Rigged output remains awaiting validation;
+no public generation, purchase or playable-result activation is included.
+
+## 2026-10-11 - Dex/Nova palette capabilities
+
+Added optional `characterPalettes` to `GET /v1/config`: finite per-head allowlists
+for independently recolouring the existing UBC bodies. No new look slots or paid
+shop items. Tightened character writes to reject extra look properties (breaking
+for callers sending undocumented fields) and reject unknown/cross-body UBC
+palette combinations. Existing seven-field authored looks remain compatible.
+
 # Changelog
 
 > Every change to the contract, in the order it is signed. Both teams read this before upgrading.
@@ -19,6 +53,19 @@ The first release candidate. Establishes the contract surface that the Unity cli
 - None.
 
 ## Unreleased
+
+### Fixed (BE behaviour, no shape change)
+
+- **Career progression is stored.** `POST /v1/shifts/{id}/complete` persists the XP it returns and promotes at the level threshold; `GET /v1/careers` and `POST /v1/careers/{id}/apply` return the stored `level`/`xp`, and shifts use the current level's pay. (GitHub #4)
+- **Anon is hidden from the rich list.** `net_worth`, `weekly_pnl` and `weekly_return` exclude the `anon` tribe from `entries` in every scope. `GET /v1/leaderboards/{boardId}` now fills `me` with the caller's own row (their value and the rank they would hold), so an Anon player still sees their standing privately. (GitHub #4)
+- **Origin home follows the lottery config.** Character creation sets `homeId` from `lottery.json` `outcomes[outcome].homeId` (insider → `studio`, seeker → `hacker_house`), not a hardcoded `skyrise` / `penthouse`. (GitHub #4)
+- **Solana Pay URL amount is in user units.** `solanaPayUrl`'s `amount` is now `1` for 1 USDC; the intent's `amount` field and the unsigned `tx` stay in base units. (GitHub #4)
+
+### Additive (character likeness preparation)
+
+- Authenticated `GET /likeness`, `POST /likeness/jobs`, and `GET /likeness/jobs/{id}`. Public submission is disabled until provider, private upload, verified paid fulfillment, and runtime delivery are ready. A connected wallet is authentication only.
+- `LIKENESS_UNAVAILABLE` (503) for the inactive provider path. Dedicated durable likeness entitlement/upload/job records do not reuse game-cash top-ups.
+
 
 ### Additive (FE-owned registries)
 

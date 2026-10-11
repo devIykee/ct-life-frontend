@@ -8,6 +8,9 @@ Run after `pnpm contract:codegen:rest`:  python3 client/Tools~/patch_rest_codege
    serializes these enums: it sends `ageConfirmed` as a JSON boolean through a raw body, and parses AdCreative
    raw. Root fix requested from backend in docs/progress/requests.md.
 3. `*Cents` (and BoardEntry.value) generated as int32 are widened to long; see the comment below.
+4. OpenAPI 3.1 dropped `nullable: true`, and generator 7.25.0 ignores it there, so nullable value types come out
+   non-nullable. NULLABLE_VALUES lists the ones the client reads typed; they become `T?` so a JSON null stays unknown
+   instead of reading as DateTime.MinValue / 0.
 2. The codegen must run with `validatable=false` (System.ComponentModel.DataAnnotations is not in Unity's
    .NET Standard 2.1 profile). That leaves `class X : AbstractOpenAPISchema, ` on anyOf wrappers; the comma is removed.
 """
@@ -23,6 +26,20 @@ board_value = (re.compile(r"\bint value = default"), re.compile(r"\bpublic int V
 
 # 2. With validatable=false, anyOf/oneOf wrappers keep a dangling comma: `class X : AbstractOpenAPISchema, \n{`.
 dangling = re.compile(r"(: AbstractOpenAPISchema),\s*\n")
+# 4. (file, C# type, property): GET /me's instalment fields (backend eeef49d), null with no debt.
+NULLABLE_VALUES = [("Me.cs", "DateTime", "DebtDueAt"), ("Me.cs", "long", "DebtWeeklyDueCents")]
+
+
+def nullable_values(name, t):
+    for file, kind, prop in NULLABLE_VALUES:
+        if file != name:
+            continue
+        param = prop[0].lower() + prop[1:]
+        t = re.sub(r"\b" + kind + r" " + param + r" = default\b", kind + "? " + param + " = default", t)
+        t = re.sub(r"\bpublic " + kind + r" " + prop + r" \{", "public " + kind + "? " + prop + " {", t)
+    return t
+
+
 changed = 0
 for f in root.rglob("*.cs"):
     s = f.read_text()
@@ -30,6 +47,7 @@ for f in root.rglob("*.cs"):
     t = dangling.sub(r"\1\n", t)
     t = int_cents.sub(r"long \1", t)
     t = int_cents_prop.sub(r"public long \1", t)
+    t = nullable_values(f.name, t)
     if f.name in ("BoardEntry.cs",):
         t = board_value[0].sub("long value = default", t)
         t = board_value[1].sub("public long Value {", t)

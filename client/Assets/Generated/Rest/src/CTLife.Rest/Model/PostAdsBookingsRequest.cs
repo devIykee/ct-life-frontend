@@ -42,7 +42,7 @@ namespace CTLife.Rest.Model
         /// <param name="slotId">slotId (required).</param>
         /// <param name="termId">termId (required).</param>
         /// <param name="uploadId">uploadId (required).</param>
-        /// <param name="link">Stored only; never fetched (SSRF safety)..</param>
+        /// <param name="link">http(s) URL, stored only; never fetched (SSRF safety). (required).</param>
         public PostAdsBookingsRequest(string slotId = default, string termId = default, Guid uploadId = default, string link = default)
         {
             // to ensure "slotId" is required (not null)
@@ -58,6 +58,11 @@ namespace CTLife.Rest.Model
             }
             this.TermId = termId;
             this.UploadId = uploadId;
+            // to ensure "link" is required (not null)
+            if (link == null)
+            {
+                throw new ArgumentNullException("link is a required property for PostAdsBookingsRequest and cannot be null");
+            }
             this.Link = link;
         }
 
@@ -80,10 +85,10 @@ namespace CTLife.Rest.Model
         public Guid UploadId { get; set; }
 
         /// <summary>
-        /// Stored only; never fetched (SSRF safety).
+        /// http(s) URL, stored only; never fetched (SSRF safety).
         /// </summary>
-        /// <value>Stored only; never fetched (SSRF safety).</value>
-        [DataMember(Name = "link", EmitDefaultValue = false)]
+        /// <value>http(s) URL, stored only; never fetched (SSRF safety).</value>
+        [DataMember(Name = "link", IsRequired = true, EmitDefaultValue = true)]
         public string Link { get; set; }
 
         /// <summary>
