@@ -35,11 +35,17 @@ namespace CTLife.EditorTools
         public static bool Build(string outPath, bool development)
         {
             ProjectSetup.ConfigureAndroid();
+            if (File.Exists(AuthoredCharacterImport.PrefabPath))
+                CharacterValidation.ValidateSnowAsset(AuthoredCharacterImport.PrefabPath);
+            if (File.Exists(AuthoredCharacterImport.WorldPrefabPath))
+                CharacterValidation.ValidateSnowAsset(AuthoredCharacterImport.WorldPrefabPath);
             Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(outPath)) ?? ".");
 
-            // Phase 1–2 venues ship in the APK (Build Settings scenes or greybox); Addressables content only matters once
-            // later venues stream in. Build it when the settings object resolves, otherwise continue without it.
-            if (UnityEditor.AddressableAssets.AddressableAssetSettingsDefaultObject.Settings != null)
+            // Shipped venue prefabs/scenes need no Addressables catalog. Build configured Addressables explicitly
+            // once; the automatic player-build hook otherwise tries again, even when no data builder is configured.
+            var addr = UnityEditor.AddressableAssets.AddressableAssetSettingsDefaultObject.Settings;
+            bool hasEntries = addr != null && addr.groups.Any(g => g != null && g.entries.Count > 0);
+            if (hasEntries)
             {
                 AddressableAssetSettings.BuildPlayerContent(out var addrResult);
                 if (addrResult != null && !string.IsNullOrEmpty(addrResult.Error))
@@ -48,19 +54,38 @@ namespace CTLife.EditorTools
                     return false;
                 }
             }
-            else Debug.LogWarning("CTLIFE [build] No Addressables settings object; building the player without Addressables content");
+            else Debug.Log("CTLIFE [build] No Addressables entries; shipped content comes from scenes and Resources");
 
             var options = new BuildPlayerOptions
             {
                 scenes = EditorBuildSettings.scenes.Where(s => s.enabled).Select(s => s.path).ToArray(),
                 locationPathName = outPath,
                 target = BuildTarget.Android,
-                options = development ? BuildOptions.Development | BuildOptions.ConnectWithProfiler : BuildOptions.None,
+                // Ordinary device review has no Editor profiler consumer; auto-connect
+                // was buffering 128 MiB at startup before disabling itself on Seeker.
+                options = development ? BuildOptions.Development |
+                    (Environment.GetCommandLineArgs().Contains("-ctlifeProfiler") ? BuildOptions.ConnectWithProfiler : BuildOptions.None)
+                    : BuildOptions.None,
             };
-            var report = BuildPipeline.BuildPlayer(options);
-            var s = report.summary;
-            Debug.Log($"CTLIFE [build] {s.result}: {outPath} {s.totalSize / (1024f * 1024f):0.0} MB in {s.totalTime.TotalSeconds:0}s, {s.totalErrors} errors, {s.totalWarnings} warnings");
-            return s.result == BuildResult.Succeeded;
+            var previous = addr != null ? addr.BuildAddressablesWithPlayerBuild : AddressableAssetSettings.PlayerBuildOption.DoNotBuildWithPlayer;
+            try
+            {
+                if (addr != null) addr.BuildAddressablesWithPlayerBuild = AddressableAssetSettings.PlayerBuildOption.DoNotBuildWithPlayer;
+                var report = BuildPipeline.BuildPlayer(options);
+                var s = report.summary;
+                double apkMb = File.Exists(outPath) ? new FileInfo(outPath).Length / (1024.0 * 1024.0) : 0;
+                Debug.Log($"CTLIFE [build] {s.result}: {outPath} APK {apkMb:0.0} MiB in {s.totalTime.TotalSeconds:0}s, {s.totalErrors} errors, {s.totalWarnings} warnings");
+                return s.result == BuildResult.Succeeded;
+            }
+            finally
+            {
+                if (addr != null)
+                {
+                    addr.BuildAddressablesWithPlayerBuild = previous;
+                    EditorUtility.SetDirty(addr);
+                    AssetDatabase.SaveAssetIfDirty(addr);
+                }
+            }
         }
     }
 }

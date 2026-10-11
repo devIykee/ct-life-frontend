@@ -46,6 +46,28 @@ namespace CTLife.EditorTools
             AssetDatabase.Refresh();
         }
 
+        // Narrow entry point for the user's landscape decision; does not rerun project setup.
+        [MenuItem("CT Life/Setup/Landscape Gameplay")]
+        public static void ConfigureLandscape()
+        {
+            PlayerSettings.defaultInterfaceOrientation = UIOrientation.AutoRotation;
+            PlayerSettings.allowedAutorotateToPortrait = false;
+            PlayerSettings.allowedAutorotateToPortraitUpsideDown = false;
+            PlayerSettings.allowedAutorotateToLandscapeLeft = true;
+            PlayerSettings.allowedAutorotateToLandscapeRight = true;
+            Debug.Log("CTLIFE [setup] Landscape gameplay: either landscape side, portrait rotation disabled.");
+        }
+
+        [MenuItem("CT Life/Setup/Gameplay Orientation and Frame Timing")]
+        public static void ConfigureGameplaySettings()
+        {
+            ConfigureLandscape();
+            // Required by the installed Google Adaptive Performance provider's timing hints.
+            // Configure it once instead of showing its InitializeOnLoad dialog on every reload.
+            PlayerSettings.enableFrameTimingStats = true;
+            Debug.Log("CTLIFE [setup] CPU/GPU frame timing enabled for Android performance hints.");
+        }
+
         [MenuItem("CT Life/Setup/Android Player Settings")]
         public static void ConfigureAndroid()
         {
@@ -67,7 +89,7 @@ namespace CTLife.EditorTools
             PlayerSettings.Android.renderOutsideSafeArea = true;
             PlayerSettings.Android.applicationEntry = AndroidApplicationEntry.GameActivity;
             PlayerSettings.SetManagedStrippingLevel(android, ManagedStrippingLevel.Low);
-            PlayerSettings.defaultInterfaceOrientation = UIOrientation.Portrait;
+            ConfigureGameplaySettings();
             PlayerSettings.colorSpace = ColorSpace.Linear;
             PlayerSettings.meshDeformation = MeshDeformation.GPUBatched;
             // mock/local REST is plain http over adb reverse; release builds use https only.
@@ -130,6 +152,7 @@ namespace CTLife.EditorTools
             urp.shadowDistance = 0f;
             EditorUtility.SetDirty(urp);
 
+            EnsureRendererReference(assetPath, rendererPath);
             GraphicsSettings.defaultRenderPipeline = urp;
             var levels = QualitySettings.names.Length;
             var current = QualitySettings.GetQualityLevel();
@@ -147,6 +170,25 @@ namespace CTLife.EditorTools
         }
 
         /// <summary>Runtime Shader.Find needs these in player builds (greybox and placeholder materials).</summary>
+        /// <summary>
+        /// In batchmode the SerializedObject assignment of m_RendererDataList[0] did not persist (the saved asset kept
+        /// `- {fileID: 0}`, and players logged "Default Renderer is missing"). Verify the YAML and write the reference by
+        /// GUID if needed.
+        /// </summary>
+        private static void EnsureRendererReference(string assetPath, string rendererPath)
+        {
+            AssetDatabase.SaveAssets();
+            var guid = AssetDatabase.AssetPathToGUID(rendererPath);
+            if (string.IsNullOrEmpty(guid) || !File.Exists(assetPath)) return;
+            var yaml = File.ReadAllText(assetPath);
+            const string empty = "m_RendererDataList:\n  - {fileID: 0}";
+            if (!yaml.Contains(empty)) return;
+            yaml = yaml.Replace(empty, "m_RendererDataList:\n  - {fileID: 11400000, guid: " + guid + ", type: 2}");
+            File.WriteAllText(assetPath, yaml);
+            AssetDatabase.ImportAsset(assetPath, ImportAssetOptions.ForceUpdate);
+            Debug.Log("CTLIFE [setup] URP default renderer reference written by GUID " + guid);
+        }
+
         /// <summary>Shader.Find can return null for package shaders in batchmode; fall back to the asset path.</summary>
         private static Shader FindShader(string name)
         {

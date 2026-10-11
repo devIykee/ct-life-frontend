@@ -15,6 +15,7 @@ namespace UnityEngine.Rendering.Universal
         protected override RenderPipeline CreatePipeline() => null;
         public static UniversalRenderPipelineAsset Create(ScriptableRendererData rendererData = null) => null;
         public float renderScale { get; set; }
+        public bool useAdaptivePerformance { get; set; }
         public bool supportsHDR { get; set; }
         public int msaaSampleCount { get; set; }
         public bool supportsMainLightShadows { get; internal set; }

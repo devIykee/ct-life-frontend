@@ -250,7 +250,7 @@ def units(editor):
                                                             "Unity.Addressables", "Unity.ResourceManager", "Unity.RenderPipelines.Universal.Runtime"],
              dlls=[newtonsoft]),
         Unit("CTLife.Solana", [ASSETS / S_ / "Solana"], refs=["CTLife.Core", "com.solana.unity_sdk", "UniTask"], dlls=sol_dlls + [newtonsoft]),
-        Unit("CTLife.UI", [ASSETS / S_ / "UI"], refs=["CTLife.Core", "CTLife.Net", "CTLife.Generated", "CTLife.World", "CTLife.Audio", "ColyseusSDK"],
+        Unit("CTLife.UI", [ASSETS / S_ / "UI"], refs=["CTLife.Core", "CTLife.Net", "CTLife.Generated", "CTLife.World", "CTLife.Audio", "ColyseusSDK", "Unity.RenderPipelines.Universal.Runtime"],
              dlls=[newtonsoft]),
         Unit("CTLife.App", [ASSETS / S_ / "App"], refs=["CTLife.Core", "CTLife.Net", "CTLife.Generated", "CTLife.World", "CTLife.Audio", "CTLife.UI",
                                                         "CTLife.Solana", "ColyseusSDK", "LiveKit"], dlls=[newtonsoft]),

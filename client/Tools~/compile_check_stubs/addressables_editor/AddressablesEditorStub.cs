@@ -3,8 +3,16 @@
 // and Build/AddressablesDataBuilders.cs.
 namespace UnityEditor.AddressableAssets.Settings
 {
+    public class AddressableAssetEntry { }
+    public class AddressableAssetGroup : UnityEngine.ScriptableObject
+    {
+        public virtual System.Collections.Generic.ICollection<AddressableAssetEntry> entries => null;
+    }
     public class AddressableAssetSettings : UnityEngine.ScriptableObject
     {
+        public enum PlayerBuildOption { PreferencesValue, BuildWithPlayer, DoNotBuildWithPlayer }
+        public PlayerBuildOption BuildAddressablesWithPlayerBuild { get; set; }
+        public System.Collections.Generic.List<AddressableAssetGroup> groups => null;
         public static void BuildPlayerContent() { }
         public static void BuildPlayerContent(out UnityEditor.AddressableAssets.Build.AddressablesPlayerBuildResult result) { result = null; }
     }

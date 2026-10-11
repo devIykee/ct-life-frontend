@@ -1,0 +1,369 @@
+using System;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Security.Cryptography;
+using Newtonsoft.Json.Linq;
+using CTLife.UI;
+using CTLife.World;
+using UnityEditor;
+using UnityEngine;
+using Object = UnityEngine.Object;
+
+namespace CTLife.EditorTools
+{
+    /// <summary>Imports the authored Rain candidate with its own 55-bone skeleton.
+    /// Rain uses its own canonical Humanoid Avatar and the existing shared controller.
+    /// Only the complete seven-ID Breeze look is registered; individual items are not modular aliases.</summary>
+    public sealed class RainCharacterImport : AssetPostprocessor
+    {
+        public const string Root = "Assets/Art/characters/authored/";
+        public const string RainRoot = Root + "Rain/";
+        public const string ModelPath = RainRoot + "RainAdult_Creator.fbx";
+        public const string PrefabPath = RainRoot + "Breeze.prefab";
+        public const string WorldPrefabPath = RainRoot + "BreezeWorld.prefab";
+        public static readonly string[] Look = { "skin_tone3", "head_rain", "hair_rain_ponytail", "top_sleeveless_white", "bottom_denim_fitted", "shoes_canvas_ochre", "acc_scarf_sky" };
+
+        private void OnPreprocessModel()
+        {
+            if (!assetPath.StartsWith(RainRoot) || !assetPath.EndsWith(".fbx", StringComparison.OrdinalIgnoreCase)) return;
+            var mi = (ModelImporter)assetImporter;
+            mi.globalScale = 1;
+            mi.useFileScale = true;
+            mi.bakeAxisConversion = true;
+            mi.importCameras = false;
+            mi.importLights = false;
+            mi.importAnimation = false;
+            mi.importBlendShapes = true;
+            mi.importNormals = ModelImporterNormals.Import;
+            mi.importTangents = ModelImporterTangents.CalculateMikk;
+            mi.materialImportMode = ModelImporterMaterialImportMode.None;
+            mi.animationType = assetPath == ModelPath && mi.userData == "ct-life:rain-humanoid-v1" ? ModelImporterAnimationType.Human : ModelImporterAnimationType.Generic;
+            mi.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
+            mi.sourceAvatar = null;
+            mi.optimizeGameObjects = false;
+            mi.skinWeights = ModelImporterSkinWeights.Standard;
+            mi.meshCompression = ModelImporterMeshCompression.Off;
+            mi.isReadable = true; // Import validation reads weights; preview measures the actual skinned surface.
+        }
+
+        private static void ConfigureHumanoidFromCurrentSkeleton(GameObject model, ModelImporter mi)
+        {
+            // Capture the newly imported, metre-scale rest hierarchy before Humanoid
+            // pose correction. An empty skeleton lets automatic mapping override the
+            // explicit map; a retained skeleton can contain an older FBX's unit scale.
+            var human = new HumanDescription();
+            var reference = Object.Instantiate(model);
+            try
+            {
+                reference.name = model.name;
+                // Same Enforce T-Pose operation as Unity's Avatar mapping inspector.
+                // A geometrically near-T bind still needs Unity's canonical Humanoid reference.
+                // Editor-only reflection is pinned/checked against Unity 6000.3 and
+                // UnityCsReference/Editor/Mono/Inspector/Avatar/AvatarSetupTool.cs.
+                var setup = typeof(UnityEditor.Editor).Assembly.GetType("UnityEditor.AvatarSetupTool", true);
+                var wrapper = setup.GetNestedType("BoneWrapper", BindingFlags.Public | BindingFlags.NonPublic);
+                var enforce = setup.GetMethod("MakePoseValid", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
+                if (wrapper == null || enforce == null) throw new MissingMethodException("Unity Avatar T-pose tooling changed.");
+                var mapped = CharacterValidation.SnowBoneMap();
+                var transforms = reference.GetComponentsInChildren<Transform>(true).ToDictionary(t => t.name);
+                var bones = Array.CreateInstance(wrapper, HumanTrait.BoneCount);
+                for (int i = 0; i < HumanTrait.BoneCount; i++)
+                {
+                    Transform bone = mapped.TryGetValue((HumanBodyBones)i, out var boneName) ? transforms[boneName] : null;
+                    bones.SetValue(Activator.CreateInstance(wrapper, new object[] { HumanTrait.BoneName[i], bone }), i);
+                }
+                enforce.Invoke(null, new object[] { bones });
+                human.skeleton = reference.GetComponentsInChildren<Transform>(true).Select(t => new SkeletonBone
+                {
+                    name = t.name, position = t.localPosition, rotation = t.localRotation, scale = t.localScale
+                }).ToArray();
+            }
+            finally { Object.DestroyImmediate(reference); }
+            human.human = CharacterValidation.SnowBoneMap().Select(pair => new HumanBone
+            {
+                boneName = pair.Value,
+                humanName = HumanTrait.BoneName[(int)pair.Key],
+                limit = new HumanLimit { useDefaultValues = true }
+            }).ToArray();
+            human.upperArmTwist = 0.5f;
+            human.lowerArmTwist = 0.5f;
+            human.upperLegTwist = 0.5f;
+            human.lowerLegTwist = 0.5f;
+            human.armStretch = 0.05f;
+            human.legStretch = 0.05f;
+            human.feetSpacing = 0;
+            human.hasTranslationDoF = false;
+            mi.humanDescription = human;
+            mi.userData = "ct-life:rain-humanoid-v1";
+            mi.animationType = ModelImporterAnimationType.Human;
+            mi.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
+            mi.SaveAndReimport();
+        }
+
+        private void OnPreprocessTexture()
+        {
+            if (!assetPath.StartsWith(RainRoot)) return;
+            var ti = (TextureImporter)assetImporter;
+            bool normal = assetPath.EndsWith("_Normal.png", StringComparison.OrdinalIgnoreCase);
+            ti.textureType = normal ? TextureImporterType.NormalMap : TextureImporterType.Default;
+            ti.sRGBTexture = assetPath.EndsWith("_BaseColor.png", StringComparison.OrdinalIgnoreCase);
+            ti.alphaSource = TextureImporterAlphaSource.FromInput;
+            ti.alphaIsTransparency = false; // Packed smoothness alpha is data, not cutout.
+            ti.isReadable = false;
+            ti.mipmapEnabled = true;
+            ti.wrapMode = TextureWrapMode.Clamp;
+            ti.filterMode = FilterMode.Trilinear;
+            ti.maxTextureSize = 2048;
+            var settings = ti.GetPlatformTextureSettings("Android");
+            settings.overridden = true;
+            settings.maxTextureSize = 2048;
+            settings.format = TextureImporterFormat.ASTC_4x4;
+            ti.SetPlatformTextureSettings(settings);
+        }
+
+        [MenuItem("CT Life/Characters/Import authored Rain candidate")]
+        public static void ImportRain()
+        {
+            var args = Environment.GetCommandLineArgs();
+            int sourceIndex = Array.IndexOf(args, "-ctRainSource");
+            string repo = Path.GetFullPath(Path.Combine(Application.dataPath, "../.."));
+            string source = sourceIndex >= 0 && sourceIndex + 1 < args.Length ? args[sourceIndex + 1] :
+                Path.Combine(repo, "art/character-candidates/rain-adult-production/exports");
+            bool preflight = Array.IndexOf(args, "-ctRainPreflight") >= 0;
+            if (!preflight) RequireFrozenBundle(source);
+            Directory.CreateDirectory(RainRoot);
+            if (preflight) File.Copy(source, ModelPath, true);
+            else
+                foreach (string name in new[] { "RainAdult_Creator.fbx", "RainAdult_BaseColor.png", "RainAdult_Normal.png", "RainAdult_MetallicSmoothness.png" })
+                {
+                    string path = Path.Combine(source, name);
+                    if (!File.Exists(path)) throw new FileNotFoundException("Authored character deliverable missing", path);
+                    File.Copy(path, RainRoot + name, true);
+                }
+            if (!preflight) ApplyReviewedWeights("Creator");
+            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
+            if (!preflight) RainClothImport.ApplyCloth(); // Required reviewed overlay; never restore the rejected metallic scarf.
+            var importer = (ModelImporter)AssetImporter.GetAtPath(ModelPath);
+            importer.userData = "ct-life:rain-rest-skeleton";
+            importer.humanDescription = new HumanDescription();
+            AssetDatabase.WriteImportSettingsIfDirty(ModelPath);
+            AssetDatabase.ImportAsset(ModelPath, ImportAssetOptions.ForceUpdate | ImportAssetOptions.ForceSynchronousImport);
+            var model = AssetDatabase.LoadAssetAtPath<GameObject>(ModelPath);
+            if (model == null) throw new InvalidDataException("Rain FBX did not import.");
+            ConfigureHumanoidFromCurrentSkeleton(model, importer);
+            model = AssetDatabase.LoadAssetAtPath<GameObject>(ModelPath);
+            var avatar = AssetDatabase.LoadAllAssetsAtPath(ModelPath).OfType<Avatar>().FirstOrDefault();
+            if (avatar == null || !avatar.isValid || !avatar.isHuman)
+                throw new InvalidDataException("Rain must import with its own valid Humanoid Avatar.");
+            Debug.Log($"CTLIFE [authored-character] own Avatar valid; preflight={preflight}; source={source}");
+            if (preflight) return;
+
+            const string materialPath = RainRoot + "Breeze.mat";
+            var material = AssetDatabase.LoadAssetAtPath<Material>(materialPath);
+            if (material == null)
+            {
+                var shader = Shader.Find("Universal Render Pipeline/Lit");
+                if (shader == null) throw new InvalidDataException("URP Lit is unavailable.");
+                material = new Material(shader) { name = "Breeze" };
+                AssetDatabase.CreateAsset(material, materialPath);
+            }
+            material.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>(RainRoot + "RainAdult_BaseColor.png"));
+            material.SetColor("_BaseColor", Color.white);
+            material.SetTexture("_BumpMap", AssetDatabase.LoadAssetAtPath<Texture2D>(RainRoot + "RainAdult_Normal.png"));
+            material.SetFloat("_BumpScale", 1);
+            material.EnableKeyword("_NORMALMAP");
+            material.SetTexture("_MetallicGlossMap", AssetDatabase.LoadAssetAtPath<Texture2D>(RainRoot + "RainAdult_MetallicSmoothness.png"));
+            material.SetFloat("_Smoothness", 1);
+            material.EnableKeyword("_METALLICSPECGLOSSMAP");
+            EditorUtility.SetDirty(material);
+            var go = new GameObject("Breeze");
+            try
+            {
+                go.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
+                go.transform.localScale = Vector3.one;
+                var visual = Object.Instantiate(model, go.transform);
+                visual.name = model.name;
+                // Navigation and the visual rig share +Z; the clip importer normalizes
+                // authored source offsets through Humanoid Body Orientation.
+                visual.transform.localPosition = Vector3.zero;
+                visual.transform.localRotation = Quaternion.identity;
+                visual.transform.localScale = Vector3.one;
+                var skins = go.GetComponentsInChildren<SkinnedMeshRenderer>(true);
+                if (skins.Length != 1 || skins[0].sharedMesh.subMeshCount != 1)
+                    throw new InvalidDataException("Rain deliverable must be one skinned mesh and one material.");
+                skins[0].sharedMaterial = material;
+                skins[0].updateWhenOffscreen = false;
+                skins[0].shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                var animator = go.GetComponentInChildren<Animator>();
+                animator.avatar = avatar;
+                animator.runtimeAnimatorController = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>("Assets/Resources/Characters/AvatarController.controller");
+                animator.applyRootMotion = false;
+                animator.cullingMode = AnimatorCullingMode.CullCompletely;
+                PrefabUtility.SaveAsPrefabAsset(go, PrefabPath);
+            }
+            finally { Object.DestroyImmediate(go); }
+            CharacterValidation.ValidateSnowAsset(PrefabPath);
+
+            var registry = AssetDatabase.LoadAssetAtPath<CharacterRegistry>("Assets/Resources/Characters/CharacterRegistry.asset");
+            if (registry == null) throw new InvalidDataException("CharacterRegistry is missing.");
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);
+            string key = string.Join("|", Look);
+            var entry = registry.looks.FirstOrDefault(e => e.key == key);
+            if (entry == null) { entry = new CharacterRegistry.Entry { key = key }; registry.looks.Add(entry); }
+            entry.prefab = prefab;
+            entry.previewPrefab = prefab;
+            entry.height = 0; // Measure imported body; no guessed eye-height override.
+            EditorUtility.SetDirty(registry);
+
+            const string catalogPath = "Assets/Resources/UI/CreatorLookCatalog.asset";
+            var catalog = AssetDatabase.LoadAssetAtPath<CreatorLookCatalog>(catalogPath);
+            if (catalog == null)
+            {
+                catalog = ScriptableObject.CreateInstance<CreatorLookCatalog>();
+                AssetDatabase.CreateAsset(catalog, catalogPath);
+            }
+            var choice = catalog.looks.FirstOrDefault(e => e.look != null && string.Join("|", e.look) == key);
+            if (choice == null) { choice = new CreatorLookCatalog.Entry(); catalog.looks.Add(choice); }
+            choice.labelKey = "creator.look.breeze";
+            choice.look = (string[])Look.Clone();
+            choice.previewYaw = 0; // Unity Humanoid faces +Z; preview camera is in front at +Z.
+            EditorUtility.SetDirty(catalog);
+            AssetDatabase.SaveAssets();
+            Debug.Log("CTLIFE [authored-character] imported and registered exact Breeze look; no default/item aliases assigned.");
+        }
+
+        [MenuItem("CT Life/Characters/Import Rain world LODs")]
+        public static void ImportRainLods()
+        {
+            string source = Path.GetFullPath(Path.Combine(Application.dataPath, "../../art/character-candidates/rain-adult-production/exports"));
+            var args = Environment.GetCommandLineArgs();
+            int sourceIndex = Array.IndexOf(args, "-ctRainSource");
+            if (sourceIndex >= 0 && sourceIndex + 1 < args.Length) source = args[sourceIndex + 1];
+            RequireFrozenBundle(source);
+            foreach (string file in new[] { "RainAdult_LOD1.fbx", "RainAdult_LOD2.fbx" })
+            {
+                if (!File.Exists(Path.Combine(source, file))) throw new FileNotFoundException("Validated Rain LOD is missing", file);
+                File.Copy(Path.Combine(source, file), RainRoot + file, true);
+            }
+            ApplyReviewedWeights("LOD1", "LOD2");
+            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
+            var creator = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);
+            if (creator == null) throw new InvalidDataException("Import and validate the full-detail character first.");
+            var go = Object.Instantiate(creator);
+            try
+            {
+                go.name = "BreezeWorld";
+                var high = go.GetComponentInChildren<SkinnedMeshRenderer>();
+                var bones = go.GetComponentsInChildren<Transform>(true).ToDictionary(t => t.name);
+                var levels = new System.Collections.Generic.List<LOD> { new LOD(0.28f, new Renderer[] { high }) };
+                for (int level = 1; level <= 2; level++)
+                {
+                    var asset = AssetDatabase.LoadAssetAtPath<GameObject>(RainRoot + $"RainAdult_LOD{level}.fbx");
+                    var imported = asset.GetComponentsInChildren<SkinnedMeshRenderer>(true);
+                    if (imported.Length != 1 || imported[0].sharedMesh.subMeshCount != 1)
+                        throw new InvalidDataException($"LOD{level} must contain exactly one skinned mesh/material.");
+                    var src = imported[0];
+                    // Compare bind matrices by bone name, not array index; FBX may reorder bones.
+                    for (int i = 0; i < src.bones.Length; i++)
+                    {
+                        int highIndex = Array.FindIndex(high.bones, b => b.name == src.bones[i].name);
+                        if (highIndex < 0 || !bones.ContainsKey(src.bones[i].name))
+                            throw new InvalidDataException("LOD bone missing from creator: " + src.bones[i].name);
+                        for (int m = 0; m < 16; m++)
+                            if (Mathf.Abs(src.sharedMesh.bindposes[i][m] - high.sharedMesh.bindposes[highIndex][m]) > 0.001f)
+                                throw new InvalidDataException("LOD bind matrix differs from creator: " + src.bones[i].name);
+                    }
+                    var child = new GameObject("Rain_LOD" + level);
+                    child.transform.SetParent(high.transform.parent, false);
+                    child.transform.localPosition = high.transform.localPosition;
+                    child.transform.localRotation = high.transform.localRotation;
+                    child.transform.localScale = high.transform.localScale;
+                    var skin = child.AddComponent<SkinnedMeshRenderer>();
+                    skin.sharedMesh = src.sharedMesh;
+                    skin.sharedMaterial = high.sharedMaterial;
+                    skin.bones = src.bones.Select(b => bones[b.name]).ToArray();
+                    skin.rootBone = bones[src.rootBone.name];
+                    skin.localBounds = high.localBounds;
+                    skin.updateWhenOffscreen = false;
+                    skin.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                    levels.Add(new LOD(level == 1 ? 0.08f : 0.02f, new Renderer[] { skin }));
+                }
+                var group = go.AddComponent<LODGroup>();
+                group.fadeMode = LODFadeMode.None;
+                group.SetLODs(levels.ToArray());
+                group.RecalculateBounds();
+                PrefabUtility.SaveAsPrefabAsset(go, WorldPrefabPath);
+            }
+            finally { Object.DestroyImmediate(go); }
+            CharacterValidation.ValidateSnowAsset(WorldPrefabPath);
+            var registry = AssetDatabase.LoadAssetAtPath<CharacterRegistry>("Assets/Resources/Characters/CharacterRegistry.asset");
+            var entry = registry.looks.Single(e => e.key == string.Join("|", Look));
+            entry.prefab = AssetDatabase.LoadAssetAtPath<GameObject>(WorldPrefabPath);
+            entry.previewPrefab = creator;
+            EditorUtility.SetDirty(registry);
+            AssetDatabase.SaveAssets();
+            Debug.Log("CTLIFE [authored-character] world LOD0/1/2 share one skeleton/material; creator retains full detail.");
+        }
+
+        // Public validator has a historical Snow name; Rain deliberately uses the same
+        // 54 canonical names, while all rest transforms and the Avatar belong to Rain.
+        private static void ApplyReviewedWeights(params string[] tiers)
+        {
+            string source = Path.GetFullPath(Path.Combine(Application.dataPath,
+                "../../art/character-candidates/rain-weight-correction"));
+            var report = JObject.Parse(File.ReadAllText(Path.Combine(source, "fbx-export-validation.json")));
+            if (report["all_pass"]?.Value<bool>() != true)
+                throw new InvalidDataException("Rain weight-only export checks did not pass.");
+            var pinned = new System.Collections.Generic.Dictionary<string, string>
+            {
+                ["Creator"] = "fe304b9c38d1f4c2eb3f918f147e641d0d7583bded97a4a25dea65f1687add7f",
+                ["LOD1"] = "2c4c4ee8ce7b690bda8419ffea40c4bbe6d5dc34cbeb347c776d1c7421c035c9",
+                ["LOD2"] = "299332b08d5dbd039f547a332f41be9e55c1238ab94e11f8d8900e7b71ac7384",
+            };
+            // Check every requested file before replacing any tier. The historical six-file
+            // archive remains reproducible, but must never restore invalid Head leg weights.
+            using var hash = SHA256.Create();
+            foreach (string tier in tiers)
+            {
+                string path = Path.Combine(source, "exports", "RainAdult_" + tier + ".fbx");
+                using var stream = File.OpenRead(path);
+                string actual = BitConverter.ToString(hash.ComputeHash(stream)).Replace("-", "").ToLowerInvariant();
+                if (actual != pinned[tier] || report["tiers"]?[tier]?["sha256"]?.Value<string>() != actual)
+                    throw new InvalidDataException("Rain weight correction differs from reviewed export: " + tier);
+            }
+            foreach (string tier in tiers)
+                File.Copy(Path.Combine(source, "exports", "RainAdult_" + tier + ".fbx"),
+                    RainRoot + "RainAdult_" + tier + ".fbx", true);
+            Debug.Log("CTLIFE [rain-weights] Applied source-faithful skin weights: " + string.Join(", ", tiers));
+        }
+
+        private static void RequireFrozenBundle(string source)
+        {
+            string path = Path.Combine(Path.GetDirectoryName(Path.GetFullPath(source)), "bundle-ready.json");
+            if (!File.Exists(path)) throw new FileNotFoundException("Rain's reviewed bundle is not frozen yet.", path);
+            var report = JObject.Parse(File.ReadAllText(path));
+            if (report["all_pass"]?.Value<bool>() != true)
+                throw new InvalidDataException("Rain source export/LOD checks did not all pass.");
+            string[] expected = { "RainAdult_Creator.fbx", "RainAdult_LOD1.fbx", "RainAdult_LOD2.fbx",
+                "RainAdult_BaseColor.png", "RainAdult_Normal.png", "RainAdult_MetallicSmoothness.png" };
+            using var hash = SHA256.Create();
+            foreach (string file in expected)
+            {
+                string value = report["files"]?[file]?.Value<string>();
+                if (string.IsNullOrEmpty(value)) throw new InvalidDataException("Missing frozen Rain hash: " + file);
+                using var stream = File.OpenRead(Path.Combine(source, file));
+                string actual = BitConverter.ToString(hash.ComputeHash(stream)).Replace("-", "").ToLowerInvariant();
+                if (!string.Equals(actual, value, StringComparison.OrdinalIgnoreCase))
+                    throw new InvalidDataException("Rain file differs from reviewed bundle: " + file);
+            }
+        }
+
+        [MenuItem("CT Life/Characters/Import complete Rain bundle")]
+        public static void ImportRainAll()
+        {
+            ImportRain();
+            ImportRainLods();
+        }
+    }
+}
