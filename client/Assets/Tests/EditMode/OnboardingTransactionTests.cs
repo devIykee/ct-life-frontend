@@ -168,8 +168,8 @@ namespace CTLife.Tests
         [Test]
         public void LostCreateResponseRequiresActualRefreshedCharacterNotFlagsOrMoney()
         {
-            var character = new Character("anon", new Look("skin", "head", "hair", "top", "bottom", "shoes", "acc"),
-                "trencher", new List<string>(Traits), "make_10k");
+            var character = new Character(alias: "anon", look: new Look("skin", "head", "hair", "top", "bottom", "shoes", "acc"),
+                tribeId: "trencher", traitIds: new List<string>(Traits), dreamId: "make_10k");
             var me = new Me(new User(Guid.NewGuid(), "test-wallet", false, true), character, needs: new Needs(), skills: new Skills(),
                 cashCents: 300000, homeId: "parents_basement", flags: new Dictionary<string, object>
                 { ["lotteryRolled"] = true, ["hasCharacter"] = true });

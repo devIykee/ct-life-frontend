@@ -16,7 +16,10 @@ if [ ! -f "$JAR" ]; then
 fi
 echo "56a9bb79e3bb565f477eddca2c6daa288a9c6f35  $JAR" | shasum -c - >/dev/null
 rm -rf "$OUT"
-java -jar "$JAR" generate -i "$SPEC" -g csharp -o "$OUT" \
+# --skip-validate-spec: backend main eeef49d has one stray `description` under a media type
+# (paths./payments/intents/{id}.get.responses.200.content.application/json). The parser ignores it, so the models
+# are unaffected; reported upstream rather than edited in the read-only contract copy.
+java -jar "$JAR" generate -i "$SPEC" -g csharp -o "$OUT" --skip-validate-spec \
   --global-property models,modelDocs=false,modelTests=false,apiTests=false,apiDocs=false,supportingFiles=false \
   --additional-properties=packageName=CTLife.Rest,targetFramework=netstandard2.1,nullableReferenceTypes=false,library=httpclient,validatable=false \
   2>&1 | grep -E "WARN|ERROR|Exception" | grep -v "OpenAPI 3.1 support is still in beta" || true

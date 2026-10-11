@@ -26,43 +26,48 @@ using OpenAPIDateConverter = CTLife.Rest.Client.OpenAPIDateConverter;
 namespace CTLife.Rest.Model
 {
     /// <summary>
-    /// PostAdsBookings200Response
+    /// ListLikenessJobs200Response
     /// </summary>
-    [DataContract(Name = "postAdsBookings_200_response")]
-    public partial class PostAdsBookings200Response
+    [DataContract(Name = "listLikenessJobs_200_response")]
+    public partial class ListLikenessJobs200Response
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="PostAdsBookings200Response" /> class.
+        /// Initializes a new instance of the <see cref="ListLikenessJobs200Response" /> class.
         /// </summary>
         [JsonConstructorAttribute]
-        protected PostAdsBookings200Response() { }
+        protected ListLikenessJobs200Response() { }
         /// <summary>
-        /// Initializes a new instance of the <see cref="PostAdsBookings200Response" /> class.
+        /// Initializes a new instance of the <see cref="ListLikenessJobs200Response" /> class.
         /// </summary>
-        /// <param name="bookingId">bookingId (required).</param>
-        /// <param name="intent">intent (required).</param>
-        public PostAdsBookings200Response(Guid bookingId = default, PaymentIntent intent = default)
+        /// <param name="jobs">jobs (required).</param>
+        /// <param name="acceptedJobId">acceptedJobId (required).</param>
+        public ListLikenessJobs200Response(List<LikenessJob> jobs = default, Guid? acceptedJobId = default)
         {
-            this.BookingId = bookingId;
-            // to ensure "intent" is required (not null)
-            if (intent == null)
+            // to ensure "jobs" is required (not null)
+            if (jobs == null)
             {
-                throw new ArgumentNullException("intent is a required property for PostAdsBookings200Response and cannot be null");
+                throw new ArgumentNullException("jobs is a required property for ListLikenessJobs200Response and cannot be null");
             }
-            this.Intent = intent;
+            this.Jobs = jobs;
+            // to ensure "acceptedJobId" is required (not null)
+            if (acceptedJobId == null)
+            {
+                throw new ArgumentNullException("acceptedJobId is a required property for ListLikenessJobs200Response and cannot be null");
+            }
+            this.AcceptedJobId = acceptedJobId;
         }
 
         /// <summary>
-        /// Gets or Sets BookingId
+        /// Gets or Sets Jobs
         /// </summary>
-        [DataMember(Name = "bookingId", IsRequired = true, EmitDefaultValue = true)]
-        public Guid BookingId { get; set; }
+        [DataMember(Name = "jobs", IsRequired = true, EmitDefaultValue = true)]
+        public List<LikenessJob> Jobs { get; set; }
 
         /// <summary>
-        /// Gets or Sets Intent
+        /// Gets or Sets AcceptedJobId
         /// </summary>
-        [DataMember(Name = "intent", IsRequired = true, EmitDefaultValue = true)]
-        public PaymentIntent Intent { get; set; }
+        [DataMember(Name = "acceptedJobId", IsRequired = true, EmitDefaultValue = true)]
+        public Guid? AcceptedJobId { get; set; }
 
         /// <summary>
         /// Returns the string presentation of the object
@@ -71,9 +76,9 @@ namespace CTLife.Rest.Model
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
-            sb.Append("class PostAdsBookings200Response {\n");
-            sb.Append("  BookingId: ").Append(BookingId).Append("\n");
-            sb.Append("  Intent: ").Append(Intent).Append("\n");
+            sb.Append("class ListLikenessJobs200Response {\n");
+            sb.Append("  Jobs: ").Append(Jobs).Append("\n");
+            sb.Append("  AcceptedJobId: ").Append(AcceptedJobId).Append("\n");
             sb.Append("}\n");
             return sb.ToString();
         }
