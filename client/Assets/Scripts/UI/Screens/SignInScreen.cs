@@ -16,10 +16,9 @@ namespace CTLife.UI
         private readonly Action _onWallet, _onPlay, _onAnotherWallet;
         private readonly bool _walletAvailable;
         private bool _returning;
-        private VisualElement _root, _bg, _scrim, _actions;
-        private static Texture2D _scrimTex;
-        private Button _walletBtn, _playBtn;
-        private Label _another, _error;
+        private VisualElement _root, _bg, _actions;
+        private Button _walletBtn, _playBtn, _another;
+        private Label _error;
         private IVisualElementScheduledItem _idle;
 
         public SignInScreen(Action onWallet, bool walletAvailable, bool returning = false, Action onPlay = null, Action onAnotherWallet = null)
@@ -44,39 +43,41 @@ namespace CTLife.UI
             _playBtn = TitleButton(Strings.T("welcome.play"), () => _onPlay?.Invoke(), "purple");
             _playBtn.name = "title-play";
 
+            // Secondary text button beside PLAY: outlined game text, underlined, with a 48 dp transparent hit area.
             // Fixed, trusted copy: rich text only for the underline.
-            _another = new Label("<u>" + Strings.T("welcome.anotherWallet") + "</u>") { enableRichText = true, name = "title-another-wallet" };
-            _another.AddToClassList("ct-title-link");
-            _another.RegisterCallback<ClickEvent>(_ =>
+            _another = new Button(() =>
             {
-                if (!_another.enabledInHierarchy) return;
                 Bus.Publish(new SfxSignal("sfx_ui_tap"));
                 _onAnotherWallet?.Invoke();
-            });
+            }) { text = "<u>" + Strings.T("welcome.anotherWallet") + "</u>", enableRichText = true, name = "title-another-wallet" };
+            _another.AddToClassList("ct-title-link");
             _error = El.Text("", "ct-title-error");
 
-            _actions = El.Div("ct-title-actions", _walletBtn, _playBtn, El.Div("ct-title-under", _another, _error));
+            var side = El.Div("ct-title-side", _another);
+            side.pickingMode = PickingMode.Ignore;
+            var under = El.Div("ct-title-under", _error);
+            under.pickingMode = PickingMode.Ignore;
+            _actions = El.Div("ct-title-actions", _walletBtn, _playBtn, side, under);
             // Haptic tick on press (the parent sees the press before the button's own handlers).
             _actions.RegisterCallback<PointerDownEvent>(e =>
             {
                 if (e.target is VisualElement t && (Pressed(_walletBtn, t) || Pressed(_playBtn, t))) DeviceFeel.Tick();
             }, TrickleDown.TrickleDown);
 
-            var legal = El.Text(Strings.T("welcome.age"), "ct-title-legal");
+            var legalText = El.Text(Strings.T("welcome.age"), "ct-title-legal");
+            legalText.pickingMode = PickingMode.Ignore;
+            var legal = El.Div("ct-title-legal-row", legalText);
             legal.pickingMode = PickingMode.Ignore;
-            // A soft dark gradient along the bottom keeps the legal line readable over the light cobblestones.
-            _scrim = El.Div("ct-title-scrim");
-            _scrim.pickingMode = PickingMode.Ignore;
-            _scrim.style.backgroundImage = new StyleBackground(ScrimTexture());
-            _root = El.Div("ct-title", _bg, _scrim, _actions, legal);
+            // No plate or gradient behind the copy: the outlined text carries itself (title.uss).
+            _root = El.Div("ct-title", _bg, _actions, legal);
             var sheet = Resources.Load<StyleSheet>("UI/title");
             if (sheet != null) _root.styleSheets.Add(sheet);
             else Log.Warn("ui", "Missing UI/title stylesheet");
 
             // Full bleed: the screen sits inside the safe area; the art extends under the cutout/edges.
             _root.RegisterCallback<GeometryChangedEvent>(_ => Bleed());
-            ApplyButtonArt(_walletBtn, "UI/Title/btn-green-blank");
-            ApplyButtonArt(_playBtn, "UI/Title/btn-purple-blank");
+            ApplyButtonArt(_walletBtn, "green");
+            ApplyButtonArt(_playBtn, "purple");
             SetReturning(_returning);
             if (!LoginUp) ShowError(Strings.T("welcome.unavailable"));
             else if (!_walletAvailable) ShowError(Strings.T("welcome.walletAndroid"));
@@ -103,20 +104,36 @@ namespace CTLife.UI
         }
 
         /// <summary>
-        /// The painted blank button body (Resources/UI/Title/btn-*-blank.png, a pill with alpha), 9-sliced so only the middle
-        /// stretches sideways: the top and bottom slices together cover the whole height and the side caps are half the height,
-        /// and the slice scale follows the button's height, so the rounded ends stay round at any width. USS placeholder until
-        /// the file exists.
+        /// Side slice of the squircle bodies (btn-*-blank-sq.png, corner radius ~22% of the height) as a fraction of the
+        /// texture height: the corner plus its antialiasing and rim shading, so no curved pixel is ever stretched.
+        /// `TitleButtonArtTests` measures the painted corner and checks this covers it.
         /// </summary>
-        private static void ApplyButtonArt(Button b, string resource)
+        public const float SquircleSideSlice = 0.30f;
+
+        /// <summary>Resource path of a title button body: the squircle body when present, else the older pill.</summary>
+        public static string ButtonArtResource(string tone, out bool squircle)
         {
-            var tex = Resources.Load<Texture2D>(resource);
+            var sq = "UI/Title/btn-" + tone + "-blank-sq";
+            squircle = Resources.Load<Texture2D>(sq) != null;
+            return squircle ? sq : "UI/Title/btn-" + tone + "-blank";
+        }
+
+        /// <summary>
+        /// The painted blank button body (Resources/UI/Title), 9-sliced so only the middle stretches sideways: the top and
+        /// bottom slices together cover the whole height, and the slice scale follows the button's height, so there is no
+        /// vertical stretch. Side slices: the squircle's corner (SquircleSideSlice of the height), or half the height for the
+        /// older pill. Either way the corners keep their painted shape at any width. USS placeholder until a file exists.
+        /// </summary>
+        private static void ApplyButtonArt(Button b, string tone)
+        {
+            var tex = Resources.Load<Texture2D>(ButtonArtResource(tone, out bool squircle));
             if (tex == null) return;
             b.AddToClassList("ct-title-btn-art");
             b.style.backgroundImage = new StyleBackground(tex);
             int half = tex.height / 2 - 1;
-            b.style.unitySliceLeft = half;
-            b.style.unitySliceRight = half;
+            int side = squircle ? Mathf.Min(half, Mathf.CeilToInt(tex.height * SquircleSideSlice)) : half;
+            b.style.unitySliceLeft = side;
+            b.style.unitySliceRight = side;
             b.style.unitySliceTop = half;
             b.style.unitySliceBottom = half;
             b.RegisterCallback<GeometryChangedEvent>(e =>
@@ -134,27 +151,6 @@ namespace CTLife.UI
             _bg.style.top = -s.top;
             _bg.style.right = -s.right;
             _bg.style.bottom = -s.bottom;
-            _scrim.style.left = -s.left;
-            _scrim.style.right = -s.right;
-            _scrim.style.bottom = -s.bottom;
-        }
-
-        /// <summary>A 1×64 vertical ramp (transparent → dark plum), made once at runtime: no texture in the build.</summary>
-        private static Texture2D ScrimTexture()
-        {
-            if (_scrimTex != null) return _scrimTex;
-            const int h = 64;
-            _scrimTex = new Texture2D(1, h, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear, name = "TitleScrim" };
-            var px = new Color32[h];
-            for (int y = 0; y < h; y++)
-            {
-                float t = y / (h - 1f);        // row 0 is the bottom of the texture
-                float a = Mathf.Pow(1f - t, 1.3f); // dense at the screen edge, fading out upwards
-                px[y] = new Color32(26, 8, 32, (byte)Mathf.RoundToInt(a * 185f));
-            }
-            _scrimTex.SetPixels32(px);
-            _scrimTex.Apply(false, true);
-            return _scrimTex;
         }
 
         /// <summary>

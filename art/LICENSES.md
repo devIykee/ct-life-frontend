@@ -270,7 +270,8 @@ Print text and marks are original parody (e.g. COIN2050, CHECKPOINT, POMP, WOTCH
 
 | Name | Source URL | Licence | Author | Date | Used for |
 | --- | --- | --- | --- | --- | --- |
-| Title background "town square with eggs" v2 (`client/Assets/Resources/UI/Title/title-bg.png`, 1870×841, sha256 aa12b9bd…49d64d105; source `ct-life-evidence/art-direction/out/title-bg-eggs-v2.png`) | Generated for CT Life in the Codex art thread (built-in image generation) | Owned by the project (generated for CT Life) | CT Life | 2026-10-08 | Sign-in / title screen background |
+| Title background "town square with eggs" v2, high-res (`client/Assets/Resources/UI/Title/title-bg.png`, 3840×1727, sha256 0e4291db…8fec9fcef; source `ct-life-evidence/art-direction/out/title-bg-eggs-v2-3840.png`, an Adobe Photoshop 2026 "Preserve Details" upscale of the approved 1870×841 `title-bg-eggs-v2.png`, no content change; provenance json beside it) | Generated for CT Life in the Codex art thread (built-in image generation), upscaled in Photoshop | Owned by the project (generated for CT Life) | CT Life | 2026-10-08 | Sign-in / title screen background |
+| Title button bodies, squircle (`client/Assets/Resources/UI/Title/btn-green-blank-sq.png`, 600×130; source `ct-life-evidence/art-direction/out/btn-green-blank-sq.png`) | Generated for CT Life in the Codex art thread (built-in image generation) | Owned by the project (generated for CT Life) | CT Life | 2026-10-08 | "Sign in with Solana" button body |
 
 <!-- BEGIN animation-sources-20261008 -->
 ## Source animation clips (2026-10-08, raw only, not yet imported into Unity)

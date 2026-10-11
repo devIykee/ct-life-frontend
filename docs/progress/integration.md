@@ -1,4 +1,4 @@
-READY TO COMMIT (2 commits, in order). [1] (checkpoint: cast re-import + device round d, on dev 82c380a): client/Assets/Art/characters/cast/ (every change under it: looks/*/*.fbx|png (+metas), materials/*.mat incl. snow_everyday.mat, prefabs/*.prefab, manifest.json — all written by CastImport from art/cast/export @658cb8b), client/Assets/Scripts/Editor/CastWeightRepair.cs + .meta (DELETED), client/Assets/Tests/EditMode/SeatFitTests.cs, client/Assets/Scripts/UI/Screens/CharacterCreatorScreen.cs, client/Assets/Scripts/App/FlowController.cs, client/Assets/Scripts/Core/Env/LaunchArgs.cs, docs/progress/requests.md (incl. the cast-lane note). Commit message: "cast: re-import the corrected export, drop the import-time weight patch (it mislabelled Spine as Hips); dev spot/stand/look launch extras". Checks: compile_check dev/release/editor 0 errors; EditMode 1360/1360 (cast weight test now covers every look). [2] (backend main 7243073 reconciliation, steps 1-3 as ONE commit: the steps edit the same files, e.g. AuthService.cs, GameBootstrap.cs, NetPolicyTests.cs, StateMapper.cs, so split commits would not build or test on their own): tools/backend-local/up.sh, tools/backend-local/down.sh, tools/backend-local/patches/0001-siws-ed25519-spki-key.patch (DELETED), tools/backend-local/tsconfig.backend.json (DELETED), tools/backend-local/patches/0001-venue-profile.patch (NEW), tools/backend-local/patches/0002-character-look-validation.patch (NEW), tools/backend-local/patches/0003-config-emotes.patch (NEW), tools/backend-local/patches/0004-rtc-token-contract-id.patch (NEW), tools/integration/run_editor_integration.sh, contract/SOURCE.md, contract/ids/venues.json, contract/realtime/states.ts, client/Tools~/codegen_realtime.sh, client/Packages/io.colyseus.sdk/Runtime/Colyseus/Serializer/Schema/Utils/Decode.cs, client/Assets/Generated/Realtime/CoinState.cs, client/Assets/Resources/Contract/config_snapshot.json, client/Assets/Resources/Env/EnvConfig_Local.asset, client/Assets/Resources/Env/EnvConfig_Mock.asset, client/Assets/Resources/Env/EnvConfig_Staging.asset, client/Assets/Resources/Env/EnvConfig_Prod.asset, client/Assets/Scripts/Core/Env/EnvConfig.cs, client/Assets/Scripts/Solana/MwaWallet.cs, client/Assets/Scripts/App/GameBootstrap.cs, client/Assets/Scripts/App/Dev/FeatureProbe.cs, client/Assets/Scripts/Net/Auth/AuthService.cs, client/Assets/Scripts/Net/Auth/AuthResponse.cs, client/Assets/Scripts/Net/Realtime/RealtimeService.cs, client/Assets/Scripts/Net/Realtime/StateMapper.cs, client/Assets/Scripts/World/Venue/VenueSession.cs, client/Assets/Scripts/World/Venue/VenueRoomCheck.cs, client/Assets/Tests/EditMode/AuthTests.cs, client/Assets/Tests/EditMode/NetPolicyTests.cs, client/Assets/Tests/EditMode/StateMapperTests.cs, client/Assets/Tests/Integration/IntegrationRun.cs, docs/progress/backend-dev-feedback.md, docs/progress/integration.md. Commit message: "reconcile with backend main 7243073: backend-local runs it (workers on, tsconfig override and SIWS patch gone, local patches for 4 new backend bugs); one SIWS identity (EnvConfig.AppIdentityUri, no .dev); contract re-sync (venues B27, CoinState bigint64; codegen + vendored SDK decode bigint64); drop the SIWS nonce/uri adjust, base64 text retry, venue wrong-room guard and profile join options; feedback section G". Checks: compile_check dev/release/editor compile; EditMode 1359/1359; editor integration 13/13 (editor-20261008-153125). Device round + fingerprint sign-in: next.
+READY TO COMMIT (2 commits). [1] (returning-player lottery fix after the real SIWS pass): client/Assets/Scripts/Net/Auth/Onboarding.cs, client/Assets/Tests/EditMode/OnboardingTests.cs, docs/progress/backend-dev-feedback.md (item 92 + real SIWS pass), docs/progress/integration.md (the "Step 4b" table rows: SIWS pass, returning player, MWA overlay). Commit message: "onboarding: a character always means the lottery was rolled (backend 7243073 reads lotteryRolled:false for pre-migration players and 500s their roll; feedback 92)". Checks: compile_check dev/release/editor compile; EditMode 1360/1360. [2] (title screen v4, separate commit): client/Assets/Scripts/UI/Screens/SignInScreen.cs, client/Assets/Resources/UI/title.uss, client/Assets/Scripts/Editor/TitleArtImporter.cs, client/Assets/Resources/UI/Title/title-bg.png + .meta (3840×1727), client/Assets/Resources/UI/Title/btn-green-blank-sq.png + .meta (NEW), client/Assets/Resources/UI/Title/btn-green-blank.png + .meta (DELETED), client/Assets/Tests/EditMode/TitleButtonArtTests.cs + .meta (NEW), art/LICENSES.md, docs/progress/integration.md (section "Title screen v4"). Commit message: "title v4: high-res 3840 background (ASTC 6x6, max 4096); green squircle body with corner-safe 9-slice (purple pill until its -sq lands); bottom copy as outlined game text (Lilita One +30%, thick plum outline, drop shadow; no plate, old gradient removed), Use another wallet underlined beside PLAY with a 48 dp hit area". Checks: compile_check dev/release/editor compile (the one editor warning is the venue lane's VenueVerify.cs:58); EditMode 1360 passed + 2 ignored; squircle test green passes; release APK 146.2 MiB (budget 150). integration.md holds both sections; if [1] is committed alone, include integration.md with [2].
 
 # Integration lead log
 
@@ -892,7 +892,59 @@ Evidence: `../ct-life-evidence/backend-7243073/device/`.
 | City, market, Terminal Café rooms | pass; café gets its own room, the observer bot in the same room sees the Seeker player walk (`a-kol-cafe-bot.json`) |
 | Café v3 seat online (`terminal_2`, laptop table) | **pass**: walks over, sits with hands on the laptop, "Stand up" CTA, stands on cue (`b-terminal2-online.mp4`, `b-t2-strip.png`, `b-t2-zoom.png`); female dress look sits cleanly |
 | Proximity voice (real `POST /rtc/token`, no dev token) | upstream **fail #88** (400 body, then undecodable `expiresAt` → "Voice unavailable: ApiException"); with patch 0004: **pass**, LiveKit room `venue:<instanceId>`, active speaker level 0.125. Mic turned off again afterwards |
-| Real SIWS via Seed Vault (fingerprint) | waiting for the user (USER ACTION NEEDED below) |
+| Real SIWS via Seed Vault (fingerprint) | **pass** 15:53 (user): challenge for `ctlife.invalid`, signed as issued (no nonce/uri adjustment), `POST /auth/verify` base64 → 200 on the first try (`e-siws-trail.txt`). `seeker=False` is expected locally (no Helius key, so no SGT lookup) |
+| Returning player after SIWS | **fail upstream #92**: the existing player (character from 9f3e5ef days) landed on "Your origin story": the new `lottery_rolled_at` column has no backfill, so `/me` says `lotteryRolled:false` with a character, and a roll is a 500. Client fixed: a character now always means rolled (`Onboarding.LotteryRolled`, test `CharacterBeatsAStaleFalseFlag`) |
+| Dev-build error overlay after the wallet returns | Solana Unity SDK logs `[MWA] ReconnectWallet failed: OperationInFlightException … 'Login' cannot start` from its own `HandleApplicationFocus` while the sign-in is still in flight; the dev build shows it on screen. Sign-in still completes. [Inference] harmless (release builds show no log overlay); not changed |
+
+## 2026-10-08: Title screen v4 (squircle slicing, outlined bottom copy, high-res background)
+
+Evidence: `../ct-life-evidence/title-screen/v4-play.png`, `v4-signin.png` (Seeker screencaps, dev APK from the build
+clone), `v4-*-bottom.png` crops. `v3-*` are the intermediate plate version, which the user rejected.
+
+**1. Squircle buttons (green body in; purple still the pill).** `SignInScreen.ApplyButtonArt` loads
+`Resources/UI/Title/btn-<tone>-blank-sq.png` when it exists and falls back to the current pill. The squircle is 9-sliced
+with side caps of `SquircleSideSlice` = 0.30 of the texture height (39 px of 130: the ~22% corner, 28.6 px, plus its
+antialiasing and rim). The top and bottom slices cover the whole height, and the slice scale follows the button height,
+so nothing stretches vertically and the corners keep their painted shape at any width. `TitleButtonArtTests` decodes each
+delivered `-sq` PNG, measures where its outline stops curving and fails if that reaches past the cap.
+- `btn-green-blank-sq.png` arrived at 16:15 (600×130, body 119 px tall, 5 px margins). Its painted corner ends 36 px in,
+  inside the 39 px cap: the test passes. It is in `Resources/UI/Title/`, with the same ASTC 4x4 import as before, and
+  `btn-green-blank.png` is deleted. "Sign in with Solana" uses it.
+- `btn-purple-blank-sq.png` is not delivered yet, so PLAY keeps the purple pill and its test case is Ignored. When it
+  lands: copy it in, delete `btn-purple-blank.png` (+ .meta), run the test, rebuild.
+- The USS placeholder radius is now 33 px (22% of 150).
+
+**2. Bottom copy readable over the art (user correction: no plate, no gradient).** The first pass used dark-plum plates;
+the user asked for mobile-game text instead, so the plates are gone, and so is the old bottom gradient band (`ScrimTexture`
+and `.ct-title-scrim` removed). The copy now carries itself:
+- Font and fill: Lilita One (the button font), solid cream fill.
+- Outline and shadow: dark-plum outline 3.5 units on the link and 3 on the legal line and errors, which is 3.9 px and 3.3 px
+  on the Seeker (1.112 px per unit). A soft dark drop shadow (`0 3px 5px`, 85%) under each.
+- "Use another wallet": 28 → 36 px (+30%), underlined. **Placement chosen: beside PLAY**, centred on the button body, with a transparent
+  hit area of min 130 × 130 units = 144 px = 48 dp on the Seeker (480 dpi), so it never overlaps PLAY or the legal line.
+  Pressed state scales to 0.94.
+- Legal line: 24 → 31 px, slightly smaller than the link.
+- Errors under the button use the same style.
+
+The device captures (`v4-play.png`, `v4-signin.png`, zooms `v3-legal-zoom.png`, `v3-link-zoom.png` from the same text
+build) show the outline and shadow separating the text from the light cobblestones. There is no plate, so the old plate contrast numbers no longer
+apply. Cream fill against the plum outline is ~14:1.
+
+**3. High-res background in.** `title-bg-eggs-v2-3840.png` (3840×1727) is a Photoshop "Preserve Details" upscale of the
+approved v2, with no content change. It replaces `Resources/UI/Title/title-bg.png`.
+- Import: ASTC 6x6, no mips, max size 4096 on Default, Standalone and Android, so it keeps its full 3840 width.
+  `TitleArtImporter` now sets 4096 for the background (buttons stay at 2048), and the .meta says the same.
+- Size: ASTC 6x6 is 16 bytes per 6×6 block, so 640 × 288 blocks = 2.95 MB, against 0.70 MB for the old 1870×841.
+- `art/LICENSES.md` updated with the new size, sha256, upscale provenance, and the green squircle body.
+- Release APK (local env, build clone, round 7 + reconcile + this): **146.2 MiB** (153,251,861 bytes), within the
+  150 MiB budget. Round 7 was 144.2 MiB. The build report packs `title-bg.png` at 2.81 MiB (full 3840 ASTC 6x6). Dev APK:
+  231.6 MiB.
+- On the device (`v4-signin-detail.png`, a 1:1 crop of the screencap) the faces, fountain and roofs are sharp at native
+  2670×1200.
+
+Checks: compile_check dev / release compile. EditMode 1360 passed + 2 ignored of 1362 before the green body arrived.
+After it: `TitleButtonArtTests` green passes (corner 36 px ≤ cap 39 px) and purple is still ignored. No code changed
+after that full run.
 
 ## Status
 

@@ -11,15 +11,21 @@
 }
 .ct-title-bg.ct-title-zoom { scale: 1.04 1.04; }
 
-/* The button sits in the open cobblestones of the lower third. Seeker (2670x1200, ~1.1 px per unit): its top edge is at
-   ~926 px, below the group's shoes (905-915 px across the Ken Burns drift); "Use another wallet" sits 9 px under it, then
-   ~19 px of air above the legal line, which keeps its own bottom margin inside the scrim. */
+/* The button sits in the open cobblestones of the lower third. Seeker (2670x1200, 1.112 px per unit, 480 dpi = 3 px/dp):
+   its top edge is at ~926 px, below the group's shoes (905-915 px across the Ken Burns drift), and its bottom ~120 px above
+   the screen edge, which holds the legal line. "Use another wallet" sits beside PLAY, centred on the button body, where its
+   48 dp hit area (130 units) fits without touching PLAY or the legal line. */
 .ct-title-actions { position: absolute; left: 0; right: 0; bottom: 9.1%; align-items: center; }
-.ct-title-under { position: absolute; top: 100%; left: 0; right: 0; align-items: center; padding-top: 8px; }
+.ct-title-under { position: absolute; top: 100%; left: 0; right: 0; align-items: center; padding-top: 4px; }
+.ct-title-side {
+    position: absolute; left: 68%; right: 0; top: 0; bottom: 0;
+    padding-left: 12px; padding-bottom: 12px; /* the painted rim is thicker at the bottom: centre on the body */
+    justify-content: center; align-items: flex-start;
+}
 
 .ct-title-btn {
     width: 36%; height: 150px; margin: 0; padding: 0 40px 12px 40px; /* the painted rim is thicker at the bottom: lift the label */
-    border-radius: 46px; border-width: 6px; border-bottom-width: 12px; border-color: rgb(58, 20, 64);
+    border-radius: 33px; border-width: 6px; border-bottom-width: 12px; border-color: rgb(58, 20, 64); /* squircle: ~22% of the height */
     -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 60px; -unity-text-align: middle-center; white-space: nowrap;
     color: rgb(255, 246, 228); -unity-text-outline-width: 4px; -unity-text-outline-color: rgb(58, 20, 64);
     text-shadow: 0 5px 1px rgb(58, 20, 64); /* the painted labels have a solid plum drop under the letters */
@@ -46,26 +52,33 @@
     background-color: rgba(255, 255, 255, 0.26); rotate: 18deg;
 }
 
-.ct-title-link {
-    font-size: 28px; -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); color: rgb(255, 246, 228);
-    -unity-text-outline-width: 2px; -unity-text-outline-color: rgb(58, 20, 64); text-shadow: 0 2px 2px rgba(40, 8, 44, 0.6);
-    padding: 0 20px;
+/* Bottom copy, read the way mobile games do it: no plate, no gradient band. The text carries itself: Lilita One (the button
+   font), solid cream fill, a thick dark-plum outline and a soft dark drop shadow (user direction 2026-10-08). On the
+   Seeker the outlines are 3.3-3.9 px. */
+
+/* "Use another wallet": the same outlined game text, underlined (rich text <u>), +30% (28 → 36 px). The transparent
+   padding makes the hit area 130 units tall (48 dp on the Seeker) without any visible box. */
+.ct-title-link, .ct-title-link:hover, .ct-title-link:focus, .ct-title-link:active {
+    margin: 0; padding: 0 26px; min-height: 130px; min-width: 130px;
+    background-color: rgba(0, 0, 0, 0); border-width: 0;
+    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 36px; white-space: nowrap; -unity-text-align: middle-center;
+    color: rgb(255, 246, 228); -unity-text-outline-width: 3.5px; -unity-text-outline-color: rgb(58, 20, 64);
+    text-shadow: 0 3px 5px rgba(26, 8, 32, 0.85);
+    transition-property: scale; transition-duration: 0.08s; transition-timing-function: ease-out;
 }
+.ct-title-link:active { scale: 0.94 0.94; }
 .ct-title-link:disabled { opacity: 0.6; }
 
 .ct-title-error {
-    font-size: 28px; color: rgb(255, 246, 228); -unity-text-align: middle-center; white-space: normal; max-width: 56%;
-    -unity-text-outline-width: 2px; -unity-text-outline-color: rgb(58, 20, 64); text-shadow: 0 2px 2px rgba(40, 8, 44, 0.7);
-    margin-top: 4px;
+    font-size: 32px; white-space: normal; max-width: 56%; margin-top: 0; padding: 0 12px;
+    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); color: rgb(255, 246, 228); -unity-text-align: middle-center;
+    -unity-text-outline-width: 3px; -unity-text-outline-color: rgb(58, 20, 64); text-shadow: 0 3px 5px rgba(26, 8, 32, 0.85);
 }
 
-/* Bottom ~8% of the screen, full bleed: a transparent → dark-plum ramp behind the legal line. */
-.ct-title-scrim { position: absolute; left: 0; right: 0; bottom: 0; height: 10%; -unity-background-scale-mode: stretch-to-fill; }
-
+/* The legal line, same outlined style, slightly smaller (+30%: 24 → 31 px). */
+.ct-title-legal-row { position: absolute; left: 0; right: 0; bottom: 10px; align-items: center; }
 .ct-title-legal {
-    position: absolute; left: 0; right: 0; bottom: 8px;
-    font-size: 24px; color: rgb(255, 246, 228); -unity-text-align: middle-center;
-    -unity-font-definition: url("Fonts/Manrope-Semibold.ttf");
-    -unity-text-outline-width: 1.5px; -unity-text-outline-color: rgb(58, 20, 64);
-    text-shadow: 0 2px 2px rgba(40, 8, 44, 0.9);
+    font-size: 31px; white-space: nowrap; letter-spacing: 0.5px;
+    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); color: rgb(255, 246, 228); -unity-text-align: middle-center;
+    -unity-text-outline-width: 3px; -unity-text-outline-color: rgb(58, 20, 64); text-shadow: 0 3px 5px rgba(26, 8, 32, 0.85);
 }
