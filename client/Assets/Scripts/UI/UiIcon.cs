@@ -55,6 +55,7 @@ namespace CTLife.UI
                 "rotate" => "arrows-clockwise",
                 "cash" => "coins",
                 "dream" => "star-four",
+                "npc" => "star-four",
                 "energy" => "lightning",
                 "lobby" => "squares-four",
                 "seat" => "armchair",

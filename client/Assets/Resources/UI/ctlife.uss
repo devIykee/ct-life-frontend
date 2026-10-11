@@ -243,9 +243,11 @@
 .ct-emote-scroll { flex-grow: 1; min-height: 140px; max-height: 500px; }
 
 /* Name tags and short-lived conversation bubbles. */
-.ct-tag { position: absolute; left: 0; top: 0; color: white; font-size: 24px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-font-style: normal; background-color: var(--ct-scrim); border-radius: 14px; padding: 6px 14px; }
-.ct-tag-npc { background-color: rgba(94, 75, 119, 0.84); }
-.ct-tag-talking { background-color: rgba(35, 102, 76, 0.94); }
+.ct-tag { position: absolute; left: 0; top: 0; flex-direction: row; align-items: center; background-color: rgba(18, 14, 30, 0.66); border-radius: 13px; padding: 3px 11px 4px 11px; }
+.ct-tag-text { color: white; font-size: 19px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-font-style: normal; white-space: nowrap; }
+.ct-tag-icon { width: 14px; height: 14px; margin-right: 5px; -unity-background-image-tint-color: rgb(255, 214, 102); }
+.ct-tag-npc { background-color: rgba(70, 52, 98, 0.78); }
+.ct-tag-talking { background-color: rgba(35, 102, 76, 0.92); }
 .ct-bubble { position: absolute; left: 0; top: 0; max-width: 520px; background-color: var(--ct-card); border-radius: 26px; padding: 20px 24px; border-width: 2px; border-color: var(--ct-line); }
 .ct-bubble-npc { border-color: var(--ct-violet); }
 .ct-bubble-text { white-space: normal; font-size: 28px; color: var(--ct-ink); }

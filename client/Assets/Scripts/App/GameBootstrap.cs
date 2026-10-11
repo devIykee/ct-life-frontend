@@ -31,6 +31,11 @@ namespace CTLife.App
 
         public static void Boot()
         {
+            // One line per Info/Warning. With the default script stack on every log line, a caught 404 warning printed an
+            // async stack (Task.TrySetException / AsyncTaskMethodBuilder.SetException) that read like an exception on device
+            // (2026-10-08). Errors, asserts and exceptions keep their stacks.
+            Application.SetStackTraceLogType(LogType.Log, StackTraceLogType.None);
+            Application.SetStackTraceLogType(LogType.Warning, StackTraceLogType.None);
             Log.Info("boot", $"CT Life {Semver.ClientVersion} (contract {Semver.ContractVersion}) on {SystemInfo.deviceModel}, {SystemInfo.graphicsDeviceType}, {SystemInfo.graphicsDeviceName}");
             var session = Services.Register(new Session());
             var config = Services.Register(new ConfigStore());

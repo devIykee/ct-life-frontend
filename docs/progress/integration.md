@@ -1,4 +1,4 @@
-READY TO COMMIT (title polish + device round on dev 9f23592): client/Assets/Scripts/UI/Screens/SignInScreen.cs, client/Assets/Resources/UI/title.uss, client/Assets/Scripts/UI/Hud/MovementControls.cs, client/Assets/Scripts/World/Players/LocalPlayerController.cs, docs/progress/integration.md. NOT mine, leave out: client/Assets/Art/characters/cast/materials/snow_everyday.mat (feel lane). Commit message: "fix: on-screen stick no longer blocked by the social chip bar; a seat claim no longer stands the player back up; title spacing + legal scrim". Checks: compile_check dev/release/editor 0 errors; EditMode 1333/1333; Seeker: stick, Sit/Stand up and knockdown verified on device. Evidence: ../ct-life-evidence/device-round-20261008b/ and ../ct-life-evidence/title-screen/title-{signin,play}-device.png.
+READY TO COMMIT (tags, launch log, tap focus on dev 40cc7b4): client/Assets/Scripts/UI/Overlays/TagPlanner.cs (+.meta), client/Assets/Tests/EditMode/TagPlannerTests.cs (+.meta), client/Assets/Scripts/UI/Overlays/WorldLabels.cs, client/Assets/Scripts/UI/UiIcon.cs, client/Assets/Resources/UI/ctlife.uss, client/Assets/Scripts/App/FlowController.cs, client/Assets/Scripts/App/GameBootstrap.cs, client/Assets/Scripts/UI/WorldInputLayer.cs, client/Assets/Scripts/World/Input/WorldInput.cs, client/Assets/Scripts/World/Interaction/InteractionFinder.cs, client/Assets/Scripts/World/Venue/VenueSession.cs, client/Assets/Scripts/Editor/SpotTapAudit.cs (+.meta), docs/progress/{integration,requests}.md. NOT mine, leave out: client/Assets/Art/characters/cast/materials/snow_everyday.mat. Commit message: "fix: world taps were swallowed (seats, stage, avatars untappable); tap resolver for solid furniture; name-tag declutter; no stack traces on info/warning logs". Checks: compile_check dev/release/editor 0 errors; EditMode 1340/1340; Seeker verified (../ct-life-evidence/device-round-20261008c/).
 
 # Integration lead log
 
@@ -629,6 +629,71 @@ override-status 0`, restored after; only windows at the 60 target are counted.
 - [Unverified] Every launch logs an async exception stack (`Task.TrySetException`) without its message.
 - The venue isolation backend item #39 is still open; the café got its own room this time only because no other venue
   room was open.
+
+## 2026-10-08: Name tags, launch "exception", tap focus (device-round-20261008c)
+
+Evidence: `../ct-life-evidence/device-round-20261008c/`.
+
+**3. Tap focus: the real cause was in the client, three layers deep.**
+1. **Every world tap was swallowed.** `WorldInputLayer.IsBlocked` had its own copy of the overlay check that blocked the
+   stick. The Social lane's always-present click-through `ct-social-chip-bar` on the modal layer counted as an open
+   overlay, so `WorldInput.Tap` never ran. Seats, the stage and avatars (profile cards) could not be tapped on device.
+   - Found with dev logging: the press reached `#layer-world`, but no tap followed.
+   - Fix: same rule as the stick; only a child that takes input (`pickingMode = Position`) blocks.
+2. **The tap → spot rule predated solid furniture.** Since venues round 4 a tap lands on the chair/sofa/table/desk
+   collider, and the old rule (first hit only, ≤ 0.9 m in 3D from the floor anchor) rarely matched.
+   - New `WorldInput.ResolveSpotTap`, shared with the editor audit. In order:
+     - an explicit tap target (a collider under the anchor) within 1 m behind the first hit;
+     - the anchor the touched object belongs to;
+     - the anchor horizontally nearest the touched point (0.75 m, standing spots such as the host's mic 1.3 m);
+     - the anchors a touched furniture-sized collider covers.
+   - Editor audit `Editor/SpotTapAudit.cs`: each venue loaded like the game, taps aimed from the venue's own camera
+     yaw/pitch/distance. From the default camera yaw:
+
+     | Venue | Old rule | New rule |
+     |---|---|---|
+     | Café | 0/12 | **12/12** |
+     | Spaces Studio | 19/33 | **33/33** |
+     | Timeline Square | 3/6 | **6/6** |
+
+   - **No anchor is off its furniture** (report `spot-tap-audit.md`), so there is no anchor list for the venue lane.
+3. **A tapped target was dropped beyond 14 m.** The Spaces host spot is ~17 m from the entrance. `InteractionFinder.FocusRange`
+   is now 24 m, enough for what the venue camera shows.
+
+**Device:**
+- **Café:** one tap on a chair from the spawn point focuses it (`tap → table_3`, `focus ok`, ring on the chair, "Sit"),
+  then "Sit" walks the player ~9 m there and seats them. Files: `3-cafe-seat-tapped.png`, `3-cafe-walked-and-seated.png`.
+- **Spaces:** one tap on the host desk from the entrance gives **"Take the mic"**. Tapping it walks the player around the
+  tiers to the desk and holds the mic pose, with "Step away" / "Wave" / "Hype the room". Files:
+  `3-studio-mic-offered.png`, `3-studio-on-the-mic.png`, `3-studio-take-the-mic.mp4`.
+- New venue finding: on the mic the stage lighting truss blocks the camera (requests.md).
+- Dev builds now log one line per world tap (`CTLIFE [input] tap … -> spot`) and per focus.
+
+**2. Launch "exception": there was no exception.**
+- The `Task.TrySetException` / `AsyncTaskMethodBuilder.SetException` lines were the script stack trace that Unity
+  attaches to every log line in dev builds. They belonged to one ordinary warning, `CTLIFE [citylife] GET /homes failed:
+  NOT_FOUND` (backend #75). The awaited request threw a 404 that CityLife caught and logged, so the async frames came
+  through `TrySetException`.
+- Fix (`GameBootstrap.Boot`): `Application.SetStackTraceLogType(Log/Warning, None)`; errors, asserts and exceptions keep
+  their stacks.
+- Device: launch log 687 → 338 lines; 0 `TrySetException` lines. The only warning left is that one-line 404, a backend
+  gap. Files: `launch-unity-full.log` (before), `launch-unity-after.log`.
+
+**1. Name tags** (`UI/Overlays/TagPlanner.cs`, pure and unit-tested; `WorldLabels` renders it).
+- **Who gets a tag:**
+  - never your own;
+  - always: speakers, friends (people you follow, via `SocialHub.Follows`) and NPCs within 10 m in your 50° facing cone;
+  - then the 6 nearest, within 16 m and on screen.
+- **Collisions:** a tag pushed up one row if it collides; otherwise the lower priority is hidden.
+- **The centre of the screen stays clear:** an ordinary tag there is hidden; a priority tag is pushed sideways.
+- **Fade:** alpha falls from 1 at 6 m to 0.4 at 16 m (×0.9 when pushed).
+- **Style:** smaller rounded pills (19 px); NPCs show just the name with a tiny gold star (`UiIcon("npc")`).
+- **Tests:** 7 in `Tests/EditMode/TagPlannerTests.cs`. They cover own tag hidden, nearest 6 plus speaker, friend and faced
+  NPC, range/off-screen, collision push/hide, centre clear, fade, and priority.
+- **Device** (30-bot crowd): `1-tags-before-after.png`. Before: ~30 overlapping labels. After: a handful of small pills,
+  nothing over your character.
+
+**EditMode: 1340/1340.** Compile clean on all three passes.
 
 ## Status
 

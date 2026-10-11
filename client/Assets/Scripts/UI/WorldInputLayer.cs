@@ -55,11 +55,18 @@ namespace CTLife.UI
             return false;
         }
 
+        /// <summary>
+        /// A visible child that takes input blocks world taps. A click-through container (`pickingMode = Ignore`, e.g. the
+        /// Social lane's always-present `ct-social-chip-bar` on the modal layer) does not: it used to swallow every world
+        /// tap on device, so seats, the stage and avatars could never be tapped (found 2026-10-08; same rule as
+        /// MovementControls.HasOverlay).
+        /// </summary>
         private static bool HasOverlay(VisualElement layer)
         {
             if (layer == null || layer.resolvedStyle.display == DisplayStyle.None) return false;
             foreach (var child in layer.Children())
-                if (child.resolvedStyle.display != DisplayStyle.None && child.resolvedStyle.visibility == Visibility.Visible) return true;
+                if (child.pickingMode == PickingMode.Position && child.resolvedStyle.display != DisplayStyle.None
+                    && child.resolvedStyle.visibility == Visibility.Visible) return true;
             return false;
         }
 

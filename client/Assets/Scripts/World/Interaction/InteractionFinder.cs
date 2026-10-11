@@ -12,7 +12,9 @@ namespace CTLife.World
     public static class InteractionFinder
     {
         public const float Hysteresis = 1.25f;    // keep the current target until 25% beyond its range
-        public const float FocusRange = 14f;      // a tapped target stays offered within this distance
+        // A tapped target stays offered within this distance. 24 m covers what the venue camera shows: the Spaces Studio
+        // host's mic is ~17 m from the entrance, so at 14 m a tap on it was accepted and then dropped (2026-10-08).
+        public const float FocusRange = 24f;
         public const float FacingPenalty = 0.6f;  // metres added for a target directly behind
 
         public static Interactable Best(Vector3 actor, Vector3 forward, IReadOnlyList<Interactable> all,

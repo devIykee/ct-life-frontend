@@ -453,7 +453,8 @@ namespace CTLife.World
             if (!OwnsVisit || IsOwnHome) return;
             // Own Home currently supports exploration and the existing phone needs actions.
             // A tap only offers the seat (the CTA, from farther away); the player chooses to sit with the button.
-            InteractionController.Current?.Focus(spot);
+            bool focused = InteractionController.Current != null && InteractionController.Current.Focus(spot);
+            if (Debug.isDebugBuild) Log.Info("input", $"focus {spot.spotId}: {(InteractionController.Current == null ? "no controller" : focused ? "ok" : "refused")}");
         }
 
         // ---------------------------------------------------------------- voice

@@ -340,6 +340,7 @@ namespace CTLife.App
             ProfileCard.PlayerActions = null;
             ProfileCard.VisitHome = null;
             ProfileCard.NpcActions = null;
+            WorldLabels.IsFriend = null;
             SettingsApp.ExtraSection = null;
             CTLife.Competition.CompetitionLinks.OpenApp = null;
             // Resets the live Phase 6 state, so a second account never sees the first one's jail, invites or flags.
@@ -517,6 +518,7 @@ namespace CTLife.App
                 CTLife.Competition.CompetitionProfileActions.Build(id, name, close),
                 HireAction(id, close));
             ProfileCard.NpcActions = CTLife.Competition.CompetitionProfileActions.BuildNpc;
+            WorldLabels.IsFriend = id => CTLife.SocialFeatures.SocialHub.Current?.Follows.Contains(id) == true;
             SettingsApp.ExtraSection = CTLife.Competition.XLinkPanel.Build;
             CTLife.Competition.CompetitionRuntime.Bind();
             CTLife.Competition.CompetitionLinks.OpenApp = app => _phone?.Open(app);

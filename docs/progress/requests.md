@@ -1093,3 +1093,17 @@ bins and the kiosk.
 | `home:marina_villa` | 2 | (-0.80,2.10) 1.00x0.80 m, h 0.45 m, near sofa; (-5.20,2.60) 0.20x0.60 m, h 0.68 m, near bed | 3 | (-3.90,2.60) near bed; (4.00,2.80) near desk |
 
 Status: open
+
+## 2026-10-08 integration lead -> venue lane: Spaces Studio stage, camera blocked on the mic (device-round-20261008c)
+
+Seat and stage anchors are all fine. `SpotTapAudit` (editor; it loads each venue like the game and taps from the venue camera)
+found no seat, terminal or stage anchor off its furniture in Terminal Café, Spaces Studio or Timeline Square. The tap problems
+were client-side and are fixed.
+
+One new finding: when the player takes the mic (`spaces_studio.stage_host`), the follow camera sits behind the stage edge, and
+the black lighting truss runs between the camera and the player. The view is mostly truss. See
+`../ct-life-evidence/device-round-20261008c/3-studio-on-the-mic.png`. Please either keep the truss out of the camera's
+path for the stage spots (raise it, or move it upstage), or tell me to add camera occluder fading for that object
+(name/layer).
+
+Status: open
