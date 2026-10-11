@@ -272,6 +272,48 @@ namespace CTLife.Tests
             Assert.IsFalse(badge.enableRichText);
         }
 
+        // ------------------------------------------------------------------ wave 2
+
+        [Test]
+        public void Timeframes_OnlyWindowsTheDataReallyCovers()
+        {
+            const long min = 60_000L;
+            Assert.IsEmpty(DuoTimeframes.Available(0, 0, 1), "one point: no pills");
+            Assert.IsEmpty(DuoTimeframes.Available(0, 10 * min, 11), "10 minutes of data: a single view, no pills");
+            CollectionAssert.AreEqual(new[] { "15m", "All" }, DuoTimeframes.Available(0, 40 * min, 41));
+            CollectionAssert.AreEqual(new[] { "15m", "1H", "4H", "All" }, DuoTimeframes.Available(0, 5 * 60 * min, 301));
+            Assert.AreEqual(60 * min, DuoTimeframes.WindowMs("1H"));
+            Assert.AreEqual(long.MaxValue, DuoTimeframes.WindowMs("All"));
+        }
+
+        [Test]
+        public void LineChart_DropsInvalidPointsAndReportsDirection()
+        {
+            var chart = new DuoLineChart();
+            chart.SetData(new[] { 1.0, double.NaN, 2.0, double.PositiveInfinity, 3.0 });
+            Assert.AreEqual(3, chart.Count);
+            Assert.IsTrue(chart.Rising);
+            chart.SetData(new[] { 3.0, 1.0 });
+            Assert.IsFalse(chart.Rising);
+            chart.SetData(null);
+            Assert.AreEqual(0, chart.Count);
+        }
+
+        [Test]
+        public void Pill_IsALargeTargetAroundALiteralFace()
+        {
+            int taps = 0;
+            var pill = Duo.Pill("<b>Work</b>", () => taps++, Duo.PillKind.Primary);
+            var label = pill.Q<Label>(className: "duo-pill-label");
+            Assert.AreEqual("<b>Work</b>", label.text);
+            Assert.IsFalse(label.enableRichText);
+            Assert.AreEqual("", pill.text, "the caption is the face label, not the button text");
+            Assert.IsTrue(pill.ClassListContains("duo-pill-primary"));
+            Duo.SetPillText(pill, "Busy");
+            Assert.AreEqual("Busy", label.text);
+            Assert.AreEqual("Busy", pill.tooltip);
+        }
+
         // ------------------------------------------------------------------ time labels
 
         [Test]

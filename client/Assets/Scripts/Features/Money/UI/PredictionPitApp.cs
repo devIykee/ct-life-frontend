@@ -13,6 +13,7 @@ namespace CTLife.Economy
     {
         public override string Id => "predict";
         public override string Title => MoneyStrings.T("predict.title");
+        public override string HomeLabel => MoneyStrings.T("predict.homeLabel");
         public override string Color => "#3867d6";
         public override int Phase => 2;
         public override string Feature => FeatureFlags.Markets;

@@ -112,11 +112,16 @@ namespace CTLife.SocialFeatures
                 _input.RegisterValueChangedCallback(e => { _draft = e.newValue ?? ""; ClearError(); SyncComposer(); });
                 _send = new Button(Send) { name = "social-common-send", tooltip = SocialStrings.T("common.send") };
                 _send.AddToClassList("duo-composer-send");
-                _send.Add(new DuoGlyph(DuoGlyph.Kind.Send));
+                _send.Add(El.PassThrough(El.Div("duo-composer-send-face", new DuoGlyph(DuoGlyph.Kind.Send))));
                 var plus = Duo.Circle(DuoGlyph.Kind.Plus, SocialStrings.T("dm.options"), ActionsSheet, "messages-plus");
-                var field = El.Div("duo-composer-field", _input, _send);
+                plus.AddToClassList("duo-glass-circle");
+                // Board #4: the pill is glass (soft shadow under a translucent white face), not an outline.
+                var field = El.Div("duo-composer-field");
+                Duo.AddShadow(field, "pill");
+                field.Add(El.Div("duo-composer-field-face", _input, _send));
                 Footer.RemoveFromHierarchy();
                 Footer.AddToClassList("duo-composer");
+                Footer.style.backgroundImage = Background.FromTexture2D(Duo.Fade);
                 Footer.Add(_inputError);
                 Footer.Add(El.Div("duo-composer-row", plus, field));
                 _frame.Add(Footer);

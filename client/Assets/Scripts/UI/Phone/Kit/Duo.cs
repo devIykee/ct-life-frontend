@@ -83,11 +83,49 @@ namespace CTLife.UI
         public static Label GroupHeader(string text) => El.Text(text.ToUpperInvariant(), "duo-group-header");
         public static Label GroupFooter(string text) => El.Text(text, "duo-group-footer");
 
-        /// <summary>App-Store "GET" capsule.</summary>
+        /// <summary>
+        /// App-Store "GET" capsule. The Button is an ~8 mm touch target (negative margins keep the board's layout);
+        /// the visible capsule is its face.
+        /// </summary>
         public static Button Pill(string text, Action onClick, PillKind kind = PillKind.Plain)
         {
-            var b = El.Btn(text, onClick, "duo-pill duo-pill-" + kind.ToString().ToLowerInvariant());
+            var b = new Button(() => { Bus.Publish(new SfxSignal("sfx_ui_tap")); onClick?.Invoke(); }) { text = "", enableRichText = false, tooltip = text };
+            b.AddToClassList("duo-pill");
+            b.AddToClassList("duo-pill-" + kind.ToString().ToLowerInvariant());
+            var label = El.Text(text, "duo-pill-label");
+            label.pickingMode = PickingMode.Ignore;
+            var face = El.Div("duo-pill-face", label);
+            face.pickingMode = PickingMode.Ignore;
+            b.Add(face);
             return b;
+        }
+
+        /// <summary>Changes a pill's caption (state changes such as Work → Working).</summary>
+        public static void SetPillText(Button pill, string text)
+        {
+            var label = pill?.Q<Label>(className: "duo-pill-label");
+            if (label != null) label.text = text;
+            if (pill != null) pill.tooltip = text;
+        }
+
+        private static Texture2D _fade;
+
+        /// <summary>Transparent at the top to near-white at the bottom: the composer's backdrop, so content fades under
+        /// the floating glass controls instead of meeting a hard bar (USS has no gradients).</summary>
+        public static Texture2D Fade
+        {
+            get
+            {
+                if (_fade != null) return _fade;
+                _fade = new Texture2D(1, 64, TextureFormat.RGBA32, false) { name = "Duo fade", wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear, hideFlags = HideFlags.HideAndDontSave };
+                for (int y = 0; y < 64; y++)
+                {
+                    float t = 1f - y / 63f; // y=0 is the bottom row: opaque there
+                    _fade.SetPixel(0, y, new Color(1f, 1f, 1f, Mathf.Clamp01(Mathf.SmoothStep(0f, 1f, t * 1.6f)) * .97f));
+                }
+                _fade.Apply(false, true);
+                return _fade;
+            }
         }
 
         /// <summary>A big number with its label and an optional real delta line.</summary>
@@ -295,11 +333,19 @@ namespace CTLife.UI
         public VisualElement Body { get; }
         public Label Title { get; }
 
-        public DuoPage(string title, bool largeTitle = true, bool grouped = false)
+        public DuoPage(string title, bool largeTitle = true, bool grouped = false) : this(null, title, largeTitle, grouped) { }
+
+        /// <summary>
+        /// Wraps a feature's own scroll view (its lifetime hooks stay on it) in the Duo frame. Its legacy page padding
+        /// classes are removed; its content goes into <see cref="Body"/>.
+        /// </summary>
+        public DuoPage(ScrollView existing, string title, bool largeTitle = true, bool grouped = false)
         {
             AddToClassList("duo-page");
             if (grouped) AddToClassList("duo-page-grouped");
-            Scroll = El.VerticalScroll("duo-scroll");
+            Scroll = existing ?? El.VerticalScroll();
+            Scroll.RemoveFromClassList("ct-app-page");
+            Scroll.AddToClassList("duo-scroll");
             Scroll.mode = ScrollViewMode.Vertical;
             // Own class on this page's content (a descendant selector would also pad nested scroll views).
             Scroll.contentContainer.AddToClassList("duo-scroll-content");

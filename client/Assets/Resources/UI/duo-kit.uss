@@ -40,7 +40,10 @@
 .ct-phone.ct-phone-grouped .ct-phone-home-control { background-color: #f2f2f7; }
 /* Legacy apps keep the shell bar, restyled: glass circle buttons, centred headline title, hairline. */
 .ct-phone .ct-phone-bar { background-color: #ffffff; border-bottom-width: 1px; border-bottom-color: rgba(60,60,67,0.12); min-height: 112px; padding: 0 22px; flex-direction: row; align-items: center; }
-.ct-phone .ct-phone-bar .ct-phone-system-button { width: 96px; height: 96px; min-width: 96px; padding: 34px; margin: 0; border-radius: 48px; background-color: rgba(0,0,0,0); }
+.ct-phone .ct-phone-bar .ct-phone-system-button { width: 132px; height: 132px; min-width: 132px; padding: 50px; margin: -18px; border-radius: 66px; background-color: rgba(0,0,0,0); }
+/* Launcher controls: page dots and search Cancel also reach ~8 mm. */
+.ct-phone .ct-phone-page-button { width: 128px; height: 128px; min-width: 128px; min-height: 128px; margin: -24px; }
+.ct-phone .ct-phone-search-cancel { height: 128px; margin: -24px 0; }
 .ct-phone .ct-phone-bar .ct-phone-system-button .ct-phone-system-icon { color: var(--duo-label); }
 .ct-phone .ct-phone-bar .ct-phone-system-button:hover { background-color: var(--duo-fill); }
 .ct-phone .ct-phone-bar .ct-phone-system-button:active { background-color: var(--duo-pressed); }
@@ -83,9 +86,12 @@
 .duo-shadow { position: absolute; }
 .duo-shadow-circle { display: none; }
 .duo-page-grouped .duo-shadow-circle, .duo-messages-thread .duo-shadow-circle { display: flex; }
-.duo-shadow-circle.duo-shadow-far { left: 10px; right: 10px; top: 18px; bottom: 4px; border-radius: 40px; background-color: rgba(0,0,0,0.035); }
-.duo-shadow-circle.duo-shadow-mid { left: 11px; right: 11px; top: 15px; bottom: 7px; border-radius: 38px; background-color: rgba(0,0,0,0.045); }
-.duo-shadow-circle.duo-shadow-near { left: 12px; right: 12px; top: 13px; bottom: 10px; border-radius: 37px; background-color: rgba(0,0,0,0.05); }
+.duo-shadow-circle.duo-shadow-far { left: 25px; right: 25px; top: 35px; bottom: 19px; border-radius: 42px; background-color: rgba(0,0,0,0.035); }
+.duo-shadow-circle.duo-shadow-mid { left: 26px; right: 26px; top: 32px; bottom: 23px; border-radius: 40px; background-color: rgba(0,0,0,0.045); }
+.duo-shadow-circle.duo-shadow-near { left: 27px; right: 27px; top: 29px; bottom: 26px; border-radius: 39px; background-color: rgba(0,0,0,0.05); }
+.duo-shadow-pill.duo-shadow-far { left: -6px; right: -6px; top: 8px; bottom: -14px; border-radius: 46px; background-color: rgba(0,0,0,0.035); }
+.duo-shadow-pill.duo-shadow-mid { left: -3px; right: -3px; top: 4px; bottom: -8px; border-radius: 42px; background-color: rgba(0,0,0,0.045); }
+.duo-shadow-pill.duo-shadow-near { left: -1px; right: -1px; top: 1px; bottom: -2px; border-radius: 39px; background-color: rgba(0,0,0,0.06); }
 .duo-shadow-bar.duo-shadow-far { left: -8px; right: -8px; top: 10px; bottom: -22px; border-radius: 68px; background-color: rgba(0,0,0,0.04); }
 .duo-shadow-bar.duo-shadow-mid { left: -4px; right: -4px; top: 6px; bottom: -12px; border-radius: 62px; background-color: rgba(0,0,0,0.05); }
 .duo-shadow-bar.duo-shadow-near { left: -1px; right: -1px; top: 2px; bottom: -4px; border-radius: 59px; background-color: rgba(0,0,0,0.06); }
@@ -124,22 +130,27 @@
 }
 
 /* ---------- circle buttons (96 touch target, 72 glass face) ---------- */
-.ct-phone .duo-circle { width: 96px; height: 96px; min-width: 96px; margin: 0; padding: 0; border-width: 0; border-radius: 48px; background-color: rgba(0,0,0,0); }
+/* Touch targets: ~8 mm on the Seeker (1 unit ≈ 0.061 mm) = ~130 units. Hit boxes overhang with negative margins so
+   the board's layout and the visible sizes stay. */
+.ct-phone .duo-circle { width: 132px; height: 132px; min-width: 132px; margin: -18px; padding: 0; border-width: 0; border-radius: 66px; background-color: rgba(0,0,0,0); }
 .ct-phone .duo-circle:hover, .ct-phone .duo-circle:active, .ct-phone .duo-circle:focus { background-color: rgba(0,0,0,0); border-width: 0; }
 .ct-phone .duo-circle-face {
-    position: absolute; left: 12px; top: 12px; width: 72px; height: 72px; border-radius: 36px;
+    position: absolute; left: 28px; top: 28px; width: 76px; height: 76px; border-radius: 38px;
     background-color: #f0f0f2; border-width: 0;
     align-items: center; justify-content: center;
 }
 .ct-phone .duo-page-grouped .duo-circle-face { background-color: #ffffff; }
 .ct-phone .duo-circle:active .duo-circle-face { background-color: #e1e1e6; }
 .ct-phone .duo-circle:focus .duo-circle-face { border-width: 2px; border-color: var(--duo-blue); }
-.ct-phone .duo-circle .duo-glyph { width: 30px; height: 30px; color: var(--duo-label); }
+.ct-phone .duo-circle .duo-glyph { width: 32px; height: 32px; color: var(--duo-label); }
+/* Glass circles on white content (composer +): white face, hairline, soft shadow (board #4 .glass-l). */
+.ct-phone .duo-glass-circle .duo-circle-face { background-color: rgba(255,255,255,0.92); border-width: 1px; border-color: rgba(0,0,0,0.06); }
+.ct-phone .duo-glass-circle .duo-shadow-circle { display: flex; }
 .ct-phone .duo-circle .ct-icon { width: 34px; height: 34px; -unity-background-image-tint-color: var(--duo-label); }
 
 /* ---------- rows ---------- */
 .ct-phone .duo-row {
-    flex-direction: row; align-items: center; min-height: 112px; margin: 0; padding: 0 0 0 36px;
+    flex-direction: row; align-items: center; min-height: 128px; margin: 0; padding: 0 0 0 36px;
     border-width: 0; border-radius: 0; background-color: rgba(0,0,0,0); -unity-text-align: middle-left;
 }
 .ct-phone .duo-row:hover { background-color: rgba(0,0,0,0); }
@@ -217,7 +228,7 @@
 /* ---------- section header, link, footnote, notice, empty ---------- */
 .ct-phone .duo-section-header { flex-direction: row; justify-content: space-between; align-items: flex-end; padding: 34px 38px 12px; }
 .ct-phone .duo-section-title { font-size: var(--duo-title3); color: var(--duo-label); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); letter-spacing: -0.7px; }
-.ct-phone .duo-link { font-size: var(--duo-subhead); color: var(--duo-blue); background-color: rgba(0,0,0,0); border-width: 0; margin: 0; padding: 12px 0 12px 20px; min-height: 72px; -unity-font-definition: url("Fonts/Phone/Inter-Medium.ttf"); }
+.ct-phone .duo-link { font-size: var(--duo-subhead); color: var(--duo-blue); background-color: rgba(0,0,0,0); border-width: 0; margin: -24px -12px; padding: 24px 12px 24px 32px; min-height: 128px; -unity-font-definition: url("Fonts/Phone/Inter-Medium.ttf"); }
 .ct-phone .duo-link:hover, .ct-phone .duo-link:active { background-color: rgba(0,0,0,0); opacity: 0.6; }
 .ct-phone .duo-footnote { font-size: var(--duo-footnote); color: var(--duo-label2); -unity-text-align: middle-center; white-space: normal; margin: 18px 40px; padding: 0; }
 .ct-phone .duo-notice { margin: 0 30px 20px; padding: 20px 26px; border-radius: 24px; background-color: var(--duo-fill); flex-shrink: 0; }
@@ -234,16 +245,22 @@
 
 /* ---------- pills ---------- */
 .ct-phone .duo-pill {
-    height: 64px; min-width: 136px; padding: 0 30px; margin: 0; border-width: 0; border-radius: 32px;
-    background-color: var(--duo-fill); color: var(--duo-blue); font-size: 27px; -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf");
-    -unity-text-align: middle-center;
+    height: 128px; min-width: 160px; padding: 0 12px; margin: -28px -12px; border-width: 0; border-radius: 0;
+    background-color: rgba(0,0,0,0); align-items: center; justify-content: center; flex-shrink: 0;
 }
-.ct-phone .duo-pill:hover { background-color: var(--duo-fill); }
-.ct-phone .duo-pill:active { opacity: 0.6; }
+.ct-phone .duo-pill:hover, .ct-phone .duo-pill:focus { background-color: rgba(0,0,0,0); border-width: 0; }
+.ct-phone .duo-pill-face {
+    height: 72px; min-width: 136px; padding: 0 30px; border-radius: 36px; background-color: var(--duo-fill);
+    align-items: center; justify-content: center;
+}
+.ct-phone .duo-pill .duo-pill-label { font-size: 28px; color: var(--duo-blue); -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); -unity-text-align: middle-center; margin: 0; padding: 0; white-space: nowrap; }
+.ct-phone .duo-pill:active .duo-pill-face { opacity: 0.6; }
+.ct-phone .duo-pill:focus .duo-pill-face { border-width: 2px; border-color: var(--duo-blue); }
 .ct-phone .duo-pill:disabled { opacity: 0.4; }
-.ct-phone .duo-pill-primary, .ct-phone .duo-pill-primary:hover { background-color: var(--duo-blue); color: #ffffff; }
-.ct-phone .duo-pill-destructive { color: var(--duo-red); }
-.ct-phone .duo-pill-locked { color: var(--duo-label2); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); }
+.ct-phone .duo-pill-primary .duo-pill-face { background-color: var(--duo-blue); }
+.ct-phone .duo-pill-primary .duo-pill-label { color: #ffffff; }
+.ct-phone .duo-pill-destructive .duo-pill-label { color: var(--duo-red); }
+.ct-phone .duo-pill-locked .duo-pill-label { color: var(--duo-label2); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); }
 
 /* ---------- hero ---------- */
 .ct-phone .duo-hero { padding: 6px 38px 18px; flex-shrink: 0; }
@@ -278,17 +295,17 @@
 
 /* ---------- slider ---------- */
 .ct-phone .duo-slider { flex-direction: row; align-items: center; height: 96px; }
-.ct-phone .duo-slider-end { width: 76px; height: 96px; min-width: 76px; margin: 0; padding: 0; border-width: 0; background-color: rgba(0,0,0,0); color: var(--duo-label); -unity-text-align: middle-center; }
+.ct-phone .duo-slider-end { width: 104px; height: 132px; min-width: 104px; margin: -18px -14px; padding: 0; border-width: 0; background-color: rgba(0,0,0,0); color: var(--duo-label); -unity-text-align: middle-center; }
 .ct-phone .duo-slider-end:hover { background-color: rgba(0,0,0,0); }
 .ct-phone .duo-slider-end:active { opacity: 0.5; }
 .ct-phone .duo-slider-small { font-size: 26px; }
 .ct-phone .duo-slider-large { font-size: 46px; -unity-font-definition: url("Fonts/Phone/Inter-Medium.ttf"); }
-.ct-phone .duo-slider-track { flex-grow: 1; height: 96px; justify-content: center; margin: 0 34px; }
+.ct-phone .duo-slider-track { flex-grow: 1; height: 132px; justify-content: center; margin: -18px 34px; }
 .ct-phone .duo-slider-rail { height: 8px; border-radius: 4px; background-color: #e3e3e8; }
 .ct-phone .duo-slider-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; background-color: var(--duo-blue); }
 .ct-phone .duo-slider-tick { position: absolute; top: -8px; width: 4px; height: 24px; margin-left: -2px; border-radius: 2px; background-color: #d1d1d6; }
 .ct-phone .duo-slider-tick-on { background-color: var(--duo-blue); }
-.ct-phone .duo-slider-thumb { position: absolute; top: 20px; width: 56px; height: 56px; margin-left: -28px; }
+.ct-phone .duo-slider-thumb { position: absolute; top: 38px; width: 56px; height: 56px; margin-left: -28px; }
 .ct-phone .duo-slider-thumb-face { position: absolute; left: 0; top: 0; width: 56px; height: 56px; border-radius: 28px; background-color: #ffffff; border-width: 1px; border-color: rgba(0,0,0,0.05); }
 
 /* ---------- segmented ---------- */
@@ -298,7 +315,7 @@
     border-width: 1px; border-color: rgba(0,0,0,0.05); transition-property: left; transition-duration: 0.2s;
 }
 .ct-phone .duo-segment {
-    flex-grow: 1; flex-basis: 0; height: 76px; margin: 0; padding: 0 12px; border-width: 0; border-radius: 38px;
+    flex-grow: 1; flex-basis: 0; height: 128px; margin: -26px 0; padding: 0 12px; border-width: 0; border-radius: 38px;
     background-color: rgba(0,0,0,0); font-size: var(--duo-footnote); color: var(--duo-label); -unity-text-align: middle-center;
     -unity-font-definition: url("Fonts/Phone/Inter-Medium.ttf");
 }
@@ -316,7 +333,9 @@
 
 /* ---------- stepper (Sounds) ---------- */
 .ct-phone .duo-stepper { flex-direction: row; align-items: center; }
-.ct-phone .duo-stepper .duo-stepper-button { width: 88px; min-width: 88px; height: 72px; padding: 0; font-size: 36px; color: var(--duo-label); -unity-font-definition: url("Fonts/Phone/Inter-Medium.ttf"); }
+.ct-phone .duo-stepper .duo-stepper-button { min-width: 128px; }
+.ct-phone .duo-stepper .duo-stepper-button .duo-pill-face { min-width: 96px; padding: 0; }
+.ct-phone .duo-stepper .duo-stepper-button .duo-pill-label { font-size: 36px; color: var(--duo-label); -unity-font-definition: url("Fonts/Phone/Inter-Medium.ttf"); }
 .ct-phone .duo-stepper .duo-stepper-value { width: 96px; font-size: var(--duo-subhead); color: var(--duo-label2); -unity-text-align: middle-center; margin: 0; padding: 0; }
 
 /* ---------- sheet ---------- */
@@ -333,7 +352,7 @@
 .ct-phone .duo-sheet .duo-sheet-message { font-size: var(--duo-subhead); color: var(--duo-label2); -unity-text-align: middle-center; white-space: normal; margin: 0 0 22px; }
 .ct-phone .duo-sheet-content { flex-shrink: 1; }
 .ct-phone .duo-sheet-option {
-    min-height: 104px; margin: 0; padding: 0 20px; border-width: 0; border-bottom-width: 1px; border-color: var(--duo-sep); border-radius: 0;
+    min-height: 128px; margin: 0; padding: 0 20px; border-width: 0; border-bottom-width: 1px; border-color: var(--duo-sep); border-radius: 0;
     background-color: rgba(0,0,0,0); font-size: var(--duo-body); color: var(--duo-blue); -unity-text-align: middle-center; white-space: normal;
 }
 .ct-phone .duo-sheet-option:hover { background-color: rgba(0,0,0,0); }
@@ -341,14 +360,14 @@
 .ct-phone .duo-sheet-option.duo-destructive { color: var(--duo-red); }
 .ct-phone .duo-sheet-actions { margin-top: 18px; }
 .ct-phone .duo-sheet-primary {
-    height: 104px; margin: 8px 0 0; border-width: 0; border-radius: 52px; background-color: var(--duo-blue); color: #ffffff;
+    height: 128px; margin: 8px 0 0; border-width: 0; border-radius: 64px; background-color: var(--duo-blue); color: #ffffff;
     font-size: var(--duo-headline); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); -unity-text-align: middle-center;
 }
 .ct-phone .duo-sheet-primary:hover { background-color: var(--duo-blue); }
 .ct-phone .duo-sheet-primary:active { opacity: 0.75; }
 .ct-phone .duo-sheet-primary-destructive, .ct-phone .duo-sheet-primary-destructive:hover { background-color: var(--duo-red); }
 .ct-phone .duo-sheet-secondary {
-    height: 96px; margin: 8px 0 0; border-width: 0; border-radius: 48px; background-color: rgba(0,0,0,0); color: var(--duo-blue);
+    height: 128px; margin: 4px 0 0; border-width: 0; border-radius: 64px; background-color: rgba(0,0,0,0); color: var(--duo-blue);
     font-size: var(--duo-body); -unity-font-definition: url("Fonts/Phone/Inter-Medium.ttf"); -unity-text-align: middle-center;
 }
 .ct-phone .duo-sheet-secondary:hover { background-color: rgba(0,0,0,0); }
@@ -382,3 +401,108 @@
     margin: 0; padding: 0; font-size: 31px; color: #1c1c1e; white-space: normal;
     -unity-font-definition: url("Fonts/Phone/Inter-Regular.ttf"); -unity-text-outline-width: 0; letter-spacing: -0.2px; text-shadow: 0 0 0 rgba(0,0,0,0);
 }
+
+/* ================= wave 2 kit additions ================= */
+/* text field (sheets, order entry): grey rounded box */
+.ct-phone .duo-field { margin: 0 8px 16px; padding: 0; flex-shrink: 0; }
+.ct-phone .duo-field > .unity-text-field__input {
+    min-height: 92px; padding: 20px 26px; margin: 0; border-width: 0; border-radius: 24px; background-color: rgba(120,120,128,0.12);
+    font-size: var(--duo-body); color: var(--duo-label); white-space: normal; -unity-font-definition: url("Fonts/Phone/Inter-Regular.ttf");
+}
+.ct-phone .duo-field .unity-base-text-field__input--placeholder { color: rgba(60,60,67,0.45); }
+.ct-phone .duo-field:focus > .unity-text-field__input { border-width: 2px; border-color: var(--duo-blue); }
+.ct-phone .duo-field:disabled { opacity: 0.5; }
+.ct-phone .duo-sheet-body-text { font-size: var(--duo-body); color: var(--duo-label); white-space: normal; margin: 0 8px 16px; }
+.ct-phone .duo-nav .duo-nav-note { font-size: var(--duo-footnote); color: var(--duo-label2); -unity-font-definition: url("Fonts/Phone/Inter-Medium.ttf"); margin: 0 12px 0 0; padding: 0; }
+
+/* key-value grid ("Your position") */
+.ct-phone .duo-kv-grid { flex-direction: row; flex-wrap: wrap; margin: 0 38px 8px; flex-shrink: 0; }
+.ct-phone .duo-kv { width: 50%; flex-direction: row; justify-content: space-between; align-items: center; min-height: 76px; padding: 0 22px 0 0; border-bottom-width: 1px; border-bottom-color: var(--duo-sep); }
+.ct-phone .duo-kv .duo-kv-key { font-size: var(--duo-subhead); color: var(--duo-label2); margin: 0; padding: 0; }
+.ct-phone .duo-kv .duo-kv-value { font-size: var(--duo-subhead); color: var(--duo-label); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); margin: 0; padding: 0; }
+
+/* featured hero card (Jobs) */
+.ct-phone .duo-feature { margin: 8px 30px 18px; min-height: 280px; border-radius: 40px; padding: 30px 34px; overflow: hidden; background-color: #3b3fd8; flex-shrink: 0; }
+.ct-phone .duo-feature-sheen { position: absolute; left: 0; top: 0; right: 0; bottom: 0; -unity-background-scale-mode: stretch-to-fill; }
+.ct-phone .duo-feature-art { position: absolute; right: 22px; top: 22px; width: 176px; height: 176px; border-radius: 44px; background-color: rgba(255,255,255,0.16); rotate: 8deg; align-items: center; justify-content: center; }
+.ct-phone .duo-feature-art .ct-icon { width: 96px; height: 96px; -unity-background-image-tint-color: #ffffff; }
+.ct-phone .duo-feature .duo-feature-kicker { font-size: var(--duo-caption); color: rgba(255,255,255,0.75); -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); letter-spacing: 1px; margin: 0; padding: 0; }
+.ct-phone .duo-feature .duo-feature-title { font-size: var(--duo-title2); color: #ffffff; -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); letter-spacing: -1px; white-space: normal; margin: 8px 200px 0 0; padding: 0; }
+.ct-phone .duo-feature .duo-feature-meta { font-size: var(--duo-footnote); color: rgba(255,255,255,0.86); margin: 10px 200px 0 0; padding: 0; white-space: normal; }
+.ct-phone .duo-feature-actions { flex-direction: row; justify-content: flex-end; margin-top: 18px; }
+.ct-phone .duo-feature .duo-pill .duo-pill-face { background-color: rgba(255,255,255,0.96); }
+.ct-phone .duo-feature .duo-pill .duo-pill-label { color: #2a2fd6; }
+
+/* app tile (row leading, 22% radius) */
+.ct-phone .duo-app-tile { width: 92px; height: 92px; border-radius: 22px; align-items: center; justify-content: center; }
+.ct-phone .duo-app-tile .ct-icon { width: 50px; height: 50px; -unity-background-image-tint-color: #ffffff; }
+.ct-phone .duo-row-selected { background-color: rgba(10,124,255,0.06); }
+
+/* tabs with a blue underline (Timeline) */
+.ct-phone .duo-tabs { flex-direction: row; padding: 0 30px; border-bottom-width: 1px; border-bottom-color: var(--duo-sep); background-color: #ffffff; }
+.ct-phone .duo-tab {
+    flex-grow: 1; flex-basis: 0; height: 104px; margin: 0; padding: 0; border-width: 0; border-radius: 0; background-color: rgba(0,0,0,0);
+    font-size: var(--duo-headline); color: var(--duo-label2); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); -unity-text-align: middle-center;
+}
+.ct-phone .duo-tab:hover, .ct-phone .duo-tab:focus { background-color: rgba(0,0,0,0); border-width: 0; }
+.ct-phone .duo-tab-on { color: var(--duo-label); }
+.ct-phone .duo-tab-underline { position: absolute; bottom: -1px; left: 30%; right: 30%; height: 6px; border-radius: 3px; background-color: rgba(0,0,0,0); }
+.ct-phone .duo-tab-on .duo-tab-underline { background-color: var(--duo-blue); }
+
+/* floating action button (Timeline compose) */
+.ct-phone .duo-fab { position: absolute; right: 22px; bottom: 30px; width: 132px; height: 132px; margin: 0; padding: 0; border-width: 0; border-radius: 66px; background-color: rgba(0,0,0,0); }
+.ct-phone .duo-fab:hover, .ct-phone .duo-fab:focus { background-color: rgba(0,0,0,0); border-width: 0; }
+.ct-phone .duo-fab-face { position: absolute; left: 16px; top: 16px; width: 100px; height: 100px; border-radius: 50px; background-color: var(--duo-blue); align-items: center; justify-content: center; }
+.ct-phone .duo-fab:active .duo-fab-face { opacity: 0.8; }
+.ct-phone .duo-fab .duo-glyph { width: 40px; height: 40px; color: #ffffff; }
+.duo-shadow-fab.duo-shadow-far { left: 10px; right: 10px; top: 28px; bottom: -4px; border-radius: 60px; background-color: rgba(10,124,255,0.12); }
+.duo-shadow-fab.duo-shadow-mid { left: 13px; right: 13px; top: 22px; bottom: 6px; border-radius: 56px; background-color: rgba(10,124,255,0.14); }
+.duo-shadow-fab.duo-shadow-near { left: 15px; right: 15px; top: 18px; bottom: 12px; border-radius: 52px; background-color: rgba(0,0,0,0.06); }
+
+/* round controls with labels (calls, Spaces; reference 8) */
+.ct-phone .duo-control { width: 150px; min-width: 150px; height: 170px; margin: 0 4px; padding: 0; border-width: 0; border-radius: 30px; background-color: rgba(0,0,0,0); align-items: center; justify-content: flex-start; }
+.ct-phone .duo-control:hover, .ct-phone .duo-control:focus { background-color: rgba(0,0,0,0); border-width: 0; }
+.ct-phone .duo-control-face { width: 112px; height: 112px; border-radius: 56px; background-color: rgba(120,120,128,0.16); align-items: center; justify-content: center; }
+.ct-phone .duo-control-face .ct-icon, .ct-phone .duo-control-face .ct-social-control-icon { width: 48px; height: 48px; -unity-background-image-tint-color: var(--duo-label); color: var(--duo-label); }
+.ct-phone .duo-control:active .duo-control-face { opacity: 0.7; }
+.ct-phone .duo-control:disabled { opacity: 0.4; }
+.ct-phone .duo-control .duo-control-label { font-size: var(--duo-caption); color: var(--duo-label); -unity-font-definition: url("Fonts/Phone/Inter-Medium.ttf"); -unity-text-align: middle-center; white-space: normal; margin: 10px 0 0; padding: 0; }
+.ct-phone .duo-control-on .duo-control-face { background-color: #ffffff; border-width: 1px; border-color: rgba(0,0,0,0.08); }
+.ct-phone .duo-control-red .duo-control-face { background-color: var(--duo-red); }
+.ct-phone .duo-control-green .duo-control-face { background-color: #34c759; }
+.ct-phone .duo-control-purple .duo-control-face { background-color: #7b4dff; }
+.ct-phone .duo-control-red .duo-control-face .ct-icon, .ct-phone .duo-control-green .duo-control-face .ct-icon,
+.ct-phone .duo-control-purple .duo-control-face .ct-icon { -unity-background-image-tint-color: #ffffff; }
+
+/* wide buttons and badges */
+.ct-phone .duo-wide-button {
+    height: 116px; margin: 8px 30px; border-width: 0; border-radius: 58px; background-color: var(--duo-blue); color: #ffffff;
+    font-size: var(--duo-headline); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); -unity-text-align: middle-center; flex-shrink: 0;
+}
+.ct-phone .duo-wide-button:hover { background-color: var(--duo-blue); }
+.ct-phone .duo-wide-button:active { opacity: 0.8; }
+.ct-phone .duo-wide-button:disabled { opacity: 0.4; }
+.ct-phone .duo-wide-button-purple, .ct-phone .duo-wide-button-purple:hover { background-color: #7b4dff; }
+.ct-phone .duo-wide-button-red, .ct-phone .duo-wide-button-red:hover { background-color: var(--duo-red); }
+.ct-phone .duo-live-badge {
+    height: 44px; padding: 0 16px; margin: 0; border-radius: 12px; background-color: #ff2d55; color: #ffffff;
+    font-size: var(--duo-caption); -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); -unity-text-align: middle-center; letter-spacing: 1px;
+}
+.ct-phone .duo-select { width: 48px; height: 48px; border-radius: 24px; border-width: 3px; border-color: rgba(60,60,67,0.3); align-items: center; justify-content: center; padding: 8px; }
+.ct-phone .duo-select-on { background-color: var(--duo-blue); border-color: var(--duo-blue); }
+.ct-phone .duo-select .duo-glyph { width: 100%; height: 100%; color: #ffffff; }
+.ct-phone .duo-row-circle { margin: -18px -24px -18px 0; }
+.duo-shadow-bar.duo-shadow-far { left: -8px; right: -8px; top: 10px; bottom: -22px; }
+
+/* more avatar sizes */
+.ct-phone .duo-avatar-post { width: 84px; height: 84px; border-radius: 42px; }
+.ct-phone .duo-avatar-post .duo-avatar-letter { font-size: 32px; }
+.ct-phone .duo-avatar-fav { width: 120px; height: 120px; border-radius: 60px; }
+.ct-phone .duo-avatar-fav .duo-avatar-letter { font-size: 46px; }
+.ct-phone .duo-avatar-stage { width: 140px; height: 140px; border-radius: 70px; }
+.ct-phone .duo-avatar-stage .duo-avatar-letter { font-size: 54px; }
+.ct-phone .duo-avatar-call { width: 240px; height: 240px; border-radius: 120px; }
+.ct-phone .duo-avatar-call .duo-avatar-letter { font-size: 92px; }
+
+/* line chart */
+.ct-phone .duo-line-chart { height: 320px; margin: 10px 0 0; flex-shrink: 0; }

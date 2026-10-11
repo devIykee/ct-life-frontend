@@ -13,6 +13,8 @@ namespace CTLife.UI
         public abstract string Id { get; }
         public abstract string Title { get; }
         public virtual string Monogram => Title.Substring(0, Math.Min(2, Title.Length));
+        /// <summary>Short name under the home-screen icon (iOS labels are one short word); the app title stays.</summary>
+        public virtual string HomeLabel => Title;
         public virtual string Color => "#4b7bec";
         public virtual int Phase => 1;
 
@@ -287,7 +289,7 @@ namespace CTLife.UI
             tile.tooltip = app.Title + (!open ? " · " + Strings.T("common.soon") : !available ? " · " + Strings.T("common.unavailable") : "");
             tile.EnableInClassList("ct-app-locked", !open || !available);
             tile.Add(El.PassThrough(icon));
-            tile.Add(El.PassThrough(El.Text(app.Title, "ct-app-label")));
+            tile.Add(El.PassThrough(El.Text(app.HomeLabel, "ct-app-label")));
             if (!open) tile.Add(El.PassThrough(El.Text(Strings.T("common.soon"), "ct-app-phase")));
             else if (!available) tile.Add(El.PassThrough(El.Text(Strings.T("common.unavailable"), "ct-app-phase")));
             return tile;
