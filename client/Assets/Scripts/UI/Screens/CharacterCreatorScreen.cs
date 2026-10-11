@@ -446,10 +446,22 @@ namespace CTLife.UI
             _alias.RegisterCallback<FocusInEvent>(_ => { if (TouchScreenKeyboard.isSupported) SetTyping(true); });
             _alias.RegisterCallback<FocusOutEvent>(_ => _alias.schedule.Execute(() => { if (!IsAliasFocused()) SetTyping(false); }).StartingIn(120));
             _aliasStatus = El.Text("", "ob-alias-status");
-            _done = new LippedButton(Strings.T("ob.name.done"), () => { _alias.Blur(); SetTyping(false); }, LippedButton.Tone.Green, LippedButton.Size.Medium);
+            _done = new LippedButton(Strings.T("ob.name.done"), EndTyping, LippedButton.Tone.Green, LippedButton.Size.Medium);
             _done.AddToClassList("ob-done");
             var fieldRow = El.Div("ob-field-row", _alias, _done);
             return Page(Strings.T("ob.name.title"), Strings.T("ob.name.sub"), fieldRow, _aliasStatus);
+        }
+
+        /// <summary>
+        /// DONE (and anything else that ends typing): close the soft keyboard, then drop focus. Blur alone left the Android
+        /// keyboard up on the Seeker (2026-10-08): the layout went back to normal under a keyboard covering 65% of the
+        /// screen, hiding the field and NEXT. See <see cref="SoftKeyboard"/>.
+        /// </summary>
+        private void EndTyping()
+        {
+            SoftKeyboard.Hide(_alias);
+            _alias?.Blur();
+            SetTyping(false);
         }
 
         private bool IsAliasFocused()
@@ -630,7 +642,7 @@ namespace CTLife.UI
         private void ShowStep(CreatorStep step, int direction, bool instant = false)
         {
             if (_busy) return;
-            if (_typing) { _alias.Blur(); SetTyping(false); }
+            if (_typing) EndTyping();
             for (int i = 0; i < _pages.Length; i++) _pages[i].style.display = i == (int)step ? DisplayStyle.Flex : DisplayStyle.None;
             var page = _pages[(int)step];
             if (!instant) Motion.Enter(page, direction >= 0 ? 72f : -72f, 0f);
@@ -649,6 +661,10 @@ namespace CTLife.UI
             if (step == CreatorStep.Name)
             {
                 _alias.SetValueWithoutNotify(_draft.alias);
+                // SetValueWithoutNotify does not refresh the placeholder state: a name restored from the draft rendered in
+                // the faded placeholder colour on the Seeker (2026-10-08). Match the class to the value.
+                _alias.Q(className: TextField.inputUssClassName)?
+                    .EnableInClassList("unity-base-text-field__input--placeholder", string.IsNullOrEmpty(_draft.alias));
                 RefreshAliasStatus(false);
             }
             _ageCard.SetSelected(_draft.ageConfirmed);
