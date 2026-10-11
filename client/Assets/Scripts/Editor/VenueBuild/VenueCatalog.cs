@@ -36,13 +36,15 @@ namespace CTLife.EditorTools.VenueBuild
                 build = VenuesTimelineSquare.TimelineSquare, cellSize = 22f,
             }.SunAt(32f, 48f).Look(C("ffd29a"), 1.25f, C("a9b4e6"), C("e2c39c"), C("7a6650"))
              .Grade(C("c9bcf0"), 0.06f, 15f, 16f, 7f, C("fff6ea"), bloom: 0.3f, bloomAt: 0.95f, vignetteValue: 0.15f),
-            new VenueSpec
-            {
-                id = "terminal_cafe", venueId = "terminal_cafe", spotsKey = "terminal_cafe", title = "Terminal Café", district = "trenches",
-                identity = "Trading café: 8 terminals, social tables, coffee bar, pulse screen, brick and glass shell (seat motion profile kept).",
-                repackSource = "Assets/Art/Candidates/PlayableVenues20261007/terminal_cafe.prefab", cellSize = 12.5f, cellSizeZ = 6f, cellSplit = true, lod0Threshold = 0.65f,
-                dress = VenuesCafeDress.Dress,
-            }.Grade(C("d9cdf2"), 0.08f, 12f, 10f, 9f, C("fff2e2"), bloom: 0.4f, bloomAt: 0.9f, vignetteValue: 0.18f),
+            // Terminal Café v2 (round 5): layout build to the in-game concept; the fitted seat presentation is bound from the
+            // authored café (exit routes regenerated from the new approach points).
+            V("terminal_cafe", "Terminal Café", "trenches",
+                "Sunny corner café / coworking (v2, to the in-game concept): street windows with the town outside, coffee bar with green tiles, " +
+                "pastry case, espresso machine, chalkboard menu, communal laptop table, twin-monitor trading desks, booths, round tables, sofa, " +
+                "armchairs, exposed brick with a sunrise-coffee neon, pendants, rugs and plants; five Tier A community eggs.",
+                VenuesCafe.TerminalCafe).SeatMotionFrom("Assets/Art/Candidates/PlayableVenues20261007/terminal_cafe.prefab")
+                .SunAt(24f, 72f).Look(C("ffcf96"), 1.6f, C("c6d6e4"), C("e8d2b2"), C("8a6c52"))
+                .Grade(C("d6e6f2"), 0.08f, 10f, 12f, 10f, C("fff4e6"), bloom: 0.35f, bloomAt: 0.95f, vignetteValue: 0.15f),
             // Spaces Studio, redesigned in round 3 (layout build; the old repack source is no longer used).
             V("spaces_studio", "Spaces Studio", "timeline",
                 "Evening broadcast studio / rooftop (v4, to the in-game concept): round two-step stage with amber LED nosing, cream rug, 4 tan armchairs in a talk-show semicircle with boom mics, host desk + sun lamp, speaker pods with three-lens phones on mic stands, teal LED waveform wall + on-air lamp (live hooks), fluted purple/teal panels, truss spots, bean bags and poufs in arcs on curved risers, green-room lounge beside a rainbow neon arched door + lanyard frame, open glazing onto a terrace with lanterns, bunting and the city.",

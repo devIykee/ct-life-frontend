@@ -84,6 +84,14 @@ MOVES = {
     },
 }
 
+# fe.6 (round 5, Terminal Café v2 to the in-game concept): terminals, tables and the counter move onto the new furniture.
+MOVES["terminal_cafe"] = {
+    "terminal_1": (-1.3, -3.8, 0.0), "terminal_2": (1.3, -3.8, 0.0), "terminal_3": (-1.3, -1.4, 3.142), "terminal_4": (1.3, -1.4, 3.142),
+    "terminal_5": (10.5, -4.9, 1.571), "terminal_6": (10.5, -2.2, 1.571), "terminal_7": (10.5, 0.5, 1.571), "terminal_8": (10.5, 3.2, 1.571),
+    "table_1": (0.65, 2.85, 0.785), "table_2": (1.75, 2.85, -0.785), "table_3": (5.65, 2.85, 0.785), "table_4": (6.75, 2.85, -0.785),
+    "counter": (-7.0, 5.25, 3.142),
+}
+
 # fe.5: walkable rectangles that change with a venue rebuild (the venue's own NavMesh is built from these).
 WALKABLE = {
     "timeline_square": [{"x0": -11.5, "z0": -12.4, "x1": 11.5, "z1": 9.8}, {"x0": -3.5, "z0": 9.8, "x1": 3.5, "z1": 12.0}],
@@ -151,7 +159,7 @@ def main():
                     s["x"], s["z"], s["rotY"] = x, z, rot
                     moved += 1
     if added or moved or " fe.4 " in doc["_note"]:
-        doc["version"] = "1.0.0-rc1+fe.5"
+        doc["version"] = "1.0.0-rc1+fe.6"
         cut = doc["_note"].find(" fe.4 ")
         if cut >= 0:
             doc["_note"] = doc["_note"][:cut]  # fe.4 notes are rewritten whole on every run
@@ -165,7 +173,10 @@ def main():
                      " street to the town hall steps, x -3.5..3.5 z 9.8..12); crier_1/2/3, entrance, exit, pixel_wall and billboard_view"
                      " move inside it (ids, kinds, anims and rotY unchanged); center, square_center and the benches are unchanged.",
                      " fe.5 also (Spaces Studio): stage_5/stage_6 move 0.3 m apart (x -1.3 / 1.3) so the walkable gap between the"
-                     " talk-show chairs keeps their side-step approach points reachable now that seat furniture is carved from the NavMesh."):
+                     " talk-show chairs keeps their side-step approach points reachable now that seat furniture is carved from the NavMesh.",
+                     " fe.6 (venue builder, 2026-10-08, Terminal Café v2): terminal_1..4 sit at the communal laptop table (1..2 facing north,"
+                     " 3..4 facing south), terminal_5..8 at twin-monitor desks on the east wall (facing east), table_1..4 at two round"
+                     " tables (facing the table), counter behind the new bar (facing south); ids, kinds and anims unchanged."):
             if note.strip() not in doc["_note"]:
                 doc["_note"] += note
     out = json.dumps(doc, indent=2, ensure_ascii=False) + "\n"

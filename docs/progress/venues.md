@@ -1,6 +1,72 @@
-READY TO COMMIT (round 4) — two commits, in this order (step 2 uses builder APIs from step 1). Use `git add -A` on these paths; the `client/Assets/Art/` re-saves are Unity import churn: discard them. Worktree is fast-forwarded to dev 7618938.
-READY TO COMMIT (1/2 solid props + carved NavMesh, all venues): client/Assets/Scripts/Editor/VenueBuild/VenueCollision.cs client/Assets/Scripts/Editor/VenueBuild/VenueCollisionPass.cs client/Assets/Scripts/Editor/VenueBuild/VenueKit.cs client/Assets/Scripts/Editor/VenueBuild/VenueRepack.cs client/Assets/Scripts/Editor/VenueBuild/VenueBuildPipeline.cs client/Assets/Scripts/Editor/VenueBuild/VenueMeshCompression.cs 'client/Assets/World/Venues/*/*.prefab' 'client/Assets/World/Venues/*/*_NavMesh.asset' ':(exclude)client/Assets/World/Venues/spaces_studio' ':(exclude)client/Assets/World/Venues/timeline_square' ':(exclude)client/Assets/World/Venues/terminal_cafe' — fix(venues): every prop solid and carved from the NavMesh (seat furniture too, never its anchor or approach), body-height geometry scan in the build gate, venue APK size measurement
-READY TO COMMIT (2/2 Timeline Square v3 + Spaces Studio terrace): client/Assets/Scripts/Editor/VenueBuild/Venues_TimelineSquare.cs client/Assets/Scripts/Editor/VenueBuild/Venues_Spaces.cs client/Assets/Scripts/Editor/VenueBuild/Venues_CafeDress.cs client/Assets/Scripts/Editor/VenueBuild/VenueCatalog.cs client/Assets/World/Venues/timeline_square client/Assets/World/Venues/spaces_studio client/Assets/World/Venues/terminal_cafe docs/fe-contract-proposals/ids/spots.json tools/venues/propose_spots.py docs/progress/venues.md — feat(venues): Timeline Square v3 as a compact, dense square at the default camera; Spaces Studio walk-out terrace, city view and riser LEDs; spots.json fe.5
+READY TO COMMIT (round 5) — one commit. Use `git add -A` on these paths (it also records the deletions: the unused `Venues_CafeDress.cs` and the café's old repack atlases/meshes). The `client/Assets/Art/` re-saves were Unity import churn and are already discarded. Worktree is fast-forwarded to dev 6aa8bb3.
+READY TO COMMIT (round 5: Terminal Café v2, Spaces truss, Timeline lushness): client/Assets/Scripts/Editor/VenueBuild/VenueEggs.cs client/Assets/Scripts/Editor/VenueBuild/VenueEggs.cs.meta client/Assets/Scripts/Editor/VenueBuild/Venues_Cafe.cs client/Assets/Scripts/Editor/VenueBuild/Venues_Cafe.cs.meta client/Assets/Scripts/Editor/VenueBuild/Venues_CafeDress.cs client/Assets/Scripts/Editor/VenueBuild/Venues_CafeDress.cs.meta client/Assets/Scripts/Editor/VenueBuild/Venues_Spaces.cs client/Assets/Scripts/Editor/VenueBuild/Venues_TimelineSquare.cs client/Assets/Scripts/Editor/VenueBuild/VenueCatalog.cs client/Assets/World/Venues/terminal_cafe client/Assets/World/Venues/spaces_studio client/Assets/World/Venues/timeline_square client/Assets/World/Venues/_Shared/Materials/M_stylized_nature_megakit__Leaves.mat client/Assets/World/Venues/_Shared/Materials/M_stylized_nature_megakit__Leaves.mat.meta tools/venues/make_venue_signs.py tools/venues/propose_spots.py docs/fe-contract-proposals/ids/spots.json docs/progress/venues.md docs/progress/requests.md art/LICENSES.md — feat(venues): Terminal Café v2 to the in-game concept (spots.json fe.6), Spaces Studio truss off the mic camera, Timeline Square lushness
+
+## 2026-10-08 round 5: Terminal Café v2, Spaces Studio truss, Timeline Square lushness
+
+Evidence (`ct-life-evidence/venues/round5/`):
+- `terminal_cafe-before-after-concept.png`: the round 3/4 café, then v2 at the entrance and centre spots, then the concept.
+- `terminal_cafe-spots-eggs.png`: game camera at `counter`, `terminal_5` and `table_1`.
+- `studio-on-mic-before-after.png`: the device shot, then the editor capture at `stage_host`.
+- `timeline_square-before-after-concept.png`.
+- Single shots `*-after*.png` and `venue-physicality-audit-after.json`.
+- Logs `venues/logs/110`–`116`.
+
+**Terminal Café v2** (new builder `Venues_Cafe.cs`; this replaces the repack of the authored prefab):
+- **Layout, west to east:**
+  - West: big open street windows with the sun streaming in, a window seat with a mustard cushion, and the sage sofa
+    lounge with rug, pouf and floor lamp.
+  - North-west: the wooden bar with a green-tile front, pastry case, stools and till. Behind it, the back counter with
+    a green espresso machine, grinders and cup stacks, open shelves, the chalkboard menu (doodles only), and pendants.
+  - Centre: the long communal work table with laptops (`terminal_1..4`) and two round tables on rugs (`table_1..4`).
+  - North-east: green booths under the back windows, with pots on the sill and pothos.
+  - East: exposed brick, with the sunrise-coffee neon (a cup with rays, no letters) above four twin-monitor trading
+    desks with candle charts (`terminal_5..8`), shelves and two prints.
+  - South-east: armchairs on a rug.
+  - Throughout: plants (potted big-leaf plants, front planters) and hanging pothos.
+- **Town outside.** Painted town panels (backdrop: not lightmapped, no shadows) stand just across the street on the
+  west, north and east sides, with trees and lamps. Through the windows, the game camera sees shopfronts with blue
+  awnings, not sand.
+- **Eggs** (`VenueEggs.cs`, our own drawings, shared with Timeline Square):
+  - The JUPCAT astronaut cat on the window-seat cushion.
+  - The pink-beanie dog under the communal table.
+  - The three-lens phone on the bar.
+  - The purple ghost plush on the middle shelf.
+  - The O-mouth cat by the till.
+- **Seats (`spots.json` fe.6).** Every terminal and table seat and the counter moved onto the new furniture, with the
+  same ids. `entrance`, `exit`, `center` and `pulse_screen` are unchanged.
+  - `CafeSeatMotionProfile` is still bound from the authored café, and its 12 exit routes are regenerated.
+  - The old → new table for the character-feel lane is in `requests.md` ("Terminal Café v2 moved every seat").
+- **Budgets:** gameplay max 31 draws / 67.5k tris; the whole venue at LOD0 is 33 / 68.3k. Round 4 was 25 / 68k.
+  Lighting: 2 lightmaps (327k texels) and 160 probes. Spots 17/17 reachable.
+- **Physicality audit:** 0 walk-through regions. Ten "collider, NavMesh not carved" regions sit at seat anchors,
+  where carving is clipped by design.
+
+**Spaces Studio truss** (the `requests.md` item from device round 20261008c):
+- The overhead truss ring is removed.
+- Fixtures hang on two truss towers at the stage wings (x ±6.7, z 2.1, 5 m) and on an upstage bar (z 9.2, y 5.6) with
+  four back lights.
+- Nothing crosses the camera line for `stage_host` or `stage_1..6`, so no occluder fading is needed.
+  [Inference] The editor capture uses the venue camera settings, not the device follow camera; a device check
+  at `stage_host` would confirm it.
+- **Budgets:** 23 draws / 89.7k tris (unchanged). Spots 36/36 reachable.
+
+**Timeline Square lushness** (small budget):
+- Vines and wisteria garlands on the facades.
+- Hanging baskets on the lamp posts, on wall brackets and along the awning edges.
+- Fuller flower clumps (10 blooms each, one trailing).
+- A produce table with sacks by the market stall.
+- **Budgets:** 14 draws (unchanged), 103.4k tris (was 86.8k). [Inference] With the 85–106-draw crowd that is
+  about 120 draws, under the 150 budget. Spots 15/15 reachable.
+
+**APK** (`VenueMeshCompression.MeasureVenues`, Android, all 25 venues in one bundle):
+
+| | Round 4 | Round 5 |
+| --- | --- | --- |
+| Raw | 73.7 MiB | 68.3 MiB |
+| LZ4 | 31.4 MiB | 30.3 MiB (−1.1 MiB) |
+
+The café's unused repack atlases and meshes are deleted. Per-venue LZ4 changes: Timeline +0.49 MB, café +0.07 MB,
+studio unchanged. Receipt: `ct-life-evidence/venues/receipts/venue-size-r5.json`.
 
 ## 2026-10-08 round 4: Timeline Square v3, Spaces Studio polish, solid props, APK
 

@@ -856,7 +856,7 @@ cap lifted: CPU main 10.8 ms, GPU 13.9 ms). Please rebuild `timeline_square` and
 through your combine/bake pipeline (merged meshes per material, baked lightmaps) and hand me the registry entries.
 Runtime-instantiated prefabs get no static batching, so the combine has to happen at build time.
 
-Status: open
+Status: done (venue builder, rounds 2-5): all three are built by VenueKit (merged per material, baked lightmaps). Editor estimates at the gameplay camera, venue only: Timeline Square 14 draws / 103k tris, Spaces Studio 23 / 90k, Terminal Café v2 (round 5) see docs/progress/venues.md. Registry entries are the catalogue prefabs under `client/Assets/World/Venues/<id>/`.
 
 ## 2026-10-08 phase6-competition -> integration lead: wire Phase 6 (League/Tribes/Districts, Beef, Farm + Sybil Barn, Cabal, NPC Chat, X link)
 
@@ -1092,7 +1092,7 @@ bins and the kiosk.
 | `home:penthouse` | 2 | (-0.80,2.10) 1.00x0.80 m, h 0.45 m, near sofa; (-5.20,2.60) 0.20x0.60 m, h 0.68 m, near bed | 3 | (-3.90,2.60) near bed; (4.00,2.80) near desk |
 | `home:marina_villa` | 2 | (-0.80,2.10) 1.00x0.80 m, h 0.45 m, near sofa; (-5.20,2.60) 0.20x0.60 m, h 0.68 m, near bed | 3 | (-3.90,2.60) near bed; (4.00,2.80) near desk |
 
-Status: open
+Status: done (venue builder, round 4; re-checked round 5): every prop gets a solid collider and NavMesh carving, clipped so each anchor and approach keeps 0.6 m clear; a geometry scan (0.2 m grid, 0.25-1.9 m) fails the build on anything left uncovered. Round-5 audit: `ct-life-evidence/venues/round5/venue-physicality-audit-after.json`.
 
 ## 2026-10-08 integration lead -> venue lane: Spaces Studio stage, camera blocked on the mic (device-round-20261008c)
 
@@ -1105,5 +1105,42 @@ the black lighting truss runs between the camera and the player. The view is mos
 `../ct-life-evidence/device-round-20261008c/3-studio-on-the-mic.png`. Please either keep the truss out of the camera's
 path for the stage spots (raise it, or move it upstage), or tell me to add camera occluder fading for that object
 (name/layer).
+
+Status: done (venue builder, round 5): the overhead truss ring is gone. Lights now hang on two truss towers at the stage wings (x ±6.7, z 2.1, 5.0 m tall) and an upstage bar (z 9.2, y 5.6); nothing crosses the camera line for `stage_host` or `stage_1..6`. No occluder fading needed. Capture: `ct-life-evidence/venues/round5/studio-on-mic-before-after.png`.
+
+## 2026-10-08 venue builder → character-feel: Terminal Café v2 moved every seat (spots.json fe.6)
+
+Round 5 rebuilt Terminal Café to the new concept (`ct-life-evidence/art-direction/out/ingame-cafe-concept-v1.png`).
+Spot ids are unchanged, but every seat, terminal and the counter moved onto new furniture
+(`docs/fe-contract-proposals/ids/spots.json`, version `1.0.0-rc1+fe.6`). Positions are venue-local metres; rotY is in radians.
+
+| Spot | Old (x, z, rotY) | New (x, z, rotY) | New furniture |
+| --- | --- | --- | --- |
+| `terminal_1` | (-7.5, 3, 0) | (-1.3, -3.8, 0) | `cafe_chair_a` at the long communal table (top 0.77 m), laptop 0.55 m ahead of the anchor |
+| `terminal_2` | (-2.5, 3, 0) | (1.3, -3.8, 0) | same |
+| `terminal_3` | (2.5, 3, 0) | (-1.3, -1.4, π) | same (opposite side of the table) |
+| `terminal_4` | (7.5, 3, 0) | (1.3, -1.4, π) | same |
+| `terminal_5` | (-7.5, 7, 0) | (10.5, -4.9, π/2) | `office_chair` at a `home_desk` (top 0.76 m), keyboard 0.70 m ahead, twin monitors |
+| `terminal_6` | (-2.5, 7, 0) | (10.5, -2.2, π/2) | same |
+| `terminal_7` | (2.5, 7, 0) | (10.5, 0.5, π/2) | same |
+| `terminal_8` | (7.5, 7, 0) | (10.5, 3.2, π/2) | same |
+| `table_1` | (-6, -4, 0) | (0.65, 2.85, π/4) | `cafe_chair_b` at a round table (top 0.80 m) |
+| `table_2` | (-2, -4, 0) | (1.75, 2.85, -π/4) | same |
+| `table_3` | (2, -4, 0) | (5.65, 2.85, π/4) | same |
+| `table_4` | (6, -4, 0) | (6.75, 2.85, -π/4) | same |
+| `counter` | (-10, -5, π/2) | (-7.0, 5.25, π) | barista stands behind the bar (bar front z 4.15), customers queue in front |
+
+Unchanged: `entrance`, `exit`, `center`, `pulse_screen`.
+
+What the builder does for you: `CafeSeatMotionProfile` is still copied from the authored café prefab
+(`Assets/Art/Candidates/PlayableVenues20261007/terminal_cafe.prefab`) by `VenueSeatMotion.Bind`, and its 12 exit
+routes are regenerated for the new seats (one point at each approach, seat height, within 2.5 m). Approaches keep the
+old sides: terminals 1.35 m to the right and 0.1 m back, tables 0.95 m right and 0.3 m back. Anchors and approaches
+stay 0.6 m clear of carving.
+
+What needs your re-fit: the sit and typing poses were fitted to the old furniture. Please re-check seat height and the
+hands-on-laptop / hands-on-keyboard reach on the three chair types above. If you need an anchor nudged
+(say forward/back by a few cm), reply here with the new values and I'll move it in `tools/venues/propose_spots.py`
+(MOVES["terminal_cafe"]) and rebuild.
 
 Status: open
