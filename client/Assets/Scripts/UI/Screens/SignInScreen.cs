@@ -271,6 +271,10 @@ namespace CTLife.UI
             _sheetLayer = El.Div("ct-title-sheet-layer", scrim, _sheet);
             _sheetLayer.name = "title-signin-layer";
             _root.Add(_sheetLayer);
+            // The dim covers the whole screen like the key art: bleed the scrim past the safe area (cutout) on every edge.
+            scrim.RegisterCallback<GeometryChangedEvent>(_ => SafeAreaBleed.Apply(_root, scrim));
+            scrim.RegisterCallback<AttachToPanelEvent>(_ => SafeAreaBleed.Apply(_root, scrim));
+            SafeAreaBleed.Apply(_root, scrim);
             SetBusy(_busy);
             string note = !LoginUp ? Strings.T("welcome.unavailable") : !_walletAvailable ? Strings.T("welcome.walletAndroid") : "";
             _sheetError.text = note;
