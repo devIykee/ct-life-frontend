@@ -50,6 +50,15 @@ namespace CTLife.EditorTools.VenueBuild
             ("terracotta", "c8673f"), ("olive", "7b7a3a"), ("lavender", "b9a7e8"), ("skyblue", "9fd3f0"), ("pool", "3fc1d9"),
             ("marble", "e9e6e1"), ("darkmarble", "2b2b30"), ("rosegold", "d9a08c"), ("emerald", "1f8a5b"), ("crimson", "b0172b"),
             ("discord", "7b68ee"), ("teal2", "2aa198"), ("paper", "f7f3e8"), ("cardboard", "b98d5a"), ("pizza", "e8a33d"),
+            // Look-dev (round 3): warm fabrics and woods matched to the painted concepts.
+            ("rose", "c25560"), ("dustpink", "d98a92"), ("tan", "c8a27c"), ("honey", "c98a4a"), ("sage", "8fa58a"),
+            ("limestone", "e2d3b2"), ("stoneshade", "b9a888"), ("water2", "4fb3c8"), ("waterlight", "a6e3ea"), ("awningblue", "3b6fb6"),
+            ("awningred", "c8453b"), ("awninggreen", "2f8a4e"), ("leafdark", "3d6b35"), ("ivy", "5a9441"), ("wisteria", "9a7fd1"),
+            ("wisterialight", "c4aef0"), ("shutterblue", "4a78a8"), ("shuttergreen", "5b8a5a"), ("heliusorange", "e84125"), ("bonkyellow", "ffc93c"),
+            ("bonkorange", "fc8e03"), ("penguinblue", "6fa8dc"), ("ghostpurple", "9b84e8"), ("clay", "7cbf6a"), ("iron", "2b2d31"),
+            ("petalred", "e0455a"), ("petalpink", "f08cb4"), ("petalwhite", "f7f2ea"), ("petalyellow", "f5cf4a"), ("cypress", "2f5232"),
+            ("stuccocream", "ecdab8"), ("stuccoochre", "e2b670"), ("stuccopeach", "e8b08c"), ("stuccoblue", "96a8d2"), ("stuccostone", "cec0a6"),
+            ("stuccosage", "b2c0a0"), ("rooftile", "c0603a"),
         };
 
         private static Dictionary<string, int> _index;

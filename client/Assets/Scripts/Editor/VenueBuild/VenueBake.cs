@@ -54,6 +54,8 @@ namespace CTLife.EditorTools.VenueBuild
                 var venue = root.GetComponent<VenueSceneRoot>();
                 var walk = venue.cameraBounds;
                 var bakeRenderers = Prepare(root, output, walk);
+                (LightProbeGroup group, ReflectionProbe reflection) probes = default;
+                if (root.GetComponent<VenueLook>() != null) probes = VenueLookdev.AddBakeProbes(root);
                 var settings = Configure(appleSilicon, output, spec.id);
                 var look = root.GetComponent<VenueContentLighting>();
                 var sun = new GameObject("Bake-only sun").AddComponent<Light>();
@@ -94,6 +96,7 @@ namespace CTLife.EditorTools.VenueBuild
                 bindings.colors = maps.Select(m => m.lightmapColor).ToArray();
                 bindings.mode = LightmapsMode.NonDirectional;
                 bindings.bindings = rows.ToArray();
+                if (probes.group != null) VenueLookdev.BindBakedProbes(root, probes.reflection, output, spec.id);
                 foreach (var light in root.GetComponentsInChildren<Light>(true)) Object.DestroyImmediate(light.gameObject);
                 // Backdrop stays Simple Lit and is lit by the venue's realtime sun at runtime.
                 foreach (var r in root.GetComponentsInChildren<MeshRenderer>(true)) r.lightProbeUsage = LightProbeUsage.Off;
@@ -154,6 +157,7 @@ namespace CTLife.EditorTools.VenueBuild
             UnwrapParam.SetDefaults(out var p);
             if (!Unwrapping.GenerateSecondaryUVSet(mesh, p) || mesh.uv2.Length != mesh.vertexCount)
                 throw new InvalidDataException("UV2 unwrap failed for " + original.name);
+            MeshUtility.SetMeshCompression(mesh, VenueMeshCompression.Level); // APK size (see VenueMeshCompression)
             var saved = AssetDatabase.LoadAssetAtPath<Mesh>(path);
             if (saved == null) { AssetDatabase.CreateAsset(mesh, path); saved = mesh; }
             else { EditorUtility.CopySerialized(mesh, saved); Object.DestroyImmediate(mesh); EditorUtility.SetDirty(saved); }

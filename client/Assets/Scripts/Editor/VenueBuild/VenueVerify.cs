@@ -66,11 +66,14 @@ namespace CTLife.EditorTools.VenueBuild
                 int lights = go.GetComponentsInChildren<Light>(true).Length;
                 if (baked) maps.Apply();
                 go.GetComponent<VenueContentLighting>()?.Apply();
+                var look = go.GetComponent<VenueLook>();
 
                 // Navigation from the saved prefab asset (not the build-time copy).
-                var navReport = VenueBuildPipeline.ValidateBuild(spec, venue, spots);
+                // -ctNoGate: capture-only run (e.g. a "before" shot of a prefab whose spots the proposal has since extended).
+                var navReport = Environment.GetCommandLineArgs().Contains("-ctNoGate") ? new JArray() : VenueBuildPipeline.ValidateBuild(spec, venue, spots);
 
                 var cam = NewCamera();
+                if (look != null) look.Apply(cam); // grade, clear colour and probes as the game camera gets them
                 // Entrance gameplay captures are opt-in (-ctEntranceCaptures): the default is one preview per venue.
                 bool entranceCapture = Environment.GetCommandLineArgs().Contains("-ctEntranceCaptures");
                 var (views, maxDraws, maxTris) = MeasureViews(go, venue, spots, lodBias, cam,
@@ -110,6 +113,7 @@ namespace CTLife.EditorTools.VenueBuild
             }
             finally
             {
+                if (go != null) go.GetComponent<VenueLook>()?.Restore();
                 if (go != null) go.GetComponent<VenueLightmaps>()?.Restore();
                 if (go != null) go.GetComponent<VenueContentLighting>()?.Restore();
                 EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
@@ -140,13 +144,25 @@ namespace CTLife.EditorTools.VenueBuild
                 ("center", spots.spots.TryGetValue("center", out var c) ? new Vector3(c.x, 0, c.z) : Vector3.zero),
             };
             if (hero != null) targets.Add(("far_" + hero.id, new Vector3(hero.x, 0, hero.z)));
+            // -ctCaptureSpots a,b: extra gameplay-camera captures at named spots (evidence for details such as the eggs).
+            var args = Environment.GetCommandLineArgs();
+            int ci = Array.IndexOf(args, "-ctCaptureSpots");
+            if (ci >= 0 && ci + 1 < args.Length && entranceCapturePath != null)
+                foreach (var id in args[ci + 1].Split(','))
+                    if (spots.spots.TryGetValue(id, out var sp))
+                    {
+                        PlaceGameplayCamera(cam, venue, new Vector3(sp.x, 0, sp.z));
+                        Render(cam, entranceCapturePath.Replace("-entrance.png", "-spot-" + id + ".png"), 1870, 841);
+                    }
             foreach (var (label, p) in targets)
             {
                 PlaceGameplayCamera(cam, venue, p);
                 var est = Estimate(go, cam, lodBias);
                 maxDraws = Mathf.Max(maxDraws, est.draws);
                 maxTris = Mathf.Max(maxTris, est.tris);
-                if (label == "entrance" && entranceCapturePath != null) Render(cam, entranceCapturePath, 1068, 480);
+                // Gameplay captures at the in-game concepts' size and aspect (side-by-side evidence): entrance and centre views.
+                if (label == "entrance" && entranceCapturePath != null) Render(cam, entranceCapturePath, 1870, 841);
+                if (label == "center" && entranceCapturePath != null) Render(cam, entranceCapturePath.Replace("-entrance.png", "-center.png"), 1870, 841);
                 views.Add(new JObject
                 {
                     ["view"] = label, ["estimatedDraws"] = est.draws, ["estimatedTriangles"] = est.tris, ["materials"] = est.materials,

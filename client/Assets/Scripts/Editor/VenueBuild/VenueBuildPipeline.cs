@@ -100,6 +100,7 @@ namespace CTLife.EditorTools.VenueBuild
             SaveFolder(spec.Folder);
             SaveFolder(VenuePalette.SharedRoot);
             var nav = ValidateBuild(spec, result.prefab.GetComponent<VenueSceneRoot>(), spots);
+            var collision = VenueCollision.Validate(spec.id, result.prefab, result.prefab.GetComponent<VenueSceneRoot>().navigation, vb.Props);
             var receipt = new JObject
             {
                 ["id"] = spec.id, ["venueId"] = spec.venueId, ["spotsKey"] = spec.spotsKey, ["homeId"] = spec.homeId, ["title"] = spec.title,
@@ -108,6 +109,7 @@ namespace CTLife.EditorTools.VenueBuild
                 ["sourcedInstances"] = result.sourcedInstances, ["staticRenderers"] = result.staticRenderers,
                 ["lod0Triangles"] = result.lod0Triangles, ["materials"] = result.materials, ["hooks"] = new JArray(vb.Hooks),
                 ["sources"] = JObject.FromObject(result.sources), ["notes"] = new JArray(vb.Notes.Distinct()), ["navigation"] = nav,
+                ["collision"] = collision,
                 ["builtUtc"] = DateTime.UtcNow.ToString("o"),
             };
             Directory.CreateDirectory(Path.Combine(EvidenceDir, "receipts"));
@@ -134,7 +136,8 @@ namespace CTLife.EditorTools.VenueBuild
             foreach (var s in spots.spots.Values.Distinct().Where(s => s.hasPosition))
             {
                 var a = anchors.FirstOrDefault(x => x.spotId == s.id);
-                if (a == null || Vector3.Distance(a.transform.position, new Vector3(s.x, 0, s.z)) > 0.001f ||
+                // The contract is 2D: anchors may sit on raised floors (stages, risers), so compare x/z only.
+                if (a == null || Vector2.Distance(new Vector2(a.transform.position.x, a.transform.position.z), new Vector2(s.x, s.z)) > 0.001f ||
                     Mathf.Abs(Mathf.DeltaAngle(a.transform.eulerAngles.y, s.rotY * Mathf.Rad2Deg)) > 0.05f)
                     throw new InvalidDataException(spec.id + ": anchor moved or missing for " + s.id);
             }

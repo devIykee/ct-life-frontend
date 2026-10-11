@@ -40,7 +40,7 @@ namespace CTLife.EditorTools.VenueBuild
         private readonly Dictionary<string, GameObject> _models = new Dictionary<string, GameObject>();
         private readonly Dictionary<string, Material> _materials = new Dictionary<string, Material>();
         private readonly Dictionary<Mesh, VenueMeshAcc.MeshCache> _meshCache = new Dictionary<Mesh, VenueMeshAcc.MeshCache>();
-        private readonly VenueMeshAcc _glow = new VenueMeshAcc(), _signs = new VenueMeshAcc();
+        private readonly VenueMeshAcc _glow = new VenueMeshAcc(), _signs = new VenueMeshAcc(), _litSigns = new VenueMeshAcc();
 
         /// <summary>Main geometry is lightmapped; backdrop geometry (far ground, water, skyline) stays realtime-lit.</summary>
         private sealed class Layer
@@ -57,13 +57,103 @@ namespace CTLife.EditorTools.VenueBuild
         /// realtime venue sun), so large far ground/water/skyline does not consume lightmap texels.
         /// </summary>
         public bool Backdrop;
+
+        /// <summary>Collect placements, colliders and NavMesh sources only (collision pass): no asset is written.</summary>
+        public bool DryRun;
+
+        /// <summary>
+        /// Floor height at a venue-local point (raised stages, risers). Anchors and approach points are placed on it;
+        /// the contract stays 2D (x, z). Default: flat floor.
+        /// </summary>
+        public Func<Vector3, float> GroundAt = _ => 0f;
+
+        /// <summary>Raised walkable box (stage tier, riser): NavMesh surface plus a collider for tap/ground probes.</summary>
+        public void WalkableBox(Vector3 topCenter, Vector3 size, float yaw = 0f)
+        {
+            var center = topCenter - new Vector3(0, size.y * .5f, 0);
+            _nav.Add(new NavMeshBuildSource
+            {
+                shape = NavMeshBuildSourceShape.Box, transform = Matrix4x4.TRS(center, Quaternion.Euler(0, yaw, 0), Vector3.one),
+                size = size, area = 0,
+            });
+            Collider(center, size, yaw);
+        }
+
+        /// <summary>Raised round walkable platform (closed prism mesh): NavMesh surface plus a convex mesh collider.</summary>
+        public void WalkablePrism(string name, Vector3 baseCenter, float radius, float height, int sides)
+        {
+            var mesh = PrismMesh(name, radius, height, sides);
+            if (!DryRun) mesh = SaveMesh(mesh, name);
+            var m = Matrix4x4.Translate(baseCenter);
+            _nav.Add(new NavMeshBuildSource { shape = NavMeshBuildSourceShape.Mesh, sourceObject = mesh, transform = m, area = 0 });
+            var go = Child(name + " collider", _colliders);
+            go.localPosition = baseCenter;
+            var mc = go.gameObject.AddComponent<MeshCollider>();
+            mc.sharedMesh = mesh;
+            mc.convex = true;
+        }
+
+        /// <summary>
+        /// Round solid that blocks navigation by its shape (fountain basin, round planter): a closed prism mesh as a
+        /// not-walkable NavMesh source (area 1) plus a convex mesh collider. Unlike an Obstacle box it follows the circle.
+        /// </summary>
+        public void BlockPrism(string name, Vector3 baseCenter, float radius, float height, int sides)
+        {
+            var mesh = PrismMesh(name, radius, height, sides);
+            if (!DryRun) mesh = SaveMesh(mesh, name);
+            var m = Matrix4x4.Translate(baseCenter);
+            _nav.Add(new NavMeshBuildSource { shape = NavMeshBuildSourceShape.Mesh, sourceObject = mesh, transform = m, area = 1 });
+            var go = Child(name + " collider", _colliders);
+            go.localPosition = baseCenter;
+            var mc = go.gameObject.AddComponent<MeshCollider>();
+            mc.sharedMesh = mesh;
+            mc.convex = true;
+        }
+
+        /// <summary>Raised curved walkable deck (annular sector, see <see cref="Arc"/>): NavMesh surface plus a static mesh collider.</summary>
+        public void WalkableArc(string name, Vector3 center, float r0, float r1, float a0, float a1, float height, int segments)
+        {
+            var acc = new VenueMeshAcc();
+            acc.Arc(Vector3.zero, r0, r1, a0, a1, 0f, height, segments, new Vector2(.5f, .5f), bottom: true);
+            var mesh = acc.ToMesh(name);
+            if (!DryRun) mesh = SaveMesh(mesh, name);
+            var m = Matrix4x4.Translate(center);
+            _nav.Add(new NavMeshBuildSource { shape = NavMeshBuildSourceShape.Mesh, sourceObject = mesh, transform = m, area = 0 });
+            var go = Child(name + " collider", _colliders);
+            go.localPosition = center;
+            go.gameObject.AddComponent<MeshCollider>().sharedMesh = mesh;
+        }
+
+        /// <summary>Curved block (riser, step, LED nosing): radii r0..r1, angles a0..a1 in degrees (0 = +z, 90 = +x), y0..y1.</summary>
+        public void Arc(Vector3 center, float r0, float r1, float a0, float a1, float y0, float y1, string color, int segments = 24, bool glow = false) =>
+            (glow ? _glow : _blocks).Arc(center, r0, r1, a0, a1, y0, y1, segments, VenuePalette.Uv(color));
+
+        private static Mesh PrismMesh(string name, float r, float h, int sides)
+        {
+            var acc = new VenueMeshAcc();
+            acc.Cylinder(Matrix4x4.identity, r, r, h, sides, new Vector2(.5f, .5f), true);
+            // Bottom cap so the collider/NavMesh source is closed.
+            acc.Cylinder(Matrix4x4.TRS(Vector3.zero, Quaternion.Euler(180, 0, 0), Vector3.one), r, r, 0.0001f, sides, new Vector2(.5f, .5f), true);
+            var mesh = acc.ToMesh(name);
+            return mesh;
+        }
+
+        /// <summary>Oriented bounds of every placed model and registered procedural prop (classified in Finish).</summary>
+        public readonly List<VenueCollision.PropBox> RawProps = new List<VenueCollision.PropBox>();
+        public List<VenueCollision.PropBox> Props { get; private set; } = new List<VenueCollision.PropBox>();
+        public Transform CollidersRoot => _colliders;
+        public IReadOnlyList<NavMeshBuildSource> NavSources => _nav;
+
+        /// <summary>Register a procedural floor prop (figure, post, bale) for collision.</summary>
+        public void RegisterProp(string name, Vector3 center, Vector3 size, float yaw = 0f) =>
+            RawProps.Add(new VenueCollision.PropBox { name = name, center = center, size = size, yaw = yaw });
         private readonly List<Placement> _placements = new List<Placement>();
         private readonly List<NavMeshBuildSource> _nav = new List<NavMeshBuildSource>();
         private readonly Dictionary<string, int> _sourceCounts = new Dictionary<string, int>();
         private readonly HashSet<string> _writtenAssets = new HashSet<string>();
         private Transform _colliders, _lights, _hooks, _spots;
         private SignAtlas _atlas;
-        private Material _signMaterial;
+        private Material _signMaterial, _litSignMaterial;
         private int _hookCount;
 
         private sealed class Placement
@@ -160,13 +250,15 @@ namespace CTLife.EditorTools.VenueBuild
         public void ModelAt(string id, Vector3 position, float facing = 180f, float scale = 1f, string screen = null,
             string recolor = null, string glow = null, Vector3? stretch = null)
         {
-            LoadModel(id);
+            var model = LoadModel(id);
             var s = stretch ?? Vector3.one;
+            var matrix = Matrix4x4.TRS(position, Quaternion.Euler(0f, facing + 180f, 0f), new Vector3(s.x, s.y, s.z) * scale);
             _placements.Add(new Placement
             {
                 id = id, position = position, screen = screen, recolor = recolor, glowColor = glow, backdrop = Backdrop,
-                matrix = Matrix4x4.TRS(position, Quaternion.Euler(0f, facing + 180f, 0f), new Vector3(s.x, s.y, s.z) * scale),
+                matrix = matrix,
             });
+            RawProps.Add(VenueCollision.FromRenderers(id, model.GetComponentsInChildren<MeshRenderer>(true), model.transform.localToWorldMatrix, matrix));
             _sourceCounts[id] = _sourceCounts.TryGetValue(id, out int n) ? n + 1 : 1;
         }
 
@@ -257,13 +349,26 @@ namespace CTLife.EditorTools.VenueBuild
             if (collider || solid) Collider(center, size, yaw);
         }
 
+        /// <summary>Arbitrarily oriented box (roof slab, leaning pickaxe handle, tilted sign).</summary>
+        public void BoxRot(Vector3 center, Vector3 size, Quaternion rotation, string color, bool glow = false) =>
+            (glow ? _glow : _blocks).Box(Matrix4x4.TRS(center, rotation, size), VenuePalette.Uv(color));
+
+        /// <summary>Oriented prism/cone (pyramid roof, cypress, pennant pole cap): <see cref="Cylinder"/> with a rotation.</summary>
+        public void CylinderRot(Vector3 basePoint, Quaternion rotation, float radius, float height, string color, int sides = 12, float topRadius = -1f, bool glow = false) =>
+            (glow ? _glow : _blocks).Cylinder(Matrix4x4.TRS(basePoint, rotation, Vector3.one), radius, topRadius < 0 ? radius : topRadius, height, sides, VenuePalette.Uv(color));
+
+        /// <summary>Flat triangle (pennant, gable end), two-sided by default.</summary>
+        public void Triangle(Vector3 a, Vector3 b, Vector3 c, string color, bool twoSided = true, bool glow = false) =>
+            (glow ? _glow : _blocks).Triangle(a, b, c, VenuePalette.Uv(color), twoSided);
+
         /// <summary>Box resting on the floor (y = base height).</summary>
         public void BoxOn(float x, float z, Vector3 size, string color, float yaw = 0f, float y = 0f, bool glow = false, bool solid = false) =>
             Box(new Vector3(x, y + size.y * .5f, z), size, color, yaw, glow, solid);
 
-        public void Cylinder(Vector3 basePoint, float radius, float height, string color, int sides = 12, bool glow = false, bool solid = false, float topRadius = -1f)
+        public void Cylinder(Vector3 basePoint, float radius, float height, string color, int sides = 12, bool glow = false, bool solid = false, float topRadius = -1f,
+            bool caps = true)
         {
-            (glow ? _glow : _blocks).Cylinder(Matrix4x4.Translate(basePoint), radius, topRadius < 0 ? radius : topRadius, height, sides, VenuePalette.Uv(color));
+            (glow ? _glow : _blocks).Cylinder(Matrix4x4.Translate(basePoint), radius, topRadius < 0 ? radius : topRadius, height, sides, VenuePalette.Uv(color), caps);
             if (solid) { var s = new Vector3(radius * 2, height, radius * 2); Obstacle(basePoint + Vector3.up * height * .5f, s, 0); Collider(basePoint + Vector3.up * height * .5f, s, 0); }
         }
 
@@ -279,8 +384,8 @@ namespace CTLife.EditorTools.VenueBuild
             (glow ? _glow : _blocks).Sphere(Matrix4x4.Translate(center), radius, rings, segments, VenuePalette.Uv(color));
 
         /// <summary>Ellipsoid (beanbag, dome, canopy) of the given full size.</summary>
-        public void Blob(Vector3 center, Vector3 size, string color, bool glow = false, float yaw = 0f) =>
-            (glow ? _glow : _blocks).Sphere(Matrix4x4.TRS(center, Quaternion.Euler(0, yaw, 0), size), 0.5f, 6, 10, VenuePalette.Uv(color));
+        public void Blob(Vector3 center, Vector3 size, string color, bool glow = false, float yaw = 0f, int rings = 6, int segments = 10) =>
+            (glow ? _glow : _blocks).Sphere(Matrix4x4.TRS(center, Quaternion.Euler(0, yaw, 0), size), 0.5f, rings, segments, VenuePalette.Uv(color));
 
         /// <summary>Flush floor decal (rug, stripe, ring segment) 3 mm above the floor; does not affect navigation.</summary>
         public void Decal(float x, float z, float width, float depth, string color, float yaw = 0f, float y = 0.003f, bool glow = false) =>
@@ -314,13 +419,14 @@ namespace CTLife.EditorTools.VenueBuild
         /// <paramref name="bottomCenter"/>, facing <paramref name="facing"/> degrees (0 = +z). Height follows the
         /// region aspect unless given. A missing atlas entry falls back to a plain panel so builds stay reproducible.
         /// </summary>
-        public void Sign(string signId, Vector3 bottomCenter, float width, float facing, float height = -1f, string frame = null, float frameDepth = 0.08f)
+        public void Sign(string signId, Vector3 bottomCenter, float width, float facing, float height = -1f, string frame = null, float frameDepth = 0.08f,
+            bool lit = false)
         {
             var rect = SignRect(signId, out float aspect);
             if (height <= 0) height = width / aspect;
             var rot = Quaternion.Euler(0, facing + 180f, 0); // panel front faces local -Z
             var m = Matrix4x4.TRS(bottomCenter, rot, Vector3.one);
-            if (rect.HasValue) _signs.Panel(m, width, height, rect.Value);
+            if (rect.HasValue) (lit ? _litSigns : _signs).Panel(m, width, height, rect.Value);
             else _blocks.Panel(m, width, height, SwatchRect("screenbg"));
             if (frame != null)
             {
@@ -329,13 +435,21 @@ namespace CTLife.EditorTools.VenueBuild
             }
         }
 
+        /// <summary>Sign art on an arbitrary quad: <paramref name="m"/> places the panel's bottom-centre; the art faces local -Z.</summary>
+        public void SignAt(string signId, Matrix4x4 m, float width, float height, bool lit = true)
+        {
+            var rect = SignRect(signId, out _);
+            if (rect.HasValue) (lit ? _litSigns : _signs).Panel(m, width, height, rect.Value);
+            else _blocks.Panel(m, width, height, SwatchRect("darkgrey"));
+        }
+
         /// <summary>Sign art lying flat on the floor (floor graphic), centred at (x, z); top of the art points to <paramref name="facing"/>.</summary>
-        public void FloorSign(string signId, float x, float z, float width, float facing = 0f, float depth = -1f)
+        public void FloorSign(string signId, float x, float z, float width, float facing = 0f, float depth = -1f, float y = 0f, bool lit = false)
         {
             var rect = SignRect(signId, out float aspect);
             if (depth <= 0) depth = width / aspect;
-            var m = Matrix4x4.TRS(new Vector3(x, 0.006f, z), Quaternion.Euler(0, facing, 0), Vector3.one);
-            if (rect.HasValue) _signs.Flat(m, width, depth, rect.Value);
+            var m = Matrix4x4.TRS(new Vector3(x, y + 0.006f, z), Quaternion.Euler(0, facing, 0), Vector3.one);
+            if (rect.HasValue) (lit ? _litSigns : _signs).Flat(m, width, depth, rect.Value);
             else _blocks.Flat(m, width, depth, SwatchRect("darkgrey"));
         }
 
@@ -352,6 +466,7 @@ namespace CTLife.EditorTools.VenueBuild
             else aspect = texture.width / (float)texture.height;
             if (height <= 0) height = width / aspect;
             var rot = Quaternion.Euler(0, facing + 180f, 0);
+            if (DryRun) return new GameObject("Hook_" + name);
             var acc = new VenueMeshAcc();
             acc.Panel(Matrix4x4.identity, width, height, new Rect(0, 0, 1, 1));
             var go = new GameObject("Hook_" + name);
@@ -374,11 +489,66 @@ namespace CTLife.EditorTools.VenueBuild
         }
 
         /// <summary>
+        /// Live surface for WorldLife's LiveSurfaces (timeline feed, pixel wall, billboard ad slot, kiosk): own renderer and
+        /// unlit material named "Screen_{screenId}" (house_ads.json prefixes: timeline_screen, pixel_wall, bb_, kiosk_).
+        /// The idle art is the sign region copied into its own texture, so a runtime _BaseMap override fills the panel 0..1.
+        /// </summary>
+        public GameObject LiveScreen(string screenId, string signId, Vector3 bottomCenter, float width, float facing, float height = -1f,
+            string frame = "black")
+        {
+            var rect = SignRect(signId, out float aspect);
+            if (height <= 0) height = width / aspect;
+            var rot = Quaternion.Euler(0, facing + 180f, 0);
+            if (frame != null)
+                Box(bottomCenter + rot * new Vector3(0, height * .5f, 0.05f), new Vector3(width + 0.14f, height + 0.14f, 0.08f), frame, facing + 180f);
+            if (DryRun) return new GameObject("Screen_" + screenId);
+            var acc = new VenueMeshAcc();
+            acc.Panel(Matrix4x4.identity, width, height, new Rect(0, 0, 1, 1));
+            var go = new GameObject("Screen_" + screenId);
+            go.transform.SetParent(_hooks, false);
+            go.transform.localPosition = bottomCenter + rot * new Vector3(0, 0, -0.01f);
+            go.transform.localRotation = rot;
+            go.AddComponent<MeshFilter>().sharedMesh = SaveMesh(acc.ToMesh("Screen_" + screenId), "Screen_" + screenId);
+            var r = go.AddComponent<MeshRenderer>();
+            Texture2D idle = null;
+            if (rect.HasValue && _atlas?.Texture != null)
+            {
+                var full = new Texture2D(2, 2, TextureFormat.RGBA32, false);
+                full.LoadImage(File.ReadAllBytes(AssetDatabase.GetAssetPath(_atlas.Texture)));
+                int x0 = Mathf.RoundToInt(rect.Value.xMin * full.width), y0 = Mathf.RoundToInt(rect.Value.yMin * full.height);
+                int w = Mathf.Max(4, Mathf.RoundToInt(rect.Value.width * full.width)), h = Mathf.Max(4, Mathf.RoundToInt(rect.Value.height * full.height));
+                var crop = new Texture2D(w, h, TextureFormat.RGBA32, false);
+                crop.SetPixels(full.GetPixels(x0, y0, w, h));
+                crop.Apply();
+                Object.DestroyImmediate(full);
+                idle = SaveTexture("Screen_" + screenId + "_idle", crop, false);
+            }
+            string path = Spec.Folder + "/Materials/Screen_" + screenId + ".mat";
+            var shader = Shader.Find("Universal Render Pipeline/Unlit");
+            var m = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (m == null) { m = new Material(shader); AssetDatabase.CreateAsset(m, path); }
+            m.shader = shader;
+            m.name = "Screen_" + screenId;
+            m.SetColor("_BaseColor", Color.white);
+            m.SetTexture("_BaseMap", idle);
+            m.SetTextureScale("_BaseMap", Vector2.one);
+            m.SetTextureOffset("_BaseMap", Vector2.zero);
+            EditorUtility.SetDirty(m);
+            _writtenAssets.Add(path);
+            r.sharedMaterial = m;
+            Quiet(r);
+            Hooks.Add("Screen_" + screenId + " (live surface; idle art: " + signId + ")");
+            _hookCount++;
+            return go;
+        }
+
+        /// <summary>
         /// Runtime-tintable glowing volume (furnace mouth, alarm beacon): own renderer, unlit material whose
         /// _BaseColor integration code may modulate (e.g. furnace heat from city-wide staked ORE).
         /// </summary>
         public GameObject HookGlow(string name, Vector3 center, Vector3 size, string color, float yaw = 0f, bool sphere = false)
         {
+            if (DryRun) return new GameObject("Hook_" + name);
             var acc = new VenueMeshAcc();
             if (sphere) acc.Sphere(Matrix4x4.Scale(size), 0.5f, 6, 10, new Vector2(.5f, .5f));
             else acc.Box(Matrix4x4.Scale(size), new Vector2(.5f, .5f), true);
@@ -412,6 +582,7 @@ namespace CTLife.EditorTools.VenueBuild
         /// </summary>
         public GameObject OreBoard(Vector3 bottomCenter, float size, float facing)
         {
+            if (DryRun) return new GameObject("Hook_OreBoard5x5");
             var tex = new Texture2D(5, 5, TextureFormat.RGBA32, false);
             for (int y = 0; y < 5; y++)
                 for (int x = 0; x < 5; x++)
@@ -521,7 +692,8 @@ namespace CTLife.EditorTools.VenueBuild
         }
 
         public void ObstacleOn(float x, float z, float width, float depth, float height = 1.2f, float yaw = 0f) =>
-            Obstacle(new Vector3(x, height * .5f, z), new Vector3(width, height, depth), yaw);
+            // 0.5 m below the floor as well, so the walkable surface voxels are always inside the modifier.
+            Obstacle(new Vector3(x, (height - 0.5f) * .5f, z), new Vector3(width, height + 0.5f, depth), yaw);
 
         public void Collider(Vector3 center, Vector3 size, float yaw = 0f, Transform parent = null)
         {
@@ -586,7 +758,7 @@ namespace CTLife.EditorTools.VenueBuild
         {
             if (_anchors.TryGetValue(spot.id, out var t)) return t;
             t = Child("spot_" + spot.id, _spots);
-            t.localPosition = P(spot);
+            t.localPosition = P(spot) + Vector3.up * GroundAt(P(spot));
             t.localRotation = Quaternion.Euler(0, Deg(spot), 0);
             var a = t.gameObject.AddComponent<SpotAnchor>();
             a.spotId = spot.id;
@@ -612,7 +784,7 @@ namespace CTLife.EditorTools.VenueBuild
             {
                 var anchor = _anchors[kv.Key];
                 var ap = Child("Approach", anchor);
-                ap.position = Root.TransformPoint(kv.Value);
+                ap.position = Root.TransformPoint(new Vector3(kv.Value.x, GroundAt(kv.Value), kv.Value.z));
                 anchor.GetComponent<SpotAnchor>().approach = ap;
             }
             var statics = Child("Static", Root);
@@ -676,6 +848,12 @@ namespace CTLife.EditorTools.VenueBuild
                 Emit("Signs_" + Spec.id, _signs, SignMaterial(), statics);
                 renderers++; lod0 += _signs.Triangles; usedMaterials.Add(SignMaterial());
             }
+            if (!_litSigns.Empty)
+            {
+                // Printed decor (rugs, posters, flags, framed art): same atlas, lit and lightmapped like the room.
+                Emit("SignsLit_" + Spec.id, _litSigns, SignMaterial(true), statics);
+                renderers++; lod0 += _litSigns.Triangles; usedMaterials.Add(SignMaterial(true));
+            }
 
             var venue = Root.gameObject.AddComponent<VenueSceneRoot>();
             venue.venueId = Spec.venueId;
@@ -691,6 +869,12 @@ namespace CTLife.EditorTools.VenueBuild
             var look = Root.gameObject.AddComponent<VenueContentLighting>();
             look.sunColor = Spec.sunColor; look.sunIntensity = Spec.sunIntensity; look.sunAngles = Spec.sunAngles;
             look.sky = Spec.sky; look.equator = Spec.equator; look.ground = Spec.ground; look.haze = Spec.haze;
+            if (Spec.lookdev && !DryRun) VenueLookdev.AddLook(Spec, Root.gameObject);
+            if (Spec.seatMotionSource != null && !DryRun) VenueSeatMotion.Bind(Spec, Root.gameObject);
+            // Prop collision: colliders for every floor prop, not-walkable volumes for every non-seat prop.
+            Props = VenueCollision.Classify(RawProps, Spots, Walk);
+            VenueCollision.AddColliders(_colliders, Root.gameObject, Props);
+            _nav.AddRange(VenueCollision.Obstacles(Props));
             venue.navigation = BuildNavigation();
             venue.Init(Spots);
 
@@ -842,21 +1026,24 @@ namespace CTLife.EditorTools.VenueBuild
             return m;
         }
 
-        private Material SignMaterial()
+        private Material SignMaterial(bool lit = false)
         {
-            if (_signMaterial != null) return _signMaterial;
-            string path = Spec.Folder + "/Materials/" + Spec.id + "_Signs.mat";
-            var shader = Shader.Find("Universal Render Pipeline/Unlit");
+            if (!lit && _signMaterial != null) return _signMaterial;
+            if (lit && _litSignMaterial != null) return _litSignMaterial;
+            string path = Spec.Folder + "/Materials/" + Spec.id + (lit ? "_SignsLit.mat" : "_Signs.mat");
+            var shader = Shader.Find(lit ? "Universal Render Pipeline/Simple Lit" : "Universal Render Pipeline/Unlit");
             var m = AssetDatabase.LoadAssetAtPath<Material>(path);
             if (m == null) { m = new Material(shader); AssetDatabase.CreateAsset(m, path); }
             m.shader = shader;
-            m.name = Spec.id + "_Signs";
+            m.name = Spec.id + (lit ? "_SignsLit" : "_Signs");
             m.SetTexture("_BaseMap", _atlas != null ? _atlas.Texture : VenuePalette.EnsureTexture());
             m.SetColor("_BaseColor", Color.white);
+            if (lit && m.HasProperty("_Smoothness")) m.SetFloat("_Smoothness", 0.1f);
+            if (lit && m.HasProperty("_SpecularHighlights")) m.SetFloat("_SpecularHighlights", 0f);
             m.enableInstancing = true;
             EditorUtility.SetDirty(m);
             _writtenAssets.Add(path);
-            return _signMaterial = m;
+            return lit ? _litSignMaterial = m : _signMaterial = m;
         }
 
         private Renderer Emit(string name, VenueMeshAcc acc, Material material, Transform parent)
@@ -892,11 +1079,19 @@ namespace CTLife.EditorTools.VenueBuild
             return existing;
         }
 
-        private NavMeshData BuildNavigation()
+        public static NavMeshData BuildNavMeshData(string id, IEnumerable<NavMeshBuildSource> sources, Rect walk)
         {
             var settings = NavMesh.GetSettingsByID(0);
-            var bounds = new Bounds(new Vector3(Walk.center.x, 1f, Walk.center.y), new Vector3(Walk.width + 4f, 8f, Walk.height + 4f));
-            var data = NavMeshBuilder.BuildNavMeshData(settings, _nav, bounds, Vector3.zero, Quaternion.identity);
+            var bounds = new Bounds(new Vector3(walk.center.x, 1f, walk.center.y), new Vector3(walk.width + 4f, 8f, walk.height + 4f));
+            var data = NavMeshBuilder.BuildNavMeshData(settings, sources.ToList(), bounds, Vector3.zero, Quaternion.identity);
+            if (data == null) throw new InvalidOperationException(id + " NavMesh build returned null.");
+            data.name = id + "_NavMesh";
+            return data;
+        }
+
+        private NavMeshData BuildNavigation()
+        {
+            var data = BuildNavMeshData(Spec.id, _nav, Walk);
             if (data == null) throw new InvalidOperationException(Spec.id + " NavMesh build returned null.");
             data.name = Spec.id + "_NavMesh";
             string path = Spec.Folder + "/" + Spec.id + "_NavMesh.asset";

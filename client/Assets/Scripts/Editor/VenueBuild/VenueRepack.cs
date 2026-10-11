@@ -180,9 +180,12 @@ namespace CTLife.EditorTools.VenueBuild
                 UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(go, scene);
                 go.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
                 go.transform.localScale = Vector3.one;
+                spec.dress?.Invoke(go);
                 var root = go.transform;
                 var before = MeasureBefore(spec, go);
                 var liveBefore = LiveSurfaceKeys(go);
+                var propSpots = VenueSpotsFile.Load(spec.spotsKey);
+                var props = VenueCollision.Classify(VenueCollision.FromSourceInstance(go), propSpots, go.GetComponent<VenueSceneRoot>().cameraBounds);
                 var oldMaps = go.GetComponent<VenueLightmaps>();
                 if (oldMaps != null) Object.DestroyImmediate(oldMaps);
 
@@ -487,20 +490,19 @@ namespace CTLife.EditorTools.VenueBuild
                     staticRenderers++; usedMats.Add(screenMat); lod0Tris += acc.Triangles;
                 }
 
-                // Self-contained navigation copy.
+                // Prop colliders and a NavMesh rebuilt with prop obstacles (walk-through props were the old NavMesh's gap).
                 var venue = go.GetComponent<VenueSceneRoot>();
-                if (venue.navigation != null)
                 {
                     string navPath = spec.Folder + "/" + spec.id + "_NavMesh.asset";
-                    string oldPath = AssetDatabase.GetAssetPath(venue.navigation);
-                    if (oldPath != navPath)
-                    {
-                        AssetDatabase.DeleteAsset(navPath);
-                        if (!AssetDatabase.CopyAsset(oldPath, navPath)) throw new IOException("Could not copy NavMesh " + oldPath);
-                    }
-                    venue.navigation = AssetDatabase.LoadAssetAtPath<UnityEngine.AI.NavMeshData>(navPath);
+                    var sources = VenueCollisionPass.RepackCollision(go, props, propSpots);
+                    var data = VB.BuildNavMeshData(spec.id, sources, venue.cameraBounds);
+                    var existing = AssetDatabase.LoadAssetAtPath<UnityEngine.AI.NavMeshData>(navPath);
+                    if (existing == null) { AssetDatabase.CreateAsset(data, navPath); existing = data; }
+                    else { EditorUtility.CopySerialized(data, existing); Object.DestroyImmediate(data); EditorUtility.SetDirty(existing); }
+                    venue.navigation = existing;
                     written.Add(navPath);
                 }
+                if (spec.lookdev) VenueLookdev.AddLook(spec, go);
                 var liveAfter = LiveSurfaceKeys(go);
                 if (!liveAfter.SequenceEqual(liveBefore))
                     throw new InvalidDataException($"{spec.id}: live surfaces changed. before [{string.Join(", ", liveBefore)}] after [{string.Join(", ", liveAfter)}]");
@@ -517,6 +519,7 @@ namespace CTLife.EditorTools.VenueBuild
 
                 var spots = VenueSpotsFile.Load(spec.spotsKey);
                 var nav = VenueBuildPipeline.ValidateBuild(spec, prefab.GetComponent<VenueSceneRoot>(), spots);
+                var collision = VenueCollision.Validate(spec.id, prefab, prefab.GetComponent<VenueSceneRoot>().navigation, props);
                 var receipt = new JObject
                 {
                     ["id"] = spec.id, ["venueId"] = spec.venueId, ["mode"] = "repack", ["source"] = spec.repackSource, ["prefab"] = spec.PrefabPath,
@@ -524,7 +527,7 @@ namespace CTLife.EditorTools.VenueBuild
                     ["identity"] = spec.identity, ["sourceRenderers"] = sourceRenderers, ["staticRenderers"] = staticRenderers,
                     ["lod0Triangles"] = lod0Tris, ["materials"] = usedMats.Count, ["atlasEntries"] = new JArray(entries.Select(e => e.Count)),
                     ["tiledMaterials"] = tiledMats.Count, ["hooks"] = new JArray(hookNames), ["liveSurfaces"] = new JArray(liveAfter),
-                    ["before"] = before, ["navigation"] = nav, ["builtUtc"] = DateTime.UtcNow.ToString("o"),
+                    ["before"] = before, ["navigation"] = nav, ["collision"] = collision, ["builtUtc"] = DateTime.UtcNow.ToString("o"),
                 };
                 Directory.CreateDirectory(Path.Combine(VenueBuildPipeline.EvidenceDir, "receipts"));
                 File.WriteAllText(Path.Combine(VenueBuildPipeline.EvidenceDir, "receipts", spec.id + "-build.json"), receipt.ToString());
@@ -813,13 +816,14 @@ namespace CTLife.EditorTools.VenueBuild
                 Check((p0 == null) == (p1 == null) && (p0 == null || EditorJsonUtility.ToJson(p0) == EditorJsonUtility.ToJson(p1)), "CafeSeatMotionProfile differs");
                 var c0 = src.GetComponentsInChildren<Collider>(true).Select(c => c.GetType().Name + c.bounds.center.ToString("F3") + c.bounds.size.ToString("F3")).OrderBy(k => k).ToList();
                 var c1 = dst.GetComponentsInChildren<Collider>(true).Select(c => c.GetType().Name + c.bounds.center.ToString("F3") + c.bounds.size.ToString("F3")).OrderBy(k => k).ToList();
-                Check(c0.SequenceEqual(c1), $"colliders {c0.Count} vs {c1.Count}");
+                Check(!c0.Except(c1).Any(), $"source colliders missing: {c0.Except(c1).Count()}");
                 var v0 = src.GetComponent<VenueSceneRoot>();
                 var v1 = dst.GetComponent<VenueSceneRoot>();
                 Check(v0.venueId == v1.venueId && v0.districtId == v1.districtId && v0.cameraBounds == v1.cameraBounds &&
                       v0.cameraDistance == v1.cameraDistance && v0.cameraPitch == v1.cameraPitch && v0.cameraYaw == v1.cameraYaw &&
                       v0.cameraFieldOfView == v1.cameraFieldOfView && v0.cameraTargetViewportY == v1.cameraTargetViewportY, "VenueSceneRoot settings");
-                Check(v1.navigation != null && v0.navigation != null && SerializedHash(v0.navigation) == SerializedHash(v1.navigation), "NavMesh data differs");
+                // NavMesh is intentionally rebuilt with prop obstacles; reachability is gated by the build.
+                Check(v1.navigation != null, "no NavMesh");
                 Check(dst.GetComponentsInChildren<Light>(true).Length == 0, "lights left in prefab");
                 Check(dst.GetComponent<VenueLightmaps>() != null, "not baked");
                 var report = new JObject { ["id"] = spec.id, ["ok"] = problems.Count == 0, ["problems"] = problems,
