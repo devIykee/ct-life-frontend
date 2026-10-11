@@ -394,3 +394,23 @@ The 29 Rain-derived cast appearances retain their existing Blender Foundation / 
 | Name | Source | Licence / usage terms | Author | Date downloaded | Use |
 |---|---|---|---|---|---|
 | `client/Assets/Resources/UI/Brand/solana-logomark.png` | [Official Solana branding page](https://solana.com/branding), [original PNG](https://solana.com/src/img/branding/solanaLogoMark.png) | Solana Foundation trademark/brand asset, subject to its published Brand Guidelines; not CC0. Keep the artwork unaltered. The published guidance requires written permission for combinations with another name/graphic/generic term; a CT Life-specific permission was not verified in this task. | Solana Foundation | 2026-10-15 | User-requested official mark preceding “Duo” in the fictional in-game phone header. Original 101×88 PNG copied byte-for-byte (SHA256 `c20cf2118506af6428993609364c77653d51c21561c41120bacb91eb4679a4cc`), aspect ratio preserved, no tint/effect. |
+
+## CT Island v2 world (World lane) — 2026-10-17
+
+Tiling ground and surface detail for the v2 island. The photos are reduced to normalised grayscale or tinted detail by
+`tools/world/islandgen/textures.py`, and the shaders and painted maps supply the colour. ambientCG licence re-read
+2026-10-17 at https://docs.ambientcg.com/license/ (CC0 1.0; credit not required).
+
+| Name | Source URL | Licence | Author | Downloaded | Used for |
+| --- | --- | --- | --- | --- | --- |
+| ambientCG `Grass004` (1K JPG) | https://ambientcg.com/view?id=Grass004 | CC0 1.0 | ambientCG (Lennart Demes) | 2026-10-17 | terrain detail pack, grass channel (`client/Assets/World/Island/Textures/terrain_detail.png`) |
+| ambientCG `Rock030` (1K JPG) | https://ambientcg.com/view?id=Rock030 | CC0 1.0 | ambientCG (Lennart Demes) | 2026-10-17 | terrain detail pack, rock channel |
+| ambientCG `Ground054` (1K JPG) | https://ambientcg.com/view?id=Ground054 | CC0 1.0 | ambientCG (Lennart Demes) | 2026-10-17 | terrain detail pack, sand channel |
+| ambientCG `Ground037` (1K JPG) | https://ambientcg.com/view?id=Ground037 | CC0 1.0 | ambientCG (Lennart Demes) | 2026-10-17 | terrain detail pack, dirt channel |
+| ambientCG `Ground048` (1K JPG) | https://ambientcg.com/view?id=Ground048 | CC0 1.0 | ambientCG (Lennart Demes) | 2026-10-17 | dirt road detail (`dirt_detail.png`) |
+| ambientCG `Asphalt031` (1K JPG, downloaded 2026-10-05) | https://ambientcg.com/view?id=Asphalt031 | CC0 1.0 | ambientCG (Lennart Demes) | 2026-10-05 | road asphalt detail (`asphalt_detail.png`) |
+| ambientCG `PavingStones128` (1K JPG, downloaded 2026-10-05) | https://ambientcg.com/view?id=PavingStones128 | CC0 1.0 | ambientCG (Lennart Demes) | 2026-10-05 | sidewalk pavers (`pavers.png`, warmed) |
+| ambientCG `Gravel022` (1K JPG) | https://ambientcg.com/view?id=Gravel022 | CC0 1.0 | ambientCG (Lennart Demes) | 2026-10-17 | downloaded, not used yet |
+| ambientCG `Grass001`, `Rock035` (1K JPG) | https://ambientcg.com/view?id=Grass001 , https://ambientcg.com/view?id=Rock035 | CC0 1.0 | ambientCG (Lennart Demes) | 2026-10-17 | downloaded, not used yet |
+| Poly Haven `Concrete Floor 02` (1k diffuse, downloaded 2026-10-05) | https://polyhaven.com/a/concrete_floor_02 | CC0 | Rob Tuytel | 2026-10-05 | kerbs, bridges, tunnel (`concrete.png`) |
+| CT Island v2 heightfield, ground maps, water depth, far map, ripple normals | `tools/world/islandgen/` | CC0 (made by us) | CT Life World lane | 2026-10-17 | terrain, water, far LOD |

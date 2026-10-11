@@ -1,0 +1,317 @@
+"""CT Island v2: the authored plan (single source of truth for terrain, roads, districts, venues and landmarks).
+
+Coordinates: island metres, +x east, +z north, +y up. Origin = Timeline Square plaza centre, at y = 0.
+Sea level is y = SEA (-6 m), so the plaza stands 6 m above the sea; the flight ceiling is 220 m above sea level.
+
+The island faces south. A mountain range runs along the north coast (the MtnDAO summit), with foothills and the
+terraced Builder Hills below it. Downtown sits at the head of a crescent bay with the beach boardwalk along it. A
+river comes from a foothill spring, past Breakpoint Park and down the west side of downtown into the Trenches
+harbour. The Dubai Marina basin is cut into the south-east coast behind Marina Point; Airdrop Farm rolls over the
+east; the Residences sit on the western plateau above the cliffs and the fjord inlet. Everything here is placed by
+hand; generator code only smooths, samples and carves.
+"""
+
+SEA = -6.0
+FLIGHT_CEILING = SEA + 220.0
+DOMAIN = 1024.0            # heightfield covers [-DOMAIN, DOMAIN] on x and z
+CELL = 2.0                 # heightfield spacing (m)
+LANE = 3.3                 # lane width (contract)
+
+# ------------------------------------------------------------------ coastline
+# Counter-clockwise outline (east along the south coast first). Each point opens a stretch of coast of its type:
+# beach (gentle sand), rock (rocky shore), cliff (steep drop; h = cliff top above the sea), quay (vertical wall).
+COAST = [
+    (-720, -300, 'cliff', 16), (-668, -372, 'cliff', 12), (-600, -414, 'rock', 0), (-566, -430, 'rock', 0),
+    (-452, -414, 'quay', 0), (-392, -378, 'quay', 0), (-346, -342, 'rock', 0),                      # Trenches, Rug Point
+    (-298, -330, 'beach', 0), (-236, -298, 'beach', 0), (-160, -266, 'beach', 0), (-80, -246, 'beach', 0),
+    (0, -240, 'beach', 0), (84, -246, 'beach', 0), (164, -268, 'beach', 0), (232, -302, 'beach', 0),   # crescent bay
+    (276, -342, 'rock', 0), (298, -392, 'rock', 0), (322, -444, 'cliff', 8), (372, -470, 'rock', 0),   # Marina Point
+    (404, -452, 'quay', 0), (414, -396, 'quay', 0), (430, -352, 'quay', 0), (480, -334, 'quay', 0),    # marina basin
+    (548, -330, 'quay', 0), (600, -346, 'quay', 0), (614, -392, 'quay', 0), (608, -440, 'rock', 0),
+    (628, -488, 'rock', 0), (676, -540, 'cliff', 10), (738, -534, 'rock', 0), (782, -488, 'beach', 0),  # SE peninsula
+    (806, -402, 'beach', 0), (822, -300, 'beach', 0), (834, -180, 'beach', 0), (828, -60, 'beach', 0),  # east beach
+    (806, 30, 'rock', 0), (762, 74, 'beach', 0), (770, 118, 'beach', 0), (806, 150, 'rock', 0),       # east cove
+    (826, 224, 'cliff', 18), (862, 300, 'cliff', 26), (884, 382, 'cliff', 32), (856, 456, 'cliff', 28),  # Observatory
+    (790, 480, 'cliff', 22), (742, 530, 'cliff', 22), (652, 584, 'cliff', 22), (548, 612, 'cliff', 22),
+    (452, 604, 'rock', 0), (402, 624, 'beach', 0), (350, 618, 'rock', 0),                            # Gm Cove
+    (246, 652, 'cliff', 24), (120, 674, 'cliff', 26), (0, 670, 'cliff', 26), (-120, 682, 'cliff', 28),
+    (-240, 678, 'cliff', 26), (-360, 664, 'cliff', 24), (-462, 642, 'cliff', 22), (-562, 612, 'cliff', 22),
+    (-642, 562, 'cliff', 24), (-722, 492, 'cliff', 28), (-782, 402, 'cliff', 30), (-812, 302, 'cliff', 30),
+    (-816, 214, 'cliff', 28), (-764, 194, 'cliff', 20), (-716, 170, 'beach', 0), (-752, 144, 'cliff', 20),  # fjord inlet
+    (-818, 122, 'cliff', 26), (-834, 20, 'cliff', 26), (-818, -82, 'cliff', 24), (-792, -180, 'cliff', 22),
+    (-756, -252, 'cliff', 18),
+]
+
+# IslandDAO islet off the east beach, reached by a causeway (a low land strip carrying a service road).
+ISLET = dict(center=(800, -646), radius=46, top=SEA + 7.5)
+CAUSEWAY = dict(path=[(800, -470), (802, -532), (802, -598)], half_width=7.0, top=SEA + 1.8)
+
+# ------------------------------------------------------------------ relief
+# Mountain massifs (x, z, summit y, half-width x, south reach, north reach). Their soft union makes the range:
+# saddles fall where massifs overlap; angular noise grows spurs and gullies; rock and snow come from slope/height.
+MASSIFS = [
+    (-660, 470, 58, 140, 120, 90),
+    (-520, 522, 96, 120, 110, 85),
+    (-410, 482, 112, 110, 95, 90),      # west peak
+    (-300, 532, 88, 120, 100, 90),
+    (-180, 495, 176, 175, 165, 105),    # the MtnDAO summit
+    (-90, 537, 118, 110, 95, 80),
+    (40, 502, 104, 100, 95, 90),
+    (150, 542, 138, 140, 120, 95),      # east peak
+    (270, 517, 92, 110, 95, 85),
+    (380, 550, 104, 110, 95, 75),
+    (500, 517, 70, 120, 90, 80),
+    (610, 482, 44, 110, 80, 70),
+]
+SPURS = [((120, 500, 120), (240, 432, 52), 70)]   # east peak spur into the top of Builder Hills
+# Rounded hills (x, z, height y, radius x, radius z); never perfect circles (angular wobble in terrain.py).
+HILLS = [
+    (842, 380, 70, 80, 110),      # Observatory peninsula (the coast highway tunnels through its west flank)
+    (360, 330, 44, 200, 150),     # Builder Hills (terraced)
+    (620, 160, 14, 170, 120), (690, -80, 10, 140, 120), (560, 240, 20, 120, 90),   # farm hills
+    (-600, 60, 18, 240, 280),     # west plateau under the Residences
+    (-60, 372, 32, 170, 75),      # foothills under the summit switchbacks
+    (-430, 330, 26, 200, 90),
+    (330, -160, 14, 110, 80),     # Hodl Heights between downtown and the marina
+]
+TERRACES = dict(center=(360, 330), radius=190, step=9.0, base=8.0)   # Builder Hills shelves at y = 8, 17, 26, 35
+
+# Flat districts: (name, polygon, target, edge blend m). target: number (y), 'downtown', 'farm' (smoothed), 'soft'.
+DOWNTOWN_POLY = [(-226, -244), (-160, -230), (-80, -212), (0, -206), (84, -212), (164, -230), (262, -262),
+                 (270, 186), (-226, 186)]
+FLATS = [
+    ('downtown', DOWNTOWN_POLY, 'downtown', 24),
+    ('trenches', [(-440, -414), (-300, -330), (-262, -230), (-300, -176), (-430, -230)], SEA + 1.9, 18),
+    ('marina', [(380, -470), (420, -470), (630, -440), (680, -300), (640, -250), (360, -270)], SEA + 2.3, 20),
+    ('boardwalk', [(-300, -332), (-160, -268), (0, -242), (164, -270), (240, -305), (250, -255), (0, -205), (-300, -280)], SEA + 2.6, 10),
+    ('breakpoint', [(-420, 205), (-150, 205), (-130, 330), (-400, 350)], 'soft', 40),
+    ('farmyard', [(470, 20), (740, 40), (745, 190), (480, 170)], 'farm', 40),
+]
+
+
+def downtown_height(x, z):
+    """Downtown leans gently towards the bay: about -1.4 m on Ocean Drive, +1.1 m on Summit Street."""
+    return 0.0065 * z
+
+
+# ------------------------------------------------------------------ river
+# (x, z, water level y, half-width, depth): from a foothill spring to the Trenches harbour mouth.
+RIVER = [
+    (96, 392, 33.0, 5, 1.2), (78, 352, 26.0, 6, 1.4), (46, 318, 18.0, 7, 1.6), (0, 296, 11.0, 8, 1.7),
+    (-60, 276, 6.0, 9, 1.8), (-112, 256, 3.4, 10, 2.0), (-162, 234, 1.4, 11, 2.1), (-208, 206, -0.4, 11, 2.2),
+    (-246, 160, -2.2, 12, 2.4), (-270, 92, -3.2, 13, 2.6), (-284, 22, -4.0, 14, 2.8), (-300, -60, -4.6, 15, 3.0),
+    (-345, -140, -5.2, 17, 3.4), (-410, -205, -5.7, 22, 4.5), (-460, -270, -6.0, 32, 6.5), (-490, -345, -6.0, 40, 7.5),
+    (-505, -425, -6.0, 50, 8.0), (-515, -520, -6.0, 60, 9.0),
+]
+LAKES = [dict(center=(100, 402), radius=22, level=33.2, depth=2.5), dict(center=(-300, 238), radius=18, level=4.6, depth=1.5)]
+
+# ------------------------------------------------------------------ districts (labels, masks, building rules)
+DISTRICTS = [
+    dict(id='timeline', name='Timeline Downtown', label=(-20, 140), poly=DOWNTOWN_POLY),
+    dict(id='trenches', name='The Trenches', label=(-330, -390), poly=[(-450, -420), (-300, -334), (-250, -226), (-300, -170), (-440, -226)]),
+    dict(id='dubai_marina', name='Dubai Marina', label=(520, -400), poly=[(370, -476), (640, -440), (690, -300), (640, -240), (350, -262)]),
+    dict(id='boardwalk', name='Beachfront Boardwalk', label=(-20, -300), poly=[(-300, -334), (0, -246), (244, -308), (250, -250), (0, -200), (-300, -280)]),
+    dict(id='airdrop_farm', name='Airdrop Farm', label=(640, 30), poly=[(450, -200), (800, -200), (800, 250), (460, 270)]),
+    dict(id='builder_hills', name='Builder Hills', label=(420, 214), poly=[(190, 210), (540, 200), (560, 420), (220, 430)]),
+    dict(id='breakpoint', name='Breakpoint Park', label=(-290, 330), poly=[(-430, 200), (-150, 196), (-130, 340), (-420, 360)]),
+    dict(id='residences', name='Residences', label=(-560, 100), poly=[(-790, -240), (-330, -190), (-320, 200), (-780, 300)]),
+    dict(id='mountain', name='MtnDAO Summit', label=(-180, 560), poly=[(-720, 380), (640, 380), (640, 620), (-720, 620)]),
+    dict(id='islet', name='Palm Islet', label=(760, -700), poly=[(750, -700), (850, -700), (850, -600), (750, -600)]),
+]
+
+# ------------------------------------------------------------------ roads
+# Node ids are shared between routes; a route is split into segments at every node it passes. Route ends that are
+# plain points become dead-end nodes.
+NODES = {
+    # coast highway
+    'HM1': (352, -268), 'HM2': (604, -270), 'HE1': (752, -352), 'HE3': (740, 126), 'TUNS': (782, 262),
+    'TUNN': (778, 470), 'HN1': (600, 582), 'HN4': (-470, 620), 'BRF1': (-752, 204), 'BRF2': (-742, 132),
+    'HW2': (-748, 44), 'BRHW': (-566, -404), 'BRHE': (-452, -396), 'T3': (-404, -350), 'T4': (-350, -318),
+    # Genesis Avenue west + river bridge + Residences
+    'BR1A': (-252, 38), 'BR1B': (-306, 35), 'R1': (-392, 40), 'R2': (-520, 52), 'R3': (-640, 48), 'R0': (-420, 128), 'RS1': (-560, 162), 'RC1': (-462, -40),
+    # Farm Road
+    'F1': (500, 72), 'F2': (652, 112),
+    # Hills Drive
+    'B1': (182, 238), 'B2': (420, 252), 'B3': (272, 306), 'B4': (452, 366), 'B5': (560, 424),
+    # Marina
+    'MQ': (404, -318),
+    # Harbour Road / Trenches
+    'T1': (-330, -234), 'T2': (-402, -276),
+    # Breakpoint Way + Foothill Road
+    'BR3A': (-160, 206), 'BR3B': (-194, 238), 'P1': (-232, 268), 'P2': (-336, 302),
+    'FH1': (-120, 318), 'FH2': (-20, 340), 'MR0': (-112, 388), 'BR4A': (30, 332), 'BR4B': (66, 322), 'FH3': (96, 306),
+}
+
+# Downtown grid: columns (x) and rows (z). Row 0 is Ocean Drive (its z per column follows the bay).
+DT_X = [-212, -136, -56, 34, 118, 200]
+DT_Z = [None, -150, -92, -30, 38, 104, 170]
+DT_OCEAN_Z = [-236, -214, -200, -196, -204, -222]
+DT_REMOVED = {('h', 0, 1), ('h', 4, 1), ('h', 4, 6), ('v', 2, 5), ('v', 5, 5)}   # ('h', col, row) / ('v', col, row)
+DT_AVENUE_ROW, DT_AVENUE_COL = 4, 3                    # Genesis Avenue (z = 38) and Timeline Avenue (x = 34)
+DT_ONE_WAY = {('h', 2): +1, ('h', 5): -1}              # one-way rows (+1 eastbound, -1 westbound)
+DT_ROW_NAMES = [None, 'Wen Street', 'Liquidity Street', 'Gm Street', 'Genesis Avenue', 'Hodl Street', 'Summit Street']
+DT_COL_NAMES = ['River Road', 'Mint Street', 'Ledger Street', 'Timeline Avenue', 'Validator Street', 'Epoch Street']
+
+
+def dt_node(c, r):
+    return f'D{c}{r}'
+
+
+def dt_pos(c, r):
+    """Grid node position: the N-S streets fan out towards the bay (6 %) and the E-W streets bow gently south."""
+    if r == 0:
+        return (DT_X[c] * 1.035, DT_OCEAN_Z[c])
+    z = DT_Z[r]
+    x = DT_X[c] * (1.035 - 0.07 * (z + 196) / 366)
+    return (round(x, 2), round(z - 0.00024 * x * x + 0.012 * x, 2))
+
+
+# Cross-sections (metres). surface: asphalt | dirt.  markings: centre line (double_yellow | dashed | none).
+PROFILES = {
+    'highway': dict(median=1.2, sidewalk=0.0, parking=0.0, shoulder=1.8, kerb=False, markings='double_yellow', surface='asphalt', speed=25.0),
+    'avenue': dict(median=0.6, sidewalk=4.0, parking=0.0, shoulder=0.0, kerb=True, markings='double_yellow', surface='asphalt', speed=16.7),
+    'street': dict(median=0.0, sidewalk=3.0, parking=2.4, shoulder=0.0, kerb=True, markings='dashed', surface='asphalt', speed=11.1),
+    'suburban': dict(median=0.0, sidewalk=2.2, parking=0.0, shoulder=0.6, kerb=True, markings='dashed', surface='asphalt', speed=11.1),
+    'mountain': dict(median=0.0, sidewalk=0.0, parking=0.0, shoulder=1.0, kerb=False, markings='double_yellow', surface='asphalt', speed=12.5),
+    'service': dict(median=0.0, sidewalk=0.0, parking=0.0, shoulder=0.8, kerb=False, markings='none', surface='asphalt', speed=8.3),
+    'dirt': dict(median=0.0, sidewalk=0.0, parking=0.0, shoulder=0.6, kerb=False, markings='none', surface='dirt', speed=8.3),
+}
+MAX_GRADE = {'highway': 0.07, 'avenue': 0.08, 'street': 0.09, 'suburban': 0.11, 'mountain': 0.115, 'service': 0.12, 'dirt': 0.13}
+SMOOTH = {'highway': 26.0, 'avenue': 16.0, 'street': 10.0, 'suburban': 10.0, 'mountain': 12.0, 'service': 8.0, 'dirt': 8.0}
+
+ROUTES = [
+    # Coast Highway: 2+2 lanes from downtown's east end round the island to its west end (Ocean Drive closes the loop).
+    dict(id='coast', name='Coast Highway', kind='highway', lanes=(2, 2),
+         pts=['D50', (236, -244), (270, -262), (310, -270), 'HM1', (450, -262), (530, -260), 'HM2', (662, -296), (712, -326),
+              'HE1', (782, -250), (792, -120), (782, -10), (748, 64), 'HE3', (762, 196), 'TUNS', (792, 366), 'TUNN',
+              (706, 540), 'HN1', (500, 596), (452, 592), (360, 608), (246, 636), (120, 652), (0, 650), (-120, 660),
+              (-240, 656), (-360, 644), 'HN4', (-560, 596), (-640, 548), (-710, 484), (-760, 402), (-782, 300),
+              'BRF1', 'BRF2', (-758, 88), 'HW2', (-762, -40), (-748, -140), (-716, -232), (-660, -312), (-612, -372),
+              'BRHW', 'BRHE', (-428, -372), 'T3', 'T4', (-300, -282), 'D00'],
+         bridges=[('BRHW', 'BRHE'), ('BRF1', 'BRF2')], tunnels=[('TUNS', 'TUNN')]),
+    # Ocean Drive: the highway's town section, a palm boulevard along the crescent bay (downtown streets T into it).
+    dict(id='ocean_drive', name='Ocean Drive', kind='avenue', lanes=(2, 2), pts=['D00', 'D10', 'D20', 'D30', 'D40', 'D50']),
+    # Genesis Avenue west over the river to the Residences and the west coast.
+    dict(id='genesis_w', name='Genesis Avenue', kind='avenue', lanes=(2, 2),
+         pts=['D04', 'BR1A', 'BR1B', 'R1', (-456, 48), 'R2', (-580, 54), 'R3', (-706, 46), 'HW2'],
+         bridges=[('BR1A', 'BR1B')]),
+    # Farm Road: Genesis Avenue east of downtown, rolling out to the farm and the east coast.
+    dict(id='farm_road', name='Farm Road', kind='avenue', lanes=(1, 1),
+         pts=['D54', (262, 44), (340, 58), (424, 70), 'F1', (580, 92), 'F2', (700, 122), 'HE3']),
+    # Hills Drive: Timeline Avenue north of downtown, winding up the Builder Hills terraces to the coast highway.
+    dict(id='hills_drive', name='Hills Drive', kind='avenue', lanes=(1, 1),
+         pts=['D36', (52, 200), (108, 226), 'B1', (262, 238), (344, 242), 'B2', (486, 274), (448, 300), (344, 296),
+              'B3', (222, 330), (268, 360), (360, 364), 'B4', (520, 386), 'B5', (612, 470), 'HN1']),
+    # Marina: the quay promenade along the basin and the west quay out to Marina Point.
+    dict(id='marina_promenade', name='Marina Promenade', kind='street', lanes=(1, 1),
+         pts=['HM1', (380, -300), 'MQ', (470, -320), (540, -322), (590, -314), (606, -292), 'HM2']),
+    dict(id='marina_quay', name='Yacht Quay', kind='service', lanes=(1, 1), pts=['MQ', (398, -372), (388, -424), (374, -450)]),
+    # Harbour Road into the Trenches, and Quay Street.
+    dict(id='harbour_road', name='Harbour Road', kind='avenue', lanes=(1, 1),
+         pts=['D02', (-250, -140), (-292, -196), 'T1', (-372, -250), 'T2', (-414, -312), 'T3']),
+    dict(id='quay_road', name='Quay Street', kind='service', lanes=(1, 1), pts=['T1', (-334, -286), 'T4']),
+    # Breakpoint Way: downtown north-west over the river to Breakpoint Park, then down to the Residences.
+    dict(id='breakpoint_way', name='Breakpoint Way', kind='avenue', lanes=(1, 1),
+         pts=['D16', (-146, 190), 'BR3A', 'BR3B', 'P1', (-288, 292), 'P2', (-390, 286), (-420, 220), 'R0'],
+         bridges=[('BR3A', 'BR3B')]),
+    dict(id='foothill_road', name='Foothill Road', kind='street', lanes=(1, 1),
+         pts=['P1', (-176, 296), 'FH1', (-70, 334), 'FH2', 'BR4A', 'BR4B', 'FH3', (140, 282), 'B1'],
+         bridges=[('BR4A', 'BR4B')]),
+    # Summit Road: contour-following switchbacks up the summit's south-east face to the MtnDAO basecamp lodge.
+    dict(id='summit_approach', name='Summit Road', kind='mountain', lanes=(1, 1), pts=['FH1', (-118, 352), 'MR0']),
+    dict(id='summit_road', name='Summit Road', kind='mountain', lanes=(1, 1),
+         switchback=dict(start='MR0', end='MR1', east=-90.0, west=-262.0, grade=0.098, legs=3, first='west', radius=10.5)),
+    # Residences: a lane arcing north of Genesis Avenue, a crescent south of it, cul-de-sacs off both.
+    dict(id='res_spine', name='Seed Phrase Lane', kind='suburban', lanes=(1, 1),
+         pts=['R0', (-482, 152), 'RS1', (-618, 128), 'R3']),
+    dict(id='res_link', name='Mnemonic Way', kind='suburban', lanes=(1, 1), pts=['R1', (-404, 86), 'R0']),
+    dict(id='res_crescent', name='Cold Wallet Crescent', kind='suburban', lanes=(1, 1),
+         pts=['R2', (-512, -6), 'RC1', (-414, -30), 'R1']),
+    dict(id='res_close', name='Paper Hands Close', kind='suburban', lanes=(1, 1), pts=['RC1', (-470, -84), (-484, -132)]),
+    dict(id='res_rise', name='Diamond Hands Rise', kind='suburban', lanes=(1, 1), pts=['RS1', (-552, 214), (-584, 246)]),
+    dict(id='res_cliff', name='Cliffside Drive', kind='suburban', lanes=(1, 1), pts=['R3', (-664, -10), (-690, -96), (-700, -150)]),
+    # Farm dirt roads.
+    dict(id='farm_track', name='Harvest Track', kind='dirt', lanes=(1, 1), pts=['F2', (668, 180), (640, 236), (590, 250)]),
+    dict(id='farm_lane', name='Sybil Lane', kind='dirt', lanes=(1, 1), pts=['F1', (520, 0), (588, -60), (650, -70)]),
+    # Causeway to the islet.
+    dict(id='causeway', name='Palm Causeway', kind='service', lanes=(1, 1), pts=['HE1', (790, -410), (800, -470), (802, -532), (802, -590)]),
+]
+
+# Junction kinds (default: signal where listed, stop elsewhere; roundabouts listed explicitly).
+ROUNDABOUTS = {'B1': 15.0, 'HM1': 17.0}
+SIGNALS = {'D04', 'D14', 'D24', 'D34', 'D44', 'D54', 'D00', 'D10', 'D20', 'D30', 'D40', 'D50', 'D31', 'D32', 'D33', 'D35',
+           'D36', 'D16', 'D02', 'HE3', 'F1', 'T1', 'T3', 'HM2'}
+
+# ------------------------------------------------------------------ venues
+# Each public venue sits on a real street and faces it (any yaw). Placement:
+#   ('front', route, near (x, z), side, gap): on that side of the route near the point, door facing the road;
+#   ('end', route, node, gap): beyond a dead-end road, facing it;   ('at', x, z, yaw): explicit.
+# gap = metres between the sidewalk edge and the venue frame.
+VENUES = [
+    dict(id='timeline_square', district='timeline', place=('at', 0.0, 0.0, 0.0, 0.0)),
+    dict(id='spaces_studio', district='timeline', place=('front', 'genesis', (-96, 38), 'north', 4.0)),
+    dict(id='discord_heights', district='timeline', place=('front', 'dt_v4', (118, 72), 'east', 4.0)),
+    dict(id='ct_jail', district='timeline', place=('front', 'dt_h2', (76, -92), 'south', 4.0)),
+    dict(id='conference_hall', district='breakpoint', place=('front', 'breakpoint_way', (-232, 270), 'north', 8.0)),
+    dict(id='ratio_arena', district='breakpoint', place=('front', 'breakpoint_way', (-352, 300), 'south', 8.0)),
+    dict(id='terminal_cafe', district='trenches', place=('front', 'harbour_road', (-296, -200), 'north', 4.0)),
+    dict(id='perp_pit', district='trenches', place=('front', 'harbour_road', (-372, -252), 'south', 5.0)),
+    dict(id='launchpad_tower', district='trenches', place=('front', 'quay_road', (-334, -286), 'east', 5.0)),
+    dict(id='rekt_clinic', district='trenches', place=('front', 'coast', (-380, -334), 'north', 4.0)),
+    dict(id='prediction_pit', district='boardwalk', place=('at', 96.0, -258.0, 180.0, SEA + 2.8)),   # arcade pier deck
+    dict(id='cabal_lounge', district='dubai_marina', place=('front', 'marina_promenade', (470, -320), 'north', 4.0)),
+    dict(id='penthouse_row', district='dubai_marina', place=('front', 'marina_promenade', (562, -322), 'north', 4.0)),
+    dict(id='yacht_club', district='dubai_marina', place=('front', 'marina_quay', (396, -398), 'west', 4.0)),
+    dict(id='checker_kiosk', district='airdrop_farm', place=('front', 'farm_road', (470, 68), 'south', 6.0)),
+    dict(id='airdrop_fields', district='airdrop_farm', place=('front', 'farm_road', (612, 100), 'north', 6.0)),
+    dict(id='sybil_barn', district='airdrop_farm', place=('front', 'farm_lane', (600, -62), 'south', 6.0)),
+    dict(id='audit_row', district='builder_hills', place=('front', 'hills_drive', (300, 240), 'north', 5.0)),
+    dict(id='vc_row', district='builder_hills', place=('front', 'hills_drive', (330, 296), 'north', 5.0)),
+    dict(id='ore_refinery', district='mountain', place=('front', 'foothill_road', (124, 294), 'north', 6.0)),
+    dict(id='hackathon_house', district='mountain', place=('front', 'summit_road', 'end-34', 'north', 5.0)),
+]
+
+# Private homes: exteriors only (visits stay private), placed where each kind of home belongs.
+HOMES = [
+    dict(id='home_parents_basement', district='residences', place=('front', 'res_crescent', (-440, -36), 'south', 6.0)),
+    dict(id='home_studio', district='residences', place=('front', 'genesis_w', (-470, 50), 'north', 6.0)),
+    dict(id='home_hacker_house', district='builder_hills', place=('front', 'hills_drive', (300, 362), 'north', 5.0)),
+    dict(id='home_penthouse', district='dubai_marina', place=('front', 'marina_promenade', (514, -321), 'north', 4.0)),
+    dict(id='home_marina_villa', district='dubai_marina', place=('at', 350.0, -428.0, 300.0, None)),
+]
+
+# ------------------------------------------------------------------ landmarks (big, seen from afar) and helipads
+# venue=...: the landmark is that venue's building (its frame centre).
+LANDMARKS = [
+    dict(id='mtndao_summit', name='MtnDAO summit', kind='summit', at=(-180, 495), egg='Mtndao'),
+    dict(id='mtndao_lodge', name='Basecamp lodge', kind='lodge', venue='hackathon_house', egg='Mtndao'),
+    dict(id='colosseum_hall', name='Arena hall', kind='colosseum', venue='ratio_arena', egg='Colosseum'),
+    dict(id='breakpoint_centre', name='Convention centre', kind='convention', venue='conference_hall', egg='Breakpoint 2026'),
+    dict(id='superteam_hq', name='Builder HQ', kind='tower', at=(392, 372), egg='Superteam'),
+    dict(id='jupiter_observatory', name='Observatory', kind='dome', at=(846, 386), egg='Jupiter'),
+    dict(id='seeker_shop', name='Phone shop', kind='shop', at=(-96, -58), egg='Seeker (Solana Mobile)'),
+    dict(id='helius_depot', name='Delivery depot', kind='depot', at=(-252, -176), egg='Helius'),
+    dict(id='lighthouse', name='Lighthouse', kind='lighthouse', at=(676, -532), egg=None),
+    dict(id='island_palm', name='Palm islet', kind='palm', at=(800, -646), egg='IslandDAO'),
+    dict(id='timeline_screens', name='Timeline screens', kind='billboards', at=(-10, 52), egg=None),
+    dict(id='harbour_bridge', name='Harbour bridge', kind='bridge', at=(-510, -400), egg=None),
+]
+# Helipads (x, z); ('venue', id, offset along the venue's side) puts one next to a venue.
+HELIPADS = [('venue', 'hackathon_house', 36.0), (640.0, -262.0), (-300.0, 214.0)]
+
+# Farm patchwork: field blocks (polygon, row direction degrees, crop) used for ground colour now and crops later.
+FIELDS = [
+    ([(520, 110), (600, 118), (596, 196), (514, 186)], 12, 'wheat'),
+    ([(604, 120), (690, 128), (684, 214), (600, 200)], 12, 'corn'),
+    ([(696, 140), (744, 146), (742, 220), (690, 214)], 100, 'sunflower'),
+    ([(470, -10), (546, -24), (556, 40), (478, 52)], 168, 'cabbage'),
+    ([(560, -20), (640, -34), (652, 40), (570, 56)], 168, 'wheat'),
+    ([(560, -110), (650, -120), (660, -80), (568, -70)], 4, 'lavender'),
+    ([(660, -126), (742, -140), (750, -60), (668, -52)], 94, 'corn'),
+    ([(470, -150), (552, -160), (560, -110), (478, -96)], 4, 'pumpkin'),
+]
+PARKS = [
+    ('genesis_park', [(-130, 112), (26, 112), (26, 164), (-130, 164)]),
+    ('breakpoint_park', [(-330, 200), (-190, 210), (-196, 258), (-326, 266)]),
+    ('riverside_park', [(-234, -120), (-224, 186), (-252, 186), (-276, 90), (-288, -60)]),
+]
