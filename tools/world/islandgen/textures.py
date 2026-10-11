@@ -124,7 +124,13 @@ def far_albedo(ctl, macro, h):
     ao = macro[..., 3:4]
     grass = macro[..., :3]
     t = np.clip((h - 40.0) / 110.0, 0, 1)[..., None]
-    rock = (np.array([0.50, 0.50, 0.53]) * (1 - t) + np.array([0.66, 0.66, 0.70]) * t) * (0.72 + 0.28 * ao)
+    rock = (np.array([0.38, 0.36, 0.37]) * (1 - t) + np.array([0.55, 0.53, 0.56]) * t) * (0.72 + 0.28 * ao)
+    # strata as the near shader draws them (cool-grey and warm-ochre beds, strongest on steep faces)
+    bed_noise = (macro[..., 0] - macro[..., 1]) * 3.0
+    bed = G.smoothstep(0.3, 0.7, np.sin(h * 0.42 + bed_noise) * 0.5 + 0.5)[..., None]
+    bed_tint = np.array([0.80, 0.79, 0.84]) * (1 - bed) + np.array([1.14, 1.02, 0.86]) * bed
+    steep = np.clip(1.0 - ny * 1.2, 0.35, 1.0)[..., None]
+    rock = rock * (1 - steep + steep * bed_tint)
     wet = G.smoothstep(L.SEA + 1.1, L.SEA + 0.15, h)[..., None]
     sand = np.array([0.92, 0.83, 0.62]) * (1 - wet) + np.array([0.60, 0.52, 0.40]) * wet
     dirt = np.array([0.56, 0.43, 0.30]) * (0.8 + 0.2 * np.clip(grass * 1.8, 0, 2))

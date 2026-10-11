@@ -332,7 +332,8 @@ SHELLS = {
     'audit_row': dict(h=10.0, roof='flat', style='plaster', wall=(0.86, 0.84, 0.76), trim=(0.30, 0.42, 0.62), accent=(0.24, 0.36, 0.60)),
     'vc_row': dict(h=12.0, roof='flat', style='glass', wall=(0.74, 0.80, 0.84), trim=(0.24, 0.26, 0.30), accent=(0.20, 0.70, 0.60)),
     'ore_refinery': dict(h=12.0, roof='flat', style='industrial', wall=(0.70, 0.42, 0.22), trim=(0.24, 0.24, 0.26), accent=(0.95, 0.75, 0.25)),
-    'hackathon_house': dict(h=6.8, roof='gable', style='timber', wall=(0.52, 0.36, 0.24), trim=(0.92, 0.88, 0.80), accent=(0.86, 0.32, 0.20)),
+    'hackathon_house': dict(h=4.2, roof='gable', pitch=56.0, roof_col=(0.66, 0.20, 0.15), style='timber', wall=(0.56, 0.38, 0.24), trim=(0.92, 0.88, 0.80), accent=(0.86, 0.32, 0.20),
+                            sign='BASECAMP LODGE'),
 }
 
 # Private homes: exteriors only (visits stay private), placed where each kind of home belongs.
@@ -359,6 +360,30 @@ LANDMARKS = [
     dict(id='island_palm', name='Palm islet', kind='palm', at=(800, -646), egg='IslandDAO'),
     dict(id='timeline_screens', name='Timeline screens', kind='billboards', at=(-10, 52), egg=None),
     dict(id='harbour_bridge', name='Harbour bridge', kind='bridge', at=(-510, -400), egg=None),
+]
+# Landmark buildings (W3): non-venue heroes built like venue shells (facade styles as SHELLS) on their own pads.
+# at = centre, size = (w, d) m, yaw degrees (0 = the sign faces south), extra = a feature the builder adds.
+LANDMARK_BUILDINGS = [
+    dict(id='superteam_hq', at=(392, 372), size=(16, 16), yaw=200.0, h=30.0, roof='flat', style='glass', sign='BUILDER HQ',
+         wall=(0.40, 0.24, 0.86), trim=(0.97, 0.66, 0.08), accent=(0.97, 0.66, 0.08), extra='bunting'),
+    dict(id='jupiter_observatory', at=(846, 386), size=(18, 18), yaw=250.0, h=7.0, roof='dome', style='plaster', sign='OBSERVATORY',
+         wall=(0.94, 0.94, 0.92), trim=(0.40, 0.72, 0.86), accent=(0.30, 0.62, 0.86), extra='dome'),
+    dict(id='seeker_shop', at=(-96, -58), size=(12, 10), yaw=174.0, h=6.0, roof='flat', style='plaster', sign='PHONE SHOP',
+         wall=(0.22, 0.22, 0.26), trim=(0.62, 0.40, 0.92), accent=(0.95, 0.50, 0.30), extra='phone'),
+    dict(id='helius_depot', at=(-252, -176), size=(20, 14), yaw=40.0, h=7.0, roof='flat', style='industrial', sign='faster',
+         wall=(0.16, 0.16, 0.18), trim=(0.91, 0.25, 0.14), accent=(0.91, 0.25, 0.14), extra='neon'),
+    dict(id='mtndao_cairn', at=(-182, 513), size=(4, 4), yaw=180.0, h=0.0, roof='none', style='none', sign=None,
+         wall=(0.5, 0.5, 0.5), trim=(0.5, 0.5, 0.5), accent=(0.86, 0.32, 0.20), extra='cairn'),
+]
+
+# Hero statues (W3, Tripo3D originals that nod to community mascots): placed by dress.py on a free spot near `near`,
+# facing the nearest road, on a stone plinth (w, d, h m). tint multiplies the statue's own texture (1 = as made).
+HEROES = [
+    dict(id='black_bull', proto='hero_black_bull', near=(-338, -222), plinth=(5.2, 2.8, 1.1), tint=None, egg='The Black Bull'),
+    dict(id='chef_bull', proto='hero_chef_bull', near=(-150, -52), plinth=(3.0, 3.0, 0.8), tint=None, egg='Marinade'),
+    dict(id='purple_ghost', proto='hero_purple_ghost', near=(-30, 104), plinth=(2.4, 2.4, 0.5), tint=(0.70, 0.55, 1.0), egg='Phantom'),
+    dict(id='penguin_cart', proto='hero_penguin_cart', near=(34, 118), plinth=None, tint=None, egg='Pudgy Penguins'),
+    dict(id='space_cat', proto='hero_space_cat', near=(822, 372), plinth=(3.2, 3.2, 1.0), tint=None, egg='Jupiter'),
 ]
 # Helipads (x, z); ('venue', id, offset along the venue's side) puts one next to a venue.
 HELIPADS = [(-226.0, 428.0), (640.0, -262.0), (-300.0, 214.0)]   # lodge pad: on the shoulder, north of the road end

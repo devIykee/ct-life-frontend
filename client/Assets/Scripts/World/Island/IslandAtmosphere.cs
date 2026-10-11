@@ -6,7 +6,7 @@ namespace CTLife.World
 {
     /// <summary>
     /// CT Island v2 light and air (World lane): one warm golden-hour sun with realtime shadows near the camera, trilight
-    /// ambient, the sky material, long-range fog and a light, cool aerial perspective (_CTWorldHaze* globals): distant
+    /// ambient (also pushed to the world shaders, which shade with it directly), soft deep shadows, the sky material, long-range fog and a light, cool aerial perspective (_CTWorldHaze* globals): distant
     /// hills turn slightly blue, the foreground keeps its warmth and saturation, and only the sun side glows warm.
     /// Applied while the island is loaded and fully restored afterwards, so venues, the lobby and captures keep their
     /// own lighting. The URP asset only enables main-light shadows; the island sets the shadow distance itself.
@@ -15,11 +15,17 @@ namespace CTLife.World
     {
         [Header("Sun")]
         public Color sunColor = new Color(1f, 0.86f, 0.68f);
-        public float sunIntensity = 1.25f;
+        public float sunIntensity = 1.35f;
         [Tooltip("x = elevation (degrees), y = heading the light travels towards (degrees clockwise from north).")]
         public Vector2 sunAngles = new Vector2(30f, 38f);
         public float shadowDistance = 70f;
-        [Range(0f, 1f)] public float shadowStrength = 0.72f;
+        [Range(0f, 1f)] public float shadowStrength = 0.92f;
+        [Tooltip("Share of the sun that still reaches shadowed surfaces (bounce). Lower = deeper shadows.")]
+        [Range(0f, 1f)] public float sunInShadow = 0.04f;
+        [Tooltip("Soft-shadow radius in shadow-map texels (4-tap PCF in the world shaders).")]
+        public float shadowSoftness = 1.25f;
+        [Tooltip("Ambient multiplier on shadowed and sun-averted surfaces; 1 = flat fill, lower = clearer sun direction.")]
+        [Range(0f, 1f)] public float shadowFill = 0.74f;
 
         [Header("Ambient")]
         public Color skyAmbient = new Color(0.52f, 0.62f, 0.80f);
@@ -38,6 +44,10 @@ namespace CTLife.World
         private static readonly int HazeColorId = Shader.PropertyToID("_CTWorldHazeColor");
         private static readonly int HazeParamsId = Shader.PropertyToID("_CTWorldHazeParams");
         private static readonly int SunGlowId = Shader.PropertyToID("_CTWorldSunGlow");
+        private static readonly int AmbSkyId = Shader.PropertyToID("_CTWorldAmbSky");
+        private static readonly int AmbEquatorId = Shader.PropertyToID("_CTWorldAmbEquator");
+        private static readonly int AmbGroundId = Shader.PropertyToID("_CTWorldAmbGround");
+        private static readonly int ShadowParamsId = Shader.PropertyToID("_CTWorldShadowParams");
 
         private bool _applied;
         private Light _sun;
@@ -105,6 +115,11 @@ namespace CTLife.World
             Shader.SetGlobalVector(HazeColorId, new Vector4(hazeColor.r, hazeColor.g, hazeColor.b, hazeStrength));
             Shader.SetGlobalVector(HazeParamsId, new Vector4(hazeStart, hazeEnd, hazeHeightFalloff, sunGlow));
             Shader.SetGlobalVector(SunGlowId, new Vector4(sunGlowColor.r, sunGlowColor.g, sunGlowColor.b, 1f));
+            // the world shaders' own trilight ambient and shadow shaping (a = 1 marks them set)
+            Shader.SetGlobalVector(AmbSkyId, new Vector4(skyAmbient.r, skyAmbient.g, skyAmbient.b, 1f));
+            Shader.SetGlobalVector(AmbEquatorId, new Vector4(equatorAmbient.r, equatorAmbient.g, equatorAmbient.b, 1f));
+            Shader.SetGlobalVector(AmbGroundId, new Vector4(groundAmbient.r, groundAmbient.g, groundAmbient.b, 1f));
+            Shader.SetGlobalVector(ShadowParamsId, new Vector4(sunInShadow, shadowSoftness, shadowFill, 0f));
         }
 
         public void Restore()
@@ -119,6 +134,7 @@ namespace CTLife.World
             RenderSettings.skybox = _oldSkybox;
             if (GraphicsSettings.currentRenderPipeline is UniversalRenderPipelineAsset urp) urp.shadowDistance = _oldShadowDistance;
             Shader.SetGlobalVector(HazeColorId, Vector4.zero);
+            Shader.SetGlobalVector(AmbSkyId, Vector4.zero);
             if (_sun != null) _sun.enabled = false;
         }
     }

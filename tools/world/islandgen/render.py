@@ -15,8 +15,11 @@ PPM = 1.12                               # pixels per metre
 
 
 def font(size, bold=False):
-    for p in (['/System/Library/Fonts/Supplemental/Arial Bold.ttf', '/Library/Fonts/Arial Bold.ttf'] if bold else []) + \
-             ['/System/Library/Fonts/Supplemental/Arial.ttf', '/Library/Fonts/Arial.ttf', '/System/Library/Fonts/Helvetica.ttc']:
+    """The project's bundled fonts (SIL OFL 1.1, client/Assets/Resources/UI/Fonts): Lilita One for bold sign text,
+    Manrope otherwise; system fonts only as a fallback for plan previews."""
+    fonts = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..', 'client', 'Assets', 'Resources', 'UI', 'Fonts')
+    for p in ([os.path.join(fonts, 'LilitaOne-Regular.ttf')] if bold else [os.path.join(fonts, 'Manrope-Semibold.ttf')]) + \
+             ['/System/Library/Fonts/Supplemental/Arial.ttf', '/System/Library/Fonts/Helvetica.ttc']:
         if os.path.exists(p):
             try:
                 return ImageFont.truetype(p, size)

@@ -166,8 +166,10 @@ class Dress:
         self.inst = {}                 # proto id -> list of [x, y, z, yaw, sxz, sy, r, g, b, a]
         self.boxes = []                # building colliders [cx, cy, cz, w, h, d, yaw]
         self.signals = []              # traffic light heads
+        self.shop_signs = []           # W3 blade signs [x, y, z, facade yaw, atlas cell]
         self.power = []                # power line pole runs
         self.billboards = []           # live ad boards
+        self.heroes = []               # W3 statues
         self.stats = {}
         self.segs = {s['id']: s for s in self.roads['segments']}
         self.districts = [(d['id'], np.array(d['poly'], float)) for d in self.plan['districts']]
@@ -415,6 +417,7 @@ class Dress:
                     self.boxes.append([round(float(c[0]), 2), round(ybase + hh / 2, 2), round(float(c[1]), 2), round(w, 2), round(hh, 2),
                                        round(d, 2), round(yaw % 360, 1)])
                     self.occ.rect(c[0], c[1], w, d, yaw, Occupancy.BUILDING, margin=0.05)
+                    self.shopfront(pid, it, c, yaw, w, d, ybase, -n_, t_, s, setback)
                     recent.append(pid)
                     placed += 1
                     gap = RNG.uniform(*pl['gap'])
@@ -634,6 +637,92 @@ class Dress:
         self.stats['boats'] = n
         log(f'boats: {n}')
 
+    def place_heroes(self):
+        """W3 hero statues: the nearest free spot to each layout.HEROES point (spiral search), facing the nearest road,
+        on a plinth the Unity builder makes from dress.json heroes."""
+        K = self.kit.items
+        heroes = []
+        roads = np.array([[q[0], q[2]] for s in self.roads['segments'] for q in s['samples']])
+        for hdef in getattr(L, 'HEROES', []):
+            proto = hdef['proto']
+            if proto not in K:
+                continue
+            it = K[proto]
+            pw, pd, ph = hdef['plinth'] or (it['w'] + 0.6, it['d'] + 0.6, 0.0)
+            spot = None
+            for r in np.arange(0.0, 40.0, 1.5):
+                for a in np.linspace(0, 2 * math.pi, max(1, int(r * 1.5)), endpoint=False):
+                    x, z = hdef['near'][0] + r * math.cos(a), hdef['near'][1] + r * math.sin(a)
+                    if self.occ.rect_free(x, z, pw + 1.0, pd + 1.0, 0.0, margin=0.5, allow=(Occupancy.FREE, Occupancy.PARK)):
+                        gy = self.g.y([x - pw / 2, x + pw / 2, x - pw / 2, x + pw / 2], [z - pd / 2, z - pd / 2, z + pd / 2, z + pd / 2])
+                        if float(gy.max() - gy.min()) > 0.9:          # level ground only: a plinth, not a tower
+                            continue
+                        spot = (x, z)
+                        break
+                if spot:
+                    break
+            if spot is None:
+                log(f'hero {hdef["id"]}: no free spot near {hdef["near"]}')
+                continue
+            x, z = spot
+            d = np.linalg.norm(roads - np.array([x, z]), axis=1)
+            q = roads[int(np.argmin(d))]
+            face = math.degrees(math.atan2(q[0] - x, q[1] - z))
+            ys = self.g.y([x - pw / 2, x + pw / 2, x, x - pw / 2, x + pw / 2], [z - pd / 2, z - pd / 2, z, z + pd / 2, z + pd / 2])
+            # the plinth starts below the lowest corner and stands its full height above the highest, so on a slope it
+            # never floats or sinks; the statue stands on its top
+            y0 = float(ys.min()) - 0.6
+            top = float(ys.max()) + (ph or 0.0) + 0.05
+            hh = top - 0.05 - y0 if ph else 0.0
+            self.add(proto, x, top if ph else float(ys.min()) + 0.05, z, face, 1.0, 1.0, tuple(hdef['tint']) + (1.0,) if hdef.get('tint') else None)
+            heroes.append(dict(id=hdef['id'], proto=proto, p=[round(x, 2), round(y0, 2), round(z, 2)], yaw=round(face, 1),
+                               plinth=[pw, pd, round(hh, 2)] if ph else None, egg=hdef.get('egg')))
+            # a clear ring for the statue to read: no trees, benches or lamps within ~5 m of the plinth
+            self.occ.rect(x, z, pw + 10.0, pd + 10.0, face, Occupancy.PROP)
+        self.heroes = heroes
+        self.stats['heroes'] = len(heroes)
+        log(f'heroes: {[h["id"] for h in heroes]}')
+
+    # -------------------------------------------------------------- shopfronts (W3 street life)
+    SHOP_DISTRICTS = ('timeline', 'trenches', 'dubai_marina', 'boardwalk')
+    N_SHOP_SIGNS = 32                  # cells in signs.shop_atlas
+
+    def shopfront(self, pid, it, c, yaw, w, d, y, out, tan, seg, setback):
+        """Downtown ground floors: canvas awnings over the shop windows, a blade sign with a shop name projecting from
+        the facade (built by Unity from dress.json shopSigns), now and then cafe parasols on a wide sidewalk."""
+        if it['kit'] not in ('qtb', 'kc') or self.district_at(*c) not in self.SHOP_DISTRICTS or seg['sidewalk'] < 1.5:
+            return
+        K = self.kit.items
+        front = c + out * (d / 2)
+        a = math.radians(yaw)
+        n = self.stats.setdefault('shopfronts', 0)
+        self.stats['shopfronts'] = n + 1
+        r = RNG.random()
+        if r < 0.6 and 'kc_detail_awning' in K:
+            wide = w >= 8.6 and 'kc_detail_awning_wide' in K
+            proto = 'kc_detail_awning_wide' if wide else 'kc_detail_awning'
+            aw, ad = K[proto]['w'], K[proto]['d']
+            count = 2 if w >= aw * 2 + 1.0 else 1
+            for k in range(count):
+                u = 0.0 if count == 1 else (k - 0.5) * (aw + 0.5)
+                q = front + tan * u + out * (ad / 2 + 0.03)
+                self.add(proto, q[0], y, q[1], yaw)
+                self.occ.rect(q[0], q[1], aw, ad + 0.6, yaw, Occupancy.PROP)
+            self.stats['awnings'] = self.stats.get('awnings', 0) + count
+        elif r < 0.72 and seg['sidewalk'] + setback >= 3.2 and 'kc_detail_parasol_a' in K:
+            for k in range(2 if w >= 7 else 1):
+                u = (k - 0.5) * 3.2 if w >= 7 else 0.0
+                q = front + tan * u + out * 1.9
+                if self.occ.codes([q[0]], [q[1]])[0] in (Occupancy.FREE, Occupancy.PARK, Occupancy.ROAD):
+                    self.add(['kc_detail_parasol_a', 'kc_detail_parasol_b'][RNG.integers(2)], q[0], y, q[1], RNG.uniform(0, 360))
+                    self.occ.rect(q[0], q[1], 3.0, 3.0, yaw, Occupancy.PROP)
+                    self.stats['parasols'] = self.stats.get('parasols', 0) + 1
+        if RNG.random() < 0.75 and w >= 4.5:
+            side = 1.0 if RNG.random() < 0.5 else -1.0
+            q = front + tan * side * (w / 2 - 0.7) + out * 0.62
+            self.shop_signs.append([round(float(q[0]), 2), round(float(y + 4.1), 2), round(float(q[1]), 2), round(float(yaw) % 360.0, 1),
+                                    int(RNG.integers(self.N_SHOP_SIGNS))])
+
     # -------------------------------------------------------------- street furniture
     def town(self, x, z):
         return self.district_at(x, z) in ('timeline', 'trenches', 'dubai_marina', 'boardwalk', 'residences', 'builder_hills')
@@ -682,6 +771,9 @@ class Dress:
                         face = math.degrees(math.atan2(-rn[k][0] * side, -rn[k][1] * side))
                         r = RNG.random()
                         yk = y[k] + 0.15
+                        if self.occ.codes([inner[0]], [inner[1]])[0] in (Occupancy.PROP, Occupancy.BUILDING):
+                            pos += RNG.uniform(4, 7)
+                            continue
                         if s['base'] == 'avenue' and r < 0.45:
                             tree = ['kf_tree_2_a', 'kf_tree_2_b', 'kf_tree_1_a', 'kf_tree_3_a'][RNG.integers(4)]
                             if tree in K:
@@ -696,10 +788,19 @@ class Dress:
                         elif r < 0.74 and 'kyc_firehydrant' in K:
                             self.add('kyc_firehydrant', kerb[0], yk, kerb[1], face)
                             n_f += 1
-                        elif r < 0.86 and 'planter_round' in K:
+                        elif r < 0.84 and 'planter_round' in K:
                             self.add('planter_round', inner[0], yk, inner[1], RNG.uniform(0, 90))
                             n_f += 1
-                        pos += RNG.uniform(14, 22)
+                        elif r < 0.93 and 'kyc_box_a' in K:
+                            # a pair of newspaper / parcel boxes at the kerb
+                            for k2 in range(2):
+                                bq = kerb + tan[k] * (k2 * 1.4)
+                                self.add('kyc_box_a', bq[0], yk, bq[1], face + 180.0)
+                            n_f += 2
+                        elif 'kyc_trash_b' in K:
+                            self.add('kyc_trash_b', inner[0], yk, inner[1], face)
+                            n_f += 1
+                        pos += RNG.uniform(9, 15) if self.district_at(*p[k]) in self.SHOP_DISTRICTS else RNG.uniform(14, 22)
         # traffic lights and stop signs on every approach (right-hand corner, facing the oncoming traffic)
         for j in self.roads['intersections']:
             parts = j.get('parts') or [j]
@@ -972,7 +1073,8 @@ class Dress:
         doc = dict(version=1, generated=time.strftime('%Y-%m-%d'), stats=self.stats,
                    record='x, y, z, yaw (deg), scale xz, scale y, tint r, g, b, a',
                    instances=[dict(proto=p, n=len(self.inst[p]), d=[c for r in self.inst[p] for c in r]) for p in protos],
-                   buildingBoxes=self.boxes, signals=self.signals, power=self.power, billboards=self.billboards)
+                   buildingBoxes=self.boxes, signals=self.signals, power=self.power, billboards=self.billboards, heroes=self.heroes,
+                   shopSigns=self.shop_signs)
         txt = json.dumps(doc, separators=(',', ':'))
         open(path, 'w').write(txt)
         log(f'wrote {path} ({len(txt) / 1e6:.1f} MB, {sum(len(v) for v in self.inst.values())} instances of {len(protos)} models)')
@@ -982,6 +1084,7 @@ def main():
     t0 = time.time()
     d = Dress()
     d.stamp_static()
+    d.place_heroes()
     d.place_buildings()
     d.infill_blocks()
     d.place_promenade()

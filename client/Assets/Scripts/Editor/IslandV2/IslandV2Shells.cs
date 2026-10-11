@@ -22,6 +22,9 @@ namespace CTLife.EditorTools.IslandV2
             public Material Facade, RoofMat, SignMat;
             public Vector3 Origin; public float Yaw; public Rect Footprint; public float Height;
             public Vector3[] Normals, Centres;
+            public bool HasDoor = true;
+            /// <summary>Landmark extras (dome, phone, bunting, cairn) in their own renderer, and their materials.</summary>
+            public MeshBuilder Extra; public Material ExtraMat;
         }
 
         private static readonly Dictionary<string, int> StyleIds = new Dictionary<string, int>
@@ -40,12 +43,33 @@ namespace CTLife.EditorTools.IslandV2
                 n++;
             }
             receipt["venueShells"] = n;
+            // W3 landmark buildings: the same building kit on their own pads, no door (no interior), plus their feature
+            int lm = 0;
+            if (plan["landmarkBuildings"] is JArray lbs)
+                foreach (JObject lb in lbs)
+                {
+                    var at = IslandV2Paths.V2(lb["at"]); var size = IslandV2Paths.V2(lb["size"]);
+                    float y = (float)lb["y"];
+                    var v = new JObject
+                    {
+                        ["id"] = (string)lb["id"], ["origin"] = new JArray(at.x, y, at.y), ["yaw"] = (float)lb["yaw"],
+                        ["frame_min"] = new JArray(-size.x / 2f, -size.y / 2f), ["frame_size"] = new JArray(size.x, size.y),
+                        ["walk"] = new JArray(-size.x / 2f + 1f, -size.y / 2f + 0.7f, size.x / 2f - 1f, size.y / 2f - 1f),
+                    };
+                    Def def;
+                    if ((float)lb["h"] > 0f) { def = Shell(v, lb, mats, door: false); }
+                    else def = new Def { VenueId = (string)lb["id"], Origin = new Vector3(at.x, y, at.y), Yaw = (float)lb["yaw"], Footprint = new Rect(-size / 2f, size), HasDoor = false };
+                    Extras(def, lb, mats);
+                    cells.At(def.Origin).Shells.Add(def);
+                    lm++;
+                }
+            receipt["landmarkBuildings"] = lm;
             return n;
         }
 
         private static Color C(JToken t) => new Color((float)t[0], (float)t[1], (float)t[2]);
 
-        private static Def Shell(JObject v, JObject sh, Dictionary<string, Material> mats)
+        private static Def Shell(JObject v, JObject sh, Dictionary<string, Material> mats, bool door = true)
         {
             var id = (string)v["id"];
             var o = IslandV2Paths.V3(v["origin"]);
@@ -67,7 +91,8 @@ namespace CTLife.EditorTools.IslandV2
                 Roof = new MeshBuilder { HasColor = true }, Sign = new MeshBuilder(),
             };
             const float baseY = -0.4f;
-            float gableRise = roofKind == "gable" ? Mathf.Min(x1 - x0, z1 - z0) * 0.5f * Mathf.Tan(28f * Mathf.Deg2Rad) : 0f;
+            float pitch = sh["pitch"] != null ? (float)sh["pitch"] : 28f;
+            float gableRise = roofKind == "gable" ? Mathf.Min(x1 - x0, z1 - z0) * 0.5f * Mathf.Tan(pitch * Mathf.Deg2Rad) : 0f;
             // a wall from local (ax, az) to (bx, bz), outward normal on its right seen from outside: quads in u (along) and
             // v (up) with uv0 metres and uv1 = (length, height); holes: the door on the front wall
             void Wall(MeshBuilder b, Vector2 a, Vector2 c, float top, (float u0, float u1, float v1)? hole, float gable)
@@ -109,7 +134,8 @@ namespace CTLife.EditorTools.IslandV2
             // the front looks along +z, their right is +x, so the front wall runs from x0 to x1 and faces -z.
             bool gableAlongX = (x1 - x0) >= (z1 - z0);       // the ridge runs along the long side
             float gFront = roofKind == "gable" && !gableAlongX ? gableRise : 0f, gSide = roofKind == "gable" && gableAlongX ? gableRise : 0f;
-            Wall(def.Front, new Vector2(x0, z0), new Vector2(x1, z0), h, (doorX - doorW / 2f - x0, doorX + doorW / 2f - x0, doorH), gFront);
+            def.HasDoor = door;
+            Wall(def.Front, new Vector2(x0, z0), new Vector2(x1, z0), h, door ? (doorX - doorW / 2f - x0, doorX + doorW / 2f - x0, doorH) : ((float, float, float)?)null, gFront);
             Wall(def.Back, new Vector2(x1, z1), new Vector2(x0, z1), h, null, gFront);
             Wall(def.Left, new Vector2(x0, z1), new Vector2(x0, z0), h, null, gSide);
             Wall(def.Right, new Vector2(x1, z0), new Vector2(x1, z1), h, null, gSide);
@@ -117,7 +143,7 @@ namespace CTLife.EditorTools.IslandV2
             float cy = o.y + h * 0.5f;
             def.Centres = new[] { W((x0 + x1) / 2f, h / 2f, z0), W((x0 + x1) / 2f, h / 2f, z1), W(x0, h / 2f, (z0 + z1) / 2f), W(x1, h / 2f, (z0 + z1) / 2f) };
             // roof
-            var roofCol = roofKind == "gable" ? new Color(0.36f, 0.22f, 0.18f) : new Color(0.50f, 0.50f, 0.52f);
+            var roofCol = sh["roof_col"] != null ? C(sh["roof_col"]) : roofKind == "gable" ? new Color(0.36f, 0.22f, 0.18f) : new Color(0.50f, 0.50f, 0.52f);
             if (roofKind == "flat")
             {
                 var r = def.Roof;
@@ -168,6 +194,110 @@ namespace CTLife.EditorTools.IslandV2
             def.RoofMat = mats.TryGetValue("shell_roof", out var rm) ? rm : mats[Mat.Concrete];
             def.SignMat = SignMaterial(id);
             return def;
+        }
+
+        /// <summary>A landmark's feature: the observatory dome, the phone on the shop roof, Builder HQ bunting, the summit cairn.</summary>
+        private static void Extras(Def def, JObject lb, Dictionary<string, Material> mats)
+        {
+            string kind = (string)lb["extra"];
+            if (string.IsNullOrEmpty(kind)) return;
+            var b = new MeshBuilder { HasColor = true };
+            var rot = Quaternion.Euler(0f, def.Yaw, 0f);
+            var o = def.Origin;
+            float h = def.Height;
+            var accent = C(lb["accent"]); var trim = C(lb["trim"]);
+            Vector3 W(float x, float y, float z) => o + rot * new Vector3(x, y, z);
+            switch (kind)
+            {
+                case "dome":
+                {
+                    float r = Mathf.Min(def.Footprint.width, def.Footprint.height) * 0.42f;
+                    const int seg = 16, rings = 8;
+                    var white = new Color(0.96f, 0.96f, 0.95f); var slit = new Color(0.18f, 0.20f, 0.26f);
+                    for (int j = 0; j < rings; j++)
+                        for (int i = 0; i < seg; i++)
+                        {
+                            float a0 = i * Mathf.PI * 2f / seg, a1 = (i + 1) * Mathf.PI * 2f / seg;
+                            float t0 = j * Mathf.PI * 0.5f / rings, t1 = (j + 1) * Mathf.PI * 0.5f / rings;
+                            Vector3 P(float a, float t) => W(Mathf.Cos(a) * Mathf.Cos(t) * r, h + 0.9f + Mathf.Sin(t) * r, Mathf.Sin(a) * Mathf.Cos(t) * r);
+                            var col = (i == 3 || i == 4) && j < rings - 1 ? slit : white;    // the observing slit
+                            b.FlatQuad(P(a0, t0), P(a0, t1), P(a1, t1), P(a1, t0), default, col);
+                        }
+                    break;
+                }
+                case "phone":
+                {
+                    // a giant phone propped on the roof, back to the street: black slab, three lens dots, a small shield
+                    var c = W(0f, h + 3.4f, 1.0f);
+                    b.Box(c, rot * Vector3.right, Vector3.up, rot * Vector3.forward, new Vector3(1.7f, 3.2f, 0.28f), new Color(0.06f, 0.06f, 0.07f));
+                    for (int k = 0; k < 3; k++)
+                        b.Box(W(-0.9f + k * 0.0f, h + 5.6f - k * 0.62f, 0.68f), rot * Vector3.right, Vector3.up, rot * Vector3.forward, new Vector3(0.24f, 0.24f, 0.06f), new Color(0.32f, 0.34f, 0.40f));
+                    b.Box(W(0.5f, h + 2.6f, 0.68f), rot * Vector3.right, Vector3.up, rot * Vector3.forward, new Vector3(0.3f, 0.36f, 0.04f), accent);
+                    b.Box(W(0f, h + 0.25f, 1.4f), rot * Vector3.right, Vector3.up, rot * Vector3.forward, new Vector3(1.9f, 0.25f, 0.6f), new Color(0.3f, 0.3f, 0.32f));
+                    break;
+                }
+                case "bunting":
+                {
+                    // pennant strings from the roof corners to the plaza, alternating the two colours
+                    var f = def.Footprint;
+                    var corners = new[] { new Vector2(f.xMin, f.yMin), new Vector2(f.xMax, f.yMin), new Vector2(f.xMax, f.yMax), new Vector2(f.xMin, f.yMax) };
+                    for (int c = 0; c < 4; c++)
+                    {
+                        var a = W(corners[c].x, h + 0.8f, corners[c].y);
+                        var dir = new Vector3(corners[c].x, 0f, corners[c].y).normalized;
+                        var e = W(corners[c].x + dir.x * 14f, 4.2f, corners[c].y + dir.z * 14f);
+                        e.y = o.y + 4.2f;
+                        for (int k = 0; k < 18; k++)
+                        {
+                            float t = (k + 0.5f) / 18f;
+                            var p = Vector3.Lerp(a, e, t) - Vector3.up * Mathf.Sin(t * Mathf.PI) * 1.4f;
+                            var along = (e - a).normalized;
+                            var col = k % 2 == 0 ? accent : C(lb["wall"]);
+                            var p0 = p - along * 0.3f; var p1 = p + along * 0.3f; var p2 = p - Vector3.up * 0.7f;
+                            int i0 = b.Add(p0, Vector3.Cross(along, Vector3.up), Vector2.zero, default, default, col);
+                            int i1 = b.Add(p1, Vector3.Cross(along, Vector3.up), Vector2.zero, default, default, col);
+                            int i2 = b.Add(p2, Vector3.Cross(along, Vector3.up), Vector2.zero, default, default, col);
+                            b.Tri(i0, i1, i2); b.Tri(i0, i2, i1);
+                        }
+                    }
+                    break;
+                }
+                case "cairn":
+                {
+                    // the MtnDAO summit: a stone cairn with three tall flag poles (red, white, the accent), a bench
+                    var stone = new Color(0.52f, 0.50f, 0.48f);
+                    float y = 0f;
+                    for (int k = 0; k < 6; k++)
+                    {
+                        float s = 1.5f - k * 0.2f, hh = 0.45f;
+                        b.Box(W(Mathf.Sin(k * 1.7f) * 0.15f, y + hh * 0.5f, Mathf.Cos(k * 2.3f) * 0.15f), Quaternion.Euler(0f, k * 23f, 0f) * (rot * Vector3.right), Vector3.up,
+                              Quaternion.Euler(0f, k * 23f, 0f) * (rot * Vector3.forward), new Vector3(s * 0.5f, hh * 0.5f, s * 0.5f), stone * (0.9f + 0.05f * k));
+                        y += hh;
+                    }
+                    var flags = new[] { accent, new Color(0.96f, 0.96f, 0.94f), new Color(0.20f, 0.30f, 0.62f) };
+                    for (int k = 0; k < 3; k++)
+                    {
+                        var foot = W(-2.2f + k * 2.2f, 0f, 2.2f);
+                        b.Box(foot + Vector3.up * 3.5f, rot * Vector3.right, Vector3.up, rot * Vector3.forward, new Vector3(0.05f, 3.5f, 0.05f), new Color(0.8f, 0.8f, 0.82f));
+                        var top = foot + Vector3.up * 6.6f;
+                        var fx = rot * Vector3.right;
+                        int i0 = b.Add(top, rot * Vector3.back, Vector2.zero, default, default, flags[k]);
+                        int i1 = b.Add(top + fx * 1.8f - Vector3.up * 0.2f, rot * Vector3.back, Vector2.zero, default, default, flags[k]);
+                        int i2 = b.Add(top - Vector3.up * 1.1f, rot * Vector3.back, Vector2.zero, default, default, flags[k]);
+                        int i3 = b.Add(top + fx * 1.7f - Vector3.up * 1.3f, rot * Vector3.back, Vector2.zero, default, default, flags[k]);
+                        b.Tri(i0, i1, i2); b.Tri(i1, i3, i2); b.Tri(i0, i2, i1); b.Tri(i1, i2, i3);
+                    }
+                    break;
+                }
+                case "neon":
+                    if (def.SignMat != null) def.SignMat.SetColor("_Emission", new Color(1.6f, 0.55f, 0.3f));
+                    break;
+            }
+            if (!b.Empty)
+            {
+                def.Extra = b;
+                def.ExtraMat = mats.TryGetValue(Mat.Lighthouse, out var lm) ? lm : mats[Mat.Concrete];   // white, vertex-coloured
+            }
         }
 
         private static Material FacadeMaterial(string id, int style, Color trim, Color accent, string styleName)
@@ -231,7 +361,9 @@ namespace CTLife.EditorTools.IslandV2
             var right = Part("right", d.Right, d.Facade, true);
             var roof = Part("roof", d.Roof, d.RoofMat, true);
             var sign = Part("sign", d.Sign, d.SignMat, false);
-            if (sign != null) sign.transform.SetParent(front.transform, true);
+            var extra = Part("feature", d.Extra, d.ExtraMat, true);
+            if (sign != null && front != null) sign.transform.SetParent(front.transform, true);
+            if (d.Front == null) return;   // features only (the summit cairn): no walls, no fader
             var vs = go.AddComponent<VenueShell>();
             vs.venueId = d.VenueId; vs.footprint = d.Footprint; vs.height = d.Height; vs.origin = d.Origin; vs.yaw = d.Yaw;
             vs.roof = roof;
@@ -254,8 +386,12 @@ namespace CTLife.EditorTools.IslandV2
                 cgo.AddComponent<BoxCollider>().size = new Vector3(0.4f, d.Height + 0.8f, len);
             }
             float doorW = Mathf.Min(5.2f, f.width * 0.4f);
-            Col(new Vector2(f.xMin, f.yMin), new Vector2(-doorW / 2f, f.yMin));
-            Col(new Vector2(doorW / 2f, f.yMin), new Vector2(f.xMax, f.yMin));
+            if (d.HasDoor)
+            {
+                Col(new Vector2(f.xMin, f.yMin), new Vector2(-doorW / 2f, f.yMin));
+                Col(new Vector2(doorW / 2f, f.yMin), new Vector2(f.xMax, f.yMin));
+            }
+            else Col(new Vector2(f.xMin, f.yMin), new Vector2(f.xMax, f.yMin));
             Col(new Vector2(f.xMax, f.yMax), new Vector2(f.xMin, f.yMax));
             Col(new Vector2(f.xMin, f.yMax), new Vector2(f.xMin, f.yMin));
             Col(new Vector2(f.xMax, f.yMin), new Vector2(f.xMax, f.yMax));

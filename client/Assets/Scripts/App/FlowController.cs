@@ -503,6 +503,18 @@ namespace CTLife.App
                     }
                     Log.Info("island", "islandTour done");
                 });
+                // Demo-route waypoints (dev builds only, World W3): `islandWaypoints=4` stands the player on shot 4's spot,
+                // `islandWaypoints=all` (or a list) visits each for 10 s. Spots: Resources/World/Island/demo_route.json.
+                if (!string.IsNullOrEmpty(LaunchArgs.Get("islandWaypoints"))) RunGameAction(game, async () =>
+                {
+                    float deadline = Time.realtimeSinceStartup + 90f;
+                    while (GameAlive(game) && (VenueSession.Current == null || !VenueSession.Current.IsActive) && Time.realtimeSinceStartup < deadline)
+                        await Awaitable.WaitForSecondsAsync(0.5f, game.Token);
+                    await Awaitable.WaitForSecondsAsync(3f, game.Token);
+                    var s = VenueSession.Current;
+                    if (s == null || !s.IsIsland) { Log.Warn("island", "islandWaypoints: not on CT Island"); return; }
+                    await IslandWaypoints.Run(s, LaunchArgs.Get("islandWaypoints"), () => GameAlive(game), game.Token);
+                });
                 // Device feature pass (dev builds only): `integration=1 [peer=<userId>]`. The editor driver calls it directly.
                 if (LaunchArgs.Flag("integration") && !Application.isEditor) RunGameAction(game, async () =>
                 {

@@ -285,7 +285,16 @@ def main():
         if math.hypot(near['origin'][0] - p[0], near['origin'][2] - p[2]) < 70:
             p[1] = near['origin'][1]
     heli_pads = [dict(cx=p[0], cz=p[2], w=24.0, d=24.0, yaw=0.0, y=float(p[1]) + 0.12) for p in heli]
-    h = T.carve_pads(h, heli_pads + [v['pad'] for v in venues + homes])      # venue pads last and exact ...
+    lm_pads = []
+    for lb in getattr(L, 'LANDMARK_BUILDINGS', []):
+        if lb['h'] <= 0:
+            continue
+        (cx, cz), (w, d) = lb['at'], lb['size']
+        pts = np.array([[cx + u, cz + v] for u in (-w / 2, 0, w / 2) for v in (-d / 2, 0, d / 2)])
+        y = float(np.median(T.sample(h, pts[:, 0], pts[:, 1]))) + 0.12
+        lb['y'] = round(y - 0.12, 3)
+        lm_pads.append(dict(cx=cx, cz=cz, w=w + 6.0, d=d + 6.0, yaw=lb['yaw'], y=y))
+    h = T.carve_pads(h, heli_pads + lm_pads + [v['pad'] for v in venues + homes])      # venue pads last and exact ...
     h = np.where(np.isfinite(road_core), road_core - 0.12, h)                   # ... roads stay on their profile
     log(f'retaining walls: {len(walls)} runs, {sum(len(w["points"]) for w in walls) * 2} m')
     holes = tunnel_holes(net, h)
@@ -311,7 +320,9 @@ def main():
         write_png(os.path.join(OUT, 'ground.png'), np.stack([ctl[..., 1], ctl[..., 3], np.clip(emaps.get('talus', np.zeros_like(h)) * 2, 0, 1)], -1), 'RGB')
         write_roads(net, os.path.join(OUT, 'roads.json'), walls)
         write_plan(net, venues, homes, coast, river, os.path.join(OUT, 'plan.json'), h,
-                   extra=dict(quays=quays(coast, ctypes, h), boardwalk=boardwalk(net, h)))
+                   extra=dict(quays=quays(coast, ctypes, h), boardwalk=boardwalk(net, h),
+                              landmarkBuildings=[dict(lb, y=lb.get('y', float(T.sample(h, np.array([lb['at'][0]]), np.array([lb['at'][1]]))[0])))
+                                                 for lb in getattr(L, 'LANDMARK_BUILDINGS', [])]))
         import textures
         tex_dir = os.path.join(REPO, 'client', 'Assets', 'World', 'Island', 'Textures')
         textures.write_all(h, river, net, macro, tex_dir, ctl=ctl)

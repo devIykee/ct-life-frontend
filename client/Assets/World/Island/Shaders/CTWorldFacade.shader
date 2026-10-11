@@ -147,7 +147,9 @@ Shader "CT Life/World/Facade"
             half3 n = normalize(input.normalWS);
             half glass;
             half3 albedo = Facade(input.uv.xy, max(input.uv.z, 1.0), input.color.rgb, glass);
-            half3 c = CTWorldLight(albedo, input.positionWS, n, 1.0h, _Toon);
+            // contact darkening: the bottom two metres of every wall (uv.y = metres up from 0.4 m below grade)
+            half ao = lerp(0.5h, 1.0h, smoothstep(0.3h, 2.4h, (half)input.uv.y));
+            half3 c = CTWorldLight(albedo, input.positionWS, n, ao, _Toon) * lerp(0.82h, 1.0h, ao);
             if (glass > 0.0h)
             {
                 half3 view = normalize(_WorldSpaceCameraPos - input.positionWS);
@@ -157,7 +159,7 @@ Shader "CT Life/World/Facade"
                 Light sun = GetMainLight();
                 half3 hv = normalize(sun.direction + view);
                 g += sun.color * pow(saturate(dot(n, hv)), 60.0h) * 0.6h;
-                c = lerp(c, g * (SampleSH(n) * 0.6h + sun.color * 0.35h), glass);
+                c = lerp(c, g * (CTWorldAmbient(n) * 0.6h + sun.color * 0.35h), glass);
             }
             c = MixFog(c, input.fog);
             c = CTWorldHaze(c, input.positionWS);

@@ -116,6 +116,7 @@ def natural_heights(land, inland, seaward, coast_poly, coast_types, coast_cliff,
         h, maps = erode_relief(h, land)
         if stats is not None:
             stats.update(maps)
+    h = RL.summit_crags(h, X, Z)
     h = RL.shoulder_bench(h, X, Z)
     # Coast: plateau floors near cliffs, height caps near beaches and quays.
     tree = cKDTree(coast_poly)
@@ -561,9 +562,11 @@ def forest_mask(h, land, slope, exclusions):
     cliffs, beaches, towns or flats. Patchy by low-frequency noise, so there are clearings and meadows."""
     n = G.fbm(X / 120.0 + 7, Z / 120.0 + 3, octaves=4)
     n2 = G.fbm(X / 40.0 - 3, Z / 40.0 + 9, octaves=3)
-    line = 112.0 + (n2 - 0.5) * 30.0                            # ragged tree line
-    m = G.smoothstep(3.0, 12.0, h) * G.smoothstep(line, line - 22.0, h) * G.smoothstep(1.2, 0.85, slope)
-    m = m * G.smoothstep(0.34, 0.48, n)
+    line = 122.0 + (n2 - 0.5) * 34.0                            # ragged tree line
+    m = G.smoothstep(3.0, 12.0, h) * G.smoothstep(line, line - 22.0, h) * G.smoothstep(1.3, 0.95, slope)
+    # W3: dense forest climbs the mountain's lower slopes (fewer clearings above 30 m), patchier down in the hills
+    up = G.smoothstep(26.0, 50.0, h)
+    m = m * G.smoothstep(0.34 - 0.10 * up, 0.48 - 0.12 * up, n)
     m = m * land * (1 - exclusions)
     return np.clip(m, 0, 1)
 

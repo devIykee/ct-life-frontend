@@ -189,6 +189,96 @@ MonoBehaviour:
       m_Center: {x: 0, y: 1.188, z: 0}
       m_Extent: {x: 1.3200046, y: 1.1880046, z: 2.4200046}
     kind: vehicle
+  - id: hero_black_bull
+    lods:
+    - {fileID: -8449706894203695474, guid: 9cbe17ea4564c4c2f92347faa2dc0b6b, type: 3}
+    - {fileID: -8167404263252368664, guid: 9cbe17ea4564c4c2f92347faa2dc0b6b, type: 3}
+    - {fileID: -6716223723200661042, guid: 9cbe17ea4564c4c2f92347faa2dc0b6b, type: 3}
+    lodEnd:
+    - 70
+    - 240
+    - 900
+    material: {fileID: 2100000, guid: a302dbddaa70943229bb067ffe7de7e9, type: 2}
+    materials:
+    - {fileID: 2100000, guid: a302dbddaa70943229bb067ffe7de7e9, type: 2}
+    shadowRange: 80
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 1.3, z: 0}
+      m_Extent: {x: 1.923012, y: 1.3000042, z: 0.9093976}
+    kind: hero
+  - id: hero_chef_bull
+    lods:
+    - {fileID: -2595429277331325984, guid: 77f4d313950404f5388b6d0214b91520, type: 3}
+    - {fileID: -5758394327992666568, guid: 77f4d313950404f5388b6d0214b91520, type: 3}
+    - {fileID: 5597882699310255602, guid: 77f4d313950404f5388b6d0214b91520, type: 3}
+    lodEnd:
+    - 70
+    - 240
+    - 900
+    material: {fileID: 2100000, guid: b37d481d3e8a94721928dc4a068e5ee6, type: 2}
+    materials:
+    - {fileID: 2100000, guid: b37d481d3e8a94721928dc4a068e5ee6, type: 2}
+    shadowRange: 80
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 1.7, z: 0}
+      m_Extent: {x: 1.3681413, y: 1.7000046, z: 1.3944464}
+    kind: hero
+  - id: hero_penguin_cart
+    lods:
+    - {fileID: -5016093907695354428, guid: 3759c4ee5cb7e447d942790f08f1be2d, type: 3}
+    - {fileID: 1701365231566229349, guid: 3759c4ee5cb7e447d942790f08f1be2d, type: 3}
+    - {fileID: 4453461713834373247, guid: 3759c4ee5cb7e447d942790f08f1be2d, type: 3}
+    lodEnd:
+    - 70
+    - 240
+    - 900
+    material: {fileID: 2100000, guid: fb47e365166944cb097d2d7738e2ed28, type: 2}
+    materials:
+    - {fileID: 2100000, guid: fb47e365166944cb097d2d7738e2ed28, type: 2}
+    shadowRange: 80
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 1.3, z: 0}
+      m_Extent: {x: 1.0011795, y: 1.3000034, z: 0.94092715}
+    kind: hero
+  - id: hero_purple_ghost
+    lods:
+    - {fileID: 2397616974814923017, guid: 24bde09cf77734ee1956e04249c5a827, type: 3}
+    - {fileID: 1711712664586873425, guid: 24bde09cf77734ee1956e04249c5a827, type: 3}
+    - {fileID: 7377489745310117037, guid: 24bde09cf77734ee1956e04249c5a827, type: 3}
+    lodEnd:
+    - 70
+    - 240
+    - 900
+    material: {fileID: 2100000, guid: 551e3c7007c2d4c779a5f3c74ffebe9c, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 551e3c7007c2d4c779a5f3c74ffebe9c, type: 2}
+    shadowRange: 80
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 1.1, z: 0}
+      m_Extent: {x: 1.0671823, y: 1.1000031, z: 1.0706446}
+    kind: hero
+  - id: hero_space_cat
+    lods:
+    - {fileID: 3753775208864454997, guid: 70ed9aa6aafe44771a1b324b894278c9, type: 3}
+    - {fileID: -7781585538095996553, guid: 70ed9aa6aafe44771a1b324b894278c9, type: 3}
+    - {fileID: 3625931542670392274, guid: 70ed9aa6aafe44771a1b324b894278c9, type: 3}
+    lodEnd:
+    - 70
+    - 240
+    - 900
+    material: {fileID: 2100000, guid: 4ef7b4dc8f1794a1e948d97a1e5c19f5, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 4ef7b4dc8f1794a1e948d97a1e5c19f5, type: 2}
+    shadowRange: 80
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 1.8, z: 0}
+      m_Extent: {x: 1.2484045, y: 1.8000046, z: 1.2413392}
+    kind: hero
   - id: kc_building_a
     lods:
     - {fileID: 6854071043640083243, guid: 1e1f3015cc06e451486db3c71a943684, type: 3}
@@ -351,24 +441,6 @@ MonoBehaviour:
       m_Center: {x: -0.00000023841858, y: 7.1400003, z: 0.00000023841858}
       m_Extent: {x: 5.2700195, y: 7.1400194, z: 5.533519}
     kind: building
-  - id: kc_building_j
-    lods:
-    - {fileID: -8484322946152328032, guid: 155cc56c2989143a19f18ff61f9a4061, type: 3}
-    - {fileID: -6777073025867037775, guid: 155cc56c2989143a19f18ff61f9a4061, type: 3}
-    - {fileID: 3565761228824253728, guid: 155cc56c2989143a19f18ff61f9a4061, type: 3}
-    lodEnd:
-    - 80
-    - 260
-    - 1300
-    material: {fileID: 2100000, guid: c80519f6cd6584537991b3cf0758ac08, type: 2}
-    materials:
-    - {fileID: 2100000, guid: c80519f6cd6584537991b3cf0758ac08, type: 2}
-    shadowRange: 130
-    layer: 12
-    bounds:
-      m_Center: {x: -0.00000047683716, y: 7.1952505, z: 0}
-      m_Extent: {x: 8.855271, y: 7.1952724, z: 5.695022}
-    kind: building
   - id: kc_building_k
     lods:
     - {fileID: 5999016079111510578, guid: f7392be072c2e44a6a8f3e71431495db, type: 3}
@@ -441,6 +513,62 @@ MonoBehaviour:
       m_Center: {x: -0.00000047683716, y: 10.54, z: 0}
       m_Extent: {x: 9.86003, y: 10.54003, z: 7.7350297}
     kind: building
+  - id: kc_detail_awning
+    lods:
+    - {fileID: -4140506411171969174, guid: 527c0919e9e2e4778beea201519a0b52, type: 3}
+    lodEnd:
+    - 160
+    material: {fileID: 2100000, guid: c80519f6cd6584537991b3cf0758ac08, type: 2}
+    materials:
+    - {fileID: 2100000, guid: c80519f6cd6584537991b3cf0758ac08, type: 2}
+    shadowRange: 30
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 1.7, z: 0.000000029802322}
+      m_Extent: {x: 1.7000049, y: 1.7000049, z: 0.628543}
+    kind: prop
+  - id: kc_detail_awning_wide
+    lods:
+    - {fileID: 8288987180272120927, guid: fc9d720b1c4fe4e369f27ec096629ec4, type: 3}
+    lodEnd:
+    - 160
+    material: {fileID: 2100000, guid: c80519f6cd6584537991b3cf0758ac08, type: 2}
+    materials:
+    - {fileID: 2100000, guid: c80519f6cd6584537991b3cf0758ac08, type: 2}
+    shadowRange: 30
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 1.7, z: 0.000000029802322}
+      m_Extent: {x: 3.4000065, y: 1.7000065, z: 0.6285446}
+    kind: prop
+  - id: kc_detail_parasol_a
+    lods:
+    - {fileID: 5642670670125990239, guid: 9549f4a737890444f914e8a3dbfff4c1, type: 3}
+    lodEnd:
+    - 160
+    material: {fileID: 2100000, guid: c80519f6cd6584537991b3cf0758ac08, type: 2}
+    materials:
+    - {fileID: 2100000, guid: c80519f6cd6584537991b3cf0758ac08, type: 2}
+    shadowRange: 30
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 1.9125, z: 0}
+      m_Extent: {x: 1.4722484, y: 1.9125053, z: 1.7000053}
+    kind: prop
+  - id: kc_detail_parasol_b
+    lods:
+    - {fileID: 4357083341002981801, guid: 00cd5404db24c479c864366514e64a6a, type: 3}
+    lodEnd:
+    - 160
+    material: {fileID: 2100000, guid: c80519f6cd6584537991b3cf0758ac08, type: 2}
+    materials:
+    - {fileID: 2100000, guid: c80519f6cd6584537991b3cf0758ac08, type: 2}
+    shadowRange: 30
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 1.9125, z: 0}
+      m_Extent: {x: 1.4722484, y: 1.9125053, z: 1.7000053}
+    kind: prop
   - id: kc_tower_a
     lods:
     - {fileID: 7008283447261110530, guid: 2ad53f48348034b76b4576602b12c8c6, type: 3}
@@ -1493,11 +1621,11 @@ MonoBehaviour:
       m_Center: {x: 0, y: 6.195068, z: 0}
       m_Extent: {x: 2.1477306, y: 6.1950817, z: 1.6497419}
     kind: tree
-  - id: ki_building_b
+  - id: ki_building_a
     lods:
-    - {fileID: -1096740701740677556, guid: 47d425347ff1944ec87a58a7ae9f1869, type: 3}
-    - {fileID: -6274875270290798127, guid: 47d425347ff1944ec87a58a7ae9f1869, type: 3}
-    - {fileID: -3191288584309326978, guid: 47d425347ff1944ec87a58a7ae9f1869, type: 3}
+    - {fileID: 2882294878636527819, guid: c5b0bf2d3373e421498c3b25ac183e2c, type: 3}
+    - {fileID: 3304677735107740979, guid: c5b0bf2d3373e421498c3b25ac183e2c, type: 3}
+    - {fileID: -3258186477103657184, guid: c5b0bf2d3373e421498c3b25ac183e2c, type: 3}
     lodEnd:
     - 80
     - 260
@@ -1509,13 +1637,13 @@ MonoBehaviour:
     layer: 12
     bounds:
       m_Center: {x: 0, y: 6.2475, z: 0}
-      m_Extent: {x: 8.855269, y: 6.2475204, z: 5.3635206}
+      m_Extent: {x: 8.85527, y: 6.2475204, z: 5.278521}
     kind: building
-  - id: ki_building_c
+  - id: ki_building_e
     lods:
-    - {fileID: -6555410640882990790, guid: 967b882fca1824a92899f39536fc2779, type: 3}
-    - {fileID: -4244792905228680031, guid: 967b882fca1824a92899f39536fc2779, type: 3}
-    - {fileID: -365643493679749774, guid: 967b882fca1824a92899f39536fc2779, type: 3}
+    - {fileID: -4687886960242853114, guid: 87a17f256d6964f7582dbfd6d8044b84, type: 3}
+    - {fileID: 2513709345306782549, guid: 87a17f256d6964f7582dbfd6d8044b84, type: 3}
+    - {fileID: -3379099837721613416, guid: 87a17f256d6964f7582dbfd6d8044b84, type: 3}
     lodEnd:
     - 80
     - 260
@@ -1526,26 +1654,8 @@ MonoBehaviour:
     shadowRange: 130
     layer: 12
     bounds:
-      m_Center: {x: 0, y: 5.3125, z: 0}
-      m_Extent: {x: 7.972742, y: 5.3125186, z: 8.959109}
-    kind: building
-  - id: ki_building_d
-    lods:
-    - {fileID: -217797063502881686, guid: 687505c43a7ec4b308e9addb336fa914, type: 3}
-    - {fileID: 2244760023231098954, guid: 687505c43a7ec4b308e9addb336fa914, type: 3}
-    - {fileID: 1968108112331569007, guid: 687505c43a7ec4b308e9addb336fa914, type: 3}
-    lodEnd:
-    - 80
-    - 260
-    - 1300
-    material: {fileID: 2100000, guid: e64ca8931c528498195877b16652e058, type: 2}
-    materials:
-    - {fileID: 2100000, guid: e64ca8931c528498195877b16652e058, type: 2}
-    shadowRange: 130
-    layer: 12
-    bounds:
-      m_Center: {x: 0, y: 6.011847, z: 0}
-      m_Extent: {x: 3.7552657, y: 6.011864, z: 6.035018}
+      m_Center: {x: 0, y: 7.0125, z: 0}
+      m_Extent: {x: 7.1552687, y: 7.01252, z: 5.482521}
     kind: building
   - id: ki_building_g
     lods:
@@ -1564,6 +1674,24 @@ MonoBehaviour:
     bounds:
       m_Center: {x: 0.00000023841858, y: 5.4400005, z: 0.0000009536743}
       m_Extent: {x: 7.132105, y: 5.4400177, z: 5.455267}
+    kind: building
+  - id: ki_building_i
+    lods:
+    - {fileID: 7397766708167388159, guid: e209dec633256447a918684231e805ad, type: 3}
+    - {fileID: -974021758380550962, guid: e209dec633256447a918684231e805ad, type: 3}
+    - {fileID: 1527985710200132697, guid: e209dec633256447a918684231e805ad, type: 3}
+    lodEnd:
+    - 80
+    - 260
+    - 1300
+    material: {fileID: 2100000, guid: e64ca8931c528498195877b16652e058, type: 2}
+    materials:
+    - {fileID: 2100000, guid: e64ca8931c528498195877b16652e058, type: 2}
+    shadowRange: 130
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 3.1175494, z: -0.00000023841858}
+      m_Extent: {x: 4.3695974, y: 3.1175606, z: 5.525012}
     kind: building
   - id: ki_building_j
     lods:
@@ -1600,42 +1728,6 @@ MonoBehaviour:
     bounds:
       m_Center: {x: 0, y: 3.284151, z: 0}
       m_Extent: {x: 5.537163, y: 3.2841625, z: 3.88276}
-    kind: building
-  - id: ki_building_m
-    lods:
-    - {fileID: -6288020478108837065, guid: 822f5ac25f5b2482a8ac4bb6a1077ccb, type: 3}
-    - {fileID: -7083530898011445860, guid: 822f5ac25f5b2482a8ac4bb6a1077ccb, type: 3}
-    - {fileID: 4604492356116111155, guid: 822f5ac25f5b2482a8ac4bb6a1077ccb, type: 3}
-    lodEnd:
-    - 80
-    - 260
-    - 1300
-    material: {fileID: 2100000, guid: e64ca8931c528498195877b16652e058, type: 2}
-    materials:
-    - {fileID: 2100000, guid: e64ca8931c528498195877b16652e058, type: 2}
-    shadowRange: 130
-    layer: 12
-    bounds:
-      m_Center: {x: 0, y: 6.455778, z: 0}
-      m_Extent: {x: 5.5941896, y: 6.455797, z: 7.2250195}
-    kind: building
-  - id: ki_building_o
-    lods:
-    - {fileID: 5113493945978409317, guid: 09880c87742834d9db9175ada278d98b, type: 3}
-    - {fileID: -8975502557459395465, guid: 09880c87742834d9db9175ada278d98b, type: 3}
-    - {fileID: -8090580577115488176, guid: 09880c87742834d9db9175ada278d98b, type: 3}
-    lodEnd:
-    - 80
-    - 260
-    - 1300
-    material: {fileID: 2100000, guid: e64ca8931c528498195877b16652e058, type: 2}
-    materials:
-    - {fileID: 2100000, guid: e64ca8931c528498195877b16652e058, type: 2}
-    shadowRange: 130
-    layer: 12
-    bounds:
-      m_Center: {x: 0, y: 3.9015, z: 0}
-      m_Extent: {x: 3.7552614, y: 3.9015124, z: 5.2700124}
     kind: building
   - id: ki_building_p
     lods:
@@ -2287,6 +2379,20 @@ MonoBehaviour:
       m_Center: {x: 0, y: 1.6724614, z: -0.00000011920929}
       m_Extent: {x: 1.8742565, y: 1.672468, z: 3.45578}
     kind: boat
+  - id: kw_boat_speed_c
+    lods:
+    - {fileID: 1701681551895815719, guid: b2bc75af7e5c2496fb598f0164d9d73d, type: 3}
+    lodEnd:
+    - 800
+    material: {fileID: 2100000, guid: 781f607e3f5174318a6abec270d86b47, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 781f607e3f5174318a6abec270d86b47, type: 2}
+    shadowRange: 45
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 1.3644776, z: 0}
+      m_Extent: {x: 1.8742563, y: 1.364484, z: 3.3285062}
+    kind: boat
   - id: kw_boat_speed_e
     lods:
     - {fileID: 1144566267515719276, guid: 774abb2500c1c44dc9fdee2cbd457e4f, type: 3}
@@ -2401,6 +2507,20 @@ MonoBehaviour:
       m_Center: {x: 0, y: 22.334501, z: 0}
       m_Extent: {x: 11.900101, y: 22.334602, z: 53.200108}
     kind: ship
+  - id: kyc_box_a
+    lods:
+    - {fileID: -1711107020507756233, guid: 89418a427580d400a96fc59ef333d127, type: 3}
+    lodEnd:
+    - 130
+    material: {fileID: 2100000, guid: 6bf9122b717f6414294742c8b3eac306, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 6bf9122b717f6414294742c8b3eac306, type: 2}
+    shadowRange: 15
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 0.54999995, z: 0}
+      m_Extent: {x: 0.62358046, y: 0.5500016, z: 0.6331741}
+    kind: prop
   - id: kyc_firehydrant
     lods:
     - {fileID: -3415047148218550632, guid: ca1f80d6304cc4e1dbf92cd8d2267ae3, type: 3}
@@ -2414,6 +2534,20 @@ MonoBehaviour:
     bounds:
       m_Center: {x: 0, y: 0.4, z: 0}
       m_Extent: {x: 0.24131563, y: 0.400001, z: 0.23388098}
+    kind: prop
+  - id: kyc_trash_b
+    lods:
+    - {fileID: -2830828655001519939, guid: 78e938e6d37444e6e90711df0a4d3e4f, type: 3}
+    lodEnd:
+    - 130
+    material: {fileID: 2100000, guid: 6bf9122b717f6414294742c8b3eac306, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 6bf9122b717f6414294742c8b3eac306, type: 2}
+    shadowRange: 15
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 0.5, z: 0}
+      m_Extent: {x: 0.84255296, y: 0.5000018, z: 0.87696415}
     kind: prop
   - id: palm_1
     lods:
@@ -2472,13 +2606,13 @@ MonoBehaviour:
     - {fileID: 2046622258251025511, guid: 29c3e3e0a0325407d9676b46c484cca1, type: 3}
     - {fileID: 5669927378943969906, guid: 29c3e3e0a0325407d9676b46c484cca1, type: 3}
     lodEnd:
-    - 80
-    - 260
-    - 1300
+    - 45
+    - 150
+    - 1100
     material: {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
     materials:
     - {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
-    shadowRange: 130
+    shadowRange: 90
     layer: 12
     bounds:
       m_Center: {x: 0, y: 2.257532, z: 0}
@@ -2490,13 +2624,13 @@ MonoBehaviour:
     - {fileID: 7867170469145780888, guid: f4d81adb7dce94756a479b8193482f71, type: 3}
     - {fileID: -4635203506735845866, guid: f4d81adb7dce94756a479b8193482f71, type: 3}
     lodEnd:
-    - 80
-    - 260
-    - 1300
+    - 45
+    - 150
+    - 1100
     material: {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
     materials:
     - {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
-    shadowRange: 130
+    shadowRange: 90
     layer: 12
     bounds:
       m_Center: {x: 0, y: 2.733156, z: 0}
@@ -2508,13 +2642,13 @@ MonoBehaviour:
     - {fileID: 4995074373785051823, guid: 8c19b0cdfb3fc4315a067041c3a5715f, type: 3}
     - {fileID: -1931529725679978828, guid: 8c19b0cdfb3fc4315a067041c3a5715f, type: 3}
     lodEnd:
-    - 80
-    - 260
-    - 1300
+    - 45
+    - 150
+    - 1100
     material: {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
     materials:
     - {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
-    shadowRange: 130
+    shadowRange: 90
     layer: 12
     bounds:
       m_Center: {x: 0, y: 3.2172034, z: 0}
@@ -2526,13 +2660,13 @@ MonoBehaviour:
     - {fileID: 3073797929267706560, guid: 0fbca0f72e929485c9189396488c2032, type: 3}
     - {fileID: -2999742850220293219, guid: 0fbca0f72e929485c9189396488c2032, type: 3}
     lodEnd:
-    - 80
-    - 260
-    - 1300
+    - 45
+    - 150
+    - 1100
     material: {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
     materials:
     - {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
-    shadowRange: 130
+    shadowRange: 90
     layer: 12
     bounds:
       m_Center: {x: 0, y: 2.4216063, z: 0}
@@ -2544,13 +2678,13 @@ MonoBehaviour:
     - {fileID: 2969765680683744340, guid: 376eb9494a12b4a95b40aa9267867d0c, type: 3}
     - {fileID: 5970097521670486618, guid: 376eb9494a12b4a95b40aa9267867d0c, type: 3}
     lodEnd:
-    - 80
-    - 260
-    - 1300
+    - 45
+    - 150
+    - 1100
     material: {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
     materials:
     - {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
-    shadowRange: 130
+    shadowRange: 90
     layer: 12
     bounds:
       m_Center: {x: 0, y: 3.7062001, z: 0}
@@ -2562,13 +2696,13 @@ MonoBehaviour:
     - {fileID: 3514868818248897273, guid: 77a24e3c6f5dc448d994c9fba318f3c8, type: 3}
     - {fileID: 7923220459342600762, guid: 77a24e3c6f5dc448d994c9fba318f3c8, type: 3}
     lodEnd:
-    - 80
-    - 260
-    - 1300
+    - 45
+    - 150
+    - 1100
     material: {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
     materials:
     - {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
-    shadowRange: 130
+    shadowRange: 90
     layer: 12
     bounds:
       m_Center: {x: 0, y: 3.729326, z: 0}
@@ -2580,13 +2714,13 @@ MonoBehaviour:
     - {fileID: -8344468753429459961, guid: e4c25290f4d12462490dd1d72ddf8bfd, type: 3}
     - {fileID: 7584948242830239738, guid: e4c25290f4d12462490dd1d72ddf8bfd, type: 3}
     lodEnd:
-    - 80
-    - 260
-    - 1300
+    - 45
+    - 150
+    - 1100
     material: {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
     materials:
     - {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
-    shadowRange: 130
+    shadowRange: 90
     layer: 12
     bounds:
       m_Center: {x: 0, y: 3.9744956, z: 0}
@@ -2598,13 +2732,13 @@ MonoBehaviour:
     - {fileID: -1659149535079145684, guid: f1eee6d91d2774d578315eae88909556, type: 3}
     - {fileID: 5349238746103688154, guid: f1eee6d91d2774d578315eae88909556, type: 3}
     lodEnd:
-    - 80
-    - 260
-    - 1300
+    - 45
+    - 150
+    - 1100
     material: {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
     materials:
     - {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
-    shadowRange: 130
+    shadowRange: 90
     layer: 12
     bounds:
       m_Center: {x: 0, y: 3.6942837, z: 0}
@@ -2616,13 +2750,13 @@ MonoBehaviour:
     - {fileID: 4199044390541416881, guid: 52d0f1d3c7edd479ebd35a1a68cb3ac8, type: 3}
     - {fileID: 7822413715560026114, guid: 52d0f1d3c7edd479ebd35a1a68cb3ac8, type: 3}
     lodEnd:
-    - 80
-    - 260
-    - 1300
+    - 45
+    - 150
+    - 1100
     material: {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
     materials:
     - {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
-    shadowRange: 130
+    shadowRange: 90
     layer: 12
     bounds:
       m_Center: {x: 0, y: 3.7377667, z: 0}
@@ -2634,13 +2768,13 @@ MonoBehaviour:
     - {fileID: 4447047100506193698, guid: ed2acea7eae39499580268c3c607d070, type: 3}
     - {fileID: 5826904578985888794, guid: ed2acea7eae39499580268c3c607d070, type: 3}
     lodEnd:
-    - 80
-    - 260
-    - 1300
+    - 45
+    - 150
+    - 1100
     material: {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
     materials:
     - {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
-    shadowRange: 130
+    shadowRange: 90
     layer: 12
     bounds:
       m_Center: {x: 0, y: 3.7062004, z: 0}
@@ -2652,13 +2786,13 @@ MonoBehaviour:
     - {fileID: 3180162566797146231, guid: 4f97658fb505a47538cb7d55a86051a3, type: 3}
     - {fileID: 2694653535361617789, guid: 4f97658fb505a47538cb7d55a86051a3, type: 3}
     lodEnd:
-    - 80
-    - 260
-    - 1300
+    - 45
+    - 150
+    - 1100
     material: {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
     materials:
     - {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
-    shadowRange: 130
+    shadowRange: 90
     layer: 12
     bounds:
       m_Center: {x: 0, y: 4.229881, z: 0}
@@ -2670,13 +2804,13 @@ MonoBehaviour:
     - {fileID: -7704467249152175674, guid: c868a1b7c08874972b1231e8183ca38c, type: 3}
     - {fileID: 3738045620324596376, guid: c868a1b7c08874972b1231e8183ca38c, type: 3}
     lodEnd:
-    - 80
-    - 260
-    - 1300
+    - 45
+    - 150
+    - 1100
     material: {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
     materials:
     - {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
-    shadowRange: 130
+    shadowRange: 90
     layer: 12
     bounds:
       m_Center: {x: 0, y: 3.914162, z: 0}
@@ -2688,13 +2822,13 @@ MonoBehaviour:
     - {fileID: -6945661550970622205, guid: 21074dfb3aa6b43588df263cc1e91a49, type: 3}
     - {fileID: 6869087377637484039, guid: 21074dfb3aa6b43588df263cc1e91a49, type: 3}
     lodEnd:
-    - 80
-    - 260
-    - 1300
+    - 45
+    - 150
+    - 1100
     material: {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
     materials:
     - {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
-    shadowRange: 130
+    shadowRange: 90
     layer: 12
     bounds:
       m_Center: {x: 0, y: 3.7223296, z: 0}
@@ -2706,13 +2840,13 @@ MonoBehaviour:
     - {fileID: 2849506875861845564, guid: 9d514797cbbd143d18dfe9cd4d8a8cba, type: 3}
     - {fileID: 8943287953623621658, guid: 9d514797cbbd143d18dfe9cd4d8a8cba, type: 3}
     lodEnd:
-    - 80
-    - 260
-    - 1300
+    - 45
+    - 150
+    - 1100
     material: {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
     materials:
     - {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
-    shadowRange: 130
+    shadowRange: 90
     layer: 12
     bounds:
       m_Center: {x: 0, y: 3.72233, z: 0}
@@ -2724,13 +2858,13 @@ MonoBehaviour:
     - {fileID: 8944315212156893727, guid: 90dfd07c287cf436d9804dec3f7268a9, type: 3}
     - {fileID: 8284797670571597067, guid: 90dfd07c287cf436d9804dec3f7268a9, type: 3}
     lodEnd:
-    - 80
-    - 260
-    - 1300
+    - 45
+    - 150
+    - 1100
     material: {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
     materials:
     - {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
-    shadowRange: 130
+    shadowRange: 90
     layer: 12
     bounds:
       m_Center: {x: 0, y: 3.7223294, z: 0}
@@ -2742,13 +2876,13 @@ MonoBehaviour:
     - {fileID: -4773195440243082850, guid: 04afd20f65f5f4581ba0bb637d82169f, type: 3}
     - {fileID: -2661096812740750234, guid: 04afd20f65f5f4581ba0bb637d82169f, type: 3}
     lodEnd:
-    - 80
-    - 260
-    - 1300
+    - 45
+    - 150
+    - 1100
     material: {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
     materials:
     - {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
-    shadowRange: 130
+    shadowRange: 90
     layer: 12
     bounds:
       m_Center: {x: 0, y: 3.7062004, z: 0}
@@ -2760,13 +2894,13 @@ MonoBehaviour:
     - {fileID: 540022095554553806, guid: c5f963e49cde840faa61b203bad53a2b, type: 3}
     - {fileID: -3731892916566670842, guid: c5f963e49cde840faa61b203bad53a2b, type: 3}
     lodEnd:
-    - 80
-    - 260
-    - 1300
+    - 45
+    - 150
+    - 1100
     material: {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
     materials:
     - {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
-    shadowRange: 130
+    shadowRange: 90
     layer: 12
     bounds:
       m_Center: {x: 0, y: 3.7097268, z: 0}
@@ -2778,13 +2912,13 @@ MonoBehaviour:
     - {fileID: -7142536726541198637, guid: 35013e956b3be4dda8167fd4dc32306a, type: 3}
     - {fileID: 2763844571275989530, guid: 35013e956b3be4dda8167fd4dc32306a, type: 3}
     lodEnd:
-    - 80
-    - 260
-    - 1300
+    - 45
+    - 150
+    - 1100
     material: {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
     materials:
     - {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
-    shadowRange: 130
+    shadowRange: 90
     layer: 12
     bounds:
       m_Center: {x: 0, y: 3.7097268, z: 0}
@@ -2796,13 +2930,13 @@ MonoBehaviour:
     - {fileID: -4097196591597431370, guid: 7210a50a1108f4323ac89b45e9b73b0f, type: 3}
     - {fileID: -8698974993520664369, guid: 7210a50a1108f4323ac89b45e9b73b0f, type: 3}
     lodEnd:
-    - 80
-    - 260
-    - 1300
+    - 45
+    - 150
+    - 1100
     material: {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
     materials:
     - {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
-    shadowRange: 130
+    shadowRange: 90
     layer: 12
     bounds:
       m_Center: {x: 0, y: 5.6869087, z: 0}
@@ -2814,13 +2948,13 @@ MonoBehaviour:
     - {fileID: -4533818947882316040, guid: 827df94abb6594f87b9cd72281371b1a, type: 3}
     - {fileID: -7674090223506239866, guid: 827df94abb6594f87b9cd72281371b1a, type: 3}
     lodEnd:
-    - 80
-    - 260
-    - 1300
+    - 45
+    - 150
+    - 1100
     material: {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
     materials:
     - {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
-    shadowRange: 130
+    shadowRange: 90
     layer: 12
     bounds:
       m_Center: {x: 0, y: 5.3891473, z: 0}
@@ -2832,13 +2966,13 @@ MonoBehaviour:
     - {fileID: -7281350280284530286, guid: 3f766d81f25394af6a205633125a39b5, type: 3}
     - {fileID: -1417716081658992940, guid: 3f766d81f25394af6a205633125a39b5, type: 3}
     lodEnd:
-    - 80
-    - 260
-    - 1300
+    - 45
+    - 150
+    - 1100
     material: {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
     materials:
     - {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
-    shadowRange: 130
+    shadowRange: 90
     layer: 12
     bounds:
       m_Center: {x: 0, y: 5.195528, z: -0.109873295}
@@ -2850,13 +2984,13 @@ MonoBehaviour:
     - {fileID: 5313614424461203940, guid: 0629a8fd6ed3342ee9f6171b1df109ae, type: 3}
     - {fileID: 4361249522014487576, guid: 0629a8fd6ed3342ee9f6171b1df109ae, type: 3}
     lodEnd:
-    - 80
-    - 260
-    - 1300
+    - 45
+    - 150
+    - 1100
     material: {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
     materials:
     - {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
-    shadowRange: 130
+    shadowRange: 90
     layer: 12
     bounds:
       m_Center: {x: 0, y: 6.873981, z: 0}
@@ -2868,13 +3002,13 @@ MonoBehaviour:
     - {fileID: 8169656461509540061, guid: baf01ab3d008d46e2aac8ff506d3686f, type: 3}
     - {fileID: -884117007853358352, guid: baf01ab3d008d46e2aac8ff506d3686f, type: 3}
     lodEnd:
-    - 80
-    - 260
-    - 1300
+    - 45
+    - 150
+    - 1100
     material: {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
     materials:
     - {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
-    shadowRange: 130
+    shadowRange: 90
     layer: 12
     bounds:
       m_Center: {x: 0, y: 6.8739815, z: 0}
@@ -2886,13 +3020,13 @@ MonoBehaviour:
     - {fileID: 5970052976069042050, guid: 5ee44923a2d704bdcb16f69b53de1a40, type: 3}
     - {fileID: 6063351867895319889, guid: 5ee44923a2d704bdcb16f69b53de1a40, type: 3}
     lodEnd:
-    - 80
-    - 260
-    - 1300
+    - 45
+    - 150
+    - 1100
     material: {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
     materials:
     - {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
-    shadowRange: 130
+    shadowRange: 90
     layer: 12
     bounds:
       m_Center: {x: 0, y: 6.954362, z: 0}
@@ -2904,13 +3038,13 @@ MonoBehaviour:
     - {fileID: 5799341245086707380, guid: 3105402a4e43845f5974feaf34b7e4a2, type: 3}
     - {fileID: 6089344590858294676, guid: 3105402a4e43845f5974feaf34b7e4a2, type: 3}
     lodEnd:
-    - 80
-    - 260
-    - 1300
+    - 45
+    - 150
+    - 1100
     material: {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
     materials:
     - {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
-    shadowRange: 130
+    shadowRange: 90
     layer: 12
     bounds:
       m_Center: {x: 0, y: 7.6726727, z: 0}
@@ -2922,13 +3056,13 @@ MonoBehaviour:
     - {fileID: 5041882938694881211, guid: dcf0a6e23214046bf9300f5c3140dc05, type: 3}
     - {fileID: -4419767020833554067, guid: dcf0a6e23214046bf9300f5c3140dc05, type: 3}
     lodEnd:
-    - 80
-    - 260
-    - 1300
+    - 45
+    - 150
+    - 1100
     material: {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
     materials:
     - {fileID: 2100000, guid: 42705eb1c01174400b7d657dbdb6ffae, type: 2}
-    shadowRange: 130
+    shadowRange: 90
     layer: 12
     bounds:
       m_Center: {x: 0, y: 10.534544, z: 0}

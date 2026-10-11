@@ -111,3 +111,10 @@ for n, sc in (('boat-sail-a', 2.6), ('boat-sail-b', 2.6), ('boat-speed-a', 2.1),
               ('boat-speed-e', 2.1), ('boat-speed-g', 2.1), ('boat-fishing-small', 2.3), ('boat-tug-a', 2.8), ('boat-row-small', 1.4),
               ('buoy', 1.2), ('buoy-flag', 1.2), ('ship-large', 4.0), ('ship-ocean-liner', 5.0), ('ship-cargo-a', 5.5), ('boat-house-a', 2.4)):
     add('kw_' + n.replace('-', '_'), KW + n, W, scale=sc, tags=['boat'])
+
+H = 'world/heroes'
+TR = 'tripo::'
+# Tripo3D text-to-model hero statues (W3; prompts and credits in art/raw/tripo/<id>/receipt.json): original designs that
+# nod to community mascots (docs/research/community-eggs-2026-10.md), never their art
+for n, h in (('black_bull', 2.6), ('chef_bull', 3.4), ('purple_ghost', 2.2), ('penguin_cart', 2.6), ('space_cat', 3.6)):
+    add('hero_' + n, TR + n, H, fit=('z', h), tex_max=1024, tags=['hero'], lods=(0.4, 0.12))

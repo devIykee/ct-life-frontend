@@ -102,7 +102,7 @@ Shader "CT Life/World/Water"
                 half patch = SAMPLE_TEXTURE2D(_Ripples, sampler_Ripples, ws.xz * _ReefBand.w + 0.31).r;
                 half reef = smoothstep(_ReefBand.x, _ReefBand.x + 0.6h, depth) * smoothstep(_ReefBand.y, _ReefBand.y - 1.4h, depth);
                 col = lerp(col, _Reef.rgb, reef * _ReefBand.z * (0.55h + 0.9h * patch));
-                half3 ambient = SampleSH(half3(0, 1, 0));
+                half3 ambient = CTWorldAmbient(half3(0, 1, 0));
                 col = col * (ambient * 0.85h + sun.color * 0.45h * shadow);
                 half fres = pow(1.0h - saturate(dot(n, view)), 4.0h);
                 col = lerp(col, _Sky.rgb * (ambient + sun.color * 0.3h), saturate(fres * 0.7h));
