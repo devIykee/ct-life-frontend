@@ -700,6 +700,20 @@ namespace CTLife.UI
 
         public VisualElement Content => _content;
 
+        /// <summary>
+        /// Long sheets (forms, term sheets): the content scrolls inside the sheet's 90% height so the actions stay reachable.
+        /// </summary>
+        public DuoSheet Scrolling()
+        {
+            if (_content.parent is ScrollView) return this;
+            var scroll = El.VerticalScroll("duo-sheet-scroll duo-sheet-content-scroll");
+            scroll.mode = ScrollViewMode.Vertical;
+            int index = _panel.IndexOf(_content);
+            _panel.Insert(index, scroll);
+            scroll.Add(_content);
+            return this;
+        }
+
         public DuoSheet AddContent(VisualElement e)
         {
             if (e != null) _content.Add(e);

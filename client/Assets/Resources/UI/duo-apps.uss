@@ -321,3 +321,131 @@
 /* Headings that also carry the legacy ct-h1 class (focus tests find them by it) keep the Duo sizes. */
 .ct-phone .ct-phone-glass .ct-phone-body .duo-large-title.ct-h1 { font-size: var(--duo-large-title); margin: 0; padding: 0 38px 20px; -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); }
 .ct-phone .ct-phone-glass .ct-phone-body .duo-space-title.ct-h1 { font-size: var(--duo-title2); margin: 16px 38px 6px; padding: 0; }
+
+/* ================= wave 3: Competition apps (League, Beef, Farm, Cabal, Chat, X link) ================= */
+.ct-phone .duo-comp-body { flex-shrink: 0; }
+.ct-phone .duo-comp-tags { flex-direction: row; flex-wrap: wrap; margin: 0 38px 12px; flex-shrink: 0; }
+.ct-phone .duo-comp-tags > .duo-tag { margin-right: 10px; }
+.ct-phone .duo-comp-status { color: var(--duo-orange); }
+.ct-phone .duo-comp-sheet-body { flex-shrink: 0; }
+.ct-phone .duo-sheet .duo-comp-sheet-body .duo-comp-h2 { margin-left: 8px; margin-right: 8px; margin-top: 4px; }
+.ct-phone .duo-sheet .duo-comp-sheet-body .duo-list > .duo-row { padding-left: 8px; }
+.ct-phone .duo-beef-vs { font-size: var(--duo-headline); color: var(--duo-label2); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); }
+.ct-phone .duo-comp .duo-page-body > .duo-comp-body > .duo-large-title { margin-top: 0; }
+.ct-phone .duo-xlink-avatar { width: 108px; height: 108px; border-radius: 54px; background-color: #1c1c1e; -unity-background-scale-mode: scale-and-crop; }
+.ct-phone .duo-xlink-embedded .duo-xlink-avatar { width: 88px; height: 88px; border-radius: 44px; }
+.ct-phone .duo-group-legacy .duo-xlink-embedded .duo-comp-pair { margin-left: 0; padding-right: 0; }
+.ct-phone .duo-group-legacy .duo-xlink-embedded .duo-comp-note, .ct-phone .duo-group-legacy .duo-xlink-embedded .duo-comp-actions { margin-left: 0; margin-right: 0; }
+.ct-phone .duo-group-legacy .duo-xlink-embedded .duo-empty { margin: 30px 10px; }
+/* NPC chat: Messages bubbles; the composer floats at the bottom over a fade. */
+.ct-phone .duo-npc-chat .duo-scroll-content { padding-bottom: 300px; }
+.ct-phone .duo-npc-chat .duo-thread { padding: 0 26px; }
+.ct-phone .duo-npc-chat .duo-npc-line { flex-shrink: 0; }
+.ct-phone .duo-npc-chat .duo-npc-who { font-size: var(--duo-caption); color: var(--duo-label2); -unity-font-definition: url("Fonts/Phone/Inter-Medium.ttf"); margin: 22px 0 0 20px; padding: 0; }
+.ct-phone .duo-npc-chat .duo-npc-pending { opacity: 0.55; }
+.ct-phone .duo-npc-chat .duo-npc-failed { color: var(--duo-red); }
+.ct-phone .duo-npc-chat .duo-npc-report { align-self: flex-start; font-size: var(--duo-footnote); min-height: 96px; margin: -20px 0 -20px 4px; padding: 20px 16px; }
+.ct-phone .duo-npc-chat .duo-composer { padding-left: 20px; }
+.ct-phone .duo-npc-chat .duo-npc-meta { flex-direction: row; justify-content: space-between; margin: 0 14px 6px 24px; }
+.ct-phone .duo-npc-chat .duo-npc-meta .duo-composer-error { margin: 0; flex-shrink: 1; }
+.ct-phone .duo-npc-chat .duo-npc-status { color: var(--duo-label2); }
+.ct-phone .duo-npc-chat .duo-composer-count { flex-shrink: 0; margin-left: 16px; }
+.ct-phone .duo-npc-chat .duo-comp-tabs { margin-top: 0; }
+
+/* ================= wave 3: Map, Rich List, Profile ================= */
+.ct-phone .duo-map .duo-map-district-note { margin-top: -6px; }
+.ct-phone .duo-richlist-body { flex-shrink: 0; }
+.ct-phone .duo-profile-head { align-items: center; padding: 20px 38px 30px; flex-shrink: 0; }
+.ct-phone .duo-avatar-profile { width: 200px; height: 200px; border-radius: 100px; }
+.ct-phone .duo-avatar-profile .duo-avatar-letter { font-size: 80px; }
+.ct-phone .duo-profile-head .duo-profile-name { font-size: var(--duo-title2); color: var(--duo-label); -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); letter-spacing: -1px; margin: 22px 0 0; padding: 0; -unity-text-align: middle-center; }
+.ct-phone .duo-profile-head .duo-profile-subtitle { font-size: var(--duo-subhead); color: var(--duo-label2); margin: 6px 0 0; padding: 0; }
+.ct-phone .duo-profile-tags { flex-direction: row; flex-wrap: wrap; justify-content: center; margin-top: 18px; }
+.ct-phone .duo-profile-tags > .duo-tag { margin: 4px 6px; }
+/* Small progress meter under a row title (skills, needs). */
+.ct-phone .duo-meter { height: 12px; border-radius: 6px; background-color: var(--duo-fill); margin: 14px 0 4px; overflow: hidden; }
+.ct-phone .duo-meter-fill { height: 100%; border-radius: 6px; background-color: var(--duo-blue); }
+.ct-phone .duo-meter-green .duo-meter-fill { background-color: #30c75e; }
+.ct-phone .duo-meter-orange .duo-meter-fill { background-color: var(--duo-orange); }
+.ct-phone .duo-meter-red .duo-meter-fill { background-color: var(--duo-red); }
+
+/* ================= wave 3: City Life (Home, Shop, Week, Business) ================= */
+/* Home: Health-style grouped page. */
+.ct-phone .duo-home .duo-home-where { font-size: var(--duo-headline); color: var(--duo-label); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); margin: 0 58px 4px; }
+.ct-phone .duo-home .duo-page-body > .duo-comp-note { margin: 0 58px 24px; }
+.ct-phone .duo-needs { flex-shrink: 0; }
+.ct-phone .duo-needs-summary { padding: 30px 34px 26px; }
+.ct-phone .duo-needs-summary .duo-needs-kicker { font-size: var(--duo-footnote); color: #ff6a3d; -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); letter-spacing: 0.4px; margin: 0; padding: 0; }
+.ct-phone .duo-needs-summary .duo-needs-headline { font-size: var(--duo-title2); color: var(--duo-label); -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); letter-spacing: -1px; margin: 8px 0 22px; }
+.ct-phone .duo-needs-columns { flex-direction: row; justify-content: space-between; align-items: flex-end; }
+.ct-phone .duo-needs-column { flex-grow: 1; flex-basis: 0; align-items: center; min-width: 0; }
+.ct-phone .duo-needs-column .duo-needs-column-value { font-size: var(--duo-subhead); color: var(--duo-label); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); margin: 0 0 8px; padding: 0; }
+.ct-phone .duo-needs-column-track { width: 46px; height: 150px; border-radius: 23px; background-color: var(--duo-fill); justify-content: flex-end; overflow: hidden; }
+.ct-phone .duo-needs-column-fill { width: 100%; border-radius: 23px; background-color: var(--duo-label3); }
+.ct-phone .duo-needs-ok .duo-needs-column-fill { background-color: #30c75e; }
+.ct-phone .duo-needs-low .duo-needs-column-fill { background-color: var(--duo-orange); }
+.ct-phone .duo-needs-critical .duo-needs-column-fill { background-color: var(--duo-red); }
+.ct-phone .duo-needs-column .duo-needs-column-name { font-size: var(--duo-caption); color: var(--duo-label2); margin: 10px 0 0; padding: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.ct-phone .duo-needs-summary .duo-needs-hint { font-size: var(--duo-subhead); color: var(--duo-label2); margin: 24px 0 0; white-space: normal; }
+.ct-phone .duo-needs-list .duo-row-text { min-width: 0; }
+.ct-phone .duo-needs-list .duo-meter { margin-right: 6px; }
+.ct-phone .duo-needs-value { font-size: var(--duo-headline); color: var(--duo-label); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); min-width: 64px; -unity-text-align: middle-right; margin: 0 18px 0 0; padding: 0; }
+.ct-phone .duo-needs-value-low { color: var(--duo-orange); }
+.ct-phone .duo-needs-status { margin-top: -28px; color: var(--duo-orange); }
+.ct-phone .duo-home .duo-group > .duo-comp-note { margin: 18px 28px; }
+.ct-phone .duo-home-policy { margin: 0 30px 44px; flex-shrink: 0; }
+.ct-phone .duo-home .duo-notice { margin: -28px 30px 44px; }
+.ct-phone .duo-nft { flex-shrink: 0; }
+.ct-phone .duo-nft-thumb { width: 92px; height: 92px; border-radius: 18px; background-color: var(--duo-fill); }
+.ct-phone .duo-nft-group > .duo-comp-note { margin: 18px 28px; }
+.ct-phone .duo-home .duo-nft > .duo-comp-actions { margin: -18px 30px 44px; }
+/* Shop */
+.ct-phone .duo-shop-preview { align-items: center; margin: 0 30px 10px; flex-shrink: 0; }
+.ct-phone .duo-shop-preview .duo-shop-preview-image { height: 420px; width: 100%; }
+.ct-phone .duo-shop-options { margin-top: 10px; }
+/* Week */
+.ct-phone .duo-week .duo-week-clue { font-size: var(--duo-title3); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); letter-spacing: -0.5px; margin-top: 12px; }
+.ct-phone .duo-row .duo-row-value.duo-value-positive { color: #1f9d47; }
+.ct-phone .duo-row .duo-row-value.duo-value-negative { color: var(--duo-red); }
+.ct-phone .duo-row-subtitle.duo-destructive { color: var(--duo-red); }
+.ct-phone .duo-row-subtitle.duo-value-positive { color: #1f9d47; }
+
+/* ================= wave 3: Money (Pulse, Predict, ORE) ================= */
+.ct-phone .duo-money-notice { font-size: var(--duo-footnote); color: var(--duo-label); white-space: normal; margin: 0 30px 20px; padding: 20px 26px; border-radius: 24px; background-color: rgba(10,124,255,0.08); flex-shrink: 0; }
+.ct-phone .duo-money-notice-info { color: #0a5fcc; }
+.ct-phone .duo-money-notice-warning { background-color: rgba(255,149,0,0.12); color: #9a4f00; }
+.ct-phone .duo-money-notice-danger { background-color: rgba(255,59,48,0.10); color: #c4271d; }
+.ct-phone .duo-money-notice-success { background-color: rgba(48,199,94,0.12); color: #1f7a3a; }
+.ct-phone .duo-sheet .duo-money-notice { margin: 4px 8px 14px; }
+.ct-phone .duo-money-value { font-size: var(--duo-subhead); color: var(--duo-label); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); margin: 0; padding: 0; }
+.ct-phone .duo-value-positive.duo-money-value, .ct-phone .duo-hero-value.duo-value-positive { color: #1f9d47; }
+.ct-phone .duo-value-negative.duo-money-value, .ct-phone .duo-hero-value.duo-value-negative { color: var(--duo-red); }
+.ct-phone .duo-money-ack { flex-shrink: 0; }
+.ct-phone .duo-money-tabs { margin-bottom: 14px; }
+/* Pulse */
+.ct-phone .duo-pulse .duo-chip-row { flex-wrap: wrap; }
+.ct-phone .duo-pulse-launch { margin-top: 4px; }
+.ct-phone .duo-pulse-coin .duo-scroll-content { padding-bottom: 220px; }
+.ct-phone .duo-pulse .duo-bottom-bar { height: 136px; bottom: 24px; }
+.ct-phone .duo-pulse .duo-bottom-bar-button { height: 112px; }
+.ct-phone .duo-pulse-buy, .ct-phone .duo-pulse-buy:hover { background-color: #22b35a; }
+.ct-phone .duo-pulse-sell, .ct-phone .duo-pulse-sell:hover { background-color: #ff3b30; }
+.ct-phone .duo-pulse .duo-perp-asset { margin: 0 38px 4px; }
+.ct-phone .duo-pulse .duo-perp-asset > .duo-tag { margin-left: 14px; }
+.ct-phone .duo-pulse-hero .duo-hero-label { display: none; }
+.ct-phone .duo-pulse .duo-line-chart { height: 300px; margin: 6px 0 0; flex-shrink: 0; }
+.ct-phone .duo-sheet .duo-pulse-place { margin: 18px 8px 4px; }
+/* ORE */
+.ct-phone .duo-ore-grid { flex-direction: row; flex-wrap: wrap; margin: 6px 32px 10px; flex-shrink: 0; }
+.ct-phone .duo-ore-cell { width: 20%; height: 96px; padding: 5px; }
+.ct-phone .duo-ore-cell > .duo-ore-sol {
+    flex-grow: 1; border-radius: 18px; background-color: var(--duo-fill); -unity-text-align: middle-center; font-size: var(--duo-caption);
+    color: var(--duo-label); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); margin: 0; padding: 0; white-space: nowrap; overflow: hidden;
+}
+.ct-phone .duo-ore-hot > .duo-ore-sol { background-color: rgba(255,149,0,0.22); color: #9a4f00; }
+.ct-phone .duo-ore .duo-hero-delta.duo-ore-ended { color: var(--duo-red); }
+
+/* ================= wave 3: Ventures (Ads, Builder, VC Row) ================= */
+.ct-phone .duo-ads-preview { border-radius: 24px; margin: 10px 38px; -unity-background-scale-mode: scale-to-fit; background-color: var(--duo-fill); }
+.ct-phone .duo-comp-pair .duo-comp-pair-detail { font-size: var(--duo-footnote); color: var(--duo-label2); margin: 0 0 0 16px; padding: 0; }
+.ct-phone .duo-comp .duo-page-body > .duo-comp-body > .duo-comp-section > .duo-large-title { padding-left: 38px; padding-right: 38px; }

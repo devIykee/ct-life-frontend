@@ -171,7 +171,7 @@
 .ct-phone .duo-row-subtitle { font-size: var(--duo-subhead); color: var(--duo-label2); margin: 4px 0 0; padding: 0; white-space: normal; }
 .ct-phone .duo-row-subtitle.duo-one-line { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ct-phone .duo-row-subtitle-clip { max-height: var(--duo-subhead-2l); overflow: hidden; margin-top: 4px; }
-.ct-phone .duo-row-subtitle-clip > .duo-row-subtitle { margin: 0; }
+.ct-phone .duo-row-subtitle-clip > .duo-row-subtitle { margin: 0; flex-shrink: 0; -unity-text-align: upper-left; }
 .ct-phone .duo-row-trailing { flex-direction: row; align-items: center; flex-shrink: 0; margin-left: 16px; }
 .ct-phone .duo-row-value { font-size: var(--duo-subhead); color: var(--duo-label2); margin: 0; padding: 0; }
 .ct-phone .duo-row-chevron { width: 26px; height: 26px; margin-left: 14px; color: var(--duo-label3); }
@@ -510,3 +510,103 @@
 .ct-phone .duo-sheet .duo-group-header { margin: 10px 16px 10px; }
 .ct-phone .duo-topup-note { -unity-text-align: middle-left; margin: 10px 38px 18px; }
 .ct-phone .duo-sheet .duo-topup-note { margin: 8px 16px 14px; }
+
+/* ================= wave 3: shared builders for the remaining apps ================= */
+/* Sections on the canvas (no boxes): a title, inset key/value rows, capsule actions. */
+.ct-phone .duo-comp-section { margin: 0 0 30px; flex-shrink: 0; }
+.ct-phone .duo-comp-h2 { font-size: var(--duo-title3); color: var(--duo-label); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); letter-spacing: -0.7px; white-space: normal; margin: 26px 38px 10px; padding: 0; }
+.ct-phone .duo-comp-text { font-size: var(--duo-body); color: var(--duo-label); white-space: normal; letter-spacing: -0.3px; margin: 6px 38px; padding: 0; }
+.ct-phone .duo-comp-note { font-size: var(--duo-footnote); color: var(--duo-label2); white-space: normal; margin: 6px 38px 10px; padding: 0; }
+.ct-phone .duo-comp-error { font-size: var(--duo-subhead); color: #c4271d; white-space: normal; margin: 6px 38px 10px; padding: 0; }
+.ct-phone .duo-comp-label { font-size: var(--duo-footnote); color: var(--duo-label2); letter-spacing: 0.4px; margin: 26px 38px 12px; padding: 0; }
+.ct-phone .duo-comp-pair {
+    flex-direction: row; align-items: center; justify-content: space-between; min-height: 88px; margin-left: 38px; padding: 12px 38px 12px 0;
+    border-bottom-width: 1px; border-bottom-color: var(--duo-sep); flex-shrink: 0;
+}
+.ct-phone .duo-comp-pair .duo-comp-pair-key { font-size: var(--duo-body); color: var(--duo-label); flex-shrink: 1; white-space: normal; margin: 0 20px 0 0; padding: 0; letter-spacing: -0.3px; }
+.ct-phone .duo-comp-pair .duo-comp-pair-value { font-size: var(--duo-body); color: var(--duo-label2); flex-shrink: 1; white-space: normal; -unity-text-align: middle-right; margin: 0; padding: 0; letter-spacing: -0.3px; }
+.ct-phone .duo-comp-pair .duo-value-positive { color: #1f9d47; }
+.ct-phone .duo-comp-pair .duo-value-negative { color: var(--duo-red); }
+.ct-phone .duo-comp-actions { flex-direction: row; flex-wrap: wrap; align-items: center; margin: 14px 30px 6px; flex-shrink: 0; }
+.ct-phone .duo-comp-btn {
+    min-height: 88px; margin: 6px 8px; padding: 0 36px; border-width: 0; border-radius: 44px; background-color: var(--duo-fill);
+    font-size: var(--duo-headline); color: var(--duo-blue); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); white-space: normal; -unity-text-align: middle-center;
+}
+.ct-phone .duo-comp-btn:hover { background-color: var(--duo-fill); }
+.ct-phone .duo-comp-btn:active { opacity: 0.6; }
+.ct-phone .duo-comp-btn:focus { border-width: 2px; border-color: var(--duo-blue); }
+.ct-phone .duo-comp-btn:disabled { opacity: 0.4; }
+.ct-phone .duo-comp-btn-primary, .ct-phone .duo-comp-btn-primary:hover { background-color: var(--duo-blue); color: #ffffff; }
+.ct-phone .duo-comp-btn-danger, .ct-phone .duo-comp-btn-danger:hover { background-color: rgba(255,59,48,0.10); color: var(--duo-red); }
+/* A lone primary in a section spans the column (thumb-sized). */
+.ct-phone .duo-comp-section > .duo-comp-btn, .ct-phone .duo-page-body > .duo-comp-btn, .ct-phone .duo-sheet-content > .duo-comp-btn { margin: 14px 38px 6px; }
+.ct-phone .duo-comp-tabs { margin: 0 30px 18px; flex-shrink: 0; }
+.ct-phone .duo-comp-error-block { margin: 20px 0; flex-shrink: 0; }
+.ct-phone .duo-comp .duo-field { margin: 6px 38px 14px; }
+.ct-phone .duo-sheet .duo-field { margin: 6px 8px 14px; }
+.ct-phone .duo-chip-row { flex-direction: row; flex-wrap: wrap; margin: 0 30px 10px; flex-shrink: 0; }
+.ct-phone .duo-chip {
+    min-height: 76px; margin: 6px; padding: 0 28px; border-width: 0; border-radius: 38px; background-color: var(--duo-fill);
+    font-size: var(--duo-subhead); color: var(--duo-label); -unity-font-definition: url("Fonts/Phone/Inter-Medium.ttf");
+}
+.ct-phone .duo-chip:hover { background-color: var(--duo-fill); }
+.ct-phone .duo-chip:active { opacity: 0.6; }
+.ct-phone .duo-chip:disabled { opacity: 0.4; }
+.ct-phone .duo-chip-on, .ct-phone .duo-chip-on:hover { background-color: var(--duo-blue); color: #ffffff; }
+.ct-phone .duo-sheet .duo-chip-row { margin: 0 2px 10px; }
+.ct-phone .duo-sheet .duo-comp-label { margin: 18px 8px 10px; }
+.ct-phone .duo-sheet .duo-comp-note, .ct-phone .duo-sheet .duo-comp-text, .ct-phone .duo-sheet .duo-comp-error { margin-left: 8px; margin-right: 8px; }
+.ct-phone .duo-sheet .duo-comp-pair { margin-left: 8px; padding-right: 8px; }
+.ct-phone .duo-sheet .duo-comp-actions { margin-left: 0; margin-right: 0; }
+
+/* Status tags (reference 2): only for a real server state. */
+.ct-phone .duo-tag { font-size: var(--duo-caption); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); padding: 6px 16px; margin: 0; border-radius: 20px; background-color: var(--duo-fill); color: var(--duo-label2); white-space: nowrap; }
+.ct-phone .duo-tag-green { background-color: rgba(48,199,94,0.14); color: #1f9d47; }
+.ct-phone .duo-tag-red { background-color: rgba(255,59,48,0.12); color: #c4271d; }
+.ct-phone .duo-tag-orange { background-color: rgba(255,149,0,0.14); color: #9a4f00; }
+.ct-phone .duo-tag-blue { background-color: rgba(10,124,255,0.10); color: #0a5fcc; }
+.ct-phone .duo-row-trailing > .duo-tag { margin-left: 12px; }
+
+/* Leaderboards: podium, rank rows, pinned own row (spec "Rich List / League"). */
+.ct-phone .duo-board { flex-shrink: 0; }
+.ct-phone .duo-podium { flex-direction: row; justify-content: center; align-items: flex-end; margin: 10px 30px 26px; flex-shrink: 0; }
+.ct-phone .duo-podium-spot { flex-grow: 1; flex-basis: 0; align-items: center; min-width: 0; }
+.ct-phone .duo-podium-face { align-items: center; margin-bottom: 14px; }
+.ct-phone .duo-avatar-podium { width: 128px; height: 128px; border-radius: 64px; border-width: 5px; }
+.ct-phone .duo-avatar-podium .duo-avatar-letter { font-size: 48px; }
+.ct-phone .duo-avatar-podium-1 { width: 164px; height: 164px; border-radius: 82px; border-width: 6px; }
+.ct-phone .duo-avatar-podium-1 .duo-avatar-letter { font-size: 62px; }
+.ct-phone .duo-podium-first .duo-avatar { border-color: #f5c242; }
+.ct-phone .duo-podium-second .duo-avatar { border-color: #c4c9d4; }
+.ct-phone .duo-podium-third .duo-avatar { border-color: #d89a62; }
+.ct-phone .duo-podium-badge {
+    position: absolute; bottom: -10px; width: 48px; height: 48px; border-radius: 24px; border-width: 4px; border-color: #ffffff;
+    font-size: 24px; color: #ffffff; -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); -unity-text-align: middle-center; padding: 0; margin: 0;
+}
+.ct-phone .duo-podium-first .duo-podium-badge { background-color: #e6a700; }
+.ct-phone .duo-podium-second .duo-podium-badge { background-color: #8e939e; }
+.ct-phone .duo-podium-third .duo-podium-badge { background-color: #b9733a; }
+.ct-phone .duo-podium-name { font-size: var(--duo-subhead); color: var(--duo-label); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); -unity-text-align: middle-center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; margin: 8px 6px 0; padding: 0; }
+.ct-phone .duo-podium-name.duo-podium-me { color: var(--duo-blue); }
+.ct-phone .duo-podium-value { font-size: var(--duo-footnote); color: var(--duo-label2); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); -unity-text-align: middle-center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; margin: 4px 6px 12px; padding: 0; }
+.ct-phone .duo-podium-step { align-self: stretch; margin: 0 8px; border-top-left-radius: 22px; border-top-right-radius: 22px; background-color: var(--duo-fill); align-items: center; justify-content: flex-start; padding-top: 12px; }
+.ct-phone .duo-podium-first .duo-podium-step { height: 132px; background-color: rgba(245,194,66,0.18); }
+.ct-phone .duo-podium-second .duo-podium-step { height: 96px; }
+.ct-phone .duo-podium-third .duo-podium-step { height: 72px; background-color: rgba(216,154,98,0.14); }
+.ct-phone .duo-podium-step .duo-podium-step-rank { font-size: var(--duo-title3); color: var(--duo-label2); -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); margin: 0; padding: 0; }
+.ct-phone .duo-board-rows { border-top-width: 1px; border-top-color: var(--duo-sep); }
+.ct-phone .duo-rank-lead { flex-direction: row; align-items: center; }
+.ct-phone .duo-rank-lead .duo-rank-number { width: 64px; font-size: var(--duo-subhead); color: var(--duo-label2); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); -unity-text-align: middle-left; margin: 0 8px 0 0; padding: 0; }
+.ct-phone .duo-row .duo-rank-value { color: var(--duo-label); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); }
+.ct-phone .duo-rank-me .duo-rank-number { color: var(--duo-blue); }
+.ct-phone .duo-board-pin { position: absolute; left: 26px; right: 26px; bottom: 24px; flex-shrink: 0; }
+.ct-phone .duo-board-pin-face {
+    border-radius: 58px; padding: 0 14px 0 26px; background-color: rgba(255,255,255,0.97); border-width: 1px; border-color: rgba(0,0,0,0.05);
+}
+.ct-phone .duo-board-pin-face > .duo-row > .duo-row-body { border-bottom-width: 0; }
+.ct-phone .duo-has-pin .duo-scroll-content { padding-bottom: 240px; }
+.ct-phone .duo-sheet-content-scroll { flex-shrink: 1; flex-grow: 0; min-height: 0; }
+.ct-phone .duo-sheet-content-scroll > .unity-scroll-view__content-viewport > .unity-scroll-view__content-container { padding-bottom: 8px; }
+/* Section headers: a long title wraps instead of pushing its link off the edge (XXL). */
+.ct-phone .duo-section-header > .duo-section-title { flex-shrink: 1; white-space: normal; min-width: 0; }
+.ct-phone .duo-section-header > .duo-link { flex-shrink: 0; }

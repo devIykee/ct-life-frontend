@@ -328,5 +328,65 @@ namespace CTLife.Tests
             Assert.AreEqual(DateTime.Parse("2026-10-13").ToString("ddd", System.Globalization.CultureInfo.InvariantCulture),
                 DuoTime.ListStamp(new DateTime(2026, 10, 13, 9, 0, 0), now));
         }
-    }
+    
+        // ---- wave 3: leaderboards (podium / rows / pinned own row)
+
+        private static DuoRank R(int rank, string alias, bool me = false) => new DuoRank(rank, alias, alias, "$" + rank, me);
+
+        [Test]
+        public void BoardSplitPutsTopThreeOnThePodiumAndTheRestInRows()
+        {
+            var podium = new System.Collections.Generic.List<DuoRank>();
+            var rest = new System.Collections.Generic.List<DuoRank>();
+            DuoBoard.Split(new[] { R(1, "a"), R(2, "b"), R(3, "c"), R(4, "d"), R(5, "e") }, podium, rest);
+            Assert.AreEqual(new[] { "a", "b", "c" }, podium.Select(p => p.Alias).ToArray());
+            Assert.AreEqual(new[] { "d", "e" }, rest.Select(p => p.Alias).ToArray());
+        }
+
+        [Test]
+        public void BoardSplitHandlesShortBoardsTiesAndPagesThatDoNotStartAtOne()
+        {
+            var podium = new System.Collections.Generic.List<DuoRank>();
+            var rest = new System.Collections.Generic.List<DuoRank>();
+            DuoBoard.Split(new[] { R(1, "a"), R(2, "b") }, podium, rest);
+            Assert.AreEqual(2, podium.Count);
+            Assert.AreEqual(0, rest.Count);
+            // A tie at 2 still uses the server's ranks; nothing is re-ranked.
+            DuoBoard.Split(new[] { R(1, "a"), R(2, "b"), R(2, "c"), R(4, "d") }, podium, rest);
+            Assert.AreEqual(new[] { 1, 2, 2 }, podium.Select(p => p.Rank).ToArray());
+            Assert.AreEqual(new[] { "d" }, rest.Select(p => p.Alias).ToArray());
+            // A later page (starts at #21) gets no podium.
+            DuoBoard.Split(new[] { R(21, "u"), R(22, "v") }, podium, rest);
+            Assert.AreEqual(0, podium.Count);
+            Assert.AreEqual(2, rest.Count);
+            DuoBoard.Split(null, podium, rest);
+            Assert.AreEqual(0, podium.Count + rest.Count);
+        }
+
+        [Test]
+        public void BoardPinsOnlyARealOwnRow()
+        {
+            Assert.IsFalse(DuoBoard.ShouldPin(null));
+            Assert.IsFalse(DuoBoard.ShouldPin(R(0, "me", true)));
+            Assert.IsTrue(DuoBoard.ShouldPin(R(42, "me", true)));
+        }
+
+        [Test]
+        public void BoardBuildsPodiumRowsAndPin()
+        {
+            var board = DuoBoard.Board(new[] { R(1, "a"), R(2, "b"), R(3, "c"), R(4, "d", true) }, "test-board");
+            Assert.IsNotNull(board.Q("duo-podium"));
+            Assert.AreEqual(3, board.Query(className: "duo-podium-spot").ToList().Count(e => !e.ClassListContains("duo-podium-empty")));
+            Assert.AreEqual(1, board.Query<DuoRow>().ToList().Count);
+            Assert.IsTrue(board.Q<DuoRow>().ClassListContains("duo-rank-me"));
+            var page = new VisualElement();
+            DuoBoard.PinMe(page, R(4, "d", true), "You");
+            DuoBoard.PinMe(page, R(4, "d", true), "You");
+            Assert.AreEqual(1, page.Query(className: "duo-board-pin").ToList().Count, "re-pinning replaces the old pin");
+            Assert.IsTrue(page.ClassListContains("duo-has-pin"));
+            DuoBoard.Unpin(page);
+            Assert.IsNull(page.Q(className: "duo-board-pin"));
+            Assert.IsFalse(page.ClassListContains("duo-has-pin"));
+        }
+}
 }
