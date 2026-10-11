@@ -11,6 +11,8 @@ namespace CTLife.SocialFeatures
     /// with CT post-format starters (gm, thread, call, PnL, rekt, journal; fictional tickers), format badges on posts, scam
     /// hints on "drop your wallet" giveaways, and per-post Follow, Message, Tip (#28), Report and Block.
     /// Posting never earns rewards (X developer policy forbids pay-to-engage; the project keeps that ban in-game too).
+    /// Duo layout (spec Timeline): sticky tabs with a blue underline, posts as rows with hairlines, ticker chips, an
+    /// action row, and a floating compose button that opens the composer in a sheet.
     /// </summary>
     public sealed class TimelineApp : SocialApp
     {
@@ -18,6 +20,7 @@ namespace CTLife.SocialFeatures
         public override string Title => SocialStrings.T("feed.title");
         public override string Color => "#2d98da";
         public override string Feature => Features.Feed;
+        public override DuoChrome Chrome => DuoChrome.Plain;
 
         /// <summary>Deep link from a profile card: open the tip sheet for this player.</summary>
         public static string PendingTipUser, PendingTipName;
@@ -32,44 +35,91 @@ namespace CTLife.SocialFeatures
         private sealed class View : SocialView
         {
             private readonly TimelineController _t;
+            private readonly VisualElement _frame;
+            private readonly Button _tabGlobal, _tabFollowing;
             private readonly TextField _compose;
             private readonly Label _left, _composeMsg;
+            private readonly VisualElement _composer;
+            private Button _postButton;
+            private DuoSheet _composeSheet;
             private string _draft = "";
-            private string _tipFor, _moreFor, _tipAmount = "", _tipSig = "", _tipMsg;
-            private bool _tipBusy, _awaitingPost;
-            private RetainedKey _tipKey = new RetainedKey(), _sigKey = new RetainedKey();
-
-            private string _tipUser, _tipUserName;
+            private bool _awaitingPost;
 
             public View(SocialHub hub, PhoneShell phone, string tipUser, string tipName) : base(hub, phone)
             {
                 _t = hub.Timeline;
-                Root.AddToClassList("ct-social-timeline");
-                if (SocialWire.IsSafeId(tipUser) && !SocialWire.SameId(tipUser, hub.Me)) { _tipUser = tipUser; _tipUserName = tipName ?? hub.Names.Name(tipUser); }
-                _compose = SocialUi.Field("feed.compose", _t.PendingPost ?? "", FeedTimeline.MaxLength + 40, v => { _draft = v; UpdateLeft(); }, multiline: true);
+                Root.RemoveFromClassList("ct-app-page");
+                Root.RemoveFromClassList("ct-social");
+                Root.AddToClassList("duo-scroll");
+                Root.contentContainer.AddToClassList("duo-scroll-content");
+                _frame = El.Div("duo-page duo-timeline");
+                _frame.name = "timeline-frame";
+                _frame.Add(Root);
+
+                // Sticky top: nav + For you / Following with the blue underline.
+                var nav = new DuoNav();
+                nav.SetTitle(SocialStrings.T("feed.title"));
+                nav.SetCollapsed(true, instant: true);
+                nav.AddLeft(DuoGlyph.Kind.Back, SocialStrings.T("common.back"), () => Phone?.Back(), "timeline-back");
+                nav.Right.Add(Duo.Circle(new UiIcon("rotate"), SocialStrings.T("common.refresh"), () => _t.Refresh(), "social-common-refresh"));
+                _tabGlobal = El.Btn(SocialStrings.T("feed.global"), () => _t.SetScope("global"), "duo-tab");
+                _tabGlobal.name = "timeline-tab-global";
+                _tabFollowing = El.Btn(SocialStrings.T("feed.following"), () => _t.SetScope("following"), "duo-tab");
+                _tabFollowing.name = "timeline-tab-following";
+                foreach (var tab in new[] { _tabGlobal, _tabFollowing }) tab.Add(El.PassThrough(El.Div("duo-tab-underline")));
+                var top = El.Div("duo-timeline-top", nav, El.Div("duo-tabs", _tabGlobal, _tabFollowing));
+                top.pickingMode = PickingMode.Ignore;
+                _frame.Add(top);
+
+                // The composer (persistent; shown in a sheet from the floating button).
+                _compose = new TextField { maxLength = FeedTimeline.MaxLength + 40, multiline = true, isDelayed = false, value = _t.PendingPost ?? "" };
+                _compose.name = "timeline-compose";
+                _compose.AddToClassList("duo-field");
+                _compose.AddToClassList("duo-compose-field");
+                _compose.textEdition.placeholder = SocialStrings.T("feed.placeholder");
+                _compose.RegisterValueChangedCallback(e => { _draft = e.newValue ?? ""; UpdateLeft(); });
                 _draft = _compose.value;
-                _left = SocialUi.Small("");
-                _composeMsg = SocialUi.Small("");
-                var starters = SocialUi.Row();
-                starters.AddToClassList("ct-social-formats");
+                _left = El.Text("", "duo-compose-left");
+                _composeMsg = El.Text("", "duo-compose-msg");
+                var starters = El.Div("duo-compose-starters");
                 foreach (var k in PostKinds.Starters)
                 {
                     var kind = k;
-                    starters.Add(SocialUi.Chip(SocialStrings.T("feed.kind." + kind), () => { _draft = SocialStrings.T("feed.starter." + kind); _compose.value = _draft; }, false));
+                    var pill = Duo.Pill(SocialStrings.T("feed.kind." + kind), () => { _draft = SocialStrings.T("feed.starter." + kind); _compose.value = _draft; });
+                    pill.name = "timeline-starter-" + kind;
+                    starters.Add(pill);
                 }
-                Header.Add(SocialUi.H1(SocialStrings.T("feed.title")));
-                var composer = SocialUi.Composer(_compose, _left, SocialUi.Action("feed.post", "send", Post, true));
-                composer.Insert(1, starters);
-                composer.Add(_composeMsg);
-                Header.Add(composer);
-                Header.Add(SocialUi.Small(SocialStrings.T("feed.notAdvice")));
+                _postButton = El.Btn(SocialStrings.T("feed.post"), Post, "duo-sheet-primary");
+                _postButton.name = "social-feed-post";
+                _composer = El.Div("duo-composer-sheet", _compose, El.Div("duo-compose-meta", _left, El.Div("ct-grow")), _composeMsg,
+                    Duo.GroupHeader(SocialStrings.T("feed.starters")), starters, _postButton,
+                    Duo.Footnote(SocialStrings.T("feed.notAdvice")));
                 UpdateLeft();
+
+                var fab = new Button(OpenComposer) { name = "timeline-compose-button", tooltip = SocialStrings.T("feed.newPost") };
+                fab.AddToClassList("duo-fab");
+                Duo.AddShadow(fab, "fab");
+                fab.Add(El.PassThrough(El.Div("duo-fab-face", new DuoGlyph(DuoGlyph.Kind.Plus))));
+                _frame.Add(fab);
+
+                if (SocialWire.IsSafeId(tipUser) && !SocialWire.SameId(tipUser, hub.Me))
+                {
+                    var user = tipUser; var name = tipName ?? hub.Names.Name(tipUser);
+                    _frame.RegisterCallback<AttachToPanelEvent>(OnceTip);
+                    void OnceTip(AttachToPanelEvent e)
+                    {
+                        _frame.UnregisterCallback<AttachToPanelEvent>(OnceTip);
+                        _frame.schedule.Execute(() => TipSheet(user, name));
+                    }
+                }
                 _t.Watch(true);
             }
 
+            public override VisualElement Container => _frame;
+
             public override void Dispose()
             {
-                if (!Disposed) _t.Watch(false);
+                if (!Disposed) { _t.Watch(false); _composeSheet?.Close(); }
                 base.Dispose();
             }
 
@@ -77,13 +127,27 @@ namespace CTLife.SocialFeatures
             {
                 var left = FeedTimeline.Remaining(_draft);
                 _left.text = SocialStrings.F("feed.left", left);
-                _left.EnableInClassList("ct-error", left < 0);
+                _left.EnableInClassList("duo-compose-over", left < 0);
+            }
+
+            private void OpenComposer()
+            {
+                if (Disposed) return;
+                _composeSheet?.Close();
+                _composer.RemoveFromHierarchy();
+                _composeSheet = new DuoSheet(SocialStrings.T("feed.newPost"));
+                _composeSheet.name = "timeline-compose-sheet";
+                _composeSheet.AddContent(_composer);
+                var sheet = _composeSheet;
+                _composeSheet.Closed += () => { if (_composeSheet == sheet) _composeSheet = null; };
+                _composeSheet.Show(_frame);
             }
 
             private void Post()
             {
                 var err = _t.Post(_draft);
                 _composeMsg.text = err == null ? "" : SocialStrings.T(err);
+                _composeMsg.EnableInClassList("duo-compose-error", err != null);
                 _awaitingPost = err == null;
                 MarkDirty();
             }
@@ -94,112 +158,166 @@ namespace CTLife.SocialFeatures
                 if (_awaitingPost && !_t.Posting)
                 {
                     _awaitingPost = false;
-                    if (_t.PendingPost == null && _t.Message == "feed.posted") { _compose.SetValueWithoutNotify(""); _draft = ""; UpdateLeft(); }
+                    if (_t.PendingPost == null && _t.Message == "feed.posted")
+                    {
+                        _compose.SetValueWithoutNotify(""); _draft = ""; UpdateLeft();
+                        _composeSheet?.Close();
+                    }
                 }
-                _compose.SetEnabled(_t.PendingPost == null && !_t.Posting);
+                bool editable = _t.PendingPost == null && !_t.Posting;
+                _compose.SetEnabled(editable);
+                _postButton.SetEnabled(editable);
+                _postButton.text = SocialStrings.T(_t.Posting ? "feed.posting" : "feed.post");
+                _tabGlobal.EnableInClassList("duo-tab-on", _t.Scope == "global");
+                _tabFollowing.EnableInClassList("duo-tab-on", _t.Scope == "following");
 
-                var scope = SocialUi.Row(
-                    SocialUi.Chip(SocialStrings.T("feed.global"), () => _t.SetScope("global"), _t.Scope == "global"),
-                    SocialUi.Chip(SocialStrings.T("feed.following"), () => _t.SetScope("following"), _t.Scope == "following"),
-                    El.Div("ct-grow"), SocialUi.Action("common.refresh", "rotate", _t.Refresh));
-                scope.AddToClassList("ct-social-scope");
-                Body.Add(scope);
-                if (_tipUser != null)
-                {
-                    Body.Add(TipPanel(_tipUser, _tipUserName));
-                    Body.Add(SocialUi.Ghost("common.close", () => { _tipUser = null; _tipMsg = null; MarkDirty(); }));
-                }
-                if (!Features.IsAvailable(Features.Feed)) Body.Add(SocialUi.Notice(SocialStrings.T("feed.degraded"), "error"));
+                if (!Features.IsAvailable(Features.Feed)) Body.Add(Duo.Notice(SocialStrings.T("feed.degraded"), Duo.Tone.Danger));
                 if (_t.Message != null)
                 {
-                    Body.Add(SocialUi.Notice(SocialStrings.T(_t.Message), _t.Message == "feed.postUnknown" ? "warn" : "info"));
+                    Body.Add(Duo.Notice(SocialStrings.T(_t.Message), _t.Message == "feed.postUnknown" ? Duo.Tone.Warning : Duo.Tone.Info));
                     if (_t.PendingPost != null)
-                        Body.Add(SocialUi.Row(SocialUi.Btn("feed.postRetry", Post, true), SocialUi.Ghost("feed.forget", _t.ForgetPendingPost)));
+                    {
+                        var retry = Duo.Pill(SocialStrings.T("feed.postRetry"), Post, Duo.PillKind.Primary);
+                        retry.name = "social-feed-postRetry";
+                        Body.Add(El.Div("duo-topup-actions", retry, Duo.Pill(SocialStrings.T("feed.forget"), _t.ForgetPendingPost)));
+                    }
                 }
-                if (_t.Error != null) Body.Add(SocialUi.Notice(SocialStrings.T(_t.Error), "error"));
+                if (_t.Error != null) Body.Add(Duo.Notice(SocialStrings.T(_t.Error), Duo.Tone.Danger));
                 var posts = _t.Visible;
-                if (_t.Loading && !_t.Feed.Loaded) { Body.Add(SocialUi.Copy("common.loading")); return; }
-                if (posts.Count == 0) { Body.Add(SocialUi.Empty("timeline", SocialStrings.T(_t.Scope == "following" ? "feed.noneFollowing" : "feed.none"))); return; }
-                foreach (var p in posts.Take(100)) RenderPost(p);
+                if (_t.Loading && !_t.Feed.Loaded) { Body.Add(Duo.Footnote(SocialStrings.T("common.loading"))); return; }
+                if (posts.Count == 0) { Body.Add(Duo.Empty(SocialStrings.T(_t.Scope == "following" ? "feed.noneFollowing" : "feed.none"))); return; }
+                var list = El.Div("duo-feed");
+                foreach (var p in posts.Take(100)) list.Add(RenderPost(p));
+                Body.Add(list);
             }
 
-            private void RenderPost(FeedPostRow p)
+            private VisualElement RenderPost(FeedPostRow p)
             {
                 var author = p.UserId;
                 var mine = SocialWire.SameId(author, Hub.Me);
                 var name = string.IsNullOrWhiteSpace(p.Alias) ? Hub.Names.Name(author) : p.Alias;
-                var head = SocialUi.Row(SocialUi.Avatar(name), El.Div("ct-grow",
-                    SocialUi.H2(mine ? SocialStrings.F("common.you", name) : name), SocialUi.Small(Ago.Short(p.AtMs, ServerClock.NowMs))));
-                head.AddToClassList("ct-social-post-head");
+                var head = El.Div("duo-post-head",
+                    El.Text(mine ? SocialStrings.F("common.you", name) : name, "duo-post-name"),
+                    El.Text("· " + Ago.Short(p.AtMs, ServerClock.NowMs), "duo-post-time"));
                 var kind = PostKinds.Detect(p.Text);
-                if (kind != PostKind.Plain) head.Add(SocialUi.Status(SocialStrings.T("feed.kind." + kind), "info"));
-                var card = SocialUi.Card(head, SocialUi.Text(p.Text));
-                card.AddToClassList("ct-social-post");
+                if (kind != PostKind.Plain) head.Add(El.Text(SocialStrings.T("feed.kind." + kind), "duo-post-kind" + (kind == PostKind.Giveaway ? " duo-post-kind-warn" : "")));
+                var body = El.Div("duo-post-body", head, SocialUi.Text(p.Text, "duo-post-text"));
                 var tickers = PostKinds.Tickers(p.Text);
-                if (tickers.Count > 0) card.Add(SocialUi.Small(string.Join("  ", tickers)));
+                if (tickers.Count > 0)
+                {
+                    var chips = El.Div("duo-post-chips");
+                    foreach (var t in tickers.Take(6)) chips.Add(El.Div("duo-coin-chip", El.Div("duo-coin-dot"), El.Text(t, "duo-coin-chip-text")));
+                    body.Add(chips);
+                }
                 var flag = SocialUi.Flag(p.Text);
-                if (flag != null && !mine) card.Add(flag);
+                if (flag != null && !mine) body.Add(El.Text(flag.text, "duo-post-flag"));
                 if (!mine)
                 {
-                    var follow = SocialUi.Action(_t.Following(author) ? "feed.unfollow" : "feed.follow", "contacts", () => _t.ToggleFollow(author));
+                    bool following = _t.Following(author);
+                    var follow = PostAction(following ? "feed.unfollow" : "feed.follow", "contacts", () => _t.ToggleFollow(author));
                     follow.SetEnabled(!_t.FollowBusy(author));
-                    var actions = SocialUi.Row(follow,
-                        SocialUi.Action("feed.message", "chat", () => { MessagesApp.PendingPeer = author; MessagesApp.PendingAlias = p.Alias; Phone?.Open("messages"); }),
-                        SocialUi.Action("feed.tip", "cash", () => { _tipFor = _tipFor == p.PostId ? null : p.PostId; _tipMsg = null; _tipKey = new RetainedKey(); _sigKey = new RetainedKey(); MarkDirty(); }),
-                        SocialUi.Action("feed.more", "menu", () => { _moreFor = _moreFor == p.PostId ? null : p.PostId; MarkDirty(); }));
-                    actions.AddToClassList("ct-social-post-actions");
-                    card.Add(actions);
-                    if (_tipFor == p.PostId) card.Add(TipPanel(author, name));
-                    if (_moreFor == p.PostId)
-                        card.Add(SocialUi.ReportPanel(name, reason => { _moreFor = null; Hub.Report("post", p.PostId, reason, null); MarkDirty(); }, () => { _moreFor = null; MarkDirty(); }));
-                    if (_moreFor == p.PostId) card.Add(SocialUi.Danger("common.block", () => { _moreFor = null; Hub.Block(author, null); }));
+                    follow.EnableInClassList("duo-post-action-on", following);
+                    var actions = El.Div("duo-post-actions",
+                        PostAction("feed.message", "chat", () => { MessagesApp.PendingPeer = author; MessagesApp.PendingAlias = p.Alias; Phone?.Open("messages"); }),
+                        PostAction("feed.tip", "cash", () => TipSheet(author, name)),
+                        follow,
+                        PostAction("feed.more", "menu", () => MoreSheet(p, author, name)));
+                    body.Add(actions);
                 }
-                Body.Add(card);
+                var row = El.Div("duo-post", Duo.Avatar(name, author, "duo-avatar-post"), body);
+                row.name = "timeline-post-" + p.PostId;
+                return row;
+            }
+
+            private static Button PostAction(string key, string icon, Action clicked)
+            {
+                var b = El.Btn("", clicked, "duo-post-action");
+                b.name = "social-" + key.Replace('.', '-');
+                b.tooltip = SocialStrings.T(key);
+                b.Add(El.PassThrough(new UiIcon(icon)));
+                b.Add(El.PassThrough(El.Text(SocialStrings.T(key), "duo-post-action-label")));
+                return b;
+            }
+
+            private void MoreSheet(FeedPostRow p, string author, string name)
+            {
+                var sheet = new DuoSheet(SocialStrings.F("common.reportTitle", name), SocialStrings.T("common.reportWhy"));
+                var reasons = Services.TryGet<ConfigStore>(out var cfg) ? cfg.Registries.ReportReasons : null;
+                if (reasons != null)
+                    foreach (var r in reasons)
+                    {
+                        var id = r.id;
+                        sheet.AddOption(Strings.ReportReason(r.id, r.name), () => { Hub.Report("post", p.PostId, id, null); MarkDirty(); });
+                    }
+                sheet.AddOption(SocialStrings.T("common.block"), () => Hub.Block(author, null), destructive: true, name: "timeline-block");
+                sheet.AddSecondary(SocialStrings.T("common.cancel"));
+                sheet.Show(_frame);
             }
 
             /// <summary>Tip sheet (#28): Cash (game money, server-capped daily) or a record of a wallet-to-wallet tip.</summary>
-            private VisualElement TipPanel(string userId, string name)
+            private void TipSheet(string userId, string name)
             {
-                var panel = SocialUi.Card(SocialUi.H2(SocialStrings.F("tip.title", name)));
-                panel.Add(SocialUi.Eyebrow("tip.cash"));
-                panel.Add(SocialUi.Small(SocialStrings.T("tip.cashHint")));
+                if (Disposed) return;
+                var sheet = new DuoSheet(SocialStrings.F("tip.title", name));
+                sheet.name = "timeline-tip-sheet";
+                var panel = El.Div("duo-tip");
+                string amount = "", signature = "";
+                bool busy = false;
+                var message = El.Text("", "duo-compose-msg");
+                panel.Add(Duo.GroupHeader(SocialStrings.T("tip.cash")));
+                panel.Add(Duo.Footnote(SocialStrings.T("tip.cashHint"), "duo-topup-note"));
                 var bal = _t.BalanceCents;
-                if (bal.HasValue) panel.Add(SocialUi.Small(SocialStrings.F("tip.balance", CashInput.Format(bal.Value))));
+                if (bal.HasValue) panel.Add(Duo.Footnote(SocialStrings.F("tip.balance", CashInput.Format(bal.Value)), "duo-topup-note"));
                 var cap = _t.TipCapCents;
-                panel.Add(SocialUi.Small(cap.HasValue ? SocialStrings.F("tip.capKnown", CashInput.Format(cap.Value)) : SocialStrings.T("tip.capServer")));
-                panel.Add(SocialUi.Field("tip.amount", _tipAmount, 12, v => _tipAmount = v));
-                var send = SocialUi.Btn("tip.send", () =>
+                panel.Add(Duo.Footnote(cap.HasValue ? SocialStrings.F("tip.capKnown", CashInput.Format(cap.Value)) : SocialStrings.T("tip.capServer"), "duo-topup-note"));
+                var amountField = new TextField { maxLength = 12, isDelayed = false, name = "tip-amount" };
+                amountField.AddToClassList("duo-field");
+                amountField.textEdition.placeholder = SocialStrings.T("tip.amount");
+                amountField.RegisterValueChangedCallback(e => amount = e.newValue);
+                panel.Add(amountField);
+                var tipKey = new RetainedKey();
+                var sigKey = new RetainedKey();
+                Button send = null, record = null;
+                void Busy(bool on) { busy = on; send.SetEnabled(!on); record.SetEnabled(!on); }
+                send = El.Btn(SocialStrings.T("tip.send"), () =>
                 {
-                    _tipBusy = true; _tipMsg = null; MarkDirty();
-                    var amount = _tipAmount;
-                    _t.TipCash(userId, amount, _tipKey, err =>
+                    if (busy) return;
+                    Busy(true); message.text = "";
+                    _t.TipCash(userId, amount, tipKey, err =>
                     {
-                        _tipBusy = false;
-                        _tipMsg = err == null ? SocialStrings.F("tip.sent", name) : SocialStrings.T(err);
-                        if (err == null) { _tipAmount = ""; _tipKey = new RetainedKey(); }
-                        MarkDirty();
+                        Busy(false);
+                        message.text = err == null ? SocialStrings.F("tip.sent", name) : SocialStrings.T(err);
+                        if (err == null) { amount = ""; amountField.SetValueWithoutNotify(""); tipKey = new RetainedKey(); }
                     });
-                }, true);
-                send.SetEnabled(!_tipBusy);
+                }, "duo-sheet-primary");
+                send.name = "social-tip-send";
                 panel.Add(send);
-                panel.Add(SocialUi.Eyebrow("tip.onchain"));
-                panel.Add(SocialUi.Small(SocialStrings.T("tip.onchainHint")));
-                panel.Add(SocialUi.Field("tip.signature", _tipSig, 100, v => _tipSig = v));
-                var record = SocialUi.Btn("tip.record", () =>
+                panel.Add(Duo.GroupHeader(SocialStrings.T("tip.onchain")));
+                panel.Add(Duo.Footnote(SocialStrings.T("tip.onchainHint"), "duo-topup-note"));
+                var sigField = new TextField { maxLength = 100, isDelayed = false, name = "tip-signature" };
+                sigField.AddToClassList("duo-field");
+                sigField.textEdition.placeholder = SocialStrings.T("tip.signature");
+                sigField.RegisterValueChangedCallback(e => signature = e.newValue);
+                panel.Add(sigField);
+                record = El.Btn(SocialStrings.T("tip.record"), () =>
                 {
-                    _tipBusy = true; _tipMsg = null; MarkDirty();
-                    _t.RecordOnchainTip(userId, _tipSig, _sigKey, err =>
+                    if (busy) return;
+                    Busy(true); message.text = "";
+                    _t.RecordOnchainTip(userId, signature, sigKey, err =>
                     {
-                        _tipBusy = false;
-                        _tipMsg = SocialStrings.T(err ?? "tip.recorded");
-                        if (err == null) { _tipSig = ""; _sigKey = new RetainedKey(); }
-                        MarkDirty();
+                        Busy(false);
+                        message.text = SocialStrings.T(err ?? "tip.recorded");
+                        if (err == null) { signature = ""; sigField.SetValueWithoutNotify(""); sigKey = new RetainedKey(); }
                     });
-                });
-                record.SetEnabled(!_tipBusy);
+                }, "duo-sheet-secondary");
+                record.name = "social-tip-record";
                 panel.Add(record);
-                if (_tipMsg != null) panel.Add(SocialUi.Notice(_tipMsg));
-                return panel;
+                panel.Add(message);
+                var scroll = El.VerticalScroll("duo-sheet-scroll");
+                scroll.Add(panel);
+                sheet.AddContent(scroll);
+                sheet.AddSecondary(SocialStrings.T("common.close"));
+                sheet.Show(_frame);
             }
         }
     }

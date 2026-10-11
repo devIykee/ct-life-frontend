@@ -65,6 +65,9 @@ namespace CTLife.SocialFeatures
 
             // ---- Spaces Studio (#23)
             ["spaces.title"] = "Spaces",
+            ["spaces.liveBadge"] = "LIVE",
+            ["spaces.hostedBy"] = "Hosted by {0}",
+            ["spaces.leaveShort"] = "Leave",
             ["spaces.heading"] = "Spaces Studio",
             ["spaces.intro"] = "Live audio rooms. Everyone joins muted as a listener; tap Request to ask the host for the mic.",
             ["spaces.live"] = "Live now",
@@ -137,6 +140,16 @@ namespace CTLife.SocialFeatures
 
             // ---- calls (#24)
             ["calls.title"] = "Calls",
+            ["calls.favourites"] = "Favourites",
+            ["calls.contactsSection"] = "Contacts",
+            ["calls.kind.outgoing"] = "Outgoing",
+            ["calls.kind.incoming"] = "Incoming",
+            ["calls.kind.missed"] = "Missed",
+            ["calls.paidTag"] = "paid",
+            ["calls.startCount"] = "Video call · {0}",
+            ["calls.callNow"] = "Video call",
+            ["calls.person"] = "Options",
+            ["calls.message"] = "Message",
             ["calls.heading"] = "Calls",
             ["calls.intro"] = "Free video calls with up to 7 people. Calls are never recorded.",
             ["calls.contacts"] = "People",
@@ -311,6 +324,8 @@ namespace CTLife.SocialFeatures
 
             // ---- Timeline (#27)
             ["feed.title"] = "Timeline",
+            ["feed.newPost"] = "New post",
+            ["feed.placeholder"] = "What's happening on CT?",
             ["feed.global"] = "For you",
             ["feed.following"] = "Following",
             ["feed.compose"] = "What's happening on CT? (280 max)",

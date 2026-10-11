@@ -75,7 +75,7 @@ namespace CTLife.EditorTools
             public ScrollView Root { get; private set; }
             public bool Thread;
             public override string Id => _id;
-            public override DuoChrome Chrome => _id == "messages" ? DuoChrome.Plain : DuoChrome.Legacy;
+            public override DuoChrome Chrome => DuoChrome.Plain;
             public override string Title => SocialStrings.T(_id == "messages" ? "dm.title" : _id == "timeline" ? "feed.title" : _id + ".title");
             public FixtureApp(string id, string viewName, SocialHub hub) { _id = id; _viewName = viewName; _hub = hub; }
             public override VisualElement Open()
@@ -205,13 +205,13 @@ namespace CTLife.EditorTools
                 typeof(CallController).GetProperty(nameof(CallController.Active), Instance).SetValue(hub.Calls, null);
 
                 await Capture(timeline, "timeline-composer");
-                var scopeLabel = timeline.Root.Q(className: "ct-social-scope").Query<Button>(className: "ct-chip").First();
+                var scopeLabel = timeline.Root.parent.Q<Button>("timeline-tab-global");
                 float scopeTextWidth = scopeLabel.MeasureTextSize(scopeLabel.text, 0, VisualElement.MeasureMode.Undefined, 0, VisualElement.MeasureMode.Undefined).x;
                 expect(!FitsOneLine(20f, scopeTextWidth), "short-label measurement rejects the former collapsed tab width");
                 timeline.Root.scrollOffset = new Vector2(0, timeline.Root.Q(className: "ct-social-header").layout.height);
                 await shot("duo-social-timeline-long-name", .3f);
                 CheckShortLabels(timeline.Root, "timeline-long-name", expect, (JArray)report["shortLabelFit"], (JArray)report["hiddenShortLabels"]);
-                var head = timeline.Root.Q(className: "ct-social-post-head");
+                var head = timeline.Root.Q(className: "duo-post-head");
                 expect(head != null, "the shipping feed parser produced the long-name post");
                 if (head != null)
                 {
