@@ -82,10 +82,12 @@ namespace CTLife.Rest.Model
         /// <param name="skills">skills (required).</param>
         /// <param name="cashCents">cashCents (required).</param>
         /// <param name="debtCents">debtCents (required).</param>
+        /// <param name="debtDueAt">Next instalment deadline (Sunday Unlock.</param>
+        /// <param name="debtWeeklyDueCents">Instalment due by debtDueAt.</param>
         /// <param name="homeId">homeId (required).</param>
         /// <param name="minerTier">minerTier (required).</param>
         /// <param name="flags">flags (required).</param>
-        public Me(User user = default, Character character = default, Needs needs = default, Skills skills = default, long cashCents = default, long debtCents = default, string homeId = default, MinerTierEnum minerTier = default, Dictionary<string, Object> flags = default)
+        public Me(User user = default, Character character = default, Needs needs = default, Skills skills = default, long cashCents = default, long debtCents = default, DateTime? debtDueAt = default, long? debtWeeklyDueCents = default, string homeId = default, MinerTierEnum minerTier = default, Dictionary<string, Object> flags = default)
         {
             // to ensure "user" is required (not null)
             if (user == null)
@@ -126,6 +128,8 @@ namespace CTLife.Rest.Model
                 throw new ArgumentNullException("flags is a required property for Me and cannot be null");
             }
             this.Flags = flags;
+            this.DebtDueAt = debtDueAt;
+            this.DebtWeeklyDueCents = debtWeeklyDueCents;
         }
 
         /// <summary>
@@ -165,6 +169,20 @@ namespace CTLife.Rest.Model
         public long DebtCents { get; set; }
 
         /// <summary>
+        /// Next instalment deadline (Sunday Unlock
+        /// </summary>
+        /// <value>Next instalment deadline (Sunday Unlock</value>
+        [DataMember(Name = "debtDueAt", EmitDefaultValue = false)]
+        public DateTime? DebtDueAt { get; set; }
+
+        /// <summary>
+        /// Instalment due by debtDueAt
+        /// </summary>
+        /// <value>Instalment due by debtDueAt</value>
+        [DataMember(Name = "debtWeeklyDueCents", EmitDefaultValue = false)]
+        public long? DebtWeeklyDueCents { get; set; }
+
+        /// <summary>
         /// Gets or Sets HomeId
         /// </summary>
         [DataMember(Name = "homeId", IsRequired = true, EmitDefaultValue = true)]
@@ -190,6 +208,8 @@ namespace CTLife.Rest.Model
             sb.Append("  Skills: ").Append(Skills).Append("\n");
             sb.Append("  CashCents: ").Append(CashCents).Append("\n");
             sb.Append("  DebtCents: ").Append(DebtCents).Append("\n");
+            sb.Append("  DebtDueAt: ").Append(DebtDueAt).Append("\n");
+            sb.Append("  DebtWeeklyDueCents: ").Append(DebtWeeklyDueCents).Append("\n");
             sb.Append("  HomeId: ").Append(HomeId).Append("\n");
             sb.Append("  MinerTier: ").Append(MinerTier).Append("\n");
             sb.Append("  Flags: ").Append(Flags).Append("\n");

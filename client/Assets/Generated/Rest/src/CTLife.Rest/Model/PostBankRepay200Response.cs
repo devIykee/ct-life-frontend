@@ -26,43 +26,46 @@ using OpenAPIDateConverter = CTLife.Rest.Client.OpenAPIDateConverter;
 namespace CTLife.Rest.Model
 {
     /// <summary>
-    /// PostUploads200Response
+    /// PostBankRepay200Response
     /// </summary>
-    [DataContract(Name = "postUploads_200_response")]
-    public partial class PostUploads200Response
+    [DataContract(Name = "postBankRepay_200_response")]
+    public partial class PostBankRepay200Response
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="PostUploads200Response" /> class.
+        /// Initializes a new instance of the <see cref="PostBankRepay200Response" /> class.
         /// </summary>
         [JsonConstructorAttribute]
-        protected PostUploads200Response() { }
+        protected PostBankRepay200Response() { }
         /// <summary>
-        /// Initializes a new instance of the <see cref="PostUploads200Response" /> class.
+        /// Initializes a new instance of the <see cref="PostBankRepay200Response" /> class.
         /// </summary>
-        /// <param name="uploadId">uploadId (required).</param>
-        /// <param name="url">url (required).</param>
-        public PostUploads200Response(Guid uploadId = default, string url = default)
+        /// <param name="repaidCents">repaidCents (required).</param>
+        /// <param name="cashCents">cashCents (required).</param>
+        /// <param name="debtCents">debtCents (required).</param>
+        public PostBankRepay200Response(long repaidCents = default, long cashCents = default, long debtCents = default)
         {
-            this.UploadId = uploadId;
-            // to ensure "url" is required (not null)
-            if (url == null)
-            {
-                throw new ArgumentNullException("url is a required property for PostUploads200Response and cannot be null");
-            }
-            this.Url = url;
+            this.RepaidCents = repaidCents;
+            this.CashCents = cashCents;
+            this.DebtCents = debtCents;
         }
 
         /// <summary>
-        /// Gets or Sets UploadId
+        /// Gets or Sets RepaidCents
         /// </summary>
-        [DataMember(Name = "uploadId", IsRequired = true, EmitDefaultValue = true)]
-        public Guid UploadId { get; set; }
+        [DataMember(Name = "repaidCents", IsRequired = true, EmitDefaultValue = true)]
+        public long RepaidCents { get; set; }
 
         /// <summary>
-        /// Gets or Sets Url
+        /// Gets or Sets CashCents
         /// </summary>
-        [DataMember(Name = "url", IsRequired = true, EmitDefaultValue = true)]
-        public string Url { get; set; }
+        [DataMember(Name = "cashCents", IsRequired = true, EmitDefaultValue = true)]
+        public long CashCents { get; set; }
+
+        /// <summary>
+        /// Gets or Sets DebtCents
+        /// </summary>
+        [DataMember(Name = "debtCents", IsRequired = true, EmitDefaultValue = true)]
+        public long DebtCents { get; set; }
 
         /// <summary>
         /// Returns the string presentation of the object
@@ -71,9 +74,10 @@ namespace CTLife.Rest.Model
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
-            sb.Append("class PostUploads200Response {\n");
-            sb.Append("  UploadId: ").Append(UploadId).Append("\n");
-            sb.Append("  Url: ").Append(Url).Append("\n");
+            sb.Append("class PostBankRepay200Response {\n");
+            sb.Append("  RepaidCents: ").Append(RepaidCents).Append("\n");
+            sb.Append("  CashCents: ").Append(CashCents).Append("\n");
+            sb.Append("  DebtCents: ").Append(DebtCents).Append("\n");
             sb.Append("}\n");
             return sb.ToString();
         }

@@ -105,7 +105,9 @@ namespace CTLife.Rest.Model
         /// <param name="status">status (required).</param>
         /// <param name="realizedCents">realizedCents.</param>
         /// <param name="closedAt">closedAt.</param>
-        public Perp(Guid perpId = default, Guid coinId = default, SideEnum side = default, int leverage = default, long marginCents = default, int entryMicros = default, int liqMicros = default, StatusEnum status = default, long realizedCents = default, DateTime closedAt = default)
+        /// <param name="markMicros">Open perps only. Current coin price.</param>
+        /// <param name="unrealizedPnlCents">Open perps only. PnL if closed at markMicros now; equals realizedCents on close..</param>
+        public Perp(Guid perpId = default, Guid coinId = default, SideEnum side = default, int leverage = default, long marginCents = default, int entryMicros = default, int liqMicros = default, StatusEnum status = default, long realizedCents = default, DateTime closedAt = default, int markMicros = default, long unrealizedPnlCents = default)
         {
             this.PerpId = perpId;
             this.CoinId = coinId;
@@ -117,6 +119,8 @@ namespace CTLife.Rest.Model
             this.Status = status;
             this.RealizedCents = realizedCents;
             this.ClosedAt = closedAt;
+            this.MarkMicros = markMicros;
+            this.UnrealizedPnlCents = unrealizedPnlCents;
         }
 
         /// <summary>
@@ -168,6 +172,20 @@ namespace CTLife.Rest.Model
         public DateTime ClosedAt { get; set; }
 
         /// <summary>
+        /// Open perps only. Current coin price
+        /// </summary>
+        /// <value>Open perps only. Current coin price</value>
+        [DataMember(Name = "markMicros", EmitDefaultValue = false)]
+        public int MarkMicros { get; set; }
+
+        /// <summary>
+        /// Open perps only. PnL if closed at markMicros now; equals realizedCents on close.
+        /// </summary>
+        /// <value>Open perps only. PnL if closed at markMicros now; equals realizedCents on close.</value>
+        [DataMember(Name = "unrealizedPnlCents", EmitDefaultValue = false)]
+        public long UnrealizedPnlCents { get; set; }
+
+        /// <summary>
         /// Returns the string presentation of the object
         /// </summary>
         /// <returns>String presentation of the object</returns>
@@ -185,6 +203,8 @@ namespace CTLife.Rest.Model
             sb.Append("  Status: ").Append(Status).Append("\n");
             sb.Append("  RealizedCents: ").Append(RealizedCents).Append("\n");
             sb.Append("  ClosedAt: ").Append(ClosedAt).Append("\n");
+            sb.Append("  MarkMicros: ").Append(MarkMicros).Append("\n");
+            sb.Append("  UnrealizedPnlCents: ").Append(UnrealizedPnlCents).Append("\n");
             sb.Append("}\n");
             return sb.ToString();
         }

@@ -39,12 +39,13 @@ namespace CTLife.Rest.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="Character" /> class.
         /// </summary>
+        /// <param name="likenessJobId">Owned accepted personal avatar; stock Look remains its declared base..</param>
         /// <param name="alias">alias (required).</param>
         /// <param name="look">look (required).</param>
         /// <param name="tribeId">tribeId (required).</param>
         /// <param name="traitIds">traitIds (required).</param>
         /// <param name="dreamId">dreamId (required).</param>
-        public Character(string alias = default, Look look = default, string tribeId = default, List<string> traitIds = default, string dreamId = default)
+        public Character(Guid? likenessJobId = default, string alias = default, Look look = default, string tribeId = default, List<string> traitIds = default, string dreamId = default)
         {
             // to ensure "alias" is required (not null)
             if (alias == null)
@@ -76,7 +77,15 @@ namespace CTLife.Rest.Model
                 throw new ArgumentNullException("dreamId is a required property for Character and cannot be null");
             }
             this.DreamId = dreamId;
+            this.LikenessJobId = likenessJobId;
         }
+
+        /// <summary>
+        /// Owned accepted personal avatar; stock Look remains its declared base.
+        /// </summary>
+        /// <value>Owned accepted personal avatar; stock Look remains its declared base.</value>
+        [DataMember(Name = "likenessJobId", EmitDefaultValue = true)]
+        public Guid? LikenessJobId { get; set; }
 
         /// <summary>
         /// Gets or Sets Alias
@@ -116,6 +125,7 @@ namespace CTLife.Rest.Model
         {
             StringBuilder sb = new StringBuilder();
             sb.Append("class Character {\n");
+            sb.Append("  LikenessJobId: ").Append(LikenessJobId).Append("\n");
             sb.Append("  Alias: ").Append(Alias).Append("\n");
             sb.Append("  Look: ").Append(Look).Append("\n");
             sb.Append("  TribeId: ").Append(TribeId).Append("\n");

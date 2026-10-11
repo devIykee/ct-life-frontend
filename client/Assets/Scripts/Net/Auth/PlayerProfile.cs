@@ -35,8 +35,7 @@ namespace CTLife.Net
             ct.ThrowIfCancellationRequested();
             Me = current;
             LikenessJobId = _api.LastLikenessJobId;
-            DebtDueAtMs = _api.LastDebtDueAtMs;
-            DebtWeeklyDueCents = _api.LastDebtWeeklyDueCents;
+            (DebtDueAtMs, DebtWeeklyDueCents) = DebtSchedule.From(current);
 #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
             Log.Info("appearance", "Profile refreshed: " + (HasCharacter ? "character present, " : "no character, ") +
                 (string.IsNullOrEmpty(LikenessJobId) ? "stock appearance." : "personal appearance."));
@@ -51,6 +50,7 @@ namespace CTLife.Net
         {
             Me = me;
             LikenessJobId = null;
+            (DebtDueAtMs, DebtWeeklyDueCents) = DebtSchedule.From(me);
             Bus.Publish(new ProfileChangedSignal());
         }
 #endif

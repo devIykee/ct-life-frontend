@@ -32,8 +32,8 @@ namespace CTLife.CityLife.Tests
             Services.Register(config);
             Assert.IsTrue(Phases.IsOpen(4), "Rent notifications must be enabled for this regression test.");
 
-            _character = new Character("rent-observer", new Look("skin", "head", "hair", "top", "bottom", "shoes", "acc"),
-                "trencher", new List<string> { "fast_talker", "iron_will" }, "make_10k");
+            _character = new Character(alias: "rent-observer", look: new Look("skin", "head", "hair", "top", "bottom", "shoes", "acc"),
+                tribeId: "trencher", traitIds: new List<string> { "fast_talker", "iron_will" }, dreamId: "make_10k");
             _me = new Me(new User(Guid.NewGuid(), "fixture-wallet", false, false), _character, new Needs(), new Skills(),
                 cashCents: 0, debtCents: 0, homeId: "parents_basement", flags: new Dictionary<string, object>());
             _me.Character = null; // The endpoint permits null; the generated public constructor does not.

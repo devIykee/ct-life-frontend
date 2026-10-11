@@ -37,8 +37,8 @@ namespace CTLife.App
         private static CTLife.Rest.Model.Me OfflineDemoMe()
         {
             var look = new CTLife.Rest.Model.Look("skin_04", "head_snow", "hair_villa_blonde", "top_hoodie_black", "bottom_jeans_indigo", "shoes_sneakers_white", "acc_aviators");
-            var character = new CTLife.Rest.Model.Character(LaunchArgs.Get("alias") ?? "demo", look, "trencher",
-                new System.Collections.Generic.List<string> { "fast_talker", "iron_will" }, "make_10k");
+            var character = new CTLife.Rest.Model.Character(alias: LaunchArgs.Get("alias") ?? "demo", look: look, tribeId: "trencher",
+                traitIds: new System.Collections.Generic.List<string> { "fast_talker", "iron_will" }, dreamId: "make_10k");
             return new CTLife.Rest.Model.Me(new CTLife.Rest.Model.User(System.Guid.Empty, "offline-demo", false, true), character,
                 new CTLife.Rest.Model.Needs(), new CTLife.Rest.Model.Skills(), cashCents: 0, debtCents: 0, homeId: "parents_basement",
                 flags: new System.Collections.Generic.Dictionary<string, object> { ["lotteryRolled"] = true, ["hasCharacter"] = true });

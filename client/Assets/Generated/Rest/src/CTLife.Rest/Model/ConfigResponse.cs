@@ -52,7 +52,8 @@ namespace CTLife.Rest.Model
         /// <param name="ads">ads.</param>
         /// <param name="ore">ore.</param>
         /// <param name="meta">meta.</param>
-        public ConfigResponse(string varVersion = default, string minClientVersion = default, List<string> degraded = default, Dictionary<string, Object> venues = default, Dictionary<string, Object> archetypes = default, Dictionary<string, Object> tribes = default, Dictionary<string, Object> careers = default, Dictionary<string, Object> market = default, Dictionary<string, Object> events = default, Dictionary<string, Object> npcLines = default, Dictionary<string, Object> ads = default, Dictionary<string, Object> ore = default, Dictionary<string, Object> meta = default)
+        /// <param name="characterPalettes">characterPalettes.</param>
+        public ConfigResponse(string varVersion = default, string minClientVersion = default, List<string> degraded = default, Dictionary<string, Object> venues = default, Dictionary<string, Object> archetypes = default, Dictionary<string, Object> tribes = default, Dictionary<string, Object> careers = default, Dictionary<string, Object> market = default, Dictionary<string, Object> events = default, Dictionary<string, Object> npcLines = default, Dictionary<string, Object> ads = default, Dictionary<string, Object> ore = default, Dictionary<string, Object> meta = default, CharacterPalettes characterPalettes = default)
         {
             // to ensure "varVersion" is required (not null)
             if (varVersion == null)
@@ -82,6 +83,7 @@ namespace CTLife.Rest.Model
             this.Ads = ads;
             this.Ore = ore;
             this.Meta = meta;
+            this.CharacterPalettes = characterPalettes;
         }
 
         /// <summary>
@@ -164,6 +166,12 @@ namespace CTLife.Rest.Model
         public Dictionary<string, Object> Meta { get; set; }
 
         /// <summary>
+        /// Gets or Sets CharacterPalettes
+        /// </summary>
+        [DataMember(Name = "characterPalettes", EmitDefaultValue = false)]
+        public CharacterPalettes CharacterPalettes { get; set; }
+
+        /// <summary>
         /// Returns the string presentation of the object
         /// </summary>
         /// <returns>String presentation of the object</returns>
@@ -184,6 +192,7 @@ namespace CTLife.Rest.Model
             sb.Append("  Ads: ").Append(Ads).Append("\n");
             sb.Append("  Ore: ").Append(Ore).Append("\n");
             sb.Append("  Meta: ").Append(Meta).Append("\n");
+            sb.Append("  CharacterPalettes: ").Append(CharacterPalettes).Append("\n");
             sb.Append("}\n");
             return sb.ToString();
         }
