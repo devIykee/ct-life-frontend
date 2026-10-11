@@ -5,7 +5,6 @@ using CTLife.UI;
 using CTLife.World;
 using CTLife.World.Roads;
 using CTLife.World.Vehicles;
-using DecorStandIn = CTLife.World.Vehicles.DecorStandIn;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -250,33 +249,48 @@ namespace CTLife.EditorTools
                 var bay = IslandMarkers.SpawnsNear(arrival, 120f).FirstOrDefault(b => b != null && !Physics.CheckSphere(b.transform.position + Vector3.up, 2f, 1 << CharacterLayers.Vehicle));
                 if (bay != null)
                 {
-                    // the stand-in's pose is the bay (forward = the parked heading); a car-sized box is its "model"
+                    // a real World ParkedCar in the bay (pose = the bay, forward = the parked heading), a box collider on Prop
                     decor = new GameObject("decor-parked-car") { layer = 13 };
                     decor.transform.SetPositionAndRotation(bay.transform.position, bay.transform.rotation);
-                    var box = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                    box.layer = 13;
-                    box.transform.SetParent(decor.transform, false);
-                    box.transform.localPosition = new Vector3(0f, 0.75f, 0f);
-                    box.transform.localScale = new Vector3(1.9f, 1.4f, 4.2f);
-                    var stand = decor.AddComponent<DecorStandIn>();
-                    ParkedCars.Extra.Add(stand);
+                    var box = decor.AddComponent<BoxCollider>();
+                    box.center = new Vector3(0f, 0.75f, 0f); box.size = new Vector3(1.9f, 1.4f, 4.2f);
+                    var stand = decor.AddComponent<ParkedCar>();
+                    stand.vehicleClass = VehicleClass.Compact; stand.model = "kit_compact";
                     var far = bay.transform.position + bay.transform.right * 30f;
                     p.SnapTo(far, 0f);
                     await Frames(1.2f);
-                    bool before = stand.hidden;
+                    bool before = !box.enabled;
                     p.SnapTo(bay.transform.position + bay.transform.right * -5f, 0f);
                     rig.FollowAvatar(p.transform);
                     await Frames(1.5f);
-                    bool swapped = stand.hidden && sys.Parked.Active > 0;
+                    bool swapped = !box.enabled && sys.Parked.IsSwapped(stand);
                     await shot("traffic-06-parked-car-swapped", .05f);
                     p.SnapTo(far + bay.transform.right * 30f, 0f);
                     await Frames(1.5f);
-                    bool restored = !stand.hidden && sys.Parked.Active == 0;
-                    o["parked"] = new JObject { ["hiddenBefore"] = before, ["swappedNear"] = swapped, ["restoredFar"] = restored };
-                    expect(!before && swapped && restored, "a parked decor car turns drivable as the player walks up, and back when they leave");
-                    ParkedCars.Extra.Remove(stand);
+                    bool restored = box.enabled && !sys.Parked.IsSwapped(stand);
+                    o["parked"] = new JObject { ["hiddenBefore"] = before, ["swappedNear"] = swapped, ["restoredFar"] = restored, ["realDecorCars"] = ParkedCar.All.Count };
+                    expect(!before && swapped && restored, "a World ParkedCar turns drivable as the player walks up, and back when they leave");
                 }
                 else o["parked"] = "no free bay near the arrival";
+                // and one of World's own decor cars on the island
+                ParkedCar real = null; float rd = float.MaxValue;
+                foreach (var pc in ParkedCar.All)
+                {
+                    if (pc == null || (decor != null && pc.gameObject == decor)) continue;
+                    float d = (pc.transform.position - arrival).sqrMagnitude;
+                    if (d < rd) { rd = d; real = pc; }
+                }
+                if (real != null)
+                {
+                    p.SnapTo(real.transform.position - real.transform.right * 4f, 0f);
+                    rig.FollowAvatar(p.transform);
+                    await Frames(1.5f);
+                    bool swappedReal = sys.Parked.IsSwapped(real);
+                    await shot("traffic-07-world-parked-car", .05f);
+                    o["parkedWorld"] = new JObject { ["model"] = real.model, ["class"] = real.vehicleClass.ToString(), ["fromArrivalM"] = R(Mathf.Sqrt(rd)), ["swapped"] = swappedReal };
+                    expect(swappedReal, $"one of World's parked cars ({real.model}) is drivable when the player walks up");
+                }
+                else o["parkedWorld"] = "no ParkedCar streamed in";
 
                 o["end"] = new JObject
                 {
@@ -292,7 +306,7 @@ namespace CTLife.EditorTools
             {
                 VehicleControls.ScriptedInput = false;
                 Time.captureFramerate = prevCapture;
-                if (decor != null) { ParkedCars.Extra.RemoveAll(c => c == null || c.gameObject == decor); Object.Destroy(decor); }
+                if (decor != null) Object.Destroy(decor);
             }
             return visit;
         }
