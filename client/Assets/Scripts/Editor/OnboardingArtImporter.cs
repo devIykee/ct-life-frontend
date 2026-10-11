@@ -23,7 +23,9 @@ namespace CTLife.EditorTools
         public const string KitFolder = "Assets/Resources/UI/Kit/";
         public const string PortraitFolder = "Assets/Resources/UI/Customizer/";
         public const string BackdropPath = Folder + "onboarding-bg.png";
-        private const string TitleArt = "Assets/Resources/UI/Title/title-bg.png";
+        // The source painting (title-bg.png) left the build on 2026-10-16; the shipped onboarding-bg.png was derived from it
+        // and stays. Rebuilding the backdrop now uses the title key art.
+        private const string TitleArt = "Assets/Resources/UI/Title/title-keyart-b.png";
         public const int BackdropWidth = 1280, BackdropHeight = 576;
 
         private void OnPreprocessTexture()

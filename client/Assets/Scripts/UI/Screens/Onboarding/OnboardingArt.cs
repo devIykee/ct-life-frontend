@@ -15,7 +15,7 @@ namespace CTLife.UI
         private static Texture2D _glow;
 
         /// <summary>The title painting, pre-blurred and dimmed at import time (onboarding-bg.png); the sharp title art otherwise.</summary>
-        public static Texture2D Backdrop => Load(Folder + "onboarding-bg") ?? Load("UI/Title/title-bg");
+        public static Texture2D Backdrop => Load(Folder + "onboarding-bg") ?? Load("UI/Title/title-keyart-b");
 
         public static Texture2D CardBack => Load(Folder + "origin-card-back");
         public static Texture2D PlayerCardSurface => Load(Folder + "player-card-surface");
