@@ -444,7 +444,9 @@ namespace CTLife.App
                     {
                         var v = s.Island.Find(id);
                         var e = Services.Get<ConfigStore>().Registries.SpotsFor(id)?.spots.Values.FirstOrDefault(x => x.id == "entrance" || x.id.EndsWith(".entrance"));
-                        var target = new Vector3(v.origin.x + (e?.x ?? 0f), 0f, v.origin.y + (e != null ? e.z + 2.5f : 0f));
+                        var local = new Vector2(e?.x ?? 0f, e != null ? e.z + 2.5f : 0f);       // a step inside, in the venue's own frame
+                        var flat = v.ToIsland(local);
+                        var target = new Vector3(flat.x, v.elevation, flat.y);
                         bool ok = s.LocalPlayer.MoveTo(target);
                         Log.Info("island", $"islandWalk -> {id}: path {(ok ? "ok" : "REFUSED")}");
                         float t0 = Time.realtimeSinceStartup;
