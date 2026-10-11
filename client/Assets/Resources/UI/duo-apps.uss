@@ -128,7 +128,13 @@
 .ct-phone .duo-wcard-cash { background-color: #ff6a4a; }
 .ct-phone .duo-wcard-loan { background-color: #262833; }
 .ct-phone .duo-wcard-solana { background-color: #6a52f5; }
-.ct-phone .duo-wcard-sheen { position: absolute; left: 0; top: 0; right: 0; bottom: 0; -unity-background-scale-mode: stretch-to-fill; }
+.ct-phone .duo-wcard-sheen { position: absolute; left: 0; top: 0; right: 0; bottom: 0; -unity-background-scale-mode: stretch-to-fill; opacity: 0.7; }
+/* Legacy wallet classes stay on the card's labels (tests and the lobby capture find them); their old chip looks do not. */
+.ct-phone .duo-wcard .ct-wallet-network, .ct-phone .duo-wcard .ct-wallet-status {
+    background-color: rgba(0,0,0,0); border-radius: 0; padding: 0; margin: 0; color: rgba(255,255,255,0.72); align-self: flex-start;
+}
+.ct-phone .duo-wcard .ct-wallet-status { margin-top: 10px; color: rgba(255,255,255,0.85); }
+.ct-phone .duo-wcard .ct-wallet-stale { color: #ffd0cc; }
 .ct-phone .duo-wcard-strip {
     flex-direction: row; align-items: center; justify-content: space-between; height: 92px; min-height: 92px; margin: 0; padding: 0 30px;
     border-width: 0; border-radius: 0; background-color: rgba(0,0,0,0);
@@ -159,7 +165,6 @@
 .ct-phone .duo-sheet-scroll { flex-shrink: 1; max-height: 1200px; }
 .ct-phone .duo-topup-currencies { flex-direction: row; flex-wrap: wrap; margin: 0 16px 6px; }
 .ct-phone .duo-topup-currencies > .duo-pill { margin: -22px -4px; }
-.ct-phone .duo-topup-note { -unity-text-align: middle-left; margin: 10px 28px 18px; }
 .ct-phone .duo-topup-actions { flex-direction: row; justify-content: center; margin: 6px 0 12px; }
 .ct-phone .duo-sheet .duo-list > .duo-row { padding-left: 8px; }
 
@@ -173,12 +178,11 @@
 .ct-phone .duo-perps .duo-hero { padding-top: 0; }
 .ct-phone .duo-perps .duo-hero .duo-hero-label { display: none; }
 .ct-phone .duo-perp-timeframes { flex-direction: row; justify-content: space-between; margin: 6px 30px 12px; }
-.ct-phone .duo-timeframe {
-    min-width: 110px; height: 104px; margin: -16px 0; padding: 0 22px; border-width: 0; border-radius: 52px; background-color: rgba(0,0,0,0);
-    font-size: var(--duo-footnote); color: var(--duo-label2); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); -unity-text-align: middle-center;
-}
-.ct-phone .duo-timeframe:hover { background-color: rgba(0,0,0,0); }
-.ct-phone .duo-timeframe-on, .ct-phone .duo-timeframe-on:hover { background-color: rgba(48,199,94,0.14); color: #1f9d47; }
+.ct-phone .duo-timeframe { min-width: 140px; }
+.ct-phone .duo-timeframe .duo-pill-face { min-width: 100px; height: 60px; padding: 0 22px; background-color: rgba(0,0,0,0); }
+.ct-phone .duo-timeframe .duo-pill-label { font-size: var(--duo-footnote); color: var(--duo-label2); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); }
+.ct-phone .duo-timeframe-on .duo-pill-face { background-color: rgba(48,199,94,0.14); }
+.ct-phone .duo-timeframe-on .duo-pill-label { color: #1f9d47; }
 .ct-phone .duo-perp-position { flex-shrink: 0; }
 .ct-phone .duo-perp-position-actions { flex-direction: row; justify-content: flex-end; margin: 14px 38px 8px; }
 .ct-phone .duo-perp-none { -unity-text-align: middle-left; margin: 0 38px 12px; }
@@ -227,7 +231,7 @@
 .ct-phone .duo-coin-dot { width: 36px; height: 36px; border-radius: 18px; background-color: #8a55ff; border-width: 4px; border-color: #14f195; margin-right: 10px; }
 .ct-phone .duo-coin-chip .duo-coin-chip-text { font-size: var(--duo-footnote); color: var(--duo-label); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); margin: 0; padding: 0; }
 .ct-phone .duo-post .duo-post-flag { font-size: var(--duo-footnote); color: #9a4f00; white-space: normal; margin: 10px 0 0; padding: 0; }
-.ct-phone .duo-post-actions { flex-direction: row; justify-content: space-between; margin: 8px 0 0 -14px; }
+.ct-phone .duo-post-actions { flex-direction: row; justify-content: space-between; margin: -10px 0 -22px -14px; }
 .ct-phone .duo-post-action {
     flex-direction: row; align-items: center; height: 104px; margin: 0; padding: 0 14px; border-width: 0; border-radius: 30px; background-color: rgba(0,0,0,0);
 }
@@ -274,7 +278,7 @@
 .ct-phone .duo-call-tile-video { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
 .ct-phone .duo-call-tile .duo-call-tile-label { font-size: var(--duo-caption); color: #ffffff; margin: 12px; padding: 6px 12px; border-radius: 12px; background-color: rgba(0,0,0,0.5); align-self: flex-start; white-space: normal; }
 .ct-phone .duo-call-controls-bar { margin: 20px 26px 30px; flex-shrink: 0; }
-.ct-phone .duo-call-controls { flex-direction: row; justify-content: space-around; padding: 20px 10px 14px; border-radius: 56px; background-color: rgba(255,255,255,0.92); border-width: 1px; border-color: rgba(0,0,0,0.06); }
+.ct-phone .duo-call-controls { flex-direction: row; justify-content: space-around; padding: 20px 10px 14px; border-radius: 56px; background-color: rgba(255,255,255,0.97); border-width: 1px; border-color: rgba(0,0,0,0.06); }
 .ct-phone .duo-call-answer { background-color: rgba(0,0,0,0); border-width: 0; justify-content: space-around; }
 .ct-phone .duo-call-block, .ct-phone .duo-call-done { align-self: center; }
 .ct-phone .duo-paid { flex-shrink: 0; }

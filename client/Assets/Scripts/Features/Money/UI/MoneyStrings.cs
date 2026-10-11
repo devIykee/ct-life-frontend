@@ -216,6 +216,7 @@ namespace CTLife.Economy
             ["perps.position"] = "Your position",
             ["perps.noPosition"] = "No open position on ${0}.",
             ["perps.markets"] = "Markets",
+            ["perps.marginHint"] = "Amount, e.g. 50",
             ["perps.pickHint"] = "Pick a coin below to see its price and trade it.",
             ["perps.side"] = "Side",
             ["perps.size"] = "Size",

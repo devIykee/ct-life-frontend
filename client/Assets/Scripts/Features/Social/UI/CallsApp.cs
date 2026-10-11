@@ -96,7 +96,8 @@ namespace CTLife.SocialFeatures
                 if (_c.Paid != null && !(_c.Active != null && _c.Active.Paid && !_c.Active.IsOver)) RenderPaid(_c.Paid, now);
                 bool people = _c.Active == null || _c.Active.IsOver;
                 if (people) RenderPeople();
-                _bar.Show(people && _c.Incoming.Count == 0);
+                // The call bar appears once someone is picked (an empty, disabled bar only covered the list).
+                _bar.Show(people && _c.Incoming.Count == 0 && _selected.Count > 0);
                 _start.text = _selected.Count > 0 ? SocialStrings.F("calls.startCount", _selected.Count) : SocialStrings.T("calls.start");
                 _start.SetEnabled(_selected.Count > 0 && !_c.Busy && !_c.Dialing && Features.IsAvailable(Features.Voice));
             }

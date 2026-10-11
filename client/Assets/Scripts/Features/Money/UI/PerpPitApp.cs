@@ -243,7 +243,9 @@ namespace CTLife.Economy
                     foreach (var f in frames)
                     {
                         var frame = f;
-                        var b = El.Btn(f, () => { _timeframe = frame; RenderHero(); }, "duo-timeframe" + (f == _timeframe ? " duo-timeframe-on" : ""));
+                        var b = Duo.Pill(f, () => { _timeframe = frame; RenderHero(); });
+                        b.AddToClassList("duo-timeframe");
+                        b.EnableInClassList("duo-timeframe-on", f == _timeframe);
                         b.name = "perps-timeframe-" + f;
                         pills.Add(b);
                     }
@@ -366,7 +368,7 @@ namespace CTLife.Economy
 
             var field = new TextField { value = _marginInput ?? "", isDelayed = false, name = "perps-margin" };
             field.AddToClassList("duo-field");
-            field.textEdition.placeholder = MoneyStrings.T("perps.margin");
+            field.textEdition.placeholder = MoneyStrings.T("perps.marginHint");
             field.RegisterValueChangedCallback(e => _marginInput = e.newValue);
             _tradeControls.Add(Duo.GroupHeader(MoneyStrings.T("perps.margin")));
             _tradeControls.Add(field);

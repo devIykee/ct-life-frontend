@@ -96,7 +96,7 @@ namespace CTLife.EditorTools
 
         /// <param name="lobbyHook">Duo iOS capture: runs over the first lobby (real catalog phone) and ends the lobby pass.</param>
         public static async Task Run(Func<string, float, Task> shot, Func<float, Task> wait,
-            Action<bool, string> expect, Action<string> step, JObject receipt, Func<PhoneShell, Task> lobbyHook = null)
+            Action<bool, string> expect, Action<string> step, JObject receipt, Func<PhoneShell, Task> lobbyHook = null, long hookDebtCents = 0)
         {
             var config = Services.Get<ConfigStore>();
             var transport = new Transport();
@@ -144,7 +144,8 @@ namespace CTLife.EditorTools
                 foreach (var head in new[] { "head_snow", "head_rain", "head_ubc_m", "head_hero_gynoid" })
                 {
                     home?.Close();
-                    transport.Profile = Profile(head, i == 0 ? "Amara" : head == "head_hero_gynoid" ? "joel" : "city_regular");
+                    transport.Profile = Profile(head, i == 0 ? "Amara" : head == "head_hero_gynoid" ? "joel" : "city_regular",
+                        debt: lobbyHook != null ? hookDebtCents : 0);
                     await profile.Refresh();
                     home = new DashboardScreen(() => { }, id => phone.Open(id)) { OfflineOverride = false };
                     home.Show();
