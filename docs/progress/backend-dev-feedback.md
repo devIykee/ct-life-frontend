@@ -3,6 +3,13 @@
 From the Unity client, run against your stack locally (editor + Seeker). One line each; numbers point to the detailed
 entries below (reproductions included there). Everything here was reproduced live unless marked (source).
 
+**Sign-in blocker (fix first of all)**
+0. `POST /v1/auth/verify` can never accept a real wallet: `verifySignature` in `server/application/auth.ts` passes the raw
+   32-byte public key to `node:crypto` `verify`, which throws `ERR_OSSL_UNSUPPORTED` (caught → `SIGNATURE_INVALID`). Seen
+   live 2026-10-08 with Seed Vault on the Seeker (the wallet signed correctly). Fix: wrap the key as SPKI DER via
+   `createPublicKey({ key: Buffer.concat([0x302a300506032b6570032100, raw32]), format: 'der', type: 'spki' })`; with that,
+   challenge → sign → verify returns 200. Patch: `tools/backend-local/patches/0001-siws-ed25519-spki-key.patch` (FE repo).
+
 **Security (fix first)**
 1. `POST /v1/beef/:id/settle` has no admin check: any signed-in player can settle a match and name the winner (source; Phase 4-6 README #1).
 2. `GET /v1/cabal/invites` returns every invite with its bearer `code`; `POST /v1/cabal/invites/:id/accept` accepts for anyone (source).
