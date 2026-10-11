@@ -43,6 +43,8 @@
 .ct-hud .ct-move-running .ct-move-thumb { background-color: var(--ct-accent); }
 .ct-hud .ct-move-hint { font-size: 24px; top: auto; bottom: 0; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); -unity-text-outline-width: 1px; }
 .ct-hud .ct-move-arrows { left: 0; top: -24px; }
+/* Arrow mode: the caption sits above the up arrow; at the bottom it covered the down arrow. */
+.ct-hud .ct-move-arrow-mode .ct-move-hint { top: -72px; bottom: auto; }
 .ct-hud .ct-chat, .ct-hud .ct-emotes { bottom: 248px; border-width: 1px; border-color: var(--ct-line); }
 
 /* Keep the send action readable while the input takes the remaining width. */

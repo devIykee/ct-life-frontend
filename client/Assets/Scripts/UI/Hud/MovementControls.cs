@@ -387,6 +387,7 @@ namespace CTLife.UI
             bool analog = ControlSettings.MovementMode == MovementControlMode.Analog;
             _zone.Show(analog);
             _arrows.Show(!analog);
+            Element.EnableInClassList("ct-move-arrow-mode", !analog);
             Element.tooltip = Strings.T(analog ? "controls.analogHelp" : "controls.arrowsHelp");
         }
 

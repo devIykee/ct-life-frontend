@@ -68,6 +68,14 @@ namespace CTLife.World
             Publish(force: true);
         }
 
+        /// <summary>Follows the visit onto a rejoined venue room; seat occupancy restarts from the new room's state.</summary>
+        public void Rebind(VenueChannel channel)
+        {
+            _channel = channel;
+            _occupancy = new SeatOccupancy(_venue != null ? _venue.venueId : null);
+            Publish(force: true);
+        }
+
         private void OnDestroy()
         {
             if (_local != null) { _local.SeatChanged -= OnSeatChanged; _local.SeatRejected -= OnRejected; }

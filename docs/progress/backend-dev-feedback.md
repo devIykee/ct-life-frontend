@@ -681,3 +681,12 @@ only `callId`; #40 `GET /homes` and `POST /rtc/token` exist (see 88).
     beside the machine `effect`. Then every screen (profile, other players' cards) shows the same words, not only the
     creator. The client keeps the server's own `effect` text whenever it differs from the rc1 string it was written from,
     so a changed effect is never contradicted.
+
+96. **Venue move speed check cascades after one refusal (Seeker on Railway 2026-10-10; read in `server/realtime/rooms/venue.ts`
+    @ dbfefc1, `handleMove`).** `lastMoveAt` is set *before* the velocity check, but `lastX/lastZ` only advance when a move
+    is accepted. After one bunched packet is refused as `SPEED_EXCEEDED`, the next move is measured over ~100 ms against a
+    position two or more steps old, so a running player (4.5 m/s, 0.45 m per 100 ms move) keeps getting refused until they
+    stop. Suggested fix: set `lastMoveAt` only on accept (or measure against the time of the last *accepted* move), and/or
+    allow a small burst tolerance. Client mitigation in the meantime (2026-10-11): on `SPEED_EXCEEDED` the client no longer
+    snaps back; it re-publishes from the server's accepted position in ≤0.5 m steps (`LocalPlayerController.CatchUpFrom`),
+    and snaps only beyond a 3 m gap.

@@ -187,6 +187,7 @@ namespace CTLife.World
                 Channel.NpcRemoved += OnNpcRemoved;
                 Channel.Said += OnSaid;
                 Channel.Rejected += OnRejected;
+                Channel.LostUnexpectedly += OnChannelLost;
                 // State that arrived before the handlers were attached.
                 foreach (var kv in new List<KeyValuePair<string, PlayerState>>(Channel.Players)) if (!_players.ContainsKey(kv.Key)) OnPlayerAdded(kv.Key, kv.Value);
                 foreach (var kv in new List<KeyValuePair<string, NpcState>>(Channel.Npcs)) if (!_npcs.ContainsKey(kv.Key)) OnNpcAdded(kv.Key, kv.Value);
@@ -244,7 +245,7 @@ namespace CTLife.World
             {
                 channel.PlayerAdded -= OnPlayerAdded; channel.PlayerChanged -= OnPlayerChanged; channel.PlayerRemoved -= OnPlayerRemoved;
                 channel.NpcAdded -= OnNpcAdded; channel.NpcChanged -= OnNpcChanged; channel.NpcRemoved -= OnNpcRemoved;
-                channel.Said -= OnSaid; channel.Rejected -= OnRejected;
+                channel.Said -= OnSaid; channel.Rejected -= OnRejected; channel.LostUnexpectedly -= OnChannelLost;
                 await AttemptAsync(() => channel.Leave()); // Captured visit only, never a successor room.
             }
             var voice = _voice; _voice = null;
@@ -278,6 +279,88 @@ namespace CTLife.World
         }
 
         private void OnDestroy() { if (_visit != null && !_cleaned) RequestExit(); }
+
+        // ---------------------------------------------------------------- room loss
+
+        /// <summary>Rejoin attempts after the venue room is lost (the SDK's own reconnect already failed).</summary>
+        public const int MaxRejoinAttempts = 5;
+        private bool _rejoining;
+
+        private void OnChannelLost(int code)
+        {
+            if (!OwnsVisit || _rejoining) return;
+            _ = RejoinAfterLoss(code);
+        }
+
+        /// <summary>
+        /// The room ended without our Leave (e.g. 4003 after a network drop). Chat and emotes would reach no one, so
+        /// join the same venue again with capped backoff and move this visit onto the new room.
+        /// </summary>
+        private async Task RejoinAfterLoss(int code)
+        {
+            _rejoining = true;
+            var lost = Channel;
+            var token = LifetimeToken;
+            Log.Warn("venue", $"Venue room lost ({code}); rejoining {VenueId}");
+            Bus.Publish(ToastSignal.Text("Reconnecting…", ToastKind.Info));
+            try
+            {
+                for (int attempt = 1; attempt <= MaxRejoinAttempts; attempt++)
+                {
+                    if (!OwnsVisit || !ReferenceEquals(Channel, lost)) return;
+                    try
+                    {
+                        var rt = Services.Get<IRealtimeService>();
+                        var fresh = await VenueWait.Run(rt.JoinVenue(VenueId, token), token);
+                        if (!OwnsVisit || !ReferenceEquals(Channel, lost)) return; // Cleanup leaves the slot's room.
+                        AdoptChannel(lost, fresh);
+                        Bus.Publish(ToastSignal.Text("Reconnected", ToastKind.Good));
+                        return;
+                    }
+                    catch (OperationCanceledException) when (token.IsCancellationRequested) { return; }
+                    catch (Exception e)
+                    {
+                        float wait = ReconnectBackoff.DelaySeconds(attempt);
+                        Log.Warn("venue", $"Venue rejoin {attempt}/{MaxRejoinAttempts} failed ({e.GetType().Name}); retry in {wait:0}s");
+                        if (attempt == MaxRejoinAttempts) break;
+                        try { await Awaitable.WaitForSecondsAsync(wait, token); }
+                        catch (OperationCanceledException) { return; }
+                    }
+                }
+                if (OwnsVisit) Bus.Publish(ToastSignal.Text("Connection lost. Re-enter the venue to chat.", ToastKind.Bad));
+            }
+            finally { _rejoining = false; }
+        }
+
+        private void AdoptChannel(VenueChannel lost, VenueChannel fresh)
+        {
+            if (lost != null)
+            {
+                lost.PlayerAdded -= OnPlayerAdded; lost.PlayerChanged -= OnPlayerChanged; lost.PlayerRemoved -= OnPlayerRemoved;
+                lost.NpcAdded -= OnNpcAdded; lost.NpcChanged -= OnNpcChanged; lost.NpcRemoved -= OnNpcRemoved;
+                lost.Said -= OnSaid; lost.Rejected -= OnRejected; lost.LostUnexpectedly -= OnChannelLost;
+            }
+            // Session ids belong to the old room: drop every remote avatar and NPC and rebuild from the new state.
+            foreach (var player in _players.Values) if (player != null) Destroy(player.gameObject);
+            foreach (var npc in _npcs.Values) if (npc != null) Destroy(npc.gameObject);
+            _players.Clear(); _npcs.Clear(); _byUserId.Clear();
+            Channel = fresh;
+            fresh.PlayerAdded += OnPlayerAdded; fresh.PlayerChanged += OnPlayerChanged; fresh.PlayerRemoved += OnPlayerRemoved;
+            fresh.NpcAdded += OnNpcAdded; fresh.NpcChanged += OnNpcChanged; fresh.NpcRemoved += OnNpcRemoved;
+            fresh.Said += OnSaid; fresh.Rejected += OnRejected; fresh.LostUnexpectedly += OnChannelLost;
+            if (LocalPlayer != null)
+            {
+                var view = LocalPlayer.GetComponent<AvatarView>();
+                view.sessionId = fresh.SessionId;
+                if (!string.IsNullOrEmpty(view.userId)) _byUserId[view.userId] = view;
+                LocalPlayer.Rebind(fresh);
+                LocalPlayer.GetComponent<InteractionController>()?.Rebind(fresh);
+            }
+            foreach (var kv in new List<KeyValuePair<string, PlayerState>>(fresh.Players)) if (!_players.ContainsKey(kv.Key)) OnPlayerAdded(kv.Key, kv.Value);
+            foreach (var kv in new List<KeyValuePair<string, NpcState>>(fresh.Npcs)) if (!_npcs.ContainsKey(kv.Key)) OnNpcAdded(kv.Key, kv.Value);
+            // Proximity voice was keyed to the old room instance.
+            if (_voice != null && lost != null && lost.InstanceId != fresh.InstanceId) { _voiceConnect = null; _ = ConnectVoice(); }
+        }
 
         // ---------------------------------------------------------------- players
 
@@ -425,7 +508,8 @@ namespace CTLife.World
             if (!OwnsVisit) return;
             if (r.type == "sit") LocalPlayer?.OnSeatRejected();
             if (r.type == "move" && LocalPlayer != null && Channel != null &&
-                Channel.TryGetPlayer(Channel.SessionId, out var me))
+                Channel.TryGetPlayer(Channel.SessionId, out var me) &&
+                !(r.code == "SPEED_EXCEEDED" && LocalPlayer.CatchUpFrom(new Vector2((float)me.x, (float)me.z))))
                 LocalPlayer.SnapTo(Venue.ToWorld((float)me.x, (float)me.z), (float)me.rotY);
             if (r.code == "SPOT_TAKEN") Bus.Publish(ToastSignal.Id("toast_spot_taken", new Dictionary<string, string>()));
             else if (r.code == "RATE_LIMITED") Bus.Publish(ToastSignal.Text("Slow down", ToastKind.Bad));

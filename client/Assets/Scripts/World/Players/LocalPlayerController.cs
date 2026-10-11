@@ -78,6 +78,19 @@ namespace CTLife.World
         public CharacterBody Body => _body;
         public bool Stunned => _stunned;
 
+        /// <summary>
+        /// Points this player at a fresh venue room after the previous one was lost. The new room has no seat for us,
+        /// so any seat is released locally (no stand is sent) and the current position is published again.
+        /// </summary>
+        public void Rebind(VenueChannel channel)
+        {
+            _channel = channel;
+            _requestedSpot = null; _catchUpFrom = null;
+            if (!string.IsNullOrEmpty(_seatedSpot)) { _seatLocalOnly = true; StandIfSeated(); }
+            _lastSentPos = transform.position;
+            _dirty = channel != null;
+        }
+
         public void Init(VenueSceneRoot venue, VenueChannel channel)
         {
             _venue = venue;
@@ -349,9 +362,59 @@ namespace CTLife.World
             return true;
         }
 
+        /// <summary>Largest step sent while catching up after SPEED_EXCEEDED (server cap 6 m/s at 10 moves/s).</summary>
+        public const float CatchUpStepMeters = 0.5f;
+        /// <summary>Beyond this gap from the server's accepted position a rejected move snaps instead of catching up.</summary>
+        public const float CatchUpMaxGapMeters = 3f;
+        private Vector2? _catchUpFrom;
+
+        /// <summary>
+        /// A run step was refused as too fast (bunched packets). The server keeps the last accepted position, so walk
+        /// the published position from there to ours in steps it accepts instead of snapping the avatar back.
+        /// Returns false when the gap is too large and the caller should snap.
+        /// </summary>
+        public bool CatchUpFrom(Vector2 serverLocal)
+        {
+            if (_venue == null || _channel == null) return false;
+            if (Vector2.Distance(serverLocal, _venue.ToLocal(transform.position)) > CatchUpMaxGapMeters) { _catchUpFrom = null; return false; }
+            _catchUpFrom = serverLocal;
+            _dirty = true;
+            return true;
+        }
+
+        private void SendMove(Vector3 pos, float yaw)
+        {
+            Vector2 target = _venue.ToLocal(pos);
+            Vector2 send = target;
+            bool reached = true;
+            if (_catchUpFrom.HasValue)
+            {
+                send = CatchUpStep(_catchUpFrom.Value, target, CatchUpStepMeters, out reached);
+            }
+            if (!_channel.Move(send.x, send.y, Mathf.Repeat(yaw, 360f) * Mathf.Deg2Rad)) return;
+            _lastSentRot = yaw;
+            if (reached)
+            {
+                _catchUpFrom = null;
+                _lastSentPos = pos;
+                _dirty = false;
+            }
+            else _catchUpFrom = send; // Stay dirty: the next tick sends the next step.
+        }
+
+        /// <summary>One step from <paramref name="from"/> toward <paramref name="to"/>, at most <paramref name="step"/> metres.</summary>
+        public static Vector2 CatchUpStep(Vector2 from, Vector2 to, float step, out bool reached)
+        {
+            var delta = to - from;
+            float d = delta.magnitude;
+            reached = d <= step;
+            return reached ? to : from + delta / d * step;
+        }
+
         /// <summary>A move correction updates the walking pose, never a confirmed seated visual anchor.</summary>
         public void SnapTo(Vector3 worldPos, float rotYRad)
         {
+            _catchUpFrom = null;
             RememberStandingPose(worldPos, rotYRad * Mathf.Rad2Deg);
             if (!string.IsNullOrEmpty(_seatedSpot))
             {
@@ -401,7 +464,7 @@ namespace CTLife.World
             _requestedSpot = null;
             bool changed = _seatedSpot != spotId;
             _seatedSpot = spotId; _seatLocalOnly = false;
-            _dirty = false;
+            _dirty = false; _catchUpFrom = null;
             if (_agent != null) _agent.enabled = false;
             var seatRotation = Quaternion.Euler(0, rot * Mathf.Rad2Deg, 0);
             transform.SetPositionAndRotation(p, seatRotation);
@@ -447,14 +510,7 @@ namespace CTLife.World
         {
             if (_dirty && _venue != null && _channel != null)
             {
-                var local = _venue.ToLocal(transform.position);
-                float yaw = transform.eulerAngles.y;
-                if (_channel.Move(local.x, local.y, Mathf.Repeat(yaw, 360f) * Mathf.Deg2Rad))
-                {
-                    _lastSentPos = transform.position;
-                    _lastSentRot = yaw;
-                    _dirty = false;
-                }
+                SendMove(transform.position, transform.eulerAngles.y);
             }
             _channel.Sit(wireSpotId);
         }
@@ -569,13 +625,7 @@ namespace CTLife.World
             }
             if (_dirty && _venue != null && _channel != null && string.IsNullOrEmpty(_requestedSpot))
             {
-                var local = _venue.ToLocal(pos);
-                if (_channel.Move(local.x, local.y, Mathf.Repeat(yaw, 360f) * Mathf.Deg2Rad))
-                {
-                    _lastSentPos = pos;
-                    _lastSentRot = yaw;
-                    _dirty = false;
-                }
+                SendMove(pos, yaw);
             }
 
             if (_hasDestination && !_agent.pathPending && _agent.remainingDistance <= _agent.stoppingDistance + 0.02f)
