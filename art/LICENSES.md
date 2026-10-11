@@ -271,7 +271,15 @@ Print text and marks are original parody (e.g. COIN2050, CHECKPOINT, POMP, WOTCH
 | Name | Source URL | Licence | Author | Date | Used for |
 | --- | --- | --- | --- | --- | --- |
 | Title background "town square with eggs" v2, high-res (`client/Assets/Resources/UI/Title/title-bg.png`, 3840×1727, sha256 0e4291db…8fec9fcef; source `ct-life-evidence/art-direction/out/title-bg-eggs-v2-3840.png`, an Adobe Photoshop 2026 "Preserve Details" upscale of the approved 1870×841 `title-bg-eggs-v2.png`, no content change; provenance json beside it) | Generated for CT Life in the Codex art thread (built-in image generation), upscaled in Photoshop | Owned by the project (generated for CT Life) | CT Life | 2026-10-08 | Sign-in / title screen background |
-| Title button bodies, squircle (`client/Assets/Resources/UI/Title/btn-green-blank-sq.png` and `btn-purple-blank-sq.png`, 600×130 each; sources `ct-life-evidence/art-direction/out/btn-green-blank-sq.png`, `btn-purple-blank-sq.png`) | Generated for CT Life in the Codex art thread (built-in image generation) | Owned by the project (generated for CT Life) | CT Life | 2026-10-08 | "Sign in with Solana" and "PLAY" button bodies |
+| Title button bodies, squircle (`client/Assets/Resources/UI/Title/btn-green-blank-sq.png` and `btn-purple-blank-sq.png`, 600×130 each; sources `ct-life-evidence/art-direction/out/btn-green-blank-sq.png`, `btn-purple-blank-sq.png`) | Generated for CT Life in the Codex art thread (built-in image generation) | Owned by the project (generated for CT Life) | CT Life | 2026-10-08 | "Sign in with Solana" and "PLAY" button bodies; reused 9-sliced by the UI kit's LippedButton |
+
+## Onboarding (2026-10-08)
+
+| Name | Source URL | Licence | Author | Date | Used for |
+| --- | --- | --- | --- | --- | --- |
+| Origin cards `origin-insider_baby.png`, `origin-exit_liquidity_baby.png`, `origin-card-back.png` (`client/Assets/Resources/UI/Onboarding/`, 640×880 RGBA each; sources `ct-life-evidence/art-direction/out/ui/`, prompts in `origin-prompts.md` beside them) | Generated for CT Life in the Codex art thread (built-in image generation) | Owned by the project (generated for CT Life) | CT Life | 2026-10-08 | Birth lottery cards (face-down back, Insider and Exit Liquidity faces) |
+| Tribe badges `tribe-<id>.png` for trencher, perp_degen, prediction_shark, airdrop_farmer, caller, builder, anon (`client/Assets/Resources/UI/Onboarding/`, 512×512 RGBA each; sources `ct-life-evidence/art-direction/out/ui/`, prompts in `tribe-prompts.md`) | Generated for CT Life in the Codex art thread (built-in image generation) | Owned by the project (generated for CT Life) | CT Life | 2026-10-08 | Creator tribe cards and the summary chip |
+| Blurred backdrop `onboarding-bg.png` (`client/Assets/Resources/UI/Onboarding/`, 1280×576) | Derived in the editor from the title background above (`OnboardingArtImporter.BuildBackdrop`: downsample, blur, dim) | Owned by the project (derived from project art) | CT Life | 2026-10-08 | Background of the lottery and creator |
 
 <!-- BEGIN animation-sources-20261008 -->
 ## Source animation clips (2026-10-08, raw only, not yet imported into Unity)

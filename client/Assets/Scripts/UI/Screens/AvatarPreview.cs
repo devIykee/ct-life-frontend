@@ -33,11 +33,18 @@ namespace CTLife.UI
         private UniversalRenderPipelineAsset _pipeline;
         private float _previousRenderScale;
         private bool _previousAdaptive;
+        private readonly bool _transparent;
+        private string _idleState;
 
         public RenderTexture Texture { get; }
+        public float Yaw => _yaw;
+        public bool Portrait => _portrait;
 
-        public AvatarPreview(int width = 1080, int height = 1620)
+        /// <param name="transparent">Clear to transparent and drop the round blob shadow, so the character stands on whatever
+        /// the UI draws behind it (the onboarding draws the painted town, a spotlight and a pill shadow).</param>
+        public AvatarPreview(int width = 1080, int height = 1620, bool transparent = false)
         {
+            _transparent = transparent;
             var origin = new Vector3(1000f + 50f * _slot++, -500f, 0f);
             _root = new GameObject("CTLife.AvatarPreview");
             _root.transform.position = origin;
@@ -58,7 +65,7 @@ namespace CTLife.UI
             _cam.targetTexture = Texture;
             _cam.aspect = (float)width / height;
             _cam.clearFlags = CameraClearFlags.SolidColor;
-            _cam.backgroundColor = new Color32(232, 230, 225, 255);
+            _cam.backgroundColor = transparent ? new Color(0f, 0f, 0f, 0f) : (Color)new Color32(232, 230, 225, 255);
             _cam.fieldOfView = 30f;
             _cam.nearClipPlane = 0.1f;
             _cam.farClipPlane = 20f;
@@ -86,6 +93,11 @@ namespace CTLife.UI
             _avatar.transform.localRotation = Quaternion.Euler(0, _yaw, 0);
             foreach (var child in _avatar.GetComponentsInChildren<Transform>(true)) child.gameObject.layer = PreviewLayer;
             AvatarView.All.Remove(_avatar); // Not part of the world: no name tag, no LOD.
+            if (_transparent)
+            {
+                var blob = _avatar.transform.Find("blob_shadow");
+                if (blob != null) blob.gameObject.SetActive(false);
+            }
             if (_avatar.Animator != null)
             {
                 _avatar.Animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
@@ -94,7 +106,39 @@ namespace CTLife.UI
                 _avatar.Animator.Update(0);
             }
             FrameAvatar();
+            if (!string.IsNullOrEmpty(_idleState)) _avatar.SetBase(_idleState);
         }
+
+        /// <summary>
+        /// The resting pose: "loco_idle" for the full body, "idle_fidget_foldarms" (arms folded) for the face shot, so the
+        /// bind-pose-like idle arms never jut into the portrait (device QA 2026-10-08). Emotes return to it when they end.
+        /// </summary>
+        public void SetIdle(string state)
+        {
+            _idleState = state;
+            if (_avatar != null && !string.IsNullOrEmpty(state) && HasState(state)) _avatar.SetBase(state);
+            else if (_avatar != null) _avatar.SetBase("loco_idle");
+        }
+
+        /// <summary>
+        /// Plays the first of `animIds` the shipped AvatarController has (registry emote ids do not all have states yet),
+        /// as a one-shot that returns to the idle. Returns the id played, or null.
+        /// </summary>
+        public string PlayReaction(params string[] animIds)
+        {
+            if (_avatar == null || animIds == null) return null;
+            foreach (var id in animIds)
+            {
+                if (string.IsNullOrEmpty(id) || !HasState(id)) continue;
+                _avatar.PlayOneShot(id);
+                return id;
+            }
+            return null;
+        }
+
+        private bool HasState(string id) =>
+            _avatar != null && _avatar.Animator != null && _avatar.Animator.runtimeAnimatorController != null &&
+            _avatar.Animator.HasState(0, AnimationLibrary.Hash(id));
 
         private void BeginPreview(ScriptableRenderContext context, Camera camera)
         {
@@ -177,10 +221,11 @@ namespace CTLife.UI
                 var head = animator.GetBoneTransform(HumanBodyBones.Head);
                 if (head != null) headCentre = _avatar.transform.InverseTransformPoint(head.position);
             }
-            float lower = Mathf.Clamp(headCentre.y - bounds.size.y * 0.13f,
-                bounds.min.y + bounds.size.y * 0.60f, bounds.min.y + bounds.size.y * 0.72f);
+            // Head and shoulders only (chin plus a little chest): the arms stay out of the portrait.
+            float lower = Mathf.Clamp(headCentre.y - bounds.size.y * 0.10f,
+                bounds.min.y + bounds.size.y * 0.66f, bounds.min.y + bounds.size.y * 0.76f);
             float portraitHeight = Mathf.Max(0.3f, bounds.max.y - lower);
-            float portraitWidth = Mathf.Max(portraitHeight * 0.84f, bounds.size.y * 0.23f);
+            float portraitWidth = Mathf.Max(portraitHeight * 0.72f, bounds.size.y * 0.18f);
             _portraitBounds = new Bounds(new Vector3(headCentre.x, lower + portraitHeight * 0.5f, headCentre.z),
                 new Vector3(portraitWidth, portraitHeight, Mathf.Min(portraitWidth, bounds.size.z)));
             ApplyFraming();
