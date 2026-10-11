@@ -175,6 +175,11 @@ namespace CTLife.EditorTools
                 {
                     await DuoIosCapture.Run(Shot, Wait, Expect, Step, Receipt);
                 }
+                else if (Set == "island")
+                {
+                    CityHudCapture.IslandOnly = true;
+                    await CityHudCapture.Run(Shot, Wait, Expect, Step, Receipt);
+                }
                 else if (Set == "feel")
                 {
                     CityHudCapture.FeelOnly = true;

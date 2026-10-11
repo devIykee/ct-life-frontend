@@ -207,6 +207,25 @@ namespace CTLife.Net
             return channel;
         }
 
+        public async Task<VenueChannel> JoinVenueHandoff(string venueId, CancellationToken ct = default)
+        {
+            string user = _session.UserId;
+            if (!IdentityCurrent(user)) throw new OperationCanceledException("Room identity is no longer current.", ct);
+            var candidate = new VenueChannel();
+            using (var attempt = new RoomJoinAttempt(ct, () => IdentityCurrent(user)))
+                await JoinWithBusyRetry(async () => candidate.Join(Client, await Options(attempt.Token, venueId), attempt), attempt);
+            ct.ThrowIfCancellationRequested();
+            var retire = _venue.Adopt(candidate, user);   // the old room leaves only after the new one is joined
+            VenueJoined?.Invoke(candidate);
+            _ = ObserveHandoffRetirement(retire);
+            return candidate;
+        }
+
+        private static async Task ObserveHandoffRetirement(Task retire)
+        {
+            try { await retire; } catch (Exception e) { Log.Warn("rt", "Handoff leave of the previous venue failed: " + e.GetType().Name); }
+        }
+
         public async Task LeaveVenue()
         {
             var previous = _venue.Detach();

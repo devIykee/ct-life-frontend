@@ -799,7 +799,17 @@ namespace CTLife.App
                 // including when the server cannot answer yet: the room's own check then decides.
                 var blocked = await game.Wait(CTLife.Competition.CompetitionLinks.BlockMessageBeforeJoin(venueId, game.Token));
                 if (blocked != null) { Bus.Publish(ToastSignal.Text(blocked, ToastKind.Bad)); ReopenLobby(); lobby?.ShowError(blocked); return; }
-                try { await game.Wait(VenueSession.Enter(venueId, joinRoom: true, owner: game.Token)); }
+                try
+                {
+                    // CT Island (Phase B): venues placed on the island are one connected world. Already on it, Go is a
+                    // fast travel (teleport + room handoff, no load); otherwise enter the island at that venue's door.
+                    if (IslandWorld.Places(venueId) && !LaunchArgs.Flag("classicVenues"))
+                    {
+                        if (VenueSession.Current != null && VenueSession.Current.IsIsland && !leavingOwnHome) await game.Wait(VenueSession.Current.FastTravel(venueId));
+                        else await game.Wait(VenueSession.EnterIsland(venueId, joinRoom: true, owner: game.Token));
+                    }
+                    else await game.Wait(VenueSession.Enter(venueId, joinRoom: true, owner: game.Token));
+                }
                 catch (OperationCanceledException) when (!GameAlive(game)) { throw; }
                 catch (Exception e) when (GatedJoinRejection(e) is string rejection)
                 {

@@ -89,6 +89,15 @@ namespace CTLife.World
         private bool Online => _channel != null && _channel.IsJoined;
         private string Me => _channel != null ? _channel.SessionId : "local";
 
+        /// <summary>Open world: the interactables and room of the zone the player just walked into.</summary>
+        public void Rebind(VenueSceneRoot venue, VenueChannel channel)
+        {
+            _venue = venue; _channel = channel;
+            _catalog = InteractableCatalog.Build(venue);
+            _occupancy = new SeatOccupancy(venue != null ? venue.venueId : null);
+            Publish(force: true);
+        }
+
         public void Init(VenueSceneRoot venue, VenueChannel channel, VenueSession session)
         {
             _local = GetComponent<LocalPlayerController>();

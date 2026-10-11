@@ -86,6 +86,12 @@ namespace CTLife.UI.Map
             (MapArea area, Vector2 local, Vector3 fwd)? src = null;
             var session = VenueSession.Current;
             if (Source != null) src = Source();
+            else if (session != null && session.IsIsland && session.LocalPlayer != null)
+            {
+                // CT Island: world x/z ARE atlas metres; show the island with every venue map.
+                IslandTick(session);
+                return;
+            }
             else if (session != null && session.Venue != null && session.LocalPlayer != null)
             {
                 var area = MapCatalog.ForVisit(session.VenueId, session.HomeId);
@@ -98,6 +104,7 @@ namespace CTLife.UI.Map
             var (a, local, forward) = src.Value;
             if (a != _area)
             {
+                _islandLayers = false;
                 _area = a;
                 _placement = MapCatalog.PlacementOf(a) ?? new MapPlacement { AreaId = a.Id, Origin = Vector2.zero };
                 var atlas = MapCatalog.Atlas;
@@ -115,6 +122,38 @@ namespace CTLife.UI.Map
             _surface.Refresh();
 
             if (Source == null) MapMarkers.Live(session, _area, _placement, _live);
+            PlaceMarkers();
+            PlaceNorth();
+        }
+
+        private bool _islandLayers;
+
+        private void IslandTick(VenueSession session)
+        {
+            style.display = DisplayStyle.Flex;
+            if (!_islandLayers)
+            {
+                _islandLayers = true; _area = null;
+                var atlas = MapCatalog.Atlas;
+                var layers = new List<MapSurface.Layer>();
+                var tex = MapCatalog.Texture(atlas.Texture);
+                if (tex != null) layers.Add(new MapSurface.Layer { Texture = tex, AtlasRect = atlas.Rect, Alpha = 1f, Grid = 1 });
+                foreach (var p in atlas.Placements.Values)
+                    if (MapCatalog.Areas.TryGetValue(p.AreaId, out var a))
+                        layers.Add(new MapSurface.Layer { Texture = MapCatalog.Texture(a.Texture), AtlasRect = MapSurface.AreaAtlasRect(a, p), Alpha = 1f, Grid = 1 });
+                _surface.SetLayers(layers);
+                _hasHeading = false;
+            }
+            var t = session.LocalPlayer.transform;
+            _center = new Vector2(t.position.x, t.position.z);
+            var f = t.forward;
+            float target = new Vector2(f.x, f.z).sqrMagnitude > 1e-4f ? MapMath.Heading(f) : _heading;
+            _heading = _hasHeading ? MapMath.SmoothAngle(_heading, target, 12f, Mathf.Min(Time.unscaledDeltaTime, 0.1f)) : target;
+            _hasHeading = true;
+            _surface.Refresh();
+            // The current zone's markers (its root sits at its atlas origin, so placement math holds).
+            var zoneArea = MapCatalog.ForVisit(session.VenueId, null);
+            MapMarkers.Live(session, zoneArea, MapCatalog.PlacementOf(zoneArea), _live);
             PlaceMarkers();
             PlaceNorth();
         }

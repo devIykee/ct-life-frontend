@@ -144,6 +144,13 @@ namespace CTLife.UI
                 _mood.EnableInClassList("ct-green", s.bps > 0);
                 _mood.EnableInClassList("ct-red", s.bps < 0);
             });
+            _subs.On<IslandPlaceSignal>(s =>
+            {
+                // On CT Island's streets the label is the district (a venue's own name arrives with VenueChangedSignal).
+                if (s.venueId != null) return;
+                var island = VenueSession.Current != null ? VenueSession.Current.Island : null;
+                _venue.text = island != null ? island.DistrictName(s.districtId) : "";
+            });
             _subs.On<VenueChangedSignal>(s =>
             {
                 var reg = Services.Get<ConfigStore>().Registries;

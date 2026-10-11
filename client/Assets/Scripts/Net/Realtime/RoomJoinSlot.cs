@@ -86,6 +86,21 @@ namespace CTLife.Net
             }
         }
 
+        /// <summary>
+        /// Make-before-break: publish an already-joined room as current and retire the previous one (its leave runs after,
+        /// so the user is in both rooms for the overlap). Pending joins are superseded.
+        /// </summary>
+        public Task Adopt(T joined, string identity)
+        {
+            ReleaseLeaseRegistration();
+            Revision++;
+            var attempt = _pending; _pending = null; attempt?.Cancel();
+            var previous = Current;
+            Current = joined;
+            _identity = identity;
+            return previous != null && !ReferenceEquals(previous, joined) ? BeginRetirement(previous) : Task.CompletedTask;
+        }
+
         /// <summary>Invalidates pending work and captures the currently published room synchronously.</summary>
         public T Detach()
         {
