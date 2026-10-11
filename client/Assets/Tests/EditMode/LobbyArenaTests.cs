@@ -12,7 +12,10 @@ namespace CTLife.Tests
         private static readonly string[] Icons =
             { "treasure-map", "briefcase", "bank", "shop", "coins", "lightning-bolt", "brain", "crown", "calendar", "chat", "smartphone",
               // Map and city HUD (2026-10-17)
-              "door", "laptop", "microphone", "center-direction", "search", "multiply", "crane", "home-page", "place-marker", "speech-bubble", "smiling" };
+              "door", "laptop", "microphone", "center-direction", "search", "multiply", "crane", "home-page", "place-marker", "speech-bubble", "smiling",
+              // Venue landmarks on the CT Island map (96 px, 2026-10-17)
+              "fountain", "podcast", "boxing", "prison", "conference-call", "source-code", "inspection", "money-bag", "coffee", "combo-chart",
+              "hospital", "rocket", "dice", "gift", "factory", "farm-2", "approval", "yacht", "cocktail", "skyscrapers" };
 
         [Test]
         public void Cash_ExactBelowTenThousand_CompactAbove()
@@ -39,7 +42,7 @@ namespace CTLife.Tests
                 var tex = Resources.Load<Texture2D>("UI/Lobby/Icons/" + name);
                 Assert.IsNotNull(tex, name);
                 Assert.LessOrEqual(Mathf.Max(tex.width, tex.height), 256, name);
-                StringAssert.Contains("https://img.icons8.com/fluent/256/" + name + ".png", notice.text, name + " source URL");
+                Assert.IsTrue(notice.text.Contains("https://img.icons8.com/fluent/256/" + name + ".png") || notice.text.Contains("https://img.icons8.com/fluent/96/" + name + ".png"), name + " source URL");
             }
             // Every icon file in the folder is one the notice credits.
             foreach (var file in Directory.GetFiles("Assets/Resources/UI/Lobby/Icons", "*.png"))

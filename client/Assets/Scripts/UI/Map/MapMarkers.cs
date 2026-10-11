@@ -74,6 +74,18 @@ namespace CTLife.UI.Map
             return false;
         }
 
+        /// <summary>The landmark icon of a venue on the island map (Icons8 fluent; a generic chat bubble, never a brand logo).</summary>
+        public static string Landmark(string areaId) => areaId switch
+        {
+            "timeline_square" => "fountain", "spaces_studio" => "podcast", "discord_heights" => "chat", "ratio_arena" => "boxing",
+            "ct_jail" => "prison", "conference_hall" => "conference-call", "hackathon_house" => "source-code", "audit_row" => "inspection",
+            "vc_row" => "money-bag", "terminal_cafe" => "coffee", "perp_pit" => "combo-chart", "rekt_clinic" => "hospital",
+            "launchpad_tower" => "rocket", "prediction_pit" => "dice", "airdrop_fields" => "gift", "ore_refinery" => "factory",
+            "sybil_barn" => "farm-2", "checker_kiosk" => "approval", "yacht_club" => "yacht", "cabal_lounge" => "cocktail",
+            "penthouse_row" => "skyscrapers",
+            _ => areaId != null && areaId.StartsWith("home_", StringComparison.Ordinal) ? "home-page" : "place-marker",
+        };
+
         public static string Icon(MarkerKind k) => k switch
         {
             MarkerKind.Door => "door",

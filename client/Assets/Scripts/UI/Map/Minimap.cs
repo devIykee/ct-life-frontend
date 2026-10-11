@@ -14,8 +14,8 @@ namespace CTLife.UI.Map
     /// </summary>
     public sealed class Minimap : VisualElement
     {
-        public const float Side = 270f;          // panel units (= 300 device px on the Seeker)
-        public float Radius = 16f;               // metres from the centre to the edge
+        public const float Side = 324f;          // panel units (= 360 device px on the Seeker)
+        public float Radius = 18f;               // metres from the centre to the edge
         public Action OpenFull;
 
         private readonly VisualElement _clip, _markers, _arrows, _north;
