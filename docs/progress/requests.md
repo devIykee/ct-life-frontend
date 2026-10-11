@@ -857,3 +857,192 @@ through your combine/bake pipeline (merged meshes per material, baked lightmaps)
 Runtime-instantiated prefabs get no static batching, so the combine has to happen at build time.
 
 Status: open
+
+## 2026-10-08 phase6-competition -> integration lead: wire Phase 6 (League/Tribes/Districts, Beef, Farm + Sybil Barn, Cabal, NPC Chat, X link)
+
+All code is in `client/Assets/Scripts/Features/Competition/` (assembly `CTLife.Features.Competition`, C# namespace
+`CTLife.Competition`; references Core, Net, Generated, UI). Nothing outside it was edited. It compiles in your harness
+(`compile_check.py` default, `--editor`, `--release`: 0 errors, 0 warnings in my assemblies) and its tests run out of the
+editor (`Features/Competition/Tests~/run_competition_tests.sh` → PASSED 224). Log: `docs/progress/phase6-competition.md`.
+Contract: `docs/fe-contract-proposals/phase4-6/` (a proposal; the backend does not serve most of it yet, so every screen shows
+"Not available yet" on a 404/405/501 and never fake data). Hooks, each an exact change:
+
+**1. App asmdef.** `client/Assets/Scripts/App/CTLife.App.asmdef`, `references`: append `"CTLife.Features.Competition"`.
+
+**2. Phone catalog.** `client/Assets/Scripts/App/PhoneCatalog.cs`: add `using CTLife.Competition;`, then
+```csharp
+phone.Register(new ComingApp("league", "League", 6, "#4b7bec"));
+// ->
+phone.Register(new LeagueApp());   // id "league": my league, leagues, tribes (pick), districts + standings
+phone.Register(new BeefApp());     // id "beef"
+phone.Register(new FarmApp());     // id "farm": Airdrop Farm claim + Sybil Barn
+phone.Register(new CabalApp());    // id "cabal": door, invites, Dubai Marina / Cabal Lounge gates
+phone.Register(new NpcChatApp());  // id "npcchat": AI Agent and Sleuth
+phone.Register(new XLinkApp());    // id "xlink": verified X link
+```
+All are Phase 6 apps (`Phase => 6`, so the phone shows "coming soon" until `Phases.Live >= 6`) and `IDisposable` (PhoneShell
+disposes them); they share one `CompetitionHub`.
+
+**3. Raw room messages (Net).** The Phase 6 messages are not in the generated realtime types, so the channels forward them as
+plain maps. New file `client/Assets/Scripts/Net/Realtime/RawRoomMessages.cs`:
+```csharp
+using System;
+namespace CTLife.Net
+{
+    /// <summary>Room messages the client does not have generated types for yet (Phase 4-6 proposal). Payload: Dictionary&lt;string, object&gt;.</summary>
+    public static class RawRoomMessages
+    {
+        public static readonly string[] CityTypes = { "district_flipped", "season_rollover", "league_result", "beef_challenge", "beef_update",
+            "beef_result", "sybil_status", "cabal_invite", "x_link_update" };
+        /// <summary>The server also broadcasts these on every `ratio_arena` instance.</summary>
+        public static readonly string[] VenueTypes = { "beef_update", "beef_result" };
+        public static event Action<string, object> Received;
+        internal static void Publish(string type, object payload) => Received?.Invoke(type, payload);
+    }
+}
+```
+`Net/Realtime/Channels.cs`, `CityChannel.OnJoined`, after the `toast` line:
+```csharp
+foreach (var t in RawRoomMessages.CityTypes) { var type = t; On<System.Collections.Generic.Dictionary<string, object>>(type, m => RawRoomMessages.Publish(type, m)); }
+```
+and in `VenueChannel.OnJoined`, after its `toast` line:
+```csharp
+foreach (var t in RawRoomMessages.VenueTypes) { var type = t; On<System.Collections.Generic.Dictionary<string, object>>(type, m => RawRoomMessages.Publish(type, m)); }
+```
+(`OnMessage<Dictionary<string, object>>` is what the SDK itself uses for `__playground_message_types`, `Room.cs:261`.) The feed
+ignores a duplicate `beef_update` / `beef_result` that arrives on both rooms. If Phase 5 adds its own raw types, merge the lists.
+
+**4. FlowController.** `client/Assets/Scripts/App/FlowController.cs`
+- Once at boot (where the other static hooks are set): `CTLife.Net.RawRoomMessages.Received += CTLife.Competition.CompetitionRuntime.OnRaw;`
+- `BuildHudAndPhone`, after `ProfileCard.VisitHome = ...`: `CTLife.Competition.CompetitionRuntime.Bind(); CTLife.Competition.CompetitionLinks.OpenApp = app => _phone?.Open(app);`
+- `EndGameplay`, after `ProfileCard.VisitHome = null;`: `CTLife.Competition.CompetitionLinks.OpenApp = null; CTLife.Competition.CompetitionRuntime.Unbind();`
+  (`Unbind` resets the live state, so a second account never sees the first one's jail, invites or flags.)
+- `Travel`, immediately before `try { await game.Wait(VenueSession.Enter(venueId, joinRoom: true, ...` (gated venues only; it returns null
+  when the venue is not gated, when it is allowed, or when the server cannot answer yet, so the room's own check decides):
+```csharp
+var blocked = await game.Wait(CTLife.Competition.CompetitionLinks.BlockMessageBeforeJoin(venueId, game.Token));
+if (blocked != null) { Bus.Publish(ToastSignal.Text(blocked, ToastKind.Bad)); return; }   // inside the existing try, before `_homeReturnVenueId = null`
+```
+  This is the net-worth gate wording for `dubai_marina`, membership for `cabal_lounge`, jailed-only for `sybil_barn`.
+  If a join is rejected anyway, `CTLife.Competition.CompErrors.JoinRejection(rejected.code)` returns the message for
+  `NET_WORTH_TOO_LOW` / `INVITE_REQUIRED` / `SYBIL_JAILED` (null for other codes).
+- `kicked { reasonId: 'sybil_jailed' }`: after the kick, `Travel(game, "sybil_barn")` is allowed by the server; the farm app shows the jail state.
+
+**5. Profile card (players and the two LLM NPCs).** `client/Assets/Scripts/UI/Overlays/ProfileCard.cs`
+- `ShowNpc`, before the closing `sheet.Add(El.Btn(Strings.T("common.close") ...`: add a public hook member
+  `public static Func<string, string, Action, VisualElement> NpcActions;` and `var talk = NpcActions?.Invoke(s.archetypeId, s.npcId, () => Close(sheet)); if (talk != null) sheet.Add(talk);`
+  then in `BuildHudAndPhone`: `ProfileCard.NpcActions = CTLife.Competition.CompetitionProfileActions.BuildNpc;` (clear it in `EndGameplay`).
+  It returns a "Talk" button only for `ai_agent` and `sleuth`; it opens the Chat app on that NPC's tab.
+- Player actions: `ProfileCard.PlayerActions` already composes Social's actions. Wrap both in one container, for example
+  `(id, name, close) => El.Div("ct-col", SocialProfileActions.Build(id, name, close, app => _phone?.Open(app)), CTLife.Competition.CompetitionProfileActions.Build(id, name, close))`
+  (`Build` returns null for an unsafe id; `El.Div` skips nulls). Buttons: "Call out to a beef" (opens Beef with that player preselected) and
+  "Invite to the Cabal" (opens Cabal with that guest ready).
+
+**6. Settings: verified X link.** `SettingsApp` is in `CTLife.UI`, which Competition references, so it cannot call `XLinkPanel` directly.
+Either keep the standalone `xlink` tile from hook 2, or add (`UI/Phone/Apps/CoreApps.cs`, `SettingsApp`):
+```csharp
+public static Func<VisualElement> ExtraSection;                       // new member
+// in Open(), before `page.Add(AssetCredits.Build());`
+var extra = ExtraSection?.Invoke(); if (extra != null) page.Add(extra);
+```
+and in `BuildHudAndPhone`: `SettingsApp.ExtraSection = CTLife.Competition.XLinkPanel.Build;` (clear in `EndGameplay`).
+Linking opens `Application.OpenURL` on the HTTPS URL from `GET /x/link/start` (system browser; the URL must be https on x.com or
+twitter.com, otherwise it is refused), then the screen shows the handle and avatar when `x_link_update` arrives or `GET /x/link` answers.
+
+**7. City map flags (data API only; the drawing is yours).** `CTLife.Competition.CompetitionFeed.Shared.Districts` (a `DistrictBoard`):
+`Loaded`, `Flags` (id, name, `OwnerTribeId`, `DefaultHolderTribeId`, `SinceMs`, `VenueIds`, `FlippedAtMs` for a fresh flip), `ForVenue(venueId)`,
+`DistrictBoard.HolderOf(flag)`, `Changed` event, `CompetitionRuntime.TribeName(tribeId)`. It fills from `district_flipped` live and from
+`await CompetitionHub.Acquire().LoadDistricts(ct)` (call it when the map opens, then `Release()`). With no server data `Loaded` is false and
+`Flags` is empty: draw no flags. `CityMapScreen` is in `CTLife.UI`, so give it a provider delegate like hook 6 if you want flags there.
+
+**8. Ratio Arena board (`Hook_RatioMeter`) and spot taps.** `CompetitionFeed.Shared.Arena.Lines(userId => alias, nowMs)` returns the plain text lines
+(opponents, phase, countdown; the result only after `beef_result`, never live tallies); `Arena.Changed` fires on each update. Render them into
+the board texture or a UI panel. `CompetitionLinks.AppForVenue(venueId)` gives the phone app a venue opens (`ratio_arena` → `beef`,
+`airdrop_fields`/`airdrop_farm`/`sybil_barn` → `farm`, `cabal_lounge`/`dubai_marina` → `cabal`); call `_phone.Open(id)` from a venue HUD
+chip or a spot tap. No venue prefab was touched.
+
+**9. Toasts.** The feed raises its own toasts for the nine messages. If devIykee adds the matching server `toast` messages
+(`toast_beef_won`, `toast_league_promoted`, ...), set `CompetitionFeed.Shared.ToastsEnabled = false` to avoid doubles.
+
+**10. Backend.** Forward the Phase 6 gaps in `docs/progress/phase6-competition.md` ("Backend gaps") to `docs/progress/backend-dev-feedback.md`
+(I did not edit that file).
+
+Status: open
+
+## 2026-10-08 phase5-ventures -> integration lead: wire Ad Desk, Builder Hills, VC Row (Phase 5, features #36 and #37)
+
+All new code is in `client/Assets/Scripts/Features/Ventures/` (assembly `CTLife.Features.Ventures`, C# namespace `CTLife.Ventures`;
+references Core, Net, Generated, World, UI, Money, ColyseusSDK). Nothing outside it was edited. `compile_check.py` (player,
+`--editor`, `--release`): 0 errors, 0 warnings in it. Tests run out of the editor:
+`Features/Ventures/Tests~/run_ventures_tests.sh` -> PASSED 282. Log: `docs/progress/phase5-ventures.md`. Hooks, each an exact change:
+
+**1. App asmdef.** `client/Assets/Scripts/App/CTLife.App.asmdef`, `references`: append `"CTLife.Features.Ventures"`.
+
+**2. Phone catalog.** `client/Assets/Scripts/App/PhoneCatalog.cs`: add `using CTLife.Ventures;` and replace the placeholder
+```csharp
+phone.Register(new ComingApp("ads", "Ads", 5, "#778ca3"));
+// -> phone.Register(new AdDeskApp());      // id "ads" (same id as the placeholder, so the lobby tile keeps working)
+//    phone.Register(new BuilderApp());     // id "builder", Phase 5
+//    phone.Register(new VcRowApp());       // id "vc", Phase 5
+```
+All three are `IDisposable` (PhoneShell disposes them) and share one `VenturesHub`. They are `Phase => 5`.
+
+**3. Realtime plumbing (Net).** The proposal's `ad_booking_update`, `ads_changed`, `vc_offer`, `hire_offer`, `project_event` have no generated
+class. `client/Assets/Scripts/Net/Realtime/Channels.cs`, in `CityChannel`:
+```csharp
+// new member, next to the other events:
+/// <summary>Messages with no generated class (Phase 5). The payload is whatever the room decoder produced; the feature lane parses it.</summary>
+public event Action<string, object> UntypedReceived;
+private static readonly string[] UntypedTypes = { "ad_booking_update", "ads_changed", "vc_offer", "hire_offer", "project_event" };
+// in OnJoined(), after On<ToastMessage>("toast", ...):
+foreach (var type in UntypedTypes) { var t = type; On<Dictionary<string, object>>(t, m => UntypedReceived?.Invoke(t, m)); }
+```
+(`OnMessage<Dictionary<string, object>>` is what the vendored SDK itself uses in `Room.cs:261`; [Unverified] against a live Colyseus 0.18 server: the
+parser also accepts a `JObject` or JSON text if you prefer another decode.) `client/Assets/Scripts/App/FlowController.cs`, `BindKick`/`UnbindKick`:
+```csharp
+// BindKick, after `city.Kicked += _kickHandler;`
+city.UntypedReceived -= CTLife.Ventures.VenturesRealtime.Dispatch;
+city.UntypedReceived += CTLife.Ventures.VenturesRealtime.Dispatch;
+// UnbindKick, inside the `if (_kickCity != null ...)` block:
+_kickCity.UntypedReceived -= CTLife.Ventures.VenturesRealtime.Dispatch;
+```
+`Dispatch` is `bool Dispatch(string type, object payload)`; it parses tolerantly, drops malformed payloads with a warning, and publishes
+`AdBookingUpdateSignal`, `AdsChangedSignal`, `VcOfferSignal`, `HireOfferSignal`, `ProjectEventSignal` on the Bus. `evt_vc_dump` needs no
+plumbing: the hub already listens to the existing `EventMessage`.
+
+**4. Live ads refresh on `ads_changed` (WorldLife + App).** WorldLife cannot reference this lane, so App glues them.
+`Features/WorldLife/Runtime/LiveSurfaces.cs`: `public void RefreshAdsNow() { _nextAds = 0f; _adsFailures = 0; }`
+`Features/WorldLife/Runtime/WorldLifeHub.cs`: `public void RefreshAds() => _surfaces.RefreshAdsNow();`
+`App/FlowController.cs` line ~65:
+```csharp
+_overlays.Add(new CTLife.WorldLife.WorldLifeHub());
+// -> var worldLife = new CTLife.WorldLife.WorldLifeHub();
+//    _overlays.Add(worldLife);
+//    _subscriptions.On<CTLife.Ventures.AdsChangedSignal>(_ => worldLife.RefreshAds());
+```
+Optional: serve `ad_rejection_reasons` and `project_events` so rejection reasons and risk events get their registry labels; until then the
+screens show the id made readable. In `ConfigStore.Normalize` add `MergeRegistry(ids, "ad_rejection_reasons", r["ad_rejection_reasons"], null); MergeRegistry(ids, "project_events", r["project_events"], null);`.
+
+**5. Venue interactions (Builder Hills, VC Row, booths, Pixel Wall).** Create once, next to the other overlays in `FlowController`:
+`_overlays.Add(new CTLife.Ventures.VenturesSpotLinks(id => { if (_phone != null) _phone.Open(id); }));` (it is `IDisposable`; it only reacts to
+`WorldInput.SpotTapped` and opens the phone app for these registry spots: `vc_row.center` -> `vc`, `timeline_square.pixel_wall` -> `ads`,
+`conference_hall.center` -> `ads`). Builder Hills has no spots in `contract/ids/spots.json`, so for the project board and the HQ door the venue
+lane / registry needs `builder_hills.project_board` and `builder_hills.hq_door` (kind `stand`); `VenturesSpots.AppFor` already maps them to `builder`.
+Booth desks in `conference_hall` can use the same app (`conference_hall.center` opens the Ad Desk, whose kind filter has "Conference Week booth").
+
+**6. Project HQ room (World + Net), optional for the first device pass.** `POST /projects/{id}/hq/visit` returns `{roomName: "project_hq", roomId}`.
+`Ventures.IProjectHqPresenter { Task Enter(RoomTicket, string projectId, string projectName, CancellationToken); Task Leave(); }` is looked up with
+`Services.TryGet`. It needs the same `JoinById` plumbing as hook 6 of the City Life entry above (`IRealtimeService.JoinHome` generalised to a named
+room). Without a presenter the HQ screen still works (project, team, fund, hire, launch) and says the 3D room is not wired in this build.
+
+**7. Creative picker (optional).** There is no image picker in the project. `Ventures.ICreativePicker { Task<PickedImage> Pick(CancellationToken) }` is
+looked up with `Services.TryGet`; register an Android document-picker implementation when a vetted one exists (a package must be verified on its
+registry first). Until then the Ad Desk reads a PNG/JPEG from a path inside `Application.persistentDataPath`/`temporaryCachePath` (any path in the editor).
+
+**8. Optional: "Hire" on the profile card.** The hire form takes a player id (paste). A button on `ProfileCard` could copy it or prefill the form; not done here.
+
+**Also (your call, no code):** the three apps need `Phases.Live >= 5` (mock/local default 6). Payments are devnet-only by `PaymentPolicy.DevnetOnly`
+(a mainnet environment shows "devnet-only in this build" instead of a pay button). Backend mismatches to forward to devIykee are listed in
+`docs/progress/phase5-ventures.md` ("Backend gaps").
+
+Status: open
