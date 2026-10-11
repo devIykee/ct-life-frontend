@@ -30,10 +30,19 @@ namespace CTLife.UI
         private readonly MovementControls _movement;
         private readonly InteractionPrompt _interact;
         private readonly Func<IVenueMic> _venueMic;
+        private readonly Map.Minimap _minimap;
+        private readonly VisualElement _avatar, _energyFill, _sanityFill;
+        private readonly Button _walletPill;
+        private readonly Label _walletValue;
+        private WalletBalanceService _wallet;
+        private string _avatarHead;
 
         public Action OpenPhone;
         public Action OpenMap;
         public Action OpenHome;
+        /// <summary>Opens a phone app by id (the wallet pill); set by the game.</summary>
+        public Action<string> OpenApp;
+        public Map.Minimap Minimap => _minimap;
 
         public VisualElement Element => _root;
 
@@ -51,8 +60,6 @@ namespace CTLife.UI
             _needsToggle = El.Btn("", ToggleNeeds, "ct-needs-toggle");
             _needsToggle.name = "hud-needs";
             _needsToggle.tooltip = Strings.T("hud.needsShow");
-            _needsToggle.Add(new UiIcon("needs"));
-            _needsToggle.Add(El.Div("ct-col", El.Text(Strings.T("hud.needsToggle"), "ct-needs-toggle-title"), _needsSummary));
             foreach (var n in new[] { "energy", "hunger", "fun", "hygiene", "sanity" })
             {
                 var bar = El.Div("ct-need-fill");
@@ -66,32 +73,63 @@ namespace CTLife.UI
             _emotes = new EmotePicker();
             _movement = new MovementControls();
             _interact = new InteractionPrompt();
-            _mic = HudAction("mic", Strings.T("hud.micOff"), ToggleMic);
+            _mic = HudAction("mic", Strings.T("hud.micOff"), ToggleMic, "microphone");
             _micLabel = _mic.Q<Label>();
 
-            var location = El.Btn("", () => OpenUtility(OpenMap), "ct-hud-location");
+            // Top-left: compact player plate (avatar + Energy/Sanity) opening the needs card; Lobby beside it.
+            _needsToggle.AddToClassList("hud-plate");
+            _needsToggle.Clear();
+            _avatar = El.Div("hud-avatar");
+            _avatar.pickingMode = PickingMode.Ignore;
+            _energyFill = El.Div("hud-meter-fill hud-meter-fill--energy");
+            _sanityFill = El.Div("hud-meter-fill hud-meter-fill--sanity");
+            var meters = El.Div("hud-meters", Meter("lightning-bolt", _energyFill), Meter("brain", _sanityFill));
+            _needsSummary.AddToClassList("hud-needs-summary");
+            _needsToggle.Add(_avatar);
+            _needsToggle.Add(El.PassThrough(El.Div("hud-plate-copy", meters, _needsSummary)));
+            var lobby = HudAction("lobby", Strings.T("hud.lobby"), () => OpenUtility(OpenHome), "home-page");
+            lobby.AddToClassList("hud-small-action");
+            var plate = El.Div("hud-plate-row", _needsToggle, lobby);
+            plate.pickingMode = PickingMode.Ignore;
+
+            // Top-centre: Cash and wallet pills, small.
+            var cash = El.Div("hud-pill hud-pill-cash", LobbyArt.Icon("coins", "hud-pill-icon"), _cash);
+            cash.name = "hud-cash";
+            El.PassThrough(cash);
+            _walletValue = El.Text("", "hud-pill-value");
+            _walletPill = El.Btn("", () => OpenUtility(() => OpenApp?.Invoke("wallet")), "hud-pill hud-pill-wallet");
+            _walletPill.name = "hud-wallet";
+            _walletPill.tooltip = Strings.T("lobby.wallet.title");
+            _walletPill.Add(El.PassThrough(El.Div("hud-sol-mark")));
+            _walletPill.Add(_walletValue);
+            _walletPill.style.display = DisplayStyle.None;
+            var top = El.Div("ct-hud-top hud-currencies", cash, _walletPill);
+            top.pickingMode = PickingMode.Ignore;
+
+            // Top-right: the live minimap (tap = full map) with the place and presence under it, the Duo tucked beside it.
+            _minimap = new Map.Minimap();
+            var location = El.Btn("", () => OpenUtility(OpenMap), "ct-hud-location hud-map-button");
             location.name = "hud-map";
             location.tooltip = Strings.T("hud.map");
-            location.Add(El.PassThrough(El.Div("ct-hud-location-mark", new UiIcon("map"))));
-            location.Add(El.PassThrough(El.Div("ct-hud-location-copy", _venue, El.Div("ct-hud-presence", _online, _mood))));
-            location.Add(new UiIcon("next").With("ct-hud-location-next"));
-            var cash = El.Div("ct-cash-card", new UiIcon("cash"),
-                El.Div("ct-col", El.Text(Strings.T("hud.cash"), "ct-hud-caption"), _cash));
-            El.PassThrough(cash);
-            var top = El.Div("ct-hud-top", cash, _needsToggle);
-            top.pickingMode = PickingMode.Ignore;
-            El.PassThrough(_needs);
+            location.Add(_minimap);
+            var place = El.Div("hud-place", _venue, El.Div("ct-hud-presence", _online, _mood));
+            location.Add(El.PassThrough(place));
+            var phone = PhoneAction();
+            phone.AddToClassList("hud-small-action");
+            var personal = El.Div("ct-hud-personal hud-corner", phone, location);
+            personal.pickingMode = PickingMode.Ignore;
+
+            // Bottom-right: round, icon-led context actions. Bottom-left: the joystick (MovementControls).
             var social = El.Div("ct-hud-social",
-                HudAction("chat", Strings.T("hud.chat"), () => { CollapseNeeds(); _emotes.Hide(); _chat.Toggle(); }),
-                HudAction("emotes", Strings.T("hud.emote"), () => { CollapseNeeds(); _chat.Hide(); _emotes.Toggle(); }, "emote"), _mic,
-                PhoneAction());
-            var personal = El.Div("ct-hud-personal",
-                HudAction("lobby", Strings.T("hud.lobby"), () => OpenUtility(OpenHome)), location);
-            // Movement owns the lower left. Social/utility actions stay on the right.
-            social.pickingMode = personal.pickingMode = PickingMode.Ignore;
-            _root = El.Div("ct-hud", top, _needs, _movement.Element, _emotes.Element, _chat.Element, social, personal, _interact.Element);
+                HudAction("chat", Strings.T("hud.chat"), () => { CollapseNeeds(); _emotes.Hide(); _chat.Toggle(); }, "speech-bubble"),
+                HudAction("emotes", Strings.T("hud.emote"), () => { CollapseNeeds(); _chat.Hide(); _emotes.Toggle(); }, "smiling"), _mic);
+            social.pickingMode = PickingMode.Ignore;
+            El.PassThrough(_needs);
+            _root = El.Div("ct-hud hud-arena", plate, top, _needs, _movement.Element, _emotes.Element, _chat.Element, social, personal, _interact.Element);
             _root.pickingMode = PickingMode.Ignore;
-            _interact.SetObstacles(top, _needsToggle, _needs, _movement.Element, social, personal, _chat.Element, _emotes.Element);
+            OnboardingFrame.AddSheet(_root, "UI/map");
+            _interact.SetObstacles(plate, top, _needs, _movement.Element, social, personal, _chat.Element, _emotes.Element);
+            if (Services.TryGet<WalletBalanceService>(out var wallet)) { _wallet = wallet; _wallet.Changed += RefreshWallet; RefreshWallet(); }
 
             _subs.On<ProfileChangedSignal>(_ => RefreshProfile());
             _subs.On<OpenMapRequestSignal>(_ => OpenUtility(OpenMap)); // the door interaction
@@ -124,7 +162,7 @@ namespace CTLife.UI
         /// <summary>The phone action carries the Duo's total unread count (red badge, cleared when read).</summary>
         private Button PhoneAction()
         {
-            var button = HudAction("phone", Strings.T("phone.ctos"), () => OpenUtility(OpenPhone), primary: true);
+            var button = HudAction("phone", Strings.T("phone.ctos"), () => OpenUtility(OpenPhone), "smartphone", primary: true);
             _phoneBadge = Duo.Badge(DuoNotificationCenter.TotalBadge, "ct-hud-badge");
             _phoneBadge.name = "hud-phone-badge";
             button.Add(_phoneBadge);
@@ -137,9 +175,45 @@ namespace CTLife.UI
             var button = El.Btn("", action, primary ? "ct-dock-action ct-dock-primary" : "ct-dock-action");
             button.name = "hud-" + id;
             button.tooltip = label;
-            button.Add(El.PassThrough(El.Div("ct-hud-keycap", new UiIcon(icon ?? id))));
+            button.Add(El.PassThrough(El.Div("ct-hud-keycap", LobbyArt.Icon(icon ?? id, "hud-icon"))));
             button.Add(El.PassThrough(El.Text(label, "ct-dock-label")));
             return button;
+        }
+
+        private static VisualElement Meter(string icon, VisualElement fill)
+        {
+            var m = El.Div("hud-meter", LobbyArt.Icon(icon, "hud-meter-icon"), El.Div("hud-meter-track", fill));
+            m.pickingMode = PickingMode.Ignore;
+            return m;
+        }
+
+        private void RefreshWallet()
+        {
+            var state = _wallet?.State;
+            var sol = state?.Token("SOL");
+            bool show = state != null && state.Status != WalletBalanceStatus.Disconnected && sol != null && OpenApp != null;
+            _walletPill.style.display = show ? DisplayStyle.Flex : DisplayStyle.None;
+            if (!show) return;
+            bool stale = sol.IsStale || sol.State == WalletTokenState.Unavailable;
+            _walletValue.text = (sol.Amount >= 10000m ? LobbyAmounts.Compact(sol.Amount.Value) : sol.Amount != null ? sol.FormatAmount(3) : "\u2014") + " SOL";
+            _walletPill.EnableInClassList("hud-pill--dim", stale);
+            _walletPill.tooltip = stale ? Strings.T("wallet.stale") : Strings.T("lobby.wallet.title");
+        }
+
+        private void RefreshAvatar(PlayerProfile p)
+        {
+            string head = p?.LookArray() is string[] look && look.Length > 1 ? look[1] : null;
+            if (head == _avatarHead) return;
+            _avatarHead = head;
+            var portrait = string.IsNullOrEmpty(head) ? null : Resources.Load<Texture2D>("UI/Customizer/Portraits/" + head);
+            _avatar.Clear();
+            if (portrait != null) _avatar.style.backgroundImage = new StyleBackground(portrait);
+            else
+            {
+                _avatar.style.backgroundImage = new StyleBackground(StyleKeyword.None);
+                var alias = (p?.Alias ?? "?").Trim();
+                _avatar.Add(El.Text(System.Globalization.StringInfo.GetNextTextElement(alias.Length > 0 ? alias : "?").ToUpperInvariant(), "hud-avatar-letter"));
+            }
         }
 
         public void Show(bool on)
@@ -184,8 +258,14 @@ namespace CTLife.UI
             decimal cash = p.CashCents / 100m;
             _cash.text = Math.Abs(cash) >= 10000m ? "$" + LobbyAmounts.Compact(cash) : Money.Cash(p.CashCents);
             _cash.tooltip = Money.Cash(p.CashCents);
+            RefreshAvatar(p);
+            if (_wallet != null) RefreshWallet();
             var n = p.Me.Needs;
             if (n == null) return;
+            _energyFill.style.width = Length.Percent(Mathf.Clamp(n.Energy, 0, 100));
+            _sanityFill.style.width = Length.Percent(Mathf.Clamp(n.Sanity, 0, 100));
+            _energyFill.EnableInClassList("hud-meter-fill--low", n.Energy < 25);
+            _sanityFill.EnableInClassList("hud-meter-fill--low", n.Sanity < 25);
             SetNeed("energy", n.Energy);
             SetNeed("hunger", n.Hunger);
             SetNeed("fun", n.Fun);
@@ -196,6 +276,7 @@ namespace CTLife.UI
             bool low = lowest.Item2 < 25;
             _needsSummary.text = low ? Strings.F("hud.needsLow", Strings.NeedName(lowest.Item1), Mathf.Clamp(lowest.Item2, 0, 100)) : Strings.T("hud.needsGood");
             _needsToggle.EnableInClassList("ct-needs-alert", low);
+            _needsSummary.style.display = low ? DisplayStyle.Flex : DisplayStyle.None;
         }
 
         private void ToggleNeeds()
@@ -277,6 +358,7 @@ namespace CTLife.UI
             _chat.Dispose();
             _interact.Dispose();
             _subs.Dispose();
+            if (_wallet != null) _wallet.Changed -= RefreshWallet;
         }
     }
 
