@@ -185,6 +185,11 @@ namespace CTLife.EditorTools
                     CityHudCapture.VehiclesOnly = true;
                     await CityHudCapture.Run(Shot, Wait, Expect, Step, Receipt);
                 }
+                else if (Set == "peds")
+                {
+                    CityHudCapture.PedsOnly = true;
+                    await CityHudCapture.Run(Shot, Wait, Expect, Step, Receipt);
+                }
                 else if (Set == "traffic")
                 {
                     CityHudCapture.TrafficOnly = true;

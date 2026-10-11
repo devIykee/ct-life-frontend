@@ -95,7 +95,7 @@ namespace CTLife.UI
             _candidates.Clear();
             foreach (var a in AvatarView.All)
             {
-                if (a == null || a.HeadAnchor == null) continue;
+                if (a == null || a.HeadAnchor == null || a.ambient) continue;
                 var delta = a.transform.position - origin;
                 delta.y = 0f;
                 float dist = delta.magnitude;

@@ -23,6 +23,11 @@ namespace CTLife.World
         public bool isLocal;
         public bool isSeeker;
         public string minerTier = "none";
+        /// <summary>Drawn out to this many metres (0: the avatar budget's <see cref="AvatarLod.CullDistance"/>). Street
+        /// people and traffic drivers on the island set more: 25 m left drivers invisible in cars passing 40 m off.</summary>
+        public float cullDistance;
+        /// <summary>Street people and traffic drivers: scenery, not someone to meet (no name tag, no profile on tap).</summary>
+        public bool ambient;
         public string tribeId;
 
         public Transform HeadAnchor { get; private set; }

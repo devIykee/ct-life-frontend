@@ -51,6 +51,8 @@ namespace CTLife.World.Vehicles
             Current = s;
             // AI traffic on the island's roads (it waits for World's RoadNetwork to be loaded)
             TrafficSystem.Ensure(player, player.transform.parent);
+            // and people on its sidewalks (World W4's walkable network)
+            CTLife.World.Pedestrians.PedestrianSystem.Ensure(player, player.transform.parent);
             return s;
         }
 
