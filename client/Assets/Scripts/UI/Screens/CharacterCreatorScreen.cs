@@ -343,7 +343,9 @@ namespace CTLife.UI
                 _modelCards.Add(card);
             }
             var scroll = El.VerticalScroll("ob-model-scroll");
-            _modelGrid = ChoiceGrid.Build(_modelCards.Cast<VisualElement>().ToList(), 4, 300f, 1.4f, 18f);
+            // Portrait tiles, not cards (user review 2026-10-10): six across, two rows visible, and the scroll ends above
+            // the CTA so the roster never touches NEXT.
+            _modelGrid = ChoiceGrid.Build(_modelCards.Cast<VisualElement>().ToList(), 6, 236f, 2f, 16f);
             scroll.Add(_modelGrid);
             return Page(Strings.T("ob.look.title"), Strings.T("ob.look.sub"), scroll);
         }

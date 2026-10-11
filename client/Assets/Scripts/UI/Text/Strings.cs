@@ -152,7 +152,7 @@ namespace CTLife.UI
             ["ob.lottery.seeker.line"] = "Born with the right phone in hand.",
             ["ob.lottery.exit.line"] = "Cooked on day one. Not your fault.",
             ["ob.lottery.exit.line2"] = "Everyone gets a comeback arc. Yours starts now.",
-            ["ob.look.title"] = "Pick your character", ["ob.look.sub"] = "Drag to turn. Tap one to try it on.",
+            ["ob.look.title"] = "Pick your character", ["ob.look.sub"] = "Tap one to try it on.",
             ["ob.look.count"] = "{0} of {1}", ["ob.look.full"] = "FULL BODY", ["ob.look.face"] = "FACE", ["ob.look.drag"] = "Drag to turn",
             ["ob.look.previewTag"] = "PREVIEW ONLY",
             ["ob.tribe.title"] = "Find your people", ["ob.tribe.sub"] = "One tribe. One perk.",
