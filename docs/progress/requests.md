@@ -1206,3 +1206,65 @@ your capture. Watch the café chairs at 0.45 m (the old seats were 0.37), the de
 the bean bags.
 
 Status: done (venue builder, round 6); re-verification requested from character-feel
+
+## 2026-10-08 venue builder → integration lead (+ world-life lane, backend B17/B10): patrons in Terminal Café and Spaces Studio
+
+The coordinator asked round 7 for life in the café: a barista behind the bar, 2–3 seated typers and one trader at a
+trading desk. The same applies to Spaces Studio. I traced it read-only, and **this is not venue data**. The client places
+no ambient NPCs; every venue NPC comes from the backend venue room.
+
+What happens today (backend checkout 9f3e5ef; `origin/main` has the same code):
+- `server/realtime/rooms/venue.ts:383-398` `npcArchetypesFor()` hard-codes the NPC lists:
+  - `terminal_cafe` gets `['wallet_tracker']` only. That brain only ever sends `talk` or `idle` with
+    `targetSpotId: 'cafe_terminal'`. The world-life alias (`npc_presentation.json:248`, `cafe_terminal → terminal_*`)
+    resolves it by hash to `terminal_4`, where it stands. Nobody sits, types, or works the counter.
+  - `spaces_studio` falls to `default: []`, so it has **no NPCs at all**.
+- B10: the venue room has no `filterBy(['venueId'])`. A café join can land in another venue's room, the client then
+  falls back to offline, and offline has no NPCs.
+
+The ask, backend (B17 in `docs/handoff/backend-fixes-for-iyke.md`), with global spot ids from `spots.json`
+(1.0.0-rc1+fe.8; every one of these seats is now fitted in `SeatFits.asset`):
+
+| Venue | Who | Spot(s) | State / anim |
+| --- | --- | --- | --- |
+| terminal_cafe | barista | `terminal_cafe.counter` (−5.3, 4.5), behind the bar facing the room | stand, `loco_idle` (or a serve beat) |
+| terminal_cafe | 2–3 laptop patrons | `terminal_cafe.terminal_1..4` (communal laptop table) | `act` + `act_type` |
+| terminal_cafe | 1 trader | one of `terminal_cafe.terminal_5..8` (twin-monitor desks) | `act` + `act_type` |
+| terminal_cafe | optional 1–2 coffee drinkers | `terminal_cafe.table_1..4` | `act` + `act_sit` |
+| spaces_studio | host | `spaces_studio.stage_host` | stand, talk beats |
+| spaces_studio | 2 guests | `spaces_studio.stage_4..7` | `act` + `act_sit` |
+| spaces_studio | 3–5 audience | `spaces_studio.seat_1..20` (bean bags 1–10, poufs 11–20) | `act` + `act_sit` |
+
+The client already walks an NPC with a seat anim to the seat's approach point and sits it (`NpcController` 172-226).
+
+World-life lane, small data follow-ups:
+- Exact aliases, or no alias, for the new spot ids in `npc_presentation.json`.
+- A look in `archetype_looks.json` for any new archetype (barista, patron).
+
+Venue lane side: nothing left to do. The spots, approaches and seat fits exist.
+
+Status: open (integration lead to route: backend B17 + B10, world-life aliases/looks)
+
+## 2026-10-08 venue builder → character-feel: round 7 compact café moved every café seat (spots.json fe.8)
+
+Round 7 shrinks Terminal Café to 17 × 12 m (walkable x −8.5..8.5, z −6..6) so the zones sit close together.
+
+- **Positions:** every terminal, table seat, the counter, entrance, exit, center and pulse_screen move with their
+  furniture. Ids, kinds, anims and facings are unchanged. Seat-to-furniture offsets are as fe.7:
+  - laptops are 0.63 m ahead on the communal table;
+  - keyboards are 0.45 m ahead of `terminal_5..8`.
+- **Furniture:** the same models as round 6.
+- **Seat builders re-run:** `SeatFitBuilder` → `SeatPoseBuilder` (Build + Measure).
+  - Reports: `ct-life-evidence/venues/round7/seat-measure.json`, `seat-pose-build.json`, `seat-pose-metrics.json`.
+  - Seat heights are unchanged except `terminal_5..8`, at 0.449 m (was 0.455).
+
+| Spot | fe.7 (round 6) | fe.8 (round 7) |
+| --- | --- | --- |
+| `terminal_1..4` | (±1.3, −3.7 / −1.5) | (−2.7 / −0.1, −2.7 / −0.5) |
+| `terminal_5..8` | (10.75, −4.9 / −2.2 / 0.5 / 3.2) | (7.4, −3.6 / −1.5 / 0.6 / 2.7) |
+| `table_1..4` | (0.65 / 1.75 / 5.65 / 6.75, 2.85) | (1.15 / 2.25 / 4.35 / 5.45, 0.45) |
+| `counter` | (−7.0, 5.25) | (−5.3, 4.5) |
+| `entrance` / `exit` | (0, −8) / (0, −9) | (0, −5) / (0, −6) |
+| `center` / `pulse_screen` | (0, 0) / (0, 8.5) | (0.3, 1.4) / (−0.45, 5.2) |
+
+Status: done (venue builder, round 7); FYI for character-feel. [Unverified] I did not re-run your PlayMode seating captures.

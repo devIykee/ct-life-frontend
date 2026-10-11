@@ -368,3 +368,12 @@ add('tl_lamp_post', 'quaternius/modular_streets::Streetlight_Single', TL, fit=('
 add('tl_tree_citrus', USN + 'MapleTree_4', TL, fit=('z', 2.6), force_palette=True, quant=24,
     tex={'MapleTree_Leaves': 'ctlife_custom/CitrusTree_Leaves.png'})
 add('houseplant_fern_lite', HI + 'Houseplant_5', TC, fit=('z', 0.6), decimate=0.5)
+
+# --- Round 7 (café density): shelf clutter, pastries, hanging planters, shelving
+for name in ('jar_beans', 'coffee_bag', 'cup_stack', 'hanging_planter'):
+    add(name, CU + name, TC, smooth=40)
+add('muffin', KFO + 'muffin', TC, fit=('x', 0.11))
+add('cupcake', KFO + 'cupcake', TC, fit=('z', 0.12))
+add('cookie', KFO + 'cookie-chocolate', TC, fit=('x', 0.09))
+add('plate', KFO + 'plate', TC, fit=('x', 0.24))
+add('cafe_bookcase', KFU + 'bookcaseOpen', TC, fit=('z', 1.9), recolor=rc({'to': '6b4429'}))

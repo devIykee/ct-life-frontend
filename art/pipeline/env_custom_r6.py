@@ -321,6 +321,50 @@ if want('headphones'):
         b.cyl(0.04, 0.012, (sx * 0.07, 0, 0.06), mat('r6_cushion_orange', 'E8743B', 0.9), seg=10, axis='X')
     b.save()
 
+if want('jar_beans'):
+    # Glass storage jar (pale glass flattened to the palette) full of coffee beans, cork lid.
+    b = Model('jar_beans')
+    GLASS = mat('r6_glass', 'CFE3E6', 0.1)
+    b.lathe([(0.0, 0.0), (0.07, 0.0), (0.075, 0.01), (0.075, 0.17), (0.06, 0.19), (0.0, 0.19)], GLASS, seg=14)
+    b.lathe([(0.0, 0.012), (0.068, 0.012), (0.068, 0.13), (0.0, 0.14)], BEANS, seg=14)
+    b.lathe([(0.0, 0.19), (0.058, 0.19), (0.058, 0.23), (0.0, 0.23)], mat('r6_cork', 'B9925F', 0.9), seg=12)
+    b.save()
+
+if want('coffee_bag'):
+    # Stand-up coffee bag with a folded top and a cream label band (no letters).
+    b = Model('coffee_bag')
+    b.soft((0.14, 0.08, 0.2), (0, 0, 0.1), mat('r6_kraft', 'A0784C', 0.9), crease=0.85, puff=0.04, levels=1)
+    b.box((0.142, 0.06, 0.03), (0, 0, 0.215), mat('r6_kraft', 'A0784C', 0.9))
+    b.box((0.143, 0.082, 0.06), (0, 0, 0.1), CREAM)
+    b.save()
+
+if want('cup_stack'):
+    # Three white cups on saucers, stacked (espresso station / shelf clutter).
+    b = Model('cup_stack')
+    for k in range(3):
+        z = k * 0.075
+        b.cyl(0.07, 0.01, (0, 0, z + 0.005), WHITE, seg=14)
+        b.lathe([(0.0, 0.01), (0.035, 0.01), (0.047, 0.03), (0.05, 0.07), (0.045, 0.072), (0.0, 0.072)], WHITE, seg=12, loc=(0, 0, z))
+    b.save()
+
+if want('hanging_planter'):
+    # Macrame hanging planter: cream pot in a rope cradle (the venue adds the cord to the ceiling line and the vine).
+    b = Model('hanging_planter')
+    ROPE = mat('r6_rope', 'D9C7A3', 0.95)
+    b.lathe([(0.0, 0.0), (0.09, 0.0), (0.13, 0.05), (0.15, 0.17), (0.13, 0.19), (0.12, 0.18), (0.0, 0.17)], CREAM, seg=16)
+    for k in range(4):
+        a = k * math.pi / 2 + math.pi / 4
+        b.tube([(math.cos(a) * 0.1, math.sin(a) * 0.1, 0.0), (math.cos(a) * 0.16, math.sin(a) * 0.16, 0.18), (0, 0, 0.62)], 0.008, ROPE, seg=4)
+    b.lathe([(0.0, 0.17), (0.12, 0.17), (0.0, 0.2)], mat('r6_soil', '5C4630', 0.9), seg=12)
+    LEAF = mat('r6_leaf', '4F8A3A', 0.8)
+    for k in range(6):
+        a = k * math.tau / 6
+        b.sphere(0.07, (math.cos(a) * 0.09, math.sin(a) * 0.09, 0.23), LEAF, seg=6, ring=4, scale=(1.3, 1.3, 0.6))
+    b.save()
+
+if want('art_frame_easel'):
+    pass
+
 # ------------------------------------------------------------------ coffee bar equipment
 if want('espresso_machine'):
     b = Model('espresso_machine')

@@ -176,11 +176,19 @@ namespace CTLife.EditorTools.VenueBuild
                 // Gameplay captures at the in-game concepts' size and aspect (side-by-side evidence): entrance and centre views.
                 if (label == "entrance" && entranceCapturePath != null) Render(cam, entranceCapturePath, 1870, 841);
                 if (label == "center" && entranceCapturePath != null) Render(cam, entranceCapturePath.Replace("-entrance.png", "-center.png"), 1870, 841);
-                views.Add(new JObject
+                var view = new JObject
                 {
                     ["view"] = label, ["estimatedDraws"] = est.draws, ["estimatedTriangles"] = est.tris, ["materials"] = est.materials,
                     ["visibleRenderers"] = est.renderers,
-                });
+                };
+                if (label == "entrance" || label == "center")
+                {
+                    var fs = FloorStats(go, cam);
+                    view["bareFloorOfFrame"] = Math.Round(fs.bare, 3);
+                    view["bareFloorOfRoom"] = Math.Round(fs.bareOfRoom, 3);
+                    Debug.Log($"CTLIFE [venues] {venue.venueId} {label}: bare floor {fs.bare:P0} of the frame, {fs.bareOfRoom:P0} of the room (floor + furniture + decor)");
+                }
+                views.Add(view);
             }
             return (views, maxDraws, maxTris);
         }
@@ -202,6 +210,54 @@ namespace CTLife.EditorTools.VenueBuild
         }
 
         /// <summary>Same framing math as CameraRig.Follow with the venue's authored settings.</summary>
+        /// <summary>
+        /// Round 7: how much of the gameplay frame is bare floor. Rays through a 96 x 44 grid hit the venue's render meshes
+        /// (temporary mesh colliders on a scratch layer, LOD0 only): a hit on the shell floor facing up below 3 cm is bare
+        /// floor; rugs, furniture and decor count as room content; walls are room too; backdrop and misses are outside.
+        /// </summary>
+        internal static (float bare, float bareOfRoom) FloorStats(GameObject go, Camera cam)
+        {
+            const int layer = 31;
+            var added = new List<(GameObject go, int layer, MeshCollider col)>();
+            try
+            {
+                foreach (var r in go.GetComponentsInChildren<MeshRenderer>(false))
+                {
+                    if (!r.enabled || r.name.EndsWith("_LOD1")) continue;
+                    var mf = r.GetComponent<MeshFilter>();
+                    if (mf == null || mf.sharedMesh == null) continue;
+                    var col = r.gameObject.AddComponent<MeshCollider>();
+                    col.sharedMesh = mf.sharedMesh;
+                    added.Add((r.gameObject, r.gameObject.layer, col));
+                    r.gameObject.layer = layer;
+                }
+                Physics.SyncTransforms();
+                int bare = 0, room = 0, total = 0;
+                const int nx = 96, ny = 44;
+                for (int iy = 0; iy < ny; iy++)
+                    for (int ix = 0; ix < nx; ix++)
+                    {
+                        total++;
+                        var ray = cam.ViewportPointToRay(new Vector3((ix + 0.5f) / nx, (iy + 0.5f) / ny, 0f));
+                        if (!Physics.Raycast(ray, out var hit, 200f, 1 << layer, QueryTriggerInteraction.Collide)) continue;
+                        var t = hit.collider.transform;
+                        bool backdrop = t.GetComponentsInParent<Transform>(true).Any(x => x.name == "Backdrop");
+                        if (backdrop) continue;
+                        room++;
+                        if (t.name.StartsWith("Shell_") && hit.normal.y > 0.9f && hit.point.y < 0.03f) bare++;
+                    }
+                return (bare / (float)total, room > 0 ? bare / (float)room : 0f);
+            }
+            finally
+            {
+                foreach (var (g, l, col) in added)
+                {
+                    Object.DestroyImmediate(col);
+                    g.layer = l;
+                }
+            }
+        }
+
         private static void PlaceGameplayCamera(Camera cam, VenueSceneRoot venue, Vector3 target)
         {
             cam.fieldOfView = venue.cameraFieldOfView;
