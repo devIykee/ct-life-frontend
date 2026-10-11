@@ -75,7 +75,9 @@ namespace CTLife.CityLife.Tests
                 Assert.That(root.panel, Is.Not.Null);
                 Assert.That(rest.Reads, Is.EqualTo(1));
                 Assert.That(root.Query<Label>().ToList().Select(l => l.text), Does.Contain(CityLifeStrings.T("biz.notLive")));
-                var buys = root.Query<Button>().ToList().Where(b => b.text == CityLifeStrings.T("biz.buy")).ToList();
+                // Duo layout: Buy is a capsule pill (its label is a child), one per catalog row.
+                var buys = root.Query<Button>().ToList().Where(b => b.text == CityLifeStrings.T("biz.buy")
+                    || b.Q<Label>(className: "duo-pill-label")?.text == CityLifeStrings.T("biz.buy")).ToList();
                 Assert.That(buys, Is.Not.Empty);
                 Assert.That(buys.All(b => !b.enabledSelf), Is.True);
                 Assert.That(rest.Writes, Is.Zero);

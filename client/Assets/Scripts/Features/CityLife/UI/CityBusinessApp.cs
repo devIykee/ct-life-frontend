@@ -29,12 +29,12 @@ namespace CTLife.CityLife
             private readonly Dictionary<string, string> _notes = new Dictionary<string, string>(StringComparer.Ordinal);
             private readonly VisualElement _body = El.Div();
 
-            public BizView(CityLifeHub hub) : base(hub)
+            public BizView(CityLifeHub hub) : base(hub, CityLifeStrings.T("biz.title"))
             {
                 _catalog = BusinessDef.ParseConfig(Services.Get<ConfigStore>().Config("businesses"));
-                Root.Add(CityUi.H1(CityLifeStrings.T("biz.title")));
-                Root.Add(CityUi.Small(CityLifeStrings.T("biz.hint")));
-                Root.Add(_body);
+                Page.name = "business-page";
+                Page.AddToClassList("duo-business");
+                Body.Add(_body);
                 Load();
                 Render();
             }
@@ -53,11 +53,32 @@ namespace CTLife.CityLife
             {
                 if (!Alive) return;
                 _body.Clear();
-                if (!Live) _body.Add(CityUi.Card(CityUi.Text(CityLifeStrings.T("biz.notLive"))));
-                else if (_ownedError != null) { _body.Add(CityUi.Error(_ownedError.Message)); _body.Add(CityUi.Btn(CityLifeStrings.T("common.retry"), Load, "ct-btn")); }
-                if (_owned != null)
-                    foreach (var o in _owned) _body.Add(OwnedCard(o));
-                foreach (var d in _catalog) _body.Add(CatalogCard(d));
+                if (!Live) _body.Add(Duo.Notice(CityLifeStrings.T("biz.notLive"), Duo.Tone.Warning));
+                else if (_ownedError != null)
+                {
+                    _body.Add(Duo.Notice(_ownedError.Message, Duo.Tone.Danger));
+                    _body.Add(CityUi.Row(CityUi.Btn(CityLifeStrings.T("common.retry"), Load, CityUi.Plain)));
+                }
+                if (_owned != null && _owned.Count > 0)
+                {
+                    // Hero: what is waiting to be collected across your businesses (server pending amounts).
+                    long pending = 0;
+                    foreach (var o in _owned) pending += Math.Max(0, o.PendingCents);
+                    var hero = Duo.Hero(CityLifeStrings.T("biz.pendingLabel"), Money.Cash(pending), null, null, CityLifeStrings.F("biz.ownedCount", _owned.Count));
+                    hero.name = "business-hero";
+                    _body.Add(hero);
+                    _body.Add(Duo.SectionHeader(CityLifeStrings.T("biz.yours")));
+                    var owned = El.Div("duo-list");
+                    foreach (var o in _owned) owned.Add(OwnedRow(o));
+                    Duo.MarkLast(owned);
+                    _body.Add(owned);
+                }
+                _body.Add(Duo.SectionHeader(CityLifeStrings.T("biz.catalog")));
+                _body.Add(CityUi.Small(CityLifeStrings.T("biz.hint")));
+                var list = El.Div("duo-list");
+                foreach (var d in _catalog) list.Add(CatalogRow(d));
+                Duo.MarkLast(list);
+                _body.Add(list);
             }
 
             private string NameOf(string kindId)
@@ -66,47 +87,84 @@ namespace CTLife.CityLife
                 return d != null && !string.IsNullOrEmpty(d.Name) ? d.Name : CityLifeStrings.Readable(kindId);
             }
 
-            private VisualElement CatalogCard(BusinessDef d)
+            private static readonly string[] Tints = { "indigo", "orange", "teal", "pink", "green", "purple" };
+
+            private VisualElement CatalogRow(BusinessDef d)
             {
-                var card = CityUi.Card(CityUi.H2(string.IsNullOrEmpty(d.Name) ? CityLifeStrings.Readable(d.Id) : d.Name));
-                if (CityLifeStrings.Has("biz.flavor." + d.Id)) card.Add(CityUi.Small(CityLifeStrings.T("biz.flavor." + d.Id)));
-                card.Add(CityUi.Text(CityLifeStrings.F("biz.cost", Money.Cash(d.CostCents))));
-                card.Add(CityUi.Small(CityLifeStrings.F("biz.income", Money.Cash(d.IncomeMinCents), Money.Cash(d.IncomeMaxCents))));
-                card.Add(CityUi.Small(CityLifeStrings.F("biz.badDay", Money.Bps(d.BadDayChanceBps, false), Money.Cash(d.BadDayPayCents))));
-                card.Add(CityUi.Small(CityLifeStrings.F("biz.expected", Money.Cash((long)Math.Round(d.ExpectedPayCents)), CityLifeStrings.T("common.estimate"))));
-                if (d.BreakEvenPeriods > 0) card.Add(CityUi.Small(CityLifeStrings.F("biz.breakEven", Math.Ceiling(d.BreakEvenPeriods), CityLifeStrings.T("common.estimate"))));
-                if (d.SellBackCents >= 0) card.Add(CityUi.Small(CityLifeStrings.F("biz.sellBack", Money.Cash(d.SellBackCents))));
+                int i = Math.Max(0, _catalog.IndexOf(d));
+                var row = new DuoRow(() => CatalogSheet(d)).Leading(El.PassThrough(El.Div("duo-app-tile duo-tint-" + Tints[i % Tints.Length], new UiIcon("city"))))
+                    .Title(string.IsNullOrEmpty(d.Name) ? CityLifeStrings.Readable(d.Id) : d.Name, "duo-row-title-strong")
+                    .Subtitle(CityLifeStrings.F("biz.rowLine", Money.Cash(d.CostCents), Money.Cash(d.IncomeMinCents), Money.Cash(d.IncomeMaxCents)), twoLines: true);
+                row.name = "business-kind-" + d.Id;
                 var flow = Flow("buy:" + d.Id);
-                if (flow.Error != null) card.Add(CityUi.Error(flow.Error.Message));
-                if (_notes.TryGetValue("buy:" + d.Id, out var note)) card.Add(CityUi.Small(note));
-                var buy = CityUi.Btn(flow.Stage == WriteStage.Unknown ? CityLifeStrings.T("common.retry") : CityLifeStrings.T("biz.buy"), () => Buy(d));
-                var me = Hub.Profile?.Me;
+                if (flow.Error != null) row.TextColumn.Add(El.Text(flow.Error.Message, "duo-row-subtitle duo-destructive"));
+                if (_notes.TryGetValue("buy:" + d.Id, out var note)) row.TextColumn.Add(El.Text(note, "duo-row-subtitle duo-value-positive"));
+                var buy = Duo.Pill(flow.Stage == WriteStage.Unknown ? CityLifeStrings.T("common.retry") : CityLifeStrings.T("biz.buy"), () => Buy(d), Duo.PillKind.Primary);
+                buy.name = "business-buy-" + d.Id;
                 buy.SetEnabled(Live && _owned != null && flow.Stage != WriteStage.Sending && !Hub.Businesses.IsStub);
-                if (me != null && me.CashCents < d.CostCents) card.Add(CityUi.Small(CityLifeStrings.F("err.insufficientCash", Money.Cash(d.CostCents - me.CashCents))));
-                card.Add(buy);
-                return card;
+                row.Trailing(buy);
+                return row;
             }
 
-            private VisualElement OwnedCard(OwnedBusiness o)
+            private void CatalogSheet(BusinessDef d)
             {
-                var card = CityUi.Card(PhonePresentation.Status(CityLifeStrings.T("biz.owned"), PhonePresentation.Tone.Success), CityUi.Text(NameOf(o.KindId), "ct-duo-card-title"));
-                if (o.LastDay != null)
-                {
-                    card.Add(CityUi.Small(CityLifeStrings.F("biz.lastDay", CityLifeStrings.T("biz.day." + o.LastDay.Kind)) + " · " + Money.Cash(o.LastDay.PayCents)));
-                    if (o.LastDay.Kind == "bad_day") card.Add(CityUi.Text(CityLifeStrings.BadDay(o.LastDay.EventId)));
-                }
-                if (o.NextPayoutAtMs.HasValue) card.Add(CityUi.Small(CityUi.When(o.NextPayoutAtMs.Value)));
+                var name = string.IsNullOrEmpty(d.Name) ? CityLifeStrings.Readable(d.Id) : d.Name;
+                var sheet = new DuoSheet(name, CityLifeStrings.Has("biz.flavor." + d.Id) ? CityLifeStrings.T("biz.flavor." + d.Id) : null);
+                sheet.name = "business-sheet";
+                sheet.AddContent(CityUi.Pair(CityLifeStrings.T("biz.costRow"), Money.Cash(d.CostCents)));
+                sheet.AddContent(CityUi.Pair(CityLifeStrings.T("biz.incomeRow"), Money.Cash(d.IncomeMinCents) + "–" + Money.Cash(d.IncomeMaxCents)));
+                sheet.AddContent(CityUi.Small(CityLifeStrings.F("biz.badDay", Money.Bps(d.BadDayChanceBps, false), Money.Cash(d.BadDayPayCents))));
+                sheet.AddContent(CityUi.Small(CityLifeStrings.F("biz.expected", Money.Cash((long)Math.Round(d.ExpectedPayCents)), CityLifeStrings.T("common.estimate"))));
+                if (d.BreakEvenPeriods > 0) sheet.AddContent(CityUi.Small(CityLifeStrings.F("biz.breakEven", Math.Ceiling(d.BreakEvenPeriods), CityLifeStrings.T("common.estimate"))));
+                if (d.SellBackCents >= 0) sheet.AddContent(CityUi.Small(CityLifeStrings.F("biz.sellBack", Money.Cash(d.SellBackCents))));
+                var me = Hub.Profile?.Me;
+                if (me != null && me.CashCents < d.CostCents) sheet.AddContent(Duo.Notice(CityLifeStrings.F("err.insufficientCash", Money.Cash(d.CostCents - me.CashCents)), Duo.Tone.Warning));
+                var flow = Flow("buy:" + d.Id);
+                if (Live && _owned != null && flow.Stage != WriteStage.Sending && !Hub.Businesses.IsStub)
+                    sheet.AddPrimary(CityLifeStrings.F("biz.buyFor", Money.Cash(d.CostCents)), () => Buy(d), name: "business-sheet-buy");
+                sheet.AddSecondary(CityLifeStrings.T("common.close"));
+                ShowSheet(sheet);
+            }
+
+            private VisualElement OwnedRow(OwnedBusiness o)
+            {
+                var sub = new List<string>();
+                if (o.LastDay != null) sub.Add(CityLifeStrings.F("biz.lastDay", CityLifeStrings.T("biz.day." + o.LastDay.Kind)) + " · " + Money.Cash(o.LastDay.PayCents));
+                if (o.NextPayoutAtMs.HasValue) sub.Add(CityLifeStrings.F("biz.nextPayout", CityUi.When(o.NextPayoutAtMs.Value)));
+                var row = new DuoRow(() => OwnedSheet(o)).Leading(El.PassThrough(El.Div("duo-app-tile duo-tint-green", new UiIcon("city"))))
+                    .Title(NameOf(o.KindId), "duo-row-title-strong");
+                if (sub.Count > 0) row.Subtitle(string.Join("\n", sub), twoLines: true);
+                row.name = "business-owned-" + o.BusinessId;
                 var cf = Flow("collect:" + o.BusinessId);
                 var sf = Flow("sell:" + o.BusinessId);
-                foreach (var f in new[] { cf, sf }) if (f.Error != null) card.Add(CityUi.Error(f.Error.Message));
-                if (_notes.TryGetValue(o.BusinessId, out var note)) card.Add(CityUi.Text(note));
-                var collect = CityUi.Btn(cf.Stage == WriteStage.Unknown ? CityLifeStrings.T("common.retry") : CityLifeStrings.F("biz.collect", Money.Cash(o.PendingCents)), () => Collect(o));
+                foreach (var f in new[] { cf, sf }) if (f.Error != null) row.TextColumn.Add(El.Text(f.Error.Message, "duo-row-subtitle duo-destructive"));
+                if (_notes.TryGetValue(o.BusinessId, out var note)) row.TextColumn.Add(El.Text(note, "duo-row-subtitle duo-value-positive"));
+                if (o.LastDay?.Kind == "bad_day") row.TextColumn.Add(El.Text(CityLifeStrings.BadDay(o.LastDay.EventId), "duo-row-subtitle duo-comp-status"));
+                var collect = Duo.Pill(cf.Stage == WriteStage.Unknown ? CityLifeStrings.T("common.retry") : Money.Cash(o.PendingCents), () => Collect(o), Duo.PillKind.Primary);
+                collect.name = "business-collect-" + o.BusinessId;
+                collect.tooltip = CityLifeStrings.F("biz.collect", Money.Cash(o.PendingCents));
                 collect.SetEnabled(cf.Stage != WriteStage.Sending && (o.PendingCents > 0 || cf.Stage == WriteStage.Unknown));
-                var sell = CityUi.Btn(sf.Stage == WriteStage.Unknown ? CityLifeStrings.T("common.retry") : CityLifeStrings.T("biz.sell")
-                    + (o.SellBackCents >= 0 ? " (" + Money.Cash(o.SellBackCents) + ")" : ""), () => Sell(o), "ct-btn ct-btn-danger");
-                sell.SetEnabled(sf.Stage != WriteStage.Sending);
-                card.Add(PhonePresentation.Footer(collect, sell));
-                return card;
+                row.Trailing(collect);
+                return row;
+            }
+
+            private void OwnedSheet(OwnedBusiness o)
+            {
+                var sheet = new DuoSheet(NameOf(o.KindId), CityLifeStrings.T("biz.owned"));
+                sheet.name = "business-owned-sheet";
+                sheet.AddContent(CityUi.Pair(CityLifeStrings.T("biz.pendingLabel"), Money.Cash(o.PendingCents)));
+                if (o.LastDay != null) sheet.AddContent(CityUi.Pair(CityLifeStrings.F("biz.lastDay", CityLifeStrings.T("biz.day." + o.LastDay.Kind)), Money.Cash(o.LastDay.PayCents)));
+                if (o.NextPayoutAtMs.HasValue) sheet.AddContent(CityUi.Pair(CityLifeStrings.T("biz.nextPayoutRow"), CityUi.When(o.NextPayoutAtMs.Value)));
+                if (o.LastDay?.Kind == "bad_day") sheet.AddContent(Duo.Notice(CityLifeStrings.BadDay(o.LastDay.EventId), Duo.Tone.Warning));
+                var cf = Flow("collect:" + o.BusinessId);
+                var sf = Flow("sell:" + o.BusinessId);
+                if (cf.Stage != WriteStage.Sending && (o.PendingCents > 0 || cf.Stage == WriteStage.Unknown))
+                    sheet.AddPrimary(CityLifeStrings.F("biz.collect", Money.Cash(o.PendingCents)), () => Collect(o), name: "business-sheet-collect");
+                if (sf.Stage != WriteStage.Sending)
+                    sheet.AddPrimary((sf.Stage == WriteStage.Unknown ? CityLifeStrings.T("common.retry") : CityLifeStrings.T("biz.sell"))
+                        + (o.SellBackCents >= 0 ? " (" + Money.Cash(o.SellBackCents) + ")" : ""), () => Sell(o), destructive: true, name: "business-sheet-sell");
+                sheet.AddSecondary(CityLifeStrings.T("common.close"));
+                ShowSheet(sheet);
             }
 
             private void Buy(BusinessDef d)

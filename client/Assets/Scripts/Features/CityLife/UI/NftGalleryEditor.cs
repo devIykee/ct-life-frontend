@@ -31,7 +31,7 @@ namespace CTLife.CityLife
             _hub = hub;
             _alive = alive;
             _life = CancellationTokenSource.CreateLinkedTokenSource(life);
-            Root = CityUi.Card();
+            Root = El.Div("duo-nft");
             _save.Changed += Render;
             Load();
         }
@@ -86,57 +86,67 @@ namespace CTLife.CityLife
         {
             if (!Alive) return;
             Root.Clear();
-            Root.Add(CityUi.H2(CityLifeStrings.T("nft.title")));
-            Root.Add(CityUi.Small(CityLifeStrings.T("nft.hint")));
-            if (_loading) { Root.Add(CityUi.Small(CityLifeStrings.T("common.loading"))); return; }
+            Root.Add(Duo.GroupHeader(CityLifeStrings.T("nft.title")));
+            var group = El.Div("duo-group duo-nft-group");
+            Root.Add(group);
+            if (_loading) { group.Add(CityUi.Small(CityLifeStrings.T("common.loading"))); return; }
             if (_error != null)
             {
-                Root.Add(CityUi.Small(_error.Is("UNAVAILABLE") ? CityLifeStrings.T("nft.notLive") : _error.Message));
-                if (!_error.Is("UNAVAILABLE")) Root.Add(CityUi.Btn(CityLifeStrings.T("common.retry"), Load, "ct-btn"));
+                group.Add(CityUi.Small(_error.Is("UNAVAILABLE") ? CityLifeStrings.T("nft.notLive") : _error.Message));
+                if (!_error.Is("UNAVAILABLE")) group.Add(CityUi.Row(CityUi.Btn(CityLifeStrings.T("common.retry"), Load, CityUi.Plain)));
+                Root.Add(Duo.GroupFooter(CityLifeStrings.T("nft.hint")));
                 return;
             }
             if (_mine == null) return;
-            if (_slots.Length == 0) { Root.Add(CityUi.Small(CityLifeStrings.T("nft.noWalls"))); return; }
+            if (_slots.Length == 0) { group.Add(CityUi.Small(CityLifeStrings.T("nft.noWalls"))); Root.Add(Duo.GroupFooter(CityLifeStrings.T("nft.hint"))); return; }
             int used = 0;
             foreach (var s in _slots) if (s != null) used++;
-            Root.Add(CityUi.Text(CityLifeStrings.F("nft.slots", used, _slots.Length), "ct-small"));
             for (int i = 0; i < _slots.Length; i++)
             {
                 int slot = i;
                 var item = _slots[i];
-                var row = CityUi.Row(CityUi.Text(CityLifeStrings.F("nft.slot", i + 1), "ct-small"));
-                if (item == null) row.Add(CityUi.Small(CityLifeStrings.T("nft.emptySlot")));
+                var row = new DuoRow().Title(CityLifeStrings.F("nft.slot", i + 1), "duo-row-title-strong");
+                row.AddToClassList("duo-row-static");
+                if (item == null) { row.Leading(El.Div("duo-nft-thumb duo-nft-empty")); row.Subtitle(CityLifeStrings.T("nft.emptySlot")); }
                 else
                 {
-                    row.Add(Thumb(item));
-                    row.Add(CityUi.Text(Label(item), "ct-small"));
-                    if (item.Moderation == Moderation.Pending) row.Add(CityUi.Small(CityLifeStrings.T("nft.pending")));
-                    row.Add(CityUi.Btn(CityLifeStrings.T("nft.remove"), () => { _slots[slot] = null; _dirty = true; Render(); }, "ct-btn"));
+                    row.Leading(Thumb(item));
+                    row.Subtitle(Label(item) + (item.Moderation == Moderation.Pending ? "\n" + CityLifeStrings.T("nft.pending") : ""), twoLines: true);
+                    row.Trailing(Duo.Pill(CityLifeStrings.T("nft.remove"), () => { _slots[slot] = null; _dirty = true; Render(); }, Duo.PillKind.Destructive));
                 }
-                Root.Add(row);
+                group.Add(row);
             }
-            if (_mine.Count == 0) Root.Add(CityUi.Small(CityLifeStrings.T("nft.empty")));
+            Duo.MarkLast(group);
+            Root.Add(Duo.GroupFooter(CityLifeStrings.F("nft.slots", used, _slots.Length) + " · " + CityLifeStrings.T("nft.hint")));
+            Root.Add(Duo.GroupHeader(CityLifeStrings.T("nft.mine")));
+            var mine = El.Div("duo-group duo-nft-group");
+            Root.Add(mine);
+            if (_mine.Count == 0) mine.Add(CityUi.Small(CityLifeStrings.T("nft.empty")));
             foreach (var item in _mine)
             {
                 bool hung = Array.Exists(_slots, s => s != null && s.AssetId == item.AssetId);
-                var row = CityUi.Row(Thumb(item), CityUi.Text(Label(item), "ct-small"));
+                var row = new DuoRow().Leading(Thumb(item)).Title(Label(item));
+                row.AddToClassList("duo-row-static");
                 var vis = NftItem.VisibilityFor(item, viewerIsOwner: true);
-                if (vis == FrameVisibility.Hidden) row.Add(CityUi.Small(CityLifeStrings.T("nft.flagged")));
-                else if (!hung)
+                if (vis == FrameVisibility.Hidden) row.Trailing(CityUi.Tag(CityLifeStrings.T("nft.flaggedTag"), "red")).Subtitle(CityLifeStrings.T("nft.flagged"));
+                else if (hung) row.Trailing(CityUi.Tag(CityLifeStrings.T("nft.hungTag"), "blue"));
+                else
                 {
                     var pick = item;
-                    var b = CityUi.Btn(CityLifeStrings.T("nft.hang"), () => Hang(pick), "ct-btn");
+                    var b = Duo.Pill(CityLifeStrings.T("nft.hang"), () => Hang(pick));
                     b.SetEnabled(Array.IndexOf(_slots, null) >= 0);
-                    row.Add(b);
+                    row.Trailing(b);
                 }
-                Root.Add(row);
+                mine.Add(row);
             }
-            Root.Add(CityUi.Small(CityLifeStrings.T("nft.visitorsNote")));
-            if (_save.Error != null) Root.Add(CityUi.Error(_save.Error.Message));
+            Duo.MarkLast(mine);
+            Root.Add(Duo.GroupFooter(CityLifeStrings.T("nft.visitorsNote")));
+            if (_save.Error != null) Root.Add(Duo.Notice(_save.Error.Message, Duo.Tone.Danger));
             if (_save.Stage == WriteStage.Done && !_dirty) Root.Add(CityUi.Small(CityLifeStrings.T("nft.saved")));
             var save = CityUi.Btn(_save.Stage == WriteStage.Unknown ? CityLifeStrings.T("common.retry") : CityLifeStrings.T("nft.save"), Save);
+            save.name = "citylife-nft-save";
             save.SetEnabled((_dirty || _save.Stage == WriteStage.Unknown) && _save.Stage != WriteStage.Sending);
-            Root.Add(save);
+            Root.Add(CityUi.Row(save));
         }
 
         private static string Label(NftItem item)
@@ -147,10 +157,8 @@ namespace CTLife.CityLife
 
         private VisualElement Thumb(NftItem item)
         {
-            var img = new Image { scaleMode = ScaleMode.ScaleToFit };
-            img.style.width = 56;
-            img.style.height = 56;
-            img.style.backgroundColor = new Color(0, 0, 0, 0.1f);
+            var img = new Image { scaleMode = ScaleMode.ScaleAndCrop };
+            img.AddToClassList("duo-nft-thumb");
             if (NftItem.VisibilityFor(item, true) == FrameVisibility.Show)
                 _ = LoadThumb(img, string.IsNullOrEmpty(item.ThumbUrl) ? item.ImageUrl : item.ThumbUrl);
             return img;

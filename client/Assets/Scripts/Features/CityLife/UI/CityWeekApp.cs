@@ -56,26 +56,41 @@ namespace CTLife.CityLife
             private MetaView _meta;
             private CityError _metaError;
             private string _answer = "";
-            private Label _clueExpires;
+            private Label _clueExpires, _moodSub;
             private bool _metaLoading, _eventsLoading;
             private bool? _recapMoodKnown;
             private int _recapMoodBps;
 
-            public WeekView(CityLifeHub hub) : base(hub)
+            public WeekView(CityLifeHub hub) : base(hub, CityLifeStrings.T("week.title"))
             {
                 var economy = Services.Get<ConfigStore>().Config("economy");
                 _unlockAt = WeekClock.ParseOr(CityWire.Str(economy?["sundayUnlockCron"]), WeekClock.ContractUnlock);
                 _resetAt = WeekClock.ParseOr(CityWire.Str(economy?["mondayResetCron"]), WeekClock.ContractReset);
-                Root.Add(CityUi.H1(CityLifeStrings.T("week.title")));
-                _unlock = CityUi.Text("", "ct-h2");
-                _reset = CityUi.Small("");
-                _mood = CityUi.Text("");
-                Root.Add(CityUi.Card(_unlock, CityUi.Small(CityLifeStrings.F("week.unlockAt", _unlockAt.ToString())), _reset));
-                Root.Add(_metaBox);
-                Root.Add(CityUi.Card(_mood));
-                Root.Add(_clueBox);
-                Root.Add(_eventsBox);
-                Root.Add(_recapBox);
+                Page.name = "week-page";
+                Page.AddToClassList("duo-week");
+                // Hero: the countdown to Sunday Unlock (from the server's cron), reset and mood as rows below.
+                var hero = Duo.Hero(CityLifeStrings.T("week.unlockLabel"), "—");
+                hero.name = "week-hero";
+                _unlock = hero.Q<Label>(className: "duo-hero-value");
+                Body.Add(hero);
+                Body.Add(CityUi.Small(CityLifeStrings.F("week.unlockAt", _unlockAt.ToString())));
+                var reset = new DuoRow().Leading(Duo.IconSquare("rotate", "blue")).Title(CityLifeStrings.T("week.resetRow"));
+                reset.AddToClassList("duo-row-static");
+                _reset = El.Text("", "duo-row-value");
+                reset.Trailing(_reset);
+                var mood = new DuoRow().Leading(Duo.IconSquare("perps", "green")).Title(CityLifeStrings.T("week.moodRow")).Subtitle(CityLifeStrings.T("week.moodSub"), twoLines: true);
+                mood.AddToClassList("duo-row-static");
+                mood.name = "week-mood";
+                _moodSub = mood.SubtitleLabel;
+                _mood = El.Text("", "duo-row-value");
+                mood.Trailing(_mood);
+                var rows = El.Div("duo-list", reset, mood);
+                Duo.MarkLast(rows);
+                Body.Add(rows);
+                Body.Add(_metaBox);
+                Body.Add(_clueBox);
+                Body.Add(_eventsBox);
+                Body.Add(_recapBox);
                 _clue.Changed += RenderClue;
                 LoadMeta();
                 LoadEvents();
@@ -90,10 +105,13 @@ namespace CTLife.CityLife
             {
                 Hub.RefreshMood();
                 var now = Now;
-                _unlock.text = CityLifeStrings.F("week.unlockIn", WeekClock.Countdown(WeekClock.Next(_unlockAt, now), now));
-                _reset.text = CityLifeStrings.F("week.resetIn", WeekClock.Countdown(WeekClock.Next(_resetAt, now), now));
-                _mood.text = Hub.MoodKnown ? CityLifeStrings.F("week.mood", CityLifeStrings.T(MarketMood.Key(Hub.MoodBps)), Money.Bps(Hub.MoodBps))
-                    : CityLifeStrings.T("week.moodOffline");
+                _unlock.text = WeekClock.Countdown(WeekClock.Next(_unlockAt, now), now);
+                _reset.text = WeekClock.Countdown(WeekClock.Next(_resetAt, now), now);
+                // Known: the mood and SOL's 24h move trail the row. Offline: the reason goes in the subtitle, nothing trails.
+                _mood.text = Hub.MoodKnown ? CityLifeStrings.T(MarketMood.Key(Hub.MoodBps)) + " · " + Money.Bps(Hub.MoodBps) : "";
+                if (_moodSub != null) _moodSub.text = Hub.MoodKnown ? CityLifeStrings.T("week.moodSub") : CityLifeStrings.T("week.moodOffline");
+                _mood.EnableInClassList("duo-value-positive", Hub.MoodKnown && Hub.MoodBps > 0);
+                _mood.EnableInClassList("duo-value-negative", Hub.MoodKnown && Hub.MoodBps < 0);
                 if (_clueExpires != null && _clue.Clue?.ExpiresAtMs != null)
                     _clueExpires.text = CityLifeStrings.F("clue.expires", WeekClock.Countdown(_clue.Clue.ExpiresAtMs.Value - Hub.NowMs));
                 if (_recapMoodKnown != Hub.MoodKnown || (Hub.MoodKnown && _recapMoodBps != Hub.MoodBps)) RenderRecap();
@@ -114,22 +132,24 @@ namespace CTLife.CityLife
             private void RenderMeta()
             {
                 _metaBox.Clear();
+                _metaBox.Add(Duo.SectionHeader(CityLifeStrings.T("week.metaSection")));
                 var card = CityUi.Card();
+                card.name = "week-meta";
                 if (_meta != null && _meta.HasBonus)
                 {
-                    card.Add(CityUi.H2(CityLifeStrings.F("week.metaNow", CityLifeStrings.MetaTitle(_meta.BonusId))));
+                    card.Add(CityUi.H2(CityLifeStrings.MetaTitle(_meta.BonusId)));
                     card.Add(CityUi.Text(CityLifeStrings.MetaBody(_meta.BonusId)));
                 }
                 else if (_metaLoading) card.Add(CityUi.Small(CityLifeStrings.T("common.loading")));
                 else if (_metaError != null && !_metaError.Is("NOT_FOUND"))
                 {
-                    card.Add(CityUi.Error(_metaError.Message));
-                    card.Add(CityUi.Btn(CityLifeStrings.T("common.retry"), LoadMeta, "ct-btn"));
+                    card.Add(Duo.Notice(_metaError.Message, Duo.Tone.Danger));
+                    card.Add(CityUi.Row(CityUi.Btn(CityLifeStrings.T("common.retry"), LoadMeta, CityUi.Plain)));
                 }
                 else card.Add(CityUi.Small(CityLifeStrings.T("week.metaUnknown")));
-                if (_meta != null && _meta.PerkCents > 0) card.Add(CityUi.Small(CityLifeStrings.F("week.metaPerk", Money.Cash(_meta.PerkCents))));
+                if (_meta != null && _meta.PerkCents > 0) card.Add(CityUi.Pair(CityLifeStrings.T("week.metaPerkRow"), Money.Cash(_meta.PerkCents)));
                 var next = MetaRotation.Next(_meta, MetaRotation.Read(Services.Get<ConfigStore>().Config("meta")));
-                if (next != null) card.Add(CityUi.Small(CityLifeStrings.F("week.metaNext", CityLifeStrings.MetaTitle(next))));
+                if (next != null) card.Add(CityUi.Pair(CityLifeStrings.T("week.metaNextRow"), CityLifeStrings.MetaTitle(next)));
                 _metaBox.Add(card);
             }
 
@@ -147,16 +167,28 @@ namespace CTLife.CityLife
             private void RenderEvents(List<(string id, long? atMs, JObject @params)> events, CityError error = null)
             {
                 _eventsBox.Clear();
-                var card = CityUi.Card(CityUi.H2(CityLifeStrings.T("week.events")));
-                if (_eventsLoading) card.Add(CityUi.Small(CityLifeStrings.T("common.loading")));
+                _eventsBox.Add(Duo.SectionHeader(CityLifeStrings.T("week.events")));
+                if (_eventsLoading) _eventsBox.Add(CityUi.Small(CityLifeStrings.T("common.loading")));
                 else if (error != null)
                 {
-                    card.Add(CityUi.Error(error.Message));
-                    card.Add(CityUi.Btn(CityLifeStrings.T("common.retry"), LoadEvents, "ct-btn"));
+                    _eventsBox.Add(Duo.Notice(error.Message, Duo.Tone.Danger));
+                    _eventsBox.Add(CityUi.Row(CityUi.Btn(CityLifeStrings.T("common.retry"), LoadEvents, CityUi.Plain)));
                 }
-                else if (events == null || events.Count == 0) card.Add(CityUi.Small(CityLifeStrings.T("week.noEvents")));
-                else foreach (var e in events) card.Add(CityUi.Text(CityLifeStrings.EventLabel(e.id) + (e.atMs.HasValue ? " · " + CityUi.When(e.atMs.Value) : "")));
-                _eventsBox.Add(card);
+                else if (events == null || events.Count == 0) _eventsBox.Add(CityUi.Small(CityLifeStrings.T("week.noEvents")));
+                else
+                {
+                    var list = El.Div("duo-list");
+                    foreach (var e in events)
+                    {
+                        var row = new DuoRow().Leading(Duo.IconSquare("bell", "red")).Title(CityLifeStrings.EventLabel(e.id), "duo-row-title-strong");
+                        if (e.atMs.HasValue) row.Subtitle(CityUi.When(e.atMs.Value));
+                        row.AddToClassList("duo-row-static");
+                        row.Trailing(CityUi.Tag(CityLifeStrings.T("week.liveTag"), "red"));
+                        list.Add(row);
+                    }
+                    Duo.MarkLast(list);
+                    _eventsBox.Add(list);
+                }
             }
 
             // ------------------------------------------------------------ daily clue
@@ -176,7 +208,9 @@ namespace CTLife.CityLife
                 if (!Alive) return;
                 _clueBox.Clear();
                 _clueExpires = null;
-                var card = CityUi.Card(CityUi.H2(CityLifeStrings.T("clue.title")), CityUi.Small(CityLifeStrings.T("clue.hint")));
+                _clueBox.Add(Duo.SectionHeader(CityLifeStrings.T("clue.title")));
+                var card = CityUi.Card(CityUi.Small(CityLifeStrings.T("clue.hint")));
+                card.name = "week-clue";
                 if (_meta?.BonusId == "alpha_clue_prize_x3") card.Add(CityUi.Small(CityLifeStrings.T("clue.alphaWeek")));
                 switch (_clue.Stage)
                 {
@@ -184,28 +218,30 @@ namespace CTLife.CityLife
                     case ClueStage.NoClue: card.Add(CityUi.Text(CityLifeStrings.T("clue.none"))); break;
                     case ClueStage.Unavailable: card.Add(CityUi.Small(CityLifeStrings.T("common.notLive"))); break;
                     case ClueStage.Error:
-                        card.Add(CityUi.Error(_clue.Error?.Message ?? CityLifeStrings.T("err.generic")));
-                        card.Add(CityUi.Btn(CityLifeStrings.T("common.retry"), LoadClue, "ct-btn"));
+                        card.Add(Duo.Notice(_clue.Error?.Message ?? CityLifeStrings.T("err.generic"), Duo.Tone.Danger));
+                        card.Add(CityUi.Row(CityUi.Btn(CityLifeStrings.T("common.retry"), LoadClue, CityUi.Plain)));
                         break;
                     case ClueStage.Expired: card.Add(CityUi.Text(CityLifeStrings.T("clue.expired"))); break;
                     default:
                         if (_clue.Clue != null)
                         {
-                            card.Add(CityUi.Text(_clue.Clue.Text, "ct-body"));
+                            card.Add(CityUi.Text(_clue.Clue.Text, "duo-week-clue"));
                             _clueExpires = CityUi.Small("");
                             card.Add(_clueExpires);
                         }
                         if (_clue.Stage == ClueStage.Ready || _clue.Stage == ClueStage.Unknown)
                         {
-                            if (_clue.Stage == ClueStage.Unknown) { card.Add(CityUi.Error(CityLifeStrings.T("clue.unknown"))); _answer = _clue.LastAnswer ?? _answer; }
-                            if (_clue.Error != null && _clue.Stage == ClueStage.Ready) card.Add(CityUi.Error(_clue.Error.Message));
+                            if (_clue.Stage == ClueStage.Unknown) { card.Add(Duo.Notice(CityLifeStrings.T("clue.unknown"), Duo.Tone.Warning)); _answer = _clue.LastAnswer ?? _answer; }
+                            if (_clue.Error != null && _clue.Stage == ClueStage.Ready) card.Add(Duo.Notice(_clue.Error.Message, Duo.Tone.Danger));
                             var field = CityUi.Field(CityLifeStrings.T("clue.answer"), _answer, s => _answer = s, DailyClueFlow.MaxAnswerLength);
                             field.SetEnabled(_clue.Stage == ClueStage.Ready);
                             card.Add(field);
-                            card.Add(CityUi.Btn(CityLifeStrings.T(_clue.Stage == ClueStage.Unknown ? "common.retry" : "clue.submit"), Submit));
+                            var submit = CityUi.Btn(CityLifeStrings.T(_clue.Stage == ClueStage.Unknown ? "common.retry" : "clue.submit"), Submit);
+                            submit.name = "week-clue-submit";
+                            card.Add(submit);
                         }
                         else if (_clue.Stage == ClueStage.Submitting) card.Add(CityUi.Small(CityLifeStrings.T("clue.checking")));
-                        else if (_clue.Stage == ClueStage.Correct) card.Add(CityUi.Text(CityLifeStrings.F("clue.correct", Money.Cash(_clue.Result?.PrizeCents ?? 0)), "ct-h2"));
+                        else if (_clue.Stage == ClueStage.Correct) card.Add(Duo.Notice(CityLifeStrings.F("clue.correct", Money.Cash(_clue.Result?.PrizeCents ?? 0)), Duo.Tone.Success));
                         else if (_clue.Stage == ClueStage.Wrong) card.Add(CityUi.Text(CityLifeStrings.T("clue.wrong")));
                         else if (_clue.Stage == ClueStage.AlreadyAnswered) card.Add(CityUi.Text(CityLifeStrings.T("clue.already")));
                         break;
@@ -248,11 +284,21 @@ namespace CTLife.CityLife
                 var lines = WeekRecap.Lines(before, me.CashCents, me.DebtCents, me.HomeId, homeName, _meta, Hub.MoodKnown ? (int?)Hub.MoodBps : null, Hub.RentNow());
                 if (before == null || before.WeekIso != week)
                     CityPrefs.SaveWeek(Hub.UserId, new WeekSnapshot { WeekIso = week, HomeId = me.HomeId, CashCents = me.CashCents, DebtCents = me.DebtCents, AtMs = Hub.NowMs });
-                var card = CityUi.Card(CityUi.H2(CityLifeStrings.T("week.recap")));
-                foreach (var l in lines) card.Add(CityUi.Text("• " + l, "ct-small"));
                 var share = WeekRecap.Card(Hub.Profile?.Alias, week, lines);
-                card.Add(CityUi.Btn(CityLifeStrings.T("week.share"), () => CityUi.Copy(share.Text()), "ct-btn"));
-                _recapBox.Add(card);
+                var shareLink = Duo.SectionHeader(CityLifeStrings.T("week.recap"), CityLifeStrings.T("week.share"), () => CityUi.Copy(share.Text()));
+                shareLink.name = "week-recap-header";
+                _recapBox.Add(shareLink);
+                var list = El.Div("duo-list");
+                list.name = "week-recap";
+                foreach (var l in lines)
+                {
+                    var row = new DuoRow().Title(l);
+                    row.TitleLabel.style.whiteSpace = WhiteSpace.Normal;
+                    row.AddToClassList("duo-row-static");
+                    list.Add(row);
+                }
+                Duo.MarkLast(list);
+                _recapBox.Add(list);
             }
 
             public override void Dispose()

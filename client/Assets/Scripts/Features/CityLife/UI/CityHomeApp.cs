@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using CTLife.Core;
 using CTLife.UI;
@@ -24,6 +25,7 @@ namespace CTLife.CityLife
         public override string Id => "home";
         public override string Title => CityLifeStrings.T("app.home");
         public override string Color => "#fa8231";
+        public override DuoChrome Chrome => DuoChrome.Grouped;
 
         internal override CityView CreateView(CityLifeHub hub) => new HomeView(this, hub);
 
@@ -40,27 +42,31 @@ namespace CTLife.CityLife
             private string _visitId = "";
             private NftGalleryEditor _gallery;
 
-            public HomeView(CityHomeApp app, CityLifeHub hub) : base(hub)
+            public HomeView(CityHomeApp app, CityLifeHub hub) : base(hub, CityLifeStrings.T("app.home"))
             {
                 _app = app;
+                // Health-style grouped page: white groups on system grey.
+                Page.AddToClassList("duo-page-grouped");
+                Page.AddToClassList("duo-home");
+                Page.name = "home-page";
                 var me = hub.Profile?.Me;
                 var homeId = me?.HomeId;
                 var reg = Services.Get<ConfigStore>().Registries;
                 var name = reg.Homes.FirstOrDefault(h => h.id == homeId)?.name ?? CityLifeStrings.Readable(homeId);
-                Root.Add(CityUi.H1(CityLifeStrings.F("home.current", name)));
-                if (CityLifeStrings.Has("home.flavor." + homeId)) Root.Add(CityUi.Small(CityLifeStrings.T("home.flavor." + homeId)));
-                AddEntry();
+                Body.Add(CityUi.Text(CityLifeStrings.F("home.current", name), "duo-home-where"));
+                if (CityLifeStrings.Has("home.flavor." + homeId)) Body.Add(CityUi.Small(CityLifeStrings.T("home.flavor." + homeId)));
                 _needs = new NeedsPanel(hub, () => Alive, Life);
-                Root.Add(_needs.Root);
+                Body.Add(_needs.Root);
+                AddEntry();
                 bool p4 = Phases.IsOpen(4);
-                if (!p4) { Root.Add(CityUi.Small(CityLifeStrings.T("common.phase4"))); return; }
-                Root.Add(_rentBox);
-                Root.Add(_visitBox);
-                Root.Add(_homesBox);
-                Root.Add(_galleryBox);
+                if (!p4) { Body.Add(Duo.GroupFooter(CityLifeStrings.T("common.phase4"))); return; }
+                Body.Add(_rentBox);
+                Body.Add(_visitBox);
+                Body.Add(_homesBox);
+                Body.Add(_galleryBox);
                 hub.HomesChanged += Render;
                 hub.Visit.Changed += RenderVisit;
-                _move.Changed += RenderHomes;
+                _move.Changed += RenderMove;
                 _policySave.Changed += RenderVisit;
                 Subs.On<ProfileChangedSignal>(_ => { if (Alive) { RenderRent(); RenderHomes(); } });
                 _ = hub.RefreshHomes();
@@ -73,15 +79,18 @@ namespace CTLife.CityLife
                 if (_app._enterHome == null || _app._returnToCity == null) return;
                 bool returning = _app._atOwnHome?.Invoke() == true;
                 bool can = returning || _app._canEnterHome?.Invoke() == true;
-                var b = CityUi.Btn(CityLifeStrings.T(returning ? "home.return" : "home.enter"), () =>
+                var b = Duo.Pill(CityLifeStrings.T(returning ? "home.return" : "home.enter"), () =>
                 {
                     if (!Alive) return;
                     if (returning ? _app._atOwnHome?.Invoke() == true : _app._canEnterHome?.Invoke() == true)
                         (returning ? _app._returnToCity : _app._enterHome)?.Invoke();
-                });
+                }, Duo.PillKind.Primary);
                 b.name = returning ? "home-return-city" : "home-enter-own";
                 b.SetEnabled(can);
-                Root.Add(CityUi.Card(b, CityUi.Small(CityLifeStrings.T(can ? "home.explore" : "home.sceneMissing"))));
+                var row = new DuoRow().Leading(Duo.IconSquare("home", "orange")).Title(CityLifeStrings.T(returning ? "home.return" : "home.enter"), "duo-row-title-strong")
+                    .Subtitle(CityLifeStrings.T(can ? "home.explore" : "home.sceneMissing"), twoLines: true).Trailing(b);
+                row.AddToClassList("duo-row-static");
+                Body.Add(Duo.Group(row));
             }
 
             private void Render()
@@ -105,33 +114,50 @@ namespace CTLife.CityLife
 
             // ------------------------------------------------------------ rent and debt
 
+            private static string RentTone(RentState s) => s == RentState.Paid ? "green" : s == RentState.Unknown ? "gray" : s >= RentState.Overdue ? "red" : "orange";
+
             private void RenderRent()
             {
                 _rentBox.Clear();
                 var me = Hub.Profile?.Me;
                 if (me == null) return;
                 var r = Hub.RentNow();
-                var card = CityUi.Card(CityUi.H2(CityLifeStrings.T("rent.title")),
-                    PhonePresentation.Status(CityLifeStrings.T(r.Key), r.State == RentState.Paid ? PhonePresentation.Tone.Success
-                        : r.State == RentState.Unknown ? PhonePresentation.Tone.Neutral
-                        : r.State >= RentState.Overdue ? PhonePresentation.Tone.Danger : PhonePresentation.Tone.Warning));
-                if (r.RentCents >= 0) card.Add(CityUi.Pair(CityLifeStrings.T("rent.title"), CityLifeStrings.F("home.rentPerWeek", Money.Cash(r.RentCents))));
-                _rentDue = CityUi.Small("");
-                card.Add(_rentDue);
-                if (r.ShortfallCents > 0) card.Add(CityUi.Error(CityLifeStrings.F("rent.shortfall", Money.Cash(r.ShortfallCents))));
-                if (r.WeeksBeforeEviction >= 0 && r.State >= RentState.Overdue) card.Add(CityUi.Error(CityLifeStrings.F("rent.weeksLeft", r.WeeksBeforeEviction)));
-                if (me.DebtCents > 0)
-                {
-                    card.Add(CityUi.Pair(CityLifeStrings.F("rent.debt", ""), Money.Cash(me.DebtCents)));
-                    var policy = RentPolicy.Parse(Services.Get<ConfigStore>().Config("economy"));
-                    if (policy.LotteryWeeklyDueCents > 0 && policy.LotteryMissedPenaltyBps >= 0)
-                        card.Add(CityUi.Small(CityLifeStrings.F("rent.lotteryDebt", Money.Cash(me.DebtCents), Money.Cash(policy.LotteryWeeklyDueCents), Money.Bps(policy.LotteryMissedPenaltyBps, false))));
-                }
+                _rentBox.Add(Duo.GroupHeader(CityLifeStrings.T("rent.title")));
+                var rows = new List<VisualElement>();
+                var rent = new DuoRow().Leading(Duo.IconSquare("cash", "green")).Title(CityLifeStrings.T("rent.title"), "duo-row-title-strong")
+                    .Subtitle(r.RentCents >= 0 ? CityLifeStrings.F("home.rentPerWeek", Money.Cash(r.RentCents)) : CityLifeStrings.T("home.noPrice"));
+                rent.name = "home-rent";
+                rent.AddToClassList("duo-row-static");
+                _rentDue = El.Text("", "duo-row-subtitle");
+                rent.TextColumn.Add(_rentDue);
+                rent.Trailing(CityUi.Tag(CityLifeStrings.T(r.Key), RentTone(r.State)));
                 var current = Hub.Homes.Find(h => h.Id == me.HomeId);
                 if (current != null && current.RentCents >= 0 && r.State >= RentState.DueSoon)
-                    card.Add(CityUi.Btn(CityLifeStrings.T("home.renew"), () => { _move.Select(current, me.HomeId); }, "ct-btn"));
-                if (Hub.HomesError != null && !Hub.HomesError.Is("UNAVAILABLE")) card.Add(CityUi.Small(Hub.HomesError.Message));
-                _rentBox.Add(card);
+                {
+                    var pay = Duo.Pill(CityLifeStrings.T("home.renewShort"), () => { _move.Select(current, me.HomeId); }, Duo.PillKind.Primary);
+                    pay.name = "home-renew";
+                    pay.tooltip = CityLifeStrings.T("home.renew");
+                    rent.Trailing(pay);
+                }
+                rows.Add(rent);
+                if (me.DebtCents > 0)
+                {
+                    var debt = new DuoRow().Leading(Duo.IconSquare("bank", "red")).Title(CityLifeStrings.T("rent.debtRow")).Value(Money.Cash(me.DebtCents), "duo-value-negative");
+                    debt.AddToClassList("duo-row-static");
+                    rows.Add(debt);
+                }
+                _rentBox.Add(Duo.Group(rows.ToArray()));
+                var notes = new List<string>();
+                if (r.ShortfallCents > 0) _rentBox.Add(Duo.Notice(CityLifeStrings.F("rent.shortfall", Money.Cash(r.ShortfallCents)), Duo.Tone.Warning));
+                if (r.WeeksBeforeEviction >= 0 && r.State >= RentState.Overdue) _rentBox.Add(Duo.Notice(CityLifeStrings.F("rent.weeksLeft", r.WeeksBeforeEviction), Duo.Tone.Danger));
+                if (me.DebtCents > 0)
+                {
+                    var policy = RentPolicy.Parse(Services.Get<ConfigStore>().Config("economy"));
+                    if (policy.LotteryWeeklyDueCents > 0 && policy.LotteryMissedPenaltyBps >= 0)
+                        notes.Add(CityLifeStrings.F("rent.lotteryDebt", Money.Cash(me.DebtCents), Money.Cash(policy.LotteryWeeklyDueCents), Money.Bps(policy.LotteryMissedPenaltyBps, false)));
+                }
+                if (Hub.HomesError != null && !Hub.HomesError.Is("UNAVAILABLE")) notes.Add(Hub.HomesError.Message);
+                if (notes.Count > 0) _rentBox.Add(Duo.GroupFooter(string.Join("\n", notes)));
                 Tick();
             }
 
@@ -142,65 +168,91 @@ namespace CTLife.CityLife
                 if (!Alive) return;
                 _homesBox.Clear();
                 var me = Hub.Profile?.Me;
-                var card = CityUi.Card(CityUi.H2(CityLifeStrings.T("home.movesTitle")), CityUi.Small(CityLifeStrings.T("home.movesHint")));
-                card.Add(CityUi.Small(CityLifeStrings.T("home.moveUnavailable")));
-                if (Hub.HomesError != null)
-                {
-                    card.Add(CityUi.Error(Hub.HomesError.Message));
-                    card.Add(CityUi.Btn(CityLifeStrings.T("common.retry"), () => { _ = Hub.RefreshHomes(force: true); }, "ct-btn"));
-                }
-                if (_move.Stage != MoveStage.Idle && _move.Target != null) card.Add(MoveBox(me));
+                _homesBox.Add(Duo.GroupHeader(CityLifeStrings.T("home.movesTitle")));
+                var group = El.Div("duo-group");
+                group.name = "home-homes";
                 long currentRent = Hub.Homes.Find(h => h.Id == me?.HomeId)?.RentCents ?? -1;
                 foreach (var h in Hub.Homes)
                 {
                     var name = string.IsNullOrEmpty(h.Name) ? CityLifeStrings.Readable(h.Id) : h.Name;
-                    var row = CityUi.Card(CityUi.Text(name, "ct-body"));
-                    row.Add(CityUi.Small(h.RentCents >= 0 ? CityLifeStrings.F("home.rentPerWeek", Money.Cash(h.RentCents)) : CityLifeStrings.T("home.noPrice")));
-                    if (h.Rooms > 0) row.Add(CityUi.Small(CityLifeStrings.F("home.rooms", h.Rooms)));
-                    if (CityLifeStrings.Has("home.flavor." + h.Id)) row.Add(CityUi.Small(CityLifeStrings.T("home.flavor." + h.Id)));
-                    if (me != null && h.Id == me.HomeId) row.Add(CityUi.Text(CityLifeStrings.T("home.youLiveHere"), "ct-badge"));
+                    var parts = new List<string> { h.RentCents >= 0 ? CityLifeStrings.F("home.rentPerWeek", Money.Cash(h.RentCents)) : CityLifeStrings.T("home.noPrice") };
+                    if (h.Rooms > 0) parts.Add(CityLifeStrings.F("home.rooms", h.Rooms));
+                    var row = new DuoRow().Leading(Duo.IconSquare("home", me != null && h.Id == me.HomeId ? "orange" : "gray")).Title(name, "duo-row-title-strong")
+                        .Subtitle(string.Join(" · ", parts) + (CityLifeStrings.Has("home.flavor." + h.Id) ? "\n" + CityLifeStrings.T("home.flavor." + h.Id) : ""), twoLines: true);
+                    row.AddToClassList("duo-row-static");
+                    row.name = "home-option-" + h.Id;
+                    if (me != null && h.Id == me.HomeId) row.Trailing(CityUi.Tag(CityLifeStrings.T("home.youLiveHereTag"), "blue"));
                     else if (h.RentCents >= 0)
                     {
                         var target = h;
                         bool down = currentRent >= 0 && h.RentCents < currentRent;
-                        var b = CityUi.Btn(CityLifeStrings.T(down ? "home.downsize" : "home.move"), () => { if (Alive) _move.Select(target, me?.HomeId); }, "ct-btn");
+                        var b = Duo.Pill(CityLifeStrings.T(down ? "home.downsizeShort" : "home.moveShort"), () => { if (Alive) _move.Select(target, me?.HomeId); });
                         // This backend's /rent endpoint only renews existing leases; it cannot move the character.
                         b.SetEnabled(false);
-                        row.Add(b);
-                        if (me != null && me.CashCents < h.RentCents) row.Add(CityUi.Small(CityLifeStrings.F("home.cantAffordHint", Money.Cash(me.CashCents))));
+                        b.tooltip = CityLifeStrings.T("home.moveUnavailable");
+                        row.Trailing(b);
                     }
-                    card.Add(row);
+                    group.Add(row);
                 }
-                _homesBox.Add(card);
+                Duo.MarkLast(group);
+                if (group.childCount > 0) _homesBox.Add(group);
+                if (Hub.HomesError != null)
+                {
+                    _homesBox.Add(Duo.Notice(Hub.HomesError.Message, Duo.Tone.Danger));
+                    _homesBox.Add(CityUi.Row(CityUi.Btn(CityLifeStrings.T("common.retry"), () => { _ = Hub.RefreshHomes(force: true); }, CityUi.Plain)));
+                }
+                _homesBox.Add(Duo.GroupFooter(CityLifeStrings.T("home.movesHint") + " " + CityLifeStrings.T("home.moveUnavailable")));
             }
 
-            private VisualElement MoveBox(CTLife.Rest.Model.Me me)
+            /// <summary>The lease confirm / signing / done states in a sheet (was an inline box).</summary>
+            private void RenderMove()
             {
+                if (!Alive) return;
+                RenderHomes();
                 var t = _move.Target;
+                if (_move.Stage == MoveStage.Idle || t == null) { _moveSheet?.Close(); _moveSheet = null; return; }
                 var name = string.IsNullOrEmpty(t.Name) ? CityLifeStrings.Readable(t.Id) : t.Name;
-                var box = CityUi.Card();
+                if (_moveSheet == null || _moveSheet.panel == null)
+                {
+                    _moveSheet = new DuoSheet(CityLifeStrings.T(_move.IsRenewal ? "home.renew" : "home.move"));
+                    _moveSheet.name = "home-move-sheet";
+                    var sheet = _moveSheet;
+                    sheet.Closed += () =>
+                    {
+                        if (_moveSheet != sheet) return;
+                        _moveSheet = null;
+                        if (_move.Stage == MoveStage.Unknown) Hub.RefreshProfile(true);
+                        if (_move.Stage != MoveStage.Signing && _move.Stage != MoveStage.Idle) _move.Cancel();
+                    };
+                    ShowSheet(sheet);
+                }
+                var content = _moveSheet.Content;
+                content.Clear();
                 switch (_move.Stage)
                 {
                     case MoveStage.Confirming:
                     case MoveStage.Rejected:
                     case MoveStage.Unknown:
-                        box.Add(CityUi.Text(_move.IsRenewal ? CityLifeStrings.F("home.confirmRenew", Money.Cash(t.RentCents), name)
+                        content.Add(CityUi.Text(_move.IsRenewal ? CityLifeStrings.F("home.confirmRenew", Money.Cash(t.RentCents), name)
                             : CityLifeStrings.F("home.confirmMove", name, Money.Cash(t.RentCents))));
-                        if (_move.Error != null) box.Add(CityUi.Error(_move.Error.Message));
-                        box.Add(CityUi.Row(
-                            CityUi.Btn(_move.Stage == MoveStage.Unknown ? CityLifeStrings.T("common.retry") : CityLifeStrings.T(_move.IsRenewal ? "home.renew" : "home.move"), Sign),
-                            CityUi.Btn(CityLifeStrings.T("common.cancel"), () => { if (_move.Stage == MoveStage.Unknown) Hub.RefreshProfile(true); _move.Cancel(); }, "ct-btn")));
+                        if (_move.Error != null) content.Add(Duo.Notice(_move.Error.Message, Duo.Tone.Danger));
+                        var sign = CityUi.Btn(_move.Stage == MoveStage.Unknown ? CityLifeStrings.T("common.retry") : CityLifeStrings.T(_move.IsRenewal ? "home.renew" : "home.move"), Sign);
+                        sign.name = "home-move-sign";
+                        content.Add(sign);
+                        var cancel = El.Btn(CityLifeStrings.T("common.cancel"), () => _moveSheet?.Close(), "duo-sheet-secondary");
+                        content.Add(cancel);
                         break;
                     case MoveStage.Signing:
-                        box.Add(CityUi.Text(CityLifeStrings.T("home.signing")));
+                        content.Add(CityUi.Text(CityLifeStrings.T("home.signing")));
                         break;
                     case MoveStage.Done:
-                        box.Add(CityUi.Text(CityLifeStrings.F(_move.IsRenewal ? "home.renewed" : "home.moved", name)));
-                        box.Add(CityUi.Btn(CityLifeStrings.T("common.close"), _move.Cancel, "ct-btn"));
+                        content.Add(CityUi.Text(CityLifeStrings.F(_move.IsRenewal ? "home.renewed" : "home.moved", name)));
+                        content.Add(El.Btn(CityLifeStrings.T("common.close"), () => _moveSheet?.Close(), "duo-sheet-secondary"));
                         break;
                 }
-                return box;
             }
+
+            private DuoSheet _moveSheet;
 
             private void Sign()
             {
@@ -242,52 +294,82 @@ namespace CTLife.CityLife
                 if (!Alive) return;
                 _visitBox.Clear();
                 var v = Hub.Visit;
-                var card = CityUi.Card(CityUi.H2(CityLifeStrings.T("visit.title")));
+                _visitBox.Add(Duo.GroupHeader(CityLifeStrings.T("visit.title")));
+                var group = El.Div("duo-group");
+                group.name = "home-visits";
                 switch (v.Stage)
                 {
-                    case VisitStage.Requesting: card.Add(CityUi.Text(CityLifeStrings.T("visit.requesting"))); break;
-                    case VisitStage.Joining: card.Add(CityUi.Text(CityLifeStrings.T("visit.joining"))); break;
-                    case VisitStage.Leaving: card.Add(CityUi.Text(CityLifeStrings.T("visit.leaving"))); break;
+                    case VisitStage.Requesting: group.Add(StateRow(CityLifeStrings.T("visit.requesting"))); break;
+                    case VisitStage.Joining: group.Add(StateRow(CityLifeStrings.T("visit.joining"))); break;
+                    case VisitStage.Leaving: group.Add(StateRow(CityLifeStrings.T("visit.leaving"))); break;
                     case VisitStage.Inside:
                         bool own = v.IsOwnHome(Hub.UserId);
-                        card.Add(CityUi.Text(own ? CityLifeStrings.F("visit.insideOwn", v.Visitors)
-                            : CityLifeStrings.F("visit.inside", string.IsNullOrEmpty(v.OwnerName) ? "?" : v.OwnerName, v.Visitors)));
+                        var inside = new DuoRow().Leading(Duo.IconSquare("contacts", "teal")).Title(own ? CityLifeStrings.F("visit.insideOwn", v.Visitors)
+                            : CityLifeStrings.F("visit.inside", string.IsNullOrEmpty(v.OwnerName) ? "?" : v.OwnerName, v.Visitors), "duo-row-title-strong");
                         var names = Hub.Presenter.Names;
-                        if (names.Count > 0) card.Add(CityUi.Small(CityLifeStrings.F("visit.visitorsHere", string.Join(", ", names))));
-                        if (!Hub.Presenter.ShowsInterior) card.Add(CityUi.Small(CityLifeStrings.T("visit.presenceOnly")));
-                        card.Add(CityUi.Btn(CityLifeStrings.T("visit.leave"), () => _ = Hub.LeaveVisit(), "ct-btn"));
+                        var sub = new List<string>();
+                        if (names.Count > 0) sub.Add(CityLifeStrings.F("visit.visitorsHere", string.Join(", ", names)));
+                        if (!Hub.Presenter.ShowsInterior) sub.Add(CityLifeStrings.T("visit.presenceOnly"));
+                        if (sub.Count > 0) inside.Subtitle(string.Join("\n", sub), twoLines: true);
+                        inside.AddToClassList("duo-row-static");
+                        var leave = Duo.Pill(CityLifeStrings.T("visit.leave"), () => _ = Hub.LeaveVisit(), Duo.PillKind.Destructive);
+                        leave.name = "home-visit-leave";
+                        inside.Trailing(leave);
+                        group.Add(inside);
                         break;
                     default:
                         if (v.Error != null && (v.Stage == VisitStage.Denied || v.Stage == VisitStage.Failed || v.Stage == VisitStage.Unavailable))
                         {
-                            card.Add(CityUi.Error(v.Error.Message));
-                            card.Add(CityUi.Btn(CityLifeStrings.T("common.close"), v.Dismiss, "ct-btn"));
+                            var err = new DuoRow().Title(v.Error.Message, "duo-destructive");
+                            err.AddToClassList("duo-row-static");
+                            err.Trailing(Duo.Pill(CityLifeStrings.T("common.close"), v.Dismiss));
+                            group.Add(err);
                         }
-                        card.Add(CityUi.Small(CityLifeStrings.T("visit.hint")));
-                        card.Add(CityUi.Field(CityLifeStrings.T("visit.idLabel"), _visitId, s => _visitId = (s ?? "").Trim(), 80));
-                        card.Add(CityUi.Row(
-                            CityUi.Btn(CityLifeStrings.T("visit.go"), () => { if (CityWire.IsSafeId(_visitId)) _ = Hub.RequestVisit(_visitId, null); }, "ct-btn"),
-                            CityUi.Btn(CityLifeStrings.T("visit.myRoom"), () => _ = Hub.RequestVisit(Hub.UserId, Hub.Profile?.Alias), "ct-btn")));
+                        var knock = new DuoRow(KnockSheet).Leading(Duo.IconSquare("door", "blue")).Title(CityLifeStrings.T("visit.knockRow"), "duo-row-title-strong").Chevron();
+                        knock.name = "home-visit-knock";
+                        group.Add(knock);
+                        var open = new DuoRow().Leading(Duo.IconSquare("home", "orange")).Title(CityLifeStrings.T("visit.myRoom"));
+                        open.AddToClassList("duo-row-static");
+                        var openPill = Duo.Pill(CityLifeStrings.T("visit.openShort"), () => _ = Hub.RequestVisit(Hub.UserId, Hub.Profile?.Alias));
+                        openPill.name = "home-visit-open";
+                        open.Trailing(openPill);
+                        group.Add(open);
                         break;
                 }
-                card.Add(CityUi.Text(CityLifeStrings.T("visit.policy"), "ct-small"));
+                Duo.MarkLast(group);
+                _visitBox.Add(group);
+                _visitBox.Add(Duo.GroupHeader(CityLifeStrings.T("visit.policy")));
                 if (_policy == null)
-                    card.Add(CityUi.Small(_policyError != null && _policyError.Is("UNAVAILABLE") ? CityLifeStrings.T("common.notLive") : _policyError?.Message ?? CityLifeStrings.T("common.loading")));
+                    _visitBox.Add(Duo.GroupFooter(_policyError != null && _policyError.Is("UNAVAILABLE") ? CityLifeStrings.T("common.notLive") : _policyError?.Message ?? CityLifeStrings.T("common.loading")));
                 else
                 {
-                    var row = CityUi.Row();
-                    foreach (VisitorPolicy p in Enum.GetValues(typeof(VisitorPolicy)))
-                    {
-                        var pick = p;
-                        var chip = CityUi.Chip(CityLifeStrings.T("visit.policy." + VisitorPolicies.Wire(p)), () => SavePolicy(pick), _policy == p);
-                        chip.SetEnabled(_policySave.Stage != WriteStage.Sending);
-                        row.Add(chip);
-                    }
-                    card.Add(row);
-                    if (_policySave.Stage == WriteStage.Done) card.Add(CityUi.Small(CityLifeStrings.T("visit.policySaved")));
-                    if (_policySave.Error != null) card.Add(CityUi.Error(_policySave.Error.Message));
+                    var policies = (VisitorPolicy[])Enum.GetValues(typeof(VisitorPolicy));
+                    var seg = new DuoSegmented(policies.Select(p => CityLifeStrings.T("visit.policy." + VisitorPolicies.Wire(p))).ToList(), Array.IndexOf(policies, _policy.Value), i => SavePolicy(policies[i]));
+                    seg.name = "home-visit-policy";
+                    seg.SetEnabled(_policySave.Stage != WriteStage.Sending);
+                    _visitBox.Add(El.Div("duo-home-policy", seg));
+                    string note = _policySave.Error != null ? _policySave.Error.Message : _policySave.Stage == WriteStage.Done ? CityLifeStrings.T("visit.policySaved") : CityLifeStrings.T("visit.hint");
+                    _visitBox.Add(Duo.GroupFooter(note));
                 }
-                _visitBox.Add(card);
+            }
+
+            private static DuoRow StateRow(string text)
+            {
+                var r = new DuoRow().Leading(Duo.IconSquare("door", "gray")).Title(text);
+                r.AddToClassList("duo-row-static");
+                return r;
+            }
+
+            private void KnockSheet()
+            {
+                var sheet = new DuoSheet(CityLifeStrings.T("visit.knockRow"), CityLifeStrings.T("visit.hint"));
+                sheet.name = "home-visit-sheet";
+                var field = CityUi.Field(CityLifeStrings.T("visit.idLabel"), _visitId, s => _visitId = (s ?? "").Trim(), 80);
+                field.name = "home-visit-id";
+                sheet.AddContent(field);
+                sheet.AddPrimary(CityLifeStrings.T("visit.go"), () => { if (CityWire.IsSafeId(_visitId)) _ = Hub.RequestVisit(_visitId, null); }, name: "home-visit-go");
+                sheet.AddSecondary(CityLifeStrings.T("common.cancel"));
+                ShowSheet(sheet);
             }
 
             private void SavePolicy(VisitorPolicy p)
@@ -317,6 +399,7 @@ namespace CTLife.CityLife
                 Hub.HomesChanged -= Render;
                 Hub.Visit.Changed -= RenderVisit;
                 _gallery?.Dispose();
+                _needs?.Close();
                 base.Dispose();
             }
         }

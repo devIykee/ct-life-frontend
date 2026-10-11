@@ -8,77 +8,90 @@ using UnityEngine.UIElements;
 
 namespace CTLife.CityLife
 {
-    /// <summary>Small UI Toolkit builders on CTLife.UI's El and the existing ct-* theme. Functional, not styled.</summary>
+    /// <summary>
+    /// UI Toolkit builders for the City Life phone screens on the Duo kit: sections on the canvas, inset key/value rows, capsule
+    /// buttons, a kit field and small meters. <see cref="Legacy"/> keeps the world-overlay look for sheets outside the phone.
+    /// </summary>
     internal static class CityUi
     {
-        public static ScrollView Page() => El.VerticalScroll("ct-app-page");
+        public const string Primary = "primary", Plain = "plain", Danger = "danger";
 
-        public static Label Text(string text, string cls = "ct-body")
+        public static ScrollView Page() => El.VerticalScroll();
+
+        public static Label Text(string text, string cls = "duo-comp-text")
         {
             var l = El.Text(text ?? "", cls);
             l.enableRichText = false;
             return l;
         }
 
-        public static Label H1(string text) => Text(text, "ct-h1");
-        public static Label H2(string text) => Text(text, "ct-h2");
-        public static Label Small(string text) => Text(text, "ct-small ct-muted");
-        public static Label Error(string text) => Text(text, "ct-error");
+        public static Label H2(string text) => Text(text, "duo-comp-h2");
+        public static Label Small(string text) => Text(text, "duo-comp-note");
+        public static Label Error(string text) => Text(text, "duo-comp-error");
+        public static Label Label(string text) => Text((text ?? "").ToUpperInvariant(), "duo-comp-label");
 
-        public static VisualElement Card(params VisualElement[] children) => El.Div("ct-card", children);
+        /// <summary>A section on the canvas, separated by space rather than a box.</summary>
+        public static VisualElement Card(params VisualElement[] children) => El.Div("duo-comp-section", children);
 
-        public static VisualElement Row(params VisualElement[] children)
+        public static VisualElement Row(params VisualElement[] children) => El.Div("duo-comp-actions", children);
+
+        /// <summary>Key on the left, value on the right, inset hairline below.</summary>
+        public static VisualElement Pair(string key, string value) =>
+            El.Div("duo-comp-pair", Text(key, "duo-comp-pair-key"), Text(value, "duo-comp-pair-value"));
+
+        public static Button Btn(string text, Action onClick, string kind = Primary)
         {
-            var r = El.Div("ct-row", children);
-            r.style.flexDirection = FlexDirection.Row;
-            r.style.alignItems = Align.Center;
-            r.style.flexWrap = Wrap.Wrap;
-            return r;
-        }
-
-        /// <summary>A muted label on the left, a value on the right.</summary>
-        public static VisualElement Pair(string key, string value)
-        {
-            var row = Row(Text(key, "ct-small ct-muted"), El.Div("ct-grow"), Text(value, "ct-body"));
-            row.Q(className: "ct-grow").style.flexGrow = 1;
-            return row;
-        }
-
-        public static Button Btn(string text, Action onClick, string cls = "ct-btn ct-btn-primary") => El.Btn(text, onClick, cls);
-
-        public static Button Chip(string text, Action onClick, bool on)
-        {
-            var b = PhonePresentation.SizeToText(El.Btn(text, onClick, "ct-chip"));
-            b.EnableInClassList("ct-chip-on", on);
+            var b = El.Btn(text, onClick, "duo-comp-btn" + (kind == Plain ? "" : kind == Danger ? " duo-comp-btn-danger" : " duo-comp-btn-primary"));
+            b.enableRichText = false;
             return b;
         }
 
-        /// <summary>A horizontal bar 0..1 drawn with two elements (no USS file needed).</summary>
+        public static Button Chip(string text, Action onClick, bool on)
+        {
+            var b = El.Btn(text, onClick, "duo-chip");
+            b.enableRichText = false;
+            b.EnableInClassList("duo-chip-on", on);
+            return b;
+        }
+
+        /// <summary>A small rounded meter 0..1 (kit duo-meter).</summary>
         public static VisualElement Bar(out VisualElement fill)
         {
-            var track = El.Div("ct-need-track");
-            track.style.height = 10;
-            track.style.flexGrow = 1;
-            track.style.backgroundColor = new Color(0, 0, 0, 0.15f);
-            fill = El.Div("ct-need-fill");
-            fill.style.height = Length.Percent(100);
+            fill = El.Div("duo-meter-fill");
             fill.style.width = Length.Percent(0);
-            track.Add(fill);
-            return track;
+            return El.Div("duo-meter", fill);
         }
 
         public static void SetBar(VisualElement fill, double fraction, NeedLevel level)
         {
             fill.style.width = Length.Percent((float)(Math.Max(0, Math.Min(1, fraction)) * 100));
-            fill.style.backgroundColor = level == NeedLevel.Ok ? new Color(0.13f, 0.62f, 0.4f) : level == NeedLevel.Low ? new Color(0.96f, 0.65f, 0.14f) : new Color(0.85f, 0.25f, 0.25f);
+            var track = fill.parent;
+            if (track == null) return;
+            track.EnableInClassList("duo-meter-green", level == NeedLevel.Ok);
+            track.EnableInClassList("duo-meter-orange", level == NeedLevel.Low);
+            track.EnableInClassList("duo-meter-red", level != NeedLevel.Ok && level != NeedLevel.Low);
         }
 
         public static TextField Field(string label, string value, Action<string> changed, int maxLength = 200)
         {
-            var f = new TextField(label) { value = value ?? "", isDelayed = false, maxLength = maxLength };
-            f.AddToClassList("ct-field");
+            var f = new TextField { value = value ?? "", isDelayed = false, maxLength = maxLength };
+            f.AddToClassList("duo-field");
+            f.textEdition.placeholder = label ?? "";
+            f.tooltip = label;
             f.RegisterValueChangedCallback(e => changed?.Invoke(e.newValue));
             return f;
+        }
+
+        /// <summary>Status tag (reference 2) for a real server state.</summary>
+        public static Label Tag(string text, string tone = "gray") => Text(text, "duo-tag duo-tag-" + tone);
+
+        /// <summary>The world-overlay look (furniture sheet), outside the phone's Duo styles.</summary>
+        internal static class Legacy
+        {
+            public static Label Text(string text, string cls = "ct-body") => CityUi.Text(text, cls);
+            public static Label H1(string text) => CityUi.Text(text, "ct-h1");
+            public static Label Small(string text) => CityUi.Text(text, "ct-small ct-muted");
+            public static Button Btn(string text, Action onClick, string cls = "ct-btn ct-btn-primary") => El.Btn(text, onClick, cls);
         }
 
         public static void Copy(string text)
@@ -101,6 +114,11 @@ namespace CTLife.CityLife
     internal abstract class CityView : IDisposable
     {
         public readonly ScrollView Root;
+        /// <summary>The Duo frame (nav + large title) the phone shows; content goes into <see cref="Body"/>.</summary>
+        public readonly DuoPage Page;
+        protected VisualElement Body => Page.Body;
+        internal PhoneShell Shell;
+        private DuoSheet _sheet;
         protected readonly CityLifeHub Hub;
         private readonly CancellationTokenSource _life = new CancellationTokenSource();
         private readonly Session _session;
@@ -110,10 +128,13 @@ namespace CTLife.CityLife
         protected bool Disposed { get; private set; }
         protected CancellationToken Life => _life.Token;
 
-        protected CityView(CityLifeHub hub)
+        protected CityView(CityLifeHub hub, string title, bool largeTitle = true)
         {
             Hub = hub;
             Root = CityUi.Page();
+            Page = new DuoPage(Root, title, largeTitle);
+            Page.AddToClassList("duo-comp");
+            Page.Nav.AddLeft(DuoGlyph.Kind.Back, Strings.T("common.back"), () => { if (!Back()) Shell?.Back(); }, "city-back");
             _session = Services.Get<Session>();
             _user = _session.UserId;
             _session.Changed += SessionChanged;
@@ -135,6 +156,18 @@ namespace CTLife.CityLife
         }
 
         protected virtual void Tick() { }
+
+        /// <summary>Nav back inside the screen. False lets the phone go back.</summary>
+        protected virtual bool Back() => false;
+
+        protected DuoSheet ShowSheet(DuoSheet sheet)
+        {
+            _sheet?.Close();
+            _sheet = sheet;
+            sheet.Scrolling();
+            sheet.Closed += () => { if (_sheet == sheet) _sheet = null; };
+            return sheet.Show(Page);
+        }
 
         /// <summary>Runs async work bound to this view. Callbacks run only while the view is alive.</summary>
         protected async void Run<T>(Func<CancellationToken, Task<T>> work, Action<T> done, Action<CityError> fail, bool write)
@@ -162,6 +195,7 @@ namespace CTLife.CityLife
         {
             if (Disposed) return;
             Disposed = true;
+            _sheet?.Close();
             _life.Cancel();
             _tick?.Pause();
             Subs.Dispose();
@@ -184,12 +218,14 @@ namespace CTLife.CityLife
 
         internal CityLifeHub Hub => _hub == null || _hub.Disposed ? (_hub = CityLifeHub.Acquire()) : _hub;
         internal PhoneShell Shell => Phone;
+        public override DuoChrome Chrome => DuoChrome.Plain;
 
         public override VisualElement Open()
         {
             Closed();
             _view = CreateView(Hub);
-            return _view.Root;
+            _view.Shell = Shell;
+            return _view.Page;
         }
 
         internal abstract CityView CreateView(CityLifeHub hub);

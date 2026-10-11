@@ -41,17 +41,21 @@ namespace CTLife.CityLife
             private readonly IntentPurchaseFlow _buyPass = new IntentPurchaseFlow();
             private bool _mainnetAck;
 
-            public ShopView(CityLifeHub hub) : base(hub)
+            public ShopView(CityLifeHub hub) : base(hub, CityLifeStrings.T("shop.title"))
             {
                 _free = LookDraft.FreeItems(Services.Get<ConfigStore>().Ids("items"));
                 _equip = new EquipFlow(new LookDraft(hub.Profile?.LookArray()));
                 _equip.Changed += Render;
                 _buyPass.Changed += Render;
                 hub.PaymentConfirmed += OnPaymentConfirmed;
-                Root.Add(CityUi.H1(CityLifeStrings.T("shop.title")));
-                _tabs = CityUi.Row();
-                Root.Add(_tabs);
-                Root.Add(_body);
+                Page.name = "shop-page";
+                Page.AddToClassList("duo-shop");
+                string[] tabs = { "shop", "wardrobe", "pass" };
+                var seg = new DuoSegmented(tabs.Select(t => CityLifeStrings.T("shop.tab." + t)).ToList(), 0, i => { _tab = tabs[i]; Render(); });
+                seg.name = "shop-tabs";
+                _tabs = El.Div("duo-comp-tabs", seg);
+                Body.Add(_tabs);
+                Body.Add(_body);
                 Load();
                 LoadPass();
                 Render();
@@ -68,12 +72,6 @@ namespace CTLife.CityLife
             private void Render()
             {
                 if (!Alive) return;
-                _tabs.Clear();
-                foreach (var t in new[] { "shop", "wardrobe", "pass" })
-                {
-                    var key = t;
-                    _tabs.Add(CityUi.Chip(CityLifeStrings.T("shop.tab." + t), () => { _tab = key; Render(); }, _tab == t));
-                }
                 _body.Clear();
                 if (_tab != "wardrobe") HidePreview();
                 if (_tab == "shop") RenderShop();
@@ -85,37 +83,63 @@ namespace CTLife.CityLife
 
             private void RenderShop()
             {
-                _body.Add(CityUi.Small(CityLifeStrings.T("shop.hint")));
-                if (_shopError != null) { _body.Add(CityUi.Error(_shopError.Message)); _body.Add(CityUi.Btn(CityLifeStrings.T("common.retry"), Load, "ct-btn")); return; }
+                if (_shopError != null)
+                {
+                    _body.Add(Duo.Notice(_shopError.Message, Duo.Tone.Danger));
+                    _body.Add(CityUi.Row(CityUi.Btn(CityLifeStrings.T("common.retry"), Load, CityUi.Plain)));
+                    return;
+                }
                 if (_shop == null) { _body.Add(CityUi.Small(CityLifeStrings.T("common.loading"))); return; }
+                var cash = Hub.Profile?.Me?.CashCents;
+                if (cash.HasValue)
+                {
+                    var hero = Duo.Hero(CityLifeStrings.T("shop.cash"), Money.Cash(cash.Value));
+                    hero.name = "shop-hero";
+                    _body.Add(hero);
+                }
+                _body.Add(CityUi.Small(CityLifeStrings.T("shop.hint")));
                 foreach (var slot in LookSlots.Slots)
                 {
                     var rows = _shop.Where(r => r.Slot == slot).ToList();
                     if (rows.Count == 0) continue;
-                    var card = CityUi.Card(CityUi.H2(CityLifeStrings.T("shop.slot." + slot)));
-                    foreach (var r in rows) card.Add(ShopRowView(r));
-                    _body.Add(card);
+                    _body.Add(Duo.SectionHeader(CityLifeStrings.T("shop.slot." + slot)));
+                    var list = El.Div("duo-list");
+                    foreach (var r in rows) list.Add(ShopRowView(r));
+                    Duo.MarkLast(list);
+                    _body.Add(list);
                 }
-                if (_shop.Count == 0) _body.Add(CityUi.Small(CityLifeStrings.T("shop.empty")));
+                if (_shop.Count == 0) _body.Add(Duo.Empty(CityLifeStrings.T("shop.empty")));
             }
 
             private VisualElement ShopRowView(ShopRow r)
             {
-                var row = CityUi.Row(CityUi.Text(string.IsNullOrEmpty(r.Name) ? CityLifeStrings.Readable(r.LookId) : r.Name, "ct-body"), El.Div("ct-grow"));
+                var row = new DuoRow().Leading(El.PassThrough(El.Div("duo-app-tile duo-tint-" + SlotTint(r.Slot), new UiIcon("shop"))))
+                    .Title(string.IsNullOrEmpty(r.Name) ? CityLifeStrings.Readable(r.LookId) : r.Name, "duo-row-title-strong")
+                    .Subtitle(CityLifeStrings.T("shop.slot." + r.Slot));
+                row.AddToClassList("duo-row-static");
+                row.name = "shop-item-" + r.PurchaseId;
                 bool owned = _inventory != null && _inventory.Owns(r.LookId);
                 _buys.TryGetValue(r.PurchaseId, out var flow);
-                if (owned) row.Add(CityUi.Text(CityLifeStrings.T("shop.owned"), "ct-badge"));
-                else if (r.OnchainOnly) row.Add(CityUi.Small(CityLifeStrings.T("shop.onchain")));
+                if (owned) row.Trailing(CityUi.Tag(CityLifeStrings.T("shop.owned"), "blue"));
+                else if (r.OnchainOnly) row.Trailing(CityUi.Tag(CityLifeStrings.T("shop.onchainTag"), "gray")).Subtitle(CityLifeStrings.T("shop.onchain"), twoLines: true);
                 else if (r.PriceCents >= 0)
                 {
                     var item = r;
-                    var b = CityUi.Btn(flow?.Stage == WriteStage.Unknown ? CityLifeStrings.T("common.retry") : CityLifeStrings.F("shop.buy", Money.Cash(r.PriceCents)), () => Buy(item), "ct-btn");
+                    var b = Duo.Pill(flow?.Stage == WriteStage.Unknown ? CityLifeStrings.T("common.retry") : Money.Cash(r.PriceCents), () => Buy(item), Duo.PillKind.Primary);
+                    b.name = "shop-buy-" + r.PurchaseId;
+                    b.tooltip = CityLifeStrings.F("shop.buy", Money.Cash(r.PriceCents));
                     b.SetEnabled(flow == null || flow.Stage != WriteStage.Sending);
-                    row.Add(b);
+                    row.Trailing(b);
                 }
-                var box = El.Div(null, row);
-                if (flow?.Error != null) box.Add(CityUi.Error(flow.Error.Message));
-                return box;
+                if (flow?.Error != null) row.TextColumn.Add(El.Text(flow.Error.Message, "duo-row-subtitle duo-destructive"));
+                return row;
+            }
+
+            private static string SlotTint(string slot)
+            {
+                int i = Array.IndexOf(LookSlots.Slots, slot);
+                string[] tints = { "indigo", "pink", "blue", "orange", "teal", "purple", "green" };
+                return tints[(i < 0 ? 0 : i) % tints.Length];
             }
 
             private void Buy(ShopRow r)
@@ -146,10 +170,11 @@ namespace CTLife.CityLife
 
             private void RenderWardrobe()
             {
-                if (_invError != null) _body.Add(CityUi.Error(_invError.Message));
+                if (_invError != null) _body.Add(Duo.Notice(_invError.Message, Duo.Tone.Danger));
                 ShowPreview();
-                if (_previewImage != null) _body.Add(_previewImage);
+                if (_previewImage != null) _body.Add(El.Div("duo-shop-preview", _previewImage));
                 var slots = CityUi.Row();
+                slots.AddToClassList("duo-chip-row");
                 foreach (var s in LookSlots.Slots.Skip(1))
                 {
                     var key = s;
@@ -158,6 +183,7 @@ namespace CTLife.CityLife
                 _body.Add(slots);
                 var draft = _equip.Draft;
                 _body.Add(CityUi.Pair(CityLifeStrings.T("wardrobe.wearing"), Name(draft[_slot])));
+                var choices = El.Div("duo-chip-row duo-shop-options");
                 var options = new List<string>();
                 if (!string.IsNullOrEmpty(draft.Worn[LookSlots.IndexOf(_slot)])) options.Add(draft.Worn[LookSlots.IndexOf(_slot)]);
                 if (_inventory != null) options.AddRange(_inventory.InSlot(_slot));
@@ -169,18 +195,20 @@ namespace CTLife.CityLife
                     var b = CityUi.Chip(Name(id) + (_free.Contains(id) ? " · " + CityLifeStrings.T("wardrobe.starter") : ""),
                         () => { if (_equip.Wear(_slot, look, _inventory, _free)) _preview?.SetLook(_equip.Draft.Current); }, draft[_slot] == id);
                     b.SetEnabled(_equip.Stage != SaveStage.Saving && _equip.Draft.CanWear(id, _slot, _inventory, _free));
-                    _body.Add(b);
+                    choices.Add(b);
                 }
+                _body.Add(choices);
                 switch (_equip.Stage)
                 {
                     case SaveStage.Saving: _body.Add(CityUi.Small(CityLifeStrings.T("wardrobe.saving"))); break;
                     case SaveStage.Saved: _body.Add(CityUi.Small(CityLifeStrings.T("wardrobe.saved"))); break;
-                    case SaveStage.Unknown: _body.Add(CityUi.Error(CityLifeStrings.T("wardrobe.unknown"))); break;
-                    case SaveStage.Rejected: _body.Add(CityUi.Error(_equip.Error?.Message ?? "")); break;
+                    case SaveStage.Unknown: _body.Add(Duo.Notice(CityLifeStrings.T("wardrobe.unknown"), Duo.Tone.Warning)); break;
+                    case SaveStage.Rejected: _body.Add(Duo.Notice(_equip.Error?.Message ?? "", Duo.Tone.Danger)); break;
                 }
                 var save = CityUi.Btn(CityLifeStrings.T(_equip.Stage == SaveStage.Unknown ? "common.retry" : "wardrobe.save"), SaveLook);
                 save.SetEnabled(_equip.Stage == SaveStage.Dirty || _equip.Stage == SaveStage.Unknown || (_equip.Stage == SaveStage.Rejected && _equip.Draft.IsDirty));
-                var revert = CityUi.Btn(CityLifeStrings.T("wardrobe.revert"), () => { _equip.Revert(); _preview?.SetLook(_equip.Draft.Current); }, "ct-btn");
+                save.name = "shop-wardrobe-save";
+                var revert = CityUi.Btn(CityLifeStrings.T("wardrobe.revert"), () => { _equip.Revert(); _preview?.SetLook(_equip.Draft.Current); }, CityUi.Plain);
                 revert.SetEnabled(_equip.Draft.IsDirty && _equip.Stage != SaveStage.Saving);
                 _body.Add(CityUi.Row(save, revert));
             }
@@ -220,7 +248,7 @@ namespace CTLife.CityLife
                     _preview = new AvatarPreview(540, 720);
                     _preview.SetLook(_equip.Draft.Current);
                     _previewImage = new Image { image = _preview.Texture, scaleMode = ScaleMode.ScaleToFit };
-                    _previewImage.style.height = 260;
+                    _previewImage.AddToClassList("duo-shop-preview-image");
                 }
                 catch (Exception e)
                 {
@@ -241,8 +269,15 @@ namespace CTLife.CityLife
 
             private void RenderPass()
             {
-                var card = CityUi.Card(CityUi.H2(CityLifeStrings.T("pass.title")));
-                switch (_pass?.State ?? PassState.Unknown)
+                var card = CityUi.Card();
+                card.name = "shop-pass";
+                var state = _pass?.State ?? PassState.Unknown;
+                var head = new DuoRow().Leading(El.PassThrough(El.Div("duo-app-tile duo-tint-purple", new UiIcon("league")))).Title(CityLifeStrings.T("pass.title"), "duo-row-title-large");
+                head.AddToClassList("duo-row-static");
+                if (state == PassState.Active) head.Trailing(CityUi.Tag(CityLifeStrings.T("pass.tag.active"), "green"));
+                else if (state == PassState.Expired) head.Trailing(CityUi.Tag(CityLifeStrings.T("pass.tag.expired"), "orange"));
+                card.Add(head);
+                switch (state)
                 {
                     case PassState.Active: card.Add(CityUi.Text(CityLifeStrings.F("pass.active", CityUi.When(_pass.ExpiresAtMs ?? 0)))); break;
                     case PassState.Expired: card.Add(CityUi.Text(CityLifeStrings.F("pass.expired", CityUi.When(_pass.ExpiresAtMs ?? 0)))); break;
@@ -273,8 +308,8 @@ namespace CTLife.CityLife
                     case IntentStage.Idle:
                     case IntentStage.Failed:
                     case IntentStage.Expired:
-                        if (f.Stage == IntentStage.Expired) card.Add(CityUi.Error(CityLifeStrings.T("pay.expired")));
-                        if (f.Error != null) card.Add(CityUi.Error(f.Error.Message));
+                        if (f.Stage == IntentStage.Expired) card.Add(Duo.Notice(CityLifeStrings.T("pay.expired"), Duo.Tone.Warning));
+                        if (f.Error != null) card.Add(Duo.Notice(f.Error.Message, Duo.Tone.Danger));
                         card.Add(CityUi.Btn(CityLifeStrings.F("pass.buy", "USDC"), () => CreatePassIntent(sku)));
                         break;
                     case IntentStage.Creating: card.Add(CityUi.Small(CityLifeStrings.T("pay.creating"))); break;
@@ -284,26 +319,24 @@ namespace CTLife.CityLife
                         if (string.IsNullOrEmpty(f.Intent.Tx))
                         {
                             card.Add(CityUi.Small(CityLifeStrings.T("pay.noTx")));
-                            if (!string.IsNullOrEmpty(f.Intent.SolanaPayUrl)) card.Add(CityUi.Btn(CityLifeStrings.T("pay.copyLink"), () => CityUi.Copy(f.Intent.SolanaPayUrl), "ct-btn"));
+                            if (!string.IsNullOrEmpty(f.Intent.SolanaPayUrl)) card.Add(CityUi.Row(CityUi.Btn(CityLifeStrings.T("pay.copyLink"), () => CityUi.Copy(f.Intent.SolanaPayUrl), CityUi.Plain)));
                             break;
                         }
                         if (cluster == SolanaCluster.Mainnet)
                         {
-                            var ack = new Toggle(CityLifeStrings.T("pay.mainnetAck")) { value = _mainnetAck };
-                            ack.RegisterValueChangedCallback(e => { _mainnetAck = e.newValue; Render(); });
-                            card.Add(ack);
+                            var ack = new DuoToggle(_mainnetAck, v => { _mainnetAck = v; Render(); });
+                            card.Add(ack.InRow(CityLifeStrings.T("pay.mainnetAck")));
                         }
                         var sign = CityUi.Btn(CityLifeStrings.T("pass.sign"), SignPass);
                         sign.SetEnabled(f.CanSign(Hub.NowMs) && (cluster != SolanaCluster.Mainnet || _mainnetAck));
-                        card.Add(sign);
-                        card.Add(CityUi.Btn(CityLifeStrings.T("common.cancel"), f.Reset, "ct-btn"));
+                        card.Add(CityUi.Row(sign, CityUi.Btn(CityLifeStrings.T("common.cancel"), f.Reset, CityUi.Plain)));
                         break;
                     case IntentStage.Signing: card.Add(CityUi.Small(CityLifeStrings.T("pay.signing"))); break;
                     case IntentStage.Confirming: card.Add(CityUi.Small(CityLifeStrings.T("pay.confirming"))); break;
                     case IntentStage.Pending: card.Add(CityUi.Text(CityLifeStrings.T("pay.pending"))); break;
                     case IntentStage.Confirmed:
                         card.Add(CityUi.Text(CityLifeStrings.T("pay.confirmed")));
-                        card.Add(CityUi.Btn(CityLifeStrings.T("common.close"), () => { f.Reset(); LoadPass(); }, "ct-btn"));
+                        card.Add(CityUi.Row(CityUi.Btn(CityLifeStrings.T("common.close"), () => { f.Reset(); LoadPass(); }, CityUi.Plain)));
                         break;
                 }
             }

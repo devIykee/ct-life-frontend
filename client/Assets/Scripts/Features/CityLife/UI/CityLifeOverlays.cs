@@ -98,9 +98,9 @@ namespace CTLife.CityLife
             var runner = _runner;
             var sheet = El.VerticalScroll("ct-sheet");
             sheet.Insert(0, El.Div("ct-sheet-handle"));
-            sheet.Add(CityUi.H1(CityLifeStrings.Has("furniture." + kind) ? CityLifeStrings.T("furniture." + kind) : CityLifeStrings.Readable(kind)));
-            var status = CityUi.Small("");
-            if (ownerOnly) sheet.Add(CityUi.Text(CityLifeStrings.T("furniture.visitorOnly")));
+            sheet.Add(CityUi.Legacy.H1(CityLifeStrings.Has("furniture." + kind) ? CityLifeStrings.T("furniture." + kind) : CityLifeStrings.Readable(kind)));
+            var status = CityUi.Legacy.Small("");
+            if (ownerOnly) sheet.Add(CityUi.Legacy.Text(CityLifeStrings.T("furniture.visitorOnly")));
             else
             {
                 var cfg = hub.Needs.Config;
@@ -112,9 +112,9 @@ namespace CTLife.CityLife
                     if (def == null) continue;
                     int idx = Array.IndexOf(NeedsConfig.Ids, def.Raises);
                     if (idx >= 0 && projected != null)
-                        sheet.Add(CityUi.Small(CityLifeStrings.NeedName(def.Raises) + ": " + Math.Floor(projected[idx]).ToString(System.Globalization.CultureInfo.InvariantCulture)));
+                        sheet.Add(CityUi.Legacy.Small(CityLifeStrings.NeedName(def.Raises) + ": " + Math.Floor(projected[idx]).ToString(System.Globalization.CultureInfo.InvariantCulture)));
                     var gate = runner.GateText(action);
-                    var b = CityUi.Btn(CityLifeStrings.FurnitureLabel(kind, action), async () =>
+                    var b = CityUi.Legacy.Btn(CityLifeStrings.FurnitureLabel(kind, action), async () =>
                     {
                         if (_disposed || runner.Busy || !ReferenceEquals(runner, _runner)) return;
                         status.text = CityLifeStrings.T("needs.working");
@@ -123,11 +123,11 @@ namespace CTLife.CityLife
                     });
                     b.SetEnabled(gate == null);
                     sheet.Add(b);
-                    if (gate != null) sheet.Add(CityUi.Small(gate));
+                    if (gate != null) sheet.Add(CityUi.Legacy.Small(gate));
                 }
             }
             sheet.Add(status);
-            sheet.Add(CityUi.Btn(CityLifeStrings.T("common.close"), Close, "ct-btn"));
+            sheet.Add(CityUi.Legacy.Btn(CityLifeStrings.T("common.close"), Close, "ct-btn"));
             var backdrop = El.Div("ct-modal-backdrop ct-modal-bottom", sheet);
             backdrop.pickingMode = PickingMode.Position;
             backdrop.RegisterCallback<PointerDownEvent>(e => { if (e.target == backdrop) Close(); });
