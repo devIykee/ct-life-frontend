@@ -75,6 +75,7 @@ namespace CTLife.EditorTools
             public ScrollView Root { get; private set; }
             public bool Thread;
             public override string Id => _id;
+            public override DuoChrome Chrome => _id == "messages" ? DuoChrome.Plain : DuoChrome.Legacy;
             public override string Title => SocialStrings.T(_id == "messages" ? "dm.title" : _id == "timeline" ? "feed.title" : _id + ".title");
             public FixtureApp(string id, string viewName, SocialHub hub) { _id = id; _viewName = viewName; _hub = hub; }
             public override VisualElement Open()
@@ -85,7 +86,7 @@ namespace CTLife.EditorTools
                     : new object[] { _hub, Phone, Thread ? Peer : null, Thread ? LongName : null };
                 _view = Activator.CreateInstance(type, Instance, null, args, null);
                 Root = (ScrollView)type.BaseType.GetField("Root", Instance).GetValue(_view);
-                return Root;
+                return (VisualElement)type.GetProperty("Container", Instance).GetValue(_view) ?? Root;
             }
             public override void Closed()
             {
@@ -184,13 +185,15 @@ namespace CTLife.EditorTools
                 await Capture(calls, "calls-empty");
                 await Capture(messages, "messages-inbox");
                 expect(hub.Messages.Inbox.All.Count() == 2, "the shipping DM parser populated two review conversations");
-                expect(ReferenceEquals(DisplayNoneAncestor(messages.Root.Q("social-common-send")), messages.Root.Q(className: "ct-social-footer")),
+                var frame = messages.Root.parent;
+                expect(ReferenceEquals(DisplayNoneAncestor(frame.Q("social-common-send")), frame.Q(className: "ct-social-footer")),
                     "the inbox intentionally hides Send through its display:none composer footer");
                 messages.Thread = true;
                 await Capture(messages, "messages-thread", bottom: true);
-                expect(messages.Root.Q("social-common-send") != null, "the shipping message composer contains its real Send control");
-                expect(DisplayNoneAncestor(messages.Root.Q("social-common-send")) == null,
-                    "the thread restores the visible composer and Send control");
+                var threadFrame = messages.Root.parent;
+                expect(threadFrame.Q("social-common-send") != null, "the shipping message composer contains its real Send control");
+                expect(threadFrame.Q(className: "ct-social-footer").resolvedStyle.display != DisplayStyle.None,
+                    "the thread restores the visible composer (Send itself appears once there is text)");
                 await Capture(calls, "calls-contacts");
 
                 var call = CallSession.StartOutgoing(new[] { Peer }, SocialHub.NowMs);
