@@ -86,10 +86,14 @@ if fam == 'f':
     keep_faces(parts['top'], lambda f: not (n_top <= f.index < 2 * n_top))
     log('rain top inner shell removed; tris now', tri_count(parts['top']))
 
-# eyes: drop rear-facing eyeball faces (never visible behind the lids)
+# Eyes: discard only faces physically behind the eye joint. A normal alone is not
+# a visibility test: Rain's right pupil is an inset, reverse-wound opaque cap.
+# The old normal-only predicate deleted that front cap and left a see-through pupil.
 head = parts['head']
 subs = get_face_attr(head, 'sub')
-rear = {p.index for p in head.data.polygons if subs[p.index] == SUB_IDS['eyes'] and p.normal.y > 0.3}
+eye_back = max(rig.data.bones[name].head_local.y for name in ('Eye.L', 'Eye.R'))
+rear = {p.index for p in head.data.polygons
+        if subs[p.index] == SUB_IDS['eyes'] and p.normal.y > 0.3 and p.center.y > eye_back}
 keep_faces(head, lambda f: f.index not in rear)
 log('eyes rear faces removed', len(rear), 'head tris', tri_count(head))
 
