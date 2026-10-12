@@ -175,6 +175,14 @@ The current development build uses the adult Snow derivative in `character-candi
 
 The UI uses unmodified static **Manrope** and **Lilita One** fonts (SIL Open Font License 1.1), 44 active filled/bold **Phosphor** raster icons (MIT; +6 interaction CTA icons added 2026-10-08 by character-feel: armchair, desktop, microphone-stage, coffee, door-open, person-simple-walk), and one retained regular ranking raster. Exact pinned sources, hashes and complete notices are bundled in `client/Assets/Resources/UI/asset-sources.json`, `THIRD-PARTY-NOTICES.md` and `Licenses/`, and exposed in the in-app credits. Pinterest reference imagery is research only and is not included in the game.
 
+### CTOS phone typography — 2026-10-12
+
+| Name | Source URL | Licence | Author | Downloaded | Used for |
+| --- | --- | --- | --- | --- | --- |
+| Inter v4.1, unmodified static text-size Regular 400, Medium 500 and SemiBold 600 TTFs (`extras/ttf/Inter-*.ttf`) | https://rsms.me/inter/ ; pinned release https://github.com/rsms/inter/releases/tag/v4.1 ; download https://github.com/rsms/inter/releases/download/v4.1/Inter-4.1.zip | SIL Open Font License 1.1; complete upstream notice bundled in `client/Assets/Resources/UI/Fonts/Phone/Inter-OFL.txt` | Copyright (c) 2016 The Inter Project Authors | 2026-10-12 | Dedicated Solana Duo / CTOS interface typography; existing game fonts retained. Runtime files and exact SHA-256 hashes are recorded in `client/Assets/Resources/UI/Fonts/Phone/font-sources.json`. No Apple fonts are included. |
+
+The Inter source archive SHA-256 is `9883fdd4a49d4fb66bd8177ba6625ef9a64aa45899767dde3d36aa425756b11e`. These three TTFs are copied byte-for-byte from the release, not generated or renamed derivatives. The release is v4.1; its embedded font version string is `Version 4.001;git-9221beed3`. The bundled licence permits font embedding with its copyright and licence retained.
+
 
 ## Authored Rain / Breeze development import — 2026-10-06
 
@@ -312,3 +320,51 @@ Licences re-read on the live source pages on 2026-10-10; receipts in `art/cast/v
 | "Game Ready low poly character tactical" | https://sketchfab.com/3d-models/game-ready-low-poly-character-tactical-342501b0c84843a3a418319c31ea26fa | CC BY 4.0 (Sketchfab API, 2026-10-10) | DanlyVostok (1799danly) | 2026-10-09 | downloaded and in the v2 export only; EXCLUDED from cast v3 (placeholder hands). Credit required if ever shipped |
 | CT Life starter accessories (pixel-face mask, visor, helmet, laser-eyes glow, chain, headphones, small wings, shoulder drone) | art/cast/v2/scripts/v2_geo.py | CC0 (made by us) | CT Life cast lane | 2026-10-09 | fitted per base in art/cast/v3/export/bases/*/accessories (TV head dropped) |
 <!-- END cast-v3-20261010 -->
+# Distinct playable creature additions — 2026-10-11
+
+| Name | Source | Licence | Author | Downloaded | Use / modifications |
+|---|---|---|---|---|---|
+| SharkPerson, 100 Avatars 120 | https://github.com/PolygonalMind/100Avatars/tree/ff07c2ad0017819c4e5366656ee1e5bcc4029bd4/100Avatars_120 | Publisher VRM metadata and latest release: CC0. Older repository CCLicense.md: CC BY 4.0; full credit is retained under that notice as well. | Polygonal Mind | 2026-10-11 | `art/cast/creatures/export/pm_shark`, `client/Assets/Art/characters/distinct/pm_shark`; original authored geometry/texture/rig preserved, added distance LODs and Unity Humanoid integration. In-game `UI/Licenses/Model-Credits.txt`. |
+| Froggy, 100 Avatars 010 | https://github.com/PolygonalMind/100Avatars/tree/ff07c2ad0017819c4e5366656ee1e5bcc4029bd4/100Avatars_010 | Publisher VRM metadata and latest release: CC0. Older repository CCLicense.md: CC BY 4.0; full credit is retained under that notice as well. | Polygonal Mind | 2026-10-11 | `art/cast/creatures/export/pm_froggy`, `client/Assets/Art/characters/distinct/pm_froggy`; original authored geometry/texture/rig preserved, added distance LODs and Unity Humanoid integration. In-game `UI/Licenses/Model-Credits.txt`. |
+
+## Illustrated character roster and edit icon — 2026-10-11
+
+| Asset | Source | Licence / attribution | Author | Date | Use / modifications |
+| --- | --- | --- | --- | --- | --- |
+| Ten illustrated roster busts, `UI/Customizer/Illustrations/head_*.png` | Built-in image_gen, using the corresponding actual Unity-rendered character portrait and the generated Snow illustration as a drawing-style reference | Generated derivatives of the credited characters: Snow/Rain Blender Foundation CC BY 4.0; four Sketchfab hero credits above CC BY 4.0; Quaternius UBC CC0; Polygonal Mind attribution retained under the repository CC BY 4.0 notice. Existing in-game source credits remain applicable. No creator endorsement implied. | CT Life generated adaptation; source model creators credited above | 2026-10-11 | Clean 2D ink/cel character-selection portraits; identity, original clothing and key color cues retained. Prompts/provenance in `docs/progress/character-illustrations-20261011.md`. |
+| Phosphor pencil-simple bold | https://raw.githubusercontent.com/phosphor-icons/core/2b75f3ad12b420c9504ef05df8d2564a28f8500e/assets/bold/pencil-simple-bold.svg | MIT; existing bundled Phosphor licence applies | Phosphor Icons | 2026-10-11 | `UI/Icons/pencil-simple.png`, flat white 128px RGBA rasterization using macOS AppKit; `edit` mapping in `asset-sources.json`; original SVG SHA256 `163a4e787655de6b5b50bfb0dc0e6818c015ba32106eb14fe12c3daf033a892b`. |
+
+Publisher release: https://github.com/PolygonalMind/100Avatars/releases/tag/v24.02.1 . No Mixamo account, login or service was used by CT Life for these imports; the publisher distributes the already-rigged models directly. Source hashes and exact transformation recipe are retained under `art/cast/creatures/`; original downloaded files and licence snapshots remain in the external evidence directory.
+
+## Dream badges and Seeker origin illustration — 2026-10-12
+
+| Asset | Source | Licence / attribution | Author | Date | Use / modifications |
+| --- | --- | --- | --- | --- | --- |
+| Six dream badges, `client/Assets/Resources/UI/Kit/Icons/dream_*.png` | Built-in image_gen, using existing CT Life `cash.png` as the visual-style reference | Generated for CT Life; no third-party icon pack or stock art incorporated | CT Life generated artwork | 2026-10-12 | Distinct trophy, project-launch, rug/coin, broadcast-microphone, secured-ingot and chart-peak badges. PNG originals copied without image edits; Unity imports at existing max-128 Android ASTC settings. Prompts, original paths and validation: `docs/research/dream-icons-20261012.md`. |
+| Seeker Baby, `client/Assets/Resources/UI/Onboarding/origin-seeker_baby.png` | Built-in image_gen, using existing CT Life Insider Baby and Exit Liquidity Baby illustrations as style/framing references | Generated for CT Life; no third-party stock character or device product photograph incorporated | CT Life generated artwork | 2026-10-12 | Original seated baby adventurer holding a stylized black mobile device on a sunny city doorstep, within the existing purple-rimmed card family. No text or gameplay-benefit claims in the artwork. SHA256 `eb7096f6774195f8734b6f1baa72c78d15f7f71827be30a28aee01999314ca1e`. Prompts and validation: `docs/research/seeker-origin-art-20261012.md`. |
+
+## Illustrated landscape card surfaces — 2026-10-12
+
+| Asset | Source | Licence / attribution | Author | Date | Use / modifications |
+| --- | --- | --- | --- | --- | --- |
+| `client/Assets/Resources/UI/Onboarding/player-card-surface.png` | Built-in image_gen; composition researched from the user-supplied Oscar game-profile reference https://www.pinterest.com/pin/1900024839881546/ | Generated CT Life surface; reference image retained as research only, not bundled into game resources. No Oscar character, reference copy or Duolingo branding appears in the generated surface. | CT Life generated artwork | 2026-10-12 | Opaque 2:1 mint/lavender/plum card base with blank white information area. The actual avatar and all labels are runtime content. Generation history and accepted source path: `docs/research/illustrated-cards-20261012.md`. |
+| `client/Assets/Resources/UI/Onboarding/origin-surface-{insider,exit_liquidity,seeker}.png` | Built-in image_gen; accepted CT Life player-card base plus the matching existing CT Life baby painting as references | Generated adaptations of CT Life's existing generated artwork; original paintings retained | CT Life generated artwork | 2026-10-12 | Three opaque 1774×887 card faces. Recognizable origin baby/prop integrated into the left art field; blank right-hand rows for code-rendered outcome and benefits. Max2048 Android ASTC6×6, no mipmaps. Exact prompts, source paths, hashes and validation: `docs/research/illustrated-cards-20261012.md`. |
+
+## Rain pupil surface restoration — 2026-10-12
+
+The 29 Rain-derived cast appearances retain their existing Blender Foundation / Blender Studio Rain attribution and [CC-BY 4.0 source](https://studio.blender.org/characters/rain/v3/). `art/cast/scripts/repair_rain_pupil.py` restores the accidentally removed right pupil using the surviving authored left cap's geometry and atlas UVs. It adds four vertices/two triangles per existing mesh (99 meshes in 41 hero/world FBXs); all prior positions, UVs, weights, normals and skeleton transforms were preserved and checked through FBX round-trip. Both cast manifests record updated counts and hashes. The original clothing, textures, rig and source paintings are unchanged. Diagnosis and actual Unity close-eye validation: `docs/progress/rain-eye-surface-20261012.md`.
+
+## Lobby courtyard — 2026-10-12
+
+`client/Assets/Resources/UI/Onboarding/lobby-rooftop.png` — original generated CT Life lobby illustration, built-in OpenAI imagegen, 12 October 2026. No downloaded third-party game art is embedded. Source: `exec-7ef7fca0-58e2-421c-b204-6b05b18a5762.png`; exact prompt: `docs/research/lobby-rooftop-image-prompt-20261012.txt`. Reference/layout discussion: `docs/research/lobby-solana-duo-20261012.md`. This is background artwork, not a newly playable map.
+
+## CTOS original app icon artwork — 12 October 2026
+
+| Name | Source | Provenance | Author | Date | Use |
+|---|---|---|---|---|---|
+| CTOS layered app icon set (29 routes + neutral fallback) | `art/source/phoneos-icons/render-icons.swift` | Original geometry authored for CT Life with native CoreGraphics; no third-party icon, SF Symbol, Apple artwork or glyph font embedded. Primary design reference only: [Apple Icon Composer](https://developer.apple.com/icon-composer/), current official app-icon grid and WWDC26 lab. Reference images do not ship. | CT Life / Codex icon lane | 2026-10-12 | `client/Assets/Resources/UI/PhoneOS/Icons/*.png`; 192px RGBA, 794,745 bytes total; renderer and mapping research in `docs/research/ctos-app-icons-20261012.md` |
+
+
+## CTOS photographic wallpaper — 12 October 2026
+
+`client/Assets/Resources/UI/PhoneOS/Wallpaper/Dunes.png` — original built-in OpenAI imagegen photographic-style wallpaper created for CT Life. No Apple wallpaper, product photo, third-party photograph, UI or logo is embedded. Original 1024×1536 PNG copied unchanged; mobile texture import is bounded to2048, ASTC6×6. Prompt/source and validation: `docs/progress/ctos-iphone-20261012.md`.

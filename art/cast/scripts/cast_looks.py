@@ -12,6 +12,7 @@ from cast_common import *
 import cast_tex as T
 import cast_spec as S
 import cast_morph as M
+from cast_eye_surface import restore_missing_rain_pupil
 
 args = sys.argv[sys.argv.index('--') + 1:]
 fam = args[0]
@@ -71,6 +72,10 @@ def assemble(look, tier):
         o.data.attributes.remove(o.data.attributes[name])
     for vc in list(o.data.color_attributes):
         o.data.color_attributes.remove(vc)
+    if fam == 'f' and 'head' in S.resolved_parts(look):
+        # Older cached LODs predate the front-pupil culling correction. Preserve that
+        # surface on every rebuild, without replacing the user's wardrobe intermediates.
+        restore_missing_rain_pupil(o)
     return o
 
 def fit_budget(o, target):
