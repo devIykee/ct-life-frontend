@@ -177,7 +177,14 @@ namespace CTLife.Economy
             bool bullish = target > entryMicros && stop < entryMicros;
             bool bearish = target < entryMicros && stop > entryMicros;
             if (!bullish && !bearish) return Ticket.Reject("ticket.callSides");
-            return Ticket.Send(new JObject { ["coinId"] = coinId, ["entryMicros"] = entryMicros, ["targetMicros"] = target, ["stopMicros"] = stop });
+            // The running backend validates bigint price fields as decimal strings, matching its responses.
+            return Ticket.Send(new JObject
+            {
+                ["coinId"] = coinId,
+                ["entryMicros"] = entryMicros.ToString(CultureInfo.InvariantCulture),
+                ["targetMicros"] = target.ToString(CultureInfo.InvariantCulture),
+                ["stopMicros"] = stop.ToString(CultureInfo.InvariantCulture),
+            });
         }
 
         /// <summary>

@@ -15,7 +15,7 @@ using UnityEngine.UIElements;
 namespace CTLife.App
 {
     /// <summary>
-    /// splash → sign-in → birth lottery → character creator → lobby → city. Each onboarding step is skipped when the
+    /// splash → sign-in → character choices → automatic birth lottery → result → lobby → city. Onboarding is skipped when the
     /// server's /me shows it is done (see <see cref="Onboarding"/>). Any start-up failure to reach the backend shows
     /// <see cref="ConnectionRetryScreen"/> and resumes from the failed step. Development automation (never in prod):
     /// launch extras `autologin=dev` (optional `wallet`, `seeker=1`), `autocreate=1`, `venue=terminal_cafe`.
@@ -273,21 +273,7 @@ namespace CTLife.App
                 tcs.TrySetResult(true);
             }
 
-            async void AnotherWallet()
-            {
-                if (pending || !Owns(screen)) return;
-                pending = true;
-                screen.SetSwitching(true);
-                try { await _owner.Wait(auth.SignOut(wallet)); }
-                catch (OperationCanceledException) when (!Alive) { return; }
-                catch (Exception e) { Log.Warn("flow", "Sign-out for another wallet: " + e.Message); }
-                finally { pending = false; }
-                if (!Owns(screen)) return;
-                screen.SetSwitching(false);
-                screen.SetReturning(false);
-            }
-
-            screen = new SignInScreen(Wallet, wallet.IsAvailable, returning, Play, AnotherWallet);
+            screen = new SignInScreen(Wallet, wallet.IsAvailable, returning, Play);
             ShowFlow(screen);
 #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
             // Explicit development automation only. No guest/demo route is exposed in the product UI.
@@ -363,12 +349,14 @@ namespace CTLife.App
             try
             {
                 var profile = Services.Get<PlayerProfile>();
-                var session = Services.Get<Session>();
                 await game.Wait(profile.Refresh(game.Token));
-                // The roll comes first: the server treats an existing character as "already rolled".
+                // Choices come first on screen; the lottery write still precedes character creation on the server.
                 _firstLobby = Onboarding.NeedsCharacter(profile.Me);
-                if (Onboarding.NeedsLottery(profile.Me)) await game.Wait(Lottery(game, session.IsSeeker));
                 if (Onboarding.NeedsCharacter(profile.Me)) await game.Wait(CreateCharacter(game));
+                // An equipped personal character must be restored before entering the world. A failed asset load
+                // goes through the existing connection/retry flow; it is never silently replaced by a stock body.
+                if (!string.IsNullOrEmpty(profile.LikenessJobId))
+                    await game.Wait(CTLife.World.Likeness.LikenessAvatarCache.PrepareOwned(profile.LikenessJobId, game.Token));
 
                 var rt = Services.Get<IRealtimeService>();
                 try
@@ -450,86 +438,149 @@ namespace CTLife.App
 
         private Task CreateCharacter(FlowLifetime game)
         {
-            var tcs = new TaskCompletionSource<bool>();
-            CharacterCreatorScreen screen = null;
-            bool pending = false;
+            var done = new TaskCompletionSource<bool>();
             var config = Services.Get<ConfigStore>();
-            screen = new CharacterCreatorScreen(config.Registries, async draft =>
-            {
-                if (pending || !Owns(game, screen)) return;
-                pending = true;
-                screen.SetBusy(true);
-                try
-                {
-                    await game.Wait(Services.Get<Api>().CreateCharacter(draft.alias, draft.look, draft.traitIds, draft.dreamId,
-                        draft.tribeId, draft.ageConfirmed));
-                    await game.Wait(Services.Get<PlayerProfile>().Refresh(game.Token));
-                    if (!Owns(game, screen)) return;
-                    // The milestone beat (onboarding redesign): "Welcome to CT" until the player taps ENTER THE CITY.
-                    await game.Wait(screen.Celebrate());
-                    if (!Owns(game, screen)) return;
-                    CloseFlow(screen);
-                    tcs.TrySetResult(true);
-                }
-                catch (OperationCanceledException) when (!GameAlive(game)) { }
-                catch (Exception e)
-                {
-                    if (Owns(game, screen)) screen.ShowError(e is ApiException api ? Strings.Error(api.Code, api.ServerMessage) : e.Message);
-                    if (Owns(game, screen)) screen.SetBusy(false);
-                }
-                finally { pending = false; }
-            }, serverLookConfirmed: look => CreatorLookPolicy.CanSubmit(look, isAuthoredLook: true, config.IsLookConfirmed));
-            ShowFlow(screen);
-            _gameplayScreen = screen;
-#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
-            if (LaunchArgs.Flag("autocreate"))
-            {
-                var alias = LaunchArgs.Get("alias", "dev" + UnityEngine.Random.Range(10000, 99999));
-                if (!screen.AutoSubmitForAutomation(alias)) Log.Warn("flow", "autocreate could not submit the creator");
-            }
-#endif
-            return game.Wait(tcs.Task);
-        }
-
-        private Task Lottery(FlowLifetime game, bool isSeeker)
-        {
-            var tcs = new TaskCompletionSource<bool>();
-            LotteryScreen screen = null;
-            var api = Services.Get<Api>();
             var profile = Services.Get<PlayerProfile>();
-            screen = new LotteryScreen(isSeeker, async () =>
+            var api = Services.Get<Api>();
+            var journal = new OnboardingTransactionStore(profile.UserId);
+            bool pending = false;
+
+            // Older installs may have a committed roll but no local receipt. /me's default home is not an outcome.
+            // A retained request key can replay a lost response; without one, keep the origin explicitly unknown.
+            if (Onboarding.LotteryRolled(profile.Me) && journal.Receipt == null && string.IsNullOrEmpty(journal.PendingLotteryKey))
+                journal.RecordRolledWithoutReceipt();
+
+            async Task<PostLotteryRoll200Response> Roll()
             {
                 game.ThrowIfClosed();
+                if (journal.LotteryRecorded) return journal.Receipt;
                 try
                 {
-                    return await api.RollLottery(); // A started roll keeps its original economic lifetime.
+                    // An issued write keeps its economic lifetime even if the screen closes. Persist its exact result
+                    // before any reveal animation, so a relaunch cannot change the draw or invent its starting home.
+                    var result = await api.RollLottery(idempotencyKey: journal.LotteryKey());
+                    journal.RecordLottery(result);
+                    if (GameAlive(game)) profile.ApplyLottery(result);
+                    return result;
                 }
                 catch (Exception e) when (!(e is OperationCanceledException))
                 {
-                    // A lost response, a retry after a committed roll, or 409: reconcile with the server's /me.
-                    Rest.Model.Me refreshed = null;
+                    Me refreshed = null;
                     try { refreshed = await profile.Refresh(game.Token); }
-                    catch (Exception refresh) when (!(refresh is OperationCanceledException)) { Log.Warn("lottery", "Profile refresh failed: " + refresh.Message); }
+                    catch (Exception refresh) when (!(refresh is OperationCanceledException))
+                    { Log.Warn("lottery", "Profile refresh failed: " + refresh.Message); }
                     if (Onboarding.RollFailureMeansDone(e, refreshed))
                     {
-                        Log.Info("lottery", "Roll already recorded server-side (" + (e is ApiException a ? a.Code : e.GetType().Name) + "); continuing");
+                        journal.RecordRolledWithoutReceipt();
                         return null;
                     }
                     throw;
                 }
-            }, r =>
+            }
+
+            void Choose(string error = null, bool ageConfirmedThisSession = false)
             {
-                if (!Owns(game, screen)) return;
-                if (r != null) profile.ApplyLottery(r);
-                CloseFlow(screen);
-                tcs.TrySetResult(true);
-            });
-            ShowFlow(screen);
-            _gameplayScreen = screen;
+                game.ThrowIfClosed();
+                CharacterCreatorScreen creator = null;
+                creator = new CharacterCreatorScreen(config.Registries, draft =>
+                {
+                    if (pending || !Owns(game, creator)) return;
+                    creator.FlushDraft();
+                    Reveal(draft);
+                }, serverLookConfirmed: look => CreatorLookPolicy.CanSubmit(look, isAuthoredLook: true, config.IsLookConfirmed));
+                ShowFlow(creator);
+                _gameplayScreen = creator;
+                if (ageConfirmedThisSession) creator.RestoreSessionConsent();
+                if (!string.IsNullOrEmpty(error)) creator.ShowError(error);
 #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
-            if (LaunchArgs.Flag("autocreate")) screen.AutoRollForAutomation();
+                // Do not automatically resubmit a draft rejected by the server.
+                if (error == null && LaunchArgs.Flag("autocreate"))
+                {
+                    var alias = LaunchArgs.Get("alias", "dev" + UnityEngine.Random.Range(10000, 99999));
+                    if (!creator.AutoSubmitForAutomation(alias)) Log.Warn("flow", "autocreate could not submit the creator");
+                }
 #endif
-            return game.Wait(tcs.Task);
+            }
+
+            void Reveal(CharacterDraft draft)
+            {
+                LotteryScreen lottery = null;
+                lottery = new LotteryScreen(Services.Get<Session>().IsSeeker, Roll, async result =>
+                {
+                    if (pending || !Owns(game, lottery)) return;
+                    pending = true;
+                    lottery.SetBusy(true);
+                    try
+                    {
+                        bool SavedSelectionMatches() => Onboarding.CharacterCreationMatches(profile.Me, draft.alias,
+                            draft.look, draft.traitIds, draft.dreamId, draft.tribeId, draft.likenessJobId, profile.LikenessJobId);
+                        if (result != null) profile.ApplyLottery(result);
+                        try
+                        {
+                            await game.Wait(api.CreateCharacter(draft.alias, draft.look, draft.traitIds, draft.dreamId,
+                                draft.tribeId, draft.ageConfirmed,
+                                idempotencyKey: journal.CharacterKey(draft.alias, draft.look, draft.traitIds, draft.dreamId, draft.tribeId, draft.likenessJobId),
+                                likenessJobId: draft.likenessJobId));
+                            await game.Wait(profile.Refresh(game.Token));
+                            if (!SavedSelectionMatches())
+                                throw new InvalidOperationException(Strings.T(Onboarding.CharacterCreationRecorded(profile.Me)
+                                    ? "ob.save.characterMismatch" : "ob.save.unconfirmed"));
+                        }
+                        catch (Exception write) when (!(write is OperationCanceledException))
+                        {
+                            // A response can disappear after the server commits. Re-read /me before asking for edits
+                            // or retrying, and retain the same idempotency key for an unchanged draft.
+                            Me refreshed = null;
+                            try { refreshed = await profile.Refresh(game.Token); }
+                            catch (Exception refresh) when (!(refresh is OperationCanceledException))
+                            { Log.Warn("creator", "Creation reconciliation failed: " + refresh.Message); }
+                            if (!Onboarding.CharacterCreationRecorded(refreshed)) throw;
+                            if (!SavedSelectionMatches())
+                                throw new InvalidOperationException(Strings.T("ob.save.characterMismatch"));
+                            Log.Info("creator", "Character creation confirmed from refreshed profile after " + write.GetType().Name);
+                        }
+                        if (!Owns(game, lottery)) return;
+                        // The server has confirmed creation. A local cleanup failure must not hold the player here
+                        // or turn a completed write into another create attempt (notably when the device is full).
+                        try { new CreatorDraftStore(profile.UserId).Clear(); }
+                        catch (Exception cleanup) { Log.Warn("creator", "Draft cleanup failed: " + cleanup.Message); }
+                        try { journal.ClearCharacterRequest(); }
+                        catch (Exception cleanup) { Log.Warn("creator", "Request cleanup failed: " + cleanup.Message); }
+                        CloseFlow(lottery);
+                        done.TrySetResult(true);
+                    }
+                    catch (OperationCanceledException) when (!GameAlive(game)) { }
+                    catch (Exception e)
+                    {
+                        if (!Owns(game, lottery)) return;
+                        string message = e is ApiException apiError ? Strings.Error(apiError.Code, apiError.ServerMessage) : e.Message;
+                        if (e is ApiException validation && (validation.Is("VALIDATION_FAILED") || validation.Is("ALIAS_TAKEN")))
+                        {
+                            // The recorded origin survives editing. The next reveal uses its receipt, not another draw.
+                            pending = false;
+                            Choose(message, draft.ageConfirmed);
+                        }
+                        else lottery.ShowCommitError(message);
+                    }
+                    finally
+                    {
+                        pending = false;
+                        if (Owns(game, lottery)) lottery.SetBusy(false);
+                    }
+                }, existingResult: journal.Receipt, alreadyRecorded: journal.LotteryRecorded);
+                lottery.PlayerAlias = draft.alias;
+                var tribe = config.Registries.TribeOrder.Find(t => t.id == draft.tribeId);
+                var perk = tribe == null ? null : OnboardingCopy.TribePerk(tribe);
+                lottery.StarterPerk = string.IsNullOrEmpty(perk) ? tribe?.name : tribe.name + " · " + perk;
+                ShowFlow(lottery);
+                _gameplayScreen = lottery;
+#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
+                if (LaunchArgs.Flag("autocreate")) lottery.AutoRollForAutomation();
+#endif
+            }
+
+            Choose();
+            return game.Wait(done.Task);
         }
 
         private void BuildHudAndPhone(FlowLifetime game)
@@ -693,12 +744,6 @@ namespace CTLife.App
                     if (lobby != null) AudioManager.Instance?.Music.SetDistrict("lobby");
                     return;
                 }
-                catch (Exception e)
-                {
-                    Log.Warn("flow", $"Venue room join failed ({e.Message}); entering the venue offline");
-                    Bus.Publish(ToastSignal.Text("Realtime is offline. You're alone here for now.", ToastKind.Bad));
-                    await game.Wait(VenueSession.Enter(venueId, joinRoom: false, owner: game.Token));
-                }
                 _homeReturnVenueId = null;
                 CloseLobby();
             }
@@ -706,6 +751,9 @@ namespace CTLife.App
             catch (Exception e)
             {
                 if (!GameAlive(game)) return;
+                // A failed multiplayer join must not silently become a local-only city visit.
+                // Enter() has released the failed visit; restore navigation so the player can retry.
+                rejected = true;
                 Log.Exception("flow", e);
                 Bus.Publish(ToastSignal.Text(e.Message, ToastKind.Bad));
                 lobby?.ShowError(Strings.T("home.error.travel"));

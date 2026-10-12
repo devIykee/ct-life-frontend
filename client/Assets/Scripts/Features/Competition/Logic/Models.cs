@@ -459,7 +459,7 @@ namespace CTLife.Competition
                 InviteId = CompWire.ReqStr(o["inviteId"] ?? o["id"], "inviteId"),
                 HostUserId = CompWire.Str(o["hostUserId"] ?? o["hostId"]),
                 GuestUserId = CompWire.Str(o["guestUserId"] ?? o["guestId"]),
-                Status = CompWire.Str(o["status"]) ?? "pending",
+                Status = CompWire.Str(o["status"]) ?? (CompWire.IsNull(o["usedAt"]) ? "pending" : "accepted"),
                 ExpiresAtMs = CompWire.TimeMsOrNull(o["expiresAt"]),
                 CreatedAtMs = CompWire.TimeMsOrNull(o["createdAt"]),
                 UsedAtMs = CompWire.TimeMsOrNull(o["usedAt"]),
@@ -505,7 +505,7 @@ namespace CTLife.Competition
                 Text = CompWire.Plain(CompWire.Str(o["text"] ?? o["response"]), 1200),
                 Filtered = CompWire.BoolOr(o["filtered"], false),
                 Refused = CompWire.BoolOr(o["refused"], false),
-                RefusalReasonId = CompWire.Str(o["refusalReasonId"]),
+                RefusalReasonId = CompWire.Str(o["refusalReasonId"] ?? o["refusalReason"]),
                 // The client always labels replies as AI-generated, whatever the flag says.
                 AiGenerated = true,
                 Quota = o["quota"] is JObject q ? LlmQuota.Parse(q) : null,

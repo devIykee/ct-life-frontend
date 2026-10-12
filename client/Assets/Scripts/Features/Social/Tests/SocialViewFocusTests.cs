@@ -63,6 +63,34 @@ namespace CTLife.SocialFeatures.Tests
         }
 
         [UnityTest]
+        public IEnumerator HangingUpDuringGrantFetchDoesNotStrandTheNextCall()
+        {
+            var rest = new DelayedCallRest();
+            typeof(SocialHub).GetField("Api").SetValue(_hub, new SocialApi(rest));
+            var controller = _hub.Calls;
+            var active = typeof(CallController).GetProperty("Active");
+            var join = typeof(CallController).GetMethod("JoinMedia", Instance);
+            var first = CallSession.StartOutgoing(new[] { "first-peer" }, 0);
+            first.Dialed("first-call", 0);
+            active.SetValue(controller, first);
+            join.Invoke(controller, new object[] { first });
+            Assert.That(rest.TokenRequests, Is.EqualTo(1));
+            controller.Hangup();
+            Assert.That(rest.FirstRequestToken.IsCancellationRequested, Is.True);
+
+            var second = CallSession.StartOutgoing(new[] { "second-peer" }, 0);
+            second.Dialed("second-call", 0);
+            active.SetValue(controller, second);
+            join.Invoke(controller, new object[] { second });
+            Assert.That(rest.TokenRequests, Is.EqualTo(2), "The canceled predecessor must not block the successor's grant request.");
+            yield return null;
+            Assert.That(controller.Active, Is.SameAs(second));
+            Assert.That(second.IsOver, Is.False);
+            Assert.That(typeof(CallController).GetField("_joiningCall", Instance).GetValue(controller), Is.SameAs(second),
+                "The predecessor's finally/error callback must not clear its successor's join ownership.");
+        }
+
+        [UnityTest]
         public IEnumerator FocusedHostButtonDoesNotStarveComposeRender()
         {
             yield return WaitFor(() => Button("Host a Space") != null);
@@ -215,6 +243,31 @@ namespace CTLife.SocialFeatures.Tests
         }
 
         private sealed class FocusTestWindow : EditorWindow { }
+
+        private sealed class DelayedCallRest : IRestClient
+        {
+            public int TokenRequests;
+            public CancellationToken FirstRequestToken;
+            public Func<Task<bool>> RefreshHandler { get; set; }
+            public Task<T> Get<T>(string path, CancellationToken ct = default) => Task.FromResult((T)(object)JToken.Parse("{\"spaces\":[]}"));
+            public Task<T> Send<T>(string method, string path, object body = null, bool auth = true, string idempotencyKey = null, CancellationToken ct = default)
+            {
+                if (path == "/rtc/token")
+                {
+                    if (++TokenRequests == 1) FirstRequestToken = ct;
+                    var pending = new TaskCompletionSource<T>();
+                    ct.Register(() => pending.TrySetCanceled());
+                    return pending.Task;
+                }
+                Assert.That(path.EndsWith("/end", StringComparison.Ordinal), Is.True);
+                return Task.FromResult(default(T));
+            }
+            public Task<T> Post<T>(string path, object body = null, bool auth = true, string idempotencyKey = null, CancellationToken ct = default) => throw new NotSupportedException();
+            public Task<T> Put<T>(string path, object body, CancellationToken ct = default) => throw new NotSupportedException();
+            public Task<T> Patch<T>(string path, object body, CancellationToken ct = default) => throw new NotSupportedException();
+            public Task<T> Delete<T>(string path, CancellationToken ct = default) => throw new NotSupportedException();
+            public Task<RawResponse> SendRaw(string method, string path, string jsonBody, bool auth, string idempotencyKey, string ifNoneMatch, CancellationToken ct) => throw new NotSupportedException();
+        }
 
         private sealed class SpacesListRest : IRestClient
         {

@@ -67,6 +67,18 @@ namespace CTLife.Ventures.Tests
         }
 
         [Test]
+        public void CurrentServerUploadMetadataReachesBookingUnchanged()
+        {
+            Ready();
+            _gw.UploadResult = () => new UploadedCreative { UploadId = Kit.Upload, ImageKey = "ads/from-server.png", MimeType = "image/png", SizeBytes = 64 };
+            Kit.Sync(_flow.Submit(Kit.Now, CancellationToken.None));
+            var body = _gw.BookBodies.Single();
+            Assert.AreEqual("ads/from-server.png", (string)body["imageKey"]);
+            Assert.AreEqual("image/png", (string)body["mimeType"]);
+            Assert.AreEqual(64, (int)body["sizeBytes"]);
+        }
+
+        [Test]
         public void InvalidCreative_IsNotKept()
         {
             _flow.TermId = "term_7d";

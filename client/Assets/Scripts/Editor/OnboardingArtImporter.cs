@@ -30,20 +30,22 @@ namespace CTLife.EditorTools
         {
             bool kit = assetPath.StartsWith(KitFolder, StringComparison.Ordinal);
             bool portrait = assetPath.StartsWith(PortraitFolder, StringComparison.Ordinal);
+            bool illustration = assetPath.StartsWith(PortraitFolder + "Illustrations/", StringComparison.Ordinal);
             bool icon = assetPath.StartsWith(KitFolder + "Icons/", StringComparison.Ordinal);
             if ((!kit && !portrait && !assetPath.StartsWith(Folder, StringComparison.Ordinal)) || !(assetImporter is TextureImporter ti)) return;
             string file = Path.GetFileName(assetPath);
             bool backdrop = file.StartsWith("onboarding-bg", StringComparison.Ordinal);
             bool badge = file.StartsWith("tribe-", StringComparison.Ordinal);
+            bool surface = file == "player-card-surface.png" || file.StartsWith("origin-surface-", StringComparison.Ordinal) || file == "lobby-rooftop.png";
             ti.textureType = TextureImporterType.Default;
             ti.textureShape = TextureImporterShape.Texture2D;
             ti.mipmapEnabled = false;
             ti.npotScale = TextureImporterNPOTScale.None;
             ti.wrapMode = TextureWrapMode.Clamp;
             ti.filterMode = FilterMode.Bilinear;
-            ti.alphaIsTransparency = !backdrop;
-            ti.alphaSource = backdrop ? TextureImporterAlphaSource.None : TextureImporterAlphaSource.FromInput;
-            int max = kit ? 128 : portrait ? 256 : badge ? 256 : backdrop ? 2048 : 1024; // kit icons: shown at ≤ 120 px on the Seeker
+            ti.alphaIsTransparency = !backdrop && !surface;
+            ti.alphaSource = backdrop || surface ? TextureImporterAlphaSource.None : TextureImporterAlphaSource.FromInput;
+            int max = kit ? 128 : illustration ? 512 : portrait ? 256 : badge ? 256 : backdrop || surface ? 2048 : 1024;
             ti.maxTextureSize = max;
             var android = ti.GetPlatformTextureSettings("Android");
             android.overridden = true;

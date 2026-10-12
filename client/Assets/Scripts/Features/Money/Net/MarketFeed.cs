@@ -21,8 +21,8 @@ namespace CTLife.Economy
     /// <summary>
     /// Live coin list for Pulse, Launchpad and the Perp Pit. Source of truth, in order:
     /// 1) the `market` room's `coins` map (contract section 5: 0.5 Hz, about 40 live coins) when joined and non-empty;
-    /// 2) otherwise GET /market/coins?stage=… polled while a view asks for it (the backend checkout's market room is still
-    ///    a stub without coins, so this fallback is the working path today).
+    /// 2) otherwise GET /market/coins?stage=… polled while a view asks for it. The backend publishes real coin snapshots
+    ///    into the market room; REST also covers startup, disconnection and an empty room.
     /// Also keeps a ticker cache for perps, tombstones, smart money and the REKT card, and the last 30 tape rows.
     /// </summary>
     public sealed class MarketFeed : IDisposable

@@ -90,6 +90,62 @@ namespace CTLife.CityLife.Tests
         }
 
         private sealed class BusinessReadTestWindow : EditorWindow { }
+
+        [Test]
+        public void WeekReadFailuresStayVisibleInsteadOfClaimingNoEventsOrAnUnannouncedMeta()
+        {
+            Services.TryGet<Session>(out var previousSession);
+            Services.TryGet<ConfigStore>(out var previousConfig);
+            Services.TryGet<PlayerProfile>(out var previousProfile);
+            object view = null;
+            EditorWindow window = null;
+            try
+            {
+                var session = new Session();
+                typeof(Session).GetProperty("AccessToken").SetValue(session, "fixture-not-a-token");
+                Services.Register(session);
+                Services.Unregister<PlayerProfile>();
+                var config = new ConfigStore();
+                config.Apply(Resources.Load<TextAsset>("Contract/config_snapshot").text, null, persist: false);
+                Services.Register(config);
+                var hub = (CityLifeHub)System.Runtime.Serialization.FormatterServices.GetUninitializedObject(typeof(CityLifeHub));
+                typeof(CityLifeHub).GetField("Api").SetValue(hub, new CityLifeApi(new WeekMissingRouteRest()));
+                var flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+                var type = typeof(CityWeekApp).GetNestedType("WeekView", BindingFlags.NonPublic);
+                view = Activator.CreateInstance(type, flags, null, new object[] { hub }, null);
+                var root = (ScrollView)type.BaseType.GetField("Root", flags).GetValue(view);
+                window = ScriptableObject.CreateInstance<BusinessReadTestWindow>();
+                window.Show();
+                window.rootVisualElement.Add(root);
+                var labels = root.Query<Label>().ToList().Select(l => l.text).ToList();
+                Assert.That(labels, Does.Contain(CityLifeStrings.T("err.unavailable")));
+                Assert.That(labels, Does.Not.Contain(CityLifeStrings.T("week.noEvents")));
+                Assert.That(labels, Does.Not.Contain(CityLifeStrings.T("week.metaUnknown")));
+                Assert.That(root.Query<Button>().ToList().Count(b => b.text == CityLifeStrings.T("common.retry")), Is.EqualTo(2));
+            }
+            finally
+            {
+                (view as IDisposable)?.Dispose();
+                if (window != null) window.Close();
+                if (previousSession == null) Services.Unregister<Session>(); else Services.Register(previousSession);
+                if (previousConfig == null) Services.Unregister<ConfigStore>(); else Services.Register(previousConfig);
+                if (previousProfile != null) Services.Register(previousProfile);
+            }
+        }
+
+        private sealed class WeekMissingRouteRest : IRestClient
+        {
+            public Func<Task<bool>> RefreshHandler { get; set; }
+            public Task<T> Get<T>(string path, CancellationToken ct = default) => Task.FromException<T>(new ApiException(404,
+                "NOT_FOUND", "No route for this path and method.", new JObject { ["path"] = path, ["method"] = "GET" }));
+            public Task<T> Post<T>(string p, object body = null, bool auth = true, string idempotencyKey = null, CancellationToken ct = default) => throw new NotSupportedException();
+            public Task<T> Put<T>(string p, object body, CancellationToken ct = default) => throw new NotSupportedException();
+            public Task<T> Patch<T>(string p, object body, CancellationToken ct = default) => throw new NotSupportedException();
+            public Task<T> Delete<T>(string p, CancellationToken ct = default) => throw new NotSupportedException();
+            public Task<T> Send<T>(string method, string p, object body = null, bool auth = true, string idempotencyKey = null, CancellationToken ct = default) => throw new NotSupportedException();
+            public Task<RawResponse> SendRaw(string method, string path, string jsonBody, bool auth, string idempotencyKey, string ifNoneMatch, CancellationToken ct) => throw new NotSupportedException();
+        }
+
         private sealed class MissingRouteRest : IRestClient
         {
             public int Reads, Writes;

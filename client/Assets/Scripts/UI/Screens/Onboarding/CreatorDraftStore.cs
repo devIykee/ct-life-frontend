@@ -22,7 +22,7 @@ namespace CTLife.UI
         public sealed class Saved
         {
             public CreatorStep step, furthest;
-            public string lookKey, tribeId, dreamId, alias;
+            public string lookKey, tribeId, dreamId, alias, likenessJobId;
             /// <summary>The customized look (seven ids), or null.</summary>
             public string[] look;
             /// <summary>The customizer spec (base, parts, tints, accessories), or null.</summary>
@@ -42,6 +42,7 @@ namespace CTLife.UI
                 ["v"] = Version, ["step"] = (int)flow.Step, ["furthest"] = (int)flow.Furthest, ["look"] = lookKey,
                 ["tribe"] = d.tribeId, ["traits"] = new JArray(d.traitIds.ToArray()), ["dream"] = d.dreamId, ["alias"] = d.alias,
                 ["yaw"] = yaw, ["portrait"] = portrait,
+                ["likenessJobId"] = d.likenessJobId,
             };
             return o.ToString(Newtonsoft.Json.Formatting.None);
         }
@@ -58,6 +59,7 @@ namespace CTLife.UI
                     step = ClampStep((int?)o["step"] ?? 0), furthest = ClampStep((int?)o["furthest"] ?? 0),
                     lookKey = (string)o["look"], tribeId = (string)o["tribe"], dreamId = (string)o["dream"], alias = (string)o["alias"] ?? "",
                     yaw = (float?)o["yaw"] ?? 180f, portrait = (bool?)o["portrait"] ?? false,
+                    likenessJobId = (string)o["likenessJobId"],
                 };
                 if (o["traits"] is JArray traits) s.traitIds = traits.ToObject<string[]>() ?? Array.Empty<string>();
                 if (o["custom"] is JArray custom && custom.Count == 7) s.look = custom.ToObject<string[]>();
@@ -81,6 +83,7 @@ namespace CTLife.UI
             d.tribeId = s.tribeId;
             d.dreamId = s.dreamId;
             d.alias = s.alias ?? "";
+            d.likenessJobId = s.likenessJobId;
             d.traitIds.Clear();
             foreach (var t in s.traitIds) if (!string.IsNullOrEmpty(t) && !d.traitIds.Contains(t)) d.traitIds.Add(t);
         }

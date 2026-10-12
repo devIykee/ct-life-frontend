@@ -249,7 +249,13 @@ namespace CTLife.Economy
             ["predict.bet"] = "Place bet",
             ["predict.placing"] = "Placing bet…",
             ["predict.placed"] = "Bet placed: {0} on {1}",
-            ["predict.yours"] = "Your bets this session",
+            ["predict.yours"] = "Your predictions",
+            ["predict.unavailable"] = "New predictions are unavailable. Your existing bets appear below.",
+            ["predict.noHistory"] = "No predictions yet.",
+            ["predict.status.open"] = "Open",
+            ["predict.status.won"] = "Won",
+            ["predict.status.lost"] = "Lost",
+            ["predict.status.cancelled"] = "Cancelled",
 
             // ---- ORE (#18)
             ["ore.title"] = "ORE Refinery",

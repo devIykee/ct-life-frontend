@@ -184,6 +184,7 @@ namespace CTLife.EditorTools
             if (assetPath.StartsWith(AuthoredCharacterImport.Root)) return;
             // The cast has its own importer (CastPostprocessor) and its own per-look Avatars; CTL settings must not leak in.
             if (assetPath.StartsWith(CastImport.Root + "/", StringComparison.Ordinal)) return;
+            if (assetPath.StartsWith(DistinctCharacterImport.Root + "/", StringComparison.Ordinal)) return;
             if (assetPath.StartsWith(MocapImport.Root + "/", StringComparison.Ordinal)) return; // own Avatars (MocapPostprocessor)
             var mi = (ModelImporter)assetImporter;
             if (assetPath.StartsWith(CharRoot) || assetPath.StartsWith(AnimRoot))
@@ -299,6 +300,8 @@ namespace CTLife.EditorTools
         private void OnPreprocessTexture()
         {
             if (assetPath.StartsWith(AuthoredCharacterImport.Root)) return;
+            if (assetPath.StartsWith(DistinctCharacterImport.Root + "/", StringComparison.Ordinal)) return;
+            if (assetPath.StartsWith("Assets/Art/characters/palettes/", StringComparison.Ordinal)) return;
             var ti = (TextureImporter)assetImporter;
             if (assetPath.StartsWith(CharRoot))
             {

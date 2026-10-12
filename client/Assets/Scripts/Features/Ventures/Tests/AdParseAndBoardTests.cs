@@ -169,6 +169,34 @@ namespace CTLife.Ventures.Tests
             Assert.Throws<FormatException>(() => AdParse.Upload(JObject.Parse(@"{""url"":""https://cdn/x.png""}")));
         }
 
+        [Test]
+        public void Upload_CurrentBackendCreativeResponseKeepsServerMetadata()
+        {
+            var upload = AdParse.Upload(JObject.Parse(@"{""creativeId"":""u-1"",""bookingId"":"""",""imageKey"":""ads/u-1.png"",""mimeType"":""image/png"",""sizeBytes"":1024}"));
+            Assert.AreEqual("u-1", upload.UploadId);
+            Assert.AreEqual("ads/u-1.png", upload.ImageKey);
+            Assert.AreEqual("image/png", upload.MimeType);
+            Assert.AreEqual(1024, upload.SizeBytes);
+            Assert.IsNull(upload.Url, "a storage key is not a public image URL");
+        }
+
+        [Test]
+        public void BookingResult_CurrentBackendEnvelopeKeepsBookingWithoutInventingPayment()
+        {
+            var result = AdParse.BookingResult(JObject.Parse(@"{""booking"":{""bookingId"":""b-1"",""status"":""pending_review""},""creative"":{""creativeId"":""c-1""}}"));
+            Assert.AreEqual("b-1", result.BookingId);
+            Assert.IsNull(result.Intent, "the missing server payment lifecycle stays unavailable");
+        }
+
+        [Test]
+        public void UploadValidationMatchesTheServerOneMiBLimitAndMimeTypes()
+        {
+            Assert.DoesNotThrow(() => UnityMultipartClient.ValidateImage(new byte[1_048_576], "image/png"));
+            Assert.Throws<ArgumentException>(() => UnityMultipartClient.ValidateImage(new byte[1_048_577], "image/png"));
+            Assert.Throws<ArgumentException>(() => UnityMultipartClient.ValidateImage(new byte[12], "image/webp"));
+            Assert.Throws<ArgumentException>(() => UnityMultipartClient.ValidateImage(Array.Empty<byte>(), "image/jpeg"));
+        }
+
         [TestCase("https://example.org/a", true)]
         [TestCase("HTTPS://EXAMPLE.ORG", true)]
         [TestCase("http://example.org", false)]

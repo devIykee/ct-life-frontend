@@ -18,6 +18,7 @@ namespace CTLife.UI
             string asset = kind switch
             {
                 "close" => "x",
+                "edit" => "pencil-simple",
                 "back" => "caret-left",
                 "next" => "caret-right",
                 "chat" => "chat-circle-text",

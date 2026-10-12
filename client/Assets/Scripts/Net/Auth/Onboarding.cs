@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using CTLife.Rest.Model;
 
 namespace CTLife.Net
@@ -6,7 +8,8 @@ namespace CTLife.Net
     /// <summary>
     /// Server-driven onboarding decisions (pure; unit-tested in Tests/EditMode).
     ///
-    /// Order: birth lottery, then character creator. The contract says the roll "is forced before the character is
+    /// API order: birth lottery, then character creation; the UI can collect draft choices before the roll.
+    /// The contract says the roll "is forced before the character is
     /// created", so a character always means rolled, whatever the flag says: backend 7243073 added
     /// `flags.lotteryRolled` from a new column without backfilling existing users, so every player created before that
     /// migration reads `lotteryRolled:false` with a character, and their roll is a 500 (feedback item 92). Without a
@@ -28,6 +31,27 @@ namespace CTLife.Net
         public static bool NeedsLottery(Me me) => me != null && !LotteryRolled(me);
 
         public static bool NeedsCharacter(Me me) => me != null && !HasCharacter(me);
+
+        /// <summary>
+        /// A fresh /me showing an actual character reconciles a lost create response. Neither balances nor flags alone
+        /// prove creation; the caller must fetch this profile after the failed write and keep the same account lifetime.
+        /// </summary>
+        public static bool CharacterCreationRecorded(Me refreshed) => HasCharacter(refreshed);
+
+        /// <summary>A refresh confirms this write only when it contains the submitted character, including its
+        /// personal asset. A pre-existing stock character is not a receipt for a different creation request.</summary>
+        public static bool CharacterCreationMatches(Me refreshed, string alias, string[] look, IList<string> traits,
+            string dreamId, string tribeId, string requestedLikenessJobId, string recordedLikenessJobId)
+        {
+            if (!HasCharacter(refreshed) || look == null || look.Length != 7 || traits == null) return false;
+            var character = refreshed.Character;
+            var saved = character.Look;
+            if (saved == null || character.Alias != alias || character.DreamId != dreamId || character.TribeId != tribeId ||
+                !string.Equals(requestedLikenessJobId ?? "", recordedLikenessJobId ?? "", StringComparison.Ordinal)) return false;
+            var savedLook = new[] { saved.SkinTone, saved.HeadId, saved.HairId, saved.TopId, saved.BottomId, saved.ShoesId, saved.AccId };
+            return savedLook.SequenceEqual(look) && character.TraitIds != null &&
+                character.TraitIds.Count == traits.Count && new HashSet<string>(traits, StringComparer.Ordinal).SetEquals(character.TraitIds);
+        }
 
         /// <summary>
         /// After a failed roll and a fresh GET /me: true when the roll must already have happened (409 ALREADY_ROLLED,

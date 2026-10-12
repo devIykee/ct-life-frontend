@@ -15,51 +15,54 @@ namespace CTLife.UI
     /// Genesis Token holders) Seeker Baby. The server rolls (`POST /v1/lottery/roll`); the client only animates.
     /// The roll delegate returns null when the server shows the roll already happened (409 or reconciled /me).
     ///
-    /// Presentation (spec docs/research/duolingo-design-teardown.md C1, redesign 2026-10-08): face-down painted cards on the
-    /// blurred town, one action ("DISCOVER MY BEGINNING"), a shuffle and a spotlight that hops card to card (the original
-    /// 0.07 → 0.35 s curve, minimum 2.2 s, waits for the server), the winner flips; Insider/Seeker get a coin burst and the moon
-    /// horn, Exit Liquidity gets a soft "bonk", a muted shower and a second, supportive line. Then the result (Cash, home,
-    /// debt) and the CTA into the creator. No guide character: the cards carry the moment.
+    /// After the creator selections, centred painted cards automatically shuffle and reveal the server's result.
+    /// The winning face expands into one illustrated landscape card with live origin and starting resources.
+    /// The result remains visible while the coordinator commits the character; a failed commit can retry without rolling.
     ///
-    /// Round 3 (user review 2026-10-10, trading-card references): the face-down cards carry a rarity ribbon (RARE · 20%,
-    /// COMMON · 80%); the winner flips, comes to the centre and unfolds into a landscape origin card: the painted art in a
-    /// window on the left, rarity, name, the story line and a stat band (starting Cash, home, debt) on the card itself.
+    /// The face-down cards retain their rarity ribbon and the existing draw/flip. The result keeps its
+    /// artwork, name, story and resource values inside the same collectible surface.
     /// </summary>
     public sealed class LotteryScreen : UiScreen
     {
         private const float CardW = 440f, CardH = 605f, CardGap = 96f, SeekerCardW = 360f;
-        // The table spans the content; face-down cards sit right of the intro copy, the unfolded card is centred.
-        private const float DrawShiftX = 440f, WideW = 1880f, WideH = 660f, WideTop = -8f, WidePad = 22f, WideBorder = 10f;
-        private static readonly Color WideBody = new Color32(42, 15, 50, 255);
+        private const float WideW = 1520f, WideH = 760f, WideTop = -22f;
+        private const float ResultArtW = 590f, ResultArtH = 760f;
 
         private readonly Func<Task<PostLotteryRoll200Response>> _roll;
         private readonly Action<PostLotteryRoll200Response> _onDone;
         private readonly bool _isSeeker;
+        private readonly bool _autoStart;
+        private readonly bool _alreadyRecorded;
+        private readonly PostLotteryRoll200Response _existingResult;
         private readonly List<Card> _cards = new List<Card>();
+        private readonly HashSet<Tween> _tweens = new HashSet<Tween>();
         private OnboardingFrame _frame;
-        private VisualElement _table, _intro;
-        private Label _eyebrow, _title, _line, _error, _note;
+        private VisualElement _table;
+        private Label _status, _error;
         private PostLotteryRoll200Response _rollResult;
-        private Card _shown;
-        private float _drawShift = DrawShiftX;
-        private IVisualElementScheduledItem _idle;
-        private bool _rolling, _rollDone, _revealed;
+        private IVisualElementScheduledItem _idle, _start, _showCta;
+        private bool _rolling, _rollDone, _revealed, _started, _closed, _busy;
         private float _idleStart;
 
         private sealed class Card
         {
             public string id;
-            public VisualElement root, glow, art, fallback, ribbon, info, stats, debtCell;
-            public Label odds, rarity, chance, name, line, cash, home, debt;
+            public VisualElement root, surface, glow, portrait, art, fallback, ribbon, info, stats, debtCell;
+            public Label odds, rarity, chance, name, line, alias, perk, cash, home, debt;
             public float homeX;
             public bool wide;
+            public bool hasSurface;
         }
 
-        public LotteryScreen(bool isSeeker, Func<Task<PostLotteryRoll200Response>> roll, Action<PostLotteryRoll200Response> onDone)
+        public LotteryScreen(bool isSeeker, Func<Task<PostLotteryRoll200Response>> roll, Action<PostLotteryRoll200Response> onDone,
+            bool autoStart = true, PostLotteryRoll200Response existingResult = null, bool alreadyRecorded = false)
         {
             _isSeeker = isSeeker;
             _roll = roll;
             _onDone = onDone;
+            _autoStart = autoStart;
+            _existingResult = existingResult;
+            _alreadyRecorded = alreadyRecorded;
         }
 
         /// <summary>Presentation phases ("draw", "reveal", "flip", "landed", "result") for editor captures and checks.</summary>
@@ -68,46 +71,49 @@ namespace CTLife.UI
         /// <summary>True once the result is on screen (captures and automation).</summary>
         public bool Revealed => _revealed;
         public bool Rolling => _rolling;
+        public string PlayerAlias { get; set; }
+        public string StarterPerk { get; set; }
 
         protected override VisualElement Build()
         {
-            _frame = new OnboardingFrame("ob-lottery", null, OnRoll, Strings.T("ob.lottery.cta"));
-            _frame.Back.style.visibility = Visibility.Hidden; // nothing to go back to; the slot keeps the bar where the creator has it
-            _frame.Progress.Set(0, false);
-            _frame.Cta.EnableShine();
-
-            _eyebrow = El.Text(Strings.T("lottery.eyebrow"), "ob-eyebrow");
-            _title = El.Text(Strings.T("lottery.title"), "ob-title");
-            _line = El.Text(Strings.T("lottery.body"), "ob-line");
-            _intro = El.Div("ob-lottery-intro", _eyebrow, _title, _line);
+            _frame = new OnboardingFrame("ob-lottery", null, OnRoll, Strings.T("ob.lottery.continue"));
+            OnboardingFrame.AddSheet(_frame.Root, "UI/origin-reveal");
+            _frame.Back.style.visibility = Visibility.Hidden;
+            _frame.Progress.Set(CreatorFlow.ProgressSegments - 1, false);
+            _frame.ShowCta(false, false);
 
             _error = El.Text("", "ob-error");
             _error.style.display = DisplayStyle.None;
-            _note = El.Text(Strings.T("ob.lottery.note"), "ob-note");
-            var left = El.Div("ob-lottery-left", _intro, _error);
-            left.pickingMode = PickingMode.Ignore;
+            _status = El.Text("", "ob-line");
+            _status.style.display = DisplayStyle.None;
+            var messages = El.Div("ob-lottery-status", _status, _error);
+            messages.pickingMode = PickingMode.Ignore;
 
             _table = El.Div("ob-lottery-table");
             _table.pickingMode = PickingMode.Ignore;
             var ids = LotteryModel.Cards(_isSeeker);
+            // Eligibility can change after a recorded draw. Its authoritative outcome must still have a result card.
+            if (_existingResult != null)
+            {
+                string recordedId = LotteryModel.OutcomeId(_existingResult.Outcome);
+                if (!ids.Contains(recordedId)) ids.Add(recordedId);
+            }
             Dictionary<string, int> odds = null;
             if (Services.TryGet<ConfigStore>(out var config)) odds = LotteryModel.Odds(config.Config("lottery"), ids);
             float w = ids.Count > 2 ? SeekerCardW : CardW;
-            _drawShift = ids.Count > 2 ? DrawShiftX - 70f : DrawShiftX; // three cards: keep the right card off the screen edge
             float total = ids.Count * w + (ids.Count - 1) * CardGap;
             for (int i = 0; i < ids.Count; i++)
             {
                 var card = MakeCard(ids[i], w, odds);
-                card.homeX = _drawShift - total / 2f + i * (w + CardGap);
+                card.homeX = -total / 2f + i * (w + CardGap);
                 card.root.style.left = new Length(50f, LengthUnit.Percent);
                 card.root.style.marginLeft = card.homeX;
                 _cards.Add(card);
                 _table.Add(card.root);
             }
 
-            _frame.Content.Add(left);
             _frame.Content.Add(_table);
-            _frame.Content.Add(_note);
+            _frame.Content.Add(messages);
             _frame.SetHint("");
             StartIdle();
             return _frame.Root;
@@ -126,6 +132,7 @@ namespace CTLife.UI
             c.fallback = El.Text(Strings.T(LotteryModel.NameKey(id)), "ob-card-fallback");
             c.fallback.style.display = DisplayStyle.None;
             c.art.Add(c.fallback);
+            c.portrait = El.Div("ob-origin-portrait", c.art);
             int pct = -1;
             if (odds != null && odds.TryGetValue(id, out var p)) pct = p;
             string rarity = Strings.T(RarityKey(id));
@@ -134,7 +141,12 @@ namespace CTLife.UI
             c.ribbon.pickingMode = PickingMode.Ignore;
             c.info = BuildInfo(c, id, rarity, pct);
             c.info.style.display = DisplayStyle.None;
-            c.root = El.Div("ob-card " + RarityClass(id), c.glow, c.art, c.info, c.ribbon);
+            c.surface = El.Div("ob-origin-surface", El.Text(Strings.T("ob.card.brand"), "ob-origin-brand"));
+            var surfaceArt = OnboardingArt.OriginSurface(id);
+            c.hasSurface = surfaceArt != null;
+            if (c.hasSurface) c.surface.style.backgroundImage = new StyleBackground(surfaceArt);
+            c.surface.style.display = DisplayStyle.None;
+            c.root = El.Div("ob-card " + RarityClass(id), c.surface, c.glow, c.portrait, c.info, c.ribbon);
             c.root.name = "card_" + id;
             c.root.style.width = width;
             c.root.style.height = width * CardH / CardW;
@@ -148,7 +160,22 @@ namespace CTLife.UI
         private static string RarityClass(string id) =>
             id == LotteryModel.Insider ? "ob-card--rare" : id == LotteryModel.Seeker ? "ob-card--seeker" : "ob-card--common";
 
-        /// <summary>The right half of the unfolded origin card: rarity and odds, the name, the story line, the stat band.</summary>
+        private Card ResultCard(string id)
+        {
+            var card = _cards.FirstOrDefault(c => c.id == id);
+            if (card != null) return card;
+            // A fresh server response can also disagree with stale local eligibility. Add its actual named card;
+            // never reuse another outcome's title/rarity, and never invent odds for an unoffered outcome.
+            card = MakeCard(id, CardW, null);
+            card.homeX = -CardW / 2f;
+            card.root.style.left = new Length(50f, LengthUnit.Percent);
+            card.root.style.marginLeft = card.homeX;
+            _cards.Add(card);
+            _table.Add(card.root);
+            return card;
+        }
+
+        /// <summary>Live result details occupy the illustrated card's reserved information area.</summary>
         private static VisualElement BuildInfo(Card c, string id, string rarity, int pct)
         {
             c.rarity = El.Text(rarity, "ob-origin-rarity");
@@ -156,21 +183,28 @@ namespace CTLife.UI
             var top = El.Div("ob-origin-top", c.rarity, c.chance);
             c.name = El.Text(Strings.T(LotteryModel.NameKey(id)), "ob-origin-name");
             c.line = El.Text("", "ob-origin-line");
+            c.alias = El.Text("", "ob-origin-alias");
+            c.perk = El.Text("", "ob-origin-perk");
+            c.alias.style.display = DisplayStyle.None;
+            c.perk.style.display = DisplayStyle.None;
             c.cash = El.Text("", "ob-origin-value ob-origin-value--cash");
+            c.cash.name = "origin-cash";
             c.home = El.Text("", "ob-origin-value ob-origin-value--home");
+            c.home.name = "origin-home";
             c.debt = El.Text("", "ob-origin-value ob-origin-value--debt");
-            var cashCell = El.Div("ob-origin-stat", El.Text(Strings.T("ob.lottery.stat.cash"), "ob-origin-label"), c.cash);
-            var homeCell = El.Div("ob-origin-stat ob-origin-stat--sep", El.Text(Strings.T("ob.lottery.stat.home"), "ob-origin-label"), c.home);
-            c.debtCell = El.Div("ob-origin-stat ob-origin-stat--sep", El.Text(Strings.T("ob.lottery.stat.debt"), "ob-origin-label"), c.debt);
+            c.debt.name = "origin-debt";
+            var cashCell = El.Div("ob-origin-stat ob-origin-stat--cash", El.Text(Strings.T("ob.lottery.stat.cash"), "ob-origin-label"), c.cash);
+            var homeCell = El.Div("ob-origin-stat ob-origin-stat--home", El.Text(Strings.T("ob.lottery.stat.home"), "ob-origin-label"), c.home);
+            c.debtCell = El.Div("ob-origin-stat ob-origin-stat--debt", El.Text(Strings.T("ob.lottery.stat.debt"), "ob-origin-label"), c.debt);
             c.stats = El.Div("ob-origin-stats", cashCell, homeCell, c.debtCell);
-            var info = El.Div("ob-origin-info", El.Div("ob-origin-head", top, c.name, c.line), c.stats);
+            var note = El.Text(Strings.T("ob.lottery.note"), "ob-origin-note");
+            var info = El.Div("ob-origin-info", El.Div("ob-origin-head", top, c.alias, c.name, c.line), c.perk,
+                El.Div("ob-origin-benefits", c.stats, note));
             info.pickingMode = PickingMode.Ignore;
             return info;
         }
 
-        private static float WideArtWidth() => (WideH - 2f * (WidePad + WideBorder)) * CardW / CardH;
-
-        /// <summary>One frame of the unfold, t 0 → 1: the face-up card grows into the landscape origin card.</summary>
+        /// <summary>One frame of the result reveal: the illustration moves left as its details enter beside it.</summary>
         private static void SetWide(Card c, float t, float w0, float h0, float top0, float ml0, float s0)
         {
             float w = Mathf.Lerp(w0, WideW, t), h = Mathf.Lerp(h0, WideH, t);
@@ -180,13 +214,10 @@ namespace CTLife.UI
             c.root.style.top = Mathf.Lerp(top0, WideTop, t);
             float s = Mathf.Lerp(s0, 1f, t);
             c.root.style.scale = new Scale(new Vector2(s, s));
-            float pad = WidePad * t, border = WideBorder * t;
-            c.root.style.paddingLeft = pad; c.root.style.paddingRight = pad; c.root.style.paddingTop = pad; c.root.style.paddingBottom = pad;
-            c.root.style.borderLeftWidth = border; c.root.style.borderRightWidth = border;
-            c.root.style.borderTopWidth = border; c.root.style.borderBottomWidth = border;
-            var body = WideBody; body.a = Mathf.Clamp01(t * 4f);
-            c.root.style.backgroundColor = body;
-            c.art.style.width = Mathf.Lerp(w0, WideArtWidth(), t);
+            c.portrait.style.width = Mathf.Lerp(w0, ResultArtW, t);
+            c.portrait.style.height = Mathf.Lerp(h0, ResultArtH, t);
+            c.surface.style.opacity = t;
+            c.portrait.style.opacity = c.hasSurface ? 1f - t : 1f;
             float info = Mathf.Clamp01((t - 0.72f) / 0.28f); // after the card is wide enough for the name
             c.info.style.opacity = info;
             c.info.style.translate = new Translate((1f - info) * 48f, 0f);
@@ -197,13 +228,14 @@ namespace CTLife.UI
         {
             c.wide = true;
             c.root.AddToClassList("ob-card--wide");
+            c.surface.style.display = c.hasSurface ? DisplayStyle.Flex : DisplayStyle.None;
             c.ribbon.style.display = DisplayStyle.None;
-            c.art.style.flexGrow = 0f;
-            c.art.style.flexShrink = 0f;
+            c.portrait.style.flexGrow = 0f;
+            c.portrait.style.flexShrink = 0f;
             c.info.style.display = DisplayStyle.Flex;
         }
 
-        /// <summary>The flipped card comes to the centre and unfolds sideways into the landscape origin card.</summary>
+        /// <summary>The flipped card settles left while its origin details appear beside it.</summary>
         private async Task Unfold(Card c)
         {
             float w0 = c.root.resolvedStyle.width, h0 = c.root.resolvedStyle.height, top0 = c.root.resolvedStyle.top;
@@ -212,18 +244,76 @@ namespace CTLife.UI
             BeginWide(c);
             SetWide(c, 0f, w0, h0, top0, ml0, s0);
             Kit.Cues.Play(Kit.Cues.SfxSelect, 0.5f);
-            await Tween.Run(_table, 0.5f, t => SetWide(c, t, w0, h0, top0, ml0, s0), Ease.OutCubic).Completion;
+            await Animate(_table, 0.5f, t => SetWide(c, t, w0, h0, top0, ml0, s0), Ease.OutCubic);
         }
 
-        /// <summary>The unfolded card without animation (reduced motion, instant results).</summary>
+        /// <summary>The same result arrangement without movement (reduced motion, instant results).</summary>
         private static void MakeWide(Card c)
         {
-            if (c.wide) return;
-            BeginWide(c);
+            if (!c.wide) BeginWide(c);
             SetWide(c, 1f, CardW, CardH, 14f, -CardW / 2f, 1f);
         }
 
-        protected override void OnShown() => OnboardingAudio.StartTheme();
+        protected override void OnShown()
+        {
+            OnboardingAudio.StartTheme();
+            if (_closed || _started || (!_autoStart && _existingResult == null && !_alreadyRecorded)) return;
+            // The first attached frame can still have unresolved card widths. Start once layout has completed, and
+            // pause this item explicitly on close: UI Toolkit otherwise resumes scheduled items when reattached.
+            _start?.Pause();
+            _start = _table.schedule.Execute(() =>
+            {
+                if (_closed || _started || _table.panel == null || _cards.Count == 0 ||
+                    !(_cards[0].root.resolvedStyle.width > 0f)) return;
+                _start?.Pause();
+                _start = null;
+                _started = true;
+                if (_existingResult != null)
+                {
+                    StopIdle();
+                    _rollResult = _existingResult;
+                    ShowResultInstant(_rollResult);
+                }
+                else if (_alreadyRecorded)
+                {
+                    StopIdle();
+                    _rollDone = true;
+                    ShowRecordedResult();
+                    _onDone?.Invoke(null);
+                }
+                else OnRoll();
+            }).Every(16).StartingIn(120);
+        }
+
+        private bool IsActive => !_closed && Element?.panel != null;
+
+        private void RequireActive()
+        {
+            if (!IsActive) throw new OperationCanceledException("Lottery screen closed");
+        }
+
+        private async Task Animate(VisualElement owner, float seconds, Action<float> step, Func<float, float> ease = null)
+        {
+            RequireActive();
+            var tween = Tween.Run(owner, seconds, step, ease);
+            _tweens.Add(tween);
+            try { await tween.Completion; }
+            finally { _tweens.Remove(tween); }
+            RequireActive();
+        }
+
+        private async void Track(Tween tween)
+        {
+            _tweens.Add(tween);
+            try { await tween.Completion; }
+            finally { _tweens.Remove(tween); }
+        }
+
+        private async Task Delay(float seconds)
+        {
+            await Kit.Motion.Delay(seconds);
+            RequireActive();
+        }
 
         /// <summary>Face-down cards breathe gently (offset phases) until the draw. Off under reduced motion.</summary>
         private void StartIdle()
@@ -249,56 +339,123 @@ namespace CTLife.UI
 
         private async void OnRoll()
         {
-            if (_rolling) return;
-            if (_rollResult != null)
+            if (!IsActive || _rolling || _busy) return;
+            if (_rollDone || _rollResult != null)
             {
                 _onDone?.Invoke(_rollResult);
                 return;
             }
+            _started = true;
+            _start?.Pause();
+            _start = null;
             _rolling = true;
             _rollDone = false;
             _error.style.display = DisplayStyle.None;
+            _status.style.display = DisplayStyle.None;
             _frame.Cta.SetEnabled(false);
             _frame.ShowCta(false);
-            _line.text = Strings.T("ob.lottery.drawing");
             StopIdle();
             // The odds were shown before the draw; during the shuffle they would pile up, so they step out.
-            foreach (var c in _cards) Kit.Motion.Fade(c.odds, 1f, 0f, 0.15f);
+            foreach (var c in _cards) c.odds.style.opacity = 0f;
             Phase?.Invoke("draw");
-            var draw = Draw();
             try
             {
-                _rollResult = await _roll();
-                _rollDone = true;
+                var draw = Draw();
+                try
+                {
+                    _rollResult = await _roll();
+                    _rollDone = true;
+                }
+                catch (Exception e)
+                {
+                    _rolling = false;
+                    await draw;
+                    if (!IsActive) return;
+                    foreach (var card in _cards) { Hot(card, false); card.odds.style.opacity = 1f; }
+                    _status.style.display = DisplayStyle.None;
+                    _error.text = AppUi.Err(e);
+                    _error.style.display = DisplayStyle.Flex;
+                    Kit.Cues.Nope();
+                    _frame.Cta.Text = Strings.T("ob.lottery.retry");
+                    _frame.Cta.SetEnabled(true);
+                    _frame.ShowCta(true);
+                    StartIdle();
+                    return;
+                }
+                await draw;
+                if (!IsActive) return;
+                if (_rollResult == null)
+                {
+                    // The coordinator reconciled the roll with /me. It owns the verified profile and continuation.
+                    ShowRecordedResult();
+                    _onDone?.Invoke(null);
+                    return;
+                }
+                try { await Reveal(_rollResult); }
+                catch (OperationCanceledException) when (!IsActive) { }
+                catch (Exception e)
+                {
+                    Log.Exception("lottery", e);
+                    if (IsActive) ShowResultInstant(_rollResult);
+                }
             }
+            catch (OperationCanceledException) when (!IsActive) { }
             catch (Exception e)
             {
-                _rolling = false;
-                await draw;
-                if (Element?.panel == null) return;
-                foreach (var card in _cards) { Hot(card, false); card.odds.style.opacity = 1f; }
-                _line.text = Strings.T("lottery.body");
-                _error.text = AppUi.Err(e);
-                _error.style.display = DisplayStyle.Flex;
-                Kit.Cues.Nope();
-                _frame.Cta.Text = Strings.T("ob.lottery.retry");
-                _frame.Cta.SetEnabled(true);
-                _frame.ShowCta(true);
-                StartIdle();
-                return;
+                Log.Exception("lottery", e);
+                if (!IsActive) return;
+                if (_rollResult != null) ShowResultInstant(_rollResult);
+                else if (_rollDone)
+                {
+                    ShowRecordedResult();
+                    ShowCommitError(AppUi.Err(e));
+                }
+                else
+                {
+                    _status.style.display = DisplayStyle.None;
+                    _error.text = AppUi.Err(e);
+                    _error.style.display = DisplayStyle.Flex;
+                    _frame.Cta.Text = Strings.T("ob.lottery.retry");
+                    _frame.Cta.SetEnabled(true);
+                    _frame.ShowCta(true);
+                }
             }
-            await draw;
-            if (Element?.panel == null) { _rolling = false; return; }
-            if (_rollResult == null)
-            {
-                // The roll had already happened (reconciled from /me). Nothing to reveal; continue onboarding.
-                _rolling = false;
-                _onDone?.Invoke(null);
-                return;
-            }
-            try { await Reveal(_rollResult); }
-            catch (Exception e) { Log.Exception("lottery", e); ShowResultInstant(_rollResult); }
-            _rolling = false;
+            finally { _rolling = false; }
+        }
+
+        private void ShowRecordedResult()
+        {
+            _revealed = true;
+            _frame.Progress.Set(CreatorFlow.ProgressSegments);
+            _table.style.display = DisplayStyle.None;
+            _status.parent.AddToClassList("ob-lottery-status--recorded");
+            _status.AddToClassList("ob-lottery-recorded");
+            _status.text = Strings.T("ob.lottery.recorded");
+            _status.style.display = DisplayStyle.Flex;
+            _frame.Cta.Text = Strings.T("ob.lottery.continue");
+            _frame.Cta.SetEnabled(true);
+            _frame.ShowCta(true, false);
+            Phase?.Invoke("result");
+        }
+
+        /// <summary>Disables the result action while the coordinator saves the already selected character.</summary>
+        public void SetBusy(bool busy)
+        {
+            _busy = busy;
+            if (_frame == null) return;
+            _frame.Cta.SetEnabled(!busy && (!_rolling || _revealed));
+            _frame.Cta.Text = Strings.T(busy ? "ob.saving" : _revealed ? "ob.lottery.continue" : "ob.lottery.retry");
+            if (busy) _error.style.display = DisplayStyle.None;
+        }
+
+        /// <summary>A create-character error leaves the origin result intact; retry continues, never rerolls.</summary>
+        public void ShowCommitError(string message)
+        {
+            if (!IsActive) return;
+            SetBusy(false);
+            _error.text = message ?? "";
+            _error.style.display = string.IsNullOrEmpty(message) ? DisplayStyle.None : DisplayStyle.Flex;
+            _frame.ShowCta(true, false);
         }
 
         /// <summary>The shuffle, then the spotlight hopping card to card until at least 2.2 s and the server's answer.</summary>
@@ -306,7 +463,12 @@ namespace CTLife.UI
         {
             if (DeviceFeel.ReducedMotion)
             {
-                while (_rolling && !_rollDone) await Awaitable.WaitForSecondsAsync(0.1f);
+                float began = Kit.Motion.Now;
+                while (_rolling && !_rollDone)
+                {
+                    if (Kit.Motion.Now - began > 8f) ShowSlowStatus();
+                    await Delay(0.1f);
+                }
                 return;
             }
             await Shuffle();
@@ -318,9 +480,9 @@ namespace CTLife.UI
                 i++;
                 Kit.Cues.Hop(i - 1);
                 float elapsed = Kit.Motion.Now - t0;
-                if (elapsed > 8f) _line.text = Strings.T("ob.lottery.slow");
-                await Kit.Motion.Delay(Mathf.Lerp(0.07f, 0.35f, Mathf.Clamp01(elapsed / 2.2f)));
-                if (Element?.panel == null) return;
+                if (elapsed > 8f)
+                    ShowSlowStatus();
+                await Delay(Mathf.Lerp(0.07f, 0.35f, Mathf.Clamp01(elapsed / 2.2f)));
             }
             if (!_rolling || _rollResult == null) return;
             // Land on the winner: a few last, slowing hops ending on it.
@@ -331,11 +493,17 @@ namespace CTLife.UI
             if (hops == 0) hops = _cards.Count;
             for (int h = 1; h <= hops; h++)
             {
-                await Kit.Motion.Delay(0.36f + 0.06f * h);
+                await Delay(0.36f + 0.06f * h);
                 for (int k = 0; k < _cards.Count; k++) Hot(_cards[k], k == (current + h) % _cards.Count);
                 Kit.Cues.Hop(Mathf.Min(6, h));
             }
-            await Kit.Motion.Delay(0.3f);
+            await Delay(0.3f);
+        }
+
+        private void ShowSlowStatus()
+        {
+            _status.text = Strings.T("ob.lottery.slow");
+            _status.style.display = DisplayStyle.Flex;
         }
 
         /// <summary>The cards gather to the centre and deal back out in a new order: two quick swaps (spec C1).</summary>
@@ -346,19 +514,19 @@ namespace CTLife.UI
             float w = _cards[0].root.resolvedStyle.width;
             for (int pass = 0; pass < 2; pass++)
             {
-                await Tween.Run(_table, 0.26f, t =>
+                await Animate(_table, 0.26f, t =>
                 {
                     for (int k = 0; k < _cards.Count; k++)
                     {
-                        float target = _drawShift + (k - (_cards.Count - 1) / 2f) * 18f - w / 2f;
+                        float target = (k - (_cards.Count - 1) / 2f) * 18f - w / 2f;
                         _cards[k].root.style.marginLeft = Mathf.Lerp(starts[k], target, t);
                         _cards[k].root.style.rotate = new Rotate(new Angle((k - 1) * 6f * t));
                     }
-                }, Ease.InCubic).Completion;
+                }, Ease.InCubic);
                 // Deal each card to another card's slot; two passes read as a shuffle.
                 var order = Enumerable.Range(0, _cards.Count).Select(k => (k + 1 + pass) % _cards.Count).ToArray();
-                var gathered = _cards.Select((c, k) => _drawShift + (k - (_cards.Count - 1) / 2f) * 18f - w / 2f).ToArray();
-                await Tween.Run(_table, 0.26f, t =>
+                var gathered = _cards.Select((c, k) => (k - (_cards.Count - 1) / 2f) * 18f - w / 2f).ToArray();
+                await Animate(_table, 0.26f, t =>
                 {
                     for (int k = 0; k < _cards.Count; k++)
                     {
@@ -366,7 +534,7 @@ namespace CTLife.UI
                         _cards[k].root.style.marginLeft = Mathf.LerpUnclamped(gathered[k], target, t);
                         _cards[k].root.style.rotate = new Rotate(new Angle((k - 1) * 6f * (1f - t)));
                     }
-                }, Ease.OutBack).Completion;
+                }, Ease.OutBack);
                 for (int k = 0; k < _cards.Count; k++) starts[k] = _cards[order[k]].homeX;
                 Kit.Cues.Play(Kit.Cues.SfxSelect, 0.4f);
             }
@@ -379,7 +547,15 @@ namespace CTLife.UI
         private async Task Reveal(PostLotteryRoll200Response r)
         {
             string id = LotteryModel.OutcomeId(r.Outcome);
-            var winner = _cards.FirstOrDefault(c => c.id == id) ?? _cards[0];
+            var winner = _cards.FirstOrDefault(c => c.id == id);
+            if (winner == null)
+            {
+                // The server's outcome was absent from the locally offered deck. Present the correct result directly;
+                // do not animate a different outcome as the winner or depend on this new card's unresolved layout.
+                Phase?.Invoke("reveal");
+                ShowResultInstant(r);
+                return;
+            }
             var losers = _cards.Where(c => c != winner).ToList();
             foreach (var c in _cards) Hot(c, c == winner);
             bool good = id != LotteryModel.Exit;
@@ -392,7 +568,7 @@ namespace CTLife.UI
                 winner.odds.style.display = DisplayStyle.None;
                 SetFront(winner, front, id);
                 MakeWide(winner);
-                Kit.Motion.Fade(winner.root, 0f, 1f, 0.2f);
+                Track(Kit.Motion.Fade(winner.root, 0f, 1f, 0.2f));
                 Kit.Cues.Play(Kit.Cues.Origin(id));
                 if (good) DeviceFeel.Confirm(); else DeviceFeel.Reject();
                 ShowResult(r, id, false);
@@ -405,7 +581,7 @@ namespace CTLife.UI
             var loserStart = losers.Select(c => c.root.style.marginLeft.value.value).ToArray();
             foreach (var c in losers) c.odds.style.display = DisplayStyle.None;
             winner.odds.style.display = DisplayStyle.None;
-            await Tween.Run(_table, 0.42f, t =>
+            await Animate(_table, 0.42f, t =>
             {
                 winner.root.style.marginLeft = Mathf.Lerp(startX, -width / 2f, t);
                 float s = Mathf.Lerp(1f, 1.1f, t);
@@ -416,29 +592,27 @@ namespace CTLife.UI
                     losers[k].root.style.marginLeft = loserStart[k] + dir * 260f * t;
                     losers[k].root.style.opacity = 1f - t;
                 }
-            }, Ease.OutCubic).Completion;
+            }, Ease.OutCubic);
             foreach (var c in losers) c.root.style.display = DisplayStyle.None;
 
             // The flip: scaleX to 0 (darkening like a card edge), swap to the face, open back up with a little overshoot.
             Phase?.Invoke("flip");
             Kit.Cues.Play(Kit.Cues.SfxFlip);
-            await Tween.Run(winner.art, 0.17f, t =>
+            await Animate(winner.art, 0.17f, t =>
             {
                 winner.art.style.scale = new Scale(new Vector2(Mathf.Max(0.001f, 1f - t), 1f + 0.04f * t));
                 winner.art.style.unityBackgroundImageTintColor = Color.Lerp(Color.white, new Color(0.55f, 0.5f, 0.6f), t);
-            }, Ease.InCubic).Completion;
+            }, Ease.InCubic);
             SetFront(winner, front, id);
-            await Tween.Run(winner.art, 0.28f, t =>
+            await Animate(winner.art, 0.28f, t =>
             {
                 winner.art.style.scale = new Scale(new Vector2(Mathf.Max(0.001f, t), 1.04f - 0.04f * t));
                 winner.art.style.unityBackgroundImageTintColor = Color.Lerp(new Color(0.55f, 0.5f, 0.6f), Color.white, Mathf.Clamp01(t * 1.4f));
-            }, Ease.OutBack).Completion;
+            }, Ease.OutBack);
 
-            await Kit.Motion.Delay(0.12f);
+            await Delay(0.12f);
             FillCard(winner, r, id);
-            Kit.Motion.Fade(_intro, 1f, 0f, 0.18f); // the card unfolds over the copy column
             await Unfold(winner);
-            if (Element?.panel == null) return;
 
             var centre = CardCentreInBurst(winner);
             Phase?.Invoke("landed");
@@ -446,10 +620,10 @@ namespace CTLife.UI
             {
                 Kit.Cues.Play(Kit.Cues.Origin(id));
                 DeviceFeel.Confirm();
-                Kit.Motion.Pop(winner.art, 1.06f, 0.24f);
+                Track(Kit.Motion.Pop(winner.art, 1.06f, 0.24f));
                 _frame.Burst.Coins(centre, 26);
                 Kit.Cues.Play(Kit.Cues.SfxCoins, 0.7f);
-                await Kit.Motion.Delay(0.18f);
+                await Delay(0.18f);
                 _frame.Burst.Confetti(60);
             }
             else
@@ -457,17 +631,16 @@ namespace CTLife.UI
                 // A comic "bonk": squash, a cloud puff and a slow muted shower; the rug sting mixed down so it is not punishing.
                 Kit.Cues.Play(Kit.Cues.SfxDebt); // the comic bonk + hopeful tag, mixed 1 dB under the Insider stinger: full volume
                 DeviceFeel.Reject();
-                _ = Tween.Run(winner.art, 0.36f, t =>
+                Track(Tween.Run(winner.art, 0.36f, t =>
                 {
                     float squash = Mathf.Sin(t * Mathf.PI) * 0.06f;
                     winner.art.style.scale = new Scale(new Vector2(1f + squash, 1f - squash));
-                }).Completion;
+                }));
                 _frame.Burst.Puff(new Vector2(centre.x, centre.y + winner.root.resolvedStyle.height * 0.42f));
-                await Kit.Motion.Delay(0.2f);
+                await Delay(0.2f);
                 _frame.Burst.Confetti(12, muted: true, slow: true);
             }
             ShowResult(r, id, true);
-            await Kit.Motion.Delay(0.4f);
         }
 
         private Vector2 CardCentreInBurst(Card c)
@@ -497,28 +670,30 @@ namespace CTLife.UI
         private void ShowResult(PostLotteryRoll200Response r, string id, bool animate)
         {
             _revealed = true;
-            _frame.Progress.Set(1);
-            _intro.style.display = DisplayStyle.None;
-            var c = _cards.FirstOrDefault(x => x.id == id) ?? _cards[0];
+            _frame.Progress.Set(CreatorFlow.ProgressSegments);
+            _status.style.display = DisplayStyle.None;
+            var c = ResultCard(id);
             MakeWide(c);
-            _shown = c;
             FillCard(c, r, id);
             CountUp(c.cash, r.CashCents, animate);
-            if (id == LotteryModel.Exit)
-            {
-                // Spec C1: the debt outcome must not feel like a punishment. A second, supportive line 1.2 s later.
-                _ = SecondLine();
-            }
-            _frame.Cta.Text = Strings.T("ob.lottery.next");
+            _frame.Cta.Text = Strings.T("ob.lottery.continue");
             _frame.Cta.SetEnabled(true);
             Phase?.Invoke("result");
-            _frame.Cta.schedule.Execute(() => _frame.ShowCta(true, animate)).StartingIn(animate ? 400 : 0);
+            _showCta?.Pause();
+            _showCta = _frame.Cta.schedule.Execute(() =>
+            {
+                if (IsActive) _frame.ShowCta(true, animate);
+            }).StartingIn(animate ? 400 : 0);
         }
 
         /// <summary>Writes the outcome onto the card (story line, home, debt); Cash shows $0 until it counts up.</summary>
-        private static void FillCard(Card c, PostLotteryRoll200Response r, string id)
+        private void FillCard(Card c, PostLotteryRoll200Response r, string id)
         {
             c.line.text = Strings.T("ob.lottery." + (id == LotteryModel.Exit ? "exit" : id) + ".line");
+            c.alias.text = BoundText(PlayerAlias, CreatorFlow.MaxAlias);
+            c.alias.style.display = string.IsNullOrEmpty(c.alias.text) ? DisplayStyle.None : DisplayStyle.Flex;
+            c.perk.text = BoundText(StarterPerk, 160);
+            c.perk.style.display = string.IsNullOrEmpty(c.perk.text) ? DisplayStyle.None : DisplayStyle.Flex;
             string home = "";
             if (Services.TryGet<ConfigStore>(out var config))
                 home = config.Registries.Homes.FirstOrDefault(h => h.id == r.HomeId)?.name;
@@ -529,27 +704,22 @@ namespace CTLife.UI
             c.cash.text = LotteryModel.CashWhole(0);
         }
 
-        private async Task SecondLine()
-        {
-            await Kit.Motion.Delay(DeviceFeel.ReducedMotion ? 0f : 1.2f);
-            if (Element?.panel == null) return;
-            if (_shown == null) return;
-            _shown.line.text = Strings.T("ob.lottery.exit.line") + "\n" + Strings.T("ob.lottery.exit.line2");
-            Kit.Motion.Pop(_shown.line, 1.03f, 0.2f);
-            DeviceFeel.Tick();
-        }
+        private static string BoundText(string value, int maxLength) =>
+            string.IsNullOrWhiteSpace(value) ? "" : value.Length <= maxLength ? value.Trim() : value.Substring(0, maxLength).Trim();
 
         private void ShowResultInstant(PostLotteryRoll200Response r)
         {
             string id = LotteryModel.OutcomeId(r.Outcome);
+            var winner = ResultCard(id);
             foreach (var c in _cards) c.root.style.display = c.id == id ? DisplayStyle.Flex : DisplayStyle.None;
-            var winner = _cards.FirstOrDefault(c => c.id == id);
-            if (winner != null) SetFront(winner, OnboardingArt.CardFront(id), id);
+            winner.art.style.scale = new Scale(Vector2.one);
+            winner.art.style.unityBackgroundImageTintColor = Color.white;
+            SetFront(winner, OnboardingArt.CardFront(id), id);
             ShowResult(r, id, false);
         }
 
         /// <summary>Cash counts up over 600 ms. The labels are built once up front, so the ticks assign, not format.</summary>
-        private static void CountUp(Label label, long cents, bool animate)
+        private void CountUp(Label label, long cents, bool animate)
         {
             string final = LotteryModel.CashWhole(cents);
             if (!animate || DeviceFeel.ReducedMotion || cents <= 0) { label.text = final; return; }
@@ -557,7 +727,7 @@ namespace CTLife.UI
             var labels = new string[steps + 1];
             for (int i = 0; i < steps; i++) labels[i] = LotteryModel.CashWhole(cents * i / steps / 100 * 100);
             labels[steps] = final;
-            Tween.Run(label, 0.6f, t => label.text = labels[Mathf.Clamp(Mathf.FloorToInt(t * steps), 0, steps)], Ease.OutCubic);
+            Track(Tween.Run(label, 0.6f, t => label.text = labels[Mathf.Clamp(Mathf.FloorToInt(t * steps), 0, steps)], Ease.OutCubic));
         }
 
 #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
@@ -566,12 +736,13 @@ namespace CTLife.UI
         {
             try
             {
-                await Awaitable.WaitForSecondsAsync(0.5f);
-                OnRoll();
-                while (_rolling) await Awaitable.WaitForSecondsAsync(0.25f);
-                await Awaitable.WaitForSecondsAsync(1f);
-                if (_rollResult != null && Element?.parent != null) OnRoll();
+                await Delay(0.5f);
+                if (!_started) OnRoll();
+                while (_rolling) await Delay(0.25f);
+                await Delay(1f);
+                if (_revealed && IsActive) OnRoll();
             }
+            catch (OperationCanceledException) when (!IsActive) { }
             catch (Exception e) { Log.Warn("lottery", "Automation roll failed: " + e.Message); }
         }
 #endif
@@ -581,8 +752,14 @@ namespace CTLife.UI
 
         public override void Close()
         {
+            _closed = true;
             _rolling = false;
+            _start?.Pause();
+            _showCta?.Pause();
             StopIdle();
+            // Complete pending animation awaits before detachment pauses UI Toolkit's scheduler.
+            foreach (var tween in _tweens.ToArray()) tween.Cancel();
+            _tweens.Clear();
             _frame?.Burst.Stop();
             base.Close();
         }

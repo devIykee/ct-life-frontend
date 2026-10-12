@@ -90,7 +90,7 @@ namespace CTLife.EditorTools
 
             // 2. Lottery result (white UI, Solana green).
             var exit = new PostLotteryRoll200Response(PostLotteryRoll200Response.OutcomeEnum.ExitLiquidity, 30000, 72000, "parents_basement");
-            var lottery = new LotteryScreen(false, async () => { await Awaitable.WaitForSecondsAsync(0.3f); return exit; }, _ => { });
+            var lottery = new LotteryScreen(false, async () => { await Awaitable.WaitForSecondsAsync(0.3f); return exit; }, _ => { }, autoStart: false);
             owned.Add(lottery);
             lottery.Show();
             await shot("02-lottery-idle-white", 0.8f);

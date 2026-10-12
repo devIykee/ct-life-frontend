@@ -127,6 +127,7 @@ namespace CTLife.SocialFeatures
             // The backend reports NOT_SPACE_HOST as FORBIDDEN {reason: NOT_SPACE_HOST}.
             var reason = a.Details is JObject d ? SocialWire.Str(d["reason"]) : null;
             if (a.Is("FORBIDDEN") && reason == "NOT_SPACE_HOST") err.Code = "NOT_SPACE_HOST";
+            if (a.Is("VALIDATION_FAILED") && reason == "blocked") err.Code = "BLOCKED";
             if (a.Status == 429 && !Keys.ContainsKey(err.Code)) err.Code = "RATE_LIMITED";
             err.CopyKey = Keys.TryGetValue(err.Code, out var key) ? key : "err.generic";
             return err;

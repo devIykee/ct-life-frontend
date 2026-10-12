@@ -8,26 +8,25 @@ namespace CTLife.UI
     /// <summary>
     /// The title screen (approved art direction, 2026-10-08): the painted town square full-bleed and one big button in the
     /// open cobblestones. A new player gets "Sign in with Solana" (SIWS, contract section 3, the only public entry). A returning
-    /// player with a valid saved session gets "PLAY" and a small "Use another wallet" link that signs out and swaps back.
+    /// player with a valid saved session gets "PLAY". Wallet switching belongs in the in-game Settings sign-out flow.
     /// Styles: Resources/UI/title.uss. Art: Resources/UI/Title (art/LICENSES.md, "Title screen").
     /// </summary>
     public sealed class SignInScreen : UiScreen
     {
-        private readonly Action _onWallet, _onPlay, _onAnotherWallet;
+        private readonly Action _onWallet, _onPlay;
         private readonly bool _walletAvailable;
         private bool _returning;
         private VisualElement _root, _bg, _actions;
-        private Button _walletBtn, _playBtn, _another;
+        private Button _walletBtn, _playBtn;
         private Label _error;
         private IVisualElementScheduledItem _idle;
 
-        public SignInScreen(Action onWallet, bool walletAvailable, bool returning = false, Action onPlay = null, Action onAnotherWallet = null)
+        public SignInScreen(Action onWallet, bool walletAvailable, bool returning = false, Action onPlay = null)
         {
             _onWallet = onWallet;
             _walletAvailable = walletAvailable;
             _returning = returning && onPlay != null;
             _onPlay = onPlay;
-            _onAnotherWallet = onAnotherWallet;
         }
 
         private static bool LoginUp => Features.IsAvailable(Features.Login);
@@ -43,21 +42,11 @@ namespace CTLife.UI
             _playBtn = TitleButton(Strings.T("welcome.play"), () => _onPlay?.Invoke(), "purple");
             _playBtn.name = "title-play";
 
-            // Secondary text button beside PLAY: outlined game text, underlined, with a 48 dp transparent hit area.
-            // Fixed, trusted copy: rich text only for the underline.
-            _another = new Button(() =>
-            {
-                Bus.Publish(new SfxSignal("sfx_ui_tap"));
-                _onAnotherWallet?.Invoke();
-            }) { text = "<u>" + Strings.T("welcome.anotherWallet") + "</u>", enableRichText = true, name = "title-another-wallet" };
-            _another.AddToClassList("ct-title-link");
             _error = El.Text("", "ct-title-error");
 
-            var side = El.Div("ct-title-side", _another);
-            side.pickingMode = PickingMode.Ignore;
             var under = El.Div("ct-title-under", _error);
             under.pickingMode = PickingMode.Ignore;
-            _actions = El.Div("ct-title-actions", _walletBtn, _playBtn, side, under);
+            _actions = El.Div("ct-title-actions", _walletBtn, _playBtn, under);
             // Haptic tick on press (the parent sees the press before the button's own handlers).
             _actions.RegisterCallback<PointerDownEvent>(e =>
             {
@@ -179,9 +168,7 @@ namespace CTLife.UI
             if (_walletBtn == null) return;
             _walletBtn.Show(!_returning);
             _playBtn.Show(_returning);
-            _another.Show(_returning && _onAnotherWallet != null);
             _playBtn.SetEnabled(true);
-            _another.SetEnabled(true);
             ShowError("");
         }
 
@@ -190,13 +177,6 @@ namespace CTLife.UI
             _walletBtn?.SetEnabled(!busy && _walletAvailable && LoginUp);
             if (_walletBtn != null) _walletBtn.text = Strings.T(busy ? "welcome.busy" : "welcome.wallet");
             if (busy) ShowError("");
-        }
-
-        /// <summary>While "Use another wallet" signs out: PLAY and the link are disabled.</summary>
-        public void SetSwitching(bool switching)
-        {
-            _playBtn?.SetEnabled(!switching);
-            _another?.SetEnabled(!switching);
         }
 
         public void ShowError(string text)

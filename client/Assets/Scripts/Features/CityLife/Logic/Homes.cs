@@ -100,6 +100,13 @@ namespace CTLife.CityLife
         }
     }
 
+    /// <summary>The current server's /rent endpoint only renews the caller's current home; it is not a move operation.</summary>
+    public static class HomeLeaseActions
+    {
+        public static bool CanRenew(string currentHomeId, string targetHomeId) =>
+            CityWire.IsSafeId(currentHomeId) && string.Equals(currentHomeId, targetHomeId, StringComparison.Ordinal);
+    }
+
     /// <summary>
     /// Furniture in a home scene → the needs action it runs. FE-owned presentation over FE-owned spot ids
     /// (contract/ids/spots.json `home.bed`, `home.desk`, `home.sofa` exist; `fridge`, `shower`, `plant`, `speaker` and

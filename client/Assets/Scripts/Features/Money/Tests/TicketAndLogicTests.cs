@@ -127,7 +127,9 @@ namespace CTLife.Economy.Tests
 
             var call = Tickets.AlphaCall(Coin, 15000, "0.03", "0.01");
             Assert.IsTrue(call.Ok);
-            Assert.AreEqual(JTokenType.Integer, call.Body["targetMicros"].Type, "contract: integers");
+            Assert.AreEqual(JTokenType.String, call.Body["entryMicros"].Type, "backend Zod bigint price fields require digit strings");
+            Assert.AreEqual(JTokenType.String, call.Body["targetMicros"].Type);
+            Assert.AreEqual(JTokenType.String, call.Body["stopMicros"].Type);
             Assert.AreEqual(30000, (long)call.Body["targetMicros"]);
             Assert.IsTrue(Tickets.AlphaCall(Coin, 15000, "0.01", "0.03").Ok, "bearish call");
             Assert.AreEqual("ticket.callSides", Tickets.AlphaCall(Coin, 15000, "0.03", "0.02").ErrorKey);

@@ -305,6 +305,9 @@ namespace CTLife.EditorTools
             var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
             if (mat == null) { mat = new Material(shader); AssetDatabase.CreateAsset(mat, path); }
             mat.shader = shader;
+            // The Rain cast exporter intentionally removes the top's inner Solidify wall.
+            // Keep the remaining opaque fabric visible from inside at neck, armholes and hem.
+            mat.SetFloat("_Cull", (string)look["family"] == "f" ? (float)CullMode.Off : (float)CullMode.Back);
             Texture2D Tex(string key) => look["files"]?[key] == null ? null :
                 AssetDatabase.LoadAssetAtPath<Texture2D>($"{LooksRoot}/{lookId}/{Path.GetFileName(look["files"][key].ToString())}");
             mat.SetTexture("_BaseMap", Tex("base"));

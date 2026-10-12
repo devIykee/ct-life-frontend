@@ -161,6 +161,14 @@ namespace CTLife.Ventures
         public JObject BookingBody()
         {
             var b = new JObject { ["slotId"] = SlotId, ["termId"] = TermId, ["uploadId"] = Uploaded?.UploadId };
+            // The current server upload supplies storage metadata required by bookAd.
+            // Echo only server-returned metadata; never invent an object key or image URL.
+            if (!string.IsNullOrEmpty(Uploaded?.ImageKey))
+            {
+                b["imageKey"] = Uploaded.ImageKey;
+                b["mimeType"] = Uploaded.MimeType;
+                b["sizeBytes"] = Uploaded.SizeBytes;
+            }
             if (!string.IsNullOrEmpty(Link)) b["link"] = Link;
             var start = ParseStart(StartText, out var ok);
             if (ok && start.HasValue)
@@ -273,6 +281,8 @@ namespace CTLife.Ventures
         }
 
         public Task<IntentStatusRow> GetIntent(string intentId, CancellationToken ct) => _inner.GetIntent(intentId, ct);
+        public Task SubmitIntent(string intentId, string signature, string idempotencyKey, CancellationToken ct) =>
+            _inner.SubmitIntent(intentId, signature, idempotencyKey, ct);
     }
 
     /// <summary>When a real-money payment may be started from the client. Devnet only until the user lifts it.</summary>

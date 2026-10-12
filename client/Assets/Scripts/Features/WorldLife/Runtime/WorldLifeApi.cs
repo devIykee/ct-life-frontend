@@ -20,7 +20,15 @@ namespace CTLife.WorldLife
 
         public WorldLifeApi(IRestClient rest) { _rest = rest; }
 
-        public static bool IsUnsupported(Exception e) => e is ApiException a && (a.Status == 404 || a.Status == 405 || a.Status == 501);
+        public static bool IsUnsupported(Exception e)
+        {
+            if (!(e is ApiException a)) return false;
+            if (a.Status == 405 || a.Status == 501) return true;
+            if (a.Status != 404) return false;
+            if (a.Is("HTTP_404")) return true;
+            return a.Is("NOT_FOUND") && a.ServerMessage == "No route for this path and method." &&
+                a.Details is JObject d && d["path"]?.Type == JTokenType.String && d["method"]?.Type == JTokenType.String;
+        }
 
         /// <summary>GET /ads/live with If-None-Match (contract: Cache-Control 5 min + ETag).</summary>
         public async Task<JToken> LiveAds(CancellationToken ct)

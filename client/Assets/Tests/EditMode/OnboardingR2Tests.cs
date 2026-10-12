@@ -74,7 +74,7 @@ namespace CTLife.Tests
         {
             var models = CustomizerModel.Build(new[] { Entry("head_player_f_kol"), Entry("head_snow") }, null);
             Assert.AreEqual(2, models.Count);
-            Assert.AreEqual("head_player_f_kol", models[0].id);
+            Assert.AreEqual("head_rain", models[0].id, "an outfit is grouped under its source character");
             Assert.AreEqual('f', models[0].family);
             Assert.AreEqual('m', models[1].family);
             var spec = CustomizerModel.DefaultSpec(models[0]);
@@ -158,8 +158,8 @@ namespace CTLife.Tests
             Assert.IsTrue(f.Next());
             Assert.AreEqual(CreatorStep.Tribe, f.Step);
             Assert.AreEqual(CreatorFlow.ProgressFor(CreatorStep.Look), CreatorFlow.ProgressFor(CreatorStep.Customize));
-            Assert.AreEqual(2, CreatorFlow.ProgressFor(CreatorStep.Tribe));
-            Assert.AreEqual(6, CreatorFlow.ProgressFor(CreatorStep.Confirm));
+            Assert.AreEqual(1, CreatorFlow.ProgressFor(CreatorStep.Tribe));
+            Assert.AreEqual(5, CreatorFlow.ProgressFor(CreatorStep.Confirm));
             var g = new CreatorFlow(new CharacterDraft()) { HasLook = true, CustomizeAvailable = false };
             g.Restore(CreatorStep.Customize, CreatorStep.Customize);
             Assert.AreEqual(CreatorStep.Look, g.Step, "a restored Customize step without data falls back to Look");

@@ -42,6 +42,7 @@ namespace CTLife.Core
 
         private JObject _snapshot;
         private readonly System.Collections.Generic.Dictionary<string, string> _confirmedStarterItems = new();
+        private readonly System.Collections.Generic.Dictionary<string, System.Collections.Generic.HashSet<string>[]> _confirmedPalettes = new();
         private static readonly string[] LookSlots = { "skin", "head", "hair", "top", "bottom", "shoes", "acc" };
 
         /// <summary>Only an explicit item registry received from the server can authorize new creator IDs.
@@ -50,6 +51,12 @@ namespace CTLife.Core
         {
             // The contract's skinTone is a plain string, not an item registry entry.
             if (!HasNetworkValidation || look == null || look.Length != LookSlots.Length || string.IsNullOrWhiteSpace(look[0])) return false;
+            if (!string.IsNullOrWhiteSpace(look[1]) && _confirmedPalettes.TryGetValue(look[1], out var palette))
+            {
+                for (int i = 0; i < look.Length; i++)
+                    if (string.IsNullOrWhiteSpace(look[i]) || !palette[i].Contains(look[i])) return false;
+                return true;
+            }
             for (int i = 1; i < LookSlots.Length; i++)
                 if (string.IsNullOrWhiteSpace(look[i]) || !_confirmedStarterItems.TryGetValue(look[i], out var slot) || slot != LookSlots[i]) return false;
             return true;
@@ -106,8 +113,13 @@ namespace CTLife.Core
             var root = Normalize(raw);
             var registries = Registries.Parse(root["ids"], root["config"]);
             _confirmedStarterItems.Clear();
+            _confirmedPalettes.Clear();
             HasNetworkValidation = persist;
-            if (persist) ConfirmRawItems(raw["ids"]?["items"] ?? raw["items"]);
+            if (persist)
+            {
+                ConfirmRawItems(raw["ids"]?["items"] ?? raw["items"]);
+                ConfirmRawPalettes(raw["characterPalettes"] ?? raw["config"]?["characterPalettes"]);
+            }
             Root = root;
             ETag = etag;
             Registries = registries;
@@ -152,6 +164,34 @@ namespace CTLife.Core
             bool free = starter?.Type == JTokenType.Boolean ? starter.Value<bool>()
                 : starter == null && item["cashCents"]?.Type == JTokenType.Integer && item["cashCents"].Value<long>() == 0;
             if (free && !string.IsNullOrWhiteSpace(item.Str("slot"))) _confirmedStarterItems[id] = item.Str("slot");
+        }
+
+        private void ConfirmRawPalettes(JToken token)
+        {
+            if (!(token is JObject obj) || obj["version"]?.Type != JTokenType.Integer || (int)obj["version"] != 1 ||
+                !(obj["models"] is JArray models) || models.Count > 32) return;
+            var keys = new[] { "skinTones", null, "hairIds", "topIds", "bottomIds", "shoesIds", "accIds" };
+            foreach (var model in models)
+            {
+                var head = model.Str("headId");
+                if (string.IsNullOrWhiteSpace(head) || head.Length > 96 || _confirmedPalettes.ContainsKey(head)) continue;
+                var slots = new System.Collections.Generic.HashSet<string>[7];
+                bool valid = true;
+                for (int i = 0; i < slots.Length; i++)
+                {
+                    slots[i] = new System.Collections.Generic.HashSet<string>(StringComparer.Ordinal);
+                    if (i == 1) { slots[i].Add(head); continue; }
+                    if (!(model[keys[i]] is JArray values) || values.Count == 0 || values.Count > 64) { valid = false; break; }
+                    foreach (var value in values)
+                    {
+                        if (value.Type != JTokenType.String || string.IsNullOrWhiteSpace((string)value) || ((string)value).Length > 96)
+                        { valid = false; break; }
+                        slots[i].Add((string)value);
+                    }
+                    if (!valid) break;
+                }
+                if (valid) _confirmedPalettes.Add(head, slots);
+            }
         }
 
         /// <summary>

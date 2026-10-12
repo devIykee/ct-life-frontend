@@ -151,6 +151,7 @@ namespace CTLife.SocialFeatures
             ["calls.alreadyInCall"] = "You're already on a call.",
             ["calls.voiceDegraded"] = "Calls are temporarily unavailable.",
             ["calls.dialUnknown"] = "We couldn't confirm the call started. Try again.",
+            ["calls.endPending"] = "You've left the call. The server hasn't confirmed it ended yet.",
             ["calls.missed"] = "Missed call from {0}",
             ["calls.missedBusy"] = "Missed call from {0} (you were busy)",
             ["calls.tooLate"] = "Too late to answer that call.",

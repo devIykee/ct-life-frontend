@@ -6,6 +6,18 @@ using NUnit.Framework;
 
 namespace CTLife.CityLife.Tests
 {
+    public class HomeLeaseActionTests
+    {
+        [TestCase("studio", "studio", true)]
+        [TestCase("studio", "penthouse", false)]
+        [TestCase(null, "studio", false)]
+        [TestCase("studio", null, false)]
+        public void ExistingRentEndpointCannotBeUsedToMove(string current, string target, bool allowed)
+        {
+            Assert.That(HomeLeaseActions.CanRenew(current, target), Is.EqualTo(allowed));
+        }
+    }
+
     internal static class Keys
     {
         /// <summary>Deterministic Idempotency-Keys: k1, k2, ...</summary>

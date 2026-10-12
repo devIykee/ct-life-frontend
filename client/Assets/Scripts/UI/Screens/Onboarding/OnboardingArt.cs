@@ -18,6 +18,10 @@ namespace CTLife.UI
         public static Texture2D Backdrop => Load(Folder + "onboarding-bg") ?? Load("UI/Title/title-bg");
 
         public static Texture2D CardBack => Load(Folder + "origin-card-back");
+        public static Texture2D PlayerCardSurface => Load(Folder + "player-card-surface");
+
+        /// <summary>Finished landscape origin surface; text and resource values stay live.</summary>
+        public static Texture2D OriginSurface(string outcomeId) => string.IsNullOrEmpty(outcomeId) ? null : Load(Folder + "origin-surface-" + outcomeId);
 
         /// <summary>Card face for a lottery outcome id ("insider", "exit_liquidity", "seeker").</summary>
         public static Texture2D CardFront(string outcomeId) => string.IsNullOrEmpty(outcomeId) ? null : Load(Folder + "origin-" + outcomeId + "_baby");

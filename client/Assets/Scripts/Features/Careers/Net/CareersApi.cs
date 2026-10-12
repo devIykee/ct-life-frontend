@@ -36,6 +36,7 @@ namespace CTLife.Careers
         public async Task<List<CareerRow>> Careers(CancellationToken ct)
         {
             var rows = CareerRow.ParseList(await _rest.Get<JToken>("/careers", ct), out int malformed);
+            if (malformed > 0 && rows.Count == 0) throw new FormatException("Invalid careers response");
             if (malformed > 0) CTLife.Core.Log.Warn("careers", "GET /careers: " + malformed + " malformed rows skipped");
             return rows;
         }
@@ -60,6 +61,7 @@ namespace CTLife.Careers
         public async Task<List<GigRow>> Gigs(CancellationToken ct)
         {
             var rows = GigRow.ParseList(await _rest.Get<JToken>("/gigs", ct), out int malformed);
+            if (malformed > 0 && rows.Count == 0) throw new FormatException("Invalid gigs response");
             if (malformed > 0) CTLife.Core.Log.Warn("careers", "GET /gigs: " + malformed + " malformed rows skipped");
             return rows;
         }

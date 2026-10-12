@@ -12,6 +12,7 @@ namespace CTLife.Economy
     public interface ITopUpGateway
     {
         Task<PaymentIntentRow> CreateIntent(string kind, string sku, string currency, string idempotencyKey, CancellationToken ct);
+        Task SubmitIntent(string intentId, string signature, string idempotencyKey, CancellationToken ct);
         Task<IntentStatusRow> GetIntent(string intentId, CancellationToken ct);
     }
 
@@ -70,6 +71,8 @@ namespace CTLife.Economy
         private readonly IMoneyClock _clock;
         private readonly IPendingIntentStore _store;
         private readonly RetainedWrite _create;
+        private readonly Func<string> _newKey;
+        private string _submissionKey;
         private int _pollGeneration;
 
         public TopUpStage Stage { get; private set; } = TopUpStage.Choose;
@@ -77,6 +80,8 @@ namespace CTLife.Economy
         public string Currency { get; private set; }
         public PaymentIntentRow Intent { get; private set; }
         public string Signature { get; private set; }
+        /// <summary>The server acknowledged the submitted signature; this is not payment confirmation.</summary>
+        public bool SubmissionReported { get; private set; }
         /// <summary>Cash credited according to `payment_confirmed` (server value), when that message closed the flow.</summary>
         public long? CreditedCashCents { get; private set; }
         public MoneyError Error { get; private set; }
@@ -99,7 +104,8 @@ namespace CTLife.Economy
             _signer = signer;
             _clock = clock ?? throw new ArgumentNullException(nameof(clock));
             _store = store;
-            _create = new RetainedWrite(newKey);
+            _newKey = newKey ?? (() => Guid.NewGuid().ToString("D"));
+            _create = new RetainedWrite(_newKey);
         }
 
         /// <summary>POST /payments/intents `{kind: topup, sku, currency}`. A retry after an unknown outcome reuses the key.</summary>
@@ -113,6 +119,8 @@ namespace CTLife.Economy
             Error = null;
             Intent = null;
             Signature = null;
+            _submissionKey = null;
+            SubmissionReported = false;
             SignUncertain = false;
             StatusUnavailable = false;
             CreditedCashCents = null;
@@ -188,6 +196,8 @@ namespace CTLife.Economy
                 SignUncertain = true;
                 Error = MoneyErrors.From(e is OperationCanceledException ? new WalletException("cancelled", false, e) : e, write: true);
             }
+            // A realtime confirmation can arrive before the wallet returns. Do not reopen that completed flow.
+            if (Stage == TopUpStage.Confirmed) return;
             if (!string.IsNullOrEmpty(signature)) Signature = signature;
             Persist(signingStarted: true);
             await PollWindow(ct);
@@ -213,16 +223,18 @@ namespace CTLife.Economy
             return true;
         }
 
-        /// <summary>Back to the pack list. Ignored while the wallet is open.</summary>
+        /// <summary>Back to the pack list. Unresolved wallet-started payments retain their recovery evidence.</summary>
         public void Reset()
         {
-            if (Stage == TopUpStage.Signing) return;
+            if (Stage == TopUpStage.Signing || Stage == TopUpStage.Confirming || Stage == TopUpStage.Pending) return;
             _pollGeneration++;
             if (Stage != TopUpStage.Error || !(Error?.OutcomeUnknown ?? false)) _create.Complete();
             ClearStore();
             Stage = TopUpStage.Choose;
             Intent = null;
             Signature = null;
+            _submissionKey = null;
+            SubmissionReported = false;
             Error = null;
             SignUncertain = false;
             StatusUnavailable = false;
@@ -245,8 +257,9 @@ namespace CTLife.Economy
                 ClearStore();
                 return false;
             }
-            // Never signed: nothing can have moved. Older than a day: past the server's dedupe window; stop tracking.
-            if (!p.SigningStarted || _clock.NowMs - p.SavedAtMs > 24 * 3600 * 1000.0)
+            // Never signed: nothing can have moved. Elapsed time (including the server's dedupe window) says
+            // nothing about whether a wallet-started transfer landed; retain it until the server resolves it.
+            if (!p.SigningStarted)
             {
                 ClearStore();
                 return false;
@@ -258,6 +271,8 @@ namespace CTLife.Economy
             Sku = p.Sku;
             Currency = p.Currency;
             Signature = p.Signature;
+            _submissionKey = p.SubmissionKey;
+            SubmissionReported = p.SubmissionReported;
             SignUncertain = string.IsNullOrEmpty(p.Signature);
             Stage = TopUpStage.Pending;
             Notify();
@@ -270,6 +285,35 @@ namespace CTLife.Economy
             Stage = TopUpStage.Confirming;
             PollStartedMs = _clock.NowMs;
             Notify();
+            try { await PollWindowCore(generation, ct); }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                // A cancelled view/session must remain recoverable, never stuck in the busy state.
+                if (generation == _pollGeneration && Stage == TopUpStage.Confirming) ToPending();
+                throw;
+            }
+        }
+
+        private async Task PollWindowCore(int generation, CancellationToken ct)
+        {
+            if (!string.IsNullOrEmpty(Signature) && !SubmissionReported)
+            {
+                _submissionKey ??= _newKey();
+                Persist(signingStarted: true); // retain before sending, including across process restarts
+                try
+                {
+                    await _gateway.SubmitIntent(Intent.IntentId, Signature, _submissionKey, ct);
+                    if (generation != _pollGeneration || Stage != TopUpStage.Confirming) return;
+                    SubmissionReported = true;
+                    Persist(signingStarted: true);
+                }
+                catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
+                catch (Exception)
+                {
+                    // The wallet already broadcast. Keep the same signature/key for Check again; a webhook can
+                    // still confirm while this report is offline. Never ask the wallet to sign a second transfer.
+                }
+            }
             while (true)
             {
                 if (generation != _pollGeneration || Stage != TopUpStage.Confirming) return;
@@ -350,6 +394,7 @@ namespace CTLife.Economy
                     IntentId = Intent.IntentId, Sku = Sku, Currency = Currency ?? Intent.Currency, Amount = Intent.Amount,
                     CashCents = Intent.CashCents, BonusBps = Intent.BonusBps, ExpiresAtMs = Intent.ExpiresAtMs,
                     Signature = Signature, SigningStarted = signingStarted, SavedAtMs = _clock.NowMs,
+                    SubmissionKey = _submissionKey, SubmissionReported = SubmissionReported,
                 }.Serialize());
             }
             catch (Exception) { /* Persistence is best effort; the live flow continues. */ }
@@ -371,10 +416,11 @@ namespace CTLife.Economy
     /// <summary>What is persisted for an in-flight top-up: ids and server display values only, never the transaction or tokens.</summary>
     public sealed class PendingIntent
     {
-        public string IntentId, Sku, Currency, Amount, Signature;
+        public string IntentId, Sku, Currency, Amount, Signature, SubmissionKey;
         public long? CashCents, ExpiresAtMs;
         public int? BonusBps;
         public bool SigningStarted;
+        public bool SubmissionReported;
         public double SavedAtMs;
 
         public string Serialize() => new JObject
@@ -382,6 +428,7 @@ namespace CTLife.Economy
             ["intentId"] = IntentId, ["sku"] = Sku, ["currency"] = Currency, ["amount"] = Amount, ["signature"] = Signature,
             ["cashCents"] = CashCents, ["bonusBps"] = BonusBps, ["expiresAtMs"] = ExpiresAtMs,
             ["signingStarted"] = SigningStarted, ["savedAtMs"] = SavedAtMs,
+            ["submissionKey"] = SubmissionKey, ["submissionReported"] = SubmissionReported,
         }.ToString(Formatting.None);
 
         public static PendingIntent Parse(string json)
@@ -394,6 +441,8 @@ namespace CTLife.Economy
                 Currency = Wire.Str(o["currency"]),
                 Amount = Wire.Str(o["amount"]),
                 Signature = Wire.Str(o["signature"]),
+                SubmissionKey = Wire.Str(o["submissionKey"]),
+                SubmissionReported = o["submissionReported"]?.Type == JTokenType.Boolean && (bool)o["submissionReported"],
                 CashCents = Wire.OptLong(o["cashCents"]),
                 BonusBps = Wire.OptInt(o["bonusBps"]),
                 ExpiresAtMs = Wire.OptLong(o["expiresAtMs"]),

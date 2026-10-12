@@ -25,6 +25,7 @@ namespace CTLife.Net
         }
 
         public IRestClient Rest => _rest;
+        public string LastLikenessJobId { get; private set; }
         public PerpsApi Perps => new PerpsApi(_rest);
         public SpacesApi Spaces => new SpacesApi(_rest);
 
@@ -48,7 +49,12 @@ namespace CTLife.Net
         public async Task<Me> GetMe(CancellationToken ct = default)
         {
             var raw = await _rest.Get<JToken>("/me", ct);
-            try { return MeCompat.Normalize(raw).ToObject<Me>(Newtonsoft.Json.JsonSerializer.Create(Json.Settings)); }
+            LastLikenessJobId = (raw?["character"] as JObject)?.Value<string>("likenessJobId");
+            try
+            {
+                if (raw is JObject profile) profile["needs"] = NeedsCodec.Normalize(profile["needs"]);
+                return MeCompat.Normalize(raw).ToObject<Me>(Newtonsoft.Json.JsonSerializer.Create(Json.Settings));
+            }
             catch (Exception e) { throw new ApiException(200, "DECODE_FAILED", "GET /me: " + e.Message); }
         }
 
@@ -57,29 +63,22 @@ namespace CTLife.Net
         /// that would serialize as a string (openapi-generator 7.25.0 bug; see client/Tools~/patch_rest_codegen.py).
         /// </summary>
         public Task<Character> CreateCharacter(string alias, string[] look, IList<string> traitIds, string dreamId, string tribeId,
-            bool ageConfirmed, CancellationToken ct = default)
+            bool ageConfirmed, CancellationToken ct = default, string idempotencyKey = null, string likenessJobId = null)
         {
-            var body = new JObject
-            {
-                ["alias"] = alias,
-                ["look"] = new JObject
-                {
-                    ["skinTone"] = look[0], ["headId"] = look[1], ["hairId"] = look[2], ["topId"] = look[3],
-                    ["bottomId"] = look[4], ["shoesId"] = look[5], ["accId"] = look[6],
-                },
-                ["traitIds"] = new JArray(traitIds),
-                ["dreamId"] = dreamId,
-                ["tribeId"] = tribeId,
-                ["ageConfirmed"] = ageConfirmed,
-            };
-            return _rest.Post<Character>("/characters", body.ToString(), ct: ct);
+            var body = OnboardingRequest.CharacterBody(alias, look, traitIds, dreamId, tribeId, ageConfirmed, likenessJobId);
+            return _rest.Post<Character>("/characters", body, idempotencyKey: idempotencyKey, ct: ct);
         }
 
-        public Task<PostLotteryRoll200Response> RollLottery(CancellationToken ct = default) =>
-            _rest.Post<PostLotteryRoll200Response>("/lottery/roll", null, ct: ct);
+        public Task<PostLotteryRoll200Response> RollLottery(CancellationToken ct = default, string idempotencyKey = null) =>
+            _rest.Post<PostLotteryRoll200Response>("/lottery/roll", null, idempotencyKey: idempotencyKey, ct: ct);
 
-        public Task<PostNeedsAction200Response> NeedsAction(string actionId, CancellationToken ct = default) =>
-            _rest.Post<PostNeedsAction200Response>("/needs/actions", new JObject { ["actionId"] = actionId }.ToString(), ct: ct);
+        public async Task<PostNeedsAction200Response> NeedsAction(string actionId, CancellationToken ct = default)
+        {
+            var raw = await _rest.Post<JObject>("/needs/actions", new JObject { ["actionId"] = actionId }, ct: ct);
+            if (raw == null) throw new ApiException(200, "DECODE_FAILED", "Missing needs action receipt");
+            raw["needs"] = NeedsCodec.Normalize(raw["needs"]);
+            return raw.ToObject<PostNeedsAction200Response>(Newtonsoft.Json.JsonSerializer.Create(Json.Settings));
+        }
 
         // ---------------------------------------------------------------- work (Ph 1)
 

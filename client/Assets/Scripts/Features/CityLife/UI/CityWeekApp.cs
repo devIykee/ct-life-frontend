@@ -57,6 +57,9 @@ namespace CTLife.CityLife
             private CityError _metaError;
             private string _answer = "";
             private Label _clueExpires;
+            private bool _metaLoading, _eventsLoading;
+            private bool? _recapMoodKnown;
+            private int _recapMoodBps;
 
             public WeekView(CityLifeHub hub) : base(hub)
             {
@@ -85,6 +88,7 @@ namespace CTLife.CityLife
 
             protected override void Tick()
             {
+                Hub.RefreshMood();
                 var now = Now;
                 _unlock.text = CityLifeStrings.F("week.unlockIn", WeekClock.Countdown(WeekClock.Next(_unlockAt, now), now));
                 _reset.text = CityLifeStrings.F("week.resetIn", WeekClock.Countdown(WeekClock.Next(_resetAt, now), now));
@@ -92,11 +96,20 @@ namespace CTLife.CityLife
                     : CityLifeStrings.T("week.moodOffline");
                 if (_clueExpires != null && _clue.Clue?.ExpiresAtMs != null)
                     _clueExpires.text = CityLifeStrings.F("clue.expires", WeekClock.Countdown(_clue.Clue.ExpiresAtMs.Value - Hub.NowMs));
+                if (_recapMoodKnown != Hub.MoodKnown || (Hub.MoodKnown && _recapMoodBps != Hub.MoodBps)) RenderRecap();
             }
 
             // ------------------------------------------------------------ Weekly Meta
 
-            private void LoadMeta() => Run(ct => Hub.Api.Meta(ct), m => { _meta = m; RenderMeta(); RenderRecap(); }, e => { _metaError = e; RenderMeta(); RenderRecap(); }, false);
+            private void LoadMeta()
+            {
+                if (_metaLoading) return;
+                _metaLoading = true;
+                _metaError = null;
+                RenderMeta();
+                Run(ct => Hub.Api.Meta(ct), m => { _metaLoading = false; _metaError = null; _meta = m; RenderMeta(); RenderRecap(); },
+                    e => { _metaLoading = false; _meta = null; _metaError = e; RenderMeta(); RenderRecap(); }, false);
+            }
 
             private void RenderMeta()
             {
@@ -107,7 +120,13 @@ namespace CTLife.CityLife
                     card.Add(CityUi.H2(CityLifeStrings.F("week.metaNow", CityLifeStrings.MetaTitle(_meta.BonusId))));
                     card.Add(CityUi.Text(CityLifeStrings.MetaBody(_meta.BonusId)));
                 }
-                else card.Add(CityUi.Small(_metaError != null && !_metaError.Is("NOT_FOUND") && !_metaError.Is("UNAVAILABLE") ? _metaError.Message : CityLifeStrings.T("week.metaUnknown")));
+                else if (_metaLoading) card.Add(CityUi.Small(CityLifeStrings.T("common.loading")));
+                else if (_metaError != null && !_metaError.Is("NOT_FOUND"))
+                {
+                    card.Add(CityUi.Error(_metaError.Message));
+                    card.Add(CityUi.Btn(CityLifeStrings.T("common.retry"), LoadMeta, "ct-btn"));
+                }
+                else card.Add(CityUi.Small(CityLifeStrings.T("week.metaUnknown")));
                 if (_meta != null && _meta.PerkCents > 0) card.Add(CityUi.Small(CityLifeStrings.F("week.metaPerk", Money.Cash(_meta.PerkCents))));
                 var next = MetaRotation.Next(_meta, MetaRotation.Read(Services.Get<ConfigStore>().Config("meta")));
                 if (next != null) card.Add(CityUi.Small(CityLifeStrings.F("week.metaNext", CityLifeStrings.MetaTitle(next))));
@@ -116,13 +135,26 @@ namespace CTLife.CityLife
 
             // ------------------------------------------------------------ server events
 
-            private void LoadEvents() => Run(ct => Hub.Api.ActiveEvents(ct), RenderEvents, e => RenderEvents(null), false);
+            private void LoadEvents()
+            {
+                if (_eventsLoading) return;
+                _eventsLoading = true;
+                RenderEvents(null);
+                Run(ct => Hub.Api.ActiveEvents(ct), events => { _eventsLoading = false; RenderEvents(events); },
+                    e => { _eventsLoading = false; RenderEvents(null, e); }, false);
+            }
 
-            private void RenderEvents(List<(string id, long? atMs, JObject @params)> events)
+            private void RenderEvents(List<(string id, long? atMs, JObject @params)> events, CityError error = null)
             {
                 _eventsBox.Clear();
                 var card = CityUi.Card(CityUi.H2(CityLifeStrings.T("week.events")));
-                if (events == null || events.Count == 0) card.Add(CityUi.Small(CityLifeStrings.T("week.noEvents")));
+                if (_eventsLoading) card.Add(CityUi.Small(CityLifeStrings.T("common.loading")));
+                else if (error != null)
+                {
+                    card.Add(CityUi.Error(error.Message));
+                    card.Add(CityUi.Btn(CityLifeStrings.T("common.retry"), LoadEvents, "ct-btn"));
+                }
+                else if (events == null || events.Count == 0) card.Add(CityUi.Small(CityLifeStrings.T("week.noEvents")));
                 else foreach (var e in events) card.Add(CityUi.Text(CityLifeStrings.EventLabel(e.id) + (e.atMs.HasValue ? " · " + CityUi.When(e.atMs.Value) : "")));
                 _eventsBox.Add(card);
             }
@@ -206,12 +238,14 @@ namespace CTLife.CityLife
             private void RenderRecap()
             {
                 _recapBox.Clear();
+                _recapMoodKnown = Hub.MoodKnown;
+                _recapMoodBps = Hub.MoodBps;
                 var me = Hub.Profile?.Me;
                 if (me == null) return;
                 var week = WeekClock.WeekIso(Now);
                 var before = CityPrefs.LoadWeek(Hub.UserId);
                 var homeName = Hub.Homes.Find(h => h.Id == me.HomeId)?.Name;
-                var lines = WeekRecap.Lines(before, me.CashCents, me.DebtCents, me.HomeId, homeName, _meta, Hub.MoodKnown ? Hub.MoodBps : 0, Hub.RentNow());
+                var lines = WeekRecap.Lines(before, me.CashCents, me.DebtCents, me.HomeId, homeName, _meta, Hub.MoodKnown ? (int?)Hub.MoodBps : null, Hub.RentNow());
                 if (before == null || before.WeekIso != week)
                     CityPrefs.SaveWeek(Hub.UserId, new WeekSnapshot { WeekIso = week, HomeId = me.HomeId, CashCents = me.CashCents, DebtCents = me.DebtCents, AtMs = Hub.NowMs });
                 var card = CityUi.Card(CityUi.H2(CityLifeStrings.T("week.recap")));

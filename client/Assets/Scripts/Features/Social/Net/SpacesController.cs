@@ -373,9 +373,7 @@ namespace CTLife.SocialFeatures
                     if (Session == null || !SocialWire.SameId(Session.SpaceId, spaceId)) return;
                     Apply(Session.ApplySnapshot(fresh, Session.BeginFetch(), SocialHub.NowMs));
                     if (!Session.CanPublish(SocialHub.NowMs) || _audio == null) { Message = "spaces.roleChanged"; return; }
-                    bool serverAllows = true;
-                    try { serverAllows = (await _hub.Api.RtcToken("space", spaceId, ct)).CanPublish; }
-                    catch (ApiException e) when (SocialError.IsRouteMissing(e)) { serverAllows = true; } // no route: the snapshot decides
+                    bool serverAllows = (await _hub.Api.RtcToken("space", spaceId, ct)).CanPublish;
                     if (!serverAllows) { Message = "spaces.roleChanged"; return; }
                     _audio.SetRoster(Roster(Session.Space), ParseGuid(_hub.Me)); // refreshes SpacesAudio's 8 s publish gate
                     await _audio.EnableMicrophone(true, ct);

@@ -135,6 +135,10 @@ namespace CTLife.EditorTools
                 {
                     await OnboardingCaptureR2.Run(Shot, Wait, Expect, Step, Receipt);
                 }
+                else if (Set == "refinements")
+                {
+                    await OnboardingRefinementCapture.Run(Shot, Wait, Expect, Step, Receipt);
+                }
                 else if (Set == "lottery")
                 {
                     await Lottery(); // the origin cards only (fast iteration on the lottery screens)
@@ -143,6 +147,14 @@ namespace CTLife.EditorTools
                 {
                     await OnboardingCaptureHome.Run(Shot, Wait, Expect, Step);
                     await LookOrderShots();
+                }
+                else if (Set == "lobby")
+                {
+                    await LobbyFlowCapture.Run(Shot, Wait, Expect, Step, Receipt);
+                }
+                else if (Set == "hud")
+                {
+                    await CityHudCapture.Run(Shot, Wait, Expect, Step, Receipt);
                 }
                 else
                 {
@@ -265,7 +277,7 @@ namespace CTLife.EditorTools
         {
             // 1. Insider: idle, shuffle, spotlight, the flip (strip), the result.
             var insider = new PostLotteryRoll200Response(PostLotteryRoll200Response.OutcomeEnum.Insider, 300000, 0, "studio");
-            var screen = new LotteryScreen(false, async () => { await Awaitable.WaitForSecondsAsync(0.8f); return insider; }, _ => { });
+            var screen = new LotteryScreen(false, async () => { await Awaitable.WaitForSecondsAsync(0.8f); return insider; }, _ => { }, autoStart: false);
             string phase = null;
             screen.Phase += p => phase = p;
             screen.Show();
@@ -282,10 +294,10 @@ namespace CTLife.EditorTools
             await Shot("04-lottery-insider-result", 1.4f);
             screen.Close();
 
-            // 2. Exit Liquidity: the bonk and the muted shower, then the second, supportive line.
+            // 2. Exit Liquidity: the bonk, muted shower and integrated result card.
             var exit = new PostLotteryRoll200Response(PostLotteryRoll200Response.OutcomeEnum.ExitLiquidity, 30000, 72000, "parents_basement");
             phase = null;
-            screen = new LotteryScreen(false, async () => { await Awaitable.WaitForSecondsAsync(0.5f); return exit; }, _ => { });
+            screen = new LotteryScreen(false, async () => { await Awaitable.WaitForSecondsAsync(0.5f); return exit; }, _ => { }, autoStart: false);
             screen.Phase += p => phase = p;
             screen.Show();
             await Wait(0.3f);
@@ -301,7 +313,7 @@ namespace CTLife.EditorTools
             {
                 await Awaitable.WaitForSecondsAsync(0.4f);
                 throw new ApiException(0, "NETWORK_ERROR", "Network unreachable", isNetwork: true);
-            }, _ => { });
+            }, _ => { }, autoStart: false);
             screen.Show();
             await Wait(0.3f);
             screen.PressCta();
@@ -310,7 +322,7 @@ namespace CTLife.EditorTools
             screen.Close();
 
             // 4. A Seeker Genesis holder: three cards (rc1 seeker weight is 0, so no odds are shown).
-            screen = new LotteryScreen(true, async () => { await Awaitable.WaitForSecondsAsync(0.4f); return insider; }, _ => { });
+            screen = new LotteryScreen(true, async () => { await Awaitable.WaitForSecondsAsync(0.4f); return insider; }, _ => { }, autoStart: false);
             screen.Show();
             await Shot("08-lottery-seeker-idle", 0.6f);
             screen.Close();
@@ -319,7 +331,7 @@ namespace CTLife.EditorTools
             DeviceFeel.OverrideReducedMotion(true);
             try
             {
-                screen = new LotteryScreen(false, async () => { await Awaitable.WaitForSecondsAsync(0.3f); return exit; }, _ => { });
+                screen = new LotteryScreen(false, async () => { await Awaitable.WaitForSecondsAsync(0.3f); return exit; }, _ => { }, autoStart: false);
                 screen.Show();
                 await Wait(0.3f);
                 screen.PressCta();

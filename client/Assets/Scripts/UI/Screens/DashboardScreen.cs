@@ -11,13 +11,9 @@ using Motion = CTLife.UI.Kit.Motion;
 namespace CTLife.UI
 {
     /// <summary>
-    /// The home / lobby: where a player lands after onboarding and on every return (redesign 2026-10-09,
-    /// docs/progress/home-ui.md). The player's own 3D character stands on the painted town, waves on arrival and reacts to
-    /// their state; a top bar shows Cash, debt (when any), Energy and Sanity, each tappable to explain itself; the Dream and
-    /// Home cards, a "today" row with only what the server provides (Market Mood, the daily clue), one dominant ENTER THE
-    /// CITY and chunky icon tiles for Explore, Jobs, Bank, Me and Phone. Settings is a round button in the corner.
-    /// Routes are the old lobby's: enter city, map, jobs, bank, profile, phone, settings, home (via the Home card and the
-    /// Energy/Sanity explainers) and bank (via the Cash/debt explainers). Rules: <see cref="HomeModel"/>. Styles: home.uss.
+    /// Signed-in home: a live character on the illustrated city courtyard, compact identity and balances,
+    /// edge navigation, real daily information and a single city-entry action. Wallet holdings are distinct
+    /// from server-ledgered Cash. Rules: HomeModel. Presentation: Resources/UI/home.uss.
     /// </summary>
     public sealed class DashboardScreen : UiScreen
     {
@@ -27,8 +23,10 @@ namespace CTLife.UI
         private readonly Action _enterCity;
         private readonly Action<string> _openApp;
         private readonly bool _firstArrival;
-        private VisualElement _root, _bg, _stage, _model, _chips, _today, _cards, _tribeMark;
-        private Label _eyebrow, _greeting, _sub, _error, _marketValue, _clueText;
+        private VisualElement _root, _bg, _stage, _model, _chips, _needs, _today, _cards, _tribeMark;
+        private WalletBalanceService _wallet;
+        private Label _walletSol, _walletUsdc, _walletStatus;
+        private Label _eyebrow, _greeting, _error, _marketValue, _clueText;
         private LippedButton _enter, _settings;
         private ChoiceCard _dreamCard, _homeCard;
         private VisualElement _dreamBar, _dreamFill;
@@ -71,7 +69,7 @@ namespace CTLife.UI
         {
             _bg = El.Div("home-bg");
             _bg.pickingMode = PickingMode.Ignore;
-            var art = OnboardingArt.Backdrop;
+            var art = Resources.Load<Texture2D>("UI/Onboarding/lobby-rooftop") ?? OnboardingArt.Backdrop;
             if (art != null) _bg.style.backgroundImage = new StyleBackground(art);
 
             BuildStage();
@@ -80,17 +78,18 @@ namespace CTLife.UI
 
             _chips = El.Div("home-chips");
             _chips.pickingMode = PickingMode.Ignore;
+            _needs = El.Div("home-needs");
+            _needs.pickingMode = PickingMode.Ignore;
             _settings = new LippedButton("", () => OpenApp("settings"), LippedButton.Tone.White, LippedButton.Size.Round).WithIconArt("settings", "settings");
             _settings.tooltip = Strings.T("app.settings");
             _settings.AddToClassList("home-settings");
-            var top = El.Div("home-top", _chips, _settings);
+            var top = El.Div("home-top", _chips, BuildWallet(), _settings);
             top.pickingMode = PickingMode.Ignore;
 
             var rail = El.Div("home-rail",
                 Tile("map", "lobby.map", "cyan", "map"),
                 Tile("jobs", "lobby.jobs", "coral", "jobs"),
                 Tile("bank", "lobby.bank", "gold", "bank"),
-                Tile("profile", "lobby.profile", "purple", "profile"),
                 Tile("phone", "lobby.phone", "green", null));
             rail.pickingMode = PickingMode.Ignore;
 
@@ -100,7 +99,6 @@ namespace CTLife.UI
             var eyebrowRow = El.Div("home-eyebrow-row", _tribeMark, _eyebrow);
             eyebrowRow.pickingMode = PickingMode.Ignore;
             _greeting = El.Text("", "home-greeting");
-            _sub = El.Text("", "home-sub");
 
             _marketValue = El.Text("", "home-today-value");
             _marketChip = TodayChip("perps", "home.today.market", _marketValue, ExplainMarket);
@@ -137,21 +135,24 @@ namespace CTLife.UI
             _enter = new LippedButton(Strings.T("lobby.enter"), OnEnter, LippedButton.Tone.Green, LippedButton.Size.Large);
             _enter.name = "home-enter";
             _enter.AddToClassList("home-enter");
-            _enter.EnableShine();
+            _enter.WithIcon("next");
 
-            var right = El.Div("home-right", eyebrowRow, _greeting, _sub, _today, _cards);
+            var identity = El.Btn("", () => OpenApp("profile"), "home-identity");
+            identity.name = "home-identity";
+            identity.Add(El.Div("home-identity-copy", _greeting, eyebrowRow));
+            var right = El.Div("home-right", _today, _cards);
             right.pickingMode = PickingMode.Ignore;
             var ctaZone = El.Div("home-cta-zone", _error, _enter);
             ctaZone.pickingMode = PickingMode.Ignore;
 
-            var content = El.Div("home-content", _stage, rail, right, _bubble, ctaZone, top);
+            var content = El.Div("home-content", _stage, rail, right, _bubble, ctaZone, top, identity, _needs);
             content.pickingMode = PickingMode.Ignore;
             _popover = new Popover();
             _root = El.Div("ct-lobby home-screen", _bg, content, _popover);
             OnboardingFrame.AddSheet(_root, "UI/kit");
             OnboardingFrame.AddSheet(_root, "UI/home");
             SafeAreaBleed.Attach(_root, _bg);
-            StartDrift();
+            // The character and its ground contact must stay aligned with the illustrated stage.
             return _root;
         }
 
@@ -159,7 +160,8 @@ namespace CTLife.UI
 
         private void BuildStage()
         {
-            _preview = new AvatarPreview(720, 1080, transparent: true);
+            _preview = new AvatarPreview(1080, 1080, transparent: true);
+            _preview.SetFullBodyReach(true);
             var glow = El.Div("home-stage-glow");
             glow.style.backgroundImage = new StyleBackground(OnboardingArt.Glow);
             var shadow = El.Div("home-stage-shadow");
@@ -207,13 +209,34 @@ namespace CTLife.UI
 
         private void React(string line, params string[] emotes)
         {
-            if (!string.IsNullOrEmpty(line)) _bubble.Say(line);
+            if (!string.IsNullOrEmpty(line)) _bubble.Say(line, 3.5f);
             _preview?.PlayReaction(emotes);
         }
 
         private void LoadCharacter(PlayerProfile profile)
         {
             if (_preview == null) return;
+            string personalJob = profile?.LikenessJobId;
+            if (!string.IsNullOrEmpty(personalJob))
+            {
+                string personalKey = "personal:" + personalJob;
+                if (_lookKey == personalKey) return;
+                _preview.SetIdle("loco_idle");
+                if (!_preview.TrySetLikeness(personalJob, out var failure))
+                {
+                    // EnterGame prepares the equipped asset before opening home. If that preparation is lost,
+                    // do not present the stock look stored alongside it as the player's personal character.
+                    _preview.SetVisible(false);
+                    _lookKey = null;
+                    ShowError(Strings.T("likeness.badModel"));
+                    Log.Warn("home", "Equipped personal character could not be presented: " + failure);
+                    return;
+                }
+                _preview.SetYaw(0f); // Normalized +Z faces the preview camera at +Z.
+                _preview.SetVisible(true);
+                _lookKey = personalKey;
+                return;
+            }
             string[] look = profile?.LookArray();
             bool complete = look != null && look.Length == 7 && Array.TrueForAll(look, id => !string.IsNullOrEmpty(id));
             if (!complete) look = CreatorLookCatalog.FallbackLook(profile?.UserId ?? profile?.Alias);
@@ -223,14 +246,7 @@ namespace CTLife.UI
             _preview.SetIdle("loco_idle");
             _preview.SetLook(look);
             _preview.SetYaw(CreatorLookCatalog.PreviewYawFor(look));
-        }
-
-        /// <summary>A slow Ken Burns drift on the painting (as on the title), off under reduced motion.</summary>
-        private void StartDrift()
-        {
-            if (DeviceFeel.ReducedMotion) return;
-            _bg.RegisterCallback<TransitionEndEvent>(_ => _bg.ToggleInClassList("home-bg--zoom"));
-            _bg.schedule.Execute(() => _bg.AddToClassList("home-bg--zoom")).StartingIn(300);
+            _preview.SetVisible(true);
         }
 
         // ------------------------------------------------------------------ pieces
@@ -278,7 +294,31 @@ namespace CTLife.UI
         public void PressEnter() => _enter?.Press();
 
         /// <summary>Captures and automation: taps the status chip with this id ("cash", "debt", "energy", "sanity").</summary>
-        public void TapChip(string id) => _chips?.Query<StatChip>().Where(c => c.Id == id).First()?.Press();
+        public void TapChip(string id) => _root?.Query<StatChip>().Where(c => c.Id == id).First()?.Press();
+
+        private Button BuildWallet()
+        {
+            _walletSol = El.Text("— SOL", "home-wallet-amount");
+            _walletUsdc = El.Text("— USDC", "home-wallet-amount");
+            _walletStatus = El.Text(Strings.T("wallet.mainnet"), "home-wallet-caption");
+            var button = El.Btn("", () => OpenApp("wallet"), "home-wallet");
+            button.name = "home-wallet";
+            button.Add(_walletStatus);
+            button.Add(El.Div("home-wallet-values", _walletSol, _walletUsdc));
+            return button;
+        }
+
+        private void RefreshWallet()
+        {
+            var state = _wallet?.State;
+            var sol = state?.Token("SOL"); var usdc = state?.Token("USDC");
+            _walletSol.text = (sol?.Amount >= 10000m ? LobbyAmounts.Compact(sol.Amount.Value) : sol?.FormatAmount(4) ?? "—") + " SOL";
+            _walletUsdc.text = (usdc?.Amount >= 10000m ? LobbyAmounts.Compact(usdc.Amount.Value) : usdc?.FormatAmount(2) ?? "—") + " USDC";
+            bool stale = sol?.IsStale == true || usdc?.IsStale == true;
+            bool failed = sol?.State == WalletTokenState.Unavailable || usdc?.State == WalletTokenState.Unavailable;
+            bool partial = failed && (sol?.State == WalletTokenState.Ready || usdc?.State == WalletTokenState.Ready);
+            _walletStatus.text = Strings.T(state == null || state.Status == WalletBalanceStatus.Disconnected ? "wallet.disconnected" : stale ? "wallet.stale" : state.IsRefreshing ? "wallet.refreshing" : partial ? "wallet.partial" : failed ? "wallet.unavailable" : "wallet.mainnet");
+        }
 
         private void Explain(StatChip chip)
         {
@@ -313,6 +353,10 @@ namespace CTLife.UI
             }
             if (!_mood.HasValue && Services.TryGet<IRealtimeService>(out var rt) && rt.City != null && rt.City.IsJoined) _mood = rt.City.Mood;
             _life ??= new CancellationTokenSource();
+            if (_wallet == null && Services.TryGet<WalletBalanceService>(out var wallet))
+            { _wallet = wallet; _wallet.Changed += RefreshWallet; }
+            RefreshWallet();
+            if (_wallet != null) _ = _wallet.Refresh();
             _preview?.SetVisible(true);
             Refresh();
             // Re-check connectivity every 2 s (the city room retries on its own).
@@ -320,7 +364,7 @@ namespace CTLife.UI
             if (!_greeted)
             {
                 _greeted = true;
-                _root.schedule.Execute(() => { if (_state != null) React(Strings.F(_state.ReactionKey, _state.Alias ?? ""), _state.ReactionEmotes); }).StartingIn(500);
+                _root.schedule.Execute(() => { if (_state != null) _preview?.PlayReaction(_state.ReactionEmotes); }).StartingIn(500);
             }
             LoadClue();
         }
@@ -372,6 +416,7 @@ namespace CTLife.UI
 
         private void RefreshOffline()
         {
+            if (_wallet != null) { RefreshWallet(); _ = _wallet.Refresh(); }
             if (_offlineChip == null) return;
             bool off = Offline || _state == null || !_state.HasProfile;
             _offlineChip.style.display = off ? DisplayStyle.Flex : DisplayStyle.None;
@@ -388,8 +433,7 @@ namespace CTLife.UI
             LoadCharacter(profile);
 
             var alias = _state.Alias ?? profile?.Alias ?? Strings.T("phone.greetingDefault");
-            _greeting.text = Strings.F(_state.GreetingKey, alias);
-            _sub.text = _mood.HasValue && !_firstArrival ? Strings.F(_state.SubKey, Money.Bps(_mood.Value)) : Strings.T(_state.SubKey);
+            _greeting.text = alias;
             _eyebrow.text = string.IsNullOrEmpty(_state.TribeName) ? Strings.T("lobby.noTribe").ToUpperInvariant() : _state.TribeName.ToUpperInvariant();
             var badge = OnboardingArt.TribeBadge(_state.TribeId);
             _tribeMark.style.backgroundImage = badge != null ? new StyleBackground(badge) : new StyleBackground(StyleKeyword.None);
@@ -421,12 +465,14 @@ namespace CTLife.UI
         private void RefreshChips()
         {
             // Rebuilt only when the set of chips changes (debt appears or clears); values update in place.
-            var existing = _chips.Query<StatChip>().ToList();
+            var existing = _root.Query<StatChip>().ToList();
+            existing.Sort((a, b) => _state.Stats.FindIndex(s => s.id == a.Id).CompareTo(_state.Stats.FindIndex(s => s.id == b.Id)));
             bool same = existing.Count == Math.Max(1, _state.Stats.Count);
             for (int i = 0; same && i < _state.Stats.Count; i++) same = existing[i].Id == _state.Stats[i].id;
             if (!same)
             {
                 _chips.Clear();
+                _needs.Clear();
                 if (_state.Stats.Count == 0)
                 {
                     var placeholder = new StatChip("cash", "cash", "gold", Strings.T("home.cash"), null);
@@ -437,16 +483,23 @@ namespace CTLife.UI
                 {
                     var chip = new StatChip(stat.id, stat.icon, stat.badgeTone, Strings.T(stat.captionKey), Explain, stat.fill >= 0f);
                     chip.name = "home-chip-" + stat.id;
-                    _chips.Add(chip);
+                    (stat.id == "energy" || stat.id == "sanity" ? _needs : _chips).Add(chip);
                 }
-                existing = _chips.Query<StatChip>().ToList();
+                existing = _root.Query<StatChip>().ToList();
+                existing.Sort((a, b) => _state.Stats.FindIndex(s => s.id == a.Id).CompareTo(_state.Stats.FindIndex(s => s.id == b.Id)));
             }
             for (int i = 0; i < _state.Stats.Count && i < existing.Count; i++)
             {
                 var stat = _state.Stats[i];
                 var tone = stat.id == "debt" ? StatChip.Tone.Debt
                     : stat.level == StatLevel.Critical ? StatChip.Tone.Bad : stat.level == StatLevel.Low ? StatChip.Tone.Warn : StatChip.Tone.Normal;
-                existing[i].Set(stat.value, tone, stat.fill);
+                string value = stat.value;
+                if (Services.TryGet<PlayerProfile>(out var profile) && (stat.id == "cash" || stat.id == "debt"))
+                {
+                    decimal amount = (stat.id == "cash" ? profile.CashCents : profile.DebtCents) / 100m;
+                    if (Math.Abs(amount) >= 10000m) value = "$" + LobbyAmounts.Compact(amount);
+                }
+                existing[i].Set(value, tone, stat.fill);
                 existing[i].SetEnabled(!_busy);
             }
         }
@@ -454,6 +507,8 @@ namespace CTLife.UI
         public override void Close()
         {
             _subs?.Dispose();
+            if (_wallet != null) _wallet.Changed -= RefreshWallet;
+            _wallet = null;
             _subs = null;
             if (_config != null) _config.Changed -= Refresh;
             _config = null;

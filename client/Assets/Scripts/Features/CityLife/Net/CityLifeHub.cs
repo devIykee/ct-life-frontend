@@ -145,6 +145,17 @@ namespace CTLife.CityLife
         public string UserId => _user;
         public double NowMs => ServerClock.NowMs;
 
+        /// <summary>A zero-valued first city snapshot need not emit MoodSignal. Reconcile it, and clear knowledge on disconnect.</summary>
+        public void RefreshMood()
+        {
+            if (Services.TryGet<IRealtimeService>(out var rt) && rt.City != null && rt.City.IsJoined)
+            {
+                MoodBps = rt.City.Mood;
+                MoodKnown = true;
+            }
+            else MoodKnown = false;
+        }
+
         // ---------------------------------------------------------------- profile / needs / rent
 
         private void OnProfileChanged()
@@ -176,6 +187,14 @@ namespace CTLife.CityLife
 
         private void CheckRent(Me me)
         {
+            // Birth-lottery debt is the opening balance, not a missed rent payment. Overlays subscribe before the
+            // creator finishes, so ignore those readings and establish a new baseline after character creation.
+            if (!Onboarding.HasCharacter(me))
+            {
+                _lastRent = null;
+                _lastDebt = -1;
+                return;
+            }
             if (Homes.Count == 0) return;
             var view = RentFor(me);
             var msg = RentLedger.Transition(_lastRent, view, _lastDebt, me.DebtCents);
