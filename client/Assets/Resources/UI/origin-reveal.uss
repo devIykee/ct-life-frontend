@@ -1,0 +1,40 @@
+/* Authored landscape card surfaces. All values are live labels inside the painted rim. */
+.ob-lottery .ob-origin-portrait { position: relative; flex-grow: 1; flex-shrink: 0; }
+.ob-lottery .ob-card--wide {
+    flex-direction: row; align-items: stretch; padding: 0; border-width: 0; border-radius: 64px;
+    background-color: rgb(255, 255, 255); overflow: hidden;
+}
+.ob-origin-surface { position: absolute; left: 0; right: 0; top: 0; bottom: 0; -unity-background-scale-mode: stretch-to-fill; }
+.ob-origin-brand {
+    position: absolute; left: 44px; top: 40px; width: 300px; height: 62px;
+    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 32px; letter-spacing: 4px;
+    color: rgb(58, 20, 64); -unity-text-align: middle-center; margin: 0; padding: 0;
+}
+.ob-lottery .ob-card--wide .ob-card-art { position: absolute; left: 0; right: 0; top: 0; bottom: 0; -unity-background-scale-mode: scale-and-crop; }
+.ob-lottery .ob-origin-info { height: 100%; min-width: 0; position: relative; margin: 0; padding: 0; overflow: visible; }
+.ob-lottery .ob-origin-head { position: absolute; left: 26px; right: 46px; top: 42px; }
+.ob-lottery .ob-origin-top { min-height: 52px; margin-bottom: 10px; }
+.ob-lottery .ob-origin-rarity { font-size: 26px; letter-spacing: 2px; color: rgb(58, 20, 64); background-color: rgb(120, 205, 255); padding: 7px 20px; border-radius: 14px; }
+.ob-lottery .ob-card--rare .ob-origin-rarity { background-color: rgb(255, 200, 60); }
+.ob-lottery .ob-card--seeker .ob-origin-rarity { background-color: rgb(20, 241, 149); }
+.ob-lottery .ob-origin-chance, .ob-lottery .ob-origin-alias, .ob-lottery .ob-origin-name,
+.ob-lottery .ob-origin-line, .ob-lottery .ob-origin-perk, .ob-lottery .ob-origin-label,
+.ob-lottery .ob-origin-value, .ob-lottery .ob-origin-note {
+    color: rgb(58, 20, 64); -unity-text-outline-width: 0; text-shadow: 0 0 0 rgba(0, 0, 0, 0);
+}
+.ob-lottery .ob-origin-chance { font-size: 28px; margin-left: 20px; }
+.ob-lottery .ob-origin-alias { font-size: 28px; margin-top: 2px; white-space: normal; }
+.ob-lottery .ob-origin-name { font-size: 74px; margin-top: 4px; white-space: normal; }
+.ob-lottery .ob-origin-line { -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); font-size: 29px; margin-top: 12px; white-space: normal; }
+.ob-lottery .ob-origin-perk { position: absolute; left: 26px; right: 46px; top: 432px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); font-size: 29px; white-space: normal; }
+.ob-lottery .ob-origin-benefits { position: absolute; left: 26px; right: 46px; top: 584px; }
+.ob-lottery .ob-origin-stats { padding: 0; border-width: 0; align-items: flex-start; }
+.ob-lottery .ob-origin-stat { flex-grow: 0; flex-shrink: 0; flex-basis: auto; padding: 0; border-width: 0; }
+.ob-lottery .ob-origin-stat--cash { width: 218px; }
+.ob-lottery .ob-origin-stat--home { flex-grow: 1; flex-shrink: 1; min-width: 0; padding: 0 20px; }
+.ob-lottery .ob-origin-stat--debt { width: 174px; }
+.ob-lottery .ob-origin-label { font-size: 22px; letter-spacing: 1px; }
+.ob-lottery .ob-origin-value { font-size: 54px; margin-top: 8px; }
+.ob-lottery .ob-origin-value--home { -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); font-size: 26px; white-space: normal; }
+.ob-lottery .ob-origin-value--debt { font-size: 48px; }
+.ob-lottery .ob-origin-note { position: absolute; left: 0; right: 0; top: 116px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); font-size: 18px; margin: 0; white-space: normal; }

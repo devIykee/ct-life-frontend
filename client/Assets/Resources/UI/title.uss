@@ -15,15 +15,9 @@
    3.7% exactly, so the gap holds through the button's ±5-unit idle bob). Seeker (2670x1200, 1.112 px per unit, 480 dpi =
    3 px/dp): top edge ~970 px, well clear of the group's shoes (905-915 px across the Ken Burns drift), and at least 16 px
    between the button rim and the legal line pinned at the bottom (measured across the bob on the device).
-   "Use another wallet" sits beside PLAY, centred on the button body, where its 48 dp hit area (130 units) fits without
-   touching PLAY or the legal line. Errors show above the button: there is no room under it any more. */
+   Errors show above the button, leaving the legal line clear below it. */
 .ct-title-actions { position: absolute; left: 0; right: 0; bottom: 5.4%; align-items: center; }
 .ct-title-under { position: absolute; bottom: 100%; left: 0; right: 0; align-items: center; padding-bottom: 6px; }
-.ct-title-side {
-    position: absolute; left: 68%; right: 0; top: 0; bottom: 0;
-    padding-left: 12px; padding-bottom: 12px; /* the painted rim is thicker at the bottom: centre on the body */
-    justify-content: center; align-items: flex-start;
-}
 
 .ct-title-btn {
     width: 36%; height: 150px; margin: 0; padding: 0 40px 12px 40px; /* the painted rim is thicker at the bottom: lift the label */
@@ -61,20 +55,6 @@
 /* Bottom copy, read the way mobile games do it: no plate, no gradient band. The text carries itself: Lilita One (the button
    font), solid white fill, a thick dark-plum outline and a soft dark drop shadow (user direction 2026-10-08). On the
    Seeker the outlines are 3.3-3.9 px. */
-
-/* "Use another wallet": the same outlined game text, underlined (rich text <u>), 28 → 41 px (+30%, then +15% so it holds its
-   own beside PLAY), outline as thick as the legal line's. The transparent padding makes the hit area 130 units tall
-   (48 dp on the Seeker) without any visible box. */
-.ct-title-link, .ct-title-link:hover, .ct-title-link:focus, .ct-title-link:active {
-    margin: 0; padding: 0 26px; min-height: 130px; min-width: 130px;
-    background-color: rgba(0, 0, 0, 0); border-width: 0;
-    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 41px; white-space: nowrap; -unity-text-align: middle-center;
-    color: rgb(255, 255, 255); -unity-text-outline-width: 3px; -unity-text-outline-color: rgb(58, 20, 64);
-    text-shadow: 0 3px 5px rgba(26, 8, 32, 0.85);
-    transition-property: scale; transition-duration: 0.08s; transition-timing-function: ease-out;
-}
-.ct-title-link:active { scale: 0.94 0.94; }
-.ct-title-link:disabled { opacity: 0.6; }
 
 .ct-title-error {
     font-size: 32px; white-space: normal; max-width: 56%; margin-top: 0; padding: 0 12px;
