@@ -4784,23 +4784,23 @@
    "scale": 1.0,
    "tiers": {
     "hero": {
-     "triangles": 11396,
-     "vertices": 6306,
+     "triangles": 11398,
+     "vertices": 6310,
      "max_influences": 4
     },
     "lod0": {
-     "triangles": 5297,
-     "vertices": 3077,
+     "triangles": 5299,
+     "vertices": 3081,
      "max_influences": 4
     },
     "lod1": {
-     "triangles": 2540,
-     "vertices": 1526,
+     "triangles": 2542,
+     "vertices": 1530,
      "max_influences": 4
     },
     "lod2": {
-     "triangles": 999,
-     "vertices": 665,
+     "triangles": 1001,
+     "vertices": 669,
      "max_influences": 2
     }
    },
@@ -4816,11 +4816,16 @@
    "tribe": null,
    "notes": "",
    "sha256": {
-    "rain_breeze.fbx": "f0fef87457c572880c2cdb1d913c5018b57090814c3a305f7ea93d7d8fad9d76",
-    "rain_breeze_Hero.fbx": "83fb5f31ed2bbb0c1e65c53e95ae1be84de534bad089e240c90c0b0c4f4aa39d",
+    "rain_breeze.fbx": "019d6efb630ee6115a9e2211bbfacbea85c70cd0540c96b60542e23ac8b4371b",
+    "rain_breeze_Hero.fbx": "e574f65f2f53629335a955d5f17a9953f3ca5091335110baeaf4674c30966aea",
     "rain_breeze_BaseColor.png": "799a406f21ce9bd1490f0a2addccbef4abb87d25a667da888469f88e2446373e",
     "rain_breeze_Normal.png": "de53f3f26995a550d06d9980aa98e54ab7bf021f59bcdc650ac3a0c92fd013b3",
     "rain_breeze_MetallicSmoothness.png": "9ee867705094e18ebbc2de4d7401bf2c0220a0b16c9ab6d9f0874695a83af7cf"
+   },
+   "surface_correction": {
+    "date": "2026-10-12",
+    "description": "Restore the accidentally culled right pupil cap; four added vertices and two triangles per existing tier. Existing geometry, UVs, weights, normals and skeleton unchanged.",
+    "generator": "art/cast/scripts/repair_rain_pupil.py"
    }
   },
   "npc_wallet_tracker": {
@@ -4894,18 +4899,18 @@
    "scale": 1.0,
    "tiers": {
     "lod0": {
-     "triangles": 5684,
-     "vertices": 3644,
+     "triangles": 5686,
+     "vertices": 3648,
      "max_influences": 4
     },
     "lod1": {
-     "triangles": 2625,
-     "vertices": 1843,
+     "triangles": 2627,
+     "vertices": 1847,
      "max_influences": 4
     },
     "lod2": {
-     "triangles": 1029,
-     "vertices": 883,
+     "triangles": 1031,
+     "vertices": 887,
      "max_influences": 2
     }
    },
@@ -4920,12 +4925,17 @@
    "tribe": null,
    "notes": "",
    "sha256": {
-    "npc_wallet_tracker.fbx": "8c4fdffb64c28386d87715142688e5661ec88d3b3177ecaa5f55e81b18da313e",
+    "npc_wallet_tracker.fbx": "4f9ad7c4bb061cac25f9a12c45a1987369f938afcf041104b2c58f7eece30cbd",
     "npc_wallet_tracker_BaseColor.png": "d661f0593178ce947a1b64531d6c8fbcbf4130c8694f1cd11455bdae8abffef9",
     "npc_wallet_tracker_Normal.png": "8cdbb2b9f31e7b96c4ddbff1bb45d1adc0037259871fca4f19dd6da2c49c5947",
     "npc_wallet_tracker_MetallicSmoothness.png": "2d0d720e4108cc5b8dd50bb5020f409d0a07ad63608e0e34180754ac9ba3142b"
    },
-   "archetype_in_contract": true
+   "archetype_in_contract": true,
+   "surface_correction": {
+    "date": "2026-10-12",
+    "description": "Restore the accidentally culled right pupil cap; four added vertices and two triangles per existing tier. Existing geometry, UVs, weights, normals and skeleton unchanged.",
+    "generator": "art/cast/scripts/repair_rain_pupil.py"
+   }
   },
   "npc_spaces_host": {
    "family": "f",
@@ -4994,18 +5004,18 @@
    "scale": 1.0,
    "tiers": {
     "lod0": {
-     "triangles": 5613,
-     "vertices": 3291,
+     "triangles": 5615,
+     "vertices": 3295,
      "max_influences": 4
     },
     "lod1": {
-     "triangles": 2595,
-     "vertices": 1649,
+     "triangles": 2597,
+     "vertices": 1653,
      "max_influences": 4
     },
     "lod2": {
-     "triangles": 975,
-     "vertices": 709,
+     "triangles": 977,
+     "vertices": 713,
      "max_influences": 2
     }
    },
@@ -5020,12 +5030,17 @@
    "tribe": null,
    "notes": "",
    "sha256": {
-    "npc_spaces_host.fbx": "b4016e09c156d9109ff6245ec895d1b339b8eb7a2e1104bc9f135419ce6416c8",
+    "npc_spaces_host.fbx": "9c91fec64c4ef24745c43d6eb73963bac2609116b80e77ee1ad20c3ed94ee7cb",
     "npc_spaces_host_BaseColor.png": "22e6ddb43ea74f568fcc9546e471c113591f58a65e1fb9b7c6ffb0655204ca05",
     "npc_spaces_host_Normal.png": "55ba6bb3e68c1fb6c45fab48092b66bec2bfd9690bd8d6ed208244355dcf9925",
     "npc_spaces_host_MetallicSmoothness.png": "de2eaef4611e151afaff1692765c1c71c0ec2c4944020d93cf623999737140bc"
    },
-   "archetype_in_contract": true
+   "archetype_in_contract": true,
+   "surface_correction": {
+    "date": "2026-10-12",
+    "description": "Restore the accidentally culled right pupil cap; four added vertices and two triangles per existing tier. Existing geometry, UVs, weights, normals and skeleton unchanged.",
+    "generator": "art/cast/scripts/repair_rain_pupil.py"
+   }
   },
   "npc_auditor": {
    "family": "f",
@@ -5105,18 +5120,18 @@
    "scale": 1.0,
    "tiers": {
     "lod0": {
-     "triangles": 5987,
-     "vertices": 3641,
+     "triangles": 5989,
+     "vertices": 3645,
      "max_influences": 4
     },
     "lod1": {
-     "triangles": 2836,
-     "vertices": 1862,
+     "triangles": 2838,
+     "vertices": 1866,
      "max_influences": 4
     },
     "lod2": {
-     "triangles": 1093,
-     "vertices": 843,
+     "triangles": 1095,
+     "vertices": 847,
      "max_influences": 2
     }
    },
@@ -5131,12 +5146,17 @@
    "tribe": null,
    "notes": "",
    "sha256": {
-    "npc_auditor.fbx": "bd233df5341512a2274672b226864a284e11216848daab595a20386914232dd8",
+    "npc_auditor.fbx": "a5ace0c1f7dccef02adb33a96bc39a98c62d4547eaee2ee59b37d4e178844185",
     "npc_auditor_BaseColor.png": "8ed12bb13ce7a626ef15350ddd024d024c1f83dcdf8b0f92ff35f38f5effb455",
     "npc_auditor_Normal.png": "78dfdae5df356140a95cbf531290250a1729ebfc2594bbc8e671f197f15b1e52",
     "npc_auditor_MetallicSmoothness.png": "e2740475fcaebedd4a1ae64b97b8af7ad007786273509125deb368c18a779d30"
    },
-   "archetype_in_contract": true
+   "archetype_in_contract": true,
+   "surface_correction": {
+    "date": "2026-10-12",
+    "description": "Restore the accidentally culled right pupil cap; four added vertices and two triangles per existing tier. Existing geometry, UVs, weights, normals and skeleton unchanged.",
+    "generator": "art/cast/scripts/repair_rain_pupil.py"
+   }
   },
   "npc_dubai_relocator": {
    "family": "f",
@@ -5190,18 +5210,18 @@
    "scale": 1.0,
    "tiers": {
     "lod0": {
-     "triangles": 5361,
-     "vertices": 3195,
+     "triangles": 5363,
+     "vertices": 3199,
      "max_influences": 4
     },
     "lod1": {
-     "triangles": 2517,
-     "vertices": 1612,
+     "triangles": 2519,
+     "vertices": 1616,
      "max_influences": 4
     },
     "lod2": {
-     "triangles": 994,
-     "vertices": 730,
+     "triangles": 996,
+     "vertices": 734,
      "max_influences": 2
     }
    },
@@ -5216,12 +5236,17 @@
    "tribe": null,
    "notes": "",
    "sha256": {
-    "npc_dubai_relocator.fbx": "b3b51fae5eb6525c66486b94c8a0b514465c12e14b3cfcc8cce9693fe83f4f2c",
+    "npc_dubai_relocator.fbx": "72d4e93aeed1190ffbfe8cef51f265ff436cdd32ff73ed12555d30d35cb474e3",
     "npc_dubai_relocator_BaseColor.png": "6a7bf6a325d792c14f61e16d164347b6adf1e322f158efd9540355e65300de24",
     "npc_dubai_relocator_Normal.png": "bf6537b437dab21a578f10e97fd14d46ae07449c0b36b94db6a13db923957f57",
     "npc_dubai_relocator_MetallicSmoothness.png": "b4826bb9c8b4c95baecc1a35c3bf8e6003393a0c2a45896319f28ae85b685609"
    },
-   "archetype_in_contract": true
+   "archetype_in_contract": true,
+   "surface_correction": {
+    "date": "2026-10-12",
+    "description": "Restore the accidentally culled right pupil cap; four added vertices and two triangles per existing tier. Existing geometry, UVs, weights, normals and skeleton unchanged.",
+    "generator": "art/cast/scripts/repair_rain_pupil.py"
+   }
   },
   "npc_community_mod": {
    "family": "f",
@@ -5283,18 +5308,18 @@
    "scale": 1.0,
    "tiers": {
     "lod0": {
-     "triangles": 4883,
-     "vertices": 2851,
+     "triangles": 4885,
+     "vertices": 2855,
      "max_influences": 4
     },
     "lod1": {
-     "triangles": 2307,
-     "vertices": 1440,
+     "triangles": 2309,
+     "vertices": 1444,
      "max_influences": 4
     },
     "lod2": {
-     "triangles": 914,
-     "vertices": 644,
+     "triangles": 916,
+     "vertices": 648,
      "max_influences": 2
     }
    },
@@ -5309,12 +5334,17 @@
    "tribe": null,
    "notes": "",
    "sha256": {
-    "npc_community_mod.fbx": "76b6c09d3cfcf14efa63b80a681a252afe232ad8ee21b275048084b3128fce43",
+    "npc_community_mod.fbx": "cd8e50dbdd93704d88818d1773fe8b38fb30c278d8f8d3868815d0dd7bf406c8",
     "npc_community_mod_BaseColor.png": "90a948c7c7a08cbfa3c44079fa1995a2fdfd02aa0df9ac23d93fe78992a696de",
     "npc_community_mod_Normal.png": "a71eb3efeaf730169b552cfbe15d262f42a3078cfc3925e09cda87427605a9f0",
     "npc_community_mod_MetallicSmoothness.png": "c2e2a5cb2e3494f3656b4a6e8d1f15508321a3fb6f1db3b5f66be31ac7d9a430"
    },
-   "archetype_in_contract": true
+   "archetype_in_contract": true,
+   "surface_correction": {
+    "date": "2026-10-12",
+    "description": "Restore the accidentally culled right pupil cap; four added vertices and two triangles per existing tier. Existing geometry, UVs, weights, normals and skeleton unchanged.",
+    "generator": "art/cast/scripts/repair_rain_pupil.py"
+   }
   },
   "npc_engagement_farmer": {
    "family": "f",
@@ -5377,18 +5407,18 @@
    "scale": 1.0,
    "tiers": {
     "lod0": {
-     "triangles": 5598,
-     "vertices": 3264,
+     "triangles": 5600,
+     "vertices": 3268,
      "max_influences": 4
     },
     "lod1": {
-     "triangles": 2626,
-     "vertices": 1652,
+     "triangles": 2628,
+     "vertices": 1656,
      "max_influences": 4
     },
     "lod2": {
-     "triangles": 1015,
-     "vertices": 721,
+     "triangles": 1017,
+     "vertices": 725,
      "max_influences": 2
     }
    },
@@ -5404,13 +5434,18 @@
    "tribe": null,
    "notes": "",
    "sha256": {
-    "npc_engagement_farmer.fbx": "43c1fca6658249088aefbfce741bf9f24483e0c89a48c446dedb9d62a21db015",
+    "npc_engagement_farmer.fbx": "4d721f5b919514e996b63107fe40b299a71bc45971481973c1a949df53c39c8b",
     "npc_engagement_farmer_BaseColor.png": "e2a86b7480d691ee2f914ad16e156034e5dae795c1a29ac2d0a7462c619fa176",
     "npc_engagement_farmer_Normal.png": "05990e0f02d73bd07aea90bc57460562873842b7ea96c87bd3c947fde4e98516",
     "npc_engagement_farmer_MetallicSmoothness.png": "3f9dfd6b0a48bc59298ad6c1f7bda56bc13eb44a0f65cdb70f43af5a9ca15a81",
     "npc_engagement_farmer_Emission.png": "89846fd8c1903aa491184af0504a8fbcdfbcec117649776798f909fc1042d55f"
    },
-   "archetype_in_contract": true
+   "archetype_in_contract": true,
+   "surface_correction": {
+    "date": "2026-10-12",
+    "description": "Restore the accidentally culled right pupil cap; four added vertices and two triangles per existing tier. Existing geometry, UVs, weights, normals and skeleton unchanged.",
+    "generator": "art/cast/scripts/repair_rain_pupil.py"
+   }
   },
   "npc_prediction_shark": {
    "family": "f",
@@ -5482,18 +5517,18 @@
    "scale": 1.0,
    "tiers": {
     "lod0": {
-     "triangles": 5362,
-     "vertices": 3162,
+     "triangles": 5364,
+     "vertices": 3166,
      "max_influences": 4
     },
     "lod1": {
-     "triangles": 2539,
-     "vertices": 1558,
+     "triangles": 2541,
+     "vertices": 1562,
      "max_influences": 4
     },
     "lod2": {
-     "triangles": 1006,
-     "vertices": 696,
+     "triangles": 1008,
+     "vertices": 700,
      "max_influences": 2
     }
    },
@@ -5508,12 +5543,17 @@
    "tribe": null,
    "notes": "",
    "sha256": {
-    "npc_prediction_shark.fbx": "7f0855f65c03851c81cd299d3934a14453d3146b8a0062b35fcd05df55e55575",
+    "npc_prediction_shark.fbx": "cfff665423deb817876c8cae9a7fc86dfa806d465cef603cc84369c92d446a84",
     "npc_prediction_shark_BaseColor.png": "89b0de5602aaeb0cfba2256f4892e30f5a29eb98e2bd638d3bd2db384f908e5b",
     "npc_prediction_shark_Normal.png": "286d9eb1a99d217794a871a22a67ec2034569742f8051a8397ed649a976076cc",
     "npc_prediction_shark_MetallicSmoothness.png": "2a905b13430e6e0b5a60049b2c298cbb016ab6fe7e05b929347990ac9b803fa4"
    },
-   "archetype_in_contract": true
+   "archetype_in_contract": true,
+   "surface_correction": {
+    "date": "2026-10-12",
+    "description": "Restore the accidentally culled right pupil cap; four added vertices and two triangles per existing tier. Existing geometry, UVs, weights, normals and skeleton unchanged.",
+    "generator": "art/cast/scripts/repair_rain_pupil.py"
+   }
   },
   "npc_chain_tribalist_b": {
    "family": "f",
@@ -5579,18 +5619,18 @@
    "scale": 1.0,
    "tiers": {
     "lod0": {
-     "triangles": 5180,
-     "vertices": 3050,
+     "triangles": 5182,
+     "vertices": 3054,
      "max_influences": 4
     },
     "lod1": {
-     "triangles": 2429,
-     "vertices": 1487,
+     "triangles": 2431,
+     "vertices": 1491,
      "max_influences": 4
     },
     "lod2": {
-     "triangles": 948,
-     "vertices": 650,
+     "triangles": 950,
+     "vertices": 654,
      "max_influences": 2
     }
    },
@@ -5605,13 +5645,18 @@
    "tribe": null,
    "notes": "",
    "sha256": {
-    "npc_chain_tribalist_b.fbx": "b64979aa38bad7baa7da1f2fd563c1f23c4bac32b2f8ad3f11bd130b4a3ccade",
+    "npc_chain_tribalist_b.fbx": "7e75d0d5823c852ce826513cae3778a5bee1cbbbd9af729ea129ea8b61d54c27",
     "npc_chain_tribalist_b_BaseColor.png": "6180196a74e1cdace1d245c04a3de3966e44c33a98c2f5aed02ea880278e0031",
     "npc_chain_tribalist_b_Normal.png": "2b673bb2f3e4cb294856ce7a3a4b7793dd0bfd357b0680311a2b52d4baea5199",
     "npc_chain_tribalist_b_MetallicSmoothness.png": "a09c1f13f853e4dc800e7496bad3f760357b6613bfac7254faad51507a60fc50"
    },
    "archetype_in_contract": false,
-   "archetype_status": "proposed id (not in contract/ids/archetypes.json)"
+   "archetype_status": "proposed id (not in contract/ids/archetypes.json)",
+   "surface_correction": {
+    "date": "2026-10-12",
+    "description": "Restore the accidentally culled right pupil cap; four added vertices and two triangles per existing tier. Existing geometry, UVs, weights, normals and skeleton unchanged.",
+    "generator": "art/cast/scripts/repair_rain_pupil.py"
+   }
   },
   "player_f_trencher": {
    "family": "f",
@@ -5673,23 +5718,23 @@
    "scale": 1.0,
    "tiers": {
     "hero": {
-     "triangles": 11379,
-     "vertices": 6391,
+     "triangles": 11381,
+     "vertices": 6395,
      "max_influences": 4
     },
     "lod0": {
-     "triangles": 5263,
-     "vertices": 3111,
+     "triangles": 5265,
+     "vertices": 3115,
      "max_influences": 4
     },
     "lod1": {
-     "triangles": 2428,
-     "vertices": 1500,
+     "triangles": 2430,
+     "vertices": 1504,
      "max_influences": 4
     },
     "lod2": {
-     "triangles": 920,
-     "vertices": 645,
+     "triangles": 922,
+     "vertices": 649,
      "max_influences": 2
     }
    },
@@ -5705,11 +5750,16 @@
    "tribe": "trencher",
    "notes": "",
    "sha256": {
-    "player_f_trencher.fbx": "e741c8b87b1de818c0bcae967539745f160d55e7e921bd413d4d59b811e06025",
-    "player_f_trencher_Hero.fbx": "3d80391a914e66ac1a3d75a894328d3cde4ff5677908df8bbf17b11873a35531",
+    "player_f_trencher.fbx": "57782d7a07c22128c6ba42b27ef6b151683b29b62f7e2550342071caede06542",
+    "player_f_trencher_Hero.fbx": "18910384e2badd266040c033ff4fc0da7999fb33c530262a72361f97a1d1a7b8",
     "player_f_trencher_BaseColor.png": "31ec99bebd6fe342e10269dee129beec638a17567394ed960d1af810d372b21e",
     "player_f_trencher_Normal.png": "34511e2a81f5a305f25719dcc572de52e8aa2d01cb4567f652c256f53cf637e5",
     "player_f_trencher_MetallicSmoothness.png": "521209153ae39de428dc76f0bba3ab9a1114f5279464d90e096cf2069dfd8637"
+   },
+   "surface_correction": {
+    "date": "2026-10-12",
+    "description": "Restore the accidentally culled right pupil cap; four added vertices and two triangles per existing tier. Existing geometry, UVs, weights, normals and skeleton unchanged.",
+    "generator": "art/cast/scripts/repair_rain_pupil.py"
    }
   },
   "player_f_lagos_ankara": {
@@ -5793,23 +5843,23 @@
    "scale": 1.0,
    "tiers": {
     "hero": {
-     "triangles": 11247,
-     "vertices": 6359,
+     "triangles": 11249,
+     "vertices": 6363,
      "max_influences": 4
     },
     "lod0": {
-     "triangles": 5325,
-     "vertices": 3218,
+     "triangles": 5327,
+     "vertices": 3222,
      "max_influences": 4
     },
     "lod1": {
-     "triangles": 2489,
-     "vertices": 1635,
+     "triangles": 2491,
+     "vertices": 1639,
      "max_influences": 4
     },
     "lod2": {
-     "triangles": 970,
-     "vertices": 715,
+     "triangles": 972,
+     "vertices": 719,
      "max_influences": 2
     }
    },
@@ -5825,11 +5875,16 @@
    "tribe": null,
    "notes": "",
    "sha256": {
-    "player_f_lagos_ankara.fbx": "90404dbcb640734a4e8aa1b6d823e8cad48e178e4717377bceb1a6cde25ecebf",
-    "player_f_lagos_ankara_Hero.fbx": "14ac4659e4808c01c992ff2803bccd620796c9a851a7db878e0ee94fbbf2557c",
+    "player_f_lagos_ankara.fbx": "309a23c631bc79c80e69a3ad28aa9e0ffea8fc6dc57c7b96ebc5028fdab2d81f",
+    "player_f_lagos_ankara_Hero.fbx": "cd1914f8db4a3bb1c85c0cc238ab9dc19f0dd2a9aa33245f2dd9269774e6b792",
     "player_f_lagos_ankara_BaseColor.png": "37754b584ec018fa78aa997d8a450612b9f6e94cbc61ea4cdd21a7b1d5c2b173",
     "player_f_lagos_ankara_Normal.png": "56b94343663701bbfccf9b15d7b61917dea0a13156f1e903c59ed7a9423339e3",
     "player_f_lagos_ankara_MetallicSmoothness.png": "50a03703f175973e5b276c846e50b310b2ac104ece443890c89be1fda7626a8d"
+   },
+   "surface_correction": {
+    "date": "2026-10-12",
+    "description": "Restore the accidentally culled right pupil cap; four added vertices and two triangles per existing tier. Existing geometry, UVs, weights, normals and skeleton unchanged.",
+    "generator": "art/cast/scripts/repair_rain_pupil.py"
    }
   },
   "player_f_blazer": {
@@ -5899,23 +5954,23 @@
    "scale": 1.0,
    "tiers": {
     "hero": {
-     "triangles": 11237,
-     "vertices": 6378,
+     "triangles": 11239,
+     "vertices": 6382,
      "max_influences": 4
     },
     "lod0": {
-     "triangles": 5281,
-     "vertices": 3155,
+     "triangles": 5283,
+     "vertices": 3159,
      "max_influences": 4
     },
     "lod1": {
-     "triangles": 2455,
-     "vertices": 1582,
+     "triangles": 2457,
+     "vertices": 1586,
      "max_influences": 4
     },
     "lod2": {
-     "triangles": 934,
-     "vertices": 703,
+     "triangles": 936,
+     "vertices": 707,
      "max_influences": 2
     }
    },
@@ -5931,11 +5986,16 @@
    "tribe": null,
    "notes": "",
    "sha256": {
-    "player_f_blazer.fbx": "8ea2059dd2b75d2bb4b10dc9cd38d64e3b39949121ee1ed08944544e2a9f37d8",
-    "player_f_blazer_Hero.fbx": "73000b734977c1271d193e47338d8313b4c9eb3f148a2a42504e95bd27393e70",
+    "player_f_blazer.fbx": "44c082cf89bdd3f73821f75231864781381804998f7e06e7a49091c79d874888",
+    "player_f_blazer_Hero.fbx": "6f2e6b98cc5078b54a290f9ad23a06b2e909443db766a449c1904604cf80073e",
     "player_f_blazer_BaseColor.png": "ff8a118b4576708a8a7a6a5bf4c6231e271a4458ca8f9d035c2afc306c04c0ad",
     "player_f_blazer_Normal.png": "b95884664ab896da9c00455ca64088784d946c2381c86154036b28cbb16814fa",
     "player_f_blazer_MetallicSmoothness.png": "b4946cd1547ec53584d26dbbd72c5b03bca1b24992ac7c36d75897e40135b76d"
+   },
+   "surface_correction": {
+    "date": "2026-10-12",
+    "description": "Restore the accidentally culled right pupil cap; four added vertices and two triangles per existing tier. Existing geometry, UVs, weights, normals and skeleton unchanged.",
+    "generator": "art/cast/scripts/repair_rain_pupil.py"
    }
   },
   "player_f_kol": {
@@ -5996,23 +6056,23 @@
    "scale": 1.0,
    "tiers": {
     "hero": {
-     "triangles": 11987,
-     "vertices": 6746,
+     "triangles": 11989,
+     "vertices": 6750,
      "max_influences": 4
     },
     "lod0": {
-     "triangles": 5889,
-     "vertices": 3495,
+     "triangles": 5891,
+     "vertices": 3499,
      "max_influences": 4
     },
     "lod1": {
-     "triangles": 2745,
-     "vertices": 1752,
+     "triangles": 2747,
+     "vertices": 1756,
      "max_influences": 4
     },
     "lod2": {
-     "triangles": 1073,
-     "vertices": 787,
+     "triangles": 1075,
+     "vertices": 791,
      "max_influences": 2
     }
    },
@@ -6028,11 +6088,16 @@
    "tribe": "caller_kol",
    "notes": "",
    "sha256": {
-    "player_f_kol.fbx": "7e23f94334f5eb377b2d0b8c426d8ed35fccb859e40e84848fccc2c7e919eb12",
-    "player_f_kol_Hero.fbx": "da3f41a5a517b5de604eb872e36c6ab4bf1a51bc008be23fa20ab946ba72e985",
+    "player_f_kol.fbx": "8d794788c1425ce2296b1ba95f4431c558d7c60d61d5f0b8e75fa3936756a9ab",
+    "player_f_kol_Hero.fbx": "84e5aa5329dd8efb7edfa9cabe86e56909d0963ef3216f5fdb834c1286b58822",
     "player_f_kol_BaseColor.png": "6936d9306b6c0846753e3580035c07c6e7d157f2ba62e55d5973aa529fd13edc",
     "player_f_kol_Normal.png": "148699bec9975a139fe7cfeeb402560134211f3ec8edcf232fee731feaf63a47",
     "player_f_kol_MetallicSmoothness.png": "488f0e55a409531088bd8b26314de5c3e9c2eb03330b3edb51dea3004dd07f88"
+   },
+   "surface_correction": {
+    "date": "2026-10-12",
+    "description": "Restore the accidentally culled right pupil cap; four added vertices and two triangles per existing tier. Existing geometry, UVs, weights, normals and skeleton unchanged.",
+    "generator": "art/cast/scripts/repair_rain_pupil.py"
    }
   },
   "player_f_builder": {
@@ -6093,23 +6158,23 @@
    "scale": 1.0,
    "tiers": {
     "hero": {
-     "triangles": 10370,
-     "vertices": 5751,
+     "triangles": 10372,
+     "vertices": 5755,
      "max_influences": 4
     },
     "lod0": {
-     "triangles": 4865,
-     "vertices": 2831,
+     "triangles": 4867,
+     "vertices": 2835,
      "max_influences": 4
     },
     "lod1": {
-     "triangles": 2256,
-     "vertices": 1405,
+     "triangles": 2258,
+     "vertices": 1409,
      "max_influences": 4
     },
     "lod2": {
-     "triangles": 864,
-     "vertices": 610,
+     "triangles": 866,
+     "vertices": 614,
      "max_influences": 2
     }
    },
@@ -6125,11 +6190,16 @@
    "tribe": "builder",
    "notes": "",
    "sha256": {
-    "player_f_builder.fbx": "13b6484f2642d469eef443e18a4bd159becc94fcf9f76a4cab20adea22441633",
-    "player_f_builder_Hero.fbx": "4ae2ba0a4d7a7f0dd68bb5d423ec0adb41c727579419e05edace7d2bd9f8b489",
+    "player_f_builder.fbx": "f1e68753bcccf76b80726d5d21efee83beeb8fdafdca3a4776de27931041109c",
+    "player_f_builder_Hero.fbx": "72b0d819f5d42f8823ecbd30b987f1ff8513fd94a0cb3a053b81b60b13cb0cac",
     "player_f_builder_BaseColor.png": "7f7bfd9e7fda24a3a45dc59d00e910f80308300e9e3fa74db3f8bd1781b826e7",
     "player_f_builder_Normal.png": "b0dd7eca1df81d2ed1efcbf2f1774b882411016601b98ec17417673b7c81d5a9",
     "player_f_builder_MetallicSmoothness.png": "21069d12dbfc625cc8b347ba42b6354130cf2a081af96156b2f3f7e364f5df08"
+   },
+   "surface_correction": {
+    "date": "2026-10-12",
+    "description": "Restore the accidentally culled right pupil cap; four added vertices and two triangles per existing tier. Existing geometry, UVs, weights, normals and skeleton unchanged.",
+    "generator": "art/cast/scripts/repair_rain_pupil.py"
    }
   },
   "player_f_anon": {
@@ -6185,23 +6255,23 @@
    "scale": 1.0,
    "tiers": {
     "hero": {
-     "triangles": 10706,
-     "vertices": 5963,
+     "triangles": 10708,
+     "vertices": 5967,
      "max_influences": 4
     },
     "lod0": {
-     "triangles": 4966,
-     "vertices": 2910,
+     "triangles": 4968,
+     "vertices": 2914,
      "max_influences": 4
     },
     "lod1": {
-     "triangles": 2307,
-     "vertices": 1460,
+     "triangles": 2309,
+     "vertices": 1464,
      "max_influences": 4
     },
     "lod2": {
-     "triangles": 887,
-     "vertices": 624,
+     "triangles": 889,
+     "vertices": 628,
      "max_influences": 2
     }
    },
@@ -6217,11 +6287,16 @@
    "tribe": "anon",
    "notes": "",
    "sha256": {
-    "player_f_anon.fbx": "4f386b4ca3258fa2514a2014ac946dd86c0fbf5cd0d538eae23b0520f7f2c592",
-    "player_f_anon_Hero.fbx": "c0003ed27605c568b68942bc2c2b25b06114ef62babcf7865150addffa56b3e8",
+    "player_f_anon.fbx": "6f883c033d0e4f32587bd0adc53007a76571c2597d61c4ca649e972f771eb0ae",
+    "player_f_anon_Hero.fbx": "1cb89934513c29595fd42cc0b01fc3e901fd8948fe1dbba9b5766e318857cf74",
     "player_f_anon_BaseColor.png": "60a2c5fb82fdef1d945bd52528a41290ebb26d99f0f55526f7d4be8429dc3be2",
     "player_f_anon_Normal.png": "245251e15c4c5c3924f877ee40eaf33fdcbefdab389afbc8fd28b07fa4d0b2c2",
     "player_f_anon_MetallicSmoothness.png": "33dc12db175cc976869631fae32060e4b415231775a7b5aa3580c68776fbb125"
+   },
+   "surface_correction": {
+    "date": "2026-10-12",
+    "description": "Restore the accidentally culled right pupil cap; four added vertices and two triangles per existing tier. Existing geometry, UVs, weights, normals and skeleton unchanged.",
+    "generator": "art/cast/scripts/repair_rain_pupil.py"
    }
   },
   "player_f_perp": {
@@ -6283,23 +6358,23 @@
    "scale": 1.0,
    "tiers": {
     "hero": {
-     "triangles": 11432,
-     "vertices": 6376,
+     "triangles": 11434,
+     "vertices": 6380,
      "max_influences": 4
     },
     "lod0": {
-     "triangles": 5431,
-     "vertices": 3183,
+     "triangles": 5433,
+     "vertices": 3187,
      "max_influences": 4
     },
     "lod1": {
-     "triangles": 2549,
-     "vertices": 1611,
+     "triangles": 2551,
+     "vertices": 1615,
      "max_influences": 4
     },
     "lod2": {
-     "triangles": 998,
-     "vertices": 711,
+     "triangles": 1000,
+     "vertices": 715,
      "max_influences": 2
     }
    },
@@ -6315,11 +6390,16 @@
    "tribe": "perp_degen",
    "notes": "",
    "sha256": {
-    "player_f_perp.fbx": "2a967f830be1df8b762ebb8c02f2c3df4f117254d874e9378940be9f31f683f9",
-    "player_f_perp_Hero.fbx": "7e65f669231e319817b1e2c0747636cdf68079f91e4ad2b241c5658235f6771d",
+    "player_f_perp.fbx": "3435b27965b1983f37059ff7c7dcdcb36005a770b48df984debff68282b85016",
+    "player_f_perp_Hero.fbx": "36155a701cd8128210731d59e78f7a41bbf68e3d496d430d76be83629d678e8f",
     "player_f_perp_BaseColor.png": "83160c1d989fe25092a2d84882476b7dc3bfd49188519d43e765fa7b8f8d5e9d",
     "player_f_perp_Normal.png": "c6143be4533970eb7c53b39fa03abebf60266d8944d42f94a3b1e0e6ada498aa",
     "player_f_perp_MetallicSmoothness.png": "5410deb17bb1a19fa138b1f0a34362482cf461d74382566a8e3647f82c83b630"
+   },
+   "surface_correction": {
+    "date": "2026-10-12",
+    "description": "Restore the accidentally culled right pupil cap; four added vertices and two triangles per existing tier. Existing geometry, UVs, weights, normals and skeleton unchanged.",
+    "generator": "art/cast/scripts/repair_rain_pupil.py"
    }
   },
   "player_f_farmer": {
@@ -6381,23 +6461,23 @@
    "scale": 1.0,
    "tiers": {
     "hero": {
-     "triangles": 11387,
-     "vertices": 6486,
+     "triangles": 11389,
+     "vertices": 6490,
      "max_influences": 4
     },
     "lod0": {
-     "triangles": 5444,
-     "vertices": 3296,
+     "triangles": 5446,
+     "vertices": 3300,
      "max_influences": 4
     },
     "lod1": {
-     "triangles": 2586,
-     "vertices": 1678,
+     "triangles": 2588,
+     "vertices": 1682,
      "max_influences": 4
     },
     "lod2": {
-     "triangles": 1024,
-     "vertices": 776,
+     "triangles": 1026,
+     "vertices": 780,
      "max_influences": 2
     }
    },
@@ -6413,11 +6493,16 @@
    "tribe": "airdrop_farmer",
    "notes": "",
    "sha256": {
-    "player_f_farmer.fbx": "6e850472aaba440cceb09d0f7814fcb995ead58cb69d948e4aaf3a1b0880a43e",
-    "player_f_farmer_Hero.fbx": "daa4ef2f68c0a81a16fa0a48e1d52848a8878d0086b4f094345e44c68b3c41ff",
+    "player_f_farmer.fbx": "f3ec6c1bd8e02845022040dee07ddaacbc63b7e31a9a5be0ea9772e0f3093133",
+    "player_f_farmer_Hero.fbx": "f0b015ccf2b523c19b82e745100d775d93cd2d3203548d9948c83cf32a6d4b4b",
     "player_f_farmer_BaseColor.png": "ee4c16becc97169b9091acd29abae4b8dd3b77d88ef69fba2ee44a7ea06c6d62",
     "player_f_farmer_Normal.png": "6752bc1d61ca2bb98dbbd21125adb5b3f456b8c94da18fa3a40e0a07bc9b8651",
     "player_f_farmer_MetallicSmoothness.png": "d0d5d43a107b026c55719a43320f3101cc8ca0022222084ca20dc3055b3fc12e"
+   },
+   "surface_correction": {
+    "date": "2026-10-12",
+    "description": "Restore the accidentally culled right pupil cap; four added vertices and two triangles per existing tier. Existing geometry, UVs, weights, normals and skeleton unchanged.",
+    "generator": "art/cast/scripts/repair_rain_pupil.py"
    }
   },
   "player_f_shark": {
@@ -6487,23 +6572,23 @@
    "scale": 1.0,
    "tiers": {
     "hero": {
-     "triangles": 11988,
-     "vertices": 6737,
+     "triangles": 11990,
+     "vertices": 6741,
      "max_influences": 4
     },
     "lod0": {
-     "triangles": 5734,
-     "vertices": 3376,
+     "triangles": 5736,
+     "vertices": 3380,
      "max_influences": 4
     },
     "lod1": {
-     "triangles": 2676,
-     "vertices": 1648,
+     "triangles": 2678,
+     "vertices": 1652,
      "max_influences": 4
     },
     "lod2": {
-     "triangles": 1025,
-     "vertices": 715,
+     "triangles": 1027,
+     "vertices": 719,
      "max_influences": 2
     }
    },
@@ -6519,11 +6604,16 @@
    "tribe": "prediction_shark",
    "notes": "",
    "sha256": {
-    "player_f_shark.fbx": "2beab4cc666d70afdda2ffe6deb50b5f008783deb35be7d6a7e26616b639aee0",
-    "player_f_shark_Hero.fbx": "bdee8153eb81eb30e38575f11b918451af4bcb2c216cfdbedc92fa3a48f74cc7",
+    "player_f_shark.fbx": "14baf34269003dc7c5b87bc81bd759f0e90b0a7ccbab0a56dfce0da1218f7674",
+    "player_f_shark_Hero.fbx": "08a5b8eae1db5096e400163942043a50ad49e59e8fb58fcd635c5358c7274935",
     "player_f_shark_BaseColor.png": "90a5f0d2e455f9b93f1000d2fbe7123844e6756720a803e0f50f3fb8a9f78eb3",
     "player_f_shark_Normal.png": "a3ce76ad3f58ba449c37fe705f33fbd99049f665aedcdd075e1200b3ab2f4614",
     "player_f_shark_MetallicSmoothness.png": "93093a26580b67ee28c93cde87219bfe8067dde10089915df6a9b5da6fad2fb9"
+   },
+   "surface_correction": {
+    "date": "2026-10-12",
+    "description": "Restore the accidentally culled right pupil cap; four added vertices and two triangles per existing tier. Existing geometry, UVs, weights, normals and skeleton unchanged.",
+    "generator": "art/cast/scripts/repair_rain_pupil.py"
    }
   },
   "player_f_coat": {
@@ -6578,23 +6668,23 @@
    "scale": 1.0,
    "tiers": {
     "hero": {
-     "triangles": 11342,
-     "vertices": 6413,
+     "triangles": 11344,
+     "vertices": 6417,
      "max_influences": 4
     },
     "lod0": {
-     "triangles": 5221,
-     "vertices": 3122,
+     "triangles": 5223,
+     "vertices": 3126,
      "max_influences": 4
     },
     "lod1": {
-     "triangles": 2393,
-     "vertices": 1494,
+     "triangles": 2395,
+     "vertices": 1498,
      "max_influences": 4
     },
     "lod2": {
-     "triangles": 905,
-     "vertices": 643,
+     "triangles": 907,
+     "vertices": 647,
      "max_influences": 2
     }
    },
@@ -6610,11 +6700,16 @@
    "tribe": null,
    "notes": "",
    "sha256": {
-    "player_f_coat.fbx": "90311b36aaf7cf2a9ca3c02127c5abed62d372fb8087fdc95f3174a43abddb13",
-    "player_f_coat_Hero.fbx": "7cbf2e8ce363f1701a5b812ee4236e64ebf593ad1545ccba0c1859bc0a1556c0",
+    "player_f_coat.fbx": "4d17e0cf57d2ba5b3861f030030e8286b5b2b760b4b4b4f95441e2f5335c3a76",
+    "player_f_coat_Hero.fbx": "01bb8964a9b8709f7e4d68ebccec4ac408f3a0e4320d6c8c0810237120963cde",
     "player_f_coat_BaseColor.png": "6ba29d351040b99d38de7e131dea6e9298316f188503e168287b9f1069b9b957",
     "player_f_coat_Normal.png": "3ba95175f67049294c438b725d8fb24ca1c0332f28759a62a4b72d1ffb8591d9",
     "player_f_coat_MetallicSmoothness.png": "ae1e05da2702c94e9082ef19c45c76f17a4672b257c4d7bf39c50513c12667ca"
+   },
+   "surface_correction": {
+    "date": "2026-10-12",
+    "description": "Restore the accidentally culled right pupil cap; four added vertices and two triangles per existing tier. Existing geometry, UVs, weights, normals and skeleton unchanged.",
+    "generator": "art/cast/scripts/repair_rain_pupil.py"
    }
   },
   "player_f_lagos_kaftan": {
@@ -6670,23 +6765,23 @@
    "scale": 1.0,
    "tiers": {
     "hero": {
-     "triangles": 11040,
-     "vertices": 6164,
+     "triangles": 11042,
+     "vertices": 6168,
      "max_influences": 4
     },
     "lod0": {
-     "triangles": 5074,
-     "vertices": 2985,
+     "triangles": 5076,
+     "vertices": 2989,
      "max_influences": 4
     },
     "lod1": {
-     "triangles": 2335,
-     "vertices": 1487,
+     "triangles": 2337,
+     "vertices": 1491,
      "max_influences": 4
     },
     "lod2": {
-     "triangles": 875,
-     "vertices": 633,
+     "triangles": 877,
+     "vertices": 637,
      "max_influences": 2
     }
    },
@@ -6702,11 +6797,16 @@
    "tribe": null,
    "notes": "",
    "sha256": {
-    "player_f_lagos_kaftan.fbx": "a549d993476ba136b584b165043d82934334226a0c3a13d4a1ff599ac9a0baa2",
-    "player_f_lagos_kaftan_Hero.fbx": "5e7d73b102eec81ba03786160e1403518883f795eb716589849bcd243700fdec",
+    "player_f_lagos_kaftan.fbx": "40507c2373f9c0274c71abf0b8fb1119e16f09bf7c36b6441fa933314cc4777f",
+    "player_f_lagos_kaftan_Hero.fbx": "24f7d942e11405638a91717f80d3164fba11c417c3b17d93c794632e6cbc6e4f",
     "player_f_lagos_kaftan_BaseColor.png": "23af9579c9b52f1791fa69522a569022f8fe46cfc098d1a6a81909449ce8b706",
     "player_f_lagos_kaftan_Normal.png": "0a97e07e03a587aa2188a478a509efe556f082a0c1a76a0723645d2bb4e97e15",
     "player_f_lagos_kaftan_MetallicSmoothness.png": "9ff1acee1dfb068b5dcd91c41d85d57194f796ec1335e463f3ba3f393e2f08ef"
+   },
+   "surface_correction": {
+    "date": "2026-10-12",
+    "description": "Restore the accidentally culled right pupil cap; four added vertices and two triangles per existing tier. Existing geometry, UVs, weights, normals and skeleton unchanged.",
+    "generator": "art/cast/scripts/repair_rain_pupil.py"
    }
   },
   "npc_odds_crier": {
@@ -6776,18 +6876,18 @@
    "scale": 1.0,
    "tiers": {
     "lod0": {
-     "triangles": 5362,
-     "vertices": 3162,
+     "triangles": 5364,
+     "vertices": 3166,
      "max_influences": 4
     },
     "lod1": {
-     "triangles": 2539,
-     "vertices": 1558,
+     "triangles": 2541,
+     "vertices": 1562,
      "max_influences": 4
     },
     "lod2": {
-     "triangles": 1006,
-     "vertices": 696,
+     "triangles": 1008,
+     "vertices": 700,
      "max_influences": 2
     }
    },
@@ -6802,13 +6902,18 @@
    "tribe": null,
    "notes": "Dossier new archetype; proposed id odds_crier.",
    "sha256": {
-    "npc_odds_crier.fbx": "0143624508dc04d55757eee3f0e9ea04b218cfc3c9b46038b6b231ddd4f7c9a2",
+    "npc_odds_crier.fbx": "cc28219df744f36d699770a1a1dc7de7fc1c2a1bededf60622528fc337f9c41d",
     "npc_odds_crier_BaseColor.png": "bc57e5c8524601db5b38258fd8fceaf5ef36878d2c7f5349f3e100057807c8aa",
     "npc_odds_crier_Normal.png": "286d9eb1a99d217794a871a22a67ec2034569742f8051a8397ed649a976076cc",
     "npc_odds_crier_MetallicSmoothness.png": "2a905b13430e6e0b5a60049b2c298cbb016ab6fe7e05b929347990ac9b803fa4"
    },
    "archetype_in_contract": false,
-   "archetype_status": "proposed id (not in contract/ids/archetypes.json)"
+   "archetype_status": "proposed id (not in contract/ids/archetypes.json)",
+   "surface_correction": {
+    "date": "2026-10-12",
+    "description": "Restore the accidentally culled right pupil cap; four added vertices and two triangles per existing tier. Existing geometry, UVs, weights, normals and skeleton unchanged.",
+    "generator": "art/cast/scripts/repair_rain_pupil.py"
+   }
   },
   "npc_tradfi_suit": {
    "family": "f",
@@ -6866,18 +6971,18 @@
    "scale": 1.0,
    "tiers": {
     "lod0": {
-     "triangles": 5185,
-     "vertices": 3107,
+     "triangles": 5187,
+     "vertices": 3111,
      "max_influences": 4
     },
     "lod1": {
-     "triangles": 2375,
-     "vertices": 1542,
+     "triangles": 2377,
+     "vertices": 1546,
      "max_influences": 4
     },
     "lod2": {
-     "triangles": 904,
-     "vertices": 688,
+     "triangles": 906,
+     "vertices": 692,
      "max_influences": 2
     }
    },
@@ -6892,13 +6997,18 @@
    "tribe": null,
    "notes": "Proposed id tradfi_suit.",
    "sha256": {
-    "npc_tradfi_suit.fbx": "cafe10e7b23cff381b4a70015f28ef149d87294ef6ebba87e0a29b4a35ea8646",
+    "npc_tradfi_suit.fbx": "564c0f0f5d75b0dd2cd2341393020559b3359d9bd0c9586f64272e89ada4164c",
     "npc_tradfi_suit_BaseColor.png": "a1de9d35785e674e5e7debd2bef769d70ae956f4c62d2eb7fed8dc97ac0d5cd0",
     "npc_tradfi_suit_Normal.png": "16ae0daf32078e0b3a42d326d75a71323b93953cdaceaffb25cd316842b5b55f",
     "npc_tradfi_suit_MetallicSmoothness.png": "8f67177ac0679618eaa8b73f6f1be03f25d09b7ec4bc9a8f2f9dff94acdd704f"
    },
    "archetype_in_contract": false,
-   "archetype_status": "proposed id (not in contract/ids/archetypes.json)"
+   "archetype_status": "proposed id (not in contract/ids/archetypes.json)",
+   "surface_correction": {
+    "date": "2026-10-12",
+    "description": "Restore the accidentally culled right pupil cap; four added vertices and two triangles per existing tier. Existing geometry, UVs, weights, normals and skeleton unchanged.",
+    "generator": "art/cast/scripts/repair_rain_pupil.py"
+   }
   },
   "npc_clip_farmer": {
    "family": "f",
@@ -6960,18 +7070,18 @@
    "scale": 1.0,
    "tiers": {
     "lod0": {
-     "triangles": 4835,
-     "vertices": 2860,
+     "triangles": 4837,
+     "vertices": 2864,
      "max_influences": 4
     },
     "lod1": {
-     "triangles": 2283,
-     "vertices": 1448,
+     "triangles": 2285,
+     "vertices": 1452,
      "max_influences": 4
     },
     "lod2": {
-     "triangles": 900,
-     "vertices": 646,
+     "triangles": 902,
+     "vertices": 650,
      "max_influences": 2
     }
    },
@@ -6987,14 +7097,19 @@
    "tribe": null,
    "notes": "Proposed id clip_farmer; gimbal approximated by phone.",
    "sha256": {
-    "npc_clip_farmer.fbx": "60cf52d28448ca0589251ddc4740dd36718faeb9c02662362f2e13f4663264e5",
+    "npc_clip_farmer.fbx": "3fc057fae9b68115fc832d9ff8b9f8ca7c0d283110c16f2609d2a852371222db",
     "npc_clip_farmer_BaseColor.png": "443762ea02e8f3a374ee922470c333acdd41c7b184d46378c33d869244ddd037",
     "npc_clip_farmer_Normal.png": "0cdcd764aec75502aaa35521840b0aca2a57fab70bff274dd77ffbfd9e4116fd",
     "npc_clip_farmer_MetallicSmoothness.png": "37d2088aef9bcf485b813e7d98cd61a4b11f415c5a5a442f2b08a16800867e89",
     "npc_clip_farmer_Emission.png": "2d83ebaa7b011d3e9ea332a36f805572bc42ab695fc1a3c430572c262a8b8e0e"
    },
    "archetype_in_contract": false,
-   "archetype_status": "proposed id (not in contract/ids/archetypes.json)"
+   "archetype_status": "proposed id (not in contract/ids/archetypes.json)",
+   "surface_correction": {
+    "date": "2026-10-12",
+    "description": "Restore the accidentally culled right pupil cap; four added vertices and two triangles per existing tier. Existing geometry, UVs, weights, normals and skeleton unchanged.",
+    "generator": "art/cast/scripts/repair_rain_pupil.py"
+   }
   },
   "npc_hiring_bait_farmer": {
    "family": "f",
@@ -7065,18 +7180,18 @@
    "scale": 1.0,
    "tiers": {
     "lod0": {
-     "triangles": 5381,
-     "vertices": 3322,
+     "triangles": 5383,
+     "vertices": 3326,
      "max_influences": 4
     },
     "lod1": {
-     "triangles": 2505,
-     "vertices": 1688,
+     "triangles": 2507,
+     "vertices": 1692,
      "max_influences": 4
     },
     "lod2": {
-     "triangles": 954,
-     "vertices": 759,
+     "triangles": 956,
+     "vertices": 763,
      "max_influences": 2
     }
    },
@@ -7091,13 +7206,18 @@
    "tribe": null,
    "notes": "Proposed id hiring_bait_farmer.",
    "sha256": {
-    "npc_hiring_bait_farmer.fbx": "617c3594b4aafac6b4e790abca801f888889294b3009f0e3a16248cbf4932401",
+    "npc_hiring_bait_farmer.fbx": "29c9cf69ba94c053a451f7acdbd476bb6b5cabb0a50bbede63dccebccfe528d8",
     "npc_hiring_bait_farmer_BaseColor.png": "1471ae1700871b167f0ce49004221fffb2f8b050a2a777fcaef00ae662bbdc5f",
     "npc_hiring_bait_farmer_Normal.png": "715d7675a5207f539b226af458de434ca7e7ea6ae73c63ffdac283c8e8f2fa6c",
     "npc_hiring_bait_farmer_MetallicSmoothness.png": "7d7f23e0ff0901ae66e62b329155f70f3556de3358efbf89108a96ed28239479"
    },
    "archetype_in_contract": false,
-   "archetype_status": "proposed id (not in contract/ids/archetypes.json)"
+   "archetype_status": "proposed id (not in contract/ids/archetypes.json)",
+   "surface_correction": {
+    "date": "2026-10-12",
+    "description": "Restore the accidentally culled right pupil cap; four added vertices and two triangles per existing tier. Existing geometry, UVs, weights, normals and skeleton unchanged.",
+    "generator": "art/cast/scripts/repair_rain_pupil.py"
+   }
   },
   "npc_tip_coin_pilgrim": {
    "family": "f",
@@ -7161,18 +7281,18 @@
    "scale": 1.0,
    "tiers": {
     "lod0": {
-     "triangles": 5002,
-     "vertices": 2923,
+     "triangles": 5004,
+     "vertices": 2927,
      "max_influences": 4
     },
     "lod1": {
-     "triangles": 2357,
-     "vertices": 1426,
+     "triangles": 2359,
+     "vertices": 1430,
      "max_influences": 4
     },
     "lod2": {
-     "triangles": 924,
-     "vertices": 624,
+     "triangles": 926,
+     "vertices": 628,
      "max_influences": 2
     }
    },
@@ -7187,13 +7307,18 @@
    "tribe": null,
    "notes": "Proposed id tip_coin_pilgrim.",
    "sha256": {
-    "npc_tip_coin_pilgrim.fbx": "1833f4847288281b4ae6f32123b0b97d4b554cd3c5e342706ceb7bddb7821eb3",
+    "npc_tip_coin_pilgrim.fbx": "28e82f625bc9349c4914b051f2ad55f42d1b956bb13fb1b30f998bd312037e0c",
     "npc_tip_coin_pilgrim_BaseColor.png": "72204bcabee75c93aa877e3c531310d4006ff5e76c0975b47b356725c2c67fc1",
     "npc_tip_coin_pilgrim_Normal.png": "7a288bbf897ac16b574af84714cbfc26f67b9a03784a0e942db5665207b35940",
     "npc_tip_coin_pilgrim_MetallicSmoothness.png": "1140195c9c85f28991e147b6fd0319393b5587bf40bc94046d7dbc91f8b44c2c"
    },
    "archetype_in_contract": false,
-   "archetype_status": "proposed id (not in contract/ids/archetypes.json)"
+   "archetype_status": "proposed id (not in contract/ids/archetypes.json)",
+   "surface_correction": {
+    "date": "2026-10-12",
+    "description": "Restore the accidentally culled right pupil cap; four added vertices and two triangles per existing tier. Existing geometry, UVs, weights, normals and skeleton unchanged.",
+    "generator": "art/cast/scripts/repair_rain_pupil.py"
+   }
   },
   "npc_privacy_maxi": {
    "family": "f",
@@ -7250,18 +7375,18 @@
    "scale": 1.0,
    "tiers": {
     "lod0": {
-     "triangles": 5066,
-     "vertices": 2985,
+     "triangles": 5068,
+     "vertices": 2989,
      "max_influences": 4
     },
     "lod1": {
-     "triangles": 2346,
-     "vertices": 1496,
+     "triangles": 2348,
+     "vertices": 1500,
      "max_influences": 4
     },
     "lod2": {
-     "triangles": 906,
-     "vertices": 652,
+     "triangles": 908,
+     "vertices": 656,
      "max_influences": 2
     }
    },
@@ -7276,13 +7401,18 @@
    "tribe": null,
    "notes": "Proposed id privacy_maxi.",
    "sha256": {
-    "npc_privacy_maxi.fbx": "d539660e4aed54bee6e8e057c7acbed77b528a0e943f5f14bdd9823d3dd9b76d",
+    "npc_privacy_maxi.fbx": "aff8b300c52c5257466ffbe6795b96ae1c4d7955658642efc1fa774dbef9a3cd",
     "npc_privacy_maxi_BaseColor.png": "1f8cc734618c24522c48e06e37735e30f5438a72802464da34c9c1eb5552a787",
     "npc_privacy_maxi_Normal.png": "209f1fcf7e42138abcda665e838afcfdcb05c21f72fa1abfd78f5782e9898ca1",
     "npc_privacy_maxi_MetallicSmoothness.png": "4d1f4579ac67a9f6c86e7cf3babcf3255adea220307a9a4adb73ede50c7cf811"
    },
    "archetype_in_contract": false,
-   "archetype_status": "proposed id (not in contract/ids/archetypes.json)"
+   "archetype_status": "proposed id (not in contract/ids/archetypes.json)",
+   "surface_correction": {
+    "date": "2026-10-12",
+    "description": "Restore the accidentally culled right pupil cap; four added vertices and two triangles per existing tier. Existing geometry, UVs, weights, normals and skeleton unchanged.",
+    "generator": "art/cast/scripts/repair_rain_pupil.py"
+   }
   },
   "npc_side_event_hopper": {
    "family": "f",
@@ -7354,18 +7484,18 @@
    "scale": 1.0,
    "tiers": {
     "lod0": {
-     "triangles": 5222,
-     "vertices": 3043,
+     "triangles": 5224,
+     "vertices": 3047,
      "max_influences": 4
     },
     "lod1": {
-     "triangles": 2501,
-     "vertices": 1508,
+     "triangles": 2503,
+     "vertices": 1512,
      "max_influences": 4
     },
     "lod2": {
-     "triangles": 998,
-     "vertices": 671,
+     "triangles": 1000,
+     "vertices": 675,
      "max_influences": 2
     }
    },
@@ -7380,13 +7510,18 @@
    "tribe": null,
    "notes": "Proposed id; tote approximated by backpack, one lanyard.",
    "sha256": {
-    "npc_side_event_hopper.fbx": "086cc7b6c5077096d6d7915f8bcb4c4104ffefe432a626b76b528575fd357113",
+    "npc_side_event_hopper.fbx": "fa7f537e83bf58772fba7c06a26fc1cba00c9da6d45044e65921ae34c9f9dab8",
     "npc_side_event_hopper_BaseColor.png": "c8b2306e36a534307ce65f1b73d4056d3710f6e75fa32dea10249463ca8eadb6",
     "npc_side_event_hopper_Normal.png": "5571e0785154afade62e3ccb2375ba2b99f6a58f24a91bb2f33ce7b90836f1e7",
     "npc_side_event_hopper_MetallicSmoothness.png": "1d7766bbc41984631e8a8594de74836ff19648d9c35ae3a222479cbadedcb2cf"
    },
    "archetype_in_contract": false,
-   "archetype_status": "proposed id (not in contract/ids/archetypes.json)"
+   "archetype_status": "proposed id (not in contract/ids/archetypes.json)",
+   "surface_correction": {
+    "date": "2026-10-12",
+    "description": "Restore the accidentally culled right pupil cap; four added vertices and two triangles per existing tier. Existing geometry, UVs, weights, normals and skeleton unchanged.",
+    "generator": "art/cast/scripts/repair_rain_pupil.py"
+   }
   },
   "npc_hackathon_grinder": {
    "family": "f",
@@ -7452,18 +7587,18 @@
    "scale": 1.0,
    "tiers": {
     "lod0": {
-     "triangles": 5136,
-     "vertices": 3010,
+     "triangles": 5138,
+     "vertices": 3014,
      "max_influences": 4
     },
     "lod1": {
-     "triangles": 2384,
-     "vertices": 1510,
+     "triangles": 2386,
+     "vertices": 1514,
      "max_influences": 4
     },
     "lod2": {
-     "triangles": 910,
-     "vertices": 655,
+     "triangles": 912,
+     "vertices": 659,
      "max_influences": 2
     }
    },
@@ -7478,13 +7613,18 @@
    "tribe": null,
    "notes": "Proposed id hackathon_grinder.",
    "sha256": {
-    "npc_hackathon_grinder.fbx": "8a146e86d8bf8d95d9a11169de0965a2b17c87a465ea9e144e524c803184acee",
+    "npc_hackathon_grinder.fbx": "3b73cb6e5b70662e5c7ad0de79796dbfb732ff794bf4a63e8471fbaad03c5635",
     "npc_hackathon_grinder_BaseColor.png": "2e5bd7acf119bf2b67e18287cc89e0f748f065d76a6fa5f4941ef93d261a16bd",
     "npc_hackathon_grinder_Normal.png": "56ba86cf88c8ba289e2c8072fdbd61bcb5bf9e4f332224c752901798d9f07a94",
     "npc_hackathon_grinder_MetallicSmoothness.png": "644224eccabb08441a20a542694682b2fe598bb7f9bec2576b6b19bd20d83e49"
    },
    "archetype_in_contract": false,
-   "archetype_status": "proposed id (not in contract/ids/archetypes.json)"
+   "archetype_status": "proposed id (not in contract/ids/archetypes.json)",
+   "surface_correction": {
+    "date": "2026-10-12",
+    "description": "Restore the accidentally culled right pupil cap; four added vertices and two triangles per existing tier. Existing geometry, UVs, weights, normals and skeleton unchanged.",
+    "generator": "art/cast/scripts/repair_rain_pupil.py"
+   }
   },
   "npc_seeker_farmer": {
    "family": "f",
@@ -7543,18 +7683,18 @@
    "scale": 1.0,
    "tiers": {
     "lod0": {
-     "triangles": 5087,
-     "vertices": 3003,
+     "triangles": 5089,
+     "vertices": 3007,
      "max_influences": 4
     },
     "lod1": {
-     "triangles": 2401,
-     "vertices": 1516,
+     "triangles": 2403,
+     "vertices": 1520,
      "max_influences": 4
     },
     "lod2": {
-     "triangles": 946,
-     "vertices": 692,
+     "triangles": 948,
+     "vertices": 696,
      "max_influences": 2
     }
    },
@@ -7570,14 +7710,19 @@
    "tribe": null,
    "notes": "Proposed id seeker_farmer; generic phone, no Seeker branding.",
    "sha256": {
-    "npc_seeker_farmer.fbx": "d1376e34ca37d79c49410e242b3e587950eb428706bd1eb76208687806356f55",
+    "npc_seeker_farmer.fbx": "3830facadf9ec6a39492392d54635c599a3daee7261edcda9b9c2bd8a1aa2440",
     "npc_seeker_farmer_BaseColor.png": "2e0b3d5bd2d64139d75b47a0d0a578f440889a481767e3c5e8a426ac5a6dc706",
     "npc_seeker_farmer_Normal.png": "a6ffa777e967e847f7e74f38c7c7854bd7a6845b398e2ba30a17b2c25a48608a",
     "npc_seeker_farmer_MetallicSmoothness.png": "36a6bf026000297ff9ea0b39d37a14e0bfa4fab7313b7f48ea8c77b108b9f655",
     "npc_seeker_farmer_Emission.png": "e7990424228be6ee7daa7ec03fa3dc83fec48aba6c160031ec62bd4da86aae62"
    },
    "archetype_in_contract": false,
-   "archetype_status": "proposed id (not in contract/ids/archetypes.json)"
+   "archetype_status": "proposed id (not in contract/ids/archetypes.json)",
+   "surface_correction": {
+    "date": "2026-10-12",
+    "description": "Restore the accidentally culled right pupil cap; four added vertices and two triangles per existing tier. Existing geometry, UVs, weights, normals and skeleton unchanged.",
+    "generator": "art/cast/scripts/repair_rain_pupil.py"
+   }
   }
  },
  "parts": {
