@@ -4,7 +4,38 @@ Read this first, then the spec in `docs/spec/build-spec.md` and `docs/spec/contr
 (exported from the Claude Doc "CT Life — Build Spec"). The spec is the product baseline;
 later explicit user decisions, including the art direction below, supersede older wording.
 
+## Character selection correction (user decision, 2026-10-11)
+- A character is a distinct person or creature. Clothing, hair, accessories and recolours of the same source model are
+  options within that character, never extra people in the roster. Preserve their existing saved look IDs.
+- Continue the character screen now: expand the actual playable cast using the user's earlier Sketchfab references and
+  Claude/Hermes source work. Do not count research links, unimported exports or duplicated heads as playable characters.
+- Put the optional paid **Make it look like me** entry on this screen, after wallet connection. Human choices should
+  resemble the player naturally; nonhuman choices should interpret their likeness cartoonishly. The user explicitly
+  authorizes backend work for this feature in the separate backend checkout, superseding the older blanket restriction
+  below for this scope. Later on 2026-10-11 the user also authorized deployment and Telegram coordination with backend
+  developer Iyke 🦀, and selected 3 USDC per creation. This does not authorize charging the user's wallet during testing.
+- Verify a photo-to-3D provider with real samples and current documentation. Keep provider credentials server-side.
+  Distinguish working generation from an availability screen or unconfigured backend. See
+  `docs/research/paid-character-likeness-20261011.md` for the evaluated provider and unresolved gates.
+
+## Character screen refinement (user decision, 2026-10-11)
+- Research the supplied podium reference and game UI before changing this screen. Avoid excessive glossy/neumorphic controls and preserve other screens for gradual user-led changes.
+- Use 2D illustrations for roster choices, actual selected 3D character on a podium, and enough framing space for raised hands. Paid likeness is a small edit control beside the character, not a large CTA.
+- Offer authored character browsing and supported outfits, skin tones and garment colors. Do not force gender onto unspecified creatures/robots or claim unsupported material regions work.
+- Nonhuman staking unlocks (ORE/SKR) remain a proposal until the token, threshold and live verification work. See `docs/research/character-podium-and-likeness-20261011.md`.
+
+## Onboarding copy and card correction (user decision, 2026-10-12)
+- Do not repeat the screen question, name-length range or age checkbox as another footer instruction. Keep real validation and failure messages; the name helper stays “3–20 characters”.
+- Generate the player and origin card surfaces from researched game-card references, then populate real names, choices, odds and benefits in code. The artwork and information belong inside one coherent collectible card.
+- Review character eyes in actual animated close portraits as well as full-body views. Clothing opacity checks do not establish that pupils have complete geometry.
+
 ## Current priorities (user decision, 2026-10-07) — read first
+Latest presentation scope (2026-10-12): research and redesign the signed-in lobby, in-game phone and its app presentation. Use the user's character-centred game-lobby references; show actual connected-wallet balances separately from fictional Cash. Name the fictional hinged phone **Solana Duo**, styled like one leaf of a folding device. This explicitly authorizes visual work on these surfaces while preserving game behavior.
+
+Latest refinement (2026-10-12): the user approves the Duo hardware mockup. CTOS inside must feel like an iPhone home screen/OS, rather than a scrolling app menu. Research and redesign the in-game HUD too; sit/stand actions should appear by the relevant object or character in the scene, not tucked in a corner. Preserve actual interactions and test on the Seeker.
+
+Latest phone correction (2026-10-12): the user rejected the first CTOS home-grid restyling because its icons and font still looked like CT Life. Research the current iPhone OS and the supplied fold-leaf reference before implementing. Match its photographic wallpaper, two upper widgets, multicolour dimensional app icons, compact typography, vertical glass dock and small search control inside the approved Duo hardware. Phone-local typography/materials deliberately differ from the game. Apple system fonts/symbols cannot be redistributed in the Android APK under the reviewed licences; use the bundled licensed Inter and original CTOS icon artwork. See `docs/research/ctos-iphone-fidelity-20261012.md`.
+
 - **No deadline.** Ignore CLOCK IN and every hackathon date in older docs. Do not plan around it.
 - **Everything must work first.** Build the whole game robustly and properly, phase by phase:
   real wallet sign-in on the Seeker, real backend integration (devIykee's server, run locally
@@ -93,8 +124,8 @@ Phase 6 = Competition. Every phase must end in something that runs. Do NOT reduc
   Never trust memory for APIs. Label anything unverified `[Unverified]` in your notes.
 - Stay inside your folder(s) (see README.md ownership table). Read other folders freely.
   Never edit another agent's folder; write a request in `docs/progress/requests.md` instead.
-- Git: only the coordinator (the lead session) commits and pushes, on the working branch, at
-  least daily. Agents do not run `git commit`, `git add -A`, `git stash`, `git reset` or
+- Git: only the coordinator (the lead session) commits and pushes, on the working branch, after
+  every completed, verified change (user instruction 2026-10-12). Agents do not run `git commit`, `git add -A`, `git stash`, `git reset` or
   `git clean`; when a unit of work is done, write "READY TO COMMIT: <paths> — <message>" at the
   top of your progress log. Never commit secrets or files over 50 MB; binaries are plain git (GitHub LFS is blocked on this account).
 - Do not deploy anything to a public host. Do not create accounts or sign in anywhere. Do not
