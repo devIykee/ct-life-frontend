@@ -551,6 +551,17 @@ namespace CTLife.App
                     if (s == null || !s.IsIsland) { Log.Warn("island", "islandShot: not on CT Island"); return; }
                     await IslandWaypoints.Shot(s, LaunchArgs.Get("islandShot"), game.Token);
                 });
+                // Perf route (dev builds only): `islandPerf=1` measures the same downtown spots every run (World/Perf/PerfRoute.cs).
+                if (LaunchArgs.Get("islandPerf") == "1") RunGameAction(game, async () =>
+                {
+                    float deadline = Time.realtimeSinceStartup + 90f;
+                    while (GameAlive(game) && (VenueSession.Current == null || !VenueSession.Current.IsActive) && Time.realtimeSinceStartup < deadline)
+                        await Awaitable.WaitForSecondsAsync(0.5f, game.Token);
+                    await Awaitable.WaitForSecondsAsync(6f, game.Token);
+                    var s = VenueSession.Current;
+                    if (s == null || !s.IsIsland) { Log.Warn("perf", "islandPerf: not on CT Island"); return; }
+                    await PerfRoute.Run(s, () => GameAlive(game), game.Token);
+                });
                 // Device feature pass (dev builds only): `integration=1 [peer=<userId>]`. The editor driver calls it directly.
                 if (LaunchArgs.Flag("integration") && !Application.isEditor) RunGameAction(game, async () =>
                 {

@@ -40,6 +40,10 @@ namespace CTLife.Tests
             Assert.IsTrue(IslandProtocol.IsPublicVehicle(IslandProtocol.WireKind("scooter")));
             foreach (var kind in new[] { "heli", "drone", "roadstar", "unknown" }) Assert.IsFalse(IslandProtocol.IsPublicVehicle(kind));
             Assert.AreEqual("scooter", IslandProtocol.SpecKind("moped"));
+            // v3 batch 2: every new local kind travels as a public kind, and each v3 wire kind has its own client model
+            foreach (var spec in new[] { "suv", "pickup", "van", "bike" }) Assert.IsTrue(IslandProtocol.IsPublicVehicle(IslandProtocol.WireKind(spec)), spec);
+            if (!IslandProtocol.WireV3Kinds) { Assert.AreEqual("compact", IslandProtocol.WireKind("van")); Assert.AreEqual("moped", IslandProtocol.WireKind("bike")); }
+            foreach (var wire in new[] { "pickup", "van", "bike" }) Assert.AreEqual(wire, IslandProtocol.SpecKind(wire));
             Assert.IsFalse(IslandProtocol.IsDistrict("countryside")); Assert.IsTrue(IslandProtocol.IsDistrict("mountain"));
         }
         [Test] public void ServerCorrectionAndClaimRejectionDecodeThePublishedPayload()

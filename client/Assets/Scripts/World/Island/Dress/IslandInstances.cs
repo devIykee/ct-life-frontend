@@ -23,6 +23,8 @@ namespace CTLife.World
             public Bounds bounds;
             public Matrix4x4[] matrices;
             public Vector4[] tints;
+            /// <summary>Per-instance world bounds (occlusion tests).</summary>
+            public Bounds[] boxes;
             public bool tinted;
         }
 
@@ -87,8 +89,8 @@ namespace CTLife.World
                 foreach (var kv in buckets)
                 {
                     var list = kv.Value;
-                    var ch = new Chunk { matrices = new Matrix4x4[list.Count], tints = new Vector4[list.Count], tinted = tinted, bounds = list[0].wb };
-                    for (int i = 0; i < list.Count; i++) { ch.matrices[i] = list[i].m; ch.tints[i] = list[i].t; ch.bounds.Encapsulate(list[i].wb); }
+                    var ch = new Chunk { matrices = new Matrix4x4[list.Count], tints = new Vector4[list.Count], boxes = new Bounds[list.Count], tinted = tinted, bounds = list[0].wb };
+                    for (int i = 0; i < list.Count; i++) { ch.matrices[i] = list[i].m; ch.tints[i] = list[i].t; ch.boxes[i] = list[i].wb; ch.bounds.Encapsulate(list[i].wb); }
                     chunks.Add(ch);
                 }
                 Groups[proto] = chunks;

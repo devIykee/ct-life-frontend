@@ -24,8 +24,8 @@ namespace CTLife.UI
             // The multi-model cast's credits (Sketchfab hero authors and others) land as one notice file from the cast lane.
             if (Resources.Load<TextAsset>(ModelCredits) != null)
                 entries.Add(Credit("credits.models", "credits.modelsSummary", null, ModelCredits, "UI/Licenses/CC-BY-4.0"));
-            // Vehicles v3 (Sketchfab: CC BY-SA 4.0 hovercar, CC BY 4.0 cars and scooter), the v1 SUV and drone (Poly Pizza, CC0 /
-            // CC BY 3.0) and their CC0 recorded sounds; each source's link is in the notice
+            // Vehicles v3 (Sketchfab: CC BY-SA 4.0 hovercar, CC BY 4.0 cars, SUV, pickup, van, scooter and motorbike), the v1
+            // drone (Poly Pizza, CC BY 3.0) and their CC0 recorded sounds; each source's link is in the notice
             entries.Add(Credit("credits.vehicles", "credits.vehiclesSummary", null, "UI/Licenses/Vehicle-Credits",
                 "UI/Licenses/CC-BY-SA-4.0", "UI/Licenses/CC-BY-4.0", "UI/Licenses/CC-BY-3.0"));
             // World v3: the city's semi-real buildings and street props (99.Miles CC BY 4.0, Neighbourhood City, Poly Haven CC0)

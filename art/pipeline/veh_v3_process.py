@@ -47,10 +47,11 @@ SPECS = {
     'van': dict(uid='09d718c9cf72401b8534d265a06a803f', cls='delivery van', kind='car', src='dz', length=5.0),
     'police': dict(uid='6a5c6c8a75764eea905541fd5b05e9bf', cls='police cruiser', kind='car', src='dz', length=4.9, livery=True),
     'heli': dict(uid='f25c041a8d004eb092e4aa41d1dc33f4', cls='civilian helicopter', kind='heli', length=9.6),
-    'bike': dict(uid='c02dec85ac0541b8ab6dd56098706b50', cls='city motorbike', kind='bike', length=2.1),
+    'bike': dict(uid='c02dec85ac0541b8ab6dd56098706b50', cls='city motorbike', kind='bike', length=2.1, wheel_r=0.31),
     'scooter': dict(uid='2205f4e69bc64df3aab03c71ab9d7492', cls='scooter', kind='bike', length=1.8),
 }
-LOD_BUDGET = {0: 35000, 1: 10000, 2: 5000}   # LOD2 5k (was 2.5k: the harder weld and collapse melted the silhouette and smeared the atlas, 2026-10-22)
+LOD_BUDGET = {0: 35000, 1: 10000, 2: 5000, 3: 1200}   # LOD2 5k (was 2.5k: the harder weld and collapse melted the silhouette and smeared the atlas, 2026-10-22)
+# LOD3 ~1.2k: parked decor beyond ~70 m only (a car is a few dozen pixels there); same 2 mm weld, so the atlas holds
 SF = 'https://sketchfab.com/3d-models/'
 BACKUP = {   # second choice per slot (not downloaded unless noted)
     'hovercar': 'Cyberpunk car by 3d_Bob, CC-BY, 11k faces ' + SF + 'b4301ff99d214d16a7a43708a5866bf0 [Unverified quality]; '
@@ -554,12 +555,37 @@ def build_bike(name, spec, rec):
     ends = {}
     for t in tires:
         ends.setdefault('F' if center([t]).y < 0 else 'R', []).append(t)
-    others = [o for o in meshes() if o not in tires]
+    if not tires:
+        # One merged mesh with no tire material (e.g. the Cafe Racer): find each wheel by shape instead,
+        # the loose parts inside a ground-touching cylinder of spec['wheel_r'] at each end.
+        r0 = spec.get('wheel_r', 0.31)
+        mn, mx = bounds(meshes())
+        for key, y in (('F', mn.y + r0 + 0.02), ('R', mx.y - r0 - 0.02)):
+            parts_ = pull_wheel_parts(meshes(), Vector((0, y, r0)), r0 * 1.08, 0.12)
+            # keep only round parts (a wheel's y and z extents match); the rest goes back to the body
+            ends[key] = [o for o in parts_ if abs(o.dimensions.y - o.dimensions.z) <= 0.12 * max(o.dimensions.y, o.dimensions.z, 1e-6)]
+            # the whole wheel must be round too: drop the part that stretches it most until y and z extents agree
+            while len(ends[key]) > 1:
+                wmn, wmx = bounds(ends[key]); ext = wmx - wmn
+                if abs(ext.y - ext.z) <= 0.04 * max(ext.y, ext.z):
+                    break
+                long_ax = 'y' if ext.y > ext.z else 'z'
+                ends[key].remove(max(ends[key], key=lambda o: getattr(o.dimensions, long_ax)))
+            if not ends[key]:
+                raise RuntimeError(f'{name}: no wheel parts found at the {key} end; set spec wheel_r')
+    others = [o for o in meshes() if not any(o in v for v in ends.values())]
     info = {}
     for key in ('F', 'R'):
         t = join(ends[key], 'Wheel_' + key)
+        others = [o for o in meshes() if not o.name.startswith('Wheel_') and not any(o in v for v in ends.values())]
         tmn, tmx = bounds([t]); c = (tmn + tmx) / 2
-        r = (tmx.z - tmn.z) / 2; hw = max((tmx.x - tmn.x) / 2 + 0.03, 0.08)
+        # hub from the round part only: a sprocket or disc modelled into the rim sticks out toward the bike's middle
+        # and stretches the bounds, so the radius is the shorter extent and the hub sits that far from the outer edge
+        # (a bounds-centre pivot would make the wheel wobble)
+        r = min(tmx.y - tmn.y, tmx.z - tmn.z) / 2
+        if (tmx.y - tmn.y) > (tmx.z - tmn.z) * 1.04:
+            c.y = tmn.y + r if key == 'F' else tmx.y - r
+        hw = max((tmx.x - tmn.x) / 2 + 0.03, 0.08)
         parts = pull_wheel_parts(others, c, r, hw)
         t = join([t] + parts, 'Wheel_' + key)
         set_origin(t, c); t.rotation_mode = 'XYZ'
@@ -832,7 +858,8 @@ def process(name, spec):
     small = [p.name for p in parts if p.name in ('Steering',) or p.name.startswith('Rotor_Tail_detail')]
     lod1, t1 = fit_lod(parts, 1, LOD_BUDGET[1])
     lod2, t2 = fit_lod(parts, 2, LOD_BUDGET[2], drop_parts=small, drop_tags=(1, 2))
-    rec['tris'] = {'LOD0': tris(parts), 'LOD1': t1, 'LOD2': t2}
+    lod3, t3 = fit_lod(parts, 3, LOD_BUDGET[3], drop_parts=small, drop_tags=(1, 2))
+    rec['tris'] = {'LOD0': tris(parts), 'LOD1': t1, 'LOD2': t2, 'LOD3': t3}
     rec['materials'] = sorted({s.material.name for o in meshes() for s in o.material_slots if s.material})
     rec['textures'] = {k: {'file': os.path.relpath(v, out_dir), 'size': 2048} for k, v in tex.items()}
     rec['paint'] = {'tintable': paint_mat is not None, 'default_srgb': [round(x, 3) for x in paint_rgb] if paint_rgb else None,

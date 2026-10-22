@@ -65,6 +65,10 @@ namespace CTLife.World.Vehicles
                 var w = _v.Wheels[i];
                 if (w == null) continue;
                 var r = Mathf.Max(0.12f, RadiusOf(w));
+                // a wheel whose tyre stayed in the body mesh (the v3 bike: Wheel_F/R hold only rims and spokes) reaches the
+                // ground from its hub, not from the rim's edge; the origin is at ground level
+                float hub = transform.InverseTransformPoint(w.position).y;
+                if (hub > r + 0.03f && hub < 0.6f) r = hub;
                 bool front = i < 2;
                 Vector3 local = transform.InverseTransformPoint(w.position);
                 if (scooter)

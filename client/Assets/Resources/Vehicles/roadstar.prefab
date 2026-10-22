@@ -395,10 +395,14 @@ LODGroup:
     fadeTransitionWidth: 0
     renderers:
     - renderer: {fileID: 1395368542409252093}
-  - screenRelativeHeight: 0.008
+  - screenRelativeHeight: 0.023
     fadeTransitionWidth: 0
     renderers:
     - renderer: {fileID: 1038265084428939595}
+  - screenRelativeHeight: 0.008
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 886689014748744760}
   m_Enabled: 1
 --- !u!54 &6314824011343905488
 Rigidbody:
@@ -944,6 +948,18 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 20
       objectReference: {fileID: 0}
+    - target: {fileID: 707560506376619134, guid: 33a6b8d82186f4999ad723199fe6681c, type: 3}
+      propertyPath: m_CastShadows
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 707560506376619134, guid: 33a6b8d82186f4999ad723199fe6681c, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 9cfb9467e616a49b593120d0cb38ca35, type: 2}
+    - target: {fileID: 707560506376619134, guid: 33a6b8d82186f4999ad723199fe6681c, type: 3}
+      propertyPath: 'm_Materials.Array.data[1]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 1618c579c1ba445c5b257037b0bc3017, type: 2}
     - target: {fileID: 772643914208634698, guid: 33a6b8d82186f4999ad723199fe6681c, type: 3}
       propertyPath: m_Layer
       value: 20
@@ -977,6 +993,10 @@ PrefabInstance:
       value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 5764783473386792484, guid: 33a6b8d82186f4999ad723199fe6681c, type: 3}
+      propertyPath: m_Layer
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 7047697814861055355, guid: 33a6b8d82186f4999ad723199fe6681c, type: 3}
       propertyPath: m_Layer
       value: 20
       objectReference: {fileID: 0}
@@ -1028,6 +1048,11 @@ Transform:
 --- !u!4 &356110147838502060 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 103244369333120234, guid: 33a6b8d82186f4999ad723199fe6681c, type: 3}
+  m_PrefabInstance: {fileID: 405293721739561030}
+  m_PrefabAsset: {fileID: 0}
+--- !u!23 &886689014748744760 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 707560506376619134, guid: 33a6b8d82186f4999ad723199fe6681c, type: 3}
   m_PrefabInstance: {fileID: 405293721739561030}
   m_PrefabAsset: {fileID: 0}
 --- !u!4 &1034391776227068472 stripped

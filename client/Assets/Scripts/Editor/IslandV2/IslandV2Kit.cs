@@ -214,6 +214,36 @@ namespace CTLife.EditorTools.IslandV2
             if (Application.isBatchMode) EditorApplication.Exit(0);
         }
 
+        /// <summary>
+        /// Batch: re-merge the v3 decor cars from the current vehicle prefabs (after VehicleImport.RunBatch) and swap them into
+        /// the kit in place: same prototype ids and indices (the cells reference prototypes by index), no island rebuild.
+        /// </summary>
+        public static void RefreshV3CarsBatch()
+        {
+            int code = 0;
+            try
+            {
+                var kit = AssetDatabase.LoadAssetAtPath<IslandKit>(KitAsset) ?? throw new InvalidOperationException("no island kit");
+                var receipt = new JObject();
+                int swapped = 0;
+                foreach (var fresh in V3Cars(receipt).ToList())
+                {
+                    int i = kit.IndexOf(fresh.id);
+                    if (i < 0) { Debug.LogWarning("CTLIFE [islandv2] decor car not in the kit: " + fresh.id); continue; }
+                    var old = kit.protos[i];
+                    fresh.collision = old.collision;
+                    kit.protos[i] = fresh;
+                    swapped++;
+                }
+                SyncKeywords(kit);
+                EditorUtility.SetDirty(kit);
+                AssetDatabase.SaveAssets();
+                Debug.Log($"CTLIFE [islandv2] decor cars refreshed: {swapped}; {receipt["kitDecorCars"]}");
+            }
+            catch (Exception e) { Debug.LogException(e); code = 1; }
+            if (Application.isBatchMode) EditorApplication.Exit(code);
+        }
+
         // ------------------------------------------------------------------ v3 parked decor cars
 
         /// <summary>The v3 drivables the street's parked decor shows (same models the player swaps into on approach).</summary>
@@ -243,7 +273,7 @@ namespace CTLife.EditorTools.IslandV2
                     : m.name.EndsWith("_Paint", StringComparison.Ordinal) ? "Paint" : "Body";
                 var lods = new List<Mesh>();
                 bool anyPaint = false;
-                foreach (int lod in new[] { 1, 2 })
+                foreach (int lod in new[] { 1, 2, 3 })
                 {
                     var parts = roles.ToDictionary(r => r, r => new List<CombineInstance>());
                     foreach (var r in prefab.GetComponentsInChildren<MeshRenderer>(true))
@@ -292,8 +322,8 @@ namespace CTLife.EditorTools.IslandV2
                 var proto = new IslandKit.Proto
                 {
                     // LOD1 (~10k) to 25 m, the 5k LOD2 (same atlas and silhouette) beyond, cross-faded: the old 30 m switch onto a 2.4k melted mesh read
-                    // as a different car (2026-10-22)
-                    id = V3CarId(name), lods = lods.ToArray(), lodEnd = lods.Count == 2 ? new[] { 25f, 220f } : new[] { 340f },
+                    // as a different car (2026-10-22). With the ~1.2k LOD3 (same weld and atlas) LOD2 hands over at 70 m (perf lane).
+                    id = V3CarId(name), lods = lods.ToArray(), lodEnd = lods.Count == 3 ? new[] { 25f, 70f, 220f } : lods.Count == 2 ? new[] { 25f, 220f } : new[] { 340f },
                     shadowRange = 45f, layer = Layers.Prop, kind = "vehicle", bounds = lods[0].bounds,
                 };
                 proto.materials = new[] { V3CarMaterial(name, "Body", spec), V3CarMaterial(name, "Paint", spec), V3CarMaterial(name, "Glass", spec) };

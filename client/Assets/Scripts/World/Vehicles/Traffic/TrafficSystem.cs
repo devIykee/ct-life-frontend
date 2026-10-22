@@ -25,10 +25,14 @@ namespace CTLife.World.Vehicles
         /// <summary>Out of view a car may appear this close (behind the camera), so the street around the player has
         /// traffic, not just the far ring: with the ring alone at most one car was ever near enough to seat a driver.</summary>
         public const float SpawnHiddenMin = 32f;
-        /// <summary>The traffic mix (spec ids and weights). v3 models (2026-10-21); the hovercar is the player's own flyer, not
-        /// traffic, and the police cruiser waits for the wanted system. Add pickup / van / bike here when they land.</summary>
+        /// <summary>The traffic mix (spec ids and weights, normalised). All v3 models (2026-10-22: SUV, pickup, van and bike
+        /// landed); vans and pickups rarer than sedans, bikes occasional. The hovercar is the player's own flyer, not traffic,
+        /// and the police cruiser waits for the wanted system.</summary>
         public static readonly (string id, float weight)[] Mix =
-            { ("compact", 0.32f), ("sedan", 0.34f), ("sports", 0.11f), ("taxi", 0.13f), ("scooter", 0.1f) };   // no v3 SUV yet: the old low-poly one read as a toy (2026-10-22)
+        {
+            ("compact", 0.25f), ("sedan", 0.27f), ("suv", 0.12f), ("sports", 0.08f), ("taxi", 0.11f),
+            ("pickup", 0.05f), ("van", 0.04f), ("scooter", 0.05f), ("bike", 0.03f),
+        };
 
         public readonly List<TrafficCar> Cars = new List<TrafficCar>();
         private readonly Dictionary<string, Stack<TrafficCar>> _pool = new Dictionary<string, Stack<TrafficCar>>();

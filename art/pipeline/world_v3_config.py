@@ -17,7 +17,7 @@ PACKS = {
     'c4a3993ef1e84e6d9d5a15c78da88aae': dict(prefix='m99_chicago_a', family='v3_buildings', kind='building', mode='whole', height=16.5, card=False,
                                              debrand=[('Image_2', (0.52, 0.415, 0.69, 0.462))], drop_mats=['Sidewalks']),   # 'FOUND' restaurant sign
     '950b3d8a998c41ecb06e6ba85da3e1f6': dict(prefix='m99_chicago_b', family='v3_buildings', kind='building', mode='cluster'),
-    '8ef9555171c44ba1872a17558f589630': dict(prefix='m99_nyc_dwelling', family='v3_buildings', kind='building', mode='cluster'),
+    '8ef9555171c44ba1872a17558f589630': dict(prefix='m99_nyc_dwelling', family='v3_buildings', kind='building', mode='cluster', exclude=True),  # a whole street scene: one 130 m terrace mesh with road/sidewalk baked in; doesn't split into buildings
     '98faceefdc154d60a2b8617ca5e182e7': dict(prefix='m99_ny_building', family='v3_buildings', kind='building', mode='cluster'),
     'd96380fb001345cca9a9be121f3e43d5': dict(prefix='m99_corp_tower', family='v3_buildings', kind='building', mode='cluster', lod0=20000),
     # ---------------------------------------------------------------- residential

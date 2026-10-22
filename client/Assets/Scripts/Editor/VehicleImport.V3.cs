@@ -29,8 +29,11 @@ namespace CTLife.EditorTools
         /// LOD transitions (screen-relative height; Android's Medium quality multiplies by its lodBias 0.7). With the 52 deg
         /// camera a 4.5 m car keeps LOD0 to ~21 m, LOD1 (~9.7k tris) to ~65 m, LOD2 (~5k, same atlas and silhouette) to
         /// ~400 m, cross-faded (dithered) so no switch pops (2026-10-22: the old 2.4k LOD2 from ~80 m read as another car).
+        /// With a LOD3 (~1.2k, same 2 mm weld and atlas; perf lane 2026-10-22) LOD2 hands over at ~140 m and LOD3 runs to the
+        /// same ~400 m cull. The last level present always ends at the cull height.
         /// </summary>
-        public static readonly float[] LodHeights = { 0.15f, 0.05f, 0.008f };
+        public static readonly float[] LodHeights = { 0.15f, 0.05f, 0.023f, 0.008f };
+        public const float CullHeight = 0.008f;
 
         /// <summary>The spec a v3 folder builds: the hovercar is the player's flying car, the Roadstar's slot.</summary>
         public static string SpecIdFor(string v3Name) => v3Name == "hovercar" ? "roadstar" : v3Name;
@@ -177,11 +180,12 @@ namespace CTLife.EditorTools
                 if (unknown.Count > 0) Debug.LogWarning($"CTLIFE [vehicles] {id}: unexpected material slots {string.Join(", ", unknown)} drawn with Body");
                 var lodGroup = root.AddComponent<LODGroup>();
                 var levels = new List<LOD>();
-                for (int i = 0; i < 3; i++)
+                for (int i = 0; i < 4; i++)
                 {
                     var rs = renderers.Where(r => LodOf(r.name) == i).Cast<Renderer>().ToArray();
                     if (rs.Length > 0) levels.Add(new LOD(LodHeights[i], rs));
                 }
+                if (levels.Count > 0) { var last = levels[levels.Count - 1]; last.screenRelativeTransitionHeight = CullHeight; levels[levels.Count - 1] = last; }
                 lodGroup.SetLODs(levels.ToArray());
                 lodGroup.fadeMode = LODFadeMode.CrossFade;
                 lodGroup.animateCrossFading = true;          // a short timed dither between LODs (URP asset: LOD cross-fade on)
@@ -258,7 +262,7 @@ namespace CTLife.EditorTools
                 Glow("Glow_" + t.name, t, Vector3.down * 0.02f, new Vector2(0.75f, 0.75f));
         }
 
-        private static int LodOf(string n) => n.StartsWith("LOD2_", StringComparison.Ordinal) ? 2 : n.StartsWith("LOD1_", StringComparison.Ordinal) ? 1 : 0;
+        private static int LodOf(string n) => n.StartsWith("LOD3_", StringComparison.Ordinal) ? 3 : n.StartsWith("LOD2_", StringComparison.Ordinal) ? 2 : n.StartsWith("LOD1_", StringComparison.Ordinal) ? 1 : 0;
 
         /// <summary>The hull's vertices in root space: the coarsest LOD of Body and the doors (wheels and rotors excluded).</summary>
         private static List<Vector3> HullPoints(Transform root, GameObject inst)

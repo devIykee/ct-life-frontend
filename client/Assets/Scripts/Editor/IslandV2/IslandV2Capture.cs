@@ -58,6 +58,8 @@ namespace CTLife.EditorTools.IslandV2
             new View("v3_tower", new Vector3(40f, 28f, -150f), new Vector3(-96f, 45f, -9f), 55f),
             new View("v3_skyline", new Vector3(160f, 70f, -260f), new Vector3(-40f, 30f, 0f), 52f),
             new View("v3_side_street", new Vector3(-180f, 1.8f, -60f), new Vector3(-150f, 5f, 40f), 58f, true),
+            // perf lane (2026-10-22): the hovercar's view crossing downtown at 80 m
+            new View("perf_fly80", new Vector3(140f, 80f, -140f), new Vector3(-40f, 15f, 30f), 60f),
         };
 
         public static void Run()
@@ -115,6 +117,8 @@ namespace CTLife.EditorTools.IslandV2
             foreach (var set in sets) { set.Decode(); IslandInstanceRenderer.Register(set); }
             receipt["instanceSets"] = sets.Length;
             receipt["instances"] = sets.Sum(x => x.Count);
+            IslandInstanceRenderer.CollectStats = true;
+            if (Environment.GetCommandLineArgs().Contains("-ctlife-noocclusion")) root.GetComponent<IslandInstanceRenderer>().occlusion = false;
             _instanceRenderer = Arg("-ctlife-noinstances") == null && !Environment.GetCommandLineArgs().Contains("-ctlife-noinstances") ? root.GetComponent<IslandInstanceRenderer>() : null;
             var atm = root.GetComponent<IslandAtmosphere>();
             if (Environment.GetCommandLineArgs().Contains("-ctlife-nohaze")) atm.hazeStrength = 0f;
@@ -166,8 +170,8 @@ namespace CTLife.EditorTools.IslandV2
                 stats[v.Name] = new JObject
                 {
                     ["batches"] = UnityEditor.UnityStats.batches, ["setPass"] = UnityEditor.UnityStats.setPassCalls,
-                    ["triangles"] = UnityEditor.UnityStats.triangles, ["kitDraws"] = IslandInstanceRenderer.LastDraws,
-                    ["kitInstances"] = IslandInstanceRenderer.LastInstances,
+                    ["triangles"] = UnityEditor.UnityStats.triangles, ["shadowCasters"] = UnityEditor.UnityStats.shadowCasters, ["kitDraws"] = IslandInstanceRenderer.LastDraws,
+                    ["kitInstances"] = IslandInstanceRenderer.LastInstances, ["kit"] = KitStats(),
                 };
             }
             if (Environment.GetCommandLineArgs().Contains("-ctlife-venueviews"))
@@ -233,6 +237,12 @@ namespace CTLife.EditorTools.IslandV2
                     cam.transform.SetPositionAndRotation(pos, rot);
                     Render(cam, rt, Path.Combine(outDir, $"shot-{w.shot}-{w.id}.png"));
                     shots.Add("shot-" + w.id);
+                    stats["shot-" + w.id] = new JObject
+                    {
+                        ["batches"] = UnityEditor.UnityStats.batches, ["setPass"] = UnityEditor.UnityStats.setPassCalls,
+                        ["triangles"] = UnityEditor.UnityStats.triangles, ["shadowCasters"] = UnityEditor.UnityStats.shadowCasters,
+                        ["kitDraws"] = IslandInstanceRenderer.LastDraws, ["kitInstances"] = IslandInstanceRenderer.LastInstances, ["kit"] = KitStats(),
+                    };
                 }
                 Object.DestroyImmediate(stand);
             }
@@ -428,6 +438,15 @@ namespace CTLife.EditorTools.IslandV2
             RenderTexture.active = prev;
             File.WriteAllBytes(path, tex.EncodeToPNG());
             Object.DestroyImmediate(tex);
+        }
+
+        /// <summary>Kit renderer counters of the last view (per kind: main draws, main tris, caster draws, caster tris).</summary>
+        private static JObject KitStats()
+        {
+            var o = new JObject { ["tris"] = IslandInstanceRenderer.LastTris, ["casterTris"] = IslandInstanceRenderer.LastCasterTris, ["casters"] = IslandInstanceRenderer.LastCasters,
+                ["occluded"] = IslandInstanceRenderer.LastOccluded, ["occluders"] = IslandInstanceRenderer.LastOccluders };
+            foreach (var kv in IslandInstanceRenderer.Stats) o[kv.Key] = string.Join("/", kv.Value);
+            return o;
         }
 
         private static string Arg(string name)

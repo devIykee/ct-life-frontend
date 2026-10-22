@@ -49,10 +49,13 @@ namespace CTLife.Net
         public static readonly bool WireV3Kinds = false;
         public static bool IsPublicVehicle(string kind) => kind == "compact" || kind == "suv" || kind == "sports" || kind == "moped" ||
             (WireV3Kinds && (kind == "sedan" || kind == "taxi" || kind == "police" || kind == "pickup" || kind == "van" || kind == "bike"));
+        /// <summary>Local spec to wire kind. While the v3 kinds are off, the v3-only cars travel as "compact" and the bike as
+        /// "moped" (same lease and speed caps).</summary>
         public static string WireKind(string spec) => spec == "scooter" ? "moped" :
-            !WireV3Kinds && (spec == "sedan" || spec == "taxi" || spec == "police") ? "compact" : spec;
-        /// <summary>Wire kind to a local spec. The v3 kinds without a client model yet show the nearest one.</summary>
-        public static string SpecKind(string wire) => wire == "moped" || wire == "bike" ? "scooter" : wire == "pickup" || wire == "van" ? "suv" : wire;
+            !WireV3Kinds && spec == "bike" ? "moped" :
+            !WireV3Kinds && (spec == "sedan" || spec == "taxi" || spec == "police" || spec == "pickup" || spec == "van") ? "compact" : spec;
+        /// <summary>Wire kind to a local spec (every v3 kind now has a client model).</summary>
+        public static string SpecKind(string wire) => wire == "moped" ? "scooter" : wire;
         /// <summary>Same immutable parking pose gives every client the same vehicle id. Never includes user identity.</summary>
         public static string ParkedId(string kind, double x, double z) => "park_" + kind + "_" +
             Math.Round(x * 10, MidpointRounding.AwayFromZero).ToString(System.Globalization.CultureInfo.InvariantCulture) + "_" +

@@ -261,6 +261,8 @@ def main():
             continue
         if FAM and cfg['family'] != FAM:
             continue
+        if cfg.get('exclude'):
+            continue
         try:
             man = process_pack(uid, cfg)
         except Exception as e:

@@ -90,6 +90,29 @@ namespace CTLife.World.Vehicles
                 frontDrive = true, rearDrive = true, grip = 1.08f, suspensionRest = 0.36f, suspensionHz = 1.5f, antiRoll = 14000f,
                 camDistance = 6.9f, camHeight = 2.2f, enginePitchIdle = 0.65f, enginePitchMax = 1.6f,
             },
+            // v3 batch 2 (2026-10-22): Lightbody '90 pickup and Shvan '92 van (parked in SUV bays), the cafe racer bike
+            ["pickup"] = new VehicleSpec
+            {
+                id = "pickup", nameKey = "vehicle.pickup", kind = VehicleKind.Car, spawnClass = "suv", mass = 1900f,
+                centerOfMass = new Vector3(0f, 0.58f, 0.15f), topSpeed = 36f, driveForce = 11200f, brakeForce = 16000f,
+                frontDrive = false, rearDrive = true, grip = 1.06f, suspensionRest = 0.36f, suspensionHz = 1.45f, antiRoll = 13000f,
+                camDistance = 7.4f, camHeight = 2.3f, enginePitchIdle = 0.6f, enginePitchMax = 1.55f,
+            },
+            ["van"] = new VehicleSpec
+            {
+                id = "van", nameKey = "vehicle.van", kind = VehicleKind.Car, spawnClass = "suv", mass = 2100f,
+                centerOfMass = new Vector3(0f, 0.62f, 0.05f), topSpeed = 33f, driveForce = 11500f, brakeForce = 16500f,
+                frontDrive = true, rearDrive = false, grip = 1.04f, maxSteer = 33f, suspensionRest = 0.34f, suspensionHz = 1.4f,
+                antiRoll = 15000f, camDistance = 7.6f, camHeight = 2.6f, enginePitchIdle = 0.62f, enginePitchMax = 1.5f,
+            },
+            ["bike"] = new VehicleSpec
+            {
+                id = "bike", nameKey = "vehicle.bike", kind = VehicleKind.Scooter, spawnClass = "moped", mass = 180f,
+                centerOfMass = new Vector3(0f, 0.42f, 0f), topSpeed = 30f, reverseSpeed = 3f, driveForce = 1650f, brakeForce = 2300f,
+                frontDrive = false, rearDrive = true, grip = 1.2f, maxSteer = 28f, highSpeedSteer = 8f, suspensionRest = 0.18f,
+                suspensionHz = 2.3f, antiRoll = 4500f, downforce = 0.35f, leanMax = 30f, camDistance = 4.6f, camHeight = 1.6f,
+                engineSound = "engine_scooter", startSound = "scooter_start", enginePitchIdle = 0.7f, enginePitchMax = 2.1f,
+            },
             ["sports"] = new VehicleSpec
             {
                 id = "sports", nameKey = "vehicle.sports", kind = VehicleKind.Car, spawnClass = "sports", mass = 1300f,
