@@ -28,6 +28,7 @@ namespace CTLife.World
         public VenueSceneRoot Venue { get; private set; }
         public VenueChannel Channel { get; private set; }
         public LocalPlayerController LocalPlayer { get; private set; }
+        public bool IsOnline => _online && !RuntimeMode.IsOfflineIsland;
 
         private readonly Dictionary<string, RemotePlayer> _players = new Dictionary<string, RemotePlayer>();
         private readonly Dictionary<string, NpcController> _npcs = new Dictionary<string, NpcController>();
@@ -47,6 +48,8 @@ namespace CTLife.World
         private Task _exitTask, _cleanupTask;
         private Task<bool> _voiceConnect;
         private bool _ready, _cleaned, _closing;
+        private readonly VenueRoomRecovery _roomRecovery = new VenueRoomRecovery(() => Time.realtimeSinceStartupAsDouble);
+        private bool _travelRequested;
         private GameObject _ownedObject;
         private VoiceService _voice;
         private Func<string, AudioSource> _speakerResolver;
@@ -133,6 +136,7 @@ namespace CTLife.World
                 request.Token.ThrowIfCancellationRequested();
                 RequireHomeOwner(homeId, homeUserId);
                 session._ready = true;
+                if (island && joinRoom && !RuntimeMode.IsOfflineIsland) session.gameObject.AddComponent<StreetNetworkBridge>().Init(session);
                 if (island && !joinRoom && IslandDemo.Active) session.SpawnDemoNpcs(venueId);
                 if (voice) _ = session.ConnectVoice();
                 return session;
@@ -234,6 +238,7 @@ namespace CTLife.World
         private async Task CleanupOwned()
         {
             _closing = true; _ready = false;
+            _roomRecovery.Dispose();
             var failures = new List<Exception>();
             void Attempt(Action release) { try { release(); } catch (Exception error) { failures.Add(error); } }
             async Task AttemptAsync(Func<Task> release)
@@ -253,7 +258,7 @@ namespace CTLife.World
             {
                 channel.PlayerAdded -= OnPlayerAdded; channel.PlayerChanged -= OnPlayerChanged; channel.PlayerRemoved -= OnPlayerRemoved;
                 channel.NpcAdded -= OnNpcAdded; channel.NpcChanged -= OnNpcChanged; channel.NpcRemoved -= OnNpcRemoved;
-                channel.Said -= OnSaid; channel.Rejected -= OnRejected;
+                channel.Said -= OnSaid; channel.Rejected -= OnRejected; channel.Corrected -= OnCorrected;
                 await AttemptAsync(() => channel.Leave()); // Captured visit only, never a successor room.
             }
             var voice = _voice; _voice = null;
@@ -303,7 +308,7 @@ namespace CTLife.World
         {
             channel.PlayerAdded += OnPlayerAdded; channel.PlayerChanged += OnPlayerChanged; channel.PlayerRemoved += OnPlayerRemoved;
             channel.NpcAdded += OnNpcAdded; channel.NpcChanged += OnNpcChanged; channel.NpcRemoved += OnNpcRemoved;
-            channel.Said += OnSaid; channel.Rejected += OnRejected;
+            channel.Said += OnSaid; channel.Rejected += OnRejected; channel.Corrected += OnCorrected;
             // State that arrived before the handlers were attached.
             foreach (var kv in new List<KeyValuePair<string, PlayerState>>(channel.Players)) if (!_players.ContainsKey(kv.Key)) OnPlayerAdded(kv.Key, kv.Value);
             foreach (var kv in new List<KeyValuePair<string, NpcState>>(channel.Npcs)) if (!_npcs.ContainsKey(kv.Key)) OnNpcAdded(kv.Key, kv.Value);
@@ -313,7 +318,7 @@ namespace CTLife.World
         {
             channel.PlayerAdded -= OnPlayerAdded; channel.PlayerChanged -= OnPlayerChanged; channel.PlayerRemoved -= OnPlayerRemoved;
             channel.NpcAdded -= OnNpcAdded; channel.NpcChanged -= OnNpcChanged; channel.NpcRemoved -= OnNpcRemoved;
-            channel.Said -= OnSaid; channel.Rejected -= OnRejected;
+            channel.Said -= OnSaid; channel.Rejected -= OnRejected; channel.Corrected -= OnCorrected;
         }
 
         /// <summary>Remove the people of the room being left (the local player stays).</summary>
@@ -330,7 +335,13 @@ namespace CTLife.World
 
         private void Update()
         {
-            if (!IsIsland || !_ready || _closing || LocalPlayer == null) return;
+            if (!_ready || _closing || LocalPlayer == null || LocalPlayer.Recovering)
+            { _roomRecovery.SetTarget(null); return; }
+            if (!IsIsland)
+            {
+                RecoverVenueIfNeeded(IsOnline && !_travelRequested ? VenueId : null);
+                return;
+            }
             var pos = LocalPlayer.transform.position;
             _island.Stream(pos);
             var zone = _island.ZoneAt(pos);
@@ -340,10 +351,50 @@ namespace CTLife.World
                 _placeKey = key;
                 Bus.Publish(new IslandPlaceSignal { venueId = zone?.venueId, districtId = zone != null ? zone.district : _island.DistrictAt(pos) });
             }
-            if (_handoffBusy) return;
+            string recoveryTarget = IsOnline && !_handoffBusy && !_travelRequested && !LocalPlayer.InVehicle &&
+                zone != null && _zone != null && zone.venueId == _zone.venueId ? zone.venueId : null;
+            RecoverVenueIfNeeded(recoveryTarget);
+            if (_handoffBusy || _roomRecovery.Busy || _travelRequested) return;
             var action = IslandStreaming.Decide(new Vector2(pos.x, pos.z), zone, _zone);
             if (action == IslandStreaming.RoomAction.Join) _ = Handoff(zone);
             else if (action == IslandStreaming.RoomAction.Leave) LeaveZone();
+        }
+
+        private void RecoverVenueIfNeeded(string target)
+        {
+            // IsJoined stays true during the SDK's own retry window. Replace only a terminally lost room.
+            _roomRecovery.SetTarget(Channel != null && Channel.IsJoined ? null : target);
+            if (target == null || (Channel != null && Channel.IsJoined)) return;
+            _ = _roomRecovery.TryRun(LifetimeToken, token => RejoinVenue(target, token),
+                error => Log.Warn("venue", "Room rejoin failed; retrying with backoff: " + error.GetType().Name));
+        }
+
+        private async Task RejoinVenue(string target, CancellationToken owner)
+        {
+            var next = await Services.Get<IRealtimeService>().JoinVenueHandoff(target, owner);
+            try
+            {
+                owner.ThrowIfCancellationRequested();
+                var zone = IsIsland && LocalPlayer != null ? _island.ZoneAt(LocalPlayer.transform.position) : null;
+                if (!OwnsVisit || LocalPlayer == null || LocalPlayer.Recovering || _travelRequested ||
+                    (IsIsland && (LocalPlayer.InVehicle || zone?.venueId != target)))
+                    throw new OperationCanceledException("Venue reconnect target is obsolete.", owner);
+                if (Channel != null) Detach(Channel);
+                ClearRoomActors(); Channel = next;
+                LocalPlayer.SetRoom(Venue, next);
+                LocalPlayer.GetComponent<InteractionController>()?.Rebind(Venue, next);
+                var view = LocalPlayer.GetComponent<AvatarView>();
+                if (view != null) view.sessionId = next.SessionId;
+                Attach(next);
+                Bus.Publish(new VenueChangedSignal { venueId = target, instanceId = next.InstanceId, seamless = true });
+                Log.Info("venue", "Room rejoined after terminal loss: " + target);
+            }
+            catch
+            {
+                // The service's raw join has no cancellation overload; retire only this exact late result.
+                await next.Leave();
+                throw;
+            }
         }
 
         /// <summary>Walked into <paramref name="zone"/>: join its room (old room still joined), then switch and leave the old.</summary>
@@ -381,7 +432,7 @@ namespace CTLife.World
             finally { _handoffBusy = false; }
         }
 
-        /// <summary>Far out on the street: leave the last venue's room (no street room exists yet; see the server asks).</summary>
+        /// <summary>Far out on the street: leave the venue room; district presence continues in the street bridge.</summary>
         private void LeaveZone()
         {
             var old = Channel;
@@ -396,15 +447,42 @@ namespace CTLife.World
         /// <summary>The map's Go on the island: teleport to the venue's door and hand off to its room, no load screen.</summary>
         public async Task FastTravel(string venueId)
         {
-            if (!IsIsland || LocalPlayer == null) return;
+            if (!IsIsland || LocalPlayer == null || LocalPlayer.InVehicle || LocalPlayer.Recovering || _travelRequested) return;
             var zone = _island.Find(venueId) ?? throw new InvalidOperationException(venueId + " is not on CT Island.");
-            while (_handoffBusy) await Awaitable.NextFrameAsync();
-            var root = await _island.Ensure(venueId, LifetimeToken);
-            var arrival = VenueArrival.For(root, out float yaw);
-            LocalPlayer.StopDirectInput();
-            LocalPlayer.SnapTo(arrival, yaw);
-            CameraRig.Instance?.SnapToTarget();
-            if (_zone == null || _zone.venueId != venueId) await Handoff(zone);
+            _travelRequested = true;
+            _roomRecovery.SetTarget(null);
+            bool paused = false;
+            try
+            {
+                while (_handoffBusy || _roomRecovery.Busy) await Awaitable.NextFrameAsync(LifetimeToken);
+                LifetimeToken.ThrowIfCancellationRequested();
+                if (LocalPlayer == null || LocalPlayer.InVehicle || LocalPlayer.Recovering) return;
+                LocalPlayer.SetRecoveryPaused(true);
+                paused = true;
+                var root = await _island.Ensure(venueId, LifetimeToken);
+                var arrival = VenueArrival.For(root, out float yaw);
+                if (IsOnline)
+                {
+                    // Street rejoin alone restores the old shared anchor. Retire all previous writers,
+                    // then publish a validated destination-venue spawn before reopening street presence.
+                    if (StreetNetworkBridge.Current != null) await StreetNetworkBridge.Current.ResetAfterTravel();
+                    if (Channel != null) Detach(Channel);
+                    Channel = null; ClearRoomActors(); _zone = null;
+                    LocalPlayer.SetRoom(Venue, null);
+                    await Services.Get<IRealtimeService>().LeaveVenue();
+                    await Handoff(zone);
+                    if (Channel == null) throw new InvalidOperationException("Destination venue is unavailable.");
+                    var accepted = await Channel.PublishSpawnPresence(LifetimeToken);
+                    arrival = root.ToWorld((float)accepted.x, (float)accepted.z);
+                    yaw = (float)accepted.irotY;
+                    Log.Info("street", "Fast travel destination presence acknowledged");
+                }
+                else if (_zone == null || _zone.venueId != venueId) await Handoff(zone);
+                LocalPlayer.StopDirectInput();
+                LocalPlayer.SnapTo(arrival, yaw);
+                CameraRig.Instance?.SnapToTarget();
+            }
+            finally { _travelRequested = false; if (paused && LocalPlayer != null) LocalPlayer.SetRecoveryPaused(false); }
         }
 
         // ---------------------------------------------------------------- players
@@ -575,6 +653,16 @@ namespace CTLife.World
             if (Channel != null && m.sessionId == Channel.SessionId && LocalPlayer != null) v = LocalPlayer.GetComponent<AvatarView>();
             else if (_players.TryGetValue(m.sessionId ?? "", out var rp) && rp != null) v = rp.GetComponent<AvatarView>();
             if (v != null) Bus.Publish(new BubbleSignal { anchor = v.HeadAnchor, text = m.text, isNpc = false, seconds = 4.5f });
+        }
+
+        private void OnCorrected(CorrectedMessage correction)
+        {
+            if (!OwnsVisit || LocalPlayer == null || LocalPlayer.Recovering || Venue == null ||
+                Vehicles.VehicleSystem.Current?.Driving != null || Vehicles.VehicleNetworkBridge.HasClaim) return;
+            if (IsIsland && !Venue.IsWalkable(LocalPlayer.transform.position)) return;
+            var position = correction.island ? new Vector3((float)correction.x, LocalPlayer.transform.position.y, (float)correction.z) :
+                Venue.ToWorld((float)correction.x, (float)correction.z);
+            LocalPlayer.SnapTo(position, LocalPlayer.transform.eulerAngles.y * Mathf.Deg2Rad);
         }
 
         private void OnRejected(RejectedMessage r)

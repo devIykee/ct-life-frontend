@@ -197,7 +197,13 @@ namespace CTLife.EditorTools
                 bool inPlace = file != "getup_face_down.fbx";
                 c.lockRootPositionXZ = !inPlace; c.keepOriginalPositionXZ = !inPlace;
                 // JogStop: the decelerating steps only (0.8–2.4 s: 1.9 m/s → standing), not the jog before them.
-                if (file == "jog_stop.fbx") { c.firstFrame = 24f; c.lastFrame = 72f; }
+                if (file == "jog_stop.fbx")
+                {
+                    c.firstFrame = 24f; c.lastFrame = 72f;
+                    // Native retargeting on both cast families faced -Z throughout this trimmed stop while idle
+                    // faces +Z. Correct this clip's baked pose, leaving the actor's movement/camera yaw alone.
+                    c.rotationOffset = 180f;
+                }
             }
             mi.clipAnimations = clips;
         }

@@ -268,9 +268,10 @@ namespace CTLife.Tests
             // Up to the walk speed: identical to the accepted walk (speed / 1.0 m/s).
             Assert.AreEqual(0.5f, LocomotionTuning.Rate(0.5f, 1f, 4.5f, 5.8f), 1e-4f);
             Assert.AreEqual(1.6f, LocomotionTuning.Rate(1.6f, 1f, 4.5f, 5.8f), 1e-4f);
-            // At the jog speed: speed / jog ground speed; at the sprint speed: speed / sprint ground speed.
+            // At the jog speed: speed / jog ground speed; at the sprint speed: speed / sprint ground speed, with the sprint
+            // cadence (mocap v3: the upright 100STYLE sprint plays a little faster so it reads as a sprint).
             Assert.AreEqual(3.5f / 4.5f, LocomotionTuning.Rate(3.5f, 1f, 4.5f, 5.8f), 1e-4f);
-            Assert.AreEqual(6f / 5.8f, LocomotionTuning.Rate(6f, 1f, 4.5f, 5.8f), 1e-4f);
+            Assert.AreEqual(6f / 5.8f * LocomotionTuning.SprintCadence, LocomotionTuning.Rate(6f, 1f, 4.5f, 5.8f), 1e-4f);
             // Continuous across both crossovers, and stopped = 1.
             float prev = LocomotionTuning.Rate(1.6f, 1f, 4.5f, 5.8f);
             for (float v = 1.65f; v <= 6.5f; v += 0.05f)

@@ -639,7 +639,7 @@ namespace CTLife.UI
         {
             if (_wallet != null) { RefreshWallet(); _ = _wallet.Refresh(); }
             if (_offlineChip == null) return;
-            bool off = Offline || _state == null || !_state.HasProfile;
+            bool off = !RuntimeMode.IsOfflineDemo && (Offline || _state == null || !_state.HasProfile);
             _offlineChip.style.display = off ? DisplayStyle.Flex : DisplayStyle.None;
             _marketChip.style.display = !off && _mood.HasValue ? DisplayStyle.Flex : DisplayStyle.None;
         }

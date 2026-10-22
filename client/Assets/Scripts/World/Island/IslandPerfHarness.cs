@@ -3,6 +3,7 @@ using System.Globalization;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
+using CTLife.Core;
 
 namespace CTLife.World
 {
@@ -18,6 +19,10 @@ namespace CTLife.World
             if (!string.IsNullOrEmpty(renderScale) && float.TryParse(renderScale, NumberStyles.Float, CultureInfo.InvariantCulture, out var rs)
                 && GraphicsSettings.currentRenderPipeline is UniversalRenderPipelineAsset urp)
                 urp.renderScale = rs;
+            // `islandFps=60` lifts the frame cap (the thermal budget's 30 hides GPU headroom: Mali's DVFS clocks down to just
+            // meet the cap, so GPU ms at 30 fps reads ~30 whatever the load)
+            if (LaunchArgs.Get("islandFps") is string fps && int.TryParse(fps, NumberStyles.Integer, CultureInfo.InvariantCulture, out var f) && f > 0)
+                Application.targetFrameRate = f;
             if (IslandInstanceRenderer.SkipKinds.Contains("shadows"))
                 foreach (var atm in Object.FindObjectsByType<IslandAtmosphere>(FindObjectsSortMode.None))
                     if (atm.Sun != null) atm.Sun.shadows = LightShadows.None;

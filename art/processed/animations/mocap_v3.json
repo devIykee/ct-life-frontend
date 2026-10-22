@@ -1,0 +1,3513 @@
+{
+ "generated_by": "tools/anim/loco_v3/build_loco_v3.py (retarget_v3_blender.py, Blender 5.1.2)",
+ "date": "2026-10-22",
+ "conventions": {
+  "fps": 30,
+  "rig": "each target's own skeleton (snow/rain: 55-bone Root/Hips/... h55 rig; hazmat: CTS mannequin names); armature + 1-tri _bind_proxy; rest (T/A pose) keyed one frame before the take so FBX node defaults = rest",
+  "facing": "character faces -Y in Blender = +Z in Unity (FBX -Z forward / Y up export)",
+  "loops": "in place (mean travel velocity removed; planted feet move backward at native_speed_mps); last frame == first frame (Unity Loop Time, no Loop Pose needed); locomotion loops start at the LEFT foot plant so walk/jog/sprint are phase-aligned for a 1D blend tree",
+  "oneshots": "translation kept in the hips (start at origin facing forward); turns keep yaw in the hips",
+  "metres_per_cycle": "body travel over one loop at 1x = native_speed_mps x duration_s; playback rate for a speed v = v / native_speed_mps"
+ },
+ "licences": {
+  "cmu": {
+   "source": "CMU Graphics Lab Motion Capture Database, http://mocap.cs.cmu.edu",
+   "licence": "Free use. FAQ (http://mocap.cs.cmu.edu/faqs.php): \"The motion capture data may be copied, modified, or redistributed without permission.\" Requested acknowledgement: \"The data used in this project was obtained from mocap.cs.cmu.edu. The database was created with funding from NSF EIA-0196217.\""
+  },
+  "s100": {
+   "source": "100STYLE dataset, Ian Mason, Sebastian Starke, Taku Komura (2022), https://www.ianxmason.com/100style/ , https://zenodo.org/records/8127870 (BVH zip; members fetched by HTTP range from the authors' Google Drive mirror of the same 100STYLE.zip)",
+   "licence": "CC BY 4.0: \"This work is licensed under a Creative Commons Attribution 4.0 International License.\" (ianxmason.com/100style, read 2026-10-22; Zenodo record licence field: Creative Commons Attribution 4.0 International). Credit: \"100STYLE dataset by Ian Mason, Sebastian Starke and Taku Komura, CC BY 4.0; retargeted and edited by CT Life.\""
+  }
+ },
+ "clips": [
+  {
+   "id": "loco_idle",
+   "mode": "loop",
+   "replaces": "loco_idle (UAL1 Idle_Loop; Rain: RainAdult_RelaxedIdle)",
+   "source": "100STYLE Neutral_ID: relaxed standing, arms hanging naturally, breathing / small weight shifts",
+   "source_kind": "s100",
+   "licence": "CC BY 4.0: \"This work is licensed under a Creative Commons A...",
+   "source_file": "art/raw/animations/100style/100STYLE/Neutral/Neutral_ID.bvh",
+   "per_target": {
+    "snow": {
+     "fbx": "client/Assets/Art/animations/mocap_v3/snow/loco_idle.fbx",
+     "frames": 108,
+     "duration_s": 3.5667,
+     "source_window_s": [
+      14.3,
+      17.8667
+     ],
+     "source_frames": [
+      858,
+      1072
+     ],
+     "source_fps": 59.999,
+     "time_warp": 1.0,
+     "loop_range_frames": [
+      0,
+      107
+     ],
+     "metres_per_cycle": 0.0017,
+     "native_speed_mps": 0.0005,
+     "stance_foot_backward_speed_mps": {
+      "l": null,
+      "r": null
+     },
+     "closure_residual": {
+      "hips_m": 0.0004,
+      "max_rot_deg": 2.13,
+      "worst_bones": [
+       [
+        2.1,
+        "Head"
+       ],
+       [
+        1.5,
+        "Shoulder.R"
+       ],
+       [
+        1.3,
+        "Forearm.R"
+       ],
+       [
+        1.2,
+        "UpperArm.R"
+       ]
+      ]
+     },
+     "arm_body_intersections": {
+      "frames_before": 108,
+      "frames_after": 0,
+      "tri_pairs_before_max": 41,
+      "tri_pairs_after_max": 0
+     },
+     "arm_abduction_added_deg_max": {
+      "l": 0,
+      "r": 4.0
+     },
+     "gaze_lift_deg": 14.9,
+     "hips_raised_m": -0.0023,
+     "ik_goal_clamped_frames": 0,
+     "scale_leg_ratio": 0.9559
+    },
+    "rain": {
+     "fbx": "client/Assets/Art/animations/mocap_v3/rain/loco_idle.fbx",
+     "frames": 108,
+     "duration_s": 3.5667,
+     "source_window_s": [
+      14.3,
+      17.8667
+     ],
+     "source_frames": [
+      858,
+      1072
+     ],
+     "source_fps": 59.999,
+     "time_warp": 1.0,
+     "loop_range_frames": [
+      0,
+      107
+     ],
+     "metres_per_cycle": 0.0018,
+     "native_speed_mps": 0.0005,
+     "stance_foot_backward_speed_mps": {
+      "l": null,
+      "r": null
+     },
+     "closure_residual": {
+      "hips_m": 0.0003,
+      "max_rot_deg": 2.13,
+      "worst_bones": [
+       [
+        2.1,
+        "Head"
+       ],
+       [
+        1.5,
+        "Shoulder.R"
+       ],
+       [
+        1.3,
+        "Forearm.R"
+       ],
+       [
+        1.2,
+        "UpperArm.R"
+       ]
+      ]
+     },
+     "arm_body_intersections": {
+      "frames_before": 216,
+      "frames_after": 0,
+      "tri_pairs_before_max": 307,
+      "tri_pairs_after_max": 0
+     },
+     "arm_abduction_added_deg_max": {
+      "l": 8.0,
+      "r": 10.0
+     },
+     "gaze_lift_deg": 14.0,
+     "hips_raised_m": -0.0024,
+     "ik_goal_clamped_frames": 0,
+     "scale_leg_ratio": 0.9986
+    },
+    "hazmat": {
+     "fbx": "client/Assets/Art/animations/mocap_v3/hazmat/loco_idle.fbx",
+     "frames": 108,
+     "duration_s": 3.5667,
+     "source_window_s": [
+      14.3,
+      17.8667
+     ],
+     "source_frames": [
+      858,
+      1072
+     ],
+     "source_fps": 59.999,
+     "time_warp": 1.0,
+     "loop_range_frames": [
+      0,
+      107
+     ],
+     "metres_per_cycle": 0.0017,
+     "native_speed_mps": 0.0005,
+     "stance_foot_backward_speed_mps": {
+      "l": null,
+      "r": null
+     },
+     "closure_residual": {
+      "hips_m": 0.0007,
+      "max_rot_deg": 2.13,
+      "worst_bones": [
+       [
+        2.1,
+        "Head"
+       ],
+       [
+        1.5,
+        "clavicle_r"
+       ],
+       [
+        1.3,
+        "lowerarm_r"
+       ],
+       [
+        1.2,
+        "upperarm_r"
+       ]
+      ]
+     },
+     "arm_body_intersections": {
+      "frames_before": 216,
+      "frames_after": 0,
+      "tri_pairs_before_max": 158,
+      "tri_pairs_after_max": 0
+     },
+     "arm_abduction_added_deg_max": {
+      "l": 6.0,
+      "r": 8.0
+     },
+     "gaze_lift_deg": 15.0,
+     "hips_raised_m": -0.003,
+     "ik_goal_clamped_frames": 0,
+     "scale_leg_ratio": 0.9735
+    }
+   }
+  },
+  {
+   "id": "idle_hands_hips",
+   "mode": "loop",
+   "replaces": "(new) idle variation (idle_fidget_* are UAL keyframe)",
+   "source": "CMU 137_28 \"Normal Wait\": hands on hips, looks around over the left shoulder, weight shifts",
+   "source_kind": "cmu",
+   "licence": "Free use. FAQ (http://mocap.cs.cmu.edu/faqs.php): \"The motio...",
+   "source_file": "art/raw/animations/loco_v3_bvh/cmu_137_28.bvh",
+   "per_target": {
+    "snow": {
+     "fbx": "client/Assets/Art/animations/mocap_v3/snow/idle_hands_hips.fbx",
+     "frames": 97,
+     "duration_s": 3.2,
+     "source_window_s": [
+      19.15,
+      22.35
+     ],
+     "source_frames": [
+      2298,
+      2682
+     ],
+     "source_fps": 120.0,
+     "time_warp": 1.0,
+     "loop_range_frames": [
+      0,
+      96
+     ],
+     "metres_per_cycle": 0.0131,
+     "native_speed_mps": 0.0041,
+     "stance_foot_backward_speed_mps": {
+      "l": -0.0022,
+      "r": -0.0028
+     },
+     "closure_residual": {
+      "hips_m": 0.0032,
+      "max_rot_deg": 13.93,
+      "worst_bones": [
+       [
+        13.9,
+        "Forearm.R"
+       ],
+       [
+        13.4,
+        "UpperArm.R"
+       ],
+       [
+        13.2,
+        "Hand.R"
+       ],
+       [
+        9.9,
+        "Head"
+       ]
+      ]
+     },
+     "arm_body_intersections": {
+      "frames_before": 0,
+      "frames_after": 0,
+      "tri_pairs_before_max": 0,
+      "tri_pairs_after_max": 0
+     },
+     "arm_abduction_added_deg_max": {
+      "l": 0,
+      "r": 0
+     },
+     "knee_offset_hips_raise_m": [
+      0.002,
+      0.0075
+     ],
+     "hips_raised_m": -0.0029,
+     "ik_goal_clamped_frames": 0,
+     "scale_leg_ratio": 1.0411
+    },
+    "rain": {
+     "fbx": "client/Assets/Art/animations/mocap_v3/rain/idle_hands_hips.fbx",
+     "frames": 97,
+     "duration_s": 3.2,
+     "source_window_s": [
+      19.15,
+      22.35
+     ],
+     "source_frames": [
+      2298,
+      2682
+     ],
+     "source_fps": 120.0,
+     "time_warp": 1.0,
+     "loop_range_frames": [
+      0,
+      96
+     ],
+     "metres_per_cycle": 0.0136,
+     "native_speed_mps": 0.0043,
+     "stance_foot_backward_speed_mps": {
+      "l": -0.003,
+      "r": -0.002
+     },
+     "closure_residual": {
+      "hips_m": 0.0064,
+      "max_rot_deg": 13.93,
+      "worst_bones": [
+       [
+        13.9,
+        "Forearm.R"
+       ],
+       [
+        13.4,
+        "UpperArm.R"
+       ],
+       [
+        13.2,
+        "Hand.R"
+       ],
+       [
+        9.9,
+        "Head"
+       ]
+      ]
+     },
+     "arm_body_intersections": {
+      "frames_before": 0,
+      "frames_after": 0,
+      "tri_pairs_before_max": 0,
+      "tri_pairs_after_max": 0
+     },
+     "arm_abduction_added_deg_max": {
+      "l": 0,
+      "r": 0
+     },
+     "knee_offset_hips_raise_m": [
+      0.0021,
+      0.008
+     ],
+     "hips_raised_m": -0.0034,
+     "ik_goal_clamped_frames": 0,
+     "scale_leg_ratio": 1.0876
+    },
+    "hazmat": {
+     "fbx": "client/Assets/Art/animations/mocap_v3/hazmat/idle_hands_hips.fbx",
+     "frames": 97,
+     "duration_s": 3.2,
+     "source_window_s": [
+      19.15,
+      22.35
+     ],
+     "source_frames": [
+      2298,
+      2682
+     ],
+     "source_fps": 120.0,
+     "time_warp": 1.0,
+     "loop_range_frames": [
+      0,
+      96
+     ],
+     "metres_per_cycle": 0.0133,
+     "native_speed_mps": 0.0042,
+     "stance_foot_backward_speed_mps": {
+      "l": 0.0058,
+      "r": -0.007
+     },
+     "closure_residual": {
+      "hips_m": 0.0033,
+      "max_rot_deg": 13.93,
+      "worst_bones": [
+       [
+        13.9,
+        "lowerarm_r"
+       ],
+       [
+        13.4,
+        "upperarm_r"
+       ],
+       [
+        13.2,
+        "hand_r"
+       ],
+       [
+        9.9,
+        "Head"
+       ]
+      ]
+     },
+     "arm_body_intersections": {
+      "frames_before": 0,
+      "frames_after": 0,
+      "tri_pairs_before_max": 0,
+      "tri_pairs_after_max": 0
+     },
+     "arm_abduction_added_deg_max": {
+      "l": 0,
+      "r": 0
+     },
+     "knee_offset_hips_raise_m": [
+      0.0021,
+      0.0069
+     ],
+     "hips_raised_m": -0.0056,
+     "ik_goal_clamped_frames": 0,
+     "scale_leg_ratio": 1.0603
+    }
+   }
+  },
+  {
+   "id": "idle_heavy",
+   "mode": "loop",
+   "replaces": "(new) idle for bulky looks",
+   "source": "CMU 137_41 \"Strong Man Wait\": wide arms, slow weight shift",
+   "source_kind": "cmu",
+   "licence": "Free use. FAQ (http://mocap.cs.cmu.edu/faqs.php): \"The motio...",
+   "source_file": "art/raw/animations/loco_v3_bvh/cmu_137_41.bvh",
+   "per_target": {
+    "snow": {
+     "fbx": "client/Assets/Art/animations/mocap_v3/snow/idle_heavy.fbx",
+     "frames": 97,
+     "duration_s": 3.2,
+     "source_window_s": [
+      20.0,
+      23.2
+     ],
+     "source_frames": [
+      2400,
+      2784
+     ],
+     "source_fps": 120.0,
+     "time_warp": 1.0,
+     "loop_range_frames": [
+      0,
+      96
+     ],
+     "metres_per_cycle": 0.0154,
+     "native_speed_mps": 0.0048,
+     "stance_foot_backward_speed_mps": {
+      "l": null,
+      "r": null
+     },
+     "closure_residual": {
+      "hips_m": 0.0092,
+      "max_rot_deg": 17.88,
+      "worst_bones": [
+       [
+        17.9,
+        "UpperArm.R"
+       ],
+       [
+        17.9,
+        "UpperArm.L"
+       ],
+       [
+        17.8,
+        "Forearm.R"
+       ],
+       [
+        17.5,
+        "Hand.R"
+       ]
+      ]
+     },
+     "arm_body_intersections": {
+      "frames_before": 0,
+      "frames_after": 0,
+      "tri_pairs_before_max": 0,
+      "tri_pairs_after_max": 0
+     },
+     "arm_abduction_added_deg_max": {
+      "l": 0,
+      "r": 0
+     },
+     "knee_offset_hips_raise_m": [
+      0.0019,
+      0.0092
+     ],
+     "hips_raised_m": -0.0078,
+     "ik_goal_clamped_frames": 0,
+     "scale_leg_ratio": 1.0411
+    },
+    "rain": {
+     "fbx": "client/Assets/Art/animations/mocap_v3/rain/idle_heavy.fbx",
+     "frames": 97,
+     "duration_s": 3.2,
+     "source_window_s": [
+      20.0,
+      23.2
+     ],
+     "source_frames": [
+      2400,
+      2784
+     ],
+     "source_fps": 120.0,
+     "time_warp": 1.0,
+     "loop_range_frames": [
+      0,
+      96
+     ],
+     "metres_per_cycle": 0.0161,
+     "native_speed_mps": 0.005,
+     "stance_foot_backward_speed_mps": {
+      "l": null,
+      "r": null
+     },
+     "closure_residual": {
+      "hips_m": 0.0135,
+      "max_rot_deg": 17.88,
+      "worst_bones": [
+       [
+        17.9,
+        "UpperArm.R"
+       ],
+       [
+        17.9,
+        "UpperArm.L"
+       ],
+       [
+        17.8,
+        "Forearm.R"
+       ],
+       [
+        17.5,
+        "Hand.R"
+       ]
+      ]
+     },
+     "arm_body_intersections": {
+      "frames_before": 0,
+      "frames_after": 0,
+      "tri_pairs_before_max": 0,
+      "tri_pairs_after_max": 0
+     },
+     "arm_abduction_added_deg_max": {
+      "l": 0,
+      "r": 0
+     },
+     "knee_offset_hips_raise_m": [
+      0.002,
+      0.0099
+     ],
+     "hips_raised_m": -0.0084,
+     "ik_goal_clamped_frames": 0,
+     "scale_leg_ratio": 1.0876
+    },
+    "hazmat": {
+     "fbx": "client/Assets/Art/animations/mocap_v3/hazmat/idle_heavy.fbx",
+     "frames": 97,
+     "duration_s": 3.2,
+     "source_window_s": [
+      20.0,
+      23.2
+     ],
+     "source_frames": [
+      2400,
+      2784
+     ],
+     "source_fps": 120.0,
+     "time_warp": 1.0,
+     "loop_range_frames": [
+      0,
+      96
+     ],
+     "metres_per_cycle": 0.0157,
+     "native_speed_mps": 0.0049,
+     "stance_foot_backward_speed_mps": {
+      "l": null,
+      "r": null
+     },
+     "closure_residual": {
+      "hips_m": 0.0062,
+      "max_rot_deg": 17.88,
+      "worst_bones": [
+       [
+        17.9,
+        "upperarm_r"
+       ],
+       [
+        17.9,
+        "upperarm_l"
+       ],
+       [
+        17.8,
+        "lowerarm_r"
+       ],
+       [
+        17.4,
+        "hand_r"
+       ]
+      ]
+     },
+     "arm_body_intersections": {
+      "frames_before": 0,
+      "frames_after": 0,
+      "tri_pairs_before_max": 0,
+      "tri_pairs_after_max": 0
+     },
+     "arm_abduction_added_deg_max": {
+      "l": 0,
+      "r": 0
+     },
+     "knee_offset_hips_raise_m": [
+      0.0018,
+      0.0111
+     ],
+     "hips_raised_m": -0.0177,
+     "ik_goal_clamped_frames": 0,
+     "scale_leg_ratio": 1.0603
+    }
+   }
+  },
+  {
+   "id": "idle_phone_call",
+   "mode": "loop",
+   "replaces": "(new) phone idle (act_phone_call is UAL keyframe)",
+   "source": "100STYLE OnPhoneRight_ID: phone held to the right ear (a call, not a screen check)",
+   "source_kind": "s100",
+   "licence": "CC BY 4.0: \"This work is licensed under a Creative Commons A...",
+   "source_file": "art/raw/animations/100style/100STYLE/OnPhoneRight/OnPhoneRight_ID.bvh",
+   "per_target": {
+    "snow": {
+     "fbx": "client/Assets/Art/animations/mocap_v3/snow/idle_phone_call.fbx",
+     "frames": 168,
+     "duration_s": 5.5667,
+     "source_window_s": [
+      20.3333,
+      25.9
+     ],
+     "source_frames": [
+      1220,
+      1554
+     ],
+     "source_fps": 59.999,
+     "time_warp": 1.0,
+     "loop_range_frames": [
+      0,
+      167
+     ],
+     "metres_per_cycle": 0.002,
+     "native_speed_mps": 0.0004,
+     "stance_foot_backward_speed_mps": {
+      "l": null,
+      "r": null
+     },
+     "closure_residual": {
+      "hips_m": 0.0003,
+      "max_rot_deg": 1.18,
+      "worst_bones": [
+       [
+        1.2,
+        "Hand.L"
+       ],
+       [
+        0.9,
+        "Head"
+       ],
+       [
+        0.9,
+        "Hand.R"
+       ],
+       [
+        0.8,
+        "Shoulder.R"
+       ]
+      ]
+     },
+     "arm_body_intersections": {
+      "frames_before": 0,
+      "frames_after": 0,
+      "tri_pairs_before_max": 0,
+      "tri_pairs_after_max": 0
+     },
+     "arm_abduction_added_deg_max": {
+      "l": 0,
+      "r": 0
+     },
+     "gaze_lift_deg": 15.0,
+     "hips_raised_m": -0.0024,
+     "ik_goal_clamped_frames": 0,
+     "scale_leg_ratio": 0.9559
+    },
+    "rain": {
+     "fbx": "client/Assets/Art/animations/mocap_v3/rain/idle_phone_call.fbx",
+     "frames": 168,
+     "duration_s": 5.5667,
+     "source_window_s": [
+      20.3333,
+      25.9
+     ],
+     "source_frames": [
+      1220,
+      1554
+     ],
+     "source_fps": 59.999,
+     "time_warp": 1.0,
+     "loop_range_frames": [
+      0,
+      167
+     ],
+     "metres_per_cycle": 0.0021,
+     "native_speed_mps": 0.0004,
+     "stance_foot_backward_speed_mps": {
+      "l": null,
+      "r": null
+     },
+     "closure_residual": {
+      "hips_m": 0.0002,
+      "max_rot_deg": 1.18,
+      "worst_bones": [
+       [
+        1.2,
+        "Hand.L"
+       ],
+       [
+        0.9,
+        "Head"
+       ],
+       [
+        0.9,
+        "Hand.R"
+       ],
+       [
+        0.8,
+        "Shoulder.R"
+       ]
+      ]
+     },
+     "arm_body_intersections": {
+      "frames_before": 168,
+      "frames_after": 0,
+      "tri_pairs_before_max": 273,
+      "tri_pairs_after_max": 0
+     },
+     "arm_abduction_added_deg_max": {
+      "l": 10.0,
+      "r": 0
+     },
+     "gaze_lift_deg": 15.0,
+     "hips_raised_m": -0.0026,
+     "ik_goal_clamped_frames": 0,
+     "scale_leg_ratio": 0.9986
+    },
+    "hazmat": {
+     "fbx": "client/Assets/Art/animations/mocap_v3/hazmat/idle_phone_call.fbx",
+     "frames": 168,
+     "duration_s": 5.5667,
+     "source_window_s": [
+      20.3333,
+      25.9
+     ],
+     "source_frames": [
+      1220,
+      1554
+     ],
+     "source_fps": 59.999,
+     "time_warp": 1.0,
+     "loop_range_frames": [
+      0,
+      167
+     ],
+     "metres_per_cycle": 0.002,
+     "native_speed_mps": 0.0004,
+     "stance_foot_backward_speed_mps": {
+      "l": null,
+      "r": null
+     },
+     "closure_residual": {
+      "hips_m": 0.0005,
+      "max_rot_deg": 1.18,
+      "worst_bones": [
+       [
+        1.2,
+        "hand_l"
+       ],
+       [
+        0.9,
+        "hand_r"
+       ],
+       [
+        0.9,
+        "Head"
+       ],
+       [
+        0.8,
+        "lowerarm_l"
+       ]
+      ]
+     },
+     "arm_body_intersections": {
+      "frames_before": 168,
+      "frames_after": 0,
+      "tri_pairs_before_max": 151,
+      "tri_pairs_after_max": 0
+     },
+     "arm_abduction_added_deg_max": {
+      "l": 6.0,
+      "r": 0
+     },
+     "gaze_lift_deg": 15.0,
+     "hips_raised_m": -0.0037,
+     "ik_goal_clamped_frames": 0,
+     "scale_leg_ratio": 0.9735
+    }
+   }
+  },
+  {
+   "id": "loco_walk",
+   "mode": "loop",
+   "replaces": "loco_walk (UAL1 Walk_Loop; Snow: SnowWalkContact.anim)",
+   "source": "CMU 16_22 \"walk\"",
+   "source_kind": "cmu",
+   "licence": "Free use. FAQ (http://mocap.cs.cmu.edu/faqs.php): \"The motio...",
+   "source_file": "art/raw/animations/loco_v3_bvh/cmu_16_22.bvh",
+   "per_target": {
+    "snow": {
+     "fbx": "client/Assets/Art/animations/mocap_v3/snow/loco_walk.fbx",
+     "frames": 30,
+     "duration_s": 0.9667,
+     "source_window_s": [
+      0.9083,
+      1.8833
+     ],
+     "source_frames": [
+      109,
+      226
+     ],
+     "source_fps": 120.0,
+     "time_warp": 1.0086,
+     "loop_range_frames": [
+      0,
+      29
+     ],
+     "metres_per_cycle": 1.542,
+     "native_speed_mps": 1.5951,
+     "stance_foot_backward_speed_mps": {
+      "l": 1.5026,
+      "r": 1.5375
+     },
+     "closure_residual": {
+      "hips_m": 0.01,
+      "max_rot_deg": 8.38,
+      "worst_bones": [
+       [
+        8.4,
+        "Hand.R"
+       ],
+       [
+        8.3,
+        "Forearm.R"
+       ],
+       [
+        7.1,
+        "UpperArm.R"
+       ],
+       [
+        6.3,
+        "Toes.R"
+       ]
+      ]
+     },
+     "arm_body_intersections": {
+      "frames_before": 27,
+      "frames_after": 0,
+      "tri_pairs_before_max": 95,
+      "tri_pairs_after_max": 0
+     },
+     "arm_abduction_added_deg_max": {
+      "l": 4.0,
+      "r": 4.0
+     },
+     "gaze_lift_deg": 7.5,
+     "knee_offset_hips_raise_m": [
+      0.0098,
+      0.021
+     ],
+     "hips_raised_m": -0.0003,
+     "ik_goal_clamped_frames": 3,
+     "scale_leg_ratio": 0.9939,
+     "phase_shift_frames": 12
+    },
+    "rain": {
+     "fbx": "client/Assets/Art/animations/mocap_v3/rain/loco_walk.fbx",
+     "frames": 30,
+     "duration_s": 0.9667,
+     "source_window_s": [
+      0.9083,
+      1.8833
+     ],
+     "source_frames": [
+      109,
+      226
+     ],
+     "source_fps": 120.0,
+     "time_warp": 1.0086,
+     "loop_range_frames": [
+      0,
+      29
+     ],
+     "metres_per_cycle": 1.6108,
+     "native_speed_mps": 1.6663,
+     "stance_foot_backward_speed_mps": {
+      "l": 1.5793,
+      "r": 1.6058
+     },
+     "closure_residual": {
+      "hips_m": 0.0132,
+      "max_rot_deg": 8.32,
+      "worst_bones": [
+       [
+        8.3,
+        "Hand.R"
+       ],
+       [
+        8.3,
+        "Forearm.R"
+       ],
+       [
+        7.1,
+        "UpperArm.R"
+       ],
+       [
+        6.3,
+        "Toes.R"
+       ]
+      ]
+     },
+     "arm_body_intersections": {
+      "frames_before": 43,
+      "frames_after": 9,
+      "tri_pairs_before_max": 373,
+      "tri_pairs_after_max": 79
+     },
+     "arm_abduction_added_deg_max": {
+      "l": 12.0,
+      "r": 12.0
+     },
+     "gaze_lift_deg": 6.6,
+     "knee_offset_hips_raise_m": [
+      0.0104,
+      0.0225
+     ],
+     "hips_raised_m": -0.0012,
+     "ik_goal_clamped_frames": 2,
+     "scale_leg_ratio": 1.0382,
+     "phase_shift_frames": 12
+    },
+    "hazmat": {
+     "fbx": "client/Assets/Art/animations/mocap_v3/hazmat/loco_walk.fbx",
+     "frames": 30,
+     "duration_s": 0.9667,
+     "source_window_s": [
+      0.9083,
+      1.8833
+     ],
+     "source_frames": [
+      109,
+      226
+     ],
+     "source_fps": 120.0,
+     "time_warp": 1.0086,
+     "loop_range_frames": [
+      0,
+      29
+     ],
+     "metres_per_cycle": 1.5703,
+     "native_speed_mps": 1.6245,
+     "stance_foot_backward_speed_mps": {
+      "l": 1.618,
+      "r": 1.6313
+     },
+     "closure_residual": {
+      "hips_m": 0.0089,
+      "max_rot_deg": 8.32,
+      "worst_bones": [
+       [
+        8.3,
+        "lowerarm_r"
+       ],
+       [
+        8.3,
+        "hand_r"
+       ],
+       [
+        7.1,
+        "upperarm_r"
+       ],
+       [
+        6.3,
+        "ball_r"
+       ]
+      ]
+     },
+     "arm_body_intersections": {
+      "frames_before": 17,
+      "frames_after": 0,
+      "tri_pairs_before_max": 173,
+      "tri_pairs_after_max": 0
+     },
+     "arm_abduction_added_deg_max": {
+      "l": 2.0,
+      "r": 6.0
+     },
+     "gaze_lift_deg": 9.2,
+     "knee_offset_hips_raise_m": [
+      0.0102,
+      0.023
+     ],
+     "hips_raised_m": -0.0064,
+     "ik_goal_clamped_frames": 9,
+     "scale_leg_ratio": 1.0122,
+     "phase_shift_frames": 12
+    }
+   }
+  },
+  {
+   "id": "loco_jog",
+   "mode": "loop",
+   "replaces": "loco_jog (UAL1 Jog_Fwd_Loop = the run band)",
+   "source": "CMU 09_07 \"run\"",
+   "source_kind": "cmu",
+   "licence": "Free use. FAQ (http://mocap.cs.cmu.edu/faqs.php): \"The motio...",
+   "source_file": "art/raw/animations/loco_v3_bvh/cmu_09_07.bvh",
+   "per_target": {
+    "snow": {
+     "fbx": "client/Assets/Art/animations/mocap_v3/snow/loco_jog.fbx",
+     "frames": 24,
+     "duration_s": 0.7667,
+     "source_window_s": [
+      0.2417,
+      1.0
+     ],
+     "source_frames": [
+      29,
+      120
+     ],
+     "source_fps": 120.0,
+     "time_warp": 0.9891,
+     "loop_range_frames": [
+      0,
+      23
+     ],
+     "metres_per_cycle": 2.5064,
+     "native_speed_mps": 3.2692,
+     "stance_foot_backward_speed_mps": {
+      "l": 3.2064,
+      "r": 3.132
+     },
+     "closure_residual": {
+      "hips_m": 0.009,
+      "max_rot_deg": 12.89,
+      "worst_bones": [
+       [
+        12.9,
+        "Toes.R"
+       ],
+       [
+        6.0,
+        "Hand.R"
+       ],
+       [
+        5.4,
+        "Neck"
+       ],
+       [
+        4.7,
+        "Spine"
+       ]
+      ]
+     },
+     "arm_body_intersections": {
+      "frames_before": 2,
+      "frames_after": 0,
+      "tri_pairs_before_max": 12,
+      "tri_pairs_after_max": 0
+     },
+     "arm_abduction_added_deg_max": {
+      "l": 2.0,
+      "r": 0
+     },
+     "knee_offset_hips_raise_m": [
+      0.0048,
+      0.0173
+     ],
+     "hips_raised_m": -0.006,
+     "ik_goal_clamped_frames": 6,
+     "scale_leg_ratio": 0.965,
+     "phase_shift_frames": 19
+    },
+    "rain": {
+     "fbx": "client/Assets/Art/animations/mocap_v3/rain/loco_jog.fbx",
+     "frames": 24,
+     "duration_s": 0.7667,
+     "source_window_s": [
+      0.2417,
+      1.0
+     ],
+     "source_frames": [
+      29,
+      120
+     ],
+     "source_fps": 120.0,
+     "time_warp": 0.9891,
+     "loop_range_frames": [
+      0,
+      23
+     ],
+     "metres_per_cycle": 2.6182,
+     "native_speed_mps": 3.415,
+     "stance_foot_backward_speed_mps": {
+      "l": 3.3274,
+      "r": 3.3205
+     },
+     "closure_residual": {
+      "hips_m": 0.0125,
+      "max_rot_deg": 12.89,
+      "worst_bones": [
+       [
+        12.9,
+        "Toes.R"
+       ],
+       [
+        5.9,
+        "Hand.R"
+       ],
+       [
+        5.4,
+        "Neck"
+       ],
+       [
+        4.7,
+        "Spine"
+       ]
+      ]
+     },
+     "arm_body_intersections": {
+      "frames_before": 24,
+      "frames_after": 0,
+      "tri_pairs_before_max": 104,
+      "tri_pairs_after_max": 0
+     },
+     "arm_abduction_added_deg_max": {
+      "l": 6.0,
+      "r": 6.0
+     },
+     "gaze_lift_deg": -2.2,
+     "knee_offset_hips_raise_m": [
+      0.005,
+      0.0181
+     ],
+     "hips_raised_m": -0.0069,
+     "ik_goal_clamped_frames": 6,
+     "scale_leg_ratio": 1.008,
+     "phase_shift_frames": 19
+    },
+    "hazmat": {
+     "fbx": "client/Assets/Art/animations/mocap_v3/hazmat/loco_jog.fbx",
+     "frames": 24,
+     "duration_s": 0.7667,
+     "source_window_s": [
+      0.2417,
+      1.0
+     ],
+     "source_frames": [
+      29,
+      120
+     ],
+     "source_fps": 120.0,
+     "time_warp": 0.9891,
+     "loop_range_frames": [
+      0,
+      23
+     ],
+     "metres_per_cycle": 2.5525,
+     "native_speed_mps": 3.3293,
+     "stance_foot_backward_speed_mps": {
+      "l": 3.1861,
+      "r": 3.1859
+     },
+     "closure_residual": {
+      "hips_m": 0.0098,
+      "max_rot_deg": 12.89,
+      "worst_bones": [
+       [
+        12.9,
+        "ball_r"
+       ],
+       [
+        5.9,
+        "hand_r"
+       ],
+       [
+        5.4,
+        "neck_01"
+       ],
+       [
+        4.7,
+        "spine_02"
+       ]
+      ]
+     },
+     "arm_body_intersections": {
+      "frames_before": 0,
+      "frames_after": 0,
+      "tri_pairs_before_max": 0,
+      "tri_pairs_after_max": 0
+     },
+     "arm_abduction_added_deg_max": {
+      "l": 0,
+      "r": 0
+     },
+     "knee_offset_hips_raise_m": [
+      0.0055,
+      0.0173
+     ],
+     "hips_raised_m": -0.0031,
+     "ik_goal_clamped_frames": 7,
+     "scale_leg_ratio": 0.9827,
+     "phase_shift_frames": 19
+    }
+   }
+  },
+  {
+   "id": "loco_sprint",
+   "mode": "loop",
+   "replaces": "loco_run (UAL1 Sprint_Loop)",
+   "source": "CMU 143_01 \"Run\"",
+   "source_kind": "cmu",
+   "licence": "Free use. FAQ (http://mocap.cs.cmu.edu/faqs.php): \"The motio...",
+   "source_file": "art/raw/animations/loco_v3_bvh/cmu_143_01.bvh",
+   "per_target": {
+    "snow": {
+     "fbx": "client/Assets/Art/animations/mocap_v3/snow/loco_sprint.fbx",
+     "frames": 23,
+     "duration_s": 0.7333,
+     "source_window_s": [
+      0.0667,
+      0.7833
+     ],
+     "source_frames": [
+      8,
+      94
+     ],
+     "source_fps": 120.0,
+     "time_warp": 0.9773,
+     "loop_range_frames": [
+      0,
+      22
+     ],
+     "metres_per_cycle": 4.7999,
+     "native_speed_mps": 6.5454,
+     "stance_foot_backward_speed_mps": {
+      "l": 6.2374,
+      "r": null
+     },
+     "closure_residual": {
+      "hips_m": 0.0259,
+      "max_rot_deg": 39.92,
+      "worst_bones": [
+       [
+        39.9,
+        "Hand.R"
+       ],
+       [
+        38.5,
+        "Forearm.R"
+       ],
+       [
+        23.3,
+        "Toes.L"
+       ],
+       [
+        22.3,
+        "UpperArm.R"
+       ]
+      ]
+     },
+     "arm_body_intersections": {
+      "frames_before": 24,
+      "frames_after": 6,
+      "tri_pairs_before_max": 251,
+      "tri_pairs_after_max": 301
+     },
+     "arm_abduction_added_deg_max": {
+      "l": 8.0,
+      "r": 12.0
+     },
+     "knee_offset_hips_raise_m": [
+      0.0067,
+      0.011
+     ],
+     "hips_raised_m": 0.04,
+     "ik_goal_clamped_frames": 8,
+     "scale_leg_ratio": 1.1241,
+     "phase_shift_frames": 0
+    },
+    "rain": {
+     "fbx": "client/Assets/Art/animations/mocap_v3/rain/loco_sprint.fbx",
+     "frames": 23,
+     "duration_s": 0.7333,
+     "source_window_s": [
+      0.0667,
+      0.7833
+     ],
+     "source_frames": [
+      8,
+      94
+     ],
+     "source_fps": 120.0,
+     "time_warp": 0.9773,
+     "loop_range_frames": [
+      0,
+      22
+     ],
+     "metres_per_cycle": 5.0141,
+     "native_speed_mps": 6.8374,
+     "stance_foot_backward_speed_mps": {
+      "l": 6.4858,
+      "r": null
+     },
+     "closure_residual": {
+      "hips_m": 0.0379,
+      "max_rot_deg": 40.04,
+      "worst_bones": [
+       [
+        40.0,
+        "Hand.R"
+       ],
+       [
+        38.5,
+        "Forearm.R"
+       ],
+       [
+        23.3,
+        "Toes.L"
+       ],
+       [
+        22.3,
+        "UpperArm.R"
+       ]
+      ]
+     },
+     "arm_body_intersections": {
+      "frames_before": 34,
+      "frames_after": 9,
+      "tri_pairs_before_max": 533,
+      "tri_pairs_after_max": 361
+     },
+     "arm_abduction_added_deg_max": {
+      "l": 8.0,
+      "r": 12.0
+     },
+     "knee_offset_hips_raise_m": [
+      0.0068,
+      0.0115
+     ],
+     "hips_raised_m": 0.04,
+     "ik_goal_clamped_frames": 7,
+     "scale_leg_ratio": 1.1742,
+     "phase_shift_frames": 0
+    },
+    "hazmat": {
+     "fbx": "client/Assets/Art/animations/mocap_v3/hazmat/loco_sprint.fbx",
+     "frames": 23,
+     "duration_s": 0.7333,
+     "source_window_s": [
+      0.0667,
+      0.7833
+     ],
+     "source_frames": [
+      8,
+      94
+     ],
+     "source_fps": 120.0,
+     "time_warp": 0.9773,
+     "loop_range_frames": [
+      0,
+      22
+     ],
+     "metres_per_cycle": 4.8882,
+     "native_speed_mps": 6.6657,
+     "stance_foot_backward_speed_mps": {
+      "l": 6.3802,
+      "r": null
+     },
+     "closure_residual": {
+      "hips_m": 0.0235,
+      "max_rot_deg": 40.02,
+      "worst_bones": [
+       [
+        40.0,
+        "hand_r"
+       ],
+       [
+        38.5,
+        "lowerarm_r"
+       ],
+       [
+        23.3,
+        "ball_l"
+       ],
+       [
+        22.3,
+        "upperarm_r"
+       ]
+      ]
+     },
+     "arm_body_intersections": {
+      "frames_before": 9,
+      "frames_after": 3,
+      "tri_pairs_before_max": 150,
+      "tri_pairs_after_max": 112
+     },
+     "arm_abduction_added_deg_max": {
+      "l": 0,
+      "r": 12.0
+     },
+     "knee_offset_hips_raise_m": [
+      0.0094,
+      0.0125
+     ],
+     "hips_raised_m": 0.04,
+     "ik_goal_clamped_frames": 8,
+     "scale_leg_ratio": 1.1448,
+     "phase_shift_frames": 0
+    }
+   }
+  },
+  {
+   "id": "loco_walk_start",
+   "mode": "oneshot",
+   "replaces": "(new) idle -> walk",
+   "source": "CMU 16_32 \"walk\": standing start, ends on the left plant (= walk phase 0)",
+   "source_kind": "cmu",
+   "licence": "Free use. FAQ (http://mocap.cs.cmu.edu/faqs.php): \"The motio...",
+   "source_file": "art/raw/animations/loco_v3_bvh/cmu_16_32.bvh",
+   "per_target": {
+    "snow": {
+     "fbx": "client/Assets/Art/animations/mocap_v3/snow/loco_walk_start.fbx",
+     "frames": 58,
+     "duration_s": 1.9,
+     "source_window_s": [
+      0.7,
+      2.6
+     ],
+     "source_frames": [
+      84,
+      312
+     ],
+     "source_fps": 120.0,
+     "time_warp": 1.0,
+     "hips_displacement_m_xy": [
+      -0.0033,
+      -1.6703
+     ],
+     "yaw_change_deg": -0.8,
+     "hips_speed_mps_per_frame": [
+      0.151,
+      0.115,
+      0.117,
+      0.137,
+      0.138,
+      0.15,
+      0.134,
+      0.249,
+      0.271,
+      0.277,
+      0.399,
+      0.367,
+      0.499,
+      0.427,
+      0.582,
+      0.586,
+      0.653,
+      0.747,
+      0.72,
+      0.979,
+      1.062,
+      1.111,
+      1.157,
+      1.142,
+      1.058,
+      1.013,
+      1.012,
+      0.954,
+      0.958,
+      0.932,
+      0.943,
+      0.963,
+      0.993,
+      1.008,
+      1.067,
+      1.1,
+      1.155,
+      1.183,
+      1.278,
+      1.383,
+      1.441,
+      1.412,
+      1.378,
+      1.316,
+      1.233,
+      1.196,
+      1.169,
+      1.115,
+      1.14,
+      1.128,
+      1.181,
+      1.173,
+      1.21,
+      1.282,
+      1.301,
+      1.344,
+      1.449
+     ],
+     "arm_body_intersections": {
+      "frames_before": 18,
+      "frames_after": 0,
+      "tri_pairs_before_max": 16,
+      "tri_pairs_after_max": 0
+     },
+     "arm_abduction_added_deg_max": {
+      "l": 2.0,
+      "r": 2.0
+     },
+     "gaze_lift_deg": 9.9,
+     "knee_offset_hips_raise_m": [
+      0.0029,
+      0.0193
+     ],
+     "hips_raised_m": -0.0022,
+     "straightened": {
+      "yaw_removed_deg": -2.6,
+      "lateral_removed_m": 0.159
+     },
+     "ik_goal_clamped_frames": 14,
+     "scale_leg_ratio": 0.9939
+    },
+    "rain": {
+     "fbx": "client/Assets/Art/animations/mocap_v3/rain/loco_walk_start.fbx",
+     "frames": 58,
+     "duration_s": 1.9,
+     "source_window_s": [
+      0.7,
+      2.6
+     ],
+     "source_frames": [
+      84,
+      312
+     ],
+     "source_fps": 120.0,
+     "time_warp": 1.0,
+     "hips_displacement_m_xy": [
+      -0.0085,
+      -1.7559
+     ],
+     "yaw_change_deg": -0.8,
+     "hips_speed_mps_per_frame": [
+      0.161,
+      0.098,
+      0.107,
+      0.139,
+      0.159,
+      0.165,
+      0.137,
+      0.296,
+      0.282,
+      0.284,
+      0.43,
+      0.361,
+      0.552,
+      0.416,
+      0.635,
+      0.629,
+      0.678,
+      0.799,
+      0.712,
+      1.047,
+      1.121,
+      1.166,
+      1.214,
+      1.209,
+      1.113,
+      1.101,
+      1.091,
+      1.015,
+      1.016,
+      0.994,
+      1.001,
+      1.021,
+      1.042,
+      1.029,
+      1.113,
+      1.152,
+      1.219,
+      1.24,
+      1.35,
+      1.473,
+      1.547,
+      1.493,
+      1.478,
+      1.429,
+      1.332,
+      1.26,
+      1.226,
+      1.172,
+      1.195,
+      1.174,
+      1.206,
+      1.193,
+      1.238,
+      1.328,
+      1.355,
+      1.425,
+      1.572
+     ],
+     "arm_body_intersections": {
+      "frames_before": 98,
+      "frames_after": 0,
+      "tri_pairs_before_max": 360,
+      "tri_pairs_after_max": 0
+     },
+     "arm_abduction_added_deg_max": {
+      "l": 8.0,
+      "r": 10.0
+     },
+     "gaze_lift_deg": 9.0,
+     "knee_offset_hips_raise_m": [
+      0.0031,
+      0.0201
+     ],
+     "hips_raised_m": -0.0021,
+     "straightened": {
+      "yaw_removed_deg": -2.6,
+      "lateral_removed_m": 0.159
+     },
+     "ik_goal_clamped_frames": 14,
+     "scale_leg_ratio": 1.0382
+    },
+    "hazmat": {
+     "fbx": "client/Assets/Art/animations/mocap_v3/hazmat/loco_walk_start.fbx",
+     "frames": 58,
+     "duration_s": 1.9,
+     "source_window_s": [
+      0.7,
+      2.6
+     ],
+     "source_frames": [
+      84,
+      312
+     ],
+     "source_fps": 120.0,
+     "time_warp": 1.0,
+     "hips_displacement_m_xy": [
+      -0.0047,
+      -1.7052
+     ],
+     "yaw_change_deg": -0.8,
+     "hips_speed_mps_per_frame": [
+      0.147,
+      0.111,
+      0.11,
+      0.143,
+      0.152,
+      0.168,
+      0.136,
+      0.28,
+      0.273,
+      0.288,
+      0.417,
+      0.356,
+      0.525,
+      0.424,
+      0.606,
+      0.6,
+      0.66,
+      0.766,
+      0.718,
+      1.006,
+      1.086,
+      1.133,
+      1.18,
+      1.171,
+      1.081,
+      1.046,
+      1.042,
+      0.976,
+      0.981,
+      0.956,
+      0.967,
+      0.987,
+      1.013,
+      1.017,
+      1.087,
+      1.122,
+      1.184,
+      1.21,
+      1.31,
+      1.419,
+      1.482,
+      1.444,
+      1.421,
+      1.365,
+      1.271,
+      1.219,
+      1.19,
+      1.137,
+      1.162,
+      1.147,
+      1.191,
+      1.181,
+      1.223,
+      1.303,
+      1.325,
+      1.374,
+      1.498
+     ],
+     "arm_body_intersections": {
+      "frames_before": 34,
+      "frames_after": 0,
+      "tri_pairs_before_max": 157,
+      "tri_pairs_after_max": 0
+     },
+     "arm_abduction_added_deg_max": {
+      "l": 0,
+      "r": 6.0
+     },
+     "gaze_lift_deg": 11.7,
+     "knee_offset_hips_raise_m": [
+      0.0054,
+      0.0226
+     ],
+     "hips_raised_m": -0.0079,
+     "straightened": {
+      "yaw_removed_deg": -2.6,
+      "lateral_removed_m": 0.159
+     },
+     "ik_goal_clamped_frames": 16,
+     "scale_leg_ratio": 1.0122
+    }
+   }
+  },
+  {
+   "id": "loco_walk_stop",
+   "mode": "oneshot",
+   "replaces": "(new) walk -> idle",
+   "source": "CMU 16_34 \"slow walk, stop\": starts on the left plant (= walk phase 0)",
+   "source_kind": "cmu",
+   "licence": "Free use. FAQ (http://mocap.cs.cmu.edu/faqs.php): \"The motio...",
+   "source_file": "art/raw/animations/loco_v3_bvh/cmu_16_34.bvh",
+   "per_target": {
+    "snow": {
+     "fbx": "client/Assets/Art/animations/mocap_v3/snow/loco_walk_stop.fbx",
+     "frames": 71,
+     "duration_s": 2.3333,
+     "source_window_s": [
+      0.52,
+      2.86
+     ],
+     "source_frames": [
+      62,
+      343
+     ],
+     "source_fps": 120.0,
+     "time_warp": 1.0029,
+     "hips_displacement_m_xy": [
+      0.0045,
+      -1.4544
+     ],
+     "yaw_change_deg": 2.6,
+     "hips_speed_mps_per_frame": [
+      1.402,
+      1.28,
+      1.219,
+      1.097,
+      1.191,
+      0.989,
+      0.992,
+      0.976,
+      0.957,
+      0.993,
+      1.015,
+      1.058,
+      1.061,
+      1.085,
+      1.119,
+      1.187,
+      1.163,
+      1.141,
+      1.085,
+      1.013,
+      0.902,
+      0.822,
+      0.775,
+      0.754,
+      0.782,
+      0.741,
+      0.738,
+      0.754,
+      0.794,
+      0.8,
+      0.737,
+      0.726,
+      0.829,
+      0.879,
+      0.847,
+      0.813,
+      0.752,
+      0.684,
+      0.638,
+      0.55,
+      0.469,
+      0.474,
+      0.434,
+      0.395,
+      0.402,
+      0.401,
+      0.403,
+      0.358,
+      0.356,
+      0.386,
+      0.34,
+      0.336,
+      0.294,
+      0.287,
+      0.248,
+      0.213,
+      0.202,
+      0.2,
+      0.18,
+      0.145,
+      0.133,
+      0.129,
+      0.078,
+      0.091,
+      0.059,
+      0.055,
+      0.044,
+      0.049,
+      0.015,
+      0.014
+     ],
+     "arm_body_intersections": {
+      "frames_before": 31,
+      "frames_after": 0,
+      "tri_pairs_before_max": 35,
+      "tri_pairs_after_max": 0
+     },
+     "arm_abduction_added_deg_max": {
+      "l": 2.0,
+      "r": 2.0
+     },
+     "gaze_lift_deg": 5.8,
+     "knee_offset_hips_raise_m": [
+      0.0053,
+      0.017
+     ],
+     "hips_raised_m": 0.0062,
+     "straightened": {
+      "yaw_removed_deg": 8.3,
+      "lateral_removed_m": -0.105
+     },
+     "ik_goal_clamped_frames": 11,
+     "scale_leg_ratio": 0.9939
+    },
+    "rain": {
+     "fbx": "client/Assets/Art/animations/mocap_v3/rain/loco_walk_stop.fbx",
+     "frames": 71,
+     "duration_s": 2.3333,
+     "source_window_s": [
+      0.52,
+      2.86
+     ],
+     "source_frames": [
+      62,
+      343
+     ],
+     "source_fps": 120.0,
+     "time_warp": 1.0029,
+     "hips_displacement_m_xy": [
+      0.0105,
+      -1.5131
+     ],
+     "yaw_change_deg": 2.6,
+     "hips_speed_mps_per_frame": [
+      1.516,
+      1.385,
+      1.328,
+      1.174,
+      1.291,
+      1.019,
+      1.027,
+      0.999,
+      0.968,
+      0.997,
+      1.034,
+      1.08,
+      1.105,
+      1.152,
+      1.188,
+      1.289,
+      1.266,
+      1.227,
+      1.182,
+      1.101,
+      0.956,
+      0.868,
+      0.802,
+      0.781,
+      0.806,
+      0.755,
+      0.739,
+      0.751,
+      0.799,
+      0.798,
+      0.723,
+      0.763,
+      0.887,
+      0.899,
+      0.879,
+      0.881,
+      0.797,
+      0.722,
+      0.67,
+      0.583,
+      0.464,
+      0.489,
+      0.452,
+      0.409,
+      0.418,
+      0.415,
+      0.41,
+      0.369,
+      0.37,
+      0.428,
+      0.361,
+      0.354,
+      0.305,
+      0.282,
+      0.262,
+      0.216,
+      0.213,
+      0.215,
+      0.186,
+      0.148,
+      0.13,
+      0.118,
+      0.067,
+      0.093,
+      0.081,
+      0.052,
+      0.048,
+      0.059,
+      0.008,
+      0.01
+     ],
+     "arm_body_intersections": {
+      "frames_before": 115,
+      "frames_after": 0,
+      "tri_pairs_before_max": 438,
+      "tri_pairs_after_max": 0
+     },
+     "arm_abduction_added_deg_max": {
+      "l": 10.0,
+      "r": 12.0
+     },
+     "gaze_lift_deg": 4.9,
+     "knee_offset_hips_raise_m": [
+      0.0065,
+      0.0182
+     ],
+     "hips_raised_m": 0.0058,
+     "straightened": {
+      "yaw_removed_deg": 8.3,
+      "lateral_removed_m": -0.105
+     },
+     "ik_goal_clamped_frames": 10,
+     "scale_leg_ratio": 1.0382
+    },
+    "hazmat": {
+     "fbx": "client/Assets/Art/animations/mocap_v3/hazmat/loco_walk_stop.fbx",
+     "frames": 71,
+     "duration_s": 2.3333,
+     "source_window_s": [
+      0.52,
+      2.86
+     ],
+     "source_frames": [
+      62,
+      343
+     ],
+     "source_fps": 120.0,
+     "time_warp": 1.0029,
+     "hips_displacement_m_xy": [
+      0.005,
+      -1.4785
+     ],
+     "yaw_change_deg": 2.6,
+     "hips_speed_mps_per_frame": [
+      1.441,
+      1.317,
+      1.27,
+      1.128,
+      1.239,
+      0.994,
+      1.001,
+      0.983,
+      0.96,
+      0.994,
+      1.023,
+      1.068,
+      1.08,
+      1.112,
+      1.148,
+      1.239,
+      1.205,
+      1.179,
+      1.133,
+      1.054,
+      0.921,
+      0.836,
+      0.782,
+      0.762,
+      0.791,
+      0.745,
+      0.738,
+      0.751,
+      0.795,
+      0.798,
+      0.728,
+      0.742,
+      0.856,
+      0.893,
+      0.862,
+      0.835,
+      0.766,
+      0.699,
+      0.651,
+      0.563,
+      0.467,
+      0.479,
+      0.438,
+      0.399,
+      0.408,
+      0.412,
+      0.408,
+      0.357,
+      0.354,
+      0.397,
+      0.341,
+      0.342,
+      0.296,
+      0.284,
+      0.253,
+      0.213,
+      0.21,
+      0.205,
+      0.183,
+      0.142,
+      0.128,
+      0.128,
+      0.078,
+      0.099,
+      0.078,
+      0.053,
+      0.053,
+      0.059,
+      0.016,
+      0.012
+     ],
+     "arm_body_intersections": {
+      "frames_before": 61,
+      "frames_after": 0,
+      "tri_pairs_before_max": 186,
+      "tri_pairs_after_max": 0
+     },
+     "arm_abduction_added_deg_max": {
+      "l": 2.0,
+      "r": 6.0
+     },
+     "gaze_lift_deg": 7.5,
+     "knee_offset_hips_raise_m": [
+      0.0051,
+      0.0182
+     ],
+     "hips_raised_m": 0.0016,
+     "straightened": {
+      "yaw_removed_deg": 8.3,
+      "lateral_removed_m": -0.105
+     },
+     "ik_goal_clamped_frames": 12,
+     "scale_leg_ratio": 1.0122
+    }
+   }
+  },
+  {
+   "id": "loco_run_start",
+   "mode": "oneshot",
+   "replaces": "(new) idle -> jog / sprint",
+   "source": "CMU 143_03 \"Start to Run\": ends at ~4.3 m/s on the left plant",
+   "source_kind": "cmu",
+   "licence": "Free use. FAQ (http://mocap.cs.cmu.edu/faqs.php): \"The motio...",
+   "source_file": "art/raw/animations/loco_v3_bvh/cmu_143_03.bvh",
+   "per_target": {
+    "snow": {
+     "fbx": "client/Assets/Art/animations/mocap_v3/snow/loco_run_start.fbx",
+     "frames": 31,
+     "duration_s": 1.0,
+     "source_window_s": [
+      0.62,
+      1.62
+     ],
+     "source_frames": [
+      74,
+      194
+     ],
+     "source_fps": 120.0,
+     "time_warp": 1.0,
+     "hips_displacement_m_xy": [
+      0.0048,
+      -1.6778
+     ],
+     "yaw_change_deg": 1.1,
+     "hips_speed_mps_per_frame": [
+      0.018,
+      0.029,
+      0.025,
+      0.05,
+      0.052,
+      0.078,
+      0.105,
+      0.132,
+      0.139,
+      0.185,
+      0.233,
+      0.336,
+      0.503,
+      0.64,
+      0.709,
+      0.824,
+      1.115,
+      1.345,
+      1.692,
+      2.015,
+      2.404,
+      2.972,
+      3.274,
+      3.543,
+      3.832,
+      4.553,
+      5.395,
+      5.222,
+      4.86,
+      4.683
+     ],
+     "arm_body_intersections": {
+      "frames_before": 31,
+      "frames_after": 3,
+      "tri_pairs_before_max": 295,
+      "tri_pairs_after_max": 2
+     },
+     "arm_abduction_added_deg_max": {
+      "l": 4.0,
+      "r": 12.0
+     },
+     "gaze_lift_deg": 7.7,
+     "knee_offset_hips_raise_m": [
+      0.0011,
+      0.0161
+     ],
+     "hips_raised_m": -0.0017,
+     "straightened": {
+      "yaw_removed_deg": 4.1,
+      "lateral_removed_m": -0.014
+     },
+     "ik_goal_clamped_frames": 2,
+     "scale_leg_ratio": 1.1241
+    },
+    "rain": {
+     "fbx": "client/Assets/Art/animations/mocap_v3/rain/loco_run_start.fbx",
+     "frames": 31,
+     "duration_s": 1.0,
+     "source_window_s": [
+      0.62,
+      1.62
+     ],
+     "source_frames": [
+      74,
+      194
+     ],
+     "source_fps": 120.0,
+     "time_warp": 1.0,
+     "hips_displacement_m_xy": [
+      0.0125,
+      -1.7348
+     ],
+     "yaw_change_deg": 1.1,
+     "hips_speed_mps_per_frame": [
+      0.041,
+      0.049,
+      0.033,
+      0.085,
+      0.05,
+      0.084,
+      0.114,
+      0.148,
+      0.129,
+      0.169,
+      0.223,
+      0.308,
+      0.494,
+      0.654,
+      0.741,
+      0.834,
+      1.129,
+      1.351,
+      1.712,
+      2.055,
+      2.468,
+      3.029,
+      3.366,
+      3.763,
+      3.999,
+      4.69,
+      5.654,
+      5.48,
+      5.173,
+      4.948
+     ],
+     "arm_body_intersections": {
+      "frames_before": 56,
+      "frames_after": 13,
+      "tri_pairs_before_max": 445,
+      "tri_pairs_after_max": 86
+     },
+     "arm_abduction_added_deg_max": {
+      "l": 12.0,
+      "r": 12.0
+     },
+     "gaze_lift_deg": 6.8,
+     "knee_offset_hips_raise_m": [
+      0.0012,
+      0.0167
+     ],
+     "hips_raised_m": -0.0012,
+     "straightened": {
+      "yaw_removed_deg": 4.1,
+      "lateral_removed_m": -0.014
+     },
+     "ik_goal_clamped_frames": 2,
+     "scale_leg_ratio": 1.1742
+    },
+    "hazmat": {
+     "fbx": "client/Assets/Art/animations/mocap_v3/hazmat/loco_run_start.fbx",
+     "frames": 31,
+     "duration_s": 1.0,
+     "source_window_s": [
+      0.62,
+      1.62
+     ],
+     "source_frames": [
+      74,
+      194
+     ],
+     "source_fps": 120.0,
+     "time_warp": 1.0,
+     "hips_displacement_m_xy": [
+      0.0068,
+      -1.7012
+     ],
+     "yaw_change_deg": 1.1,
+     "hips_speed_mps_per_frame": [
+      0.035,
+      0.044,
+      0.029,
+      0.065,
+      0.05,
+      0.081,
+      0.108,
+      0.139,
+      0.135,
+      0.182,
+      0.243,
+      0.334,
+      0.501,
+      0.634,
+      0.732,
+      0.833,
+      1.114,
+      1.345,
+      1.7,
+      2.034,
+      2.438,
+      3.005,
+      3.312,
+      3.623,
+      3.894,
+      4.612,
+      5.5,
+      5.329,
+      4.981,
+      4.787
+     ],
+     "arm_body_intersections": {
+      "frames_before": 20,
+      "frames_after": 0,
+      "tri_pairs_before_max": 191,
+      "tri_pairs_after_max": 0
+     },
+     "arm_abduction_added_deg_max": {
+      "l": 0,
+      "r": 6.0
+     },
+     "gaze_lift_deg": 9.4,
+     "knee_offset_hips_raise_m": [
+      0.0007,
+      0.0179
+     ],
+     "hips_raised_m": -0.0099,
+     "straightened": {
+      "yaw_removed_deg": 4.1,
+      "lateral_removed_m": -0.014
+     },
+     "ik_goal_clamped_frames": 4,
+     "scale_leg_ratio": 1.1448
+    }
+   }
+  },
+  {
+   "id": "loco_jog_stop",
+   "mode": "oneshot",
+   "replaces": "loco_run_stop (CMU 104_09 JogStop)",
+   "source": "CMU 16_57 \"run/jog, sudden stop\"",
+   "source_kind": "cmu",
+   "licence": "Free use. FAQ (http://mocap.cs.cmu.edu/faqs.php): \"The motio...",
+   "source_file": "art/raw/animations/loco_v3_bvh/cmu_16_57.bvh",
+   "per_target": {
+    "snow": {
+     "fbx": "client/Assets/Art/animations/mocap_v3/snow/loco_jog_stop.fbx",
+     "frames": 63,
+     "duration_s": 2.0667,
+     "source_window_s": [
+      0.09,
+      2.15
+     ],
+     "source_frames": [
+      11,
+      258
+     ],
+     "source_fps": 120.0,
+     "time_warp": 0.9968,
+     "hips_displacement_m_xy": [
+      0.0006,
+      -2.5957
+     ],
+     "yaw_change_deg": -3.1,
+     "hips_speed_mps_per_frame": [
+      2.895,
+      2.875,
+      2.896,
+      3.02,
+      3.16,
+      3.17,
+      2.954,
+      2.915,
+      2.632,
+      2.467,
+      2.325,
+      2.183,
+      2.319,
+      2.243,
+      2.269,
+      2.34,
+      2.225,
+      2.16,
+      1.934,
+      1.699,
+      1.59,
+      1.472,
+      1.467,
+      1.368,
+      1.347,
+      1.378,
+      1.374,
+      1.385,
+      1.341,
+      1.343,
+      1.329,
+      1.346,
+      1.176,
+      1.052,
+      0.907,
+      0.727,
+      0.685,
+      0.603,
+      0.552,
+      0.534,
+      0.547,
+      0.598,
+      0.455,
+      0.374,
+      0.425,
+      0.388,
+      0.352,
+      0.322,
+      0.235,
+      0.168,
+      0.152,
+      0.116,
+      0.148,
+      0.048,
+      0.071,
+      0.081,
+      0.043,
+      0.078,
+      0.048,
+      0.053,
+      0.053,
+      0.023
+     ],
+     "arm_body_intersections": {
+      "frames_before": 33,
+      "frames_after": 6,
+      "tri_pairs_before_max": 73,
+      "tri_pairs_after_max": 57
+     },
+     "arm_abduction_added_deg_max": {
+      "l": 4.0,
+      "r": 12.0
+     },
+     "knee_offset_hips_raise_m": [
+      0.0042,
+      0.0173
+     ],
+     "hips_raised_m": 0.025,
+     "straightened": {
+      "yaw_removed_deg": 3.0,
+      "lateral_removed_m": -0.048
+     },
+     "ik_goal_clamped_frames": 14,
+     "scale_leg_ratio": 0.9939
+    },
+    "rain": {
+     "fbx": "client/Assets/Art/animations/mocap_v3/rain/loco_jog_stop.fbx",
+     "frames": 63,
+     "duration_s": 2.0667,
+     "source_window_s": [
+      0.09,
+      2.15
+     ],
+     "source_frames": [
+      11,
+      258
+     ],
+     "source_fps": 120.0,
+     "time_warp": 0.9968,
+     "hips_displacement_m_xy": [
+      0.0054,
+      -2.6955
+     ],
+     "yaw_change_deg": -3.1,
+     "hips_speed_mps_per_frame": [
+      3.03,
+      3.008,
+      2.968,
+      3.107,
+      3.293,
+      3.301,
+      3.144,
+      3.186,
+      2.79,
+      2.651,
+      2.419,
+      2.274,
+      2.374,
+      2.262,
+      2.336,
+      2.422,
+      2.329,
+      2.322,
+      2.079,
+      1.833,
+      1.661,
+      1.515,
+      1.522,
+      1.391,
+      1.36,
+      1.378,
+      1.374,
+      1.405,
+      1.371,
+      1.402,
+      1.395,
+      1.462,
+      1.318,
+      1.121,
+      0.948,
+      0.741,
+      0.698,
+      0.599,
+      0.544,
+      0.545,
+      0.551,
+      0.607,
+      0.468,
+      0.413,
+      0.464,
+      0.418,
+      0.357,
+      0.323,
+      0.217,
+      0.155,
+      0.148,
+      0.124,
+      0.149,
+      0.037,
+      0.075,
+      0.09,
+      0.009,
+      0.091,
+      0.058,
+      0.037,
+      0.045,
+      0.015
+     ],
+     "arm_body_intersections": {
+      "frames_before": 84,
+      "frames_after": 5,
+      "tri_pairs_before_max": 433,
+      "tri_pairs_after_max": 36
+     },
+     "arm_abduction_added_deg_max": {
+      "l": 12.0,
+      "r": 12.0
+     },
+     "knee_offset_hips_raise_m": [
+      0.0043,
+      0.0182
+     ],
+     "hips_raised_m": 0.0263,
+     "straightened": {
+      "yaw_removed_deg": 3.0,
+      "lateral_removed_m": -0.048
+     },
+     "ik_goal_clamped_frames": 14,
+     "scale_leg_ratio": 1.0382
+    },
+    "hazmat": {
+     "fbx": "client/Assets/Art/animations/mocap_v3/hazmat/loco_jog_stop.fbx",
+     "frames": 63,
+     "duration_s": 2.0667,
+     "source_window_s": [
+      0.09,
+      2.15
+     ],
+     "source_frames": [
+      11,
+      258
+     ],
+     "source_fps": 120.0,
+     "time_warp": 0.9968,
+     "hips_displacement_m_xy": [
+      0.0055,
+      -2.636
+     ],
+     "yaw_change_deg": -3.1,
+     "hips_speed_mps_per_frame": [
+      2.951,
+      2.932,
+      2.921,
+      3.053,
+      3.216,
+      3.223,
+      3.036,
+      3.04,
+      2.704,
+      2.55,
+      2.361,
+      2.22,
+      2.341,
+      2.244,
+      2.295,
+      2.373,
+      2.268,
+      2.232,
+      1.998,
+      1.759,
+      1.619,
+      1.483,
+      1.488,
+      1.373,
+      1.349,
+      1.373,
+      1.371,
+      1.396,
+      1.36,
+      1.372,
+      1.358,
+      1.401,
+      1.228,
+      1.088,
+      0.935,
+      0.734,
+      0.683,
+      0.595,
+      0.544,
+      0.531,
+      0.548,
+      0.602,
+      0.459,
+      0.391,
+      0.442,
+      0.401,
+      0.353,
+      0.323,
+      0.227,
+      0.16,
+      0.154,
+      0.116,
+      0.147,
+      0.04,
+      0.064,
+      0.075,
+      0.024,
+      0.07,
+      0.036,
+      0.043,
+      0.049,
+      0.02
+     ],
+     "arm_body_intersections": {
+      "frames_before": 19,
+      "frames_after": 0,
+      "tri_pairs_before_max": 175,
+      "tri_pairs_after_max": 0
+     },
+     "arm_abduction_added_deg_max": {
+      "l": 2.0,
+      "r": 4.0
+     },
+     "gaze_lift_deg": 2.4,
+     "knee_offset_hips_raise_m": [
+      0.0049,
+      0.0177
+     ],
+     "hips_raised_m": 0.0214,
+     "straightened": {
+      "yaw_removed_deg": 3.0,
+      "lateral_removed_m": -0.048
+     },
+     "ik_goal_clamped_frames": 13,
+     "scale_leg_ratio": 1.0122
+    }
+   }
+  },
+  {
+   "id": "turn_90_l",
+   "mode": "turn",
+   "replaces": "(new)",
+   "source": "CMU 69_17 \"turn in place\"",
+   "source_kind": "cmu",
+   "licence": "Free use. FAQ (http://mocap.cs.cmu.edu/faqs.php): \"The motio...",
+   "source_file": "art/raw/animations/loco_v3_bvh/cmu_69_17.bvh",
+   "per_target": {
+    "snow": {
+     "fbx": "client/Assets/Art/animations/mocap_v3/snow/turn_90_l.fbx",
+     "frames": 49,
+     "duration_s": 1.6,
+     "source_window_s": [
+      0.7,
+      2.3
+     ],
+     "source_frames": [
+      84,
+      276
+     ],
+     "source_fps": 120.0,
+     "time_warp": 1.0,
+     "hips_displacement_m_xy": [
+      0.1297,
+      0.0978
+     ],
+     "yaw_change_deg": 93.7,
+     "hips_speed_mps_per_frame": [
+      0.038,
+      0.056,
+      0.057,
+      0.069,
+      0.061,
+      0.065,
+      0.081,
+      0.08,
+      0.056,
+      0.028,
+      0.047,
+      0.062,
+      0.091,
+      0.042,
+      0.056,
+      0.072,
+      0.094,
+      0.123,
+      0.119,
+      0.144,
+      0.202,
+      0.21,
+      0.295,
+      0.251,
+      0.297,
+      0.317,
+      0.306,
+      0.28,
+      0.283,
+      0.275,
+      0.249,
+      0.223,
+      0.177,
+      0.127,
+      0.12,
+      0.097,
+      0.098,
+      0.048,
+      0.073,
+      0.066,
+      0.066,
+      0.118,
+      0.106,
+      0.154,
+      0.154,
+      0.248,
+      0.078,
+      0.12
+     ],
+     "arm_body_intersections": {
+      "frames_before": 0,
+      "frames_after": 0,
+      "tri_pairs_before_max": 0,
+      "tri_pairs_after_max": 0
+     },
+     "arm_abduction_added_deg_max": {
+      "l": 0,
+      "r": 0
+     },
+     "gaze_lift_deg": 11.9,
+     "knee_offset_hips_raise_m": [
+      0.002,
+      0.0093
+     ],
+     "hips_raised_m": -0.0027,
+     "ik_goal_clamped_frames": 2,
+     "scale_leg_ratio": 0.9759
+    },
+    "rain": {
+     "fbx": "client/Assets/Art/animations/mocap_v3/rain/turn_90_l.fbx",
+     "frames": 49,
+     "duration_s": 1.6,
+     "source_window_s": [
+      0.7,
+      2.3
+     ],
+     "source_frames": [
+      84,
+      276
+     ],
+     "source_fps": 120.0,
+     "time_warp": 1.0,
+     "hips_displacement_m_xy": [
+      0.1448,
+      0.1033
+     ],
+     "yaw_change_deg": 93.7,
+     "hips_speed_mps_per_frame": [
+      0.037,
+      0.058,
+      0.059,
+      0.076,
+      0.067,
+      0.08,
+      0.088,
+      0.085,
+      0.055,
+      0.026,
+      0.098,
+      0.088,
+      0.097,
+      0.05,
+      0.065,
+      0.082,
+      0.105,
+      0.145,
+      0.128,
+      0.141,
+      0.219,
+      0.201,
+      0.38,
+      0.265,
+      0.33,
+      0.363,
+      0.344,
+      0.295,
+      0.299,
+      0.308,
+      0.296,
+      0.256,
+      0.197,
+      0.137,
+      0.123,
+      0.087,
+      0.103,
+      0.042,
+      0.078,
+      0.062,
+      0.071,
+      0.124,
+      0.119,
+      0.167,
+      0.166,
+      0.333,
+      0.096,
+      0.122
+     ],
+     "arm_body_intersections": {
+      "frames_before": 86,
+      "frames_after": 0,
+      "tri_pairs_before_max": 304,
+      "tri_pairs_after_max": 0
+     },
+     "arm_abduction_added_deg_max": {
+      "l": 4.0,
+      "r": 6.0
+     },
+     "gaze_lift_deg": 11.0,
+     "knee_offset_hips_raise_m": [
+      0.0021,
+      0.0096
+     ],
+     "hips_raised_m": -0.0025,
+     "ik_goal_clamped_frames": 2,
+     "scale_leg_ratio": 1.0195
+    },
+    "hazmat": {
+     "fbx": "client/Assets/Art/animations/mocap_v3/hazmat/turn_90_l.fbx",
+     "frames": 49,
+     "duration_s": 1.6,
+     "source_window_s": [
+      0.7,
+      2.3
+     ],
+     "source_frames": [
+      84,
+      276
+     ],
+     "source_fps": 120.0,
+     "time_warp": 1.0,
+     "hips_displacement_m_xy": [
+      0.0891,
+      0.0507
+     ],
+     "yaw_change_deg": 93.7,
+     "hips_speed_mps_per_frame": [
+      0.041,
+      0.063,
+      0.066,
+      0.083,
+      0.075,
+      0.092,
+      0.111,
+      0.104,
+      0.091,
+      0.071,
+      0.035,
+      0.111,
+      0.104,
+      0.06,
+      0.056,
+      0.029,
+      0.015,
+      0.051,
+      0.038,
+      0.064,
+      0.133,
+      0.127,
+      0.263,
+      0.186,
+      0.248,
+      0.281,
+      0.258,
+      0.219,
+      0.228,
+      0.233,
+      0.215,
+      0.196,
+      0.141,
+      0.095,
+      0.097,
+      0.069,
+      0.096,
+      0.045,
+      0.068,
+      0.069,
+      0.075,
+      0.128,
+      0.124,
+      0.175,
+      0.173,
+      0.289,
+      0.094,
+      0.12
+     ],
+     "arm_body_intersections": {
+      "frames_before": 8,
+      "frames_after": 0,
+      "tri_pairs_before_max": 17,
+      "tri_pairs_after_max": 0
+     },
+     "arm_abduction_added_deg_max": {
+      "l": 0,
+      "r": 2.0
+     },
+     "gaze_lift_deg": 13.6,
+     "knee_offset_hips_raise_m": [
+      0.0025,
+      0.0132
+     ],
+     "hips_raised_m": -0.0093,
+     "ik_goal_clamped_frames": 2,
+     "scale_leg_ratio": 0.9939
+    }
+   }
+  },
+  {
+   "id": "turn_90_r",
+   "mode": "turn",
+   "replaces": "(new)",
+   "source": "CMU 69_18 \"turn in place (opposite direction)\"",
+   "source_kind": "cmu",
+   "licence": "Free use. FAQ (http://mocap.cs.cmu.edu/faqs.php): \"The motio...",
+   "source_file": "art/raw/animations/loco_v3_bvh/cmu_69_18.bvh",
+   "per_target": {
+    "snow": {
+     "fbx": "client/Assets/Art/animations/mocap_v3/snow/turn_90_r.fbx",
+     "frames": 41,
+     "duration_s": 1.3333,
+     "source_window_s": [
+      4.0,
+      5.35
+     ],
+     "source_frames": [
+      480,
+      642
+     ],
+     "source_fps": 120.0,
+     "time_warp": 1.0125,
+     "hips_displacement_m_xy": [
+      -0.0028,
+      0.1212
+     ],
+     "yaw_change_deg": -89.7,
+     "hips_speed_mps_per_frame": [
+      0.11,
+      0.091,
+      0.124,
+      0.122,
+      0.123,
+      0.137,
+      0.113,
+      0.139,
+      0.144,
+      0.126,
+      0.104,
+      0.092,
+      0.071,
+      0.048,
+      0.083,
+      0.098,
+      0.15,
+      0.185,
+      0.233,
+      0.257,
+      0.268,
+      0.316,
+      0.27,
+      0.242,
+      0.247,
+      0.241,
+      0.217,
+      0.15,
+      0.101,
+      0.087,
+      0.02,
+      0.028,
+      0.038,
+      0.018,
+      0.019,
+      0.067,
+      0.045,
+      0.054,
+      0.042,
+      0.05
+     ],
+     "arm_body_intersections": {
+      "frames_before": 0,
+      "frames_after": 0,
+      "tri_pairs_before_max": 0,
+      "tri_pairs_after_max": 0
+     },
+     "arm_abduction_added_deg_max": {
+      "l": 0,
+      "r": 0
+     },
+     "gaze_lift_deg": 15.0,
+     "knee_offset_hips_raise_m": [
+      0.0021,
+      0.0083
+     ],
+     "hips_raised_m": -0.0024,
+     "ik_goal_clamped_frames": 4,
+     "scale_leg_ratio": 0.9759
+    },
+    "rain": {
+     "fbx": "client/Assets/Art/animations/mocap_v3/rain/turn_90_r.fbx",
+     "frames": 41,
+     "duration_s": 1.3333,
+     "source_window_s": [
+      4.0,
+      5.35
+     ],
+     "source_frames": [
+      480,
+      642
+     ],
+     "source_fps": 120.0,
+     "time_warp": 1.0125,
+     "hips_displacement_m_xy": [
+      -0.0126,
+      0.1353
+     ],
+     "yaw_change_deg": -89.7,
+     "hips_speed_mps_per_frame": [
+      0.123,
+      0.087,
+      0.144,
+      0.114,
+      0.122,
+      0.148,
+      0.11,
+      0.15,
+      0.18,
+      0.145,
+      0.114,
+      0.099,
+      0.08,
+      0.041,
+      0.109,
+      0.113,
+      0.165,
+      0.195,
+      0.245,
+      0.272,
+      0.261,
+      0.354,
+      0.294,
+      0.278,
+      0.271,
+      0.254,
+      0.227,
+      0.16,
+      0.11,
+      0.122,
+      0.041,
+      0.033,
+      0.051,
+      0.032,
+      0.072,
+      0.097,
+      0.072,
+      0.086,
+      0.065,
+      0.062
+     ],
+     "arm_body_intersections": {
+      "frames_before": 73,
+      "frames_after": 0,
+      "tri_pairs_before_max": 352,
+      "tri_pairs_after_max": 0
+     },
+     "arm_abduction_added_deg_max": {
+      "l": 6.0,
+      "r": 6.0
+     },
+     "gaze_lift_deg": 15.0,
+     "knee_offset_hips_raise_m": [
+      0.0021,
+      0.0088
+     ],
+     "hips_raised_m": -0.0027,
+     "ik_goal_clamped_frames": 4,
+     "scale_leg_ratio": 1.0195
+    },
+    "hazmat": {
+     "fbx": "client/Assets/Art/animations/mocap_v3/hazmat/turn_90_r.fbx",
+     "frames": 41,
+     "duration_s": 1.3333,
+     "source_window_s": [
+      4.0,
+      5.35
+     ],
+     "source_frames": [
+      480,
+      642
+     ],
+     "source_fps": 120.0,
+     "time_warp": 1.0125,
+     "hips_displacement_m_xy": [
+      0.04,
+      0.0808
+     ],
+     "yaw_change_deg": -89.7,
+     "hips_speed_mps_per_frame": [
+      0.113,
+      0.099,
+      0.141,
+      0.138,
+      0.155,
+      0.188,
+      0.154,
+      0.185,
+      0.196,
+      0.173,
+      0.154,
+      0.164,
+      0.16,
+      0.116,
+      0.045,
+      0.033,
+      0.062,
+      0.111,
+      0.161,
+      0.193,
+      0.191,
+      0.273,
+      0.236,
+      0.234,
+      0.219,
+      0.206,
+      0.179,
+      0.115,
+      0.061,
+      0.05,
+      0.031,
+      0.064,
+      0.092,
+      0.035,
+      0.029,
+      0.094,
+      0.07,
+      0.078,
+      0.051,
+      0.048
+     ],
+     "arm_body_intersections": {
+      "frames_before": 5,
+      "frames_after": 0,
+      "tri_pairs_before_max": 30,
+      "tri_pairs_after_max": 0
+     },
+     "arm_abduction_added_deg_max": {
+      "l": 2.0,
+      "r": 2.0
+     },
+     "gaze_lift_deg": 15.0,
+     "knee_offset_hips_raise_m": [
+      0.0026,
+      0.0078
+     ],
+     "hips_raised_m": -0.0026,
+     "ik_goal_clamped_frames": 8,
+     "scale_leg_ratio": 0.9939
+    }
+   }
+  },
+  {
+   "id": "turn_180_walk",
+   "mode": "turn",
+   "replaces": "(new) walking U-turn",
+   "source": "CMU 69_13 \"walk, turn in place\": slow walk -> 180 deg pivot -> walk",
+   "source_kind": "cmu",
+   "licence": "Free use. FAQ (http://mocap.cs.cmu.edu/faqs.php): \"The motio...",
+   "source_file": "art/raw/animations/loco_v3_bvh/cmu_69_13.bvh",
+   "per_target": {
+    "snow": {
+     "fbx": "client/Assets/Art/animations/mocap_v3/snow/turn_180_walk.fbx",
+     "frames": 64,
+     "duration_s": 2.1,
+     "source_window_s": [
+      3.45,
+      5.55
+     ],
+     "source_frames": [
+      414,
+      666
+     ],
+     "source_fps": 120.0,
+     "time_warp": 1.0,
+     "hips_displacement_m_xy": [
+      0.0552,
+      0.1853
+     ],
+     "yaw_change_deg": 169.3,
+     "hips_speed_mps_per_frame": [
+      0.822,
+      0.782,
+      0.733,
+      0.66,
+      0.652,
+      0.574,
+      0.507,
+      0.511,
+      0.487,
+      0.492,
+      0.494,
+      0.471,
+      0.506,
+      0.471,
+      0.45,
+      0.451,
+      0.45,
+      0.489,
+      0.429,
+      0.417,
+      0.353,
+      0.3,
+      0.325,
+      0.256,
+      0.201,
+      0.186,
+      0.113,
+      0.08,
+      0.001,
+      0.031,
+      0.077,
+      0.118,
+      0.152,
+      0.234,
+      0.276,
+      0.326,
+      0.404,
+      0.452,
+      0.504,
+      0.541,
+      0.599,
+      0.608,
+      0.582,
+      0.542,
+      0.517,
+      0.479,
+      0.497,
+      0.498,
+      0.512,
+      0.532,
+      0.554,
+      0.584,
+      0.596,
+      0.644,
+      0.682,
+      0.709,
+      0.742,
+      0.795,
+      0.861,
+      0.887,
+      0.933,
+      0.909,
+      0.895
+     ],
+     "arm_body_intersections": {
+      "frames_before": 0,
+      "frames_after": 0,
+      "tri_pairs_before_max": 0,
+      "tri_pairs_after_max": 0
+     },
+     "arm_abduction_added_deg_max": {
+      "l": 0,
+      "r": 0
+     },
+     "gaze_lift_deg": 15.0,
+     "knee_offset_hips_raise_m": [
+      0.0024,
+      0.0145
+     ],
+     "hips_raised_m": -0.003,
+     "ik_goal_clamped_frames": 11,
+     "scale_leg_ratio": 0.9759
+    },
+    "rain": {
+     "fbx": "client/Assets/Art/animations/mocap_v3/rain/turn_180_walk.fbx",
+     "frames": 64,
+     "duration_s": 2.1,
+     "source_window_s": [
+      3.45,
+      5.55
+     ],
+     "source_frames": [
+      414,
+      666
+     ],
+     "source_fps": 120.0,
+     "time_warp": 1.0,
+     "hips_displacement_m_xy": [
+      0.0558,
+      0.2107
+     ],
+     "yaw_change_deg": 169.3,
+     "hips_speed_mps_per_frame": [
+      0.906,
+      0.868,
+      0.802,
+      0.711,
+      0.693,
+      0.588,
+      0.516,
+      0.51,
+      0.483,
+      0.491,
+      0.49,
+      0.455,
+      0.518,
+      0.473,
+      0.44,
+      0.446,
+      0.444,
+      0.476,
+      0.432,
+      0.437,
+      0.315,
+      0.284,
+      0.336,
+      0.277,
+      0.202,
+      0.199,
+      0.114,
+      0.07,
+      0.03,
+      0.055,
+      0.087,
+      0.116,
+      0.139,
+      0.249,
+      0.278,
+      0.323,
+      0.423,
+      0.464,
+      0.532,
+      0.569,
+      0.635,
+      0.637,
+      0.629,
+      0.594,
+      0.58,
+      0.515,
+      0.529,
+      0.527,
+      0.546,
+      0.559,
+      0.578,
+      0.596,
+      0.607,
+      0.662,
+      0.709,
+      0.732,
+      0.778,
+      0.848,
+      0.904,
+      0.936,
+      0.983,
+      0.964,
+      0.958
+     ],
+     "arm_body_intersections": {
+      "frames_before": 80,
+      "frames_after": 0,
+      "tri_pairs_before_max": 431,
+      "tri_pairs_after_max": 0
+     },
+     "arm_abduction_added_deg_max": {
+      "l": 8.0,
+      "r": 8.0
+     },
+     "gaze_lift_deg": 15.0,
+     "knee_offset_hips_raise_m": [
+      0.0025,
+      0.0148
+     ],
+     "hips_raised_m": -0.0025,
+     "ik_goal_clamped_frames": 11,
+     "scale_leg_ratio": 1.0195
+    },
+    "hazmat": {
+     "fbx": "client/Assets/Art/animations/mocap_v3/hazmat/turn_180_walk.fbx",
+     "frames": 64,
+     "duration_s": 2.1,
+     "source_window_s": [
+      3.45,
+      5.55
+     ],
+     "source_frames": [
+      414,
+      666
+     ],
+     "source_fps": 120.0,
+     "time_warp": 1.0,
+     "hips_displacement_m_xy": [
+      0.0431,
+      0.1037
+     ],
+     "yaw_change_deg": 169.3,
+     "hips_speed_mps_per_frame": [
+      0.848,
+      0.81,
+      0.755,
+      0.676,
+      0.663,
+      0.582,
+      0.53,
+      0.538,
+      0.522,
+      0.547,
+      0.56,
+      0.543,
+      0.612,
+      0.589,
+      0.581,
+      0.604,
+      0.592,
+      0.615,
+      0.547,
+      0.524,
+      0.441,
+      0.407,
+      0.448,
+      0.374,
+      0.316,
+      0.31,
+      0.22,
+      0.166,
+      0.081,
+      0.045,
+      0.047,
+      0.074,
+      0.115,
+      0.205,
+      0.251,
+      0.303,
+      0.387,
+      0.428,
+      0.489,
+      0.533,
+      0.597,
+      0.602,
+      0.578,
+      0.538,
+      0.522,
+      0.476,
+      0.496,
+      0.501,
+      0.521,
+      0.538,
+      0.561,
+      0.587,
+      0.6,
+      0.651,
+      0.693,
+      0.719,
+      0.757,
+      0.817,
+      0.879,
+      0.906,
+      0.95,
+      0.93,
+      0.92
+     ],
+     "arm_body_intersections": {
+      "frames_before": 22,
+      "frames_after": 0,
+      "tri_pairs_before_max": 58,
+      "tri_pairs_after_max": 0
+     },
+     "arm_abduction_added_deg_max": {
+      "l": 0,
+      "r": 4.0
+     },
+     "gaze_lift_deg": 15.0,
+     "knee_offset_hips_raise_m": [
+      0.0035,
+      0.0226
+     ],
+     "hips_raised_m": -0.018,
+     "ik_goal_clamped_frames": 8,
+     "scale_leg_ratio": 0.9939
+    }
+   }
+  }
+ ]
+}

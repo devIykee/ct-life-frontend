@@ -56,5 +56,14 @@ namespace CTLife.Realtime {
 
 		[global::Colyseus.Schema.Type(14, "boolean")]
 		public bool talking = false;
+
+		[global::Colyseus.Schema.Type(15, "float32")]
+		public double ix = 0;
+
+		[global::Colyseus.Schema.Type(16, "float32")]
+		public double iz = 0;
+
+		[global::Colyseus.Schema.Type(17, "float32")]
+		public double irotY = 0;
 	}
 }

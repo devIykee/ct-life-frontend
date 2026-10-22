@@ -24,8 +24,15 @@ namespace CTLife.UI
             // The multi-model cast's credits (Sketchfab hero authors and others) land as one notice file from the cast lane.
             if (Resources.Load<TextAsset>(ModelCredits) != null)
                 entries.Add(Credit("credits.models", "credits.modelsSummary", null, ModelCredits, "UI/Licenses/CC-BY-4.0"));
-            // Feel lane F2: vehicle models (two CC BY 3.0) and their CC0 recorded sounds
-            entries.Add(Credit("credits.vehicles", "credits.vehiclesSummary", "https://poly.pizza", "UI/Licenses/Vehicle-Credits", "UI/Licenses/CC-BY-3.0"));
+            // Vehicles v3 (Sketchfab: CC BY-SA 4.0 hovercar, CC BY 4.0 cars and scooter), the v1 SUV and drone (Poly Pizza, CC0 /
+            // CC BY 3.0) and their CC0 recorded sounds; each source's link is in the notice
+            entries.Add(Credit("credits.vehicles", "credits.vehiclesSummary", null, "UI/Licenses/Vehicle-Credits",
+                "UI/Licenses/CC-BY-SA-4.0", "UI/Licenses/CC-BY-4.0", "UI/Licenses/CC-BY-3.0"));
+            // World v3: the city's semi-real buildings and street props (99.Miles CC BY 4.0, Neighbourhood City, Poly Haven CC0)
+            entries.Add(Credit("credits.world", "credits.worldSummary", null, "UI/Licenses/World-Credits", "UI/Licenses/CC-BY-4.0"));
+            // Mocap v3 locomotion: 100STYLE (CC BY 4.0) and the CMU database (acknowledgement requested)
+            entries.Add(Credit("credits.motion", "credits.motionSummary", "https://www.ianxmason.com/100style/", "UI/Licenses/Motion-Credits",
+                "UI/Licenses/CC-BY-4.0"));
             entries.Add(El.Text(Strings.T("credits.section.audio"), "ct-eyebrow"));
             entries.Add(Credit("credits.music", "credits.musicSummary", null, "Audio/Music-Credits", "UI/Licenses/CC-BY-4.0"));
             entries.Add(El.Text(Strings.T("credits.section.type"), "ct-eyebrow"));

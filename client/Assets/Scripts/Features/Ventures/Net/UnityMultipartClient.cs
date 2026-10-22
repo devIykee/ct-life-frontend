@@ -20,6 +20,9 @@ namespace CTLife.Ventures
 
         public async Task<JToken> PostFile(string path, string field, string fileName, string mime, byte[] data, string idempotencyKey, CancellationToken ct)
         {
+            ct.ThrowIfCancellationRequested();
+            if (RuntimeMode.IsOfflineDemo)
+                throw new ApiException(0, "OFFLINE_DEMO", "Server actions are unavailable in the offline demo");
             ValidateImage(data, mime);
             if (string.IsNullOrEmpty(idempotencyKey)) throw new ArgumentException("A retained Idempotency-Key is required", nameof(idempotencyKey));
             var session = Services.Get<Session>();

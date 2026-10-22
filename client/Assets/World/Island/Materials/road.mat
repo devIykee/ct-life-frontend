@@ -11,7 +11,8 @@ Material:
   m_Shader: {fileID: 4800000, guid: b2bb18778f05840949167c82852258b0, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
-  m_ValidKeywords: []
+  m_ValidKeywords:
+  - _PBR
   m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 1
@@ -23,8 +24,16 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
+    - _Albedo:
+        m_Texture: {fileID: 2800000, guid: 3fae1a8b144f740e48c0bf7e6060c4b4, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _Detail:
         m_Texture: {fileID: 2800000, guid: 1fe8f2655ab20486f8ee12d7116301c1, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Normal:
+        m_Texture: {fileID: 2800000, guid: 4d8d94b43ad62497e87bad681f27f3ae, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Ints: []
@@ -32,12 +41,18 @@ Material:
     - _Contrast: 0.8
     - _DetailScale: 0.2
     - _LineWidth: 0.14
+    - _MacroMid: 0.072
+    - _NormalStrength: 1
+    - _Patches: 0.6
+    - _Reflection: 1
+    - _TileMetres: 4
     - _Toon: 0.2
     - _Tracks: 0.12
-    - _Wear: 0.25
+    - _UsePBR: 1
+    - _Wear: 0.3
     m_Colors:
-    - _Color: {r: 0.34, g: 0.35, b: 0.38, a: 1}
-    - _White: {r: 0.93, g: 0.93, b: 0.9, a: 1}
-    - _Yellow: {r: 0.96, g: 0.78, b: 0.21999997, a: 1}
+    - _Color: {r: 1.3, g: 1.3, b: 1.34, a: 1}
+    - _White: {r: 0.86, g: 0.86, b: 0.84, a: 1}
+    - _Yellow: {r: 0.86, g: 0.66, b: 0.16, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

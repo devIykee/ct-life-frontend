@@ -25,6 +25,12 @@ namespace CTLife.World.Vehicles
         public static RoadNetwork Roads => RoadNetwork.Active;
         public static float FlightCeiling => IslandStreamer.FlightCeiling;
         public static float SeaLevel => IslandStreamer.SeaLevel;
+        public static float WaterSurfaceAt(Vector3 p) => IslandStreamer.WaterSurfaceAt(p.x, p.z);
+        public static bool Dry(Vector3 p, float margin = 0.3f)
+        {
+            float water = WaterSurfaceAt(p);
+            return float.IsNaN(water) || p.y > water + margin;
+        }
         public static void Prefetch(Vector3 position, Vector3 velocity, float horizonSeconds) => IslandStreamer.Prefetch(position, velocity, horizonSeconds);
         public static bool IsReady(Vector3 position) => IslandStreamer.IsReady(position);
 

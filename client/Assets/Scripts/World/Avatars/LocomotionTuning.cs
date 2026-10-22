@@ -92,14 +92,22 @@ namespace CTLife.World
         /// </summary>
         public static float Rate(float speed, float walkNative, float runNative) => Rate(speed, walkNative, runNative, runNative);
 
+        /// <summary>
+        /// Mocap v3: the 100STYLE sprint is upright and short-strided, so at speed-matched playback it reads as a fast jog.
+        /// Towards full sprint the cadence runs this much faster than the ground speed (a little stance slide traded for a
+        /// sprint that reads as one; AvatarView adds the forward lean).
+        /// </summary>
+        public const float SprintCadence = 1.08f;
+
         /// <summary>Three bands: walk → jog between the walk and jog speeds, jog → sprint between the jog and sprint speeds.</summary>
         public static float Rate(float speed, float walkNative, float runNative, float sprintNative)
         {
             if (speed <= 0.05f) return 1f;
             float walk = Mathf.Max(0.1f, walkNative), run = Mathf.Max(0.1f, runNative), sprint = Mathf.Max(0.1f, sprintNative);
+            float sprintT = Mathf.InverseLerp(BlendRun, BlendSprint, speed);
             float native = speed <= BlendRun ? Mathf.Lerp(walk, run, Mathf.InverseLerp(BlendWalk, BlendRun, speed))
-                : Mathf.Lerp(run, sprint, Mathf.InverseLerp(BlendRun, BlendSprint, speed));
-            return Mathf.Clamp(speed / native, 0.3f, 2.4f);
+                : Mathf.Lerp(run, sprint, sprintT);
+            return Mathf.Clamp(speed / native * Mathf.Lerp(1f, SprintCadence, sprintT), 0.3f, 2.4f);
         }
     }
 }

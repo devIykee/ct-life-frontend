@@ -209,7 +209,7 @@ namespace CTLife.WorldLife
 
         private void PollServer(float now)
         {
-            if (_api == null || _cts == null) return;
+            if (_api == null || _cts == null || RuntimeMode.IsOfflineDemo) return;
             bool wantsAds = false, wantsFeed = false;
             foreach (var s in _surfaces)
             {

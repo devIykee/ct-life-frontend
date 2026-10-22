@@ -29,7 +29,10 @@ namespace CTLife.UI
         private readonly EmotePicker _emotes;
         private readonly MovementControls _movement;
         private readonly VehicleControls _vehicle;
-        private VisualElement _droneAction;
+        private VisualElement _droneAction, _lockBadge, _jump;
+        private readonly HeatPlate _heat = new HeatPlate();
+        private VisualElement _recoveryVeil;
+        private IVisualElementScheduledItem _recoveryFade;
         private bool _shown = true;
         private readonly InteractionPrompt _interact;
         private readonly Func<IVenueMic> _venueMic;
@@ -93,6 +96,7 @@ namespace CTLife.UI
             _needsToggle.Add(El.PassThrough(El.Div("hud-plate-copy", meters, _needsSummary)));
             var lobby = HudAction("lobby", Strings.T("hud.lobby"), () => OpenUtility(OpenHome), "home-page");
             lobby.AddToClassList("hud-small-action");
+            lobby.AddToClassList("hud-fade");
             var plate = El.Div("hud-plate-row", _needsToggle, lobby);
             plate.pickingMode = PickingMode.Ignore;
 
@@ -107,7 +111,7 @@ namespace CTLife.UI
             _walletPill.Add(El.PassThrough(El.Div("hud-sol-mark")));
             _walletPill.Add(_walletValue);
             _walletPill.style.display = DisplayStyle.None;
-            var top = El.Div("ct-hud-top hud-currencies", cash, _walletPill);
+            var top = El.Div("ct-hud-top hud-currencies", El.Div("hud-currency-row", cash, _walletPill), _heat.Element);
             top.pickingMode = PickingMode.Ignore;
 
             // Top-right: the live minimap (tap = full map) with the place and presence under it, the Duo tucked beside it.
@@ -116,29 +120,45 @@ namespace CTLife.UI
             location.name = "hud-map";
             location.tooltip = Strings.T("hud.map");
             location.Add(_minimap);
-            var place = El.Div("hud-place", _venue, El.Div("ct-hud-presence", _online, _mood));
+            var place = El.Div("hud-place hud-fade", _venue, El.Div("ct-hud-presence", _online, _mood));
             location.Add(El.PassThrough(place));
             var phone = PhoneAction();
             phone.AddToClassList("hud-small-action");
             var personal = El.Div("ct-hud-personal hud-corner", phone, location);
             personal.pickingMode = PickingMode.Ignore;
 
-            // Bottom-right: round, icon-led context actions. Bottom-left: the joystick (MovementControls).
-            var social = El.Div("ct-hud-social",
+            // Bottom-right: Jump (a glass round in the corner), then the round, icon-led context actions. Bottom-left: the joystick.
+            _jump = JumpButton();
+            var social = El.Div("ct-hud-social hud-fade",
                 HudAction("chat", Strings.T("hud.chat"), () => { CollapseNeeds(); _emotes.Hide(); _chat.Toggle(); }, "speech-bubble"),
                 HudAction("emotes", Strings.T("hud.emote"), () => { CollapseNeeds(); _chat.Hide(); _emotes.Toggle(); }, "smiling"), _mic);
-            // Feel lane F2: the pocket camera drone (CT Island only).
-            _droneAction = HudAction("drone", Strings.T("hud.drone"), () => CTLife.World.Vehicles.VehicleSystem.Current?.DeployDrone(), "drone-with-camera");
+            // The owned flyer (CT Island only): since vehicles v3 the hovercar comes to the player and they get in. The quadcopter
+            // (VehicleSystem.DeployDrone) is no longer on the default HUD.
+            // The hovercar is a bought asset (a scarce right-to-drive NFT, real money only): without it the button stays, locked
+            // (dimmed, "Buy in Duo Shop"), and a tap says where to get it.
+            _droneAction = HudAction("hovercar", Strings.T("hud.drone"), () =>
+            {
+                var vs = CTLife.World.Vehicles.VehicleSystem.Current;
+                if (vs != null && vs.CanDeployDrone) vs.SummonHovercar();
+                else OpenShop();   // locked: real money only, sold in the Duo Shop (never a Cash price)
+            }, "rocket");
+            _lockBadge = El.PassThrough(El.Div("hud-lock-badge", new UiIcon("locked")));
+            _droneAction.Add(_lockBadge);
             _droneAction.style.display = DisplayStyle.None;
             social.Insert(0, _droneAction);
             social.pickingMode = PickingMode.Ignore;
             El.PassThrough(_needs);
             // The stick's touch area is the whole lower-left of the screen (a floating stick), so it goes first: every
             // other control sits above it and keeps its taps.
-            _root = El.Div("ct-hud hud-arena", _movement.Element, _vehicle.Element, plate, top, _needs, _emotes.Element, _chat.Element, social, personal, _interact.Element);
+            _root = El.Div("ct-hud hud-arena", _movement.Element, _vehicle.Element, plate, top, _needs, _emotes.Element, _chat.Element, social, _jump, personal, _interact.Element);
             _root.pickingMode = PickingMode.Ignore;
+            _recoveryVeil = El.Div("hud-recovery-veil");
+            _recoveryVeil.name = "hud-recovery-veil";
+            _recoveryVeil.pickingMode = PickingMode.Ignore;
+            _root.Add(_recoveryVeil);
+            _subs.On<PlayerRecoveryFadeSignal>(FadeRecovery);
             OnboardingFrame.AddSheet(_root, "UI/map");
-            _interact.SetObstacles(plate, top, _needs, _movement.Footprint, social, personal, _chat.Element, _emotes.Element);
+            _interact.SetObstacles(plate, top, _needs, _movement.Footprint, social, _jump, personal, _chat.Element, _emotes.Element);
             if (Services.TryGet<WalletBalanceService>(out var wallet)) { _wallet = wallet; _wallet.Changed += RefreshWallet; RefreshWallet(); }
 
             _subs.On<ProfileChangedSignal>(_ => RefreshProfile());
@@ -147,9 +167,14 @@ namespace CTLife.UI
                 // driving or flying: the vehicle controls replace the walking stick and the social buttons
                 bool driving = s.vehicle != null;
                 _movement.SetEnabled(_shown && !driving);
-                social.Show(!driving);
+                // City HUD v2: the on-foot groups (dock, Jump, Lobby, place chips) fade out while driving and back after.
+                HudFade.Set(social, !driving);
+                HudFade.Set(_jump, !driving);
+                HudFade.Set(lobby, !driving);
+                HudFade.Set(place, !driving);
                 if (driving) { _chat.Hide(); _emotes.Hide(); }
             });
+            _subs.On<OpenDuoAppRequestSignal>(s => { if (s.app == "shop") OpenShop(); });
             _subs.On<OpenMapRequestSignal>(_ => OpenUtility(OpenMap)); // the door interaction
             _subs.On<DegradedChangedSignal>(_ => RefreshDegraded());
             _subs.On<OnlineCountSignal>(s => _online.text = Strings.F("hud.online", s.online));
@@ -177,13 +202,87 @@ namespace CTLife.UI
                     ? reg.Homes.FirstOrDefault(h => h.id == visit.HomeId)?.name ?? Strings.T("app.home")
                     : s.venueId != null ? reg.Venue(s.venueId)?.name ?? s.venueId : "";
                 RefreshDegraded();
-                _droneAction.style.display = visit != null && visit.IsIsland ? DisplayStyle.Flex : DisplayStyle.None;
+                RefreshVehicleAccess();
             });
+            CTLife.World.Vehicles.VehicleSystem.AccessChanged += RefreshVehicleAccess;
+            RefreshVehicleAccess();
             RefreshProfile();
             RefreshDegraded();
         }
 
         private Label _phoneBadge;
+
+        private void FadeRecovery(PlayerRecoveryFadeSignal signal)
+        {
+            _recoveryFade?.Pause();
+            if (_disposed || !_shown || signal.seconds <= 0f)
+            {
+                _recoveryVeil.style.opacity = 0f;
+                _recoveryVeil.pickingMode = PickingMode.Ignore;
+                return;
+            }
+            float start = Time.realtimeSinceStartup;
+            float from = _recoveryVeil.resolvedStyle.opacity;
+            if (float.IsNaN(from)) from = 0f;
+            float target = signal.dim ? 1f : 0f;
+            _recoveryVeil.pickingMode = PickingMode.Position;
+            _recoveryFade = _recoveryVeil.schedule.Execute(() =>
+            {
+                float t = Mathf.Clamp01((Time.realtimeSinceStartup - start) / signal.seconds);
+                _recoveryVeil.style.opacity = Mathf.Lerp(from, target, t);
+                if (t < 1f) return;
+                _recoveryFade?.Pause();
+                if (!signal.dim) _recoveryVeil.pickingMode = PickingMode.Ignore;
+            }).Every(16);
+        }
+
+        private void RefreshVehicleAccess()
+        {
+            if (_disposed) return;
+            bool island = VenueSession.Current?.IsIsland == true && CTLife.World.Vehicles.VehicleSystem.Current != null;
+            bool owned = island && CTLife.World.Vehicles.VehicleSystem.Current.CanDeployDrone;
+            _droneAction.style.display = island ? DisplayStyle.Flex : DisplayStyle.None;
+            _droneAction.style.opacity = owned ? 1f : 0.6f;           // locked: not owned yet (Duo Shop)
+            bool wasLocked = _droneAction.ClassListContains("hud-locked");
+            _droneAction.EnableInClassList("hud-locked", island && !owned);
+            if (wasLocked && owned)
+            {
+                // Bought: the lock pops off (1 -> 1.3 -> 0) and the button is the summon again, no restart.
+                _lockBadge.AddToClassList("hud-lock-pop");
+                _lockBadge.schedule.Execute(() => _lockBadge.RemoveFromClassList("hud-lock-pop")).StartingIn(200);
+            }
+            // locked: the label says where it is sold (an NFT right-to-drive, real money only; Cash never unlocks it)
+            if (_droneAction.Q<Label>(className: "ct-dock-label") is Label label)
+            {
+                label.text = owned ? Strings.T("hud.drone") : Strings.T("hud.hovercarLocked");
+                label.style.whiteSpace = owned ? StyleKeyword.Null : WhiteSpace.Normal;     // "Buy in / Duo Shop" on two lines
+                label.style.unityTextAlign = TextAnchor.UpperCenter;
+            }
+        }
+
+        private void OpenShop() => OpenUtility(() =>
+        {
+            if (OpenApp != null) OpenApp("shop");
+            else Bus.Publish(ToastSignal.Text(Strings.T("hud.hovercarLockedToast")));
+        });
+
+        /// <summary>Jump: a glass round in the bottom-right corner; a small hop on the local player.</summary>
+        private VisualElement JumpButton()
+        {
+            var b = El.Div("hud-jump hud-fade", new UiIcon("jump"), El.Text(Strings.T("hud.jump"), "veh-caption"));
+            b.name = "hud-jump";
+            b.RegisterCallback<PointerDownEvent>(e =>
+            {
+                if (e.button != 0) return;
+                b.AddToClassList("veh-down");
+                VenueSession.Current?.LocalPlayer?.RequestJump();
+                e.StopPropagation();
+            });
+            b.RegisterCallback<PointerUpEvent>(_ => b.RemoveFromClassList("veh-down"));
+            b.RegisterCallback<PointerLeaveEvent>(_ => b.RemoveFromClassList("veh-down"));
+            b.RegisterCallback<PointerCancelEvent>(_ => b.RemoveFromClassList("veh-down"));
+            return b;
+        }
 
         /// <summary>The phone action carries the Duo's total unread count (red badge, cleared when read).</summary>
         private Button PhoneAction()
@@ -249,6 +348,7 @@ namespace CTLife.UI
             _movement.SetEnabled(on && !_vehicle.Active);
             if (!on)
             {
+                FadeRecovery(new PlayerRecoveryFadeSignal());
                 _chat.Hide(); _emotes.Hide();
                 if (_needsExpanded) ToggleNeeds();
                 TurnMicOff();
@@ -272,7 +372,7 @@ namespace CTLife.UI
 
         private void RefreshDegraded()
         {
-            bool voice = Features.IsAvailable(Features.Voice);
+            bool voice = !RuntimeMode.IsOfflineDemo && Features.IsAvailable(Features.Voice);
             _mic.SetEnabled(voice && !(VenueSession.Current?.IsOwnHome ?? false) && !_micPending && !_disposed);
             bool on = voice && _venueMic()?.MicOn == true;
             _micLabel.text = Strings.T(!voice ? "hud.voiceUnavailable" : on ? "hud.micOn" : "hud.micOff");
@@ -380,6 +480,8 @@ namespace CTLife.UI
         {
             if (_disposed) return;
             _disposed = true;
+            FadeRecovery(new PlayerRecoveryFadeSignal());
+            CTLife.World.Vehicles.VehicleSystem.AccessChanged -= RefreshVehicleAccess;
             _life.Cancel(); _life.Dispose();
             _movement.Dispose();
             _vehicle.Dispose();
@@ -574,6 +676,12 @@ namespace CTLife.UI
                 grid.Add(El.Btn(label, () =>
                 {
                     var s = VenueSession.Current;
+                    if (RuntimeMode.IsOfflineIsland)
+                    {
+                        s?.LocalPlayer?.GetComponent<AvatarView>()?.PlayOneShot(id);
+                        Element.Show(false);
+                        return;
+                    }
                     if (s?.Channel == null) return;
                     if (s.Channel.Emote(id)) s.LocalPlayer?.GetComponent<AvatarView>()?.PlayOneShot(id);
                     Element.Show(false);

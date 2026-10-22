@@ -120,6 +120,10 @@ namespace CTLife.World
 
         // ------------------------------------------------------------------ cells
 
+        public const int FastLoadConcurrency = 3;
+        public static int LoadConcurrency(float horizontalSpeed) => horizontalSpeed > 15f ? FastLoadConcurrency : 1;
+        public static float PrefetchHorizon(float horizontalSpeed) => Mathf.Clamp(250f / Mathf.Max(horizontalSpeed, 0.1f), 4f, 10f);
+
         /// <summary>
         /// Cells to stream: every cell whose rect is within <paramref name="loadRadius"/> of the player or of a prefetch point
         /// (nearest first), and loaded cells farther than <paramref name="unloadRadius"/> from all of them.

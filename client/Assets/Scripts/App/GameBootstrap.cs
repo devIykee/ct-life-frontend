@@ -58,6 +58,11 @@ namespace CTLife.App
             };
             Services.Register<IRealtimeService>(realtime);
             Services.Register(new VoiceService());
+            // bought assets (the hovercar): a local stand-in until the backend has an entitlement API
+            var entitlements = new LocalEntitlements();
+            Services.Register<IEntitlements>(entitlements);
+            // GET /v1/me/entitlements after sign-in feeds it; a 404 (not deployed yet) keeps the stand-in
+            Services.Register(new EntitlementsSync(rest, entitlements));
             var env = Env.Current;
             var wallet = new MwaWallet(env.walletIdentityName, env.IdentityUri, env.walletIconUri);
             Services.Register<IWalletSignIn>(wallet);

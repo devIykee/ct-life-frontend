@@ -15,6 +15,10 @@ namespace CTLife.World
         public string targetId;
         public InteractionController owner;
         public InteractionPromptAnchor anchor;
+        /// <summary>City HUD v2: the object's name (UI Strings key) on a chip above the prompt ("HOVERCAR", "BENCH"); null = none.</summary>
+        public string tagKey;
+        /// <summary>The chip adds "LOCKED" (a hovercar the player does not own).</summary>
+        public bool tagLocked;
     }
 
     /// <summary>Presentation only: a fixed spot, or an actor root (never an animated head/hand bone).</summary>
@@ -52,6 +56,9 @@ namespace CTLife.World
     /// <summary>The door interaction: leave through the map (the HUD's Explore action).</summary>
     public struct OpenMapRequestSignal { }
 
+    /// <summary>Open a Duo app from the world (the locked hovercar's "Buy in Duo Shop" opens "shop").</summary>
+    public struct OpenDuoAppRequestSignal { public string app; }
+
     /// <summary>
     /// Player-chosen interactions on the local player. Offers the best nearby interactable as a CTA (and highlights it in
     /// the world); nothing happens until the player presses it. Then: walk to the approach point, claim the spot
@@ -84,6 +91,9 @@ namespace CTLife.World
         private double _walkIssuedAt;
         private Vehicles.Vehicle _vehicleOffer;
         private string VehicleTarget => _vehicleOffer != null ? "vehicle:" + _vehicleOffer.GetInstanceID() : null;
+        /// <summary>A hovercar the player does not own (real-money right-to-drive): offered as "Buy in Duo Shop", never Drive.</summary>
+        private Vehicles.Vehicle _lockedOffer;
+        private string LockedTarget => _lockedOffer != null ? "locked:" + _lockedOffer.GetInstanceID() : null;
         private bool _wasDirect;
         private string _lastPromptKey;
 
@@ -143,6 +153,12 @@ namespace CTLife.World
         /// <summary>A rendered button may outlive its offered target by one frame; never act on another object.</summary>
         public void Perform(string actionId, string expectedTargetId)
         {
+            if (actionId == "buy")
+            {
+                if (Current == this && _lockedOffer != null && expectedTargetId == LockedTarget)
+                    Bus.Publish(new OpenDuoAppRequestSignal { app = "shop" });
+                return;
+            }
             if (actionId == "drive")
             {
                 if (Current == this && _vehicleOffer != null && expectedTargetId == VehicleTarget && Vehicles.VehicleSystem.Current != null)
@@ -212,6 +228,8 @@ namespace CTLife.World
                 if (offer != null && Offered != null &&
                     InteractionFinder.Flat(transform.position, Offered.approach) < InteractionFinder.Flat(transform.position, offer.EntryPoint)) offer = null;
                 _vehicleOffer = offer;
+                _lockedOffer = offer == null && Offered == null && Machine.Phase == InteractionPhase.Idle && vehicles != null && !_local.InVehicle &&
+                    vehicles.Driving == null ? vehicles.LockedOffer : null;
                 Publish(force: false);
             }
             UpdateHighlight();
@@ -301,7 +319,7 @@ namespace CTLife.World
         private void Publish(bool force)
         {
             var actions = Machine.Actions(Offered);
-            var key = Machine.Phase + "|" + string.Join(",", actions) + "|" + (Offered != null ? Offered.id : "") + "|" + VehicleTarget;
+            var key = Machine.Phase + "|" + string.Join(",", actions) + "|" + (Offered != null ? Offered.id : "") + "|" + VehicleTarget + "|" + LockedTarget;
             if (!force && key == _lastPromptKey) return;
             _lastPromptKey = key;
             Bus.Publish(GetPrompt());
@@ -317,17 +335,35 @@ namespace CTLife.World
                 return new InteractionPromptSignal
                 {
                     actions = new List<InteractionAction> { new InteractionAction("drive", key, icon, true) },
-                    targetId = VehicleTarget, owner = this,
+                    targetId = VehicleTarget, owner = this, tagKey = VehicleTag(_vehicleOffer),
                     anchor = new InteractionPromptAnchor(at - _vehicleOffer.transform.position, _vehicleOffer.transform, true),
+                };
+            }
+            if (_lockedOffer != null && Machine.Phase == InteractionPhase.Idle)
+            {
+                var at = _lockedOffer.EntryPoint + Vector3.up * 1.25f;
+                return new InteractionPromptSignal
+                {
+                    actions = new List<InteractionAction> { new InteractionAction("buy", "vehicle.buyInShop", "buy", false) },
+                    targetId = LockedTarget, owner = this, tagKey = VehicleTag(_lockedOffer), tagLocked = true,
+                    anchor = new InteractionPromptAnchor(at - _lockedOffer.transform.position, _lockedOffer.transform, true),
                 };
             }
             var target = Machine.Phase == InteractionPhase.Idle ? Offered : Machine.Target;
             return new InteractionPromptSignal
             {
+                tagKey = target != null ? "interact.tag." + target.kind : null,
                 actions = Machine.Actions(Offered), kind = target?.kind, targetId = target?.id, owner = this,
                 anchor = InteractionPromptAnchor.For(Machine, Offered, transform),
                 busy = Machine.Phase == InteractionPhase.Approaching || Machine.Phase == InteractionPhase.Requesting,
             };
+        }
+
+        private static string VehicleTag(Vehicles.Vehicle v)
+        {
+            if (v == null) return null;
+            if (v.Kind == Vehicles.VehicleKind.Roadstar) return "hud.drone";
+            return v.Spec != null ? v.Spec.nameKey : null;
         }
     }
 }

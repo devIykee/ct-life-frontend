@@ -170,13 +170,16 @@ namespace CTLife.Tests
         [Test]
         public void ParkedCar_SwapPicksTheKitModelThenTheClass()
         {
-            Assert.AreEqual("suv", ParkedCars.SpecFor(VehicleClass.Compact, "kit_suv_blue", 0), "a model named after one of ours wins");
+            Assert.AreEqual("sedan", ParkedCars.SpecFor(VehicleClass.Compact, "kit_suv_blue", 0), "no v3 SUV yet: the sedan stands in");
             Assert.AreEqual("scooter", ParkedCars.SpecFor(VehicleClass.Moped, null, 0));
             Assert.AreEqual("roadstar", ParkedCars.SpecFor(VehicleClass.Roadstar, "", 0));
-            Assert.AreEqual("compact", ParkedCars.SpecFor(VehicleClass.Compact, "sedan_kit_03", 5));
+            Assert.AreEqual("sedan", ParkedCars.SpecFor(VehicleClass.Compact, "sedan_kit_03", 5));
+            Assert.AreEqual("compact", ParkedCars.SpecFor(VehicleClass.Compact, "hatch_kit_03", 4));
             var seen = new HashSet<string>();
             for (int i = 0; i < 6; i++) seen.Add(ParkedCars.SpecFor(VehicleClass.Cars, null, i));
-            CollectionAssert.AreEquivalent(new[] { "compact", "suv", "sports" }, seen, "any car class: a mix");
+            CollectionAssert.AreEquivalent(new[] { "compact", "sedan", "sports" }, seen, "any car class: a mix (the sedan stands in for the SUV)");
+            Assert.AreEqual("police", ParkedCars.SpecFor(VehicleClass.Compact, "kit_compact", 3 << 4), "one car bay in ten parks a police cruiser");
+            Assert.AreEqual("scooter", ParkedCars.SpecFor(VehicleClass.Moped, null, 3 << 4), "never on a moped bay");
         }
     }
 }

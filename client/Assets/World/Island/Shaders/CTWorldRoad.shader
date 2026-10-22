@@ -5,6 +5,9 @@ Shader "CT Life/World/Road"
     //   uv0 = (metres right of the centreline, metres along), uv1 = (lane width, median), uv2 = (lanes forward, back),
     //   color = (one-way, centre-line kind 0 none / 0.5 dashed / 1 double yellow, parking width / 4, 1 lines | 0 none).
     // The surface is a tiling grayscale detail (asphalt or packed dirt) in world metres, tinted.
+    // World v3 (_PBR, 2026-10-22): a real asphalt scan instead (Poly Haven asphalt_02, CC0: colour x AO, smoothness,
+    // OpenGL normal), world-projected at 3 m a tile, broken up by a large-scale tone drift and darker resealed patches,
+    // lit by the island's PBR street lighting (sun highlight, HDRI reflection); the paint is smoother and flatter.
     Properties
     {
         _Detail("Surface detail (grayscale)", 2D) = "gray" {}
@@ -17,6 +20,14 @@ Shader "CT Life/World/Road"
         _Wear("Paint wear", Range(0, 1)) = 0.25
         _Tracks("Tyre track darkening", Range(0, 0.5)) = 0.12
         _Toon("Toon step", Range(0, 1)) = 0.2
+        [Toggle(_PBR)] _UsePBR("PBR asphalt", Float) = 0
+        _Albedo("Asphalt (rgb colour x AO, a smoothness)", 2D) = "grey" {}
+        [Normal] _Normal("Asphalt normal (OpenGL)", 2D) = "bump" {}
+        _TileMetres("Asphalt tile (m)", Float) = 3
+        _NormalStrength("Normal strength", Range(0, 2)) = 1
+        _Patches("Patch darkening", Range(0, 1)) = 0.25
+        _MacroMid("Scan's mean linear luminance", Float) = 0.072
+        _Reflection("Reflection", Range(0, 2) ) = 1
     }
     SubShader
     {
@@ -24,10 +35,12 @@ Shader "CT Life/World/Road"
         HLSLINCLUDE
         #include "CTWorldCommon.hlsl"
         TEXTURE2D(_Detail); SAMPLER(sampler_Detail);
+        TEXTURE2D(_Albedo); SAMPLER(sampler_Albedo);
+        TEXTURE2D(_Normal); SAMPLER(sampler_Normal);
         CBUFFER_START(UnityPerMaterial)
             half4 _Color, _White, _Yellow;
-            float _DetailScale, _LineWidth;
-            half _Contrast, _Wear, _Tracks, _Toon;
+            float _DetailScale, _LineWidth, _TileMetres;
+            half _Contrast, _Wear, _Tracks, _Toon, _NormalStrength, _Patches, _Reflection, _MacroMid;
         CBUFFER_END
 
         struct Attributes
@@ -69,9 +82,22 @@ Shader "CT Life/World/Road"
             half kind = input.color.g;
             float park = input.color.b * 4.0;
             bool lines = input.color.a > 0.5;
-            half det = SAMPLE_TEXTURE2D(_Detail, sampler_Detail, input.positionWS.xz * _DetailScale).r;
-            half det2 = SAMPLE_TEXTURE2D(_Detail, sampler_Detail, input.positionWS.xz * (_DetailScale * 0.17) + 0.31).r;
-            half3 albedo = _Color.rgb * (1.0h + (lerp(det, det2, 0.35h) - 0.5h) * _Contrast);
+            #if defined(_PBR)
+                float2 auv = input.positionWS.xz / _TileMetres;
+                half4 at = SAMPLE_TEXTURE2D(_Albedo, sampler_Albedo, auv);
+                half3 tn = UnpackNormalScale(SAMPLE_TEXTURE2D(_Normal, sampler_Normal, auv), _NormalStrength);
+                // large-scale tone drift and resealed patches from a far, rotated read of the same scan (its low mips)
+                half macro = dot(SAMPLE_TEXTURE2D_BIAS(_Albedo, sampler_Albedo, float2(auv.y, -auv.x) * 0.071 + 0.37, 3.0).rgb, half3(0.33h, 0.34h, 0.33h)) / _MacroMid;
+                half macro2 = dot(SAMPLE_TEXTURE2D_BIAS(_Albedo, sampler_Albedo, auv * 0.023 + 0.71, 4.0).rgb, half3(0.33h, 0.34h, 0.33h)) / _MacroMid;
+                half patch = smoothstep(0.93h, 0.87h, macro2) * _Patches;
+                half det = 0.5h, det2 = saturate(macro * 0.5h);
+                half3 albedo = at.rgb * _Color.rgb * clamp(1.0h + (macro - 1.0h) * 0.6h, 0.75h, 1.25h) * (1.0h - patch * 0.4h);
+                half smooth = at.a * lerp(1.0h, 1.35h, patch);
+            #else
+                half det = SAMPLE_TEXTURE2D(_Detail, sampler_Detail, input.positionWS.xz * _DetailScale).r;
+                half det2 = SAMPLE_TEXTURE2D(_Detail, sampler_Detail, input.positionWS.xz * (_DetailScale * 0.17) + 0.31).r;
+                half3 albedo = _Color.rgb * (1.0h + (lerp(det, det2, 0.35h) - 0.5h) * _Contrast);
+            #endif
             float aa = max(fwidth(u) * 1.25, 0.004);
             float hw = _LineWidth * 0.5;
             float white = 0.0, yellow = 0.0, track = 0.0;
@@ -121,7 +147,16 @@ Shader "CT Life/World/Road"
             albedo = lerp(albedo, _White.rgb, saturate(white) * wear);
             albedo = lerp(albedo, _Yellow.rgb, saturate(yellow) * wear);
             half3 n = normalize(input.normalWS);
-            half3 c = CTWorldLight(albedo, input.positionWS, n, 1.0h, _Toon);
+            #if defined(_PBR)
+                half paint = saturate(white + yellow) * wear;
+                // world-projected scan: its tangent space is world x / z on the (near-flat) road
+                half3 nn = normalize(n * tn.z + half3(tn.x, 0.0h, tn.y) * (1.0h - paint * 0.7h));
+                smooth = lerp(smooth, 0.42h, paint);
+                smooth = lerp(smooth, smooth + 0.12h, saturate(track) * 0.6h);     // tyre-polished lanes
+                half3 c = CTWorldSurface(albedo, saturate(smooth), input.positionWS, nn, 1.0h, _Reflection);
+            #else
+                half3 c = CTWorldLight(albedo, input.positionWS, n, 1.0h, _Toon);
+            #endif
             c = MixFog(c, input.fog);
             c = CTWorldHaze(c, input.positionWS);
             return half4(c, 1);
@@ -156,6 +191,7 @@ Shader "CT Life/World/Road"
             #pragma multi_compile_fog
             #pragma multi_compile_instancing
             #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
+            #pragma shader_feature_local _PBR
             ENDHLSL
         }
         Pass

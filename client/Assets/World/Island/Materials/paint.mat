@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: paint
-  m_Shader: {fileID: 4800000, guid: 38ae144fb4c8b42039f8d42dd4f02c38, type: 3}
+  m_Shader: {fileID: 4800000, guid: da93b78f6c7744ce6bd31de096824077, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -23,8 +23,16 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
+    - _Albedo:
+        m_Texture: {fileID: 2800000, guid: 3fae1a8b144f740e48c0bf7e6060c4b4, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _BaseMap:
         m_Texture: {fileID: 2800000, guid: 1fe8f2655ab20486f8ee12d7116301c1, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Normal:
+        m_Texture: {fileID: 2800000, guid: 4d8d94b43ad62497e87bad681f27f3ae, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Ints: []
@@ -32,12 +40,19 @@ Material:
     - _Cull: 2
     - _Cutoff: 0
     - _Fade: 0
+    - _NormalStrength: 1
+    - _Reflection: 1
+    - _Smoothness: 1.6
+    - _TileMetres: 3
     - _Toon: 0.1
     - _UseWorldUV: 0
     - _WorldScale: 0.5
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 0.98, a: 1}
+    - _Color: {r: 11.2, g: 11.2, b: 10.8, a: 1}
+    - _EdgeAO: {r: 0, g: 0, b: 0, a: 0}
     - _Emission: {r: 0, g: 0, b: 0, a: 0}
+    - _Slabs: {r: 1, g: 0, b: 0, a: 0}
     - _Spec: {r: 0, g: 32, b: 0, a: 0}
     - _TileVar: {r: 0, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []

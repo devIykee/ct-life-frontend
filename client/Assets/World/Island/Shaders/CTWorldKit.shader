@@ -32,6 +32,7 @@ Shader "CT Life/World/Kit"
         CBUFFER_END
         UNITY_INSTANCING_BUFFER_START(Props)
             UNITY_DEFINE_INSTANCED_PROP(float4, _Tint)
+            UNITY_DEFINE_INSTANCED_PROP(float, _LodFade)
         UNITY_INSTANCING_BUFFER_END(Props)
 
         struct Attributes { float4 positionOS : POSITION; float3 normalOS : NORMAL; float2 uv : TEXCOORD0; UNITY_VERTEX_INPUT_INSTANCE_ID };
@@ -70,8 +71,11 @@ Shader "CT Life/World/Kit"
         half4 Frag(Varyings input) : SV_Target
         {
             UNITY_SETUP_INSTANCE_ID(input); UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
+            CTWorldLodFade(input.positionCS.xy, UNITY_ACCESS_INSTANCED_PROP(Props, _LodFade));
             half4 tex = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.uv);
-            if (_Cutoff > 0.0) clip(tex.a - _Cutoff);
+            #if defined(_ALPHATEST_ON)
+                clip(tex.a - _Cutoff);
+            #endif
             float4 tint = UNITY_ACCESS_INSTANCED_PROP(Props, _Tint);
             half3 albedo = tex.rgb * _BaseColor.rgb;
             #if defined(_TINTALL)
@@ -112,7 +116,9 @@ Shader "CT Life/World/Kit"
         }
         half4 ShadowFrag(ShadowVaryings input) : SV_Target
         {
-            if (_Cutoff > 0.0) clip(SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.uv).a - _Cutoff);
+            #if defined(_ALPHATEST_ON)
+                clip(SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.uv).a - _Cutoff);
+            #endif
             return 0;
         }
         float4 DepthVert(Attributes input) : SV_POSITION
@@ -139,6 +145,8 @@ Shader "CT Life/World/Kit"
             #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
             #pragma shader_feature_local _TINTPALETTE
             #pragma shader_feature_local _TINTALL
+            #pragma shader_feature_local _ALPHATEST_ON
+            #pragma multi_compile_local _ _CTLODFADE
             ENDHLSL
         }
         Pass
@@ -152,6 +160,7 @@ Shader "CT Life/World/Kit"
             #pragma vertex ShadowVert
             #pragma fragment ShadowFrag
             #pragma multi_compile_instancing
+            #pragma shader_feature_local _ALPHATEST_ON
             ENDHLSL
         }
         Pass

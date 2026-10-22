@@ -96,9 +96,13 @@ namespace CTLife.UI
             else if (((Vector2)e.position - p.start).sqrMagnitude > 144f)
             {
                 // Only world pointers are tracked: a second thumb can still pan while the joystick is held.
-                rig.Pan(new Vector2(delta.x, -delta.y) * scale);
+                rig.Pan(OrbitPixels(delta, _layer.layout.width, Screen.width));
             }
         }
+
+        /// <summary>Panel points have a top-left origin; camera gestures use screen pixels with up positive.</summary>
+        public static Vector2 OrbitPixels(Vector2 panelDelta, float panelWidth, float screenWidth) =>
+            new Vector2(panelDelta.x, -panelDelta.y) * (screenWidth / Mathf.Max(1f, panelWidth));
 
         private static void OnUp(PointerUpEvent e)
         {

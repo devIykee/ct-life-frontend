@@ -5,6 +5,9 @@ Shader "CT Life/World/Terrain"
     // world metres) sampled at two scales. Colours come from the macro tint and per-layer colours; the detail only
     // modulates them, which keeps the look painterly. Height-based weight sharpening, a snow line on gentle high ground.
     // The far LOD (_FAR) skips the detail texture.
+    // World v3 (2026-10-22): downtown is paved, not grass. _PaveMask (1 m over Timeline Downtown, dress.py v3_paving)
+    // replaces the ground with the sidewalk stone (Poly Haven concrete_pavement_02, CC0) lit like the streets; outside the
+    // mask it costs one extra sample. The far LOD paves with the stone's flat tone.
     Properties
     {
         _Control("Control (r grass, g rock, b sand, a dirt)", 2D) = "red" {}
@@ -23,6 +26,12 @@ Shader "CT Life/World/Terrain"
         _Contrast("Detail contrast", Range(0, 2)) = 0.7
         _Sharpness("Blend sharpness", Range(1, 8)) = 2.5
         _Toon("Toon step", Range(0, 1)) = 0.35
+        _PaveMask("Downtown paving mask", 2D) = "black" {}
+        _PaveDomain("Paving domain (min x, min z, size x, size z)", Vector) = (0, 0, 1, 1)
+        _PaveAlbedo("Paving (rgb colour x AO, a smoothness)", 2D) = "grey" {}
+        [Normal] _PaveNormal("Paving normal", 2D) = "bump" {}
+        _PaveTint("Paving tint", Color) = (1, 1, 1, 1)
+        _PaveTile("Paving tile (m), slabs a tile, slab variation", Vector) = (1.8, 4, 0.08, 0)
     }
     SubShader
     {
@@ -32,9 +41,12 @@ Shader "CT Life/World/Terrain"
         TEXTURE2D(_Control); SAMPLER(sampler_Control);
         TEXTURE2D(_Macro); SAMPLER(sampler_Macro);
         TEXTURE2D(_Detail); SAMPLER(sampler_Detail);
+        TEXTURE2D(_PaveMask); SAMPLER(sampler_PaveMask);
+        TEXTURE2D(_PaveAlbedo); SAMPLER(sampler_PaveAlbedo);
+        TEXTURE2D(_PaveNormal); SAMPLER(sampler_PaveNormal);
         CBUFFER_START(UnityPerMaterial)
-            float4 _Domain, _DetailScale, _Snow, _Shore;
-            half4 _RockColor, _RockColorHigh, _SandColor, _DirtColor, _SnowColor, _WetSand;
+            float4 _Domain, _DetailScale, _Snow, _Shore, _PaveDomain, _PaveTile;
+            half4 _RockColor, _RockColorHigh, _SandColor, _DirtColor, _SnowColor, _WetSand, _PaveTint;
             half _Contrast, _Sharpness, _Toon;
         CBUFFER_END
 
@@ -133,6 +145,24 @@ Shader "CT Life/World/Terrain"
             half ao;
             half3 albedo = GroundAlbedo(input.positionWS, n, ao);
             half3 c = CTWorldLight(albedo, input.positionWS, n, ao, _Toon) * lerp(0.82h, 1.0h, ao);
+            float2 puv = (input.positionWS.xz - _PaveDomain.xy) / _PaveDomain.zw;
+            half pave = all(puv == saturate(puv)) ? SAMPLE_TEXTURE2D(_PaveMask, sampler_PaveMask, puv).r : 0.0h;
+            if (pave > 0.003h)
+            {
+                #if defined(_FAR)
+                    half3 pc = CTWorldLight(_PaveTint.rgb * 0.19h, input.positionWS, n, 1.0h, 0.0h);
+                #else
+                    float2 tuv = input.positionWS.xz / _PaveTile.x;
+                    half4 pa = SAMPLE_TEXTURE2D(_PaveAlbedo, sampler_PaveAlbedo, tuv);
+                    half3 tn = UnpackNormal(SAMPLE_TEXTURE2D(_PaveNormal, sampler_PaveNormal, tuv));
+                    float2 cell = floor(tuv * _PaveTile.y) + 17.0;
+                    float3 p3 = frac(float3(cell.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33);
+                    half slab = (half)frac((p3.x + p3.y) * p3.z) - 0.5h;
+                    half3 pn = normalize(n * tn.z + half3(tn.x, 0.0h, tn.y));
+                    half3 pc = CTWorldSurface(pa.rgb * _PaveTint.rgb * (1.0h + slab * _PaveTile.z * 2.0h), pa.a, input.positionWS, pn, 1.0h, 1.0h);
+                #endif
+                c = lerp(c, pc, pave);
+            }
             c = MixFog(c, input.fog);
             c = CTWorldHaze(c, input.positionWS);
             return half4(c, 1);

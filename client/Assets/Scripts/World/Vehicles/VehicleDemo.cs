@@ -40,9 +40,12 @@ namespace CTLife.World.Vehicles
             Parts.Clear();
             _home = player.transform.position;
             VehicleSystem.ScriptedInput = true;
-            foreach (var id in ids)
+            foreach (var part in ids)
             {
                 if (sys == null || player == null) yield break;
+                // "<id>@hold": board it, then hand the controls to the HUD and stay in (touch captures of the HUD itself)
+                bool hold = part.EndsWith("@hold", System.StringComparison.Ordinal);
+                var id = hold ? part.Substring(0, part.Length - 5) : part;
                 if (id == "drone") { yield return Drone(sys); continue; }
                 if (id == "traffic") { yield return TrafficWatch(player); continue; }
                 var v = Nearest(sys, id, player.transform.position);
@@ -58,6 +61,7 @@ namespace CTLife.World.Vehicles
                 while (sys.Driving != v && Time.time - t0 < 8f) yield return null;
                 if (sys.Driving != v) { Log.Warn("vehicles", $"demo: could not board {id}"); continue; }
                 yield return new WaitForSeconds(0.6f);
+                if (hold) { VehicleSystem.ScriptedInput = false; Log.Info("vehicles", $"demo: holding in {id}, the HUD drives"); yield break; }
                 switch (v.Kind)
                 {
                     case VehicleKind.Helicopter: yield return Heli(v); break;

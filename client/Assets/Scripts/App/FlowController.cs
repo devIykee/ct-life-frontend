@@ -40,7 +40,7 @@ namespace CTLife.App
             var character = new CTLife.Rest.Model.Character(alias: LaunchArgs.Get("alias") ?? "demo", look: look, tribeId: "trencher",
                 traitIds: new System.Collections.Generic.List<string> { "fast_talker", "iron_will" }, dreamId: "make_10k");
             return new CTLife.Rest.Model.Me(new CTLife.Rest.Model.User(System.Guid.Empty, "offline-demo", false, true), character,
-                new CTLife.Rest.Model.Needs(), new CTLife.Rest.Model.Skills(), cashCents: 0, debtCents: 0, homeId: "parents_basement",
+                new CTLife.Rest.Model.Needs(100, 100, 100, 100, 100), new CTLife.Rest.Model.Skills(), cashCents: 0, debtCents: 0, homeId: "parents_basement",
                 flags: new System.Collections.Generic.Dictionary<string, object> { ["lotteryRolled"] = true, ["hasCharacter"] = true });
         }
 #endif
@@ -521,7 +521,7 @@ namespace CTLife.App
                     foreach (var k in skip.Split(',')) IslandInstanceRenderer.SkipKinds.Add(k.Trim());
                 // `islandRenderScale=0.7` pins the URP render scale (test harness; PerfManager's policy is untouched otherwise);
                 // islandSkip also takes `shadows` (sun shadows off) and `post` (island look volume off). World/Island/IslandPerfHarness.
-                if (LaunchArgs.Get("islandRenderScale") is string || IslandInstanceRenderer.SkipKinds.Contains("shadows") || IslandInstanceRenderer.SkipKinds.Contains("post"))
+                if (LaunchArgs.Get("islandRenderScale") is string || LaunchArgs.Get("islandFps") is string || IslandInstanceRenderer.SkipKinds.Contains("shadows") || IslandInstanceRenderer.SkipKinds.Contains("post"))
                     RunGameAction(game, async () =>
                     {
                         for (int i = 0; i < 240 && GameAlive(game); i++)

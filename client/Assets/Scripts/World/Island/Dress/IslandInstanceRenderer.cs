@@ -10,7 +10,9 @@ namespace CTLife.World
     /// picks an LOD by its distance, and the chunks' matrices are copied into per-(prototype, LOD) batches drawn with
     /// Graphics.RenderMeshInstanced (1023 per call, per-instance tint through a property block). One draw call per
     /// prototype and LOD in view, not per chunk or object. Lives on the island root; works for whatever camera is
-    /// Camera.main (Feel's camera).
+    /// Camera.main (Feel's camera). LOD switches cross-fade with a screen-space dither over a short distance band (the
+    /// fading draws use a _CTLODFADE copy of the material, so the rest keep early depth); buildings cast their shadows
+    /// from LOD1; chunks beyond the sun's shadow reach cast none.
     /// </summary>
     public sealed class IslandInstanceRenderer : MonoBehaviour
     {
@@ -26,12 +28,20 @@ namespace CTLife.World
         [Tooltip("Multiplies every prototype's LOD and cull distances (quality knob).")]
         public float distanceScale = 1f;
         public bool shadows = true;
+        [Tooltip("LOD switches cross-fade (dithered) over this share of the switch distance, clamped to 2-25 m.")]
+        public float fadeBand = 0.1f;
+        [Tooltip("Instances further than the sun's shadow distance plus this cast no shadows (they cannot reach the map).")]
+        public float shadowCasterMargin = 50f;
 
         private const int Batch = 1023;
-        private sealed class Stage { public Matrix4x4[] m = new Matrix4x4[Batch]; public Vector4[] t = new Vector4[Batch]; public int n; public bool tinted; }
-        private readonly Dictionary<(int, int), List<Stage>> _stages = new Dictionary<(int, int), List<Stage>>();
+        // mode: 0 drawn as usual, 1 beyond the shadow casters' reach (no shadow), 2 outgoing LOD of a cross-fade,
+        // 3 incoming LOD of a cross-fade (no shadow: the outgoing one still casts)
+        private sealed class Stage { public Matrix4x4[] m = new Matrix4x4[Batch]; public Vector4[] t = new Vector4[Batch]; public float[] f = new float[Batch]; public int n; public bool tinted; }
+        private readonly Dictionary<(int, int, int), List<Stage>> _stages = new Dictionary<(int, int, int), List<Stage>>();
         private readonly List<MaterialPropertyBlock> _blocks = new List<MaterialPropertyBlock>();
+        private readonly Dictionary<Material, Material> _fadeMats = new Dictionary<Material, Material>();
         private readonly Plane[] _planes = new Plane[6];
+        private static readonly int LodFadeId = Shader.PropertyToID("_LodFade");
 
         public static void Register(IslandInstances s) { if (!Sets.Contains(s)) Sets.Add(s); }
         public static void Unregister(IslandInstances s) => Sets.Remove(s);
@@ -43,11 +53,32 @@ namespace CTLife.World
             Render(cam);
         }
 
+        private void OnDestroy()
+        {
+            foreach (var m in _fadeMats.Values) if (m != null) Destroy(m);
+            _fadeMats.Clear();
+        }
+
+        /// <summary>The material's dithered cross-fade copy (_CTLODFADE): only fading draws pay for the discard.</summary>
+        private Material FadeMat(Material m)
+        {
+            if (m == null) return null;
+            if (!_fadeMats.TryGetValue(m, out var f) || f == null)
+            {
+                f = new Material(m) { name = m.name + " (lod fade)", hideFlags = HideFlags.DontSave };
+                f.EnableKeyword("_CTLODFADE");
+                _fadeMats[m] = f;
+            }
+            return f;
+        }
+
         public void Render(Camera cam)
         {
             GeometryUtility.CalculateFrustumPlanes(cam, _planes);
             for (int i = 0; i < 6; i++) _planes[i].distance += 24f;            // casters just outside the view
             var eye = cam.transform.position;
+            float shadowReach = (UnityEngine.Rendering.Universal.UniversalRenderPipeline.asset != null
+                ? UnityEngine.Rendering.Universal.UniversalRenderPipeline.asset.shadowDistance : QualitySettings.shadowDistance) + shadowCasterMargin;
             foreach (var list in _stages.Values) foreach (var st in list) { st.n = 0; st.tinted = false; }
             IslandKit kit = null;
             foreach (var set in Sets)
@@ -68,7 +99,18 @@ namespace CTLife.World
                         if (!GeometryUtility.TestPlanesAABB(_planes, ch.bounds)) continue;
                         int lod = 0;
                         while (lod < lodCount - 1 && d > p.lodEnd[lod] * distanceScale) lod++;
-                        Append(g.Key, lod, ch);
+                        float end = p.lodEnd[lod] * distanceScale;
+                        float band = Mathf.Clamp(end * fadeBand, 2f, 25f);
+                        // split off "too far to cast" only where this LOD would cast at all (no extra draws otherwise)
+                        bool casts = shadows && p.shadowRange > 0f && (lod == 0 || p.lodEnd[lod - 1] < p.shadowRange);
+                        int baseMode = casts && d > shadowReach ? 1 : 0;
+                        if (d > end - band)
+                        {
+                            float t = Mathf.Clamp01((d - (end - band)) / band);
+                            Append(g.Key, lod, 2, ch, -t);                         // outgoing (or fading out at the cull distance)
+                            if (lod < lodCount - 1) Append(g.Key, lod + 1, 3, ch, t);
+                        }
+                        else Append(g.Key, lod, baseMode, ch, 0f);
                     }
                 }
             }
@@ -76,37 +118,50 @@ namespace CTLife.World
             int draws = 0, inst = 0, block = 0;
             foreach (var kv in _stages)
             {
-                var p = kit.protos[kv.Key.Item1];
-                var mesh = p.lods[kv.Key.Item2];
+                var (protoI, lodI, mode) = kv.Key;
+                var p = kit.protos[protoI];
+                var mesh = p.lods[lodI];
                 if (mesh == null || p.material == null) continue;
-                bool castShadow = shadows && p.shadowRange > 0f && (kv.Key.Item2 == 0 || p.lodEnd[kv.Key.Item2 - 1] < p.shadowRange);
+                bool castShadow = shadows && mode != 1 && mode != 3 && p.shadowRange > 0f && (lodI == 0 || p.lodEnd[lodI - 1] < p.shadowRange);
+                // buildings cast from their LOD1 (about a quarter of LOD0's triangles; the shadow map cannot tell)
+                Mesh shadowMesh = castShadow && lodI == 0 && p.kind == "building" && p.lods.Length > 1 && p.lods[1] != null
+                    && p.lods[1].subMeshCount == mesh.subMeshCount ? p.lods[1] : null;
+                bool fade = mode >= 2;
                 int subs = mesh.subMeshCount;
                 foreach (var st in kv.Value)
                 {
                     if (st.n == 0) continue;
                     MaterialPropertyBlock mpb = null;
-                    if (st.tinted)
+                    if (st.tinted || fade)
                     {
                         if (block >= _blocks.Count) _blocks.Add(new MaterialPropertyBlock());
                         mpb = _blocks[block++];
                         mpb.Clear();
-                        mpb.SetVectorArray(TintId, st.t);
+                        if (st.tinted) mpb.SetVectorArray(TintId, st.t);
+                        if (fade) mpb.SetFloatArray(LodFadeId, st.f);
                     }
                     for (int sm = 0; sm < subs; sm++)
                     {
-                        int lodI = kv.Key.Item2;
                         var mat = lodI < p.lodMaterials.Length && p.lodMaterials[lodI] != null ? p.lodMaterials[lodI]
                             : sm < p.materials.Length && p.materials[sm] != null ? p.materials[sm] : p.material;
+                        if (fade) mat = FadeMat(mat);
                         var rp = new RenderParams(mat)
                         {
                             layer = p.layer, receiveShadows = true,
-                            shadowCastingMode = castShadow ? ShadowCastingMode.On : ShadowCastingMode.Off,
+                            shadowCastingMode = castShadow && shadowMesh == null ? ShadowCastingMode.On : ShadowCastingMode.Off,
                             worldBounds = new Bounds(eye, Vector3.one * 8000f),
                             camera = TargetCamera,
                         };
                         if (mpb != null) rp.matProps = mpb;
                         Graphics.RenderMeshInstanced(rp, mesh, sm, st.m, st.n);
                         draws++;
+                        if (shadowMesh != null)
+                        {
+                            var srp = rp;
+                            srp.shadowCastingMode = ShadowCastingMode.ShadowsOnly;
+                            Graphics.RenderMeshInstanced(srp, shadowMesh, sm, st.m, st.n);
+                            draws++;
+                        }
                     }
                     inst += st.n;
                 }
@@ -114,9 +169,10 @@ namespace CTLife.World
             LastDraws = draws; LastInstances = inst;
         }
 
-        private void Append(int proto, int lod, IslandInstances.Chunk ch)
+        private void Append(int proto, int lod, int mode, IslandInstances.Chunk ch, float fade)
         {
-            if (!_stages.TryGetValue((proto, lod), out var list)) _stages[(proto, lod)] = list = new List<Stage> { new Stage() };
+            var key = (proto, lod, mode);
+            if (!_stages.TryGetValue(key, out var list)) _stages[key] = list = new List<Stage> { new Stage() };
             int src = 0, total = ch.matrices.Length;
             while (src < total)
             {
@@ -131,6 +187,7 @@ namespace CTLife.World
                 int k = Mathf.Min(Batch - st.n, total - src);
                 System.Array.Copy(ch.matrices, src, st.m, st.n, k);
                 System.Array.Copy(ch.tints, src, st.t, st.n, k);
+                if (mode >= 2) for (int i = 0; i < k; i++) st.f[st.n + i] = fade;
                 st.tinted |= ch.tinted;
                 st.n += k; src += k;
             }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using CTLife.World;
+using CTLife.World.Vehicles;
 using Newtonsoft.Json.Linq;
 using UnityEditor;
 using UnityEngine;
@@ -25,12 +26,34 @@ namespace CTLife.EditorTools.IslandV2
         public const string KitAsset = KitDir + "/IslandKit.asset";
 
         private static string WorldRoot => Path.Combine(IslandV2Paths.Repo, "art", "processed", "world");
+        /// <summary>World v3 (2026-10-22): the semi-real kit (Neighbourhood City anchor, 99.Miles buildings, Poly Haven props),
+        /// one merged manifest in the same id format plus kind, family, door_main, lod2_material and credit. It covers part
+        /// of the city for now, so both manifests load and dress.py mixes their pools.</summary>
+        private static string WorldV3Root => Path.Combine(IslandV2Paths.Repo, "art", "processed", "world_v3");
         private static string EnvManifest => Path.Combine(IslandV2Paths.Repo, "art", "processed", "environment", "manifest.json");
 
         /// <summary>Distances (m) where LOD0, LOD1 and LOD2 stop drawing, shadow range, layer, by kind.</summary>
         private static (float[] ends, float shadow, int layer, string kind) Rules(string id, JObject item)
         {
             var tags = (item["tags"] as JArray)?.Select(t => (string)t).ToHashSet() ?? new HashSet<string>();
+            // world v3: 15k-tri LOD0 (cards included) only near the camera, the 4k LOD1 through the street, the baked box
+            // far; the 105 m tower keeps its detail further so the skyline does not pop (Seeker 2026-10-22: GPU ~30 ms of the
+            // 33 ms budget downtown with LOD0 to 42 m, 2.1M triangles; tightened)
+            if (id == "m99_office_tower") return (new[] { 100f, 600f, 3200f }, 260f, Layers.Building, "building");
+            // (2026-10-22 LOD continuity: the baked box took over at 160 m and read as a different building; switches now
+            // sit further out and cross-fade, IslandInstanceRenderer)
+            if (id.StartsWith("m99_")) return (new[] { 45f, 240f, 1500f }, 140f, Layers.Building, "building");
+            if (id.StartsWith("nc_building")) return (new[] { 30f, 170f, 1300f }, 110f, Layers.Building, "building");
+            // planter trees: their own billboard LOD2 (no baked impostor)
+            if (id.StartsWith("nc_tree") || id.StartsWith("lp_")) return (new[] { 30f, 100f, 320f }, 45f, Layers.Vegetation, "tree");
+            if ((id.StartsWith("nc_prop_lamp") || id.StartsWith("ph_street_lamp"))) return (new[] { 40f, 140f, 380f }, 35f, Layers.Prop, "lamp");
+            // world v3 street kit (art/processed/world_v3/v3_street, 2026-10-22)
+            if (id == "v3_traffic_light" || id == "v3_stop_sign") return (new[] { 45f, 380f }, 35f, Layers.Prop, "lamp");
+            if (id == "v3_bus_shelter") return (new[] { 40f, 260f }, 30f, Layers.Prop, "prop");
+            if (id == "v3_vendor_cart" || id == "v3_cafe_set") return (new[] { 35f, 160f }, 20f, Layers.Prop, "prop");
+            if (id == "v3_manhole" || id == "v3_storm_drain") return (new[] { 35f, 70f }, 0f, Layers.Prop, "prop");
+            if (id.StartsWith("v3_")) return (new[] { 28f, 120f }, 12f, Layers.Prop, "prop");
+            if (id.StartsWith("nc_prop") || id.StartsWith("ph_")) return (new[] { 28f, 70f, 140f }, 18f, Layers.Prop, "prop");
             if (id.StartsWith("hero_")) return (new[] { 70f, 240f, 900f }, 80f, Layers.Prop, "hero");
             if (id.StartsWith("kw_ship")) return (new[] { 260f, 900f, 3600f }, 0f, Layers.Prop, "ship");
             if (id.StartsWith("kw_")) return (new[] { 55f, 170f, 800f }, 45f, Layers.Prop, "boat");
@@ -63,13 +86,14 @@ namespace CTLife.EditorTools.IslandV2
             Directory.CreateDirectory(KitDir + "/Materials");
             var world = File.Exists(Path.Combine(WorldRoot, "manifest.json")) ? JObject.Parse(File.ReadAllText(Path.Combine(WorldRoot, "manifest.json"))) : new JObject();
             var env = File.Exists(EnvManifest) ? JObject.Parse(File.ReadAllText(EnvManifest)) : new JObject();
+            var v3 = File.Exists(Path.Combine(WorldV3Root, "manifest.json")) ? JObject.Parse(File.ReadAllText(Path.Combine(WorldV3Root, "manifest.json"))) : new JObject();
             // 1. copy the world models and textures the dressing uses
             var paths = new Dictionary<string, string>();          // id -> asset path of the FBX
             var texFiles = new HashSet<string>();
             int copied = 0;
             foreach (var id in used.OrderBy(x => x))
             {
-                if (world[id] is JObject wi)
+                if ((world[id] ?? v3[id]) is JObject wi)
                 {
                     var rel = (string)wi["fbx"];                         // e.g. world/buildings/kc_building_a.fbx
                     var src = Path.Combine(IslandV2Paths.Repo, "art", "processed", rel);
@@ -89,7 +113,7 @@ namespace CTLife.EditorTools.IslandV2
             CopyIfChanged(Path.Combine(WorldRoot, "_shared", "world_palette.png"), KitDir + "/Textures/world_palette.png");
             foreach (var t in texFiles) CopyIfChanged(Path.Combine(IslandV2Paths.Repo, "art", "processed", t), KitDir + "/Textures/" + Path.GetFileName(t));
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
-            foreach (var kv in paths.Where(kv => kv.Value.StartsWith(KitDir))) ModelImport(kv.Value);
+            foreach (var kv in paths.Where(kv => kv.Value.StartsWith(KitDir))) ModelImport(kv.Value, v3[kv.Key] != null);
             foreach (var f in Directory.GetFiles(KitDir + "/Textures", "*.png")) TextureImport(f.Replace('\\', '/'));
             // 2. materials and prototypes
             var kit = AssetDatabase.LoadAssetAtPath<IslandKit>(KitAsset);
@@ -99,7 +123,8 @@ namespace CTLife.EditorTools.IslandV2
             foreach (var id in used.OrderBy(x => x))
             {
                 if (!paths.TryGetValue(id, out var fbx)) { missing.Add(id); continue; }
-                var item = (world[id] ?? env[id]) as JObject;
+                bool isV3 = v3[id] != null;
+                var item = (world[id] ?? v3[id] ?? env[id]) as JObject;
                 var meshes = AssetDatabase.LoadAllAssetsAtPath(fbx).OfType<Mesh>()
                     .OrderBy(m => LodIndex(m.name)).ToArray();
                 if (meshes.Length == 0) { missing.Add(id); continue; }
@@ -114,14 +139,26 @@ namespace CTLife.EditorTools.IslandV2
                 };
                 if (proto.lodEnd.Length < lods.Length) proto.lodEnd = ends;
                 if (lods.Length < ends.Length) proto.lodEnd[proto.lodEnd.Length - 1] = ends[ends.Length - 1];   // last LOD lives to the cull distance
-                proto.materials = mats.Select(m => Material(m, kind, id)).ToArray();
+                if (isV3)
+                {
+                    // LOD0/LOD1 share the manifest's slot order; the far LOD is one baked material (the building's box
+                    // facade or the tree's billboard)
+                    proto.materials = mats.Select(m => V3Material(m, kind, id)).ToArray();
+                    var far = (string)item["lod2_material"] ?? (kind == "tree" ? $"M_{id}_billboard" : null);
+                    if (far != null && lods.Length >= 3 && lods[lods.Length - 1].subMeshCount == 1)
+                    {
+                        proto.lodMaterials = new Material[lods.Length];
+                        proto.lodMaterials[lods.Length - 1] = V3Material(far, kind, id);
+                    }
+                }
+                else proto.materials = mats.Select(m => Material(m, kind, id)).ToArray();
                 proto.material = proto.materials.FirstOrDefault();
                 protos.Add(proto);
             }
             // W4: trees get a far billboard LOD (two crossed quads with a baked front/side view), so a 13k-tree forest
             // with 3-6k-triangle trees stays cheap beyond ~200 m
             int imp = 0;
-            foreach (var proto in protos.Where(p => p.kind == "tree"))
+            foreach (var proto in protos.Where(p => p.kind == "tree" && (p.lodMaterials == null || p.lodMaterials.Length == 0 || p.lodMaterials.All(m => m == null))))
             {
                 var (im, imat) = BakeImpostor(proto);
                 if (im == null) continue;
@@ -137,13 +174,168 @@ namespace CTLife.EditorTools.IslandV2
                 imp++;
             }
             receipt["kitImpostors"] = imp;
+            protos.AddRange(V3Cars(receipt));
             kit.protos = protos.ToArray();
+            receipt["kitAlphaTested"] = SyncKeywords(kit);
+            IslandV2Collision.BakeKit(kit);
             EditorUtility.SetDirty(kit);
             AssetDatabase.SaveAssetIfDirty(kit);
             receipt["kitModels"] = protos.Count;
             receipt["kitCopied"] = copied;
             if (missing.Count > 0) { receipt["kitMissing"] = new JArray(missing); Debug.LogWarning("CTLIFE [islandv2] kit models missing: " + string.Join(", ", missing)); }
             return kit;
+        }
+
+        /// <summary>
+        /// The kit shaders' alpha test is a keyword (_ALPHATEST_ON) so opaque facades keep early depth on Mali: on for every
+        /// kit material with a cutoff, off for the rest. Returns how many are alpha-tested.
+        /// </summary>
+        public static int SyncKeywords(IslandKit kit)
+        {
+            int n = 0;
+            var seen = new HashSet<Material>();
+            foreach (var p in kit.protos)
+                foreach (var m in p.materials.Concat(p.lodMaterials ?? Array.Empty<Material>()).Append(p.material))
+                {
+                    if (m == null || !seen.Add(m) || !m.HasProperty("_Cutoff")) continue;
+                    bool on = m.GetFloat("_Cutoff") > 0f;
+                    if (on) { m.EnableKeyword("_ALPHATEST_ON"); n++; } else m.DisableKeyword("_ALPHATEST_ON");
+                    EditorUtility.SetDirty(m);
+                }
+            return n;
+        }
+
+        /// <summary>Batch: re-sync the kit materials' keywords without rebuilding the island.</summary>
+        public static void SyncKeywordsBatch()
+        {
+            var kit = AssetDatabase.LoadAssetAtPath<IslandKit>(KitAsset);
+            Debug.Log("CTLIFE [islandv2] alpha-tested kit materials: " + SyncKeywords(kit));
+            AssetDatabase.SaveAssets();
+            if (Application.isBatchMode) EditorApplication.Exit(0);
+        }
+
+        // ------------------------------------------------------------------ v3 parked decor cars
+
+        /// <summary>The v3 drivables the street's parked decor shows (same models the player swaps into on approach).</summary>
+        public static readonly string[] V3CarSpecs = { "compact", "sedan", "sports", "taxi", "police" };
+        public static string V3CarId(string spec) => "v3car_" + spec;
+
+        /// <summary>
+        /// Instanced decor versions of the v3 cars (Resources/Vehicles/&lt;spec&gt;.prefab, built by VehicleImport.V3): the
+        /// prefab's LOD1_* and LOD2_* renderers merged per LOD into one mesh with three submeshes (Body, Paint, glass) in
+        /// the prefab's own space (its +Z front turn included). Body: the atlas with its mask; Paint: the near-white paint
+        /// tinted per instance with the traffic palette (_Tint, the colour the drivable gets on swap); glass: dark and
+        /// smooth. Same CT Life/World/Kit PBR shader as the v3 buildings, so parked cars sit in the same light.
+        /// </summary>
+        private static IEnumerable<IslandKit.Proto> V3Cars(JObject receipt)
+        {
+            var made = new JArray();
+            string dir = KitDir + "/Models/v3cars";
+            Directory.CreateDirectory(dir);
+            foreach (var name in V3CarSpecs)
+            {
+                var prefab = AssetDatabase.LoadAssetAtPath<GameObject>($"Assets/Resources/Vehicles/{name}.prefab");
+                var spec = VehicleCatalog.Get(name);
+                if (prefab == null || spec == null) { Debug.LogWarning("CTLIFE [islandv2] no v3 prefab for decor car " + name); continue; }
+                var toRoot = prefab.transform.worldToLocalMatrix;
+                var roles = new[] { "Body", "Paint", "Glass" };
+                string RoleOf(Material m) => m == null ? "Body" : m.name.StartsWith("VehicleGlass", StringComparison.Ordinal) || m.name.StartsWith("Windows", StringComparison.Ordinal) ? "Glass"
+                    : m.name.EndsWith("_Paint", StringComparison.Ordinal) ? "Paint" : "Body";
+                var lods = new List<Mesh>();
+                bool anyPaint = false;
+                foreach (int lod in new[] { 1, 2 })
+                {
+                    var parts = roles.ToDictionary(r => r, r => new List<CombineInstance>());
+                    foreach (var r in prefab.GetComponentsInChildren<MeshRenderer>(true))
+                    {
+                        if (!r.name.StartsWith($"LOD{lod}_", StringComparison.Ordinal)) continue;
+                        var mesh = r.GetComponent<MeshFilter>()?.sharedMesh;
+                        if (mesh == null) continue;
+                        var mats = r.sharedMaterials;
+                        for (int sm = 0; sm < mesh.subMeshCount; sm++)
+                            parts[RoleOf(sm < mats.Length ? mats[sm] : null)].Add(new CombineInstance { mesh = mesh, subMeshIndex = sm, transform = toRoot * r.transform.localToWorldMatrix });
+                    }
+                    if (parts.Values.All(l => l.Count == 0)) continue;
+                    anyPaint |= parts["Paint"].Count > 0;
+                    var subs = new List<Mesh>();
+                    foreach (var role in roles)
+                    {
+                        var m = new Mesh { indexFormat = UnityEngine.Rendering.IndexFormat.UInt32 };
+                        if (parts[role].Count > 0) m.CombineMeshes(parts[role].ToArray(), true, true);
+                        subs.Add(m);
+                    }
+                    // one mesh, submesh per role (an empty role keeps its slot so every LOD has the same material order)
+                    var verts = new List<Vector3>(); var nrm = new List<Vector3>(); var tan = new List<Vector4>(); var uv = new List<Vector2>();
+                    var tris = new List<int[]>();
+                    foreach (var m in subs)
+                    {
+                        int o = verts.Count;
+                        verts.AddRange(m.vertices); nrm.AddRange(m.normals);
+                        var t = m.tangents; tan.AddRange(t.Length == m.vertexCount ? t : new Vector4[m.vertexCount]);
+                        var u = m.uv; uv.AddRange(u.Length == m.vertexCount ? u : new Vector2[m.vertexCount]);
+                        tris.Add(m.vertexCount == 0 ? Array.Empty<int>() : m.triangles.Select(i => i + o).ToArray());
+                        Object.DestroyImmediate(m);
+                    }
+                    var outMesh = new Mesh { name = $"{V3CarId(name)}_LOD{lod}", indexFormat = verts.Count > 65000 ? UnityEngine.Rendering.IndexFormat.UInt32 : UnityEngine.Rendering.IndexFormat.UInt16 };
+                    outMesh.SetVertices(verts); outMesh.SetNormals(nrm); outMesh.SetTangents(tan); outMesh.SetUVs(0, uv);
+                    outMesh.subMeshCount = roles.Length;
+                    for (int i = 0; i < roles.Length; i++) outMesh.SetTriangles(tris[i], i, false);
+                    outMesh.RecalculateBounds();
+                    outMesh.UploadMeshData(false);
+                    var path = $"{dir}/{V3CarId(name)}_LOD{lod}.asset";
+                    var old = AssetDatabase.LoadAssetAtPath<Mesh>(path);
+                    if (old != null) { EditorUtility.CopySerialized(outMesh, old); Object.DestroyImmediate(outMesh); outMesh = old; }
+                    else AssetDatabase.CreateAsset(outMesh, path);
+                    lods.Add(outMesh);
+                }
+                if (lods.Count == 0) continue;
+                var proto = new IslandKit.Proto
+                {
+                    // LOD1 (~10k) to 25 m, the 5k LOD2 (same atlas and silhouette) beyond, cross-faded: the old 30 m switch onto a 2.4k melted mesh read
+                    // as a different car (2026-10-22)
+                    id = V3CarId(name), lods = lods.ToArray(), lodEnd = lods.Count == 2 ? new[] { 25f, 220f } : new[] { 340f },
+                    shadowRange = 45f, layer = Layers.Prop, kind = "vehicle", bounds = lods[0].bounds,
+                };
+                proto.materials = new[] { V3CarMaterial(name, "Body", spec), V3CarMaterial(name, "Paint", spec), V3CarMaterial(name, "Glass", spec) };
+                proto.material = proto.materials[0];
+                made.Add($"{proto.id}: LOD tris {string.Join("/", lods.Select(m => Enumerable.Range(0, m.subMeshCount).Sum(i => (int)m.GetIndexCount(i)) / 3))}{(anyPaint ? "" : " (no paint slot)")}");
+                yield return proto;
+            }
+            receipt["kitDecorCars"] = made;
+        }
+
+        private static Material V3CarMaterial(string name, string role, VehicleSpec spec)
+        {
+            string key = $"v3car_{name}_{role}";
+            var path = $"{KitDir}/Materials/{key}.mat";
+            var sh = Shader.Find("CT Life/World/Kit PBR") ?? throw new InvalidOperationException("CT Life/World/Kit PBR shader missing");
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (mat == null) { mat = new Material(sh) { name = key }; AssetDatabase.CreateAsset(mat, path); }
+            mat.shader = sh;
+            Texture2D Tex(string k) => AssetDatabase.LoadAssetAtPath<Texture2D>($"Assets/Art/vehicles/v3/{name}_{k}.png");
+            void Kw(string k, bool on) { if (on) mat.EnableKeyword(k); else mat.DisableKeyword(k); }
+            var nrm = Tex("Normal");
+            bool glass = role == "Glass", paint = role == "Paint";
+            mat.SetTexture("_BaseMap", glass ? null : Tex("BaseColor"));
+            mat.SetColor("_BaseColor", glass ? new Color(0.30f, 0.33f, 0.37f, 0.4f) : Color.white);
+            mat.SetTexture("_BumpMap", glass ? null : nrm);
+            Kw("_NORMALMAP", !glass && nrm != null); mat.SetFloat("_UseNormal", !glass && nrm != null ? 1f : 0f);
+            var mask = role == "Body" ? Tex("MaskMap") : null;
+            mat.SetTexture("_MaskMap", mask);
+            Kw("_MASKMAP", mask != null); mat.SetFloat("_UseMask", mask != null ? 1f : 0f);
+            Kw("_GLASS", glass); mat.SetFloat("_Glass", glass ? 1f : 0f);
+            mat.SetFloat("_BumpScale", 1f);
+            mat.SetFloat("_Metallic", mask != null ? 1f : paint ? spec.paintMetallic : 0f);
+            mat.SetFloat("_Smoothness", mask != null ? 1f : paint ? spec.paintSmoothness : 0.92f);
+            mat.SetFloat("_OcclusionStrength", 0.85f);
+            mat.SetFloat("_Reflection", 1f);
+            mat.SetFloat("_TintStrength", paint ? 1f : 0f);
+            mat.SetVector("_GroundAO", new Vector4(0.5f, 0.3f, 0, 0));
+            mat.SetFloat("_Cutoff", 0f);
+            mat.SetFloat("_Cull", 2f);
+            mat.enableInstancing = true;
+            EditorUtility.SetDirty(mat);
+            return mat;
         }
 
         private static int LodIndex(string name)
@@ -160,7 +352,7 @@ namespace CTLife.EditorTools.IslandV2
             return true;
         }
 
-        private static void ModelImport(string path)
+        private static void ModelImport(string path, bool v3 = false)
         {
             var mi = AssetImporter.GetAtPath(path) as ModelImporter;
             if (mi == null) return;
@@ -173,7 +365,8 @@ namespace CTLife.EditorTools.IslandV2
             Set(mi.importCameras, false, v => mi.importCameras = v);
             Set(mi.importLights, false, v => mi.importLights = v);
             Set(mi.isReadable, false, v => mi.isReadable = v);
-            Set(mi.importTangents, ModelImporterTangents.None, v => mi.importTangents = v);
+            // v3 PBR models carry normal maps: tangents from the mesh (MikkTSpace, as Blender baked them)
+            Set(mi.importTangents, v3 ? ModelImporterTangents.CalculateMikk : ModelImporterTangents.None, v => mi.importTangents = v);
             Set(mi.meshCompression, ModelImporterMeshCompression.Low, v => mi.meshCompression = v);
             Set(mi.addCollider, false, v => mi.addCollider = v);
             if (dirty) mi.SaveAndReimport();
@@ -183,6 +376,14 @@ namespace CTLife.EditorTools.IslandV2
         {
             var ti = AssetImporter.GetAtPath(path) as TextureImporter;
             if (ti == null) return;
+            string file = Path.GetFileNameWithoutExtension(path);
+            string before = EditorJsonUtility.ToJson(ti) + JsonUtility.ToJson(ti.GetPlatformTextureSettings("Android"));
+            if (V3Texture(ti, file))
+            {
+                // v3 atlases are big (2048 ASTC): re-encode only when a setting changed
+                if (before != EditorJsonUtility.ToJson(ti) + JsonUtility.ToJson(ti.GetPlatformTextureSettings("Android"))) ti.SaveAndReimport();
+                return;
+            }
             bool palette = path.Contains("palette") || path.Contains("colormap") || path.Contains("citybits");
             ti.textureType = TextureImporterType.Default;
             ti.sRGBTexture = true;
@@ -199,6 +400,117 @@ namespace CTLife.EditorTools.IslandV2
         }
 
         private static readonly Dictionary<string, Material> Cache = new Dictionary<string, Material>();
+
+        /// <summary>
+        /// World v3 texture budget on the Seeker (ASTC 6x6): building colour atlases 2048 (a whole building, every side,
+        /// in one atlas), their normal maps 1024 and mask maps 512; facade cards and props 1024 colour, 512 normal, 256 mask;
+        /// far boxes and billboards 512. Normal maps import as normal maps (OpenGL, Unity's convention), mask maps linear.
+        /// </summary>
+        private static bool V3Texture(TextureImporter ti, string file)
+        {
+            bool building = file.StartsWith("nc_building") || file.StartsWith("m99_");
+            bool v3 = building || file.StartsWith("nc_") || file.StartsWith("ph_") || file.StartsWith("v3_");
+            if (!v3) return false;
+            bool normal = file.EndsWith("_Normal") || file == "nc_trees_01" || file == "nc_trees_04" || file == "nc_trees_07";
+            bool mask = file.EndsWith("_MaskMap");
+            bool far = file.EndsWith("_lod2_BaseColor") || file.EndsWith("_billboard");
+            bool cards = file.EndsWith("_cards_BaseColor");
+            ti.textureType = normal ? TextureImporterType.NormalMap : TextureImporterType.Default;
+            ti.sRGBTexture = !normal && !mask;
+            ti.mipmapEnabled = true;
+            ti.filterMode = FilterMode.Trilinear;
+            ti.anisoLevel = building && !far ? 2 : 1;
+            ti.wrapMode = file.StartsWith("nc_trees_") ? TextureWrapMode.Repeat : TextureWrapMode.Clamp;
+            ti.alphaSource = TextureImporterAlphaSource.FromInput;
+            bool cut = file.EndsWith("_billboard") || file == "nc_trees_00" || file == "nc_trees_05";
+            // colour dilated into the clear atlas texels (alphaIsTransparency) for every colour map: mips no longer bleed the
+            // padding's black/white into UV island edges ("texture to their edges", 2026-10-22)
+            ti.alphaIsTransparency = !normal && !mask;
+            ti.mipMapsPreserveCoverage = cut;
+            if (cut) ti.alphaTestReferenceValue = 0.45f;
+            int size = far ? 512 : mask ? (building ? 512 : 256) : normal ? (building ? 1024 : 512) : building && !cards ? 2048 : 1024;
+            ti.maxTextureSize = 2048;
+            var a = ti.GetPlatformTextureSettings("Android");
+            a.overridden = true; a.maxTextureSize = size; a.format = TextureImporterFormat.ASTC_6x6;
+            ti.SetPlatformTextureSettings(a);
+            return true;
+        }
+
+        /// <summary>The Neighbourhood City trees keep their source materials (no M_ prefix): base colour, normal.</summary>
+        private static readonly Dictionary<string, (string tex, string role)> V3TreeMaterials = new Dictionary<string, (string, string)>
+        {
+            ["Wall_3.056_7"] = ("nc_trees_00", "leaves"),       // grass and bamboo cut-outs, planter swatches
+            ["Wall_3.056_15"] = ("nc_trees_02", "tree"),        // bark
+            ["Wall_3.056_14"] = ("nc_trees_05", "leaves"),      // canopy cut-outs
+        };
+
+        /// <summary>
+        /// World v3 materials. M_&lt;x&gt;: PBR (&lt;x&gt;_BaseColor, &lt;x&gt;_Normal, &lt;x&gt;_MaskMap) on CT Life/World/Kit PBR;
+        /// M_&lt;x&gt;_glass: the same atlas as opaque window glass; M_&lt;x&gt;_cards and M_&lt;x&gt;_lod2: base colour only
+        /// (facade cards two-sided). Tree foliage and billboards stay on the toon kit shader (wind, cut-out), toon off.
+        /// </summary>
+        private static Material V3Material(string fbxMaterial, string kind, string id)
+        {
+            string key = "v3__" + fbxMaterial;
+            if (Cache.TryGetValue(key, out var cached) && cached != null) return cached;
+            var path = $"{KitDir}/Materials/{key}.mat";
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
+            bool billboard = fbxMaterial.EndsWith("_billboard");
+            if (V3TreeMaterials.TryGetValue(fbxMaterial, out var tm) || billboard)
+            {
+                var sh = Shader.Find("CT Life/World/Kit") ?? throw new InvalidOperationException("CT Life/World/Kit shader missing");
+                if (mat == null) { mat = new Material(sh) { name = key }; AssetDatabase.CreateAsset(mat, path); }
+                mat.shader = sh;
+                string tex = billboard ? fbxMaterial.Substring(2) : tm.tex;
+                string role = billboard ? "billboard" : tm.role;
+                mat.SetTexture("_BaseMap", FindTexture(tex));
+                mat.SetColor("_BaseColor", Color.white);
+                mat.SetFloat("_Toon", 0f);
+                mat.DisableKeyword("_TINTPALETTE"); mat.SetFloat("_TintPalette", 0f);
+                mat.DisableKeyword("_TINTALL"); mat.SetFloat("_TintAll", 0f);
+                mat.SetVector("_Wind", role == "leaves" ? new Vector4(0.06f, 1.3f, 5f, 0) : role == "tree" ? new Vector4(0.03f, 1.1f, 5f, 0) : Vector4.zero);
+                mat.SetVector("_GroundAO", new Vector4(0.8f, 0.3f, 0, 0));
+                bool cut = role != "tree";
+                mat.SetFloat("_Cutoff", cut ? 0.45f : 0f);
+                mat.SetFloat("_Cull", cut ? 0f : 2f);
+            }
+            else
+            {
+                var sh = Shader.Find("CT Life/World/Kit PBR") ?? throw new InvalidOperationException("CT Life/World/Kit PBR shader missing");
+                if (mat == null) { mat = new Material(sh) { name = key }; AssetDatabase.CreateAsset(mat, path); }
+                mat.shader = sh;
+                string stem = fbxMaterial.StartsWith("M_") ? fbxMaterial.Substring(2) : fbxMaterial;
+                bool glass = stem.EndsWith("_glass");
+                bool flat = stem.EndsWith("_cards") || stem.EndsWith("_lod2");
+                if (glass) stem = stem.Substring(0, stem.Length - "_glass".Length);
+                mat.SetTexture("_BaseMap", FindTexture(stem + "_BaseColor"));
+                // the far box has no mask (no baked AO, no normal-map relief): a touch darker so it matches LOD1's tone
+                mat.SetColor("_BaseColor", stem.EndsWith("_lod2") ? new Color(0.84f, 0.84f, 0.84f, 1f) : Color.white);
+                Texture2D nrm = flat ? null : FindTextureOrNull(stem + "_Normal"), msk = flat ? null : FindTextureOrNull(stem + "_MaskMap");
+                mat.SetTexture("_BumpMap", nrm);
+                mat.SetTexture("_MaskMap", msk);
+                void Kw(string k, bool on) { if (on) mat.EnableKeyword(k); else mat.DisableKeyword(k); }
+                Kw("_NORMALMAP", nrm != null); mat.SetFloat("_UseNormal", nrm != null ? 1f : 0f);
+                Kw("_MASKMAP", msk != null); mat.SetFloat("_UseMask", msk != null ? 1f : 0f);
+                Kw("_GLASS", glass); mat.SetFloat("_Glass", glass ? 1f : 0f);
+                mat.SetFloat("_BumpScale", 1f);
+                mat.SetFloat("_Metallic", msk != null ? 1f : 0f);
+                mat.SetFloat("_TintStrength", 1f);
+                // with a mask its alpha is the smoothness (scale 1); flat cards and far boxes: a matt plaster/brick value
+                mat.SetFloat("_Smoothness", msk != null ? 1f : 0.18f);
+                mat.SetFloat("_OcclusionStrength", 1f);
+                mat.SetFloat("_Reflection", 1f);
+                mat.SetVector("_GroundAO", kind == "building" ? new Vector4(2.6f, 0.4f, 0, 0) : new Vector4(0.6f, 0.25f, 0, 0));
+                mat.SetFloat("_Cutoff", glass ? 0.08f : 0f);
+                mat.SetFloat("_Cull", stem.EndsWith("_cards") || glass ? 0f : 2f);
+            }
+            mat.enableInstancing = true;
+            EditorUtility.SetDirty(mat);
+            Cache[key] = mat;
+            return mat;
+        }
+
+        private static Texture2D FindTextureOrNull(string tex) => AssetDatabase.LoadAssetAtPath<Texture2D>($"{KitDir}/Textures/{tex}.png");
 
         /// <summary>The kit material for an FBX material name and a kind (billboard frames, other one-off props).</summary>
         public static Material KitMaterial(string fbxMaterial, string kind, string id) => Material(fbxMaterial, kind, id);

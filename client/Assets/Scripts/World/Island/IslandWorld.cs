@@ -16,8 +16,8 @@ namespace CTLife.World
     /// CT Island v2 at runtime (World lane, 2026-10-17). The base prefab (always loaded) holds the far terrain, the sea,
     /// the lighting, the road network and the pedestrian NavMesh. The near world streams in 256 m cells, each a prefab under
     /// Resources/World/Island/Cells: terrain chunks with colliders, road meshes, bridges, props, markers. Cells are
-    /// loaded by distance plus Feel's velocity prefetch (<see cref="IslandStreamer.Prefetch"/>), one async load at a
-    /// time, so no frame blocks. Venue dioramas stream as before, but they now sit on real terrain heights and face their
+    /// loaded by distance plus Feel's velocity prefetch (<see cref="IslandStreamer.Prefetch"/>), with bounded concurrency
+    /// and a shared terrain-build budget. Venue dioramas stream as before, but they now sit on real terrain heights and face their
     /// streets (yaw). A streamed venue keeps its own geometry, colliders, spots and baked lightmaps, but not its own sun,
     /// look, volume, backdrop or NavMesh: the island provides one light and one walkable surface.
     /// </summary>
@@ -42,6 +42,23 @@ namespace CTLife.World
         public TextAsset holeBytes;
         public int hfSamples = 1025;
         public float hfCell = 2f, hfMinX = -1024f, hfMinZ = -1024f, hfMin = -40f, hfMax = 200f;
+        public IslandWaterBodies waterBodies;
+        private IslandWaterBodies _runtimeWater;
+        [Tooltip("World v3: the material open-air venue shells are reskinned with (IslandVenueReskin).")]
+        public Material venueReskin;
+
+        public float WaterSurfaceAt(float x, float z)
+        {
+            var h = LoadHeightfield();
+            if (waterBodies != null) return waterBodies.SurfaceAt(x, z, h, seaLevel);
+            // Compatibility for the existing base prefab; the targeted safety bake persists this same geometry.
+            if (_runtimeWater == null)
+            {
+                _runtimeWater = ScriptableObject.CreateInstance<IslandWaterBodies>();
+                _runtimeWater.triangles = IslandWaterBodies.Capture(transform.Find("Water"));
+            }
+            return _runtimeWater.SurfaceAt(x, z, h, seaLevel);
+        }
 
         /// <summary>The ground heightfield (loaded with the island).</summary>
         public IslandHeightfield Heightfield { get; private set; }
@@ -94,6 +111,7 @@ namespace CTLife.World
         private CancellationTokenSource _life = new CancellationTokenSource();
         private float _nextPlan, _nextCellPlan;
         private Vector3 _lastPlayer;
+        private float _prefetchSpeed, _prefetchSpeedUntil;
 
         public VenueSceneRoot Root { get; private set; }
         public IReadOnlyDictionary<string, VenueSceneRoot> Loaded => _loaded;
@@ -131,7 +149,11 @@ namespace CTLife.World
             world.Root = go.GetComponent<VenueSceneRoot>();
             world.Root.Init(null);
             var hf = world.LoadHeightfield();
-            if (hf != null) go.GetComponent<IslandTerrainFar>()?.Build(hf);
+            if (hf != null)
+            {
+                go.GetComponent<IslandTerrainFar>()?.Build(hf);
+                await IslandGroundFallback.Create(go.transform).Build(hf, owner);
+            }
             if (world.navigation != null) world._nav = NavMesh.AddNavMeshData(world.navigation);
             go.GetComponent<VenueContentLighting>()?.Apply();
             IslandLightmaps.Clear();
@@ -159,10 +181,19 @@ namespace CTLife.World
             var need = new List<int>();
             for (int i = 0; i < rects.Count; i++) if (IslandStreaming.DistanceToRect(p, rects[i]) <= radius) need.Add(i);
             need.Sort((a, b) => IslandStreaming.DistanceToRect(p, rects[a]).CompareTo(IslandStreaming.DistanceToRect(p, rects[b])));
-            foreach (var i in need)
+            while (need.Count > 0)
             {
-                while (_cellLoading.Contains(i)) { owner.ThrowIfCancellationRequested(); await Awaitable.NextFrameAsync(); }
-                if (!_cells.ContainsKey(i)) await LoadCell(i, owner);
+                owner.ThrowIfCancellationRequested();
+                _life.Token.ThrowIfCancellationRequested();
+                need.RemoveAll(i => _cells.ContainsKey(i));
+                var loads = new List<Task>();
+                foreach (var i in need)
+                {
+                    if (_cellLoading.Count >= IslandStreaming.FastLoadConcurrency) break;
+                    if (!_cellLoading.Contains(i)) loads.Add(LoadCell(i, owner));
+                }
+                if (loads.Count > 0) await Task.WhenAll(loads);
+                else if (need.Count > 0) await Awaitable.NextFrameAsync();
             }
         }
 
@@ -187,6 +218,9 @@ namespace CTLife.World
         public void Prefetch(Vector3 position, Vector3 velocity, float horizonSeconds)
         {
             float until = Time.unscaledTime + 2f;
+            _prefetchSpeed = new Vector2(velocity.x, velocity.z).magnitude;
+            _prefetchSpeedUntil = until;
+            if (_prefetchSpeed > 15f) horizonSeconds = Mathf.Max(horizonSeconds, IslandStreaming.PrefetchHorizon(_prefetchSpeed));
             _prefetch.Add((new Vector2(position.x, position.z), until));
             foreach (var q in IslandStreaming.PredictPath(position, velocity, Mathf.Clamp(horizonSeconds, 0f, 12f), 1f)) _prefetch.Add((q, until));
             if (_prefetch.Count > 64) _prefetch.RemoveRange(0, _prefetch.Count - 64);
@@ -213,7 +247,12 @@ namespace CTLife.World
                 foreach (var i in _cellLoading) loadedCells.Add(i);
                 var (load, unload) = IslandStreaming.PlanCells(p, CellRects(), loadedCells, cellLoadRadius, cellUnloadRadius, PrefetchPoints());
                 foreach (var i in unload) UnloadCell(i);
-                if (_cellLoading.Count == 0 && load.Count > 0) _ = LoadCell(load[0], _life.Token);
+                int concurrency = IslandStreaming.LoadConcurrency(Time.unscaledTime < _prefetchSpeedUntil ? _prefetchSpeed : 0f);
+                foreach (int i in load)
+                {
+                    if (_cellLoading.Count >= concurrency) break;
+                    _ = StreamCell(i);
+                }
             }
             if (Time.unscaledTime < _nextPlan) return;
             _nextPlan = Time.unscaledTime + 0.5f;
@@ -228,9 +267,19 @@ namespace CTLife.World
 
         // ------------------------------------------------------------------ cells
 
+        private async Task StreamCell(int i)
+        {
+            try { await LoadCell(i, _life.Token); }
+            catch (OperationCanceledException) { }
+            catch (Exception e) { Log.Warn("island", "cell load failed " + cells[i].id + ": " + e.Message); }
+        }
+
         private async Task LoadCell(int i, CancellationToken owner)
         {
             if (i < 0 || i >= cells.Count || _cells.ContainsKey(i) || !_cellLoading.Add(i)) return;
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(owner, _life.Token);
+            owner = linked.Token;
+            GameObject go = null;
             try
             {
                 if (!_cellPrefabs.TryGetValue(i, out var prefab) || prefab == null)
@@ -238,20 +287,24 @@ namespace CTLife.World
                     var req = Resources.LoadAsync<GameObject>(CellFolder + "/" + cells[i].id);
                     while (!req.isDone) { owner.ThrowIfCancellationRequested(); await Awaitable.NextFrameAsync(); }
                     prefab = req.asset as GameObject;
-                    if (prefab == null) { Log.Warn("island", "missing cell " + cells[i].id); return; }
+                    if (prefab == null) throw new InvalidOperationException("Missing island cell " + cells[i].id);
                     _cellPrefabs[i] = prefab;
                 }
                 var op = Object.InstantiateAsync(prefab, transform);
-                while (!op.isDone) { owner.ThrowIfCancellationRequested(); await Awaitable.NextFrameAsync(); }
-                var go = op.Result[0];
+                // Finish instantiation before cancellation cleanup, otherwise its late result leaks a live cell.
+                while (!op.isDone) await Awaitable.NextFrameAsync();
+                go = op.Result[0];
+                owner.ThrowIfCancellationRequested();
                 go.name = cells[i].id;
                 var ground = go.GetComponentInChildren<IslandTerrainCell>(true);
                 if (ground != null) await ground.Build(LoadHeightfield(), owner);
                 if (go == null) return;
+                owner.ThrowIfCancellationRequested();
                 _cells[i] = go;
+                go = null; // dictionary owns it now
                 if (cells[i].far != null) cells[i].far.SetActive(false);
             }
-            finally { _cellLoading.Remove(i); }
+            finally { if (go != null) Destroy(go); _cellLoading.Remove(i); }
         }
 
         private void UnloadCell(int i)
@@ -284,6 +337,7 @@ namespace CTLife.World
                 root.name = "Venue_" + v.venueId;
                 Prepare(root);
                 if (v.HasLocal && v.localFrame.width > 0f) IslandVenueTrim.Trim(root.transform, v.localFrame, v.shellHeight > 0f ? 0.5f : 4f, v.shellHeight > 0f ? v.shellHeight + 0.4f : 400f);   // inside its building: nothing pokes out
+                if (v.shellHeight <= 0f && venueReskin != null) IslandVenueReskin.Apply(root.transform, venueReskin);   // open air: real plaster and tiles
                 var reg = Services.TryGet<ConfigStore>(out var cfg) ? cfg.Registries : null;
                 root.Init(reg?.SpotsFor(v.venueId));
                 if (string.IsNullOrEmpty(root.venueId)) root.venueId = v.venueId;
@@ -346,6 +400,7 @@ namespace CTLife.World
         private void OnDestroy()
         {
             _life.Cancel();
+            if (_runtimeWater != null) Destroy(_runtimeWater);
             if (_nav.valid) NavMesh.RemoveNavMeshData(_nav);
             if (ReferenceEquals(Current, this)) { Current = null; RoadNetwork.Active = null; }
         }
@@ -353,7 +408,7 @@ namespace CTLife.World
 
     /// <summary>
     /// Streaming entry points for other lanes (world-v2 contract). Feel calls <see cref="Prefetch"/> from vehicles and
-    /// flight so cells and venues are in before arrival; loading stays budgeted (one async cell load at a time).
+    /// flight so cells and venues are in before arrival; loading stays bounded and terrain work is budgeted per frame.
     /// </summary>
     public static class IslandStreamer
     {
@@ -368,6 +423,16 @@ namespace CTLife.World
             IslandWorld.Current != null ? IslandWorld.Current.EnsureCells(position, radius, ct) : Task.CompletedTask;
 
         public static float SeaLevel => IslandWorld.Current != null ? IslandWorld.Current.seaLevel : -6f;
+
+        /// <summary>Actual exposed water surface; NaN on dry terrain or when no island is loaded. Includes elevated lakes/river.</summary>
+        public static float WaterSurfaceAt(float x, float z) => IslandWorld.Current != null ? IslandWorld.Current.WaterSurfaceAt(x, z) : float.NaN;
+
+        /// <summary>Whether a point is below an actual water surface (not merely below sea altitude).</summary>
+        public static bool IsWater(float x, float z, float y)
+        {
+            float surface = WaterSurfaceAt(x, z);
+            return !float.IsNaN(surface) && y < surface;
+        }
 
         /// <summary>Ground height (terrain, not roads or buildings) at island x/z; NaN when no island is loaded.</summary>
         public static float GroundHeight(float x, float z)

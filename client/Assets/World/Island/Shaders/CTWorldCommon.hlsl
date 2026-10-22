@@ -81,4 +81,57 @@ half3 CTWorldHaze(half3 color, float3 positionWS)
     return lerp(color, haze, amount);
 }
 
+// World v3 (2026-10-22): the island's HDRI environment (IslandAtmosphere) and a compact PBR surface for the streets
+// (roads, sidewalks, kerbs, plazas, downtown paving): the island's wrapped sun, shaped trilight fill and soft shadow,
+// plus a GGX sun highlight and the HDRI reflection, so asphalt and stone catch the low sun like the PBR buildings do.
+TEXTURECUBE(_CTWorldEnvCube); SAMPLER(sampler_CTWorldEnvCube);
+float4 _CTWorldEnvParams;      // x = strength of the HDRI environment (0 = none), y = its mip count
+
+half3 CTWorldEnv(half3 r, half perceptualRough)
+{
+    return SAMPLE_TEXTURECUBE_LOD(_CTWorldEnvCube, sampler_CTWorldEnvCube, r, perceptualRough * (_CTWorldEnvParams.y - 1.0)).rgb * _CTWorldEnvParams.x;
+}
+
+half3 CTWorldSurface(half3 albedo, half smooth, float3 positionWS, half3 n, half ao, half reflection)
+{
+    Light ml = GetMainLight();
+    half ndl = dot(n, ml.direction);
+    half wrapped = saturate((ndl + 0.35h) / 1.35h);
+    half shadow = CTWorldShadow(positionWS) * ml.distanceAttenuation;
+    bool tuned = _CTWorldAmbSky.a > 0.0;
+    half keep = tuned ? (half)_CTWorldShadowParams.x : 0.35h;
+    half3 direct = ml.color * (wrapped * lerp(keep, 1.0h, shadow));
+    half fill = tuned ? lerp((half)_CTWorldShadowParams.z, 1.0h, wrapped * shadow) : 1.0h;
+    half3 c = albedo * 0.96h * (direct + CTWorldAmbient(n) * fill * ao);
+    half3 v = SafeNormalize(GetWorldSpaceViewDir(positionWS));
+    half pr = 1.0h - smooth;
+    half r = max(pr * pr, 0.0078125h);
+    half r2 = r * r;
+    half3 h = SafeNormalize(ml.direction + v);
+    half nh = saturate(dot(n, h)), lh = saturate(dot(ml.direction, h));
+    half d = nh * nh * (r2 - 1.0h) + 1.00001h;
+    half spec = min(r2 / ((d * d) * max(0.1h, lh * lh) * (r * 4.0h + 2.0h)), 60.0h);
+    c += 0.04h * spec * ml.color * (saturate(ndl) * shadow);
+    if (_CTWorldEnvParams.x > 0.0)
+    {
+        half nv = saturate(dot(n, v));
+        half f = 1.0h - nv; f *= f; f *= f;
+        half envBRDF = lerp(0.04h, saturate(smooth + 0.04h), f) / (r2 + 1.0h);
+        c += CTWorldEnv(reflect(-v, n), pr) * (envBRDF * ao * reflection * lerp(0.55h, 1.0h, shadow));
+    }
+    return c;
+}
+
+// LOD cross-fade for the island's instanced kit (IslandInstanceRenderer, 2026-10-22): during a switch both LODs draw with
+// complementary screen-space dither masks instead of popping. fade > 0: the incoming LOD keeps the pixels whose noise is
+// below the progress; fade < 0: the outgoing LOD keeps the rest. Only the _CTLODFADE variant (the renderer's fade
+// material copies) has the discard, so ordinary opaque kit draws keep early depth on Mali.
+void CTWorldLodFade(float2 positionCS, float fade)
+{
+    #if defined(_CTLODFADE)
+        float n = frac(52.9829189 * frac(dot(floor(positionCS), float2(0.06711056, 0.00583715))));
+        clip(fade > 0.0 ? fade - n : n + fade);
+    #endif
+}
+
 #endif

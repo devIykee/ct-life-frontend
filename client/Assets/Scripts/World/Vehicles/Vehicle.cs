@@ -29,11 +29,19 @@ namespace CTLife.World.Vehicles
         /// <summary>Scooters: the bars the rider holds.</summary>
         public Transform Handlebar { get; private set; }
         public readonly List<Transform> Rotors = new List<Transform>();
+        /// <summary>Each rotor's spin axis in its own space: the thinnest axis of its mesh (the main rotor's disc normal, the
+        /// v3 tail rotor's side axis), so a tilted mast or a sideways tail rotor spins true.</summary>
+        public readonly List<Vector3> RotorAxes = new List<Vector3>();
+        /// <summary>v3 hovercar: the thruster anchors (Thruster_0..N).</summary>
+        public readonly List<Transform> Thrusters = new List<Transform>();
+        /// <summary>Renderer material slots drawn with a v3 *_Paint material (every LOD): <see cref="VehiclePaint"/> tints them.</summary>
+        public readonly List<(Renderer renderer, int slot)> PaintSlots = new List<(Renderer, int)>();
 
         public VehicleInput Input;
         /// <summary>The avatar driving (null when parked).</summary>
         public AvatarView Driver { get; set; }
-        public bool Occupied => Driver != null;
+        public bool RemoteOccupied { get; set; }
+        public bool Occupied => Driver != null || RemoteOccupied;
         /// <summary>Flying (the Roadstar's flight mode, or any airborne heli/drone).</summary>
         public bool Flying { get; set; }
         /// <summary>Engine on (rotor spin-up, the hum).</summary>
@@ -73,8 +81,18 @@ namespace CTLife.World.Vehicles
             DoorLeft = P("Door_FL"); DoorRight = P("Door_FR");
             Steering = P("Steering"); Seat = P("Seat_Driver"); Entry = P("Entry_Driver");
             SteeringCenter = P("SteeringCenter"); Exhaust = P("Exhaust"); Handlebar = P("Handlebar");
-            Rotors.Clear();
-            foreach (var kv in parts) if (kv.Key.StartsWith("Rotor_", System.StringComparison.Ordinal)) Rotors.Add(kv.Value);
+            Rotors.Clear(); RotorAxes.Clear(); Thrusters.Clear(); PaintSlots.Clear();
+            foreach (var kv in parts)
+            {
+                if (kv.Key.StartsWith("Rotor_", System.StringComparison.Ordinal) || kv.Key == "TailRotor") { Rotors.Add(kv.Value); RotorAxes.Add(SpinAxis(kv.Value)); }
+                else if (kv.Key.StartsWith("Thruster_", System.StringComparison.Ordinal)) Thrusters.Add(kv.Value);
+            }
+            foreach (var r in Model.GetComponentsInChildren<Renderer>(true))
+            {
+                var mats = r.sharedMaterials;
+                for (int i = 0; i < mats.Length; i++)
+                    if (mats[i] != null && mats[i].name.EndsWith("_Paint", System.StringComparison.Ordinal)) PaintSlots.Add((r, i));
+            }
             if (DoorLeft != null) _doorLeftRest = DoorLeft.localRotation;
             if (DoorRight != null) _doorRightRest = DoorRight.localRotation;
             _colliders = GetComponentsInChildren<Collider>(true);
@@ -82,8 +100,20 @@ namespace CTLife.World.Vehicles
             if (Spec != null && Application.isPlaying) SetFlightLayer(VehicleCatalog.Flies(Spec.kind));
         }
 
+        private static Vector3 SpinAxis(Transform rotor)
+        {
+            var mf = rotor.GetComponent<MeshFilter>();
+            if (mf == null || mf.sharedMesh == null) return Vector3.up;
+            var e = mf.sharedMesh.bounds.extents;
+            return e.x <= e.y && e.x <= e.z ? Vector3.right : e.z <= e.y ? Vector3.forward : Vector3.up;
+        }
+
         /// <summary>Open (1) or close (0) the driver's door (the left one); the other door stays shut.</summary>
-        public void SetDoor(bool open) => _doorLeftTarget = open ? 1f : 0f;
+        public void SetDoor(bool open, bool passenger = false)
+        {
+            if (passenger) _doorRightTarget = open ? 1f : 0f;
+            else _doorLeftTarget = open ? 1f : 0f;
+        }
         public bool DoorMoving => !Mathf.Approximately(_doorLeft, _doorLeftTarget);
         public float DoorOpen => _doorLeft;
 

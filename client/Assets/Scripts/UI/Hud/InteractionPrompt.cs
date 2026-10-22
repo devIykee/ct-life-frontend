@@ -15,6 +15,7 @@ namespace CTLife.UI
     {
         private readonly Subscriptions _subs = new Subscriptions();
         private readonly VisualElement _actions, _pointer;
+        private readonly Label _tag;
         private readonly List<Rect> _blocked = new List<Rect>();
         private VisualElement[] _obstacles = Array.Empty<VisualElement>();
         private InteractionPromptSignal _state;
@@ -22,13 +23,16 @@ namespace CTLife.UI
         private Vector2? _translation, _pointerTranslation;
         private int _contentFrame = -1;
         private bool _disposed, _presented;
+        private float _quietUntil;
         public VisualElement Element { get; }
 
         public InteractionPrompt()
         {
             _actions = El.Div("ct-interact-actions");
             _pointer = El.Div("ct-interact-pointer");
-            Element = El.Div("ct-hud-interact", _pointer, _actions);
+            _tag = El.Text("", "ct-interact-tag");
+            _tag.pickingMode = PickingMode.Ignore;
+            Element = El.Div("ct-hud-interact", _pointer, _tag, _actions);
             Element.name = "scene-interaction";
             Element.pickingMode = _pointer.pickingMode = _actions.pickingMode = PickingMode.Ignore;
             Element.style.position = Position.Absolute;
@@ -41,6 +45,8 @@ namespace CTLife.UI
             _pointer.style.top = 0;
             Element.Show(false);
             _subs.On<InteractionPromptSignal>(Render);
+            // Just out of a vehicle: no prompt for half a second, so the car you left doesn't flash "Drive".
+            _subs.On<CTLife.World.Vehicles.VehicleChangedSignal>(s => { if (s.vehicle == null) _quietUntil = Time.unscaledTime + 0.5f; });
             _subs.On<InteractionToastSignal>(s => Bus.Publish(ToastSignal.Text(Strings.T(s.key), ToastKind.Bad)));
             InteractionController.PresentationUpdated += UpdatePosition;
             Element.RegisterCallback<AttachToPanelEvent>(OnAttach);
@@ -66,6 +72,12 @@ namespace CTLife.UI
             Element.Show(any);
             SetPresented(false); // Wait for a measured action row; never flash at layout origin.
             if (!any) return;
+            // City HUD v2: the object's name on a chip, then each verb as a squircle with one glyph and the verb under it.
+            string tag = string.IsNullOrEmpty(s.tagKey) ? "" : Strings.T(s.tagKey);
+            if (tag == s.tagKey) tag = "";   // no string for this object: no chip rather than a raw key
+            if (tag.Length > 0 && s.tagLocked) tag += " \u00b7 " + Strings.T("vehicle.locked");
+            _tag.text = tag.ToUpperInvariant();
+            _tag.Show(tag.Length > 0);
             foreach (var a in s.actions)
             {
                 var id = a.id;
@@ -75,10 +87,13 @@ namespace CTLife.UI
                 var button = El.Btn("", () =>
                     { if (!_disposed && owner != null && InteractionController.Current == owner) owner.Perform(id, target); },
                     a.primary ? "ct-interact ct-interact-primary" : "ct-interact ct-interact-secondary");
+                if (id == "buy") button.AddToClassList("ct-interact-locked");
                 button.name = "scene-action-" + id.Replace(':', '-');
                 button.tooltip = label;
-                button.Add(new UiIcon(a.icon));
-                button.Add(El.Text(label, "ct-interact-label"));
+                var key = El.PassThrough(El.Div("ct-interact-key", new UiIcon(a.icon)));
+                if (id == "buy") key.Add(El.PassThrough(El.Div("ct-interact-lock", new UiIcon("locked"))));
+                button.Add(key);
+                button.Add(El.PassThrough(El.Text(label, "ct-interact-label")));
                 _actions.Add(button);
             }
             Element.EnableInClassList("ct-interact-busy", s.busy);
@@ -87,6 +102,7 @@ namespace CTLife.UI
         /// <summary>Public for the Editor capture harness; production is driven after CameraRig's LateUpdate.</summary>
         public void UpdatePosition()
         {
+            if (!_disposed && Time.unscaledTime < _quietUntil) { SetPresented(false); return; }
             if (_disposed || Time.frameCount <= _contentFrame || Element.panel == null || Element.parent == null || _state.actions == null || _state.actions.Count == 0) return;
             var parent = Element.parent;
             for (var e = parent; e != null; e = e.parent)

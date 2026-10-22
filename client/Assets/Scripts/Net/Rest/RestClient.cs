@@ -50,6 +50,7 @@ namespace CTLife.Net
         public async Task<T> PostOnce<T>(string path, object body, string idempotencyKey, CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
+            RejectOfflineDemo();
             if (!PerpIntent.IsRequestKey(idempotencyKey))
                 throw new ArgumentException("An explicit retained idempotency key is required", nameof(idempotencyKey));
             var user = _session.UserId;
@@ -110,6 +111,8 @@ namespace CTLife.Net
         public async Task<RawResponse> SendRaw(string method, string path, string jsonBody, bool auth,
             string idempotencyKey, string ifNoneMatch, CancellationToken ct)
         {
+            ct.ThrowIfCancellationRequested();
+            RejectOfflineDemo();
             bool refreshed = false;
             int networkAttempts = 0;
             bool rateLimitedOnce = false;
@@ -182,6 +185,9 @@ namespace CTLife.Net
         private async Task<RawResponse> SendOnce(string method, string path, string jsonBody, bool auth,
             string idempotencyKey, string ifNoneMatch, CancellationToken ct, bool followRedirects = true)
         {
+            ct.ThrowIfCancellationRequested();
+            // Offline filming must not contact a real backend, even if this device has a saved session.
+            RejectOfflineDemo();
             var url = Env.Current.ApiUrl(path);
             using var req = new UnityWebRequest(url, method)
             {
@@ -229,6 +235,12 @@ namespace CTLife.Net
             }
             Log.Debug("rest", $"{method} {path} → {res.status} in {(Time.realtimeSinceStartup - started) * 1000f:0} ms");
             return res;
+        }
+
+        private static void RejectOfflineDemo()
+        {
+            if (RuntimeMode.IsOfflineDemo)
+                throw new ApiException(0, "OFFLINE_DEMO", "Server actions are unavailable in the offline demo");
         }
 
         /// <summary>True while another SERVER_BUSY retry is allowed after <paramref name="attemptsSoFar"/> retries.</summary>

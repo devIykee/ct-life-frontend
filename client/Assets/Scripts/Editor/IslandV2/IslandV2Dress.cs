@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using CTLife.World;
+using CTLife.World.Vehicles;
 using Newtonsoft.Json.Linq;
 using UnityEditor;
 using UnityEngine;
@@ -35,11 +36,12 @@ namespace CTLife.EditorTools.IslandV2
             var path = Path.Combine(IslandV2Paths.Out, "dress.json");
             if (!File.Exists(path)) { Debug.LogWarning("CTLIFE [islandv2] no dress.json: the island stays bare"); Kit = null; return; }
             var doc = JObject.Parse(File.ReadAllText(path));
+            IslandV2PlacementRepair.ApplyDressOverrides(doc);
             var groups = (JArray)doc["instances"];
-            var used = new HashSet<string>(groups.Select(g => (string)g["proto"]));
-            foreach (var c in CarModels) used.Add(c);
+            receipt["dressDecorCarsRestyled"] = V3DecorCars(groups);
+            var used = new HashSet<string>(groups.Select(g => (string)g["proto"]).Where(p => !p.StartsWith("v3car_", StringComparison.Ordinal)));
             Kit = IslandV2Kit.Build(used, receipt);
-            CarProtos = CarModels.Select(c => Kit.IndexOf(c)).Where(i => i >= 0).ToArray();
+            CarProtos = IslandV2Kit.V3CarSpecs.Select(c => Kit.IndexOf(IslandV2Kit.V3CarId(c))).Where(i => i >= 0).ToArray();
             int n = 0, trunks = 0;
             foreach (var g in groups)
             {
@@ -177,8 +179,61 @@ namespace CTLife.EditorTools.IslandV2
             return go;
         }
 
-        /// <summary>Kenney car kit models used as parked decor (Feel's drivable cars are separate).</summary>
+        /// <summary>Kenney car kit models that dress.py still places (shot dressing, yards); restyled to the v3 decor cars.</summary>
         public static readonly string[] CarModels = { "car_sedan", "car_sedan_sports", "car_hatchback_sports", "car_suv", "car_suv_luxury", "car_taxi", "car_van", "car_delivery", "car_police" };
+
+        /// <summary>The v3 drivable a Kenney car model becomes (no v3 SUV or van yet: the sedan stands in).</summary>
+        public static string V3SpecFor(string kenney) =>
+            kenney.Contains("police") ? "police" : kenney.Contains("taxi") ? "taxi" : kenney.Contains("sports") ? "sports" : kenney.Contains("hatchback") ? "compact" : "sedan";
+
+        /// <summary>World v3: every Kenney car dress.json places becomes the v3 decor car of its class, painted from the
+        /// traffic palette by a hash of its position, so the street never shows the old low-poly cars.</summary>
+        private static int V3DecorCars(JArray groups)
+        {
+            int n = 0;
+            var merged = new Dictionary<string, JArray>();
+            foreach (JObject g in groups.ToList())
+            {
+                var proto = (string)g["proto"];
+                if (!proto.StartsWith("car_", StringComparison.Ordinal)) continue;
+                string spec = V3SpecFor(proto), id = IslandV2Kit.V3CarId(spec);
+                var d = (JArray)g["d"];
+                for (int i = 0; i + 9 < d.Count; i += 10)
+                {
+                    var col = VehiclePaint.Pick(Hash01($"{(float)d[i]:F1},{(float)d[i + 2]:F1}"));
+                    bool paint = spec != "police" && spec != "taxi";
+                    d[i + 6] = paint ? col.r : 0f; d[i + 7] = paint ? col.g : 0f; d[i + 8] = paint ? col.b : 0f; d[i + 9] = paint ? 1f : 0f;
+                    n++;
+                }
+                groups.Remove(g);
+                if (!merged.TryGetValue(id, out var all)) merged[id] = all = new JArray();
+                foreach (var v in d) all.Add(v);
+            }
+            foreach (var kv in merged) groups.Add(new JObject { ["proto"] = kv.Key, ["n"] = kv.Value.Count / 10, ["d"] = kv.Value });
+            return n;
+        }
+
+        /// <summary>
+        /// A parked decor car for a street bay, chosen exactly as <see cref="ParkedCars"/> will choose the drivable that
+        /// replaces it (same position hash: the police one bay in ten, the model by class, the traffic paint), so the swap
+        /// on approach changes nothing the player can see. Returns the kit proto, the bay class and the packed tint.
+        /// </summary>
+        public static (int proto, VehicleClass cls, uint tint) DecorCarFor(string bayId, Vector3 p)
+        {
+            int pick = unchecked(Mathf.RoundToInt(p.x * 10) * 73856093 ^ Mathf.RoundToInt(p.z * 10) * 19349663);
+            var cls = Hash01(bayId + "car") < 0.22f ? VehicleClass.Sports : VehicleClass.Compact;
+            string spec = ParkedCars.SpecFor(cls, null, pick);
+            if (spec == "sedan" && Hash01(bayId + "taxi") < 0.2f) spec = "taxi";
+            int proto = Kit != null ? Kit.IndexOf(IslandV2Kit.V3CarId(spec)) : -1;
+            if (proto < 0 && CarProtos.Length > 0) proto = CarProtos[(int)(Hash01(bayId + "car") * CarProtos.Length) % CarProtos.Length];
+            uint tint = 0;
+            if (spec != "police" && spec != "taxi")
+            {
+                var c = VehiclePaint.Pick(((pick >> 8) & 0xFFFF) / 65535.0);
+                tint = Pack(c.r, c.g, c.b, 1f);
+            }
+            return (proto, cls, tint);
+        }
 
         // ------------------------------------------------------------------ W4 eye-level dressing
 

@@ -18,7 +18,7 @@ namespace CTLife.EditorTools
     /// glass so drivers show, and adds the act_drive seated pose (UAL1 Driving_Loop, CC0) to the shared controller.
     /// Batch: -executeMethod CTLife.EditorTools.VehicleImport.RunBatch
     /// </summary>
-    public static class VehicleImport
+    public static partial class VehicleImport
     {
         public const string Root = "Assets/Art/vehicles";
         public const string PrefabRoot = "Assets/Resources/Vehicles";
@@ -32,12 +32,17 @@ namespace CTLife.EditorTools
             Directory.CreateDirectory(PrefabRoot);
             string src = Path.GetFullPath(Path.Combine(Application.dataPath, "..", Source));
             var index = JObject.Parse(File.ReadAllText(Path.Combine(src, "vehicles.json")));
+            // v3 studio models take over every slot they fill; the v1 build keeps the rest (until suv/pickup/van/bike land)
+            var v3 = V3Sources();
+            foreach (var id in v3.Keys.Select(SpecIdFor).ToList()) index.Remove(id);
             // textures first (the FBX files reference them as textures/<id>_<name>.png), then the models
             string texSrc = Path.Combine(src, "textures");
             if (Directory.Exists(texSrc))
             {
                 Directory.CreateDirectory(TextureRoot);
-                foreach (var f in Directory.GetFiles(texSrc, "*.png")) CopyIfChanged(f, $"{TextureRoot}/{Path.GetFileName(f)}");
+                foreach (var f in Directory.GetFiles(texSrc, "*.png"))
+                    if (index.Properties().Any(p => Path.GetFileName(f).StartsWith(p.Name + "_", StringComparison.Ordinal)))
+                        CopyIfChanged(f, $"{TextureRoot}/{Path.GetFileName(f)}");
             }
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
             foreach (var p in index.Properties()) CopyIfChanged(Path.Combine(src, p.Name + ".fbx"), $"{Root}/{p.Name}.fbx");
@@ -51,6 +56,7 @@ namespace CTLife.EditorTools
                 if (spec == null) { Debug.LogWarning("CTLIFE [vehicles] no spec for " + p.Name); continue; }
                 BuildPrefab(p.Name, spec, (JObject)p.Value, glass);
             }
+            RunV3(v3, glass);
             AddDriveState();
             AssetDatabase.SaveAssets();
         }
@@ -227,11 +233,12 @@ namespace CTLife.EditorTools
     public sealed class VehiclePostprocessor : AssetPostprocessor
     {
         public override int GetPostprocessOrder() => 10;
-        public override uint GetVersion() => 2;
+        public override uint GetVersion() => 4;
 
         /// <summary>Palette / atlas textures: flat colour cells, so no mipmaps (they would bleed the cells together) and ASTC 4x4.</summary>
         private void OnPreprocessTexture()
         {
+            if (assetPath.StartsWith(VehicleImport.V3Root + "/", StringComparison.Ordinal)) { PreprocessV3(); return; }
             if (!assetPath.StartsWith(VehicleImport.TextureRoot + "/", StringComparison.Ordinal)) return;
             var ti = (TextureImporter)assetImporter;
             ti.textureType = TextureImporterType.Default;
@@ -245,6 +252,62 @@ namespace CTLife.EditorTools
                 name = "Android", overridden = true, maxTextureSize = 512, format = TextureImporterFormat.ASTC_4x4,
                 compressionQuality = 100,
             });
+        }
+
+        /// <summary>
+        /// v3 baked atlases: mipmapped, ASTC 6x6 on Android. BaseColor and the MaskMap (its alpha is smoothness) at 2048, the
+        /// near-flat normal and emission maps at 1024. Normal maps as normal-map type; the MaskMap linear.
+        /// </summary>
+        private void PreprocessV3()
+        {
+            var ti = (TextureImporter)assetImporter;
+            string file = System.IO.Path.GetFileNameWithoutExtension(assetPath);
+            bool normal = file.EndsWith("_Normal", StringComparison.Ordinal), mask = file.EndsWith("_MaskMap", StringComparison.Ordinal);
+            bool emission = file.EndsWith("_Emission", StringComparison.Ordinal);
+            int size = normal || emission ? 1024 : 2048;
+            ti.textureType = normal ? TextureImporterType.NormalMap : TextureImporterType.Default;
+            ti.sRGBTexture = !normal && !mask;
+            ti.alphaSource = mask ? TextureImporterAlphaSource.FromInput : TextureImporterAlphaSource.None;
+            ti.alphaIsTransparency = false;
+            ti.mipmapEnabled = true;
+            ti.streamingMipmaps = false;
+            ti.filterMode = FilterMode.Trilinear;
+            ti.anisoLevel = 2;
+            ti.wrapMode = TextureWrapMode.Clamp;
+            ti.maxTextureSize = size;
+            ti.SetPlatformTextureSettings(new TextureImporterPlatformSettings
+            {
+                name = "Android", overridden = true, maxTextureSize = size, format = TextureImporterFormat.ASTC_6x6,
+                compressionQuality = 100,
+            });
+        }
+
+        /// <summary>
+        /// v3 models keep their source UV layers in front of the baked one (veh_v3_bake.py adds 'UVAtlas' last and the FBX
+        /// carries all of them), so Unity's UV0 is the original, unbaked layout. Move the last UV channel (the atlas) to UV0,
+        /// drop the rest, and rebuild the tangents the normal map needs from it.
+        /// </summary>
+        private void OnPostprocessModel(GameObject g)
+        {
+            if (!assetPath.StartsWith(VehicleImport.Root + "/", StringComparison.Ordinal)) return;
+            string name = System.IO.Path.GetFileNameWithoutExtension(assetPath);
+            if (!System.IO.File.Exists($"{VehicleImport.V3Root}/{name}_BaseColor.png")) return;
+            var uvs = new System.Collections.Generic.List<Vector2>();
+            int moved = 0;
+            foreach (var mf in g.GetComponentsInChildren<MeshFilter>(true))
+            {
+                var mesh = mf.sharedMesh;
+                if (mesh == null) continue;
+                int atlas = -1;
+                for (int ch = 7; ch >= 0 && atlas < 0; ch--) { mesh.GetUVs(ch, uvs); if (uvs.Count > 0 && uvs.Count == mesh.vertexCount) atlas = ch; }
+                if (atlas <= 0) continue;
+                mesh.GetUVs(atlas, uvs);
+                mesh.SetUVs(0, uvs);
+                mesh.uv2 = null; mesh.uv3 = null; mesh.uv4 = null; mesh.uv5 = null; mesh.uv6 = null; mesh.uv7 = null; mesh.uv8 = null;
+                mesh.RecalculateTangents();
+                moved++;
+            }
+            if (moved > 0) Debug.Log($"CTLIFE [vehicles] {name}: atlas UVs moved to UV0 on {moved} meshes");
         }
 
         private void OnPreprocessModel()

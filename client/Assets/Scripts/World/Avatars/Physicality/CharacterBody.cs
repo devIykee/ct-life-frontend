@@ -64,7 +64,20 @@ namespace CTLife.World
         public bool Suspended { get; private set; }
         public bool Grounded { get; private set; } = true;
         /// <summary>A real fall in progress (the owner shows the fall pose).</summary>
-        public bool Airborne => _fall.Falling;
+        public bool Airborne => _fall.Falling || Jumping;
+        /// <summary>A hop is in the air (from <see cref="Jump"/> until touch-down).</summary>
+        public bool Jumping { get; private set; }
+
+        /// <summary>A small hop from the ground (City HUD v2 Jump). False when not standing on something.</summary>
+        public bool Jump(float speed)
+        {
+            if (Suspended || Controller == null || !Grounded || Jumping) return false;
+            _vy = speed;
+            _air = _lastIntent;
+            Jumping = true;
+            AirborneSince = UnityEngine.Time.time;
+            return true;
+        }
         public float AirborneSince { get; private set; }
         public Vector3 GroundNormal { get; private set; } = Vector3.up;
         /// <summary>Real horizontal velocity of the last move (displacement over that frame's delta time).</summary>
@@ -105,7 +118,7 @@ namespace CTLife.World
         {
             Suspended = suspended;
             if (Controller != null) Controller.enabled = !suspended;
-            _vy = 0f; _air = Vector3.zero;
+            _vy = 0f; _air = Vector3.zero; Jumping = false;
             _fall = new FallTracker { LastGroundY = transform.position.y, PeakY = transform.position.y };
             Velocity = Vector3.zero;
             Grounded = true;
@@ -119,7 +132,7 @@ namespace CTLife.World
             if (GroundAt(position, out float y)) position.y = y;
             transform.SetPositionAndRotation(position, rotation);
             if (Controller != null) Controller.enabled = enabled && !Suspended;
-            _vy = 0f; _air = Vector3.zero;
+            _vy = 0f; _air = Vector3.zero; Jumping = false;
             _fall = new FallTracker { LastGroundY = position.y, PeakY = position.y };
             Grounded = true;
             Velocity = Vector3.zero;
@@ -174,6 +187,12 @@ namespace CTLife.World
             var moved = transform.position - before; moved.y = 0f;
             Velocity = moved / dt;
             VelocityFrame = Time.frameCount;
+            if (Jumping && now && _vy <= 0f)
+            {
+                // Touch-down after a hop: a soft landing (a hop never counts as a fall).
+                Jumping = false;
+                if (landed < 0f) landed = 0.6f;
+            }
             if (landed >= 0f) Landed?.Invoke(landed);
         }
 

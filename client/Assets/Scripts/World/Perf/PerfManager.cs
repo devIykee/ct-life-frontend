@@ -9,15 +9,16 @@ namespace CTLife.World
 {
     /// <summary>
     /// Seeker budgets (Build Spec "Performance budgets" and "Unity must-dos"): 60 fps cap (Android defaults to 30),
-    /// render scale 0.7, and on a thermal warning drop render scale to 0.6 and halve animation rates.
+    /// render scale 0.8, and on a thermal warning drop render scale to 0.75 and halve animation rates.
     /// Android's full thermal status is polled even when Adaptive Performance is active, since its
     /// coarse warning level cannot distinguish severe, critical and emergency temperatures.
     /// </summary>
     public sealed class PerfManager : MonoBehaviour
     {
         public const int TargetFps = 60;
-        public const float NormalRenderScale = 0.7f;
-        public const float HotRenderScale = 0.6f;
+        // World v3 (2026-10-22): sharper on the Seeker: 0.8 cool, never below 0.75 hot (was 0.7 / 0.6, a soft image)
+        public const float NormalRenderScale = 0.8f;
+        public const float HotRenderScale = 0.75f;
 
         public static PerfManager Instance { get; private set; }
         public int ThermalLevel { get; private set; }

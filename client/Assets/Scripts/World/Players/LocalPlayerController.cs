@@ -111,6 +111,14 @@ namespace CTLife.World
 
         /// <summary>Driving or flying (Feel lane F2): the vehicle carries the avatar; no walking, no `move` messages.</summary>
         public bool InVehicle { get; private set; }
+        public bool Recovering { get; private set; }
+        public void SetRecoveryPaused(bool paused)
+        {
+            Recovering = paused;
+            CancelMovement();
+            _body?.Suspend(paused || InVehicle || _stunned || !string.IsNullOrEmpty(_seatedSpot));
+            ResetFootsteps();
+        }
 
         /// <summary>Hand the avatar to a vehicle seat (VehicleSystem parents it there).</summary>
         public void EnterVehicleMode()
@@ -163,6 +171,9 @@ namespace CTLife.World
             _paceFresh = true;
             ResetFootsteps();
             BindListener();
+            var safety = GetComponent<PlayerSafety>();
+            if (safety == null) safety = gameObject.AddComponent<PlayerSafety>();
+            safety.Init(this);
             if (OpenWorld) CTLife.World.Vehicles.VehicleSystem.Ensure(this);   // parked vehicles, the drone (Feel lane F2)
         }
 
@@ -199,9 +210,23 @@ namespace CTLife.World
         private void OnApplicationFocus(bool focused) { if (!focused) { CancelMovement(); _view?.CancelSeatExitPresentation(); _seatExitWasActive = false; } }
 
         /// <summary>HUD axes: right/up on screen. Refresh while held; a missing producer times out safely.</summary>
+        /// <summary>Hop speed (m/s): about 0.6 m, a modest jump rather than a superhero leap.</summary>
+        public const float JumpSpeed = 3.4f;
+
+        /// <summary>City HUD v2 Jump: a small hop when standing free on the ground (not seated, driving, stunned or recovering).</summary>
+        public bool RequestJump()
+        {
+            if (!string.IsNullOrEmpty(_seatedSpot) || InVehicle || Recovering || _stunned || _body == null || _view == null) return false;
+            if (_view.SeatPresentationActive || _body.Airborne) return false;
+            if (!_body.Jump(JumpSpeed)) return false;
+            _view.SetBase("jump_air");
+            _dirty = true;
+            return true;
+        }
+
         public void SetMoveInput(Vector2 input)
         {
-            if (_appPaused || !isActiveAndEnabled || InVehicle) return;
+            if (_appPaused || !isActiveAndEnabled || InVehicle || Recovering) return;
             if (_stunned || (_body != null && _body.Airborne)) { _moveInput = Vector2.zero; return; } // down or falling: no steering
             if (float.IsNaN(input.x) || float.IsInfinity(input.x) || float.IsNaN(input.y) || float.IsInfinity(input.y))
                 input = Vector2.zero;
@@ -276,6 +301,7 @@ namespace CTLife.World
         /// </summary>
         public bool MoveTo(Vector3 worldPoint, string thenSitAt = null)
         {
+            if (Recovering) return false;
             if (_appPaused) { ObserveReviewCommand("path-rejected:paused"); return false; }
             if (InVehicle) { ObserveReviewCommand("path-rejected:in-vehicle"); return false; }
             StandIfSeated();
@@ -495,7 +521,7 @@ namespace CTLife.World
             {
                 var local = _venue.ToLocal(transform.position);
                 float yaw = transform.eulerAngles.y;
-                if (_channel.Move(local.x, local.y, Mathf.Repeat(yaw, 360f) * Mathf.Deg2Rad))
+                if (_channel.Move(local.x, local.y, Mathf.Repeat(yaw - _venue.transform.eulerAngles.y, 360f) * Mathf.Deg2Rad))
                 {
                     _lastSentPos = transform.position;
                     _lastSentRot = yaw;
@@ -550,11 +576,17 @@ namespace CTLife.World
         public event System.Action<string> ReviewCommandObserved;
 #endif
 
+        private void MoveBody(Vector3 velocity, float dt)
+        {
+            if (_body == null) return;
+            _body.Move(_body.Grounded ? Locomotion.Separate(transform, velocity) : velocity, dt);
+        }
+
         private void Update()
         {
             // Local locomotion still animates when the venue is entered without realtime (offline/review).
             // Server-owned actions such as claiming a seat continue to require a connected channel.
-            if (!string.IsNullOrEmpty(_seatedSpot) || InVehicle) { ResetFootsteps(); return; }
+            if (!string.IsNullOrEmpty(_seatedSpot) || InVehicle || Recovering) { ResetFootsteps(); return; }
             if (_stunned || _body == null || _view == null) { ResetFootsteps(); return; }
             if (_view.SeatPresentationActive)
             {
@@ -579,7 +611,7 @@ namespace CTLife.World
             float dt = Time.deltaTime;
             if (_directControl) UpdateDirectMovement(dt);
             else if (_hasDestination) UpdatePathMovement(dt);
-            else _body.Move(Vector3.zero, dt); // gravity and ground contact while standing
+            else MoveBody(Vector3.zero, dt); // gravity and ground contact while standing
             ActualVelocity = _body.VelocityFrame == Time.frameCount ? _body.Velocity : Vector3.zero;
             // Warps have their own reset path; exclude unexpected correction spikes from animation/audio speed.
             if (ActualVelocity.magnitude > SprintSpeed + 1.5f) ActualVelocity = Vector3.zero;
@@ -643,7 +675,7 @@ namespace CTLife.World
 
         private void UpdatePathMovement(float dt)
         {
-            if (_appPaused || _path.Count == 0) { ClearPath(); _body.Move(Vector3.zero, dt); return; }
+            if (_appPaused || _path.Count == 0) { ClearPath(); MoveBody(Vector3.zero, dt); return; }
             var pos = transform.position;
             bool last = _pathIndex >= _path.Count - 1;
             var to = Flat(_path[_pathIndex] - pos);
@@ -656,7 +688,7 @@ namespace CTLife.World
                 if (dist <= ArriveRadius || (dist <= ArriveNear && stalled))
                 {
                     _directSpeed = 0f;
-                    _body.Move(Vector3.zero, dt);
+                    MoveBody(Vector3.zero, dt);
                     if (!ArriveAtDestination()) { ClearPath(); _pendingSpot = null; }
                     return;
                 }
@@ -670,7 +702,7 @@ namespace CTLife.World
                 _path.Clear(); _path.AddRange(Walkable(pos, PlanRoute(pos, goal)));
                 _pathIndex = 0; _pathBest = float.MaxValue; _pathBestAt = Time.time;
                 ObserveReviewCommand($"path-replanned:{_replans}; corners={_path.Count}");
-                _body.Move(Vector3.zero, dt);
+                MoveBody(Vector3.zero, dt);
                 return;
             }
             if (Time.time - _pathBestAt > 1.5f)
@@ -678,7 +710,7 @@ namespace CTLife.World
                 // Blocked (a person, a prop the route did not know): give up; the interaction reports it.
                 ObserveReviewCommand("path-stuck");
                 ClearPath(); _pendingSpot = null; _directSpeed = 0f;
-                _body.Move(Vector3.zero, dt);
+                MoveBody(Vector3.zero, dt);
                 return;
             }
             if (dist > 1e-4f) to /= dist;
@@ -688,7 +720,7 @@ namespace CTLife.World
             _directSpeed = Locomotion.Accelerate(_directSpeed, target, dt);
             Turn(to, dt);
             var velocity = to * (_directSpeed * Mathf.Clamp01(Vector3.Dot(transform.forward, to) * 1.5f));
-            _body.Move(velocity, dt);
+            MoveBody(velocity, dt);
         }
 
         private static readonly float[] SteerAngles = { 25f, 50f, 75f, 100f, 130f };
@@ -746,18 +778,18 @@ namespace CTLife.World
 
         private void UpdateDirectMovement(float dt)
         {
-            if (_appPaused) { StopDirectInput(); _body.Move(Vector3.zero, dt); return; }
+            if (_appPaused) { StopDirectInput(); MoveBody(Vector3.zero, dt); return; }
             Vector3 direction;
             if (_braking)
             {
                 // Coast to a stop along the current heading (no input producer needed while braking).
                 _directSpeed = Locomotion.Brake(_directSpeed, dt);
-                if (_directSpeed <= Locomotion.StopBelow) { StopDirectInput(); _body.Move(Vector3.zero, dt); return; }
+                if (_directSpeed <= Locomotion.StopBelow) { StopDirectInput(); MoveBody(Vector3.zero, dt); return; }
                 direction = transform.forward;
             }
             else
             {
-                if (Time.unscaledTime - _inputAt > 0.25f) { StopDirectInput(); _body.Move(Vector3.zero, dt); return; }
+                if (Time.unscaledTime - _inputAt > 0.25f) { StopDirectInput(); MoveBody(Vector3.zero, dt); return; }
                 float targetSpeed = DirectMovementInput.Speed(_moveInput.magnitude, ref _gait);
                 var rig = CameraRig.Instance;
                 float yaw = rig != null ? rig.yaw : (Camera.main != null ? Camera.main.transform.eulerAngles.y : 0f);
@@ -779,7 +811,7 @@ namespace CTLife.World
             Turn(facing, dt);
             // Turn before advancing, including when a wall changes the allowed direction into a slide.
             velocity *= Mathf.Clamp01(Vector3.Dot(transform.forward, facing));
-            _body.Move(velocity, dt);
+            MoveBody(velocity, dt);
         }
 
         // ------------------------------------------------------------------ physicality

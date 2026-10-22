@@ -8,7 +8,8 @@ namespace CTLife.World
     /// <summary>
     /// The on-foot camera (Feel lane F1, 2026-10-17, "it doesn't feel GTA like"): third person behind the player at shoulder
     /// height. A drag on the world (the right half; the left half is the stick) orbits it, a pinch zooms; after a moment
-    /// without orbiting it swings back behind the direction of travel. It pulls in when something solid comes between it
+    /// without orbiting it swings behind intentional path movement. Direct thumb movement retains the chosen view.
+    /// It pulls in when something solid comes between it
     /// and the player and sits closer indoors. Input arrives from the UI layer (UI Toolkit owns touch), so this class has no
     /// input-system dependency.
     /// </summary>
@@ -39,6 +40,7 @@ namespace CTLife.World
 
         private Transform _target;
         private AvatarView _targetAvatar;
+        private LocalPlayerController _targetPlayer;
         private Renderer[] _targetRenderers = System.Array.Empty<Renderer>();
         private bool _targetHidden;
         public Transform Target
@@ -49,6 +51,7 @@ namespace CTLife.World
                 ShowTarget(true);
                 _target = value;
                 _targetAvatar = value != null ? value.GetComponent<AvatarView>() : null;
+                _targetPlayer = value != null ? value.GetComponent<LocalPlayerController>() : null;
                 _targetRenderers = value != null ? value.GetComponentsInChildren<Renderer>(true) : System.Array.Empty<Renderer>();
             }
         }
@@ -256,6 +259,10 @@ namespace CTLife.World
             pitch = v.Spec != null ? v.Spec.camPitch : DefaultPitch;
             _lastOrbitAt = -10f;
             ShowTarget(true);
+            // Start at the new chase pivot. Easing from the on-foot pivot put the first drone frame inside the avatar.
+            _pivot = v.transform.position + Vector3.up * (v.Spec != null ? v.Spec.camHeight : 2f);
+            _boom = v.Spec != null ? v.Spec.camDistance : 6f;
+            ChaseVehicle(0.1f);
         }
 
         /// <summary>Back on foot behind the avatar.</summary>
@@ -290,12 +297,16 @@ namespace CTLife.World
             var vel = rb != null ? rb.linearVelocity : Vector3.zero;
             float speed = vel.magnitude;
             bool flying = v.Flying || VehicleCatalog.Flies(v.Kind);
+            // Simple flight takes world movement from this camera's yaw. Following the nose would rotate that
+            // input frame again as the craft turns, so held backward/sideways input would spiral. Follow position
+            // and retain the player's look direction; Pro and Roadstar still use vehicle-relative controls.
+            bool cameraRelative = VehicleCatalog.Flies(v.Kind) && !FlightPhysics.ProControls;
             // the boom swings behind the direction of travel (the nose when slow, flying or reversing)
             float fwdSpeed = Vector3.Dot(vel, v.transform.forward);
             var flat = new Vector3(vel.x, 0f, vel.z);
             float heading = !flying && fwdSpeed > 4f && flat.sqrMagnitude > 1f ? Quaternion.LookRotation(flat).eulerAngles.y : v.transform.eulerAngles.y;
             float idle = Time.time - _lastOrbitAt;
-            if (idle > 1.4f)
+            if (!cameraRelative && idle > (flying ? 1f : 1.4f))
             {
                 yaw = Mathf.Repeat(yaw + Mathf.DeltaAngle(yaw, heading) * (1f - Mathf.Exp(-(flying ? 2.2f : 3.4f) * dt)), 360f);
                 pitch = Mathf.Lerp(pitch, spec.camPitch + (flying ? 4f : 0f), 1f - Mathf.Exp(-1.5f * dt));
@@ -320,14 +331,20 @@ namespace CTLife.World
                 _shake = Mathf.MoveTowards(_shake, 0f, dt * 1.6f);
             }
             transform.SetPositionAndRotation(position, Quaternion.LookRotation(_pivot + Vector3.up * 0.2f - position));
+            if (v.Kind == VehicleKind.Drone && _footTarget != null)
+                ShowTarget(Vector3.Distance(position, _footTarget.position + Vector3.up) > 1f);
         }
 
         private void LateUpdate()
         {
             if (_vehicle != null) { ChaseVehicle(Mathf.Min(Time.deltaTime, 0.1f)); return; }
-            if (Target == null) return;
             // Game time, like the body it follows (the body moves on Time.deltaTime; captures step both at a fixed rate).
-            float dt = Mathf.Min(Time.deltaTime, 0.1f);
+            FollowOnFoot(Mathf.Min(Time.deltaTime, 0.1f));
+        }
+
+        private void FollowOnFoot(float dt)
+        {
+            if (Target == null) return;
             var target = TargetPosition;
             var travel = target - _lastTarget; travel.y = 0f;
             float speed = dt > 1e-5f ? travel.magnitude / dt : 0f;
@@ -339,16 +356,20 @@ namespace CTLife.World
                 _ceilingCheckAt = Time.time + 0.25f;
                 _ceiling = Physics.Raycast(target + Vector3.up * 1.0f, Vector3.up, 3.5f, CollisionMask, QueryTriggerInteraction.Ignore);
             }
-            // Swing back behind the direction of travel once the player stops steering the view.
+            // Direct movement uses this yaw as its input frame. Following the actor's resulting turn would
+            // rotate that same held input again, curving backward/sideways travel without a camera gesture.
+            // DirectInputActive also includes release braking; explicit Orbit remains free to change the view.
+            bool direct = _targetPlayer != null && _targetPlayer.DirectInputActive;
             float idle = Time.time - _lastOrbitAt;
-            if (_settleBehind)
+            if (direct) _settleBehind = false; // A thumb taking over cancels a pending seat-camera settle.
+            else if (_settleBehind)
             {
                 float delta = Mathf.DeltaAngle(yaw, Target.eulerAngles.y);
                 yaw = Mathf.Repeat(yaw + delta * (1f - Mathf.Exp(-3f * dt)), 360f);
                 if (Mathf.Abs(delta) < 1.5f || idle < RecenterDelay) _settleBehind = false;
             }
             else yaw = Recenter(yaw, Target.eulerAngles.y, speed, idle, dt);
-            if (idle > RecenterDelay + 0.8f && speed > 0.5f) pitch = Mathf.Lerp(pitch, DefaultPitch, 1f - Mathf.Exp(-1.2f * dt));
+            if (!direct && idle > RecenterDelay + 0.8f && speed > 0.5f) pitch = Mathf.Lerp(pitch, DefaultPitch, 1f - Mathf.Exp(-1.2f * dt));
             var rot = Quaternion.Euler(pitch, yaw, 0f);
             float want = DesiredDistance();
             float clear = Clearance(_pivot, rot * Vector3.back, want, CollisionMask, out bool thinOnly);
@@ -364,7 +385,8 @@ namespace CTLife.World
             var position = _pivot + rot * Vector3.back * _boom + Vector3.up * lift;
             var look = _pivot + Vector3.up * LookAbove + (rot * Vector3.forward) * (lift * 1.5f);
             transform.SetPositionAndRotation(position, Quaternion.LookRotation(look - position));
-            ShowTarget(Vector3.Distance(position, _pivot) > HideWithin);
+            // The lift must not make a collision-shortened boom count as clear of the body again.
+            ShowTarget(_boom > HideWithin);
         }
 
         private void ShowTarget(bool show)

@@ -153,6 +153,7 @@ namespace CTLife.Net
         public event Action<string, NpcState> NpcChanged;
         public event Action<string, NpcState> NpcRemoved;
         public event Action<SaidMessage> Said;
+        public event Action<CorrectedMessage> Corrected;
 
         private DynamicMapMirror<PlayerState> _players;
         private DynamicMapMirror<NpcState> _npcs;
@@ -160,6 +161,29 @@ namespace CTLife.Net
         public IReadOnlyDictionary<string, NpcState> Npcs => _npcs?.Items ?? Empty<NpcState>.Map;
         /// <summary>Change subscriptions currently held (one per live player/NPC). Exposed for leak tests.</summary>
         public int LiveEntitySubscriptions => (_players?.LiveSubscriptions ?? 0) + (_npcs?.LiveSubscriptions ?? 0);
+
+        /// <summary>Publish the server's own spawn pose and wait for its echoed heading before street rejoin.</summary>
+        public async System.Threading.Tasks.Task<PlayerState> PublishSpawnPresence(System.Threading.CancellationToken owner)
+        {
+            double deadline = UnityEngine.Time.realtimeSinceStartupAsDouble + 4;
+            PlayerState player = null;
+            while (IsJoined && UnityEngine.Time.realtimeSinceStartupAsDouble < deadline)
+            {
+                owner.ThrowIfCancellationRequested();
+                if (TryGetPlayer(SessionId, out player)) break;
+                await System.Threading.Tasks.Task.Delay(50, owner);
+            }
+            if (player == null) throw new InvalidOperationException("Venue spawn state was not received.");
+            double heading = (player.rotY + 0.02) % (Math.PI * 2);
+            await Send("move", new MoveMessage { x = player.x, z = player.z, rotY = heading });
+            while (IsJoined && UnityEngine.Time.realtimeSinceStartupAsDouble < deadline)
+            {
+                owner.ThrowIfCancellationRequested();
+                if (TryGetPlayer(SessionId, out player) && Math.Abs(player.rotY - heading) < 0.0001) return player;
+                await System.Threading.Tasks.Task.Delay(50, owner);
+            }
+            throw new InvalidOperationException("Venue spawn presence was not acknowledged.");
+        }
 
         public bool TryGetPlayer(string sessionId, out PlayerState player)
         {
@@ -169,6 +193,7 @@ namespace CTLife.Net
 
         protected override void OnJoined()
         {
+            On<CorrectedMessage>("corrected", m => Corrected?.Invoke(m));
             On<SaidMessage>("said", m => { Said?.Invoke(m); Bus.Publish(m); });
             On<ToastMessage>("toast", m => Bus.Publish(ToastSignal.Id(m.textId, m.@params)));
             foreach (var t in RawRoomMessages.VenueTypes) { var type = t; On<Dictionary<string, object>>(type, m => RawRoomMessages.Publish(type, m)); }
