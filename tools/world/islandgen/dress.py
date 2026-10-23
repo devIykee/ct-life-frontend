@@ -1510,8 +1510,14 @@ class Dress:
             rise = self._level_under(q, fwd, right, ybase - 0.08, half=6.4, depth=10.6)
             self.stats.setdefault('interior_door_rises', []).append(round(rise, 2))
             floor = ybase + 0.03
+            # the door's unit id (contract/ids/home_units.json, FE-owned): flat:<buildingInstanceId>:<doorIndex>, the building
+            # instance named by its footprint centre in whole metres (lgmf_n439_p68 = x -439, z +68), one door per building
+            def _m(v):
+                r = int(round(float(v)))
+                return ('n%d' % -r) if r < 0 else ('p%d' % r)
+            unit = 'flat:lgmf_%s_%s:0' % (_m(cx), _m(cz))
             self.interior_doors.append(dict(p=[round(float(q[0]), 3), round(float(ybase), 3), round(float(q[1]), 3)], yaw=round(yaw % 360.0, 2),
-                                            floor=round(float(floor), 3), building=pid, box=box, room=room))
+                                            floor=round(float(floor), 3), building=pid, box=box, room=room, unit=unit))
         log(f'v3 interior doors: {len(self.interior_doors)}')
 
     def v3_districts(self):

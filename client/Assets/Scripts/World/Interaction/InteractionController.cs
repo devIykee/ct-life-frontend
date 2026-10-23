@@ -96,6 +96,9 @@ namespace CTLife.World
         /// <summary>A hovercar the player does not own (real-money right-to-drive): offered as "Buy in Duo Shop", never Drive.</summary>
         private Vehicles.Vehicle _lockedOffer;
         private string LockedTarget => _lockedOffer != null ? "locked:" + _lockedOffer.GetInstanceID() : null;
+        /// <summary>A feature's one-tap offer (WorldOffers: a locked door, a parcel, Decorate) when nothing else is on offer.</summary>
+        private WorldOffer _extOffer;
+        private string ExtTarget => _extOffer != null ? "ext:" + _extOffer.id : null;
         private bool _wasDirect;
         private string _lastPromptKey;
 
@@ -183,6 +186,13 @@ namespace CTLife.World
                     Bus.Publish(new OpenDuoAppRequestSignal { app = "shop" });
                 return;
             }
+            if (actionId == "ext")
+            {
+                var ext = _extOffer;
+                if (Current == this && ext != null && expectedTargetId == ExtTarget) ext.perform?.Invoke();
+                _nextScan = 0f;
+                return;
+            }
             if (actionId == "drive")
             {
                 if (Current == this && _vehicleOffer != null && expectedTargetId == VehicleTarget && Vehicles.VehicleSystem.Current != null)
@@ -254,6 +264,8 @@ namespace CTLife.World
                 _vehicleOffer = offer;
                 _lockedOffer = offer == null && Offered == null && Machine.Phase == InteractionPhase.Idle && vehicles != null && !_local.InVehicle &&
                     vehicles.Driving == null ? vehicles.LockedOffer : null;
+                _extOffer = offer == null && _lockedOffer == null && Offered == null && Machine.Phase == InteractionPhase.Idle && !_local.InVehicle &&
+                    !_view.SeatPresentationActive ? WorldOffers.Best(transform.position) : null;
                 Publish(force: false);
             }
             UpdateHighlight();
@@ -343,7 +355,8 @@ namespace CTLife.World
         private void Publish(bool force)
         {
             var actions = Machine.Actions(Offered);
-            var key = Machine.Phase + "|" + string.Join(",", actions) + "|" + (Offered != null ? Offered.id : "") + "|" + VehicleTarget + "|" + LockedTarget;
+            var key = Machine.Phase + "|" + string.Join(",", actions) + "|" + (Offered != null ? Offered.id : "") + "|" + VehicleTarget + "|" + LockedTarget + "|" + ExtTarget +
+                (_extOffer != null ? _extOffer.verbKey + _extOffer.tagLocked : "");
             if (!force && key == _lastPromptKey) return;
             _lastPromptKey = key;
             Bus.Publish(GetPrompt());
@@ -371,6 +384,16 @@ namespace CTLife.World
                     actions = new List<InteractionAction> { new InteractionAction("buy", "vehicle.buyInShop", "buy", false) },
                     targetId = LockedTarget, owner = this, tagKey = VehicleTag(_lockedOffer), tagLocked = true,
                     anchor = new InteractionPromptAnchor(at - _lockedOffer.transform.position, _lockedOffer.transform, true),
+                };
+            }
+            if (_extOffer != null && Machine.Phase == InteractionPhase.Idle)
+            {
+                var o = _extOffer;
+                return new InteractionPromptSignal
+                {
+                    actions = new List<InteractionAction> { new InteractionAction("ext", o.verbKey, o.icon, o.primary) },
+                    targetId = ExtTarget, owner = this, tagKey = o.tagKey, tagLocked = o.tagLocked,
+                    anchor = o.follow != null ? new InteractionPromptAnchor(o.position, o.follow, true) : new InteractionPromptAnchor(o.position),
                 };
             }
             var target = Machine.Phase == InteractionPhase.Idle ? Offered : Machine.Target;

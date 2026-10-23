@@ -63,6 +63,9 @@ namespace CTLife.Core
         [Tooltip("Icon path relative to walletIdentityUri.")]
         public string walletIconUri = "/favicon.ico";
 
+        [Tooltip("Send the v3 vehicle kinds (sedan, taxi, police, pickup, van, bike) on the wire. Only for a server with backend PR #6; GET /v1/config flags.wireV3Kinds overrides it.")]
+        public bool wireV3Kinds = false;
+
         [Tooltip("Optional LiveKit URL override when /rtc/token returns a URL the device cannot reach (ws://localhost:7880).")]
         public string liveKitUrlOverride = "";
 

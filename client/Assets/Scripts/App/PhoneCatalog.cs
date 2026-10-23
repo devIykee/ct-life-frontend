@@ -35,6 +35,7 @@ namespace CTLife.App
             phone.Register(new SpacesStudioApp());
             phone.Register(new CallsApp());
             phone.Register(new CityShopApp());
+            phone.Register(new DuoShopApp());   // Duo Shop: furniture and goods delivered to your door (backend PR #8)
             phone.Register(new CityWeekApp());
             phone.Register(new CityBusinessApp());
             // Phase 5 (Ventures lane): "ads" keeps the placeholder's id so the lobby tile still opens it. One shared VenturesHub.

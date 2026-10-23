@@ -86,6 +86,9 @@ namespace CTLife.App
                 ShiftReadyNotice.Opener = id => { if (_phone != null) _phone.Open(id); };
                 _overlays.Add(new ProfileCard(ui.ModalLayer));
                 _overlays.Add(new CTLife.CityLife.CityLifeOverlays(ui.ModalLayer));
+                // flat doors, the Duo Shop's deliveries and furniture in the flats (backend PRs #7 and #8)
+                _overlays.Add(new CTLife.CityLife.HomeShopOverlays(ui.ModalLayer));
+                CTLife.CityLife.HomeShopService.Opener = id => { if (_phone != null) _phone.Open(id); };
                 _overlays.Add(new BusyOverlay(ui.ToastLayer));
                 var worldLife = new CTLife.WorldLife.WorldLifeHub();
                 _overlays.Add(worldLife);
@@ -576,6 +579,17 @@ namespace CTLife.App
                     // `islandRoom=fx`: the world fix-ups route (venue architecture, islet, Trenches, mountain, poles, aerial)
                     if (LaunchArgs.Get("islandRoom") == "fx") await InteriorRoute.RunFixups(s, () => GameAlive(game), game.Token);
                     else await InteriorRoute.Run(s, () => GameAlive(game), game.Token, LaunchArgs.Get("islandRoom") != "door", LaunchArgs.Get("islandRoom") == "d2");
+                });
+                // Flat doors and the Duo Shop (dev builds only): `homeShop=shop|deliver|place|locked|visit` (CityLife HomeShopRoute)
+                if (!string.IsNullOrEmpty(LaunchArgs.Get("homeShop"))) RunGameAction(game, async () =>
+                {
+                    float deadline = Time.realtimeSinceStartup + 90f;
+                    while (GameAlive(game) && (VenueSession.Current == null || !VenueSession.Current.IsActive) && Time.realtimeSinceStartup < deadline)
+                        await Awaitable.WaitForSecondsAsync(0.5f, game.Token);
+                    await Awaitable.WaitForSecondsAsync(5f, game.Token);
+                    var s = VenueSession.Current;
+                    if (s == null || !s.IsIsland) { Log.Warn("island", "homeShop: not on CT Island"); return; }
+                    await CTLife.CityLife.HomeShopRoute.Run(s, LaunchArgs.Get("homeShop"), () => GameAlive(game), game.Token);
                 });
                 // Device feature pass (dev builds only): `integration=1 [peer=<userId>]`. The editor driver calls it directly.
                 if (LaunchArgs.Flag("integration") && !Application.isEditor) RunGameAction(game, async () =>

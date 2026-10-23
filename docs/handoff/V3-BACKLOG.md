@@ -25,6 +25,7 @@ taste and landed as PRs, with work continuing without prompts.
   buys anything tradable; homes are game-only for now.
 
 ## Done (v3)
+Homes + Duo Shop FE (2026-10-23): flat doors gated by access, locked door with Knock, a 4403 shown-out toast, the Duo Shop app (catalogue, 3D product, bag, checkout, tracking), a courier van plus a parcel at the door, place mode, visitors seeing placements, live entitlements; WireV3Kinds via the `/v1/config` flag. Verified against PR #8 running locally (:4011).
 District fix-ups 2 (2026-10-23): a forested mountain up to the tree line, real architecture for 16 venue shells, real power poles. Uncapped GPU is +1–2 ms on the drive/fly80 legs (watch it).
 District fix-ups 2 (2026-10-23): the mountain forested to a tree line (~1500 conifers, alpine shrubs, banded mossy cliffs), real architecture on all 16 venue shells and 4 landmark buildings (merged outside renderer + far LOD, no MPB at rest), pole shafts under the power-line hardware, route shots aimed. Evidence `ct-life-evidence/world-fixups2-20261023/`.
 District fix-ups (2026-10-23): mountain terrain without stripes (triplanar cliffs, scree, alpine, snow), closed boulders, an intact islet with a path, real venue architecture for CHECKPOINT 26, Perp Pit, Basecamp Lodge and the beach hut, the Trenches walled, 54 power poles with wires.
@@ -47,7 +48,7 @@ GTA-style HUD; collisions; the shadow fix; the perf pass (30 fps cap holds); the
    dog 9abfce88, cat 0b86bde7, bus station 8c984e73, dumpster 6caa33dd, fence f2ed9f55, palm d05c8ffb.
 3. **Interiors:** the ~8 reusable types (apartment done; bedroom, bathroom, cafe, shop, office, bar/club, gym) behind
    real doors; every venue gets a real interior. The m99_storefront shop interiors need rescaling.
-4. **Draw calls:** ~740 at eye level vs ≤350. Traffic cars drawn per part (merge static parts), avatars, venue
+4. **[next] Draw calls + hitches:** single-frame 7.5–15 fps hitches when the van, courier or Decorate thumbnails spawn (pool and prewarm them). ~740 at eye level vs ≤350. Traffic cars drawn per part (merge static parts), avatars, venue
    dioramas.
 5. **Remaining districts on the v3 kit:** Builder Hills, Airdrop Farm, Boardwalk/beach, Breakpoint Park (convention
    centre), MtnDAO mountain/lodge, the islet. Timeline Square plaza and the venue landmarks are still toy-shaped.

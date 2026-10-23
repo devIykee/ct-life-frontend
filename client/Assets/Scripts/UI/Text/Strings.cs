@@ -27,6 +27,8 @@ namespace CTLife.UI
             ["vehicle.tooSteep"] = "Too steep — move to flat ground",
             ["vehicle.liftCoach"] = "Move with the left stick. Slide Lift up to climb. Tap Land to set down.",
             ["vehicle.lift"] = "Lift", ["vehicle.horn"] = "Horn", ["vehicle.alt"] = "ALT", ["vehicle.buyInShop"] = "Buy in Duo Shop", ["vehicle.locked"] = "Locked",
+            ["interact.knock"] = "Knock", ["interact.pickup"] = "Pick up", ["interact.collect"] = "Collect", ["interact.decorate"] = "Decorate",
+            ["interact.tag.flat"] = "Flat", ["interact.tag.home"] = "Home", ["interact.tag.parcel"] = "Parcel", ["interact.tag.locker"] = "Parcel locker",
             ["hud.jump"] = "Jump", ["hud.heat"] = "Sleuth heat", ["hud.heatPlus"] = "+1 Sleuth heat",
             ["interact.tag.Seat"] = "Seat", ["interact.tag.Bench"] = "Bench", ["interact.tag.Sofa"] = "Sofa", ["interact.tag.StageSeat"] = "Stage",
             ["interact.tag.Terminal"] = "Terminal", ["interact.tag.Mic"] = "Mic", ["interact.tag.Counter"] = "Counter", ["interact.tag.Door"] = "Door",

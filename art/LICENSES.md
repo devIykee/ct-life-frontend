@@ -409,15 +409,15 @@ Tiling ground and surface detail for the v2 island. The photos are reduced to no
 
 | Name | Source URL | Licence | Author | Downloaded | Used for |
 | --- | --- | --- | --- | --- | --- |
-| ambientCG `Grass004` (1K JPG) | https://ambientcg.com/view?id=Grass004 | CC0 1.0 | ambientCG (Lennart Demes) | 2026-10-17 | terrain detail pack, grass channel (`client/Assets/World/Island/Textures/terrain_detail.png`) |
-| ambientCG `Rock030` (1K JPG) | https://ambientcg.com/view?id=Rock030 | CC0 1.0 | ambientCG (Lennart Demes) | 2026-10-17 | terrain detail pack, rock channel |
-| ambientCG `Ground054` (1K JPG) | https://ambientcg.com/view?id=Ground054 | CC0 1.0 | ambientCG (Lennart Demes) | 2026-10-17 | terrain detail pack, sand channel |
-| ambientCG `Ground037` (1K JPG) | https://ambientcg.com/view?id=Ground037 | CC0 1.0 | ambientCG (Lennart Demes) | 2026-10-17 | terrain detail pack, dirt channel |
-| ambientCG `Ground048` (1K JPG) | https://ambientcg.com/view?id=Ground048 | CC0 1.0 | ambientCG (Lennart Demes) | 2026-10-17 | dirt road detail (`dirt_detail.png`) |
-| ambientCG `Asphalt031` (1K JPG, downloaded 2026-10-05) | https://ambientcg.com/view?id=Asphalt031 | CC0 1.0 | ambientCG (Lennart Demes) | 2026-10-05 | road asphalt detail (`asphalt_detail.png`) |
-| ambientCG `PavingStones128` (1K JPG, downloaded 2026-10-05) | https://ambientcg.com/view?id=PavingStones128 | CC0 1.0 | ambientCG (Lennart Demes) | 2026-10-05 | sidewalk pavers (`pavers.png`, warmed) |
-| ambientCG `Gravel022` (1K JPG) | https://ambientcg.com/view?id=Gravel022 | CC0 1.0 | ambientCG (Lennart Demes) | 2026-10-17 | downloaded, not used yet |
-| ambientCG `Grass001`, `Rock035` (1K JPG) | https://ambientcg.com/view?id=Grass001 , https://ambientcg.com/view?id=Rock035 | CC0 1.0 | ambientCG (Lennart Demes) | 2026-10-17 | downloaded, not used yet |
+| ambientCG `Grass004` (1K JPG) | https://ambientcg.com/view?id=Grass004 | CC0 1.0 | ambientCG | 2026-10-17 | terrain detail pack, grass channel (`client/Assets/World/Island/Textures/terrain_detail.png`) |
+| ambientCG `Rock030` (1K JPG) | https://ambientcg.com/view?id=Rock030 | CC0 1.0 | ambientCG | 2026-10-17 | terrain detail pack, rock channel |
+| ambientCG `Ground054` (1K JPG) | https://ambientcg.com/view?id=Ground054 | CC0 1.0 | ambientCG | 2026-10-17 | terrain detail pack, sand channel |
+| ambientCG `Ground037` (1K JPG) | https://ambientcg.com/view?id=Ground037 | CC0 1.0 | ambientCG | 2026-10-17 | terrain detail pack, dirt channel |
+| ambientCG `Ground048` (1K JPG) | https://ambientcg.com/view?id=Ground048 | CC0 1.0 | ambientCG | 2026-10-17 | dirt road detail (`dirt_detail.png`) |
+| ambientCG `Asphalt031` (1K JPG, downloaded 2026-10-05) | https://ambientcg.com/view?id=Asphalt031 | CC0 1.0 | ambientCG | 2026-10-05 | road asphalt detail (`asphalt_detail.png`) |
+| ambientCG `PavingStones128` (1K JPG, downloaded 2026-10-05) | https://ambientcg.com/view?id=PavingStones128 | CC0 1.0 | ambientCG | 2026-10-05 | sidewalk pavers (`pavers.png`, warmed) |
+| ambientCG `Gravel022` (1K JPG) | https://ambientcg.com/view?id=Gravel022 | CC0 1.0 | ambientCG | 2026-10-17 | downloaded, not used yet |
+| ambientCG `Grass001`, `Rock035` (1K JPG) | https://ambientcg.com/view?id=Grass001 , https://ambientcg.com/view?id=Rock035 | CC0 1.0 | ambientCG | 2026-10-17 | downloaded, not used yet |
 | Poly Haven `Concrete Floor 02` (1k diffuse, downloaded 2026-10-05) | https://polyhaven.com/a/concrete_floor_02 | CC0 | Rob Tuytel | 2026-10-05 | kerbs, bridges, tunnel (`concrete.png`) |
 | CT Island v2 heightfield, ground maps, water depth, far map, ripple normals | `tools/world/islandgen/` | CC0 (made by us) | CT Life World lane | 2026-10-17 | terrain, water, far LOD |
 | Kenney Watercraft Kit 2.1 | https://kenney.nl/assets/watercraft-kit (download: https://kenney.nl/media/pages/assets/watercraft-kit/a335cfed49-1713519620/kenney_watercraft-pack.zip; License.txt in the pack: CC0 1.0, credit optional) | CC0 1.0 | Kenney (www.kenney.nl) | 2026-10-17 | island boats and ships (`client/Assets/World/Island/Kit/Models/boats/`, via `art/pipeline/world_config.py`) |
@@ -571,7 +571,7 @@ Pipelines: art/pipeline/world_v3_ground.py (terrain arrays), art/pipeline/world_
 | Poly Haven texture "Forest Ground 04" | https://polyhaven.com/a/forest_ground_04 | CC0 1.0 (https://polyhaven.com/license) | Rob Tuytel, Rico Cilliers | 2026-10-23 | terrain soil (slice 2) |
 | Poly Haven texture "Concrete Floor Worn 001" | https://polyhaven.com/a/concrete_floor_worn_001 | CC0 1.0 (https://polyhaven.com/license) | Dimitrios Savva, Rico Cilliers | 2026-10-23 | The Trenches yard slabs (slice 3) |
 | Poly Haven texture "Asphalt 02" | https://polyhaven.com/a/asphalt_02 | CC0 1.0 (https://polyhaven.com/license) | Rob Tuytel | 2026-10-23 | The Trenches asphalt patches (slice 4) |
-| ambientCG material "Grass 004" (1K PNG) | https://ambientcg.com/view?id=Grass004 | CC0 1.0 (https://docs.ambientcg.com/license/) | ambientCG (Lennart Demes) | 2026-10-23 | terrain lawn (ground array slice 0) |
+| ambientCG material "Grass 004" (1K PNG) | https://ambientcg.com/view?id=Grass004 | CC0 1.0 (https://docs.ambientcg.com/license/) | ambientCG | 2026-10-23 | terrain lawn (ground array slice 0) |
 | LOLIPOP "Maple trees pack (lowpoly, game ready, LODs)" leaf cards (already in the kit) | https://sketchfab.com/3d-models/maple-trees-pack-lowpoly-game-ready-lods-b5d2833c258f4054a01ee2b4ef85adf0 | CC Attribution (credit in-game, as for the maples) | LOLIPOP | 2026-10-22 | pv_bush_round, pv_bush_low, pv_bush_large, pv_hedge (leaf cards rebuilt into shrubs) |
 <!-- END world-polish-20261023 -->
 
@@ -630,3 +630,31 @@ Downloaded through art/pipeline/ph_fetch.py (https allowlist). Pipelines: art/pi
 | Poly Haven texture "Rustic Stone Wall" (1k) | https://polyhaven.com/a/rustic_stone_wall | CC0 1.0 (https://polyhaven.com/license) | Dimitrios Savva | 2026-10-23 | venue architecture: the lodge plinth and chimney (venue_stone) |
 | Poly Haven model "Modular Electricity Poles" (placed) | https://polyhaven.com/a/modular_electricity_poles | CC0 1.0 (https://polyhaven.com/license) | James Ray Cock | 2026-10-23 | ph_power_pole_01..03 now placed along the Airdrop Farm, Builder Hills and foothill roads, wires strung by IslandV2Builder |
 <!-- END world-fixups-20261023 -->
+
+<!-- BEGIN duo-shop-20261023 -->
+## Duo Shop furniture and parcel (2026-10-23)
+
+Pipeline: art/pipeline/world_v3_furniture.py (fetch via ph_fetch.ph_model) + world_v3_process.py 'ph3_*' entries (family v3_furniture); Unity: CTLife.EditorTools.ShopFurnitureBuilder. Chosen for the walk-in apartment's clean semi-real look; Poly Haven's Television_01 left out (it carries a maker's name). Licence pages checked 2026-10-23.
+
+| Asset | Source | Licence | Author(s) | Fetched | Use |
+| --- | --- | --- | --- | --- | --- |
+| Poly Haven model "Modern Arm Chair 01" (1k) | https://polyhaven.com/a/modern_arm_chair_01 | CC0 1.0 (https://polyhaven.com/license) | Vibrant Nordic | 2026-10-23 | Duo Shop item, modelKey fu_armchair_leather (Resources/World/Furniture; decimated to 4499 tris, baked atlas) |
+| Poly Haven model "Boombox" (1k) | https://polyhaven.com/a/boombox | CC0 1.0 (https://polyhaven.com/license) | Thomas Paul Mouilleron | 2026-10-23 | Duo Shop item, modelKey fu_boombox (Resources/World/Furniture; decimated to 3500 tris, baked atlas) |
+| Poly Haven model "Modern Coffee Table 01" (1k) | https://polyhaven.com/a/modern_coffee_table_01 | CC0 1.0 (https://polyhaven.com/license) | Amin | 2026-10-23 | Duo Shop item, modelKey fu_coffee_concrete (Resources/World/Furniture; decimated to 3000 tris, baked atlas) |
+| Poly Haven model "Coffee Table Round 01" (1k) | https://polyhaven.com/a/coffee_table_round_01 | CC0 1.0 (https://polyhaven.com/license) | Ulan Cabanilla | 2026-10-23 | Duo Shop item, modelKey fu_coffee_round (Resources/World/Furniture; decimated to 3000 tris, baked atlas) |
+| Poly Haven model "Wooden Display Shelves 01" (1k) | https://polyhaven.com/a/wooden_display_shelves_01 | CC0 1.0 (https://polyhaven.com/license) | James Ray Cock | 2026-10-23 | Duo Shop item, modelKey fu_cube_shelf (Resources/World/Furniture; decimated to 2994 tris, baked atlas) |
+| Poly Haven model "Metal Office Desk" (1k) | https://polyhaven.com/a/metal_office_desk | CC0 1.0 (https://polyhaven.com/license) | Ulan Cabanilla | 2026-10-23 | Duo Shop item, modelKey fu_desk_steel (Resources/World/Furniture; decimated to 3992 tris, baked atlas) |
+| Poly Haven model "Desk Lamp Arm 01" (1k) | https://polyhaven.com/a/desk_lamp_arm_01 | CC0 1.0 (https://polyhaven.com/license) | Yann Kervran, Kuutti Siitonen | 2026-10-23 | Duo Shop item, modelKey fu_lamp_arm (Resources/World/Furniture; decimated to 4999 tris, baked atlas) |
+| Poly Haven model "Industrial Pipe Lamp" (1k) | https://polyhaven.com/a/industrial_pipe_lamp | CC0 1.0 (https://polyhaven.com/license) | Mateusz Sadek | 2026-10-23 | Duo Shop item, modelKey fu_lamp_pipe (Resources/World/Furniture; decimated to 2998 tris, baked atlas) |
+| Poly Haven model "Mid Century Lounge Chair" (1k) | https://polyhaven.com/a/mid_century_lounge_chair | CC0 1.0 (https://polyhaven.com/license) | Kuutti Siitonen | 2026-10-23 | Duo Shop item, modelKey fu_lounge_chair (Resources/World/Furniture; decimated to 4500 tris, baked atlas) |
+| Poly Haven model "Ottoman 01" (1k) | https://polyhaven.com/a/Ottoman_01 | CC0 1.0 (https://polyhaven.com/license) | Caspian Fortune | 2026-10-23 | Duo Shop item, modelKey fu_ottoman (Resources/World/Furniture; decimated to 2500 tris, baked atlas) |
+| Poly Haven model "Long Life Food" (1k) | https://polyhaven.com/a/long_life_food | CC0 1.0 (https://polyhaven.com/license) | Mia Pecina Zorko | 2026-10-23 | Duo Shop item, modelKey fu_pantry (Resources/World/Furniture; decimated to 2496 tris, baked atlas) |
+| Poly Haven model "Potted Plant 04" (1k) | https://polyhaven.com/a/potted_plant_04 | CC0 1.0 (https://polyhaven.com/license) | James Ray Cock | 2026-10-23 | Duo Shop item, modelKey fu_plant_aloe (Resources/World/Furniture; decimated to 2998 tris, baked atlas) |
+| Poly Haven model "Steel Frame Shelves 03" (1k) | https://polyhaven.com/a/steel_frame_shelves_03 | CC0 1.0 (https://polyhaven.com/license) | Ulan Cabanilla | 2026-10-23 | Duo Shop item, modelKey fu_shelf_industrial (Resources/World/Furniture; decimated to 4496 tris, baked atlas) |
+| Poly Haven model "Side Table 01" (1k) | https://polyhaven.com/a/side_table_01 | CC0 1.0 (https://polyhaven.com/license) | James Ray Cock | 2026-10-23 | Duo Shop item, modelKey fu_side_table (Resources/World/Furniture; decimated to 2000 tris, baked atlas) |
+| Poly Haven model "Modern Wooden Cabinet" (1k) | https://polyhaven.com/a/modern_wooden_cabinet | CC0 1.0 (https://polyhaven.com/license) | Patrik Pangerl | 2026-10-23 | Duo Shop item, modelKey fu_sideboard (Resources/World/Furniture; decimated to 4997 tris, baked atlas) |
+| Poly Haven model "Sofa 02" (1k) | https://polyhaven.com/a/sofa_02 | CC0 1.0 (https://polyhaven.com/license) | Kirill Sannikov | 2026-10-23 | Duo Shop item, modelKey fu_sofa_chesterfield (Resources/World/Furniture; decimated to 2688 tris, baked atlas) |
+| Poly Haven model "Sofa 01" (1k) | https://polyhaven.com/a/Sofa_01 | CC0 1.0 (https://polyhaven.com/license) | Kirill Sannikov | 2026-10-23 | Duo Shop item, modelKey fu_sofa_linen (Resources/World/Furniture; decimated to 3600 tris, baked atlas) |
+| Poly Haven model "Ceramic Vase 02" (1k) | https://polyhaven.com/a/ceramic_vase_02 | CC0 1.0 (https://polyhaven.com/license) | James Ray Cock | 2026-10-23 | Duo Shop item, modelKey fu_vase_ceramic (Resources/World/Furniture; decimated to 1500 tris, baked atlas) |
+| ambientCG material "Cardboard 004" (1K-JPG) | https://ambientcg.com/view?id=Cardboard004 | CC0 1.0 (https://docs.ambientcg.com/license/) | ambientCG | 2026-10-23 | the courier's parcel box (Resources/World/Furniture/Textures/parcel_kraft_*, 512 px) |
+<!-- END duo-shop-20261023 -->

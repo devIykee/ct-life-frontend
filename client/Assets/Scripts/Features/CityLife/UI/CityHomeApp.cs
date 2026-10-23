@@ -33,7 +33,7 @@ namespace CTLife.CityLife
         {
             private readonly CityHomeApp _app;
             private readonly NeedsPanel _needs;
-            private readonly VisualElement _rentBox = El.Div(), _homesBox = El.Div(), _visitBox = El.Div(), _galleryBox = El.Div();
+            private readonly VisualElement _rentBox = El.Div(), _homesBox = El.Div(), _visitBox = El.Div(), _galleryBox = El.Div(), _flatBox = El.Div();
             private readonly MoveHomeFlow _move = new MoveHomeFlow();
             private readonly RetainedWriteFlow _policySave = new RetainedWriteFlow();
             private VisitorPolicy? _policy;
@@ -55,9 +55,15 @@ namespace CTLife.CityLife
                 var name = reg.Homes.FirstOrDefault(h => h.id == homeId)?.name ?? CityLifeStrings.Readable(homeId);
                 Body.Add(CityUi.Text(CityLifeStrings.F("home.current", name), "duo-home-where"));
                 if (CityLifeStrings.Has("home.flavor." + homeId)) Body.Add(CityUi.Small(CityLifeStrings.T("home.flavor." + homeId)));
+                // the flat behind a real door (backend PR #7): its status from GET /me `home`, and Decorate (first: it is the
+                // home's state, before the needs)
+                Body.Add(_flatBox);
                 _needs = new NeedsPanel(hub, () => Alive, Life);
                 Body.Add(_needs.Root);
                 AddEntry();
+                var shop = HomeShopService.Current;
+                if (shop != null) { shop.HomeChanged += RenderFlat; shop.InsideChanged += RenderFlat; shop.RefreshHome(force: true); }
+                RenderFlat();
                 bool p4 = Phases.IsOpen(4);
                 if (!p4) { Body.Add(Duo.GroupFooter(CityLifeStrings.T("common.phase4"))); return; }
                 Body.Add(_rentBox);
@@ -72,6 +78,43 @@ namespace CTLife.CityLife
                 _ = hub.RefreshHomes();
                 Run(ct => hub.Api.HomeSettings(ct), p => { _policy = p; RenderVisit(); }, e => { _policyError = e; RenderVisit(); }, false);
                 Render();
+            }
+
+            private void RenderFlat()
+            {
+                if (!Alive) return;
+                _flatBox.Clear();
+                var shop = HomeShopService.Current;
+                if (shop == null || !shop.HomeKnown) return;
+                var h = shop.MyHome;
+                _flatBox.Add(Duo.GroupHeader(ShopText.T("home.unit")));
+                if (h == null || string.IsNullOrEmpty(h.UnitId))
+                {
+                    _flatBox.Add(Duo.GroupFooter(ShopText.T("home.noDoor")));
+                    return;
+                }
+                string tone = h.Status == "active" ? "green" : h.Status == "overdue" ? "orange" : "red";
+                string label = h.Status == "active" ? ShopText.T("home.active") : h.Status == "overdue" ? ShopText.T("home.overdue")
+                    : h.Status == "evicted" ? ShopText.T("home.evicted") : ShopText.T("home.movedOut");
+                var status = new DuoRow().Leading(Duo.IconSquare("home", tone == "green" ? "green" : tone == "orange" ? "orange" : "red"))
+                    .Title(CityLifeStrings.Readable(h.RoomType ?? h.Tier), "duo-row-title-strong")
+                    .Subtitle(ShopText.T("home.door") + " " + (h.UnitId.Split(':').Length > 1 ? h.UnitId.Split(':')[1].ToUpperInvariant() : h.UnitId))
+                    .Trailing(CityUi.Tag(label, tone));
+                status.name = "home-flat-status";
+                status.AddToClassList("duo-row-static");
+                bool inside = shop.InsideOwnFlat;
+                var deco = Duo.Pill(ShopText.T("home.decorate"), () =>
+                {
+                    if (!Alive) return;
+                    if (PlaceMode.Current != null && PlaceMode.Current.CanDecorate) { Shell?.Close(); _ = PlaceMode.Current.EnterEdit(); }
+                    else Bus.Publish(ToastSignal.Text(ShopText.T("home.decorate.note")));
+                }, inside ? Duo.PillKind.Primary : Duo.PillKind.Plain);
+                deco.name = "home-decorate";
+                var decoRow = new DuoRow().Leading(Duo.IconSquare("edit", "blue")).Title(ShopText.T("home.decorate"), "duo-row-title-strong")
+                    .Subtitle(inside ? ShopText.T("place.pick") : ShopText.T("home.decorate.note"), twoLines: true).Trailing(deco);
+                decoRow.AddToClassList("duo-row-static");
+                _flatBox.Add(Duo.Group(status, decoRow));
+                if (h.MissedWeeks > 0) _flatBox.Add(Duo.GroupFooter(ShopText.F("home.missed", h.MissedWeeks)));
             }
 
             private void AddEntry()
@@ -398,6 +441,8 @@ namespace CTLife.CityLife
                 if (Disposed) return;
                 Hub.HomesChanged -= Render;
                 Hub.Visit.Changed -= RenderVisit;
+                var shop = HomeShopService.Current;
+                if (shop != null) { shop.HomeChanged -= RenderFlat; shop.InsideChanged -= RenderFlat; }
                 _gallery?.Dispose();
                 _needs?.Close();
                 base.Dispose();
