@@ -10,7 +10,13 @@ The previous 8 October campaign was rejected and remains at `campaign.html` for 
 python3 -m http.server 4178 --bind 127.0.0.1 --directory website
 ```
 
-Open http://127.0.0.1:4178/ . The dated entry is http://127.0.0.1:4178/reference-01.html . This is a dependency-free static website; no package install or build step is required. Nothing was publicly deployed.
+Open http://127.0.0.1:4178/ . The dated entry is http://127.0.0.1:4178/reference-01.html . This is a dependency-free static website; no package install or build step is required.
+
+## Deployment
+
+Hosted on Vercel (project `ctlife`) at https://ctlife.fun, with `www.ctlife.fun` redirecting to it. The project is linked to this GitHub repository with root directory `website`: pushes to `dev` deploy to production and other branches get preview deployments.
+
+The Android build is too large for a Vercel deployment, so it is attached to the `ctlife-v1` GitHub release. `vercel.json` redirects `/ctlife-v1.apk` to that release asset; to ship a new build, upload it to a release and update the redirect destination.
 
 ## Current files
 
@@ -32,9 +38,9 @@ The exact headline is “Welcome to Crypto Twitter”; the main CTA is “Get th
 
 The studio and morning-city illustrations are concept art. Actual Seeker captures retain their development/sample-data labels. They do not demonstrate live multiplayer. Clip Cut is a local practice round, with no posting or payout.
 
-The download CTA opens truthful availability: there is no public download yet. Without JavaScript it reaches the visible availability section. The capture link opens the actual image without JavaScript, and inactive JS-only controls are hidden.
+The "Get the game" buttons download the current development build from `/ctlife-v1.apk`. The capture link opens the actual image without JavaScript, and inactive JS-only controls are hidden.
 
-No invented player counts, endorsements, release date, real trading returns or download destination. No analytics, external fonts, signup, wallet or payment flow.
+No invented player counts, endorsements, release date, or real trading returns. No analytics, external fonts, signup, wallet or payment flow.
 
 ## Review and limits
 
