@@ -207,6 +207,7 @@ namespace CTLife.CityLife
         /// <summary>GET /me (server-authoritative Cash, needs, home). Coalesced to one call per 2 s.</summary>
         public async void RefreshProfile(bool force = false)
         {
+            if (RuntimeMode.IsOfflineDemo) return;
             var profile = Profile;
             if (Disposed || profile == null) return;
             double now = Time.realtimeSinceStartupAsDouble;
@@ -266,6 +267,7 @@ namespace CTLife.CityLife
 
         private async Task Loop()
         {
+            if (RuntimeMode.IsOfflineDemo) return;
             try
             {
                 await RefreshHomes(true);

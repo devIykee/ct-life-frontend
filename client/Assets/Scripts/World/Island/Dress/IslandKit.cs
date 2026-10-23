@@ -31,6 +31,8 @@ namespace CTLife.World
             [Tooltip("Local bounds of LOD0 (pivot at the bottom centre).")]
             public Bounds bounds;
             public string kind;
+            [Tooltip("Baked collision for this source model; independent of the render LOD. Existing tree/parked-car colliders stay separately authored.")]
+            public IslandCollisionSpec collision = new IslandCollisionSpec();
         }
 
         public Proto[] protos = Array.Empty<Proto>();

@@ -18,20 +18,36 @@ namespace CTLife.World
         public float sunIntensity = 1.35f;
         [Tooltip("x = elevation (degrees), y = heading the light travels towards (degrees clockwise from north).")]
         public Vector2 sunAngles = new Vector2(30f, 38f);
-        public float shadowDistance = 70f;
-        [Range(0f, 1f)] public float shadowStrength = 0.92f;
+        // 2026-10-22 ("the light feels like lines"): one 2048 cascade over 70 m stair-stepped thin reveals and frames into
+        // dotted lines. Two cascades put a fine map on the first 15 m around the third-person camera; the PCF is a touch wider
+        // and the shadows a touch less black, so the edges that remain read as soft shade, not drawn lines.
+        public float shadowDistance = 60f;
+        [Range(1, 4)] public int shadowCascades = 2;
+        [Range(0.05f, 0.6f)] public float cascadeSplit = 0.25f;
+        [Range(0f, 1f)] public float shadowStrength = 0.88f;
         [Tooltip("Share of the sun that still reaches shadowed surfaces (bounce). Lower = deeper shadows.")]
-        [Range(0f, 1f)] public float sunInShadow = 0.04f;
+        [Range(0f, 1f)] public float sunInShadow = 0.09f;
         [Tooltip("Soft-shadow radius in shadow-map texels (4-tap PCF in the world shaders).")]
-        public float shadowSoftness = 1.25f;
+        public float shadowSoftness = 1.6f;
         [Tooltip("Ambient multiplier on shadowed and sun-averted surfaces; 1 = flat fill, lower = clearer sun direction.")]
-        [Range(0f, 1f)] public float shadowFill = 0.74f;
+        [Range(0f, 1f)] public float shadowFill = 0.8f;
 
         [Header("Ambient")]
         public Color skyAmbient = new Color(0.52f, 0.62f, 0.80f);
         public Color equatorAmbient = new Color(0.66f, 0.64f, 0.60f);
         public Color groundAmbient = new Color(0.32f, 0.31f, 0.27f);
         public Material skybox;
+
+        [Header("Environment (world v3: Poly Haven HDRI)")]
+        [Tooltip("The sky's HDRI as a cubemap (its sun turned to this sun): what the Kit PBR shader and the island's reflection probe (URP Lit cars, characters) reflect.")]
+        public Cubemap environment;
+        public float environmentIntensity = 1f;
+
+        [Header("Sky reflection (world v3 PBR kit, without an environment)")]
+        [Tooltip("What smooth v3 surfaces (glass, polished stone, metal) reflect: sky straight up, at the horizon, below it.")]
+        public Color reflZenith = new Color(0.50f, 0.66f, 0.92f);
+        public Color reflHorizon = new Color(0.96f, 0.90f, 0.82f);
+        public Color reflGround = new Color(0.34f, 0.32f, 0.30f);
 
         [Header("Fog and haze")]
         public Color fogColor = new Color(0.76f, 0.84f, 0.92f);
@@ -48,6 +64,12 @@ namespace CTLife.World
         private static readonly int AmbEquatorId = Shader.PropertyToID("_CTWorldAmbEquator");
         private static readonly int AmbGroundId = Shader.PropertyToID("_CTWorldAmbGround");
         private static readonly int ShadowParamsId = Shader.PropertyToID("_CTWorldShadowParams");
+        private static readonly int ReflZenithId = Shader.PropertyToID("_CTWorldReflZenith");
+        private static readonly int ReflHorizonId = Shader.PropertyToID("_CTWorldReflHorizon");
+        private static readonly int ReflGroundId = Shader.PropertyToID("_CTWorldReflGround");
+        private static readonly int EnvCubeId = Shader.PropertyToID("_CTWorldEnvCube");
+        private static readonly int EnvParamsId = Shader.PropertyToID("_CTWorldEnvParams");
+        private ReflectionProbe _probe;
 
         private bool _applied;
         private Light _sun;
@@ -56,7 +78,10 @@ namespace CTLife.World
         private Color _oldSky, _oldEq, _oldGround, _oldFogColor;
         private bool _oldFog;
         private FogMode _oldFogMode;
-        private float _oldFogStart, _oldFogEnd, _oldShadowDistance;
+        private float _oldFogStart, _oldFogEnd, _oldShadowDistance, _oldCascadeSplit;
+        private int _oldCascades;
+        private bool _oldDither;
+        private Camera _ditherCamera;
         private Material _oldSkybox;
 
         public Light Sun => _sun;
@@ -105,7 +130,32 @@ namespace CTLife.World
             if (GraphicsSettings.currentRenderPipeline is UniversalRenderPipelineAsset urp)
             {
                 _oldShadowDistance = urp.shadowDistance;
+                _oldCascades = urp.shadowCascadeCount; _oldCascadeSplit = urp.cascade2Split;
                 urp.shadowDistance = shadowDistance;
+                urp.shadowCascadeCount = shadowCascades;
+                urp.cascade2Split = cascadeSplit;
+            }
+            // dither the final image: the HDR sky and long soft gradients on paving otherwise band into visible steps
+            _ditherCamera = Camera.main;
+            if (_ditherCamera != null && _ditherCamera.TryGetComponent<UniversalAdditionalCameraData>(out var camData))
+            { _oldDither = camData.dithering; camData.dithering = true; }
+            if (environment != null)
+            {
+                // one island-wide custom probe: URP Lit surfaces (cars, characters, venue shells) reflect the same sky
+                if (_probe == null)
+                {
+                    var pg = new GameObject("Island sky reflection");
+                    pg.transform.SetParent(transform, false);
+                    _probe = pg.AddComponent<ReflectionProbe>();
+                    _probe.mode = ReflectionProbeMode.Custom;
+                    _probe.size = new Vector3(12000f, 4000f, 12000f);
+                    _probe.boxProjection = false;
+                    _probe.importance = 0;
+                    _probe.blendDistance = 0f;
+                }
+                _probe.customBakedTexture = environment;
+                _probe.intensity = environmentIntensity;
+                _probe.enabled = true;
             }
             PushHaze();
         }
@@ -120,6 +170,15 @@ namespace CTLife.World
             Shader.SetGlobalVector(AmbEquatorId, new Vector4(equatorAmbient.r, equatorAmbient.g, equatorAmbient.b, 1f));
             Shader.SetGlobalVector(AmbGroundId, new Vector4(groundAmbient.r, groundAmbient.g, groundAmbient.b, 1f));
             Shader.SetGlobalVector(ShadowParamsId, new Vector4(sunInShadow, shadowSoftness, shadowFill, 0f));
+            Shader.SetGlobalVector(ReflZenithId, new Vector4(reflZenith.r, reflZenith.g, reflZenith.b, 1f));
+            Shader.SetGlobalVector(ReflHorizonId, new Vector4(reflHorizon.r, reflHorizon.g, reflHorizon.b, 1f));
+            Shader.SetGlobalVector(ReflGroundId, new Vector4(reflGround.r, reflGround.g, reflGround.b, 1f));
+            if (environment != null)
+            {
+                Shader.SetGlobalTexture(EnvCubeId, environment);
+                Shader.SetGlobalVector(EnvParamsId, new Vector4(environmentIntensity, environment.mipmapCount, 0f, 0f));
+            }
+            else Shader.SetGlobalVector(EnvParamsId, Vector4.zero);
         }
 
         public void Restore()
@@ -132,9 +191,18 @@ namespace CTLife.World
             RenderSettings.fog = _oldFog; RenderSettings.fogMode = _oldFogMode; RenderSettings.fogColor = _oldFogColor;
             RenderSettings.fogStartDistance = _oldFogStart; RenderSettings.fogEndDistance = _oldFogEnd;
             RenderSettings.skybox = _oldSkybox;
-            if (GraphicsSettings.currentRenderPipeline is UniversalRenderPipelineAsset urp) urp.shadowDistance = _oldShadowDistance;
+            if (GraphicsSettings.currentRenderPipeline is UniversalRenderPipelineAsset urp)
+            {
+                urp.shadowDistance = _oldShadowDistance;
+                urp.shadowCascadeCount = Mathf.Max(1, _oldCascades); urp.cascade2Split = _oldCascadeSplit;
+            }
+            if (_ditherCamera != null && _ditherCamera.TryGetComponent<UniversalAdditionalCameraData>(out var camData)) camData.dithering = _oldDither;
+            _ditherCamera = null;
             Shader.SetGlobalVector(HazeColorId, Vector4.zero);
             Shader.SetGlobalVector(AmbSkyId, Vector4.zero);
+            Shader.SetGlobalVector(ReflZenithId, Vector4.zero);
+            Shader.SetGlobalVector(EnvParamsId, Vector4.zero);
+            if (_probe != null) _probe.enabled = false;
             if (_sun != null) _sun.enabled = false;
         }
     }

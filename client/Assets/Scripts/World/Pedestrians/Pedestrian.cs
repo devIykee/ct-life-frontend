@@ -40,6 +40,7 @@ namespace CTLife.World.Pedestrians
         private bool _crossFromA;
         private PedestrianSystem.BenchSeat _bench;
         private string _base;
+        private float _blockedFor;
 
         public void Init(PedestrianSystem sys, AvatarView view, string archetype)
         {
@@ -93,6 +94,9 @@ namespace CTLife.World.Pedestrians
         public void Tick(float dt, Vector3 player, bool playerNear)
         {
             if (State == Mode.Down || _net == null) return;
+            var before = _pos;
+            float previousS = _s;
+            int previousPath = _path;
             float want = 0f;
             switch (State)
             {
@@ -112,6 +116,20 @@ namespace CTLife.World.Pedestrians
                 case Mode.Cross: want = TickCross(dt); break;
                 case Mode.Stroll: want = TickStroll(dt); break;
             }
+            if ((State == Mode.Walk || State == Mode.Stroll || State == Mode.Cross) &&
+                (!FootPlanner.Clear(before, _pos) || !VehicleWorld.Dry(_pos)))
+            {
+                _pos = before; want = 0f;
+                if (_path == previousPath) _s = previousS;
+                _blockedFor += dt;
+                if (_blockedFor > 3f)
+                {
+                    if (State == Mode.Walk) _dirSign = -_dirSign;
+                    else if (State == Mode.Stroll) PickStrollTarget();
+                    _blockedFor = 0f;
+                }
+            }
+            else _blockedFor = 0f;
             _speed = Mathf.MoveTowards(_speed, want, 2.5f * dt);
             if (View != null) View.SetSpeed(State == Mode.Sit || State == Mode.Pause || State == Mode.Phone ? 0f : _speed);
             var rot = Quaternion.LookRotation(_face.sqrMagnitude > 1e-6f ? _face : transform.forward);
@@ -130,6 +148,16 @@ namespace CTLife.World.Pedestrians
             // keep right (people walking the other way pass on the left), step aside for the player
             float lane = Mathf.Min(0.55f, half);
             float pace = Pace;
+            foreach (var other in _sys.People)
+            {
+                if (other == null || other == this || other.State == Mode.Down) continue;
+                var to = other.transform.position - _pos; to.y = 0f;
+                float ahead = Vector3.Dot(to, heading), side = Vector3.Dot(to, right);
+                if (ahead < 0f || ahead > 2f || Mathf.Abs(side) > 0.85f) continue;
+                // Both walkers keep to their own right; a slower person ahead is yielded to, not walked through.
+                lane = half;
+                if (ahead < 0.85f && Mathf.Abs(side) < 0.65f) pace *= 0.15f;
+            }
             if (playerNear)
             {
                 var to = player - _pos; to.y = 0f;

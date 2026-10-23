@@ -14,17 +14,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: CTLife.World::CTLife.World.LocomotionTuning
   families:
   - controller: {fileID: 22100000, guid: fe7a8e60a4b134f24b6d65e7f6238391, type: 2}
-    walk: 1
-    run: 4.467464
-    sprint: 6.5
+    walk: 1.5951
+    run: 3.2692
+    sprint: 6.5454
     walkSoleLift: 0
-    runSoleLift: 0.011845182
+    runSoleLift: 0
   - controller: {fileID: 22100000, guid: 53b72f24bf4a54138b69dd37d543fe2e, type: 2}
-    walk: 1
-    run: 4.9088845
-    sprint: 5.5060625
+    walk: 1.6663
+    run: 3.415
+    sprint: 6.8374
     walkSoleLift: 0
-    runSoleLift: 0.03132528
+    runSoleLift: 0.00009427793
+  - controller: {fileID: 22100000, guid: 6670ecd6a37a4441b8b8613f9e3b60fa, type: 2}
+    walk: 1.6245
+    run: 3.3293
+    sprint: 6.6657
+    walkSoleLift: 0
+    runSoleLift: 0
   lengths:
   - state: act_sit_down
     seconds: 1.3000001
@@ -82,11 +88,29 @@ MonoBehaviour:
     seconds: 4.533334
   - state: react_trip
     seconds: 1.5000001
+  - state: loco_walk_start
+    seconds: 2.0652175
+  - state: loco_run_start
+    seconds: 1.25
+  - state: loco_walk_stop
+    seconds: 2.2435899
+  - state: turn_90_l
+    seconds: 1.6
+  - state: turn_90_r
+    seconds: 1.3333334
+  - state: turn_180_walk
+    seconds: 2.3863635
+  - state: idle_hands_hips
+    seconds: 4
+  - state: idle_heavy
+    seconds: 4
+  - state: idle_phone_call
+    seconds: 6.9583335
   - state: loco_run_stop
-    seconds: 1.6000001
-  defaultWalk: 1
-  defaultRun: 4.6881742
-  defaultSprint: 6.0030313
+    seconds: 2.246377
+  defaultWalk: 1.5951
+  defaultRun: 3.2692
+  defaultSprint: 6.5454
   poses:
   - state: act_get_up
     hipsStart: {x: 0.0020198906, y: 0.20556219, z: -0.16875497}

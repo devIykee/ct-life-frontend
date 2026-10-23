@@ -56,6 +56,11 @@ namespace CTLife.Net
                 catch (Exception e) { Log.Warn("rt", $"Discarded {RoomName} join leave: {e.Message}"); }
                 throw;
             }
+            BindRoom(joined);
+        }
+
+        private void BindRoom(Room<TState> joined)
+        {
             Room = joined;
             InstanceId = Room.RoomId;
             // Register synchronously right after the join completes so `welcome` is not missed.
@@ -83,15 +88,26 @@ namespace CTLife.Net
             };
             Room.OnDrop += code =>
             {
+                if (_leaving || !ReferenceEquals(Room, room)) return;
                 Log.Warn("rt", $"{RoomName} dropped ({code}); SDK will try to reconnect");
                 Dropped?.Invoke();
             };
             Room.OnReconnect += () =>
             {
+                if (_leaving || !ReferenceEquals(Room, room))
+                {
+                    // SDK retries already sleeping at Leave can still connect. Close that captured
+                    // room if it returns late, without selecting or touching the successor handle.
+                    _ = RetireRoom(room);
+                    return;
+                }
                 Log.Info("rt", $"{RoomName} reconnected");
                 Reconnected?.Invoke();
             };
-            Room.OnError += (code, message) => Log.Warn("rt", $"{RoomName} error {code}: {message}");
+            Room.OnError += (code, message) =>
+            {
+                if (!_leaving && ReferenceEquals(Room, room)) Log.Warn("rt", $"{RoomName} error {code}: {message}");
+            };
             OnJoined();
             Log.Info("rt", $"Joined {RoomName} room {Room.RoomId} as {Room.SessionId}");
         }
@@ -155,16 +171,24 @@ namespace CTLife.Net
             ReleaseListeners();
             var r = Room;
             Room = null;
-            if (r != null)
+            if (r != null) await RetireRoom(r);
+        }
+
+        private async Task RetireRoom(Room<TState> r)
+        {
+            // Leaving a dropped 0.18.8 room otherwise returns without changing its retry policy.
+            // Delays already scheduled inside the SDK can still run; they must not start another retry cycle.
+            r.Reconnection.Enabled = false;
+            r.Reconnection.MaxRetries = 0;
+            r.Reconnection.EnqueuedMessages.Clear();
+            try
             {
-                try
-                {
-                    await r.Leave();
-                }
-                catch (Exception e)
-                {
-                    Log.Warn("rt", $"Leave {RoomName}: {e.Message}");
-                }
+                if (!r.Connection.IsOpen) r.Connection.CancelConnection();
+                await r.Leave();
+            }
+            catch (Exception e)
+            {
+                Log.Warn("rt", $"Leave {RoomName}: {e.Message}");
             }
         }
     }

@@ -172,7 +172,7 @@ namespace CTLife.EditorTools
     /// <summary>Import settings for CT Life content folders.</summary>
     public sealed class CTLifeImportPostprocessor : AssetPostprocessor
     {
-        public override uint GetVersion() => 2; // 1: one-shot transition clips (sit down, stand up, get up); 2: skips the mocap folder
+        public override uint GetVersion() => 3; // 1: one-shot transition clips (sit down, stand up, get up); 2: skips the mocap folder; 3: and mocap_v3
         private const string CharRoot = "Assets/Art/characters/";
         private const string AnimRoot = "Assets/Art/animations/";
         private const string EnvRoots = "Assets/Art/";
@@ -186,6 +186,7 @@ namespace CTLife.EditorTools
             if (assetPath.StartsWith(CastImport.Root + "/", StringComparison.Ordinal)) return;
             if (assetPath.StartsWith(DistinctCharacterImport.Root + "/", StringComparison.Ordinal)) return;
             if (assetPath.StartsWith(MocapImport.Root + "/", StringComparison.Ordinal)) return; // own Avatars (MocapPostprocessor)
+            if (assetPath.StartsWith(MocapV3Import.Root + "/", StringComparison.Ordinal)) return; // own Avatars (MocapV3Postprocessor)
             var mi = (ModelImporter)assetImporter;
             if (assetPath.StartsWith(CharRoot) || assetPath.StartsWith(AnimRoot))
             {
@@ -252,7 +253,8 @@ namespace CTLife.EditorTools
 
         private void OnPreprocessAnimation()
         {
-            if (!assetPath.StartsWith(AnimRoot) || assetPath.StartsWith(MocapImport.Root + "/", StringComparison.Ordinal)) return;
+            if (!assetPath.StartsWith(AnimRoot) || assetPath.StartsWith(MocapImport.Root + "/", StringComparison.Ordinal) ||
+                assetPath.StartsWith(MocapV3Import.Root + "/", StringComparison.Ordinal)) return;
             var mi = (ModelImporter)assetImporter;
             var clips = mi.defaultClipAnimations;
             bool loop = ClipLoops(Path.GetFileName(assetPath));
@@ -292,7 +294,8 @@ namespace CTLife.EditorTools
         /// <summary>Clip FBX carry a 1-triangle `_bind_proxy` mesh (bind pose carrier): strip it.</summary>
         private void OnPostprocessModel(GameObject root)
         {
-            if (!assetPath.StartsWith(AnimRoot) || assetPath.StartsWith(MocapImport.Root + "/", StringComparison.Ordinal)) return;
+            if (!assetPath.StartsWith(AnimRoot) || assetPath.StartsWith(MocapImport.Root + "/", StringComparison.Ordinal) ||
+                assetPath.StartsWith(MocapV3Import.Root + "/", StringComparison.Ordinal)) return;
             foreach (var t in root.GetComponentsInChildren<Transform>(true).Where(t => t.name.Contains("_bind_proxy")).ToList())
                 if (t != null && t != root.transform) UnityEngine.Object.DestroyImmediate(t.gameObject);
         }

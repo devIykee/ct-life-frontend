@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using CTLife.Net;
 using UnityEngine;
 
 namespace CTLife.World.Vehicles
@@ -29,17 +30,20 @@ namespace CTLife.World.Vehicles
         /// <summary>The drivable that stands in for a decor car: its kit model by name when we have it, else by class.</summary>
         public static string SpecFor(VehicleClass c, string model, int pick)
         {
+            // the police cruiser is parked about town until the wanted system spawns it (one car bay in ten)
+            if ((c & VehicleClass.Cars) != 0 && ((pick >> 4) & int.MaxValue) % 10 == 3) return "police";
             if (!string.IsNullOrEmpty(model))
                 foreach (var s in VehicleCatalog.Specs.Values)
-                    if (!VehicleCatalog.Flies(s.kind) && model.IndexOf(s.id, StringComparison.OrdinalIgnoreCase) >= 0) return s.id;
+                    if (!VehicleCatalog.Flies(s.kind) && s.id != "suv" && model.IndexOf(s.id, StringComparison.OrdinalIgnoreCase) >= 0) return s.id;
+            if (!string.IsNullOrEmpty(model) && model.IndexOf("suv", StringComparison.OrdinalIgnoreCase) >= 0) return "sedan";
             if ((c & VehicleClass.Roadstar) != 0 && c != VehicleClass.Any) return "roadstar";
             if (c == VehicleClass.Moped) return "scooter";
             var options = new List<string>(3);
-            if ((c & VehicleClass.Compact) != 0) options.Add("compact");
-            if ((c & VehicleClass.Suv) != 0) options.Add("suv");
+            if ((c & VehicleClass.Compact) != 0) { options.Add("compact"); options.Add("sedan"); }
+            if ((c & VehicleClass.Suv) != 0) options.Add("sedan");     // the v3 sedan stands in until a v3 SUV lands
             if ((c & VehicleClass.Sports) != 0) options.Add("sports");
             if (options.Count == 0) options.Add((c & VehicleClass.Moped) != 0 ? "scooter" : "compact");
-            return options[Mathf.Abs(pick) % options.Count];
+            return options[(pick & int.MaxValue) % options.Count];
         }
 
         public void Update(VehicleSystem sys, Vector3 player)
@@ -55,6 +59,7 @@ namespace CTLife.World.Vehicles
                 if (s.decor == null) { _swaps.RemoveAt(i); continue; }
                 bool moved = s.car == null || (s.car.transform.position - s.pos).sqrMagnitude > 1.2f * 1.2f || Quaternion.Angle(s.car.transform.rotation, s.rot) > 8f;
                 if (s.car != null && (s.car.Occupied || sys.Driving == s.car)) moved = true;
+                if (s.car != null && VehicleNetworkBridge.IsRegisteredBay(s.car.GetComponent<VehicleNetworkIdentity>()?.Id)) moved = true;
                 if (moved) { _taken.Add(s.decor); _swaps.RemoveAt(i); continue; }
                 if ((s.pos - player).sqrMagnitude > RestoreBeyond * RestoreBeyond)
                 {
@@ -65,7 +70,6 @@ namespace CTLife.World.Vehicles
                 }
             }
             // to drivable: decor near the player
-            int pick = Mathf.FloorToInt(Time.time * 7f);
             _scan.Clear();
             _scan.AddRange(ParkedCar.All);
             foreach (var decor in _scan)
@@ -77,10 +81,21 @@ namespace CTLife.World.Vehicles
                 bool seen = cam != null && GeometryUtility.TestPlanesAABB(_planes, new Bounds(p + Vector3.up, new Vector3(4.5f, 2f, 4.5f)));
                 if (seen && d2 > SwapNear * SwapNear) continue;
                 if (IsSwapped(decor) || !VehicleWorld.IsReady(p)) continue;
-                var id = SpecFor(decor.vehicleClass, decor.model, pick++);
+                int pick = unchecked(Mathf.RoundToInt(p.x * 10) * 73856093 ^ Mathf.RoundToInt(p.z * 10) * 19349663);
+                var id = SpecFor(decor.vehicleClass, decor.model, pick);
+                var wire = IslandProtocol.WireKind(id);
+                var networkId = IslandProtocol.ParkedId(wire, p.x, p.z);
+                if (VehicleNetworkBridge.IsRegisteredBay(networkId)) { decor.Hide(true); _taken.Add(decor); continue; }
+                var spec = VehicleCatalog.Get(id);
+                // A hovercar bay parks the hovercar for everyone: a non-owner sees it locked ("Buy in Duo Shop"), never enters it.
+                if (spec == null || (!sys.CanUseKind(spec.kind) && spec.kind != VehicleKind.Roadstar) || !VehicleWorld.Dry(p)) continue;
                 decor.Hide(true);
                 var car = sys.Spawn(id, p + Vector3.up * 0.05f, decor.transform.rotation);
                 if (car == null) { decor.Hide(false); continue; }
+                // street colours for road cars; the hovercar keeps its own gunmetal
+                if (spec.kind == VehicleKind.Car) VehiclePaint.Apply(car, VehiclePaint.Pick(((pick >> 8) & 0xFFFF) / 65535.0));
+                var identity = car.gameObject.AddComponent<VehicleNetworkIdentity>();
+                identity.Id = networkId; identity.Kind = wire;
                 _swaps.Add(new Swap { decor = decor, car = car, pos = car.transform.position, rot = car.transform.rotation });
             }
         }

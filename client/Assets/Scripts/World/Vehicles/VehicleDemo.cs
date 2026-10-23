@@ -40,9 +40,17 @@ namespace CTLife.World.Vehicles
             Parts.Clear();
             _home = player.transform.position;
             VehicleSystem.ScriptedInput = true;
-            foreach (var id in ids)
+            foreach (var part in ids)
             {
                 if (sys == null || player == null) yield break;
+                // "<id>@hold": board it, then hand the controls to the HUD and stay in (touch captures of the HUD itself)
+                bool hold = part.EndsWith("@hold", System.StringComparison.Ordinal);
+                // "<id>@high": the hovercar crossing downtown at 80 m, then hovering facing it (perf route; stays airborne, ends the run)
+                bool high = part.EndsWith("@high", System.StringComparison.Ordinal);
+                // "<id>@mtn" (world districts 2): the hovercar up to 130 m and north over the forest to the MtnDAO slopes, then
+                // hovering facing the summit (the forest aerial; stays airborne, ends the run)
+                bool mtn = part.EndsWith("@mtn", System.StringComparison.Ordinal);
+                var id = hold || high ? part.Substring(0, part.Length - 5) : mtn ? part.Substring(0, part.Length - 4) : part;
                 if (id == "drone") { yield return Drone(sys); continue; }
                 if (id == "traffic") { yield return TrafficWatch(player); continue; }
                 var v = Nearest(sys, id, player.transform.position);
@@ -58,12 +66,14 @@ namespace CTLife.World.Vehicles
                 while (sys.Driving != v && Time.time - t0 < 8f) yield return null;
                 if (sys.Driving != v) { Log.Warn("vehicles", $"demo: could not board {id}"); continue; }
                 yield return new WaitForSeconds(0.6f);
+                if (hold) { VehicleSystem.ScriptedInput = false; Log.Info("vehicles", $"demo: holding in {id}, the HUD drives"); yield break; }
                 switch (v.Kind)
                 {
                     case VehicleKind.Helicopter: yield return Heli(v); break;
-                    case VehicleKind.Roadstar: yield return Roadstar(v); break;
+                    case VehicleKind.Roadstar: yield return mtn ? RoadstarMountain(v) : high ? RoadstarHigh(v) : Roadstar(v); break;
                     default: yield return Car(v); break;
                 }
+                if (high || mtn) break;
                 sys.Exit();
                 t0 = Time.time;
                 while ((sys.Driving != null || sys.Busy) && Time.time - t0 < 8f) yield return null;
@@ -145,6 +155,56 @@ namespace CTLife.World.Vehicles
             f.SetFlight(false);
             yield return Drive(v, "land", 18f, (c, t) => new VehicleInput { brake = 0.4f, throttle = f.OverWater ? 0.6f : 0f, steer = Mathf.Clamp(HomeTurn(c, 40f) / 30f, -1f, 1f) }, () => !v.Flying);
             yield return Drive(v, "stop", 3f, (c, t) => new VehicleInput { brake = 1f, handbrake = true }, () => v.Speed < 0.5f);
+        }
+
+        private static IEnumerator RoadstarMountain(Vehicle v)
+        {
+            var f = v.GetComponent<FlightPhysics>();
+            const float alt = 150f;
+            var over = new Vector3(-30f, 0f, 250f);       // above the foothills east of Breakpoint, the forest ahead
+            var summit = new Vector3(-260f, 0f, 430f);    // across the forested west slopes towards the lodge
+            float Hold(Vehicle c) => Mathf.Clamp((alt - c.transform.position.y) * 0.15f, -1f, 1f);
+            float Toward(Vehicle c, Vector3 at)
+            {
+                var to = at - c.transform.position; to.y = 0f;
+                return Vector3.SignedAngle(Vector3.ProjectOnPlane(c.transform.forward, Vector3.up), to, Vector3.up);
+            }
+            float Flat(Vehicle c, Vector3 at) { var d = at - c.transform.position; d.y = 0f; return d.magnitude; }
+            f.SetFlight(true);
+            yield return Drive(v, "climb", 50f, (c, t) => new VehicleInput { lift = 1f }, () => v.transform.position.y >= alt - 3f);
+            yield return Drive(v, "to_forest", 60f, (c, t) => new VehicleInput { throttle = Flat(c, over) > 60f ? 0.8f : 0.3f, lift = Hold(c),
+                steer = Mathf.Clamp(Toward(c, over) / 30f, -1f, 1f) }, () => Flat(v, over) < 25f);
+            yield return Drive(v, "turn", 10f, (c, t) => new VehicleInput { brake = 0.6f, lift = Hold(c), steer = Mathf.Clamp(Toward(c, summit) / 30f, -1f, 1f) },
+                () => Mathf.Abs(Toward(v, summit)) < 4f && v.Speed < 3f);
+            yield return Drive(v, "forest_air", 14f, (c, t) => new VehicleInput { lift = Hold(c), steer = Mathf.Clamp(Toward(c, summit) / 60f, -1f, 1f) });
+        }
+
+        private static IEnumerator RoadstarHigh(Vehicle v)
+        {
+            var f = v.GetComponent<FlightPhysics>();
+            const float alt = 80f;
+            // circle east of the plaza (the 105 m m99 tower stands ~130 m west of it), then hover facing the skyline
+            var centre = _home + new Vector3(90f, 0f, -60f);
+            var skyline = _home + new Vector3(-110f, 0f, 0f);
+            float Hold(Vehicle c) => Mathf.Clamp((alt - c.transform.position.y) * 0.15f, -1f, 1f);
+            float Toward(Vehicle c, Vector3 at)
+            {
+                var to = at - c.transform.position; to.y = 0f;
+                return Vector3.SignedAngle(Vector3.ProjectOnPlane(c.transform.forward, Vector3.up), to, Vector3.up);
+            }
+            float Circle(Vehicle c)
+            {
+                var off = c.transform.position - centre; off.y = 0f;
+                // aim at the point a quarter turn ahead on a 100 m circle
+                var ahead = centre + Quaternion.Euler(0f, 30f, 0f) * (off.sqrMagnitude > 1f ? off.normalized : Vector3.forward) * 100f;
+                return Mathf.Clamp(Toward(c, ahead) / 30f, -1f, 1f);
+            }
+            f.SetFlight(true);
+            yield return Drive(v, "climb", 40f, (c, t) => new VehicleInput { lift = 1f }, () => v.transform.position.y >= alt - 2f);
+            yield return Drive(v, "fly80", 25f, (c, t) => new VehicleInput { throttle = 0.6f, lift = Hold(c), steer = Circle(c) });
+            yield return Drive(v, "turn", 10f, (c, t) => new VehicleInput { brake = 0.6f, lift = Hold(c), steer = Mathf.Clamp(Toward(c, skyline) / 30f, -1f, 1f) },
+                () => Mathf.Abs(Toward(v, skyline)) < 4f && v.Speed < 3f);
+            yield return Drive(v, "skyline", 12f, (c, t) => new VehicleInput { lift = Hold(c), steer = Mathf.Clamp(Toward(c, skyline) / 60f, -1f, 1f) });
         }
 
         private static IEnumerator Heli(Vehicle v)

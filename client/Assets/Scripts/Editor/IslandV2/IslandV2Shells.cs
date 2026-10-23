@@ -144,6 +144,9 @@ namespace CTLife.EditorTools.IslandV2
             def.Centres = new[] { W((x0 + x1) / 2f, h / 2f, z0), W((x0 + x1) / 2f, h / 2f, z1), W(x0, h / 2f, (z0 + z1) / 2f), W(x1, h / 2f, (z0 + z1) / 2f) };
             // roof
             var roofCol = sh["roof_col"] != null ? C(sh["roof_col"]) : roofKind == "gable" ? new Color(0.36f, 0.22f, 0.18f) : new Color(0.50f, 0.50f, 0.52f);
+            // world districts 2: the roofs are clay-tile scans now (shell_roof, Venue Reskin), which multiply the colour by the
+            // tiles' own light-dark; the old flat colour read salmon-pink there, so gables take a deeper, browner red
+            if (roofKind == "gable") roofCol = new Color(roofCol.r * 0.7f, roofCol.g * 0.75f, roofCol.b * 0.8f);
             if (roofKind == "flat")
             {
                 var r = def.Roof;
@@ -313,6 +316,19 @@ namespace CTLife.EditorTools.IslandV2
             m.SetColor("_Glass", style == 1 ? new Color(0.46f, 0.66f, 0.80f) : new Color(0.36f, 0.52f, 0.62f));
             m.SetColor("_Frame", new Color(0.22f, 0.23f, 0.27f));
             m.SetVector("_Floors", style == 1 ? new Vector4(4.6f, 3.6f, 2.8f, 0f) : style == 3 ? new Vector4(3.2f, 3.0f, 3.6f, 0f) : new Vector4(4.6f, 3.6f, 3.4f, 0f));
+            // world districts 2 (2026-10-23): a CC0 scan under each style (art/pipeline/world_street_textures.py)
+            var (scan, mid, tile, k) = style switch
+            {
+                1 => ("concrete", new Color(0.088f, 0.09f, 0.085f), 2.0f, 0.6f),
+                2 => ("corrugated", new Color(0.083f, 0.081f, 0.069f), 2.0f, 0.9f),
+                3 => ("siding", new Color(0.066f, 0.043f, 0.029f), 2.4f, 1.0f),
+                4 => ("concrete", new Color(0.088f, 0.09f, 0.085f), 2.5f, 0.8f),
+                _ => ("plaster", new Color(0.383f, 0.345f, 0.331f), 1.6f, 0.9f),
+            };
+            m.SetTexture("_Wall", AssetDatabase.LoadAssetAtPath<Texture2D>(IslandV2Paths.Textures + $"/Street/{scan}_albedo.png"));
+            m.SetTexture("_WallNormal", AssetDatabase.LoadAssetAtPath<Texture2D>(IslandV2Paths.Textures + $"/Street/{scan}_normal.png"));
+            m.SetColor("_WallMid", mid);
+            m.SetVector("_Scan", new Vector4(tile, k, 0.8f, 0f));
             m.enableInstancing = true;
             EditorUtility.SetDirty(m);
             return m;

@@ -21,6 +21,7 @@ namespace UnityEngine.Rendering
     {
         public bool isGlobal { get; set; }
         public float priority = 0f;
+        public float weight = 1f; // Core 17.3 Volume.cs public field, line 51.
         public VolumeProfile sharedProfile = null;
     }
 
@@ -56,8 +57,12 @@ namespace UnityEngine.Rendering.Universal
         public ClampedFloatParameter temperature = new ClampedFloatParameter(0f, -100, 100f);
         public ClampedFloatParameter tint = new ClampedFloatParameter(0f, -100, 100f);
     }
+    public enum BloomDownscaleMode { Half, Quarter }
+    public sealed class DownscaleParameter : VolumeParameter<BloomDownscaleMode>
+    { public DownscaleParameter(BloomDownscaleMode value, bool overrideState = false) { } }
     public sealed partial class Bloom : VolumeComponent
     {
+        public DownscaleParameter downscale = new DownscaleParameter(BloomDownscaleMode.Half);
         public MinFloatParameter threshold = new MinFloatParameter(0.9f, 0f);
         public MinFloatParameter intensity = new MinFloatParameter(0f, 0f);
         public ClampedFloatParameter scatter = new ClampedFloatParameter(0.7f, 0f, 1f);

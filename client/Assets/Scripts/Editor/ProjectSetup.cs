@@ -82,6 +82,7 @@ namespace CTLife.EditorTools
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
             PlayerSettings.SetUseDefaultGraphicsAPIs(BuildTarget.Android, false);
             PlayerSettings.SetGraphicsAPIs(BuildTarget.Android, new[] { GraphicsDeviceType.Vulkan, GraphicsDeviceType.OpenGLES3 });
+            ConfigureAndroidVulkanDeviceFilter();
             PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel29;
             PlayerSettings.Android.targetSdkVersion = AndroidSdkVersions.AndroidApiLevel36;
             PlayerSettings.Android.optimizedFramePacing = true;
@@ -107,6 +108,39 @@ namespace CTLife.EditorTools
             EditorUserBuildSettings.androidBuildSubtarget = MobileTextureSubtarget.ASTC;
             EditorUserBuildSettings.buildAppBundle = false; // The dApp Store takes APKs only.
             Debug.Log("CTLIFE [setup] Android: com.ctlife.app, IL2CPP, ARM64, Vulkan+GLES3, min 29, target 36, frame pacing, ASTC");
+        }
+
+        private static void ConfigureAndroidVulkanDeviceFilter()
+        {
+            const string path = "Assets/Settings/CTLife_Android.vulkandevicefilter";
+            var filters = PlayerSettings.Android.androidVulkanDeviceFilterListAsset;
+            if (filters == null) filters = AssetDatabase.LoadAssetAtPath<VulkanDeviceFilterLists>(path);
+            if (filters == null)
+            {
+                // Both the constructor and ObjectFactory omit the native asset-menu finalization step.
+                throw new System.InvalidOperationException("Missing " + path
+                    + ". Create it via Assets/Create/Vulkan Settings/Device Filter and retain Unity's default rows.");
+            }
+            // Compatibility workaround for the measured Seeker GPU path, not a claim that the sky flash is resolved.
+            // Fields are ANDed. Keep Vulkan first for other hardware, and preserve Unity's default/existing filters.
+            var seeker = new VulkanDeviceFilterData
+            {
+                deviceName = "^Mali-G615 MC2$", brandName = "^solanamobile$", productName = "^seeker$"
+            };
+            var deny = new List<VulkanDeviceFilterData>(filters.vulkanDeviceDenyFilters ?? System.Array.Empty<VulkanDeviceFilterData>());
+            bool present = deny.Exists(f => f.deviceName == seeker.deviceName && f.brandName == seeker.brandName
+                && f.productName == seeker.productName && string.IsNullOrEmpty(f.vendorName)
+                && string.IsNullOrEmpty(f.androidOsVersionString) && string.IsNullOrEmpty(f.vulkanApiVersionString)
+                && string.IsNullOrEmpty(f.driverVersionString));
+            if (!present)
+            {
+                deny.Add(seeker);
+                filters.vulkanDeviceDenyFilters = deny.ToArray();
+                EditorUtility.SetDirty(filters);
+            }
+            filters.EnsureValidOrThrow();
+            AssetDatabase.SaveAssetIfDirty(filters);
+            PlayerSettings.Android.androidVulkanDeviceFilterListAsset = filters;
         }
 
         [MenuItem("CT Life/Setup/URP Mobile Asset")]
@@ -138,7 +172,7 @@ namespace CTLife.EditorTools
             }
             // Build Spec "Performance budgets": render scale 0.7, 1 directional light, no realtime shadows.
             urp.renderScale = 0.7f;
-            urp.supportsHDR = false;
+            urp.supportsHDR = true;     // world v3: HDR (R11G11B10) + HDR grading, set by the island builder
             urp.msaaSampleCount = 2;
             // These two have `internal set` in URP 17.3, so go through the serialized fields.
             var so = new SerializedObject(urp);

@@ -14,6 +14,10 @@ namespace CTLife.World.Vehicles
         public bool handbrake;
         /// <summary>Flight: climb/descend (left stick y), yaw (left stick x), pitch (right stick y, + = nose down/forward).</summary>
         public float lift, yaw, pitch;
+        /// <summary>Simple flight: camera-relative horizontal intent, already transformed to world space.</summary>
+        public bool simpleFlight;
+        public Vector3 move;
+        public float heading;
 
         public static VehicleInput None => default;
     }
@@ -43,6 +47,9 @@ namespace CTLife.World.Vehicles
         // audio set (Resources/Vehicles/Audio/<prefix>_*.wav)
         public string engineSound = "engine_car", startSound = "engine_start";
         public float enginePitchIdle = 0.75f, enginePitchMax = 1.9f;
+        // paint (v3 models: the Paint material's default tint and clear coat; traffic recolours it, VehiclePaint)
+        public Color paint = new Color(0.62f, 0.64f, 0.66f);
+        public float paintMetallic = 0.45f, paintSmoothness = 0.8f;
     }
 
     public static class VehicleCatalog
@@ -53,6 +60,28 @@ namespace CTLife.World.Vehicles
             {
                 id = "compact", nameKey = "vehicle.compact", kind = VehicleKind.Car, spawnClass = "compact", mass = 1150f,
                 topSpeed = 36f, driveForce = 6900f, frontDrive = true, rearDrive = false, grip = 1.12f, camDistance = 6.0f,
+                paint = new Color(0.06f, 0.16f, 0.42f),
+            },
+            ["sedan"] = new VehicleSpec
+            {
+                id = "sedan", nameKey = "vehicle.sedan", kind = VehicleKind.Car, spawnClass = "compact", mass = 1420f,
+                centerOfMass = new Vector3(0f, 0.44f, 0.08f), topSpeed = 40f, driveForce = 8400f, brakeForce = 12500f,
+                frontDrive = true, rearDrive = false, grip = 1.12f, suspensionHz = 1.6f, antiRoll = 10000f, camDistance = 6.4f,
+                paint = new Color(0.62f, 0.64f, 0.66f), enginePitchIdle = 0.72f, enginePitchMax = 1.8f,
+            },
+            ["taxi"] = new VehicleSpec
+            {
+                id = "taxi", nameKey = "vehicle.taxi", kind = VehicleKind.Car, spawnClass = "compact", mass = 1600f,
+                centerOfMass = new Vector3(0f, 0.46f, 0.08f), topSpeed = 38f, driveForce = 9200f, brakeForce = 13500f,
+                grip = 1.1f, suspensionHz = 1.5f, antiRoll = 10500f, camDistance = 6.8f, camHeight = 2.0f,
+                enginePitchIdle = 0.68f, enginePitchMax = 1.7f,
+            },
+            ["police"] = new VehicleSpec
+            {
+                id = "police", nameKey = "vehicle.police", kind = VehicleKind.Car, spawnClass = "compact", mass = 1750f,
+                centerOfMass = new Vector3(0f, 0.44f, 0.05f), topSpeed = 48f, driveForce = 12500f, brakeForce = 16000f,
+                frontDrive = false, rearDrive = true, grip = 1.2f, suspensionHz = 1.8f, antiRoll = 13000f, camDistance = 6.8f,
+                camHeight = 2.0f, enginePitchIdle = 0.7f, enginePitchMax = 1.9f,
             },
             ["suv"] = new VehicleSpec
             {
@@ -61,12 +90,36 @@ namespace CTLife.World.Vehicles
                 frontDrive = true, rearDrive = true, grip = 1.08f, suspensionRest = 0.36f, suspensionHz = 1.5f, antiRoll = 14000f,
                 camDistance = 6.9f, camHeight = 2.2f, enginePitchIdle = 0.65f, enginePitchMax = 1.6f,
             },
+            // v3 batch 2 (2026-10-22): Lightbody '90 pickup and Shvan '92 van (parked in SUV bays), the cafe racer bike
+            ["pickup"] = new VehicleSpec
+            {
+                id = "pickup", nameKey = "vehicle.pickup", kind = VehicleKind.Car, spawnClass = "suv", mass = 1900f,
+                centerOfMass = new Vector3(0f, 0.58f, 0.15f), topSpeed = 36f, driveForce = 11200f, brakeForce = 16000f,
+                frontDrive = false, rearDrive = true, grip = 1.06f, suspensionRest = 0.36f, suspensionHz = 1.45f, antiRoll = 13000f,
+                camDistance = 7.4f, camHeight = 2.3f, enginePitchIdle = 0.6f, enginePitchMax = 1.55f,
+            },
+            ["van"] = new VehicleSpec
+            {
+                id = "van", nameKey = "vehicle.van", kind = VehicleKind.Car, spawnClass = "suv", mass = 2100f,
+                centerOfMass = new Vector3(0f, 0.62f, 0.05f), topSpeed = 33f, driveForce = 11500f, brakeForce = 16500f,
+                frontDrive = true, rearDrive = false, grip = 1.04f, maxSteer = 33f, suspensionRest = 0.34f, suspensionHz = 1.4f,
+                antiRoll = 15000f, camDistance = 7.6f, camHeight = 2.6f, enginePitchIdle = 0.62f, enginePitchMax = 1.5f,
+            },
+            ["bike"] = new VehicleSpec
+            {
+                id = "bike", nameKey = "vehicle.bike", kind = VehicleKind.Scooter, spawnClass = "moped", mass = 180f,
+                centerOfMass = new Vector3(0f, 0.42f, 0f), topSpeed = 30f, reverseSpeed = 3f, driveForce = 1650f, brakeForce = 2300f,
+                frontDrive = false, rearDrive = true, grip = 1.2f, maxSteer = 28f, highSpeedSteer = 8f, suspensionRest = 0.18f,
+                suspensionHz = 2.3f, antiRoll = 4500f, downforce = 0.35f, leanMax = 30f, camDistance = 4.6f, camHeight = 1.6f,
+                engineSound = "engine_scooter", startSound = "scooter_start", enginePitchIdle = 0.7f, enginePitchMax = 2.1f,
+            },
             ["sports"] = new VehicleSpec
             {
                 id = "sports", nameKey = "vehicle.sports", kind = VehicleKind.Car, spawnClass = "sports", mass = 1300f,
                 centerOfMass = new Vector3(0f, 0.36f, 0f), topSpeed = 52f, driveForce = 11500f, brakeForce = 14000f,
                 grip = 1.25f, maxSteer = 32f, highSpeedSteer = 7f, suspensionRest = 0.26f, suspensionHz = 2.1f, antiRoll = 12000f,
                 downforce = 2.2f, camDistance = 6.3f, camHeight = 1.7f, enginePitchIdle = 0.85f, enginePitchMax = 2.2f,
+                paint = new Color(0.62f, 0.05f, 0.06f), paintMetallic = 0.5f, paintSmoothness = 0.84f,
             },
             ["roadstar"] = new VehicleSpec
             {
@@ -75,6 +128,9 @@ namespace CTLife.World.Vehicles
                 grip = 1.25f, maxSteer = 32f, highSpeedSteer = 7f, suspensionRest = 0.26f, suspensionHz = 2.0f, antiRoll = 12000f,
                 downforce = 2.0f, flightTopSpeed = 62f, climbRate = 14f, maxTilt = 26f, yawRate = 70f, hoverHeight = 1.6f,
                 camDistance = 6.6f, camHeight = 1.8f, engineSound = "engine_ev", startSound = null, enginePitchIdle = 0.8f, enginePitchMax = 1.7f,
+                // the v3 hovercar's look: deep metallic blue with a clear coat (2026-10-22: the gunmetal still read as one
+                // black shape from the chase camera; the island now has a real HDRI sky for the paint to reflect)
+                paint = new Color(0.20f, 0.36f, 0.66f), paintMetallic = 0.7f, paintSmoothness = 0.88f,
             },
             ["scooter"] = new VehicleSpec
             {
@@ -88,7 +144,7 @@ namespace CTLife.World.Vehicles
             {
                 id = "heli", nameKey = "vehicle.heli", kind = VehicleKind.Helicopter, spawnClass = "heli", mass = 1450f,
                 centerOfMass = new Vector3(0f, 0.9f, 0f), flightTopSpeed = 55f, climbRate = 10f, maxTilt = 30f, yawRate = 65f,
-                camDistance = 15f, camHeight = 4.5f, camPitch = 13f, engineSound = "rotor_heli", startSound = null,
+                camDistance = 14f, camHeight = 5f, camPitch = 12f, engineSound = "rotor_heli", startSound = null,
                 enginePitchIdle = 0.55f, enginePitchMax = 1.15f,
             },
             ["drone"] = new VehicleSpec

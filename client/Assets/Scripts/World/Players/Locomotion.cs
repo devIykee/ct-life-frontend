@@ -13,6 +13,30 @@ namespace CTLife.World
     /// </summary>
     public static class Locomotion
     {
+        private static readonly Collider[] People = new Collider[24];
+        /// <summary>Soft separation: suppress motion into a nearby person and ease sideways without solid-body trapping.</summary>
+        public static Vector3 Separate(Transform self, Vector3 velocity)
+        {
+            var p = self.position;
+            int n = Physics.OverlapCapsuleNonAlloc(p + Vector3.up * 0.4f, p + Vector3.up * 1.3f, 0.65f,
+                People, 1 << CharacterLayers.Characters, QueryTriggerInteraction.Collide);
+            var push = Vector3.zero;
+            for (int i = 0; i < n; i++)
+            {
+                var c = People[i];
+                if (c == null || c.transform == self || c.transform.IsChildOf(self)) continue;
+                var other = c.GetComponentInParent<AvatarView>();
+                if (other == null || other.transform == self) continue;
+                var away = p - other.transform.position; away.y = 0f;
+                float d = away.magnitude;
+                if (d >= 0.64f) continue;
+                var dir = d > 0.01f ? away / d : self.right;
+                float into = Vector3.Dot(velocity, -dir);
+                if (into > 0f) velocity += dir * into * Mathf.Clamp01((0.64f - d) / 0.22f);
+                push += dir * Mathf.Clamp((0.64f - d) * 5f, 0f, 2f);
+            }
+            return velocity + Vector3.ClampMagnitude(push, 2f);
+        }
         /// <summary>Speeding up (m/s^2).</summary>
         public const float Acceleration = 9f;
         /// <summary>Slowing to a lower target while still holding the stick.</summary>

@@ -93,19 +93,7 @@ namespace CTLife.EditorTools.IslandV2
                 cells.At(c).Boxes.Add(new CellGeo.BoxCol { Center = c, Rotation = Quaternion.LookRotation(fwd, Vector3.up), Size = new Vector3(5.2f, 2.6f, 1.0f), Layer = Layers.VehicleBlocker, Name = "vehicle_blocker" });
             }
 
-            // paved plazas (Timeline Square's block): the block inset to its sidewalk edges, pavers on the ground
-            if (plan["plazas"] is JArray plazas)
-                foreach (var pz in plazas)
-                {
-                    var poly = ((JArray)pz["polygon"]).Select(q => new Vector2((float)q[0], (float)q[1])).ToArray();
-                    var inner = Inset(poly, 9.2f);
-                    var c = inner.Aggregate(Vector2.zero, (a, b) => a + b) / inner.Length;
-                    float y = inner.Concat(new[] { c }).Max(q => h.Sample(q.x, q.y)) + 0.05f;    // just above the graded ground
-                    var v = inner.Select(q => new Vector3(q.x, y, q.y)).ToArray();
-                    var geo = cells.At(new Vector3(c.x, 0f, c.y));
-                    geo.V(Mat.Plaza).FlatQuad(v[0], v[3], v[2], v[1]);         // clockwise from above
-                    receipt["plaza"] = $"{pz["id"]}: {string.Join(" ", v.Select(q => $"({q.x:0.0},{q.y:0.00},{q.z:0.0})"))}";
-                }
+            IslandV2Plazas.Build(plan, h, venues, cells, receipt);
 
             // waterfront: quay walls and paving, the bay boardwalk, the lighthouse
             IslandV2Coast.Build(plan, h, cells, receipt);
@@ -114,6 +102,8 @@ namespace CTLife.EditorTools.IslandV2
 
             // dressing: buildings, street furniture, trees, rocks, crops (dress.json) into their cells
             IslandV2Dress.Place(cells, h, receipt);
+            // walk-in rooms behind dress.py's enterable doors (prefabs + the door list IslandInteriors streams from)
+            IslandV2Interiors.Build(receipt);
 
             // write the streamed cells
             foreach (var old in Directory.GetFiles(IslandV2Paths.CellsDir, "*.prefab")) AssetDatabase.DeleteAsset(old.Replace('\\', '/'));
@@ -146,7 +136,7 @@ namespace CTLife.EditorTools.IslandV2
         }
 
         /// <summary>A convex polygon (counter-clockwise from above) shrunk by d metres: each edge moves inward.</summary>
-        private static Vector2[] Inset(Vector2[] p, float d)
+        internal static Vector2[] Inset(Vector2[] p, float d)
         {
             int n = p.Length;
             var lines = new (Vector2 a, Vector2 dir)[n];
@@ -198,6 +188,11 @@ namespace CTLife.EditorTools.IslandV2
             {
                 var so = new SerializedObject(urp);
                 so.FindProperty("m_MainLightShadowsSupported").boolValue = true;
+                // world v3: HDR (R11G11B10, the same 32 bits a pixel as LDR on the tiler) with HDR grading, so ACES has
+                // real highlights to roll off and the PBR kit is not flattened by tonemapping an LDR buffer
+                so.FindProperty("m_SupportsHDR").boolValue = true;
+                so.FindProperty("m_HDRColorBufferPrecision").intValue = 0;
+                so.FindProperty("m_ColorGradingMode").intValue = (int)ColorGradingMode.HighDynamicRange;
                 so.ApplyModifiedPropertiesWithoutUndo();
                 EditorUtility.SetDirty(urp);
             }
@@ -237,7 +232,65 @@ namespace CTLife.EditorTools.IslandV2
             Set("water_depth.png", false, false, 1024, fmt: TextureImporterFormat.R8);   // smooth gradients, no ASTC blocks
             Set("clouds.png", false, true, 512, fmt: TextureImporterFormat.ASTC_6x6);
             Set("boardwalk.png", true, true, 256);
+            SkyTextures();
+            // world v3 street stone (art/pipeline/world_street_textures.py, Poly Haven CC0) and the downtown paving mask
+            foreach (var n in new[] { "asphalt", "pavers", "concrete", "granite", "plaster", "rooftiles", "siding", "corrugated", "dirt" })
+            {
+                Set($"Street/{n}_albedo.png", true, true, 1024);
+                Set($"Street/{n}_normal.png", false, true, 1024, normal: true);
+            }
+            Set("paving_mask.png", false, false, 2048, fmt: TextureImporterFormat.RG16);  // downtown + The Trenches + Dubai Marina (1156 x 690 m); g = Trenches yards
+            // world polish (2026-10-23): the ground scans (art/pipeline/world_v3_ground.py, CC0), five 1024 px slices each
+            void ArraySet(string file, bool srgb)
+            {
+                var path = IslandV2Paths.Textures + "/" + file;
+                var ti = AssetImporter.GetAtPath(path) as TextureImporter;
+                if (ti == null) { Debug.LogWarning("CTLIFE [islandv2] missing texture " + path); return; }
+                var st = new TextureImporterSettings();
+                ti.ReadTextureSettings(st);
+                st.textureType = TextureImporterType.Default; st.textureShape = TextureImporterShape.Texture2DArray;
+                st.flipbookColumns = GroundSlices; st.flipbookRows = 1;
+                st.sRGBTexture = srgb; st.mipmapEnabled = true; st.wrapMode = TextureWrapMode.Repeat; st.filterMode = FilterMode.Trilinear; st.aniso = 4;
+                st.alphaSource = TextureImporterAlphaSource.FromInput;
+                ti.SetTextureSettings(st);
+                ti.maxTextureSize = 8192;
+                var a = ti.GetPlatformTextureSettings("Android");
+                a.overridden = true; a.maxTextureSize = 8192; a.format = TextureImporterFormat.ASTC_6x6;
+                ti.SetPlatformTextureSettings(a);
+                ti.SaveAndReimport();
+            }
+            ArraySet("Ground/ground_albedo_array.png", true);
+            ArraySet("Ground/ground_normal_array.png", false);
             foreach (var f in System.IO.Directory.GetFiles(IslandV2Paths.Textures + "/Signs", "*.png")) Set("Signs/" + System.IO.Path.GetFileName(f), true, false, 512);
+        }
+
+        /// <summary>
+        /// World v3 sky (art/pipeline/world_sky_hdri.py, Poly Haven HDRI, CC0): the 4096 x 1024 panorama (no mips: the sky
+        /// shader samples mip 0; ASTC 4x4 against banding; wraps round, clamps at the zenith and the horizon) and the 1k
+        /// HDR as a 256 px cubemap with specular convolution (RGB9E5 on Android) for reflections.
+        /// </summary>
+        private static void SkyTextures()
+        {
+            if (AssetImporter.GetAtPath(IslandV2Paths.Textures + "/sky_pano.png") is TextureImporter pano)
+            {
+                pano.textureType = TextureImporterType.Default; pano.sRGBTexture = true; pano.mipmapEnabled = false;
+                pano.wrapModeU = TextureWrapMode.Repeat; pano.wrapModeV = TextureWrapMode.Clamp; pano.filterMode = FilterMode.Bilinear;
+                pano.maxTextureSize = 4096; pano.npotScale = TextureImporterNPOTScale.None;
+                var a = pano.GetPlatformTextureSettings("Android"); a.overridden = true; a.maxTextureSize = 4096; a.format = TextureImporterFormat.ASTC_4x4;
+                pano.SetPlatformTextureSettings(a);
+                pano.SaveAndReimport();
+            }
+            if (AssetImporter.GetAtPath(IslandV2Paths.Textures + "/sky_env.hdr") is TextureImporter env)
+            {
+                env.textureType = TextureImporterType.Default; env.textureShape = TextureImporterShape.TextureCube;
+                env.generateCubemap = TextureImporterGenerateCubemap.Cylindrical;
+                env.mipmapEnabled = true; env.sRGBTexture = false; env.filterMode = FilterMode.Trilinear; env.maxTextureSize = 256;
+                var settings = new TextureImporterSettings(); env.ReadTextureSettings(settings);
+                settings.cubemapConvolution = TextureImporterCubemapConvolution.Specular; env.SetTextureSettings(settings);
+                var a = env.GetPlatformTextureSettings("Android"); a.overridden = true; a.maxTextureSize = 256; a.format = TextureImporterFormat.RGB9E5;
+                env.SetPlatformTextureSettings(a);
+                env.SaveAndReimport();
+            }
         }
 
         /// <summary>Import settings for a W4 dressing texture: mipmapped, clamped, alpha kept, ASTC 6x6 up to maxSize on Android.</summary>
@@ -254,6 +307,11 @@ namespace CTLife.EditorTools.IslandV2
         }
 
         private static Texture2D Tex(string file) => AssetDatabase.LoadAssetAtPath<Texture2D>(IslandV2Paths.Textures + "/" + file);
+        private const int GroundSlices = 5;
+        private static Texture2DArray TexArray(string file) => AssetDatabase.LoadAssetAtPath<Texture2DArray>(IslandV2Paths.Textures + "/" + file);
+
+        /// <summary>The sidewalk scan's warm cast taken out: light grey slabs like the lookdev (linear multipliers).</summary>
+        private static readonly Color PaverTint = new Color(0.8f, 0.93f, 1.1f);
 
         private static Dictionary<string, Material> Materials()
         {
@@ -278,21 +336,61 @@ namespace CTLife.EditorTools.IslandV2
                 x.SetColor("_SandColor", new Color(0.92f, 0.83f, 0.62f)); x.SetColor("_DirtColor", new Color(0.56f, 0.43f, 0.30f));
                 x.SetVector("_Snow", new Vector4(138f, 156f, 0.45f, 0.6f)); x.SetVector("_Shore", new Vector4(-6f, 1.1f, 0f, 0f)); x.SetVector("_DetailScale", new Vector4(0.16f, 0.035f, 0f, 0f));
                 x.SetFloat("_Contrast", 0.65f); x.SetFloat("_Sharpness", 2.5f); x.SetFloat("_Toon", 0.3f);
+                // world polish: the scanned lawn, soil and Trenches yards (warm late-afternoon grade on the grass)
+                x.SetTexture("_GroundArr", TexArray("Ground/ground_albedo_array.png")); x.SetTexture("_GroundNrm", TexArray("Ground/ground_normal_array.png"));
+                x.SetColor("_GrassTint", new Color(1.3f, 1.36f, 1.55f, 0.2f)); x.SetVector("_GrassScale", new Vector4(1.6f, 2.3f, 18f, 61f));
+                x.SetColor("_SoilTint", new Color(1f, 0.97f, 0.92f)); x.SetColor("_YardTint", new Color(1.05f, 1.03f, 1.0f, 0.6f));
+                x.SetVector("_Yard", new Vector4(3.0f, 7.0f, 0.33f, 0.0f));
             }
-            Mk("terrain", "CT Life/World/Terrain", x => { Ground(x); x.SetTexture("_Macro", Tex("terrain_macro.png")); x.DisableKeyword("_FAR"); });
-            Mk("terrain_far", "CT Life/World/Terrain", x => { Ground(x); x.SetTexture("_Macro", Tex("terrain_far_macro.png")); x.EnableKeyword("_FAR"); });
-            Mk(Mat.Road, "CT Life/World/Road", x => { x.SetTexture("_Detail", Tex("asphalt_detail.png")); x.SetColor("_Color", new Color(0.34f, 0.35f, 0.38f)); });
+            // downtown paving (dress.py v3_paving): its mask and domain from dress.json, the sidewalk stone
+            var pave = IslandV2Paths.Json("dress.json")["paving"] as JObject;
+            void Paving(Material x)
+            {
+                if (pave == null) { x.SetTexture("_PaveMask", Texture2D.blackTexture); return; }
+                x.SetTexture("_PaveMask", Tex("paving_mask.png"));
+                x.SetVector("_PaveDomain", new Vector4((float)pave["min"][0], (float)pave["min"][1], (float)pave["size"][0], (float)pave["size"][1]));
+                x.SetTexture("_PaveAlbedo", Tex("Street/pavers_albedo.png")); x.SetTexture("_PaveNormal", Tex("Street/pavers_normal.png"));
+                x.SetColor("_PaveTint", PaverTint); x.SetVector("_PaveTile", new Vector4(1.8f, 4f, 0.07f, 0f));
+            }
+            Mk("terrain", "CT Life/World/Terrain", x => { Ground(x); Paving(x); x.SetTexture("_Macro", Tex("terrain_macro.png")); x.DisableKeyword("_FAR"); });
+            Mk("terrain_far", "CT Life/World/Terrain", x => { Ground(x); Paving(x); x.SetTexture("_Macro", Tex("terrain_far_macro.png")); x.EnableKeyword("_FAR"); });
+            // world v3 (2026-10-22): asphalt and street stone from CC0 Poly Haven scans, lit with the HDRI (PBR street shaders)
+            Mk(Mat.Road, "CT Life/World/Road", x =>
+            {
+                x.SetTexture("_Detail", Tex("asphalt_detail.png")); x.SetColor("_Color", new Color(1.3f, 1.3f, 1.34f));
+                x.SetTexture("_Albedo", Tex("Street/asphalt_albedo.png")); x.SetTexture("_Normal", Tex("Street/asphalt_normal.png"));
+                x.SetFloat("_TileMetres", 4f); x.SetFloat("_NormalStrength", 1f); x.SetFloat("_Patches", 0.6f); x.SetFloat("_MacroMid", 0.072f);
+                x.SetFloat("_Reflection", 1f); x.SetFloat("_Wear", 0.3f);
+                x.SetColor("_White", new Color(0.86f, 0.86f, 0.84f)); x.SetColor("_Yellow", new Color(0.86f, 0.66f, 0.16f));
+                x.EnableKeyword("_PBR"); x.SetFloat("_UsePBR", 1f);
+            });
+            // world districts 2 (2026-10-23): farm tracks and service lanes on a CC0 dirt scan (Poly Haven 'dirt'), PBR like the
+            // asphalt; no painted lines on dirt (the paint colours are the dirt's own), tyre tracks kept
             Mk(Mat.Dirt, "CT Life/World/Road", x =>
             {
-                x.SetTexture("_Detail", Tex("dirt_detail.png")); x.SetColor("_Color", new Color(0.62f, 0.50f, 0.36f)); x.SetFloat("_Tracks", 0.18f); x.SetFloat("_Contrast", 1.1f);
+                x.SetTexture("_Detail", Tex("dirt_detail.png")); x.SetColor("_Color", new Color(1.05f, 1.0f, 0.95f)); x.SetFloat("_Tracks", 0.22f); x.SetFloat("_Contrast", 1.1f);
+                x.SetTexture("_Albedo", Tex("Street/dirt_albedo.png")); x.SetTexture("_Normal", Tex("Street/dirt_normal.png"));
+                x.SetFloat("_TileMetres", 3f); x.SetFloat("_NormalStrength", 1f); x.SetFloat("_Patches", 0.0f); x.SetFloat("_MacroMid", 0.076f);
+                x.SetFloat("_Reflection", 0.4f); x.SetFloat("_Wear", 0.0f);
+                x.SetColor("_White", new Color(0.36f, 0.30f, 0.23f, 0f)); x.SetColor("_Yellow", new Color(0.36f, 0.30f, 0.23f, 0f));
+                x.EnableKeyword("_PBR"); x.SetFloat("_UsePBR", 1f);
             });
-            Mk(Mat.Sidewalk, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Tex("pavers.png")); x.EnableKeyword("_WORLDUV"); x.SetFloat("_UseWorldUV", 1); x.SetFloat("_WorldScale", 0.42f); x.SetFloat("_Toon", 0.3f); x.SetVector("_TileVar", new Vector4(1.7f, 0.11f, 0.18f, 0f)); });
-            Mk(Mat.Plaza, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Tex("pavers.png")); x.EnableKeyword("_WORLDUV"); x.SetFloat("_UseWorldUV", 1); x.SetFloat("_WorldScale", 0.3f); x.SetColor("_BaseColor", new Color(1.0f, 0.97f, 0.92f)); x.SetFloat("_Toon", 0.3f); x.SetVector("_TileVar", new Vector4(1.25f, 0.1f, 0.15f, 0f)); });
-            Mk(Mat.Kerb, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Tex("concrete.png")); x.EnableKeyword("_WORLDUV"); x.SetFloat("_UseWorldUV", 1); x.SetFloat("_WorldScale", 0.5f); x.SetColor("_BaseColor", new Color(0.93f, 0.91f, 0.88f)); x.SetVector("_TileVar", new Vector4(1.0f, 0.16f, 0.22f, 0f)); });
-            Mk(Mat.Concrete, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Tex("concrete.png")); x.EnableKeyword("_WORLDUV"); x.SetFloat("_UseWorldUV", 1); x.SetFloat("_WorldScale", 0.25f); x.SetColor("_BaseColor", new Color(0.86f, 0.84f, 0.8f)); x.SetVector("_TileVar", new Vector4(0.45f, 0.1f, 0.22f, 0f)); });
+            void Stone(Material x, string set, Color tint, float tile, Vector4 slabs, float smooth = 1f)
+            {
+                x.SetTexture("_Albedo", Tex($"Street/{set}_albedo.png")); x.SetTexture("_Normal", Tex($"Street/{set}_normal.png"));
+                x.SetColor("_Color", tint); x.SetFloat("_TileMetres", tile); x.SetVector("_Slabs", slabs); x.SetFloat("_Smoothness", smooth);
+                x.SetFloat("_NormalStrength", 1f); x.SetFloat("_Reflection", 1f);
+            }
+            // sidewalks: 0.45 m concrete slabs (light grey, the scan's warmth taken out), a tone per slab
+            Mk(Mat.Sidewalk, "CT Life/World/Ground PBR", x => Stone(x, "pavers", PaverTint, 1.8f, new Vector4(4f, 0.07f, 0, 0)));
+            Mk(Mat.Plaza, "CT Life/World/Ground PBR", x => Stone(x, "granite", new Color(1.02f, 1.12f, 1.32f), 2.0f, new Vector4(4f, 0.06f, 0, 0)));
+            // kerbs: light concrete kerbstones (0.15 m rise, 0.25 m top), a little smoother than the walk
+            Mk(Mat.Kerb, "CT Life/World/Ground PBR", x => Stone(x, "concrete", new Color(1.8f, 1.78f, 1.72f), 1.0f, new Vector4(1f, 0.05f, 0, 0), 1.2f));
+            Mk(Mat.Concrete, "CT Life/World/Ground PBR", x => Stone(x, "concrete", new Color(1.7f, 1.68f, 1.62f), 3.0f, new Vector4(1f, 0.0f, 0, 0)));
             Mk(Mat.Tunnel, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Tex("concrete.png")); x.EnableKeyword("_WORLDUV"); x.SetFloat("_UseWorldUV", 1); x.SetFloat("_WorldScale", 0.25f); x.SetColor("_BaseColor", new Color(0.62f, 0.6f, 0.57f)); x.SetFloat("_Cull", 0f); });
             Mk(Mat.Rail, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Texture2D.whiteTexture); x.SetColor("_BaseColor", new Color(0.78f, 0.80f, 0.82f)); x.SetVector("_Spec", new Vector4(0.25f, 40f, 0, 0)); x.SetFloat("_Cull", 0f); });
-            Mk(Mat.Paint, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Tex("asphalt_detail.png")); x.SetColor("_BaseColor", new Color(1.0f, 1.0f, 0.98f)); x.SetFloat("_Toon", 0.1f); });
+            // crossings and stop lines: road paint over the asphalt scan (its grain and cracks show through, like worn paint)
+            Mk(Mat.Paint, "CT Life/World/Ground PBR", x => Stone(x, "asphalt", new Color(11.2f, 11.2f, 10.8f), 3.0f, new Vector4(1f, 0f, 0, 0), 1.6f));
             Mk(Mat.Grass, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Tex("terrain_detail.png")); x.SetColor("_BaseColor", new Color(0.46f, 0.70f, 0.30f)); x.EnableKeyword("_WORLDUV"); x.SetFloat("_UseWorldUV", 1); x.SetFloat("_WorldScale", 0.2f); });
             Mk("water", "CT Life/World/Water", x => { x.SetTexture("_DepthMap", Tex("water_depth.png")); x.SetTexture("_Ripples", Tex("water_ripples.png")); x.SetVector("_Waves", new Vector4(0.13f, 42f, 1.0f, 0.5f)); });
             Mk("water_river", "CT Life/World/Water", x =>
@@ -301,10 +399,15 @@ namespace CTLife.EditorTools.IslandV2
                 x.SetColor("_Shallow", new Color(0.42f, 0.72f, 0.66f)); x.SetColor("_Deep", new Color(0.16f, 0.42f, 0.48f)); x.SetVector("_RippleScale", new Vector4(0.11f, 0.2f, 0, 0));
             });
             Mk("barrier", "CT Life/World/Toon", x => { x.SetColor("_BaseColor", Color.white); });
-            Mk("shell_roof", "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Tex("concrete.png")); x.EnableKeyword("_WORLDUV"); x.SetFloat("_UseWorldUV", 1); x.SetFloat("_WorldScale", 0.25f); x.SetColor("_BaseColor", Color.white); x.SetFloat("_Toon", 0.35f); x.SetFloat("_Cull", 0f); });
+            // world districts 2 (2026-10-23): shell roofs on the venue reskin (clay tiles on the warm gables, plaster-grey
+            // concrete on flat roofs; the roof colour comes in as vertex colour), no longer the toon concrete
+            Mk("shell_roof", "CT Life/World/Venue Reskin", x => { ReskinTextures(x); x.SetTexture("_BaseMap", Texture2D.whiteTexture); x.SetColor("_BaseColor", Color.white); x.SetFloat("_UseVertexColor", 1f); x.SetFloat("_Cull", 0f); });
             Mk("bird", "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Texture2D.whiteTexture); x.SetColor("_BaseColor", new Color(0.97f, 0.97f, 0.95f)); x.SetFloat("_Toon", 0.2f); x.SetFloat("_Cull", 0f); });
             Mk(Mat.Quay, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Tex("concrete.png")); x.EnableKeyword("_WORLDUV"); x.SetFloat("_UseWorldUV", 1); x.SetFloat("_WorldScale", 0.3f); x.SetColor("_BaseColor", new Color(0.72f, 0.69f, 0.64f)); x.SetFloat("_Toon", 0.35f); });
-            Mk(Mat.Boardwalk, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Tex("boardwalk.png")); x.DisableKeyword("_WORLDUV"); x.SetFloat("_UseWorldUV", 0); x.SetColor("_BaseColor", Color.white); x.SetFloat("_Toon", 0.3f); });
+            // world districts 2: the boardwalk's deck and rails as scanned weathered planks (world-projected, warm wood tone)
+            Mk(Mat.Boardwalk, "CT Life/World/Venue Reskin", x => { ReskinTextures(x); x.SetTexture("_Wall", Tex("Street/siding_albedo.png")); x.SetTexture("_WallNormal", Tex("Street/siding_normal.png"));
+                x.SetColor("_WallMid", new Color(0.066f, 0.043f, 0.029f)); x.SetVector("_Tiles", new Vector4(2.4f, 2.2f, 1.0f, 0.9f));
+                x.SetTexture("_BaseMap", Texture2D.whiteTexture); x.SetColor("_BaseColor", new Color(0.62f, 0.47f, 0.34f)); x.SetFloat("_UseVertexColor", 0f); x.SetFloat("_Cull", 2f); });
             Mk(Mat.Timber, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Texture2D.whiteTexture); x.SetColor("_BaseColor", new Color(0.50f, 0.38f, 0.27f)); x.SetFloat("_Toon", 0.35f); });
             Mk(Mat.Lighthouse, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Texture2D.whiteTexture); x.SetColor("_BaseColor", Color.white); x.SetFloat("_Toon", 0.4f); });
             Mk(Mat.LighthouseLamp, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Texture2D.whiteTexture); x.SetColor("_BaseColor", new Color(1f, 0.93f, 0.66f)); x.SetColor("_Emission", new Color(1.6f, 1.35f, 0.8f)); x.SetFloat("_Cull", 0f); });
@@ -483,16 +586,17 @@ namespace CTLife.EditorTools.IslandV2
                     if (m.Kind == "vehicle" && IslandV2Dress.Kit != null && IslandV2Dress.CarProtos.Length > 0 && IslandV2Dress.Hash01(m.Id) < IslandV2Dress.ParkedShare(m.Position))
                     {
                         // a decor car parks here (drawn instanced); Feel can swap it for a drivable one via ParkedCar
-                        int pick = IslandV2Dress.CarProtos[(int)(IslandV2Dress.Hash01(m.Id + "car") * IslandV2Dress.CarProtos.Length) % IslandV2Dress.CarProtos.Length];
+                        // world v3: the decor is the v3 car the player will swap into here, in the same paint
+                        var (pick, cls, tint) = IslandV2Dress.DecorCarFor(m.Id, m.Position);
                         var kp = IslandV2Dress.Kit.protos[pick];
                         float yaw = m.Rotation.eulerAngles.y + (IslandV2Dress.Hash01(m.Id + "flip") < 0.5f ? 0f : 180f);
-                        g.Instances.Add(new IslandV2Dress.Inst { Proto = pick, X = m.Position.x, Y = m.Position.y + 0.02f, Z = m.Position.z, Yaw = yaw, S = 1f, Sy = 1f });
+                        g.Instances.Add(new IslandV2Dress.Inst { Proto = pick, X = m.Position.x, Y = m.Position.y + 0.02f, Z = m.Position.z, Yaw = yaw, S = 1f, Sy = 1f, Tint = tint });
                         var pc = new GameObject("parked_" + m.Id) { layer = Layers.Prop };
                         pc.transform.SetParent(mk.transform, false);
                         pc.transform.SetPositionAndRotation(m.Position, Quaternion.Euler(0f, yaw, 0f));
                         var car = pc.AddComponent<ParkedCar>();
                         car.model = kp.id; car.segmentId = m.Segment;
-                        car.vehicleClass = kp.id.Contains("suv") || kp.id.Contains("van") || kp.id.Contains("delivery") ? VehicleClass.Suv : kp.id.Contains("sports") ? VehicleClass.Sports : VehicleClass.Compact;
+                        car.vehicleClass = cls;
                         var bc = pc.AddComponent<BoxCollider>();
                         bc.size = new Vector3(kp.bounds.size.x * 0.92f, kp.bounds.size.y * 0.9f, kp.bounds.size.z * 0.95f);
                         bc.center = new Vector3(0f, kp.bounds.size.y * 0.45f, 0f);
@@ -550,6 +654,8 @@ namespace CTLife.EditorTools.IslandV2
                     }
                 }
             }
+            IslandV2Collision.ReplaceCellColliders(root);
+            colliders = root.GetComponentsInChildren<Collider>(true).Length;
             int objects = root.transform.childCount;
             if (objects == 0) { Object.DestroyImmediate(root); return (0, 0, 0, 0); }
             // meshes: one asset file per cell (first mesh is the main object)
@@ -687,6 +793,12 @@ namespace CTLife.EditorTools.IslandV2
             }).ToList();
             var atm = root.AddComponent<IslandAtmosphere>();
             atm.skybox = Skybox();
+            // open-air venue shells: real plaster walls and clay-tile roofs over their palette colours (IslandVenueReskin)
+            if (root.GetComponent<IslandWorld>() is IslandWorld iw) iw.venueReskin = VenueReskin();
+            atm.environment = AssetDatabase.LoadAssetAtPath<Cubemap>(IslandV2Paths.Textures + "/sky_env.hdr");
+            // the HDRI's horizon (fog: the sea melts into the photographed sky) and a cooler, greyer aerial haze
+            atm.fogColor = new Color(0.80f, 0.80f, 0.81f);
+            atm.hazeColor = new Color(0.66f, 0.74f, 0.84f);
             root.AddComponent<IslandRenderSettings>();
             root.AddComponent<IslandInstanceRenderer>();
             var birds = root.AddComponent<IslandBirds>();
@@ -732,7 +844,7 @@ namespace CTLife.EditorTools.IslandV2
             Directory.CreateDirectory(IslandV2Paths.Data);
             var hp = IslandV2Paths.Data + "/heightfield.bytes";
             var op = IslandV2Paths.Data + "/heightfield_holes.bytes";
-            File.Copy(Path.Combine(IslandV2Paths.Out, "height.r16"), hp, true);
+            File.Copy(IslandV2Paths.HeightFile(IslandV2Paths.Out), hp, true);
             File.WriteAllBytes(op, IslandHeightfield.PackHoles(h.Hole ?? new bool[h.N * h.N]));
             AssetDatabase.ImportAsset(hp, ImportAssetOptions.ForceSynchronousImport);
             AssetDatabase.ImportAsset(op, ImportAssetOptions.ForceSynchronousImport);
@@ -761,20 +873,47 @@ namespace CTLife.EditorTools.IslandV2
             var profile = ScriptableObject.CreateInstance<VolumeProfile>();
             profile.name = "IslandLook";
             AssetDatabase.CreateAsset(profile, path);
-            var tm = profile.Add<Tonemapping>(true); tm.mode.Override(TonemappingMode.Neutral);
+            // world v3 (2026-10-22): the camera renders HDR, so ACES has real highlights to roll off (Neutral on an LDR
+            // buffer had flattened the PBR facades); exposure lifted to sit the mid-tones where they were
+            var tm = profile.Add<Tonemapping>(true); tm.mode.Override(TonemappingMode.ACES);
             var wb = profile.Add<WhiteBalance>(true); wb.temperature.Override(6f); wb.tint.Override(2f);
             var ca = profile.Add<ColorAdjustments>(true);
-            ca.postExposure.Override(0.08f); ca.contrast.Override(12f); ca.saturation.Override(14f); ca.colorFilter.Override(new Color(1f, 0.975f, 0.94f));
+            ca.postExposure.Override(0.1f); ca.contrast.Override(8f); ca.saturation.Override(8f); ca.colorFilter.Override(new Color(1f, 0.975f, 0.94f));
             var st = profile.Add<SplitToning>(true);
             st.shadows.Override(new Color(0.42f, 0.48f, 0.62f)); st.highlights.Override(new Color(0.64f, 0.56f, 0.44f)); st.balance.Override(-12f);
             var bl = profile.Add<Bloom>(true);
-            bl.threshold.Override(1.0f); bl.intensity.Override(0.28f); bl.scatter.Override(0.6f); bl.highQualityFiltering.Override(false);
-            bl.downscale.Override(BloomDownscaleMode.Quarter);
+            bl.threshold.Override(1.05f); bl.intensity.Override(0.32f); bl.scatter.Override(0.6f); bl.highQualityFiltering.Override(false);
+            bl.downscale.Override(BloomDownscaleMode.Quarter); bl.maxIterations.Override(4);     // 4 mips: the glow reach is the same at mobile res, cheaper
             var vg = profile.Add<Vignette>(true); vg.intensity.Override(0.18f); vg.smoothness.Override(0.42f);
             foreach (var c in profile.components) { c.name = c.GetType().Name; AssetDatabase.AddObjectToAsset(c, profile); }
             EditorUtility.SetDirty(profile);
             AssetDatabase.SaveAssetIfDirty(profile);
             return profile;
+        }
+
+        private static void ReskinTextures(Material mat)
+        {
+            mat.SetTexture("_Wall", Tex("Street/plaster_albedo.png")); mat.SetTexture("_WallNormal", Tex("Street/plaster_normal.png"));
+            mat.SetTexture("_Roof", Tex("Street/rooftiles_albedo.png")); mat.SetTexture("_RoofNormal", Tex("Street/rooftiles_normal.png"));
+            mat.SetColor("_WallMid", new Color(0.383f, 0.345f, 0.331f)); mat.SetColor("_RoofMid", new Color(0.078f, 0.026f, 0.009f));
+            mat.SetVector("_Tiles", new Vector4(1.6f, 2.2f, 1.0f, 0.9f));
+        }
+
+        private static Material VenueReskin()
+        {
+            var path = IslandV2Paths.Materials + "/venue_reskin.mat";
+            var sh = Shader.Find("CT Life/World/Venue Reskin");
+            if (sh == null) return null;
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (mat == null) { mat = new Material(sh) { name = "venue_reskin" }; AssetDatabase.CreateAsset(mat, path); }
+            mat.shader = sh;
+            mat.SetTexture("_Wall", Tex("Street/plaster_albedo.png")); mat.SetTexture("_WallNormal", Tex("Street/plaster_normal.png"));
+            mat.SetTexture("_Roof", Tex("Street/rooftiles_albedo.png")); mat.SetTexture("_RoofNormal", Tex("Street/rooftiles_normal.png"));
+            mat.SetColor("_WallMid", new Color(0.383f, 0.345f, 0.331f)); mat.SetColor("_RoofMid", new Color(0.078f, 0.026f, 0.009f));
+            mat.SetVector("_Tiles", new Vector4(1.6f, 2.2f, 1.0f, 0.9f));
+            mat.enableInstancing = true;
+            EditorUtility.SetDirty(mat);
+            return mat;
         }
 
         private static Material Skybox()
@@ -786,6 +925,9 @@ namespace CTLife.EditorTools.IslandV2
             if (mat == null) { mat = new Material(sh) { name = "sky" }; AssetDatabase.CreateAsset(mat, path); }
             mat.shader = sh;
             mat.SetTexture("_Clouds", Tex("clouds.png"));
+            var pano = Tex("sky_pano.png");
+            mat.SetTexture("_SkyPano", pano); mat.SetFloat("_UsePano", pano != null ? 1f : 0f);
+            mat.SetFloat("_PanoExposure", 1.1f); mat.SetColor("_PanoTint", new Color(1f, 0.98f, 0.95f));
             EditorUtility.SetDirty(mat);
             return mat;
         }

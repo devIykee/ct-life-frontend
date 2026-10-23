@@ -1,6 +1,7 @@
 using System;
 using CTLife.Core;
 using CTLife.Net;
+using CTLife.World;
 using UnityEngine.UIElements;
 
 namespace CTLife.UI
@@ -105,6 +106,20 @@ namespace CTLife.UI
 
             body.Add(Duo.GroupHeader(Strings.T("controls.title")));
             body.Add(Controls());
+            var rescue = new DuoRow(() =>
+            {
+                var safety = VenueSession.Current?.LocalPlayer?.GetComponent<PlayerSafety>();
+                if (safety == null || VenueSession.Current.LocalPlayer.InVehicle)
+                    Bus.Publish(ToastSignal.Text(Strings.T("settings.unstickUnavailable")));
+                else if (!safety.CanRecoverToSafety)
+                    Bus.Publish(ToastSignal.Text(Strings.T("settings.unstickBusy")));
+                else if (safety.RecoverToSafety()) Phone?.Close();
+            }).Leading(Duo.IconSquare("duo-info", "indigo")).Title(Strings.T("settings.unstick"));
+            rescue.name = "settings-unstick";
+            rescue.SetEnabled(VenueSession.Current?.IsIsland == true && VenueSession.Current.LocalPlayer != null &&
+                !VenueSession.Current.LocalPlayer.InVehicle);
+            body.Add(Duo.Group(rescue));
+            body.Add(Duo.GroupFooter(Strings.T("settings.unstickHelp")));
 
             var wallet = new DuoRow(() => Phone?.Open("wallet")).Leading(Duo.IconSquare("wallet", "graphite"))
                 .Title(Strings.T("settings.wallet")).Chevron();
@@ -161,7 +176,19 @@ namespace CTLife.UI
             }
             segmented.Changed += Apply;
             help.text = Strings.T(ControlSettings.MovementMode == MovementControlMode.Analog ? "controls.analogHelp" : "controls.arrowsHelp");
-            return El.Div("duo-group-block", El.Div("duo-group duo-group-padded", segmented), help);
+            var flightHelp = Duo.GroupFooter("");
+            var flight = new DuoSegmented(new[] { Strings.T("controls.flightSimple"), Strings.T("controls.flightPro") },
+                CTLife.World.Vehicles.FlightPhysics.ProControls ? 1 : 0);
+            flight.name = "settings-flight-controls";
+            void ApplyFlight(int index)
+            {
+                CTLife.World.Vehicles.FlightPhysics.ProControls = index == 1;
+                flightHelp.text = Strings.T(index == 1 ? "controls.flightProHelp" : "controls.flightSimpleHelp");
+            }
+            flight.Changed += ApplyFlight;
+            flightHelp.text = Strings.T(CTLife.World.Vehicles.FlightPhysics.ProControls ? "controls.flightProHelp" : "controls.flightSimpleHelp");
+            return El.Div("duo-group-block", El.Div("duo-group duo-group-padded", segmented), help,
+                Duo.GroupHeader(Strings.T("controls.flight")), El.Div("duo-group duo-group-padded", flight), flightHelp);
         }
 
         // ------------------------------------------------------------------ detail screens

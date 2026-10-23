@@ -19,6 +19,8 @@ export const MoveMessage = z.object({
   x: z.number().finite(),
   z: z.number().finite(),
   rotY: z.number().finite(),
+  /** Venue rooms: true when x/z/rotY are island coordinates (converted by the server). */
+  island: z.boolean().optional(),
 });
 export type MoveMessage = z.infer<typeof MoveMessage>;
 
@@ -43,12 +45,134 @@ export const NpcTapMessage = z.object({ npcId: z.string().min(1) });
 export type NpcTapMessage = z.infer<typeof NpcTapMessage>;
 
 // ---------------------------------------------------------------------------
+// Client -> server (vehicles room). Island metres, radians, m/s.
+// ---------------------------------------------------------------------------
+
+export const VEHICLE_KINDS = [
+  'compact',
+  'suv',
+  'sports',
+  'moped',
+  'roadstar',
+  'heli',
+  'drone',
+] as const;
+export type VehicleKind = (typeof VEHICLE_KINDS)[number];
+
+/** Server speed cap per vehicle kind, m/s. */
+export const VEHICLE_MAX_SPEED_M_PER_S: Record<VehicleKind, number> = {
+  compact: 60,
+  suv: 60,
+  sports: 60,
+  moped: 25,
+  roadstar: 70,
+  heli: 60,
+  drone: 20,
+};
+
+/** Highest a vehicle may fly, island metres. */
+export const VEHICLE_MAX_Y_M = 214;
+
+/**
+ * Take the wheel. `kind` and the pose are only read when the server does
+ * not know `id` yet (a client-parked car): the server then registers it
+ * where the client says, which must be within 4 m of the player.
+ */
+export const VehicleEnterMessage = z.object({
+  id: z.string().min(1).max(64),
+  kind: z.enum(VEHICLE_KINDS).optional(),
+  x: z.number().finite().optional(),
+  y: z.number().finite().optional(),
+  z: z.number().finite().optional(),
+  yaw: z.number().finite().optional(),
+});
+export type VehicleEnterMessage = z.infer<typeof VehicleEnterMessage>;
+
+export const VehicleMoveMessage = z.object({
+  id: z.string().min(1).max(64),
+  x: z.number().finite(),
+  y: z.number().finite(),
+  z: z.number().finite(),
+  yaw: z.number().finite(),
+  pitch: z.number().finite(),
+  roll: z.number().finite(),
+  speed: z.number().finite().nonnegative(),
+  flags: z.number().int().min(0).max(65535).optional(),
+});
+export type VehicleMoveMessage = z.infer<typeof VehicleMoveMessage>;
+
+/** Leave the vehicle; x/z/yaw are its final parked pose. */
+export const VehicleExitMessage = z.object({
+  id: z.string().min(1).max(64),
+  x: z.number().finite(),
+  z: z.number().finite(),
+  yaw: z.number().finite(),
+});
+export type VehicleExitMessage = z.infer<typeof VehicleExitMessage>;
+
+/** A driver hit a player. `victim` is the victim's userId. */
+export const VehicleHitMessage = z.object({
+  victim: z.string().min(1),
+  velocity: z.object({
+    x: z.number().finite(),
+    y: z.number().finite(),
+    z: z.number().finite(),
+  }),
+});
+export type VehicleHitMessage = z.infer<typeof VehicleHitMessage>;
+
+// ---------------------------------------------------------------------------
+// Server -> client (venue, street and vehicles rooms)
+// ---------------------------------------------------------------------------
+
+/** A move went past the speed budget; the server applied this position instead. */
+export const CorrectedMessage = z.object({
+  x: z.number().finite(),
+  z: z.number().finite(),
+  /** Set when the position is in island coordinates (the move was sent with `island: true`). */
+  island: z.boolean().optional(),
+});
+export type CorrectedMessage = z.infer<typeof CorrectedMessage>;
+
+/** Same as `corrected`, for the driver of a vehicle. */
+export const VehicleCorrectedMessage = z.object({
+  id: z.string().min(1),
+  x: z.number().finite(),
+  y: z.number().finite(),
+  z: z.number().finite(),
+});
+export type VehicleCorrectedMessage = z.infer<typeof VehicleCorrectedMessage>;
+
+/** Relayed to the victim only, who ragdolls on their own client. */
+export const VehicleHitRelayMessage = z.object({
+  victim: z.string().min(1),
+  velocity: z.object({
+    x: z.number().finite(),
+    y: z.number().finite(),
+    z: z.number().finite(),
+  }),
+  by: z.string().min(1),
+  vehicleId: z.string().min(1),
+  at: z.number().int().nonnegative(),
+});
+export type VehicleHitRelayMessage = z.infer<typeof VehicleHitRelayMessage>;
+
+// ---------------------------------------------------------------------------
 // Server -> client (venue room)
 // ---------------------------------------------------------------------------
 
 export const WelcomeMessage = z.object({
   serverNow: z.number().int().nonnegative(),
   instanceId: z.string().min(1),
+  /** Venue rooms placed on CT Island: where the venue's local frame sits. */
+  island: z
+    .object({
+      x: z.number().finite(),
+      y: z.number().finite(),
+      z: z.number().finite(),
+      yaw: z.number().finite(),
+    })
+    .optional(),
 });
 export type WelcomeMessage = z.infer<typeof WelcomeMessage>;
 
@@ -93,6 +217,16 @@ export const RejectedMessage = z.object({
     'PAYMENT_EXPIRED',
     'PAYMENT_UNDERPAID',
     'SERVER_BUSY',
+    'OUT_OF_BOUNDS',
+    'UNKNOWN_EMOTE',
+    'SPOT_NOT_FOUND',
+    'NPC_NOT_FOUND',
+    'VEHICLE_TAKEN',
+    'VEHICLE_TOO_FAR',
+    'VEHICLE_LIMIT',
+    'NOT_DRIVER',
+    'ALREADY_DRIVING',
+    'POSITION_UNKNOWN',
   ]),
 });
 export type RejectedMessage = z.infer<typeof RejectedMessage>;

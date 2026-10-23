@@ -166,7 +166,7 @@ namespace CTLife.World.Pedestrians
                 var (path, s, pos) = _spawnPoints[list[_rng.Next(list.Count)]];
                 var flat = pos - focus; flat.y = 0f;
                 if (!SpawnDistanceOk(flat.magnitude, Visible(pos))) continue;
-                if (!VehicleWorld.IsReady(pos)) continue;
+                if (!VehicleWorld.IsReady(pos) || !VehicleWorld.Dry(pos) || !FootPlanner.Free(pos)) continue;
                 bool crowded = false;
                 foreach (var o in People) if ((o.transform.position - pos).sqrMagnitude < 9f) { crowded = true; break; }
                 if (crowded) continue;
@@ -204,7 +204,7 @@ namespace CTLife.World.Pedestrians
                 float y = a.y ?? GroundY(new Vector3(x, 200f, z), float.NaN);
                 if (float.IsNaN(y)) continue;
                 at = new Vector3(x, y, z);
-                if (!ClearOfRoad(at, at)) continue;
+                if (!ClearOfRoad(at, at) || !VehicleWorld.Dry(at) || !FootPlanner.Free(at)) continue;
                 return true;
             }
             at = default;

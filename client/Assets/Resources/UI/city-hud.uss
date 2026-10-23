@@ -6,6 +6,7 @@
 .ct-hud.hud-arena .ct-dock-action:active, .ct-hud.hud-arena .hud-plate:active, .ct-hud.hud-arena .hud-pill-wallet:active { scale: 0.96 0.96; }
 
 /* ---------------------------------------------------------------- top-left plate */
+.hud-recovery-veil { position: absolute; left: 0; right: 0; top: 0; bottom: 0; background-color: var(--ct-deep); opacity: 0; }
 .ct-hud.hud-arena .hud-plate-row { position: absolute; left: 28px; top: 22px; flex-direction: row; align-items: flex-start; }
 .ct-hud.hud-arena .hud-plate, .ct-hud.hud-arena .hud-plate:hover, .ct-hud.hud-arena .hud-plate:active, .ct-hud.hud-arena .hud-plate:focus {
     position: relative; left: auto; right: auto; top: auto; flex-direction: row; align-items: center; height: 108px; min-height: 108px; padding: 0 28px 0 0; margin: 0 14px 0 0;
@@ -54,7 +55,8 @@
 }
 
 /* ---------------------------------------------------------------- top-centre currencies */
-.ct-hud.hud-arena .ct-hud-top { position: absolute; left: 50%; right: auto; top: 30px; translate: -50% 0; flex-direction: row; align-items: center; }
+.ct-hud.hud-arena .ct-hud-top { position: absolute; left: 50%; right: auto; top: 30px; translate: -50% 0; flex-direction: column; align-items: center; }
+.hud-currency-row { flex-direction: row; align-items: center; }
 .hud-pill {
     flex-direction: row; align-items: center; height: 64px; padding: 0 22px 0 8px; margin: 0 8px; border-radius: 18px;
     border-width: 3px; border-color: rgba(255,255,255,0.14); background-color: rgba(20,6,44,0.8);
@@ -103,7 +105,7 @@
 .ct-hud.hud-arena .ct-need-low { background-color: rgb(255,59,92); }
 
 /* ---------------------------------------------------------------- bottom-right context actions */
-.ct-hud.hud-arena .ct-hud-social { position: absolute; left: auto; right: 28px; bottom: 22px; top: auto; flex-direction: row; align-items: flex-end; }
+.ct-hud.hud-arena .ct-hud-social { position: absolute; left: auto; right: 226px; bottom: 22px; top: auto; flex-direction: row; align-items: flex-end; }
 
 /* ---------------------------------------------------------------- joystick (ref 6: thin ring, soft fill). Feel lane F1: a floating
    stick. The container is the whole lower-left touch area; MovementControls places the ring under the thumb (left/top) and
@@ -138,39 +140,106 @@
    InteractionPrompt owns the left/top projection and collision placement. */
 .ct-hud .ct-hud-interact { position: absolute; right: auto; bottom: auto; flex-direction: column; align-items: center; padding-bottom: 18px; }
 .ct-interact-actions { flex-direction: row; align-items: center; }
-.ct-hud .ct-interact {
-    flex-direction: row; align-items: center; height: 112px; min-height: 112px; min-width: 164px; margin: 0 6px; padding: 0 28px 0 18px;
-    border-width: 5px; border-radius: 56px; border-color: rgb(42,11,74); background-color: rgba(20,6,44,0.9); color: rgb(255,255,255);
+/* City HUD v2 prompt: a tag chip with the object's name, then per verb a tactile squircle (one Phosphor glyph) and the verb. */
+.ct-hud .ct-interact-tag {
+    margin-bottom: 10px; padding: 4px 14px; border-radius: 12px; background-color: rgba(14,9,30,0.82); border-width: 1px; border-color: rgba(255,255,255,0.16);
+    font-size: 17px; letter-spacing: 2px; color: rgb(255,255,255); -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); white-space: nowrap;
 }
-.ct-hud .ct-interact .ct-icon { width: 46px; height: 46px; margin-right: 12px; -unity-background-image-tint-color: rgb(255,255,255); }
-.ct-hud .ct-interact-label { font-size: 32px; color: rgb(255,255,255); -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); white-space: nowrap; }
-.ct-hud .ct-interact-primary { background-color: rgb(61,220,132); border-color: rgb(42,11,74); }
-.ct-hud .ct-interact-primary .ct-interact-label { color: rgb(13,61,34); }
-.ct-hud .ct-interact-primary .ct-icon { -unity-background-image-tint-color: rgb(13,61,34); }
-.ct-hud .ct-interact-secondary { background-color: rgba(20,6,44,0.9); border-color: rgb(42,11,74); }
+.ct-hud .ct-interact, .ct-hud .ct-interact:hover, .ct-hud .ct-interact:focus, .ct-hud .ct-interact:active {
+    flex-direction: column; align-items: center; height: auto; min-height: 0; min-width: 0; margin: 0 10px; padding: 0;
+    border-width: 0; border-radius: 0; background-color: rgba(0,0,0,0); color: rgb(255,255,255);
+}
 .ct-hud .ct-interact > .ct-button-depth, .ct-hud .ct-interact > .ct-button-glint { display: none; }
-.ct-hud .ct-interact:hover { background-color: rgba(20,6,44,0.9); }
-.ct-hud .ct-interact-primary:hover { background-color: rgb(61,220,132); }
-.ct-hud .ct-interact:focus { border-color: rgb(255,210,63); }
-.ct-hud .ct-interact:active { scale: 0.97 0.97; }
+.ct-hud .ct-interact-key {
+    width: 112px; height: 112px; border-radius: 34px; align-items: center; justify-content: center;
+    background-color: rgb(52,214,126); border-width: 3px; border-bottom-width: 9px;
+    border-top-color: rgb(170,255,212); border-left-color: rgb(120,240,178); border-right-color: rgb(120,240,178); border-bottom-color: rgb(12,115,64);
+    transition-property: scale; transition-duration: 0.08s;
+}
+.ct-hud .ct-interact .ct-icon { width: 56px; height: 56px; margin: 0; -unity-background-image-tint-color: rgb(8,72,40); }
+.ct-hud .ct-interact-label {
+    margin-top: 8px; font-size: 26px; color: rgb(255,255,255); -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); white-space: nowrap;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.7);
+}
+.ct-hud .ct-interact-secondary .ct-interact-key {
+    width: 92px; height: 92px; border-radius: 28px; background-color: rgba(18,12,36,0.78); border-width: 2px; border-bottom-width: 6px;
+    border-top-color: rgba(255,255,255,0.6); border-left-color: rgba(255,255,255,0.32); border-right-color: rgba(255,255,255,0.32); border-bottom-color: rgba(0,0,0,0.5);
+}
+.ct-hud .ct-interact-secondary .ct-icon { width: 46px; height: 46px; -unity-background-image-tint-color: rgb(255,255,255); }
+.ct-hud .ct-interact-secondary .ct-interact-label { font-size: 22px; }
+.ct-hud .ct-interact-locked .ct-interact-key { width: 112px; height: 112px; border-radius: 34px; opacity: 1; }
+.ct-hud .ct-interact-lock {
+    position: absolute; right: -14px; top: -14px; width: 44px; height: 44px; border-radius: 22px; align-items: center; justify-content: center;
+    background-color: rgb(255,210,63); border-width: 3px; border-color: rgb(42,11,74);
+}
+.ct-hud .ct-interact .ct-interact-lock .ct-icon { width: 24px; height: 24px; -unity-background-image-tint-color: rgb(42,11,74); }
+.ct-hud .ct-interact:active .ct-interact-key { scale: 0.94 0.94; }
+.ct-hud .ct-interact:focus .ct-interact-key { border-top-color: rgb(255,226,122); }
 .ct-hud .ct-interact-busy .ct-interact { opacity: 0.75; }
-.ct-interact-pointer { position: absolute; width: 22px; height: 22px; bottom: auto; left: 50%; margin-left: 0; rotate: 45deg; background-color: rgb(42,11,74); }
+.ct-interact-pointer { position: absolute; width: 22px; height: 22px; bottom: auto; left: 50%; margin-left: 0; border-radius: 11px; background-color: rgb(255,255,255); border-width: 4px; border-color: rgb(42,11,74); }
 .ct-interact-clamped .ct-interact-pointer { display: none; }
 
 .ct-landscape .ct-hud .ct-move-controls { left: 0; bottom: 0; }
 .ct-landscape .ct-hud .ct-chat, .ct-landscape .ct-hud .ct-emotes { left: auto; right: 40px; width: 850px; bottom: 190px; max-height: 420px; }
 
-/* ---------------------------------------------------------------- vehicles (Feel lane F2): a GTA-mobile driving layout in the
-   same plum-glass language. Left: a floating steer stick (in the air: climb / turn). Right: DRIFT, BRAKE and a big GAS pedal
-   (in the air: a second stick for pitch / roll). "Get out" sits by the map, the Roadstar's FLY / LAND above the pedals, the
-   speed beside the pedals (the car itself fills the bottom-centre). VehicleControls places the stick ring under the thumb (inline left/top) and clears it on release. */
-.ct-hud .veh-controls { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+/* ---------------------------------------------------------------- City HUD v2 (2026-10-22, hud-research-20261022/hud-spec.md).
+   GTA order, premium finish: solid tactile pedals (gradient, inner highlight, a 3D lip that compresses on press) and
+   frosted dark glass rounds with a thin light rim, all drawn once into Resources/UI/Hud. One icon family (Phosphor fill).
+   White text; Lilita One only for the speed numerals, Inter for labels. Press: scale 0.94 and brighter art.
+   Groups fade/slide over ~170 ms when the player gets in or out (HudFade). Units: panel px (Seeker device px / 1.112). */
+.ct-hud .hud-fade { transition-property: opacity, translate; transition-duration: 0.17s; transition-timing-function: ease-out-cubic; }
+.ct-hud .hud-fade.hud-off { opacity: 0; translate: 0 40px; }
+.ct-hud.hud-arena .hud-place.hud-off { translate: 40px 0; }
+
+.ct-hud .veh-caption {
+    position: absolute; top: 100%; left: -60px; right: -60px; margin-top: 6px; padding: 0;
+    font-size: 20px; color: rgb(255,255,255); -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); -unity-text-align: upper-center;
+    white-space: nowrap; text-shadow: 0 2px 5px rgba(0,0,0,0.75);
+}
+
+/* Jump (on foot): glass round, bottom-right corner */
+.ct-hud .hud-jump {
+    position: absolute; right: 47px; bottom: 60px; width: 155px; height: 155px; align-items: center; justify-content: center;
+    background-image: url("Hud/round.png"); -unity-background-scale-mode: stretch-to-fill; transition-property: scale, opacity, translate; transition-duration: 0.09s, 0.17s, 0.17s;
+}
+.ct-hud .hud-jump .ct-icon { width: 70px; height: 70px; -unity-background-image-tint-color: rgb(255,255,255); }
+.ct-hud .hud-jump.veh-down { background-image: url("Hud/round-down.png"); scale: 0.94 0.94; }
+.ct-hud .hud-jump .veh-caption { margin-top: 4px; }
+
+/* locked hovercar dock button: a yellow lock badge (still tappable: it opens the Duo Shop) */
+.ct-hud .hud-lock-badge {
+    position: absolute; right: 0; top: -6px; width: 48px; height: 48px; border-radius: 24px; align-items: center; justify-content: center;
+    background-color: rgb(255,210,63); border-width: 3px; border-color: rgb(42,11,74); display: none; transition-property: scale, opacity; transition-duration: 0.2s;
+}
+.ct-hud .hud-locked .hud-lock-badge { display: flex; }
+.ct-hud .hud-lock-badge .ct-icon { width: 26px; height: 26px; -unity-background-image-tint-color: rgb(42,11,74); }
+.ct-hud .hud-lock-badge.hud-lock-pop { display: flex; scale: 1.3 1.3; opacity: 0; }
+
+/* Sleuth heat: built, hidden until a real heat value exists */
+.ct-hud .hud-heat {
+    margin-top: 10px; flex-direction: row; align-items: center; padding: 6px 16px; border-radius: 14px; background-color: rgba(80,8,30,0.86);
+    border-width: 1px; border-color: rgba(255,59,92,0.5); transition-property: opacity, translate; transition-duration: 0.17s;
+}
+.ct-hud .hud-heat.hud-off { opacity: 0; translate: 0 -20px; }
+.ct-hud .hud-heat-label { font-size: 17px; letter-spacing: 2px; color: rgb(255,179,193); -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); margin-right: 12px; }
+.ct-hud .hud-heat-pips { flex-direction: row; }
+.ct-hud .hud-heat-pip { width: 34px; height: 34px; margin: 0 2px; -unity-background-image-tint-color: rgba(255,255,255,0.28); }
+.ct-hud .hud-heat-pip--lit { -unity-background-image-tint-color: rgb(255,210,63); }
+
+/* vehicle HUD root and its groups */
+.ct-hud .veh-controls { position: absolute; left: 0; top: 0; right: 0; bottom: 0; transition-property: opacity; transition-duration: 0.17s; transition-timing-function: ease-out-cubic; }
+.ct-hud .veh-controls.hud-off { opacity: 0; }
+.ct-hud .veh-cluster { position: absolute; left: 0; top: 0; right: 0; bottom: 0; transition-property: translate, opacity; transition-duration: 0.17s; transition-timing-function: ease-out-cubic; }
+.ct-hud .veh-controls.hud-off .veh-cluster { translate: 0 70px; }
+.ct-hud .veh-busy .veh-cluster { opacity: 0.6; }
+
+/* sticks: the existing thin ring, plus direction ticks per mode */
 .ct-hud .veh-stick-zone { position: absolute; bottom: 0; width: 40%; height: 74%; }
 .ct-hud .veh-stick-zone--left { left: 0; }
 .ct-hud .veh-stick-zone--right { right: 0; }
 .ct-hud .veh-stick-ring {
     position: absolute; left: 90px; top: auto; bottom: 70px; width: 260px; height: 260px; border-radius: 130px;
-    border-width: 3px; border-color: rgba(255,255,255,0.55); background-color: rgba(20,6,44,0.16); opacity: 0.7;
+    border-width: 3px; border-color: rgba(255,255,255,0.55); background-color: rgba(20,6,44,0.16); opacity: 0.75;
 }
 .ct-hud .veh-stick-zone--right .veh-stick-ring { left: auto; right: 90px; }
 .ct-hud .veh-stick-thumb {
@@ -179,52 +248,100 @@
 }
 .ct-hud .veh-active .veh-stick-ring { opacity: 1; background-color: rgba(20,6,44,0.34); border-color: rgb(255,255,255); }
 .ct-hud .veh-active .veh-stick-thumb { background-color: rgb(255,255,255); }
+.ct-hud .veh-tick { position: absolute; width: 30px; height: 30px; display: none; -unity-background-image-tint-color: rgba(255,255,255,0.8); }
+.ct-hud .veh-tick--left { left: 12px; top: 50%; margin-top: -15px; }
+.ct-hud .veh-tick--right { right: 12px; top: 50%; margin-top: -15px; }
+.ct-hud .veh-tick--up, .ct-hud .veh-tick--up2 { top: 12px; left: 50%; margin-left: -15px; }
+.ct-hud .veh-tick--down, .ct-hud .veh-tick--down2 { bottom: 12px; left: 50%; margin-left: -15px; }
+.ct-hud .veh-mode-ground .veh-tick--left, .ct-hud .veh-mode-ground .veh-tick--right { display: flex; }
+.ct-hud .veh-mode-heli .veh-tick--left, .ct-hud .veh-mode-heli .veh-tick--right, .ct-hud .veh-mode-heli .veh-tick--up, .ct-hud .veh-mode-heli .veh-tick--down { display: flex; }
+.ct-hud .veh-mode-hover.veh-flying .veh-tick--up2, .ct-hud .veh-mode-hover.veh-flying .veh-tick--down2 { display: flex; -unity-background-image-tint-color: rgb(110,228,255); }
 
-.ct-hud .veh-label {
-    font-size: 30px; color: rgb(255,255,255); -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); -unity-text-align: middle-center;
-    -unity-text-outline-width: 2px; -unity-text-outline-color: rgb(42,11,74); white-space: nowrap; margin: 0; padding: 0;
+/* pedals: Gas tall in the corner, Brake beside it */
+.ct-hud .veh-pedal { position: absolute; align-items: center; justify-content: center; -unity-background-scale-mode: stretch-to-fill; transition-property: scale; transition-duration: 0.07s; }
+.ct-hud .veh-pedal-glyph { width: 66px; height: 66px; margin-bottom: 12px; }
+.ct-hud .veh-pedal.veh-down .veh-pedal-glyph { translate: 0 8px; }
+.ct-hud .veh-gas { right: 43px; bottom: 40px; width: 166px; height: 238px; background-image: url("Hud/pedal-gas.png"); }
+.ct-hud .veh-gas.veh-down { background-image: url("Hud/pedal-gas-down.png"); scale: 0.94 0.94; }
+.ct-hud .veh-gas .veh-pedal-glyph { -unity-background-image-tint-color: rgb(6,80,42); }
+.ct-hud .veh-brake { right: 234px; bottom: 40px; width: 180px; height: 151px; background-image: url("Hud/pedal-brake.png"); }
+.ct-hud .veh-brake.veh-down { background-image: url("Hud/pedal-brake-down.png"); scale: 0.94 0.94; }
+.ct-hud .veh-brake .veh-pedal-glyph { width: 58px; height: 58px; -unity-background-image-tint-color: rgba(255,255,255,0.94); }
+.ct-hud .veh-reverse {
+    position: absolute; right: -12px; top: -14px; width: 46px; height: 46px; border-radius: 23px; display: none; padding: 0; margin: 0;
+    background-color: rgb(255,210,63); border-width: 3px; border-color: rgb(42,11,74);
+    font-size: 24px; color: rgb(42,11,74); -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); -unity-text-align: middle-center;
 }
-.ct-hud .veh-pedals { position: absolute; right: 36px; bottom: 36px; flex-direction: row; align-items: flex-end; }
-.ct-hud .veh-pedal {
-    align-items: center; justify-content: center; margin-left: 22px; border-width: 5px; border-bottom-width: 12px; border-color: rgb(42,11,74);
-    border-radius: 36px; background-color: rgba(20,6,44,0.84);
-}
-.ct-hud .veh-pedal .ct-icon { width: 66px; height: 66px; margin-bottom: 8px; -unity-background-image-tint-color: rgb(255,255,255); }
-.ct-hud .veh-gas { width: 210px; height: 290px; background-color: rgb(61,220,132); }
-.ct-hud .veh-gas .ct-icon { -unity-background-image-tint-color: rgb(13,61,34); }
-.ct-hud .veh-gas .veh-label { color: rgb(13,61,34); -unity-text-outline-width: 0; }
-.ct-hud .veh-brake { width: 186px; height: 220px; }
-.ct-hud .veh-handbrake { width: 186px; height: 150px; background-color: rgb(255,210,63); }
-.ct-hud .veh-handbrake .veh-label { color: rgb(42,11,74); -unity-text-outline-width: 0; }
-.ct-hud .veh-pedal.veh-down { scale: 0.94 0.94; border-bottom-width: 6px; }
-.ct-hud .veh-gas.veh-down { background-color: rgb(124,255,196); }
-.ct-hud .veh-brake.veh-down { background-color: rgb(255,59,92); }
-.ct-hud .veh-handbrake.veh-down { background-color: rgb(255,235,140); }
-.ct-hud .veh-reversing .veh-brake .veh-label { color: rgb(255,210,63); }
+.ct-hud .veh-reversing .veh-reverse { display: flex; }
 
-.ct-hud .veh-exit, .ct-hud .veh-exit:hover, .ct-hud .veh-exit:active, .ct-hud .veh-exit:focus {
-    position: absolute; right: 500px; top: 26px; height: 96px; min-height: 96px; padding: 0 32px 0 24px; margin: 0;
-    flex-direction: row; align-items: center; border-width: 4px; border-radius: 48px; border-color: rgb(42,11,74); background-color: rgba(20,6,44,0.86);
+/* glass rounds: Drift / Fly-Land slot over the Gas, Horn over the Brake, Get out above */
+.ct-hud .veh-round {
+    position: absolute; align-items: center; justify-content: center; background-image: url("Hud/round.png"); -unity-background-scale-mode: stretch-to-fill;
+    transition-property: scale, opacity; transition-duration: 0.09s, 0.15s;
 }
-.ct-hud .veh-fly, .ct-hud .veh-fly:hover, .ct-hud .veh-fly:active, .ct-hud .veh-fly:focus {
-    position: absolute; right: 36px; bottom: 362px; height: 104px; min-height: 104px; padding: 0 36px 0 26px; margin: 0;
-    flex-direction: row; align-items: center; border-width: 5px; border-radius: 52px; border-color: rgb(42,11,74); background-color: rgb(93,52,200);
+.ct-hud .veh-round.veh-down { background-image: url("Hud/round-down.png"); scale: 0.94 0.94; }
+.ct-hud .veh-round-glyph { width: 52%; height: 52%; -unity-background-image-tint-color: rgb(255,255,255); }
+.ct-hud .veh-icon-fly, .ct-hud .veh-icon-land {
+    position: absolute; left: 24%; top: 24%; width: 52%; height: 52%; transition-property: opacity; transition-duration: 0.12s;
 }
-.ct-hud .veh-exit .ct-icon, .ct-hud .veh-fly .ct-icon { width: 50px; height: 50px; margin-right: 12px; -unity-background-image-tint-color: rgb(255,255,255); }
-.ct-hud .veh-exit > .ct-button-depth, .ct-hud .veh-exit > .ct-button-glint, .ct-hud .veh-fly > .ct-button-depth, .ct-hud .veh-fly > .ct-button-glint { display: none; }
-.ct-hud .veh-exit:active, .ct-hud .veh-fly:active { scale: 0.96 0.96; }
-.ct-hud .veh-fly.veh-on { background-color: rgb(53,214,255); }
-.ct-hud .veh-fly.veh-on .veh-label { color: rgb(20,6,44); -unity-text-outline-width: 0; }
-.ct-hud .veh-fly.veh-on .ct-icon { -unity-background-image-tint-color: rgb(20,6,44); }
+.ct-hud .veh-icon-land { opacity: 0; }
+.ct-hud .veh-on .veh-icon-fly { opacity: 0; }
+.ct-hud .veh-on .veh-icon-land { opacity: 1; }
+.ct-hud .veh-round.veh-gone { opacity: 0; scale: 0.8 0.8; }
+.ct-hud .veh-round.veh-pop { scale: 0.88 0.88; }
+.ct-hud .veh-drift { right: 63px; bottom: 318px; width: 126px; height: 126px; }
+.ct-hud .veh-drift .veh-round-glyph { -unity-background-image-tint-color: rgb(255,214,80); }
+.ct-hud .veh-horn { right: 266px; bottom: 236px; width: 115px; height: 115px; }
+.ct-hud .veh-exit { right: 266px; bottom: 400px; width: 115px; height: 115px; }
+.ct-hud .veh-fly { right: 63px; bottom: 318px; width: 126px; height: 126px; }
+.ct-hud .veh-fly .veh-icon-fly, .ct-hud .veh-fly .veh-icon-land { -unity-background-image-tint-color: rgb(110,228,255); }
+.ct-hud .veh-fly.veh-on { background-image: url("Hud/round-cyan.png"); }
+.ct-hud .veh-fly.veh-on.veh-down { background-image: url("Hud/round-cyan-down.png"); }
+.ct-hud .veh-fly.veh-alert .veh-caption { color: rgb(255,214,80); }
+.ct-hud .veh-land { right: 266px; bottom: 226px; width: 122px; height: 122px; background-image: url("Hud/round-cyan.png"); }
+.ct-hud .veh-land.veh-down { background-image: url("Hud/round-cyan-down.png"); }
+.ct-hud .veh-land .veh-icon-fly { -unity-background-image-tint-color: rgb(110,228,255); }
+.ct-hud .veh-land .veh-icon-land { -unity-background-image-tint-color: rgb(255,255,255); }
+.ct-hud .veh-land.veh-on { background-image: url("Hud/round.png"); }
+.ct-hud .veh-land.veh-on.veh-down { background-image: url("Hud/round-down.png"); }
+.ct-hud .veh-mode-pro .veh-land { right: 63px; bottom: 560px; }
 
-.ct-hud .veh-readout { position: absolute; left: auto; right: 700px; bottom: 44px; align-items: flex-end; }
-.ct-hud .veh-speed-row { flex-direction: row; align-items: flex-end; }
+/* helicopter Lift lever: drag the knob up to climb; it springs back to the centre detent (hold altitude) */
+.ct-hud .veh-lever {
+    position: absolute; right: 50px; bottom: 47px; width: 166px; height: 464px; align-items: center;
+    background-image: url("Hud/lever-track.png"); -unity-background-scale-mode: stretch-to-fill;
+}
+.ct-hud .veh-lever-end { position: absolute; left: 65px; width: 36px; height: 36px; -unity-background-image-tint-color: rgba(255,255,255,0.55); }
+.ct-hud .veh-lever-end--up { top: 14px; }
+.ct-hud .veh-lever-end--down { bottom: 14px; }
+.ct-hud .veh-lever-fill { position: absolute; left: 38px; right: 38px; top: 232px; height: 0; border-radius: 45px; background-color: rgba(95,247,166,0.9); }
+.ct-hud .veh-lever-fill--down { background-color: rgba(255,255,255,0.4); }
+.ct-hud .veh-lever-knob {
+    position: absolute; left: 13px; top: 162px; width: 140px; height: 150px; align-items: center; justify-content: center;
+    background-image: url("Hud/lever-knob.png"); -unity-background-scale-mode: stretch-to-fill; transition-property: scale; transition-duration: 0.08s;
+}
+.ct-hud .veh-lever-glyph { width: 62px; height: 62px; margin-bottom: 10px; -unity-background-image-tint-color: rgb(42,11,74); }
+.ct-hud .veh-lever.veh-down .veh-lever-knob { background-image: url("Hud/lever-knob-down.png"); scale: 0.96 0.96; }
+.ct-hud .veh-lever.veh-down .veh-lever-glyph { translate: 0 5px; }
+.ct-hud .veh-rotor { position: absolute; left: -8px; top: -8px; width: 156px; height: 156px; }
+.ct-hud .veh-lever .veh-lever-caption { top: auto; bottom: 100%; margin-top: 0; margin-bottom: 8px; }
+
+/* plates under the minimap: speed, then ALT while flying */
+.ct-hud .veh-plates { position: absolute; right: 28px; top: 362px; align-items: flex-end; transition-property: translate; transition-duration: 0.17s; transition-timing-function: ease-out-cubic; }
+.ct-hud .veh-controls.hud-off .veh-plates { translate: 90px 0; }
+.ct-hud .veh-plate { flex-direction: row; align-items: center; border-radius: 22px; border-width: 1px; border-color: rgba(255,255,255,0.18); background-color: rgba(14,9,30,0.76); }
+.ct-hud .veh-speed-plate { min-width: 324px; height: 96px; padding: 0 20px 0 12px; }
+.ct-hud .veh-gauge { width: 72px; height: 72px; margin-right: 6px; }
 .ct-hud .veh-speed-value {
-    font-size: 86px; color: rgb(255,255,255); -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); margin: 0; padding: 0;
-    -unity-text-outline-width: 3px; -unity-text-outline-color: rgb(42,11,74); text-shadow: 0 4px 0 rgb(42,11,74);
+    min-width: 112px; font-size: 68px; color: rgb(255,255,255); -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf");
+    -unity-text-align: middle-right; margin: 0; padding: 0;
 }
-.ct-hud .veh-speed-unit, .ct-hud .veh-alt {
-    font-size: 30px; color: rgb(255,255,255); -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); margin: 0 0 14px 10px; padding: 0;
-    -unity-text-outline-width: 2px; -unity-text-outline-color: rgb(42,11,74);
-}
-.ct-hud .veh-alt { color: rgb(124,255,196); margin: -6px 0 0 0; -unity-text-align: middle-right; }
+.ct-hud .veh-speed-meta { margin-left: 14px; justify-content: center; }
+.ct-hud .veh-speed-name { font-size: 18px; letter-spacing: 2px; color: rgb(255,255,255); -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); margin: 0; padding: 0; white-space: nowrap; }
+.ct-hud .veh-speed-unit { font-size: 16px; color: rgba(255,255,255,0.62); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); margin: 2px 0 0 0; padding: 0; }
+.ct-hud .veh-alt-plate { margin-top: 10px; padding: 6px 20px; flex-direction: column; align-items: flex-end; transition-property: opacity, translate; transition-duration: 0.17s; }
+.ct-hud .veh-alt-plate.hud-off { opacity: 0; translate: 60px 0; }
+.ct-hud .veh-alt-row { flex-direction: row; align-items: center; }
+.ct-hud .veh-alt-label { font-size: 17px; letter-spacing: 2px; color: rgb(110,228,255); -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); margin: 0 14px 0 0; padding: 0; }
+.ct-hud .veh-alt-value { font-size: 30px; color: rgb(255,255,255); -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); margin: 0; padding: 0; }
+.ct-hud .veh-alt-note { font-size: 16px; color: rgb(255,214,80); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); margin: 0; padding: 0; white-space: nowrap; }

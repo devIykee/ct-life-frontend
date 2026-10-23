@@ -111,15 +111,21 @@ namespace CTLife.World.Vehicles
             view.transform.SetParent(car.transform, false);
             view.transform.localRotation = Quaternion.identity;
             view.gameObject.SetActive(true);
+            // A pooled actor can still be LOD-culled, and disabling its GameObject resets the Animator to idle while
+            // AvatarView remembers act_drive. Restore visibility and explicitly evaluate the drive state before fitting.
+            view.ApplyLod(view.LodTier, false, AvatarLod.ThermalScale);
             view.SetBase("act_drive");
             var a = view.Animator;
-            Vector3 hips = new Vector3(0f, 0.5f, 0.05f);
             if (a != null)
             {
-                a.Update(0.6f);   // into the seated pose now, so the hips can be measured
-                var h = a.isHuman ? a.GetBoneTransform(HumanBodyBones.Hips) : null;
-                if (h != null) hips = Quaternion.Inverse(view.transform.rotation) * (h.position - view.transform.position);
+                var culling = a.cullingMode;
+                a.cullingMode = AnimatorCullingMode.AlwaysAnimate;
+                a.Update(0f);
+                a.Play(AnimationLibrary.Hash("act_drive"), 0, 0f);
+                a.Update(0f);
+                a.cullingMode = culling;
             }
+            var hips = VehicleSystem.MeasureSeatOffset(view);
             view.transform.position = seat.position - car.transform.rotation * hips;
             car.Driver = view;
             _seated[car] = view;

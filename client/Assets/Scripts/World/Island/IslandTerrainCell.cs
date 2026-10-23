@@ -25,6 +25,15 @@ namespace CTLife.World
         public bool Built { get; private set; }
         private bool _building;
         private readonly List<Mesh> _meshes = new List<Mesh>();
+        private static int _budgetFrame = -1, _chunksThisFrame;
+
+        private static bool TakeChunkBudget(int limit)
+        {
+            if (_budgetFrame != Time.frameCount) { _budgetFrame = Time.frameCount; _chunksThisFrame = 0; }
+            if (_chunksThisFrame >= limit) return false;
+            _chunksThisFrame++;
+            return true;
+        }
 
         /// <summary>Builds the chunks (a few per frame) and their colliders; returns when the ground is solid.</summary>
         public async Task Build(IslandHeightfield h, CancellationToken ct, int perFrame = 3)
@@ -32,21 +41,24 @@ namespace CTLife.World
             if (Built || _building || h == null || chunks == null) return;
             _building = true;
             var bakes = new List<(Mesh mesh, MeshCollider col)>();
-            int k = 0;
             foreach (var c in chunks)
             {
-                var col = BuildChunk(h, c);
-                if (col.col != null) bakes.Add(col);
-                if (++k % perFrame == 0)
+                // Three cell requests must not multiply the old three-chunks-per-frame main-thread cost.
+                while (!TakeChunkBudget(Mathf.Max(1, perFrame)))
                 {
                     await Awaitable.NextFrameAsync();
-                    if (this == null || ct.IsCancellationRequested) return;
+                    ct.ThrowIfCancellationRequested();
+                    if (this == null) return;
                 }
+                ct.ThrowIfCancellationRequested();
+                var col = BuildChunk(h, c);
+                if (col.col != null) bakes.Add(col);
             }
-            var ids = new int[bakes.Count];
-            for (int i = 0; i < ids.Length; i++) ids[i] = bakes[i].mesh.GetInstanceID();
+            var ids = new EntityId[bakes.Count];
+            for (int i = 0; i < ids.Length; i++) ids[i] = bakes[i].mesh.GetEntityId();
             await Task.Run(() => { foreach (var id in ids) Physics.BakeMesh(id, false); }, ct);
             if (this == null) return;
+            ct.ThrowIfCancellationRequested();
             foreach (var b in bakes) if (b.col != null) b.col.sharedMesh = b.mesh;
             Built = true;
             _building = false;

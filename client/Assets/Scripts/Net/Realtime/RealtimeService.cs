@@ -13,7 +13,7 @@ namespace CTLife.Net
     /// Before every join the access token is refreshed if it is near expiry (rooms verify the JWT at join time),
     /// and `city`/`market` are kept joined for the whole session (<see cref="KeepPersistentRoomsAlive"/>).
     /// </summary>
-    public sealed class RealtimeService : IRealtimeService
+    public sealed partial class RealtimeService : IRealtimeService, IIslandRealtimeService
     {
         /// <summary>Maximum SERVER_BUSY retries for one join before the join fails.</summary>
         public const int MaxBusyJoinAttempts = 5;
@@ -212,9 +212,19 @@ namespace CTLife.Net
             string user = _session.UserId;
             if (!IdentityCurrent(user)) throw new OperationCanceledException("Room identity is no longer current.", ct);
             var candidate = new VenueChannel();
-            using (var attempt = new RoomJoinAttempt(ct, () => IdentityCurrent(user)))
-                await JoinWithBusyRetry(async () => candidate.Join(Client, await Options(attempt.Token, venueId), attempt), attempt);
-            ct.ThrowIfCancellationRequested();
+            try
+            {
+                using (var attempt = new RoomJoinAttempt(ct, () => IdentityCurrent(user)))
+                    await JoinWithBusyRetry(async () => candidate.Join(Client, await Options(attempt.Token, venueId), attempt), attempt);
+                ct.ThrowIfCancellationRequested();
+            }
+            catch
+            {
+                // Cancellation may arrive after the raw join bound its channel but before adoption.
+                // Retire that exact candidate; the currently published venue belongs to another visit.
+                await candidate.Leave();
+                throw;
+            }
             var retire = _venue.Adopt(candidate, user);   // the old room leaves only after the new one is joined
             VenueJoined?.Invoke(candidate);
             _ = ObserveHandoffRetirement(retire);
@@ -230,8 +240,8 @@ namespace CTLife.Net
         {
             var previous = _venue.Detach();
             long revision = _venue.Revision;
-            if (previous == null) return;
-            await previous.Leave();
+            if (previous != null) await previous.Leave();
+            await _venue.RetiredCleanup;
             if (_venue.Revision == revision && _venue.Current == null) VenueLeft?.Invoke();
         }
 
@@ -244,6 +254,8 @@ namespace CTLife.Net
             long venueRevision = _venue.Revision;
             var market = _market.Detach();
             var city = _city.Detach();
+            var street = _street.Detach();
+            var vehicles = _vehicles.Detach();
             var retiredVenue = _venue.RetiredCleanup;
             var retiredMarket = _market.RetiredCleanup;
             var retiredCity = _city.RetiredCleanup;
@@ -255,7 +267,9 @@ namespace CTLife.Net
             }
             if (market != null) await market.Leave();
             if (city != null) await city.Leave();
-            await Task.WhenAll(retiredVenue, retiredMarket, retiredCity);
+            if (street != null) await street.Leave();
+            if (vehicles != null) await vehicles.Leave();
+            await Task.WhenAll(retiredVenue, retiredMarket, retiredCity, _street.RetiredCleanup, _vehicles.RetiredCleanup);
         }
     }
 

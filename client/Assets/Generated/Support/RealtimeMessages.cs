@@ -8,7 +8,14 @@ using System.Collections.Generic;
 namespace CTLife.Realtime
 {
     // ---- client → server (venue room) ----
-    public class MoveMessage { public double x; public double z; public double rotY; }
+    public class MoveMessage { public double x; public double z; public double rotY; public bool island; }
+    public class CorrectedMessage { public double x; public double z; public bool island; }
+    public class VehicleEnterMessage { public string id; public string kind; public double x, y, z, yaw; }
+    public class VehicleMoveMessage { public string id; public double x, y, z, yaw, pitch, roll, speed; public ushort flags; }
+    public class VehicleExitMessage { public string id; public double x, z, yaw; }
+    public class VehicleCorrectedMessage { public string id; public double x, y, z; }
+    public class WireVector3 { public double x, y, z; }
+    public class VehicleHitRelayMessage { public string victim, by, vehicleId; public WireVector3 velocity; public double at; }
     public class SitMessage { public string spotId; }
     public class StandMessage { }
     public class EmoteMessage { public string emoteId; }
@@ -22,7 +29,7 @@ namespace CTLife.Realtime
     /// <summary>`params` is optional in rc1 (may be null).</summary>
     public class ToastMessage { public string textId; public Dictionary<string, string> @params; }
     /// <summary>`code` is the RejectedMessage enum in messages.ts; kept as a string so unknown codes never crash.</summary>
-    public class RejectedMessage { public string type; public string code; }
+    public class RejectedMessage { public string type; public string code; public string id; }
 
     // ---- server → client (city room) ----
     public class EventMessage { public string eventId; public Dictionary<string, string> @params; public double at; }

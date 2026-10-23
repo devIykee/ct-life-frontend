@@ -1,5 +1,9 @@
 # Brief for every agent working on CT Life
 
+## Repair priority (user correction, 2026-10-19)
+
+Focus more on implementing concrete repairs than extending tests and collecting evidence. Keep validation proportionate to each change, while retaining proper research and the established design standards.
+
 Read this first, then the spec in `docs/spec/build-spec.md` and `docs/spec/contract.md`
 (exported from the Claude Doc "CT Life — Build Spec"). The spec is the product baseline;
 later explicit user decisions, including the art direction below, supersede older wording.

@@ -1,0 +1,93 @@
+{
+ "name": "heli",
+ "class": "civilian helicopter",
+ "uid": "f25c041a8d004eb092e4aa41d1dc33f4",
+ "url": "https://sketchfab.com/3d-models/animated-civilian-helicopter-f25c041a8d004eb092e4aa41d1dc33f4",
+ "title": "Animated civilian Helicopter",
+ "creator": "assetfactory",
+ "creator_name": "assetfactory",
+ "licence": "Free Standard",
+ "licence_slug": "free-st",
+ "licence_checked": "Sketchfab API v3 /models/f25c041a8d004eb092e4aa41d1dc33f4 on 2026-10-22",
+ "source_tris": 21876,
+ "backup": "EC 135 by GRIP420, CC-BY https://sketchfab.com/3d-models/ec30f802c6ac43a8843948fbadb674d2 (real Airbus type + ADAC livery: would need a repaint)",
+ "orient_rot_deg": -4.2,
+ "author_length_m": 2.347,
+ "scale_applied": 4.0896,
+ "rotor_bone_axis": [
+  0.073,
+  0.997,
+  0.0
+ ],
+ "size": [
+  2.66,
+  9.6,
+  2.885
+ ],
+ "rotor": {
+  "center": [
+   -0.3036,
+   -1.9408,
+   2.554
+  ],
+  "radius": 3.895,
+  "axis": "local +Z (vehicle up)"
+ },
+ "tail_rotor": {
+  "center": [
+   -0.1611,
+   3.6867,
+   1.6312
+  ],
+  "radius": 0.913,
+  "axis": "local X (vehicle side)"
+ },
+ "lod0_decimated": false,
+ "tris": {
+  "LOD0": 21796,
+  "LOD1": 9695,
+  "LOD2": 2421
+ },
+ "materials": [
+  "Body"
+ ],
+ "textures": {
+  "BaseColor": {
+   "file": "textures/heli_BaseColor.png",
+   "size": 2048
+  },
+  "Normal": {
+   "file": "textures/heli_Normal.png",
+   "size": 2048
+  },
+  "MaskMap": {
+   "file": "textures/heli_MaskMap.png",
+   "size": 2048
+  }
+ },
+ "paint": {
+  "tintable": false,
+  "default_srgb": null,
+  "source_materials": []
+ },
+ "parts": [
+  "Body",
+  "Entry_Driver",
+  "Entry_Passenger",
+  "Rotor_Main",
+  "Seat_Driver",
+  "Seat_Passenger",
+  "TailRotor"
+ ],
+ "lod_objects": [
+  "LOD1_Body",
+  "LOD1_Rotor_Main",
+  "LOD1_TailRotor",
+  "LOD2_Body",
+  "LOD2_Rotor_Main",
+  "LOD2_TailRotor"
+ ],
+ "axes": "Blender: front -Y, left +X, up +Z, metres, origin on the ground at the body centre; FBX: -Z forward, Y up (Unity +Z forward)",
+ "credit": "\"Animated civilian Helicopter\" by assetfactory (https://sketchfab.com/3d-models/animated-civilian-helicopter-f25c041a8d004eb092e4aa41d1dc33f4), Free Standard; modified by CT Life (decimated, re-pivoted, atlas)",
+ "fbx": "art/processed/vehicles_v3/heli/heli.fbx"
+}

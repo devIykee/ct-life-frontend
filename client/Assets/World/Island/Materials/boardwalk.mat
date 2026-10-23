@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: boardwalk
-  m_Shader: {fileID: 4800000, guid: 38ae144fb4c8b42039f8d42dd4f02c38, type: 3}
+  m_Shader: {fileID: 4800000, guid: 2604c054b5f624bf595d293ab6d54d4e, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -24,7 +24,23 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _BaseMap:
-        m_Texture: {fileID: 2800000, guid: 247ed7824694140b2b81c3a996e2f842, type: 3}
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Roof:
+        m_Texture: {fileID: 2800000, guid: 0da75452379064c59820f4953ef264c6, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _RoofNormal:
+        m_Texture: {fileID: 2800000, guid: 44d7a03d4fe4944109450816a1419d07, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Wall:
+        m_Texture: {fileID: 2800000, guid: 882d3538e9073442eb72a29f145b1753, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _WallNormal:
+        m_Texture: {fileID: 2800000, guid: b706d4361190a478da223e090a8684f6, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Ints: []
@@ -33,12 +49,16 @@ Material:
     - _Cutoff: 0
     - _Fade: 0
     - _Toon: 0.3
+    - _UseVertexColor: 0
     - _UseWorldUV: 0
     - _WorldScale: 0.5
     m_Colors:
-    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
+    - _BaseColor: {r: 0.62, g: 0.47, b: 0.34, a: 1}
     - _Emission: {r: 0, g: 0, b: 0, a: 0}
+    - _RoofMid: {r: 0.078, g: 0.026, b: 0.009, a: 1}
     - _Spec: {r: 0, g: 32, b: 0, a: 0}
     - _TileVar: {r: 0, g: 0, b: 0, a: 0}
+    - _Tiles: {r: 2.4, g: 2.2, b: 1, a: 0.9}
+    - _WallMid: {r: 0.066, g: 0.043, b: 0.029, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

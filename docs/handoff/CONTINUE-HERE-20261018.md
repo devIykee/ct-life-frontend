@@ -1,5 +1,7 @@
 # CT Life: continue here (handoff from the Claude coordinator, 18 Oct 2026)
 
+> Continuation checkpoint: read [19 October repair status](CONTINUE-HERE-20261019.md) first for the current worktree, installed build, device evidence and unfinished acceptance. This document remains the historical design/workflow reference; its initial status steps have been superseded.
+
 This is the single entry point for the next agent. It records where everything is, how we work, the design language
 we agreed with the user over many passes, what is unfinished, and exactly how to make the hackathon demo video.
 Read it fully before you touch anything. Then read `AGENTS.md`/`CLAUDE.md` (house rules), then the docs it links.

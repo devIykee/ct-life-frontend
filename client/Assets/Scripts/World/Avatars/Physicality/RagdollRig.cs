@@ -27,6 +27,7 @@ namespace CTLife.World
         private readonly Animator _animator;
         private readonly List<BodyPart> _parts = new List<BodyPart>(11);
         private readonly bool _deoptimized;
+        private readonly string[] _exposedBones;
         private bool _released;
         private float _stillFor;
 
@@ -44,7 +45,8 @@ namespace CTLife.World
             return true;
         }
 
-        private RagdollRig(Animator animator, bool deoptimized) { _animator = animator; _deoptimized = deoptimized; }
+        private RagdollRig(Animator animator, bool deoptimized, string[] exposedBones)
+        { _animator = animator; _deoptimized = deoptimized; _exposedBones = exposedBones; }
 
         /// <summary>Returns a slot claimed by <see cref="TryAcquire"/> when no rig could be built.</summary>
         public static void ReleaseUnbuilt() => Active = Mathf.Max(0, Active - 1);
@@ -60,8 +62,16 @@ namespace CTLife.World
                 Physics.IgnoreLayerCollision(CharacterLayers.Characters, CharacterLayers.Ragdoll, true);
             }
             bool deopt = !animator.hasTransformHierarchy;
+            var exposed = new List<string>();
             if (deopt)
             {
+                // Keep imported attachment/measurement bones (currently the cast Hips) when restoring optimization.
+                // Otherwise a person who has fallen once loses the pelvis Transform needed for their next car seat.
+                for (int i = 0; i < (int)HumanBodyBones.LastBone; i++)
+                {
+                    var bone = animator.GetBoneTransform((HumanBodyBones)i);
+                    if (bone != null) exposed.Add(bone.name);
+                }
                 // De-optimizing re-initializes the Animator (bones come back in the bind pose). Re-pose the exact state,
                 // phase and parameters first so the body falls from the pose the player saw, not from a T-pose.
                 var info = animator.GetCurrentAnimatorStateInfo(0);
@@ -73,7 +83,7 @@ namespace CTLife.World
                 animator.Play(info.fullPathHash, 0, info.normalizedTime);
                 animator.Update(0f);
             }
-            var rig = new RagdollRig(animator, deopt);
+            var rig = new RagdollRig(animator, deopt, exposed.ToArray());
             if (!rig.Create()) { rig._released = true; rig.Teardown(); return null; } // the caller releases the slot
             return rig;
         }
@@ -246,7 +256,7 @@ namespace CTLife.World
             if (_animator != null)
             {
                 _animator.enabled = true;
-                if (_deoptimized) AnimatorUtility.OptimizeTransformHierarchy(_animator.gameObject, System.Array.Empty<string>());
+                if (_deoptimized) AnimatorUtility.OptimizeTransformHierarchy(_animator.gameObject, _exposedBones);
             }
             if (!_released) { _released = true; Active = Mathf.Max(0, Active - 1); }
         }

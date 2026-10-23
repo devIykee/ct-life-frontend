@@ -119,7 +119,9 @@ namespace CTLife.World
         private float _lastYaw, _turnShuffleUntil;
         // Subtle variations only (Feel lane F1): the overhead stretch read as the character randomly throwing its arms up
         // ("when it raises its hands it feels very weird"); it stays a state for anything that asks for it explicitly.
-        private static readonly string[] IdleVariations = { "idle_fidget_lookaround", "idle_fidget_foldarms" };
+        // Mocap v3 adds hands-on-hips and a phone call; the CTS cast (hazmat suit, mascots) also shifts its weight heavily.
+        private static readonly string[] IdleVariations = { "idle_fidget_lookaround", "idle_fidget_foldarms", "idle_hands_hips", "idle_phone_call" };
+        private const string HeavyIdle = "idle_heavy";
         public static System.Collections.Generic.IReadOnlyList<string> IdleVariationIds => IdleVariations;
 
         public void Init(Animator animator, ProceduralAnimator procedural, SkinnedMeshRenderer body, Mesh[] lods, float height)
@@ -157,12 +159,12 @@ namespace CTLife.World
         /// sit-down clip, then the seat's loop (the base anim set meanwhile). False when this look cannot present it.
         /// </summary>
         public bool BeginSeatEnter(Vector3 fromPosition, Quaternion fromRotation, Vector3 seatPosition, Quaternion seatRotation,
-            string transitionState = "act_sit_down")
+            string transitionState = "act_sit_down", float standOff = 0f)
         {
             if (_seat == null || Animator == null || SeatExitActive) return false;
             if (transitionState != null && !Animator.HasState(0, AnimationLibrary.Hash(transitionState))) return false;
             float clip = transitionState == null ? 0f : LocomotionTuning.Instance != null ? LocomotionTuning.Instance.LengthOf(transitionState, 1.3f) : 1.3f;
-            if (!_seat.BeginEnter(fromPosition, fromRotation, seatPosition, seatRotation, clip)) return false;
+            if (!_seat.BeginEnter(fromPosition, fromRotation, seatPosition, seatRotation, clip, standOff)) return false;
             _enterState = transitionState;
             _overlayAnim = null; _pendingOverlay = null; _seatBridgeTarget = null;
             if (_seat.Current == SeatPresenter.Stage.Align) AnimationLibrary.TryPlay(Animator, "loco_walk", 0.15f);
@@ -203,6 +205,7 @@ namespace CTLife.World
         private void LateUpdate()
         {
             _runCorrection?.AfterAnimation();
+            ApplySprintLean();
             _seatExit?.ApplyPose();
             // Ramp the seat fit (τ 0.3 s): lands as the sit-down clip settles; eases out through the stand-up.
             _seatApplied = Vector3.Lerp(_seatApplied, _seatTarget, 1f - Mathf.Exp(-Time.deltaTime / 0.3f));
@@ -229,6 +232,36 @@ namespace CTLife.World
                 }
             }
         }
+        // Mocap v3 sprint lean: the 100STYLE sprint runs upright; from the jog speed to the full sprint the spine pitches
+        // forward up to SprintLean degrees (spine, chest, upper chest share it) and the head gives back a third, so the gaze
+        // stays on the road. Applied after animation and IK (the legs and planted feet are untouched), near actors only.
+        private const float SprintLean = 10f;
+        private Transform _leanSpine, _leanChest, _leanUpper, _leanHead;
+        private Animator _leanFor;
+
+        private void ApplySprintLean()
+        {
+            if (Animator == null || !Animator.isHuman || Culled || LodTier > 1 || Suppressed || SeatPresentationActive || !_hasLocoRate) return;
+            if (_baseState != "loco_run" && _baseState != "loco_walk") return;
+            float t = Mathf.InverseLerp(LocomotionTuning.BlendRun, LocomotionTuning.BlendSprint, Animator.GetFloat(AnimationLibrary.SpeedParam));
+            if (t <= 0.001f) return;
+            if (_leanFor != Animator)
+            {
+                _leanFor = Animator;
+                _leanSpine = Animator.GetBoneTransform(HumanBodyBones.Spine);
+                _leanChest = Animator.GetBoneTransform(HumanBodyBones.Chest);
+                _leanUpper = Animator.GetBoneTransform(HumanBodyBones.UpperChest);
+                _leanHead = Animator.GetBoneTransform(HumanBodyBones.Head);
+            }
+            if (_leanSpine == null) return;
+            var axis = transform.right;
+            float total = SprintLean * t;
+            void Pitch(Transform b, float deg) { if (b != null) b.rotation = Quaternion.AngleAxis(deg, axis) * b.rotation; }
+            if (_leanUpper != null) { Pitch(_leanSpine, total * 0.4f); Pitch(_leanChest, total * 0.35f); Pitch(_leanUpper, total * 0.25f); }
+            else { Pitch(_leanSpine, total * 0.5f); Pitch(_leanChest, total * 0.5f); }
+            Pitch(_leanHead, -total / 3f);
+        }
+
         // A remote logical parent can move during Update. Re-pin before Animator/IK evaluates.
         internal void ReapplySeatExitPresentation() => _seatExit?.ApplyPose();
         private void OnApplicationPause(bool paused) { if (paused) CancelSeatExitPresentation(); }
@@ -382,11 +415,12 @@ namespace CTLife.World
             {
                 bool due = Time.time - _runStopPendingAt < 0.3f;
                 _runStopPendingAt = -1f;
-                if (due && RunStopAllowed()) { PlayOneShot("loco_run_stop"); return; } // returns to this idle when it ends
+                if (due && RunStopAllowed()) { PlayOneShot(_stopState); return; } // returns to this idle when it ends
             }
             // loco_walk and loco_run play the same speed-blended Locomotion tree: switching between them must not
             // restart its cycle (a crossfade restarts the target at phase 0 and freezes the legs near the crossover).
             if (SameLocomotionTree(state)) return;
+            if (PlayStart(state)) return;
             if (AnimationLibrary.TryPlay(Animator, state, 0.2f)) return;
             if (state != animId && AnimationLibrary.TryPlay(Animator, animId, 0.2f)) return;
             if (Procedural != null)
@@ -478,7 +512,7 @@ namespace CTLife.World
         {
             if (SeatExitActive) metresPerSecond = _seatExit.Speed;
             else if (SeatTransitionActive) metresPerSecond = _seat.Speed;
-            if (Time.time < _turnShuffleUntil && metresPerSecond < TurnShuffleSpeed) metresPerSecond = TurnShuffleSpeed;
+            if (Time.time < _turnShuffleUntil && _turnState == null && metresPerSecond < TurnShuffleSpeed) metresPerSecond = TurnShuffleSpeed;
             RunStop(metresPerSecond);
             _speed = metresPerSecond;
             if (Animator != null && Animator.runtimeAnimatorController != null)
@@ -511,22 +545,49 @@ namespace CTLife.World
         private void RunStop(float metresPerSecond)
         {
             if (metresPerSecond >= RunStopFrom) { _lastRunAt = Time.time; return; }
-            if (_lastRunAt < 0f || metresPerSecond > 0.15f) return;
-            bool recent = Time.time - _lastRunAt < 0.45f;
-            _lastRunAt = -1f;
-            if (!recent || !RunStopAllowed()) return;
-            if (_baseState == "loco_idle") PlayOneShot("loco_run_stop");
+            // mocap v3: a walk that ends plays the walk stop the same way (a run that slows through walk speeds keeps its own)
+            if (metresPerSecond >= WalkStopFrom) { _lastWalkAt = Time.time; return; }
+            if ((_lastRunAt < 0f && _lastWalkAt < 0f) || metresPerSecond > 0.15f) return;
+            bool ran = _lastRunAt >= 0f && Time.time - _lastRunAt < 0.45f, walked = _lastWalkAt >= 0f && Time.time - _lastWalkAt < 0.45f;
+            _lastRunAt = -1f; _lastWalkAt = -1f;
+            _stopState = ran ? "loco_run_stop" : "loco_walk_stop";
+            if (!(ran || walked) || !RunStopAllowed()) return;
+            if (_baseState == "loco_idle") PlayOneShot(_stopState);
             else _runStopPendingAt = Time.time; // SetBase("loco_idle") follows this frame
         }
 
+        private const float WalkStopFrom = 1.0f;
+        private float _lastWalkAt = -1f;
+        private string _stopState = "loco_run_stop";
+
         private bool RunStopAllowed() => !Suppressed && !SeatPresentationActive && _overlayAnim == null && !Culled && Animator != null &&
-                                         Animator.runtimeAnimatorController != null && Animator.HasState(0, RunStopHash);
+                                         Animator.runtimeAnimatorController != null &&
+                                         Animator.HasState(0, _stopState == "loco_walk_stop" ? WalkStopHash : RunStopHash);
 
         private bool SameLocomotionTree(string state)
         {
             if (!_hasLocoRate || Animator == null || !Animator.isActiveAndEnabled || (state != "loco_walk" && state != "loco_run")) return false;
             var info = Animator.IsInTransition(0) ? Animator.GetNextAnimatorStateInfo(0) : Animator.GetCurrentAnimatorStateInfo(0);
-            return info.shortNameHash == WalkHash || info.shortNameHash == RunHash;
+            // a start (mocap v3) exits into the tree by itself at its last frame
+            return info.shortNameHash == WalkHash || info.shortNameHash == RunHash || info.shortNameHash == WalkStartHash || info.shortNameHash == RunStartHash;
+        }
+
+        private static readonly int WalkStartHash = Animator.StringToHash("loco_walk_start"), RunStartHash = Animator.StringToHash("loco_run_start");
+        private static readonly int IdleHash = Animator.StringToHash("loco_idle"), WalkStopHash = Animator.StringToHash("loco_walk_stop");
+
+        /// <summary>
+        /// Mocap v3: setting off from standing plays the start (walk, or the run start for a jog or sprint), which exits at
+        /// its last frame into the Locomotion tree at walk phase 0. Only from a settled idle, on visible near actors.
+        /// </summary>
+        private bool PlayStart(string state)
+        {
+            if ((state != "loco_walk" && state != "loco_run") || !_hasLocoRate || Animator == null || !Animator.isActiveAndEnabled || Culled ||
+                LodTier > 1 || Suppressed || SeatPresentationActive || _overlayAnim != null || Animator.IsInTransition(0)) return false;
+            if (Animator.GetCurrentAnimatorStateInfo(0).shortNameHash != IdleHash) return false;
+            int start = state == "loco_run" || _speed >= 2.6f ? RunStartHash : WalkStartHash;
+            if (!Animator.HasState(0, start)) return false;
+            Animator.CrossFadeInFixedTime(start, 0.12f, 0);
+            return true;
         }
 
         private void ResolveLocoRate()
@@ -620,6 +681,7 @@ namespace CTLife.World
         }
 
         private const float TurnShuffleSpeed = 0.7f;
+        private string _turnState;
 
         /// <summary>
         /// Presentation-only life: an occasional idle variation while standing idle (LOD0, not talking), and stepping
@@ -629,24 +691,38 @@ namespace CTLife.World
         {
             float yaw = transform.eulerAngles.y;
             float dt = Mathf.Max(Time.deltaTime, 1e-4f);
-            float yawRate = Mathf.Abs(Mathf.DeltaAngle(_lastYaw, yaw)) / dt;
+            float signedYaw = Mathf.DeltaAngle(_lastYaw, yaw);
+            float yawRate = Mathf.Abs(signedYaw) / dt;
             _lastYaw = yaw;
             if (Animator == null || Animator.runtimeAnimatorController == null || Culled || SeatExitActive || SeatTransitionActive || Suppressed) return;
             bool idleBase = _baseState == "loco_idle" && _overlayAnim == null;
             if (idleBase && yawRate > 150f && _speed < TurnShuffleSpeed)
             {
-                if (Time.time >= _turnShuffleUntil) AnimationLibrary.TryPlay(Animator, "loco_walk", 0.1f);
-                _turnShuffleUntil = Time.time + 0.18f;
-                SetSpeed(_speed);
+                // mocap v3: a turn on the spot steps through the turn clip of its side (the yaw itself is the actor's);
+                // without it, the walk cycle at shuffle speed
+                string turn = signedYaw > 0f ? "turn_90_r" : "turn_90_l";
+                if (Animator.HasState(0, AnimationLibrary.Hash(turn)))
+                {
+                    if (_turnState != turn) { AnimationLibrary.TryPlay(Animator, turn, 0.15f); _turnState = turn; }
+                    _turnShuffleUntil = Time.time + 0.45f;
+                }
+                else
+                {
+                    if (Time.time >= _turnShuffleUntil) AnimationLibrary.TryPlay(Animator, "loco_walk", 0.1f);
+                    _turnShuffleUntil = Time.time + 0.18f;
+                    SetSpeed(_speed);
+                }
             }
             else if (_turnShuffleUntil > 0f && Time.time >= _turnShuffleUntil)
             {
                 _turnShuffleUntil = 0f;
-                if (idleBase) AnimationLibrary.TryPlay(Animator, "loco_idle", 0.2f);
+                _turnState = null;
+                if (idleBase) AnimationLibrary.TryPlay(Animator, "loco_idle", 0.25f);
             }
             if (!idleBase || Talking || LodTier > 0 || _speed > 0.1f || Time.time < _nextIdleVariation) return;
             _nextIdleVariation = Time.time + Random.Range(14f, 28f);
             var id = IdleVariations[Random.Range(0, IdleVariations.Length)];
+            if (Animator.runtimeAnimatorController.name == "CtsController" && Random.value < 0.5f) id = HeavyIdle;
             if (!Animator.HasState(0, AnimationLibrary.Hash(id))) return;
             float length = LocomotionTuning.Instance != null ? LocomotionTuning.Instance.LengthOf(id, 3f) : 3f;
             _overlayAnim = id;

@@ -34,7 +34,7 @@ namespace CTLife.Net
         public event Action Changed;
 
         public WalletBalanceService(Session session, ConfigStore config)
-            : this(() => session.IsSignedIn && session.AuthMethod == "siws" ? session.Wallet : null,
+            : this(() => !RuntimeMode.IsOfflineDemo && session.IsSignedIn && session.AuthMethod == "siws" ? session.Wallet : null,
                 () => config.Config("economy")?["currencies"], new WalletBalanceRpc())
         {
             _session = session; _config = config;

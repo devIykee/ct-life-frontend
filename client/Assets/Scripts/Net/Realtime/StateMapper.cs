@@ -31,6 +31,9 @@ namespace CTLife.Net
             p.x = Num(get("x"), p.x);
             p.z = Num(get("z"), p.z);
             p.rotY = Num(get("rotY"), p.rotY);
+            p.ix = Num(get("ix"), p.ix);
+            p.iz = Num(get("iz"), p.iz);
+            p.irotY = Num(get("irotY"), p.irotY);
             p.anim = Str(get("anim"), p.anim);
             p.emoteId = Str(get("emoteId"), p.emoteId);
             p.emoteAt = Num(get("emoteAt"), p.emoteAt);
@@ -55,6 +58,15 @@ namespace CTLife.Net
             }
             n.emoteId = Str(get("emoteId"), n.emoteId);
             n.startedAt = Num(get("startedAt"), n.startedAt);
+        }
+
+        public static void ApplyVehicle(Func<string, object> get, VehicleState v)
+        {
+            v.id = Str(get("id"), v.id); v.kind = Str(get("kind"), v.kind); v.driver = Str(get("driver"), v.driver);
+            v.x = Num(get("x"), v.x); v.y = Num(get("y"), v.y); v.z = Num(get("z"), v.z);
+            v.yaw = Num(get("yaw"), v.yaw); v.pitch = Num(get("pitch"), v.pitch); v.roll = Num(get("roll"), v.roll);
+            v.speed = Num(get("speed"), v.speed);
+            v.flags = (ushort)Math.Max(0, Math.Min(ushort.MaxValue, Long(get("flags"), v.flags)));
         }
 
         public static void ApplyCoin(Func<string, object> get, CoinState c)

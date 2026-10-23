@@ -181,6 +181,30 @@ namespace CTLife.EditorTools
         [MenuItem("CT Life/Cast/Rebuild look Avatars")]
         public static void RebuildAvatars() => Debug.Log($"CTLIFE [cast] {ConfigureAvatars(force: true)} look Avatars rebuilt");
 
+        /// <summary>Reimport existing rigs/clips after the driver-anchor and run-stop import correction; no art rebuild.</summary>
+        [MenuItem("CT Life/Cast/Reimport vehicle pose requirements")]
+        public static void ReimportVehiclePoses()
+        {
+            foreach (var path in ModelPaths())
+            {
+                var importer = AssetImporter.GetAtPath(path) as ModelImporter;
+                if (importer == null) throw new FileNotFoundException("Cast model not imported", path);
+                // transformPaths is available on the existing imported model, not during OnPreprocessModel.
+                string hipsPath = CastPostprocessor.MappedHipsPath(importer);
+                if (!importer.extraExposedTransformPaths.Contains(hipsPath))
+                {
+                    importer.extraExposedTransformPaths = importer.extraExposedTransformPaths.Concat(new[] { hipsPath }).Distinct().ToArray();
+                    AssetDatabase.WriteImportSettingsIfDirty(path);
+                    AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate | ImportAssetOptions.ForceSynchronousImport);
+                }
+            }
+            string stopPath = MocapImport.Root + "/jog_stop.fbx";
+            var stop = (ModelImporter)AssetImporter.GetAtPath(stopPath);
+            if (stop.clipAnimations.Length == 0 || stop.clipAnimations.Any(c => !Mathf.Approximately(c.rotationOffset, 180f)))
+                AssetDatabase.ImportAsset(stopPath, ImportAssetOptions.ForceUpdate | ImportAssetOptions.ForceSynchronousImport);
+            AssetDatabase.SaveAssets();
+        }
+
         /// <summary>Batch: rebuild every look Avatar, then every prefab and registry binding (no file copy needed).</summary>
         public static void RepairBatch()
         {
@@ -226,6 +250,7 @@ namespace CTLife.EditorTools
             finally { RestProbe.Remove(path); }
             var model = AssetDatabase.LoadAssetAtPath<GameObject>(path) ?? throw new InvalidDataException("Cast model did not import: " + path);
             var human = new HumanDescription();
+            string hipsPath;
             var reference = UnityEngine.Object.Instantiate(model);
             try
             {
@@ -235,6 +260,7 @@ namespace CTLife.EditorTools
                 foreach (var t in reference.GetComponentsInChildren<Transform>(true)) if (!transforms.ContainsKey(t.name)) transforms[t.name] = t;
                 var missing = map.Values.Where(b => !transforms.ContainsKey(b)).ToList();
                 if (missing.Count > 0) throw new InvalidDataException($"{path}: bones missing from the cast rig: {string.Join(", ", missing)}");
+                hipsPath = AnimationUtility.CalculateTransformPath(transforms[map[HumanBodyBones.Hips]], reference.transform);
                 // Unity's Enforce T-Pose (AvatarSetupTool.MakePoseValid), as in AuthoredCharacterImport (pinned to 6000.3).
                 var setup = typeof(UnityEditor.Editor).Assembly.GetType("UnityEditor.AvatarSetupTool", true);
                 var wrapper = setup.GetNestedType("BoneWrapper", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic);
@@ -264,6 +290,7 @@ namespace CTLife.EditorTools
             mi.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
             mi.sourceAvatar = null;
             mi.humanDescription = human;
+            mi.extraExposedTransformPaths = mi.extraExposedTransformPaths.Concat(new[] { hipsPath }).Distinct().ToArray();
             mi.userData = AvatarTag;
             mi.SaveAndReimport();
             if (!ModelAvatarValid(path)) throw new InvalidDataException("Cast look did not build a valid Humanoid Avatar: " + path);
@@ -387,6 +414,12 @@ namespace CTLife.EditorTools
     {
         public override int GetPostprocessOrder() => 50;
 
+        internal static string MappedHipsPath(ModelImporter importer)
+        {
+            string hips = importer.humanDescription.human.First(h => h.humanName == "Hips").boneName;
+            return importer.transformPaths.Single(p => p == hips || p.EndsWith("/" + hips, StringComparison.Ordinal));
+        }
+
         private void OnPreprocessModel()
         {
             if (!assetPath.StartsWith(CastImport.Root + "/", StringComparison.Ordinal)) return;
@@ -418,6 +451,8 @@ namespace CTLife.EditorTools
             // stored in this .meta). Nothing here reads another asset, so a fresh Library imports identically.
             mi.animationType = ModelImporterAnimationType.Human;
             mi.optimizeGameObjects = mi.userData == CastImport.AvatarTag; // optimize only once the Avatar is configured
+            // ConfigureAvatar / ReimportVehiclePoses store the exact mapped Hips exposure in this model's meta.
+            // Preserve it here: transformPaths is unavailable at this stage of Unity's import pipeline.
             if (mi.userData != CastImport.AvatarTag)
                 Debug.LogWarning("CTLIFE [cast] look Avatar not configured yet (CT Life > Cast > Rebuild look Avatars): " + assetPath);
         }

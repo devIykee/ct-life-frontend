@@ -40,7 +40,7 @@ namespace CTLife.App
             var character = new CTLife.Rest.Model.Character(alias: LaunchArgs.Get("alias") ?? "demo", look: look, tribeId: "trencher",
                 traitIds: new System.Collections.Generic.List<string> { "fast_talker", "iron_will" }, dreamId: "make_10k");
             return new CTLife.Rest.Model.Me(new CTLife.Rest.Model.User(System.Guid.Empty, "offline-demo", false, true), character,
-                new CTLife.Rest.Model.Needs(), new CTLife.Rest.Model.Skills(), cashCents: 0, debtCents: 0, homeId: "parents_basement",
+                new CTLife.Rest.Model.Needs(100, 100, 100, 100, 100), new CTLife.Rest.Model.Skills(), cashCents: 0, debtCents: 0, homeId: "parents_basement",
                 flags: new System.Collections.Generic.Dictionary<string, object> { ["lotteryRolled"] = true, ["hasCharacter"] = true });
         }
 #endif
@@ -521,7 +521,7 @@ namespace CTLife.App
                     foreach (var k in skip.Split(',')) IslandInstanceRenderer.SkipKinds.Add(k.Trim());
                 // `islandRenderScale=0.7` pins the URP render scale (test harness; PerfManager's policy is untouched otherwise);
                 // islandSkip also takes `shadows` (sun shadows off) and `post` (island look volume off). World/Island/IslandPerfHarness.
-                if (LaunchArgs.Get("islandRenderScale") is string || IslandInstanceRenderer.SkipKinds.Contains("shadows") || IslandInstanceRenderer.SkipKinds.Contains("post"))
+                if (LaunchArgs.Get("islandRenderScale") is string || LaunchArgs.Get("islandFps") is string || IslandInstanceRenderer.SkipKinds.Contains("shadows") || IslandInstanceRenderer.SkipKinds.Contains("post"))
                     RunGameAction(game, async () =>
                     {
                         for (int i = 0; i < 240 && GameAlive(game); i++)
@@ -550,6 +550,30 @@ namespace CTLife.App
                     var s = VenueSession.Current;
                     if (s == null || !s.IsIsland) { Log.Warn("island", "islandShot: not on CT Island"); return; }
                     await IslandWaypoints.Shot(s, LaunchArgs.Get("islandShot"), game.Token);
+                });
+                // Perf route (dev builds only): `islandPerf=1` measures the same downtown spots every run (World/Perf/PerfRoute.cs).
+                if (LaunchArgs.Get("islandPerf") == "1") RunGameAction(game, async () =>
+                {
+                    float deadline = Time.realtimeSinceStartup + 90f;
+                    while (GameAlive(game) && (VenueSession.Current == null || !VenueSession.Current.IsActive) && Time.realtimeSinceStartup < deadline)
+                        await Awaitable.WaitForSecondsAsync(0.5f, game.Token);
+                    await Awaitable.WaitForSecondsAsync(6f, game.Token);
+                    var s = VenueSession.Current;
+                    if (s == null || !s.IsIsland) { Log.Warn("perf", "islandPerf: not on CT Island"); return; }
+                    await PerfRoute.Run(s, () => GameAlive(game), game.Token);
+                });
+                // World v3 districts and the first walk-in room (dev builds only): `islandRoom=1` (World/Island/Interiors/InteriorRoute.cs);
+                // `islandRoom=door` skips the three district shots.
+                if (!string.IsNullOrEmpty(LaunchArgs.Get("islandRoom"))) RunGameAction(game, async () =>
+                {
+                    float deadline = Time.realtimeSinceStartup + 90f;
+                    while (GameAlive(game) && (VenueSession.Current == null || !VenueSession.Current.IsActive) && Time.realtimeSinceStartup < deadline)
+                        await Awaitable.WaitForSecondsAsync(0.5f, game.Token);
+                    await Awaitable.WaitForSecondsAsync(5f, game.Token);
+                    var s = VenueSession.Current;
+                    if (s == null || !s.IsIsland) { Log.Warn("island", "islandRoom: not on CT Island"); return; }
+                    // `islandRoom=d2`: the world districts 2 route (six new districts, the Trenches and Marina pairs, room, forest aerial)
+                    await InteriorRoute.Run(s, () => GameAlive(game), game.Token, LaunchArgs.Get("islandRoom") != "door", LaunchArgs.Get("islandRoom") == "d2");
                 });
                 // Device feature pass (dev builds only): `integration=1 [peer=<userId>]`. The editor driver calls it directly.
                 if (LaunchArgs.Flag("integration") && !Application.isEditor) RunGameAction(game, async () =>

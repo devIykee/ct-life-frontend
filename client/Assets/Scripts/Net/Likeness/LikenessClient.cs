@@ -63,6 +63,9 @@ namespace CTLife.Net
 
         private async Task<LikenessBytes> Binary(string method, string path, int limit, byte[] body, string mime, string key, CancellationToken ct)
         {
+            ct.ThrowIfCancellationRequested();
+            if (RuntimeMode.IsOfflineDemo)
+                throw new ApiException(0, "OFFLINE_DEMO", "Server actions are unavailable in the offline demo");
             if (_session.AccessTokenStale && _rest.RefreshHandler != null) await _rest.RefreshHandler();
             ct.ThrowIfCancellationRequested();
             if (!_session.IsSignedIn || _session.UserId != _owner) throw new OperationCanceledException("Account changed", ct);

@@ -25,8 +25,14 @@ namespace CTLife.World.Vehicles
         /// <summary>Out of view a car may appear this close (behind the camera), so the street around the player has
         /// traffic, not just the far ring: with the ring alone at most one car was ever near enough to seat a driver.</summary>
         public const float SpawnHiddenMin = 32f;
-        /// <summary>The traffic mix (spec ids and weights).</summary>
-        public static readonly (string id, float weight)[] Mix = { ("compact", 0.36f), ("suv", 0.3f), ("sports", 0.16f), ("scooter", 0.1f), ("roadstar", 0.08f) };
+        /// <summary>The traffic mix (spec ids and weights, normalised). All v3 models (2026-10-22: SUV, pickup, van and bike
+        /// landed); vans and pickups rarer than sedans, bikes occasional. The hovercar is the player's own flyer, not traffic,
+        /// and the police cruiser waits for the wanted system.</summary>
+        public static readonly (string id, float weight)[] Mix =
+        {
+            ("compact", 0.25f), ("sedan", 0.27f), ("suv", 0.12f), ("sports", 0.08f), ("taxi", 0.11f),
+            ("pickup", 0.05f), ("van", 0.04f), ("scooter", 0.05f), ("bike", 0.03f),
+        };
 
         public readonly List<TrafficCar> Cars = new List<TrafficCar>();
         private readonly Dictionary<string, Stack<TrafficCar>> _pool = new Dictionary<string, Stack<TrafficCar>>();
@@ -179,7 +185,7 @@ namespace CTLife.World.Vehicles
                 var (lane, along, pos) = _spawnPoints[list[_rng.Next(list.Count)]];
                 float d = Vector3.Distance(Flat(pos), Flat(focus));
                 if (!SpawnDistanceOk(d, Visible(pos))) continue;            // pop-in only where nobody is looking
-                if (!VehicleWorld.IsReady(pos)) continue;                   // its ground must be streamed in
+                if (!VehicleWorld.IsReady(pos) || !VehicleWorld.Dry(pos)) continue;
                 bool crowded = false;
                 foreach (var c in Cars) if ((c.transform.position - pos).sqrMagnitude < 22f * 22f) { crowded = true; break; }
                 if (crowded) continue;
@@ -189,6 +195,7 @@ namespace CTLife.World.Vehicles
                 if (!car.Route.StartAt(_net, lane, along, _rng)) { Give(car); continue; }
                 car.Route.Extend(Lookahead + 20f);
                 car.ToRails();
+                VehiclePaint.Apply(car.Vehicle, VehiclePaint.Pick(_rng.NextDouble()));
                 car.Pace = 0.86f + (float)_rng.NextDouble() * 0.2f;
                 float limit = car.Route.Current.SpeedLimit;
                 car.Speed = limit * car.Pace * 0.8f;
@@ -260,8 +267,8 @@ namespace CTLife.World.Vehicles
                            || (d > SpawnMax + 10f && !Visible(p))
                            || (c.Route.DeadEnd && c.Route.Remaining < 1f && !Visible(p))
                            || (c.Knocked && Time.time - c.KnockedAt > 12f && (d > 35f || !Visible(p)))
-                           || (c.Knocked && c.transform.position.y < VehicleWorld.SeaLevel - 1f)
-                           || (!c.Knocked && c.BlockedFor > 25f && !Visible(p));
+                           || (c.Knocked && !VehicleWorld.Dry(p, -1f))
+                           || (!c.Knocked && c.BlockedFor > 4f && !Visible(p));
                 }
                 if (!gone) continue;
                 Cars.RemoveAt(i);
@@ -305,9 +312,9 @@ namespace CTLife.World.Vehicles
                 var c = Cars[i];
                 if (c == null || c.Knocked) { if (c != null && c.Knocked && c.HonkAt > 0f && Time.time >= c.HonkAt) { c.HonkAt = -1f; c.Audio?.Horn(); Honks++; } continue; }
                 c.Slot = i;
-                Drive(c, dt, now, playerCar, (i + _step) % 5 == 0);
                 // about to be hit by the player's car: become physical first, so the impact is car on car, not car on wall
                 if (playerCar != null && playerCar.Body != null && !playerCar.Body.isKinematic) PreKnock(c, playerCar);
+                if (!c.Knocked) Drive(c, dt, now, playerCar, (i + _step) % 5 == 0);
             }
         }
 
@@ -355,6 +362,9 @@ namespace CTLife.World.Vehicles
             if (why == "car" && gap < ClosestGap) ClosestGap = gap;
             v = Mathf.Clamp(v + a * dt, 0f, v0 + 1.5f);
             if (gap < 0.3f) v = Mathf.Min(v, lead);   // never into it
+            // Kinematic MovePosition does not stop on static geometry. Sweep every physics step, including between scans.
+            if (StaticClearance(c.transform.position, c.transform.rotation, c.HalfWidth, c.HalfLength, v * dt + 0.35f) < v * dt + 0.15f)
+            { v = 0f; why = "obstacle"; }
             c.Speed = v;
             // 3) honk at the player, or pull round a stopped obstacle
             React(c, why, a, dt);
@@ -560,9 +570,10 @@ namespace CTLife.World.Vehicles
             var mid = c.Route.At(c.HalfLength + len * 0.5f, out var dir);
             if (dir.sqrMagnitude < 1e-6f) dir = c.transform.forward;
             var rot = Quaternion.LookRotation(Flat(dir), Vector3.up);
-            int mask = (1 << CharacterLayers.Characters) | (1 << CharacterLayers.Vehicle) | (1 << CharacterLayers.VehicleFlight);
+            int mask = (1 << CharacterLayers.Characters) | (1 << CharacterLayers.Vehicle) | (1 << CharacterLayers.VehicleFlight) | StaticMask;
             int n = Physics.OverlapBoxNonAlloc(mid + Vector3.up * 1.1f, new Vector3(c.HalfWidth + 1.4f, 1.2f, len * 0.5f + 1f), _hits, rot, mask, QueryTriggerInteraction.Ignore);
-            float best = float.PositiveInfinity, speed = 0f; bool player = false;
+            float best = StaticClearance(c.transform.position, c.transform.rotation, c.HalfWidth, c.HalfLength, Mathf.Min(len, 12f));
+            float speed = 0f; bool player = false;
             for (int i = 0; i < n; i++)
             {
                 var h = _hits[i];
@@ -583,6 +594,15 @@ namespace CTLife.World.Vehicles
                 player = (playerCar != null && root.IsChildOf(playerCar.transform)) || (_player != null && h.transform.IsChildOf(_player.transform));
             }
             c.SensorGap = best; c.SensorSpeed = speed; c.SensorPlayer = player; c.SensorAt = Time.time;
+        }
+
+        public const int StaticMask = (1 << 12) | (1 << 13) | (1 << 14) | (1 << CharacterLayers.VehicleBlocker) | (1 << CharacterLayers.CoastWall);
+        /// <summary>Distance a car-sized box can move before a building/prop. Explicit because rail bodies are kinematic.</summary>
+        public static float StaticClearance(Vector3 position, Quaternion rotation, float halfWidth, float halfLength, float distance)
+        {
+            return Physics.BoxCast(position + Vector3.up * 0.9f, new Vector3(halfWidth + 0.12f, 0.6f, halfLength),
+                rotation * Vector3.forward, out var hit, rotation, distance, StaticMask, QueryTriggerInteraction.Ignore)
+                ? hit.distance : float.PositiveInfinity;
         }
 
         private void React(TrafficCar c, string why, float accel, float dt)

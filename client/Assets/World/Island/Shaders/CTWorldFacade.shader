@@ -16,6 +16,12 @@ Shader "CT Life/World/Facade"
         _Floors("Floors (ground floor height, floor height, bay width, 0)", Vector) = (4.6, 3.6, 3.4, 0)
         _Toon("Toon step", Range(0, 1)) = 0.4
         _Fade("Dither fade", Range(0, 1)) = 0
+        // world districts 2 (2026-10-23): a real scan under the procedural facade (plaster, boards, cladding: CC0, tiled in
+        // the wall's metres, normalised by its mean so the venue colour keeps its hue), lit like the v3 buildings
+        _Wall("Wall scan (rgb colour x AO, a smoothness)", 2D) = "grey" {}
+        [Normal] _WallNormal("Wall scan normal", 2D) = "bump" {}
+        _WallMid("Wall scan's mean colour", Color) = (0.383, 0.345, 0.331, 1)
+        _Scan("Scan (tile metres, strength 0 = off, normal strength, 0)", Vector) = (1.6, 0, 0.8, 0)
         [Enum(UnityEngine.Rendering.CullMode)] _Cull("Cull", Float) = 2
     }
     SubShader
@@ -23,9 +29,11 @@ Shader "CT Life/World/Facade"
         Tags { "RenderType"="Opaque" "RenderPipeline"="UniversalPipeline" "Queue"="Geometry" }
         HLSLINCLUDE
         #include "CTWorldCommon.hlsl"
+        TEXTURE2D(_Wall); SAMPLER(sampler_Wall);
+        TEXTURE2D(_WallNormal); SAMPLER(sampler_WallNormal);
         CBUFFER_START(UnityPerMaterial)
-            half4 _Trim, _Glass, _Frame, _Accent;
-            float4 _Floors;
+            half4 _Trim, _Glass, _Frame, _Accent, _WallMid;
+            float4 _Floors, _Scan;
             half _Style, _Toon, _Fade;
         CBUFFER_END
 
@@ -149,7 +157,21 @@ Shader "CT Life/World/Facade"
             half3 albedo = Facade(input.uv.xy, max(input.uv.z, 1.0), input.color.rgb, glass);
             // contact darkening: the bottom two metres of every wall (uv.y = metres up from 0.4 m below grade)
             half ao = lerp(0.5h, 1.0h, smoothstep(0.3h, 2.4h, (half)input.uv.y));
-            half3 c = CTWorldLight(albedo, input.positionWS, n, ao, _Toon) * lerp(0.82h, 1.0h, ao);
+            half3 c;
+            if (_Scan.y > 0.001)
+            {
+                float2 suv = input.uv.xy / max(_Scan.x, 0.1);
+                half4 a = SAMPLE_TEXTURE2D(_Wall, sampler_Wall, suv);
+                half3 tn = UnpackNormal(SAMPLE_TEXTURE2D(_WallNormal, sampler_WallNormal, suv));
+                half lum = dot(a.rgb / max(_WallMid.rgb, 1e-3h), half3(0.3h, 0.4h, 0.3h));
+                albedo *= lerp(1.0h, clamp(lum, 0.0h, 2.0h), _Scan.y * (1.0h - glass));
+                // the wall's tangent frame: +u along the wall (perpendicular to n in the horizontal plane), +v up
+                half3 t = normalize(cross(half3(0, 1, 0), n) + half3(1e-4h, 0, 0));
+                half k = _Scan.z * (1.0h - glass);
+                n = normalize(n + (t * -tn.x + half3(0, 1, 0) * tn.y) * k);
+                c = CTWorldSurface(albedo, lerp(saturate(a.a) * 0.6h, 0.85h, glass), input.positionWS, n, ao, 0.6h) * lerp(0.86h, 1.0h, ao);
+            }
+            else c = CTWorldLight(albedo, input.positionWS, n, ao, _Toon) * lerp(0.82h, 1.0h, ao);
             if (glass > 0.0h)
             {
                 half3 view = normalize(_WorldSpaceCameraPos - input.positionWS);
