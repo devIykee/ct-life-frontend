@@ -47,10 +47,10 @@ namespace CTLife.World
             ("boardwalk_hut", new Vector3(102f, 0f, -228f), 190f),
             ("breakpoint", new Vector3(-276f, 0f, 278f), 21f),
             ("mtndao_basecamp", new Vector3(-222f, 0f, 420f), 262f),
-            ("mtn_view", new Vector3(-200f, 0f, 300f), 5f),
+            ("mtn_view", new Vector3(749f, 0f, -24f), 300f),
             ("islet", new Vector3(802f, 0f, -594f), 185f),
             ("trenches", new Vector3(-332.5f, 0f, -279.0f), 101f),
-            ("power_poles", new Vector3(300f, 0f, 52f), 80f),
+            ("power_poles", new Vector3(255f, 0f, 45f), 62f),
         };
 
         private static void Mark(string what) => Debug.Log("CTLIFE [room-route] " + what);

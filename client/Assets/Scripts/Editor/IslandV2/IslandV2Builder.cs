@@ -215,7 +215,8 @@ namespace CTLife.EditorTools.IslandV2
                     var a = (JArray)run[i]; var b = (JArray)run[i + 1];
                     if (a.Count < 5 || b.Count < 5) continue;      // the old toy runs ([x, y, z, yaw]) are gone
                     Vector3 pa = new Vector3((float)a[0], (float)a[1], (float)a[2]), pb = new Vector3((float)b[0], (float)b[1], (float)b[2]);
-                    float sa = (float)a[4], sb = (float)b[4];
+                    float sa = (float)a[4], sb = (float)b[4];                         // across (girth, crossarm)
+                    float ha = a.Count > 5 ? (float)a[5] : sa, hb = b.Count > 5 ? (float)b[5] : sb;   // up
                     var ra = Quaternion.Euler(0f, (float)a[3], 0f); var rb = Quaternion.Euler(0f, (float)b[3], 0f);
                     var g = cells.At((pa + pb) * 0.5f);
                     var mb = g.V("power_wire");
@@ -224,9 +225,9 @@ namespace CTLife.EditorTools.IslandV2
                     foreach (var at in attach)
                     {
                         // pair the attachment points by side (the poles may face either way along the road)
-                        var qa = pa + ra * new Vector3(at.x * sa, at.y * sa, 0f);
-                        var qbl = pb + rb * new Vector3(at.x * sb, at.y * sb, 0f);
-                        var qbr = pb + rb * new Vector3(-at.x * sb, at.y * sb, 0f);
+                        var qa = pa + ra * new Vector3(at.x * sa, at.y * ha, 0f);
+                        var qbl = pb + rb * new Vector3(at.x * sb, at.y * hb, 0f);
+                        var qbr = pb + rb * new Vector3(-at.x * sb, at.y * hb, 0f);
                         var qb = Vector3.Distance(qa, qbl) <= Vector3.Distance(qa, qbr) ? qbl : qbr;
                         const int seg = 12;
                         var dir = (qb - qa).normalized;
@@ -389,7 +390,7 @@ namespace CTLife.EditorTools.IslandV2
                 // world fix-ups: the rock colours tint the cliff scan (rock_face_03, desaturated to 0.55); a little lighter and
                 // cooler high up, so the summit reads as bare grey rock against the sky
                 x.SetColor("_RockColor", new Color(0.95f, 0.97f, 1.02f)); x.SetColor("_RockColorHigh", new Color(1.1f, 1.12f, 1.18f));
-                x.SetVector("_RockScan", new Vector4(7f, 23f, 0.35f, 4f)); x.SetVector("_RockSlope", new Vector4(0.80f, 0.55f, 34f, 135f));
+                x.SetVector("_RockScan", new Vector4(7f, 23f, 0.35f, 4f)); x.SetVector("_RockSlope", new Vector4(0.72f, 0.5f, 34f, 140f));
                 x.SetColor("_SandColor", new Color(0.92f, 0.83f, 0.62f)); x.SetColor("_DirtColor", new Color(0.56f, 0.43f, 0.30f));
                 x.SetVector("_Snow", new Vector4(138f, 156f, 0.45f, 0.6f)); x.SetVector("_Shore", new Vector4(-6f, 1.1f, 0f, 0f)); x.SetVector("_DetailScale", new Vector4(0.16f, 0.035f, 0f, 0f));
                 x.SetFloat("_Contrast", 0.65f); x.SetFloat("_Sharpness", 2.5f); x.SetFloat("_Toon", 0.3f);

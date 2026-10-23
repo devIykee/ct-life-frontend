@@ -29,6 +29,8 @@ namespace CTLife.EditorTools.IslandV2
             /// <summary>World fix-ups: real architecture (art/pipeline/world_venue_shells.py) in place of the procedural walls
             /// and roof, per side (front, back, left, right, roof), in the venue's local frame.</summary>
             public Dictionary<string, ArchPart> Arch;
+            /// <summary>The far LOD of the architecture (no frames, mullions, bars, sills or trims), merged outside.</summary>
+            public Dictionary<string, ArchPart> ArchLod1;
         }
 
         /// <summary>One side of a venue's architecture: flat-shaded triangles in submeshes by material slot.</summary>
@@ -218,24 +220,30 @@ namespace CTLife.EditorTools.IslandV2
             def.SignMat = SignMaterial(id);
             // world fix-ups (2026-10-23): real architecture replaces the procedural walls and roof where it exists; the
             // footprint, door, colliders and fader stay the shell's
-            var arch = door ? ArchJson(id) : null;
+            var arch = ArchJson(id);       // venues and (district fix-ups 2) the doorless landmark buildings
             if (arch != null)
             {
-                def.Arch = new Dictionary<string, ArchPart>();
-                foreach (var kv in (JObject)arch["parts"])
+                Dictionary<string, ArchPart> Parts(JObject parts)
                 {
-                    var ap = new ArchPart();
-                    var jv = (JArray)kv.Value["v"]; var jn = (JArray)kv.Value["n"]; var ju = (JArray)kv.Value["uv"];
-                    for (int i = 0; i < jv.Count; i++)
+                    var res = new Dictionary<string, ArchPart>();
+                    foreach (var kv in parts)
                     {
-                        ap.V.Add(new Vector3((float)jv[i][0], (float)jv[i][1], (float)jv[i][2]));
-                        ap.N.Add(new Vector3((float)jn[i][0], (float)jn[i][1], (float)jn[i][2]));
-                        ap.UV.Add(new Vector2((float)ju[i][0], (float)ju[i][1]));
+                        var ap = new ArchPart();
+                        var jv = (JArray)kv.Value["v"]; var jn = (JArray)kv.Value["n"]; var ju = (JArray)kv.Value["uv"];
+                        for (int i = 0; i < jv.Count; i++)
+                        {
+                            ap.V.Add(new Vector3((float)jv[i][0], (float)jv[i][1], (float)jv[i][2]));
+                            ap.N.Add(new Vector3((float)jn[i][0], (float)jn[i][1], (float)jn[i][2]));
+                            ap.UV.Add(new Vector2((float)ju[i][0], (float)ju[i][1]));
+                        }
+                        foreach (var sm in (JObject)kv.Value["sub"])
+                            ap.Sub.Add((sm.Key, ((JArray)sm.Value).Select(t => (int)t).ToList()));
+                        res[kv.Key] = ap;
                     }
-                    foreach (var sm in (JObject)kv.Value["sub"])
-                        ap.Sub.Add((sm.Key, ((JArray)sm.Value).Select(t => (int)t).ToList()));
-                    def.Arch[kv.Key] = ap;
+                    return res;
                 }
+                def.Arch = Parts((JObject)arch["parts"]);
+                if (arch["lod1"] is JObject l1) def.ArchLod1 = Parts(l1);
                 // the name sign where the architecture leaves room for it (the lodge's gable, the hut's roof edge)
                 if (arch["sign"] is JObject so)
                 {
@@ -255,10 +263,21 @@ namespace CTLife.EditorTools.IslandV2
         /// <summary>World fix-ups: the venue architecture's materials on CT Life/World/Kit PBR - CC0 Poly Haven scans
         /// (art/pipeline/world_venue_textures.py, tiled in metres) or flat PBR colours (glass, steel, aluminium, accent).</summary>
         private static readonly Dictionary<string, Material> ArchMats = new Dictionary<string, Material>();
-        private static Material ArchMaterial(string slot)
+        private static Material ArchMaterial(string slotName) => ArchMaterial(slotName, true);
+
+        /// <summary>fade: the per-side materials carry VenueShell's dither (_VENUE_FADE, a clip()); the merged outside
+        /// renderer uses a solid twin without it, so the mobile GPU keeps its early depth test there.</summary>
+        private static Material ArchMaterial(string slotName, bool fade)
         {
-            if (ArchMats.TryGetValue(slot, out var cached) && cached != null) return cached;
-            var path = IslandV2Paths.Materials + "/venue_" + slot + ".mat";
+            string cacheKey = slotName + (fade ? "" : "#solid");
+            if (ArchMats.TryGetValue(cacheKey, out var cached) && cached != null) return cached;
+            // district fix-ups 2: 'base:rrggbb' tints a base material (multiplies a scan, replaces a flat colour)
+            string slot = slotName, hex = null;
+            int colon = slotName.IndexOf(':');
+            if (colon > 0) { slot = slotName.Substring(0, colon); hex = slotName.Substring(colon + 1); }
+            Color? tintHex = null;
+            if (hex != null && ColorUtility.TryParseHtmlString("#" + hex, out var th)) tintHex = th;
+            var path = IslandV2Paths.Materials + "/venue_" + slot + (hex != null ? "_" + hex : "") + (fade ? "" : "_solid") + ".mat";
             var sh = Shader.Find("CT Life/World/Kit PBR");
             var m = AssetDatabase.LoadAssetAtPath<Material>(path);
             if (m == null) { m = new Material(sh) { name = "venue_" + slot }; AssetDatabase.CreateAsset(m, path); }
@@ -266,8 +285,21 @@ namespace CTLife.EditorTools.IslandV2
             void Kw(string k, bool on) { if (on) m.EnableKeyword(k); else m.DisableKeyword(k); }
             // tile metres for the scans
             float tile = slot switch { "concrete" => 2.6f, "timber_dark" => 2.2f, "timber_light" => 2.0f, "wood_post" => 1.4f, "slate" => 2.4f,
-                                       "thatch" => 2.4f, "stone" => 2.2f, "paving" => 1.8f, _ => 0f };
-            if (slot == "paving")
+                                       "thatch" => 2.4f, "stone" => 2.2f, "paving" => 1.8f, "plaster" => 1.6f, "corrugated" => 2.0f, "siding" => 2.4f, _ => 0f };
+            if (slot == "plaster" || slot == "corrugated" || slot == "siding")
+            {
+                // the street scans (world_street_textures.py, Poly Haven CC0): painted plaster, corrugated iron, plank siding
+                m.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>(IslandV2Paths.Textures + $"/Street/{slot}_albedo.png"));
+                m.SetTextureScale("_BaseMap", new Vector2(1f / tile, 1f / tile));
+                m.SetTexture("_BumpMap", AssetDatabase.LoadAssetAtPath<Texture2D>(IslandV2Paths.Textures + $"/Street/{slot}_normal.png"));
+                m.SetTexture("_MaskMap", null);
+                Kw("_NORMALMAP", true); m.SetFloat("_UseNormal", 1f); Kw("_MASKMAP", false); m.SetFloat("_UseMask", 0f);
+                m.SetFloat("_Metallic", slot == "corrugated" ? 0.35f : 0f); m.SetFloat("_Smoothness", slot == "corrugated" ? 0.4f : 0.18f);
+                m.SetFloat("_BumpScale", 1f);
+                // the scans' own brightness: plaster ~0.65, corrugated ~0.32, siding ~0.25 (sRGB); tints multiply on top
+                m.SetColor("_BaseColor", slot == "plaster" ? new Color(1.22f, 1.22f, 1.24f) : slot == "corrugated" ? new Color(1.7f, 1.7f, 1.7f) : new Color(1.4f, 1.4f, 1.4f));
+            }
+            else if (slot == "paving")
             {
                 // the convention centre's plaza: the sidewalk stone (Poly Haven concrete_pavement_02, world_street_textures.py)
                 m.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>(IslandV2Paths.Textures + "/Street/pavers_albedo.png"));
@@ -316,7 +348,12 @@ namespace CTLife.EditorTools.IslandV2
                 m.SetColor("_BaseColor", col); m.SetFloat("_Metallic", metal); m.SetFloat("_Smoothness", smooth);
             }
             Kw("_GLASS", false); m.SetFloat("_Glass", 0f);
-            Kw("_VENUE_FADE", true);      // VenueShell's dither (only these materials carry the clip)
+            Kw("_VENUE_FADE", fade);      // VenueShell's dither (only the per-side materials carry the clip)
+            if (tintHex is Color tc)
+            {
+                if (tile > 0f) m.SetColor("_BaseColor", m.GetColor("_BaseColor") * tc);
+                else m.SetColor("_BaseColor", tc);
+            }
             m.SetFloat("_OcclusionStrength", 1f);
             m.SetFloat("_Reflection", slot == "glass" ? 1.5f : 1f);
             m.SetFloat("_TintStrength", 0f);
@@ -325,7 +362,7 @@ namespace CTLife.EditorTools.IslandV2
             m.SetFloat("_Cull", 2f);
             m.enableInstancing = true;
             EditorUtility.SetDirty(m);
-            ArchMats[slot] = m;
+            ArchMats[cacheKey] = m;
             return m;
         }
 
@@ -481,6 +518,23 @@ namespace CTLife.EditorTools.IslandV2
             return m;
         }
 
+        /// <summary>RecalculateTangents leaves NaN on triangles with no UV area (thin trims, caps); a NaN in the shading reaches
+        /// the bloom and blacks out the whole building. Replace them with a tangent along the edge.</summary>
+        private static void SanitizeTangents(Mesh m, string what)
+        {
+            var t = m.tangents;
+            int bad = 0;
+            for (int i = 0; i < t.Length; i++)
+                if (float.IsNaN(t[i].x) || float.IsNaN(t[i].y) || float.IsNaN(t[i].z) || float.IsNaN(t[i].w) || new Vector3(t[i].x, t[i].y, t[i].z).sqrMagnitude < 1e-8f)
+                {
+                    var n = m.normals[i];
+                    var tv = Vector3.Cross(Mathf.Abs(n.y) < 0.9f ? Vector3.up : Vector3.right, n).normalized;
+                    t[i] = new Vector4(tv.x, tv.y, tv.z, 1f);
+                    bad++;
+                }
+            if (bad > 0) { m.tangents = t; Debug.Log($"CTLIFE [islandv2] tangents fixed {what}: {bad}"); }
+        }
+
         /// <summary>WriteCell: the shell's GameObjects (renderers per wall and roof for fading) and its VenueShell.</summary>
         public static void Write(Def d, Transform parent, List<Mesh> meshes, string cellId)
         {
@@ -510,6 +564,7 @@ namespace CTLife.EditorTools.IslandV2
                 for (int i = 0; i < ap.Sub.Count; i++) mesh.SetTriangles(ap.Sub[i].tris, i, false);
                 mesh.RecalculateBounds();
                 mesh.RecalculateTangents();
+                SanitizeTangents(mesh, d.VenueId + "/" + name);
                 meshes.Add(mesh);
                 var p = new GameObject(name) { layer = Layers.Building };
                 p.transform.SetParent(go.transform, false);
@@ -533,6 +588,61 @@ namespace CTLife.EditorTools.IslandV2
             if (d.Front == null) return;   // features only (the summit cairn): no walls, no fader
             var vs = go.AddComponent<VenueShell>();
             vs.venueId = d.VenueId; vs.footprint = d.Footprint; vs.height = d.Height; vs.origin = d.Origin; vs.yaw = d.Yaw;
+            vs.sign = sign;
+            if (d.Arch != null)
+            {
+                // world fix-ups 2: the sides and roof merged by material into one renderer for the outside view (one draw per
+                // material instead of one per material per side), on solid materials; a far LOD without the line-like
+                // members past ~60 m; VenueShell switches to the per-side renderers only while something fades
+                MeshRenderer Merged(Dictionary<string, ArchPart> parts, string name, Transform parent)
+                {
+                    var byMat = new Dictionary<string, List<int>>();
+                    var mv = new List<Vector3>(); var mn = new List<Vector3>(); var muv = new List<Vector2>();
+                    foreach (var kv in parts)
+                    {
+                        int b0 = mv.Count;
+                        mv.AddRange(kv.Value.V); mn.AddRange(kv.Value.N); muv.AddRange(kv.Value.UV);
+                        foreach (var (mat, tris) in kv.Value.Sub)
+                        {
+                            if (!byMat.TryGetValue(mat, out var l)) byMat[mat] = l = new List<int>();
+                            foreach (var t in tris) l.Add(t + b0);
+                        }
+                    }
+                    var wm = new Mesh { name = $"{cellId}_{d.VenueId}_{name}", indexFormat = mv.Count > 65000 ? UnityEngine.Rendering.IndexFormat.UInt32 : UnityEngine.Rendering.IndexFormat.UInt16 };
+                    wm.SetVertices(mv); wm.SetNormals(mn); wm.SetUVs(0, muv);
+                    var keys = byMat.Keys.ToList();
+                    wm.subMeshCount = keys.Count;
+                    for (int i = 0; i < keys.Count; i++) wm.SetTriangles(byMat[keys[i]], i, false);
+                    wm.RecalculateBounds(); wm.RecalculateTangents();
+                    SanitizeTangents(wm, d.VenueId + "/" + name);
+                    meshes.Add(wm);
+                    var wg = new GameObject(name) { layer = Layers.Building };
+                    wg.transform.SetParent(parent, false);
+                    wg.AddComponent<MeshFilter>().sharedMesh = wm;
+                    var wr = wg.AddComponent<MeshRenderer>();
+                    wr.sharedMaterials = keys.Select(k => ArchMaterial(k, false)).ToArray();
+                    wr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
+                    wr.lightProbeUsage = UnityEngine.Rendering.LightProbeUsage.Off;
+                    wr.reflectionProbeUsage = UnityEngine.Rendering.ReflectionProbeUsage.Off;
+                    return wr;
+                }
+                var lodGo = new GameObject("whole") { layer = Layers.Building };
+                lodGo.transform.SetParent(go.transform, false);
+                lodGo.transform.SetPositionAndRotation(d.Origin, Quaternion.Euler(0f, d.Yaw, 0f));
+                var w0 = Merged(d.Arch, "lod0", lodGo.transform);
+                vs.whole = w0;
+                if (d.ArchLod1 != null && d.ArchLod1.Count > 0)
+                {
+                    var w1 = Merged(d.ArchLod1, "lod1", lodGo.transform);
+                    w1.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                    var lg = lodGo.AddComponent<LODGroup>();
+                    // ~60-70 m for a 26-35 m building: past it the frames and mullions are sub-pixel
+                    lg.SetLODs(new[] { new LOD(0.4f, new Renderer[] { w0 }), new LOD(0f, new Renderer[] { w1 }) });
+                    lg.fadeMode = LODFadeMode.None;
+                    lg.RecalculateBounds();
+                }
+                foreach (var r in new Renderer[] { front, back, left, right, roof }) if (r != null) r.enabled = false;
+            }
             vs.roof = roof;
             vs.walls = new Renderer[] { front, back, left, right, sign };
             vs.normals = new[] { d.Normals[0], d.Normals[1], d.Normals[2], d.Normals[3], d.Normals[0] };

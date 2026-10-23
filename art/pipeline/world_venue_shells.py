@@ -34,6 +34,19 @@ ARGS = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else []
 MATS = ['glass', 'steel', 'alu', 'concrete', 'accent', 'timber_dark', 'timber_light', 'wood_post', 'slate', 'thatch', 'stone', 'inner', 'paving']
 
 
+# district fix-ups 2: the far LOD leaves out line-like members (frames, mullions, bars, sills, trims, string courses: any box
+# whose second-smallest side is under 0.3 m, any beam under 0.3 m): at distance they are sub-pixel triangles that cost the
+# mobile GPU (quad overdraw) without being seen
+LOD_MODE = False
+
+
+def mat_index(mat):
+    """Material slots: a base name, optionally tinted as 'base:rrggbb' (the builder multiplies the base material by it)."""
+    if mat not in MATS:
+        MATS.append(mat)
+    return MATS.index(mat)
+
+
 def U2B(p):
     """Unity local (x, y up, z depth) -> Blender (x, y = depth, z = up)."""
     return Vector((p[0], p[2], p[1]))
@@ -56,13 +69,15 @@ class Part:
             if n.dot(c - U2B(away)) < 0:
                 bv = bv[::-1]
         f = self.bm.faces.new([self.bm.verts.new(v) for v in bv])
-        f.material_index = MATS.index(mat)
+        f.material_index = mat_index(mat)
         return f
 
     def box(self, x0, x1, y0, y1, z0, z1, mat, skip=()):
         """An axis-aligned box in the venue frame (x, y up, z depth); skip: faces left out ('-x', '+x', '-y', '+y', '-z', '+z')."""
         x0, x1 = min(x0, x1), max(x0, x1); y0, y1 = min(y0, y1), max(y0, y1); z0, z1 = min(z0, z1), max(z0, z1)
         if x1 - x0 < 1e-4 or y1 - y0 < 1e-4 or z1 - z0 < 1e-4:
+            return
+        if LOD_MODE and sorted((x1 - x0, y1 - y0, z1 - z0))[1] < 0.3:
             return
         c = ((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2)
         faces = {
@@ -97,6 +112,8 @@ class Part:
 
     def beam(self, p, q, w, h, mat, up=(0, 1, 0)):
         """A square-section member from p to q (venue frame), w wide and h deep."""
+        if LOD_MODE and max(w, h) < 0.3:
+            return
         p, q = Vector(p), Vector(q)
         d = (q - p).normalized()
         u = Vector(up)
@@ -187,6 +204,8 @@ def frame(v):
     x0, x1 = mn[0] - 0.3, mn[0] + sz[0] + 0.3
     z0, z1 = walk[1] - 0.7, mn[1] + sz[1] + 0.3
     h = v['shell']['h']
+    if v.get('nodoor'):            # the landmark buildings: no door, no interior
+        return x0, x1, z0, z1, h, 0.0, 0.0
     dw = min(5.2, (x1 - x0) * 0.4)
     dh = min(4.4, h - 1.2)
     return x0, x1, z0, z1, h, dw, dh
@@ -434,15 +453,553 @@ def prediction_pit(v):
     return dict(parts=[F, B, L, R, T], sign=dict(y=e + 0.6, z=ez0 - 0.3, w=8.0))
 
 
-BUILDERS = {'conference_hall': conference_hall, 'perp_pit': perp_pit, 'hackathon_house': hackathon_house, 'prediction_pit': prediction_pit}
+# ---------------------------------------------------------------------------------------------------- district fix-ups 2
+# The remaining venue shells, from a few parametric archetypes (masonry with punched windows, glass towers, a barn, an
+# industrial shed, an open-air arena), each configured to its venue's identity (docs/progress/venues.md).
+SIDES = ('front', 'back', 'left', 'right')
+
+
+def side_frame(side, x0, x1, z0, z1):
+    """(axis, plane, outward, a0, a1) of a side: front z = z0 facing -z, back z = z1, left x = x0, right x = x1."""
+    return {'front': ('z', z0, -1, x0, x1), 'back': ('z', z1, 1, x0, x1), 'left': ('x', x0, -1, z0, z1), 'right': ('x', x1, 1, z0, z1)}[side]
+
+
+def abox(P, axis, plane, out, a_lo, a_hi, y_lo, y_hi, d0, d1, mat):
+    """A box on a side in its own terms: along a, up y, depth d measured outward from the wall plane."""
+    if axis == 'z':
+        P.box(a_lo, a_hi, y_lo, y_hi, plane + out * d0, plane + out * d1, mat)
+    else:
+        P.box(plane + out * d0, plane + out * d1, y_lo, y_hi, a_lo, a_hi, mat)
+
+
+def wall_openings(P, axis, plane, out, a0, a1, y0, y1, t, holes, mat):
+    """A wall t thick (inwards) with rectangular holes [(a_lo, a_hi, y_lo, y_hi)], as boxes round the holes."""
+    cuts = sorted(set([a0, a1] + [min(max(h[0], a0), a1) for h in holes] + [min(max(h[1], a0), a1) for h in holes]))
+    for ca, cb in zip(cuts[:-1], cuts[1:]):
+        if cb - ca < 1e-3:
+            continue
+        mid = (ca + cb) / 2
+        y = y0
+        for lo, hi in sorted((h[2], h[3]) for h in holes if h[0] <= mid <= h[1]):
+            if lo > y:
+                abox(P, axis, plane, out, ca, cb, y, lo, -t, 0.0, mat)
+            y = max(y, hi)
+        if y < y1:
+            abox(P, axis, plane, out, ca, cb, y, y1, -t, 0.0, mat)
+
+
+def window(P, axis, plane, out, a_lo, a_hi, y_lo, y_hi, frame, glass='glass', reveal=0.25, mull=0, bars=False, sill='concrete'):
+    """Glass set back `reveal` in an opening, a frame round it, optional mullions and bars, a projecting sill."""
+    abox(P, axis, plane, out, a_lo, a_hi, y_lo, y_hi, -reveal - 0.04, -reveal, glass)
+    fw = 0.07
+    for a, b, c, d in ((a_lo, a_lo + fw, y_lo, y_hi), (a_hi - fw, a_hi, y_lo, y_hi), (a_lo, a_hi, y_lo, y_lo + fw), (a_lo, a_hi, y_hi - fw, y_hi)):
+        abox(P, axis, plane, out, a, b, c, d, -reveal - 0.02, -reveal + 0.06, frame)
+    for k in range(1, mull + 1):
+        a = a_lo + (a_hi - a_lo) * k / (mull + 1)
+        abox(P, axis, plane, out, a - fw / 2, a + fw / 2, y_lo, y_hi, -reveal - 0.02, -reveal + 0.06, frame)
+    if bars:
+        n = max(2, int((a_hi - a_lo) / 0.16))
+        for k in range(1, n):
+            a = a_lo + (a_hi - a_lo) * k / n
+            abox(P, axis, plane, out, a - 0.02, a + 0.02, y_lo, y_hi, -0.12, -0.08, 'steel')
+    if sill:
+        abox(P, axis, plane, out, a_lo - 0.08, a_hi + 0.08, y_lo - 0.1, y_lo, -0.05, 0.08, sill)
+
+
+def venue_parts():
+    return {k: Part(k) for k in SIDES + ('roof',)}
+
+
+def masonry(v, wall, frame, floors, win_w, spacing, win_h, sill_h=0.9, plinth='stone', plinth_h=0.8, cornice='concrete', reveal=0.28,
+            bars=False, mull=1, glass='glass', side_windows=True, front_skip=None, parapet=0.9):
+    """A rendered / stone building: walls 0.4 thick with punched windows (deep reveals, frames, sills) on every floor, a
+    plinth, a cornice and parapet; the door left open on the front."""
+    x0, x1, z0, z1, h, dw, dh = frame_(v)
+    Pt = venue_parts()
+    t = 0.4
+    base = -0.7
+    for side in SIDES:
+        P = Pt[side]
+        axis, plane, out, a0, a1 = side_frame(side, x0, x1, z0, z1)
+        if axis == 'x':
+            a0, a1 = z0 + t, z1 - t
+        holes, wins = [], []
+        if side == 'front':
+            holes.append((-dw / 2, dw / 2, base, dh))
+        if side == 'front' or side_windows:
+            y = plinth_h
+            for fh in floors:
+                n = max(1, int((a1 - a0 - 2.0) // spacing))
+                c0 = (a0 + a1) / 2 - (n - 1) * spacing / 2
+                for i in range(n):
+                    a = c0 + i * spacing
+                    lo, hi = y + sill_h, min(y + sill_h + win_h, h - 0.6)
+                    if side == 'front' and y < dh and abs(a) < dw / 2 + win_w / 2 + 0.6:
+                        continue
+                    if side == 'front' and front_skip and front_skip(a, lo, hi):
+                        continue
+                    if hi - lo > 0.4:
+                        holes.append((a - win_w / 2, a + win_w / 2, lo, hi)); wins.append((a - win_w / 2, a + win_w / 2, lo, hi))
+                y += fh
+        wall_openings(P, axis, plane, out, a0, a1, base, h, t, holes, wall)
+        for a_lo, a_hi, lo, hi in wins:
+            window(P, axis, plane, out, a_lo, a_hi, lo, hi, frame, glass=glass, reveal=reveal, mull=mull, bars=bars)
+        # plinth band and cornice
+        pa0, pa1 = (a0, a1) if axis == 'z' else (z0, z1)
+        if side == 'front':
+            abox(P, axis, plane, out, pa0 - 0.1, -dw / 2, base, plinth_h, -0.05, 0.12, plinth)
+            abox(P, axis, plane, out, dw / 2, pa1 + 0.1, base, plinth_h, -0.05, 0.12, plinth)
+        else:
+            abox(P, axis, plane, out, pa0 - 0.1, pa1 + 0.1, base, plinth_h, -0.05, 0.12, plinth)
+        abox(P, axis, plane, out, pa0 - 0.25, pa1 + 0.25, h - 0.35, h, -0.05, 0.35, cornice)
+        abox(P, axis, plane, out, pa0 - 0.1, pa1 + 0.1, h, h + parapet, -0.3, 0.1, wall)
+        abox(P, axis, plane, out, pa0 - 0.18, pa1 + 0.18, h + parapet, h + parapet + 0.12, -0.38, 0.18, cornice)
+        # floor-line string courses
+        y = plinth_h
+        for fh in floors[:-1]:
+            y += fh
+            abox(P, axis, plane, out, pa0, pa1, y - 0.12, y + 0.08, -0.05, 0.1, cornice)
+    # door surround
+    F = Pt['front']
+    if dw > 0:
+        F.box(-dw / 2 - 0.35, -dw / 2, base, dh + 0.35, z0 - 0.15, z0 + t, frame)
+        F.box(dw / 2, dw / 2 + 0.35, base, dh + 0.35, z0 - 0.15, z0 + t, frame)
+        F.box(-dw / 2 - 0.35, dw / 2 + 0.35, dh, dh + 0.35, z0 - 0.15, z0 + t, frame)
+    Pt['roof'].box(x0 + t, x1 - t, h - 0.4, h + 0.15, z0 + t, z1 - t, 'concrete')
+    return Pt
+
+
+def frame_(v):
+    return frame(v)
+
+
+def roof_plant(T, h, boxes):
+    for (a, b, c, d, hh, m) in boxes:
+        T.box(a, b, h + 0.15, h + 0.15 + hh, c, d, m)
+
+
+def ct_jail(v):
+    """Compliance Jail: a stern civic block in pale stone, narrow barred windows, a columned portico, a heavy cornice."""
+    x0, x1, z0, z1, h, dw, dh = frame(v)
+    Pt = masonry(v, 'plaster:d6d2c8', 'steel', [4.2, 3.8], 1.0, 2.6, 2.4, sill_h=1.4, plinth='stone', plinth_h=1.0, cornice='concrete:e6e2da',
+                 bars=True, mull=0)
+    F = Pt['front']
+    # portico: four stone columns carrying an entablature over the steps
+    for cx in (-6.0, -2.9, 2.9, 6.0):
+        F.box(cx - 0.4, cx + 0.4, 0.3, 6.0, z0 - 3.4, z0 - 2.6, 'concrete:e6e2da')
+        F.box(cx - 0.55, cx + 0.55, 0.15, 0.4, z0 - 3.55, z0 - 2.45, 'stone')
+    F.box(-7.0, 7.0, 6.0, 7.4, z0 - 3.8, z0, 'concrete:e6e2da')
+    F.box(-7.2, 7.2, 7.4, 7.6, z0 - 4.0, z0, 'concrete:e6e2da')
+    F.box(-7.5, 7.5, -0.6, 0.15, z0 - 4.4, z0, 'stone')            # steps
+    F.box(-7.0, 7.0, -0.6, 0.3, z0 - 3.9, z0, 'stone')
+    roof_plant(Pt['roof'], h, [(-5, -1, 2, 6, 1.4, 'steel'), (3, 6, -3, 1, 1.0, 'alu')])
+    return dict(parts=list(Pt.values()), sign=dict(y=6.1, z=z0 - 3.86, w=8.0))
+
+
+def rekt_clinic(v):
+    """Rekt Clinic: a white rendered clinic, green-framed ribbon-ish windows, an entrance canopy, a red cross on the parapet."""
+    x0, x1, z0, z1, h, dw, dh = frame(v)
+    Pt = masonry(v, 'plaster:eef3ff', 'steel:3f8f66', [4.4, 3.6], 2.6, 3.2, 1.9, sill_h=1.1, plinth='concrete', plinth_h=0.6,
+                 cornice='alu', mull=1, parapet=0.7)
+    F = Pt['front']
+    F.box(-6.5, 6.5, dh + 0.3, dh + 0.65, z0 - 3.2, z0, 'alu')          # canopy
+    for cx in (-6.0, 6.0):
+        F.box(cx - 0.12, cx + 0.12, -0.5, dh + 0.3, z0 - 3.0, z0 - 2.76, 'steel')
+    # the red cross on a white panel over the parapet, off-centre
+    c = 9.0
+    F.box(c - 1.2, c + 1.2, h - 0.2, h + 2.2, z0 - 0.25, z0 - 0.05, 'alu')
+    F.box(c - 0.9, c + 0.9, h + 0.7, h + 1.3, z0 - 0.32, z0 - 0.25, 'accent:d83a3a')
+    F.box(c - 0.3, c + 0.3, h + 0.1, h + 1.9, z0 - 0.32, z0 - 0.25, 'accent:d83a3a')
+    roof_plant(Pt['roof'], h, [(-6, -2, 1, 5, 1.2, 'alu')])
+    return dict(parts=list(Pt.values()), sign=None)
+
+
+def audit_row(v):
+    """Audit Row: a sober office block, a deep-set window grid in cream render, blue frames, a slim entrance canopy."""
+    x0, x1, z0, z1, h, dw, dh = frame(v)
+    Pt = masonry(v, 'plaster:ebe4d2', 'steel:2f4f7f', [4.6, 3.4], 1.6, 2.4, 2.2, sill_h=1.0, plinth='stone', plinth_h=0.7,
+                 cornice='concrete', mull=0, reveal=0.32)
+    Pt['front'].box(-4.0, 4.0, dh + 0.35, dh + 0.6, z0 - 2.2, z0, 'steel:2f4f7f')
+    roof_plant(Pt['roof'], h, [(-7, -3, 0, 4, 1.3, 'alu'), (4, 7, -4, 0, 0.9, 'steel')])
+    return dict(parts=list(Pt.values()), sign=None)
+
+
+def spaces_studio(v):
+    """Spaces Studio: a terracotta-rendered broadcast studio, a wide glazed studio window upstairs, a dish and a mast on top."""
+    x0, x1, z0, z1, h, dw, dh = frame(v)
+    big = lambda a, lo, hi: lo > 5.0 and abs(a) < 9.0
+    Pt = masonry(v, 'plaster:d98c6a', 'steel', [5.0, 5.2], 1.6, 2.8, 2.4, sill_h=1.0, plinth='concrete', plinth_h=0.6,
+                 cornice='concrete:efe8de', mull=0, front_skip=big)
+    F = Pt['front']
+    # the studio window: one long glazed band with slim mullions, framed proud of the wall
+    F.box(-9.0, 9.0, 6.0, 9.4, z0 - 0.02, z0 + 0.02, 'glass')
+    for k in range(0, 13):
+        x = -9.0 + k * 1.5
+        F.box(x - 0.05, x + 0.05, 6.0, 9.4, z0 - 0.12, z0 + 0.02, 'steel')
+    F.box(-9.3, 9.3, 5.7, 6.0, z0 - 0.5, z0 + 0.02, 'concrete:efe8de')
+    F.box(-9.3, 9.3, 9.4, 9.7, z0 - 0.5, z0 + 0.02, 'concrete:efe8de')
+    F.box(-9.3, -9.0, 6.0, 9.4, z0 - 0.5, z0 + 0.02, 'concrete:efe8de')
+    F.box(9.0, 9.3, 6.0, 9.4, z0 - 0.5, z0 + 0.02, 'concrete:efe8de')
+    T = Pt['roof']
+    # satellite dish (a tilted octagonal dish on a post) and a lattice-ish mast
+    cx, cz = 8.0, 4.0
+    T.box(cx - 0.15, cx + 0.15, h + 0.15, h + 1.6, cz - 0.15, cz + 0.15, 'steel')
+    ring = [(cx + 1.4 * math.cos(a), h + 2.4 + 1.4 * math.sin(a) * 0.9, cz - 0.5 + 1.4 * math.sin(a) * 0.4) for a in [k * math.pi / 4 for k in range(8)]]
+    T.prism(ring, 0.12, 'alu', push=(0, 0, 1))
+    T.box(-9.2, -8.8, h + 0.15, h + 7.0, 5.0, 5.4, 'steel')
+    T.box(-9.6, -8.4, h + 6.8, h + 7.1, 4.8, 5.6, 'accent:e4572e')
+    return dict(parts=list(Pt.values()), sign=None)
+
+
+def terminal_cafe(v):
+    """Terminal Cafe: a warm two-storey corner cafe, a full shopfront of glass downstairs, a green awning, a timber terrace."""
+    x0, x1, z0, z1, h, dw, dh = frame(v)
+    shop = lambda a, lo, hi: lo < 4.0
+    Pt = masonry(v, 'plaster:efe0c2', 'steel:2e3b33', [4.2, 3.6], 1.4, 2.6, 2.0, sill_h=0.9, plinth='stone', plinth_h=0.5,
+                 cornice='concrete:f6efe2', mull=1, front_skip=shop)
+    F = Pt['front']
+    # the shopfront: tall panes between slim piers either side of the door, a fascia over them
+    for xa, xb in ((x0 + 1.2, -dw / 2 - 0.5), (dw / 2 + 0.5, x1 - 1.2)):
+        F.box(xa, xb, 0.5, 3.6, z0 + 0.15, z0 + 0.19, 'glass')
+        n = max(1, int((xb - xa) / 2.2))
+        for k in range(n + 1):
+            x = xa + (xb - xa) * k / n
+            F.box(x - 0.06, x + 0.06, 0.5, 3.6, z0 - 0.05, z0 + 0.2, 'steel:2e3b33')
+        F.box(xa, xb, 0.42, 0.52, z0 - 0.05, z0 + 0.2, 'steel:2e3b33')
+        F.box(xa, xb, 2.85, 2.93, z0 - 0.05, z0 + 0.2, 'steel:2e3b33')
+    # cut the wall where the shopfront is (the masonry wall stays only as piers): a lighter way, a dark lining inside
+    F.box(x0 + 1.2, x1 - 1.2, 3.6, 4.1, z0 - 0.08, z0 + 0.1, 'steel:2e3b33')        # fascia
+    # awning: green canvas sloping out over the terrace, with a scalloped valance of alternating strips
+    F.prism([(x0 + 0.8, 4.0, z0 - 0.05), (x1 - 0.8, 4.0, z0 - 0.05), (x1 - 0.8, 3.1, z0 - 2.6), (x0 + 0.8, 3.1, z0 - 2.6)], 0.05, 'accent:2f7a5a')
+    for k in range(int((x1 - x0 - 1.6) / 0.9)):
+        xa = x0 + 0.8 + k * 0.9
+        F.box(xa, xa + 0.9, 2.85, 3.12, z0 - 2.64, z0 - 2.6, 'accent:2f7a5a' if k % 2 == 0 else 'alu')
+    # terrace deck in front, edged by planters
+    F.box(x0 + 0.5, x1 - 0.5, -0.6, 0.12, z0 - 3.4, z0 - 0.05, 'wood_post')
+    for xa in (x0 + 0.6, x1 - 1.6):
+        F.box(xa, xa + 1.0, 0.12, 0.8, z0 - 3.3, z0 - 2.4, 'concrete')
+    roof_plant(Pt['roof'], h, [(-6, -3, 0, 3, 1.0, 'alu')])
+    return dict(parts=list(Pt.values()), sign=dict(y=4.25, z=z0 - 0.15, w=7.0))
+
+
+def glass_tower(v, fh=3.6, spandrel='steel', mframe='steel', pier='alu', fins=None, fin_every=3.0, crown='steel', mast=None,
+                canopy='alu', glass='glass'):
+    """A curtain-wall building: glass all round between corner piers, spandrel bands at each floor, mullions every 1.5 m,
+    optional fins (colour), a crown band, a canopy over the door, rooftop plant and an optional mast."""
+    x0, x1, z0, z1, h, dw, dh = frame(v)
+    Pt = venue_parts()
+    base = -0.7
+    nfl = max(1, int(round((h - 0.6) / fh)))
+    fh = (h - 0.6) / nfl
+    for side in SIDES:
+        P = Pt[side]
+        axis, plane, out, a0, a1 = side_frame(side, x0, x1, z0, z1)
+        if axis == 'x':
+            a0, a1 = z0 + 0.6, z1 - 0.6
+        door = side == 'front'
+        # plinth
+        if door:
+            abox(P, axis, plane, out, a0, -dw / 2, base, 0.6, -0.5, 0.0, 'concrete')
+            abox(P, axis, plane, out, dw / 2, a1, base, 0.6, -0.5, 0.0, 'concrete')
+        else:
+            abox(P, axis, plane, out, a0, a1, base, 0.6, -0.5, 0.0, 'concrete')
+        # glass (round the door)
+        if door:
+            abox(P, axis, plane, out, a0, -dw / 2, 0.6, h, -0.2, -0.16, glass)
+            abox(P, axis, plane, out, dw / 2, a1, 0.6, h, -0.2, -0.16, glass)
+            abox(P, axis, plane, out, -dw / 2, dw / 2, dh, h, -0.2, -0.16, glass)
+        else:
+            abox(P, axis, plane, out, a0, a1, 0.6, h, -0.2, -0.16, glass)
+        # spandrels at the floors (an opaque band where each slab meets the glass)
+        for k in range(1, nfl):
+            y = 0.6 + k * fh
+            if door and y < dh + 0.3:
+                abox(P, axis, plane, out, a0, -dw / 2 - 0.2, y - 0.45, y + 0.35, -0.16, 0.04, spandrel)
+                abox(P, axis, plane, out, dw / 2 + 0.2, a1, y - 0.45, y + 0.35, -0.16, 0.04, spandrel)
+            else:
+                abox(P, axis, plane, out, a0, a1, y - 0.45, y + 0.35, -0.16, 0.04, spandrel)
+        # mullions
+        n = max(1, int(round((a1 - a0) / 1.5)))
+        for i in range(n + 1):
+            a = a0 + (a1 - a0) * i / n
+            if door and abs(a) < dw / 2 + 0.05:
+                abox(P, axis, plane, out, a - 0.05, a + 0.05, dh, h, -0.2, 0.06, mframe)
+                continue
+            abox(P, axis, plane, out, a - 0.05, a + 0.05, 0.6, h, -0.2, 0.06, mframe)
+        if fins:
+            m = max(1, int(round((a1 - a0) / fin_every)))
+            for i in range(1, m):
+                a = a0 + (a1 - a0) * i / m
+                if door and abs(a) < dw / 2 + 1.2:
+                    continue
+                abox(P, axis, plane, out, a - 0.08, a + 0.08, 0.6, h + 0.6, 0.0, 0.7, fins)
+        # crown
+        abox(P, axis, plane, out, a0 - 0.6, a1 + 0.6, h - 0.1, h + 1.1, -0.2, 0.25, crown)
+    # corner piers
+    for cx, cz in ((x0, z0), (x1, z0), (x0, z1), (x1, z1)):
+        side = 'front' if cz == z0 else 'back'
+        Pt[side].box(cx - 0.35, cx + 0.35, base, h + 1.1, cz - 0.35, cz + 0.35, pier)
+    F = Pt['front']
+    if dw > 0:
+        F.box(-dw / 2 - 1.5, dw / 2 + 1.5, dh + 0.35, dh + 0.7, z0 - 3.0, z0, canopy)
+        F.box(-dw / 2 - 0.12, -dw / 2 + 0.06, base, dh + 0.35, z0 - 0.25, z0 + 0.05, mframe)
+        F.box(dw / 2 - 0.06, dw / 2 + 0.12, base, dh + 0.35, z0 - 0.25, z0 + 0.05, mframe)
+    T = Pt['roof']
+    T.box(x0 + 0.5, x1 - 0.5, h - 0.4, h + 0.15, z0 + 0.5, z1 - 0.5, 'concrete')
+    k = min(1.0, (x1 - x0) / 26.0)
+    roof_plant(T, h, [(-6 * k, -1 * k, 1 * k, 6 * k, 1.8, 'steel'), (2 * k, 6 * k, -4 * k, 0, 1.2, 'alu')])
+    if mast:
+        T.box(4.0, 4.6, h + 0.15, h + 9.0, 4.0, 4.6, mast)
+        T.box(3.4, 5.2, h + 8.6, h + 9.1, 3.4, 5.2, mast)
+    return Pt
+
+
+def launchpad_tower(v):
+    """Launchpad Tower: a tall glass tower striped with orange launch fins, a white crown and a launch mast on the roof."""
+    Pt = glass_tower(v, fh=3.6, spandrel='steel:2b2f36', fins='accent:ef6a2a', fin_every=3.4, crown='alu', mast='accent:ef6a2a', pier='alu')
+    return dict(parts=list(Pt.values()), sign=None)
+
+
+def discord_heights(v):
+    """Discord Heights: a glass block with blurple spandrel bands and a white crown."""
+    Pt = glass_tower(v, fh=3.4, spandrel='accent:5865f2', crown='alu', pier='steel:2b2f36', glass='glass')
+    return dict(parts=list(Pt.values()), sign=None)
+
+
+def vc_row(v):
+    """VC Row: a glass office with warm timber fins and a dark crown (the money in the timber)."""
+    Pt = glass_tower(v, fh=3.8, spandrel='steel:30343a', fins='wood_post', fin_every=1.5, crown='steel:30343a', pier='steel:30343a')
+    return dict(parts=list(Pt.values()), sign=None)
+
+
+def cabal_lounge(v):
+    """Cabal Lounge: smoked dark glass in gold frames, gold fins, a gold-edged canopy - discreet, expensive."""
+    Pt = glass_tower(v, fh=4.6, spandrel='steel:1a1a1f', mframe='alu:c9a24a', fins='alu:c9a24a', fin_every=2.2, crown='steel:1a1a1f',
+                     pier='steel:1a1a1f', canopy='alu:c9a24a', glass='glass:5c5a66')
+    return dict(parts=list(Pt.values()), sign=None)
+
+
+def sybil_barn(v):
+    """Sybil Barn: a red board barn (ridge front to back), white trim, an open sliding door on its track, a hay-loft door,
+    a corrugated metal roof."""
+    x0, x1, z0, z1, h, dw, dh = frame(v)
+    Pt = venue_parts()
+    base = -0.7
+    eave = 5.0
+    tp = math.tan(math.radians(32))
+    hw = (x1 - x0) / 2
+    ridge = eave + hw * tp
+    red, trim = 'timber_light:e05a48', 'alu:f2efe8'
+    sy = lambda x: eave + (hw - abs(x)) * tp
+    F, B, L, R, T = (Pt[k] for k in SIDES + ('roof',))
+    # long walls
+    L.box(x0, x0 + 0.3, base, eave, z0 + 0.3, z1 - 0.3, red)
+    R.box(x1 - 0.3, x1, base, eave, z0 + 0.3, z1 - 0.3, red)
+    for P, z, d in ((F, z0, 1), (B, z1, -1)):
+        za, zb = (z, z + 0.3) if d > 0 else (z - 0.3, z)
+        if P is F:
+            P.box(x0, -dw / 2, base, eave, za, zb, red); P.box(dw / 2, x1, base, eave, za, zb, red)
+            P.box(-dw / 2, dw / 2, dh, eave, za, zb, red)
+        else:
+            P.box(x0, x1, base, eave, za, zb, red)
+        P.prism([(x0, eave, z), (x1, eave, z), (0.0, ridge, z)], 0.3, red, push=(0, 0, d))
+        # white trim: corner boards and the gable edge
+        for x in (x0, x1 - 0.25):
+            P.box(x - 0.05, x + 0.3, base, eave, z - 0.08 * d, z + 0.05 * d, trim)
+        for sgn in (-1, 1):
+            P.beam((sgn * hw, eave, z - 0.1 * d), (0.0, ridge, z - 0.1 * d), 0.25, 0.12, trim)
+    # the sliding door: two leaves pushed aside on a track, white X-braced frames
+    for sgn in (-1, 1):
+        xa, xb = (dw / 2 + 0.1, dw / 2 + 0.1 + dw / 2) if sgn > 0 else (-dw / 2 - 0.1 - dw / 2, -dw / 2 - 0.1)
+        F.box(xa, xb, 0.0, dh, z0 - 0.22, z0 - 0.08, red)
+        for a, b, c, d in ((xa, xa + 0.18, 0.0, dh), (xb - 0.18, xb, 0.0, dh), (xa, xb, 0.0, 0.18), (xa, xb, dh - 0.18, dh)):
+            F.box(a, b, c, d, z0 - 0.28, z0 - 0.2, trim)
+        F.beam((xa + 0.1, 0.1, z0 - 0.26), (xb - 0.1, dh - 0.1, z0 - 0.26), 0.16, 0.06, trim)
+        F.beam((xa + 0.1, dh - 0.1, z0 - 0.26), (xb - 0.1, 0.1, z0 - 0.26), 0.16, 0.06, trim)
+    F.box(-dw - 0.4, dw + 0.4, dh + 0.15, dh + 0.35, z0 - 0.35, z0, 'steel')       # the track
+    # hay-loft door high in the gable
+    F.box(-1.4, 1.4, eave + 1.2, eave + 4.0, z0 - 0.1, z0 + 0.05, red)
+    for a, b, c, d in ((-1.55, -1.4, eave + 1.05, eave + 4.15), (1.4, 1.55, eave + 1.05, eave + 4.15), (-1.55, 1.55, eave + 1.05, eave + 1.2),
+                       (-1.55, 1.55, eave + 4.0, eave + 4.15)):
+        F.box(a, b, c, d, z0 - 0.16, z0 + 0.02, trim)
+    F.box(-0.15, 0.15, eave + 4.3, ridge - 0.4, z0 - 0.9, z0 - 0.6, 'steel')         # hay hood
+    # side windows
+    for P, x, out in ((L, x0, -1), (R, x1, 1)):
+        for zc in (z0 + 5.0, (z0 + z1) / 2, z1 - 5.0):
+            P.box(x + out * 0.02, x - out * 0.05, 2.0, 3.2, zc - 0.7, zc + 0.7, 'glass')
+            for a, b in ((zc - 0.85, zc - 0.7), (zc + 0.7, zc + 0.85)):
+                P.box(x + out * 0.08, x - out * 0.02, 1.85, 3.35, a, b, trim)
+            P.box(x + out * 0.08, x - out * 0.02, 1.85, 2.0, zc - 0.85, zc + 0.85, trim)
+            P.box(x + out * 0.08, x - out * 0.02, 3.2, 3.35, zc - 0.85, zc + 0.85, trim)
+    # roof: corrugated metal planes with an overhang, a ridge cap
+    ov = 0.8
+    for sgn in (-1, 1):
+        T.prism([(sgn * (hw + ov), eave - ov * tp, z0 - ov), (0.0, ridge + 0.1, z0 - ov), (0.0, ridge + 0.1, z1 + ov), (sgn * (hw + ov), eave - ov * tp, z1 + ov)],
+                0.15, 'corrugated:8d9196')
+    T.box(-0.3, 0.3, ridge + 0.05, ridge + 0.3, z0 - ov, z1 + ov, 'steel')
+    return dict(parts=list(Pt.values()), sign=dict(y=dh + 0.5, z=z0 - 0.4, w=7.0))
+
+
+def ore_refinery(v, clad='corrugated:c8743e', plant=True, hazard='accent:f2c230'):
+    """ORE Refinery: a steel-framed industrial plant in rust-orange corrugated cladding on a concrete plinth, a clerestory
+    band, a roller-door portal with hazard stripes, a smoke stack and an ore hopper on legs."""
+    x0, x1, z0, z1, h, dw, dh = frame(v)
+    Pt = venue_parts()
+    base = -0.7
+    frame_ = 'steel:2a2d31'
+    F, B, L, R, T = (Pt[k] for k in SIDES + ('roof',))
+    clere0, clere1 = h - 2.6, h - 1.0
+    for side in SIDES:
+        P = Pt[side]
+        axis, plane, out, a0, a1 = side_frame(side, x0, x1, z0, z1)
+        if axis == 'x':
+            a0, a1 = z0 + 0.3, z1 - 0.3
+        holes = [(-dw / 2 - 0.6, dw / 2 + 0.6, base, dh + 0.6)] if side == 'front' and dw > 0 else []
+        holes.append((a0 + 1.0, a1 - 1.0, clere0, clere1))
+        wall_openings(P, axis, plane, out, a0, a1, 1.4, h, 0.3, holes, clad)
+        if side == 'front':
+            abox(P, axis, plane, out, a0, -dw / 2 - 0.6, base, 1.4, -0.3, 0.1, 'concrete')
+            abox(P, axis, plane, out, dw / 2 + 0.6, a1, base, 1.4, -0.3, 0.1, 'concrete')
+        else:
+            abox(P, axis, plane, out, a0, a1, base, 1.4, -0.3, 0.1, 'concrete')
+        # clerestory glazing and the expressed steel frame every ~6 m
+        abox(P, axis, plane, out, a0 + 1.0, a1 - 1.0, clere0, clere1, -0.2, -0.16, 'glass')
+        n = max(1, int(round((a1 - a0) / 6.0)))
+        for i in range(n + 1):
+            a = a0 + (a1 - a0) * i / n
+            if side == 'front' and abs(a) < dw / 2 + 0.8:
+                continue
+            abox(P, axis, plane, out, a - 0.2, a + 0.2, base, h + 0.3, 0.0, 0.35, frame_)
+        m = max(1, int(round((a1 - a0 - 2.0) / 1.2)))
+        for i in range(m + 1):
+            a = a0 + 1.0 + (a1 - a0 - 2.0) * i / m
+            abox(P, axis, plane, out, a - 0.04, a + 0.04, clere0, clere1, -0.2, 0.0, frame_)
+        abox(P, axis, plane, out, a0 - 0.3, a1 + 0.3, h, h + 0.6, -0.3, 0.2, frame_)
+    # the roller-door portal: steel jambs and head with yellow/black hazard bands
+    if dw <= 0:
+        dw = dh = 0.0
+    F.box(-dw / 2 - 0.6, -dw / 2, base, dh + 0.6, z0 - 0.4, z0 + 0.3, frame_)
+    F.box(dw / 2, dw / 2 + 0.6, base, dh + 0.6, z0 - 0.4, z0 + 0.3, frame_)
+    F.box(-dw / 2 - 0.6, dw / 2 + 0.6, dh, dh + 0.6, z0 - 0.4, z0 + 0.3, frame_)
+    for k in range(int((dw + 1.2) / 0.6) if dw > 0 else 0):
+        xa = -dw / 2 - 0.6 + k * 0.6
+        F.box(xa, xa + 0.6, dh + 0.05, dh + 0.5, z0 - 0.44, z0 - 0.4, hazard if k % 2 == 0 else 'steel:151515')
+    if dw > 0:
+        F.box(-dw / 2, dw / 2, dh - 0.9, dh, z0 + 0.0, z0 + 0.25, 'corrugated:9a9ea3')      # roller drum housing
+    # roof: low-pitched corrugated planes, ridge along x
+    hd = (z1 - z0) / 2
+    zc = (z0 + z1) / 2
+    rise = hd * math.tan(math.radians(8))
+    for sgn in (-1, 1):
+        T.prism([(x0 - 0.5, h + 0.6, zc + sgn * (hd + 0.5)), (x1 + 0.5, h + 0.6, zc + sgn * (hd + 0.5)), (x1 + 0.5, h + 0.6 + rise, zc), (x0 - 0.5, h + 0.6 + rise, zc)],
+                0.15, 'corrugated:8d9196')
+    if not plant:
+        return dict(parts=list(Pt.values()), sign=None)
+    # smoke stack (octagonal) and an ore hopper on legs, on the right flank
+    sx, sz = x1 + 2.6, z1 - 4.0
+    ring = [(sx + 1.1 * math.cos(a), 0.0, sz + 1.1 * math.sin(a)) for a in [k * math.pi / 4 for k in range(8)]]
+    top = [(p[0], h + 12.0, p[2]) for p in ring]
+    for i in range(8):
+        j = (i + 1) % 8
+        R._face([ring[j], ring[i], top[i], top[j]], 'steel:4a4d52', away=(sx, h * 0.5 + 6.0, sz))
+    for y in (h + 3.0, h + 11.0):
+        R.box(sx - 1.3, sx + 1.3, y, y + 0.5, sz - 1.3, sz + 1.3, 'accent:f2c230' if y > h + 5 else 'steel:2a2d31')
+    hx, hz = x1 + 3.2, z0 + 6.0
+    for dx in (-1.6, 1.6):
+        for dz in (-1.6, 1.6):
+            R.box(hx + dx - 0.15, hx + dx + 0.15, base, 6.5, hz + dz - 0.15, hz + dz + 0.15, frame_)
+    R.box(hx - 2.0, hx + 2.0, 6.5, 9.5, hz - 2.0, hz + 2.0, 'corrugated:c8743e')
+    R.prism([(hx - 2.0, 6.5, hz - 2.0), (hx + 2.0, 6.5, hz - 2.0), (hx + 0.4, 4.6, hz - 0.4), (hx - 0.4, 4.6, hz - 0.4)], 0.1, 'steel:4a4d52')
+    R.beam((hx - 1.0, 9.0, hz + 1.0), (x1 - 0.2, h - 1.5, hz + 4.0), 1.0, 0.8, 'steel:2a2d31')          # conveyor into the plant
+    return dict(parts=list(Pt.values()), sign=None)
+
+
+def ratio_arena(v):
+    """Ratio Arena: an open-air fight arena - a concrete ring wall with tall ribs, red and blue banners between them, a
+    steel ring truss at the top and floodlight masts at the corners; no roof."""
+    x0, x1, z0, z1, h, dw, dh = frame(v)
+    Pt = venue_parts()
+    base = -0.7
+    for side in SIDES:
+        P = Pt[side]
+        axis, plane, out, a0, a1 = side_frame(side, x0, x1, z0, z1)
+        if axis == 'x':
+            a0, a1 = z0 + 0.5, z1 - 0.5
+        holes = [(-dw / 2, dw / 2, base, dh)] if side == 'front' else []
+        wall_openings(P, axis, plane, out, a0, a1, base, h, 0.5, holes, 'plaster:e2ded6')
+        n = max(2, int(round((a1 - a0) / 2.6)))
+        for i in range(n + 1):
+            a = a0 + (a1 - a0) * i / n
+            if side == 'front' and abs(a) < dw / 2 + 0.4:
+                continue
+            abox(P, axis, plane, out, a - 0.3, a + 0.3, base, h + 1.2, 0.0, 1.0, 'concrete:ffffff')
+            if i < n:
+                b = a0 + (a1 - a0) * (i + 1) / n
+                col = 'accent:d63a4a' if (i + (0 if side in ('front', 'right') else 1)) % 2 == 0 else 'accent:3a62d6'
+                if not (side == 'front' and abs((a + b) / 2) < dw / 2 + 1.0):
+                    abox(P, axis, plane, out, a + 0.45, b - 0.45, h * 0.45, h - 1.2, 0.05, 0.12, col)
+        abox(P, axis, plane, out, a0 - 0.6, a1 + 0.6, h, h + 0.8, -0.6, 1.1, 'steel:2b2f36')        # ring truss
+        abox(P, axis, plane, out, a0 - 0.6, a1 + 0.6, -0.7, 0.6, 0.0, 1.2, 'stone')                 # plinth
+    for cx, cz, side in ((x0, z0, 'front'), (x1, z0, 'front'), (x0, z1, 'back'), (x1, z1, 'back')):
+        P = Pt[side]
+        P.box(cx - 0.25, cx + 0.25, base, h + 9.0, cz - 0.25, cz + 0.25, 'steel:2b2f36')
+        P.box(cx - 1.2, cx + 1.2, h + 8.4, h + 9.6, cz - 0.3, cz + 0.3, 'alu')
+    return dict(parts=list(Pt.values()), sign=None)
+
+
+def superteam_hq(v):
+    """Builder HQ: a slim glass tower, violet spandrels and gold fins, a white crown (the bunting hangs from it)."""
+    Pt = glass_tower(v, fh=3.6, spandrel='accent:5a3fd0', fins='alu:e8a21a', fin_every=2.6, crown='alu', pier='steel:2b2f36')
+    return dict(parts=list(Pt.values()), sign=None)
+
+
+def jupiter_observatory(v):
+    """The observatory: a white rendered drum-base under the dome, blue-framed windows, a stone plinth."""
+    Pt = masonry(v, 'plaster:f6f6f2', 'steel:4a8fc0', [6.2], 1.1, 2.6, 2.4, sill_h=1.4, plinth='stone', plinth_h=0.8,
+                 cornice='concrete:eeeae2', mull=0, parapet=0.4)
+    return dict(parts=list(Pt.values()), sign=None)
+
+
+def seeker_shop(v):
+    """The phone shop: a single-storey glass box in dark frames with a violet crown band."""
+    Pt = glass_tower(v, fh=5.4, spandrel='steel:2a2a30', mframe='steel:2a2a30', crown='accent:8f5ae6', pier='steel:2a2a30')
+    return dict(parts=list(Pt.values()), sign=None)
+
+
+def helius_depot(v):
+    """The depot: a dark corrugated shed on a concrete plinth, a clerestory band, red-banded steel frame."""
+    return ore_refinery(v, clad='corrugated:4a4c52', plant=False, hazard='accent:e8402a')
+
+
+LANDMARKS = {'superteam_hq': superteam_hq, 'jupiter_observatory': jupiter_observatory, 'seeker_shop': seeker_shop, 'helius_depot': helius_depot}
+
+
+BUILDERS = {'conference_hall': conference_hall, 'perp_pit': perp_pit, 'hackathon_house': hackathon_house, 'prediction_pit': prediction_pit,
+            'ct_jail': ct_jail, 'rekt_clinic': rekt_clinic, 'audit_row': audit_row, 'spaces_studio': spaces_studio, 'terminal_cafe': terminal_cafe,
+            'launchpad_tower': launchpad_tower, 'discord_heights': discord_heights, 'vc_row': vc_row, 'cabal_lounge': cabal_lounge,
+            'sybil_barn': sybil_barn, 'ore_refinery': ore_refinery, 'ratio_arena': ratio_arena}
 
 
 def main():
     plan = json.load(open(os.path.abspath(os.path.join(HERE, '..', '..', 'tools', 'world', 'islandgen', 'out', 'plan.json'))))
     venues = {v['id']: v for v in plan['venues']}
+    for lb in plan.get('landmarkBuildings', []):
+        if lb['id'] in LANDMARKS:
+            sx, sz = lb['size']
+            venues[lb['id']] = dict(id=lb['id'], frame_min=[-sx / 2, -sz / 2], frame_size=[sx, sz], walk=[-sx / 2 + 1, -sz / 2 + 0.7, sx / 2 - 1, sz / 2 - 1],
+                                    shell=dict(h=lb['h']), nodoor=True)
+    BUILDERS.update(LANDMARKS)
     ids = [a for a in ARGS if a in BUILDERS] or list(BUILDERS)
     os.makedirs(OUT, exist_ok=True)
+    global LOD_MODE
     for vid in ids:
+        LOD_MODE = True
+        lod1 = {}
+        for p in BUILDERS[vid](venues[vid])['parts']:
+            d = export_part(p)
+            if d['v']:
+                lod1[p.name] = d
+        LOD_MODE = False
         res = BUILDERS[vid](venues[vid])
         parts = {}
         tris = 0
@@ -452,10 +1009,11 @@ def main():
                 parts[p.name] = d
                 tris += sum(len(t) for t in d['sub'].values()) // 3
         x0, x1, z0, z1, h, dw, dh = frame(venues[vid])
-        out = dict(venue=vid, footprint=[x0, x1, z0, z1], height=h, door=[dw, dh], tris=tris, parts=parts, sign=res['sign'],
+        tris1 = sum(sum(len(t) for t in d['sub'].values()) // 3 for d in lod1.values())
+        out = dict(venue=vid, footprint=[x0, x1, z0, z1], height=h, door=[dw, dh], tris=tris, tris_lod1=tris1, parts=parts, lod1=lod1, sign=res['sign'],
                    note='art/pipeline/world_venue_shells.py (world fix-ups 2026-10-23)')
         json.dump(out, open(os.path.join(OUT, vid + '.json'), 'w'), separators=(',', ':'))
-        print('[venues]', vid, 'tris', tris, {k: sum(len(t) for t in d['sub'].values()) // 3 for k, d in parts.items()}, flush=True)
+        print('[venues]', vid, 'tris', tris, 'lod1', tris1, {k: sum(len(t) for t in d['sub'].values()) // 3 for k, d in parts.items()}, flush=True)
     if '--sheet' in ARGS:
         sheet(ids, ARGS[ARGS.index('--sheet') + 1])
 
@@ -464,7 +1022,8 @@ def main():
 COLS = {'glass': (0.05, 0.08, 0.11, 0.95), 'steel': (0.06, 0.065, 0.07, 0.5), 'alu': (0.78, 0.79, 0.8, 0.6), 'concrete': (0.42, 0.40, 0.37, 0.2),
         'accent': (0.1, 0.8, 0.45, 0.5), 'timber_dark': (0.30, 0.22, 0.15, 0.1), 'timber_light': (0.62, 0.47, 0.30, 0.2),
         'wood_post': (0.33, 0.24, 0.16, 0.1), 'slate': (0.26, 0.26, 0.27, 0.2), 'thatch': (0.55, 0.45, 0.30, 0.05), 'stone': (0.45, 0.40, 0.33, 0.2),
-        'inner': (0.9, 0.86, 0.8, 0.2), 'paving': (0.6, 0.58, 0.55, 0.2)}
+        'inner': (0.9, 0.86, 0.8, 0.2), 'paving': (0.6, 0.58, 0.55, 0.2), 'plaster': (0.8, 0.78, 0.74, 0.2),
+        'corrugated': (0.6, 0.6, 0.62, 0.4), 'siding': (0.5, 0.4, 0.3, 0.2)}
 
 
 def sheet(ids, path):
@@ -491,6 +1050,15 @@ def sheet(ids, path):
                     faces.append((idx[i], idx[i + 2], idx[i + 1])); fm.append(mi)
             me.from_pydata(verts, [], faces)
             for mk in p['sub']:
+                if mk not in mats:
+                    base, _, hx = mk.partition(':')
+                    c = COLS.get(base, (0.6, 0.6, 0.6, 0.2))
+                    m = bpy.data.materials.new(mk); m.use_nodes = True
+                    b = m.node_tree.nodes['Principled BSDF']
+                    col = tuple(int(hx[i:i + 2], 16) / 255.0 * (c[i // 2] if False else 1.0) for i in (0, 2, 4)) if hx else c[:3]
+                    b.inputs['Base Color'].default_value = col + (1,)
+                    b.inputs['Roughness'].default_value = 1 - c[3]
+                    mats[mk] = m
                 me.materials.append(mats[mk])
             for f, mi in zip(me.polygons, fm):
                 f.material_index = mi

@@ -50,7 +50,7 @@ Shader "CT Life/World/Terrain"
         _YardTint("Trenches yard tint (rgb), stains (a)", Color) = (1, 1, 1, 0.6)
         _Yard("Yard: slab m, patch cell m, patch share, puddle share", Vector) = (3.0, 7.0, 0.33, 0.12)
         _RockScan("Rock scans: cliff tile m, cliff macro tile m, saturation, scree tile m", Vector) = (7, 23, 0.55, 4)
-        _RockSlope("Rock by slope: meadow n.y, cliff n.y, scree from y, meadow below y", Vector) = (0.80, 0.55, 34, 135)
+        _RockSlope("Rock by slope: meadow n.y, cliff n.y, scree from y, meadow below y", Vector) = (0.72, 0.5, 34, 140)
     }
     SubShader
     {
@@ -124,6 +124,16 @@ Shader "CT Life/World/Terrain"
             half toGrass = w.g * gentle * low;
             half toScree = w.g * (1.0h - gentle) * smoothstep((half)_RockSlope.y - 0.06h, (half)_RockSlope.y + 0.1h, normalWS.y) * mtn * 0.8h;
             w.g -= toGrass + toScree; w.r += toGrass; w.a += toScree;
+            // district fix-ups 2: below a ragged tree line the mountain's rock gives way to the forest's floor wherever a tree
+            // can hold (dress.py v3_mountain_forest plants the same slopes); bare cliff stays only on the truly steep faces
+            #if defined(_FAR)
+                half treeLine = 132.0h + (macro.r - macro.g) * 40.0h;
+            #else
+                half treeLine = 132.0h + (d2.g - 0.5h) * 28.0h;
+            #endif
+            half forestable = w.g * smoothstep(0.36h, 0.46h, normalWS.y) * mtn
+                            * (1.0h - smoothstep(treeLine - 8.0h, treeLine + 8.0h, (half)positionWS.y));
+            w.g -= forestable; w.r += forestable * 0.7h; w.a += forestable * 0.3h;
             #if !defined(_FAR)
                 // alpine ledges: patches of grass and scree on the rock's less steep steps (low-frequency detail as the patch
                 // mask), thinning out towards the summit, so the faces are broken up instead of one bare cone
@@ -140,6 +150,7 @@ Shader "CT Life/World/Terrain"
                 half3 grass = half3(0.099h, 0.125h, 0.028h) * lerp(half3(1, 1, 1), lerp(dot(pf, half3(0.2126h, 0.7152h, 0.0722h)).xxx, pf, 0.2h), 0.7h)
                             * hue * _GrassTint.rgb;
                 grass *= lerp(half3(1, 1, 1), half3(1.1h, 1.02h, 0.76h), smoothstep(55.0h, 125.0h, (half)positionWS.y) * 0.8h);
+                grass *= lerp(1.0h, 0.72h, smoothstep(0.75h, 0.45h, normalWS.y) * smoothstep(50.0h, 90.0h, (half)positionWS.y));
             #else
                 half4 a1 = SAMPLE_TEXTURE2D_ARRAY(_GroundArr, sampler_GroundArr, wp / _GrassScale.z, 1);
                 half4 g1 = SAMPLE_TEXTURE2D_ARRAY(_GroundArr, sampler_GroundArr, wp / _GrassScale.x, 0);
@@ -151,6 +162,7 @@ Shader "CT Life/World/Terrain"
                 half3 patchy = lerp(dot(pa, half3(0.2126h, 0.7152h, 0.0722h)).xxx, pa, 0.2h);
                 half3 grass = lawn * lerp(half3(1, 1, 1), patchy, 0.7h) * hue * _GrassTint.rgb;
                 grass *= lerp(half3(1, 1, 1), half3(1.1h, 1.02h, 0.76h), smoothstep(55.0h, 125.0h, (half)positionWS.y) * 0.8h);   // drier alpine grass
+                grass *= lerp(1.0h, 0.72h, smoothstep(0.75h, 0.45h, normalWS.y) * smoothstep(50.0h, 90.0h, (half)positionWS.y));   // steep mountain floor: shaded, mossy
                 if (w.r > 0.02h)
                 {
                     half3 gn = UnpackNormal(SAMPLE_TEXTURE2D_ARRAY(_GroundNrm, sampler_GroundArr, wp / _GrassScale.x, 0));
@@ -162,6 +174,8 @@ Shader "CT Life/World/Terrain"
             #if defined(_FAR)
                 // the scans' mean (rock_face_03 at the near shader's saturation) - no baked strata
                 half3 rock = half3(0.152h, 0.124h, 0.100h) * rockTint * lerp(0.75h, 1.0h, ao);
+                rock = lerp(rock, rock * half3(0.7h, 0.84h, 0.52h), smoothstep(0.32h, 0.58h, normalWS.y) * 0.45h
+                            * (1.0h - smoothstep(140.0h, 170.0h, (half)positionWS.y)));     // the near LOD's moss, averaged
                 half3 scree = half3(0.1165h, 0.0891h, 0.0557h);
             #else
                 half3 rock = 0;
@@ -184,6 +198,18 @@ Shader "CT Life/World/Terrain"
                     half lc = dot(rc, half3(0.2126h, 0.7152h, 0.0722h));
                     rock = lerp(lc.xxx, rc, (half)_RockScan.z) * rockTint * lerp(0.72h, 1.0h, ao);
                     rock *= lerp(0.78h, 1.04h, smoothstep(0.15h, 0.6h, normalWS.y));      // sheer faces a shade darker
+                    // district fix-ups 2: break up the big grey faces - cliff bands of warmer and cooler stone (the 23 m
+                    // scan's own luminance drives them, so they follow the rock, not the height), dark rain streaks down the
+                    // sheer faces, moss on the less steep rock and pale lichen crusts, fading towards the summit
+                    half band = smoothstep(0.35h, 0.65h, lm / 0.14h * 0.5h + d2.g * 0.5h);
+                    rock *= lerp(half3(0.9h, 0.93h, 1.0h), half3(1.1h, 1.02h, 0.9h), band);
+                    half streak = SAMPLE_TEXTURE2D_ARRAY(_GroundArr, sampler_GroundArr, float2((positionWS.x + positionWS.z) / 9.0, positionWS.y / 70.0), 5).g;
+                    rock *= lerp(1.0h, lerp(0.72h, 1.0h, smoothstep(0.08h, 0.2h, streak)), smoothstep(0.55h, 0.25h, normalWS.y));
+                    half alt = 1.0h - smoothstep(140.0h, 170.0h, (half)positionWS.y);
+                    half moss = smoothstep(0.32h, 0.58h, normalWS.y) * smoothstep(0.35h, 0.6h, d1.r * 0.5h + d2.r * 0.5h) * alt;
+                    rock = lerp(rock, rock * half3(0.62h, 0.78h, 0.42h), moss * 0.75h);
+                    half lichen = smoothstep(0.62h, 0.75h, d1.b) * alt * 0.5h;
+                    rock = lerp(rock, rock * half3(1.25h, 1.22h, 1.05h), lichen);
                     // normal: the dominant projection's scan normal, swizzled into world space
                     half3 rn;
                     if (bw.y >= bw.x && bw.y >= bw.z)
