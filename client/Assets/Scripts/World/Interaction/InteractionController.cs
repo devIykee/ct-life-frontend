@@ -84,6 +84,8 @@ namespace CTLife.World
         private VenueChannel _channel;
         private VenueSession _session;
         private List<Interactable> _catalog = new List<Interactable>();
+        private List<Interactable> _venueCatalog = new List<Interactable>();
+        private readonly List<Interactable> _extra = new List<Interactable>();
         private SeatOccupancy _occupancy = new SeatOccupancy(null);
         private Interactable _focused;
         private InteractionHighlight _highlight;
@@ -105,9 +107,30 @@ namespace CTLife.World
         public void Rebind(VenueSceneRoot venue, VenueChannel channel)
         {
             _venue = venue; _channel = channel;
-            _catalog = InteractableCatalog.Build(venue);
+            _venueCatalog = InteractableCatalog.Build(venue);
+            MergeCatalog();
             _occupancy = new SeatOccupancy(venue != null ? venue.venueId : null);
             Publish(force: true);
+        }
+
+        /// <summary>
+        /// Local-only interactables that are not in the zone's venue (the open world's walk-in rooms: their sofas and chairs).
+        /// Replaces the previous extra set; null or empty clears it.
+        /// </summary>
+        public void SetExtraInteractables(IEnumerable<Interactable> extra)
+        {
+            _extra.Clear();
+            if (extra != null) _extra.AddRange(extra);
+            MergeCatalog();
+            Publish(force: true);
+        }
+
+        private void MergeCatalog()
+        {
+            var merged = new List<Interactable>(_venueCatalog.Count + _extra.Count);
+            merged.AddRange(_venueCatalog);
+            merged.AddRange(_extra);
+            _catalog = merged;
         }
 
         public void Init(VenueSceneRoot venue, VenueChannel channel, VenueSession session)
@@ -115,7 +138,8 @@ namespace CTLife.World
             _local = GetComponent<LocalPlayerController>();
             _view = GetComponent<AvatarView>();
             _venue = venue; _channel = channel; _session = session;
-            _catalog = InteractableCatalog.Build(venue);
+            _venueCatalog = InteractableCatalog.Build(venue);
+            MergeCatalog();
             _occupancy = new SeatOccupancy(venue != null ? venue.venueId : null);
             _local.SeatChanged += OnSeatChanged;
             _local.SeatRejected += OnRejected;

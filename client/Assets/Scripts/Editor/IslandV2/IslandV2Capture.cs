@@ -60,6 +60,18 @@ namespace CTLife.EditorTools.IslandV2
             new View("v3_side_street", new Vector3(-180f, 1.8f, -60f), new Vector3(-150f, 5f, 40f), 58f, true),
             // perf lane (2026-10-22): the hovercar's view crossing downtown at 80 m
             new View("perf_fly80", new Vector3(140f, 80f, -140f), new Vector3(-40f, 15f, 30f), 60f),
+            // world v3 districts (2026-10-23): The Trenches, Residences, Dubai Marina at eye level and from the air
+            new View("d_trenches", new Vector3(-332.5f, 1.7f, -279f), new Vector3(-283f, 6f, -288f), 60f, true),
+            new View("d_trenches_air", new Vector3(-250f, 70f, -380f), new Vector3(-360f, 0f, -250f), 55f),
+            new View("d_residences", new Vector3(-493.6f, 1.7f, 50.7f), new Vector3(-491f, 10f, 100f), 60f, true),
+            new View("d_residences_air", new Vector3(-420f, 80f, -120f), new Vector3(-560f, 0f, 60f), 55f),
+            new View("d_marina", new Vector3(560f, 1.7f, -262f), new Vector3(640f, 30f, -235f), 60f, true),
+            new View("d_marina_air", new Vector3(470f, 90f, -470f), new Vector3(560f, 10f, -260f), 52f),
+            // the first walk-in door (room space: +Z out to the street, the room at -Z)
+            new View("room_door", new Vector3(0.6f, 1.6f, 7f), new Vector3(0f, 1.4f, 0f), 60f),
+            new View("room_hall", new Vector3(0.2f, 1.6f, 0.8f), new Vector3(0.2f, 1.4f, -4f), 70f),
+            new View("room_living", new Vector3(-0.3f, 1.6f, -3.6f), new Vector3(-3f, 1.0f, -7f), 75f),
+            new View("room_back", new Vector3(-2.5f, 1.6f, -8.5f), new Vector3(0f, 1.2f, -2f), 75f),
         };
 
         public static void Run()
@@ -110,6 +122,22 @@ namespace CTLife.EditorTools.IslandV2
                 venues++;
             }
             receipt["venues"] = venues;
+            // the first walk-in room where IslandInteriors would stream it (static, for the room_* views)
+            Vector3 doorPos = Vector3.zero; Quaternion doorRot = Quaternion.identity;
+            var doorsTa = AssetDatabase.LoadAssetAtPath<TextAsset>(IslandV2Interiors.DoorsAsset);
+            if (doorsTa != null && JObject.Parse(doorsTa.text)["doors"] is JArray dl && dl.Count > 0)
+            {
+                var d0 = (JObject)dl[0];
+                doorPos = new Vector3((float)d0["p"][0], (float)d0["floor"], (float)d0["p"][2]);
+                doorRot = Quaternion.Euler(0f, (float)d0["yaw"], 0f);
+                var rp = AssetDatabase.LoadAssetAtPath<GameObject>(IslandV2Interiors.PrefabDir + "/" + (string)d0["room"] + ".prefab");
+                if (rp != null)
+                {
+                    var rg = (GameObject)PrefabUtility.InstantiatePrefab(rp);
+                    rg.transform.SetPositionAndRotation(doorPos + doorRot * new Vector3(0f, 0f, -0.04f), doorRot);
+                    receipt["room"] = rp.name + " at " + doorPos;
+                }
+            }
             receipt["venueRenderersReskinned"] = reskinned;
             receipt["venueReskinMaterial"] = world.venueReskin != null ? world.venueReskin.name : "none";
             // kit instances: edit mode has no OnEnable/LateUpdate, so decode and draw them for the capture camera here
@@ -161,10 +189,13 @@ namespace CTLife.EditorTools.IslandV2
                 if (only != null && !only.Contains(v.Name)) continue;
                 var eye = v.Eye;
                 if (v.Ground) eye.y = h.Sample(eye.x, eye.z) + v.Eye.y;
+                var lookAt = v.Target;
+                if (v.Name.StartsWith("room_")) { eye = doorPos + doorRot * v.Eye; lookAt = doorPos + doorRot * v.Target; }
                 cam.orthographic = false;
                 cam.fieldOfView = v.Fov;
                 cam.transform.position = eye;
-                cam.transform.LookAt(v.Target);
+                cam.transform.LookAt(lookAt);
+                cam.nearClipPlane = v.Name.StartsWith("room_") ? 0.05f : 0.3f;
                 Render(cam, rt, Path.Combine(outDir, "v2-" + v.Name + ".png"));
                 shots.Add(v.Name);
                 stats[v.Name] = new JObject

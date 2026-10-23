@@ -159,6 +159,7 @@ namespace CTLife.World
             IslandLightmaps.Clear();
             Current = world;
             RoadNetwork.Active = world.roads;
+            IslandInteriors.Create(go.transform);          // walk-in rooms behind the enterable doors (World v3)
             return world;
         }
 

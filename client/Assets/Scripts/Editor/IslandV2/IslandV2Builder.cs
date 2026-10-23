@@ -102,6 +102,8 @@ namespace CTLife.EditorTools.IslandV2
 
             // dressing: buildings, street furniture, trees, rocks, crops (dress.json) into their cells
             IslandV2Dress.Place(cells, h, receipt);
+            // walk-in rooms behind dress.py's enterable doors (prefabs + the door list IslandInteriors streams from)
+            IslandV2Interiors.Build(receipt);
 
             // write the streamed cells
             foreach (var old in Directory.GetFiles(IslandV2Paths.CellsDir, "*.prefab")) AssetDatabase.DeleteAsset(old.Replace('\\', '/'));
@@ -237,7 +239,7 @@ namespace CTLife.EditorTools.IslandV2
                 Set($"Street/{n}_albedo.png", true, true, 1024);
                 Set($"Street/{n}_normal.png", false, true, 1024, normal: true);
             }
-            Set("paving_mask.png", false, false, 1024, fmt: TextureImporterFormat.R8);
+            Set("paving_mask.png", false, false, 2048, fmt: TextureImporterFormat.R8);    // downtown + The Trenches + Dubai Marina (1156 x 690 m)
             foreach (var f in System.IO.Directory.GetFiles(IslandV2Paths.Textures + "/Signs", "*.png")) Set("Signs/" + System.IO.Path.GetFileName(f), true, false, 512);
         }
 
@@ -802,7 +804,7 @@ namespace CTLife.EditorTools.IslandV2
             Directory.CreateDirectory(IslandV2Paths.Data);
             var hp = IslandV2Paths.Data + "/heightfield.bytes";
             var op = IslandV2Paths.Data + "/heightfield_holes.bytes";
-            File.Copy(Path.Combine(IslandV2Paths.Out, "height.r16"), hp, true);
+            File.Copy(IslandV2Paths.HeightFile(IslandV2Paths.Out), hp, true);
             File.WriteAllBytes(op, IslandHeightfield.PackHoles(h.Hole ?? new bool[h.N * h.N]));
             AssetDatabase.ImportAsset(hp, ImportAssetOptions.ForceSynchronousImport);
             AssetDatabase.ImportAsset(op, ImportAssetOptions.ForceSynchronousImport);

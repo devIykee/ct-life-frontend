@@ -17,7 +17,13 @@ for key, d in by_src.items():
     m = {}
     mp = os.path.join(RAW, str(key), 'meta.json')
     if os.path.exists(mp):
+        import sys
+        sys.path.insert(0, HERE)
         m = json.load(open(mp))
+        if 'display' not in m and 'lic' not in m:
+            import ast
+            u = m.get('user'); u = ast.literal_eval(u) if isinstance(u, str) and u.startswith('{') else (u or {})
+            m = dict(m, display=u.get('displayName') or u.get('username'), user=u.get('username'))
     name = m.get('name') or re.sub(r'^"|".*$', '', v.get('credit', '')) or key
     author = m.get('display') or m.get('user') or ''
     lic = v.get('licence', '')

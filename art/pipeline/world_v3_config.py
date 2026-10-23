@@ -21,21 +21,37 @@ PACKS = {
     '98faceefdc154d60a2b8617ca5e182e7': dict(prefix='m99_ny_building', family='v3_buildings', kind='building', mode='cluster'),
     'd96380fb001345cca9a9be121f3e43d5': dict(prefix='m99_corp_tower', family='v3_buildings', kind='building', mode='cluster', lod0=20000),
     # ---------------------------------------------------------------- residential
-    'ace3194d157447548dbdb87d14122b18': dict(prefix='lg_midrise_flats', family='v3_residential', kind='building', mode='cluster'),
+    # an enterable entrance (the walk-in apartment): 1.1 x 2.2 m through the facade and the backing box, at the central door
+    'ace3194d157447548dbdb87d14122b18': dict(prefix='lg_midrise_flats', family='v3_residential', kind='building', mode='cluster',
+                                             door=dict(width=1.1, height=2.2, through=True)),
     '0542fa5076ca4e5499e9cb0fbfeb00f7': dict(prefix='lg_astergea_flats', family='v3_residential', kind='building', mode='cluster'),
     '0d928b4f665e4803adec4e80cec70ac1': dict(prefix='lg_contemporary_apts', family='v3_residential', kind='building', mode='cluster'),
     '798ffaeadacf4e08a2665785422fb45d': dict(prefix='aa_american_house', family='v3_residential', kind='building', mode='whole'),
     # ---------------------------------------------------------------- harbour / industrial
-    'e6e105d35b3f486292c42ffa52f363c0': dict(prefix='m99_warehouse', family='v3_harbour', kind='building', mode='cluster'),
-    'e0b0d0342be24e6c923319991a2a4d3d': dict(prefix='dz_industrial', family='v3_harbour', kind='building', mode='cluster'),
+    # the download is 247 x 108 x 43 m: a 15 m sawtooth warehouse (86 x 38 m, 3.2 m loading doors)
+    'e6e105d35b3f486292c42ffa52f363c0': dict(prefix='m99_warehouse', family='v3_harbour', kind='building', mode='cluster', height=15.0, nonmetal=True),
+    # cluster 25 is the pack's texture showcase wall (99 x 191 x 89 m), not a building
+    'e0b0d0342be24e6c923319991a2a4d3d': dict(prefix='dz_industrial', family='v3_harbour', kind='building', mode='cluster', skip=[24], nonmetal=True),
     '772f4be391a245f699c54e6cf157c58d': dict(prefix='sh_container', family='v3_harbour', kind='prop', mode='whole', lod0=3000),
     '49851dc7a51b43bda6aea06856c26a85': dict(prefix='ch_tower_crane', family='v3_harbour', kind='prop', mode='whole', lod0=8000, lod1=2000),
     # ---------------------------------------------------------------- shops / storefronts
-    '348da01c195d46eca29e478e98aab16c': dict(prefix='m99_storefront', family='v3_shops', kind='prop', mode='cluster'),
+    # shop interiors (one 2k atlas with baked emissive), for the venue-interior pass: one 58 m 'prop' as it stands (needs
+    # its real scale and a split per shop), so not processed yet
+    '348da01c195d46eca29e478e98aab16c': dict(prefix='m99_storefront', family='v3_shops', kind='prop', mode='cluster', exclude=True),
     '3170993b67ee4e58b27d69d5877f71bd': dict(prefix='oz_brick_shop', family='v3_shops', kind='building', mode='whole'),
     '6ae7775d2b21417f8bb6aa3d821d294b': dict(prefix='lg_corner_shop', family='v3_shops', kind='building', mode='whole'),
     # ---------------------------------------------------------------- street furniture
-    '32b8b82bb1e9489c993799c91967a916': dict(prefix='tj_city_prop', family='v3_props', kind='prop', mode='cluster'),
+    # by glTF node: the bounding-box clusters merged the hydrant into the bollard ring and the dumpster into its posts.
+    # Not used: the wall ATM (mounted 1.2 m up) and the post box (a real postal service's livery).
+    '32b8b82bb1e9489c993799c91967a916': dict(prefix='tj_city_prop', family='v3_props', kind='prop', mode='named', groups={
+        'tj_trash_large': ['TrashCanLarge'], 'tj_trash_small': ['TrashCanSmall'], 'tj_trash_commercial': ['TrashCommercial'],
+        'tj_trash_cap': ['TrashCanCap'], 'tj_crossing_sign': ['Crossing'], 'tj_post_barrier': ['PostBarrier'],
+        'tj_drain': ['Drain'], 'tj_storm_drain': ['StormDrain'], 'tj_manhole': ['Manhole'], 'tj_tree_grate': ['Grate'],
+        'tj_bench_metal': ['Bench'], 'tj_bench_concrete': ['ConcreteBench'], 'tj_bench_park_short': ['ParkBenchShort'],
+        'tj_bench_park_long': ['ParkBenchLong'], 'tj_hydrant': ['FireHydrant'], 'tj_parking_meter': ['ParkingMeter'],
+        'tj_utility_box': ['Utility'], 'tj_bus_stop': ['BusStop'], 'tj_pallet_a': ['pallet1'], 'tj_pallet_b': ['pallet2'],
+        'tj_tarp_crates': ['Tarp', 'TarpCrate1', 'TarpCrate2', 'TarpCrate3', 'TarpCrate4'], 'tj_street_light': ['Light'],
+        'tj_dumpster': ['Dumpster', 'LidLeft', 'LidRight']}),
     '27a6775c51e44bfda8e1ac8725eb3e9e': dict(prefix='sg_street_prop', family='v3_props', kind='prop', mode='cluster'),
     '8c984e73fa274c49a444f9991444d542': dict(prefix='ts_bus_stop', family='v3_props', kind='prop', mode='whole', lod0=4000),
     '6caa33dd3ae6463ab4b60fb15e53e2e1': dict(prefix='tj_dumpster', family='v3_props', kind='prop', mode='cluster'),
@@ -45,7 +61,11 @@ PACKS = {
     '5c134526af464b5389f6c8a29fddeaff': dict(prefix='m99_construction', family='v3_props', kind='prop', mode='cluster'),
     '61c6f6f70db14bbb89ecdfa04b99bbc6': dict(prefix='m99_playground', family='v3_props', kind='prop', mode='whole', lod0=4000),
     # ---------------------------------------------------------------- vegetation
-    'b5d2833c258f4054a01ee2b4ef85adf0': dict(prefix='lp_maple', family='v3_trees', kind='tree', mode='cluster'),
+    # LOLIPOP maples ship LOD0-2 + billboard per tree (all 12 trees in one scene): pack_lods picks the medium trees at their
+    # own 10-13.5 m and the large ones scaled to 12.5-14 m (street and park trees, 8-14 m)
+    'b5d2833c258f4054a01ee2b4ef85adf0': dict(prefix='lp_maple', family='v3_trees', kind='tree', mode='whole', pack_lods=True,
+                                             pick={'Acer_medium_1': None, 'Acer_medium_2': None, 'Acer_medium_3': None,
+                                                   'Acer_large_1': 14.0, 'Acer_large_2': 13.5, 'Acer_large_3': 12.5}),
     '10312697ec994fc99355cb94f1963a2e': dict(prefix='lp_lilac', family='v3_trees', kind='tree', mode='cluster', lod0=2500),
     'd05c8ffb6ec64a7184c4b673e21f7224': dict(prefix='ns_palm', family='v3_trees', kind='tree', mode='cluster'),
     '5ff5a51e74324845a4e4905f182dfb2b': dict(prefix='m99_forest', family='v3_trees', kind='tree', mode='cluster'),

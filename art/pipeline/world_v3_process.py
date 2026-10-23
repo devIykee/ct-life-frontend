@@ -29,7 +29,25 @@ FAM = args[args.index('--family') + 1] if '--family' in args else None
 
 def meta(uid):
     p = os.path.join(RAW, uid, 'meta.json')
-    return json.load(open(p)) if os.path.exists(p) else {}
+    return normalise_meta(json.load(open(p))) if os.path.exists(p) else {}
+
+
+def normalise_meta(m):
+    """Two meta.json shapes exist: the fetcher's {name, display, url, lic} and the raw Sketchfab API model (user and license
+    as Python-repr dicts, viewerUrl). Return the first shape."""
+    import ast
+    if 'display' in m or 'lic' in m:
+        return m
+    def d(v):
+        if isinstance(v, str) and v.startswith('{'):
+            try:
+                return ast.literal_eval(v)
+            except (ValueError, SyntaxError):
+                return {}
+        return v or {}
+    u, l = d(m.get('user')), d(m.get('license'))
+    return dict(m, display=u.get('displayName') or u.get('username'), user=u.get('username'), url=m.get('viewerUrl', ''),
+                lic=l.get('label') or l.get('fullName') or '?')
 
 
 def credit(m):
@@ -158,19 +176,35 @@ def process_pack(uid, cfg):
     if kind == 'animal':
         return {cfg['prefix']: process_animal(uid, cfg, d, td, base)}
     objs = mesh_objs()
-    groups = [objs] if cfg['mode'] == 'whole' else clusters(objs, cfg.get('tol', 0.3))
-    min_xy = cfg.get('min_xy', 0.15)
-    groups = [g for g in groups if (lambda b: math.hypot(b[1].x - b[0].x, b[1].y - b[0].y))(W.world_bounds(g)) >= min_xy]
-    for k in cfg.get('skip', []):
-        if k < len(groups):
-            groups[k] = None
-    groups = [g for g in groups if g]
+    if kind == 'tree' and cfg.get('pack_lods'):
+        return process_tree_pack_lods(cfg, d, td, base)
+    if cfg['mode'] == 'named':
+        # one asset per entry of cfg['groups'] (name -> top-level glTF node names), for packs whose props sit too close
+        # together for the bounding-box clusters (a hydrant inside a ring of bollards, a dumpster beside its posts)
+        named = []
+        for nm, roots in cfg['groups'].items():
+            g = [o for o in objs if any(a.split('.')[0] in roots for a in ancestors(o))]
+            if g:
+                named.append((nm, g))
+            else:
+                W.log('named group empty', nm, roots)
+        names = [nm for nm, _ in named]
+        groups = [g for _, g in named]
+    else:
+        groups = [objs] if cfg['mode'] == 'whole' else clusters(objs, cfg.get('tol', 0.3))
+        min_xy = cfg.get('min_xy', 0.15)
+        groups = [g for g in groups if (lambda b: math.hypot(b[1].x - b[0].x, b[1].y - b[0].y))(W.world_bounds(g)) >= min_xy]
+        # names follow the cluster order before 'skip', so dropping one keeps every other asset's id
+        names = [cfg['prefix'] if len(groups) == 1 else f'{cfg["prefix"]}_{i + 1:02d}' for i in range(len(groups))]
+        keep = [i for i in range(len(groups)) if i not in set(cfg.get('skip', []))]
+        groups, names = [groups[i] for i in keep], [names[i] for i in keep]
     W.log(cfg['prefix'], len(groups), 'assets from', len(objs), 'meshes')
-    names = [cfg['prefix'] if len(groups) == 1 else f'{cfg["prefix"]}_{i + 1:02d}' for i in range(len(groups))]
     if kind == 'building':
         for name, g in zip(names, groups):
             r = W.building_lods(name, g, td, os.path.join(d, name + '.fbx'), door=cfg.get('door', False), yaw=(None if cfg.get('yaw') == 'auto' else cfg.get('yaw', 0.0)),
                                 lod0=cfg.get('lod0', 15000), lod1=cfg.get('lod1', 4000), card=cfg.get('card', True))
+            if cfg.get('nonmetal'):
+                zero_metal(os.path.join(td, f'{name}_MaskMap.png'))
             r.update(fbx=f'world_v3/{fam}/{name}.fbx', kind='building', tags=['building', 'kit:v3', 'pack:' + cfg['prefix']], **base)
             man[name] = r
         return man
@@ -216,6 +250,129 @@ def process_pack(uid, cfg):
                          size_m=[round(x, 3) for x in size], materials=at['materials'],
                          textures=at['textures'] + ([f'{name}_billboard.png'] if kind == 'tree' else []), tags=tags, **base)
         W.log(name, man[name]['tris'], man[name]['size_m'])
+        for o in out:
+            bpy.data.objects.remove(o)
+    return man
+
+
+def zero_metal(path):
+    """Mask map R (metallic) to 0: packs whose glTF materials keep the default metallicFactor 1 on brick and concrete
+    render near-black under the PBR kit shader (no metal reflections to show)."""
+    if not os.path.exists(path):
+        return
+    im = bpy.data.images.load(path)
+    a = np.empty(im.size[0] * im.size[1] * 4, np.float32)
+    im.pixels.foreach_get(a)
+    a = a.reshape(-1, 4)
+    a[:, 0] = 0.0
+    im.pixels.foreach_set(a.ravel())
+    im.filepath_raw = path
+    im.file_format = 'PNG'
+    im.save()
+    bpy.data.images.remove(im)
+    W.log('metallic zeroed', os.path.basename(path))
+
+
+def ancestors(o):
+    out = []
+    while o.parent is not None:
+        o = o.parent
+        out.append(o.name)
+    return out
+
+
+def _base_color_image(mat):
+    """The image feeding a material's Principled base colour (glTF import: Image Texture -> Base Color)."""
+    for n in mat.node_tree.nodes:
+        if n.type == 'BSDF_PRINCIPLED':
+            for l in mat.node_tree.links:
+                if l.to_node == n and l.to_socket.name == 'Base Color':
+                    fn = l.from_node
+                    for _ in range(4):
+                        if fn.type == 'TEX_IMAGE':
+                            return fn.image
+                        ins = [x for x in fn.inputs if x.is_linked]
+                        if not ins:
+                            break
+                        fn = ins[0].links[0].from_node
+    return None
+
+
+def process_tree_pack_lods(cfg, d, td, base):
+    """Tree packs that ship their own LODs (LOLIPOP maples: <tree>/<tree>_LOD0.._LOD2 with bark + leaf-cluster meshes,
+    <tree>_Billboard_LOD3; each level 20 m along -X): one asset per picked tree, scaled to its target height. Our LOD0 is
+    the most detailed pack level within lod0 tris, LOD1 the next level (decimated under lod1 if needed), LOD2 the
+    crossed billboard. Materials: the pack's shared bark (tiling) and leaf-cluster (cut-out) textures as
+    <prefix>_bark / <prefix>_leaves, base colour only (the kit tree shader)."""
+    objs = mesh_objs()
+    by_tree = {}
+    for o in objs:
+        lod = o.parent.name if o.parent else ''
+        tree = o.parent.parent.name if o.parent and o.parent.parent else ''
+        by_tree.setdefault(tree, {}).setdefault(lod, []).append(o)
+    # shared materials -> two named materials with saved base colour maps
+    renamed = {}
+    for o in objs:
+        for sl in o.material_slots:
+            m = sl.material
+            if not m or m.name in renamed or 'Billboard' in m.name or m.name == 'Checker':
+                continue
+            role = 'bark' if 'Bark' in m.name else 'leaves' if 'Cluster' in m.name else None
+            if role is None:
+                continue
+            im = _base_color_image(m)
+            fn = f'{cfg["prefix"]}_{role}.png'
+            if im is not None:
+                arr = W._img_array(im, min(1024, im.size[0]))
+                W.save_png(arr, os.path.join(td, fn), 4)
+                W.log('tree texture', m.name, '->', fn, im.size[:], 'alpha min', round(float(arr[..., 3].min()), 3))
+            renamed[m.name] = f'{cfg["prefix"]}_{role}'
+            m.name = renamed[m.name]
+    man = {}
+    lod0_t, lod1_t = cfg.get('lod0', 5500), cfg.get('lod1', 2200)
+    for tree, target_h in cfg['pick'].items():
+        levels = by_tree.get(tree)
+        if not levels:
+            W.log('tree missing', tree)
+            continue
+        keys = sorted(k for k in levels if '_LOD' in k and 'Billboard' not in k)      # <tree>_LOD0, _LOD1, _LOD2
+        ttri = [sum(W.tris(o) for o in levels[k]) for k in keys]
+        i0 = next((i for i, t in enumerate(ttri) if t <= lod0_t), len(keys) - 1)
+        i1 = min(i0 + 1, len(keys) - 1)
+        name = f'{cfg["prefix"]}_{tree.split("_", 1)[1].lower()}'                      # Acer_medium_1 -> lp_maple_medium_1
+        out = []
+        ref = None
+        for li, k in ((0, keys[i0]), (1, keys[i1])):
+            parts = W.copy_parts(levels[k], f'{name}_l{li}')
+            j = W.join_parts(parts, f'{name}_LOD{li}')
+            vs = np.array([v.co[:] for v in j.data.vertices])
+            if ref is None:
+                # the trunk's foot: the lowest 0.4 m of the level, its XY centre
+                low = vs[vs[:, 2] < vs[:, 2].min() + 0.4]
+                ref = (low[:, 0].mean(), low[:, 1].mean(), vs[:, 2].min(), vs[:, 2].max() - vs[:, 2].min())
+                s = (target_h / ref[3]) if target_h else 1.0
+            else:
+                low = vs[vs[:, 2] < vs[:, 2].min() + 0.4]
+            cx, cy = low[:, 0].mean(), low[:, 1].mean()
+            j.data.transform(Matrix.Translation(Vector((-cx, -cy, -vs[:, 2].min()))))
+            j.data.transform(Matrix.Scale(s, 4))
+            j.data.update()
+            if li == 1 and W.tris(j) > lod1_t * 1.15:
+                jj = W.lod_under(j, lod1_t, j.name + 'x', planar_first=False)
+                bpy.data.objects.remove(j)
+                j = jj
+                j.name = j.data.name = f'{name}_LOD1'
+            out.append(j)
+        out.append(W.billboard(out[0], name, td))
+        vs = np.array([v.co[:] for v in out[0].data.vertices])
+        size = (vs.max(0) - vs.min(0)).tolist()
+        W.export_fbx(out, os.path.join(d, name + '.fbx'))
+        mats = [f'{cfg["prefix"]}_bark', f'{cfg["prefix"]}_leaves']
+        man[name] = dict(fbx=f'world_v3/{os.path.basename(d)}/{name}.fbx', kind='tree', tris=[W.tris(o) for o in out],
+                         size_m=[round(x, 3) for x in size], materials=mats,
+                         textures=[f'{cfg["prefix"]}_bark.png', f'{cfg["prefix"]}_leaves.png', f'{name}_billboard.png'],
+                         tags=['tree', 'kit:v3', 'pack:' + cfg['prefix']], pack_levels=[keys[i0], keys[i1]], **base)
+        W.log(name, man[name]['tris'], man[name]['size_m'], 'scale', round(s, 3), 'from', keys[i0], keys[i1])
         for o in out:
             bpy.data.objects.remove(o)
     return man

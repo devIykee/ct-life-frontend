@@ -28,7 +28,11 @@ namespace CTLife.World
                 p.kind == "crop" || p.kind == "grass" || p.kind == "bush" || p.kind == "boat" || p.kind == "ship" ||
                 id.Contains("bush") || id.Contains("flower") || id.Contains("pebble") || id.Contains("awning"))
                 return IslandCollisionSpec.Shape.None;
-            if (id.Contains("parasol") || id.Contains("sign_stop") || id.Contains("sign_post")) return IslandCollisionSpec.Shape.Capsule;
+            // flat street covers and pallets are walked over
+            if (id == "tj_drain" || id == "tj_storm_drain" || id == "tj_manhole" || id == "tj_tree_grate" || id.StartsWith("tj_pallet"))
+                return IslandCollisionSpec.Shape.None;
+            if (id.Contains("parasol") || id.Contains("sign_stop") || id.Contains("sign_post") || id == "tj_crossing_sign" || id == "tj_parking_meter")
+                return IslandCollisionSpec.Shape.Capsule;
             if (p.kind == "rock") return IslandCollisionSpec.Shape.Box;
             if (p.kind == "prop" || p.kind == "large_prop") return IslandCollisionSpec.Shape.Box;
             return IslandCollisionSpec.Shape.None;

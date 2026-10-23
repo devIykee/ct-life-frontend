@@ -43,6 +43,13 @@ namespace CTLife.EditorTools.IslandV2
             // (2026-10-22 LOD continuity: the baked box took over at 160 m and read as a different building; switches now
             // sit further out and cross-fade, IslandInstanceRenderer)
             if (id.StartsWith("m99_")) return (new[] { 45f, 240f, 1500f }, 140f, Layers.Building, "building");
+            // world v3 districts (2026-10-23): DanielZhabotinsky industrial and Lost Gecko flats (2-3.5k-tri LOD0, own LOD2 box)
+            if (id.StartsWith("dz_") || id.StartsWith("lg_")) return (new[] { 60f, 260f, 1500f }, 140f, Layers.Building, "building");
+            // TampaJoey city props: the street light is a lamp (post proxy); flat grates and covers draw close only
+            if (id == "tj_street_light") return (new[] { 40f, 140f, 380f }, 35f, Layers.Prop, "lamp");
+            if (id == "tj_drain" || id == "tj_storm_drain" || id == "tj_manhole" || id == "tj_tree_grate") return (new[] { 30f, 60f }, 0f, Layers.Prop, "prop");
+            if (id == "tj_bus_stop" || id == "tj_dumpster") return (new[] { 40f, 200f }, 30f, Layers.Prop, "prop");
+            if (id.StartsWith("tj_")) return (new[] { 28f, 110f }, 15f, Layers.Prop, "prop");
             if (id.StartsWith("nc_building")) return (new[] { 30f, 170f, 1300f }, 110f, Layers.Building, "building");
             // planter trees: their own billboard LOD2 (no baked impostor)
             if (id.StartsWith("nc_tree") || id.StartsWith("lp_")) return (new[] { 30f, 100f, 320f }, 45f, Layers.Vegetation, "tree");
@@ -438,8 +445,8 @@ namespace CTLife.EditorTools.IslandV2
         /// </summary>
         private static bool V3Texture(TextureImporter ti, string file)
         {
-            bool building = file.StartsWith("nc_building") || file.StartsWith("m99_");
-            bool v3 = building || file.StartsWith("nc_") || file.StartsWith("ph_") || file.StartsWith("v3_");
+            bool building = file.StartsWith("nc_building") || file.StartsWith("m99_") || file.StartsWith("dz_") || file.StartsWith("lg_");
+            bool v3 = building || file.StartsWith("nc_") || file.StartsWith("ph_") || file.StartsWith("v3_") || file.StartsWith("tj_") || file.StartsWith("lp_");
             if (!v3) return false;
             bool normal = file.EndsWith("_Normal") || file == "nc_trees_01" || file == "nc_trees_04" || file == "nc_trees_07";
             bool mask = file.EndsWith("_MaskMap");
@@ -450,9 +457,9 @@ namespace CTLife.EditorTools.IslandV2
             ti.mipmapEnabled = true;
             ti.filterMode = FilterMode.Trilinear;
             ti.anisoLevel = building && !far ? 2 : 1;
-            ti.wrapMode = file.StartsWith("nc_trees_") ? TextureWrapMode.Repeat : TextureWrapMode.Clamp;
+            ti.wrapMode = file.StartsWith("nc_trees_") || file == "lp_maple_bark" || file == "lp_maple_leaves" ? TextureWrapMode.Repeat : TextureWrapMode.Clamp;
             ti.alphaSource = TextureImporterAlphaSource.FromInput;
-            bool cut = file.EndsWith("_billboard") || file == "nc_trees_00" || file == "nc_trees_05";
+            bool cut = file.EndsWith("_billboard") || file == "nc_trees_00" || file == "nc_trees_05" || file == "lp_maple_leaves";
             // colour dilated into the clear atlas texels (alphaIsTransparency) for every colour map: mips no longer bleed the
             // padding's black/white into UV island edges ("texture to their edges", 2026-10-22)
             ti.alphaIsTransparency = !normal && !mask;
@@ -472,6 +479,8 @@ namespace CTLife.EditorTools.IslandV2
             ["Wall_3.056_7"] = ("nc_trees_00", "leaves"),       // grass and bamboo cut-outs, planter swatches
             ["Wall_3.056_15"] = ("nc_trees_02", "tree"),        // bark
             ["Wall_3.056_14"] = ("nc_trees_05", "leaves"),      // canopy cut-outs
+            ["lp_maple_bark"] = ("lp_maple_bark", "tree"),      // LOLIPOP maples: tiling bark, leaf-cluster cut-outs
+            ["lp_maple_leaves"] = ("lp_maple_leaves", "leaves"),
         };
 
         /// <summary>

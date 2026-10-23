@@ -140,7 +140,9 @@ namespace CTLife.World
                 if (slot.kind == Kind.Trunk)
                 {
                     // the trunk, not the canopy: scales with the tree's footprint, ~0.15-0.4 m, up to head height and a bit
-                    radius = Mathf.Clamp(0.06f * Mathf.Max(b.size.x, b.size.z) * sxz, 0.15f, 0.4f);
+                    // (the LOLIPOP maples' crowns are 9-13 m wide over a slim trunk)
+                    float k = p.id != null && p.id.StartsWith("lp_", System.StringComparison.Ordinal) ? 0.025f : 0.06f;
+                    radius = Mathf.Clamp(k * Mathf.Max(b.size.x, b.size.z) * sxz, 0.15f, 0.4f);
                     height = Mathf.Max(radius * 2f, Mathf.Min(2.5f, b.max.y * sy));
                 }
                 else

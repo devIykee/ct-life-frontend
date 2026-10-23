@@ -80,10 +80,14 @@ namespace CTLife.World
         public static void Register(IslandInstances s) { if (!Sets.Contains(s)) Sets.Add(s); }
         public static void Unregister(IslandInstances s) => Sets.Remove(s);
 
+        /// <summary>Set while the camera is inside a closed walk-in room (IslandInteriors): nothing outside can be seen, so the
+        /// kit draws nothing (main pass and shadow casters).</summary>
+        public static bool HideWorld;
+
         private void LateUpdate()
         {
             var cam = Camera.main;
-            if (cam == null || Sets.Count == 0) { LastDraws = 0; LastInstances = 0; return; }
+            if (cam == null || Sets.Count == 0 || HideWorld) { LastDraws = 0; LastInstances = 0; return; }
             _watch.Restart();
             Render(cam);
             LastCpuMs = _watch.Elapsed.TotalMilliseconds;

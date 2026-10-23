@@ -12,7 +12,7 @@ namespace CTLife.EditorTools.IslandV2
         public static IslandHeightfield Load(string outDir)
         {
             var meta = JObject.Parse(File.ReadAllText(Path.Combine(outDir, "terrain.json")));
-            var bytes = File.ReadAllBytes(Path.Combine(outDir, "height.r16"));
+            var bytes = File.ReadAllBytes(IslandV2Paths.HeightFile(outDir));
             var h = IslandHeightfield.FromBytes(bytes, null, (int)meta["samples"], (float)meta["cell"], (float)meta["min"][0], (float)meta["min"][1],
                 (float)meta["hmin"], (float)meta["hmax"], (float)meta["sea"], (float)meta["flightCeiling"]);
             var holesPath = Path.Combine(outDir, "holes.png");
@@ -36,6 +36,12 @@ namespace CTLife.EditorTools.IslandV2
     {
         public static string Repo => Path.GetFullPath(Path.Combine(Application.dataPath, "..", ".."));
         public static string Out => Path.Combine(Repo, "tools", "world", "islandgen", "out");
+        /// <summary>dress.py's copy of the heightfield (levelled under the walk-in rooms) when it wrote one, else islandgen's.</summary>
+        public static string HeightFile(string outDir)
+        {
+            var dressed = Path.Combine(outDir, "height_dressed.r16");
+            return File.Exists(dressed) ? dressed : Path.Combine(outDir, "height.r16");
+        }
         public const string Root = "Assets/World/Island";
         public const string Textures = Root + "/Textures";
         public const string Shaders = Root + "/Shaders";

@@ -318,6 +318,8 @@ class Dress:
         return None
 
     def pool(self, style):
+        if getattr(self, 'v3_district_pools', False):
+            return self.pool_v3_district(style)
         if getattr(self, 'v3_only', False):
             return self.pool_v3(style)
         K = self.kit
@@ -724,10 +726,10 @@ class Dress:
         log(f'v3 downtown: {removed}; {len(new)} v3 buildings ({sum(p == "m99_office_tower" for _, p in new)} tower), '
             f'{cut} plants cut, rooftop boards {rehomed}/{len(roof_boards)}, swaps {swaps} ({time.time() - t0:.1f}s)')
 
-    def _v3_add_building(self, pid, x, z, yaw, sc=1.0, margin=1.2, why=None):
+    def _v3_add_building(self, pid, x, z, yaw, sc=1.0, margin=1.2, why=None, slope=1.6, allow=(0,)):
         it = self.kit.get(pid)
         w, d, hh = it['w'] * sc, it['d'] * sc, it['h'] * sc
-        if not self.occ.rect_free(x, z, w, d, yaw, margin=margin):
+        if not self.occ.rect_free(x, z, w, d, yaw, margin=margin, allow=allow):
             if why is not None:
                 a = math.radians(yaw)
                 U, V = np.meshgrid(np.arange(-w / 2, w / 2 + 0.01, 1.0), np.arange(-d / 2, d / 2 + 0.01, 1.0))
@@ -736,7 +738,7 @@ class Dress:
                     why[c] = why.get(c, 0) + 1
             return False
         ys = self.g.y([x - w / 2, x + w / 2, x, x - w / 2, x + w / 2], [z - d / 2, z + d / 2, z, z + d / 2, z - d / 2])
-        if ys.max() - ys.min() > 1.6 * (1 + max(w, d) / 30):
+        if ys.max() - ys.min() > slope * (1 + max(w, d) / 30):
             if why is not None:
                 why['slope'] = why.get('slope', 0) + 1
             return False
@@ -920,6 +922,31 @@ class Dress:
         log(f'v3 paving: {area} m2 paved downtown ({W} x {H} m mask)')
         return area
 
+    def v3_paving_all(self):
+        """The paving mask over every paved district: Timeline Downtown, The Trenches and Dubai Marina (dense frontage,
+        yards and forecourts are paved, not grass lots); Residences keeps its gardens. Same 1 m mask format as v3_paving,
+        one domain over their union."""
+        polys = [np.array(L.DOWNTOWN_POLY, float)] + [np.array(self._district_poly(d), float) for d in ('trenches', 'dubai_marina')]
+        allp = np.concatenate(polys)
+        x0, z0 = allp.min(0) - 8.0
+        x1, z1 = allp.max(0) + 8.0
+        W, H = int(math.ceil(x1 - x0)), int(math.ceil(z1 - z0))
+        img = Image.new('L', (W, H), 0)
+        dr = ImageDraw.Draw(img)
+        for P in polys:
+            dr.polygon([(x - x0, H - 1 - (z - z0)) for x, z in P], fill=255)
+        inside = np.asarray(img) > 0
+        xs = x0 + np.arange(W) + 0.5
+        zs = z0 + (H - 1 - np.arange(H)) + 0.5
+        X, Z = np.meshgrid(xs, zs)
+        codes = self.occ.codes(X.ravel(), Z.ravel()).reshape(H, W)
+        paved = inside & ~np.isin(codes, (Occupancy.PARK, Occupancy.WATER, Occupancy.FIELD))
+        m = ndimage.gaussian_filter(paved.astype(np.float32), 1.2)
+        m = np.clip((m - 0.15) / 0.7, 0, 1)
+        Image.fromarray((m * 255 + 0.5).astype(np.uint8), 'L').save(self.V3_PAVING_PNG, optimize=True)
+        self.paving = dict(min=[round(float(x0), 2), round(float(z0), 2)], size=[W, H], png='World/Island/Textures/paving_mask.png')
+        log(f'v3 paving (downtown, trenches, marina): {int(paved.sum())} m2 ({W} x {H} m mask)')
+
     def v3_street_kit(self):
         """The rest of the toy street kit downtown goes semi-real (art/processed/world_v3/v3_street): traffic lights and
         stop signs, bins, the vendor carts, rows of parked two-wheelers become bike racks, bus shelters become the glass
@@ -1051,6 +1078,475 @@ class Dress:
                                     int(RNG.integers(self.N_SHOP_SIGNS))])
             n += 1
         return {'v3_shop_signs': n}
+
+    # -------------------------------------------------------------- world v3: the districts outside downtown (2026-10-23)
+    V3_DISTRICTS = ('trenches', 'residences', 'dubai_marina')
+    V3_SHEDS = ['dz_industrial_01', 'dz_industrial_02', 'dz_industrial_03', 'dz_industrial_04', 'dz_industrial_05', 'dz_industrial_10',
+                'dz_industrial_12', 'dz_industrial_30', 'dz_industrial_21', 'dz_industrial_17']
+    V3_SMALL_SHEDS = ['dz_industrial_11', 'dz_industrial_13', 'dz_industrial_29', 'dz_industrial_15']
+    # yard structures: (id, cap) - tanks, silos, chimneys, the water tower, the gantry crane, the substation, the radio mast
+    V3_YARD = [('dz_industrial_23', 4), ('dz_industrial_27', 2), ('dz_industrial_28', 6), ('dz_industrial_26', 6), ('dz_industrial_22', 3),
+               ('dz_industrial_24', 3), ('dz_industrial_14', 2), ('dz_industrial_18', 2), ('dz_industrial_06', 4), ('dz_industrial_08', 1),
+               ('dz_industrial_07', 3)]
+    V3_FLATS = ['lg_midrise_flats', 'lg_astergea_flats_01', 'lg_astergea_flats_02']
+    # unassigned land next to a district where its big buildings may stand (the marina's north bank across the ring road,
+    # the harbour's riverside north of The Trenches)
+    V3_SITE_EXTRA = {'dubai_marina': [[(350, -252), (700, -252), (700, -205), (350, -205)]],
+                     'trenches': [[(-470, -175), (-250, -175), (-250, -120), (-470, -120)]]}
+    V3_MAPLES = ['lp_maple_medium_1', 'lp_maple_medium_2', 'lp_maple_medium_3', 'lp_maple_large_1', 'lp_maple_large_2', 'lp_maple_large_3']
+    # walk-in interiors: building -> (door_main y in model space (Blender, front -Y), interior room id)
+    V3_ENTERABLE = {'lg_midrise_flats': (-6.8, 'int_apartment_modern')}
+
+    def _district_poly(self, did):
+        return next(p for d, p in self.districts if d == did)
+
+    def _v3_clear(self, did):
+        """Toy-kit buildings out of a district with their shopfront dressing, wall decor, shop signs and rooftop boards;
+        their ground goes back to FREE (as v3_downtown does for Timeline)."""
+        K = self.kit.items
+        inside = lambda x, z: self.district_at(x, z) == did
+        keep_b, keep_i, gone = [], [], []
+        for box, pid in zip(self.boxes, self.box_ids):
+            (gone if inside(box[0], box[2]) and K[pid]['kit'] not in ('nc', 'v3') else keep_b).append(box)
+            if not (inside(box[0], box[2]) and K[pid]['kit'] not in ('nc', 'v3')):
+                keep_i.append(pid)
+        old_ids = set(pid for box, pid in zip(self.boxes, self.box_ids) if box in gone)
+        for pid in old_ids:
+            self.inst[pid] = [r for r in self.inst.get(pid, []) if not any(abs(r[0] - b[0]) < 0.03 and abs(r[2] - b[2]) < 0.03 for b in gone)]
+        shopdress = ('kc_detail_awning', 'kc_detail_awning_wide', 'kc_detail_parasol_a', 'kc_detail_parasol_b', 'pp_vending_machine')
+        for b in gone:
+            self.wall_decor = [r for r in self.wall_decor if not self._in_rect(r[0], r[2], b, 0.6)]
+            self.shop_signs = [r for r in self.shop_signs if not self._in_rect(r[0], r[2], b, 2.5)]
+            for proto in shopdress:
+                if self.inst.get(proto):
+                    self.inst[proto] = [r for r in self.inst[proto] if not self._in_rect(r[0], r[2], b, 3.2)]
+        self.billboards = [bb for bb in self.billboards if not (bb['kind'] == 'rooftop' and any(self._in_rect(bb['p'][0], bb['p'][2], b, 0.5) for b in gone))]
+        self.boxes, self.box_ids = keep_b, keep_i
+        g = self.occ.arr().copy()
+        img = Image.new('L', (self.occ.W, self.occ.H), 0)
+        ImageDraw.Draw(img).polygon([self.occ.px(x, z) for x, z in self._district_poly(did)], fill=1)
+        mask = np.asarray(img) == 1
+        g[mask & (g == Occupancy.BUILDING)] = Occupancy.FREE
+        fronts = Image.new('L', (self.occ.W, self.occ.H), 0)
+        fd = ImageDraw.Draw(fronts)
+        for b in gone:
+            fd.polygon([self.occ.px(x, z) for x, z in G.oriented_rect(b[0], b[2], b[3] + 7.0, b[5] + 7.0, b[6])], fill=1)
+        g[(np.asarray(fronts) == 1) & (g == Occupancy.PROP)] = Occupancy.FREE
+        self.occ.img = Image.fromarray(g)
+        self.occ.draw = ImageDraw.Draw(self.occ.img)
+        self.occ.grid = None
+        return len(gone)
+
+    def pool_v3_district(self, style):
+        """Frontage pools outside downtown (photo-textured facades: no stretching, a little uniform scale at most)."""
+        K = self.kit.items
+        have = lambda ids: [k for k in ids if k in K]
+        if style == 'industrial':
+            return dict(ids=have(self.V3_SHEDS) * 2 + have(self.V3_SMALL_SHEDS), gap=(2.0, 8.0), setback=(1.5, 6.0), scale=(1.0, 1.0),
+                        sy=(1.0, 1.0), slope=2.0, alley=0.12)
+        if style == 'suburb':
+            # lower density than downtown: flats with garden gaps, the Neighbourhood City mid-rises between them
+            return dict(ids=have(self.V3_FLATS) * 3 + have(['nc_building_01', 'nc_building_03', 'nc_building_05', 'nc_building_04']),
+                        gap=(6.0, 15.0), setback=(3.0, 6.5), scale=(1.0, 1.0), sy=(1.0, 1.0), slope=1.6, alley=0.0)
+        if style == 'marina':
+            return dict(ids=have(['m99_apt_complex']) * 3 + have(['nc_building_01', 'nc_building_05']), gap=(3.0, 9.0),
+                        setback=(1.0, 3.0), scale=(1.0, 1.0), sy=(1.0, 1.0), slope=1.8, alley=0.0)
+        return None
+
+    def _v3_anchor(self, did, pid, cap, scales=(1.0,), prefer=None, margin=0.3, why=None):
+        """Place up to cap copies of a big model on street sides in a district (one per side); prefer(x, z) ranks spots."""
+        segs = [s for s in self.roads['segments'] if s['kind'] not in ('bridge', 'tunnel') and s['base'] not in ('mountain', 'dirt')]
+        it = self.kit.get(pid)
+        cands = []
+        for s in segs:
+            p, y, tan, rn = self.frame(s['samples'])
+            if len(p) < 4 or self.district_at(*p[len(p) // 2]) != did:
+                continue
+            sl = G.arc_lengths(p)
+            for side in (1.0, -1.0):
+                edge = (s['widthRight'] if side > 0 else s['widthLeft']) + s['sidewalk']
+                for pos in np.arange(4.0, max(4.0, sl[-1] - 4.0), 4.0):
+                    kc = min(max(int(np.searchsorted(sl, pos)), 1), len(p) - 1)
+                    P, n_ = p[kc], rn[kc] * side
+                    if self.district_at(*P) != did:
+                        continue
+                    cands.append((prefer(*P) if prefer else RNG.random(), s['id'], side, P, n_, edge))
+        cands.sort(key=lambda c: c[0])
+        made, sides = 0, set()
+        for _, sid, side, P, n_, edge in cands:
+            if made >= cap:
+                break
+            if (sid, side) in sides:
+                continue
+            for sc in scales:
+                d = it['d'] * sc
+                c = P + n_ * (edge + RNG.uniform(1.0, 3.0) + d / 2)
+                yaw = math.degrees(math.atan2(-n_[0], -n_[1]))
+                if self._v3_add_building(pid, c[0], c[1], yaw, sc, margin=margin, why=why):
+                    made += 1
+                    sides.add((sid, side))
+                    break
+        return made
+
+    def v3_sites(self, did, order, field, dmin, dmax, spacing=6.0, margin=1.0, slope=1.6, why=None):
+        """Big footprints on free ground of a district: candidates every spacing metres whose distance in field (a
+        distance transform on the occupancy raster: road or water) is within [dmin, dmax]; the facade (+Z) turns to the
+        nearest road / water (the field's falling gradient), squared to 5 degrees. order: [(id, count, scale), ...]."""
+        polys = [np.array(self._district_poly(did), float)] + [np.array(q, float) for q in self.V3_SITE_EXTRA.get(did, [])]
+        allp = np.concatenate(polys)
+        x0, z0 = allp.min(0); x1, z1 = allp.max(0)
+        gy, gx = np.gradient(field)
+        own = lambda x, z: self.district_at(x, z) in (did, None)
+        pts = [(x, z) for x in np.arange(x0, x1, spacing) for z in np.arange(z0, z1, spacing)
+               if any(G.point_in_poly(x, z, P) for P in polys) and own(x, z)]
+        made = {}
+        for pid, count, sc in order:
+            if pid not in self.kit.items:
+                continue
+            it = self.kit.get(pid)
+            n = 0
+            for i in RNG.permutation(len(pts)):
+                if n >= count:
+                    break
+                x, z = pts[i]
+                ox = int(np.clip(round(x - Occupancy.X0), 0, Occupancy.W - 1)); oy = int(np.clip(round(Occupancy.H - 1 - (z - Occupancy.Z0)), 0, Occupancy.H - 1))
+                dd = field[oy, ox]
+                # the footprint's front edge is dd - depth/2 from the road / water
+                if not (dmin <= dd - it['d'] * sc / 2 <= dmax):
+                    continue
+                vx, vz = -gx[oy, ox], gy[oy, ox]                 # raster rows run north to south: flip the row gradient
+                if abs(vx) + abs(vz) < 1e-6:
+                    continue
+                yaw = round(math.degrees(math.atan2(vx, vz)) / 5.0) * 5.0
+                for dyaw in (0.0, 15.0, -15.0, 30.0, -30.0, 90.0, -90.0):
+                    if self._v3_add_building(pid, x, z, yaw + dyaw, sc, margin=margin, why=why, slope=slope,
+                                             allow=(Occupancy.FREE, Occupancy.PROP, Occupancy.TREE)):
+                        n += 1
+                        break
+            made[pid] = made.get(pid, 0) + n
+        return made
+
+    def v3_yards(self, did, pool, spacing, cap, road_min=9.0, margin=1.5):
+        """Behind the frontage: structures on free ground at least road_min from a road, squared to the nearest street."""
+        poly = np.array(self._district_poly(did), float)
+        x0, z0 = poly.min(0); x1, z1 = poly.max(0)
+        road_d = ndimage.distance_transform_edt(self.occ.arr() != Occupancy.ROAD)
+        caps = dict(pool)
+        made = {k: 0 for k in caps}
+        n = 0
+        pts = [(x, z) for x in np.arange(x0, x1, spacing) for z in np.arange(z0, z1, spacing)]
+        for i in RNG.permutation(len(pts)):
+            if n >= cap:
+                break
+            x, z = pts[i]
+            x += RNG.uniform(-spacing / 3, spacing / 3); z += RNG.uniform(-spacing / 3, spacing / 3)
+            if not G.point_in_poly(x, z, poly) or self.occ.codes([x], [z])[0] != Occupancy.FREE:
+                continue
+            ox = int(np.clip(round(x - Occupancy.X0), 0, Occupancy.W - 1)); oy = int(np.clip(round(Occupancy.H - 1 - (z - Occupancy.Z0)), 0, Occupancy.H - 1))
+            if road_d[oy, ox] < road_min:
+                continue
+            live = [k for k in caps if k in self.kit.items and made[k] < caps[k]]
+            if not live:
+                break
+            pid = live[int(RNG.integers(len(live)))]
+            # square to the nearest street: the direction to the closest road pixel
+            win = road_d[max(0, oy - 40):oy + 41, max(0, ox - 40):ox + 41]
+            yaw = float(RNG.integers(4)) * 90.0
+            if self._v3_add_building(pid, x, z, yaw + RNG.uniform(-4, 4), 1.0, margin=margin):
+                made[pid] += 1
+                n += 1
+        return made
+
+    def _v3_cut_inside(self, new):
+        K = self.kit.items
+        cut = 0
+        for proto in list(self.inst):
+            it = K.get(proto)
+            if it is None or 'building' in it['tags'] or proto.startswith(('nc_building', 'm99_', 'dz_', 'lg_')):
+                continue
+            rows = self.inst[proto]
+            if not rows:
+                continue
+            xs = np.array([r[0] for r in rows]); zs = np.array([r[2] for r in rows])
+            inside = np.zeros(len(rows), bool)
+            for box, pid in new:
+                near = (np.abs(xs - box[0]) < 110) & (np.abs(zs - box[2]) < 110)
+                if near.any():
+                    inside[near] |= self._in_rect(xs[near], zs[near], box, 0.3)
+            if inside.any():
+                cut += int(inside.sum())
+                self.inst[proto] = [r for r, o in zip(rows, inside) if not o]
+        for key in ('tree_pits', 'bus_shelters', 'signposts'):
+            rows = getattr(self, key)
+            setattr(self, key, [r for r in rows if not any(self._in_rect(r[0], r[2], b, 0.3) for b, _ in new)])
+        return cut
+
+    def v3_district_street(self):
+        """Street furniture and trees in the three districts to the v3 kit: TampaJoey hydrants, bins and benches, the Poly
+        Haven lamp on roads, LOLIPOP maples for every broadleaf / blossom tree (palms stay on the marina coast), the v3
+        traffic lights, stop signs and bus shelters; the toy power poles leave; ground clumps go where it is paved."""
+        K = self.kit.items
+        DS = set(self.V3_DISTRICTS)
+        dist = lambda x, z: self.district_at(x, z)
+        lamp_road = 'ph_street_lamp_01' if 'ph_street_lamp_01' in K else None
+        walk = {'residences': ('tj_street_light', 1.3), 'trenches': ('ph_street_lamp_01', 1.45), 'dubai_marina': ('nc_prop_lamp_double_01', 1.25)}
+        bench = {'residences': ['tj_bench_park_long', 'tj_bench_park_short'], 'trenches': ['tj_bench_concrete'], 'dubai_marina': ['tj_bench_metal', 'ph_modular_street_seating']}
+        bins = {'residences': ['tj_trash_large', 'tj_trash_small'], 'trenches': ['tj_trash_commercial', 'tj_trash_large'], 'dubai_marina': ['tj_trash_cap', 'tj_trash_small']}
+        broad = ('w_tree_common', 'w_tree_twisted', 'kf_tree', 'tree_blossom', 'tree_', 'w_pine')
+        extra = [(did, np.array(q, float)) for did, qs in self.V3_SITE_EXTRA.items() for q in qs]
+        counts = {}
+        pits = {(round(r[0], 1), round(r[2], 1)) for r in self.tree_pits}
+        new_rows = []
+
+        def put(proto, x, y, z, yaw, sc=1.0):
+            if proto in K:
+                new_rows.append((proto, x, y, z, yaw, sc))
+                counts[proto] = counts.get(proto, 0) + 1
+                return True
+            return False
+        for proto in list(self.inst):
+            rows = self.inst[proto]
+            if not rows:
+                continue
+            kind = None
+            if proto in ('kr_light_curved', 'street_lamp_kaykit'):
+                kind = 'road_lamp'
+            elif proto in ('street_lamp_double', 'street_lamp_single'):
+                kind = 'walk_lamp'
+            elif proto == 'bench_city':
+                kind = 'bench'
+            elif proto in ('trash_can', 'kyc_trash_b', 'ph_barrel_03'):
+                kind = 'bin'
+            elif proto == 'kyc_firehydrant':
+                kind = 'hydrant'
+            elif proto == 'pp_vendor_cart':
+                kind = 'cart'
+            elif proto == 'kr_traffic_light':
+                kind = 'signal'
+            elif proto == 'kr_road_sign_stop':
+                kind = 'stop'
+            elif proto.startswith(broad) and not proto.startswith('palm'):
+                kind = 'tree'
+            elif proto.startswith('kr_electricity'):
+                kind = 'pole'
+            elif 'ground_detail' in K.get(proto, {}).get('tags', ()):
+                kind = 'detail'
+            if kind is None:
+                continue
+            keep = []
+            for r in rows:
+                did = dist(r[0], r[2])
+                if did is None and kind == 'tree':
+                    # the districts' extra building land (the marina's north bank, the harbour's riverside) gets maples too
+                    did = next((d_ for d_, P in extra if G.point_in_poly(r[0], r[2], P)), None)
+                if did not in DS:
+                    keep.append(r)
+                    continue
+                x, y, z, yaw, sc, sy = r[:6]
+                if kind == 'road_lamp':
+                    ok = put(lamp_road, x, y, z, yaw, 1.45)
+                elif kind == 'walk_lamp':
+                    ok = put(walk[did][0], x, y, z, yaw, walk[did][1])
+                elif kind == 'bench':
+                    ok = put(bench[did][int(RNG.integers(len(bench[did])))], x, y, z, yaw + (180.0 if did != 'dubai_marina' else 0.0))
+                elif kind == 'bin':
+                    ok = put(bins[did][int(RNG.integers(len(bins[did])))], x, y, z, yaw)
+                elif kind == 'hydrant':
+                    ok = put('tj_hydrant', x, y, z, yaw)
+                elif kind == 'cart':
+                    ok = put('v3_vendor_cart', x, y, z, yaw)
+                elif kind == 'signal':
+                    ok = put('v3_traffic_light', x, y, z, (yaw - 180.0) % 360.0)
+                elif kind == 'stop':
+                    ok = put('v3_stop_sign', x, y, z, (yaw - 180.0) % 360.0)
+                elif kind == 'tree':
+                    m = self.V3_MAPLES[int(RNG.integers(len(self.V3_MAPLES)))]
+                    street = (round(x, 1), round(z, 1)) in pits
+                    ok = put(m, x, y + 0.02, z, RNG.uniform(0, 360), RNG.uniform(0.82, 0.95) if street else RNG.uniform(0.85, 1.1))
+                elif kind == 'pole' or (kind == 'detail' and did != 'residences'):
+                    ok = True                                   # dropped: toy poles everywhere, grass clumps where it is paved
+                    counts[kind + '_removed'] = counts.get(kind + '_removed', 0) + 1
+                else:
+                    ok = False
+                if not ok:
+                    keep.append(r)
+            self.inst[proto] = keep
+        for proto, x, y, z, yaw, sc in new_rows:
+            self.add(proto, x, y, z, yaw, sc, 1.0)
+        # the toy power runs leave the three districts with their poles
+        gone_poles = [q for run in self.power if sum(dist(q[0], q[2]) in DS for q in run) * 2 > len(run) for q in run]
+        self.power = [run for run in self.power if not sum(dist(q[0], q[2]) in DS for q in run) * 2 > len(run)]
+        for proto in [k for k in self.inst if k.startswith('kr_electricity')]:
+            self.inst[proto] = [r for r in self.inst[proto] if not any(abs(r[0] - q[0]) < 0.05 and abs(r[2] - q[2]) < 0.05 for q in gone_poles)]
+        # bus shelters: the modelled glass shelter (marina, trenches) or TampaJoey's (residences)
+        keep = []
+        for b in self.bus_shelters:
+            did = dist(b[0], b[2])
+            if did in DS and put('tj_bus_stop' if did == 'residences' else 'v3_bus_shelter', b[0], b[1], b[2], b[3] + (180.0 if did == 'residences' else 0.0)):
+                continue
+            keep.append(b)
+        self.bus_shelters = keep
+        return counts
+
+    def v3_trench_dressing(self, new):
+        """Yard dressing round the industrial buildings: a dumpster beside the front, pallet stacks and tarp crates, a
+        utility box now and then (all on free ground, never on a road)."""
+        n = 0
+        for box, pid in new:
+            if not pid.startswith(('dz_', 'm99_warehouse')) or box[3] < 6.0:
+                continue
+            cx, cy, cz, w, h, d, yaw = box
+            a = math.radians(yaw)
+            fwd = np.array([math.sin(a), math.cos(a)]); right = np.array([math.cos(a), -math.sin(a)])
+            ybase = cy - h / 2
+            for proto, prob, along, out, rot in (('tj_dumpster', 0.7, 0.5, 1.6, 90.0), ('tj_pallet_a', 0.45, -0.42, 1.2, 0.0),
+                                                 ('tj_tarp_crates', 0.3, 0.3, -1.0, 0.0), ('tj_pallet_b', 0.3, -0.2, 1.1, 30.0),
+                                                 ('tj_utility_box', 0.25, -0.5, 1.8, 0.0)):
+                if RNG.random() > prob or proto not in self.kit.items:
+                    continue
+                side = right * (w / 2 + 1.4) * np.sign(along) if out < 0 else right * w * along
+                q = np.array([cx, cz]) + side + fwd * ((d / 2 + out) if out > 0 else (RNG.uniform(-d / 3, d / 3)))
+                it = self.kit.get(proto)
+                if not self.occ.rect_free(q[0], q[1], it['w'], it['d'], yaw + rot, margin=0.4):
+                    continue
+                yq = float(self.g.y([q[0]], [q[1]])[0])
+                self.add(proto, q[0], yq + 0.01, q[1], yaw + rot + RNG.uniform(-6, 6), 1.0, 1.0)
+                self.occ.rect(q[0], q[1], it['w'], it['d'], yaw + rot, Occupancy.PROP, margin=0.2)
+                n += 1
+        return n
+
+    def _level_under(self, door, fwd, right, target, half, depth):
+        """Lower every heightfield sample in the rectangle behind a door (plus one cell) to target; returns how far the
+        ground rose above target there before. The edited field is written back by write_heights()."""
+        g = self.g
+        n, cell = g.n, g.cell
+        xs = g.min[0] + np.arange(n) * cell
+        zs = g.min[1] + np.arange(n) * cell
+        c = door - fwd * (depth / 2)
+        r = math.hypot(half, depth / 2) + 2 * cell
+        ix = np.where(np.abs(xs - c[0]) <= r)[0]; iz = np.where(np.abs(zs - c[1]) <= r)[0]
+        if len(ix) == 0 or len(iz) == 0:
+            return 0.0
+        X, Z = np.meshgrid(xs[ix], zs[iz])
+        dx, dz = X - c[0], Z - c[1]
+        u = dx * right[0] + dz * right[1]
+        v = -(dx * fwd[0] + dz * fwd[1])                                 # into the building
+        inside = (np.abs(u) <= half + cell) & (np.abs(v) <= depth / 2 + cell)
+        sub = g.h[np.ix_(iz, ix)]
+        rise = float(np.max(np.where(inside, sub - target, -1e9)))
+        sub = np.where(inside, np.minimum(sub, target), sub)
+        g.h[np.ix_(iz, ix)] = sub
+        self.heights_edited = True
+        return max(0.0, rise)
+
+    def write_heights(self):
+        if not getattr(self, 'heights_edited', False):
+            return
+        t = json.load(open(os.path.join(OUT, 'terrain.json')))
+        q = np.clip((self.g.h - t['hmin']) / (t['hmax'] - t['hmin']), 0, 1)
+        # a separate file (the Unity builder prefers it): dress.py always starts again from islandgen's height.r16
+        (q * 65535 + 0.5).astype('<u2').tofile(os.path.join(OUT, 'height_dressed.r16'))
+        log('heightfield levelled under the walk-in rooms -> height_dressed.r16')
+
+    def v3_interior_doors(self, new):
+        """Walk-in doors: every enterable v3 building gets its door (world position of door_main, facing the street) and
+        the interior room the client streams in behind it; only on near-flat sites (the room's floor is level)."""
+        self.interior_doors = []
+        for box, pid in new:
+            if pid not in self.V3_ENTERABLE:
+                continue
+            dy, room = self.V3_ENTERABLE[pid]
+            cx, cy, cz, w, h, d, yaw = box
+            a = math.radians(yaw)
+            fwd = np.array([math.sin(a), math.cos(a)])                  # model +Z (Unity) = Blender -Y = the facade
+            q = np.array([cx, cz]) + fwd * (-dy)
+            # the room behind the door (11.5 x 10.3 m, inside the 24 x 16 m flats): the heightfield is levelled under it to
+            # just below the door's base, falling off inside the footprint (never visible: the building covers it), so a
+            # hillside lot no longer pushes ground up through the room's floor
+            ybase = cy - h / 2
+            # the street in front of the door must meet it (a hillside lot sinks the facade's downhill-placed base)
+            outside = float(self.g.y([q[0] + fwd[0] * 1.8], [q[1] + fwd[1] * 1.8])[0])
+            if not (-0.6 <= outside - ybase <= 0.25):
+                self.stats['interior_doors_off_grade'] = self.stats.get('interior_doors_off_grade', 0) + 1
+                continue
+            right = np.array([math.cos(a), -math.sin(a)])
+            rise = self._level_under(q, fwd, right, ybase - 0.08, half=6.4, depth=10.6)
+            self.stats.setdefault('interior_door_rises', []).append(round(rise, 2))
+            floor = ybase + 0.03
+            self.interior_doors.append(dict(p=[round(float(q[0]), 3), round(float(ybase), 3), round(float(q[1]), 3)], yaw=round(yaw % 360.0, 2),
+                                            floor=round(float(floor), 3), building=pid, box=box, room=room))
+        log(f'v3 interior doors: {len(self.interior_doors)}')
+
+    def v3_districts(self):
+        """World v3 outside downtown (after v3_downtown, own RNG): The Trenches gets the 99.Miles warehouse and the
+        DanielZhabotinsky sheds on its streets with tanks, chimneys, the water tower and gantry cranes in the yards;
+        Residences the Lost Gecko flats with Neighbourhood City mid-rises and Chicago walk-ups at a lower density (some
+        flats enterable); Dubai Marina the glass towers on the waterfront. Street furniture and trees to the v3 kit, and
+        the dense two paved like downtown."""
+        global RNG
+        K = self.kit.items
+        if not any(k.startswith('dz_industrial') for k in K):
+            log('v3 districts: no harbour kit, skipped')
+            return
+        t0 = time.time()
+        RNG = np.random.default_rng(V3_SEED + 1)
+        removed = {did: self._v3_clear(did) for did in self.V3_DISTRICTS}
+        if os.environ.get('CTL_DRESS_OCC'):
+            pal = np.array([[60, 90, 60], [110, 110, 115], [200, 60, 200], [40, 80, 160], [230, 140, 60], [90, 170, 90], [170, 160, 80],
+                            [240, 240, 240], [20, 110, 20]] + [[0, 0, 0]] * 247, np.uint8)
+            Image.fromarray(pal[self.occ.arr()]).save(os.environ['CTL_DRESS_OCC'])
+        nb0 = len(self.boxes)
+        why = {}
+        sea_d = ndimage.distance_transform_edt(self.occ.arr() != Occupancy.WATER)
+
+        def near_water(x, z):
+            ox = int(np.clip(round(x - Occupancy.X0), 0, Occupancy.W - 1)); oy = int(np.clip(round(Occupancy.H - 1 - (z - Occupancy.Z0)), 0, Occupancy.H - 1))
+            return float(sea_d[oy, ox])
+        road_d = ndimage.distance_transform_edt(self.occ.arr() != Occupancy.ROAD)
+        anchors = {
+            # the marina's glass: office towers and the apartment complex on the basin's free banks, facing the water
+            'marina': self.v3_sites('dubai_marina', [('m99_office_tower', 1, 0.85), ('m99_office_tower', 1, 0.76), ('m99_office_tower', 1, 0.68),
+                                                     ('m99_apt_complex', 4, 1.0)], sea_d, 6.0, 150.0, margin=1.0, slope=3.0, why=why.setdefault('marina', {})),
+            # the harbour's big halls where the river banks leave room, fronts to the nearest street
+            'trenches': self.v3_sites('trenches', [('m99_warehouse', 2, 1.0), ('dz_industrial_20', 1, 1.0), ('dz_industrial_19', 1, 1.0),
+                                                   ('dz_industrial_09', 1, 1.0), ('dz_industrial_17', 2, 1.0), ('dz_industrial_21', 2, 1.0)],
+                                      road_d, 2.0, 30.0, spacing=5.0, margin=1.0, slope=3.0, why=why.setdefault('trenches', {})),
+            'm99_chicago_a@res': self._v3_anchor('residences', 'm99_chicago_a', 4, why=why),
+        }
+        self.v3_only = True
+        self.v3_district_pools = True
+        stats = dict(self.stats)
+        self.place_buildings()
+        self.v3_only = False
+        self.v3_district_pools = False
+        self.stats = stats
+        yards = self.v3_yards('trenches', self.V3_YARD + [(k, 3) for k in self.V3_SMALL_SHEDS], 8.0, 40, road_min=4.0, margin=1.0)
+        new = list(zip(self.boxes[nb0:], self.box_ids[nb0:]))
+        last = -1
+        for box, pid in new:
+            if pid == 'm99_office_tower':
+                continue
+            for r in self.inst[pid]:
+                if abs(r[0] - box[0]) < 0.03 and abs(r[2] - box[2]) < 0.03:
+                    ci = int(RNG.integers(len(self.V3_TINTS)))
+                    if ci == last:
+                        ci = (ci + 1) % len(self.V3_TINTS)
+                    last = ci
+                    r[6:10] = [*self.V3_TINTS[ci], 1.0]
+        cut = self._v3_cut_inside(new)
+        street = self.v3_district_street()
+        dressing = self.v3_trench_dressing(new)
+        self.v3_interior_doors(new)
+        by = {}
+        for box, pid in new:
+            d_ = self.district_at(box[0], box[2])
+            by.setdefault(d_, {}).setdefault(pid.split('_')[0], 0)
+            by[d_][pid.split('_')[0]] += 1
+        self.stats['v3_districts'] = dict(removed=removed, buildings=len(new), by_district=by, anchors=anchors, yards=yards, plants_cut=cut,
+                                          street=street, yard_dressing=dressing, interior_doors=len(self.interior_doors))
+        log(f'v3 district sites blocked by occupancy code / slope: {why}')
+        log(f'v3 districts: removed {removed}; {len(new)} v3 buildings {by}; anchors {anchors}; yards {yards}; {cut} plants cut; '
+            f'street {street}; {dressing} yard props ({time.time() - t0:.1f}s)')
 
     def place_plaza(self):
         """Timeline Square's block: a paved plaza (built by Unity from plan.json) ringed with trees in planters, benches
@@ -1942,7 +2438,7 @@ class Dress:
                    buildingBoxes=self.boxes, signals=self.signals, power=self.power, billboards=self.billboards, heroes=self.heroes,
                    shopSigns=self.shop_signs, treePits=self.tree_pits, busShelters=self.bus_shelters, wallDecor=self.wall_decor,
                    heroPlazas=self.hero_plazas, signposts=self.signposts, flagPoles=self.flag_poles, eventDress=self.event_dress,
-                   paving=getattr(self, 'paving', None))
+                   paving=getattr(self, 'paving', None), interiorDoors=getattr(self, 'interior_doors', []))
         from placement_repairs import apply_repairs
         repairs = apply_repairs(doc)
         if repairs:
@@ -1971,6 +2467,9 @@ def main():
     d.place_shot_dressing()
     d.clear_shot_frames()
     d.v3_downtown()
+    d.v3_districts()
+    d.v3_paving_all()
+    d.write_heights()
     d.write(os.path.join(OUT, 'dress.json'))
     log(f'done ({time.time() - t0:.1f}s)')
 

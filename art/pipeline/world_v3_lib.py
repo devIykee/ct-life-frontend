@@ -566,20 +566,51 @@ def box_lod(src, name, tex_dir, set_name, px=512, shrink=0.0):
 
 
 # ------------------------------------------------------------------ door opening
-def cut_door(o, fp, width=1.3, height=2.3):
+def cut_door(o, fp, width=1.3, height=2.3, through=False):
     """Boolean a door opening into the front (-Y) wall at x=0: the wall is found by a ray at 1.2 m going +Y.
-    Adds an Empty 'door_main' (parented) at the opening's floor centre, +Y pointing into the building."""
+    Adds an Empty 'door_main' (parented) at the opening's floor centre, +Y pointing into the building.
+    through: the opening also goes through the backing box behind the facade (an enterable door: a streamed interior
+    room stands behind it, so it must not end on the 1.2 m vestibule)."""
     from mathutils.bvhtree import BVHTree
     bvh = BVHTree.FromObject(o, bpy.context.evaluated_depsgraph_get())
     start = Vector((0.0, -fp[1] / 2 - 1.0, 1.2))
     hit = bvh.ray_cast(start, Vector((0, 1, 0)), fp[1] + 2)
     wy = hit[0].y if hit[0] else -fp[1] / 2
+    if through:
+        # an enterable door: no boolean tunnel (its reveal faces ran 2 m into the building and walled off the room's hall);
+        # the faces in the wall plane (the facade or the backing box's front) are split on the opening's edges and the
+        # part inside it deleted, so the streamed room behind shows through a clean hole
+        import bmesh as _bm
+        bm = _bm.new(); bm.from_mesh(o.data)
+        x0, x1, z1 = -width / 2, width / 2, 0.02 + height
+
+        def wall():
+            return [f for f in bm.faces if abs(f.normal.y) > 0.9 and abs(f.calc_center_median().y - wy) < 0.08
+                    and min(v.co.x for v in f.verts) < x1 and max(v.co.x for v in f.verts) > x0 and min(v.co.z for v in f.verts) < z1]
+        for co, no in (((x0, 0, 0), (1, 0, 0)), ((x1, 0, 0), (1, 0, 0)), ((0, 0, z1), (0, 0, 1))):
+            fs = wall()
+            _bm.ops.bisect_plane(bm, geom=list({e for f in fs for e in f.edges}) + fs + list({v for f in fs for v in f.verts}), plane_co=co, plane_no=no)
+        gone = [f for f in wall() if x0 - 0.005 < f.calc_center_median().x < x1 + 0.005 and f.calc_center_median().z < z1]
+        # and whatever the model has inside the room's volume behind the opening (a recessed lobby door, its jambs): the
+        # streamed room stands there (11.5 x 10.3 x 3.4 m behind the door)
+        gone += [f for f in bm.faces if f not in gone and abs(f.calc_center_median().x) < 6.2 and wy + 0.02 < f.calc_center_median().y < wy + 10.3
+                 and f.calc_center_median().z < 3.4]
+        _bm.ops.delete(bm, geom=list(set(gone)), context='FACES')
+        bm.to_mesh(o.data); bm.free()
+        e = bpy.data.objects.new('door_main', None)
+        e.empty_display_type = 'ARROWS'
+        e.location = (0.0, wy, 0.0)
+        bpy.context.scene.collection.objects.link(e)
+        e.parent = o
+        log('door opened (planar) at y', round(wy, 2), 'faces removed', len(gone))
+        return e
     me = bpy.data.meshes.new('door_cutter')
     import bmesh as _bm
     bm = _bm.new()
     _bm.ops.create_cube(bm, size=1.0)
     for v in bm.verts:
-        v.co = Vector((v.co.x * width, wy + v.co.y * 1.4, 0.02 + (v.co.z + 0.5) * height))
+        depth_in = 2.2 if through else 0.7
+        v.co = Vector((v.co.x * width, wy + (depth_in - 0.7) / 2 + v.co.y * (depth_in + 0.7), 0.02 + (v.co.z + 0.5) * height))
     bm.to_mesh(me)
     bm.free()
     c = bpy.data.objects.new('door_cutter', me)
@@ -994,7 +1025,7 @@ def building_lods(name, objs, tex_dir, fbx_path, door=False, yaw=None, lod0=1500
     out = [l0, l1, l2]
     extra = {}
     if door:
-        e = cut_door(l0, fp)
+        e = cut_door(l0, fp, **(door if isinstance(door, dict) else {}))
         out.append(e)
         extra['door_main'] = [round(e.location.x, 3), round(e.location.y, 3), 0.0]
     export_fbx(out, fbx_path)

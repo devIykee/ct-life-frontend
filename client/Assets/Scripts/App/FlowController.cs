@@ -562,6 +562,18 @@ namespace CTLife.App
                     if (s == null || !s.IsIsland) { Log.Warn("perf", "islandPerf: not on CT Island"); return; }
                     await PerfRoute.Run(s, () => GameAlive(game), game.Token);
                 });
+                // World v3 districts and the first walk-in room (dev builds only): `islandRoom=1` (World/Island/Interiors/InteriorRoute.cs);
+                // `islandRoom=door` skips the three district shots.
+                if (!string.IsNullOrEmpty(LaunchArgs.Get("islandRoom"))) RunGameAction(game, async () =>
+                {
+                    float deadline = Time.realtimeSinceStartup + 90f;
+                    while (GameAlive(game) && (VenueSession.Current == null || !VenueSession.Current.IsActive) && Time.realtimeSinceStartup < deadline)
+                        await Awaitable.WaitForSecondsAsync(0.5f, game.Token);
+                    await Awaitable.WaitForSecondsAsync(5f, game.Token);
+                    var s = VenueSession.Current;
+                    if (s == null || !s.IsIsland) { Log.Warn("island", "islandRoom: not on CT Island"); return; }
+                    await InteriorRoute.Run(s, () => GameAlive(game), game.Token, LaunchArgs.Get("islandRoom") != "door");
+                });
                 // Device feature pass (dev builds only): `integration=1 [peer=<userId>]`. The editor driver calls it directly.
                 if (LaunchArgs.Flag("integration") && !Application.isEditor) RunGameAction(game, async () =>
                 {
