@@ -38,6 +38,71 @@ MonoBehaviour:
       radius: 0
       height: 0
       source: LOD0 bounds / semantic kind
+  - id: dz_industrial_01
+    lods:
+    - {fileID: -5739265251091297496, guid: 52ffe981d3fb74f8eb059ffbb5873824, type: 3}
+    - {fileID: -5906978293357826142, guid: 52ffe981d3fb74f8eb059ffbb5873824, type: 3}
+    - {fileID: 6415968627851556270, guid: 52ffe981d3fb74f8eb059ffbb5873824, type: 3}
+    lodEnd:
+    - 60
+    - 260
+    - 1500
+    material: {fileID: 2100000, guid: 5d54adf528312443cadb4c6638cc3482, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 5d54adf528312443cadb4c6638cc3482, type: 2}
+    - {fileID: 2100000, guid: 7add8eec657ed4c69a206205fcda1aaf, type: 2}
+    lodMaterials:
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 2100000, guid: 7add8eec657ed4c69a206205fcda1aaf, type: 2}
+    shadowRange: 140
+    layer: 12
+    bounds:
+      m_Center: {x: -0.0000038146973, y: 5.5616183, z: 0}
+      m_Extent: {x: 16.916662, y: 5.5616508, z: 6.6800404}
+    kind: building
+    collision:
+      shape: 4
+      boxes:
+      - m_Center: {x: -15.991536, y: 5.5616183, z: -5.5012097}
+        m_Extent: {x: 0.66080713, y: 5.5616508, z: 0.6549059}
+      - m_Center: {x: -8.326174, y: 5.5616183, z: -0.1309815}
+        m_Extent: {x: 0.13216142, y: 5.5616508, z: 6.025134}
+      - m_Center: {x: 8.194004, y: 5.5616183, z: -0.26196268}
+        m_Extent: {x: 0.26432285, y: 5.5616508, z: 5.894153}
+      - m_Center: {x: 15.9915285, y: 5.5616183, z: -5.5012097}
+        m_Extent: {x: 0.66080713, y: 5.5616508, z: 0.6549059}
+      - m_Center: {x: -11.894532, y: 5.5616183, z: -0.1309815}
+        m_Extent: {x: 3.436197, y: 5.5616508, z: 5.7631717}
+      - m_Center: {x: -0.13216524, y: 5.5616183, z: -0.1309815}
+        m_Extent: {x: 8.061847, y: 5.5616508, z: 5.7631717}
+      - m_Center: {x: 11.894525, y: 5.5616183, z: -0.1309815}
+        m_Extent: {x: 3.436197, y: 5.5616508, z: 5.7631717}
+      - m_Center: {x: -15.859375, y: 5.5616183, z: 0.52392435}
+        m_Extent: {x: 0.5286457, y: 5.5616508, z: 5.3702283}
+      - m_Center: {x: 15.859367, y: 5.5616183, z: 0.52392435}
+        m_Extent: {x: 0.5286457, y: 5.5616508, z: 5.3702283}
+      - m_Center: {x: -16.652344, y: 5.5616183, z: -1.8337368}
+        m_Extent: {x: 0.26432285, y: 5.5616508, z: 0.6549059}
+      - m_Center: {x: -16.652344, y: 5.5616183, z: 1.702755}
+        m_Extent: {x: 0.26432285, y: 5.5616508, z: 0.5239247}
+      - m_Center: {x: -16.652344, y: 5.5616183, z: 3.929435}
+        m_Extent: {x: 0.26432285, y: 5.5616508, z: 0.13098118}
+      - m_Center: {x: -16.520182, y: 5.5616183, z: 5.239247}
+        m_Extent: {x: 0.13216142, y: 5.5616508, z: 0.6549059}
+      - m_Center: {x: 16.520174, y: 5.5616183, z: 5.239247}
+        m_Extent: {x: 0.13216142, y: 5.5616508, z: 0.6549059}
+      - m_Center: {x: -8.061851, y: 5.5616183, z: 5.7631717}
+        m_Extent: {x: 0.13216142, y: 5.5616508, z: 0.13098118}
+      - m_Center: {x: 8.326166, y: 5.5616183, z: 5.7631717}
+        m_Extent: {x: 0.13216142, y: 5.5616508, z: 0.13098118}
+      - m_Center: {x: 11.894525, y: 5.5616183, z: 5.7631717}
+        m_Extent: {x: 0.26432285, y: 5.5616508, z: 0.13098118}
+      footprint: {fileID: 4300000, guid: 7ea7b991a7b66467ca39c312e2eea972, type: 2}
+      center: {x: 0, y: 0, z: 0}
+      radius: 0
+      height: 0
+      source: LOD0 lower-wall slices; nonzero winding union; 0.25m footprint cells
   - id: dz_industrial_02
     lods:
     - {fileID: 292185894689632217, guid: 667261b495e994e0cbe931dc6292b01b, type: 3}
@@ -172,6 +237,59 @@ MonoBehaviour:
       - m_Center: {x: 20.54512, y: 4.691384, z: 6.6329684}
         m_Extent: {x: 0.16436099, y: 4.691424, z: 0.16177954}
       footprint: {fileID: 4300000, guid: 988fa1cd0f89e481195db6eb0438c2a0, type: 2}
+      center: {x: 0, y: 0, z: 0}
+      radius: 0
+      height: 0
+      source: LOD0 lower-wall slices; nonzero winding union; 0.25m footprint cells
+  - id: dz_industrial_04
+    lods:
+    - {fileID: -2443425992831055131, guid: d38593b22a5b34590b70b6af0e1eea16, type: 3}
+    - {fileID: -4380811073023409099, guid: d38593b22a5b34590b70b6af0e1eea16, type: 3}
+    - {fileID: 7407535520160565824, guid: d38593b22a5b34590b70b6af0e1eea16, type: 3}
+    lodEnd:
+    - 60
+    - 260
+    - 1500
+    material: {fileID: 2100000, guid: cee33855964734d5f838626cb6ef1163, type: 2}
+    materials:
+    - {fileID: 2100000, guid: cee33855964734d5f838626cb6ef1163, type: 2}
+    - {fileID: 2100000, guid: f5abf5cf258634e5a80f72ddd2a7f388, type: 2}
+    lodMaterials:
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 2100000, guid: f5abf5cf258634e5a80f72ddd2a7f388, type: 2}
+    shadowRange: 140
+    layer: 12
+    bounds:
+      m_Center: {x: 0, y: 7.5183935, z: -0.0000038146973}
+      m_Extent: {x: 9.170174, y: 7.5184164, z: 5.902691}
+    kind: building
+    collision:
+      shape: 4
+      boxes:
+      - m_Center: {x: -3.221953, y: 7.5183935, z: -0.0000038146973}
+        m_Extent: {x: 5.7003784, y: 7.5184164, z: 5.6567454}
+      - m_Center: {x: -9.046252, y: 7.5183935, z: -1.1067584}
+        m_Extent: {x: 0.12392127, y: 7.5184164, z: 4.3040457}
+      - m_Center: {x: 3.8415594, y: 7.5183935, z: -0.368922}
+        m_Extent: {x: 1.3631339, y: 7.5184164, z: 5.0418816}
+      - m_Center: {x: 6.939591, y: 7.5183935, z: -4.427022}
+        m_Extent: {x: 1.7348977, y: 7.5184164, z: 0.73783636}
+      - m_Center: {x: 6.6917486, y: 7.5183935, z: -0.368922}
+        m_Extent: {x: 1.4870552, y: 7.5184164, z: 3.3202636}
+      - m_Center: {x: 8.426646, y: 7.5183935, z: -0.8608129}
+        m_Extent: {x: 0.24784254, y: 7.5184164, z: 0.61486363}
+      - m_Center: {x: 8.79841, y: 7.5183935, z: 0.6148598}
+        m_Extent: {x: 0.12392127, y: 7.5184164, z: 0.36891818}
+      - m_Center: {x: 8.550568, y: 7.5183935, z: 0.73783255}
+        m_Extent: {x: 0.12392127, y: 7.5184164, z: 0.24594545}
+      - m_Center: {x: 9.046252, y: 7.5183935, z: 0.73783255}
+        m_Extent: {x: 0.12392127, y: 7.5184164, z: 0.24594545}
+      - m_Center: {x: 8.426646, y: 7.5183935, z: 2.4594507}
+        m_Extent: {x: 0.24784254, y: 7.5184164, z: 0.4918909}
+      - m_Center: {x: 6.567827, y: 7.5183935, z: 3.8121507}
+        m_Extent: {x: 1.3631339, y: 7.5184164, z: 0.8608091}
+      footprint: {fileID: 4300000, guid: 3351d55ad425447b6a8f6e431045f2b1, type: 2}
       center: {x: 0, y: 0, z: 0}
       radius: 0
       height: 0
@@ -7728,6 +7846,81 @@ MonoBehaviour:
       radius: 0
       height: 0
       source: LOD0 bounds / semantic kind
+  - id: ph_power_pole_01
+    lods:
+    - {fileID: 221520714316902523, guid: 651feee74b8514d2fa13bb7fe5e56487, type: 3}
+    - {fileID: -5236745051424280187, guid: 651feee74b8514d2fa13bb7fe5e56487, type: 3}
+    lodEnd:
+    - 50
+    - 300
+    material: {fileID: 2100000, guid: 3d941e9b982ab4fde83149a8fe76d42f, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 3d941e9b982ab4fde83149a8fe76d42f, type: 2}
+    lodMaterials: []
+    shadowRange: 30
+    layer: 13
+    bounds:
+      m_Center: {x: -0.003187269, y: 3.0650003, z: 0}
+      m_Extent: {x: 0.6466569, y: 3.0650067, z: 0.42612717}
+    kind: pole
+    collision:
+      shape: 1
+      boxes: []
+      footprint: {fileID: 0}
+      center: {x: 0, y: 0, z: 0}
+      radius: 0
+      height: 0
+      source: LOD0 bounds / semantic kind
+  - id: ph_power_pole_02
+    lods:
+    - {fileID: -4843166888817104122, guid: 703140dec3f3d47c2a97276cbef51fdf, type: 3}
+    - {fileID: 3781945339557625228, guid: 703140dec3f3d47c2a97276cbef51fdf, type: 3}
+    lodEnd:
+    - 50
+    - 300
+    material: {fileID: 2100000, guid: 3d941e9b982ab4fde83149a8fe76d42f, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 3d941e9b982ab4fde83149a8fe76d42f, type: 2}
+    lodMaterials: []
+    shadowRange: 30
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 3.0650003, z: 0.000002875924}
+      m_Extent: {x: 0.60000634, y: 3.0650067, z: 0.4261311}
+    kind: pole
+    collision:
+      shape: 1
+      boxes: []
+      footprint: {fileID: 0}
+      center: {x: 0, y: 0, z: 0}
+      radius: 0
+      height: 0
+      source: LOD0 bounds / semantic kind
+  - id: ph_power_pole_03
+    lods:
+    - {fileID: 7709209876777024905, guid: bab5880899a394bc78b5e48e9b0ff675, type: 3}
+    - {fileID: -6624477046841835033, guid: bab5880899a394bc78b5e48e9b0ff675, type: 3}
+    lodEnd:
+    - 50
+    - 300
+    material: {fileID: 2100000, guid: 3d941e9b982ab4fde83149a8fe76d42f, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 3d941e9b982ab4fde83149a8fe76d42f, type: 2}
+    lodMaterials: []
+    shadowRange: 30
+    layer: 13
+    bounds:
+      m_Center: {x: -0.000000059604645, y: 3.0650003, z: 0.0058555007}
+      m_Extent: {x: 0.60000676, y: 3.065007, z: 0.97278637}
+    kind: pole
+    collision:
+      shape: 1
+      boxes: []
+      footprint: {fileID: 0}
+      center: {x: 0, y: 0, z: 0}
+      radius: 0
+      height: 0
+      source: LOD0 bounds / semantic kind
   - id: ph_propane_tank
     lods:
     - {fileID: 7052114804010349317, guid: 3098d8cfa6a9c42209a243c38818e398, type: 3}
@@ -7776,6 +7969,33 @@ MonoBehaviour:
     collision:
       shape: 1
       boxes: []
+      footprint: {fileID: 0}
+      center: {x: 0, y: 0, z: 0}
+      radius: 0
+      height: 0
+      source: LOD0 bounds / semantic kind
+  - id: ph_wooden_bench
+    lods:
+    - {fileID: -7101671035423998012, guid: faf1108a7f43641b3a40888357ec7dee, type: 3}
+    - {fileID: 3198874599145061699, guid: faf1108a7f43641b3a40888357ec7dee, type: 3}
+    lodEnd:
+    - 28
+    - 140
+    material: {fileID: 2100000, guid: 9b2e1ec8e3ee040b9b2978fbfc7fc573, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 9b2e1ec8e3ee040b9b2978fbfc7fc573, type: 2}
+    lodMaterials: []
+    shadowRange: 18
+    layer: 13
+    bounds:
+      m_Center: {x: 0, y: 0.44464573, z: 0}
+      m_Extent: {x: 0.5824732, y: 0.44464713, z: 0.24827296}
+    kind: prop
+    collision:
+      shape: 2
+      boxes:
+      - m_Center: {x: 0, y: 0.44464573, z: 0}
+        m_Extent: {x: 0.56247324, y: 0.43464714, z: 0.22827296}
       footprint: {fileID: 0}
       center: {x: 0, y: 0, z: 0}
       radius: 0
@@ -8035,60 +8255,6 @@ MonoBehaviour:
       radius: 0
       height: 0
       source: LOD0 bounds / semantic kind
-  - id: pr_face_a
-    lods:
-    - {fileID: 2616631324362980870, guid: fc169abbe0ea54e60bb67c807fd704f6, type: 3}
-    - {fileID: -755280089293535002, guid: fc169abbe0ea54e60bb67c807fd704f6, type: 3}
-    lodEnd:
-    - 45
-    - 320
-    material: {fileID: 2100000, guid: d79d964b3c0fc45efb599e8ded88d5d7, type: 2}
-    materials:
-    - {fileID: 2100000, guid: d79d964b3c0fc45efb599e8ded88d5d7, type: 2}
-    lodMaterials: []
-    shadowRange: 35
-    layer: 13
-    bounds:
-      m_Center: {x: -0.00090408325, y: 1.7831266, z: -0.008334875}
-      m_Extent: {x: 2.4758573, y: 1.7910922, z: 1.91344}
-    kind: rock
-    collision:
-      shape: 2
-      boxes:
-      - m_Center: {x: -0.00090408325, y: 1.7831266, z: -0.008334875}
-        m_Extent: {x: 2.4558573, y: 1.7810922, z: 1.89344}
-      footprint: {fileID: 0}
-      center: {x: 0, y: 0, z: 0}
-      radius: 0
-      height: 0
-      source: LOD0 bounds / semantic kind
-  - id: pr_face_b
-    lods:
-    - {fileID: -9119038039052108471, guid: da20464a7a451443cad733c97f3e6442, type: 3}
-    - {fileID: 8959702184435383154, guid: da20464a7a451443cad733c97f3e6442, type: 3}
-    lodEnd:
-    - 45
-    - 320
-    material: {fileID: 2100000, guid: 6501b6154da2d4dfd85fff2361d9ed31, type: 2}
-    materials:
-    - {fileID: 2100000, guid: 6501b6154da2d4dfd85fff2361d9ed31, type: 2}
-    lodMaterials: []
-    shadowRange: 35
-    layer: 13
-    bounds:
-      m_Center: {x: -0.004023671, y: 1.2325957, z: -0.0060364604}
-      m_Extent: {x: 1.3597506, y: 1.243303, z: 1.0701164}
-    kind: rock
-    collision:
-      shape: 2
-      boxes:
-      - m_Center: {x: -0.004023671, y: 1.2325957, z: -0.0060364604}
-        m_Extent: {x: 1.3397506, y: 1.233303, z: 1.0501164}
-      footprint: {fileID: 0}
-      center: {x: 0, y: 0, z: 0}
-      radius: 0
-      height: 0
-      source: LOD0 bounds / semantic kind
   - id: pr_moss_a_01
     lods:
     - {fileID: -899237492282233111, guid: fad87af7eb4ec4acb8e311fdec184c50, type: 3}
@@ -8305,6 +8471,33 @@ MonoBehaviour:
       radius: 0
       height: 0
       source: LOD0 bounds / semantic kind
+  - id: pr_moss_b_03
+    lods:
+    - {fileID: 7314878868295589927, guid: 334e4f1d194ae453488ef0ff101537bd, type: 3}
+    - {fileID: 2784937238703560869, guid: 334e4f1d194ae453488ef0ff101537bd, type: 3}
+    lodEnd:
+    - 45
+    - 320
+    material: {fileID: 2100000, guid: 6740d7b3f48dd4d6da98773aea4a8b80, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 6740d7b3f48dd4d6da98773aea4a8b80, type: 2}
+    lodMaterials: []
+    shadowRange: 35
+    layer: 13
+    bounds:
+      m_Center: {x: -0.0019183755, y: 0.26014864, z: -0.000030487776}
+      m_Extent: {x: 0.6037736, y: 0.26014468, z: 0.48974025}
+    kind: rock
+    collision:
+      shape: 2
+      boxes:
+      - m_Center: {x: -0.0019183755, y: 0.26014864, z: -0.000030487776}
+        m_Extent: {x: 0.5837736, y: 0.2501447, z: 0.46974024}
+      footprint: {fileID: 0}
+      center: {x: 0, y: 0, z: 0}
+      radius: 0
+      height: 0
+      source: LOD0 bounds / semantic kind
   - id: pr_moss_b_04
     lods:
     - {fileID: -7339504731673806573, guid: a4577879818844685b4b060c9105e600, type: 3}
@@ -8327,6 +8520,33 @@ MonoBehaviour:
       boxes:
       - m_Center: {x: -0.0075702667, y: 0.3701168, z: -0.0013722777}
         m_Extent: {x: 0.76533365, y: 0.35764644, z: 0.7022285}
+      footprint: {fileID: 0}
+      center: {x: 0, y: 0, z: 0}
+      radius: 0
+      height: 0
+      source: LOD0 bounds / semantic kind
+  - id: pr_moss_b_05
+    lods:
+    - {fileID: -1386516353267041568, guid: a80be64f935864812b109ebeccff5af0, type: 3}
+    - {fileID: -316506815930328105, guid: a80be64f935864812b109ebeccff5af0, type: 3}
+    lodEnd:
+    - 45
+    - 320
+    material: {fileID: 2100000, guid: 6740d7b3f48dd4d6da98773aea4a8b80, type: 2}
+    materials:
+    - {fileID: 2100000, guid: 6740d7b3f48dd4d6da98773aea4a8b80, type: 2}
+    lodMaterials: []
+    shadowRange: 35
+    layer: 13
+    bounds:
+      m_Center: {x: 0.0016562939, y: 0.30529922, z: -0.0008996725}
+      m_Extent: {x: 0.81582844, y: 0.30389845, z: 0.5082574}
+    kind: rock
+    collision:
+      shape: 2
+      boxes:
+      - m_Center: {x: 0.0016562939, y: 0.30529922, z: -0.0008996725}
+        m_Extent: {x: 0.79582846, y: 0.29389846, z: 0.48825738}
       footprint: {fileID: 0}
       center: {x: 0, y: 0, z: 0}
       radius: 0
@@ -8525,8 +8745,8 @@ MonoBehaviour:
     shadowRange: 45
     layer: 14
     bounds:
-      m_Center: {x: -0.16345167, y: 3.3981242, z: 1.6759784}
-      m_Extent: {x: 3.7913325, y: 3.3703659, z: 3.954307}
+      m_Center: {x: -0.110848546, y: 3.3479815, z: 1.7498494}
+      m_Extent: {x: 3.7478185, y: 3.3484797, z: 3.9831095}
     kind: tree
     collision:
       shape: 1
@@ -8555,8 +8775,8 @@ MonoBehaviour:
     shadowRange: 45
     layer: 14
     bounds:
-      m_Center: {x: -0.20736516, y: 4.0320745, z: 0.08826828}
-      m_Extent: {x: 3.963609, y: 4.044314, z: 4.0250397}
+      m_Center: {x: 0.09088898, y: 3.9375355, z: -0.010037661}
+      m_Extent: {x: 4.0853634, y: 3.9368312, z: 4.1051636}
     kind: tree
     collision:
       shape: 1

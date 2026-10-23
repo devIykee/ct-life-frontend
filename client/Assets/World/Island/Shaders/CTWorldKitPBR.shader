@@ -28,6 +28,7 @@ Shader "CT Life/World/Kit PBR"
         [Toggle(_MASKMAP)] _UseMask("Use mask map", Float) = 0
         [Toggle(_GLASS)] _Glass("Window glass", Float) = 0
         [Enum(UnityEngine.Rendering.CullMode)] _Cull("Cull", Float) = 2
+        _Fade("Dither fade (VenueShell)", Range(0, 1)) = 0
     }
     SubShader
     {
@@ -41,7 +42,7 @@ Shader "CT Life/World/Kit PBR"
             float4 _BaseMap_ST, _BaseMap_TexelSize;
             half4 _BaseColor;
             float4 _GroundAO;
-            half _BumpScale, _Metallic, _Smoothness, _OcclusionStrength, _Reflection, _Cutoff, _TintStrength;
+            half _BumpScale, _Metallic, _Smoothness, _OcclusionStrength, _Reflection, _Cutoff, _TintStrength, _Fade;
         CBUFFER_END
         UNITY_INSTANCING_BUFFER_START(Props)
             UNITY_DEFINE_INSTANCED_PROP(float4, _Tint)
@@ -107,9 +108,24 @@ Shader "CT Life/World/Kit PBR"
             return lerp(sky, amb, rough * rough);
         }
 
+        // world fix-ups (2026-10-23): the venue architecture (world_venue_shells.py) dissolves like the facade shells while
+        // the player is inside (VenueShell sets _Fade per renderer). Only in the _VENUE_FADE variant (the venue materials):
+        // a clip() anywhere in a fragment shader costs mobile GPUs their early depth test, so the kit's buildings must not
+        // carry it (measured: +4 ms GPU at the downtown eye spot on the Seeker when every kit material had it)
+        void FadeDither(float4 positionCS)
+        {
+            #if defined(_VENUE_FADE)
+                if (_Fade <= 0.001) return;
+                float2 p = floor(positionCS.xy);
+                float d = frac(52.9829189 * frac(dot(p, float2(0.06711056, 0.00583715))));
+                clip(d - _Fade);
+            #endif
+        }
+
         half4 Frag(Varyings input, FRONT_FACE_TYPE facing : FRONT_FACE_SEMANTIC) : SV_Target
         {
             UNITY_SETUP_INSTANCE_ID(input); UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
+            FadeDither(input.positionCS);
             CTWorldLodFade(input.positionCS.xy, UNITY_ACCESS_INSTANCED_PROP(Props, _LodFade));
             half4 tex = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.uv);
             #if defined(_ALPHATEST_ON)
@@ -209,6 +225,7 @@ Shader "CT Life/World/Kit PBR"
         }
         half4 ShadowFrag(ShadowVaryings input) : SV_Target
         {
+            FadeDither(input.positionCS);
             #if defined(_ALPHATEST_ON)
                 clip(SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.uv).a - _Cutoff);
             #endif
@@ -238,6 +255,7 @@ Shader "CT Life/World/Kit PBR"
             #pragma shader_feature_local _MASKMAP
             #pragma shader_feature_local _GLASS
             #pragma shader_feature_local _ALPHATEST_ON
+            #pragma shader_feature_local _VENUE_FADE
             #pragma multi_compile_local _ _CTLODFADE
             ENDHLSL
         }
@@ -253,6 +271,7 @@ Shader "CT Life/World/Kit PBR"
             #pragma fragment ShadowFrag
             #pragma multi_compile_instancing
             #pragma shader_feature_local _ALPHATEST_ON
+            #pragma shader_feature_local _VENUE_FADE
             ENDHLSL
         }
         Pass
