@@ -71,6 +71,7 @@ namespace CTLife.EditorTools
             foreach (var kv in v3) CopyIfChanged(Path.Combine(kv.Value.dir, kv.Key + ".fbx"), $"{Root}/{kv.Key}.fbx");
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
             foreach (var kv in v3) BuildPrefabV3(kv.Key, VehicleCatalog.Get(SpecIdFor(kv.Key)), kv.Value.manifest, glass);
+            VehicleMergeBake.BakeAll();   // the merged still parts per LOD (perf lane 2)
         }
 
         // ------------------------------------------------------------------ materials

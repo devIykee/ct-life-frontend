@@ -26,6 +26,22 @@ namespace CTLife.CityLife
             return p;
         }
 
+        private static readonly Dictionary<string, ResourceRequest> Pending = new Dictionary<string, ResourceRequest>();
+
+        /// <summary>True once the prefab is in memory; until then starts (once) an async load, so the meshes and textures
+        /// upload over frames instead of in one (the Decorate tray and the catalogue rows ask for many at once).</summary>
+        public static bool FurnitureReady(string modelKey)
+        {
+            if (string.IsNullOrEmpty(modelKey) || Prefabs.ContainsKey(modelKey)) return true;
+            if (!Pending.TryGetValue(modelKey, out var req)) Pending[modelKey] = req = Resources.LoadAsync<GameObject>(FurniturePath + modelKey);
+            if (!req.isDone) return false;
+            Pending.Remove(modelKey);
+            var p = req.asset as GameObject;
+            if (p == null) Debug.LogWarning("CTLIFE [shop] no furniture prefab " + modelKey);
+            Prefabs[modelKey] = p;
+            return true;
+        }
+
         /// <summary>A furniture instance with no colliders of its own (place mode adds the footprint box).</summary>
         public static GameObject SpawnFurniture(string modelKey, Transform parent)
         {

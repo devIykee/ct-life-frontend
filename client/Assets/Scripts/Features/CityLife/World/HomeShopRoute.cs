@@ -123,6 +123,8 @@ namespace CTLife.CityLife
             }
             Mark("waiting for the courier");
             var dd = DeliveryDirector.Current;
+            // perf lane 2: `devStage=1` stages the courier client-side in 25 s (no 10-minute ASAP order needed)
+            if (LaunchArgs.Flag("devStage") && dd != null) dd.DevStage(svc.MyHome.UnitId, 25f);
             float t0 = Time.realtimeSinceStartup;
             while (alive() && Time.realtimeSinceStartup - t0 < 900f && (dd == null || dd.Active == 0)) await Awaitable.WaitForSecondsAsync(0.5f, ct);
             Mark("courier staged");

@@ -116,6 +116,8 @@ namespace CTLife.World.Vehicles
         }
         public bool DoorMoving => !Mathf.Approximately(_doorLeft, _doorLeftTarget);
         public float DoorOpen => _doorLeft;
+        /// <summary>Both doors closed and staying closed (VehicleMerge draws the merged body then).</summary>
+        public bool DoorsShut => _doorLeft == 0f && _doorRight == 0f && _doorLeftTarget == 0f && _doorRightTarget == 0f;
 
         private void Update()
         {

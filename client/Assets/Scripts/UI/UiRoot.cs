@@ -115,6 +115,7 @@ namespace CTLife.UI
             ModalLayer = Layer("layer-modal", PickingMode.Ignore);
             ToastLayer = Layer("layer-toast", PickingMode.Ignore);
             WorldInputLayer.Attach(WorldLayer);
+            UiFontWarmup.Run(Root);   // glyphs and kerning before play: no mid-game font-atlas hitches
             Root.RegisterCallback<GeometryChangedEvent>(_ => ApplySafeArea(true));
             ApplySafeArea(true);
         }

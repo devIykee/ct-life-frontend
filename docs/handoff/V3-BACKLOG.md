@@ -18,13 +18,14 @@ taste and landed as PRs, with work continuing without prompts.
   the throwaway DB `ctlife_pr_test`). Never edit `projects/ct-life-backend`.
 - **Sketchfab:** 8 download calls per window, resetting within ~7 h. Use the logged-in Chrome, `fetch('/i/models/<uid>/download')`
   plus the anchor-download JSON trick, then curl into `ct-life/art/raw/sketchfab/<uid>/<uid>.glb`. The last window
-  opened 2026-10-23 06:20 UTC; the files were LOST (see below). Next window ≈13:20 UTC.
+  opened 2026-10-23 21:20 UTC (7 OK, then 429 on the 8th; lilac 10312697 still to download). Next window ≈04:20 UTC 2026-10-24.
   Curl recipe: quote `--proto '=https'` (zsh expands bare `=https`). Only delete `~/Downloads/sfdl_*.json` after the .glb
   has size > 0. Chrome saves at most 7 anchor downloads per page, so do 7 per page or reload the page between.
 - **Money rules:** only scarce items become Metaplex Core NFTs (hovercar pass, drops, art, later deeds); Cash never
   buys anything tradable; homes are game-only for now.
 
 ## Done (v3)
+Perf 2 (2026-10-23): no more spawn and UI hitches (async vehicle/van/courier loads, font atlas prewarm), merged car meshes (-120 draws), merged far terrain (105→27 draws); eye-level draws 728→554, capped minimum 30.1 everywhere. Left: island instance renderer draws (225), the first-flat shader compile, the car-controls UI rebuild, fly80 GPU +1.1–1.6 ms.
 Homes + Duo Shop FE (2026-10-23): flat doors gated by access, locked door with Knock, a 4403 shown-out toast, the Duo Shop app (catalogue, 3D product, bag, checkout, tracking), a courier van plus a parcel at the door, place mode, visitors seeing placements, live entitlements; WireV3Kinds via the `/v1/config` flag. Verified against PR #8 running locally (:4011).
 District fix-ups 2 (2026-10-23): a forested mountain up to the tree line, real architecture for 16 venue shells, real power poles. Uncapped GPU is +1–2 ms on the drive/fly80 legs (watch it).
 District fix-ups 2 (2026-10-23): the mountain forested to a tree line (~1500 conifers, alpine shrubs, banded mossy cliffs), real architecture on all 16 venue shells and 4 landmark buildings (merged outside renderer + far LOD, no MPB at rest), pole shafts under the power-line hardware, route shots aimed. Evidence `ct-life-evidence/world-fixups2-20261023/`.
@@ -37,6 +38,22 @@ GTA-style HUD; collisions; the shadow fix; the perf pass (30 fps cap holds); the
 (vehicle kinds, entitlements).
 
 ## Queue (top = next)
+**PRODUCT PRIORITY (user, 2026-10-23):** a finished, usable product fast; it's a crypto game, so retention loops matter as much as looks.
+Plan: ct-life-evidence/design-retention-20261023/retention-plan.md (24 items, cited). Decisions taken (coordinator, from the
+plan's recommendations): a first Jupiter swap earns a cosmetic badge only; casino RTP ~95% with a daily stake cap, simulated before
+shipping; Breakpoint first (15-17 Nov 2026, Olympia London); Solana Foundation outreach (stream embed, Luma tickets) is the
+user's call and runs in parallel, never blocking.
+**Retention top 5 (after perf-2; each = FE (us, Unity) + a backend PR to Iyke; acceptance in plan §7, verified by recording):**
+R1. gm streak + daily chest + 3 daily quests/weekly chain + real push (FCM; needs a Firebase project the USER must create:
+    google-services.json + service account; build it behind config).
+R2. Event calendar engine + Breakpoint week at the Conference Center (London skin, countdown, official-stream link-out, no embed,
+    3-quest chain, off-chain lanyard). DEADLINE: live before 15 Nov 2026.
+R3. "The Rug Room" casino on the Boardwalk pier (Cash only, 18+, server RNG): slots, crash, coinflip first; then blackjack and
+    roulette; Marina high-roller room. Vet Sketchfab/Poly Haven casino interiors.
+R4. Season pass tracks (free + paid, 10+ tiers) + the community-nods collection book (80 nods already designed).
+R5. Coin-launch sandbox "Rugpull Factory" at Launchpad Tower (Cash only, hidden-arc engine exists) + the Sleuth exposé on the Timeline.
+Later from the plan: the Timeline as world feed, tribe war flags, Ratio Arena bets, drainer-DM mini-events, nameplates,
+Jupiter swap sheet, the Seeker perks pack, the wallet gallery, Solana Pay merch, Blinks.
 0. **FE wiring after backend merges** (small, any Unity agent can take it on the side): flip `WireV3Kinds` on; read `GET /v1/me/entitlements` live; after #7, home flow: export `contract/ids/home_units.json` door ids `flat:<buildingInstanceId>:<doorIndex>` for the 6 lg_midrise_flats doors, check `GET /units/{unitId}/access` before opening the door leaf, stream `roomType` on visit, and join the `home` room. `GET /homes/{id}` now returns `view: owner|guest|public`; non-owners get no status, rent or unit fields (`Logic/Homes.cs` already tolerates missing status). The `home` room kicks revoked clients with code 4403: show a 'you were shown out' toast and walk them to the door.
 1. **[next]** District fix-ups 3 (left from fix-ups 2): the summit cone above the tree line is still a big bare face from
    the south (the cliff/stone Sketchfab packs could dress it); uncapped perf-route GPU is +1.0 / +2.2 / +1.8 / +1.0 ms
@@ -48,7 +65,7 @@ GTA-style HUD; collisions; the shadow fix; the perf pass (30 fps cap holds); the
    dog 9abfce88, cat 0b86bde7, bus station 8c984e73, dumpster 6caa33dd, fence f2ed9f55, palm d05c8ffb.
 3. **Interiors:** the ~8 reusable types (apartment done; bedroom, bathroom, cafe, shop, office, bar/club, gym) behind
    real doors; every venue gets a real interior. The m99_storefront shop interiors need rescaling.
-4. **[next] Draw calls + hitches:** single-frame 7.5–15 fps hitches when the van, courier or Decorate thumbnails spawn (pool and prewarm them). ~740 at eye level vs ≤350. Traffic cars drawn per part (merge static parts), avatars, venue
+4. **[partly done] Draw calls:** the instance renderer (225 draws) is next; the hitches are fixed. Old note: single-frame 7.5–15 fps hitches when the van, courier or Decorate thumbnails spawn (pool and prewarm them). ~740 at eye level vs ≤350. Traffic cars drawn per part (merge static parts), avatars, venue
    dioramas.
 5. **Remaining districts on the v3 kit:** Builder Hills, Airdrop Farm, Boardwalk/beach, Breakpoint Park (convention
    centre), MtnDAO mountain/lodge, the islet. Timeline Square plaza and the venue landmarks are still toy-shaped.
@@ -66,6 +83,7 @@ GTA-style HUD; collisions; the shadow fix; the perf pass (30 fps cap holds); the
     EditMode test failures.
 
 ## Waiting on others
+- 2026-10-23 08:41 UTC: Iyke MERGED backend #7 and #8 and frontend #4, but before our #7/#8 updates (door ids, access homeId, /me fix, wireV3Kinds, catalogue), which go in a follow-up PR. Backend #9 (streak, chest, quests, push) is open, with the tip/call/visit anti-farming fix pushed. Backend #10 (the #7/#8 follow-ups) is open. USER DECISION PENDING: a small Cash tip fee (e.g. 3%, burned) would make alt-ring quest farming net-negative; without it, a 3+ alt ring can still earn ~1 social quest per counterpart per week. The next iyke-fe sync needs a NEW PR from sync/v3-studio-world (#4 merged).
 - Backend #6 MERGED 2026-10-23 05:19 (vehicle kinds and entitlements). Iyke must deploy it, then the FE flips `WireV3Kinds` on (queue item 0).
 - Backend #8 (Duo Shop + delivery, merge after #7) open: FE needs the real `contract/ids/shop_items.json` (with modelKey), the Duo Shop app (catalogue, window asap/30m/1h, door/locker), a courier van on `delivery_out` (unitId/locker, etaAt), a parcel on `delivery_arrived` then a refetch of `/me/items`, and place mode (`PUT /homes/{homeId}/placements`, metres and radians).
 - Backend #7 (homes, flats, doors) open; the security fixes are pushed (view-scoped GET, live revocation, rent-worker locking).

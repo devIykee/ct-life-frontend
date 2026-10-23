@@ -7,7 +7,8 @@ namespace CTLife.CityLife
 {
     /// <summary>
     /// Studio renders of the Duo Shop's furniture (2026-10-23): a live turntable for the product page (drag to turn) and
-    /// cached 256 px thumbnails for the catalogue rows and the place-mode tray, one per frame from a queue. Off-stage on
+    /// cached 256 px thumbnails for the catalogue rows and the place-mode tray, one per frame from a queue, each model's prefab
+    /// loaded asynchronously before its frame. Off-stage on
     /// layer 30 with its own key light (the city sun is swapped out for the preview cameras, as AvatarPreview does).
     /// </summary>
     public sealed class FurniturePreview : MonoBehaviour
@@ -166,7 +167,8 @@ namespace CTLife.CityLife
                 _thumbModel = null; _rendering = null;
                 _thumbCam.enabled = false;
             }
-            if (_queue.Count > 0)
+            // the next model's prefab loads asynchronously first (ShopProps.FurnitureReady): no frame pays for its upload
+            if (_queue.Count > 0 && ShopProps.FurnitureReady(_queue.Peek()))
             {
                 var key = _queue.Dequeue();
                 _thumbModel = Place(key, _thumbStage, out var b);

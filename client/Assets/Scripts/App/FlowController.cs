@@ -554,6 +554,8 @@ namespace CTLife.App
                     if (s == null || !s.IsIsland) { Log.Warn("island", "islandShot: not on CT Island"); return; }
                     await IslandWaypoints.Shot(s, LaunchArgs.Get("islandShot"), game.Token);
                 });
+                // Hitch attribution (dev builds only, perf lane 2): `hitchProbe=1` logs the marker breakdown of every frame over 50 ms.
+                if (LaunchArgs.Get("hitchProbe") == "1") PerfSegments.EnsureHitchProbe();
                 // Perf route (dev builds only): `islandPerf=1` measures the same downtown spots every run (World/Perf/PerfRoute.cs).
                 if (LaunchArgs.Get("islandPerf") == "1") RunGameAction(game, async () =>
                 {

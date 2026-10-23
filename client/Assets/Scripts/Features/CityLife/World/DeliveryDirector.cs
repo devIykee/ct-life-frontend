@@ -17,6 +17,10 @@ namespace CTLife.CityLife
     /// doorstep (hands on the box through CharacterIK), puts it down and drives off. On `delivery_arrived` the parcel is on the
     /// doorstep (or the locker's screen lights); "Pick up" / "Collect" refetches GET /me/items. A player who is not nearby
     /// gets only the Duo notification (HomeShopService); the parcel still waits at the door.
+    /// Perf lane 2 (2026-10-23): the van (with its livery), the courier and a parcel are made once, a few seconds after the
+    /// island loads, drawn once by a throwaway camera (so their shader programs, meshes and textures are on the GPU) and
+    /// pooled; a delivery takes them from the pool and gives them back, so nothing is loaded, instantiated or compiled
+    /// while the courier is on screen (each used to cost a 7.5-15 fps frame).
     /// </summary>
     public sealed class DeliveryDirector : MonoBehaviour
     {
@@ -67,6 +71,145 @@ namespace CTLife.CityLife
             Current = this;
             _offers = Offer;
             WorldOffers.Add(_offers);
+            Prewarm();
+        }
+
+        // ------------------------------------------------------------------ the pool
+
+        private GameObject _vanPrefab;
+        private Vehicle _vanPool;
+        private AvatarView _courierPool;
+        private readonly Stack<GameObject> _parcelPool = new Stack<GameObject>();
+        private static readonly Vector3 Backstage = new Vector3(-2000f, -400f, 0f);
+
+        /// <summary>Once on the island: the van, the courier and a parcel, made over a few frames, drawn once off-screen,
+        /// then parked inactive.</summary>
+        private async void Prewarm()
+        {
+            try
+            {
+                var ct = destroyCancellationToken;
+                while (VenueSession.Current == null || !VenueSession.Current.IsActive || !VenueSession.Current.IsIsland || Player() == null)
+                    await Awaitable.WaitForSecondsAsync(1f, ct);
+                await Awaitable.WaitForSecondsAsync(4f, ct);
+                var req = Resources.LoadAsync<GameObject>("Vehicles/van");
+                while (!req.isDone) await Awaitable.NextFrameAsync(ct);
+                _vanPrefab = req.asset as GameObject;
+                if (_vanPrefab == null) { Log.Warn("delivery", "missing prefab Vehicles/van"); return; }
+                await Awaitable.NextFrameAsync(ct);
+                var van = NewVan(Backstage, Quaternion.identity);
+                await Awaitable.NextFrameAsync(ct);
+                var courier = NewCourier();
+                await Awaitable.NextFrameAsync(ct);
+                var parcel = ShopProps.Parcel(transform);
+                await Awaitable.NextFrameAsync(ct);
+                // one off-screen render of the three: the first sight of them then costs nothing
+                // (AvatarLod hides avatars 25 m from the player: this one stays drawn for the warm-up frame)
+                if (courier != null) { courier.cullDistance = 1e6f; courier.transform.SetPositionAndRotation(Backstage + new Vector3(3f, 0f, 0f), Quaternion.identity); }
+                parcel.transform.position = Backstage + new Vector3(-2.5f, 0f, 1f);
+                await WarmRender(Backstage + new Vector3(0f, 1.2f, 0f), ct);
+                if (van != null) { van.gameObject.SetActive(false); if (_vanPool == null) _vanPool = van; else Destroy(van.gameObject); }
+                if (courier != null) { courier.cullDistance = 0f; courier.gameObject.SetActive(false); if (_courierPool == null) _courierPool = courier; else Destroy(courier.gameObject); }
+                ReturnParcel(parcel);
+                // the furniture studio too: its first thumbnail compiled the furniture shader for a shadowless camera (a
+                // ~40 ms frame when Decorate first opened); one cached thumbnail now, on arrival
+                FurniturePreview.Instance.Thumbnail("fu_sofa_linen");
+                Log.Info("delivery", "van, courier, parcel and the furniture studio prewarmed");
+            }
+            catch (OperationCanceledException) { }
+            catch (Exception e) { Debug.LogException(e); }
+        }
+
+        /// <summary>A throwaway camera looks at <paramref name="at"/> for one frame (the city's own settings and shadows), into
+        /// a tiny texture: shader programs, meshes and textures of what stands there reach the GPU now.</summary>
+        private static async Task WarmRender(Vector3 at, System.Threading.CancellationToken ct)
+        {
+            var main = Camera.main;
+            var rt = new RenderTexture(64, 64, 16, RenderTextureFormat.ARGB32) { name = "delivery_prewarm" };
+            var go = new GameObject("delivery_prewarm_cam");
+            try
+            {
+                var cam = go.AddComponent<Camera>();
+                if (main != null) cam.CopyFrom(main);
+                cam.targetTexture = rt;
+                cam.transform.SetPositionAndRotation(at + new Vector3(0f, 2f, -9f), Quaternion.LookRotation(new Vector3(0f, -2f, 9f)));
+                cam.nearClipPlane = 0.1f; cam.farClipPlane = 40f;
+                await Awaitable.NextFrameAsync(ct);
+                await Awaitable.NextFrameAsync(ct);
+            }
+            finally { Destroy(go); rt.Release(); Destroy(rt); }
+        }
+
+        private Vehicle NewVan(Vector3 p, Quaternion q)
+        {
+            var go = Instantiate(_vanPrefab, p, q, transform);
+            go.name = "courier-van";
+            var van = go.GetComponent<Vehicle>();
+            var body = go.GetComponent<Rigidbody>();
+            if (body != null) { body.isKinematic = true; body.interpolation = RigidbodyInterpolation.None; }
+            var car = go.GetComponent<CarPhysics>();
+            if (car != null) car.SetRails(true);
+            ShopProps.CourierLivery(van);
+            return van;
+        }
+
+        private AvatarView NewCourier()
+        {
+            string look = null;
+            var reg = CharacterRegistry.Instance;
+            if (reg != null) foreach (var e in reg.archetypes) if (e != null && e.prefab != null && !string.IsNullOrEmpty(e.key)) { look = e.key; if (e.key.Contains("worker") || e.key.Contains("dev")) break; }
+            var view = AvatarFactory.Create("courier", null, true, look, transform);
+            if (view != null) view.ambient = true;
+            return view;
+        }
+
+        private AvatarView TakeCourier()
+        {
+            var view = _courierPool;
+            _courierPool = null;
+            if (view == null) return NewCourier();
+            view.gameObject.SetActive(true);
+            return view;
+        }
+
+        private void ReturnCourier(AvatarView view)
+        {
+            if (view == null) return;
+            if (_courierPool != null) { Destroy(view.gameObject); return; }
+            view.SetSpeed(0f);
+            view.gameObject.SetActive(false);
+            _courierPool = view;
+        }
+
+        private void ReturnVan(Vehicle van)
+        {
+            if (van == null) return;
+            if (_vanPool != null) { Destroy(van.gameObject); return; }
+            van.gameObject.SetActive(false);
+            _vanPool = van;
+        }
+
+        private GameObject TakeParcel(Transform parent)
+        {
+            while (_parcelPool.Count > 0)
+            {
+                var p = _parcelPool.Pop();
+                if (p == null) continue;
+                p.transform.SetParent(parent, false);
+                p.transform.localPosition = Vector3.zero; p.transform.localRotation = Quaternion.identity;
+                p.SetActive(true);
+                return p;
+            }
+            return ShopProps.Parcel(parent);
+        }
+
+        private void ReturnParcel(GameObject p)
+        {
+            if (p == null) return;
+            if (_parcelPool.Count >= 2) { Destroy(p); return; }
+            p.SetActive(false);
+            p.transform.SetParent(transform, false);
+            _parcelPool.Push(p);
         }
 
         private void OnDestroy()
@@ -150,7 +293,7 @@ namespace CTLife.CityLife
             }
             if (_parcels.Exists(p => p.orderId == ev.OrderId)) return;
             var at = DropPoint(ev, door, rot);
-            var parcel = ShopProps.Parcel(transform);
+            var parcel = TakeParcel(transform);
             parcel.transform.SetPositionAndRotation(at, rot * Quaternion.Euler(0f, 12f, 0f));
             _parcels.Add(new Doorstep { orderId = ev.OrderId, parcel = parcel, at = at, ready = ev.Arrived });
         }
@@ -293,18 +436,23 @@ namespace CTLife.CityLife
 
         private bool SpawnVan(Run r)
         {
-            var prefab = Resources.Load<GameObject>("Vehicles/van");
-            if (prefab == null) { Log.Warn("delivery", "missing prefab Vehicles/van"); return false; }
             var p = Sample(r, 0f, out var dir); dir.y = 0f;
-            var go = Instantiate(prefab, p, Quaternion.LookRotation(dir.sqrMagnitude > 1e-6f ? dir.normalized : Vector3.forward), transform);
-            go.name = "courier-van";
-            r.van = go.GetComponent<Vehicle>();
-            var body = go.GetComponent<Rigidbody>();
-            if (body != null) { body.isKinematic = true; body.interpolation = RigidbodyInterpolation.None; }
-            r.car = go.GetComponent<CarPhysics>();
-            if (r.car != null) r.car.SetRails(true);
-            if (r.van != null) { r.van.EngineOn = true; r.van.Input = VehicleInput.None; }
-            ShopProps.CourierLivery(r.van);
+            var q = Quaternion.LookRotation(dir.sqrMagnitude > 1e-6f ? dir.normalized : Vector3.forward);
+            if (_vanPool != null)
+            {
+                r.van = _vanPool; _vanPool = null;
+                r.van.transform.SetPositionAndRotation(p, q);
+                r.van.gameObject.SetActive(true);
+            }
+            else
+            {
+                if (_vanPrefab == null) _vanPrefab = Resources.Load<GameObject>("Vehicles/van");
+                if (_vanPrefab == null) { Log.Warn("delivery", "missing prefab Vehicles/van"); return false; }
+                r.van = NewVan(p, q);
+            }
+            r.car = r.van.GetComponent<CarPhysics>();
+            if (r.car != null) { r.car.SetRails(true); r.car.RailSpeed = 0f; r.car.RailSteer = 0f; }
+            r.van.EngineOn = true; r.van.Input = VehicleInput.None;
             return true;
         }
 
@@ -324,16 +472,12 @@ namespace CTLife.CityLife
                 from.y = IslandStreamer.GroundHeight(from.x, from.z);
                 var drop = DropPoint(r.ev, r.door, r.rot);
                 var stand = drop + fwd * 0.55f;
-                string look = null;
-                var reg = CharacterRegistry.Instance;
-                if (reg != null) foreach (var e in reg.archetypes) if (e != null && e.prefab != null && !string.IsNullOrEmpty(e.key)) { look = e.key; if (e.key.Contains("worker") || e.key.Contains("dev")) break; }
-                var view = AvatarFactory.Create("courier", null, true, look, transform);
+                var view = TakeCourier();
                 if (view == null) { r.dropped = true; Settle(r.ev, r.door, r.rot); return; }
-                view.ambient = true;
                 r.courier = view;
                 r.ik = view.GetComponent<CharacterIK>();
                 view.transform.SetPositionAndRotation(from, Quaternion.LookRotation(Flat(stand - from)));
-                r.carried = ShopProps.Parcel(view.transform);
+                r.carried = TakeParcel(view.transform);
                 r.carried.transform.localPosition = new Vector3(0f, 0.98f, 0.33f);
                 await Awaitable.WaitForSecondsAsync(0.4f, destroyCancellationToken);
                 await Walk(r, view, stand, 1.25f);
@@ -353,16 +497,16 @@ namespace CTLife.CityLife
                 held.transform.SetParent(transform, true);
                 held.transform.SetPositionAndRotation(b, q);
                 if (!_parcels.Exists(p => p.orderId == r.ev.OrderId) && !r.ev.ToLocker) _parcels.Add(new Doorstep { orderId = r.ev.OrderId, parcel = held, at = b, ready = _arrived.Contains(r.ev.OrderId) });
-                else Destroy(held);
+                else ReturnParcel(held);
                 if (r.ev.ToLocker && _arrived.Contains(r.ev.OrderId)) { _lockerOrders.Add(r.ev.OrderId); ShopProps.SetLockerLit(_lockerScreen, true); }
                 r.dropped = true;
                 await Awaitable.WaitForSecondsAsync(0.5f, destroyCancellationToken);
                 await Walk(r, view, from, 1.35f);
-                Destroy(view.gameObject);
+                ReturnCourier(view);
                 r.courier = null;
             }
             catch (OperationCanceledException) { }
-            catch (Exception e) { Debug.LogException(e); r.dropped = true; if (r.courier != null) Destroy(r.courier.gameObject); r.courier = null; }
+            catch (Exception e) { Debug.LogException(e); r.dropped = true; ReturnCourier(r.courier); r.courier = null; }
         }
 
         private static Vector3 Flat(Vector3 v) { v.y = 0f; return v.sqrMagnitude > 1e-6f ? v.normalized : Vector3.forward; }
@@ -415,9 +559,9 @@ namespace CTLife.CityLife
 
         private void Clear(Run r)
         {
-            if (r.van != null) Destroy(r.van.gameObject);
-            if (r.courier != null) Destroy(r.courier.gameObject);
-            if (r.carried != null) Destroy(r.carried);
+            ReturnVan(r.van); r.van = null;
+            ReturnCourier(r.courier); r.courier = null;
+            ReturnParcel(r.carried); r.carried = null;
         }
 
         // ------------------------------------------------------------------ pick up
@@ -455,7 +599,7 @@ namespace CTLife.CityLife
             {
                 var items = await _svc.RefreshItems();
                 _parcels.Remove(p);
-                if (p.parcel != null) Destroy(p.parcel);
+                ReturnParcel(p.parcel);
                 Bus.Publish(ToastSignal.Text(ShopText.T("pickup.done"), ToastKind.Good));
                 Log.Info("delivery", $"picked up {p.orderId}: {items.Count} owned items");
             }

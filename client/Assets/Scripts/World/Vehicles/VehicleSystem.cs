@@ -134,7 +134,7 @@ namespace CTLife.World.Vehicles
             var spec = VehicleCatalog.Get(specId);
             // The hovercar may be parked locked (shown, never entered: Enter and FindOffer check CanUseKind).
             if (spec == null || (!CanUseKind(spec.kind) && spec.kind != VehicleKind.Roadstar)) return null;
-            var prefab = Resources.Load<GameObject>("Vehicles/" + specId);
+            var prefab = VehiclePrefabs.Get(specId, true);   // usually preloaded with the traffic kinds
             if (prefab == null) { Log.Warn("vehicles", "missing prefab Vehicles/" + specId); return null; }
             var go = Instantiate(prefab, position, rotation, transform);
             go.name = specId;
