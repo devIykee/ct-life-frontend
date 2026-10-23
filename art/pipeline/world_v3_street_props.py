@@ -1978,6 +1978,40 @@ def build_cafe_set():
                            'modified by CT Life (decimated, re-baked to one atlas)')
 
 
+def prep_tyre_stack(objs):
+    """three tyres lying flat, stacked a little untidily (the scan stands upright)."""
+    o = objs[0]
+    _apply_world(o)
+    o.data.transform(Matrix.Rotation(math.radians(90), 4, 'X'))
+    vs = np.array([v.co[:] for v in o.data.vertices]); mn, mx = vs.min(0), vs.max(0)
+    o.data.transform(Matrix.Translation(Vector((-(mn[0] + mx[0]) / 2, -(mn[1] + mx[1]) / 2, -mn[2]))))
+    th = mx[2] - mn[2] if (mx[2] - mn[2]) < 0.4 else 0.16
+    for k, (dx, dy, rz) in enumerate(((0.03, -0.02, 20), (-0.04, 0.03, 75))):
+        c = o.copy(); c.data = o.data.copy(); bpy.context.scene.collection.objects.link(c)
+        c.data.transform(Matrix.Rotation(math.radians(rz), 4, 'Z'))
+        c.data.transform(Matrix.Translation(Vector((dx, dy, th * (k + 1) - 0.01))))
+        objs.append(c)
+
+
+# world polish (2026-10-23): The Trenches' yard props from Poly Haven scans
+def build_jersey_barrier():
+    return build_ph('v3_jersey_barrier', 'concrete_road_barrier_02', lambda n: True, 420, 120, 512, cage=0.01, ao_dist=0.3,
+                    credit='"Concrete Road Barrier 02" (Poly Haven, https://polyhaven.com/a/concrete_road_barrier_02), CC0; modified by CT Life '
+                           '(decimated, re-baked to one atlas)')
+
+
+def build_tyre_stack():
+    return build_ph('v3_tyre_stack', 'old_tyre', lambda n: True, 900, 260, 512, prep=prep_tyre_stack, cage=0.01, ao_dist=0.2,
+                    credit='"Old Tyre" (Poly Haven, https://polyhaven.com/a/old_tyre), CC0; modified by CT Life (three stacked, decimated, '
+                           're-baked to one atlas)')
+
+
+def build_crate():
+    return build_ph('v3_crate', 'wooden_crate_02', lambda n: True, 360, 100, 512, cage=0.01, ao_dist=0.25,
+                    credit='"Wooden Crate 02" (Poly Haven, https://polyhaven.com/a/wooden_crate_02), CC0; modified by CT Life '
+                           '(decimated, re-baked to one atlas)')
+
+
 def main():
     ids = [a for a in ARGS if not a.startswith('--') and a not in ('build', 'fetch')]
     ids = ids[0].split(',') if ids else []
@@ -1992,6 +2026,7 @@ def main():
 
 BUILD.update({'v3_traffic_light': build_traffic_light, 'v3_stop_sign': build_stop_sign, 'v3_bus_shelter': build_bus_shelter,
               'v3_bollard': build_bollard, 'v3_bike_rack': build_bike_rack, 'v3_vendor_cart': build_vendor_cart,
-              'v3_decals': build_decals, 'v3_trash_bin': build_trash_bin, 'v3_cafe_set': build_cafe_set})
+              'v3_decals': build_decals, 'v3_trash_bin': build_trash_bin, 'v3_cafe_set': build_cafe_set,
+              'v3_jersey_barrier': build_jersey_barrier, 'v3_tyre_stack': build_tyre_stack, 'v3_crate': build_crate})
 
 main()

@@ -23,12 +23,13 @@ taste and landed as PRs, with work continuing without prompts.
   buys anything tradable; homes are game-only for now.
 
 ## Done (v3)
+World polish (2026-10-23): seated three-quarter camera, semi-real terrain and ground cover, Trenches yards and compounds.
 Vehicle fleet with 4 LODs; hovercar gating; downtown, Trenches, Residences and Marina on the v3 kit; mocap locomotion;
 GTA-style HUD; collisions; the shadow fix; the perf pass (30 fps cap holds); the walk-in apartment. Backend PR #6
 (vehicle kinds, entitlements).
 
 ## Queue (top = next)
-1. **[running]** World polish: seated camera, semi-real ground cover (terrain/grass/bushes), densify the Trenches.
+1. **[running]** Forests + remaining districts: replace the toy pine/broadleaf forests island-wide (mountain, slopes, parks) with semi-real trees; put Builder Hills, Airdrop Farm, Boardwalk/beach, Breakpoint Park, the MtnDAO lodge area and the islet on the v3 look; fix the sit transition (the character stands on the sofa cushion for ~0.5 s before sitting); the Trenches junction by the Perp Pit lot still reads open.
 2. **Sketchfab batch** (next window): bedroom 4f3db3cb, bathroom 9ba7e0a0, cafe a945f202, pub a6534141, office 5540183d,
    container 772f4be3, crane 49851dc7, lilac bushes 10312697. Then: dining df3f3c9f, Contemporary Apts 0d928b4f,
    American House 798ffaea, cliff 75fb6b34, stone pack f3e0a67b, pigeon 797d27b6, seagull 73aed843, snake 83c4290c,

@@ -80,9 +80,14 @@ namespace CTLife.World
             var ic = InteractionController.Current;
             Mark($"offered {(ic != null && ic.Offered != null ? ic.Offered.id + " " + ic.Offered.kind : "nothing")}");
             if (ic != null && ic.Offered != null) ic.Perform("use");
+            Mark("sat");
             PerfSegments.Label = "room_sit";
             await Awaitable.WaitForSecondsAsync(10f, ct);
             PerfSegments.Label = null;
+            // world polish (2026-10-23): stand up again, so a recording shows the camera's seat blend both ways
+            me.StandIfSeated();
+            Mark("stood");
+            await Awaitable.WaitForSecondsAsync(4f, ct);
             Mark("done");
         }
     }

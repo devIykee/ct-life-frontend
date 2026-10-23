@@ -943,7 +943,15 @@ class Dress:
         paved = inside & ~np.isin(codes, (Occupancy.PARK, Occupancy.WATER, Occupancy.FIELD))
         m = ndimage.gaussian_filter(paved.astype(np.float32), 1.2)
         m = np.clip((m - 0.15) / 0.7, 0, 1)
-        Image.fromarray((m * 255 + 0.5).astype(np.uint8), 'L').save(self.V3_PAVING_PNG, optimize=True)
+        # world polish (2026-10-23): green = The Trenches' yards (worn concrete, asphalt patches, oil and puddles in the
+        # terrain shader) instead of the downtown sidewalk slab; the harbour's riverside land counts too
+        yard_img = Image.new('L', (W, H), 0)
+        yd = ImageDraw.Draw(yard_img)
+        for P in [np.array(self._district_poly('trenches'), float)] + [np.array(q, float) for q in self.V3_SITE_EXTRA.get('trenches', [])]:
+            yd.polygon([(x - x0, H - 1 - (z - z0)) for x, z in P], fill=255)
+        yard = (np.asarray(yard_img) > 0).astype(np.float32)
+        rgb = np.stack([m, yard * (m > 0), np.zeros_like(m)], -1)
+        Image.fromarray((rgb * 255 + 0.5).astype(np.uint8), 'RGB').save(self.V3_PAVING_PNG, optimize=True)
         self.paving = dict(min=[round(float(x0), 2), round(float(z0), 2)], size=[W, H], png='World/Island/Textures/paving_mask.png')
         log(f'v3 paving (downtown, trenches, marina): {int(paved.sum())} m2 ({W} x {H} m mask)')
 
@@ -1547,6 +1555,310 @@ class Dress:
         log(f'v3 district sites blocked by occupancy code / slope: {why}')
         log(f'v3 districts: removed {removed}; {len(new)} v3 buildings {by}; anchors {anchors}; yards {yards}; {cut} plants cut; '
             f'street {street}; {dressing} yard props ({time.time() - t0:.1f}s)')
+
+    # -------------------------------------------------------------- world polish (2026-10-23)
+    def v3_trenches_dense(self):
+        """The Trenches read as one shed on an empty lot: fill the free yards with the industrial kit that fits (small
+        sheds, tanks, silos, chimneys), edge the lots along the streets with chain-link fence runs and parked vans and
+        pickups, and scatter yard clutter (pallets, crates, tyre stacks, drums, dumpsters, jersey barriers, cones) in
+        clusters. Roads, venue pads and doorways stay clear (occupancy); everything stays off the carriageway."""
+        global RNG
+        K = self.kit.items
+        if 'dz_industrial_11' not in K:
+            return
+        RNG = np.random.default_rng(V3_SEED + 7)
+        polys = [np.array(self._district_poly('trenches'), float)] + [np.array(q, float) for q in self.V3_SITE_EXTRA.get('trenches', [])]
+        inside = lambda x, z: any(G.point_in_poly(x, z, P) for P in polys)
+        allp = np.concatenate(polys)
+        x0, z0 = allp.min(0); x1, z1 = allp.max(0)
+        road_d = ndimage.distance_transform_edt(self.occ.arr() != Occupancy.ROAD)
+
+        def rd(x, z):
+            ox = int(np.clip(round(x - Occupancy.X0), 0, Occupancy.W - 1)); oy = int(np.clip(round(Occupancy.H - 1 - (z - Occupancy.Z0)), 0, Occupancy.H - 1))
+            return float(road_d[oy, ox])
+
+        def gy(x, z):
+            return float(self.g.y([x], [z])[0])
+
+        fails = {}
+
+        def put(pid, x, z, yaw, sc=1.0, margin=0.3, sink=0.0, code=Occupancy.PROP):
+            if pid not in K:
+                return False
+            it = K[pid]
+            if not self.occ.rect_free(x, z, it['w'] * sc, it['d'] * sc, yaw, margin=margin, allow=(Occupancy.FREE, Occupancy.TREE)):
+                fails['occ'] = fails.get('occ', 0) + 1
+                return False
+            ys = self.g.y([x - it['w'] / 2, x + it['w'] / 2, x, x], [z, z, z - it['d'] / 2, z + it['d'] / 2])
+            if ys.max() - ys.min() > 0.5 + max(it['w'], it['d']) * 0.08:
+                fails['slope'] = fails.get('slope', 0) + 1
+                return False
+            self.add(pid, x, float(ys.min()) + 0.01 - sink, z, yaw, sc, 1.0)
+            self.occ.rect(x, z, it['w'] * sc, it['d'] * sc, yaw, code, margin=0.15)
+            return True
+        nb0 = len(self.boxes)
+        made = {}
+        # 1. yard structures on the free ground behind the frontage (squared to the street grid of the district)
+        pool = [('dz_industrial_11', 4), ('dz_industrial_13', 4), ('dz_industrial_15', 5), ('dz_industrial_29', 4), ('dz_industrial_06', 4),
+                ('dz_industrial_28', 6), ('dz_industrial_26', 6), ('dz_industrial_22', 2), ('dz_industrial_24', 2), ('dz_industrial_23', 2),
+                ('dz_industrial_14', 1), ('dz_industrial_08', 1)]
+        caps = dict(pool)
+        pts = [(x, z) for x in np.arange(x0, x1, 6.0) for z in np.arange(z0, z1, 6.0)]
+        for i in RNG.permutation(len(pts)):
+            x, z = pts[i]
+            x += RNG.uniform(-2, 2); z += RNG.uniform(-2, 2)
+            if not inside(x, z) or self.occ.codes([x], [z])[0] != Occupancy.FREE or rd(x, z) < 4.5:
+                continue
+            live = [k for k in caps if k in K and made.get(k, 0) < caps[k]]
+            if not live:
+                break
+            pid = live[int(RNG.integers(len(live)))]
+            yaw = 101.0 + float(RNG.integers(4)) * 90.0 + RNG.uniform(-3, 3)
+            if self._v3_add_building(pid, x, z, yaw, 1.0, margin=1.0, slope=3.0, allow=(Occupancy.FREE, Occupancy.TREE)):
+                made[pid] = made.get(pid, 0) + 1
+        new = list(zip(self.boxes[nb0:], self.box_ids[nb0:]))
+        for box, pid in new:
+            for r in self.inst[pid]:
+                if abs(r[0] - box[0]) < 0.03 and abs(r[2] - box[2]) < 0.03:
+                    r[6:10] = [*self.V3_TINTS[int(RNG.integers(len(self.V3_TINTS)))], 1.0]
+        cut = self._v3_cut_inside(new)
+        # 2. lot edges along the district's streets: chain-link runs with gaps, parked vans and pickups, jersey barriers
+        fence = K.get('yd_chainlink_fence')
+        fences = vans = barriers = 0
+        for s in self.roads['segments']:
+            if s['kind'] in ('bridge', 'tunnel'):
+                continue
+            p, y, tan, rn = self.frame(s['samples'])
+            if len(p) < 3 or not any(inside(*q) for q in p[::3]):
+                continue
+            sl = G.arc_lengths(p)
+            for side in (1.0, -1.0):
+                edge = (s['widthRight'] if side > 0 else s['widthLeft']) + s['sidewalk']
+                pos = RNG.uniform(4, 12)
+                while pos < sl[-1] - 6:
+                    k = min(max(int(np.searchsorted(sl, pos)), 1), len(p) - 1)
+                    P, t, n_ = p[k], tan[k], rn[k] * side
+                    if not inside(*P):
+                        pos += 8.0
+                        continue
+                    yaw_t = math.degrees(math.atan2(t[0], t[1]))
+                    r = RNG.random()
+                    if fence is not None and r < 0.5:
+                        # a fence run 3-8 panels long, 3.2 m back from the kerb line
+                        L_ = fence['w']
+                        runs = int(RNG.integers(3, 9))
+                        ok = 0
+                        for back in (2.2, 3.4, 5.0, 7.0, 9.5):
+                            for j in range(runs):
+                                kk = min(max(int(np.searchsorted(sl, pos + j * L_)), 1), len(p) - 1)
+                                q = p[kk] + rn[kk] * side * (edge + back)
+                                ya = math.degrees(math.atan2(tan[kk][0], tan[kk][1])) + 90.0
+                                if not inside(*q) or not put('yd_chainlink_fence', q[0], q[1], ya, margin=0.1, sink=0.02):
+                                    break
+                                ok += 1
+                            if ok:
+                                break
+                        fences += ok
+                        pos += max(ok, 1) * L_ + RNG.uniform(6, 16)
+                    elif r < 0.78:
+                        # a van or a pickup parked nose along the street on the lot's apron
+                        pid = 'car_van' if RNG.random() < 0.5 else 'car_truck'
+                        flip = 180.0 if RNG.random() < 0.5 else 0.0
+                        for back in (2.2, 3.2, 4.5, 6.0, 8.0):
+                            q = P + n_ * (edge + back)
+                            if inside(*q) and put(pid, q[0], q[1], yaw_t + flip + RNG.uniform(-4, 4), margin=0.3):
+                                vans += 1
+                                break
+                        pos += RNG.uniform(9, 18)
+                    else:
+                        # a short line of jersey barriers closing a yard entrance
+                        cnt = 0
+                        for j in range(int(RNG.integers(2, 5))):
+                            q = P + n_ * (edge + 2.0) + t * j * 1.62
+                            if inside(*q) and put('v3_jersey_barrier', q[0], q[1], yaw_t + 90.0 + RNG.uniform(-3, 3), margin=0.1):
+                                cnt += 1
+                        barriers += cnt
+                        pos += RNG.uniform(8, 14)
+        # vans and pickups parked in front of the sheds (beside the door, nose out)
+        for box, pid in zip(self.boxes, self.box_ids):
+            if not pid.startswith('dz_') or not inside(box[0], box[2]) or box[3] < 5.0 or RNG.random() > 0.6:
+                continue
+            cx, cy, cz, w, h, d, yaw = box
+            a = math.radians(yaw)
+            fwd = np.array([math.sin(a), math.cos(a)]); right = np.array([math.cos(a), -math.sin(a)])
+            vid = 'car_van' if RNG.random() < 0.5 else 'car_truck'
+            for side in (RNG.choice([-1.0, 1.0]),) * 1 + (0.0,):
+                q = np.array([cx, cz]) + fwd * (d / 2 + 3.4) + right * side * (w / 2 - 1.8)
+                if inside(*q) and rd(*q) > 1.0 and put(vid, q[0], q[1], yaw + 90.0 * RNG.choice([1.0, -1.0]) + RNG.uniform(-8, 8), margin=0.3):
+                    vans += 1
+                    break
+        # chain-link compounds round the tanks, silos, chimneys and the substation (a gate gap on the street side)
+        compounds = 0
+        if fence is not None:
+            L_ = fence['w']
+            for box, pid in zip(self.boxes, self.box_ids):
+                if pid not in ('dz_industrial_28', 'dz_industrial_23', 'dz_industrial_26', 'dz_industrial_22', 'dz_industrial_24',
+                               'dz_industrial_06', 'dz_industrial_14') or not inside(box[0], box[2]):
+                    continue
+                cx, cy, cz, w, h, d, yaw = box
+                a = math.radians(yaw)
+                fwd = np.array([math.sin(a), math.cos(a)]); right = np.array([math.cos(a), -math.sin(a)])
+                hw, hd = w / 2 + 2.2, d / 2 + 2.2
+                c0 = np.array([cx, cz])
+                # the side nearest a road gets the gate
+                sides = [(fwd, right, hd, hw), (-fwd, right, hd, hw), (right, fwd, hw, hd), (-right, fwd, hw, hd)]
+                gate = min(range(4), key=lambda i: rd(*(c0 + sides[i][0] * sides[i][2])))
+                for i, (nrm, along, off, half) in enumerate(sides):
+                    n_p = max(1, int(round(2 * half / L_)))
+                    for j in range(n_p):
+                        t = -half + (j + 0.5) * (2 * half / n_p)
+                        if i == gate and abs(t) < 2.4:
+                            continue
+                        q = c0 + nrm * off + along * t
+                        ya = math.degrees(math.atan2(along[0], along[1])) + 90.0
+                        if put('yd_chainlink_fence', q[0], q[1], ya, sc=1.0, margin=0.05, sink=0.02):
+                            compounds += 1
+        fences += compounds
+        # 3. yard clutter in clusters round the sheds and in the open yards
+        kinds = [('tj_pallet_a', 3), ('tj_pallet_b', 2), ('v3_crate', 3), ('v3_tyre_stack', 2), ('ph_barrel_03', 3), ('tj_tarp_crates', 1),
+                 ('tj_dumpster', 1), ('tj_utility_box', 1), ('nc_prop_cone_01', 1), ('nc_prop_barricade_a_01', 1), ('v3_jersey_barrier', 1)]
+        bag = [k for k, w in kinds for _ in range(w) if k in K]
+        clusters = props = 0
+        pts = [(x, z) for x in np.arange(x0, x1, 6.5) for z in np.arange(z0, z1, 6.5)]
+        for i in RNG.permutation(len(pts)):
+            if clusters >= 260 or not bag:
+                break
+            x, z = pts[i]
+            x += RNG.uniform(-3, 3); z += RNG.uniform(-3, 3)
+            if not inside(x, z) or self.occ.codes([x], [z])[0] != Occupancy.FREE or not (2.0 < rd(x, z) < 40):
+                continue
+            base_yaw = 101.0 + float(RNG.integers(4)) * 90.0
+            n_here = 0
+            for _ in range(int(RNG.integers(3, 8))):
+                pid = bag[int(RNG.integers(len(bag)))]
+                q = (x + RNG.uniform(-3.5, 3.5), z + RNG.uniform(-3.5, 3.5))
+                if rd(*q) < 2.0:
+                    continue
+                if put(pid, q[0], q[1], base_yaw + RNG.choice([0.0, 90.0]) + RNG.uniform(-12, 12), margin=0.15):
+                    n_here += 1
+            if n_here:
+                clusters += 1; props += n_here
+        self.stats['v3_trenches_dense'] = dict(yard_buildings=made, plants_cut=cut, fence_panels=fences, vans=vans, barriers=barriers,
+                                               clutter_clusters=clusters, clutter_props=props)
+        log(f'v3 trenches dense: yard {made}; {fences} fence panels, {vans} vans/pickups, {barriers} barriers, {clusters} clutter clusters '
+            f'({props} props); {cut} plants cut; refused {fails}')
+
+    # toy ground cover / bushes -> the semi-real v3_plants set (ground cover: (choices, scale range, sy range))
+    V3_COVER = {
+        'w_grass_wispy_short': (['pv_grass_short'], (1.1, 1.6)), 'w_grass_common_short': (['pv_grass_short'], (1.1, 1.6)),
+        'w_grass_wispy_tall': (['pv_grass_tall', 'pv_grass_short'], (1.1, 1.5)), 'kf_grass': (['pv_grass_tall', 'pv_grass_short'], (1.1, 1.5)),
+        'w_clover_1': (['pv_grass_short'], (1.0, 1.3)), 'w_clover_2': (['pv_grass_short', 'pv_flowers_violet'], (1.0, 1.3)),
+        'w_flower': (['pv_flowers_yellow', 'pv_flowers_dandelion', 'pv_flowers_violet', 'pv_flowers_orange'], (1.1, 1.45)),
+        'flowers_': (['pv_flowers_yellow', 'pv_flowers_orange', 'pv_flowers_violet'], (1.1, 1.4)),
+        'w_fern': (['pv_fern'], (0.9, 1.25)), 'w_plant_7': (['pv_weeds'], (1.0, 1.35)),
+        'w_mushroom_common': ([], (1.0, 1.0)),
+    }
+    V3_BUSH = {'bush_round': ['pv_bush_round', 'pv_bush_low'], 'bush_small': ['pv_bush_low'], 'bush_flowers': ['pv_bush_round', 'pv_bush_large'],
+               'bush_large_flowers': ['pv_bush_large', 'pv_hedge'], 'kf_bush': ['pv_bush_round', 'pv_bush_low', 'pv_bush_large']}
+
+    ROUTE_SPOTS = [(-332.5, -279.0), (-493.6, 50.7), (690.0, -335.0)]
+
+    def v3_ground_cover(self):
+        """Island-wide: the toy grass clumps, clover, cartoon flowers, ferns and blob bushes become the semi-real cards and
+        leaf-card shrubs (art/pipeline/world_v3_plants.py); ground cover thins out towards roads (none within 1.5 m of a
+        carriageway, sparse to 4 m) and leaves paved ground alone; flowering bushes get a flower patch at their foot;
+        the parks get loose wildflower drifts."""
+        global RNG
+        K = self.kit.items
+        if 'pv_grass_short' not in K:
+            log('ground cover: no v3_plants kit, skipped')
+            return
+        RNG = np.random.default_rng(V3_SEED + 11)
+        road_d = ndimage.distance_transform_edt(self.occ.arr() != Occupancy.ROAD)
+        pave = None
+        if getattr(self, 'paving', None):
+            pave = np.asarray(Image.open(self.V3_PAVING_PNG).convert('RGB'), np.float32)[..., 0] / 255.0
+            pmin, psz = self.paving['min'], self.paving['size']
+
+        def paved(x, z):
+            if pave is None:
+                return 0.0
+            ix, iy = int(x - pmin[0]), int(psz[1] - 1 - (z - pmin[1]))
+            return float(pave[iy, ix]) if 0 <= ix < psz[0] and 0 <= iy < psz[1] else 0.0
+
+        def rd(x, z):
+            ox = int(np.clip(round(x - Occupancy.X0), 0, Occupancy.W - 1)); oy = int(np.clip(round(Occupancy.H - 1 - (z - Occupancy.Z0)), 0, Occupancy.H - 1))
+            return float(road_d[oy, ox])
+        counts = {'cover_in': 0, 'cover_out': 0, 'thinned_road': 0, 'thinned_paved': 0, 'bushes': 0, 'bush_flowers': 0, 'park_drifts': 0}
+        out = []
+        for proto in list(self.inst):
+            cover = next((v for k, v in self.V3_COVER.items() if proto.startswith(k)), None)
+            bush = next((v for k, v in self.V3_BUSH.items() if proto.startswith(k)), None)
+            if cover is None and bush is None:
+                continue
+            rows = self.inst.pop(proto)
+            for r in rows:
+                x, y, z = r[0], r[1], r[2]
+                d, pv = rd(x, z), paved(x, z)
+                if cover is not None:
+                    counts['cover_in'] += 1
+                    if not cover[0]:
+                        continue
+                    if pv > 0.25:
+                        counts['thinned_paved'] += 1
+                        continue
+                    if d < 1.5 or (d < 4.0 and RNG.random() > (d - 1.5) / 2.5):
+                        counts['thinned_road'] += 1
+                        continue
+                    pid = cover[0][int(RNG.integers(len(cover[0])))]
+                    out.append((pid, x, y - 0.03, z, RNG.uniform(0, 360), RNG.uniform(*cover[1]), RNG.uniform(0.85, 1.2)))
+                    counts['cover_out'] += 1
+                else:
+                    if pv > 0.5 or d < 1.2:
+                        continue
+                    # the device route's eye-level spots (client InteriorRoute.Spots): no shrub between the lens and the player
+                    if any(math.hypot(x - sx, z - sz) < 7.0 for sx, sz in self.ROUTE_SPOTS):
+                        continue
+                    pid = bush[int(RNG.integers(len(bush)))]
+                    out.append((pid, x, y - 0.02, z, RNG.uniform(0, 360), RNG.uniform(0.75, 1.1), RNG.uniform(0.9, 1.15)))
+                    counts['bushes'] += 1
+                    if 'flower' in proto:
+                        for _ in range(int(RNG.integers(1, 3))):
+                            a = RNG.uniform(0, 2 * math.pi); rr = RNG.uniform(1.0, 1.8)
+                            q = (x + math.cos(a) * rr, z + math.sin(a) * rr)
+                            if rd(*q) > 1.5 and paved(*q) < 0.25:
+                                out.append((['pv_flowers_yellow', 'pv_flowers_orange', 'pv_flowers_violet'][int(RNG.integers(3))], q[0],
+                                            float(self.g.y([q[0]], [q[1]])[0]) - 0.03, q[1], RNG.uniform(0, 360), RNG.uniform(0.8, 1.05), 1.0))
+                                counts['bush_flowers'] += 1
+        # the parks' lawns: grass tufts in loose clumps (denser where a low-frequency noise says so, none on the paths),
+        # and wildflower drifts (clusters of a few cards of one kind)
+        for name, poly in L.PARKS:
+            P = np.array(poly, float)
+            area = abs(float(np.sum(P[:, 0] * np.roll(P[:, 1], -1) - np.roll(P[:, 0], -1) * P[:, 1]))) / 2
+            for _ in range(int(area / 9)):
+                q = P.min(0) + RNG.random(2) * (P.max(0) - P.min(0))
+                if not G.point_in_poly(q[0], q[1], P) or self.occ.codes([q[0]], [q[1]])[0] not in (Occupancy.PARK, Occupancy.FREE) or rd(*q) < 2.0:
+                    continue
+                if G.fbm(np.array([q[0] / 23.0 + 3.1]), np.array([q[1] / 23.0]))[0] < 0.45 + RNG.random() * 0.25:
+                    continue
+                kind = 'pv_grass_tall' if RNG.random() < 0.3 else 'pv_grass_short'
+                out.append((kind, q[0], float(self.g.y([q[0]], [q[1]])[0]) - 0.03, q[1], RNG.uniform(0, 360), RNG.uniform(1.0, 1.5), RNG.uniform(0.85, 1.25)))
+                counts['park_drifts'] += 1
+            for _ in range(int(min(90, area / 400))):
+                c = P.min(0) + RNG.random(2) * (P.max(0) - P.min(0))
+                if not G.point_in_poly(c[0], c[1], P):
+                    continue
+                kind = ['pv_flowers_yellow', 'pv_flowers_dandelion', 'pv_flowers_violet', 'pv_flowers_orange', 'pv_grass_tall'][int(RNG.integers(5))]
+                for _ in range(int(RNG.integers(3, 7))):
+                    q = c + RNG.normal(0, 1.4, 2)
+                    if self.occ.codes([q[0]], [q[1]])[0] not in (Occupancy.PARK, Occupancy.FREE) or rd(*q) < 2.5:
+                        continue
+                    out.append((kind, q[0], float(self.g.y([q[0]], [q[1]])[0]) - 0.03, q[1], RNG.uniform(0, 360), RNG.uniform(1.1, 1.45), RNG.uniform(0.9, 1.15)))
+                    counts['park_drifts'] += 1
+        for pid, x, y, z, yaw, sc, sy in out:
+            self.add(pid, x, y, z, yaw, sc, sy)
+        self.stats['v3_ground_cover'] = counts
+        log(f'v3 ground cover: {counts}')
 
     def place_plaza(self):
         """Timeline Square's block: a paved plaza (built by Unity from plan.json) ringed with trees in planters, benches
@@ -2468,7 +2780,9 @@ def main():
     d.clear_shot_frames()
     d.v3_downtown()
     d.v3_districts()
+    d.v3_trenches_dense()
     d.v3_paving_all()
+    d.v3_ground_cover()
     d.write_heights()
     d.write(os.path.join(OUT, 'dress.json'))
     log(f'done ({time.time() - t0:.1f}s)')

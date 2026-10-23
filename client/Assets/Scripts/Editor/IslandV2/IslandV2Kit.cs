@@ -45,6 +45,11 @@ namespace CTLife.EditorTools.IslandV2
             if (id.StartsWith("m99_")) return (new[] { 45f, 240f, 1500f }, 140f, Layers.Building, "building");
             // world v3 districts (2026-10-23): DanielZhabotinsky industrial and Lost Gecko flats (2-3.5k-tri LOD0, own LOD2 box)
             if (id.StartsWith("dz_") || id.StartsWith("lg_")) return (new[] { 60f, 260f, 1500f }, 140f, Layers.Building, "building");
+            // world polish (2026-10-23, art/pipeline/world_v3_plants.py): leaf-card shrubs and hedges (shadows close by only),
+            // ground-cover cards (one LOD, no shadows, faded out by 36 m), the chain-link fence panel
+            if (id.StartsWith("pv_bush") || id.StartsWith("pv_hedge")) return (new[] { 32f, 90f, 240f }, 22f, Layers.Vegetation, "bush");
+            if (id.StartsWith("pv_")) return (new[] { 36f }, 0f, Layers.Vegetation, "grass");
+            if (id == "yd_chainlink_fence") return (new[] { 40f, 140f }, 30f, Layers.Prop, "prop");
             // TampaJoey city props: the street light is a lamp (post proxy); flat grates and covers draw close only
             if (id == "tj_street_light") return (new[] { 40f, 140f, 380f }, 35f, Layers.Prop, "lamp");
             if (id == "tj_drain" || id == "tj_storm_drain" || id == "tj_manhole" || id == "tj_tree_grate") return (new[] { 30f, 60f }, 0f, Layers.Prop, "prop");
@@ -254,7 +259,7 @@ namespace CTLife.EditorTools.IslandV2
         // ------------------------------------------------------------------ v3 parked decor cars
 
         /// <summary>The v3 drivables the street's parked decor shows (same models the player swaps into on approach).</summary>
-        public static readonly string[] V3CarSpecs = { "compact", "sedan", "sports", "taxi", "police" };
+        public static readonly string[] V3CarSpecs = { "compact", "sedan", "sports", "taxi", "police", "van", "pickup" };
         public static string V3CarId(string spec) => "v3car_" + spec;
 
         /// <summary>
@@ -446,7 +451,8 @@ namespace CTLife.EditorTools.IslandV2
         private static bool V3Texture(TextureImporter ti, string file)
         {
             bool building = file.StartsWith("nc_building") || file.StartsWith("m99_") || file.StartsWith("dz_") || file.StartsWith("lg_");
-            bool v3 = building || file.StartsWith("nc_") || file.StartsWith("ph_") || file.StartsWith("v3_") || file.StartsWith("tj_") || file.StartsWith("lp_");
+            bool v3 = building || file.StartsWith("nc_") || file.StartsWith("ph_") || file.StartsWith("v3_") || file.StartsWith("tj_") || file.StartsWith("lp_")
+                || file.StartsWith("pv_") || file.StartsWith("yd_");
             if (!v3) return false;
             bool normal = file.EndsWith("_Normal") || file == "nc_trees_01" || file == "nc_trees_04" || file == "nc_trees_07";
             bool mask = file.EndsWith("_MaskMap");
@@ -459,13 +465,14 @@ namespace CTLife.EditorTools.IslandV2
             ti.anisoLevel = building && !far ? 2 : 1;
             ti.wrapMode = file.StartsWith("nc_trees_") || file == "lp_maple_bark" || file == "lp_maple_leaves" ? TextureWrapMode.Repeat : TextureWrapMode.Clamp;
             ti.alphaSource = TextureImporterAlphaSource.FromInput;
-            bool cut = file.EndsWith("_billboard") || file == "nc_trees_00" || file == "nc_trees_05" || file == "lp_maple_leaves";
+            bool cut = file.EndsWith("_billboard") || file == "nc_trees_00" || file == "nc_trees_05" || file == "lp_maple_leaves" || file == "pv_ground_cards"
+                || file.EndsWith("_cutout_BaseColor");
             // colour dilated into the clear atlas texels (alphaIsTransparency) for every colour map: mips no longer bleed the
             // padding's black/white into UV island edges ("texture to their edges", 2026-10-22)
             ti.alphaIsTransparency = !normal && !mask;
             ti.mipMapsPreserveCoverage = cut;
             if (cut) ti.alphaTestReferenceValue = 0.45f;
-            int size = far ? 512 : mask ? (building ? 512 : 256) : normal ? (building ? 1024 : 512) : building && !cards ? 2048 : 1024;
+            int size = far ? 512 : mask ? (building ? 512 : 256) : normal ? (building ? 1024 : 512) : building && !cards || file == "pv_ground_cards" ? 2048 : 1024;
             ti.maxTextureSize = 2048;
             var a = ti.GetPlatformTextureSettings("Android");
             a.overridden = true; a.maxTextureSize = size; a.format = TextureImporterFormat.ASTC_6x6;
@@ -481,6 +488,8 @@ namespace CTLife.EditorTools.IslandV2
             ["Wall_3.056_14"] = ("nc_trees_05", "leaves"),      // canopy cut-outs
             ["lp_maple_bark"] = ("lp_maple_bark", "tree"),      // LOLIPOP maples: tiling bark, leaf-cluster cut-outs
             ["lp_maple_leaves"] = ("lp_maple_leaves", "leaves"),
+            ["pv_ground_cards"] = ("pv_ground_cards", "grass"),       // Poly Haven plants rendered to cut-out cards
+            ["pv_bush_leaves"] = ("lp_maple_leaves", "shrub"),         // the maple's leaf sprays as shrub cards
         };
 
         /// <summary>
@@ -503,14 +512,16 @@ namespace CTLife.EditorTools.IslandV2
                 string tex = billboard ? fbxMaterial.Substring(2) : tm.tex;
                 string role = billboard ? "billboard" : tm.role;
                 mat.SetTexture("_BaseMap", FindTexture(tex));
-                mat.SetColor("_BaseColor", Color.white);
+                // the ground-cover cards are rendered albedo of darkish scanned plants: lifted to sit in the lawn's tone
+                mat.SetColor("_BaseColor", role == "grass" ? new Color(1.45f, 1.5f, 1.35f) : role == "shrub" ? new Color(1.3f, 1.35f, 1.2f) : Color.white);
                 mat.SetFloat("_Toon", 0f);
                 mat.DisableKeyword("_TINTPALETTE"); mat.SetFloat("_TintPalette", 0f);
                 mat.DisableKeyword("_TINTALL"); mat.SetFloat("_TintAll", 0f);
-                mat.SetVector("_Wind", role == "leaves" ? new Vector4(0.06f, 1.3f, 5f, 0) : role == "tree" ? new Vector4(0.03f, 1.1f, 5f, 0) : Vector4.zero);
-                mat.SetVector("_GroundAO", new Vector4(0.8f, 0.3f, 0, 0));
+                mat.SetVector("_Wind", role == "leaves" ? new Vector4(0.06f, 1.3f, 5f, 0) : role == "tree" ? new Vector4(0.03f, 1.1f, 5f, 0)
+                    : role == "grass" ? new Vector4(0.035f, 1.7f, 0.45f, 0) : role == "shrub" ? new Vector4(0.025f, 1.4f, 1.6f, 0) : Vector4.zero);
+                mat.SetVector("_GroundAO", role == "grass" ? new Vector4(0.25f, 0.2f, 0, 0) : new Vector4(0.8f, 0.3f, 0, 0));
                 bool cut = role != "tree";
-                mat.SetFloat("_Cutoff", cut ? 0.45f : 0f);
+                mat.SetFloat("_Cutoff", cut ? (role == "grass" ? 0.4f : 0.45f) : 0f);
                 mat.SetFloat("_Cull", cut ? 0f : 2f);
             }
             else
@@ -540,8 +551,10 @@ namespace CTLife.EditorTools.IslandV2
                 mat.SetFloat("_OcclusionStrength", 1f);
                 mat.SetFloat("_Reflection", 1f);
                 mat.SetVector("_GroundAO", kind == "building" ? new Vector4(2.6f, 0.4f, 0, 0) : new Vector4(0.6f, 0.25f, 0, 0));
-                mat.SetFloat("_Cutoff", glass ? 0.08f : 0f);
-                mat.SetFloat("_Cull", stem.EndsWith("_cards") || glass ? 0f : 2f);
+                // world polish: "_cutout" atlases (the chain-link wire) are alpha-tested and two-sided
+                bool cutout = stem.EndsWith("_cutout");
+                mat.SetFloat("_Cutoff", glass ? 0.08f : cutout ? 0.5f : 0f);
+                mat.SetFloat("_Cull", stem.EndsWith("_cards") || glass || cutout ? 0f : 2f);
             }
             mat.enableInstancing = true;
             EditorUtility.SetDirty(mat);

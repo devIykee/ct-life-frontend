@@ -182,9 +182,10 @@ namespace CTLife.EditorTools.IslandV2
         /// <summary>Kenney car kit models that dress.py still places (shot dressing, yards); restyled to the v3 decor cars.</summary>
         public static readonly string[] CarModels = { "car_sedan", "car_sedan_sports", "car_hatchback_sports", "car_suv", "car_suv_luxury", "car_taxi", "car_van", "car_delivery", "car_police" };
 
-        /// <summary>The v3 drivable a Kenney car model becomes (no v3 SUV or van yet: the sedan stands in).</summary>
+        /// <summary>The v3 drivable a Kenney car model becomes (vans and delivery vans the v3 van, trucks the pickup).</summary>
         public static string V3SpecFor(string kenney) =>
-            kenney.Contains("police") ? "police" : kenney.Contains("taxi") ? "taxi" : kenney.Contains("sports") ? "sports" : kenney.Contains("hatchback") ? "compact" : "sedan";
+            kenney.Contains("police") ? "police" : kenney.Contains("taxi") ? "taxi" : kenney.Contains("sports") ? "sports" : kenney.Contains("hatchback") ? "compact"
+            : kenney.Contains("van") || kenney.Contains("delivery") ? "van" : kenney.Contains("truck") ? "pickup" : "sedan";
 
         /// <summary>World v3: every Kenney car dress.json places becomes the v3 decor car of its class, painted from the
         /// traffic palette by a hash of its position, so the street never shows the old low-poly cars.</summary>

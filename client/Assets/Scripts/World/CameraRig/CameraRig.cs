@@ -202,6 +202,90 @@ namespace CTLife.World
         /// <summary>Ease round behind the target even though it is not moving (it just sat down: look where it looks).</summary>
         public void SettleBehind() { _settleBehind = true; _lastOrbitAt = -10f; }
 
+        // ------------------------------------------------------------------ seated view (world polish, 2026-10-23)
+        // Sitting (a sofa, a chair, a bench, any engaged spot) the boom no longer stays at the back of the head: it blends in
+        // SeatBlend seconds to a raised three-quarter view of the sitter and the room (the character in the lower third,
+        // like The Sims / a GTA idle), picked among a ring of angles round the seat for the one the walls leave the most room
+        // (in a small room that is the diagonal towards the far corner). A drag still orbits; standing up blends back to the
+        // walking camera behind the player.
+        public const float SeatBlend = 0.45f;
+        public const float SeatPivotHeight = 1.15f, SeatPitch = 21f, SeatPitchIndoor = 17f, SeatDistance = 3.9f, SeatDistanceIndoor = 3.3f;
+        /// <summary>Degrees the lens tilts up from the pivot line: the sitter drops to the lower third, the room fills the rest.</summary>
+        public const float SeatLookUp = 9f;
+        /// <summary>Yaw offsets from the sitter's facing, best first: front three-quarters, then the sides, the rear quarters.</summary>
+        public static readonly float[] SeatAngles = { 145f, -145f, 120f, -120f, 165f, -165f, 95f, -95f, 60f, -60f, 30f, -30f };
+        private bool _seated, _seatOrbited;
+        private float _seatT, _steerT = 1f, _steerFromYaw, _steerToYaw, _steerFromPitch, _steerToPitch, _seatFacing;
+        public bool Seated => _seated;
+        /// <summary>0 walking .. 1 seated (eased).</summary>
+        public float SeatAmount => Mathf.SmoothStep(0f, 1f, _seatT);
+
+        private bool TargetSeated => _targetPlayer != null && !string.IsNullOrEmpty(_targetPlayer.SeatedSpot) && _targetPlayer.enabled;
+
+        private void BeginSeat(bool seated)
+        {
+            _seated = seated;
+            _seatOrbited = false;
+            _settleBehind = false;
+            _steerT = 0f;
+            _steerFromYaw = yaw; _steerFromPitch = pitch;
+            if (seated)
+            {
+                _seatFacing = Target.eulerAngles.y;
+                (_steerToYaw, _steerToPitch) = PickSeatView(TargetPosition, _seatFacing, yaw);
+            }
+            else
+            {
+                // back to the walking camera: behind the way the sitter faced as they rose
+                _steerToYaw = _seatFacing; _steerToPitch = DefaultPitch;
+                _lastOrbitAt = -10f;
+            }
+        }
+
+        /// <summary>
+        /// The seated view: the angle round the seat whose boom the walls leave the most room (ties go to the earlier,
+        /// nicer angles and to the side nearer the current view), and its pitch. Indoors a lower pitch (the ceiling).
+        /// </summary>
+        public (float yaw, float pitch) PickSeatView(Vector3 seatFeet, float facing, float currentYaw)
+        {
+            bool indoor = Interior;
+            float pitchDeg = indoor ? SeatPitchIndoor : SeatPitch;
+            float want = (indoor ? SeatDistanceIndoor : SeatDistance) * _zoom;
+            var pivot = seatFeet + Vector3.up * SeatPivotHeight;
+            float bestScore = float.MinValue, bestYaw = facing + SeatAngles[0];
+            for (int i = 0; i < SeatAngles.Length; i++)
+            {
+                float y = facing + SeatAngles[i];
+                var back = Quaternion.Euler(pitchDeg, y, 0f) * Vector3.back;
+                float clear = Clearance(pivot, back, want, CollisionMask, out _);
+                clear = Mathf.Min(clear, VisibleBoom(pivot, back, clear, seatFeet, OcclusionMask));
+                // room first (a boom 30 % short reads as cramped), then the angle's rank, then the side the camera is on
+                float side = Mathf.Abs(Mathf.DeltaAngle(currentYaw, y)) / 180f;
+                float score = Mathf.Min(clear / want, 1f) * 4f - i * 0.04f - side * 0.06f;
+                if (clear < want * 0.7f) score -= 1f;
+                if (score > bestScore) { bestScore = score; bestYaw = y; }
+            }
+            return (Mathf.Repeat(bestYaw, 360f), pitchDeg);
+        }
+
+        /// <summary>One frame of the seat blend: the eased amount and the steered yaw / pitch (until a drag takes over).</summary>
+        private void UpdateSeat(float dt)
+        {
+            bool now = TargetSeated;
+            if (now != _seated) BeginSeat(now);
+            _seatT = Mathf.MoveTowards(_seatT, _seated ? 1f : 0f, dt / SeatBlend);
+            if (_steerT < 1f)
+            {
+                _steerT = Mathf.Min(1f, _steerT + dt / SeatBlend);
+                if (!_seatOrbited)
+                {
+                    float u = Mathf.SmoothStep(0f, 1f, _steerT);
+                    yaw = Mathf.Repeat(_steerFromYaw + Mathf.DeltaAngle(_steerFromYaw, _steerToYaw) * u, 360f);
+                    pitch = Mathf.Lerp(_steerFromPitch, _steerToPitch, u);
+                }
+            }
+        }
+
         /// <summary>Jump behind the target (spawn, fast travel, teleports).</summary>
         public void SnapToTarget()
         {
@@ -212,6 +296,7 @@ namespace CTLife.World
                 yaw = Target.eulerAngles.y;
             }
             pitch = DefaultPitch;
+            _seated = false; _seatT = 0f; _steerT = 1f;
             _boom = DesiredDistance();
             _lastOrbitAt = -10f;
             LateUpdate();
@@ -228,6 +313,7 @@ namespace CTLife.World
         public void Orbit(Vector2 pixelDelta)
         {
             _settleBehind = false;
+            _seatOrbited = true;
             yaw = Mathf.Repeat(yaw + pixelDelta.x * YawPerPixel, 360f);
             pitch = Mathf.Clamp(pitch - pixelDelta.y * PitchPerPixel, MinPitch, MaxPitch);
             _lastOrbitAt = Time.time;
@@ -349,8 +435,11 @@ namespace CTLife.World
             var travel = target - _lastTarget; travel.y = 0f;
             float speed = dt > 1e-5f ? travel.magnitude / dt : 0f;
             _lastTarget = target;
-            if (speed > 12f) _pivot = target + Vector3.up * PivotHeight; // a teleport: no swoop across the map
-            _pivot = Vector3.Lerp(_pivot, target + Vector3.up * PivotHeight, 1f - Mathf.Exp(-followSharpness * dt));
+            UpdateSeat(dt);
+            float seat = SeatAmount;
+            float pivotHeight = Mathf.Lerp(PivotHeight, SeatPivotHeight, seat);
+            if (speed > 12f) _pivot = target + Vector3.up * pivotHeight; // a teleport: no swoop across the map
+            _pivot = Vector3.Lerp(_pivot, target + Vector3.up * pivotHeight, 1f - Mathf.Exp(-followSharpness * dt));
             if (Time.time >= _ceilingCheckAt)
             {
                 _ceilingCheckAt = Time.time + 0.25f;
@@ -362,6 +451,7 @@ namespace CTLife.World
             bool direct = _targetPlayer != null && _targetPlayer.DirectInputActive;
             float idle = Time.time - _lastOrbitAt;
             if (direct) _settleBehind = false; // A thumb taking over cancels a pending seat-camera settle.
+            else if (_seated) _settleBehind = false;   // the seated view owns the angle (UpdateSeat)
             else if (_settleBehind)
             {
                 float delta = Mathf.DeltaAngle(yaw, Target.eulerAngles.y);
@@ -371,20 +461,24 @@ namespace CTLife.World
             else yaw = Recenter(yaw, Target.eulerAngles.y, speed, idle, dt);
             if (!direct && idle > RecenterDelay + 0.8f && speed > 0.5f) pitch = Mathf.Lerp(pitch, DefaultPitch, 1f - Mathf.Exp(-1.2f * dt));
             var rot = Quaternion.Euler(pitch, yaw, 0f);
-            float want = DesiredDistance();
+            float want = Mathf.Lerp(DesiredDistance(), (Interior ? SeatDistanceIndoor : SeatDistance) * _zoom, seat);
             float clear = Clearance(_pivot, rot * Vector3.back, want, CollisionMask, out bool thinOnly);
             // Something between the lens and the body (not the pivot): come in front of it, smoothly.
             float seen = VisibleBoom(_pivot, rot * Vector3.back, clear, target, OcclusionMask);
             if (seen < clear - 0.05f) { clear = seen; thinOnly = true; }
             // Pull in at once when something solid comes between (quickly but smoothly for a pole or a trunk); ease back out.
-            _boom = Boom(_boom, clear, thinOnly, 3f, dt);
+            // (the seat blend eases the boom out in step with the angle instead of the usual slow drift)
+            _boom = Boom(_boom, clear, thinOnly, seat > 0f && seat < 1f || _steerT < 1f ? 9f : 3f, dt);
             // Backed against something: rise over the head and look past it (seeing the inside of the head is not a view).
             float lift = MaxLift * Mathf.Clamp01((CloseBoom - _boom) / (CloseBoom - 0.35f));
             if (lift > 0f && Physics.SphereCast(_pivot, CollisionRadius, Vector3.up, out var roof, lift + 0.1f, CollisionMask, QueryTriggerInteraction.Ignore))
                 lift = Mathf.Max(0f, roof.distance - 0.1f);
             var position = _pivot + rot * Vector3.back * _boom + Vector3.up * lift;
             var look = _pivot + Vector3.up * LookAbove + (rot * Vector3.forward) * (lift * 1.5f);
-            transform.SetPositionAndRotation(position, Quaternion.LookRotation(look - position));
+            var lookRot = Quaternion.LookRotation(look - position);
+            // seated: tilt the lens up so the sitter sits in the lower third and the room fills the frame
+            if (seat > 0f) lookRot = lookRot * Quaternion.Euler(-SeatLookUp * seat, 0f, 0f);
+            transform.SetPositionAndRotation(position, lookRot);
             // The lift must not make a collision-shortened boom count as clear of the body again.
             ShowTarget(_boom > HideWithin);
         }

@@ -545,3 +545,32 @@ art/pipeline/world_sky_hdri.py, art/pipeline/world_street_textures.py and art/pi
 | Inter font (bundled with Blender) | https://rsms.me/inter/ | SIL Open Font License 1.1 | Rasmus Andersson | 2026-10-22 | text painted into sign textures (STOP, BLOCK AVE, BUS STOP, COFFEE) |
 | CT Life street props: `v3_traffic_light`, `v3_stop_sign`, `v3_bus_shelter`, `v3_bollard`, `v3_bike_rack`, `v3_vendor_cart` | modelled in Blender for CT Life | CC0 (CT Life original) | CT Life | 2026-10-22 | downtown street kit |
 <!-- END downtown-finish-20261022 -->
+
+<!-- BEGIN world-polish-20261023 -->
+## World polish: ground cover, terrain scans, Trenches yard props (2026-10-23)
+
+Pipelines: art/pipeline/world_v3_ground.py (terrain arrays), art/pipeline/world_v3_plants.py (cards, shrubs, fence), art/pipeline/world_v3_street_props.py (barrier, tyres, crate). Raw files cached in art/raw/polyhaven and art/raw/ambientcg (gitignored). Licence pages checked 2026-10-23.
+
+| Name | Source URL | Licence | Author | Downloaded | Used for |
+| --- | --- | --- | --- | --- | --- |
+| Poly Haven model "Grass Medium 01" | https://polyhaven.com/a/grass_medium_01 | CC0 1.0 (https://polyhaven.com/license) | Rob Tuytel, Rico Cilliers | 2026-10-23 | pv_grass_short, pv_grass_tall, flower cards (rendered to cut-out cards) |
+| Poly Haven model "Grass Medium 02" | https://polyhaven.com/a/grass_medium_02 | CC0 1.0 (https://polyhaven.com/license) | Rico Cilliers | 2026-10-23 | pv_grass_tall and flower cards |
+| Poly Haven model "Grass Bermuda 01" | https://polyhaven.com/a/grass_bermuda_01 | CC0 1.0 (https://polyhaven.com/license) | Rico Cilliers | 2026-10-23 | pv_flowers_dandelion |
+| Poly Haven model "Celandine 01" | https://polyhaven.com/a/celandine_01 | CC0 1.0 (https://polyhaven.com/license) | Rob Tuytel, Rico Cilliers | 2026-10-23 | pv_flowers_yellow |
+| Poly Haven model "Periwinkle Plant" | https://polyhaven.com/a/periwinkle_plant | CC0 1.0 (https://polyhaven.com/license) | Amal Kumar | 2026-10-23 | pv_flowers_violet |
+| Poly Haven model "Dandelion 01" | https://polyhaven.com/a/dandelion_01 | CC0 1.0 (https://polyhaven.com/license) | Rob Tuytel, Rico Cilliers | 2026-10-23 | pv_flowers_dandelion |
+| Poly Haven model "Flower Ursinia" | https://polyhaven.com/a/flower_ursinia | CC0 1.0 (https://polyhaven.com/license) | Jenelle van Heerden, Rico Cilliers | 2026-10-23 | pv_flowers_orange |
+| Poly Haven model "Fern 02" | https://polyhaven.com/a/fern_02 | CC0 1.0 (https://polyhaven.com/license) | Rob Tuytel, Rico Cilliers | 2026-10-23 | pv_fern |
+| Poly Haven model "Weed Plant 02" | https://polyhaven.com/a/weed_plant_02 | CC0 1.0 (https://polyhaven.com/license) | Rob Tuytel, Rico Cilliers | 2026-10-23 | pv_weeds |
+| Poly Haven model "Nettle Plant" | https://polyhaven.com/a/nettle_plant | CC0 1.0 (https://polyhaven.com/license) | Rob Tuytel, Rico Cilliers | 2026-10-23 | pv_weeds |
+| Poly Haven model "Modular Chainlink Fence" | https://polyhaven.com/a/modular_chainlink_fence | CC0 1.0 (https://polyhaven.com/license) | James Ray Cock, Amal Kumar | 2026-10-23 | yd_chainlink_fence (the double panel, posts decimated) |
+| Poly Haven model "Concrete Road Barrier 02" | https://polyhaven.com/a/concrete_road_barrier_02 | CC0 1.0 (https://polyhaven.com/license) | Amal Kumar | 2026-10-23 | v3_jersey_barrier (decimated, re-baked) |
+| Poly Haven model "Old Tyre" | https://polyhaven.com/a/old_tyre | CC0 1.0 (https://polyhaven.com/license) | MP | 2026-10-23 | v3_tyre_stack (three stacked, re-baked) |
+| Poly Haven model "Wooden Crate 02" | https://polyhaven.com/a/wooden_crate_02 | CC0 1.0 (https://polyhaven.com/license) | James Ray Cock, Jurita Burger | 2026-10-23 | v3_crate (decimated, re-baked) |
+| Poly Haven texture "Aerial Grass Rock" | https://polyhaven.com/a/aerial_grass_rock | CC0 1.0 (https://polyhaven.com/license) | Rob Tuytel | 2026-10-23 | terrain grass macro variation (ground array slice 1) |
+| Poly Haven texture "Forest Ground 04" | https://polyhaven.com/a/forest_ground_04 | CC0 1.0 (https://polyhaven.com/license) | Rob Tuytel, Rico Cilliers | 2026-10-23 | terrain soil (slice 2) |
+| Poly Haven texture "Concrete Floor Worn 001" | https://polyhaven.com/a/concrete_floor_worn_001 | CC0 1.0 (https://polyhaven.com/license) | Dimitrios Savva, Rico Cilliers | 2026-10-23 | The Trenches yard slabs (slice 3) |
+| Poly Haven texture "Asphalt 02" | https://polyhaven.com/a/asphalt_02 | CC0 1.0 (https://polyhaven.com/license) | Rob Tuytel | 2026-10-23 | The Trenches asphalt patches (slice 4) |
+| ambientCG material "Grass 004" (1K PNG) | https://ambientcg.com/view?id=Grass004 | CC0 1.0 (https://docs.ambientcg.com/license/) | ambientCG (Lennart Demes) | 2026-10-23 | terrain lawn (ground array slice 0) |
+| LOLIPOP "Maple trees pack (lowpoly, game ready, LODs)" leaf cards (already in the kit) | https://sketchfab.com/3d-models/maple-trees-pack-lowpoly-game-ready-lods-b5d2833c258f4054a01ee2b4ef85adf0 | CC Attribution (credit in-game, as for the maples) | LOLIPOP | 2026-10-22 | pv_bush_round, pv_bush_low, pv_bush_large, pv_hedge (leaf cards rebuilt into shrubs) |
+<!-- END world-polish-20261023 -->

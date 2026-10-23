@@ -66,6 +66,10 @@ namespace CTLife.EditorTools.IslandV2
             new View("d_residences", new Vector3(-493.6f, 1.7f, 50.7f), new Vector3(-491f, 10f, 100f), 60f, true),
             new View("d_residences_air", new Vector3(-420f, 80f, -120f), new Vector3(-560f, 0f, 60f), 55f),
             new View("d_marina", new Vector3(560f, 1.7f, -262f), new Vector3(640f, 30f, -235f), 60f, true),
+            // world polish (2026-10-23): the marina's east bank (the device route's spot), a park lawn and the park from the air
+            new View("p_marina_east", new Vector3(690f, 1.7f, -335f), new Vector3(680f, 3f, -290f), 60f, true),
+            new View("p_park", new Vector3(-30f, 1.7f, 70f), new Vector3(0f, 1f, 110f), 60f, true),
+            new View("p_park_air", new Vector3(60f, 70f, 10f), new Vector3(-10f, 0f, 95f), 55f),
             new View("d_marina_air", new Vector3(470f, 90f, -470f), new Vector3(560f, 10f, -260f), 52f),
             // the first walk-in door (room space: +Z out to the street, the room at -Z)
             new View("room_door", new Vector3(0.6f, 1.6f, 7f), new Vector3(0f, 1.4f, 0f), 60f),

@@ -239,7 +239,28 @@ namespace CTLife.EditorTools.IslandV2
                 Set($"Street/{n}_albedo.png", true, true, 1024);
                 Set($"Street/{n}_normal.png", false, true, 1024, normal: true);
             }
-            Set("paving_mask.png", false, false, 2048, fmt: TextureImporterFormat.R8);    // downtown + The Trenches + Dubai Marina (1156 x 690 m)
+            Set("paving_mask.png", false, false, 2048, fmt: TextureImporterFormat.RG16);  // downtown + The Trenches + Dubai Marina (1156 x 690 m); g = Trenches yards
+            // world polish (2026-10-23): the ground scans (art/pipeline/world_v3_ground.py, CC0), five 1024 px slices each
+            void ArraySet(string file, bool srgb)
+            {
+                var path = IslandV2Paths.Textures + "/" + file;
+                var ti = AssetImporter.GetAtPath(path) as TextureImporter;
+                if (ti == null) { Debug.LogWarning("CTLIFE [islandv2] missing texture " + path); return; }
+                var st = new TextureImporterSettings();
+                ti.ReadTextureSettings(st);
+                st.textureType = TextureImporterType.Default; st.textureShape = TextureImporterShape.Texture2DArray;
+                st.flipbookColumns = GroundSlices; st.flipbookRows = 1;
+                st.sRGBTexture = srgb; st.mipmapEnabled = true; st.wrapMode = TextureWrapMode.Repeat; st.filterMode = FilterMode.Trilinear; st.aniso = 4;
+                st.alphaSource = TextureImporterAlphaSource.FromInput;
+                ti.SetTextureSettings(st);
+                ti.maxTextureSize = 8192;
+                var a = ti.GetPlatformTextureSettings("Android");
+                a.overridden = true; a.maxTextureSize = 8192; a.format = TextureImporterFormat.ASTC_6x6;
+                ti.SetPlatformTextureSettings(a);
+                ti.SaveAndReimport();
+            }
+            ArraySet("Ground/ground_albedo_array.png", true);
+            ArraySet("Ground/ground_normal_array.png", false);
             foreach (var f in System.IO.Directory.GetFiles(IslandV2Paths.Textures + "/Signs", "*.png")) Set("Signs/" + System.IO.Path.GetFileName(f), true, false, 512);
         }
 
@@ -286,6 +307,8 @@ namespace CTLife.EditorTools.IslandV2
         }
 
         private static Texture2D Tex(string file) => AssetDatabase.LoadAssetAtPath<Texture2D>(IslandV2Paths.Textures + "/" + file);
+        private const int GroundSlices = 5;
+        private static Texture2DArray TexArray(string file) => AssetDatabase.LoadAssetAtPath<Texture2DArray>(IslandV2Paths.Textures + "/" + file);
 
         /// <summary>The sidewalk scan's warm cast taken out: light grey slabs like the lookdev (linear multipliers).</summary>
         private static readonly Color PaverTint = new Color(0.8f, 0.93f, 1.1f);
@@ -313,6 +336,11 @@ namespace CTLife.EditorTools.IslandV2
                 x.SetColor("_SandColor", new Color(0.92f, 0.83f, 0.62f)); x.SetColor("_DirtColor", new Color(0.56f, 0.43f, 0.30f));
                 x.SetVector("_Snow", new Vector4(138f, 156f, 0.45f, 0.6f)); x.SetVector("_Shore", new Vector4(-6f, 1.1f, 0f, 0f)); x.SetVector("_DetailScale", new Vector4(0.16f, 0.035f, 0f, 0f));
                 x.SetFloat("_Contrast", 0.65f); x.SetFloat("_Sharpness", 2.5f); x.SetFloat("_Toon", 0.3f);
+                // world polish: the scanned lawn, soil and Trenches yards (warm late-afternoon grade on the grass)
+                x.SetTexture("_GroundArr", TexArray("Ground/ground_albedo_array.png")); x.SetTexture("_GroundNrm", TexArray("Ground/ground_normal_array.png"));
+                x.SetColor("_GrassTint", new Color(1.3f, 1.36f, 1.55f, 0.2f)); x.SetVector("_GrassScale", new Vector4(1.6f, 2.3f, 18f, 61f));
+                x.SetColor("_SoilTint", new Color(1f, 0.97f, 0.92f)); x.SetColor("_YardTint", new Color(1.05f, 1.03f, 1.0f, 0.6f));
+                x.SetVector("_Yard", new Vector4(3.0f, 7.0f, 0.33f, 0.0f));
             }
             // downtown paving (dress.py v3_paving): its mask and domain from dress.json, the sidewalk stone
             var pave = IslandV2Paths.Json("dress.json")["paving"] as JObject;
