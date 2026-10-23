@@ -22,7 +22,15 @@ Material:
   m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
-    m_TexEnvs: []
+    m_TexEnvs:
+    - _Wall:
+        m_Texture: {fileID: 2800000, guid: 882d3538e9073442eb72a29f145b1753, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _WallNormal:
+        m_Texture: {fileID: 2800000, guid: b706d4361190a478da223e090a8684f6, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
     - _Cull: 2
@@ -34,6 +42,8 @@ Material:
     - _Floors: {r: 3.2, g: 3, b: 3.6, a: 0}
     - _Frame: {r: 0.22, g: 0.23, b: 0.27, a: 1}
     - _Glass: {r: 0.36, g: 0.52, b: 0.62, a: 1}
+    - _Scan: {r: 2.4, g: 1, b: 0.8, a: 0}
     - _Trim: {r: 0.92, g: 0.88, b: 0.8, a: 1}
+    - _WallMid: {r: 0.066, g: 0.043, b: 0.029, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

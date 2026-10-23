@@ -234,7 +234,7 @@ namespace CTLife.EditorTools.IslandV2
             Set("boardwalk.png", true, true, 256);
             SkyTextures();
             // world v3 street stone (art/pipeline/world_street_textures.py, Poly Haven CC0) and the downtown paving mask
-            foreach (var n in new[] { "asphalt", "pavers", "concrete", "granite", "plaster", "rooftiles" })
+            foreach (var n in new[] { "asphalt", "pavers", "concrete", "granite", "plaster", "rooftiles", "siding", "corrugated", "dirt" })
             {
                 Set($"Street/{n}_albedo.png", true, true, 1024);
                 Set($"Street/{n}_normal.png", false, true, 1024, normal: true);
@@ -364,9 +364,16 @@ namespace CTLife.EditorTools.IslandV2
                 x.SetColor("_White", new Color(0.86f, 0.86f, 0.84f)); x.SetColor("_Yellow", new Color(0.86f, 0.66f, 0.16f));
                 x.EnableKeyword("_PBR"); x.SetFloat("_UsePBR", 1f);
             });
+            // world districts 2 (2026-10-23): farm tracks and service lanes on a CC0 dirt scan (Poly Haven 'dirt'), PBR like the
+            // asphalt; no painted lines on dirt (the paint colours are the dirt's own), tyre tracks kept
             Mk(Mat.Dirt, "CT Life/World/Road", x =>
             {
-                x.SetTexture("_Detail", Tex("dirt_detail.png")); x.SetColor("_Color", new Color(0.62f, 0.50f, 0.36f)); x.SetFloat("_Tracks", 0.18f); x.SetFloat("_Contrast", 1.1f);
+                x.SetTexture("_Detail", Tex("dirt_detail.png")); x.SetColor("_Color", new Color(1.05f, 1.0f, 0.95f)); x.SetFloat("_Tracks", 0.22f); x.SetFloat("_Contrast", 1.1f);
+                x.SetTexture("_Albedo", Tex("Street/dirt_albedo.png")); x.SetTexture("_Normal", Tex("Street/dirt_normal.png"));
+                x.SetFloat("_TileMetres", 3f); x.SetFloat("_NormalStrength", 1f); x.SetFloat("_Patches", 0.0f); x.SetFloat("_MacroMid", 0.076f);
+                x.SetFloat("_Reflection", 0.4f); x.SetFloat("_Wear", 0.0f);
+                x.SetColor("_White", new Color(0.36f, 0.30f, 0.23f, 0f)); x.SetColor("_Yellow", new Color(0.36f, 0.30f, 0.23f, 0f));
+                x.EnableKeyword("_PBR"); x.SetFloat("_UsePBR", 1f);
             });
             void Stone(Material x, string set, Color tint, float tile, Vector4 slabs, float smooth = 1f)
             {
@@ -392,10 +399,15 @@ namespace CTLife.EditorTools.IslandV2
                 x.SetColor("_Shallow", new Color(0.42f, 0.72f, 0.66f)); x.SetColor("_Deep", new Color(0.16f, 0.42f, 0.48f)); x.SetVector("_RippleScale", new Vector4(0.11f, 0.2f, 0, 0));
             });
             Mk("barrier", "CT Life/World/Toon", x => { x.SetColor("_BaseColor", Color.white); });
-            Mk("shell_roof", "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Tex("concrete.png")); x.EnableKeyword("_WORLDUV"); x.SetFloat("_UseWorldUV", 1); x.SetFloat("_WorldScale", 0.25f); x.SetColor("_BaseColor", Color.white); x.SetFloat("_Toon", 0.35f); x.SetFloat("_Cull", 0f); });
+            // world districts 2 (2026-10-23): shell roofs on the venue reskin (clay tiles on the warm gables, plaster-grey
+            // concrete on flat roofs; the roof colour comes in as vertex colour), no longer the toon concrete
+            Mk("shell_roof", "CT Life/World/Venue Reskin", x => { ReskinTextures(x); x.SetTexture("_BaseMap", Texture2D.whiteTexture); x.SetColor("_BaseColor", Color.white); x.SetFloat("_UseVertexColor", 1f); x.SetFloat("_Cull", 0f); });
             Mk("bird", "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Texture2D.whiteTexture); x.SetColor("_BaseColor", new Color(0.97f, 0.97f, 0.95f)); x.SetFloat("_Toon", 0.2f); x.SetFloat("_Cull", 0f); });
             Mk(Mat.Quay, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Tex("concrete.png")); x.EnableKeyword("_WORLDUV"); x.SetFloat("_UseWorldUV", 1); x.SetFloat("_WorldScale", 0.3f); x.SetColor("_BaseColor", new Color(0.72f, 0.69f, 0.64f)); x.SetFloat("_Toon", 0.35f); });
-            Mk(Mat.Boardwalk, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Tex("boardwalk.png")); x.DisableKeyword("_WORLDUV"); x.SetFloat("_UseWorldUV", 0); x.SetColor("_BaseColor", Color.white); x.SetFloat("_Toon", 0.3f); });
+            // world districts 2: the boardwalk's deck and rails as scanned weathered planks (world-projected, warm wood tone)
+            Mk(Mat.Boardwalk, "CT Life/World/Venue Reskin", x => { ReskinTextures(x); x.SetTexture("_Wall", Tex("Street/siding_albedo.png")); x.SetTexture("_WallNormal", Tex("Street/siding_normal.png"));
+                x.SetColor("_WallMid", new Color(0.066f, 0.043f, 0.029f)); x.SetVector("_Tiles", new Vector4(2.4f, 2.2f, 1.0f, 0.9f));
+                x.SetTexture("_BaseMap", Texture2D.whiteTexture); x.SetColor("_BaseColor", new Color(0.62f, 0.47f, 0.34f)); x.SetFloat("_UseVertexColor", 0f); x.SetFloat("_Cull", 2f); });
             Mk(Mat.Timber, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Texture2D.whiteTexture); x.SetColor("_BaseColor", new Color(0.50f, 0.38f, 0.27f)); x.SetFloat("_Toon", 0.35f); });
             Mk(Mat.Lighthouse, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Texture2D.whiteTexture); x.SetColor("_BaseColor", Color.white); x.SetFloat("_Toon", 0.4f); });
             Mk(Mat.LighthouseLamp, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Texture2D.whiteTexture); x.SetColor("_BaseColor", new Color(1f, 0.93f, 0.66f)); x.SetColor("_Emission", new Color(1.6f, 1.35f, 0.8f)); x.SetFloat("_Cull", 0f); });
@@ -877,6 +889,14 @@ namespace CTLife.EditorTools.IslandV2
             EditorUtility.SetDirty(profile);
             AssetDatabase.SaveAssetIfDirty(profile);
             return profile;
+        }
+
+        private static void ReskinTextures(Material mat)
+        {
+            mat.SetTexture("_Wall", Tex("Street/plaster_albedo.png")); mat.SetTexture("_WallNormal", Tex("Street/plaster_normal.png"));
+            mat.SetTexture("_Roof", Tex("Street/rooftiles_albedo.png")); mat.SetTexture("_RoofNormal", Tex("Street/rooftiles_normal.png"));
+            mat.SetColor("_WallMid", new Color(0.383f, 0.345f, 0.331f)); mat.SetColor("_RoofMid", new Color(0.078f, 0.026f, 0.009f));
+            mat.SetVector("_Tiles", new Vector4(1.6f, 2.2f, 1.0f, 0.9f));
         }
 
         private static Material VenueReskin()

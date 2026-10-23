@@ -2,6 +2,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using CTLife.World.Vehicles;
 using UnityEngine;
 
 namespace CTLife.World
@@ -22,14 +23,29 @@ namespace CTLife.World
             ("marina", new Vector3(690f, 0f, -335f), -12f),
         };
 
+        /// <summary>World districts 2 (2026-10-23), <c>islandRoom=d2</c>: the six districts newly on the v3 look, then the polish
+        /// pass's Trenches junction and Marina east bank (before/after pairs); the room walk and sit follow, then the hovercar
+        /// aerial over the forest (<c>roadstar@mtn</c>, from the plaza's showcase fleet).</summary>
+        private static readonly (string name, Vector3 at, float yaw)[] Spots2 =
+        {
+            ("builder_hills", new Vector3(422.7f, 0f, 302.2f), 150f),
+            ("airdrop_farm", new Vector3(560f, 0f, 92f), 33f),
+            ("boardwalk", new Vector3(-60f, 0f, -230f), 86f),
+            ("breakpoint", new Vector3(-276f, 0f, 278f), 21f),
+            ("mtndao_basecamp", new Vector3(-222f, 0f, 420f), 262f),
+            ("islet", new Vector3(802f, 0f, -594f), 185f),
+            ("trenches", new Vector3(-332.5f, 0f, -279.0f), 101f),
+            ("marina", new Vector3(690f, 0f, -335f), -12f),
+        };
+
         private static void Mark(string what) => Debug.Log("CTLIFE [room-route] " + what);
 
-        public static async Task Run(VenueSession s, Func<bool> alive, CancellationToken ct, bool districts = true)
+        public static async Task Run(VenueSession s, Func<bool> alive, CancellationToken ct, bool districts = true, bool second = false)
         {
             PerfSegments.Ensure();
             var me = s.LocalPlayer;
             if (districts)
-                foreach (var (name, at, yaw) in Spots)
+                foreach (var (name, at, yaw) in second ? Spots2 : Spots)
                 {
                     float y = IslandStreamer.GroundHeight(at.x, at.z);
                     await s.Island.EnsureCells(at, 200f, ct);
@@ -88,7 +104,31 @@ namespace CTLife.World
             me.StandIfSeated();
             Mark("stood");
             await Awaitable.WaitForSecondsAsync(4f, ct);
+            if (second) await ForestAerial(s, alive, ct);
             Mark("done");
+        }
+
+        private static async Task ForestAerial(VenueSession s, Func<bool> alive, CancellationToken ct)
+        {
+            var plaza = IslandWaypoints.Select(IslandWaypoints.Load(), "1");
+            if (plaza.Count > 0) await IslandWaypoints.Jump(s, plaza[0], ct);
+            await Awaitable.WaitForSecondsAsync(3f, ct);
+            var sys = VehicleSystem.Current;
+            if (sys == null || s.LocalPlayer == null) { Mark("aerial: no vehicle system"); return; }
+            Mark("aerial start");
+            sys.StartCoroutine(VehicleDemo.Run(sys, s.LocalPlayer, "roadstar@mtn", 1f));
+            float t0 = Time.realtimeSinceStartup;
+            await Awaitable.NextFrameAsync(ct);
+            string last = null;
+            while (alive() && VehicleDemo.Running && Time.realtimeSinceStartup - t0 < 200f)
+            {
+                var cur = VehicleDemo.Current;
+                if (cur != last) { Mark("aerial " + cur); last = cur; }
+                PerfSegments.Label = cur != null && cur.EndsWith("forest_air", StringComparison.Ordinal) ? "forest_air" : null;
+                await Awaitable.NextFrameAsync(ct);
+            }
+            PerfSegments.Label = null;
+            Mark("aerial done");
         }
     }
 }

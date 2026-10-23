@@ -71,6 +71,18 @@ namespace CTLife.EditorTools.IslandV2
             new View("p_park", new Vector3(-30f, 1.7f, 70f), new Vector3(0f, 1f, 110f), 60f, true),
             new View("p_park_air", new Vector3(60f, 70f, 10f), new Vector3(-10f, 0f, 95f), 55f),
             new View("d_marina_air", new Vector3(470f, 90f, -470f), new Vector3(560f, 10f, -260f), 52f),
+            // world districts 2 (2026-10-23): the semi-real forest at eye level and from the hovercar
+            new View("f_summit_road", new Vector3(-305f, 40f, 380f), new Vector3(-285f, 44f, 432f), 60f),
+            new View("f_north_highway", new Vector3(-147f, 25f, 660f), new Vector3(-80f, 28f, 640f), 60f),
+            new View("f_slope_eye", new Vector3(-90f, 58f, 389f), new Vector3(-150f, 62f, 420f), 60f),
+            new View("f_air80", new Vector3(-40f, 130f, 260f), new Vector3(-210f, 60f, 470f), 58f),
+            new View("f_forest_close", new Vector3(-300f, 41f, 385f), new Vector3(-330f, 44f, 395f), 60f),
+            new View("d2_hills_eye", new Vector3(330f, 1.7f, 300f), new Vector3(400f, 8f, 340f), 60f, true),
+            new View("d2_farm_eye", new Vector3(560f, 1.7f, 60f), new Vector3(620f, 4f, 120f), 60f, true),
+            new View("d2_lodge_close", new Vector3(-200f, 84f, 452f), new Vector3(-221f, 80f, 479f), 60f),
+            new View("d2_helipad", new Vector3(-226f, 110f, 400f), new Vector3(-226f, 78f, 428f), 55f),
+            new View("d2_perp_glass", new Vector3(-330f, 3f, -270f), new Vector3(-345f, 8f, -250f), 60f),
+            new View("d2_islet", new Vector3(720f, 25f, -640f), new Vector3(800f, 2f, -650f), 55f),
             // the first walk-in door (room space: +Z out to the street, the room at -Z)
             new View("room_door", new Vector3(0.6f, 1.6f, 7f), new Vector3(0f, 1.4f, 0f), 60f),
             new View("room_hall", new Vector3(0.2f, 1.6f, 0.8f), new Vector3(0.2f, 1.4f, -4f), 70f),

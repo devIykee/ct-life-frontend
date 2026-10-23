@@ -23,13 +23,14 @@ taste and landed as PRs, with work continuing without prompts.
   buys anything tradable; homes are game-only for now.
 
 ## Done (v3)
+Forests + districts 2 (2026-10-23): scanned Poly Haven forest trees island-wide, Builder Hills/Airdrop Farm/Boardwalk/Breakpoint/Basecamp/islet dressed, toy rocks/crops/palms/poles removed, sofa sit fixed.
 World polish (2026-10-23): seated three-quarter camera, semi-real terrain and ground cover, Trenches yards and compounds.
 Vehicle fleet with 4 LODs; hovercar gating; downtown, Trenches, Residences and Marina on the v3 kit; mocap locomotion;
 GTA-style HUD; collisions; the shadow fix; the perf pass (30 fps cap holds); the walk-in apartment. Backend PR #6
 (vehicle kinds, entitlements).
 
 ## Queue (top = next)
-1. **[running]** Forests + remaining districts: replace the toy pine/broadleaf forests island-wide (mountain, slopes, parks) with semi-real trees; put Builder Hills, Airdrop Farm, Boardwalk/beach, Breakpoint Park, the MtnDAO lodge area and the islet on the v3 look; fix the sit transition (the character stands on the sofa cushion for ~0.5 s before sitting); the Trenches junction by the Perp Pit lot still reads open.
+1. **[next]** District fix-ups: the MtnDAO mountain (striped bare terrain plus scattered dark rocks: needs rock/cliff/scree materials and slope-aware texturing; the cliff and stone packs are in the Sketchfab queue); the islet's dark floating slivers (broken tree cards?); the CHECKPOINT 26 convention centre, Perp Pit glass building, boardwalk hut and Basecamp Lodge (salmon roof) need real architectural shells; the Trenches first view needs big buildings on the Perp Pit lot side and the floating kiosk fixed; place the processed Poly Haven power poles.
 2. **Sketchfab batch** (next window): bedroom 4f3db3cb, bathroom 9ba7e0a0, cafe a945f202, pub a6534141, office 5540183d,
    container 772f4be3, crane 49851dc7, lilac bushes 10312697. Then: dining df3f3c9f, Contemporary Apts 0d928b4f,
    American House 798ffaea, cliff 75fb6b34, stone pack f3e0a67b, pigeon 797d27b6, seagull 73aed843, snake 83c4290c,

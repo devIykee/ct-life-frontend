@@ -21,6 +21,9 @@ namespace CTLife.World
         public Vector3 approach;   // standing point to walk to first (on the NavMesh)
         public float yaw;          // degrees, facing while engaged
         public float range = 2.0f; // the CTA appears within this distance of the approach point
+        /// <summary>Seats whose position is the floor under the seat's centre (walk-in rooms): the sitter first stands this far
+        /// in front of it, facing away from the seat, then lowers back into it (0 = the position is already the feet point).</summary>
+        public float sitStandOff;
 
         public bool Networked => !string.IsNullOrEmpty(wireId);
         public bool Sits => kind == InteractionKind.Seat || kind == InteractionKind.Bench || kind == InteractionKind.Sofa ||

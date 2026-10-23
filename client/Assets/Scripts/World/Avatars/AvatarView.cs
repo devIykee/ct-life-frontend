@@ -159,12 +159,12 @@ namespace CTLife.World
         /// sit-down clip, then the seat's loop (the base anim set meanwhile). False when this look cannot present it.
         /// </summary>
         public bool BeginSeatEnter(Vector3 fromPosition, Quaternion fromRotation, Vector3 seatPosition, Quaternion seatRotation,
-            string transitionState = "act_sit_down")
+            string transitionState = "act_sit_down", float standOff = 0f)
         {
             if (_seat == null || Animator == null || SeatExitActive) return false;
             if (transitionState != null && !Animator.HasState(0, AnimationLibrary.Hash(transitionState))) return false;
             float clip = transitionState == null ? 0f : LocomotionTuning.Instance != null ? LocomotionTuning.Instance.LengthOf(transitionState, 1.3f) : 1.3f;
-            if (!_seat.BeginEnter(fromPosition, fromRotation, seatPosition, seatRotation, clip)) return false;
+            if (!_seat.BeginEnter(fromPosition, fromRotation, seatPosition, seatRotation, clip, standOff)) return false;
             _enterState = transitionState;
             _overlayAnim = null; _pendingOverlay = null; _seatBridgeTarget = null;
             if (_seat.Current == SeatPresenter.Stage.Align) AnimationLibrary.TryPlay(Animator, "loco_walk", 0.15f);

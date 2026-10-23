@@ -572,7 +572,8 @@ namespace CTLife.App
                     await Awaitable.WaitForSecondsAsync(5f, game.Token);
                     var s = VenueSession.Current;
                     if (s == null || !s.IsIsland) { Log.Warn("island", "islandRoom: not on CT Island"); return; }
-                    await InteriorRoute.Run(s, () => GameAlive(game), game.Token, LaunchArgs.Get("islandRoom") != "door");
+                    // `islandRoom=d2`: the world districts 2 route (six new districts, the Trenches and Marina pairs, room, forest aerial)
+                    await InteriorRoute.Run(s, () => GameAlive(game), game.Token, LaunchArgs.Get("islandRoom") != "door", LaunchArgs.Get("islandRoom") == "d2");
                 });
                 // Device feature pass (dev builds only): `integration=1 [peer=<userId>]`. The editor driver calls it directly.
                 if (LaunchArgs.Flag("integration") && !Application.isEditor) RunGameAction(game, async () =>

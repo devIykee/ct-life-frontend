@@ -48,6 +48,8 @@ namespace CTLife.EditorTools.IslandV2
             // world polish (2026-10-23, art/pipeline/world_v3_plants.py): leaf-card shrubs and hedges (shadows close by only),
             // ground-cover cards (one LOD, no shadows, faded out by 36 m), the chain-link fence panel
             if (id.StartsWith("pv_bush") || id.StartsWith("pv_hedge")) return (new[] { 32f, 90f, 240f }, 22f, Layers.Vegetation, "bush");
+            // world districts 2: the farm's crop rows (aliases of the cards) read from the farm road and the air
+            if (id.StartsWith("pv_crop")) return (new[] { 110f }, 0f, Layers.Vegetation, "crop");
             if (id.StartsWith("pv_")) return (new[] { 36f }, 0f, Layers.Vegetation, "grass");
             if (id == "yd_chainlink_fence") return (new[] { 40f, 140f }, 30f, Layers.Prop, "prop");
             // TampaJoey city props: the street light is a lamp (post proxy); flat grates and covers draw close only
@@ -58,6 +60,13 @@ namespace CTLife.EditorTools.IslandV2
             if (id.StartsWith("nc_building")) return (new[] { 30f, 170f, 1300f }, 110f, Layers.Building, "building");
             // planter trees: their own billboard LOD2 (no baked impostor)
             if (id.StartsWith("nc_tree") || id.StartsWith("lp_")) return (new[] { 30f, 100f, 320f }, 45f, Layers.Vegetation, "tree");
+            // world districts 2 (2026-10-23, art/pipeline/world_v3_trees.py): Poly Haven scans as billboard-cloud trees, one
+            // atlas material: ~1.5-2.6k-tri cards + wood close, ~0.5k LOD1 through the forest, the three-quad impostor to the
+            // horizon (the aerial); shadows from the near trees only
+            if (id.StartsWith("pt_")) return (new[] { 38f, 130f, 1000f }, 45f, Layers.Vegetation, "tree");
+            // Poly Haven rock scans (1.2-2k LOD0, 300-500 LOD1) for the toy rocks; the farm and basecamp props use the ph_ rule
+            if (id.StartsWith("pr_")) return (new[] { 45f, 320f }, 35f, Layers.Prop, "rock");
+            if (id.StartsWith("ph_power_pole")) return (new[] { 50f, 300f }, 30f, Layers.Prop, "pole");
             if ((id.StartsWith("nc_prop_lamp") || id.StartsWith("ph_street_lamp"))) return (new[] { 40f, 140f, 380f }, 35f, Layers.Prop, "lamp");
             // world v3 street kit (art/processed/world_v3/v3_street, 2026-10-22)
             if (id == "v3_traffic_light" || id == "v3_stop_sign") return (new[] { 45f, 380f }, 35f, Layers.Prop, "lamp");
@@ -452,7 +461,7 @@ namespace CTLife.EditorTools.IslandV2
         {
             bool building = file.StartsWith("nc_building") || file.StartsWith("m99_") || file.StartsWith("dz_") || file.StartsWith("lg_");
             bool v3 = building || file.StartsWith("nc_") || file.StartsWith("ph_") || file.StartsWith("v3_") || file.StartsWith("tj_") || file.StartsWith("lp_")
-                || file.StartsWith("pv_") || file.StartsWith("yd_");
+                || file.StartsWith("pv_") || file.StartsWith("yd_") || file.StartsWith("pt_") || file.StartsWith("pr_");
             if (!v3) return false;
             bool normal = file.EndsWith("_Normal") || file == "nc_trees_01" || file == "nc_trees_04" || file == "nc_trees_07";
             bool mask = file.EndsWith("_MaskMap");
@@ -466,13 +475,13 @@ namespace CTLife.EditorTools.IslandV2
             ti.wrapMode = file.StartsWith("nc_trees_") || file == "lp_maple_bark" || file == "lp_maple_leaves" ? TextureWrapMode.Repeat : TextureWrapMode.Clamp;
             ti.alphaSource = TextureImporterAlphaSource.FromInput;
             bool cut = file.EndsWith("_billboard") || file == "nc_trees_00" || file == "nc_trees_05" || file == "lp_maple_leaves" || file == "pv_ground_cards"
-                || file.EndsWith("_cutout_BaseColor");
+                || file.EndsWith("_cutout_BaseColor") || (file.StartsWith("pt_") && file.EndsWith("_atlas"));
             // colour dilated into the clear atlas texels (alphaIsTransparency) for every colour map: mips no longer bleed the
             // padding's black/white into UV island edges ("texture to their edges", 2026-10-22)
             ti.alphaIsTransparency = !normal && !mask;
             ti.mipMapsPreserveCoverage = cut;
             if (cut) ti.alphaTestReferenceValue = 0.45f;
-            int size = far ? 512 : mask ? (building ? 512 : 256) : normal ? (building ? 1024 : 512) : building && !cards || file == "pv_ground_cards" ? 2048 : 1024;
+            int size = far ? (file.StartsWith("pt_") ? 1024 : 512) : mask ? (building ? 512 : 256) : normal ? (building ? 1024 : 512) : building && !cards || file == "pv_ground_cards" || file.StartsWith("pt_") && file.EndsWith("_atlas") ? 2048 : 1024;
             ti.maxTextureSize = 2048;
             var a = ti.GetPlatformTextureSettings("Android");
             a.overridden = true; a.maxTextureSize = size; a.format = TextureImporterFormat.ASTC_6x6;
@@ -504,6 +513,9 @@ namespace CTLife.EditorTools.IslandV2
             var path = $"{KitDir}/Materials/{key}.mat";
             var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
             bool billboard = fbxMaterial.EndsWith("_billboard");
+            // world districts 2: the Poly Haven forest trees' one atlas (cut-out foliage cards + baked wood)
+            if (fbxMaterial.StartsWith("pt_") && fbxMaterial.EndsWith("_atlas") && !V3TreeMaterials.ContainsKey(fbxMaterial))
+                V3TreeMaterials[fbxMaterial] = (fbxMaterial, "leaves");
             if (V3TreeMaterials.TryGetValue(fbxMaterial, out var tm) || billboard)
             {
                 var sh = Shader.Find("CT Life/World/Kit") ?? throw new InvalidOperationException("CT Life/World/Kit shader missing");
@@ -516,7 +528,11 @@ namespace CTLife.EditorTools.IslandV2
                 mat.SetColor("_BaseColor", role == "grass" ? new Color(1.45f, 1.5f, 1.35f) : role == "shrub" ? new Color(1.3f, 1.35f, 1.2f) : Color.white);
                 mat.SetFloat("_Toon", 0f);
                 mat.DisableKeyword("_TINTPALETTE"); mat.SetFloat("_TintPalette", 0f);
-                mat.DisableKeyword("_TINTALL"); mat.SetFloat("_TintAll", 0f);
+                // the forest trees take dress.py's per-tree colour drift (foliage_tint), as the old forest did
+                // (and the ground-cover cards: the farm's crop rows are tinted per instance; untinted cover is unchanged)
+                bool drift = fbxMaterial.StartsWith("pt_") || fbxMaterial.StartsWith("M_pt_") || fbxMaterial == "pv_ground_cards";
+                if (drift) { mat.EnableKeyword("_TINTALL"); mat.SetFloat("_TintAll", 1f); }
+                else { mat.DisableKeyword("_TINTALL"); mat.SetFloat("_TintAll", 0f); }
                 mat.SetVector("_Wind", role == "leaves" ? new Vector4(0.06f, 1.3f, 5f, 0) : role == "tree" ? new Vector4(0.03f, 1.1f, 5f, 0)
                     : role == "grass" ? new Vector4(0.035f, 1.7f, 0.45f, 0) : role == "shrub" ? new Vector4(0.025f, 1.4f, 1.6f, 0) : Vector4.zero);
                 mat.SetVector("_GroundAO", role == "grass" ? new Vector4(0.25f, 0.2f, 0, 0) : new Vector4(0.8f, 0.3f, 0, 0));

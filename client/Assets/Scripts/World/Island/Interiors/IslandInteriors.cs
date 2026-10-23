@@ -222,13 +222,19 @@ namespace CTLife.World
             var t = room.transform;
             foreach (var s in room.seats)
             {
-                var pos = t.TransformPoint(s.position);
                 float yaw = t.eulerAngles.y + s.yaw;
                 bool sofa = s.kind == "sofa";
+                // world districts 2 (2026-10-23): the room's seat point is the floor under the cushion's centre, but the sit
+                // clips and loops expect the feet point (venue seats: the hips travel 0.25 m back from it into the seat). Rooted
+                // at the centre the sitter stood on the cushion and sat with the knees folded on it; the feet point sits in
+                // front of the seat's edge (Seeker recording, 2026-10-23)
+                var pos = t.TransformPoint(s.position) + Quaternion.Euler(0f, yaw, 0f) * Vector3.forward * (sofa ? 0.5f : 0.36f);
                 list.Add(new Interactable
                 {
                     id = $"room{d.index}.{s.id}", wireId = null, kind = sofa ? InteractionKind.Sofa : InteractionKind.Seat,
                     anim = sofa ? "act_sit_lounge" : "act_sit", position = pos, approach = t.TransformPoint(s.approach), yaw = yaw, range = 1.9f,
+                    // a short last step backwards onto the feet point while turning (the align ends 0.12 m in front of it)
+                    sitStandOff = 0.12f,
                 });
             }
             return list;

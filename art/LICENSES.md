@@ -574,3 +574,40 @@ Pipelines: art/pipeline/world_v3_ground.py (terrain arrays), art/pipeline/world_
 | ambientCG material "Grass 004" (1K PNG) | https://ambientcg.com/view?id=Grass004 | CC0 1.0 (https://docs.ambientcg.com/license/) | ambientCG (Lennart Demes) | 2026-10-23 | terrain lawn (ground array slice 0) |
 | LOLIPOP "Maple trees pack (lowpoly, game ready, LODs)" leaf cards (already in the kit) | https://sketchfab.com/3d-models/maple-trees-pack-lowpoly-game-ready-lods-b5d2833c258f4054a01ee2b4ef85adf0 | CC Attribution (credit in-game, as for the maples) | LOLIPOP | 2026-10-22 | pv_bush_round, pv_bush_low, pv_bush_large, pv_hedge (leaf cards rebuilt into shrubs) |
 <!-- END world-polish-20261023 -->
+
+<!-- BEGIN world-districts2-20261023 -->
+## World districts 2: semi-real forest, scanned rocks, farm and basecamp props, shell scans (2026-10-23)
+
+Pipelines: art/pipeline/world_v3_trees.py (forest trees), art/pipeline/world_v3_process.py with world_v3_config.py 'ph2_*' entries (rocks, props), art/pipeline/world_street_textures.py (siding, corrugated, dirt). Raw files cached in art/raw/polyhaven (gitignored). Licence page checked 2026-10-23: "Our assets are all licensed as CC0".
+
+| Name | Source URL | Licence | Author | Downloaded | Used for |
+| --- | --- | --- | --- | --- | --- |
+| Poly Haven model "Fir Tree 01" | https://polyhaven.com/a/fir_tree_01 | CC0 1.0 (https://polyhaven.com/license) | Rob Tuytel, Rico Cilliers | 2026-10-23 | pt_fir_a, pt_fir_b, pt_fir_c (billboard-cloud game trees: cards rendered from the scan, wood decimated and baked) |
+| Poly Haven model "Pine Tree 01" | https://polyhaven.com/a/pine_tree_01 | CC0 1.0 (https://polyhaven.com/license) | Rob Tuytel, Rico Cilliers | 2026-10-23 | pt_pine_a (billboard-cloud game tree) |
+| Poly Haven model "Tree Small 02" | https://polyhaven.com/a/tree_small_02 | CC0 1.0 (https://polyhaven.com/license) | Rico Cilliers | 2026-10-23 | pt_broad_a (billboard-cloud game tree) |
+| Poly Haven model "Island Tree 01" | https://polyhaven.com/a/island_tree_01 | CC0 1.0 (https://polyhaven.com/license) | Rob Tuytel, Rico Cilliers | 2026-10-23 | pt_island_b (coastal tree; the Boardwalk, the islet, autumn mix) |
+| Poly Haven model "Island Tree 02" | https://polyhaven.com/a/island_tree_02 | CC0 1.0 (https://polyhaven.com/license) | Rob Tuytel, Rico Cilliers | 2026-10-23 | pt_island_a (coastal tree; palms replaced) |
+| Poly Haven model "Jacaranda Tree" | https://polyhaven.com/a/jacaranda_tree | CC0 1.0 (https://polyhaven.com/license) | Rob Tuytel, Rico Cilliers | 2026-10-23 | pt_jacaranda (park shade tree) |
+| Poly Haven model "Rock Moss Set 01" | https://polyhaven.com/a/rock_moss_set_01 | CC0 1.0 (https://polyhaven.com/license) | Kless Gyzen | 2026-10-23 | pr_moss_a_01..06 (forest rocks) |
+| Poly Haven model "Rock Moss Set 02" | https://polyhaven.com/a/rock_moss_set_02 | CC0 1.0 (https://polyhaven.com/license) | Kless Gyzen | 2026-10-23 | pr_moss_b_* (forest rocks) |
+| Poly Haven model "Namaqualand Boulder 02" | https://polyhaven.com/a/namaqualand_boulder_02 | CC0 1.0 (https://polyhaven.com/license) | Greg Zaal, Rico Cilliers | 2026-10-23 | pr_granite_a (mountain rocks) |
+| Poly Haven model "Namaqualand Boulder 04" | https://polyhaven.com/a/namaqualand_boulder_04 | CC0 1.0 (https://polyhaven.com/license) | Jenelle van Heerden | 2026-10-23 | pr_granite_b |
+| Poly Haven model "Namaqualand Boulder 05" | https://polyhaven.com/a/namaqualand_boulder_05 | CC0 1.0 (https://polyhaven.com/license) | Jenelle van Heerden, Dario Barresi | 2026-10-23 | pr_granite_c |
+| Poly Haven model "Rock Face 01" | https://polyhaven.com/a/rock_face_01 | CC0 1.0 (https://polyhaven.com/license) | Dario Barresi | 2026-10-23 | pr_face_a (mountain rock faces) |
+| Poly Haven model "Rock Face 02" | https://polyhaven.com/a/rock_face_02 | CC0 1.0 (https://polyhaven.com/license) | Dario Barresi, Rico Cilliers | 2026-10-23 | pr_face_b |
+| Poly Haven model "Rock 07" | https://polyhaven.com/a/rock_07 | CC0 1.0 (https://polyhaven.com/license) | Jenelle van Heerden | 2026-10-23 | pr_rock_07 (processed, unused) |
+| Poly Haven model "Rock 09" | https://polyhaven.com/a/rock_09 | CC0 1.0 (https://polyhaven.com/license) | Jenelle van Heerden | 2026-10-23 | pr_rock_09 (processed, unused) |
+| Poly Haven model "Stone 01" | https://polyhaven.com/a/stone_01 | CC0 1.0 (https://polyhaven.com/license) | Dario Barresi, Rico Cilliers | 2026-10-23 | pr_stone (processed, unused) |
+| Poly Haven model "Modular Electricity Poles" | https://polyhaven.com/a/modular_electricity_poles | CC0 1.0 (https://polyhaven.com/license) | James Ray Cock | 2026-10-23 | ph_power_pole_* (processed, not placed yet) |
+| Poly Haven model "Wooden Crate 01" | https://polyhaven.com/a/wooden_crate_01 | CC0 1.0 (https://polyhaven.com/license) | James Ray Cock | 2026-10-23 | ph_wooden_crate (farm, basecamp) |
+| Poly Haven model "Wooden Barrels 01" | https://polyhaven.com/a/wooden_barrels_01 | CC0 1.0 (https://polyhaven.com/license) | James Ray Cock | 2026-10-23 | ph_wooden_barrels (farm, basecamp) |
+| Poly Haven model "Wooden Picnic Table" | https://polyhaven.com/a/wooden_picnic_table | CC0 1.0 (https://polyhaven.com/license) | Ulan Cabanilla | 2026-10-23 | ph_picnic_table (farm, basecamp) |
+| Poly Haven model "Compost Bags" | https://polyhaven.com/a/compost_bags | CC0 1.0 (https://polyhaven.com/license) | James Ray Cock | 2026-10-23 | ph_compost_bags (farm) |
+| Poly Haven model "Propane Tank" | https://polyhaven.com/a/propane_tank | CC0 1.0 (https://polyhaven.com/license) | Slinc | 2026-10-23 | ph_propane_tank (farm) |
+| Poly Haven model "Planter Box 01" | https://polyhaven.com/a/planter_box_01 | CC0 1.0 (https://polyhaven.com/license) | James Ray Cock | 2026-10-23 | ph_planter_box (basecamp) |
+| Poly Haven model "Wooden Bucket 01" | https://polyhaven.com/a/wooden_bucket_01 | CC0 1.0 (https://polyhaven.com/license) | James Ray Cock | 2026-10-23 | ph_wooden_bucket (farm bins) |
+| Poly Haven model "Painted Wooden Bench" | https://polyhaven.com/a/painted_wooden_bench | CC0 1.0 (https://polyhaven.com/license) | Kirill Sannikov | 2026-10-23 | ph_wooden_bench (farm, mountain benches) |
+| Poly Haven texture "Weathered Plank Siding" (1k) | https://polyhaven.com/a/weathered_plank_siding | CC0 1.0 (https://polyhaven.com/license) | Dimitrios Savva | 2026-10-23 | timber venue shells (the lodge, the barn), the boardwalk deck |
+| Poly Haven texture "Corrugated Iron 02" (1k) | https://polyhaven.com/a/corrugated_iron_02 | CC0 1.0 (https://polyhaven.com/license) | Jenelle van Heerden, Sergej Majboroda | 2026-10-23 | industrial venue shells |
+| Poly Haven texture "Dirt" (1k) | https://polyhaven.com/a/dirt | CC0 1.0 (https://polyhaven.com/license) | Charlotte Baglioni | 2026-10-23 | farm tracks and service lanes (dirt road material) |
+<!-- END world-districts2-20261023 -->

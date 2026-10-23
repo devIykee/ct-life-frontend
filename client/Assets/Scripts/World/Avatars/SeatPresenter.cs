@@ -33,9 +33,10 @@ namespace CTLife.World
         /// <summary>Seat fit offset (seat space) added to the model while presenting; AvatarView ramps it.</summary>
         public Vector3 Offset { get; set; }
 
-        private Vector3 _from, _to;
+        private Vector3 _from, _to, _stand;
         private Quaternion _fromRot, _toRot;
         private float _t, _clip, _alignTime;
+        private bool _turnFirst;
 
         public SeatPresenter(AvatarView view) { _view = view; }
 
@@ -56,17 +57,22 @@ namespace CTLife.World
             return true;
         }
 
-        public bool BeginEnter(Vector3 from, Quaternion fromRot, Vector3 seat, Quaternion seatRot, float sitClipLength)
+        /// <param name="standOff">Metres in front of the seat root where the sitter stands, back to the seat, before the
+        /// sit-down clip; the root then eases back onto the seat root while the hips lower (walk-in room seats, whose root
+        /// is the floor under the cushion's centre: stepping straight onto it stood the sitter on the cushion).</param>
+        public bool BeginEnter(Vector3 from, Quaternion fromRot, Vector3 seat, Quaternion seatRot, float sitClipLength, float standOff = 0f)
         {
             if (!Bind()) return false;
             _from = from; _fromRot = fromRot; _to = seat; _toRot = seatRot;
-            float d = Flat(from, seat);
+            _stand = seat + seatRot * Vector3.forward * Mathf.Max(0f, standOff);
+            float d = Flat(from, _stand);
             _alignTime = Mathf.Clamp(d / AlignSpeed, 0.2f, 1.2f);
             float turn = Quaternion.Angle(fromRot, seatRot) / TurnRate;
             _alignTime = Mathf.Max(_alignTime, Mathf.Min(turn, 0.7f));
             _clip = sitClipLength <= 0f ? 0.01f : Mathf.Max(0.3f, sitClipLength);
             _t = 0f; Entering = true;
             Current = d < 0.05f && Quaternion.Angle(fromRot, seatRot) < 10f ? Stage.SitDown : Stage.Align;
+            _turnFirst = Quaternion.Angle(fromRot, seatRot) > 100f && d < 1.2f;
             Position = from; Rotation = fromRot;
             return true;
         }
@@ -93,14 +99,17 @@ namespace CTLife.World
                 case Stage.Align:
                 {
                     float k = Smooth(Mathf.Clamp01(_t / _alignTime));
-                    Position = Vector3.Lerp(_from, _to, k);
-                    Rotation = Quaternion.Slerp(_fromRot, _toRot, Smooth(Mathf.Clamp01(_t / (_alignTime * 0.8f))));
-                    Speed = Flat(_from, _to) > 0.05f ? AlignSpeed * Mathf.Sin(k * Mathf.PI) : 0f;
-                    if (_t >= _alignTime) { _t = 0f; Current = Stage.SitDown; Position = _to; Rotation = _toRot; Speed = 0f; return Stage.SitDown; }
+                    Position = Vector3.Lerp(_from, _stand, k);
+                    // backing in: a short step to the seat's front, turning round early so the last of it is backwards
+                    Rotation = Quaternion.Slerp(_fromRot, _toRot, Smooth(Mathf.Clamp01(_t / (_alignTime * (_turnFirst ? 0.6f : 0.8f)))));
+                    Speed = Flat(_from, _stand) > 0.05f ? AlignSpeed * Mathf.Sin(k * Mathf.PI) : 0f;
+                    if (_t >= _alignTime) { _t = 0f; Current = Stage.SitDown; Position = _stand; Rotation = _toRot; Speed = 0f; return Stage.SitDown; }
                     return Stage.None;
                 }
                 case Stage.SitDown:
-                    Position = _to; Rotation = _toRot; Speed = 0f;
+                    // the hips lower straight down into the seat: the root eases from the front edge back to the seat root
+                    // over the first 70 % of the clip (no-op when standOff was 0)
+                    Position = Vector3.Lerp(_stand, _to, Smooth(Mathf.Clamp01(_t / (_clip * 0.7f)))); Rotation = _toRot; Speed = 0f;
                     if (_t >= _clip) { Finish(); return Stage.None; }
                     return Stage.None;
                 case Stage.StandUp:

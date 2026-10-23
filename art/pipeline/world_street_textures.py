@@ -7,6 +7,9 @@ Sources (1k PNG, cached under art/raw/polyhaven/tex_<id>/, gitignored; all CC0, 
   granite_tile_04          Amal Kumar                           plazas and squares (2.0 m)
   painted_plaster_wall     Amal Kumar                           venue shells' walls (2.0 m), tinted by their palette
   clay_roof_tiles          Amal Kumar                           venue shells' roofs (4.0 m), tinted by their palette
+  weathered_plank_siding   Dimitrios Savva                        timber venue shells (the lodge, the barn) (2.4 m)
+  corrugated_iron_02       J. van Heerden                        industrial venue shells (2.0 m)
+  dirt                     C. Baglioni                          farm tracks and service lanes (3.0 m)
 
 Writes client/Assets/World/Island/Textures/Street/<name>_albedo.png (RGB = colour x ambient occlusion, A = smoothness =
 1 - roughness) and <name>_normal.png (OpenGL normal, as published), 1024 px.
@@ -27,6 +30,9 @@ SETS = {
     'granite': 'granite_tile_04',
     'plaster': 'painted_plaster_wall',
     'rooftiles': 'clay_roof_tiles',
+    'siding': 'weathered_plank_siding',          # world districts 2 (2026-10-23)
+    'corrugated': 'corrugated_iron_02',
+    'dirt': 'dirt',
 }
 
 

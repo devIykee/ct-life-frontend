@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &3336185935175717562
+--- !u!1 &574648872406333324
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,45 +8,33 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1658663526554603315}
-  - component: {fileID: 3797278217344428037}
+  - component: {fileID: 3898122356742255899}
   m_Layer: 0
-  m_Name: Dress
+  m_Name: cell_7_6
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &1658663526554603315
+--- !u!4 &3898122356742255899
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3336185935175717562}
+  m_GameObject: {fileID: 574648872406333324}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 2165239464927410335}
+  m_Children:
+  - {fileID: 7880106048043183022}
+  - {fileID: 7813740906306379537}
+  - {fileID: 3330785621954433172}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &3797278217344428037
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3336185935175717562}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 00f7bcee2308b4c22a4acd4125de7390, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: CTLife.World::CTLife.World.IslandInstances
-  kit: {fileID: 11400000, guid: fb8c4b7f123174cf19e15bd560520f79, type: 2}
-  data: {fileID: 4900000, guid: 40058d9974fef4b1abd70413cb58c492, type: 3}
---- !u!1 &3599440270835855047
+--- !u!1 &1698780465080530300
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -54,8 +42,8 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 8130972398276127124}
-  - component: {fileID: 3036547549347575421}
+  - component: {fileID: 7880106048043183022}
+  - component: {fileID: 3973633735635925465}
   m_Layer: 10
   m_Name: Terrain
   m_TagString: Untagged
@@ -63,28 +51,28 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &8130972398276127124
+--- !u!4 &7880106048043183022
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3599440270835855047}
+  m_GameObject: {fileID: 1698780465080530300}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 2165239464927410335}
+  m_Father: {fileID: 3898122356742255899}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &3036547549347575421
+--- !u!114 &3973633735635925465
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3599440270835855047}
+  m_GameObject: {fileID: 1698780465080530300}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7071ee178440f44758200a306c4b0d24, type: 3}
@@ -97,7 +85,7 @@ MonoBehaviour:
   lod0: 0.32
   lod1: 0.11
   colliders: 1
---- !u!1 &5448493191857452903
+--- !u!1 &5123919846641005078
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -105,7 +93,7 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 7817197037027834435}
+  - component: {fileID: 3330785621954433172}
   m_Layer: 0
   m_Name: AuditColliders
   m_TagString: Untagged
@@ -113,22 +101,22 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &7817197037027834435
+--- !u!4 &3330785621954433172
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5448493191857452903}
+  m_GameObject: {fileID: 5123919846641005078}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 2165239464927410335}
+  m_Father: {fileID: 3898122356742255899}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &8480704209499457786
+--- !u!1 &7199961897798613242
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -136,29 +124,41 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 2165239464927410335}
+  - component: {fileID: 7813740906306379537}
+  - component: {fileID: 3980807406987256011}
   m_Layer: 0
-  m_Name: cell_7_6
+  m_Name: Dress
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &2165239464927410335
+--- !u!4 &7813740906306379537
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8480704209499457786}
+  m_GameObject: {fileID: 7199961897798613242}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 8130972398276127124}
-  - {fileID: 1658663526554603315}
-  - {fileID: 7817197037027834435}
-  m_Father: {fileID: 0}
+  m_Children: []
+  m_Father: {fileID: 3898122356742255899}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3980807406987256011
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7199961897798613242}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 00f7bcee2308b4c22a4acd4125de7390, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: CTLife.World::CTLife.World.IslandInstances
+  kit: {fileID: 11400000, guid: fb8c4b7f123174cf19e15bd560520f79, type: 2}
+  data: {fileID: 4900000, guid: 40058d9974fef4b1abd70413cb58c492, type: 3}

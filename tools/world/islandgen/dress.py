@@ -827,7 +827,7 @@ class Dress:
         lamp_walk = 'nc_prop_lamp_double_01' if 'nc_prop_lamp_double_01' in K else lamp_road
         simple = {'bench_city': ('ph_modular_street_seating', 1.0), 'trash_can': ('ph_barrel_03', 1.0), 'kyc_trash_b': ('ph_barrel_03', 1.05),
                   'kyc_firehydrant': ('ph_fire_hydrant', 1.0)}
-        trees = ('w_tree', 'tree_', 'kf_tree')
+        trees = ('w_tree', 'tree_', 'kf_tree', 'pt_', 'lp_maple')
         counts = {}
         pits = [(r[0], r[2]) for r in self.tree_pits]
         drop_pits = set()
@@ -1148,6 +1148,9 @@ class Dress:
     def pool_v3_district(self, style):
         """Frontage pools outside downtown (photo-textured facades: no stretching, a little uniform scale at most)."""
         K = self.kit.items
+        allowed = getattr(self, 'v3_district_styles', None)
+        if allowed is not None and style not in allowed:
+            return None
         have = lambda ids: [k for k in ids if k in K]
         if style == 'industrial':
             return dict(ids=have(self.V3_SHEDS) * 2 + have(self.V3_SMALL_SHEDS), gap=(2.0, 8.0), setback=(1.5, 6.0), scale=(1.0, 1.0),
@@ -1159,6 +1162,16 @@ class Dress:
         if style == 'marina':
             return dict(ids=have(['m99_apt_complex']) * 3 + have(['nc_building_01', 'nc_building_05']), gap=(3.0, 9.0),
                         setback=(1.0, 3.0), scale=(1.0, 1.0), sy=(1.0, 1.0), slope=1.8, alley=0.0)
+        # world districts 2: Builder Hills' hacker houses and campus flats on the terraces, the farm's sheds well apart, the
+        # beach front's low kiosks and cafes
+        if style == 'hills':
+            return dict(ids=have(self.V3_FLATS) * 2 + have(['nc_building_01', 'nc_building_03', 'nc_building_05', 'nc_building_04', 'nc_building_02']) * 2
+                        + have(['m99_chicago_a']), gap=(5.0, 13.0), setback=(3.0, 7.0), scale=(1.0, 1.0), sy=(1.0, 1.0), slope=2.6, alley=0.0)
+        if style == 'farm':
+            return dict(ids=have(self.FARM_SHEDS), gap=(30.0, 70.0), setback=(8.0, 16.0), scale=(1.0, 1.0), sy=(1.0, 1.0), slope=3.0, alley=0.0)
+        if style == 'beach':
+            return dict(ids=have(['nc_building_06', 'nc_building_06', 'nc_building_04']), gap=(8.0, 18.0), setback=(2.0, 5.0), scale=(1.0, 1.0),
+                        sy=(1.0, 1.0), slope=2.0, alley=0.0)
         return None
 
     def _v3_anchor(self, did, pid, cap, scales=(1.0,), prefer=None, margin=0.3, why=None):
@@ -1289,18 +1302,27 @@ class Dress:
             setattr(self, key, [r for r in rows if not any(self._in_rect(r[0], r[2], b, 0.3) for b, _ in new)])
         return cut
 
-    def v3_district_street(self):
+    def v3_district_street(self, districts=None):
         """Street furniture and trees in the three districts to the v3 kit: TampaJoey hydrants, bins and benches, the Poly
         Haven lamp on roads, LOLIPOP maples for every broadleaf / blossom tree (palms stay on the marina coast), the v3
         traffic lights, stop signs and bus shelters; the toy power poles leave; ground clumps go where it is paved."""
         K = self.kit.items
-        DS = set(self.V3_DISTRICTS)
+        DS = set(districts or self.V3_DISTRICTS)
+        second = districts is not None
         dist = lambda x, z: self.district_at(x, z)
         lamp_road = 'ph_street_lamp_01' if 'ph_street_lamp_01' in K else None
-        walk = {'residences': ('tj_street_light', 1.3), 'trenches': ('ph_street_lamp_01', 1.45), 'dubai_marina': ('nc_prop_lamp_double_01', 1.25)}
-        bench = {'residences': ['tj_bench_park_long', 'tj_bench_park_short'], 'trenches': ['tj_bench_concrete'], 'dubai_marina': ['tj_bench_metal', 'ph_modular_street_seating']}
-        bins = {'residences': ['tj_trash_large', 'tj_trash_small'], 'trenches': ['tj_trash_commercial', 'tj_trash_large'], 'dubai_marina': ['tj_trash_cap', 'tj_trash_small']}
-        broad = ('w_tree_common', 'w_tree_twisted', 'kf_tree', 'tree_blossom', 'tree_', 'w_pine')
+        walk = {'residences': ('tj_street_light', 1.3), 'trenches': ('ph_street_lamp_01', 1.45), 'dubai_marina': ('nc_prop_lamp_double_01', 1.25),
+                'builder_hills': ('tj_street_light', 1.3), 'airdrop_farm': ('ph_street_lamp_01', 1.45), 'boardwalk': ('ph_street_lamp_02', 1.4),
+                'breakpoint': ('nc_prop_lamp_double_01', 1.25), 'mountain': ('ph_street_lamp_01', 1.45), 'islet': ('ph_street_lamp_02', 1.4)}
+        bench = {'residences': ['tj_bench_park_long', 'tj_bench_park_short'], 'trenches': ['tj_bench_concrete'], 'dubai_marina': ['tj_bench_metal', 'ph_modular_street_seating'],
+                 'builder_hills': ['tj_bench_park_long', 'tj_bench_metal'], 'airdrop_farm': ['ph_wooden_bench'], 'boardwalk': ['ph_modular_street_seating', 'tj_bench_metal'],
+                 'breakpoint': ['tj_bench_park_long', 'tj_bench_park_short'], 'mountain': ['ph_wooden_bench'], 'islet': ['tj_bench_park_short']}
+        bins = {'residences': ['tj_trash_large', 'tj_trash_small'], 'trenches': ['tj_trash_commercial', 'tj_trash_large'], 'dubai_marina': ['tj_trash_cap', 'tj_trash_small'],
+                'builder_hills': ['tj_trash_small', 'tj_trash_cap'], 'airdrop_farm': ['ph_wooden_bucket', 'tj_trash_large'], 'boardwalk': ['tj_trash_cap', 'tj_trash_small'],
+                'breakpoint': ['tj_trash_small', 'tj_trash_large'], 'mountain': ['tj_trash_large'], 'islet': ['tj_trash_cap']}
+        # the second pass leaves the semi-real forest alone (only toy trees become maples there)
+        broad = ('w_tree_common', 'w_tree_twisted', 'kf_tree', 'w_pine') if second else \
+            ('w_tree_common', 'w_tree_twisted', 'kf_tree', 'tree_blossom', 'tree_', 'w_pine', 'pt_')
         extra = [(did, np.array(q, float)) for did, qs in self.V3_SITE_EXTRA.items() for q in qs]
         counts = {}
         pits = {(round(r[0], 1), round(r[2], 1)) for r in self.tree_pits}
@@ -1327,7 +1349,7 @@ class Dress:
                 kind = 'bin'
             elif proto == 'kyc_firehydrant':
                 kind = 'hydrant'
-            elif proto == 'pp_vendor_cart':
+            elif proto == 'pp_vendor_cart' or (second and proto == 'pp_market_stalls'):
                 kind = 'cart'
             elif proto == 'kr_traffic_light':
                 kind = 'signal'
@@ -1337,7 +1359,7 @@ class Dress:
                 kind = 'tree'
             elif proto.startswith('kr_electricity'):
                 kind = 'pole'
-            elif 'ground_detail' in K.get(proto, {}).get('tags', ()):
+            elif 'ground_detail' in K.get(proto, {}).get('tags', ()) and not second:
                 kind = 'detail'
             if kind is None:
                 continue
@@ -1371,7 +1393,7 @@ class Dress:
                     m = self.V3_MAPLES[int(RNG.integers(len(self.V3_MAPLES)))]
                     street = (round(x, 1), round(z, 1)) in pits
                     ok = put(m, x, y + 0.02, z, RNG.uniform(0, 360), RNG.uniform(0.82, 0.95) if street else RNG.uniform(0.85, 1.1))
-                elif kind == 'pole' or (kind == 'detail' and did != 'residences'):
+                elif kind == 'pole' or (kind == 'detail' and did != 'residences' and not second):
                     ok = True                                   # dropped: toy poles everywhere, grass clumps where it is paved
                     counts[kind + '_removed'] = counts.get(kind + '_removed', 0) + 1
                 else:
@@ -1523,8 +1545,10 @@ class Dress:
         }
         self.v3_only = True
         self.v3_district_pools = True
+        self.v3_district_styles = {'industrial', 'suburb', 'marina'}
         stats = dict(self.stats)
         self.place_buildings()
+        self.v3_district_styles = None
         self.v3_only = False
         self.v3_district_pools = False
         self.stats = stats
@@ -1555,6 +1579,334 @@ class Dress:
         log(f'v3 district sites blocked by occupancy code / slope: {why}')
         log(f'v3 districts: removed {removed}; {len(new)} v3 buildings {by}; anchors {anchors}; yards {yards}; {cut} plants cut; '
             f'street {street}; {dressing} yard props ({time.time() - t0:.1f}s)')
+
+    def v3_trenches_junction(self):
+        """World districts 2: the first street-level view of The Trenches (the device route's spot by the Perp Pit lot, facing
+        east along Harbour Road) read open - one kiosk and distant sheds. Frame it: sheds on both sides of the view between
+        14 and 60 m, squared to the view, fronted by chain-link yard edges and pallets, so the eye meets an industrial street."""
+        global RNG
+        K = self.kit.items
+        if 'dz_industrial_02' not in K:
+            return {}
+        RNG = np.random.default_rng(V3_SEED + 17)
+        if os.environ.get('CTL_DRESS_OCC_J'):
+            pal = np.array([[60, 90, 60], [110, 110, 115], [200, 60, 200], [40, 80, 160], [230, 140, 60], [90, 170, 90], [170, 160, 80],
+                            [240, 240, 240], [20, 110, 20]] + [[0, 0, 0]] * 247, np.uint8)
+            Image.fromarray(pal[self.occ.arr()]).save(os.environ['CTL_DRESS_OCC_J'])
+        sx, sz, vy = -332.5, -279.0, 101.0
+        a = math.radians(vy)
+        f = np.array([math.sin(a), math.cos(a)]); r = np.array([math.cos(a), -math.sin(a)])
+        road_d = ndimage.distance_transform_edt(self.occ.arr() != Occupancy.ROAD)
+
+        def rd(x, z):
+            ox = int(np.clip(round(x - Occupancy.X0), 0, Occupancy.W - 1)); oy = int(np.clip(round(Occupancy.H - 1 - (z - Occupancy.Z0)), 0, Occupancy.H - 1))
+            return float(road_d[oy, ox])
+        made = []
+        # the view crosses Quay Street diagonally 16-40 m out; beyond it (44-75 m) the lots were half empty, so the street read
+        # as an open junction: close the vista there with long sheds facing back across the road, then flank it
+        made = []
+        big = ['dz_industrial_02', 'dz_industrial_01', 'dz_industrial_12', 'dz_industrial_03', 'dz_industrial_10']
+        cands = [(along, lat) for along in np.arange(46.0, 80.0, 2.0) for lat in np.arange(-24.0, 25.0, 2.0)]
+        cands.sort(key=lambda c: abs(c[1]) * 1.4 + (c[0] - 46.0))
+        for pid in big:
+            if len(made) >= 3:
+                break
+            it = K[pid]
+            for along, lat in cands:
+                q = np.array([sx, sz]) + f * (along + it['d'] / 2) + r * lat
+                if rd(*q) < it['d'] / 2 + 1.0:
+                    continue
+                if self._v3_add_building(pid, q[0], q[1], vy + 180.0, 1.0, margin=0.8, slope=3.5, allow=(Occupancy.FREE, Occupancy.PROP, Occupancy.TREE)):
+                    made.append((self.boxes[-1], pid))
+                    break
+        # yard edges: a chain-link run along each new shed's street side, pallets and a dumpster at its corner
+        fence = K.get('yd_chainlink_fence')
+        props = 0
+        for box, pid in made:
+            cx, cy, cz, w, h, d, yaw = box
+            ya = math.radians(yaw)
+            fwd = np.array([math.sin(ya), math.cos(ya)]); right = np.array([math.cos(ya), -math.sin(ya)])
+            if fence is not None:
+                L_ = fence['w']
+                for j in range(-int(w / L_ / 2), int(w / L_ / 2) + 1):
+                    q = np.array([cx, cz]) + fwd * (d / 2 + 4.0) + right * j * L_
+                    it = fence
+                    if rd(*q) > 1.5 and self.occ.rect_free(q[0], q[1], it['w'], it['d'], yaw, margin=0.1, allow=(Occupancy.FREE, Occupancy.TREE)):
+                        self.add('yd_chainlink_fence', q[0], float(self.g.y([q[0]], [q[1]])[0]) - 0.02, q[1], yaw, 1.0, 1.0)
+                        self.occ.rect(q[0], q[1], it['w'], it['d'], yaw, Occupancy.PROP, margin=0.1)
+                        props += 1
+            for proto, off in (('tj_dumpster', (0.42, 1.6)), ('tj_pallet_a', (-0.4, 1.3)), ('tj_pallet_b', (-0.32, 2.2)), ('v3_tyre_stack', (0.2, 2.0))):
+                if proto not in K:
+                    continue
+                it = K[proto]
+                q = np.array([cx, cz]) + right * w * off[0] + fwd * (d / 2 + off[1])
+                if self.occ.rect_free(q[0], q[1], it['w'], it['d'], yaw, margin=0.2, allow=(Occupancy.FREE, Occupancy.TREE)):
+                    self.add(proto, q[0], float(self.g.y([q[0]], [q[1]])[0]) + 0.01, q[1], yaw + RNG.uniform(-8, 8), 1.0, 1.0)
+                    self.occ.rect(q[0], q[1], it['w'], it['d'], yaw, Occupancy.PROP, margin=0.1)
+                    props += 1
+        cut = self._v3_cut_inside(made)
+        out = dict(sheds=[pid for _, pid in made], yard_props=props, plants_cut=cut)
+        log(f'v3 trenches junction: {out}')
+        return out
+
+    # -------------------------------------------------------------- world districts 2 (2026-10-23)
+    V3_DISTRICTS2 = ('builder_hills', 'airdrop_farm', 'boardwalk', 'breakpoint', 'mountain', 'islet')
+    # the Namaqualand granites read orange on the grey mountain (Seeker/editor 2026-10-23): rock faces and the greyer mossy set
+    PR_GRANITE = ['pr_face_a', 'pr_face_b', 'pr_face_a', 'pr_moss_b_02', 'pr_moss_b_07', 'pr_moss_b_06']
+    PR_MOSS = ['pr_moss_a_01', 'pr_moss_a_02', 'pr_moss_a_03', 'pr_moss_a_04', 'pr_moss_a_05', 'pr_moss_a_06', 'pr_moss_b_01', 'pr_moss_b_02',
+               'pr_moss_b_04', 'pr_moss_b_06', 'pr_moss_b_07']
+    FARM_SHEDS = ['dz_industrial_29', 'dz_industrial_29', 'dz_industrial_12', 'dz_industrial_11', 'dz_industrial_13', 'dz_industrial_02']
+    FARM_SILOS = [('dz_industrial_24', 0.55), ('dz_industrial_26', 0.5), ('dz_industrial_28', 0.4), ('dz_industrial_22', 0.2)]
+    FARM_PROPS = ['ph_wooden_barrels', 'ph_wooden_crate', 'ph_compost_bags', 'ph_propane_tank', 'ph_wooden_bucket', 'tj_pallet_a',
+                  'tj_pallet_b', 'ph_picnic_table']
+    # field crop -> semi-real card rows: (cards, scale, height scale, tint or None, row spacing m, step m)
+    CROP_CARDS = {'wheat': (['pv_crop_tall'], (1.2, 1.45), (1.2, 1.5), (0.98, 0.80, 0.42), 2.0, 1.3),
+                  'corn': (['pv_crop_tall'], (1.5, 1.8), (2.2, 2.7), (0.70, 0.86, 0.48), 2.2, 1.4),
+                  'sunflower': (['pv_crop_sunflower', 'pv_crop_tall'], (1.3, 1.6), (1.6, 2.0), None, 2.2, 1.5),
+                  'cabbage': (['pv_crop_leafy'], (1.0, 1.25), (0.8, 1.0), (0.72, 0.9, 0.62), 1.8, 1.3),
+                  'lavender': (['pv_crop_lavender'], (1.1, 1.35), (1.0, 1.25), None, 1.8, 1.2),
+                  'pumpkin': (['pv_crop_leafy', 'pv_crop_pumpkin'], (1.0, 1.3), (0.8, 1.0), None, 2.2, 1.5)}
+
+    def v3_districts2(self):
+        """The rest of the island on the v3 look (after v3_districts): Builder Hills' hacker houses and campus flats, Airdrop
+        Farm's sheds, silos and yards with crop rows of semi-real cards, the Boardwalk's beach front, Breakpoint Park, the
+        MtnDAO mountain and basecamp, Palm Islet. Island-wide: scanned rocks for the toy rocks, the toy pebbles and power
+        runs out, the street furniture and the last toy trees to the v3 kit."""
+        global RNG
+        K = self.kit.items
+        if 'pr_granite_a' not in K or 'dz_industrial_29' not in K:
+            log('v3 districts 2: kit missing, skipped')
+            return
+        t0 = time.time()
+        RNG = np.random.default_rng(V3_SEED + 13)
+        DS = self.V3_DISTRICTS2
+        stats = {}
+        stats['removed'] = {did: self._v3_clear(did) for did in DS}
+        nb0 = len(self.boxes)
+        keep_stats = dict(self.stats)
+        self.v3_only = True
+        self.v3_district_pools = True
+        self.v3_district_styles = {'hills', 'farm', 'beach'}
+        self.place_buildings()
+        self.v3_only = self.v3_district_pools = False
+        self.v3_district_styles = None
+        self.stats = keep_stats
+        new = list(zip(self.boxes[nb0:], self.box_ids[nb0:]))
+        last = -1
+        for box, pid in new:
+            for r in self.inst[pid]:
+                if abs(r[0] - box[0]) < 0.03 and abs(r[2] - box[2]) < 0.03 and not pid.startswith('dz_'):
+                    ci = int(RNG.integers(len(self.V3_TINTS)))
+                    ci = (ci + 1) % len(self.V3_TINTS) if ci == last else ci
+                    last = ci
+                    r[6:10] = [*self.V3_TINTS[ci], 1.0]
+        stats['buildings'] = {}
+        for box, pid in new:
+            d_ = self.district_at(box[0], box[2])
+            stats['buildings'].setdefault(str(d_), {}).setdefault(pid.split('_')[0], 0)
+            stats['buildings'][str(d_)][pid.split('_')[0]] += 1
+        stats['farm_yards'] = self.v3_farm_yards(new)
+        stats['plants_cut'] = self._v3_cut_inside(new)
+        stats['street'] = self.v3_district_street(DS)
+        stats['rocks'] = self.v3_rocks()
+        stats['crops'] = self.v3_crops()
+        stats['trees'] = self.v3_last_toy_trees()
+        stats['islet'] = self.v3_islet()
+        stats['basecamp'] = self.v3_basecamp()
+        # the toy power runs (orange poles, sagging wires) leave the whole island
+        stats['power_runs_removed'] = len(self.power)
+        self.power = []
+        for proto in [k for k in self.inst if k.startswith('kr_electricity')]:
+            stats['power_poles_removed'] = stats.get('power_poles_removed', 0) + len(self.inst[proto])
+            self.inst[proto] = []
+        # the device route's eye spots stand clear: no tree, rock or shrub within 9 m (the camera sits ~5 m behind the player)
+        clear = 0
+        for proto in list(self.inst):
+            if not proto.startswith(self.TREE_PREFIXES + ('pr_', 'pv_bush', 'pv_hedge')):
+                continue
+            rows = self.inst[proto]
+            keep = [r for r in rows if not any(math.hypot(r[0] - sx, r[2] - sz) < 9.0 for sx, sz in self.ROUTE_SPOTS)]
+            clear += len(rows) - len(keep)
+            self.inst[proto] = keep
+        stats['route_spots_cleared'] = clear
+        self.stats['v3_districts2'] = stats
+        log(f'v3 districts 2: {stats} ({time.time() - t0:.1f}s)')
+
+    def v3_farm_yards(self, new):
+        """Round each farm shed: a silo or two and a tank behind it, barrels, crates, compost bags and pallets at its side."""
+        n = 0
+        for box, pid in new:
+            if self.district_at(box[0], box[2]) != 'airdrop_farm' or not pid.startswith('dz_'):
+                continue
+            cx, cy, cz, w, h, d, yaw = box
+            a = math.radians(yaw)
+            fwd = np.array([math.sin(a), math.cos(a)]); right = np.array([math.cos(a), -math.sin(a)])
+            side = 1.0 if RNG.random() < 0.5 else -1.0
+            k = 0
+            for proto, prob in self.FARM_SILOS:
+                if RNG.random() > prob or proto not in self.kit.items:
+                    continue
+                it = self.kit.get(proto)
+                q = np.array([cx, cz]) + right * side * (w / 2 + it['w'] / 2 + 1.5 + k * (it['w'] + 1.0)) - fwd * (d / 4)
+                if self._v3_add_building(proto, q[0], q[1], yaw, 1.0, margin=0.6, slope=2.5, allow=(Occupancy.FREE, Occupancy.PROP, Occupancy.TREE)):
+                    n += 1
+                    k += 1
+            for _ in range(int(RNG.integers(3, 7))):
+                proto = self.FARM_PROPS[int(RNG.integers(len(self.FARM_PROPS)))]
+                if proto not in self.kit.items:
+                    continue
+                it = self.kit.get(proto)
+                q = np.array([cx, cz]) - right * side * (w / 2 + RNG.uniform(1.2, 4.0)) + fwd * RNG.uniform(-d / 2, d / 2)
+                ry = yaw + RNG.choice([0.0, 90.0]) + RNG.uniform(-12, 12)
+                if not self.occ.rect_free(q[0], q[1], it['w'], it['d'], ry, margin=0.3):
+                    continue
+                self.add(proto, q[0], float(self.g.y([q[0]], [q[1]])[0]) + 0.01, q[1], ry, 1.0, 1.0)
+                self.occ.rect(q[0], q[1], it['w'], it['d'], ry, Occupancy.PROP, margin=0.2)
+                n += 1
+        return n
+
+    def v3_rocks(self):
+        """The toy flat-shaded rocks become Poly Haven scans: granite boulders and rock faces on the mountain's scree and
+        bare ground, mossy rocks in the woods; sized to the old rock's footprint (and a little bigger on the mountain)."""
+        K = self.kit.items
+        gran = [k for k in self.PR_GRANITE if k in K]
+        moss = [k for k in self.PR_MOSS if k in K]
+        n = 0
+        rows_out = []
+        for proto in [k for k in self.inst if k.startswith('kf_rock_')]:
+            it0 = K.get(proto)
+            for r in self.inst[proto]:
+                x, y, z, yaw, sc, sy = r[:6]
+                size0 = max(it0['w'], it0['d']) * sc if it0 else 1.4 * sc
+                mtn = self.district_at(x, z) == 'mountain' or y > 60
+                woods = float(self.g.sample(self.g.forest, [x], [z])[0]) > 0.35
+                pool = moss if (woods and not mtn and moss) else gran
+                pid = pool[int(RNG.integers(len(pool)))]
+                it = K[pid]
+                s = np.clip(size0 * (1.6 if mtn else 1.15) / max(it['w'], it['d']), 0.6, 4.0)
+                # sunk by a third of its height on the mountain (the slopes are steep: a shallow sink floats the downhill side)
+                sy_ = s * RNG.uniform(0.75, 1.05)
+                rows_out.append((pid, x, y - (0.33 if mtn else 0.15) * it['h'] * sy_, z, RNG.uniform(0, 360), s, sy_))
+                n += 1
+            self.inst[proto] = []
+        for pid, x, y, z, yaw, s, sy in rows_out:
+            self.add(pid, x, y, z, yaw, s, sy)
+        return n
+
+    def v3_crops(self):
+        """The toy crop sprites become rows of the semi-real cards: tall grass tinted ripe for wheat, taller and greener for
+        corn, sunflowers, leafy weeds for cabbage and pumpkin, lavender's violet; rows follow each field's direction."""
+        K = self.kit.items
+        gone = sum(len(self.inst.get(k, [])) for k in list(self.inst) if k.startswith('kn_crop'))
+        for k in [k for k in self.inst if k.startswith('kn_crop')]:
+            self.inst[k] = []
+        n = 0
+        for poly, ang, kind in L.FIELDS:
+            spec = self.CROP_CARDS.get(kind)
+            if spec is None:
+                continue
+            cards, scr, syr, tint, row_d, step = spec
+            cards = [c for c in cards if c in K]
+            if not cards:
+                continue
+            P = np.array(poly, float)
+            c0 = P.mean(axis=0)
+            a = math.radians(ang)
+            u = np.array([math.sin(a), math.cos(a)]); v = np.array([u[1], -u[0]])
+            for row in np.arange(-70, 70, row_d):
+                for t in np.arange(-70, 70, step):
+                    q = c0 + u * t + v * row + RNG.uniform(-0.2, 0.2, 2)
+                    if not G.point_in_poly(q[0], q[1], P):
+                        continue
+                    yq = float(self.g.y([q[0]], [q[1]])[0])
+                    tt = None
+                    if tint is not None:
+                        tt = tuple(np.clip(np.array(tint) * RNG.uniform(0.93, 1.05, 3), 0, 1)) + (1.0,)
+                    self.add(cards[int(RNG.integers(len(cards)))], q[0], yq - 0.04, q[1], ang + RNG.uniform(-25, 25), RNG.uniform(*scr), RNG.uniform(*syr), tt)
+                    n += 1
+        return {'toy_removed': gone, 'cards': n}
+
+    def v3_last_toy_trees(self):
+        """Toy trees still standing (street trees outside the v3 districts, blossom, palms) -> maples, jacarandas and the
+        scanned coastal trees."""
+        K = self.kit.items
+        maples = [k for k in self.V3_MAPLES if k in K]
+        coast = [k for k in ('pt_island_a', 'pt_island_b') if k in K]
+        bloom = [k for k in ('pt_jacaranda',) if k in K]
+        counts = {}
+        rows_out = []
+        for proto in list(self.inst):
+            if proto.startswith(('w_tree', 'w_pine', 'kf_tree')):
+                pool, s = maples, (0.82, 0.98)
+            elif proto.startswith('tree_blossom'):
+                pool, s = bloom or maples, (0.8, 0.95)
+            elif proto.startswith('palm'):
+                pool, s = coast or None, (0.95, 1.2)
+            else:
+                continue
+            if not pool:
+                continue
+            for r in self.inst[proto]:
+                pid = pool[int(RNG.integers(len(pool)))]
+                rows_out.append((pid, r[0], r[1] + 0.02, r[2], RNG.uniform(0, 360), RNG.uniform(*s)))
+                counts[pid] = counts.get(pid, 0) + 1
+            self.inst[proto] = []
+        for pid, x, y, z, yaw, sc in rows_out:
+            self.add(pid, x, y, z, yaw, sc, 1.0, self.foliage_tint(pid, x, z))
+        return counts
+
+    def v3_islet(self):
+        """Palm Islet: a grove of the scanned coastal trees, granite on its shore, a bench and a lamp by the causeway."""
+        K = self.kit.items
+        poly = np.array(self._district_poly('islet'), float)
+        coast = [k for k in ('pt_island_a', 'pt_island_b') if k in K]
+        n = 0
+        for _ in range(400):
+            q = poly.min(0) + RNG.random(2) * (poly.max(0) - poly.min(0))
+            y = float(self.g.y([q[0]], [q[1]])[0])
+            if y < L.SEA + 0.6 or self.occ.codes([q[0]], [q[1]])[0] != Occupancy.FREE:
+                continue
+            if y < L.SEA + 1.6 and RNG.random() < 0.5:
+                pid = self.PR_GRANITE[int(RNG.integers(3))]
+                s = RNG.uniform(0.9, 2.2)
+                self.add(pid, q[0], y - 0.25 * s, q[1], RNG.uniform(0, 360), s, s * 0.8)
+            elif coast and RNG.random() < 0.35:
+                pid = coast[int(RNG.integers(len(coast)))]
+                self.add(pid, q[0], y + 0.02, q[1], RNG.uniform(0, 360), RNG.uniform(0.85, 1.2), 1.0, self.foliage_tint(pid, q[0], q[1]))
+                self.occ.disc(q[0], q[1], 2.5, Occupancy.TREE)
+            else:
+                continue
+            n += 1
+            if n > 70:
+                break
+        return n
+
+    def v3_basecamp(self):
+        """The MtnDAO basecamp lodge (Hackathon House): picnic tables, benches, barrels, crates and a woodpile of barrels and
+        planters round its yard, on free ground only."""
+        hv = next((v for v in getattr(L, 'VENUES', []) if v.get('id') in ('hackathon_house', 'mtndao_lodge')), None)
+        c = np.array([-221.0, 479.0]) if hv is None else np.array(hv.get('root', (-221.0, 479.0))[:2], float)
+        props = ['ph_picnic_table', 'ph_picnic_table', 'ph_wooden_bench', 'ph_wooden_bench', 'ph_wooden_barrels', 'ph_wooden_crate',
+                 'ph_planter_box', 'ph_compost_bags', 'ph_propane_tank', 'ph_wooden_bucket']
+        n = 0
+        for i in range(160):
+            if n >= 16:
+                break
+            proto = props[n % len(props)]
+            if proto not in self.kit.items:
+                n += 1
+                continue
+            it = self.kit.get(proto)
+            a = RNG.uniform(0, 2 * math.pi); rr = RNG.uniform(14, 30)
+            q = c + np.array([math.cos(a), math.sin(a)]) * rr
+            ry = RNG.uniform(0, 360)
+            ys = self.g.y([q[0] - 1, q[0] + 1, q[0]], [q[1], q[1], q[1] + 1])
+            if ys.max() - ys.min() > 0.5 or not self.occ.rect_free(q[0], q[1], it['w'], it['d'], ry, margin=0.5):
+                continue
+            self.add(proto, q[0], float(ys.min()) + 0.01, q[1], ry, 1.0, 1.0)
+            self.occ.rect(q[0], q[1], it['w'], it['d'], ry, Occupancy.PROP, margin=0.3)
+            n += 1
+        return n
 
     # -------------------------------------------------------------- world polish (2026-10-23)
     def v3_trenches_dense(self):
@@ -1755,13 +2107,16 @@ class Dress:
         'w_clover_1': (['pv_grass_short'], (1.0, 1.3)), 'w_clover_2': (['pv_grass_short', 'pv_flowers_violet'], (1.0, 1.3)),
         'w_flower': (['pv_flowers_yellow', 'pv_flowers_dandelion', 'pv_flowers_violet', 'pv_flowers_orange'], (1.1, 1.45)),
         'flowers_': (['pv_flowers_yellow', 'pv_flowers_orange', 'pv_flowers_violet'], (1.1, 1.4)),
+        'w_pebble': ([], (1.0, 1.0)),                               # world districts 2: the toy pebbles go
         'w_fern': (['pv_fern'], (0.9, 1.25)), 'w_plant_7': (['pv_weeds'], (1.0, 1.35)),
         'w_mushroom_common': ([], (1.0, 1.0)),
     }
     V3_BUSH = {'bush_round': ['pv_bush_round', 'pv_bush_low'], 'bush_small': ['pv_bush_low'], 'bush_flowers': ['pv_bush_round', 'pv_bush_large'],
                'bush_large_flowers': ['pv_bush_large', 'pv_hedge'], 'kf_bush': ['pv_bush_round', 'pv_bush_low', 'pv_bush_large']}
 
-    ROUTE_SPOTS = [(-332.5, -279.0), (-493.6, 50.7), (690.0, -335.0)]
+    ROUTE_SPOTS = [(-332.5, -279.0), (-493.6, 50.7), (690.0, -335.0),
+                   # world districts 2 route (InteriorRoute.Spots2)
+                   (422.7, 302.2), (560.0, 92.0), (-60.0, -230.0), (-276.0, 278.0), (-222.0, 420.0), (802.0, -594.0)]
 
     def v3_ground_cover(self):
         """Island-wide: the toy grass clumps, clover, cartoon flowers, ferns and blob bushes become the semi-real cards and
@@ -2481,6 +2836,19 @@ class Dress:
     BUSHES = ['bush_round', 'bush_flowers', 'bush_large_flowers', 'bush_small']
     COAST_DISTRICTS = ('boardwalk', 'dubai_marina', 'islet')
 
+    # world districts 2 (2026-10-23): the forest on semi-real trees (art/pipeline/world_v3_trees.py: Poly Haven scans as
+    # billboard-cloud trees) and the LOLIPOP maples; the toy pools above stay as the fallback when the v3 kit is absent
+    PT_PINES = ['pt_fir_a', 'pt_fir_a', 'pt_fir_b', 'pt_fir_b', 'pt_fir_c', 'pt_pine_a', 'pt_pine_a']
+    PT_BROAD = ['lp_maple_medium_1', 'lp_maple_medium_2', 'lp_maple_medium_3', 'lp_maple_large_1', 'lp_maple_large_2',
+                'lp_maple_large_3', 'pt_broad_a', 'pt_broad_a', 'pt_island_b']
+    PT_AUTUMN = ['pt_island_b', 'pt_island_a']
+    PT_BLOSSOM = ['pt_jacaranda']
+    TREE_PREFIXES = ('w_tree', 'w_pine', 'palm', 'tree_', 'kf_tree', 'lp_maple', 'pt_')
+
+    def semi(self, pt_pool, toy_pool):
+        live = [q for q in pt_pool if q in self.kit.items]
+        return live if live else toy_pool
+
     def pick(self, pool):
         live = [q for q in pool if q in self.kit.items]
         return live[RNG.integers(len(live))] if live else None
@@ -2488,6 +2856,11 @@ class Dress:
     def foliage_tint(self, proto, x, z):
         """Per-tree colour drift (the kit shader multiplies foliage by it): mostly deeper greens, some olive and blue-green,
         a few autumn crowns in the groves; large-scale noise keeps neighbours related, so stands read as one wood."""
+        if proto.startswith('pt_'):
+            # semi-real trees: a narrow drift round neutral (their atlas carries the scan's own colour), x1.25 in the shader
+            n = G.fbm(np.array([x / 90.0]), np.array([z / 90.0]))[0]
+            base = np.array([0.80, 0.80, 0.78]) + (n - 0.5) * np.array([0.10, 0.06, 0.08]) + RNG.uniform(-0.025, 0.025, 3)
+            return tuple(np.clip(base, 0, 1)) + (1.0,)
         if not (proto.startswith(('kf_tree', 'kf_bush', 'w_tree_common', 'w_pine', 'bush_'))):
             return None
         n = G.fbm(np.array([x / 70.0]), np.array([z / 70.0]))[0]
@@ -2500,7 +2873,9 @@ class Dress:
         t0 = time.time()
         g = self.g
         region = (-900.0, 940.0, -780.0, 720.0)
-        pines, broad = self.PINES, self.BROAD
+        pines, broad = self.semi(self.PT_PINES, self.PINES), self.semi(self.PT_BROAD, self.BROAD)
+        autumn, blossom_pool = self.semi(self.PT_AUTUMN, self.AUTUMN), self.semi(self.PT_BLOSSOM, None)
+        semi = pines is not self.PINES
 
         dmap = self.district_raster()
         road_d = ndimage.distance_transform_edt(self.occ.arr() != Occupancy.ROAD)      # metres from the nearest road
@@ -2525,7 +2900,7 @@ class Dress:
             if RNG.random() < (0.86 if high else 0.3):
                 return self.pick(pines), RNG.uniform(0.75, 1.15), RNG.uniform(0.95, 1.1)
             if RNG.random() < 0.015:
-                return self.pick(self.AUTUMN), RNG.uniform(0.8, 1.0), 1.0
+                return self.pick(autumn), RNG.uniform(0.8, 1.0), 1.0
             return self.pick(broad), RNG.uniform(0.75, 1.1), 1.0
         n_forest = self.scatter(6.0, region, forest_p, forest_pick)
 
@@ -2537,7 +2912,7 @@ class Dress:
 
         def meadow_pick(x, z, y):
             if RNG.random() < 0.05:
-                return self.pick(self.AUTUMN), RNG.uniform(0.85, 1.05), 1.0
+                return self.pick(autumn), RNG.uniform(0.85, 1.05), 1.0
             return self.pick(broad), RNG.uniform(0.85, 1.15), 1.0
         n_meadow = self.scatter(16.0, region, meadow_p, meadow_pick)
 
@@ -2571,7 +2946,7 @@ class Dress:
         for name, poly in L.PARKS:
             P = np.array(poly, float)
             x0, z0 = P.min(axis=0); x1, z1 = P.max(axis=0)
-            blossom = ['tree_blossom_1', 'tree_blossom_2', 'tree_blossom_3', 'tree_blossom_4']
+            blossom = blossom_pool or ['tree_blossom_1', 'tree_blossom_2', 'tree_blossom_3', 'tree_blossom_4']
 
             def park_p(X, Z, P=P):
                 inside = np.array([G.point_in_poly(x, z, P) for x, z in zip(X, Z)])
@@ -2580,9 +2955,11 @@ class Dress:
             def park_pick(x, z, y):
                 r = RNG.random()
                 if r < 0.4:
+                    if semi:
+                        return self.pick(blossom), RNG.uniform(0.8, 1.0), 1.0         # jacaranda, 10-12.5 m
                     return self.pick(blossom), RNG.uniform(1.35, 1.6), 1.0          # cherry blossom, 8-10 m
                 if r < 0.5:
-                    return self.pick(self.AUTUMN), RNG.uniform(0.8, 0.95), 1.0
+                    return self.pick(autumn), RNG.uniform(0.8, 0.95), 1.0
                 return self.pick(broad), RNG.uniform(0.75, 1.0), 1.0
             n_park += self.scatter(9.0, (x0, x1, z0, z1), park_p, park_pick, cull_codes=(Occupancy.PARK,))
         # crops in the fields: rows along each field's direction
@@ -2727,7 +3104,7 @@ class Dress:
             c = np.array([x, z]) - f * cam['dist'] + r * cam['side']
             half = math.tan(math.radians(cam['fov'] * 2.225 / 2.0))        # horizontal half-FOV at the Seeker's aspect (approx.)
             for proto, rows in self.inst.items():
-                if not proto.startswith(('w_tree', 'w_pine', 'palm', 'tree_', 'kf_tree', 'bush_', 'kf_bush')):
+                if not proto.startswith(self.TREE_PREFIXES + ('bush_', 'kf_bush')):
                     continue
                 keep = []
                 for row in rows:
@@ -2781,6 +3158,8 @@ def main():
     d.v3_downtown()
     d.v3_districts()
     d.v3_trenches_dense()
+    d.stats['v3_trenches_junction'] = d.v3_trenches_junction()
+    d.v3_districts2()
     d.v3_paving_all()
     d.v3_ground_cover()
     d.write_heights()

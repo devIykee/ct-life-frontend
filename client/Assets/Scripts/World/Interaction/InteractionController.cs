@@ -316,7 +316,7 @@ namespace CTLife.World
                         if (!_local.RequestSeat(c.target.id)) { Exec(Machine.Rejected()); Toast("interact.noResponse"); }
                         break;
                     case InteractionCommandKind.EngageLocal:
-                        _local.EngageLocal(c.target.id, c.target.position, c.target.yaw, c.target.anim, c.target.Sits ? "act_sit_down" : null);
+                        _local.EngageLocal(c.target.id, c.target.position, c.target.yaw, c.target.anim, c.target.Sits ? "act_sit_down" : null, c.target.sitStandOff);
                         break;
                     case InteractionCommandKind.ReleaseSeat:
                     case InteractionCommandKind.Disengage:

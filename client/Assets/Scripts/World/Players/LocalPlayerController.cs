@@ -536,7 +536,7 @@ namespace CTLife.World
         /// Local-only engagement (no contract message, or no room): present the actor at a point, facing yaw, playing
         /// <paramref name="anim"/>; the stick or "Step away" ends it. Never sent to the server.
         /// </summary>
-        public bool EngageLocal(string key, Vector3 position, float yawDegrees, string anim, string transitionState)
+        public bool EngageLocal(string key, Vector3 position, float yawDegrees, string anim, string transitionState, float standOff = 0f)
         {
             if (string.IsNullOrEmpty(key) || !string.IsNullOrEmpty(_seatedSpot) || !BodyReady) return false;
             RememberStandingPose(transform.position, transform.eulerAngles.y);
@@ -547,7 +547,7 @@ namespace CTLife.World
             var rotation = Quaternion.Euler(0, yawDegrees, 0);
             transform.SetPositionAndRotation(position, rotation);
             _view.SetSpeed(0f);
-            _view.BeginSeatEnter(fromPosition, fromRotation, position, rotation, transitionState);
+            _view.BeginSeatEnter(fromPosition, fromRotation, position, rotation, transitionState, standOff);
             _view.SetBase(string.IsNullOrEmpty(anim) ? "loco_idle" : anim);
             ResetFootsteps();
             CameraRig.Instance?.SettleBehind();

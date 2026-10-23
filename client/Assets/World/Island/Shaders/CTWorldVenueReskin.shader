@@ -17,6 +17,7 @@ Shader "CT Life/World/Venue Reskin"
         [Normal] _RoofNormal("Roof normal", 2D) = "bump" {}
         _RoofMid("Roof scan's mean colour (linear)", Color) = (0.078, 0.026, 0.009, 1)
         _Tiles("Tile metres (wall, roof), detail strength (wall, roof)", Vector) = (2.0, 2.0, 0.85, 0.9)
+        _UseVertexColor("Palette x vertex colour (venue shell roofs)", Float) = 0
         [Enum(UnityEngine.Rendering.CullMode)] _Cull("Cull", Float) = 2
     }
     SubShader
@@ -33,12 +34,14 @@ Shader "CT Life/World/Venue Reskin"
             float4 _BaseMap_ST;
             half4 _BaseColor, _WallMid, _RoofMid;
             float4 _Tiles;
+            half _UseVertexColor;
         CBUFFER_END
 
-        struct Attributes { float4 positionOS : POSITION; float3 normalOS : NORMAL; float2 uv : TEXCOORD0; UNITY_VERTEX_INPUT_INSTANCE_ID };
+        struct Attributes { float4 positionOS : POSITION; float3 normalOS : NORMAL; float2 uv : TEXCOORD0; half4 color : COLOR; UNITY_VERTEX_INPUT_INSTANCE_ID };
         struct Varyings
         {
             float4 positionCS : SV_POSITION; float3 positionWS : TEXCOORD0; half3 normalWS : TEXCOORD1; float2 uv : TEXCOORD2; half fog : TEXCOORD3;
+            half3 color : TEXCOORD4;
             UNITY_VERTEX_INPUT_INSTANCE_ID
             UNITY_VERTEX_OUTPUT_STEREO
         };
@@ -52,13 +55,14 @@ Shader "CT Life/World/Venue Reskin"
             o.normalWS = TransformObjectToWorldNormal(input.normalOS);
             o.uv = TRANSFORM_TEX(input.uv, _BaseMap);
             o.fog = ComputeFogFactor(p.positionCS.z);
+            o.color = lerp(half3(1, 1, 1), input.color.rgb, _UseVertexColor);
             return o;
         }
 
         half4 Frag(Varyings input) : SV_Target
         {
             UNITY_SETUP_INSTANCE_ID(input); UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
-            half3 pal = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.uv).rgb * _BaseColor.rgb;
+            half3 pal = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.uv).rgb * _BaseColor.rgb * input.color;
             half3 ng = normalize(input.normalWS);
             float3 p = input.positionWS;
             half mx = max(pal.r, max(pal.g, pal.b)), mn = min(pal.r, min(pal.g, pal.b));
