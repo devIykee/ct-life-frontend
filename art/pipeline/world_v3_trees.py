@@ -30,7 +30,7 @@ RAW_PH = os.path.join(ART, 'raw', 'polyhaven')
 OUT = os.path.join(ART, 'processed', 'world_v3', 'v3_forest')
 TEX = os.path.join(OUT, 'textures')
 UA = 'CTLife-artpipeline/1.0 (CC0 asset fetch)'
-SHEET = '/Users/mac/Documents/codes/projects/ct-life-evidence/world-districts2-20261023/trees-sheet.png'
+SHEET = os.environ.get('CTL_TREE_SHEET', '/Users/mac/Documents/codes/projects/ct-life-evidence/world-districts2-20261023/trees-sheet.png')
 
 # id -> (Poly Haven model, object name in its glTF (None: the only/biggest one), kind, target height m, clusters LOD0, LOD1)
 TREES = {
@@ -44,47 +44,16 @@ TREES = {
     'pt_jacaranda': ('jacaranda_tree', None, 'broad', 12.5, 120, 30),
 }
 SOURCES = sorted({v[0] for v in TREES.values()})
+# world fix-ups (2026-10-23): the island trees' wood is ~8400 loose limb pieces (each scanned limb a separate part that
+# only intersects the trunk); culled at 0.1 H and collapsed to 1500 tris, each surviving limb kept ~10 triangles and read
+# as a dark floating shard on the islet. These trees keep only limbs over 0.2 H (plus anything touching the ground) and a
+# bigger budget, so each limb stays a round, baked branch. id -> (cull size / H, LOD0 wood tris, LOD1 wood tris)
+WOOD_OVERRIDE = {'pt_island_a': (0.2, 2600, 200), 'pt_island_b': (0.2, 2600, 200)}
 
 
-# hosts the Poly Haven API hands out (the API itself, its download CDN); anything else is refused
-ALLOWED_HOSTS = {'api.polyhaven.com', 'dl.polyhaven.org'}
-
-
-def _check_url(url):
-    u = urllib.parse.urlparse(url)
-    if u.scheme != 'https' or u.hostname not in ALLOWED_HOSTS:
-        raise SystemExit('refusing to fetch ' + repr(url))
-    return url
-
-
-def _safe(name):
-    """An API-derived name made safe for a file name."""
-    return re.sub(r'[^A-Za-z0-9_-]', '_', str(name))
-
-
-def _inside(path, root):
-    p = os.path.normpath(path)
-    if not p.startswith(os.path.normpath(root) + os.sep):
-        raise SystemExit('refusing to write outside ' + root + ': ' + path)
-    return p
-
-
-def _get(url, path):
-    _check_url(url)
-    if os.path.exists(path):
-        return
-    for _ in range(8):
-        if subprocess.run(['curl', '-sS', '-L', '--proto', '=https', '--proto-redir', '=https', '-C', '-', '--retry', '5', '--retry-all-errors',
-                           '-A', UA, '-o', path + '.part', '--', url]).returncode == 0:
-            os.replace(path + '.part', path)
-            return
-    raise SystemExit('download failed ' + url)
-
-
-def _json(url):
-    _check_url(url)
-    with urllib.request.urlopen(urllib.request.Request(url, headers={'User-Agent': UA}), timeout=60) as r:
-        return json.load(r)
+# the hardened downloader (https allowlist, curl --proto =https, '--' before the URL, sanitised paths) lives in ph_fetch.py
+sys.path.insert(0, HERE)
+from ph_fetch import check_url as _check_url, safe as _safe, inside as _inside, get as _get, get_json as _json  # noqa: E402
 
 
 def fetch():
@@ -405,15 +374,15 @@ def pack(rects, size, fixed=()):
 
 
 # ------------------------------------------------------------------ wood
-def wood_lods(src, fidx, H, kind):
+def wood_lods(src, fidx, H, kind, override=None):
     """Wood (trunk + branches) -> (hi-res wood, LOD0 wood): thin twigs culled, decimated."""
     w = src.copy(); w.data = src.data.copy(); w.name = 'wood'
     bpy.context.scene.collection.objects.link(w)
     bm = bmesh.new(); bm.from_mesh(w.data)
     bmesh.ops.delete(bm, geom=[f for f in bm.faces if f.material_index in fidx], context='FACES')
     bm.to_mesh(w.data); bm.free()
-    keep_ground_cull(w, H * (0.06 if kind == 'conifer' else 0.1))
-    target = 1100 if kind == 'conifer' else 1500
+    keep_ground_cull(w, H * (override[0] if override else 0.06 if kind == 'conifer' else 0.1))
+    target = override[1] if override else 1100 if kind == 'conifer' else 1500
     l0 = W.decimate_copy(w, target, 'wood_l0', planar_first=False)
     for _ in range(4):                          # dense, many-part wood (the jacaranda) needs more than one collapse pass
         if W.tris(l0) <= target * 1.2:
@@ -447,11 +416,11 @@ def keep_ground_cull(o, min_size):
     bm.to_mesh(o.data); bm.free(); o.data.update()
 
 
-def wood_lod1(l0, H, kind):
+def wood_lod1(l0, H, kind, override=None):
     """LOD1 wood from the baked LOD0 (UVs carried through the decimation): the trunk and the main limbs only."""
     l1 = W.dup(l0, 'wood_l1x')
-    keep_ground_cull(l1, H * 0.22)
-    l1b = W.decimate_copy(l1, 260 if kind == 'conifer' else 380, 'wood_l1', planar_first=False)
+    keep_ground_cull(l1, H * (0.3 if override else 0.22))
+    l1b = W.decimate_copy(l1, override[2] if override else 260 if kind == 'conifer' else 380, 'wood_l1', planar_first=False)
     bpy.data.objects.remove(l1)
     return l1b
 
@@ -610,9 +579,10 @@ def build(tid):
     cards1 = cards_for(P, area, k1, kind, H)
     log(tid, 'cards', len(cards0), len(cards1), f'({time.time() - t0:.0f}s)')
     # wood
-    hi, w0 = wood_lods(src, fidx, H, kind)
+    ov = WOOD_OVERRIDE.get(tid)
+    hi, w0 = wood_lods(src, fidx, H, kind, ov)
     wood = bake_wood(hi, w0, 512)
-    w1 = wood_lod1(w0, H, kind)
+    w1 = wood_lod1(w0, H, kind, ov)
     # atlas: LOD0 cards at full density, LOD1 cards at 0.55 of it, the wood square
     px_m = 100.0
     rects = [((c['ext'][1] - c['ext'][0]) * px_m, (c['ext'][3] - c['ext'][2]) * px_m) for c in cards0] + \

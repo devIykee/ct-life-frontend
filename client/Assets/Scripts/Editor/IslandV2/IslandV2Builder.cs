@@ -102,6 +102,8 @@ namespace CTLife.EditorTools.IslandV2
 
             // dressing: buildings, street furniture, trees, rocks, crops (dress.json) into their cells
             IslandV2Dress.Place(cells, h, receipt);
+            // world fix-ups: the overhead wires between the country roads' electricity poles (dress.json power runs)
+            PowerWires(cells, receipt);
             // walk-in rooms behind dress.py's enterable doors (prefabs + the door list IslandInteriors streams from)
             IslandV2Interiors.Build(receipt);
 
@@ -199,6 +201,51 @@ namespace CTLife.EditorTools.IslandV2
             receipt["layers"] = string.Join(", ", Layers.All.Select(l => $"{l.index} {l.name}"));
         }
 
+        /// <summary>World fix-ups (2026-10-23): three conductors between consecutive poles of each dress.json power run
+        /// (Poly Haven modular_electricity_poles: crossarm along the pole's local x at ~6 m of its 6.1 m, scaled per run),
+        /// each a sagging catenary of two crossed 4 cm ribbons (visible from any side), in the cell of the span's midpoint.</summary>
+        private static void PowerWires(CellSet cells, JObject receipt)
+        {
+            if (!(IslandV2Paths.Json("dress.json")["power"] is JArray runs)) return;
+            var attach = new[] { new Vector2(-0.46f, 5.97f), new Vector2(0.43f, 5.97f), new Vector2(0f, 5.25f) };
+            int spans = 0;
+            foreach (JArray run in runs)
+                for (int i = 0; i + 1 < run.Count; i++)
+                {
+                    var a = (JArray)run[i]; var b = (JArray)run[i + 1];
+                    if (a.Count < 5 || b.Count < 5) continue;      // the old toy runs ([x, y, z, yaw]) are gone
+                    Vector3 pa = new Vector3((float)a[0], (float)a[1], (float)a[2]), pb = new Vector3((float)b[0], (float)b[1], (float)b[2]);
+                    float sa = (float)a[4], sb = (float)b[4];
+                    var ra = Quaternion.Euler(0f, (float)a[3], 0f); var rb = Quaternion.Euler(0f, (float)b[3], 0f);
+                    var g = cells.At((pa + pb) * 0.5f);
+                    var mb = g.V("power_wire");
+                    float span = Vector3.Distance(pa, pb);
+                    float sag = 0.25f + span * 0.022f;
+                    foreach (var at in attach)
+                    {
+                        // pair the attachment points by side (the poles may face either way along the road)
+                        var qa = pa + ra * new Vector3(at.x * sa, at.y * sa, 0f);
+                        var qbl = pb + rb * new Vector3(at.x * sb, at.y * sb, 0f);
+                        var qbr = pb + rb * new Vector3(-at.x * sb, at.y * sb, 0f);
+                        var qb = Vector3.Distance(qa, qbl) <= Vector3.Distance(qa, qbr) ? qbl : qbr;
+                        const int seg = 12;
+                        var dir = (qb - qa).normalized;
+                        var side = Vector3.Cross(Vector3.up, dir).normalized * 0.022f;
+                        var up = Vector3.up * 0.022f;
+                        for (int k = 0; k < seg; k++)
+                        {
+                            float t0 = k / (float)seg, t1 = (k + 1) / (float)seg;
+                            var c0 = Vector3.Lerp(qa, qb, t0) - Vector3.up * sag * 4f * t0 * (1f - t0);
+                            var c1 = Vector3.Lerp(qa, qb, t1) - Vector3.up * sag * 4f * t1 * (1f - t1);
+                            mb.FlatQuad(c0 - side, c1 - side, c1 + side, c0 + side);
+                            mb.FlatQuad(c0 - up, c0 + up, c1 + up, c1 - up);
+                        }
+                    }
+                    spans++;
+                }
+            receipt["powerSpans"] = spans;
+        }
+
         private static void ImportTextures()
         {
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
@@ -234,6 +281,13 @@ namespace CTLife.EditorTools.IslandV2
             Set("boardwalk.png", true, true, 256);
             SkyTextures();
             // world v3 street stone (art/pipeline/world_street_textures.py, Poly Haven CC0) and the downtown paving mask
+            // world fix-ups (2026-10-23): the venue architecture's scans (art/pipeline/world_venue_textures.py, Poly Haven CC0)
+            foreach (var n in new[] { "concrete", "timber_dark", "timber_light", "wood_post", "slate", "thatch", "stone" })
+            {
+                Set($"Venues/{n}_albedo.png", true, true, 1024);
+                Set($"Venues/{n}_normal.png", false, true, 1024, normal: true);
+                Set($"Venues/{n}_mask.png", false, true, 512);
+            }
             foreach (var n in new[] { "asphalt", "pavers", "concrete", "granite", "plaster", "rooftiles", "siding", "corrugated", "dirt" })
             {
                 Set($"Street/{n}_albedo.png", true, true, 1024);
@@ -307,7 +361,7 @@ namespace CTLife.EditorTools.IslandV2
         }
 
         private static Texture2D Tex(string file) => AssetDatabase.LoadAssetAtPath<Texture2D>(IslandV2Paths.Textures + "/" + file);
-        private const int GroundSlices = 5;
+        private const int GroundSlices = 7;   // + rock_face_03 cliffs and rocks_ground_02 scree (world fix-ups)
         private static Texture2DArray TexArray(string file) => AssetDatabase.LoadAssetAtPath<Texture2DArray>(IslandV2Paths.Textures + "/" + file);
 
         /// <summary>The sidewalk scan's warm cast taken out: light grey slabs like the lookdev (linear multipliers).</summary>
@@ -332,7 +386,10 @@ namespace CTLife.EditorTools.IslandV2
             void Ground(Material x)
             {
                 x.SetTexture("_Control", Tex("terrain_control.png")); x.SetTexture("_Detail", Tex("terrain_detail.png"));
-                x.SetColor("_RockColor", new Color(0.38f, 0.36f, 0.37f)); x.SetColor("_RockColorHigh", new Color(0.55f, 0.53f, 0.56f));   // darker, so the range reads against the sky
+                // world fix-ups: the rock colours tint the cliff scan (rock_face_03, desaturated to 0.55); a little lighter and
+                // cooler high up, so the summit reads as bare grey rock against the sky
+                x.SetColor("_RockColor", new Color(0.95f, 0.97f, 1.02f)); x.SetColor("_RockColorHigh", new Color(1.1f, 1.12f, 1.18f));
+                x.SetVector("_RockScan", new Vector4(7f, 23f, 0.35f, 4f)); x.SetVector("_RockSlope", new Vector4(0.80f, 0.55f, 34f, 135f));
                 x.SetColor("_SandColor", new Color(0.92f, 0.83f, 0.62f)); x.SetColor("_DirtColor", new Color(0.56f, 0.43f, 0.30f));
                 x.SetVector("_Snow", new Vector4(138f, 156f, 0.45f, 0.6f)); x.SetVector("_Shore", new Vector4(-6f, 1.1f, 0f, 0f)); x.SetVector("_DetailScale", new Vector4(0.16f, 0.035f, 0f, 0f));
                 x.SetFloat("_Contrast", 0.65f); x.SetFloat("_Sharpness", 2.5f); x.SetFloat("_Toon", 0.3f);
@@ -408,6 +465,13 @@ namespace CTLife.EditorTools.IslandV2
             Mk(Mat.Boardwalk, "CT Life/World/Venue Reskin", x => { ReskinTextures(x); x.SetTexture("_Wall", Tex("Street/siding_albedo.png")); x.SetTexture("_WallNormal", Tex("Street/siding_normal.png"));
                 x.SetColor("_WallMid", new Color(0.066f, 0.043f, 0.029f)); x.SetVector("_Tiles", new Vector4(2.4f, 2.2f, 1.0f, 0.9f));
                 x.SetTexture("_BaseMap", Texture2D.whiteTexture); x.SetColor("_BaseColor", new Color(0.62f, 0.47f, 0.34f)); x.SetFloat("_UseVertexColor", 0f); x.SetFloat("_Cull", 2f); });
+            Mk("power_wire", "CT Life/World/Kit PBR", x =>
+            {
+                x.SetTexture("_BaseMap", null); x.SetTexture("_BumpMap", null); x.SetTexture("_MaskMap", null);
+                x.DisableKeyword("_NORMALMAP"); x.DisableKeyword("_MASKMAP"); x.DisableKeyword("_GLASS"); x.DisableKeyword("_ALPHATEST_ON");
+                x.SetColor("_BaseColor", new Color(0.035f, 0.035f, 0.04f)); x.SetFloat("_Metallic", 0.2f); x.SetFloat("_Smoothness", 0.45f);
+                x.SetFloat("_Cull", 0f); x.SetFloat("_TintStrength", 0f); x.SetVector("_GroundAO", new Vector4(0.01f, 0f, 0f, 0f));
+            });
             Mk(Mat.Timber, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Texture2D.whiteTexture); x.SetColor("_BaseColor", new Color(0.50f, 0.38f, 0.27f)); x.SetFloat("_Toon", 0.35f); });
             Mk(Mat.Lighthouse, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Texture2D.whiteTexture); x.SetColor("_BaseColor", Color.white); x.SetFloat("_Toon", 0.4f); });
             Mk(Mat.LighthouseLamp, "CT Life/World/Toon", x => { x.SetTexture("_BaseMap", Texture2D.whiteTexture); x.SetColor("_BaseColor", new Color(1f, 0.93f, 0.66f)); x.SetColor("_Emission", new Color(1.6f, 1.35f, 0.8f)); x.SetFloat("_Cull", 0f); });
@@ -507,6 +571,7 @@ namespace CTLife.EditorTools.IslandV2
             { Mat.Kerb, (Layers.Road, false) }, { Mat.Concrete, (Layers.Road, true) }, { Mat.Tunnel, (Layers.Road, true) },
             { Mat.Rail, (Layers.Prop, false) }, { Mat.Paint, (Layers.Road, false) }, { Mat.Grass, (Layers.Prop, false) },
             { IslandV2Dress.ShopSigns, (Layers.Prop, false) },
+            { "power_wire", (Layers.Prop, false) },
             { IslandV2Dress.WallDecor, (Layers.Building, false) }, { IslandV2Dress.BusAds, (Layers.Prop, false) },
             { IslandV2Dress.Glass, (Layers.Prop, true) }, { IslandV2Dress.TreePit, (Layers.Road, false) },
             { IslandV2Dress.EventBanners, (Layers.Prop, false) }, { "sign_post_trail", (Layers.Prop, false) }, { "sign_post_checkpoint", (Layers.Prop, false) },

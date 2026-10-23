@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using CTLife.World;
 using Newtonsoft.Json.Linq;
@@ -25,6 +26,25 @@ namespace CTLife.EditorTools.IslandV2
             public bool HasDoor = true;
             /// <summary>Landmark extras (dome, phone, bunting, cairn) in their own renderer, and their materials.</summary>
             public MeshBuilder Extra; public Material ExtraMat;
+            /// <summary>World fix-ups: real architecture (art/pipeline/world_venue_shells.py) in place of the procedural walls
+            /// and roof, per side (front, back, left, right, roof), in the venue's local frame.</summary>
+            public Dictionary<string, ArchPart> Arch;
+        }
+
+        /// <summary>One side of a venue's architecture: flat-shaded triangles in submeshes by material slot.</summary>
+        public sealed class ArchPart
+        {
+            public readonly List<Vector3> V = new List<Vector3>();
+            public readonly List<Vector3> N = new List<Vector3>();
+            public readonly List<Vector2> UV = new List<Vector2>();
+            public readonly List<(string mat, List<int> tris)> Sub = new List<(string, List<int>)>();
+        }
+
+        /// <summary>The venues with real architecture: their mesh data from art/processed/world_v3/v3_venues/&lt;id&gt;.json.</summary>
+        private static JObject ArchJson(string id)
+        {
+            var path = Path.Combine(IslandV2Paths.Repo, "art", "processed", "world_v3", "v3_venues", id + ".json");
+            return File.Exists(path) ? JObject.Parse(File.ReadAllText(path)) : null;
         }
 
         private static readonly Dictionary<string, int> StyleIds = new Dictionary<string, int>
@@ -196,7 +216,117 @@ namespace CTLife.EditorTools.IslandV2
             def.Facade = FacadeMaterial(id, StyleIds.TryGetValue((string)sh["style"] ?? "plaster", out var st) ? st : 0, trim, accent, (string)sh["style"]);
             def.RoofMat = mats.TryGetValue("shell_roof", out var rm) ? rm : mats[Mat.Concrete];
             def.SignMat = SignMaterial(id);
+            // world fix-ups (2026-10-23): real architecture replaces the procedural walls and roof where it exists; the
+            // footprint, door, colliders and fader stay the shell's
+            var arch = door ? ArchJson(id) : null;
+            if (arch != null)
+            {
+                def.Arch = new Dictionary<string, ArchPart>();
+                foreach (var kv in (JObject)arch["parts"])
+                {
+                    var ap = new ArchPart();
+                    var jv = (JArray)kv.Value["v"]; var jn = (JArray)kv.Value["n"]; var ju = (JArray)kv.Value["uv"];
+                    for (int i = 0; i < jv.Count; i++)
+                    {
+                        ap.V.Add(new Vector3((float)jv[i][0], (float)jv[i][1], (float)jv[i][2]));
+                        ap.N.Add(new Vector3((float)jn[i][0], (float)jn[i][1], (float)jn[i][2]));
+                        ap.UV.Add(new Vector2((float)ju[i][0], (float)ju[i][1]));
+                    }
+                    foreach (var sm in (JObject)kv.Value["sub"])
+                        ap.Sub.Add((sm.Key, ((JArray)sm.Value).Select(t => (int)t).ToList()));
+                    def.Arch[kv.Key] = ap;
+                }
+                // the name sign where the architecture leaves room for it (the lodge's gable, the hut's roof edge)
+                if (arch["sign"] is JObject so)
+                {
+                    float w = (float)so["w"], hh = w * 0.25f, y = (float)so["y"], z = (float)so["z"];
+                    var sg = new MeshBuilder();
+                    int t0 = sg.Add(W(doorX - w / 2f, y, z), rot * Vector3.back, new Vector2(0f, 0f));
+                    int t1 = sg.Add(W(doorX - w / 2f, y + hh, z), rot * Vector3.back, new Vector2(0f, 1f));
+                    int t2 = sg.Add(W(doorX + w / 2f, y + hh, z), rot * Vector3.back, new Vector2(1f, 1f));
+                    int t3 = sg.Add(W(doorX + w / 2f, y, z), rot * Vector3.back, new Vector2(1f, 0f));
+                    sg.Tri(t0, t1, t2); sg.Tri(t0, t2, t3);
+                    def.Sign = sg;
+                }
+            }
             return def;
+        }
+
+        /// <summary>World fix-ups: the venue architecture's materials on CT Life/World/Kit PBR - CC0 Poly Haven scans
+        /// (art/pipeline/world_venue_textures.py, tiled in metres) or flat PBR colours (glass, steel, aluminium, accent).</summary>
+        private static readonly Dictionary<string, Material> ArchMats = new Dictionary<string, Material>();
+        private static Material ArchMaterial(string slot)
+        {
+            if (ArchMats.TryGetValue(slot, out var cached) && cached != null) return cached;
+            var path = IslandV2Paths.Materials + "/venue_" + slot + ".mat";
+            var sh = Shader.Find("CT Life/World/Kit PBR");
+            var m = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (m == null) { m = new Material(sh) { name = "venue_" + slot }; AssetDatabase.CreateAsset(m, path); }
+            m.shader = sh;
+            void Kw(string k, bool on) { if (on) m.EnableKeyword(k); else m.DisableKeyword(k); }
+            // tile metres for the scans
+            float tile = slot switch { "concrete" => 2.6f, "timber_dark" => 2.2f, "timber_light" => 2.0f, "wood_post" => 1.4f, "slate" => 2.4f,
+                                       "thatch" => 2.4f, "stone" => 2.2f, "paving" => 1.8f, _ => 0f };
+            if (slot == "paving")
+            {
+                // the convention centre's plaza: the sidewalk stone (Poly Haven concrete_pavement_02, world_street_textures.py)
+                m.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>(IslandV2Paths.Textures + "/Street/pavers_albedo.png"));
+                m.SetTextureScale("_BaseMap", new Vector2(1f / tile, 1f / tile));
+                m.SetTexture("_BumpMap", AssetDatabase.LoadAssetAtPath<Texture2D>(IslandV2Paths.Textures + "/Street/pavers_normal.png"));
+                m.SetTexture("_MaskMap", null);
+                Kw("_NORMALMAP", true); m.SetFloat("_UseNormal", 1f); Kw("_MASKMAP", false); m.SetFloat("_UseMask", 0f);
+                m.SetFloat("_Metallic", 0f); m.SetFloat("_Smoothness", 0.25f); m.SetFloat("_BumpScale", 1f);
+                m.SetColor("_BaseColor", new Color(1.05f, 1.03f, 1.0f));
+            }
+            else if (tile > 0f)
+            {
+                string tp = IslandV2Paths.Textures + "/Venues/" + slot;
+                m.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>(tp + "_albedo.png"));
+                m.SetTextureScale("_BaseMap", new Vector2(1f / tile, 1f / tile));
+                m.SetTexture("_BumpMap", AssetDatabase.LoadAssetAtPath<Texture2D>(tp + "_normal.png"));
+                m.SetTexture("_MaskMap", AssetDatabase.LoadAssetAtPath<Texture2D>(tp + "_mask.png"));
+                Kw("_NORMALMAP", true); m.SetFloat("_UseNormal", 1f);
+                Kw("_MASKMAP", true); m.SetFloat("_UseMask", 1f);
+                m.SetFloat("_Metallic", 1f); m.SetFloat("_Smoothness", 1f); m.SetFloat("_BumpScale", 1f);
+                m.SetColor("_BaseColor", slot switch
+                {
+                    "timber_dark" => new Color(1.0f, 0.93f, 0.86f),        // weathered boards
+                    "slate" => new Color(0.86f, 0.88f, 0.92f),
+                    "wood_post" => new Color(0.95f, 0.85f, 0.75f),
+                    "timber_light" => new Color(1.22f, 1.16f, 1.08f),      // sun-bleached pine
+                    "thatch" => new Color(1.35f, 1.28f, 1.12f),            // dry golden reed
+                    "concrete" => new Color(1.12f, 1.15f, 1.2f),           // pale cool architectural concrete
+                    _ => Color.white,
+                });
+            }
+            else
+            {
+                m.SetTexture("_BaseMap", null); m.SetTexture("_BumpMap", null); m.SetTexture("_MaskMap", null);
+                Kw("_NORMALMAP", false); m.SetFloat("_UseNormal", 0f);
+                Kw("_MASKMAP", false); m.SetFloat("_UseMask", 0f);
+                var (col, metal, smooth) = slot switch
+                {
+                    // reflective architectural glass: a tinted, partly metallic coat so the curtain walls carry the sky
+                    "glass" => (new Color(0.32f, 0.40f, 0.46f), 0.7f, 0.95f),
+                    "steel" => (new Color(0.11f, 0.115f, 0.12f), 0.55f, 0.55f),
+                    "alu" => (new Color(0.80f, 0.81f, 0.82f), 0.35f, 0.62f),
+                    "accent" => (new Color(0.25f, 0.95f, 0.6f), 0.0f, 0.7f),
+                    _ => (new Color(0.86f, 0.82f, 0.76f), 0.0f, 0.2f),     // inner: soffits and linings
+                };
+                m.SetColor("_BaseColor", col); m.SetFloat("_Metallic", metal); m.SetFloat("_Smoothness", smooth);
+            }
+            Kw("_GLASS", false); m.SetFloat("_Glass", 0f);
+            Kw("_VENUE_FADE", true);      // VenueShell's dither (only these materials carry the clip)
+            m.SetFloat("_OcclusionStrength", 1f);
+            m.SetFloat("_Reflection", slot == "glass" ? 1.5f : 1f);
+            m.SetFloat("_TintStrength", 0f);
+            m.SetVector("_GroundAO", new Vector4(2.6f, 0.4f, 0f, 0f));
+            m.SetFloat("_Cutoff", 0f); Kw("_ALPHATEST_ON", false);
+            m.SetFloat("_Cull", 2f);
+            m.enableInstancing = true;
+            EditorUtility.SetDirty(m);
+            ArchMats[slot] = m;
+            return m;
         }
 
         /// <summary>A landmark's feature: the observatory dome, the phone on the shop roof, Builder HQ bunting, the summit cairn.</summary>
@@ -371,11 +501,32 @@ namespace CTLife.EditorTools.IslandV2
                 mr.reflectionProbeUsage = UnityEngine.Rendering.ReflectionProbeUsage.Off;
                 return mr;
             }
-            var front = Part("front", d.Front, d.Facade, true);
-            var back = Part("back", d.Back, d.Facade, true);
-            var left = Part("left", d.Left, d.Facade, true);
-            var right = Part("right", d.Right, d.Facade, true);
-            var roof = Part("roof", d.Roof, d.RoofMat, true);
+            MeshRenderer ArchRenderer(string name)
+            {
+                if (d.Arch == null || !d.Arch.TryGetValue(name, out var ap) || ap.V.Count == 0) return null;
+                var mesh = new Mesh { name = $"{cellId}_{d.VenueId}_{name}_arch" };
+                mesh.SetVertices(ap.V); mesh.SetNormals(ap.N); mesh.SetUVs(0, ap.UV);
+                mesh.subMeshCount = ap.Sub.Count;
+                for (int i = 0; i < ap.Sub.Count; i++) mesh.SetTriangles(ap.Sub[i].tris, i, false);
+                mesh.RecalculateBounds();
+                mesh.RecalculateTangents();
+                meshes.Add(mesh);
+                var p = new GameObject(name) { layer = Layers.Building };
+                p.transform.SetParent(go.transform, false);
+                p.transform.SetPositionAndRotation(d.Origin, Quaternion.Euler(0f, d.Yaw, 0f));
+                p.AddComponent<MeshFilter>().sharedMesh = mesh;
+                var mr = p.AddComponent<MeshRenderer>();
+                mr.sharedMaterials = ap.Sub.Select(sm => ArchMaterial(sm.mat)).ToArray();
+                mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
+                mr.lightProbeUsage = UnityEngine.Rendering.LightProbeUsage.Off;
+                mr.reflectionProbeUsage = UnityEngine.Rendering.ReflectionProbeUsage.Off;
+                return mr;
+            }
+            var front = d.Arch != null ? ArchRenderer("front") : Part("front", d.Front, d.Facade, true);
+            var back = d.Arch != null ? ArchRenderer("back") : Part("back", d.Back, d.Facade, true);
+            var left = d.Arch != null ? ArchRenderer("left") : Part("left", d.Left, d.Facade, true);
+            var right = d.Arch != null ? ArchRenderer("right") : Part("right", d.Right, d.Facade, true);
+            var roof = d.Arch != null ? ArchRenderer("roof") : Part("roof", d.Roof, d.RoofMat, true);
             var sign = Part("sign", d.Sign, d.SignMat, false);
             var extra = Part("feature", d.Extra, d.ExtraMat, true);
             if (sign != null && front != null) sign.transform.SetParent(front.transform, true);

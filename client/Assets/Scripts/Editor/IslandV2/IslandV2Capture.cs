@@ -83,6 +83,15 @@ namespace CTLife.EditorTools.IslandV2
             new View("d2_helipad", new Vector3(-226f, 110f, 400f), new Vector3(-226f, 78f, 428f), 55f),
             new View("d2_perp_glass", new Vector3(-330f, 3f, -270f), new Vector3(-345f, 8f, -250f), 60f),
             new View("d2_islet", new Vector3(720f, 25f, -640f), new Vector3(800f, 2f, -650f), 55f),
+            // world fix-ups (2026-10-23): the venue architecture, the mountain, the islet path, the poles, the Trenches lot
+            new View("fx_cc", new Vector3(-268f, 3.5f, 277f), new Vector3(-262f, 24f, 316f), 60f, true),
+            new View("fx_pp", new Vector3(-384f, 3.0f, -249f), new Vector3(-359f, 1f, -275f), 60f, true),
+            new View("fx_lodge", new Vector3(-228f, 4.5f, 419f), new Vector3(-260f, 78f, 412f), 60f, true),
+            new View("fx_hut", new Vector3(104f, 3.0f, -226f), new Vector3(96f, 1f, -258f), 60f, true),
+            new View("fx_mtn_air", new Vector3(-60f, 170f, 330f), new Vector3(-182f, 100f, 513f), 55f),
+            new View("fx_mtn_slope", new Vector3(-120f, 6f, 420f), new Vector3(-182f, 120f, 513f), 60f, true),
+            new View("fx_islet_eye", new Vector3(802f, 1.8f, -598f), new Vector3(797f, 3f, -644f), 60f, true),
+            new View("fx_poles", new Vector3(262f, 1.8f, 47f), new Vector3(340f, 9f, 66f), 60f, true),
             // the first walk-in door (room space: +Z out to the street, the room at -Z)
             new View("room_door", new Vector3(0.6f, 1.6f, 7f), new Vector3(0f, 1.4f, 0f), 60f),
             new View("room_hall", new Vector3(0.2f, 1.6f, 0.8f), new Vector3(0.2f, 1.4f, -4f), 70f),

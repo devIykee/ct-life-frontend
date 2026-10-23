@@ -927,7 +927,8 @@ class Dress:
         yards and forecourts are paved, not grass lots); Residences keeps its gardens. Same 1 m mask format as v3_paving,
         one domain over their union."""
         polys = [np.array(L.DOWNTOWN_POLY, float)] + [np.array(self._district_poly(d), float) for d in ('trenches', 'dubai_marina')]
-        allp = np.concatenate(polys)
+        # world fix-ups: the domain also covers the islet for its footpath
+        allp = np.concatenate(polys + [np.array(self._district_poly('islet'), float)])
         x0, z0 = allp.min(0) - 8.0
         x1, z1 = allp.max(0) + 8.0
         W, H = int(math.ceil(x1 - x0)), int(math.ceil(z1 - z0))
@@ -950,7 +951,13 @@ class Dress:
         for P in [np.array(self._district_poly('trenches'), float)] + [np.array(q, float) for q in self.V3_SITE_EXTRA.get('trenches', [])]:
             yd.polygon([(x - x0, H - 1 - (z - z0)) for x, z in P], fill=255)
         yard = (np.asarray(yard_img) > 0).astype(np.float32)
-        rgb = np.stack([m, yard * (m > 0), np.zeros_like(m)], -1)
+        path_img = Image.new('L', (W, H), 0)
+        ImageDraw.Draw(path_img).line([(x - x0, H - 1 - (z - z0)) for x, z in self.islet_path()], fill=255, width=3, joint='curve')
+        path = np.clip((ndimage.gaussian_filter((np.asarray(path_img) > 0).astype(np.float32), 0.9) - 0.1) / 0.6, 0, 1)
+        # the mask is RG on the device: the path is r (amount) with g = 0.35 (yards are g = 1), g spread 3 m past the path
+        # so its filtered edge never reads as sidewalk stone
+        pg = ndimage.binary_dilation(path > 0.01, iterations=3).astype(np.float32) * 0.35
+        rgb = np.stack([np.maximum(m, path), np.maximum(yard * (m > 0), pg), np.zeros_like(m)], -1)
         Image.fromarray((rgb * 255 + 0.5).astype(np.uint8), 'RGB').save(self.V3_PAVING_PNG, optimize=True)
         self.paving = dict(min=[round(float(x0), 2), round(float(z0), 2)], size=[W, H], png='World/Island/Textures/paving_mask.png')
         log(f'v3 paving (downtown, trenches, marina): {int(paved.sum())} m2 ({W} x {H} m mask)')
@@ -1649,10 +1656,129 @@ class Dress:
         log(f'v3 trenches junction: {out}')
         return out
 
+    def v3_trenches_lot(self):
+        """World fix-ups: the first Trenches view still read open - the lots on its right (between Quay Street and the
+        water) held only small sheds and clutter, and a lone kiosk stood in the middle of the junction. The lots between
+        12 and 80 m on that side are cleared and take the big halls (the 15 m warehouse dz_industrial_04 and the long
+        dz_industrial_01 / 03 / 02 halls) squared to the street, fronts to it; the junction corridor is cleared of the
+        small kiosks and clutter, so the eye runs down an industrial street walled by real buildings."""
+        global RNG
+        K = self.kit.items
+        if 'dz_industrial_04' not in K:
+            return {}
+        RNG = np.random.default_rng(V3_SEED + 37)
+        sx, sz, vy = -332.5, -279.0, 101.0
+        a = math.radians(vy)
+        f = np.array([math.sin(a), math.cos(a)]); r = np.array([math.cos(a), -math.sin(a)])
+        rel = lambda x, z: (float((np.array([x, z]) - [sx, sz]) @ f), float((np.array([x, z]) - [sx, sz]) @ r))
+        # the lot side: the land between the street the view runs down and the water (one connected piece of non-road
+        # ground, seeded 40 m out and 18 m right), 10-100 m out
+        g0 = self.occ.arr()
+        H_, W_ = g0.shape
+        xs = Occupancy.X0 + np.arange(W_); zs = Occupancy.Z0 + (H_ - 1 - np.arange(H_))
+        X, Z = np.meshgrid(xs, zs)
+        A = (X - sx) * f[0] + (Z - sz) * f[1]; R = (X - sx) * r[0] + (Z - sz) * r[1]
+        box_ = (A >= 10) & (A <= 125) & (R >= -20) & (R <= 62)
+        lab, _ = ndimage.label(box_ & ~np.isin(g0, (Occupancy.ROAD, Occupancy.WATER, Occupancy.VENUE)))
+        seed = np.array([sx, sz]) + f * 40.0 + r * 18.0
+        sid = lab[int(round(H_ - 1 - (seed[1] - Occupancy.Z0))), int(round(seed[0] - Occupancy.X0))]
+        lotm = (lab == sid) if sid > 0 else np.zeros_like(box_)
+        corr = (A >= 4) & (A <= 38) & (np.abs(R) <= 7)
+
+        def at(m, x, z):
+            ox = int(np.clip(round(x - Occupancy.X0), 0, W_ - 1)); oy = int(np.clip(round(H_ - 1 - (z - Occupancy.Z0)), 0, H_ - 1))
+            return bool(m[oy, ox])
+        in_lot = lambda x, z: at(lotm, x, z)
+        in_corr = lambda x, z: at(corr, x, z)
+        out = dict(removed=0, halls=[])
+        # 1. clear the lot side and the corridor: small buildings, props and plants (street furniture by the kerb stays)
+        street = ('ph_street_lamp', 'tj_street_light', 'v3_traffic_light', 'v3_stop_sign', 'tj_hydrant', 'v3_bus_shelter')
+        keep_b, keep_i = [], []
+        for box, pid in zip(self.boxes, self.box_ids):
+            if (in_lot(box[0], box[2]) or in_corr(box[0], box[2])) and K.get(pid, {}).get('kind') != 'venue':
+                self.inst[pid] = [q for q in self.inst.get(pid, []) if not (abs(q[0] - box[0]) < 0.03 and abs(q[2] - box[2]) < 0.03)]
+                out['removed'] += 1
+                continue
+            keep_b.append(box); keep_i.append(pid)
+        self.boxes, self.box_ids = keep_b, keep_i
+        for proto in list(self.inst):
+            if proto.startswith(street):
+                continue
+            rows = self.inst[proto]
+            keep = [q for q in rows if not (in_lot(q[0], q[2]) or in_corr(q[0], q[2]))]
+            out['removed'] += len(rows) - len(keep)
+            self.inst[proto] = keep
+        g = self.occ.arr().copy()
+        region = lotm | corr
+        g[region & np.isin(g, (Occupancy.BUILDING, Occupancy.PROP, Occupancy.TREE))] = Occupancy.FREE
+        self.occ.img = Image.fromarray(g); self.occ.draw = ImageDraw.Draw(self.occ.img); self.occ.grid = None
+        # 2. the halls: fronts to the nearest street, squared to it, as close to the view as they fit
+        road = self.occ.arr() == Occupancy.ROAD
+        dist, (iy, ix) = ndimage.distance_transform_edt(~road, return_indices=True)
+
+        def near_road(x, z):
+            ox = int(np.clip(round(x - Occupancy.X0), 0, W_ - 1)); oy = int(np.clip(round(H_ - 1 - (z - Occupancy.Z0)), 0, H_ - 1))
+            return float(dist[oy, ox]), np.array([Occupancy.X0 + ix[oy, ox], Occupancy.Z0 + (H_ - 1 - iy[oy, ox])])
+        halls = ['dz_industrial_04', 'dz_industrial_01', 'dz_industrial_03', 'dz_industrial_02', 'dz_industrial_12', 'dz_industrial_02', 'dz_industrial_12']
+        cands = [(al, la) for al in np.arange(14.0, 112.0, 2.0) for la in np.arange(-10.0, 46.0, 2.0)]
+        cands.sort(key=lambda c: c[0] + c[1] * 0.8)
+        made = []
+        why = {}
+        for pid in halls:
+            if len(made) >= 4:
+                break
+            it = K[pid]
+            for al, la in cands:
+                q = np.array([sx, sz]) + f * al + r * la
+                d0, rp = near_road(*q)
+                if d0 < it['d'] / 2 + 2.5 or d0 > it['d'] / 2 + 9.0:
+                    continue
+                to = rp - q
+                yaw = math.degrees(math.atan2(to[0], to[1]))
+                # square to the street: the street's direction is perpendicular to 'to'; snap to the view grid's 90 degrees
+                # when within 20 degrees (the halls then line up with each other)
+                for snap in (vy, vy + 90, vy + 180, vy + 270):
+                    if abs((yaw - snap + 180) % 360 - 180) < 20:
+                        yaw = snap
+                        break
+                if self._v3_add_building(pid, q[0], q[1], yaw, 1.0, margin=1.0, slope=4.0, why=why,
+                                         allow=(Occupancy.FREE, Occupancy.TREE, Occupancy.PARK, Occupancy.FIELD)):
+                    made.append((self.boxes[-1], pid))
+                    out['halls'].append((pid, round(al), round(la), round(yaw)))
+                    break
+        # 3. yard edges: chain-link along each hall's street side, a dumpster and pallets at its corner
+        props = 0
+        for box, pid in made:
+            cx, cy, cz, w, h, d, yaw = box
+            ya = math.radians(yaw)
+            fwd = np.array([math.sin(ya), math.cos(ya)]); right = np.array([math.cos(ya), -math.sin(ya)])
+            # at the hall's ends (the street side is the forecourt)
+            for proto, off in (('tj_dumpster', (1.0, 0.25)), ('tj_pallet_a', (-1.0, 0.3)), ('v3_tyre_stack', (-1.0, -0.1)), ('tj_pallet_b', (1.0, -0.2))):
+                if proto not in K:
+                    continue
+                it = K[proto]
+                q = np.array([cx, cz]) + right * off[0] * (w / 2 + 1.6) + fwd * d * off[1]
+                if self.occ.rect_free(q[0], q[1], it['w'], it['d'], yaw, margin=0.2, allow=(Occupancy.FREE, Occupancy.TREE)):
+                    self.add(proto, q[0], float(self.g.y([q[0]], [q[1]])[0]) + 0.01, q[1], yaw + RNG.uniform(-8, 8), 1.0, 1.0)
+                    self.occ.rect(q[0], q[1], it['w'], it['d'], yaw, Occupancy.PROP, margin=0.1)
+                    props += 1
+        out['props'] = props
+        out['fails'] = why
+        if os.environ.get('CTL_DRESS_OCC_LOT'):
+            pal = np.array([[60, 90, 60], [110, 110, 115], [200, 60, 200], [40, 80, 160], [230, 140, 60], [90, 170, 90], [170, 160, 80],
+                            [240, 240, 240], [20, 110, 20]] + [[0, 0, 0]] * 247, np.uint8)
+            Image.fromarray(pal[self.occ.arr()]).save(os.environ['CTL_DRESS_OCC_LOT'])
+        out['plants_cut'] = self._v3_cut_inside(made)
+        log(f'v3 trenches lot: {out}')
+        return out
+
     # -------------------------------------------------------------- world districts 2 (2026-10-23)
     V3_DISTRICTS2 = ('builder_hills', 'airdrop_farm', 'boardwalk', 'breakpoint', 'mountain', 'islet')
     # the Namaqualand granites read orange on the grey mountain (Seeker/editor 2026-10-23): rock faces and the greyer mossy set
-    PR_GRANITE = ['pr_face_a', 'pr_face_b', 'pr_face_a', 'pr_moss_b_02', 'pr_moss_b_07', 'pr_moss_b_06']
+    # world fix-ups: the rock-face scans (pr_face_*) are open shells (a scanned cliff surface, no back): placed freely they
+    # read as dark floating shards from most sides; only the closed boulders are used now (open bottoms sunk)
+    PR_GRANITE = ['pr_moss_b_02', 'pr_moss_b_07', 'pr_moss_b_06', 'pr_moss_a_04', 'pr_moss_a_02']
+    GRANITE_TINT = (0.80, 0.82, 0.88, 1.0)      # the Namaqualand granite's orange towards the mountain's grey
     PR_MOSS = ['pr_moss_a_01', 'pr_moss_a_02', 'pr_moss_a_03', 'pr_moss_a_04', 'pr_moss_a_05', 'pr_moss_a_06', 'pr_moss_b_01', 'pr_moss_b_02',
                'pr_moss_b_04', 'pr_moss_b_06', 'pr_moss_b_07']
     FARM_SHEDS = ['dz_industrial_29', 'dz_industrial_29', 'dz_industrial_12', 'dz_industrial_11', 'dz_industrial_13', 'dz_industrial_02']
@@ -1709,8 +1835,21 @@ class Dress:
         stats['plants_cut'] = self._v3_cut_inside(new)
         stats['street'] = self.v3_district_street(DS)
         stats['rocks'] = self.v3_rocks()
+        stats['mountain_rocks'] = self.v3_mountain_rocks()
         stats['crops'] = self.v3_crops()
         stats['trees'] = self.v3_last_toy_trees()
+        # world fix-ups: the last toy road lamps and stop sign (outside the districts: the country avenues) to the v3 kit,
+        # as v3_district_street does inside them
+        K = self.kit.items
+        swapped = 0
+        for old, new, sc, dyaw in (('kr_light_curved', 'ph_street_lamp_01', 1.45, 0.0), ('kr_road_sign_stop', 'v3_stop_sign', 1.0, -180.0)):
+            if new not in K:
+                continue
+            for r in self.inst.get(old, []):
+                self.add(new, r[0], r[1], r[2], (r[3] + dyaw) % 360.0, sc, sc)
+                swapped += 1
+            self.inst[old] = []
+        stats['toy_street_swapped'] = swapped
         stats['islet'] = self.v3_islet()
         stats['basecamp'] = self.v3_basecamp()
         # the toy power runs (orange poles, sagging wires) leave the whole island
@@ -1719,6 +1858,7 @@ class Dress:
         for proto in [k for k in self.inst if k.startswith('kr_electricity')]:
             stats['power_poles_removed'] = stats.get('power_poles_removed', 0) + len(self.inst[proto])
             self.inst[proto] = []
+        stats['power_lines'] = self.v3_power_lines()
         # the device route's eye spots stand clear: no tree, rock or shrub within 9 m (the camera sits ~5 m behind the player)
         clear = 0
         for proto in list(self.inst):
@@ -1790,8 +1930,211 @@ class Dress:
                 n += 1
             self.inst[proto] = []
         for pid, x, y, z, yaw, s, sy in rows_out:
-            self.add(pid, x, y, z, yaw, s, sy)
+            self.add(pid, x, y, z, yaw, s, sy, self.GRANITE_TINT if pid.startswith('pr_granite') else None)
         return n
+
+    # world fix-ups (2026-10-23): the mountain's rocks follow its form
+    MTN_FACES = ['pr_moss_a_02', 'pr_moss_a_04', 'pr_moss_a_05', 'pr_moss_a_03']
+    MTN_SCREE = ['pr_moss_b_01', 'pr_moss_b_03', 'pr_moss_b_04', 'pr_moss_b_05', 'pr_moss_b_06']
+
+    def v3_mountain_rocks(self):
+        """The mountain's rocks were the toy rocks' random spots, scanned: dark blobs dotted over the slopes. They go, and the
+        scans are placed by the ground's form instead: rock-face scans in outcrops along the cliff bands (steep ground,
+        broad side to the valley), crowning the ridgelines (convex crests high up), and scree boulders in clusters at the
+        cliff feet (moderate slopes just below steep ground). Roads, the lodge, the cairn and the route's spots stay clear."""
+        K = self.kit.items
+        faces = [k for k in self.MTN_FACES if k in K]
+        scree = [k for k in self.MTN_SCREE if k in K]
+        if not faces or not scree:
+            return {}
+        rng = np.random.default_rng(V3_SEED + 29)
+        g = self.g
+        in_mtn = lambda x, z, y: self.district_at(x, z) == 'mountain' or y > 60.0
+        # 1. the random scans on the mountain go
+        removed = 0
+        for proto in [k for k in self.inst if k.startswith('pr_')]:
+            rows = self.inst[proto]
+            keep = [r for r in rows if not in_mtn(r[0], r[2], r[1])]
+            removed += len(rows) - len(keep)
+            self.inst[proto] = keep
+        # 2. the ground's form on the 2 m grid
+        h = g.h
+        ny = 1.0 / np.sqrt(1.0 + g.slope ** 2)
+        lap = ndimage.laplace(ndimage.gaussian_filter(h, 2.0))
+        cliff = ny < 0.62
+        near_cliff = ndimage.binary_dilation(cliff, iterations=4) & ~cliff
+        # cliff feet: below steep ground (lower than the cliff cells next to them), moderate slope
+        hmax_near = ndimage.maximum_filter(np.where(cliff, h, -1e9), size=9)
+        foot = near_cliff & (hmax_near > h + 3.0) & (ny > 0.62) & (ny < 0.93)
+        ridge = (lap < -0.35) & (ny > 0.45) & (ny < 0.9) & (h > 70.0)
+        n = g.n
+        xs = g.min[0] + np.arange(n) * g.cell
+        zs = g.min[1] + np.arange(n) * g.cell
+        cairn = np.array([-182.0, 513.0])
+        lodge = np.array([-259.6, 412.2])
+
+        def ok(x, z, y, r):
+            if y < 30.0 or not in_mtn(x, z, y):
+                return False
+            if np.hypot(*(np.array([x, z]) - cairn)) < 14.0 or np.hypot(*(np.array([x, z]) - lodge)) < 34.0:
+                return False
+            if any(math.hypot(x - sx, z - sz) < 12.0 for sx, sz in self.ROUTE_SPOTS):
+                return False
+            return self.occ.rect_free(x, z, r * 2, r * 2, 0.0, margin=1.5, allow=(Occupancy.FREE, Occupancy.TREE))
+
+        def cells(mask, spacing):
+            """Jittered picks from a mask, at most one per spacing x spacing block."""
+            iz, ix = np.nonzero(mask)
+            if len(ix) == 0:
+                return []
+            order = rng.permutation(len(ix))
+            taken = set()
+            out = []
+            for i in order:
+                x = xs[ix[i]] + rng.uniform(-0.9, 0.9); z = zs[iz[i]] + rng.uniform(-0.9, 0.9)
+                key = (int(x // spacing), int(z // spacing))
+                if key in taken:
+                    continue
+                taken.add(key)
+                out.append((x, z, iz[i], ix[i]))
+            return out
+
+        def downhill_yaw(iz, ix):
+            gz_ = h[min(iz + 1, n - 1), ix] - h[max(iz - 1, 0), ix]
+            gx_ = h[iz, min(ix + 1, n - 1)] - h[iz, max(ix - 1, 0)]
+            return math.degrees(math.atan2(-gx_, -gz_))
+
+        rows = []
+        stats = dict(removed=removed, cliff=0, ridge=0, scree=0)
+        # cliff bands: outcrops of two or three faces stepping along the contour, broad side to the valley
+        for x, z, iz, ix in cells(cliff, 22.0):
+            y = float(g.y([x], [z])[0])
+            pid = faces[int(rng.integers(len(faces)))]
+            it = K[pid]
+            s = rng.uniform(1.6, 3.2)
+            if not ok(x, z, y, max(it['w'], it['d']) * s * 0.5):
+                continue
+            yaw = downhill_yaw(iz, ix)
+            along = np.array([math.cos(math.radians(yaw)), -math.sin(math.radians(yaw))])
+            for k in range(int(rng.integers(1, 4))):
+                q = np.array([x, z]) + along * (k - 1) * it['w'] * s * 0.7 + rng.uniform(-1.0, 1.0, 2)
+                yq = float(g.y([q[0]], [q[1]])[0])
+                sk = s * rng.uniform(0.7, 1.05)
+                rows.append((pid if k == 0 else faces[int(rng.integers(len(faces)))], q[0], yq - 0.45 * it['h'] * sk, q[1],
+                             yaw + rng.uniform(-20, 20), sk, sk * rng.uniform(0.8, 1.05)))
+                stats['cliff'] += 1
+        # ridgelines: single crowns, a little smaller
+        for x, z, iz, ix in cells(ridge, 28.0):
+            y = float(g.y([x], [z])[0])
+            pid = faces[int(rng.integers(len(faces)))]
+            it = K[pid]
+            s = rng.uniform(1.1, 2.0)
+            if not ok(x, z, y, max(it['w'], it['d']) * s * 0.5):
+                continue
+            rows.append((pid, x, y - 0.45 * it['h'] * s, z, rng.uniform(0, 360), s, s * rng.uniform(0.7, 0.95)))
+            stats['ridge'] += 1
+        # scree: clusters of boulders at the cliff feet
+        for x, z, iz, ix in cells(foot, 19.0):
+            y = float(g.y([x], [z])[0])
+            if not ok(x, z, y, 3.0):
+                continue
+            for k in range(int(rng.integers(2, 5))):
+                q = np.array([x, z]) + rng.normal(0, 2.2, 2)
+                pid = scree[int(rng.integers(len(scree)))]
+                it = K[pid]
+                sk = rng.uniform(0.55, 1.35)
+                yq = float(g.y([q[0]], [q[1]])[0])
+                rows.append((pid, q[0], yq - 0.3 * it['h'] * sk, q[1], rng.uniform(0, 360), sk, sk * rng.uniform(0.75, 1.0)))
+                stats['scree'] += 1
+        # on the steep faces a centre-sunk boulder floats on its downhill side: its base goes below the lowest ground
+        # under it (8 samples round its footprint), so it reads bedded into the slope
+        for pid, x, y, z, yaw, sc, sy in rows:
+            it = K[pid]
+            r = 0.42 * max(it['w'], it['d']) * sc
+            a = np.linspace(0, 2 * math.pi, 8, endpoint=False)
+            gmin = float(g.y(x + r * np.cos(a), z + r * np.sin(a)).min())
+            y = min(y, gmin - 0.12 * it['h'] * sy)
+            self.add(pid, x, y, z, yaw, sc, sy, self.GRANITE_TINT if pid.startswith('pr_granite') else None)
+        return stats
+
+    # world fix-ups (2026-10-23): the Poly Haven electricity poles (modular_electricity_poles, CC0) on the country roads
+    POLE_FULL = ['ph_power_pole_01', 'ph_power_pole_02', 'ph_power_pole_01', 'ph_power_pole_03']
+    POLE_ROUTES = ('farm_road', 'farm_lane', 'farm_track', 'hills_drive', 'foothill_road')
+    POLE_SCALE = 1.35          # the scans are 6.1 m; rural distribution poles stand ~8-9 m
+
+    def v3_power_lines(self):
+        """Overhead lines along Airdrop Farm's roads and the Builder Hills / foothill roads outside the built frontage: a
+        pole every 36-44 m on one verge (3.5 m off the carriageway), crossarm square to the road, three wires strung by
+        the builder (dress.json power: runs of [x, y, z, yaw, scale]). Runs break at junctions, drives and buildings."""
+        K = self.kit.items
+        poles = [k for k in self.POLE_FULL if k in K]
+        if not poles:
+            return {}
+        rng = np.random.default_rng(V3_SEED + 31)
+        n = runs = 0
+        sc = self.POLE_SCALE
+        for s_ in self.roads['segments']:
+            if s_['route'] not in self.POLE_ROUTES or s_['kind'] in ('bridge', 'tunnel'):
+                continue
+            p, y, tan, rn = self.frame(s_['samples'])
+            if len(p) < 4:
+                continue
+            sl = G.arc_lengths(p)
+            side = 1.0 if (int(s_['id'][1:]) % 2) == 0 else -1.0
+            edge = (s_['widthRight'] if side > 0 else s_.get('widthLeft', s_['widthRight'])) + s_['sidewalk'] + s_.get('shoulder', 0.0) + 3.0
+            run = []
+            pos = 8.0
+            while pos < sl[-1] - 8:
+                k = min(max(int(np.searchsorted(sl, pos)), 1), len(p) - 1)
+                q = p[k] + rn[k] * side * edge
+                face = math.degrees(math.atan2(tan[k][0], tan[k][1]))
+                d_ = self.district_at(q[0], q[1])
+                built = self.occ.codes([q[0]], [q[1]])[0] in (Occupancy.BUILDING, Occupancy.VENUE, Occupancy.ROAD, Occupancy.WATER)
+                ok = (not built and d_ in ('airdrop_farm', 'builder_hills', 'mountain', None, 'countryside', 'breakpoint')
+                      and self.occ.rect_free(q[0], q[1], 1.6, 1.6, face, margin=0.4,
+                                             allow=(Occupancy.FREE, Occupancy.FIELD, Occupancy.PARK, Occupancy.TREE, Occupancy.PROP)))
+                if ok and run:
+                    # a span must not cross buildings or water
+                    a = np.array(run[-1][0:3:2])
+                    ts = np.linspace(0, 1, 12)[1:-1]
+                    cs = self.occ.codes(a[0] + (q[0] - a[0]) * ts, a[1] + (q[1] - a[1]) * ts)
+                    if np.isin(cs, (Occupancy.BUILDING, Occupancy.VENUE)).any():
+                        ok = False
+                if ok:
+                    yq = float(self.g.y([q[0]], [q[1]])[0]) - 0.1
+                    pid = poles[int(rng.integers(len(poles)))]
+                    self.add(pid, q[0], yq, q[1], face, sc, sc)
+                    self.occ.disc(q[0], q[1], 1.2, Occupancy.PROP)
+                    run.append([round(float(q[0]), 2), round(yq, 2), round(float(q[1]), 2), round(face, 1), sc])
+                    n += 1
+                    pos += rng.uniform(36, 44)
+                else:
+                    if len(run) >= 2:
+                        self.power.append(run); runs += 1
+                    run = []
+                    pos += 6.0
+            if len(run) >= 2:
+                self.power.append(run); runs += 1
+            elif len(run) == 1:
+                pass   # a lone pole still reads as a pole
+        # no tree under the wires: trees within 3 m of a span go
+        cut = 0
+        spans = [(np.array(r[i][0:3:2]), np.array(r[i + 1][0:3:2])) for r in self.power for i in range(len(r) - 1)]
+        if spans:
+            A = np.array([a for a, b in spans]); B = np.array([b for a, b in spans])
+            for proto in [k for k in self.inst if k.startswith(self.TREE_PREFIXES)]:
+                rows = self.inst[proto]
+                keep = []
+                for r in rows:
+                    pt = np.array([r[0], r[2]])
+                    ab = B - A
+                    t = np.clip(((pt - A) * ab).sum(1) / np.maximum((ab * ab).sum(1), 1e-6), 0, 1)
+                    if np.min(np.hypot(*(A + ab * t[:, None] - pt).T)) < 3.0:
+                        cut += 1
+                        continue
+                    keep.append(r)
+                self.inst[proto] = keep
+        return dict(poles=n, runs=runs, trees_cut=cut)
 
     def v3_crops(self):
         """The toy crop sprites become rows of the semi-real cards: tall grass tinted ripe for wheat, taller and greener for
@@ -1855,21 +2198,65 @@ class Dress:
             self.add(pid, x, y, z, yaw, sc, 1.0, self.foliage_tint(pid, x, z))
         return counts
 
+    def islet_path(self):
+        """World fix-ups: a gravel footpath from the causeway's end into the grove and round the islet's crown (a loop at
+        about 22 m from its centre), in the paving mask (r amount, g = 0.35) so the terrain draws it."""
+        c = np.array(self.plan['islet']['center'], float)
+        start = np.array(self.plan['causeway']['path'][-1], float)
+        r = min(22.0, float(self.plan['islet']['radius']) * 0.5)
+        # enter from the causeway, join the loop at its nearest point, go round
+        a0 = math.atan2(start[1] - c[1], start[0] - c[0])
+        entry = c + r * np.array([math.cos(a0), math.sin(a0)])
+        pts = [tuple(start), tuple((start + entry) / 2), tuple(entry)]
+        for k in range(1, 37):
+            a = a0 + k * 2 * math.pi / 36 + 0.12 * math.sin(k * 0.9)
+            rr = r * (1.0 + 0.12 * math.sin(k * 0.7 + 1.3))
+            pts.append(tuple(c + rr * np.array([math.cos(a), math.sin(a)])))
+        return [(float(x), float(z)) for x, z in pts]
+
     def v3_islet(self):
-        """Palm Islet: a grove of the scanned coastal trees, granite on its shore, a bench and a lamp by the causeway."""
+        """Palm Islet: a grove of the scanned coastal trees, granite on its shore, a bench and a lamp by the causeway.
+        World fix-ups: a gravel footpath loops through the grove (islet_path), trees and rocks stand off it, benches by it."""
         K = self.kit.items
         poly = np.array(self._district_poly('islet'), float)
         coast = [k for k in ('pt_island_a', 'pt_island_b') if k in K]
+        path = self.islet_path()
+        P = np.array(path)
+
+        def path_d(x, z):
+            a, b = P[:-1], P[1:]
+            ab = b - a
+            t = np.clip(((np.array([x, z]) - a) * ab).sum(1) / np.maximum((ab * ab).sum(1), 1e-6), 0, 1)
+            return float(np.min(np.hypot(*(a + ab * t[:, None] - np.array([x, z])).T)))
+        # whatever stood on the path's line goes (earlier vegetation), and nothing new stands on it
+        for proto in list(self.inst):
+            if proto.startswith(self.TREE_PREFIXES + ('pr_', 'pv_bush', 'pv_hedge', 'bush', 'kf_')):
+                self.inst[proto] = [r for r in self.inst[proto] if not (G.point_in_poly(r[0], r[2], poly) and path_d(r[0], r[2]) < 3.2)]
+        self.occ.line(path, 3.0, Occupancy.PROP)
         n = 0
+        # two benches and a picnic table beside the loop, facing out to sea
+        c = np.array(self.plan['islet']['center'], float)
+        for k, proto in enumerate(('ph_wooden_bench', 'ph_picnic_table', 'ph_wooden_bench')):
+            if proto not in K:
+                continue
+            q = np.array(path[3 + 7 + k * 11])
+            out = (q - c) / max(np.linalg.norm(q - c), 1e-3)
+            q = q + out * 2.6
+            yaw = math.degrees(math.atan2(out[0], out[1]))
+            it = K[proto]
+            if self.occ.rect_free(q[0], q[1], it['w'], it['d'], yaw, margin=0.3, allow=(Occupancy.FREE, Occupancy.TREE)):
+                self.add(proto, q[0], float(self.g.y([q[0]], [q[1]])[0]) + 0.01, q[1], yaw, 1.0, 1.0)
+                self.occ.rect(q[0], q[1], it['w'], it['d'], yaw, Occupancy.PROP, margin=0.3)
         for _ in range(400):
             q = poly.min(0) + RNG.random(2) * (poly.max(0) - poly.min(0))
             y = float(self.g.y([q[0]], [q[1]])[0])
-            if y < L.SEA + 0.6 or self.occ.codes([q[0]], [q[1]])[0] != Occupancy.FREE:
+            if y < L.SEA + 0.6 or self.occ.codes([q[0]], [q[1]])[0] != Occupancy.FREE or path_d(*q) < 3.5:
                 continue
             if y < L.SEA + 1.6 and RNG.random() < 0.5:
-                pid = self.PR_GRANITE[int(RNG.integers(3))]
-                s = RNG.uniform(0.9, 2.2)
-                self.add(pid, q[0], y - 0.25 * s, q[1], RNG.uniform(0, 360), s, s * 0.8)
+                pid = self.PR_GRANITE[int(RNG.integers(len(self.PR_GRANITE)))]
+                s = RNG.uniform(0.9, 2.0)
+                self.add(pid, q[0], y - 0.35 * K[pid]['h'] * s, q[1], RNG.uniform(0, 360), s, s * 0.8,
+                         self.GRANITE_TINT if pid.startswith('pr_granite') else None)
             elif coast and RNG.random() < 0.35:
                 pid = coast[int(RNG.integers(len(coast)))]
                 self.add(pid, q[0], y + 0.02, q[1], RNG.uniform(0, 360), RNG.uniform(0.85, 1.2), 1.0, self.foliage_tint(pid, q[0], q[1]))
@@ -2116,7 +2503,9 @@ class Dress:
 
     ROUTE_SPOTS = [(-332.5, -279.0), (-493.6, 50.7), (690.0, -335.0),
                    # world districts 2 route (InteriorRoute.Spots2)
-                   (422.7, 302.2), (560.0, 92.0), (-60.0, -230.0), (-276.0, 278.0), (-222.0, 420.0), (802.0, -594.0)]
+                   (422.7, 302.2), (560.0, 92.0), (-60.0, -230.0), (-276.0, 278.0), (-222.0, 420.0), (802.0, -594.0),
+                   # world fix-ups route (InteriorRoute.SpotsFx)
+                   (-374.6, -248.8), (102.0, -228.0), (-200.0, 300.0), (300.0, 52.0)]
 
     def v3_ground_cover(self):
         """Island-wide: the toy grass clumps, clover, cartoon flowers, ferns and blob bushes become the semi-real cards and
@@ -3159,6 +3548,7 @@ def main():
     d.v3_districts()
     d.v3_trenches_dense()
     d.stats['v3_trenches_junction'] = d.v3_trenches_junction()
+    d.stats['v3_trenches_lot'] = d.v3_trenches_lot()
     d.v3_districts2()
     d.v3_paving_all()
     d.v3_ground_cover()

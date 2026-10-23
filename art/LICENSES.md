@@ -611,3 +611,22 @@ Pipelines: art/pipeline/world_v3_trees.py (forest trees), art/pipeline/world_v3_
 | Poly Haven texture "Corrugated Iron 02" (1k) | https://polyhaven.com/a/corrugated_iron_02 | CC0 1.0 (https://polyhaven.com/license) | Jenelle van Heerden, Sergej Majboroda | 2026-10-23 | industrial venue shells |
 | Poly Haven texture "Dirt" (1k) | https://polyhaven.com/a/dirt | CC0 1.0 (https://polyhaven.com/license) | Charlotte Baglioni | 2026-10-23 | farm tracks and service lanes (dirt road material) |
 <!-- END world-districts2-20261023 -->
+
+<!-- BEGIN world-fixups-20261023 -->
+## World fix-ups (2026-10-23)
+
+Downloaded through art/pipeline/ph_fetch.py (https allowlist). Pipelines: art/pipeline/world_v3_ground.py (terrain), art/pipeline/world_venue_textures.py + world_venue_shells.py (venue architecture, built from modular pieces in Blender).
+
+| Asset | Source | Licence | Author(s) | Retrieved | Use |
+| --- | --- | --- | --- | --- | --- |
+| Poly Haven texture "Rock Face 03" (1k) | https://polyhaven.com/a/rock_face_03 | CC0 1.0 (https://polyhaven.com/license) | Dario Barresi, Rico Cilliers | 2026-10-23 | terrain cliffs and steep rock, tri-planar (ground array slice 5) |
+| Poly Haven texture "Rocks Ground 02" (1k) | https://polyhaven.com/a/rocks_ground_02 | CC0 1.0 (https://polyhaven.com/license) | Rob Tuytel | 2026-10-23 | terrain scree on the mountain, the islet footpath gravel (slice 6) |
+| Poly Haven texture "Brushed Concrete" (1k) | https://polyhaven.com/a/brushed_concrete | CC0 1.0 (https://polyhaven.com/license) | Dario Barresi, Dimitrios Savva | 2026-10-23 | venue architecture: the convention centre panels, the Perp Pit plinth (venue_concrete) |
+| Poly Haven texture "Planks Brown 10" (1k) | https://polyhaven.com/a/planks_brown_10 | CC0 1.0 (https://polyhaven.com/license) | Rob Tuytel | 2026-10-23 | venue architecture: the Basecamp Lodge board cladding (venue_timber_dark) |
+| Poly Haven texture "Raw Plank Wall" (1k) | https://polyhaven.com/a/raw_plank_wall | CC0 1.0 (https://polyhaven.com/license) | Dimitrios Savva | 2026-10-23 | venue architecture: the boardwalk beach hut pine boards (venue_timber_light) |
+| Poly Haven texture "Wood Planks Dirt" (1k) | https://polyhaven.com/a/wood_planks_dirt | CC0 1.0 (https://polyhaven.com/license) | Rob Tuytel | 2026-10-23 | venue architecture: posts, beams, the hut deck (venue_wood_post) |
+| Poly Haven texture "Roof Slates 02" (1k) | https://polyhaven.com/a/roof_slates_02 | CC0 1.0 (https://polyhaven.com/license) | Rob Tuytel | 2026-10-23 | venue architecture: the lodge slate roof (venue_slate) |
+| Poly Haven texture "Reed Roof 04" (1k) | https://polyhaven.com/a/reed_roof_04 | CC0 1.0 (https://polyhaven.com/license) | Rob Tuytel | 2026-10-23 | venue architecture: the beach hut reed thatch (venue_thatch) |
+| Poly Haven texture "Rustic Stone Wall" (1k) | https://polyhaven.com/a/rustic_stone_wall | CC0 1.0 (https://polyhaven.com/license) | Dimitrios Savva | 2026-10-23 | venue architecture: the lodge plinth and chimney (venue_stone) |
+| Poly Haven model "Modular Electricity Poles" (placed) | https://polyhaven.com/a/modular_electricity_poles | CC0 1.0 (https://polyhaven.com/license) | James Ray Cock | 2026-10-23 | ph_power_pole_01..03 now placed along the Airdrop Farm, Builder Hills and foothill roads, wires strung by IslandV2Builder |
+<!-- END world-fixups-20261023 -->

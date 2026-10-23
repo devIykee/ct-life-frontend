@@ -13,6 +13,11 @@ Shader "CT Life/World/Terrain"
     // variation, also on the far LOD), soil for the dirt layer, and The Trenches' yards (_PaveMask green): worn concrete
     // slabs with joints, rectangular asphalt patch repairs, oil stains and puddles that mirror the sky. Fully paved pixels
     // skip the ground layers.
+    // World fix-ups (2026-10-23): the mountain read as striped bare terrain. The stripes were this shader's sine strata
+    // (cool-grey / warm-ochre beds every ~7.5 m of height, also baked into the far macro). Rock is now real: Poly Haven
+    // rock_face_03 tri-planar on the faces (7 m, with a 23 m macro scale; no stretching down steep slopes), rocks_ground_02
+    // scree on the mid slopes and at the cliff feet, and the weights follow the slope: gentle ground below the rock line
+    // turns back to grass / forest floor, mid slopes to scree, only steep faces stay cliff.
     Properties
     {
         _Control("Control (r grass, g rock, b sand, a dirt)", 2D) = "red" {}
@@ -44,6 +49,8 @@ Shader "CT Life/World/Terrain"
         _SoilTint("Soil tint", Color) = (1, 1, 1, 1)
         _YardTint("Trenches yard tint (rgb), stains (a)", Color) = (1, 1, 1, 0.6)
         _Yard("Yard: slab m, patch cell m, patch share, puddle share", Vector) = (3.0, 7.0, 0.33, 0.12)
+        _RockScan("Rock scans: cliff tile m, cliff macro tile m, saturation, scree tile m", Vector) = (7, 23, 0.55, 4)
+        _RockSlope("Rock by slope: meadow n.y, cliff n.y, scree from y, meadow below y", Vector) = (0.80, 0.55, 34, 135)
     }
     SubShader
     {
@@ -59,7 +66,7 @@ Shader "CT Life/World/Terrain"
         TEXTURE2D_ARRAY(_GroundArr); SAMPLER(sampler_GroundArr);
         TEXTURE2D_ARRAY(_GroundNrm);
         CBUFFER_START(UnityPerMaterial)
-            float4 _Domain, _DetailScale, _Snow, _Shore, _PaveDomain, _PaveTile, _GrassScale, _Yard;
+            float4 _Domain, _DetailScale, _Snow, _Shore, _PaveDomain, _PaveTile, _GrassScale, _Yard, _RockScan, _RockSlope;
             half4 _RockColor, _RockColorHigh, _SandColor, _DirtColor, _SnowColor, _WetSand, _PaveTint, _GrassTint, _SoilTint, _YardTint;
             half _Contrast, _Sharpness, _Toon;
         CBUFFER_END
@@ -109,6 +116,21 @@ Shader "CT Life/World/Terrain"
                 w = pow(max(w * (det + 0.25h), 1e-4h), _Sharpness);
             #endif
             w /= max(dot(w, half4(1, 1, 1, 1)), 1e-4h);
+            // slope-aware rock: below the rock line, gentle ground the control map painted rock goes back to grass (alpine
+            // meadow / forest floor); mid slopes of rock become scree (dirt layer, scree scan on the mountain)
+            half mtn = smoothstep((half)_RockSlope.z, (half)_RockSlope.z + 16.0h, (half)positionWS.y);
+            half gentle = smoothstep((half)_RockSlope.y + 0.1h, (half)_RockSlope.x, normalWS.y);
+            half low = 1.0h - smoothstep((half)_RockSlope.w - 12.0h, (half)_RockSlope.w + 12.0h, (half)positionWS.y);
+            half toGrass = w.g * gentle * low;
+            half toScree = w.g * (1.0h - gentle) * smoothstep((half)_RockSlope.y - 0.06h, (half)_RockSlope.y + 0.1h, normalWS.y) * mtn * 0.8h;
+            w.g -= toGrass + toScree; w.r += toGrass; w.a += toScree;
+            #if !defined(_FAR)
+                // alpine ledges: patches of grass and scree on the rock's less steep steps (low-frequency detail as the patch
+                // mask), thinning out towards the summit, so the faces are broken up instead of one bare cone
+                half patch = smoothstep(0.42h, 0.62h, d2.r * 0.6h + d2.a * 0.4h);
+                half ledge = w.g * smoothstep(0.45h, 0.62h, normalWS.y) * patch * (1.0h - smoothstep(125.0h, 150.0h, (half)positionWS.y));
+                w.g -= ledge; w.r += ledge * 0.65h; w.a += ledge * 0.35h;
+            #endif
             half k = _Contrast;
             // grass: islandgen's painted macro keeps only its hue drift (normalised); the colour comes from the scans
             half macroLum = max(dot(macro.rgb, half3(0.3h, 0.55h, 0.15h)), 0.05h);
@@ -117,6 +139,7 @@ Shader "CT Life/World/Terrain"
                 half3 pf = aer.rgb * 16.6h;                         // the aerial scan over its mean luminance (linear)
                 half3 grass = half3(0.099h, 0.125h, 0.028h) * lerp(half3(1, 1, 1), lerp(dot(pf, half3(0.2126h, 0.7152h, 0.0722h)).xxx, pf, 0.2h), 0.7h)
                             * hue * _GrassTint.rgb;
+                grass *= lerp(half3(1, 1, 1), half3(1.1h, 1.02h, 0.76h), smoothstep(55.0h, 125.0h, (half)positionWS.y) * 0.8h);
             #else
                 half4 a1 = SAMPLE_TEXTURE2D_ARRAY(_GroundArr, sampler_GroundArr, wp / _GrassScale.z, 1);
                 half4 g1 = SAMPLE_TEXTURE2D_ARRAY(_GroundArr, sampler_GroundArr, wp / _GrassScale.x, 0);
@@ -127,6 +150,7 @@ Shader "CT Life/World/Terrain"
                 half3 pa = lerp(a1.rgb, aer.rgb, 0.4h) * 16.6h;     // over the scan's mean luminance (linear)
                 half3 patchy = lerp(dot(pa, half3(0.2126h, 0.7152h, 0.0722h)).xxx, pa, 0.2h);
                 half3 grass = lawn * lerp(half3(1, 1, 1), patchy, 0.7h) * hue * _GrassTint.rgb;
+                grass *= lerp(half3(1, 1, 1), half3(1.1h, 1.02h, 0.76h), smoothstep(55.0h, 125.0h, (half)positionWS.y) * 0.8h);   // drier alpine grass
                 if (w.r > 0.02h)
                 {
                     half3 gn = UnpackNormal(SAMPLE_TEXTURE2D_ARRAY(_GroundNrm, sampler_GroundArr, wp / _GrassScale.x, 0));
@@ -134,29 +158,52 @@ Shader "CT Life/World/Terrain"
                 }
             #endif
             half rockHigh = saturate((positionWS.y - 40.0) / 110.0);
-            half rockDet = det.g;
-            #if !defined(_FAR)
-                // cliffs: tri-planar rock detail (no smearing down steep faces) and soft strata bands
-                half3 bw = pow(abs(normalWS), 4.0h); bw /= max(dot(bw, half3(1, 1, 1)), 1e-3h);
-                half rx = SAMPLE_TEXTURE2D(_Detail, sampler_Detail, positionWS.zy * _DetailScale.x * 0.8).g;
-                half rz = SAMPLE_TEXTURE2D(_Detail, sampler_Detail, positionWS.xy * _DetailScale.x * 0.8).g;
-                rockDet = rx * bw.x + d1.g * bw.y + rz * bw.z;
-                half strata = sin(positionWS.y * 0.55h + (rx + rz) * 5.0h + d2.g * 6.0h) * 0.5h + 0.5h;
-                rockDet = lerp(rockDet, rockDet * (0.9h + 0.2h * strata), saturate(1.0h - normalWS.y * 1.4h));
+            half3 rockTint = lerp(_RockColor.rgb, _RockColorHigh.rgb, rockHigh);
+            #if defined(_FAR)
+                // the scans' mean (rock_face_03 at the near shader's saturation) - no baked strata
+                half3 rock = half3(0.152h, 0.124h, 0.100h) * rockTint * lerp(0.75h, 1.0h, ao);
+                half3 scree = half3(0.1165h, 0.0891h, 0.0557h);
+            #else
+                half3 rock = 0;
+                half3 scree = 0;
+                if (w.g > 0.01h)
+                {
+                    // tri-planar cliff scan (x, y, z projections by the normal) at 7 m, its luminance modulated by the same scan
+                    // at 23 m so the faces do not repeat; the normal comes from the dominant projection only
+                    half3 bw = pow(abs(normalWS), 4.0h); bw /= max(dot(bw, half3(1, 1, 1)), 1e-3h);
+                    float3 q = positionWS / _RockScan.x;
+                    const float2x2 rotC = float2x2(0.866, -0.5, 0.5, 0.866);
+                    half4 cx = SAMPLE_TEXTURE2D_ARRAY(_GroundArr, sampler_GroundArr, q.zy, 5);
+                    half4 cy = SAMPLE_TEXTURE2D_ARRAY(_GroundArr, sampler_GroundArr, mul(rotC, q.xz) + 0.37, 5);
+                    half4 cz = SAMPLE_TEXTURE2D_ARRAY(_GroundArr, sampler_GroundArr, q.xy + 0.61, 5);
+                    half3 rc = cx.rgb * bw.x + cy.rgb * bw.y + cz.rgb * bw.z;
+                    float3 qm = positionWS / _RockScan.y;
+                    half3 rm = SAMPLE_TEXTURE2D_ARRAY(_GroundArr, sampler_GroundArr, abs(normalWS.x) > abs(normalWS.z) ? qm.zy : qm.xy, 5).rgb;
+                    half lm = dot(rm, half3(0.2126h, 0.7152h, 0.0722h));
+                    rc *= lerp(1.0h, lm / 0.14h, 0.45h);
+                    half lc = dot(rc, half3(0.2126h, 0.7152h, 0.0722h));
+                    rock = lerp(lc.xxx, rc, (half)_RockScan.z) * rockTint * lerp(0.72h, 1.0h, ao);
+                    rock *= lerp(0.78h, 1.04h, smoothstep(0.15h, 0.6h, normalWS.y));      // sheer faces a shade darker
+                    // normal: the dominant projection's scan normal, swizzled into world space
+                    half3 rn;
+                    if (bw.y >= bw.x && bw.y >= bw.z)
+                    {
+                        half3 t = UnpackNormal(SAMPLE_TEXTURE2D_ARRAY(_GroundNrm, sampler_GroundArr, mul(rotC, q.xz) + 0.37, 5));
+                        rn = normalize(normalWS * t.z + half3(t.x, 0.0h, t.y));
+                    }
+                    else if (bw.x >= bw.z)
+                    {
+                        half3 t = UnpackNormal(SAMPLE_TEXTURE2D_ARRAY(_GroundNrm, sampler_GroundArr, q.zy, 5));
+                        rn = normalize(normalWS * t.z + half3(0.0h, t.y, t.x * sign(normalWS.x)));
+                    }
+                    else
+                    {
+                        half3 t = UnpackNormal(SAMPLE_TEXTURE2D_ARRAY(_GroundNrm, sampler_GroundArr, q.xy + 0.61, 5));
+                        rn = normalize(normalWS * t.z + half3(t.x * sign(normalWS.z), t.y, 0.0h));
+                    }
+                    nOut = normalize(lerp(nOut, rn, w.g));
+                }
             #endif
-            half3 rock = lerp(_RockColor.rgb, _RockColorHigh.rgb, rockHigh) * (1.0h + (rockDet - 0.5h) * k * 1.3h) * lerp(1.0h, macro.rgb * 1.6h, 0.06h);
-            rock *= lerp(0.72h, 1.0h, ao);                     // crevices darker
-            // rock strata: alternating cool-grey and warm-ochre beds (~7.5 m), strongest on steep faces; the far terrain
-            // bakes the same bands (textures.far_albedo), so the range reads layered from downtown too
-            {
-                half bedNoise = (macro.r - macro.g) * 3.0h;
-                #if !defined(_FAR)
-                    bedNoise += (rx + rz) * 1.2h;
-                #endif
-                half bed = smoothstep(0.3h, 0.7h, sin(positionWS.y * 0.42h + bedNoise) * 0.5h + 0.5h);
-                half3 bedTint = lerp(half3(0.80h, 0.79h, 0.84h), half3(1.14h, 1.02h, 0.86h), bed);
-                rock *= lerp(half3(1, 1, 1), bedTint, clamp(1.0h - normalWS.y * 1.2h, 0.35h, 1.0h));
-            }
             half3 sand = _SandColor.rgb * (1.0h + (det.b - 0.5h) * k * 0.6h);
             // wet sand: a darker band just above the waterline (follows the real shore height)
             half wet = smoothstep(_Shore.x + _Shore.y, _Shore.x + 0.15h, positionWS.y + (det.b - 0.5h) * 0.3h);
@@ -167,10 +214,18 @@ Shader "CT Life/World/Terrain"
                 half3 dirt = _DirtColor.rgb * (1.0h + (det.a - 0.5h) * k) * lerp(1.0h, macro.rgb * 1.8h, 0.2h);
                 if (w.a > 0.02h)
                 {
-                    float2 suv = mul(rotA, wp) / 3.2;
-                    half3 soil = SAMPLE_TEXTURE2D_ARRAY(_GroundArr, sampler_GroundArr, suv, 2).rgb * _SoilTint.rgb;
-                    dirt = soil;
-                    half3 sn = UnpackNormal(SAMPLE_TEXTURE2D_ARRAY(_GroundNrm, sampler_GroundArr, suv, 2));
+                    // soil (forest floor) in the lowlands, the scree scan on the mountain
+                    bool onMtn = mtn > 0.02h;
+                    float2 suv = onMtn ? mul(rotA, wp) / _RockScan.w : mul(rotA, wp) / 3.2;
+                    half slice = onMtn ? 6.0h : 2.0h;
+                    half3 soil = SAMPLE_TEXTURE2D_ARRAY(_GroundArr, sampler_GroundArr, suv, slice).rgb;
+                    if (onMtn)
+                    {
+                        half3 forestFloor = SAMPLE_TEXTURE2D_ARRAY(_GroundArr, sampler_GroundArr, mul(rotA, wp) / 3.2, 2).rgb;
+                        soil = lerp(forestFloor, soil, mtn);
+                    }
+                    dirt = soil * _SoilTint.rgb;
+                    half3 sn = UnpackNormal(SAMPLE_TEXTURE2D_ARRAY(_GroundNrm, sampler_GroundArr, suv, slice));
                     nOut = normalize(lerp(nOut, normalize(normalWS * sn.z + half3(sn.x, 0.0h, sn.y)), w.a));
                 }
             #endif
@@ -179,6 +234,8 @@ Shader "CT Life/World/Terrain"
                 // far terrain: islandgen bakes the composited ground colour (terrain_far_macro); its grass is repainted with
                 // the scans' tone so the far LOD meets the near terrain
                 albedo = lerp(macro.rgb, grass, w.r * 0.85h);
+                albedo = lerp(albedo, rock, w.g * 0.9h);           // the baked macro's rock carried the old strata
+                albedo = lerp(albedo, scree, w.a * mtn * 0.8h);
             #endif
             // snow only on the highest ground, mostly on the shaded north faces (normal +z = facing north), never on cliffs
             half north = lerp(1.0h, smoothstep(-0.05h, 0.35h, normalWS.z), _Snow.w);
@@ -248,10 +305,21 @@ Shader "CT Life/World/Terrain"
             if (pave > 0.003h)
             {
                 #if defined(_FAR)
-                    half3 pc = CTWorldLight(lerp(_PaveTint.rgb * 0.19h, half3(0.085h, 0.085h, 0.08h), pm.g), input.positionWS, n, 1.0h, 0.0h);
+                    half3 pc = CTWorldLight(pm.g > 0.15h && pm.g < 0.6h ? half3(0.12h, 0.095h, 0.065h)
+                                            : lerp(_PaveTint.rgb * 0.19h, half3(0.085h, 0.085h, 0.08h), pm.g), input.positionWS, n, 1.0h, 0.0h);
                 #else
                     half3 pc;
-                    if (pm.g > 0.5h) pc = YardColor(input.positionWS, n);
+                    if (pm.g > 0.6h) pc = YardColor(input.positionWS, n);
+                    else if (pm.g > 0.15h)
+                    {
+                        // world fix-ups: the islet's gravel footpath (g = 0.35): the scree scan over the forest-floor soil
+                        float2 wp = input.positionWS.xz;
+                        half4 gr = SAMPLE_TEXTURE2D_ARRAY(_GroundArr, sampler_GroundArr, wp / 2.6, 6);
+                        half4 so = SAMPLE_TEXTURE2D_ARRAY(_GroundArr, sampler_GroundArr, wp / 3.2 + 0.4, 2);
+                        half3 gn = UnpackNormal(SAMPLE_TEXTURE2D_ARRAY(_GroundNrm, sampler_GroundArr, wp / 2.6, 6));
+                        half3 pn = normalize(n * gn.z + half3(gn.x, 0.0h, gn.y));
+                        pc = CTWorldLight(lerp(so.rgb, gr.rgb, 0.6h) * half3(1.12h, 1.08h, 1.02h), input.positionWS, pn, 1.0h, _Toon);
+                    }
                     else
                     {
                         float2 tuv = input.positionWS.xz / _PaveTile.x;
