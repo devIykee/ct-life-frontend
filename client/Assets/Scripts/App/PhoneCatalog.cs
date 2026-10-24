@@ -17,6 +17,7 @@ namespace CTLife.App
         {
             phone.Register(new MapApp(travel));
             phone.Register(jobsOverride ?? new CareersApp());
+            phone.Register(new QuestsApp());    // gm streak, daily quests and the weekly chain (backend PR #9); a daily habit, so page 1
             phone.Register(new MoneyBankApp());
             phone.Register(new WalletApp());
             phone.Register(new RichListApp());

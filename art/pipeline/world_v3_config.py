@@ -198,4 +198,9 @@ PACKS = {
                    meta=dict(name='Boombox', display='Poly Haven', url='https://polyhaven.com/a/boombox', lic='CC0')),
     'ph3_long_life_food': dict(prefix='fu_pantry', family='v3_furniture', kind='prop', mode='whole', path='/Users/mac/Documents/codes/projects/ct-life-repair/art/raw/polyhaven/long_life_food/long_life_food_1k.gltf', lod0=2500, lod1=800,
                    meta=dict(name='Long Life Food', display='Poly Haven', url='https://polyhaven.com/a/long_life_food', lic='CC0')),
+    # ---------------------------------------------------------------- casino: The Rug Room (Sketchfab CC BY, vetted 2026-10-24)
+    'b853ed93538a4405949800ab501606d8': dict(prefix='cs_slot_machine', family='v3_casino', kind='prop', mode='whole', lod0=5000, lod1=1500),
+    '18a27b0e326644a0b47887d07e0d0f99': dict(prefix='cs_roulette_table', family='v3_casino', kind='prop', mode='whole', lod0=12000, lod1=3000),
+    '5c335b7eff684213bd955b05ef90a354': dict(prefix='cs_poker_table', family='v3_casino', kind='prop', mode='whole', lod0=4000, lod1=1200),
+    'baf7e3cbd14140ca81ea1a79d28fb635': dict(prefix='cs_blackjack_table', family='v3_casino', kind='prop', mode='whole', lod0=5000, lod1=1500),
 }

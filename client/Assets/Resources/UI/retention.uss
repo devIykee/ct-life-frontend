@@ -1,0 +1,207 @@
+/* CT Life · gm streak, daily chest, Quests, quest toast and the push pre-prompt (2026-10-24, backend PR #9).
+   Lobby pieces use the Arena lobby language (home.uss: plum glass, angled tiles, Lilita numbers, Inter caps captions, the
+   mint CTA); Quests uses the Duo kit tokens (duo-kit.uss); the toast is City HUD glass. Panel units: 2400 x 1080 landscape. */
+
+/* ---------------------------------------------------------------- dashboard tile */
+.home-screen .gm-tile { width: 392px; margin-bottom: 18px; }
+.gm-tile-box { padding: 14px 26px 16px 22px; min-height: 150px; }
+.gm-tile-flame { width: 86px; height: 98px; margin-right: 16px; align-items: center; justify-content: center; flex-shrink: 0; }
+.gm-tile-flame-glow {
+    position: absolute; left: -46px; top: -40px; width: 178px; height: 178px;
+    background-image: url("Kit/soft-glow.png"); -unity-background-image-tint-color: rgb(255, 120, 30); opacity: 0.35;
+}
+.gm-tile-flame-icon { width: 80px; height: 80px; -unity-background-scale-mode: scale-to-fit; }
+.gm-tile-copy { flex-grow: 1; }
+.gm-tile-caprow { flex-direction: row; align-items: center; }
+.gm-tile-milestone {
+    -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); font-size: 13px; letter-spacing: 1.5px; color: rgb(42, 11, 74);
+    background-color: rgb(255, 200, 60); border-radius: 7px; padding: 2px 8px; margin-left: 10px; display: none;
+}
+.gm-tile-dayrow { flex-direction: row; align-items: center; margin-top: -2px; }
+.home-screen .gm-tile-day { -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 40px; color: rgb(255, 255, 255); margin: 0; padding: 0; }
+.gm-tile-freeze { flex-direction: row; align-items: center; background-color: rgba(120, 190, 255, 0.18); border-radius: 14px; padding: 3px 10px 3px 6px; }
+.gm-tile-freeze-icon { width: 24px; height: 24px; margin-right: 4px; -unity-background-scale-mode: scale-to-fit; }
+.home-screen .gm-tile-freeze-count { -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); font-size: 18px; color: rgb(190, 225, 255); }
+.gm-tile-pips { flex-direction: row; margin: 6px 0 8px; }
+.gm-pip { width: 28px; height: 8px; border-radius: 4px; margin-right: 6px; background-color: rgba(255, 255, 255, 0.16); }
+.gm-pip--milestone { background-color: rgba(255, 200, 60, 0.32); }
+.gm-pip--done { background-color: rgb(255, 138, 31); }
+.gm-pip--milestone.gm-pip--done { background-color: rgb(255, 200, 60); }
+.gm-pip--today { background-color: rgba(255, 138, 31, 0.55); border-width: 2px; border-color: rgb(255, 196, 120); }
+.gm-tile-pill { align-self: flex-start; border-radius: 16px; padding: 5px 14px 6px; background-color: rgba(255, 255, 255, 0.10); }
+.home-screen .gm-tile-status { -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); font-size: 17px; color: rgba(255, 255, 255, 0.78); white-space: nowrap; }
+.gm-tile--ready .gm-tile-pill { background-color: rgb(255, 138, 31); }
+.home-screen .gm-tile--ready .gm-tile-status { color: rgb(42, 11, 74); letter-spacing: 0.5px; }
+.gm-tile--milestone .gm-tile-pill { background-color: rgb(255, 200, 60); }
+.gm-tile--milestone .gm-tile-milestone { display: flex; }
+
+/* ---------------------------------------------------------------- the chest sheet */
+.gm-sheet { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+.gm-sheet .unity-button, .gm-sheet .unity-button:hover, .gm-sheet .unity-button:focus {
+    background-image: none; -unity-background-image-tint-color: rgb(255, 255, 255);
+}
+.gm-sheet .ct-button-depth, .gm-sheet .ct-button-glint { display: none; }
+.gm-sheet Label { color: rgb(255, 255, 255); }
+/* the lobby's outlined Lilita (home.uss scopes it to .home-screen; the sheet sits in the modal layer) */
+.gm-sheet .lobby-outlined {
+    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); color: rgb(255, 255, 255); letter-spacing: 1px;
+    -unity-text-outline-width: 1px; -unity-text-outline-color: rgb(42, 11, 74);
+}
+.gm-sheet .lobby-outline-copy { -unity-text-outline-width: 2px; }
+.gm-scrim { position: absolute; left: -400px; top: -300px; right: -400px; bottom: -300px; background-color: rgba(14, 3, 30, 0.97); opacity: 0; }   /* the panel blends in linear space: 0.97 reads as about 80% */
+.gm-header { position: absolute; left: 0; right: 0; top: 34px; align-items: center; opacity: 0; }
+.gm-kicker { -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); font-size: 20px; letter-spacing: 5px; color: rgb(255, 160, 70); -unity-text-align: middle-center; }
+.gm-sheet--milestone .gm-kicker { color: rgb(255, 210, 90); }
+.gm-sheet .gm-title { font-size: 76px; -unity-text-align: middle-center; white-space: nowrap; }
+.gm-sheet--milestone .gm-title { color: rgb(255, 214, 92); }
+.gm-week { flex-direction: row; margin-top: 12px; }
+.gm-day {
+    width: 92px; height: 98px; margin: 0 6px; border-radius: 20px; align-items: center; justify-content: center;
+    background-color: rgba(255, 255, 255, 0.07); border-width: 2px; border-color: rgba(255, 255, 255, 0.10);
+}
+.gm-sheet .gm-day-n { -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); font-size: 16px; letter-spacing: 1px; color: rgba(255, 255, 255, 0.55); }
+.gm-sheet .gm-day-mark { -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 34px; color: rgb(124, 255, 196); }
+.gm-sheet .gm-day-cash { -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 21px; color: rgb(255, 255, 255); }
+.gm-sheet .gm-day-dot { font-size: 30px; color: rgba(255, 255, 255, 0.25); }
+.gm-day-chest { width: 44px; height: 44px; -unity-background-scale-mode: scale-to-fit; opacity: 0.7; }
+.gm-day--done { background-color: rgba(61, 220, 132, 0.14); border-color: rgba(61, 220, 132, 0.45); }
+.gm-day--milestone { border-color: rgba(255, 200, 60, 0.55); }
+.gm-day--today { background-color: rgba(255, 138, 31, 0.30); border-color: rgb(255, 160, 70); scale: 1.08 1.08; }
+.gm-sheet--milestone .gm-day--today { background-color: rgba(255, 200, 60, 0.30); border-color: rgb(255, 210, 90); }
+
+.gm-stage { position: absolute; left: 50%; top: 250px; width: 620px; height: 620px; margin-left: -310px; opacity: 0; }
+.gm-rays { position: absolute; left: -290px; top: -310px; width: 1200px; height: 1200px; opacity: 0.18; }
+.gm-glow {
+    position: absolute; left: -10px; top: -60px; width: 640px; height: 640px;
+    background-image: url("Kit/soft-glow.png"); -unity-background-image-tint-color: rgb(255, 196, 80); opacity: 0.35;
+}
+.gm-sheet--milestone .gm-glow { -unity-background-image-tint-color: rgb(255, 214, 92); }
+.gm-chest { position: absolute; left: 0; top: 0; width: 620px; height: 620px; -unity-background-scale-mode: scale-to-fit; }
+.gm-mouth {
+    position: absolute; left: 150px; top: 205px; width: 330px; height: 170px;
+    background-image: url("Kit/soft-glow.png"); -unity-background-image-tint-color: rgb(255, 214, 110); -unity-background-scale-mode: stretch-to-fill;
+}
+.gm-flash {
+    position: absolute; left: 60px; top: 20px; width: 500px; height: 500px; opacity: 0;
+    background-image: url("Kit/soft-glow.png"); -unity-background-image-tint-color: rgb(255, 250, 225);
+}
+.gm-hint {
+    position: absolute; left: 0; right: 0; top: 856px; -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 34px;
+    -unity-text-align: middle-center; color: rgb(255, 255, 255); letter-spacing: 1px;
+}
+.gm-hint--claimed { font-size: 30px; top: 800px; }
+.gm-rewards { position: absolute; left: 0; right: 0; top: 792px; flex-direction: row; justify-content: center; }
+.gm-reward {
+    flex-direction: row; align-items: center; margin: 0 12px; padding: 14px 30px 14px 20px; border-radius: 26px;
+    background-color: rgba(30, 9, 58, 0.92); border-width: 3px; border-color: rgba(255, 200, 60, 0.75); opacity: 0;
+}
+.gm-reward--cosmetic { border-color: rgba(190, 140, 255, 0.85); }
+.gm-reward-icon { width: 68px; height: 68px; margin-right: 14px; -unity-background-scale-mode: scale-to-fit; }
+.gm-sheet .gm-reward-value { -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 46px; color: rgb(255, 214, 92); margin: 0; padding: 0; }
+.gm-sheet .gm-reward--cosmetic .gm-reward-value { color: rgb(220, 196, 255); font-size: 36px; }
+.gm-sheet .gm-reward-caption { -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); font-size: 15px; letter-spacing: 2px; color: rgba(255, 255, 255, 0.7); margin: 0; padding: 0; }
+
+.gm-footer { position: absolute; left: 44px; right: 44px; bottom: 34px; flex-direction: row; align-items: flex-end; }
+.gm-notice {
+    position: absolute; left: 0; right: 0; bottom: 92px; white-space: normal; -unity-text-align: middle-center;
+    -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); font-size: 22px; color: rgba(255, 255, 255, 0.86);
+}
+.gm-freeze-row { flex-direction: row; align-items: center; flex-grow: 1; }
+.gm-freeze-icon { width: 40px; height: 40px; margin-right: 10px; -unity-background-scale-mode: scale-to-fit; }
+.gm-sheet .gm-freeze-label { -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); font-size: 22px; color: rgb(190, 225, 255); margin-right: 16px; }
+.gm-sheet .gm-freeze-buy {
+    -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); font-size: 20px; color: rgb(255, 255, 255);
+    background-color: rgba(120, 190, 255, 0.22); border-width: 2px; border-color: rgba(160, 210, 255, 0.5); border-radius: 22px;
+    padding: 8px 18px; margin: 0;
+}
+.gm-sheet .gm-freeze-buy:disabled { opacity: 0.5; }
+.gm-sheet .gm-collect { background-color: rgba(0, 0, 0, 0); border-width: 0; padding: 0; margin: 0; width: 420px; height: 120px; }
+.gm-sheet .gm-collect:active { scale: 0.97 0.97; }
+.gm-collect-box { position: absolute; left: 0; top: 0; right: 0; bottom: 0; align-items: center; justify-content: center; padding-bottom: 12px; }
+.gm-sheet .gm-collect-label { -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 50px; color: rgb(42, 11, 74); letter-spacing: 2px; }
+.gm-sheet .gm-close {
+    position: absolute; right: 40px; top: 34px; width: 80px; height: 80px; border-radius: 40px; margin: 0; padding: 0;
+    background-color: rgba(255, 255, 255, 0.10); border-width: 2px; border-color: rgba(255, 255, 255, 0.18); align-items: center; justify-content: center;
+}
+.gm-sheet .gm-close-x { font-size: 46px; color: rgb(255, 255, 255); -unity-text-align: middle-center; margin-top: -4px; }
+.gm-fly-coin { position: absolute; left: 0; top: 0; }
+
+/* ---------------------------------------------------------------- push pre-prompt */
+.push-pre .gm-scrim { opacity: 1; }
+.push-card { position: absolute; left: 50%; top: 50%; width: 1120px; margin-left: -560px; margin-top: -250px; min-height: 500px; flex-direction: row; align-items: center; padding: 40px 60px 40px 40px; }
+.push-bell { width: 280px; height: 280px; align-items: center; justify-content: center; flex-shrink: 0; }
+.push-bell-glow { position: absolute; left: -60px; top: -60px; width: 400px; height: 400px; background-image: url("Kit/soft-glow.png"); -unity-background-image-tint-color: rgb(255, 196, 80); opacity: 0.55; }
+.push-bell-icon { width: 220px; height: 220px; -unity-background-scale-mode: scale-to-fit; }
+.push-copy { flex-grow: 1; flex-shrink: 1; margin-left: 30px; }
+.push-copy .lobby-outline-wrap { align-self: flex-start; }
+.push-pre .push-title { font-size: 54px; white-space: nowrap; }
+.push-pre .push-body { -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); font-size: 26px; white-space: normal; color: rgba(255, 255, 255, 0.92); margin-top: 16px; }
+.push-pre .push-small { -unity-font-definition: url("Fonts/Phone/Inter-Regular.ttf"); font-size: 21px; color: rgba(255, 255, 255, 0.6); margin-top: 10px; }
+.push-actions { flex-direction: row; align-items: center; justify-content: flex-end; margin-top: 30px; }
+.push-pre .push-later {
+    -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); font-size: 24px; color: rgba(255, 255, 255, 0.75);
+    background-color: rgba(0, 0, 0, 0); border-width: 0; margin: 0 30px 0 0; padding: 16px 20px; min-width: 160px;
+}
+.push-pre .push-on { width: 340px; height: 106px; }
+.push-pre .push-on .gm-collect-label { font-size: 42px; }
+
+/* ---------------------------------------------------------------- quest toast (over the game) */
+.quest-toast {
+    position: absolute; left: 50%; top: 118px; width: 760px; margin-left: -380px; flex-direction: row; align-items: center;
+    padding: 14px 20px 14px 16px; border-radius: 40px; background-color: rgba(18, 8, 36, 0.88);
+    border-width: 2px; border-color: rgba(255, 255, 255, 0.16);
+}
+.quest-toast--done { border-color: rgba(61, 220, 132, 0.85); }
+.quest-toast-icon { width: 56px; height: 56px; margin-right: 14px; -unity-background-scale-mode: scale-to-fit; flex-shrink: 0; }
+.quest-toast-copy { flex-grow: 1; flex-shrink: 1; min-width: 0; }
+.quest-toast-row { flex-direction: row; align-items: center; }
+.quest-toast-title { -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); font-size: 25px; color: rgb(255, 255, 255); flex-grow: 1; flex-shrink: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0; padding: 0; }
+.quest-toast-count { -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); font-size: 22px; color: rgba(255, 255, 255, 0.7); margin-left: 12px; }
+.quest-toast-track { height: 8px; border-radius: 4px; background-color: rgba(255, 255, 255, 0.14); margin-top: 8px; overflow: hidden; }
+.quest-toast-fill { height: 8px; border-radius: 4px; background-color: rgb(255, 45, 120); width: 0; }
+.quest-toast--done .quest-toast-fill { background-color: rgb(61, 220, 132); }
+.quest-toast-check { width: 48px; height: 48px; border-radius: 24px; background-color: rgb(61, 220, 132); margin-left: 14px; align-items: center; justify-content: center; display: none; flex-shrink: 0; }
+.quest-toast-check-mark { -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); font-size: 28px; color: rgb(10, 40, 24); margin: 0; padding: 0; }
+
+/* ---------------------------------------------------------------- Quests (inside the phone: Duo tokens apply) */
+.ct-phone .quests .quests-streak {
+    flex-direction: row; align-items: center; margin: 10px 38px 8px; padding: 26px 30px; border-radius: 34px; flex-shrink: 0;
+    background-color: #fff4e8; border-width: 3px; border-color: rgba(255, 138, 31, 0.0);
+}
+.ct-phone .quests .quests-streak:active { background-color: #ffeedd; }
+.ct-phone .quests .quests-streak--ready { border-color: rgb(255, 138, 31); }
+.ct-phone .quests .quests-streak-flame { width: 96px; height: 96px; border-radius: 26px; background-color: #ffe2c4; align-items: center; justify-content: center; margin-right: 24px; }
+.ct-phone .quests .quests-streak-flame-icon { width: 68px; height: 68px; -unity-background-scale-mode: scale-to-fit; }
+.ct-phone .quests .quests-streak-copy { flex-grow: 1; flex-shrink: 1; align-items: flex-start; }
+.ct-phone .quests .quests-streak-copy > Label { -unity-text-align: middle-left; }
+.ct-phone .quests .quests-streak-day { font-size: var(--duo-title2); -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); color: var(--duo-label); letter-spacing: -0.9px; margin: 0; padding: 0; }
+.ct-phone .quests .quests-streak-sub { font-size: var(--duo-subhead); color: #c25a00; margin: 2px 0 0; padding: 0; -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); }
+.ct-phone .quests .quests-streak-chest { width: 90px; height: 90px; -unity-background-scale-mode: scale-to-fit; }
+.ct-phone .quests .quests-sub { font-size: var(--duo-subhead); color: var(--duo-label2); margin: -8px 38px 6px; padding: 0; }
+.ct-phone .quests .quests-list { flex-shrink: 0; }
+.ct-phone .quests .quests-row { flex-direction: row; align-items: center; padding: 22px 38px 22px 38px; flex-shrink: 0; }
+.ct-phone .quests .quests-lead { margin-right: 26px; }
+.ct-phone .quests .quests-lead .duo-icon-square { width: 76px; height: 76px; border-radius: 20px; }
+.ct-phone .quests .quests-lead .duo-icon-square .ct-icon { width: 42px; height: 42px; }
+.ct-phone .quests .quests-body { flex-grow: 1; flex-shrink: 1; min-width: 0; padding-bottom: 20px; border-bottom-width: 1px; border-color: var(--duo-sep); }
+.ct-phone .quests .quests-title { font-size: var(--duo-headline); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); color: var(--duo-label); margin: 0; padding: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ct-phone .quests .quests-desc { font-size: var(--duo-subhead); color: var(--duo-label2); margin: 2px 0 0; padding: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ct-phone .quests .quests-bar { height: 14px; border-radius: 7px; background-color: var(--duo-fill); margin-top: 14px; overflow: hidden; }
+.ct-phone .quests .quests-bar-fill { height: 14px; border-radius: 7px; background-color: #ff2d78; }
+.ct-phone .quests .quests-row--done .quests-bar-fill { background-color: var(--duo-green); }
+.ct-phone .quests .quests-meta { flex-direction: row; margin-top: 8px; }
+.ct-phone .quests .quests-progress { font-size: var(--duo-caption); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); color: var(--duo-label2); margin: 0; padding: 0; }
+.ct-phone .quests .quests-reward { font-size: var(--duo-caption); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); color: #c25a00; margin: 0; padding: 0; }
+.ct-phone .quests .quests-row--claimed .quests-title, .ct-phone .quests .quests-row--claimed .quests-desc { opacity: 0.5; }
+.ct-phone .quests .duo-pill { margin-left: 22px; }
+.ct-phone .quests .quests-claim .duo-pill-face { background-color: var(--duo-green); }
+.ct-phone .quests .quests-claim .duo-pill-label { color: #ffffff; }
+.ct-phone .quests .quests-step { width: 76px; height: 76px; border-radius: 38px; margin-right: 26px; align-items: center; justify-content: center; background-color: var(--duo-fill); overflow: visible; }
+.ct-phone .quests .quests-step-n { font-size: var(--duo-headline); -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); color: var(--duo-label2); margin: 0; padding: 0; }
+.ct-phone .quests .quests-step-line { position: absolute; left: 36px; top: 84px; width: 4px; height: 150px; background-color: var(--duo-fill); }
+.ct-phone .quests .quests-row--done .quests-step { background-color: var(--duo-green); }
+.ct-phone .quests .quests-row--done .quests-step-n { color: #ffffff; }
+.ct-phone .quests .quests-row--done .quests-step-line { background-color: rgba(48, 199, 94, 0.45); }
+.ct-phone .quests .quests-bottom-space { height: 120px; flex-shrink: 0; }
+.ct-phone .quests .quests-burst { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+.ct-phone .quests .quests-paid { position: absolute; left: 0; top: 0; font-size: var(--duo-title2); -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); color: var(--duo-green); white-space: nowrap; }

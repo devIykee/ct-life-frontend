@@ -62,6 +62,9 @@ namespace CTLife.UI
         /// </summary>
         public Func<CancellationToken, Task<string>> DailyClue { get; set; }
 
+        /// <summary>The gm streak tile (City Life lane, backend PR #9) placed first in the "today" column; null leaves it out.</summary>
+        public Func<VisualElement> GmTile { get; set; }
+
         /// <summary>Captures and tests: force the offline state (null = measured: no network, or the city room not joined).</summary>
         public bool? OfflineOverride { get; set; }
 
@@ -262,6 +265,7 @@ namespace CTLife.UI
             _clueChip.style.display = DisplayStyle.None;
             _offlineChip.style.display = DisplayStyle.None;
             _today = El.Div("home-today", _offlineChip, _marketChip, _clueChip);
+            if (GmTile?.Invoke() is VisualElement gm) _today.Insert(0, gm);
             _today.pickingMode = PickingMode.Ignore;
 
             var duo = new LobbySticker("smartphone", Strings.T("lobby.duo"), () => OpenApp(null), 3f, dark: true);

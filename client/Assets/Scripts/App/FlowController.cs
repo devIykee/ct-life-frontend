@@ -89,6 +89,9 @@ namespace CTLife.App
                 // flat doors, the Duo Shop's deliveries and furniture in the flats (backend PRs #7 and #8)
                 _overlays.Add(new CTLife.CityLife.HomeShopOverlays(ui.ModalLayer));
                 CTLife.CityLife.HomeShopService.Opener = id => { if (_phone != null) _phone.Open(id); };
+                // gm streak, daily chest, quests and push (backend PR #9): quest toasts over the game; push / quest deep links
+                _overlays.Add(new CTLife.CityLife.RetentionOverlays(ui.ToastLayer));
+                CTLife.CityLife.RetentionService.Opener = id => { if (_phone == null || !Alive) return false; _phone.Open(id); return true; };
                 _overlays.Add(new BusyOverlay(ui.ToastLayer));
                 var worldLife = new CTLife.WorldLife.WorldLifeHub();
                 _overlays.Add(worldLife);
@@ -853,6 +856,8 @@ namespace CTLife.App
             _lobby = new DashboardScreen(() => RunGameAction(game, () => EnterCityFromLobby(game)), id => { if (GameAlive(game)) _phone?.Open(id); },
                 firstArrival: _firstLobby)
             {
+                // The gm streak tile tops the "today" column (daily chest, backend PR #9).
+                GmTile = () => new CTLife.CityLife.GmStreakTile(),
                 // Today's clue for the home "today" row (City Life lane's API); null hides the chip.
                 DailyClue = async ct =>
                 {
@@ -1131,8 +1136,12 @@ namespace CTLife.App
                 UnbindKick();
                 // An explicitly requested logout continues its existing exit/disconnect/revoke sequence
                 // even if this UI owner disappears. Only the controller's wait is cancelled.
-                await _owner.Wait(FinishSignOut(VenueSession.Current, Services.Get<IRealtimeService>(),
-                    Services.Get<IAuthService>(), Services.Get<IWalletSignIn>()));
+                // Push unregister + token rotation first, while the session still works, isolated with its own 4 s
+                // timeout; SignOutSequence always runs the revoke after it, whatever it did (fail-closed).
+                var venue = VenueSession.Current;
+                await _owner.Wait(SignOutSequence.Run(
+                    ct => CTLife.CityLife.RetentionService.BeforeSignOut(ct),
+                    () => FinishSignOut(venue, Services.Get<IRealtimeService>(), Services.Get<IAuthService>(), Services.Get<IWalletSignIn>())));
                 _hud?.Element.RemoveFromHierarchy();
                 _hud?.Dispose();
                 _phone?.Dispose();
