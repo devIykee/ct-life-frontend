@@ -69,6 +69,9 @@ namespace CTLife.World.Vehicles
             t._rng = new System.Random(Environment.TickCount);
             t._drivers = new TrafficDrivers(t);
             if (Application.isMobilePlatform) t.MaxCars = 12;
+            var kinds = new List<string>();
+            foreach (var m in Mix) kinds.Add(m.id);
+            VehiclePrefabs.Preload(kinds);
             Current = t;
             return t;
         }
@@ -231,7 +234,9 @@ namespace CTLife.World.Vehicles
         private TrafficCar Take(string id)
         {
             if (_pool.TryGetValue(id, out var stack) && stack.Count > 0) return stack.Pop();
-            var prefab = Resources.Load<GameObject>("Vehicles/" + id);
+            // loaded ahead (VehiclePrefabs.Preload in Ensure): a kind still loading is skipped this time, no frame waits on it
+            if (!VehiclePrefabs.Ready(id)) return null;
+            var prefab = VehiclePrefabs.Get(id, false);
             if (prefab == null) { Log.Warn("traffic", "missing prefab Vehicles/" + id); return null; }
             var go = Instantiate(prefab, transform);
             go.SetActive(false);

@@ -17,6 +17,9 @@ namespace CTLife.World
         public float yaw;
         public Renderer roof;
         public Renderer[] walls = new Renderer[0];
+        [Tooltip("World fix-ups 2: the venue architecture merged into one renderer (one draw per material), drawn while the " +
+                 "player is outside; the per-side renderers (walls / roof) take over only while something is fading.")]
+        public Renderer whole;
         [Tooltip("Outward normal of each wall (world), and its centre.")]
         public Vector3[] normals = new Vector3[0];
         public Vector3[] centres = new Vector3[0];
@@ -58,14 +61,32 @@ namespace CTLife.World
             bool inside = player != null && Contains(player.position);
             float step = fadeSeconds > 0f ? Time.deltaTime / fadeSeconds : 1f;
             _roof = Mathf.MoveTowards(_roof, inside ? 1f : 0f, step);
-            Apply(roof, _roof);
+            bool split = inside || _roof > 0f;
             for (int i = 0; i < walls.Length; i++)
             {
                 bool hide = inside && cam != null && i < normals.Length && Vector3.Dot(normals[i], cam.transform.position - centres[i]) > 0f;
                 _wall[i] = Mathf.MoveTowards(_wall[i], hide ? 0.92f : 0f, step);
-                Apply(walls[i], _wall[i]);
+                split |= _wall[i] > 0f;
             }
+            if (whole != null)
+            {
+                // outside: the merged building only (the sign, not part of it, stays as it is)
+                if (whole.enabled == split) whole.enabled = !split;
+                if (!split)
+                {
+                    if (roof != null && roof.enabled) roof.enabled = false;
+                    for (int i = 0; i < walls.Length; i++)
+                        if (walls[i] != null && walls[i] != sign && walls[i].enabled) walls[i].enabled = false;
+                    if (sign != null) Apply(sign, 0f);
+                    return;
+                }
+            }
+            Apply(roof, _roof);
+            for (int i = 0; i < walls.Length; i++) Apply(walls[i], _wall[i]);
         }
+
+        [Tooltip("The name sign (one of the walls): never part of the merged renderer.")]
+        public Renderer sign;
 
         private void Apply(Renderer r, float fade)
         {
@@ -73,6 +94,12 @@ namespace CTLife.World
             bool show = fade < 0.999f;
             if (r.enabled != show) r.enabled = show;
             if (!show) return;
+            // no property block at rest: a renderer with one drops out of the SRP batcher
+            if (fade <= 0f)
+            {
+                if (r.HasPropertyBlock()) r.SetPropertyBlock(null);
+                return;
+            }
             r.GetPropertyBlock(_mpb);
             _mpb.SetFloat(FadeId, fade);
             r.SetPropertyBlock(_mpb);

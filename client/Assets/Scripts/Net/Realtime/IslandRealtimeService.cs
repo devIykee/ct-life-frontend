@@ -43,10 +43,12 @@ namespace CTLife.Net
             id == "residences" || id == "mountain" || id == "islet";
         /// <summary>
         /// The one switch for the v3 realtime vehicle kinds (sedan, taxi, police, pickup, van, bike;
-        /// docs/fe-contract-proposals/vehicle-kinds-v3.md). Off until the backend registry with those kinds is deployed: the
-        /// v3 cars then travel as "compact" (same lease and speed cap) and a remote client shows a compact. Flip to true then.
+        /// docs/fe-contract-proposals/vehicle-kinds-v3.md). Off until a server with backend PR #6 (merged 2026-10-23) is deployed:
+        /// the v3 cars then travel as "compact" (same lease and speed cap) and a remote client shows a compact.
+        /// Turned on (2026-10-23), in this order: dev launch extra <c>wireV3Kinds=1|0</c>; remote config
+        /// <c>GET /v1/config → flags.wireV3Kinds: true</c> (no client release needed); the env asset's <c>wireV3Kinds</c>. Default off.
         /// </summary>
-        public static readonly bool WireV3Kinds = false;
+        public static bool WireV3Kinds => V3KindsFlag.On;
         public static bool IsPublicVehicle(string kind) => kind == "compact" || kind == "suv" || kind == "sports" || kind == "moped" ||
             (WireV3Kinds && (kind == "sedan" || kind == "taxi" || kind == "police" || kind == "pickup" || kind == "van" || kind == "bike"));
         /// <summary>Local spec to wire kind. While the v3 kinds are off, the v3-only cars travel as "compact" and the bike as
@@ -60,5 +62,33 @@ namespace CTLife.Net
         public static string ParkedId(string kind, double x, double z) => "park_" + kind + "_" +
             Math.Round(x * 10, MidpointRounding.AwayFromZero).ToString(System.Globalization.CultureInfo.InvariantCulture) + "_" +
             Math.Round(z * 10, MidpointRounding.AwayFromZero).ToString(System.Globalization.CultureInfo.InvariantCulture);
+    }
+
+    /// <summary>Evaluates <see cref="IslandProtocol.WireV3Kinds"/> (cached per config snapshot).</summary>
+    public static class V3KindsFlag
+    {
+        private static object _root;
+        private static bool? _remote;
+
+        public static bool On
+        {
+            get
+            {
+#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
+                if (LaunchArgs.TryGet("wireV3Kinds", out var dev)) return dev == "1" || string.Equals(dev, "true", StringComparison.OrdinalIgnoreCase);
+#endif
+                if (Services.TryGet<ConfigStore>(out var cfg) && cfg.Root != null)
+                {
+                    if (!ReferenceEquals(cfg.Root, _root))
+                    {
+                        _root = cfg.Root;
+                        var f = cfg.Root["flags"]?["wireV3Kinds"];
+                        _remote = f != null && f.Type == Newtonsoft.Json.Linq.JTokenType.Boolean ? (bool)f : (bool?)null;
+                    }
+                    if (_remote.HasValue) return _remote.Value;
+                }
+                return Env.Current != null && Env.Current.wireV3Kinds;
+            }
+        }
     }
 }

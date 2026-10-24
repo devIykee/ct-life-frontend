@@ -45,6 +45,10 @@ namespace CTLife.CityLife
 
         public event Action<int> PresenceChanged;
         public event Action<bool> Closed;
+        /// <summary>The server's close code when the room ended without our Leave (4403 = access revoked: guest removed,
+        /// move-out, eviction; docs/REALTIME.md).</summary>
+        public event Action<int> LeftWithCode;
+        public const int CodeAccessRevoked = 4403;
 
         public bool IsJoined => _room != null;
         public string SessionId => _room?.SessionId;
@@ -57,7 +61,22 @@ namespace CTLife.CityLife
             if (_room != null) throw new InvalidOperationException("Already joined");
             if (!CityWire.IsSafeRoomId(roomId)) throw new ArgumentException("Invalid roomId");
             ct.ThrowIfCancellationRequested();
-            var room = await client.JoinById<DynamicSchema>(roomId, options);
+            await Attach(await client.JoinById<DynamicSchema>(roomId, options), ct);
+        }
+
+        /// <summary>Joins the `home` room for a home instance (`joinOrCreate("home", {token, homeId})`, filtered by homeId):
+        /// how an owner or guest who walks in through the flat's door is present there (backend PR #7).</summary>
+        public async Task JoinHome(Client client, string homeId, Dictionary<string, object> options, CancellationToken ct)
+        {
+            if (_room != null) throw new InvalidOperationException("Already joined");
+            if (!CityWire.IsSafeRoomId(homeId)) throw new ArgumentException("Invalid homeId");
+            ct.ThrowIfCancellationRequested();
+            options["homeId"] = homeId;
+            await Attach(await client.JoinOrCreate<DynamicSchema>("home", options), ct);
+        }
+
+        private async Task Attach(Room<DynamicSchema> room, CancellationToken ct)
+        {
             if (ct.IsCancellationRequested)
             {
                 try { await room.Leave(); } catch (Exception e) { Log.Warn("home-room", "Discarded join leave: " + e.Message); }
@@ -92,6 +111,7 @@ namespace CTLife.CityLife
                 bool unexpected = !_leaving;
                 Release();
                 _room = null;
+                if (unexpected) { try { LeftWithCode?.Invoke(code); } catch (Exception e) { Log.Exception("home-room", e); } }
                 Closed?.Invoke(unexpected);
             };
             room.OnError += (code, message) => Log.Warn("home-room", $"error {code}: {message}");

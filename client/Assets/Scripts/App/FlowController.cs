@@ -86,6 +86,12 @@ namespace CTLife.App
                 ShiftReadyNotice.Opener = id => { if (_phone != null) _phone.Open(id); };
                 _overlays.Add(new ProfileCard(ui.ModalLayer));
                 _overlays.Add(new CTLife.CityLife.CityLifeOverlays(ui.ModalLayer));
+                // flat doors, the Duo Shop's deliveries and furniture in the flats (backend PRs #7 and #8)
+                _overlays.Add(new CTLife.CityLife.HomeShopOverlays(ui.ModalLayer));
+                CTLife.CityLife.HomeShopService.Opener = id => { if (_phone != null) _phone.Open(id); };
+                // gm streak, daily chest, quests and push (backend PR #9): quest toasts over the game; push / quest deep links
+                _overlays.Add(new CTLife.CityLife.RetentionOverlays(ui.ToastLayer));
+                CTLife.CityLife.RetentionService.Opener = id => { if (_phone == null || !Alive) return false; _phone.Open(id); return true; };
                 _overlays.Add(new BusyOverlay(ui.ToastLayer));
                 var worldLife = new CTLife.WorldLife.WorldLifeHub();
                 _overlays.Add(worldLife);
@@ -551,6 +557,8 @@ namespace CTLife.App
                     if (s == null || !s.IsIsland) { Log.Warn("island", "islandShot: not on CT Island"); return; }
                     await IslandWaypoints.Shot(s, LaunchArgs.Get("islandShot"), game.Token);
                 });
+                // Hitch attribution (dev builds only, perf lane 2): `hitchProbe=1` logs the marker breakdown of every frame over 50 ms.
+                if (LaunchArgs.Get("hitchProbe") == "1") PerfSegments.EnsureHitchProbe();
                 // Perf route (dev builds only): `islandPerf=1` measures the same downtown spots every run (World/Perf/PerfRoute.cs).
                 if (LaunchArgs.Get("islandPerf") == "1") RunGameAction(game, async () =>
                 {
@@ -576,6 +584,17 @@ namespace CTLife.App
                     // `islandRoom=fx`: the world fix-ups route (venue architecture, islet, Trenches, mountain, poles, aerial)
                     if (LaunchArgs.Get("islandRoom") == "fx") await InteriorRoute.RunFixups(s, () => GameAlive(game), game.Token);
                     else await InteriorRoute.Run(s, () => GameAlive(game), game.Token, LaunchArgs.Get("islandRoom") != "door", LaunchArgs.Get("islandRoom") == "d2");
+                });
+                // Flat doors and the Duo Shop (dev builds only): `homeShop=shop|deliver|place|locked|visit` (CityLife HomeShopRoute)
+                if (!string.IsNullOrEmpty(LaunchArgs.Get("homeShop"))) RunGameAction(game, async () =>
+                {
+                    float deadline = Time.realtimeSinceStartup + 90f;
+                    while (GameAlive(game) && (VenueSession.Current == null || !VenueSession.Current.IsActive) && Time.realtimeSinceStartup < deadline)
+                        await Awaitable.WaitForSecondsAsync(0.5f, game.Token);
+                    await Awaitable.WaitForSecondsAsync(5f, game.Token);
+                    var s = VenueSession.Current;
+                    if (s == null || !s.IsIsland) { Log.Warn("island", "homeShop: not on CT Island"); return; }
+                    await CTLife.CityLife.HomeShopRoute.Run(s, LaunchArgs.Get("homeShop"), () => GameAlive(game), game.Token);
                 });
                 // Device feature pass (dev builds only): `integration=1 [peer=<userId>]`. The editor driver calls it directly.
                 if (LaunchArgs.Flag("integration") && !Application.isEditor) RunGameAction(game, async () =>
@@ -837,6 +856,8 @@ namespace CTLife.App
             _lobby = new DashboardScreen(() => RunGameAction(game, () => EnterCityFromLobby(game)), id => { if (GameAlive(game)) _phone?.Open(id); },
                 firstArrival: _firstLobby)
             {
+                // The gm streak tile tops the "today" column (daily chest, backend PR #9).
+                GmTile = () => new CTLife.CityLife.GmStreakTile(),
                 // Today's clue for the home "today" row (City Life lane's API); null hides the chip.
                 DailyClue = async ct =>
                 {
@@ -1115,8 +1136,12 @@ namespace CTLife.App
                 UnbindKick();
                 // An explicitly requested logout continues its existing exit/disconnect/revoke sequence
                 // even if this UI owner disappears. Only the controller's wait is cancelled.
-                await _owner.Wait(FinishSignOut(VenueSession.Current, Services.Get<IRealtimeService>(),
-                    Services.Get<IAuthService>(), Services.Get<IWalletSignIn>()));
+                // Push unregister + token rotation first, while the session still works, isolated with its own 4 s
+                // timeout; SignOutSequence always runs the revoke after it, whatever it did (fail-closed).
+                var venue = VenueSession.Current;
+                await _owner.Wait(SignOutSequence.Run(
+                    ct => CTLife.CityLife.RetentionService.BeforeSignOut(ct),
+                    () => FinishSignOut(venue, Services.Get<IRealtimeService>(), Services.Get<IAuthService>(), Services.Get<IWalletSignIn>())));
                 _hud?.Element.RemoveFromHierarchy();
                 _hud?.Dispose();
                 _phone?.Dispose();

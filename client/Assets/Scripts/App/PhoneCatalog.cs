@@ -17,6 +17,7 @@ namespace CTLife.App
         {
             phone.Register(new MapApp(travel));
             phone.Register(jobsOverride ?? new CareersApp());
+            phone.Register(new QuestsApp());    // gm streak, daily quests and the weekly chain (backend PR #9); a daily habit, so page 1
             phone.Register(new MoneyBankApp());
             phone.Register(new WalletApp());
             phone.Register(new RichListApp());
@@ -35,6 +36,7 @@ namespace CTLife.App
             phone.Register(new SpacesStudioApp());
             phone.Register(new CallsApp());
             phone.Register(new CityShopApp());
+            phone.Register(new DuoShopApp());   // Duo Shop: furniture and goods delivered to your door (backend PR #8)
             phone.Register(new CityWeekApp());
             phone.Register(new CityBusinessApp());
             // Phase 5 (Ventures lane): "ads" keeps the placeholder's id so the lobby tile still opens it. One shared VenturesHub.

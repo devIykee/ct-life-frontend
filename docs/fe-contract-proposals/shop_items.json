@@ -1,0 +1,255 @@
+{
+  "_owner": "FE",
+  "_provisional": true,
+  "version": "0.1.0",
+  "_note": "Duo Shop catalogue (Cash, off-chain, never tradable), FE-owned. itemId is stable and lowercase. modelKey is the client prefab Resources/World/Furniture/<modelKey> (CC0 Poly Haven models processed by art/pipeline/world_v3_furniture.py + world_v3_process.py, family v3_furniture). footprint {w,d,h} is the model's bounding box in metres (w along the model's x, d along its z) and is what place mode checks for overlap. Food is delivered and owned but not placeable (no use yet); no clothing in this release (the cosmetics shop sells looks).",
+  "items": [
+    {
+      "itemId": "sofa_chesterfield",
+      "category": "furniture",
+      "name": "Chesterfield Loveseat",
+      "priceCents": 34900,
+      "deliverable": true,
+      "placeable": true,
+      "footprint": {
+        "w": 1.81,
+        "d": 0.82,
+        "h": 0.71
+      },
+      "modelKey": "fu_sofa_chesterfield"
+    },
+    {
+      "itemId": "sofa_linen",
+      "category": "furniture",
+      "name": "Linen Loveseat",
+      "priceCents": 29900,
+      "deliverable": true,
+      "placeable": true,
+      "footprint": {
+        "w": 1.57,
+        "d": 0.66,
+        "h": 0.8
+      },
+      "modelKey": "fu_sofa_linen"
+    },
+    {
+      "itemId": "lounge_chair",
+      "category": "furniture",
+      "name": "Mid-Century Lounge Chair",
+      "priceCents": 27900,
+      "deliverable": true,
+      "placeable": true,
+      "footprint": {
+        "w": 1.01,
+        "d": 1.19,
+        "h": 1.17
+      },
+      "modelKey": "fu_lounge_chair"
+    },
+    {
+      "itemId": "armchair_leather",
+      "category": "furniture",
+      "name": "Leather Armchair",
+      "priceCents": 18900,
+      "deliverable": true,
+      "placeable": true,
+      "footprint": {
+        "w": 0.82,
+        "d": 0.99,
+        "h": 1.02
+      },
+      "modelKey": "fu_armchair_leather"
+    },
+    {
+      "itemId": "ottoman_leather",
+      "category": "furniture",
+      "name": "Leather Ottoman",
+      "priceCents": 8900,
+      "deliverable": true,
+      "placeable": true,
+      "footprint": {
+        "w": 0.89,
+        "d": 0.62,
+        "h": 0.62
+      },
+      "modelKey": "fu_ottoman"
+    },
+    {
+      "itemId": "coffee_table_round",
+      "category": "furniture",
+      "name": "Round Coffee Table",
+      "priceCents": 12900,
+      "deliverable": true,
+      "placeable": true,
+      "footprint": {
+        "w": 1.3,
+        "d": 1.3,
+        "h": 0.49
+      },
+      "modelKey": "fu_coffee_round"
+    },
+    {
+      "itemId": "coffee_table_concrete",
+      "category": "furniture",
+      "name": "Concrete Coffee Table",
+      "priceCents": 11900,
+      "deliverable": true,
+      "placeable": true,
+      "footprint": {
+        "w": 0.6,
+        "d": 1.2,
+        "h": 0.39
+      },
+      "modelKey": "fu_coffee_concrete"
+    },
+    {
+      "itemId": "side_table_oak",
+      "category": "furniture",
+      "name": "Oak Side Table",
+      "priceCents": 4900,
+      "deliverable": true,
+      "placeable": true,
+      "footprint": {
+        "w": 0.55,
+        "d": 0.45,
+        "h": 0.55
+      },
+      "modelKey": "fu_side_table"
+    },
+    {
+      "itemId": "desk_steel",
+      "category": "furniture",
+      "name": "Steel Desk",
+      "priceCents": 16900,
+      "deliverable": true,
+      "placeable": true,
+      "footprint": {
+        "w": 2.0,
+        "d": 0.95,
+        "h": 0.79
+      },
+      "modelKey": "fu_desk_steel"
+    },
+    {
+      "itemId": "shelf_cube",
+      "category": "furniture",
+      "name": "Cube Shelf",
+      "priceCents": 9900,
+      "deliverable": true,
+      "placeable": true,
+      "footprint": {
+        "w": 0.37,
+        "d": 1.08,
+        "h": 1.56
+      },
+      "modelKey": "fu_cube_shelf"
+    },
+    {
+      "itemId": "shelf_industrial",
+      "category": "furniture",
+      "name": "Industrial Shelving",
+      "priceCents": 14900,
+      "deliverable": true,
+      "placeable": true,
+      "footprint": {
+        "w": 2.35,
+        "d": 0.72,
+        "h": 2.31
+      },
+      "modelKey": "fu_shelf_industrial"
+    },
+    {
+      "itemId": "sideboard_slatted",
+      "category": "furniture",
+      "name": "Slatted Sideboard",
+      "priceCents": 22900,
+      "deliverable": true,
+      "placeable": true,
+      "footprint": {
+        "w": 2.44,
+        "d": 0.52,
+        "h": 0.68
+      },
+      "modelKey": "fu_sideboard"
+    },
+    {
+      "itemId": "plant_zebra",
+      "category": "decor",
+      "name": "Zebra Plant",
+      "priceCents": 1900,
+      "deliverable": true,
+      "placeable": true,
+      "footprint": {
+        "w": 0.17,
+        "d": 0.18,
+        "h": 0.27
+      },
+      "modelKey": "fu_plant_aloe"
+    },
+    {
+      "itemId": "vase_stoneware",
+      "category": "decor",
+      "name": "Stoneware Vase",
+      "priceCents": 2400,
+      "deliverable": true,
+      "placeable": true,
+      "footprint": {
+        "w": 0.22,
+        "d": 0.22,
+        "h": 0.31
+      },
+      "modelKey": "fu_vase_ceramic"
+    },
+    {
+      "itemId": "lamp_pipe",
+      "category": "decor",
+      "name": "Pipe Table Lamp",
+      "priceCents": 4900,
+      "deliverable": true,
+      "placeable": true,
+      "footprint": {
+        "w": 0.18,
+        "d": 0.26,
+        "h": 0.36
+      },
+      "modelKey": "fu_lamp_pipe"
+    },
+    {
+      "itemId": "lamp_architect",
+      "category": "decor",
+      "name": "Architect Lamp",
+      "priceCents": 6900,
+      "deliverable": true,
+      "placeable": true,
+      "footprint": {
+        "w": 0.2,
+        "d": 0.61,
+        "h": 0.89
+      },
+      "modelKey": "fu_lamp_arm"
+    },
+    {
+      "itemId": "boombox_retro",
+      "category": "appliance",
+      "name": "Retro Boombox",
+      "priceCents": 7900,
+      "deliverable": true,
+      "placeable": true,
+      "footprint": {
+        "w": 0.72,
+        "d": 0.19,
+        "h": 0.47
+      },
+      "modelKey": "fu_boombox"
+    },
+    {
+      "itemId": "pantry_restock",
+      "category": "food",
+      "name": "Pantry Restock",
+      "priceCents": 1800,
+      "deliverable": true,
+      "placeable": false,
+      "modelKey": "fu_pantry"
+    }
+  ]
+}

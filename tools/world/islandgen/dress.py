@@ -1510,8 +1510,14 @@ class Dress:
             rise = self._level_under(q, fwd, right, ybase - 0.08, half=6.4, depth=10.6)
             self.stats.setdefault('interior_door_rises', []).append(round(rise, 2))
             floor = ybase + 0.03
+            # the door's unit id (contract/ids/home_units.json, FE-owned): flat:<buildingInstanceId>:<doorIndex>, the building
+            # instance named by its footprint centre in whole metres (lgmf_n439_p68 = x -439, z +68), one door per building
+            def _m(v):
+                r = int(round(float(v)))
+                return ('n%d' % -r) if r < 0 else ('p%d' % r)
+            unit = 'flat:lgmf_%s_%s:0' % (_m(cx), _m(cz))
             self.interior_doors.append(dict(p=[round(float(q[0]), 3), round(float(ybase), 3), round(float(q[1]), 3)], yaw=round(yaw % 360.0, 2),
-                                            floor=round(float(floor), 3), building=pid, box=box, room=room))
+                                            floor=round(float(floor), 3), building=pid, box=box, room=room, unit=unit))
         log(f'v3 interior doors: {len(self.interior_doors)}')
 
     def v3_districts(self):
@@ -1836,6 +1842,7 @@ class Dress:
         stats['street'] = self.v3_district_street(DS)
         stats['rocks'] = self.v3_rocks()
         stats['mountain_rocks'] = self.v3_mountain_rocks()
+        stats['mountain_forest'] = self.v3_mountain_forest()
         stats['crops'] = self.v3_crops()
         stats['trees'] = self.v3_last_toy_trees()
         # world fix-ups: the last toy road lamps and stop sign (outside the districts: the country avenues) to the v3 kit,
@@ -2060,7 +2067,10 @@ class Dress:
     # world fix-ups (2026-10-23): the Poly Haven electricity poles (modular_electricity_poles, CC0) on the country roads
     POLE_FULL = ['ph_power_pole_01', 'ph_power_pole_02', 'ph_power_pole_01', 'ph_power_pole_03']
     POLE_ROUTES = ('farm_road', 'farm_lane', 'farm_track', 'hills_drive', 'foothill_road')
-    POLE_SCALE = 1.35          # the scans are 6.1 m; rural distribution poles stand ~8-9 m
+    POLE_SCALE = 1.35          # the hardware sets are 6.1 m; rural distribution poles stand ~8-9 m
+    # the modular kit's 01-03 are the hardware (crossarm, insulators, transformer) on a hairline shaft; the pole itself is
+    # ph_power_pole_09 (7 m, 14 cm): set under each, x2 thick (a ~28 cm pole) and 1.2 tall so its top meets the crossarm
+    POLE_SHAFT, POLE_SHAFT_SCALE = 'ph_power_pole_09', (2.0, 1.2)
 
     def v3_power_lines(self):
         """Overhead lines along Airdrop Farm's roads and the Builder Hills / foothill roads outside the built frontage: a
@@ -2104,8 +2114,10 @@ class Dress:
                     yq = float(self.g.y([q[0]], [q[1]])[0]) - 0.1
                     pid = poles[int(rng.integers(len(poles)))]
                     self.add(pid, q[0], yq, q[1], face, sc, sc)
+                    if self.POLE_SHAFT in K:
+                        self.add(self.POLE_SHAFT, q[0], yq, q[1], face, *self.POLE_SHAFT_SCALE)
                     self.occ.disc(q[0], q[1], 1.2, Occupancy.PROP)
-                    run.append([round(float(q[0]), 2), round(yq, 2), round(float(q[1]), 2), round(face, 1), sc])
+                    run.append([round(float(q[0]), 2), round(yq, 2), round(float(q[1]), 2), round(face, 1), sc, sc])
                     n += 1
                     pos += rng.uniform(36, 44)
                 else:
@@ -2135,6 +2147,60 @@ class Dress:
                     keep.append(r)
                 self.inst[proto] = keep
         return dict(poles=n, runs=runs, trees_cut=cut)
+
+    # district fix-ups 2 (2026-10-23): the mountain forested to a tree line
+    # the lightest LOD1s (234 tris): the mountain shows hundreds of them at LOD1 from the basecamp and the aerial
+    MTN_CONIFERS = ['pt_fir_a', 'pt_pine_a', 'pt_fir_a', 'pt_pine_a']
+    MTN_ALPINE = [('pv_bush_low', (0.6, 0.95)), ('pv_bush_round', (0.55, 0.85)), ('pv_grass_tall', (1.0, 1.4)), ('pv_grass_tall', (1.0, 1.4))]
+
+    def v3_mountain_forest(self):
+        """The mountain read as a bare cone from the air: islandgen's forest stops where the slope passes ~45 degrees and
+        below ~120 m. Conifers (the scanned firs and pine) now climb its gentler slopes and ledges to a ragged tree line
+        (~134 m +- 13), thinning and shrinking with height, in stands with clearings; never on the cliffs (slope normal under
+        ~0.45) thinner where the forest already stands. Above the line, alpine shrubs and tall grass in patches to ~170 m."""
+        K = self.kit.items
+        g = self.g
+        conifers = [k for k in self.MTN_CONIFERS if k in K]
+        if not conifers:
+            return {}
+        cx, cz = -182.0, 513.0
+        region = (cx - 480, cx + 480, cz - 480, cz + 480)
+        ny_f = 1.0 / np.sqrt(1.0 + g.slope ** 2)
+
+        def line(X, Z):
+            return 134.0 + (G.fbm(X / 45.0 + 11.0, Z / 45.0 - 4.0) - 0.5) * 26.0
+
+        def tree_p(X, Z):
+            y = g.y(X, Z)
+            ny = g.sample(ny_f, X, Z)
+            near = np.hypot(X - cx, Z - cz) < 470.0
+            f = g.sample(g.forest, X, Z)
+            dens = G.smoothstep(line(X, Z), line(X, Z) - 32.0, y) * G.smoothstep(38.0, 52.0, y)
+            slope_ok = G.smoothstep(0.34, 0.44, ny)
+            stands = G.smoothstep(0.20, 0.38, G.fbm(X / 85.0 + 3.0, Z / 85.0 - 7.0))
+            return np.where(near & (f < 0.7), 0.95 * dens * slope_ok * stands * (1.0 - 0.6 * f), 0.0)
+
+        def tree_pick(x, z, y):
+            k = float(G.smoothstep(85.0, 138.0, y))
+            s = RNG.uniform(0.75, 0.98) * (1.0 - 0.4 * k)
+            return conifers[int(RNG.integers(len(conifers)))], s, s
+
+        def alpine_p(X, Z):
+            y = g.y(X, Z)
+            ny = g.sample(ny_f, X, Z)
+            near = np.hypot(X - cx, Z - cz) < 470.0
+            l = line(X, Z)
+            band = G.smoothstep(l - 16.0, l + 2.0, y) * G.smoothstep(176.0, 158.0, y)
+            patch = G.smoothstep(0.38, 0.56, G.fbm(X / 30.0 - 5.0, Z / 30.0 + 2.0))
+            return np.where(near, 0.75 * band * G.smoothstep(0.42, 0.56, ny) * patch, 0.0)
+
+        def alpine_pick(x, z, y):
+            proto, (a, b) = self.MTN_ALPINE[int(RNG.integers(len(self.MTN_ALPINE)))]
+            s = RNG.uniform(a, b)
+            return proto, s, s
+        n_trees = self.scatter(6.2, region, tree_p, tree_pick, cull_codes=(Occupancy.FREE,), margin=1.5)
+        n_alpine = self.scatter(4.5, region, alpine_p, alpine_pick, cull_codes=(Occupancy.FREE, Occupancy.TREE), margin=0.8)
+        return dict(trees=n_trees, alpine=n_alpine)
 
     def v3_crops(self):
         """The toy crop sprites become rows of the semi-real cards: tall grass tinted ripe for wheat, taller and greener for
@@ -2505,7 +2571,7 @@ class Dress:
                    # world districts 2 route (InteriorRoute.Spots2)
                    (422.7, 302.2), (560.0, 92.0), (-60.0, -230.0), (-276.0, 278.0), (-222.0, 420.0), (802.0, -594.0),
                    # world fix-ups route (InteriorRoute.SpotsFx)
-                   (-374.6, -248.8), (102.0, -228.0), (-200.0, 300.0), (300.0, 52.0)]
+                   (-374.6, -248.8), (102.0, -228.0), (749.0, -24.0), (255.0, 45.0)]
 
     def v3_ground_cover(self):
         """Island-wide: the toy grass clumps, clover, cartoon flowers, ferns and blob bushes become the semi-real cards and

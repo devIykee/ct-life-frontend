@@ -87,11 +87,11 @@ namespace CTLife.UI
                 var button = El.Btn("", () =>
                     { if (!_disposed && owner != null && InteractionController.Current == owner) owner.Perform(id, target); },
                     a.primary ? "ct-interact ct-interact-primary" : "ct-interact ct-interact-secondary");
-                if (id == "buy") button.AddToClassList("ct-interact-locked");
+                if (id == "buy" || (id == "ext" && s.tagLocked)) button.AddToClassList("ct-interact-locked");
                 button.name = "scene-action-" + id.Replace(':', '-');
                 button.tooltip = label;
                 var key = El.PassThrough(El.Div("ct-interact-key", new UiIcon(a.icon)));
-                if (id == "buy") key.Add(El.PassThrough(El.Div("ct-interact-lock", new UiIcon("locked"))));
+                if (id == "buy" || (id == "ext" && s.tagLocked)) key.Add(El.PassThrough(El.Div("ct-interact-lock", new UiIcon("locked"))));
                 button.Add(key);
                 button.Add(El.PassThrough(El.Text(label, "ct-interact-label")));
                 _actions.Add(button);

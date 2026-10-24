@@ -17,13 +17,28 @@ namespace CTLife.World
     /// - with the camera inside and the leaf shut nothing outside can be seen: the island's kit and ground layers are not
     ///   drawn; the characters get an indoor light (dimmer sun without shadows, warm ambient) while they are inside.
     /// </summary>
+    /// <summary>
+    /// Who may open a walk-in door (2026-10-23, homes and flat doors): City Life answers from GET /units/{unitId}/access.
+    /// <see cref="DoorVerdict.Unknown"/> keeps the leaf shut until the answer is in; with no gate registered (offline
+    /// island, tests) every door opens as before.
+    /// </summary>
+    public enum DoorVerdict { Unknown, Open, Locked }
+
+    public interface IDoorGate
+    {
+        /// <summary>The cached answer for this unit (cheap; called every frame for nearby doors).</summary>
+        DoorVerdict Verdict(string unitId);
+        /// <summary>The player is near this door: fetch or refresh its answer.</summary>
+        void Want(string unitId);
+    }
+
     public sealed class IslandInteriors : MonoBehaviour
     {
         public const string DoorsPath = "World/Island/interior_doors";
         public const string RoomsPath = "World/Interiors/";
         public const float LeafRadius = 70f, PreloadRadius = 90f, LoadRadius = 20f, UnloadRadius = 36f, OpenRadius = 3.4f, Every = 0.2f;
 
-        [Serializable] private sealed class DoorRow { public float[] p; public float yaw; public float floor; public string room; public string building; public float[] box; }
+        [Serializable] private sealed class DoorRow { public float[] p; public float yaw; public float floor; public string room; public string building; public float[] box; public string unit; }
         [Serializable] private sealed class DoorFile { public DoorRow[] doors; }
 
         private sealed class Door
@@ -32,6 +47,8 @@ namespace CTLife.World
             public Vector3 pos;            // floor centre of the opening (the room's floor height)
             public Quaternion rot;         // +Z out of the building
             public string room;
+            /// <summary>The flat's unit id (contract/ids/home_units.json): flat:&lt;buildingInstanceId&gt;:&lt;doorIndex&gt;.</summary>
+            public string unit;
             public Vector3 boxCenter, boxSize;
             public Leaf leaf;
         }
@@ -45,7 +62,13 @@ namespace CTLife.World
             public readonly List<Collider> building = new List<Collider>();
             public bool ignoring;
             public CharacterController body;
+            public bool wasInside;      // entered once: the way out stays open even if access is revoked meanwhile
         }
+
+        /// <summary>The door gate (City Life registers it after sign-in); null opens every door.</summary>
+        public static IDoorGate Gate { get; set; }
+        /// <summary>The player walked into / out of a room (door index, unit id, room).</summary>
+        public static event Action<int, string, InteriorRoom> Entered, Exited;
 
         public static IslandInteriors Current { get; private set; }
         /// <summary>The room the player is in now (null outside every room) and its door index (perf harness, captures).</summary>
@@ -53,6 +76,36 @@ namespace CTLife.World
         public bool PlayerInside { get; private set; }
         public bool WorldHidden { get; private set; }
         public int DoorCount => _doors.Length;
+        /// <summary>The unit id of the room the player is in (null outside).</summary>
+        public string ActiveUnit => PlayerInside ? _active?.door.unit : null;
+        public int ActiveDoor => _active != null ? _active.door.index : -1;
+
+        public string UnitOf(int index) => index >= 0 && index < _doors.Length ? _doors[index].unit : null;
+
+        /// <summary>The door with this unit id (its floor centre, +Z out of the building); false when it is not on this island.</summary>
+        public bool TryGetUnitDoor(string unitId, out int index, out Vector3 position, out Quaternion rotation)
+        {
+            for (int i = 0; i < _doors.Length; i++)
+                if (_doors[i].unit == unitId) { index = i; position = _doors[i].pos; rotation = _doors[i].rot; return true; }
+            index = -1; position = default; rotation = Quaternion.identity;
+            return false;
+        }
+
+        /// <summary>Does the gate let the player through this door now (no gate: yes)?</summary>
+        public bool MayEnter(int index)
+        {
+            if (index < 0 || index >= _doors.Length) return false;
+            var gate = Gate;
+            return gate == null || string.IsNullOrEmpty(_doors[index].unit) || gate.Verdict(_doors[index].unit) == DoorVerdict.Open;
+        }
+
+        /// <summary>Is this door known to be locked for the player (a stranger's flat)?</summary>
+        public bool IsLocked(int index)
+        {
+            var gate = Gate;
+            return gate != null && index >= 0 && index < _doors.Length && !string.IsNullOrEmpty(_doors[index].unit) &&
+                   gate.Verdict(_doors[index].unit) == DoorVerdict.Locked;
+        }
 
         /// <summary>A walk-in door: its floor centre and facing (+Z out of the building).</summary>
         public bool TryGetDoor(int index, out Vector3 position, out Quaternion rotation)
@@ -98,7 +151,7 @@ namespace CTLife.World
                     if (r?.p == null || r.p.Length < 3 || string.IsNullOrEmpty(r.room)) continue;
                     var d = new Door
                     {
-                        index = list.Count, room = r.room,
+                        index = list.Count, room = r.room, unit = string.IsNullOrEmpty(r.unit) ? null : r.unit,
                         pos = new Vector3(r.p[0], r.floor > 0f || r.floor < 0f ? r.floor : r.p[1], r.p[2]),
                         rot = Quaternion.Euler(0f, r.yaw, 0f),
                     };
@@ -168,6 +221,8 @@ namespace CTLife.World
             if (_active != null && (Flat(_active.door.pos, p) > UnloadRadius || (nearest != _active.door && best < LoadRadius && !PlayerInside)))
                 Deactivate();
             if (_active == null && nearest != null && best < LoadRadius) Activate(nearest, player);
+            // ask the gate about the door being approached (the answer is in long before the 3.4 m opening distance)
+            if (nearest != null && best < LoadRadius && !string.IsNullOrEmpty(nearest.unit)) Gate?.Want(nearest.unit);
         }
 
         private void Activate(Door d, Transform player)
@@ -212,7 +267,11 @@ namespace CTLife.World
             var player = Player();
             var ic = player != null ? player.GetComponent<InteractionController>() : null;
             if (ic != null) ic.SetExtraInteractables(null);
-            PlayerInside = false;
+            if (PlayerInside)
+            {
+                PlayerInside = false;
+                try { Exited?.Invoke(a.door.index, a.door.unit, a.room); } catch (Exception e) { Debug.LogException(e); }
+            }
         }
 
         private List<Interactable> SeatsFor(Door d, InteriorRoom room)
@@ -296,7 +355,7 @@ namespace CTLife.World
             foreach (var l in _leaves)
             {
                 bool ready = _active != null && _active.door == l.door && _active.room != null && _active.room.gameObject.activeSelf;
-                bool open = ready && Flat(l.door.pos, p) < OpenRadius;
+                bool open = ready && Flat(l.door.pos, p) < OpenRadius && (MayEnter(l.door.index) || (_active.wasInside && _active.door == l.door));
                 float target = open ? 1f : 0f;
                 if (Mathf.Approximately(l.angle, target)) continue;
                 l.angle = Mathf.MoveTowards(l.angle, target, dt / 0.55f);
@@ -315,8 +374,18 @@ namespace CTLife.World
             var local = t.InverseTransformPoint(p);
             bool inside = a.room.Contains(local, 0.05f);
             bool doorway = Mathf.Abs(local.x) < 0.9f && local.z > -0.6f && local.z < 2.4f && local.y > -1f && local.y < 2.5f;
+            bool wasIn = PlayerInside;
             PlayerInside = inside;
-            SetIgnore(a, inside || doorway);
+            if (inside) a.wasInside = true;
+            else if (!doorway) a.wasInside = false;
+            // a locked door keeps the building's footprint collider (the shut leaf has none); someone already inside always
+            // gets out again, even when their access was revoked meanwhile
+            SetIgnore(a, inside || (doorway && (MayEnter(a.door.index) || a.wasInside)));
+            if (inside != wasIn)
+            {
+                try { if (inside) Entered?.Invoke(a.door.index, a.door.unit, a.room); else Exited?.Invoke(a.door.index, a.door.unit, a.room); }
+                catch (Exception e) { Debug.LogException(e); }
+            }
             // the world outside: hidden only while the camera is in the room and its door is shut
             var cam = Camera.main;
             bool camIn = cam != null && a.room.Contains(t.InverseTransformPoint(cam.transform.position), 0.0f);

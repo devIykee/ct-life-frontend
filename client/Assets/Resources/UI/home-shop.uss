@@ -1,0 +1,149 @@
+/* CT Life · Duo Shop app and place mode (2026-10-23, backend PRs #7/#8).
+   Duo Shop: the Duo kit's App Store language (docs/design/duo-ios-redesign-20261016.md): large title, chips, one featured
+   object card, rows with studio thumbnails and GET-style price pills, a product stage, sheets for confirmation, a tracker.
+   Place mode: City HUD v2 materials (frosted dark glass, thin light rim, Inter labels) over the world. */
+
+/* ---------------------------------------------------------------- Duo Shop (inside the phone: Duo tokens apply) */
+.ct-phone .dshop .dshop-sub { font-size: var(--duo-subhead); color: var(--duo-label2); margin: -6px 38px 18px; padding: 0; }
+.ct-phone .dshop .dshop-chip-scroll { flex-shrink: 0; margin: 0 0 8px; }
+.ct-phone .dshop .dshop-chips { flex-direction: row; padding: 0 30px; }
+.ct-phone .dshop .dshop-chips > .duo-chip { margin: 0 8px; }
+
+.ct-phone .dshop .dshop-feature {
+    margin: 18px 38px 6px; padding: 30px 34px 28px; border-radius: 34px; border-width: 0; flex-shrink: 0;
+    background-color: #f2f2f7; align-items: stretch;
+}
+.ct-phone .dshop .dshop-feature:active { background-color: #e9e9ee; }
+.ct-phone .dshop .dshop-feature-kicker { font-size: var(--duo-caption); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); color: var(--duo-blue); letter-spacing: 0.6px; margin: 0; padding: 0; }
+.ct-phone .dshop .dshop-feature-title { font-size: var(--duo-title2); -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); color: var(--duo-label); letter-spacing: -0.9px; margin: 6px 0 0; padding: 0; white-space: normal; }
+.ct-phone .dshop .dshop-feature-sub { font-size: var(--duo-subhead); color: var(--duo-label2); margin: 4px 0 0; padding: 0; }
+.ct-phone .dshop .dshop-feature-art-well { height: 420px; margin: 12px 0 6px; align-items: center; justify-content: center; }
+.ct-phone .dshop .dshop-feature-art { width: 420px; height: 420px; -unity-background-scale-mode: scale-to-fit; }
+.ct-phone .dshop .dshop-feature-row { flex-direction: row; align-items: center; }
+.ct-phone .dshop .dshop-feature-price { font-size: var(--duo-title3); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); color: var(--duo-label); margin: 0; padding: 0; }
+
+.ct-phone .dshop .dshop-list { flex-shrink: 0; }
+.ct-phone .dshop .dshop-row-art-well {
+    width: 112px; height: 112px; border-radius: 26px; background-color: #f2f2f7; align-items: center; justify-content: center; overflow: hidden;
+}
+.ct-phone .dshop .dshop-row-art { width: 104px; height: 104px; -unity-background-scale-mode: scale-to-fit; }
+.ct-phone .dshop .dshop-status-tile { width: 76px; height: 76px; border-radius: 20px; align-items: center; justify-content: center; }
+.ct-phone .dshop .dshop-status-tile .ct-icon { width: 40px; height: 40px; -unity-background-image-tint-color: #ffffff; }
+.ct-phone .dshop .dshop-tone-green { background-color: #30c75e; }
+.ct-phone .dshop .dshop-tone-blue { background-color: #0a7cff; }
+.ct-phone .dshop .dshop-tone-orange { background-color: #ff9500; }
+.ct-phone .dshop .dshop-tone-gray { background-color: #8e8e93; }
+
+.ct-phone .dshop-bag-badge { position: absolute; right: -4px; top: -4px; }
+
+/* product */
+.ct-phone .dshop .dshop-stage {
+    height: 640px; margin: 6px 30px 10px; border-radius: 40px; background-color: #f2f2f7; flex-shrink: 0; overflow: hidden;
+    align-items: center; justify-content: center;
+}
+.ct-phone .dshop .dshop-stage-art { position: absolute; left: 0; right: 0; top: 0; bottom: 0; -unity-background-scale-mode: scale-to-fit; }
+.ct-phone .dshop .dshop-stage-hint {
+    position: absolute; bottom: 22px; left: 0; right: 0; -unity-text-align: middle-center; font-size: var(--duo-caption);
+    color: var(--duo-label3); margin: 0; padding: 0;
+}
+.ct-phone .dshop .dshop-kicker { font-size: var(--duo-caption); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); color: var(--duo-label2); letter-spacing: 0.6px; margin: 26px 38px 0; padding: 0; }
+.ct-phone .dshop .dshop-title { font-size: var(--duo-large-title); -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); color: var(--duo-label); letter-spacing: -1.5px; white-space: normal; margin: 4px 38px 0; padding: 0; }
+.ct-phone .dshop .dshop-price { font-size: var(--duo-hero); -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); color: var(--duo-label); letter-spacing: -2px; margin: 8px 38px 10px; padding: 0; }
+.ct-phone .dshop .dshop-facts { flex-shrink: 0; margin-top: 6px; }
+.ct-phone .dshop .dshop-bottom-space { height: 220px; flex-shrink: 0; }
+.ct-phone .dshop .duo-bottom-bar-button.dshop-primary { background-color: var(--duo-blue); color: #ffffff; }
+.ct-phone .dshop .duo-bottom-bar-button.dshop-primary:disabled { opacity: 0.45; }
+.ct-phone .dshop .duo-bottom-bar-button.dshop-secondary { background-color: var(--duo-fill); color: var(--duo-blue); flex-grow: 0.6; }
+
+/* bag */
+.ct-phone .dshop .dshop-stepper { flex-direction: row; align-items: center; border-radius: 30px; background-color: var(--duo-fill); padding: 4px; }
+.ct-phone .dshop .dshop-step {
+    width: 64px; height: 56px; min-width: 64px; margin: 0; padding: 0; border-width: 0; border-radius: 28px; background-color: rgba(0,0,0,0);
+    font-size: var(--duo-headline); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); color: var(--duo-blue); -unity-text-align: middle-center;
+}
+.ct-phone .dshop .dshop-step:active { background-color: var(--duo-pressed); }
+.ct-phone .dshop .dshop-step-n { min-width: 40px; font-size: var(--duo-headline); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); color: var(--duo-label); -unity-text-align: middle-center; margin: 0; padding: 0; }
+.ct-phone .dshop .dshop-seg { margin: 4px 38px 6px; flex-shrink: 0; }
+.ct-phone .dshop .duo-notice { margin: 10px 38px; }
+
+.ct-phone .dshop-confirm-amount { align-items: center; margin: 10px 0 22px; }
+.ct-phone .dshop-confirm-value { font-size: var(--duo-hero); -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); color: var(--duo-label); letter-spacing: -2px; margin: 0; padding: 0; }
+.ct-phone .dshop-confirm-caption { font-size: var(--duo-subhead); color: var(--duo-label2); margin: 2px 0 0; padding: 0; }
+
+/* tracking */
+.ct-phone .dshop .dshop-track-hero { margin: 0 38px 12px; flex-shrink: 0; }
+.ct-phone .dshop .dshop-track-eta { font-size: var(--duo-title2); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); color: var(--duo-label); letter-spacing: -0.8px; margin: 0; padding: 0; }
+.ct-phone .dshop .dshop-track-where { font-size: var(--duo-subhead); color: var(--duo-label2); margin: 6px 0 0; padding: 0; }
+.ct-phone .dshop .dshop-steps { flex-direction: row; align-items: flex-start; margin: 26px 38px 18px; flex-shrink: 0; }
+.ct-phone .dshop .dshop-step-col { width: 210px; align-items: center; }
+.ct-phone .dshop .dshop-step-dot {
+    width: 58px; height: 58px; border-radius: 29px; border-width: 4px; border-color: #d1d1d6; background-color: #ffffff;
+    align-items: center; justify-content: center;
+}
+.ct-phone .dshop .dshop-step-done { background-color: #30c75e; border-color: #30c75e; }
+.ct-phone .dshop .dshop-step-now { border-color: rgba(48,199,94,0.35); border-width: 8px; }
+.ct-phone .dshop .dshop-step-check { width: 28px; height: 28px; color: #ffffff; }
+.ct-phone .dshop .dshop-step-name { font-size: var(--duo-footnote); color: var(--duo-label3); -unity-text-align: upper-center; white-space: normal; margin: 12px 0 0; padding: 0; }
+.ct-phone .dshop .dshop-step-name-on { color: var(--duo-label); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); }
+.ct-phone .dshop .dshop-step-line { flex-grow: 1; height: 6px; border-radius: 3px; margin: 26px -70px 0; background-color: #e5e5ea; }
+.ct-phone .dshop .dshop-step-line-on { background-color: #30c75e; }
+.ct-phone .dshop .dshop-steps-cancelled .dshop-step-dot { background-color: #ffffff; border-color: #d1d1d6; }
+.ct-phone .dshop .dshop-cancel-row { flex-direction: row; justify-content: center; margin: 30px 38px 0; flex-shrink: 0; }
+
+/* ---------------------------------------------------------------- place mode (over the world, on the modal layer) */
+.hs-place { position: absolute; left: 0; right: 0; top: 0; bottom: 0; }
+.hs-place-top {
+    position: absolute; left: 40px; right: 40px; top: 34px; height: 104px; flex-direction: row; align-items: center;
+    padding: 0 14px 0 40px; border-radius: 52px; border-width: 1.5px; border-color: rgba(255,255,255,0.22); background-color: rgba(18,18,22,0.62);
+}
+.hs-place-title { font-size: 40px; -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); color: #ffffff; letter-spacing: -0.6px; margin: 0; padding: 0; }
+.hs-glass-btn {
+    height: 76px; padding: 0 36px; margin: 0; border-radius: 38px; border-width: 0; background-color: rgba(255,255,255,0.16);
+    font-size: 30px; -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); color: #ffffff;
+}
+.hs-glass-btn:active { background-color: rgba(255,255,255,0.28); scale: 0.96 0.96; }
+.hs-place-hint {
+    position: absolute; left: 0; right: 0; top: 160px; -unity-text-align: middle-center; font-size: 28px; color: rgba(255,255,255,0.92);
+    -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); text-shadow: 0 2px 6px rgba(0,0,0,0.55); margin: 0; padding: 0;
+}
+.hs-place-status {
+    position: absolute; left: 0; right: 0; bottom: 420px; -unity-text-align: middle-center; font-size: 30px; color: #ffffff;
+    -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); text-shadow: 0 2px 6px rgba(0,0,0,0.6); margin: 0; padding: 0;
+}
+.hs-place-bottom { position: absolute; left: 0; right: 0; bottom: 30px; align-items: center; }
+.hs-place-tray {
+    width: 100%; height: 330px; padding: 0 30px;
+}
+.hs-place-tray .unity-scroll-view__content-container { flex-direction: row; padding: 0 20px; }
+.hs-tray-item {
+    width: 250px; height: 300px; margin: 0 12px; padding: 16px 14px 18px; border-radius: 40px; border-width: 1.5px;
+    border-color: rgba(255,255,255,0.22); background-color: rgba(18,18,22,0.62); align-items: center;
+}
+.hs-tray-item:active { scale: 0.96 0.96; background-color: rgba(40,40,46,0.72); }
+.hs-tray-item:disabled { opacity: 0.45; }
+.hs-tray-art { width: 190px; height: 170px; border-radius: 28px; background-color: rgba(255,255,255,0.92); -unity-background-scale-mode: scale-to-fit; }
+.hs-tray-name {
+    font-size: 25px; -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); color: #ffffff; -unity-text-align: middle-center;
+    white-space: normal; margin: 12px 0 0; padding: 0; max-height: 64px; overflow: hidden;
+}
+.hs-tray-tag { font-size: 21px; color: rgba(255,255,255,0.65); margin: 4px 0 0; padding: 0; }
+.hs-tray-tag-on { color: #6ee495; }
+.hs-place-empty {
+    font-size: 30px; color: #ffffff; -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); margin: 80px 40px 0; padding: 26px 40px;
+    border-radius: 40px; background-color: rgba(18,18,22,0.62); white-space: normal; -unity-text-align: middle-center;
+}
+.hs-place-bar {
+    flex-direction: row; align-items: center; padding: 18px 22px; border-radius: 74px; border-width: 1.5px;
+    border-color: rgba(255,255,255,0.22); background-color: rgba(18,18,22,0.66);
+}
+.hs-round { width: 132px; height: 130px; margin: 0 6px; padding: 0; border-width: 0; background-color: rgba(0,0,0,0); align-items: center; }
+.hs-round:active { scale: 0.94 0.94; }
+.hs-round-face { width: 92px; height: 92px; border-radius: 46px; background-color: rgba(255,255,255,0.16); align-items: center; justify-content: center; }
+.hs-round-face .ct-icon { width: 46px; height: 46px; -unity-background-image-tint-color: #ffffff; }
+.hs-round-label { font-size: 22px; -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); color: #ffffff; margin: 6px 0 0; padding: 0; white-space: nowrap; }
+.hs-place-primary {
+    height: 108px; min-width: 230px; margin: 0 6px 0 16px; padding: 0 46px; border-radius: 54px; border-width: 0; background-color: #30c75e;
+    font-size: 34px; -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); color: #ffffff;
+}
+.hs-place-primary:active { scale: 0.96 0.96; background-color: #2ab454; }
+.hs-place-primary-off { background-color: rgba(255,255,255,0.18); color: rgba(255,255,255,0.6); }

@@ -62,3 +62,33 @@ def ph_texture(pid, root, maps=(('Diffuse', 'diff'), ('nor_gl', 'nor_gl'), ('arm
         json.dump(dict(id=pid, name=inf['name'], url=f'https://polyhaven.com/a/{pid}', authors=list(inf['authors']), licence='CC0',
                        dimensions_mm=inf.get('dimensions')), open(mp, 'w'), indent=1)
     return d
+
+
+def ph_model(pid, root, res='1k'):
+    """A Poly Haven model's glTF (+ its .bin and textures, relative names kept, each part sanitised) into <root>/<pid>/,
+    plus meta.json (name, authors, CC0, dimensions, polycount). Cached: a directory with meta.json is skipped."""
+    pid = safe(pid)
+    d = inside(os.path.join(root, pid), root)
+    if os.path.exists(os.path.join(d, 'meta.json')):
+        return d
+    inf = get_json('https://api.polyhaven.com/info/' + pid)
+    files = get_json('https://api.polyhaven.com/files/' + pid)
+    g = files['gltf'][res]['gltf']
+    os.makedirs(d, exist_ok=True)
+    print('[fetch] Poly Haven model', pid, flush=True)
+    get(g['url'], inside(os.path.join(d, f'{pid}_{safe(res)}.gltf'), d))
+    for rel, v in g['include'].items():
+        parts = [p for p in rel.replace('\\', '/').split('/') if p not in ('', '.', '..')]
+        if not parts:
+            continue
+        stem, ext = os.path.splitext(parts[-1])
+        clean = [safe(p) for p in parts[:-1]] + [safe(stem) + '.' + safe(ext.lstrip('.'))]
+        if clean != parts:
+            print('[fetch] skipped an unexpected file name', repr(rel), flush=True)
+            continue
+        t = inside(os.path.join(d, *clean), d)
+        os.makedirs(os.path.dirname(t), exist_ok=True)
+        get(v['url'], t)
+    json.dump(dict(id=pid, name=inf['name'], url=f'https://polyhaven.com/a/{pid}', authors=list(inf['authors']), licence='CC0',
+                   dimensions_mm=inf.get('dimensions'), polycount=inf.get('polycount')), open(os.path.join(d, 'meta.json'), 'w'), indent=1)
+    return d

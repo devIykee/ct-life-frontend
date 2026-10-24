@@ -15,6 +15,10 @@ namespace CTLife.Net
             "ad_booking_update", "ads_changed", "vc_offer", "hire_offer", "project_event",
             "district_flipped", "season_rollover", "league_result", "beef_challenge", "beef_update", "beef_result", "sybil_status",
             "cabal_invite", "x_link_update",
+            // Duo Shop delivery (backend PR #8): the courier leaves / the order arrived (HomeShopService, DeliveryDirector)
+            "delivery_out", "delivery_arrived",
+            // gm streak + quests (backend PR #9): a server event moved one of your quests (RetentionService)
+            "quest_progress",
         };
 
         /// <summary>The server also broadcasts these on every `ratio_arena` venue instance (the feed drops the duplicate).</summary>

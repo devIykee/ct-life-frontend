@@ -99,7 +99,7 @@ namespace CTLife.UI
             if (phoneSheet != null) Root.styleSheets.Add(phoneSheet);
             var landscapeSheet = Resources.Load<StyleSheet>("UI/landscape");
             if (landscapeSheet != null) Root.styleSheets.Add(landscapeSheet);
-            foreach (var name in new[] { "phone-social", "phone-account", "toast", "duo-kit", "duo-apps" })
+            foreach (var name in new[] { "phone-social", "phone-account", "toast", "duo-kit", "duo-apps", "home-shop" })
             {
                 var detailSheet = Resources.Load<StyleSheet>("UI/" + name);
                 if (detailSheet != null) Root.styleSheets.Add(detailSheet);
@@ -115,6 +115,7 @@ namespace CTLife.UI
             ModalLayer = Layer("layer-modal", PickingMode.Ignore);
             ToastLayer = Layer("layer-toast", PickingMode.Ignore);
             WorldInputLayer.Attach(WorldLayer);
+            UiFontWarmup.Run(Root);   // glyphs and kerning before play: no mid-game font-atlas hitches
             Root.RegisterCallback<GeometryChangedEvent>(_ => ApplySafeArea(true));
             ApplySafeArea(true);
         }

@@ -11,6 +11,10 @@ namespace CTLife.World
     /// LODs (2, 4 and 8 m; skirts on the coarse ones), LOD0 doubling as the MeshCollider. Chunks are built a few per
     /// frame, and the collision meshes are baked on a worker thread (Physics.BakeMesh) before they are assigned, so a cell
     /// never stalls a frame. Shipping the heightfield (2 MB) instead of baked chunk meshes keeps the build and repo small.
+    /// Perf lane 2 (2026-10-23): each cell also merges its chunks' LOD1 and LOD2 meshes into one mesh per level, drawn in
+    /// place of the chunks while every chunk of the cell is (with a 15% margin) past that LOD's switch distance: the same
+    /// triangles in one draw instead of one per chunk (terrain was ~105 draws at eye level downtown). Near ground (LOD0,
+    /// the only level that casts shadows) is always the chunks' own.
     /// </summary>
     public sealed class IslandTerrainCell : MonoBehaviour
     {
@@ -60,6 +64,7 @@ namespace CTLife.World
             if (this == null) return;
             ct.ThrowIfCancellationRequested();
             foreach (var b in bakes) if (b.col != null) b.col.sharedMesh = b.mesh;
+            BuildMerged();
             Built = true;
             _building = false;
         }
@@ -73,6 +78,7 @@ namespace CTLife.World
                 var (mesh, col) = BuildChunk(h, c);
                 if (col != null) col.sharedMesh = mesh;
             }
+            BuildMerged();
             Built = true;
         }
 
@@ -109,7 +115,77 @@ namespace CTLife.World
             lg.SetLODs(new[] { new LOD(lod0, new[] { rs[0] }), new LOD(lod1, new[] { rs[1] }), new LOD(0f, new[] { rs[2] }) });
             lg.fadeMode = LODFadeMode.None;
             lg.RecalculateBounds();
+            _chunks.Add((lg, rs));
             return (lods[0], mc);
+        }
+
+        // ------------------------------------------------------------------ merged far levels
+
+        private readonly List<(LODGroup lg, Renderer[] rs)> _chunks = new List<(LODGroup, Renderer[])>();
+        private readonly Renderer[] _merged = new Renderer[3];   // [1], [2]
+        private int _state = -1;                                  // 0 chunks, 1 merged LOD1, 2 merged LOD2
+        private float _nextCheck;
+        public const float MergeMargin = 1.15f;
+
+        private void BuildMerged()
+        {
+            if (_chunks.Count < 2) return;
+            for (int level = 1; level <= 2; level++)
+            {
+                var ci = new CombineInstance[_chunks.Count];
+                int verts = 0;
+                for (int i = 0; i < _chunks.Count; i++)
+                {
+                    var r = _chunks[i].rs[level];
+                    var m = r.GetComponent<MeshFilter>().sharedMesh;
+                    verts += m.vertexCount;
+                    ci[i] = new CombineInstance { mesh = m, transform = transform.worldToLocalMatrix * r.transform.localToWorldMatrix };
+                }
+                var mesh = new Mesh { name = name + "_merged_lod" + level, indexFormat = verts > 65000 ? IndexFormat.UInt32 : IndexFormat.UInt16 };
+                mesh.CombineMeshes(ci, true, true, false);
+                mesh.UploadMeshData(true);
+                _meshes.Add(mesh);
+                var go = new GameObject("merged_LOD" + level) { layer = GroundLayer };
+                go.transform.SetParent(transform, false);
+                go.AddComponent<MeshFilter>().sharedMesh = mesh;
+                var mr = go.AddComponent<MeshRenderer>();
+                mr.sharedMaterial = material;
+                mr.shadowCastingMode = ShadowCastingMode.Off;
+                mr.lightProbeUsage = LightProbeUsage.Off;
+                mr.reflectionProbeUsage = ReflectionProbeUsage.Off;
+                mr.enabled = false;
+                _merged[level] = mr;
+            }
+            _state = 0;
+        }
+
+        /// <summary>The LOD a chunk's LODGroup is certainly at (or past) for this camera: Unity's screen-relative height
+        /// (size / 2 / (distance * tan(fov / 2)) * lodBias) against the transitions, with <see cref="MergeMargin"/> to spare.</summary>
+        private int SafeLevel(LODGroup lg, Vector3 eye, float tanHalf, float bias)
+        {
+            float d = Vector3.Distance(eye, lg.transform.TransformPoint(lg.localReferencePoint));
+            float rel = lg.size * 0.5f / (Mathf.Max(0.01f, d / MergeMargin) * tanHalf) * bias;
+            return rel < lod1 ? 2 : rel < lod0 ? 1 : 0;
+        }
+
+        private void LateUpdate()
+        {
+            if (_state < 0 || Time.unscaledTime < _nextCheck) return;
+            _nextCheck = Time.unscaledTime + 0.1f;
+            var cam = Camera.main;
+            int want = 0;
+            if (cam != null && !cam.orthographic)
+            {
+                float tanHalf = Mathf.Tan(cam.fieldOfView * 0.5f * Mathf.Deg2Rad), bias = QualitySettings.lodBias;
+                var eye = cam.transform.position;
+                want = 2;
+                foreach (var (lg, _) in _chunks) { if (lg == null) continue; want = Mathf.Min(want, SafeLevel(lg, eye, tanHalf, bias)); if (want == 0) break; }
+            }
+            if (want == _state) return;
+            _state = want;
+            foreach (var (_, rs) in _chunks) foreach (var r in rs) if (r != null) r.enabled = want == 0;
+            if (_merged[1] != null) _merged[1].enabled = want == 1;
+            if (_merged[2] != null) _merged[2].enabled = want == 2;
         }
 
         private void OnDestroy()

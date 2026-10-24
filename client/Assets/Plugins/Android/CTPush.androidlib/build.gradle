@@ -1,0 +1,22 @@
+apply plugin: 'com.android.library'
+// CT Life push (2026-10-24): Firebase Cloud Messaging for Android, no google-services Gradle plugin. The Firebase values
+// come from client/google-services.json at build time (PushConfigBuild writes src/main/res/values/ctpush_firebase.xml);
+// without it FirebaseApp never initialises and push stays off.
+// firebase-messaging 26.0.1: Google Maven, published 2026-10-21 (checked 2026-10-24), minSdk 24.
+android {
+    namespace 'com.ctlife.push'
+    compileSdk getProperty('unity.compileSdkVersion') as int
+    buildToolsVersion getProperty('unity.buildToolsVersion')
+    compileOptions {
+        sourceCompatibility JavaVersion.valueOf(getProperty('unity.javaCompatabilityVersion'))
+        targetCompatibility JavaVersion.valueOf(getProperty('unity.javaCompatabilityVersion'))
+    }
+    defaultConfig {
+        minSdk getProperty('unity.minSdkVersion') as int
+        targetSdk getProperty('unity.targetSdkVersion') as int
+        consumerProguardFiles 'consumer-rules.pro'
+    }
+}
+dependencies {
+    implementation 'com.google.firebase:firebase-messaging:26.0.1'
+}

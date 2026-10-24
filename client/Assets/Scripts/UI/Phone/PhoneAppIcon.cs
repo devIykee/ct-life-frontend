@@ -16,7 +16,7 @@ namespace CTLife.UI
         {
             "map", "jobs", "bank", "wallet", "richlist", "home", "profile", "settings", "pulse",
             "perps", "predict", "ore", "topup", "timeline", "messages", "spaces", "calls", "shop",
-            "week", "biz", "ads", "builder", "vc", "league", "beef", "farm", "cabal", "npcchat", "xlink"
+            "week", "biz", "ads", "builder", "vc", "league", "beef", "farm", "cabal", "npcchat", "xlink", "duoshop", "quests"
         };
         private static readonly Dictionary<string, Texture2D> Textures = new(StringComparer.Ordinal);
 
