@@ -136,7 +136,8 @@ namespace CTLife.World.Vehicles
         private int Target(Vector3 focus)
         {
             float density = VehicleWorld.TrafficDensityAt(focus, 0.7f);
-            return Mathf.Clamp(Mathf.RoundToInt(MaxCars * Mathf.Clamp(density / 1.2f, 0.3f, 1f)), 2, MaxCars);
+            int max = CTLife.Core.QualityTier.IsLow ? Mathf.Min(MaxCars, CTLife.Core.QualityTier.LowTrafficCars) : MaxCars;   // graphics tier
+            return Mathf.Clamp(Mathf.RoundToInt(max * Mathf.Clamp(density / 1.2f, 0.3f, 1f)), 2, max);
         }
 
         private void Update()
@@ -280,6 +281,37 @@ namespace CTLife.World.Vehicles
                 if (c != null) Give(c);
                 Despawned++;
             }
+        }
+
+        /// <summary>
+        /// Backend #17 carjacking: the player takes this car. It leaves the traffic (its driver steps out of sight, the rails
+        /// let go) and becomes an ordinary parked vehicle the player can enter; the caller gives it a `traffic_*` id and
+        /// enters with `steal: true`. Null if the car is not ours to hand over.
+        /// </summary>
+        public Vehicle Hijack(TrafficCar car)
+        {
+            if (car == null || !Cars.Remove(car)) return null;
+            _drivers.Detach(car);
+            foreach (var col in car.Colliders) if (col != null) _railColliders.Remove(col);
+            Leave(car);
+            var v = car.Vehicle;
+            if (car.Body != null)
+            {
+                car.Body.isKinematic = false;
+                car.Body.linearVelocity = Vector3.zero; car.Body.angularVelocity = Vector3.zero;
+            }
+            if (car.Car != null) car.Car.SetRails(false);
+            if (v != null) { v.EngineOn = false; v.Input = VehicleInput.None; }
+            Destroy(car);
+            var sys = VehicleSystem.Current;
+            if (v != null && sys != null)
+            {
+                v.transform.SetParent(sys.transform, true);
+                v.gameObject.name = v.specId;
+                if (!sys.Vehicles.Contains(v)) sys.Vehicles.Add(v);
+            }
+            Log.Info("traffic", "hijacked a " + (v != null ? v.specId : "?"));
+            return v;
         }
 
         /// <summary>Every traffic car back to the pool (leaving the island, a capture resetting).</summary>

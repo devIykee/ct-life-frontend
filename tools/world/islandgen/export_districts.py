@@ -2,7 +2,7 @@
 
 Same output as the backend's tools/scripts/import-districts.ts (island = coast, islet, causeway; districts; venues), plus
 the land the coast outline misses: landmark pads built out over the water (`fix_y` in layout.LANDMARK_BUILDINGS, e.g. The
-Rug Room on the arcade pier), each as its pad rectangle grown by MARGIN so it overlaps the beach. Without them the street
+Rug Room on the arcade pier) and venues on a deck over the water (the Prediction Pit), each as its pad rectangle grown by MARGIN so it overlaps the beach. Without them the street
 room answers moves on the pier with OUT_OF_BOUNDS and other players cannot see you in the casino.
 The backend importer needs the same addition (plan.extraLand); until then the backend can copy this file as is.
 
@@ -55,6 +55,18 @@ def pad_rect(lb):
     return out
 
 
+def inside(pt, poly):
+    """Even-odd point in polygon ([x, z] points)."""
+    x, z = pt
+    c = False
+    for i in range(len(poly)):
+        x1, z1 = poly[i]
+        x2, z2 = poly[(i + 1) % len(poly)]
+        if (z1 > z) != (z2 > z) and x < (x2 - x1) * (z - z1) / (z2 - z1) + x1:
+            c = not c
+    return c
+
+
 def _num(o):
     if isinstance(o, float) and o.is_integer():
         return int(o)
@@ -80,6 +92,12 @@ def main():
     if plan.get('causeway'):
         island.append(strip(plan['causeway']['path'], plan['causeway']['half_width']))
     extra = [pad_rect(lb) for lb in L.LANDMARK_BUILDINGS if lb.get('fix_y') is not None]
+    # venues standing on a deck over the water (an explicit deck height in layout.VENUES, e.g. the Prediction Pit on the
+    # arcade pier): their pad, grown the same way, when its centre is off the coast outline
+    for v in plan.get('venues', []):
+        pad = v.get('pad')
+        if pad and not inside([pad['cx'], pad['cz']], island[0]):
+            extra.append(pad_rect(dict(at=(pad['cx'], pad['cz']), size=(pad['w'], pad['d']), yaw=pad.get('yaw', 0.0))))
     island += extra
     venues = {v['id']: dict(district=v['district'], origin=[rnd(c) for c in v['origin']], yaw=rnd(v['yaw']),
                             door=[rnd(v['door'][0]), rnd(v['door'][2])]) for v in plan.get('venues', [])}

@@ -9,7 +9,18 @@ namespace CTLife.Careers
         private static readonly Dictionary<string, string> Copy = new Dictionary<string, string>
         {
             // jobs app
-            ["app.title"] = "Jobs", ["tab.careers"] = "Careers", ["tab.gigs"] = "Side gigs",
+            ["app.title"] = "Jobs", ["tab.careers"] = "Careers", ["tab.gigs"] = "Side gigs", ["tab.ladder"] = "Career",
+            // career ladders (backend PR #16)
+            ["ladder.loading"] = "Checking your career…", ["ladder.empty"] = "No career ladders yet.",
+            ["ladder.pick"] = "Pick a career ladder. Shifts on its jobs and the things you already do (trades, calls, airdrops) earn its XP.",
+            ["ladder.kicker"] = "Your career · {0}", ["ladder.rankOf"] = "Rank {0} of {1}", ["ladder.bonus"] = "{0} pay",
+            ["ladder.xpNext"] = "{0} XP · {1} to {2}", ["ladder.xpTop"] = "{0} XP · top rank", ["ladder.unlocks"] = "Next unlock: {0}",
+            ["ladder.cosmetic"] = "a wardrobe item", ["ladder.titleOnly"] = "the title", ["ladder.ranks"] = "Ranks",
+            ["ladder.rankXp"] = "{0} XP", ["ladder.current"] = "You", ["ladder.next"] = "Next",
+            ["ladder.others"] = "Other ladders", ["ladder.all"] = "Career ladders", ["ladder.suggested"] = "Fits your tribe",
+            ["ladder.kept"] = "{0} · {1} XP kept", ["ladder.jobs"] = "{0} jobs earn its XP", ["ladder.join"] = "Join", ["ladder.switch"] = "Switch",
+            ["ladder.in"] = "In {0}", ["ladder.joined"] = "You're a {0} now", ["ladder.cooldown"] = "You switched recently. Switch again in {0}.",
+            ["ladder.note"] = "Your XP and rank stay with each ladder. Switching ladders has a {0}-hour cooldown.",
             ["pill.work"] = "Work", ["pill.busy"] = "Busy", ["pill.level"] = "Lv {0}", ["pill.soon"] = "Soon",
             ["best"] = "Best pay right now", ["rowPay"] = "Up to {0} a shift · {1}s", ["heldLine"] = "Level {0} · {1}",
             ["ladderPay"] = "Up to {0} · {1}s · {2} XP",

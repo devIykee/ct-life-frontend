@@ -52,6 +52,10 @@ namespace CTLife.UI
 
         public VisualElement Element => _root;
 
+        /// <summary>The newest city HUD's slot under Cash for live feature chips (null before a HUD exists).</summary>
+        public static VisualElement TopSlot { get; private set; }
+        public static event Action TopSlotChanged;
+
         /// <param name="venueMic">The venue microphone; defaults to the registered VoiceService (tests pass a fake).</param>
         public Hud(Func<IVenueMic> venueMic = null)
         {
@@ -111,8 +115,14 @@ namespace CTLife.UI
             _walletPill.Add(El.PassThrough(El.Div("hud-sol-mark")));
             _walletPill.Add(_walletValue);
             _walletPill.style.display = DisplayStyle.None;
-            var top = El.Div("ct-hud-top hud-currencies", El.Div("hud-currency-row", cash, _walletPill), _heat.Element);
+            // Feature chips under the currencies (Rekt Burger's ON SHIFT chip): attached by the feature through TopSlot.
+            var slot = El.Div("hud-top-slot");
+            slot.name = "hud-top-slot";
+            slot.pickingMode = PickingMode.Ignore;
+            var top = El.Div("ct-hud-top hud-currencies", El.Div("hud-currency-row", cash, _walletPill), _heat.Element, slot);
             top.pickingMode = PickingMode.Ignore;
+            TopSlot = slot;
+            TopSlotChanged?.Invoke();
 
             // Top-right: the live minimap (tap = full map) with the place and presence under it, the Duo tucked beside it.
             _minimap = new Map.Minimap();
@@ -322,7 +332,7 @@ namespace CTLife.UI
             bool stale = sol.IsStale || sol.State == WalletTokenState.Unavailable;
             _walletValue.text = (sol.Amount >= 10000m ? LobbyAmounts.Compact(sol.Amount.Value) : sol.Amount != null ? sol.FormatAmount(3) : "\u2014") + " SOL";
             _walletPill.EnableInClassList("hud-pill--dim", stale);
-            _walletPill.tooltip = stale ? Strings.T("wallet.stale") : Strings.T("lobby.wallet.title");
+            _walletPill.tooltip = stale ? Strings.F("wallet.stale", Services.TryGet<WalletBalanceService>(out var wb) ? wb.ClusterLabel : "MAINNET") : Strings.T("lobby.wallet.title");
         }
 
         private void RefreshAvatar(PlayerProfile p)

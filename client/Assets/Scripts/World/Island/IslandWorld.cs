@@ -160,6 +160,7 @@ namespace CTLife.World
             Current = world;
             RoadNetwork.Active = world.roads;
             IslandInteriors.Create(go.transform);          // walk-in rooms behind the enterable doors (World v3)
+            NodField.Create(go.transform);                 // the 80 community nods (R4)
             return world;
         }
 

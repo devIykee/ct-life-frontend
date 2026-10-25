@@ -31,6 +31,10 @@ namespace CTLife.World
         /// <summary>Per prototype index: its chunks in this cell.</summary>
         public readonly Dictionary<int, List<Chunk>> Groups = new Dictionary<int, List<Chunk>>();
         public int Count { get; private set; }
+        /// <summary>All instances' world bounds and the farthest any of them draws (last LOD end): lets the renderer skip a
+        /// whole cell beyond reach (or outside the view when no shadows are cast) without walking its chunks.</summary>
+        public Bounds AllBounds { get; private set; }
+        public float MaxCull { get; private set; }
         private readonly List<BoxCollider> _decorVehicleColliders = new List<BoxCollider>();
         /// <summary>Instances with no baked collider that must still be solid (trunks, posts, statues); see IslandSolidProxies.</summary>
         public readonly List<IslandSolidProxies.Solid> Solids = new List<IslandSolidProxies.Solid>();
@@ -96,6 +100,14 @@ namespace CTLife.World
                 Groups[proto] = chunks;
                 Count += n;
             }
+            bool any = false; var all = new Bounds(); float maxCull = 0f;
+            foreach (var g in Groups)
+            {
+                var p = kit.protos[g.Key];
+                if (p.lodEnd != null && p.lodEnd.Length > 0) maxCull = Mathf.Max(maxCull, p.lodEnd[Mathf.Min(p.lods.Length, p.lodEnd.Length) - 1]);
+                foreach (var ch in g.Value) { if (!any) { all = ch.bounds; any = true; } else all.Encapsulate(ch.bounds); }
+            }
+            AllBounds = all; MaxCull = any ? maxCull : 0f;
         }
 
         private void DecorVehicleCollider(int index, IslandKit.Proto proto, Vector3 position, float yaw, float sxz, float sy)

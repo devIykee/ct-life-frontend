@@ -220,7 +220,8 @@ namespace CTLife.World
         /// <summary>0 walking .. 1 seated (eased).</summary>
         public float SeatAmount => Mathf.SmoothStep(0f, 1f, _seatT);
 
-        private bool TargetSeated => _targetPlayer != null && !string.IsNullOrEmpty(_targetPlayer.SeatedSpot) && _targetPlayer.enabled;
+        private bool TargetSeated => _targetPlayer != null && !string.IsNullOrEmpty(_targetPlayer.SeatedSpot) && _targetPlayer.enabled &&
+                                     !_targetPlayer.EngagedStanding;
 
         private void BeginSeat(bool seated)
         {

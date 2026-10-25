@@ -536,9 +536,11 @@ namespace CTLife.World
         /// Local-only engagement (no contract message, or no room): present the actor at a point, facing yaw, playing
         /// <paramref name="anim"/>; the stick or "Step away" ends it. Never sent to the server.
         /// </summary>
-        public bool EngageLocal(string key, Vector3 position, float yawDegrees, string anim, string transitionState, float standOff = 0f)
+        public bool EngageLocal(string key, Vector3 position, float yawDegrees, string anim, string transitionState, float standOff = 0f,
+                                bool standing = false)
         {
             if (string.IsNullOrEmpty(key) || !string.IsNullOrEmpty(_seatedSpot) || !BodyReady) return false;
+            _standingKey = standing ? key : null;
             RememberStandingPose(transform.position, transform.eulerAngles.y);
             var fromPosition = _view.PresentationPosition; var fromRotation = transform.rotation;
             StopMovement();
@@ -556,6 +558,11 @@ namespace CTLife.World
         }
 
         public bool SeatLocalOnly => _seatLocalOnly;
+
+        /// <summary>A local engagement on the feet (Rekt Burger's stations): the actor is held in place, but the camera
+        /// keeps the walking view instead of the seated framing.</summary>
+        public bool EngagedStanding => _seatLocalOnly && _standingKey != null && _standingKey == _seatedSpot;
+        private string _standingKey;
 
         private bool BeginLeavePresentation(string spotId, Vector3 seatedPosition, Quaternion seatedRotation)
         {

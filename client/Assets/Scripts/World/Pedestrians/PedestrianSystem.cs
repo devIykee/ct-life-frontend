@@ -133,7 +133,8 @@ namespace CTLife.World.Pedestrians
             for (int dz = -r; dz <= r; dz++)
                 for (int dx = -r; dx <= r; dx++)
                     if (_grid.TryGetValue(((long)(cx + dx) << 32) ^ (uint)(cz + dz), out var list)) near += list.Count;
-            int max = AvatarLod.ThermalScale < 1f ? Mathf.RoundToInt(Max * 0.75f) : Max;
+            int cap = CTLife.Core.QualityTier.IsLow ? Mathf.Min(Max, CTLife.Core.QualityTier.LowPedestrians) : Max;   // graphics tier
+            int max = AvatarLod.ThermalScale < 1f ? Mathf.RoundToInt(cap * 0.75f) : cap;
             return TargetFor(near, max);
         }
 

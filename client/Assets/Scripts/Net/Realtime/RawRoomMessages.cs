@@ -21,6 +21,11 @@ namespace CTLife.Net
             "quest_progress",
             // the real-world event calendar (backend PR #11): Breakpoint goes live / ends (EventsService)
             "event_live", "event_ended", "irl_checkin",
+            // careers + Rekt Burger (backend PR #16): a ladder rank rose / a job opened for you (RektBurgerService)
+            "career_promoted", "job_unlocked",
+            // Sleuth heat + police (backend PR #17): a pursuit starts / ends, CT Jail (HeatService); the street room sends the
+            // pursuit pair to bystanders too and the vehicles room the stolen / returned pair (both forwarded here)
+            "police_pursuit", "police_pursuit_end", "jailed", "released",
         };
 
         /// <summary>The server also broadcasts these on every `ratio_arena` venue instance (the feed drops the duplicate).</summary>

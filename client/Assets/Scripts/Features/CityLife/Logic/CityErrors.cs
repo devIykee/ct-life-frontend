@@ -40,6 +40,8 @@ namespace CTLife.CityLife
         private static readonly Dictionary<string, string> Keys = new Dictionary<string, string>(StringComparer.Ordinal)
         {
             ["INSUFFICIENT_CASH"] = "err.insufficientCash",
+            // backend #17: in CT Jail (details {until, bailCents}); casino bets, buys, launches are refused until released
+            ["JAILED"] = "err.jailed",
             ["VALIDATION_FAILED"] = "err.validation",
             ["NOT_FOUND"] = "err.notFound",
             ["FORBIDDEN"] = "err.forbidden",

@@ -168,10 +168,43 @@ namespace CTLife.World
             return rel < lod1 ? 2 : rel < lod0 ? 1 : 0;
         }
 
+        // ------------------------------------------------------------------ graphics tier
+
+        private static readonly Dictionary<Material, Material> LowMats = new Dictionary<Material, Material>();
+        private bool _lowShown;
+        private int _tierCount = -1;
+
+        /// <summary>Low tier (CTLife.Core.QualityTier): the near ground draws with the shader's far variant (_FAR: no detail
+        /// texture, no alpine / grass detail passes, flat rock and scree), the terrain being most of the screen on an entry
+        /// GPU. The variant is in the build because the far terrain material uses it.</summary>
+        private static Material LowMaterial(Material m)
+        {
+            if (m == null || m.IsKeywordEnabled("_FAR")) return m;
+            if (!LowMats.TryGetValue(m, out var f) || f == null)
+            {
+                f = new Material(m) { name = m.name + " (low)", hideFlags = HideFlags.DontSave };
+                f.EnableKeyword("_FAR");
+                LowMats[m] = f;
+            }
+            return f;
+        }
+
+        private void ApplyTierMaterial()
+        {
+            bool low = CTLife.Core.QualityTier.IsLow;
+            if (low == _lowShown && _tierCount == _chunks.Count && (_state < 0 || _merged[1] == null || _merged[1].sharedMaterial == (low ? LowMaterial(material) : material))) return;
+            _lowShown = low; _tierCount = _chunks.Count;
+            var mat = low ? LowMaterial(material) : material;
+            foreach (var (_, rs) in _chunks) foreach (var r in rs) if (r != null) r.sharedMaterial = mat;
+            for (int i = 1; i < _merged.Length; i++) if (_merged[i] != null) _merged[i].sharedMaterial = mat;
+        }
+
         private void LateUpdate()
         {
-            if (_state < 0 || Time.unscaledTime < _nextCheck) return;
+            if (Time.unscaledTime < _nextCheck) return;
             _nextCheck = Time.unscaledTime + 0.1f;
+            if (_chunks.Count > 0) ApplyTierMaterial();
+            if (_state < 0) return;
             var cam = Camera.main;
             int want = 0;
             if (cam != null && !cam.orthographic)

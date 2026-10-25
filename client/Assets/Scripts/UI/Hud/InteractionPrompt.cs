@@ -15,7 +15,13 @@ namespace CTLife.UI
     {
         private readonly Subscriptions _subs = new Subscriptions();
         private readonly VisualElement _actions, _pointer;
-        private readonly Label _tag;
+        private readonly Label _tag, _sub;
+        private Label _busyLabel;
+        private string _busyText;
+        private int _dots;
+        private IVisualElementScheduledItem _busyPulse;
+        private float _holdUntil;
+        private bool _pendingRender;
         private readonly List<Rect> _blocked = new List<Rect>();
         private VisualElement[] _obstacles = Array.Empty<VisualElement>();
         private InteractionPromptSignal _state;
@@ -32,7 +38,10 @@ namespace CTLife.UI
             _pointer = El.Div("ct-interact-pointer");
             _tag = El.Text("", "ct-interact-tag");
             _tag.pickingMode = PickingMode.Ignore;
-            Element = El.Div("ct-hud-interact", _pointer, _tag, _actions);
+            _sub = El.Text("", "ct-interact-sub");
+            _sub.pickingMode = PickingMode.Ignore;
+            _sub.Show(false);
+            Element = El.Div("ct-hud-interact", _pointer, _tag, _actions, _sub);
             Element.name = "scene-interaction";
             Element.pickingMode = _pointer.pickingMode = _actions.pickingMode = PickingMode.Ignore;
             Element.style.position = Position.Absolute;
@@ -48,6 +57,9 @@ namespace CTLife.UI
             // Just out of a vehicle: no prompt for half a second, so the car you left doesn't flash "Drive".
             _subs.On<CTLife.World.Vehicles.VehicleChangedSignal>(s => { if (s.vehicle == null) _quietUntil = Time.unscaledTime + 0.5f; });
             _subs.On<InteractionToastSignal>(s => Bus.Publish(ToastSignal.Text(Strings.T(s.key), ToastKind.Bad)));
+            _subs.On<InteractionDoneSignal>(_ => FlashDone());
+            _busyPulse = Element.schedule.Execute(PulseDots).Every(320);
+            _busyPulse.Pause();
             InteractionController.PresentationUpdated += UpdatePosition;
             Element.RegisterCallback<AttachToPanelEvent>(OnAttach);
             if (InteractionController.Current != null) Render(InteractionController.Current.GetPrompt());
@@ -60,17 +72,52 @@ namespace CTLife.UI
             if (InteractionController.Current != null) Render(InteractionController.Current.GetPrompt());
         }
 
+        /// <summary>A job action succeeded (Rekt Burger's Clock in): the primary key holds pressed with a check for 200 ms,
+        /// then the prompt fades out over 120 ms before the next state renders.</summary>
+        private void FlashDone()
+        {
+            if (_disposed || _actions.childCount == 0) return;
+            var primary = _actions[0];
+            var key = primary.Q(className: "ct-interact-key");
+            if (key == null) return;
+            key.Clear();
+            key.Add(new UiIcon("check"));
+            primary.AddToClassList("ct-interact-held");
+            _holdUntil = Time.unscaledTime + 0.32f;
+            Element.schedule.Execute(() => Element.AddToClassList("ct-interact-out")).StartingIn(200);
+            Element.schedule.Execute(() =>
+            {
+                Element.RemoveFromClassList("ct-interact-out");
+                if (_pendingRender) { _pendingRender = false; Render(_state); }
+            }).StartingIn(330);
+        }
+
+        private void PulseDots()
+        {
+            if (_busyLabel == null || _busyText == null) return;
+            _dots = (_dots + 1) % 4;
+            _busyLabel.text = _busyText + new string('.', _dots);
+        }
+
         private void Render(InteractionPromptSignal s)
         {
             if (_disposed) return;
+            if (Time.unscaledTime < _holdUntil) { _state = s; _pendingRender = true; return; }
             if (_state.targetId != s.targetId || _state.owner != s.owner || _state.anchor.followsActor != s.anchor.followsActor)
                 _previousOffset = null;
             _state = s;
             _contentFrame = Time.frameCount;
             _actions.Clear();
+            _busyLabel = null; _busyText = null; _busyPulse.Pause();
             bool any = s.actions != null && s.actions.Count > 0;
             Element.Show(any);
             SetPresented(false); // Wait for a measured action row; never flash at layout origin.
+            bool job = s.style != null && s.style.StartsWith("job", StringComparison.Ordinal);
+            Element.EnableInClassList("ct-interact-jobprompt", job);
+            Element.RemoveFromClassList("ct-interact-in");
+            _sub.text = s.sub ?? "";
+            _sub.Show(any && !string.IsNullOrEmpty(s.sub));
+            foreach (var tone in new[] { "good", "warn", "bad" }) _sub.EnableInClassList("ct-interact-sub--" + tone, s.subTone == tone);
             if (!any) return;
             // City HUD v2: the object's name on a chip, then each verb as a squircle with one glyph and the verb under it.
             string tag = string.IsNullOrEmpty(s.tagKey) ? "" : Strings.T(s.tagKey);
@@ -78,6 +125,8 @@ namespace CTLife.UI
             if (tag.Length > 0 && s.tagLocked) tag += " \u00b7 " + Strings.T("vehicle.locked");
             _tag.text = tag.ToUpperInvariant();
             _tag.Show(tag.Length > 0);
+            // Sleuth heat (backend #17): a steal's heat chip is red, like the wanted stars' alarm colour
+            _tag.EnableInClassList("ct-interact-tag--heat", s.tagKey != null && s.tagKey.StartsWith("heat.", System.StringComparison.Ordinal));
             foreach (var a in s.actions)
             {
                 var id = a.id;
@@ -88,13 +137,17 @@ namespace CTLife.UI
                     { if (!_disposed && owner != null && InteractionController.Current == owner) owner.Perform(id, target); },
                     a.primary ? "ct-interact ct-interact-primary" : "ct-interact ct-interact-secondary");
                 if (id == "buy" || (id == "ext" && s.tagLocked)) button.AddToClassList("ct-interact-locked");
+                if (a.primary && job) button.AddToClassList(s.style == "jobquiet" ? "ct-interact-quiet" : "ct-interact-job");
+                if (a.primary && s.disabled) button.AddToClassList("ct-interact-disabled");
                 button.name = "scene-action-" + id.Replace(':', '-');
                 button.tooltip = label;
                 var key = El.PassThrough(El.Div("ct-interact-key", new UiIcon(a.icon)));
                 if (id == "buy" || (id == "ext" && s.tagLocked)) key.Add(El.PassThrough(El.Div("ct-interact-lock", new UiIcon("locked"))));
                 button.Add(key);
-                button.Add(El.PassThrough(El.Text(label, "ct-interact-label")));
+                var verb = El.Text(label, "ct-interact-label");
+                button.Add(El.PassThrough(verb));
                 _actions.Add(button);
+                if (a.primary && s.busy && job) { _busyLabel = verb; _busyText = label; _dots = 0; _busyPulse.Resume(); }
             }
             Element.EnableInClassList("ct-interact-busy", s.busy);
         }
@@ -180,6 +233,10 @@ namespace CTLife.UI
             if (_presented == visible) return;
             _presented = visible;
             Element.style.visibility = visible ? Visibility.Visible : Visibility.Hidden;
+            // the job prompt pops in (opacity + scale, USS transition) one frame after it becomes visible
+            if (visible && Element.ClassListContains("ct-interact-jobprompt"))
+                Element.schedule.Execute(() => Element.AddToClassList("ct-interact-in"));
+            else if (!visible) Element.RemoveFromClassList("ct-interact-in");
         }
 
         private static bool Visible(VisualElement element)

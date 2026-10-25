@@ -1,0 +1,57 @@
+/* Sleuth heat, the Steal help box, pursuits and CT Jail (backend #17, lane B 2026-10-25).
+   GTA-plain per the approved brief (ct-life-evidence/heat-police-20261025/board): GTA V's objective subtitle, help box,
+   WASTED band, MISSION PASSED line and timer bars, in our HUD tokens: LilitaOne display, Inter body, deep purple
+   rgb(20,6,44) pills, yellow rgb(255,210,63), alarm red rgb(255,59,92). */
+
+/* objective subtitle: bottom centre, one line, keywords yellow */
+.heat-subtitle {
+    position: absolute; bottom: 150px; left: 50%; translate: -50% 12px; max-width: 70%; padding: 10px 22px; border-radius: 12px;
+    background-color: rgba(0,0,0,0.55); opacity: 0; transition-property: opacity, translate; transition-duration: 0.2s;
+}
+.heat-subtitle.heat-in { opacity: 1; translate: -50% 0; }
+.heat-subtitle-text { font-size: 26px; color: rgb(255,255,255); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); -unity-text-align: middle-center; white-space: normal; margin: 0; padding: 0; }
+
+/* help box (another player's car): dark, plain, two pills */
+.heat-sheet {
+    position: absolute; bottom: 140px; left: 50%; translate: -50% 16px; width: 620px; max-width: 76%; padding: 18px 22px; border-radius: 14px;
+    background-color: rgba(0,0,0,0.78); opacity: 0; transition-property: opacity, translate; transition-duration: 0.2s;
+}
+.heat-sheet.heat-in { opacity: 1; translate: -50% 0; }
+.heat-help-text { font-size: 24px; color: rgb(255,255,255); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); white-space: normal; margin: 0 0 14px 0; padding: 0; }
+.heat-sheet-actions { flex-direction: row; justify-content: flex-end; }
+.heat-pill { height: 60px; padding: 0 28px; margin: 0 0 0 12px; border-radius: 30px; border-width: 0; font-size: 22px; -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); letter-spacing: 1px; }
+.heat-pill-steal { background-color: rgb(255,59,92); color: rgb(255,255,255); }
+.heat-pill-ghost { background-color: rgba(255,255,255,0.14); color: rgb(255,255,255); }
+
+/* BUSTED: GTA's WASTED band across the middle */
+.heat-band {
+    position: absolute; top: 40%; left: 0; right: 0; height: 170px; align-items: center; justify-content: center;
+    background-color: rgba(0,0,0,0.7); opacity: 0; transition-property: opacity; transition-duration: 0.2s;
+}
+.heat-band.heat-in { opacity: 1; }
+.heat-band-word {
+    font-size: 118px; color: rgb(255,59,92); -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); letter-spacing: 6px; margin: 0; padding: 0;
+    -unity-text-outline-width: 1.5px; -unity-text-outline-color: rgb(20,6,44);
+}
+.heat-band-sub { font-size: 22px; color: rgba(255,255,255,0.9); -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); letter-spacing: 3px; margin: -6px 0 0 0; padding: 0; }
+
+/* FREE / LOST THEM: GTA's MISSION PASSED line, top centre */
+.heat-passed { position: absolute; top: 22%; left: 0; right: 0; align-items: center; opacity: 0; translate: 0 10px; transition-property: opacity, translate; transition-duration: 0.22s; }
+.heat-passed.heat-in { opacity: 1; translate: 0 0; }
+.heat-passed-word {
+    font-size: 96px; color: rgb(255,210,63); -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); letter-spacing: 4px; margin: 0; padding: 0;
+    -unity-text-outline-width: 1.5px; -unity-text-outline-color: rgb(20,6,44);
+}
+.heat-passed-sub { font-size: 24px; color: rgb(255,255,255); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); margin: 0; padding: 0; -unity-text-outline-width: 0.4px; -unity-text-outline-color: rgba(0,0,0,0.7); }
+
+/* CT Jail: GTA timer bars, right side under the minimap */
+.heat-jail { position: absolute; right: 36px; top: 420px; width: 400px; align-items: stretch; opacity: 0; translate: 24px 0; transition-property: opacity, translate; transition-duration: 0.22s; }
+.heat-jail.heat-in { opacity: 1; translate: 0 0; }
+.heat-timer {
+    flex-direction: row; align-items: center; justify-content: space-between; height: 64px; padding: 0 20px; margin-bottom: 8px;
+    border-radius: 10px; background-color: rgba(0,0,0,0.72);
+}
+.heat-timer-label { font-size: 20px; color: rgba(255,255,255,0.85); -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); letter-spacing: 2px; margin: 0; padding: 0; }
+.heat-timer-value { font-size: 40px; color: rgb(255,255,255); -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); margin: 0; padding: 0; }
+.heat-bail { height: 64px; margin: 0; border-radius: 32px; border-width: 0; background-color: rgb(255,210,63); color: rgb(20,6,44); font-size: 24px; -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); letter-spacing: 1px; }
+.heat-bail:disabled { opacity: 0.6; }

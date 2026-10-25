@@ -31,6 +31,11 @@ namespace CTLife.EditorTools
             ("getup_face_down.fbx", "act_get_up_front"), // CMU 140_02 "Get Up Face Down"
             ("trip.fbx", "react_trip"),                  // CMU 104_13 "StumbleWalk", trimmed to one stumble and recovery
             ("jog_stop.fbx", "loco_run_stop"),           // CMU 104_09 "JogStop"
+            // Rekt Burger's clock-in stations (RektBurgerAnims adds these states; World/Jobs/RektBurgerWork plays them)
+            ("rb_grill_work.fbx", "act_rb_grill"),       // CMU 80_02 "chopping onions", 3.6-8.1 s
+            ("rb_fryer_drop.fbx", "act_rb_fryer"),       // CMU 15_06 "lean forward, reach for", 10.3-12.2 s
+            ("rb_prep_chop.fbx", "act_rb_prep"),         // CMU 79_10 "chopping onions", 3.2-7.5 s
+            ("rb_hand_over.fbx", "act_rb_hand_over"),    // CMU 15_06 "lean forward, reach for", 7.9-10.0 s
         };
 
         /// <summary>
@@ -155,7 +160,7 @@ namespace CTLife.EditorTools
     /// <summary>Import settings for Assets/Art/animations/mocap (CTLifeImportPostprocessor skips this folder).</summary>
     public sealed class MocapPostprocessor : AssetPostprocessor
     {
-        public override uint GetVersion() => 1;
+        public override uint GetVersion() => 2; // 2: Rekt Burger's station clips turned to face forward
 
         private bool Ours => assetPath.StartsWith(MocapImport.Root + "/", StringComparison.Ordinal);
 
@@ -204,6 +209,9 @@ namespace CTLife.EditorTools
                     // faces +Z. Correct this clip's baked pose, leaving the actor's movement/camera yaw alone.
                     c.rotationOffset = 180f;
                 }
+                // Rekt Burger's stations: the same native retarget faces these -Z (RektBurgerAnims measured 176-180 deg on the
+                // male look, idle 1 deg), so the actor at a station would work with its back to the counter.
+                if (file.StartsWith("rb_", StringComparison.Ordinal)) c.rotationOffset = 180f;
             }
             mi.clipAnimations = clips;
         }

@@ -31,11 +31,16 @@ namespace CTLife.Net
         private bool _disposed;
 
         public WalletBalanceSnapshot State { get; private set; }
+        /// <summary>The cluster the balances are read from (labels say which: "WALLET · DEVNET").</summary>
+        public SolanaCluster Cluster => _cluster;
+        public string ClusterLabel => ClusterName(_cluster);
+        public static string ClusterName(SolanaCluster c) => c == SolanaCluster.Devnet ? "DEVNET" : c == SolanaCluster.Mainnet ? "MAINNET" : "OFFLINE";
         public event Action Changed;
 
-        public WalletBalanceService(Session session, ConfigStore config)
+        /// <param name="cluster">The environment's cluster (Env.Current.cluster): staging reads devnet balances, prod mainnet.</param>
+        public WalletBalanceService(Session session, ConfigStore config, SolanaCluster cluster = SolanaCluster.Mainnet)
             : this(() => !RuntimeMode.IsOfflineDemo && session.IsSignedIn && session.AuthMethod == "siws" ? session.Wallet : null,
-                () => config.Config("economy")?["currencies"], new WalletBalanceRpc())
+                () => config.Config("economy")?["currencies"], new WalletBalanceRpc(), cluster)
         {
             _session = session; _config = config;
             session.Changed += Invalidate; config.Changed += Invalidate;

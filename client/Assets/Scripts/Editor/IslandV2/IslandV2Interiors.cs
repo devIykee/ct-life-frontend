@@ -182,6 +182,7 @@ namespace CTLife.EditorTools.IslandV2
             }
             room.spots = spots.ToArray();
             if (id == CasinoHooks.RoomId) root.AddComponent<CasinoFloor>();
+            if (id == RektBurgerHooks.RoomId) root.AddComponent<RektBurgerFloor>();
             // R3: unbaked props (their own atlases x baked vertex light, vertex alpha = glow) on CT Life/World/Interior Prop
             if (item["props"] is JObject props) BuildProps(id, props, root, R);
 

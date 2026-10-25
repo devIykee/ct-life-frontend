@@ -122,7 +122,15 @@
     "sfx_coin_land": "sfx.sfx_coin_land",
     "sfx_rug_pull": "sfx.sfx_rug_pull",
     "sfx_cashout_ok": "sfx.sfx_cashout_ok",
-    "amb_rug_room": "ambience.rug_room"
+    "amb_rug_room": "ambience.rug_room",
+    "sfx_grill_sizzle": "sfx.sfx_grill_sizzle",
+    "sfx_fryer_drop": "sfx.sfx_fryer_drop",
+    "sfx_order_bell": "sfx.sfx_order_bell",
+    "sfx_ticket_print": "sfx.sfx_ticket_print",
+    "sfx_tray_slide": "sfx.sfx_tray_slide",
+    "sfx_order_wrong": "sfx.sfx_order_wrong",
+    "amb_rekt_burger": "ambience.rekt_burger",
+    "sfx_nod_collect": "sfx.sfx_nod_collect"
   },
   "surfaces": {
     "_note": "Footstep floor default per venue id (CTLife.Audio SurfaceResolver).",
@@ -1817,6 +1825,237 @@
         "quality": 0.6,
         "preloadAudioData": true
       }
+    },
+    "sfx_grill_sizzle": {
+      "files": [
+        "sfx/sfx_grill_sizzle.wav"
+      ],
+      "volume": 0.251,
+      "pitchJitter": 0.0,
+      "category": "job",
+      "volume_db": -12,
+      "channels": 1,
+      "loop": true,
+      "duration_s": 4.0,
+      "true_peak_dbtp": -1.0,
+      "ducks_music": false,
+      "status": "recorded",
+      "desc": "a flat-top sizzle: real sausages frying (loop)",
+      "sources": [
+        "Frying_Sausages_Sizzle_2 — SignatureSoundsOrg (freesound 873540)"
+      ],
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_page": "https://freesound.org/people/SignatureSoundsOrg/sounds/873540/",
+      "source_pages": [
+        "https://freesound.org/people/SignatureSoundsOrg/sounds/873540/"
+      ],
+      "license_checked": "2026-10-25",
+      "processing": "{\"window_s\": [20.15, 24.15], \"xfade_s\": 0.25, \"search_window_s\": [2.0, 28.0]}; mono; 48 kHz; peak-normalised to -1 dBFS",
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
+        "preloadAudioData": true
+      }
+    },
+    "sfx_fryer_drop": {
+      "files": [
+        "sfx/sfx_fryer_drop.wav"
+      ],
+      "volume": 0.562,
+      "pitchJitter": 0.03,
+      "category": "job",
+      "volume_db": -5,
+      "channels": 1,
+      "loop": false,
+      "duration_s": 2.5,
+      "true_peak_dbtp": -1.0,
+      "ducks_music": false,
+      "status": "recorded",
+      "desc": "a fryer basket dropped into oil: a real kitchen fryer basket clack",
+      "sources": [
+        "kitchen restaurant fries deep fryer basket pickup put down clack metal.flac — kyles (freesound 637625)"
+      ],
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_page": "https://freesound.org/people/kyles/sounds/637625/",
+      "source_pages": [
+        "https://freesound.org/people/kyles/sounds/637625/"
+      ],
+      "license_checked": "2026-10-25",
+      "processing": "{\"window_s\": [0.0, 2.5]}; mono; 48 kHz; peak-normalised to -1 dBFS",
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
+        "preloadAudioData": true
+      }
+    },
+    "sfx_order_bell": {
+      "files": [
+        "sfx/sfx_order_bell.wav"
+      ],
+      "volume": 0.501,
+      "pitchJitter": 0.03,
+      "category": "job",
+      "volume_db": -6,
+      "channels": 1,
+      "loop": false,
+      "duration_s": 2.5,
+      "true_peak_dbtp": -1.0,
+      "ducks_music": false,
+      "status": "recorded",
+      "desc": "order up: a real counter bell ding",
+      "sources": [
+        "ding 2.wav — organicmanpl (freesound 149269)"
+      ],
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_page": "https://freesound.org/people/organicmanpl/sounds/149269/",
+      "source_pages": [
+        "https://freesound.org/people/organicmanpl/sounds/149269/"
+      ],
+      "license_checked": "2026-10-25",
+      "processing": "{\"window_s\": [0.128, 2.628]}; mono; 48 kHz; peak-normalised to -1 dBFS",
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
+        "preloadAudioData": true
+      }
+    },
+    "sfx_ticket_print": {
+      "files": [
+        "sfx/sfx_ticket_print.wav"
+      ],
+      "volume": 0.447,
+      "pitchJitter": 0.03,
+      "category": "job",
+      "volume_db": -7,
+      "channels": 1,
+      "loop": false,
+      "duration_s": 2.8,
+      "true_peak_dbtp": -1.0,
+      "ducks_music": false,
+      "status": "recorded",
+      "desc": "a new ticket: a real receipt printer",
+      "sources": [
+        "epson receipt printer7 — azumarill (freesound 345057)"
+      ],
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_page": "https://freesound.org/people/azumarill/sounds/345057/",
+      "source_pages": [
+        "https://freesound.org/people/azumarill/sounds/345057/"
+      ],
+      "license_checked": "2026-10-25",
+      "processing": "{\"window_s\": [0.0, 2.8]}; mono; 48 kHz; peak-normalised to -1 dBFS",
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
+        "preloadAudioData": true
+      }
+    },
+    "sfx_tray_slide": {
+      "files": [
+        "sfx/sfx_tray_slide.wav"
+      ],
+      "volume": 0.501,
+      "pitchJitter": 0.03,
+      "category": "job",
+      "volume_db": -6,
+      "channels": 1,
+      "loop": false,
+      "duration_s": 1.6,
+      "true_peak_dbtp": -1.0,
+      "ducks_music": false,
+      "status": "recorded",
+      "desc": "a tray served: a real plate slid across a table",
+      "sources": [
+        "Plate Slide.wav — Cleron (freesound 590084)"
+      ],
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_page": "https://freesound.org/people/Cleron/sounds/590084/",
+      "source_pages": [
+        "https://freesound.org/people/Cleron/sounds/590084/"
+      ],
+      "license_checked": "2026-10-25",
+      "processing": "{\"window_s\": [0.003, 1.603]}; mono; 48 kHz; peak-normalised to -1 dBFS",
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
+        "preloadAudioData": true
+      }
+    },
+    "sfx_order_wrong": {
+      "files": [
+        "sfx/sfx_order_wrong.wav"
+      ],
+      "volume": 0.501,
+      "pitchJitter": 0.03,
+      "category": "job",
+      "volume_db": -6,
+      "channels": 1,
+      "loop": false,
+      "duration_s": 0.673,
+      "true_peak_dbtp": -1.0,
+      "ducks_music": false,
+      "status": "recorded",
+      "desc": "a wrong order: a soft real desk thud",
+      "sources": [
+        "Desk Thud.wav — JWMalahy (freesound 146977)"
+      ],
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_page": "https://freesound.org/people/JWMalahy/sounds/146977/",
+      "source_pages": [
+        "https://freesound.org/people/JWMalahy/sounds/146977/"
+      ],
+      "license_checked": "2026-10-25",
+      "processing": "{\"window_s\": [0, 0.673]}; mono; 48 kHz; peak-normalised to -1 dBFS",
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
+        "preloadAudioData": true
+      }
+    },
+    "sfx_nod_collect": {
+      "files": [
+        "sfx/sfx_nod_collect.wav"
+      ],
+      "volume": 0.447,
+      "pitchJitter": 0.04,
+      "category": "world",
+      "volume_db": -7,
+      "channels": 1,
+      "loop": false,
+      "duration_s": 1.8,
+      "true_peak_dbtp": -1.0,
+      "ducks_music": false,
+      "status": "recorded",
+      "desc": "a nod found: one stroke of a real bell tree (VSCO 2 CE percussion)",
+      "sources": [
+        "Percussion - C6 (BellTree_Stroke2_v1_Sum.wav) — sgossner (freesound 373394)"
+      ],
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_page": "https://freesound.org/people/sgossner/sounds/373394/",
+      "source_pages": [
+        "https://freesound.org/people/sgossner/sounds/373394/"
+      ],
+      "license_checked": "2026-10-25",
+      "processing": "{\"window_s\": [0.0, 1.8]}; mono; 48 kHz; peak-normalised to -1 dBFS",
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
+        "preloadAudioData": true
+      }
     }
   },
   "footsteps": {
@@ -2275,6 +2514,35 @@
         "raw/freesound/438129.ogg"
       ],
       "processing": "freesound 277444 from 35.85 s; freesound 438129 from 9.0 s; 30.0 s, 0.5 s equal-power loop crossfade, RMS -27.0 dBFS, right channel +11 ms",
+      "unity_import": {
+        "loadType": "Streaming",
+        "compressionFormat": "Vorbis",
+        "quality": 0.35,
+        "preloadAudioData": false,
+        "loadInBackground": true
+      }
+    },
+    "rekt_burger": {
+      "id": "amb_rekt_burger",
+      "file": "ambience/amb_rekt_burger.wav",
+      "volume": 1.0,
+      "category": "ambience",
+      "venue_status": "walk-in room (Rekt Burger)",
+      "channels": 2,
+      "loop": true,
+      "loop_start_sample": 0,
+      "loop_end_sample": 1440000,
+      "duration_s": 30.0,
+      "loudness_lufs": -24.0,
+      "true_peak_dbtp": -6.6,
+      "status": "recorded",
+      "desc": "Rekt Burger: a real fast-food dining room, a restaurant walla and a quiet kitchen sizzle layered",
+      "sources": [
+        "raw/freesound/405148.ogg",
+        "raw/freesound/792481.ogg",
+        "raw/freesound/873539.ogg"
+      ],
+      "processing": "freesound 405148 from 15.05 s; freesound 792481 from 0.0 s; freesound 873539 from 0.0 s; 30.0 s, 0.5 s equal-power loop crossfade, RMS -27.0 dBFS, right channel +11 ms",
       "unity_import": {
         "loadType": "Streaming",
         "compressionFormat": "Vorbis",

@@ -79,9 +79,7 @@ namespace CTLife.CityLife.Casino
         private string _currentId;
         private float _last;
         private VisualElement _toast;
-        private Camera _cam;
-        private int _camMask;
-        private Rect _camRect;
+        private readonly FullScreenPause _pause = new FullScreenPause();
 
         public const string Fair = "fair", Limits = "limits";
 
@@ -158,11 +156,7 @@ namespace CTLife.CityLife.Casino
 
             // the casino is opaque and full screen: the world camera stops drawing behind it (perf: the Seeker spent ~28 ms
             // of GPU on the hidden floor), and gets its layers back on close
-            // Infinix (2026-10-25): culling alone still left the camera's full-screen passes (skybox clear, URP post) at
-            // ~15 fps, so its viewport shrinks to a few pixels too while the casino covers the screen
-            _cam = Camera.main;
-            if (_cam != null) { _camMask = _cam.cullingMask; _camRect = _cam.rect; _cam.cullingMask = 0; _cam.rect = new Rect(0f, 0f, 0.01f, 0.01f); }
-            PauseWorld(true);
+            _pause.Begin();
             svc.ScreensOpen = true;
             svc.StateChanged += OnState;
             svc.SessionReminder += OnReminder;
@@ -406,43 +400,10 @@ namespace CTLife.CityLife.Casino
             RemoveFromHierarchy();
         }
 
-        // Infinix (2026-10-25): with the casino covering the screen the main thread still spent ~45 ms a frame on the world
-        // behind it (traffic, pedestrians, the instance renderer's submissions, the HUD and 20+ name tags re-laid out every
-        // frame). None of it can be seen, so it rests while the casino is open and resumes as it was on close.
-        private readonly List<(VisualElement el, StyleEnum<DisplayStyle> was)> _hiddenLayers = new List<(VisualElement, StyleEnum<DisplayStyle>)>();
-        private bool _hidWorld, _pausedTraffic, _stoppedPeds;
-
-        private void PauseWorld(bool pause)
-        {
-            var ui = UiRoot.Instance;
-            if (pause)
-            {
-                if (ui != null)
-                    foreach (var layer in new[] { ui.WorldLayer, ui.LabelLayer, ui.HudLayer })
-                        if (layer != null) { _hiddenLayers.Add((layer, layer.style.display)); layer.style.display = DisplayStyle.None; }
-                if (!IslandInstanceRenderer.HideWorld) { IslandInstanceRenderer.HideWorld = true; _hidWorld = true; }
-                var traffic = CTLife.World.Vehicles.TrafficSystem.Current;
-                if (traffic != null && !traffic.Paused) { traffic.Paused = true; _pausedTraffic = true; }
-                var peds = CTLife.World.Pedestrians.PedestrianSystem.Current;
-                if (peds != null && peds.enabled) { peds.enabled = false; _stoppedPeds = true; }
-                return;
-            }
-            foreach (var (el, was) in _hiddenLayers) el.style.display = was;
-            _hiddenLayers.Clear();
-            if (_hidWorld) { IslandInstanceRenderer.HideWorld = IslandInteriors.Current != null && IslandInteriors.Current.WorldHidden; _hidWorld = false; }
-            if (_pausedTraffic) { var t = CTLife.World.Vehicles.TrafficSystem.Current; if (t != null) t.Paused = false; _pausedTraffic = false; }
-            if (_stoppedPeds) { var p = CTLife.World.Pedestrians.PedestrianSystem.Current; if (p != null) p.enabled = true; _stoppedPeds = false; }
-        }
-
         private void Teardown()
         {
             _tick?.Pause();
-            if (_cam != null)
-            {
-                if (_cam.cullingMask == 0) _cam.cullingMask = _camMask;
-                _cam.rect = _camRect;
-            }
-            PauseWorld(false);
+            _pause.End();
             Svc.ScreensOpen = false;
             Svc.StateChanged -= OnState;
             Svc.SessionReminder -= OnReminder;

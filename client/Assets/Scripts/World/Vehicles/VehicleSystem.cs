@@ -56,6 +56,8 @@ namespace CTLife.World.Vehicles
         }
 
         public const float OfferRange = 3.2f, ExitMaxSpeed = 3f;
+        /// <summary>The network bridge explained a refused entry itself (steal prompt, jail, taken): skip the generic toast once.</summary>
+        public static bool SuppressEntryToast;
         /// <summary>A script (the dev demo, editor captures) drives: the HUD must not overwrite the vehicle's input.</summary>
         public static bool ScriptedInput;
 
@@ -343,7 +345,11 @@ namespace CTLife.World.Vehicles
                     while (!entry.Finished && v != null && !entry.Owner.IsCancellationRequested && permission != null && !permission.IsCompleted && Time.unscaledTime < until)
                         yield return null;
                     if (v == null || permission == null || !permission.IsCompleted || permission.IsFaulted || permission.IsCanceled || !permission.Result)
-                    { Bus.Publish(new InteractionToastSignal { key = "vehicle.entryUnavailable" }); yield break; }
+                    {
+                        if (!SuppressEntryToast) Bus.Publish(new InteractionToastSignal { key = "vehicle.entryUnavailable" });
+                        SuppressEntryToast = false;
+                        yield break;
+                    }
                 }
                 if (!EntryCurrent(entry)) yield break;
                 bool hasDoor = v.DoorLeft != null;

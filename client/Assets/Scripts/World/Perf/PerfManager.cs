@@ -17,8 +17,11 @@ namespace CTLife.World
     {
         public const int TargetFps = 60;
         // World v3 (2026-10-22): sharper on the Seeker: 0.8 cool, never below 0.75 hot (was 0.7 / 0.6, a soft image)
-        public const float NormalRenderScale = 0.8f;
-        public const float HotRenderScale = 0.75f;
+        public const float HighRenderScale = 0.8f;
+        public const float HighHotRenderScale = 0.75f;
+        // Low tier (QualityTier, entry phones): a smaller target, the GPU there is the wall
+        public static float NormalRenderScale => QualityTier.IsLow ? QualityTier.LowRenderScale : HighRenderScale;
+        public static float HotRenderScale => QualityTier.IsLow ? QualityTier.LowHotRenderScale : HighHotRenderScale;
 
         public static PerfManager Instance { get; private set; }
         public int ThermalLevel { get; private set; }
@@ -62,12 +65,16 @@ namespace CTLife.World
             var go = new GameObject("CTLife.Perf");
             DontDestroyOnLoad(go);
             go.AddComponent<FpsMeter>();
+            QualityTier.Init();
+            go.AddComponent<LowTier>();
             return go.AddComponent<PerfManager>();
         }
 
         private void Awake()
         {
             Instance = this;
+            QualityTier.Init();
+            QualityTier.Changed += OnTierChanged;
             _originalFrameRate = Application.targetFrameRate;
             _originalSleepTimeout = Screen.sleepTimeout;
             _originalVSync = QualitySettings.vSyncCount;
@@ -98,8 +105,15 @@ namespace CTLife.World
             Log.Info("perf", $"targetFrameRate={Application.targetFrameRate} renderScale={(urp != null ? urp.renderScale : 1f)} screen={Screen.width}x{Screen.height}@{Screen.currentResolution.refreshRateRatio}");
         }
 
+        private void OnTierChanged()
+        {
+            var urp = UniversalRenderPipeline.asset;
+            if (urp != null) urp.renderScale = ThermalLevel >= 2 ? HotRenderScale : NormalRenderScale;
+        }
+
         private void OnDestroy()
         {
+            QualityTier.Changed -= OnTierChanged;
             var urp = UniversalRenderPipeline.asset;
             if (urp != null && _originalScale > 0f) urp.renderScale = _originalScale;
             if (_apActive && Holder.Instance != null) Holder.Instance.ThermalStatus.ThermalEvent -= OnThermalEvent;

@@ -33,6 +33,9 @@ namespace CTLife.Net
         {
             On<CorrectedMessage>("corrected", m => Corrected?.Invoke(m));
             On<SaidMessage>("said", m => Said?.Invoke(m));
+            // backend #17: a pursuit of a player in this street room (bystanders see the same cruisers); HeatService dedupes
+            On<Dictionary<string, object>>("police_pursuit", m => RawRoomMessages.Publish("police_pursuit", m));
+            On<Dictionary<string, object>>("police_pursuit_end", m => RawRoomMessages.Publish("police_pursuit_end", m));
             _players = new DynamicMapMirror<PlayerState>();
             _players.Bind(TrackAndReturn, Callbacks.Get(Room), "players", () => new PlayerState(), StateMapper.ApplyPlayer,
                 (k, p) => PlayerAdded?.Invoke(k, p), (k, p) => PlayerChanged?.Invoke(k, p), (k, p) => PlayerRemoved?.Invoke(k, p));
@@ -81,6 +84,9 @@ namespace CTLife.Net
             Track(() => { Dropped -= Drop; Reconnected -= Reconnect; });
             On<VehicleCorrectedMessage>("vehicle_corrected", m => Corrected?.Invoke(m));
             On<VehicleHitRelayMessage>("vehicle_hit", m => Hit?.Invoke(m));
+            // backend #17: your parked vehicle was stolen / came back; a thief's car went back (HeatService)
+            On<Dictionary<string, object>>("vehicle_stolen", m => RawRoomMessages.Publish("vehicle_stolen", m));
+            On<Dictionary<string, object>>("vehicle_returned", m => RawRoomMessages.Publish("vehicle_returned", m));
             _vehicles = new DynamicMapMirror<VehicleState>();
             _vehicles.Bind(TrackAndReturn, Callbacks.Get(Room), "vehicles", () => new VehicleState(), StateMapper.ApplyVehicle,
                 (k, v) => { ReleaseAbandoned(v); VehicleAdded?.Invoke(k, v); },
@@ -91,18 +97,29 @@ namespace CTLife.Net
         {
             if (v.driver == _user && _abandonedClaims.Contains(v.id)) Exit(v.id, v.x, v.z, v.yaw);
         }
-        public async Task<bool> Enter(VehicleEnterMessage request, CancellationToken owner)
+        /// <summary>The code of the last refused vehicle_enter (STEAL_REQUIRED, VEHICLE_TAKEN, JAILED, ...), null after an accept.</summary>
+        public string LastEnterRejection { get; private set; }
+
+        public async Task<bool> Enter(VehicleEnterMessage request, CancellationToken owner, bool steal = false)
         {
             if (!CanDrive || request == null || string.IsNullOrEmpty(request.id)) return false;
             bool rejected = false, accepted = false;
+            LastEnterRejection = null;
             void OnRejected(RejectedMessage r)
-            { if (r.type == "vehicle_enter" && (string.IsNullOrEmpty(r.id) || r.id == request.id)) rejected = true; }
+            { if (r.type == "vehicle_enter" && (string.IsNullOrEmpty(r.id) || r.id == request.id)) { rejected = true; LastEnterRejection = r.code; } }
             _abandonedClaims.Remove(request.id);
             Rejected += OnRejected;
             try
             {
                 owner.ThrowIfCancellationRequested();
-                await Send("vehicle_enter", request);
+                // backend #17: `steal` only when taking a car that is not ours (an optional field: never sent as null)
+                if (steal)
+                {
+                    var m = new Dictionary<string, object> { ["id"] = request.id, ["x"] = request.x, ["y"] = request.y, ["z"] = request.z, ["yaw"] = request.yaw, ["steal"] = true };
+                    if (!string.IsNullOrEmpty(request.kind)) m["kind"] = request.kind;
+                    await Send("vehicle_enter", m);
+                }
+                else await Send("vehicle_enter", request);
                 double until = UnityEngine.Time.realtimeSinceStartupAsDouble + 8;
                 while (CanDrive && !rejected && UnityEngine.Time.realtimeSinceStartupAsDouble < until)
                 {

@@ -127,6 +127,16 @@ namespace CTLife.EditorTools.IslandV2
             new View("rr_room_crash", new Vector3(-1.4f, 1.7f, -5.2f), new Vector3(-6.4f, 1.8f, -7.4f), 68f),
             new View("rr_room_coinflip", new Vector3(0.3f, 2.2f, -5.8f), new Vector3(0f, 0.9f, -9.4f), 68f),
             new View("rr_room_back", new Vector3(0.5f, 1.8f, -6.0f), new Vector3(-0.5f, 1.6f, -16f), 72f),
+            // Rekt Burger (2026-10-25) on the Coast Highway in The Trenches, outside, and its restaurant (rb_room_*: room space of
+            // the rekt_burger door, +Z out to the highway, the room at -Z, the booths at +x; -ctlife-room rekt_burger places it)
+            new View("rb_room_ext", new Vector3(3.0f, 1.7f, 13f), new Vector3(0f, 3.4f, -6f), 60f),
+            new View("rb_room_ext_wide", new Vector3(-9f, 2.6f, 25f), new Vector3(0f, 2.8f, -6f), 56f),
+            new View("rb_ext_air", new Vector3(-330f, 30f, -270f), new Vector3(-301.8f, -4f, -306.7f), 55f),
+            new View("rb_room_entry", new Vector3(-0.3f, 1.6f, -0.8f), new Vector3(0.5f, 1.4f, -8f), 72f),
+            new View("rb_room_counter", new Vector3(-2.6f, 1.7f, -1.4f), new Vector3(1.0f, 1.6f, -7f), 70f),
+            new View("rb_room_booths", new Vector3(-1.5f, 1.6f, -5.2f), new Vector3(4.4f, 0.9f, -2.6f), 70f),
+            new View("rb_room_logo", new Vector3(2.4f, 1.6f, -3.3f), new Vector3(-5.2f, 2.1f, -3.3f), 70f),
+            new View("rb_room_kitchen", new Vector3(0.2f, 2.4f, -7.0f), new Vector3(0.6f, 1.1f, -11.6f), 72f),
         };
 
         public static void Run()
@@ -254,12 +264,12 @@ namespace CTLife.EditorTools.IslandV2
                 var eye = v.Eye;
                 if (v.Ground) eye.y = h.Sample(eye.x, eye.z) + v.Eye.y;
                 var lookAt = v.Target;
-                if (v.Name.StartsWith("room_") || v.Name.StartsWith("rr_room_")) { eye = doorPos + doorRot * v.Eye; lookAt = doorPos + doorRot * v.Target; }
+                if (v.Name.StartsWith("room_") || v.Name.StartsWith("rr_room_") || v.Name.StartsWith("rb_room_")) { eye = doorPos + doorRot * v.Eye; lookAt = doorPos + doorRot * v.Target; }
                 cam.orthographic = false;
                 cam.fieldOfView = v.Fov;
                 cam.transform.position = eye;
                 cam.transform.LookAt(lookAt);
-                cam.nearClipPlane = v.Name.StartsWith("room_") || v.Name.StartsWith("rr_room_") ? 0.05f : 0.3f;
+                cam.nearClipPlane = v.Name.StartsWith("room_") || v.Name.StartsWith("rr_room_") || v.Name.StartsWith("rb_room_") ? 0.05f : 0.3f;
                 Render(cam, rt, Path.Combine(outDir, "v2-" + v.Name + ".png"));
                 shots.Add(v.Name);
                 stats[v.Name] = new JObject

@@ -132,16 +132,21 @@ namespace CTLife.World
             foreach (var st in _shadowStages.Values) st.n = 0;
             LastCasters = 0;
             if (CollectStats) { Stats.Clear(); LastTris = LastCasterTris = 0; }
-            bool occ = occlusion;
+            bool occ = occlusion && (!CTLife.Core.QualityTier.IsLow || CTLife.Core.QualityTier.LowKitOcclusion);
             var sw = System.Diagnostics.Stopwatch.StartNew();
             if (occ) BuildOccluders(cam, eye);
             LastOccMs = sw.Elapsed.TotalMilliseconds;
             int occluded = 0;
             IslandKit kit = null;
+            // the graphics tier scales every kit LOD and cull distance (Low: entry phones)
+            float distanceScale = this.distanceScale * CTLife.Core.QualityTier.KitDistance;
             foreach (var set in Sets)
             {
                 if (set == null || set.kit == null) continue;
                 kit = set.kit;
+                // whole cell out of reach (or, casting no shadows, out of view): skip its chunks
+                if (set.MaxCull > 0f && (set.AllBounds.SqrDistance(eye) > set.MaxCull * distanceScale * set.MaxCull * distanceScale
+                    || (!castAny && !InFrustum(set.AllBounds)))) continue;
                 foreach (var g in set.Groups)
                 {
                     var p = kit.protos[g.Key];
@@ -289,6 +294,7 @@ namespace CTLife.World
             foreach (var set in Sets)
             {
                 if (set == null || set.kit == null) continue;
+                if (set.MaxCull > 0f && (set.AllBounds.SqrDistance(eye) > reach2 || !InFrustum(set.AllBounds))) continue;
                 foreach (var g in set.Groups)
                 {
                     var p = set.kit.protos[g.Key];

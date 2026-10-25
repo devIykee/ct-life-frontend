@@ -1086,8 +1086,80 @@ def rug_room(v):
     return dict(parts=[F, B, L, R, T], sign=dict(y=4.6, z=tz - 0.06, w=6.0), neon=neon)
 
 
+def rekt_burger(v):
+    """Rekt Burger (2026-10-25): the parody fast-food fallback job's restaurant on the Coast Highway in The Trenches. A
+    modern drive-to burger joint: charcoal composite panels on a concrete plinth, a full-width dark-glass storefront with
+    slim black mullions either side of the walk-in door (1.2 x 2.3 m, the streamed room's entrance), a deep flat canopy with
+    a burnt-orange soffit and a mint light line along its edge, the lit REKT BURGER board across the fascia, an orange fin
+    up the corner, a mint stripe down each side, a stepped parapet with orange coping and roof plant. Light lines are
+    exported as neon quads drawn by the sign's emissive material (orange = the board's top rows, mint = its bottom rows)."""
+    x0, x1, z0, z1, h, dw, dh = frame(v)
+    Pt = venue_parts()
+    F, B, L, R, T = Pt['front'], Pt['back'], Pt['left'], Pt['right'], Pt['roof']
+    t, base = 0.35, -0.6
+    coal, frame_, orange, mint, glass, plinth = 'plaster:2a2d34', 'alu:1c1e22', 'accent:ff6a2b', 'accent:38e0a2', 'glass', 'concrete'
+    neon = []
+
+    def tube(p, q, col, w=0.08, out=-0.06):
+        (ax, ay, az), (bx, by, bz) = p, q
+        if abs(ay - by) < 1e-3:
+            neon.append(dict(c=col, q=[[ax, ay - w / 2, az + out], [ax, ay + w / 2, az + out], [bx, by + w / 2, bz + out], [bx, by - w / 2, bz + out]]))
+        else:
+            neon.append(dict(c=col, q=[[ax - w / 2, ay, az + out], [ax - w / 2, by, az + out], [ax + w / 2, by, az + out], [ax + w / 2, ay, az + out]]))
+
+    # ---- the storefront: glass from 0.45 m to 3.3 m across the front, the door in the middle
+    gx0, gx1, gy0, gy1 = x0 + 0.9, x1 - 0.9, 0.45, 3.3
+    holes = [(-dw / 2, dw / 2, base, dh), (gx0, -dw / 2 - 0.25, gy0, gy1), (dw / 2 + 0.25, gx1, gy0, gy1)]
+    wall_openings(F, 'z', z0, -1, x0, x1, base, h, t, holes, coal)
+    wall_openings(B, 'z', z1, 1, x0, x1, base, h, t, [], coal)
+    wall_openings(L, 'x', x0, -1, z0 + t, z1 - t, base, h, t, [(z0 + 2.0, z1 - 2.0, 2.4, 3.2)], coal)
+    wall_openings(R, 'x', x1, 1, z0 + t, z1 - t, base, h, t, [(z0 + 2.0, z1 - 2.0, 2.4, 3.2)], coal)
+    for a, b in ((gx0, -dw / 2 - 0.25), (dw / 2 + 0.25, gx1)):
+        n = max(1, int(round((b - a) / 1.3)) - 1)
+        window(F, 'z', z0, -1, a, b, gy0, gy1, frame_, glass=glass, reveal=0.12, mull=n, sill=None)
+        F.box(a, b, 2.55, 2.6, z0 - 0.02, z0 + 0.04, frame_)                       # transom bar
+    for P, side in ((L, 'left'), (R, 'right')):                                     # the high window band down the sides
+        axis, plane, out, a0, a1 = side_frame(side, x0, x1, z0, z1)
+        window(P, axis, plane, out, z0 + 2.0, z1 - 2.0, 2.4, 3.2, frame_, glass=glass, reveal=0.1, mull=3, sill=None)
+    # the door surround (black) and a mint threshold
+    F.box(-dw / 2 - 0.2, -dw / 2, base, dh + 0.2, z0 - 0.08, z0 + t, frame_)
+    F.box(dw / 2, dw / 2 + 0.2, base, dh + 0.2, z0 - 0.08, z0 + t, frame_)
+    F.box(-dw / 2 - 0.2, dw / 2 + 0.2, dh, dh + 0.2, z0 - 0.08, z0 + t, frame_)
+    # ---- plinth, mint side stripes, cornice, parapet, coping
+    for P, side in ((F, 'front'), (B, 'back'), (L, 'left'), (R, 'right')):
+        axis, plane, out, a0, a1 = side_frame(side, x0, x1, z0, z1)
+        if side == 'front':
+            for lo, hi in ((a0 - 0.1, -dw / 2 - 0.2), (dw / 2 + 0.2, a1 + 0.1)):
+                abox(P, axis, plane, out, lo, hi, base, 0.45, -0.04, 0.1, plinth)
+        else:
+            abox(P, axis, plane, out, a0 - 0.1, a1 + 0.1, base, 0.45, -0.04, 0.1, plinth)
+        abox(P, axis, plane, out, a0 - 0.12, a1 + 0.12, h - 0.25, h, -0.04, 0.16, frame_)
+        abox(P, axis, plane, out, a0 - 0.04, a1 + 0.04, h, h + 0.6, -0.25, 0.04, coal)
+        abox(P, axis, plane, out, a0 - 0.1, a1 + 0.1, h + 0.6, h + 0.72, -0.3, 0.1, orange)
+    for P, side in ((L, 'left'), (R, 'right')):
+        axis, plane, out, a0, a1 = side_frame(side, x0, x1, z0, z1)
+        abox(P, axis, plane, out, z0 + 0.9, z0 + 1.25, 0.45, h - 0.25, 0.0, 0.05, mint)
+    # ---- the corner fin (orange, full height + 1.6 m), with a mint light line up its edge
+    fx = x1 - 0.9
+    F.box(fx, fx + 0.55, base, h + 1.6, z0 - 0.9, z0 + 0.3, orange)
+    F.box(fx - 0.02, fx + 0.57, h + 1.6, h + 1.7, z0 - 0.94, z0 + 0.34, frame_)
+    tube((fx + 0.275, 0.6, z0 - 0.9), (fx + 0.275, h + 1.5, z0 - 0.9), 'gold', w=0.07, out=-0.04)
+    # ---- the canopy: a deep flat slab over the storefront, orange soffit, black fascia, mint light line along the edge
+    cz0, cy0, cy1 = z0 - 1.8, 3.45, 3.75
+    F.box(x0 + 0.5, fx - 0.1, cy0, cy1, cz0, z0, frame_)
+    F.box(x0 + 0.6, fx - 0.2, cy0 - 0.02, cy0, cz0 + 0.1, z0 - 0.05, orange)
+    tube((x0 + 0.5, cy0 + 0.12, cz0), (fx - 0.1, cy0 + 0.12, cz0), 'gold', w=0.06, out=-0.04)
+    # ---- the fascia above the canopy carries the board (sign): a black frame round it
+    F.box(-4.0, 4.0, 3.9, 6.0, z0 - 0.12, z0, frame_)
+    tube((-4.0, 3.95, z0 - 0.12), (4.0, 3.95, z0 - 0.12), 'orange', w=0.05, out=-0.03)
+    # ---- the roof: slab and plant
+    T.box(x0 + t, x1 - t, h - 0.35, h + 0.12, z0 + t, z1 - t, 'concrete')
+    roof_plant(T, h, [(-4.5, -2.0, 2.0, 4.5, 1.2, 'steel'), (1.0, 3.5, 3.0, 5.0, 0.9, 'alu'), (-1.0, 0.6, -3.0, -1.5, 0.7, 'steel')])
+    return dict(parts=[F, B, L, R, T], sign=dict(y=4.0, z=z0 - 0.14, w=7.6), neon=neon)
+
+
 LANDMARKS = {'superteam_hq': superteam_hq, 'jupiter_observatory': jupiter_observatory, 'seeker_shop': seeker_shop, 'helius_depot': helius_depot,
-             'rug_room': rug_room}
+             'rug_room': rug_room, 'rekt_burger': rekt_burger}
 
 
 BUILDERS = {'conference_hall': conference_hall, 'perp_pit': perp_pit, 'hackathon_house': hackathon_house, 'prediction_pit': prediction_pit,

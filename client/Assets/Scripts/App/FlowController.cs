@@ -94,10 +94,19 @@ namespace CTLife.App
                 CTLife.CityLife.RetentionService.Opener = id => { if (_phone == null || !Alive) return false; _phone.Open(id); return true; };
                 // The Rug Room (backend PR #12): the casino floor's machines and the Duo app open the casino screens
                 _overlays.Add(new CTLife.CityLife.Casino.CasinoOverlays());
+                // Rekt Burger + career ladders (backend PR #16): the counter's shift, the broke nudge, promotion cards
+                _overlays.Add(new CTLife.CityLife.RektBurger.RektBurgerOverlays());
+                // Season tracks + the community nods book (backend #13): the world's nods collect through it
+                _overlays.Add(new CTLife.CityLife.Season.SeasonOverlays());
+                CTLife.Careers.CareersApp.ExtraTopCard = CTLife.CityLife.RektBurger.RektBurgerCard.Build;
+                CTLife.CityLife.RektBurger.RektBurgerCard.CloseDuo = () => _phone?.Close();
+                CTLife.CityLife.RektBurger.PromotionCard.OpenCareer = () => { CTLife.Careers.CareersApp.OpenOnLadder = true; if (_phone != null && Alive) _phone.Open("jobs"); };
                 // Breakpoint 2026: the London skin on the Conference Center, booths, nods, trivia and the claim (backend PR #11)
                 _overlays.Add(new CTLife.CityLife.EventsOverlays(ui.ModalLayer));
                 CTLife.CityLife.EventsService.Opener = id => { if (_phone != null) _phone.Open(id); };
                 CTLife.CityLife.EventsService.Closer = () => { if (_phone != null && _phone.IsOpen) _phone.Close(); };
+                // Sleuth heat, carjacking, police pursuits and CT Jail (backend PR #17)
+                _overlays.Add(new CTLife.CityLife.Heat.HeatOverlays(ui.ModalLayer));
                 _overlays.Add(new BusyOverlay(ui.ToastLayer));
                 var worldLife = new CTLife.WorldLife.WorldLifeHub();
                 _overlays.Add(worldLife);
@@ -612,6 +621,41 @@ namespace CTLife.App
                     var s = VenueSession.Current;
                     if (s == null || !s.IsIsland) { Log.Warn("island", "bp: not on CT Island"); return; }
                     await CTLife.CityLife.BreakpointRoute.Run(s, LaunchArgs.Get("bp"), () => GameAlive(game), game.Token);
+                });
+                // Sleuth heat (dev builds only): `heat=steal|chase|jail` (CityLife.Heat HeatRoute, backend PR #17)
+                if (!string.IsNullOrEmpty(LaunchArgs.Get("heat"))) RunGameAction(game, async () =>
+                {
+                    float deadline = Time.realtimeSinceStartup + 90f;
+                    while (GameAlive(game) && (VenueSession.Current == null || !VenueSession.Current.IsActive) && Time.realtimeSinceStartup < deadline)
+                        await Awaitable.WaitForSecondsAsync(0.5f, game.Token);
+                    await Awaitable.WaitForSecondsAsync(4f, game.Token);
+                    var s = VenueSession.Current;
+                    if (s == null || !s.IsIsland) { Log.Warn("island", "heat: not on CT Island"); return; }
+                    await CTLife.CityLife.Heat.HeatRoute.Run(s, LaunchArgs.Get("heat"), () => GameAlive(game), game.Token);
+                });
+                // Tip sheet (dev builds only, backend PR #20): `tipDev=<userId>` opens the Timeline tip sheet, types $10, sends it
+                if (LaunchArgs.Get("tipDev") is string tipUser && tipUser.Length > 0) RunGameAction(game, async () =>
+                {
+                    float deadline = Time.realtimeSinceStartup + 90f;
+                    while (GameAlive(game) && (VenueSession.Current == null || !VenueSession.Current.IsActive) && Time.realtimeSinceStartup < deadline)
+                        await Awaitable.WaitForSecondsAsync(0.5f, game.Token);
+                    await Awaitable.WaitForSecondsAsync(5f, game.Token);
+                    CTLife.SocialFeatures.TimelineApp.PendingTipUser = tipUser;
+                    CTLife.SocialFeatures.TimelineApp.PendingTipName = "dev peer";
+                    _phone?.Open("timeline");
+                    await Awaitable.WaitForSecondsAsync(3f, game.Token);
+                    var root = UiRoot.Instance != null ? UiRoot.Instance.Root : null;
+                    var field = root?.Q<UnityEngine.UIElements.TextField>("tip-amount");
+                    if (field != null) field.value = "10";
+                    await Awaitable.WaitForSecondsAsync(1.5f, game.Token);
+                    Debug.Log("CTLIFE [bp-route] shot tip fee " + (root?.Q<UnityEngine.UIElements.Label>("tip-fee")?.text ?? "none"));
+                    await Awaitable.WaitForSecondsAsync(1.5f, game.Token);
+                    var send = root?.Q<UnityEngine.UIElements.Button>("social-tip-send");
+                    if (send != null) { using var ev = UnityEngine.UIElements.NavigationSubmitEvent.GetPooled(); ev.target = send; send.SendEvent(ev); }
+                    await Awaitable.WaitForSecondsAsync(3f, game.Token);
+                    Debug.Log("CTLIFE [bp-route] shot tip sent");
+                    await Awaitable.WaitForSecondsAsync(1.5f, game.Token);
+                    Debug.Log("CTLIFE [bp-route] done tip");
                 });
                 // Device feature pass (dev builds only): `integration=1 [peer=<userId>]`. The editor driver calls it directly.
                 if (LaunchArgs.Flag("integration") && !Application.isEditor) RunGameAction(game, async () =>

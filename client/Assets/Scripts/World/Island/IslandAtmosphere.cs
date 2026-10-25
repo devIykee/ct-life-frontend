@@ -86,8 +86,25 @@ namespace CTLife.World
 
         public Light Sun => _sun;
 
-        private void OnEnable() => Apply();
-        private void OnDisable() => Restore();
+        private void OnEnable() { Apply(); CTLife.Core.QualityTier.Changed += ApplyTier; }
+        private void OnDisable() { CTLife.Core.QualityTier.Changed -= ApplyTier; Restore(); }
+
+        /// <summary>The graphics tier (CTLife.Core.QualityTier): on Low no sun shadows and the fog and haze close in before
+        /// the shorter far plane (IslandRenderSettings), so nothing is cut off hard; High is the look above.</summary>
+        public void ApplyTier()
+        {
+            if (!_applied || _sun == null) return;
+            bool low = CTLife.Core.QualityTier.IsLow;
+            float far = CTLife.Core.QualityTier.LowFarClip;
+            _sun.shadows = low ? LightShadows.None : LightShadows.Soft;
+            if (GraphicsSettings.currentRenderPipeline is UniversalRenderPipelineAsset urp) urp.shadowDistance = low ? 0f : shadowDistance;
+            RenderSettings.fogStartDistance = low ? Mathf.Min(fogStart, far * 0.35f) : fogStart;
+            RenderSettings.fogEndDistance = low ? Mathf.Min(fogEnd, far * 0.97f) : fogEnd;
+            float hs = hazeStart, he = hazeEnd;
+            if (low) { hs = Mathf.Min(hazeStart, far * 0.15f); he = Mathf.Min(hazeEnd, far * 0.9f); }
+            Shader.SetGlobalVector(HazeParamsId, new Vector4(hs, he, hazeHeightFalloff, sunGlow));
+            if (_ditherCamera != null && _ditherCamera.TryGetComponent<UniversalAdditionalCameraData>(out var camData)) camData.dithering = !low;
+        }
 
         public void Apply()
         {
@@ -158,6 +175,7 @@ namespace CTLife.World
                 _probe.enabled = true;
             }
             PushHaze();
+            ApplyTier();
         }
 
         public void PushHaze()

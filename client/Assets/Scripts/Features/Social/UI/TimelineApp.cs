@@ -273,8 +273,18 @@ namespace CTLife.SocialFeatures
                 var amountField = new TextField { maxLength = 12, isDelayed = false, name = "tip-amount" };
                 amountField.AddToClassList("duo-field");
                 amountField.textEdition.placeholder = SocialStrings.T("tip.amount");
-                amountField.RegisterValueChangedCallback(e => amount = e.newValue);
+                // backend #20: 3% of a Cash tip is burned; say what they get before sending
+                var feeLine = Duo.Footnote(SocialStrings.F("tip.feeHint", TipRules.FeeBps / 100), "duo-topup-note");
+                feeLine.name = "tip-fee";
+                void UpdateFee()
+                {
+                    feeLine.text = CashInput.TryCents(amount, out var c) && c >= TipRules.MinCents
+                        ? SocialStrings.F("tip.fee", TipRules.FeeBps / 100, CashInput.Format(TipRules.ReceivedCents(c)))
+                        : SocialStrings.F("tip.feeHint", TipRules.FeeBps / 100);
+                }
+                amountField.RegisterValueChangedCallback(e => { amount = e.newValue; UpdateFee(); });
                 panel.Add(amountField);
+                panel.Add(feeLine);
                 var tipKey = new RetainedKey();
                 var sigKey = new RetainedKey();
                 Button send = null, record = null;
@@ -283,15 +293,18 @@ namespace CTLife.SocialFeatures
                 {
                     if (busy) return;
                     Busy(true); message.text = "";
-                    _t.TipCash(userId, amount, tipKey, err =>
+                    _t.TipCash(userId, amount, tipKey, (err, tip) =>
                     {
                         Busy(false);
-                        message.text = err == null ? SocialStrings.F("tip.sent", name) : SocialStrings.T(err);
-                        if (err == null) { amount = ""; amountField.SetValueWithoutNotify(""); tipKey = new RetainedKey(); }
+                        message.text = err != null ? SocialStrings.T(err)
+                            : tip != null ? SocialStrings.F("tip.sentNet", name, CashInput.Format(tip.ReceivedCents), CashInput.Format(tip.FeeCents))
+                            : SocialStrings.F("tip.sent", name);
+                        if (err == null) { amount = ""; amountField.SetValueWithoutNotify(""); tipKey = new RetainedKey(); UpdateFee(); }
                     });
                 }, "duo-sheet-primary");
                 send.name = "social-tip-send";
                 panel.Add(send);
+                panel.Add(message);   // the result right under the button (it was below the wallet section, out of view)
                 panel.Add(Duo.GroupHeader(SocialStrings.T("tip.onchain")));
                 panel.Add(Duo.Footnote(SocialStrings.T("tip.onchainHint"), "duo-topup-note"));
                 var sigField = new TextField { maxLength = 100, isDelayed = false, name = "tip-signature" };
@@ -312,7 +325,6 @@ namespace CTLife.SocialFeatures
                 }, "duo-sheet-secondary");
                 record.name = "social-tip-record";
                 panel.Add(record);
-                panel.Add(message);
                 var scroll = El.VerticalScroll("duo-sheet-scroll");
                 scroll.Add(panel);
                 sheet.AddContent(scroll);

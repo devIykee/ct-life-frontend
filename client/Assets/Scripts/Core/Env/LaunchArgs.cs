@@ -51,7 +51,7 @@ namespace CTLife.Core
                 Log.Warn("args", "Could not read command line: " + e.Message);
             }
 #if UNITY_ANDROID && !UNITY_EDITOR
-            ReadAndroidExtras(new[] { "env", "autologin", "autocreate", "autoenter", "fresh", "alias", "wallet", "venue", "seeker", "phase", "livekitToken", "livekitUrl", "integration", "peer", "app", "shot", "spot", "stand", "look", "logerror", "qaUi", "classicVenues", "islandWalk", "islandTour", "islandWaypoints", "islandShot", "islandPerf", "islandCensus", "hitchProbe", "devStage", "islandRoom", "islandSkip", "islandDistance", "islandRenderScale", "islandFps", "islandOffline", "islandDemo", "vehicleDemo", "showcaseFleet", "grantHovercar", "devDmFrom", "devDmId", "devDmText", "homeShop", "order", "item", "unit", "wireV3Kinds", "devPushToken", "bp" });
+            ReadAndroidExtras(new[] { "env", "autologin", "autocreate", "autoenter", "fresh", "alias", "wallet", "venue", "seeker", "phase", "livekitToken", "livekitUrl", "integration", "peer", "app", "shot", "spot", "stand", "look", "logerror", "qaUi", "classicVenues", "islandWalk", "islandTour", "islandWaypoints", "islandShot", "islandPerf", "islandCensus", "hitchProbe", "devStage", "islandRoom", "islandSkip", "islandDistance", "islandRenderScale", "islandFps", "islandOffline", "islandDemo", "vehicleDemo", "showcaseFleet", "grantHovercar", "devDmFrom", "devDmId", "devDmText", "homeShop", "order", "item", "unit", "wireV3Kinds", "devPushToken", "bp", "quality", "lowRs", "lowDist", "lowFar", "lowFixed", "lowOcc", "heat", "tipDev" });
 #endif
 #endif
         }

@@ -489,6 +489,7 @@ namespace CTLife.EditorTools.IslandV2
                 case "neon":
                     if (def.SignMat != null) def.SignMat.SetColor("_Emission", new Color(1.6f, 0.55f, 0.3f));
                     break;
+                case "neon_rekt":   // Rekt Burger's board and light lines: white emission keeps the art's own orange and mint
                 case "neon_rug":
                     // The Rug Room's neon board and tubes (white emission keeps the sign art's own pink and gold)
                     if (def.SignMat != null) def.SignMat.SetColor("_Emission", new Color(1.5f, 1.5f, 1.5f));
@@ -705,15 +706,26 @@ namespace CTLife.EditorTools.IslandV2
             Col(new Vector2(f.xMax, f.yMin), new Vector2(f.xMax, f.yMax));
             if (d.WalkIn)
             {
-                // R3 walk-in landmark (The Rug Room): the streamed room is the inside, so no fader (the merged outside renderer
-                // stays on); the marquee's two columns stop bodies too
+                // walk-in landmarks (The Rug Room, Rekt Burger): the streamed room is the inside, so no fader (the merged outside
+                // renderer stays on). Their canopies get boxes too (2026-10-25): above head height they stop nobody, but the
+                // camera collides with Building, so it no longer swings into the canopy slab on the approach.
                 Object.DestroyImmediate(vs);
-                foreach (var x in new[] { -3.35f, 3.35f })
+                void Box(string name, float xa, float xb, float ya, float yb, float za, float zb)
                 {
-                    var cgo = new GameObject("column_col") { layer = Layers.Building };
+                    var cgo = new GameObject(name) { layer = Layers.Building };
                     cgo.transform.SetParent(go.transform, false);
-                    cgo.transform.SetPositionAndRotation(d.Origin + rot * new Vector3(x, 1.7f, f.yMin - 3.4f + 0.31f), rot);
-                    cgo.AddComponent<BoxCollider>().size = new Vector3(0.3f, 3.4f, 0.3f);
+                    cgo.transform.SetPositionAndRotation(d.Origin + rot * new Vector3((xa + xb) * 0.5f, (ya + yb) * 0.5f, (za + zb) * 0.5f), rot);
+                    cgo.AddComponent<BoxCollider>().size = new Vector3(Mathf.Abs(xb - xa), Mathf.Abs(yb - ya), Mathf.Abs(zb - za));
+                }
+                if (d.VenueId == "rug_room")
+                {
+                    foreach (var x in new[] { -3.35f, 3.35f }) Box("column_col", x - 0.15f, x + 0.15f, 0f, 3.4f, f.yMin - 3.4f + 0.16f, f.yMin - 3.4f + 0.46f);
+                    Box("canopy_col", -3.76f, 3.76f, 3.45f, 4.02f, f.yMin - 3.46f, f.yMin);
+                }
+                else if (d.VenueId == "rekt_burger")
+                {
+                    Box("canopy_col", f.xMin + 0.5f, f.xMax - 1.0f, 3.45f, 3.75f, f.yMin - 1.8f, f.yMin);
+                    Box("fin_col", f.xMax - 0.9f, f.xMax - 0.35f, -0.6f, d.Height + 1.6f, f.yMin - 0.9f, f.yMin + 0.3f);
                 }
             }
         }

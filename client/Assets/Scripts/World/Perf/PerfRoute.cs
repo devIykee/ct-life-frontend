@@ -111,7 +111,7 @@ namespace CTLife.World
                 Log.Info("perf", FormattableString.Invariant(
                     $"seg={_cur} frames={_n} seconds={_sumDt:0.0} avg={_n / _sumDt:0.0} min={1f / _worst:0.0} gpuMs={_gpu / k:0.0} mainMs={_main / k:0.0} renderMs={_rt / k:0.0} ") +
                     FormattableString.Invariant($"draws={_draws / _n:0} drawsMax={_drawsMax} tris={_tris / _n / 1e6:0.00}M trisMax={_trisMax / 1e6:0.00}M kitDraws={_kit / _n:0} ") +
-                    FormattableString.Invariant($"renderScale={(urp != null ? urp.renderScale : 0f):0.00} targetFps={Application.targetFrameRate} {thermal}"));
+                    FormattableString.Invariant($"tier={QualityTier.Current} renderScale={(urp != null ? urp.renderScale : 0f):0.00} fixedDt={Time.fixedDeltaTime:0.000} targetFps={Application.targetFrameRate} {thermal}"));
                 var sb = new System.Text.StringBuilder(FormattableString.Invariant($"seg={_cur} cpu kitRenderMs={_kitMs / _n:0.00} kitOccluded={_occluded / _n:0} kitCasters={_casters / _n:0} kitOccMs={_occMs / _n:0.00} kitLoopMs={_loopMs / _n:0.00} kitSubmitMs={_submitMs / _n:0.00}"));
                 for (int i = 0; i < _markers.Count; i++)
                     sb.Append(' ').Append(_markers[i].name).Append('=').Append((_markerSum[i] / _n / (_markers[i].name == "GC.Alloc" ? 1 : 1e6)).ToString("0.00", CultureInfo.InvariantCulture));
@@ -197,6 +197,11 @@ namespace CTLife.World
             list.Sort((a, c) => (c.Value.main + c.Value.casters).CompareTo(a.Value.main + a.Value.casters));
             var sb = new System.Text.StringBuilder(FormattableString.Invariant($"census seg={label} rendererMain={tm} rendererCasters={tc} kitMain={IslandInstanceRenderer.LastDraws} kitCasters={IslandInstanceRenderer.LastCasters} buckets={list.Count}"));
             Log.Info("perf", sb.ToString());
+            // every camera that renders this frame (an off-screen preview left on costs a whole extra pass)
+            var cams = new System.Text.StringBuilder("census seg=" + label + " cameras:");
+            foreach (var c in Camera.allCameras)
+                cams.Append(' ').Append(c.name).Append(c.targetTexture != null ? FormattableString.Invariant($"[rt {c.targetTexture.width}x{c.targetTexture.height}]") : "[screen]");
+            Log.Info("perf", cams.ToString());
             for (int i = 0; i < list.Count && i < 30; i++)
             {
                 var b = list[i].Value;
