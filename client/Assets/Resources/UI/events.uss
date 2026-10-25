@@ -1,0 +1,220 @@
+/* CT Life · Breakpoint 2026 and the event calendar (lane B, 2026-10-24, backend PR #11).
+   World overlays: City HUD v2 materials (frosted dark glass, thin light rim, Inter) for the booth stamp, the nod photo
+   moment (viewfinder, flash, polaroid) and the claim moment. The Events app: the Duo kit inside the phone, with one
+   event poster card in the Breakpoint palette (ink #000000, London red #aa67fb, cream #ffffff). */
+
+/* ---------------------------------------------------------------- world: stamp / polaroid cards */
+.evt-layer { position: absolute; left: 0; right: 0; top: 0; bottom: 0; }
+.evt-card {
+    position: absolute; right: 40px; top: 250px; width: 700px; padding: 26px 30px 28px;
+    flex-direction: row; align-items: center; border-radius: 46px; border-width: 1.5px; border-color: rgba(255,255,255,0.22);
+    background-color: rgba(0,0,0,0.82); opacity: 0; translate: 0 -60px;
+    transition-property: opacity, translate; transition-duration: 0.28s, 0.36s; transition-timing-function: ease-out, ease-out-back;
+}
+.evt-card.evt-in { opacity: 1; translate: 0 0; }
+.evt-stamp { width: 112px; height: 112px; border-radius: 4px; background-color: #aa67fb; align-items: center; justify-content: center; margin-right: 26px; }
+.evt-stamp-text { font-size: 40px; -unity-font-definition: url("Fonts/Events/GeistMono-SemiBold.ttf"); color: #000000; margin: 0; padding: 0; letter-spacing: -1px; }
+.evt-card-main { flex-grow: 1; flex-shrink: 1; }
+.evt-kicker { font-size: 20px; -unity-font-definition: url("Fonts/Events/GeistMono-Medium.ttf"); color: #aa67fb; letter-spacing: 2.4px; margin: 0; padding: 0; }
+.evt-card-title { font-size: 38px; -unity-font-definition: url("Fonts/Events/Geist-SemiBold.ttf"); color: #ffffff; letter-spacing: -0.8px; margin: 4px 0 0; padding: 0; white-space: normal; }
+.evt-card-sub { font-size: 25px; color: rgba(255,255,255,0.72); margin: 4px 0 0; padding: 0; white-space: normal; }
+.evt-track { height: 12px; border-radius: 6px; background-color: rgba(255,255,255,0.14); margin: 16px 0 0; overflow: hidden; }
+.evt-track-fill { height: 12px; border-radius: 6px; background-color: #aa67fb; width: 0; transition-property: width; transition-duration: 0.6s; transition-timing-function: ease-out; }
+.evt-track-fill.evt-done { background-color: #30c75e; }
+
+/* the photo moment */
+.evt-viewfinder { position: absolute; left: 0; right: 0; top: 0; bottom: 0; opacity: 0; transition-property: opacity; transition-duration: 0.22s; }
+.evt-viewfinder.evt-in { opacity: 1; }
+.evt-corner { position: absolute; width: 120px; height: 120px; border-color: rgba(255,255,255,0.92); }
+.evt-corner-tl { left: 22%; top: 22%; border-left-width: 6px; border-top-width: 6px; border-top-left-radius: 26px; }
+.evt-corner-tr { right: 22%; top: 22%; border-right-width: 6px; border-top-width: 6px; border-top-right-radius: 26px; }
+.evt-corner-bl { left: 22%; bottom: 22%; border-left-width: 6px; border-bottom-width: 6px; border-bottom-left-radius: 26px; }
+.evt-corner-br { right: 22%; bottom: 22%; border-right-width: 6px; border-bottom-width: 6px; border-bottom-right-radius: 26px; }
+.evt-reticle { position: absolute; left: 50%; top: 50%; width: 22px; height: 22px; margin: -11px 0 0 -11px; border-radius: 11px; border-width: 3px; border-color: rgba(255,255,255,0.9); }
+.evt-vf-label {
+    position: absolute; left: 0; right: 0; top: 14%; -unity-text-align: middle-center; font-size: 26px; letter-spacing: 3px;
+    -unity-font-definition: url("Fonts/Events/GeistMono-Medium.ttf"); color: #ffffff; text-shadow: 0 2px 8px rgba(0,0,0,0.6); margin: 0; padding: 0;
+}
+.evt-flash { position: absolute; left: 0; right: 0; top: 0; bottom: 0; background-color: #ffffff; opacity: 0; transition-property: opacity; transition-duration: 0.42s; transition-timing-function: ease-out; }
+.evt-flash.evt-on { opacity: 0.92; transition-duration: 0.04s; }
+.evt-polaroid {
+    position: absolute; left: 50%; bottom: 250px; width: 520px; margin-left: -260px; padding: 22px 22px 26px; border-radius: 16px;
+    background-color: #fbfaf6; rotate: -3deg; opacity: 0; translate: 0 140px; scale: 0.9 0.9;
+    transition-property: opacity, translate, scale, rotate; transition-duration: 0.3s, 0.5s, 0.5s, 0.5s; transition-timing-function: ease-out, ease-out-back, ease-out-back, ease-out;
+}
+.evt-polaroid.evt-in { opacity: 1; translate: 0 0; scale: 1 1; rotate: -2deg; }
+.evt-photo { width: 476px; height: 476px; background-color: #1b1e27; -unity-background-scale-mode: scale-and-crop; }
+.evt-photo-cap { font-size: 30px; -unity-font-definition: url("Fonts/Events/Geist-SemiBold.ttf"); color: #000000; margin: 18px 0 0; padding: 0; letter-spacing: -0.5px; }
+.evt-photo-sub { font-size: 21px; -unity-font-definition: url("Fonts/Events/GeistMono-Medium.ttf"); color: rgba(0,0,0,0.6); margin: 4px 0 0; padding: 0; white-space: normal; }
+
+/* the claim moment */
+.evt-claim { position: absolute; left: 0; right: 0; top: 0; bottom: 0; background-color: rgba(0,0,0,0.78); align-items: center; justify-content: center; opacity: 0; transition-property: opacity; transition-duration: 0.3s; }
+.evt-claim.evt-in { opacity: 1; }
+.evt-claim-panel {
+    width: 820px; padding: 40px 46px 40px; border-radius: 10px; background-color: #000000; border-width: 2px; border-color: rgba(170,103,251,0.7);
+    align-items: center; scale: 0.86 0.86; translate: 0 40px; transition-property: scale, translate; transition-duration: 0.5s; transition-timing-function: ease-out-back;
+}
+.evt-claim.evt-in .evt-claim-panel { scale: 1 1; translate: 0 0; }
+.evt-claim-kicker { font-size: 22px; letter-spacing: 3px; -unity-font-definition: url("Fonts/Events/GeistMono-Medium.ttf"); color: #aa67fb; margin: 0; padding: 0; }
+.evt-claim-title { font-size: 58px; -unity-font-definition: url("Fonts/Events/Geist-SemiBold.ttf"); color: #ffffff; letter-spacing: -1.6px; margin: 8px 0 0; padding: 0; -unity-text-align: middle-center; }
+.evt-claim-art { width: 360px; height: 480px; margin: 12px 0 0; -unity-background-scale-mode: scale-to-fit; rotate: -4deg; transition-property: rotate; transition-duration: 1.2s; transition-timing-function: ease-in-out; }
+.evt-claim-art.evt-swing { rotate: 4deg; }
+.evt-claim-rows { width: 100%; margin: 14px 0 0; }
+.evt-claim-row { flex-direction: row; align-items: center; padding: 18px 26px; margin: 8px 0 0; border-radius: 6px; background-color: #1e1e1e; }
+.evt-claim-row-label { flex-grow: 1; font-size: 30px; -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); color: #ffffff; margin: 0; padding: 0; }
+.evt-claim-row-value { font-size: 32px; -unity-font-definition: url("Fonts/Events/GeistMono-SemiBold.ttf"); color: #14f195; margin: 0; padding: 0; }
+.evt-claim-note { font-size: 24px; color: rgba(255,255,255,0.66); margin: 18px 0 0; padding: 0; white-space: normal; -unity-text-align: middle-center; }
+.evt-claim-actions { flex-direction: row; margin: 26px 0 0; }
+.evt-btn {
+    height: 100px; padding: 0 46px; margin: 0 10px; border-radius: 4px; border-width: 0; background-color: rgba(255,255,255,0.14);
+    font-size: 28px; -unity-font-definition: url("Fonts/Events/GeistMono-SemiBold.ttf"); color: #ffffff; letter-spacing: 1px;
+}
+.evt-btn:active { scale: 0.96 0.96; }
+.evt-btn, .evt-btn:hover, .evt-btn:active { border-bottom-width: 0; border-top-width: 0; border-left-width: 0; border-right-width: 0; }
+.evt-btn-primary { background-color: #aa67fb; color: #000000; }
+.evt-btn-gold { background-color: #f2b33d; color: #000000; }
+
+/* ---------------------------------------------------------------- the Events app (inside the phone) */
+.ct-phone .evt-app .evt-poster {
+    margin: 10px 30px 0; border-radius: 8px; overflow: hidden; background-color: #000000; flex-shrink: 0;
+}
+.ct-phone .evt-app .evt-poster-art { height: 430px; -unity-background-scale-mode: scale-to-fit; background-color: #000000; }
+.ct-phone .evt-app .evt-poster-body { padding: 26px 34px 30px; }
+.ct-phone .evt-app .evt-poster-row { flex-direction: row; align-items: center; }
+.ct-phone .evt-app .evt-live {
+    font-size: var(--duo-caption); -unity-font-definition: url("Fonts/Events/GeistMono-SemiBold.ttf"); color: #000000; background-color: #aa67fb;
+    border-radius: 3px; padding: 6px 14px; margin: 0 14px 0 0; letter-spacing: 1.4px;
+}
+.ct-phone .evt-app .evt-soon { background-color: #353535; color: #ffffff; }
+.ct-phone .evt-app .evt-poster-dates { font-size: var(--duo-footnote); -unity-font-definition: url("Fonts/Events/GeistMono-Medium.ttf"); color: #a2a2a2; margin: 0; padding: 0; }
+.ct-phone .evt-app .evt-count-label { font-size: var(--duo-footnote); -unity-font-definition: url("Fonts/Events/GeistMono-Medium.ttf"); color: #aa67fb; margin: 22px 0 0; padding: 0; letter-spacing: 1px; }
+.ct-phone .evt-app .evt-count { font-size: 88px; -unity-font-definition: url("Fonts/Events/Geist-SemiBold.ttf"); color: #ffffff; margin: 2px 0 0; padding: 0; letter-spacing: -3px; }
+.ct-phone .evt-app .evt-where { font-size: var(--duo-footnote); color: rgba(255,255,255,0.66); margin: 8px 0 0; padding: 0; white-space: normal; }
+.ct-phone .evt-app .evt-watch {
+    margin: 24px 0 0; height: 104px; border-radius: 4px; border-width: 0; background-color: #ffffff; color: #000000;
+    font-size: var(--duo-subhead); -unity-font-definition: url("Fonts/Events/GeistMono-SemiBold.ttf"); letter-spacing: 1px;
+}
+.ct-phone .evt-app .evt-watch:active { scale: 0.97 0.97; }
+.ct-phone .evt-app .evt-watch-note { font-size: var(--duo-caption); color: rgba(255,255,255,0.55); margin: 10px 0 0; padding: 0; -unity-text-align: middle-center; }
+
+.ct-phone .evt-app .evt-section { font-size: var(--duo-title3); -unity-font-definition: url("Fonts/Events/Geist-SemiBold.ttf"); color: var(--duo-label); margin: 40px 38px 4px; padding: 0; letter-spacing: -0.6px; }
+.ct-phone .evt-app .evt-section-note { font-size: var(--duo-subhead); color: var(--duo-label2); margin: 0 38px 16px; padding: 0; white-space: normal; }
+.ct-phone .evt-app .evt-step {
+    flex-direction: row; margin: 0 30px 14px; padding: 26px 28px; border-radius: 34px; background-color: #f2f2f7; flex-shrink: 0;
+}
+.ct-phone .evt-app .evt-step-num {
+    width: 72px; height: 72px; border-radius: 36px; background-color: #ffffff; margin-right: 24px; align-items: center; justify-content: center;
+    font-size: var(--duo-headline); -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); color: var(--duo-label); -unity-text-align: middle-center;
+}
+.ct-phone .evt-app .evt-step-done .evt-step-num { background-color: #000000; color: #14f195; }
+.ct-phone .evt-app .evt-step-current .evt-step-num { background-color: #aa67fb; color: #000000; }
+.ct-phone .evt-app .evt-step-locked { opacity: 0.55; }
+.ct-phone .evt-app .evt-step-main { flex-grow: 1; flex-shrink: 1; }
+.ct-phone .evt-app .evt-step-title { font-size: var(--duo-headline); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); color: var(--duo-label); margin: 0; padding: 0; }
+.ct-phone .evt-app .evt-step-how { font-size: var(--duo-footnote); color: var(--duo-label2); margin: 4px 0 0; padding: 0; white-space: normal; }
+.ct-phone .evt-app .evt-step-meter { flex-direction: row; align-items: center; margin: 16px 0 0; }
+.ct-phone .evt-app .evt-step-track { flex-grow: 1; height: 14px; border-radius: 7px; background-color: rgba(120,120,128,0.18); overflow: hidden; }
+.ct-phone .evt-app .evt-step-fill { height: 14px; border-radius: 7px; background-color: #aa67fb; }
+.ct-phone .evt-app .evt-step-done .evt-step-fill { background-color: #14f195; }
+.ct-phone .evt-app .evt-step-count { font-size: var(--duo-footnote); -unity-font-definition: url("Fonts/Events/GeistMono-Medium.ttf"); color: var(--duo-label); margin: 0 0 0 18px; padding: 0; }
+.ct-phone .evt-app .evt-step-btn {
+    align-self: flex-start; margin: 16px 0 0; height: 74px; padding: 0 30px; border-radius: 37px; border-width: 0; background-color: #000000;
+    color: #ffffff; font-size: var(--duo-subhead); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf");
+}
+
+.ct-phone .evt-app .evt-reward {
+    flex-direction: row; align-items: center; margin: 6px 30px 0; padding: 22px 28px; border-radius: 34px; background-color: #000000; flex-shrink: 0;
+}
+.ct-phone .evt-app .evt-reward-art { width: 120px; height: 160px; -unity-background-scale-mode: scale-to-fit; margin-right: 22px; }
+.ct-phone .evt-app .evt-reward-title { font-size: var(--duo-headline); -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); color: #ffffff; margin: 0; padding: 0; }
+.ct-phone .evt-app .evt-reward-sub { font-size: var(--duo-footnote); color: rgba(255,255,255,0.7); margin: 4px 0 0; padding: 0; white-space: normal; }
+.ct-phone .evt-app .evt-reward-tag { font-size: var(--duo-caption); -unity-font-definition: url("Fonts/Events/GeistMono-SemiBold.ttf"); color: #14f195; margin: 8px 0 0; padding: 0; letter-spacing: 1.2px; }
+
+/* trivia */
+.ct-phone .evt-app .evt-q { margin: 0 30px 18px; padding: 26px 28px 20px; border-radius: 34px; background-color: #f2f2f7; flex-shrink: 0; }
+.ct-phone .evt-app .evt-q-num { font-size: var(--duo-caption); -unity-font-definition: url("Fonts/Events/GeistMono-SemiBold.ttf"); color: #8a4fe0; letter-spacing: 1.6px; margin: 0; padding: 0; }
+.ct-phone .evt-app .evt-q-prompt { font-size: var(--duo-headline); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); color: var(--duo-label); margin: 6px 0 12px; padding: 0; white-space: normal; }
+.ct-phone .evt-app .evt-choice {
+    flex-direction: row; align-items: center; height: 92px; margin: 6px 0 0; padding: 0 22px; border-radius: 26px; border-width: 0;
+    background-color: #ffffff; -unity-text-align: middle-left;
+}
+.ct-phone .evt-app .evt-choice:active { background-color: #e9e9ee; scale: 0.98 0.98; }
+.ct-phone .evt-app .evt-choice-letter {
+    width: 54px; height: 54px; border-radius: 27px; background-color: rgba(0,0,0,0.08); margin-right: 18px; -unity-text-align: middle-center;
+    font-size: var(--duo-subhead); -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); color: var(--duo-label); padding: 0;
+}
+.ct-phone .evt-app .evt-choice-label { font-size: var(--duo-body); color: var(--duo-label); margin: 0; padding: 0; }
+.ct-phone .evt-app .evt-choice-right { background-color: #dff6e6; }
+.ct-phone .evt-app .evt-choice-right .evt-choice-letter { background-color: #30c75e; color: #ffffff; }
+/* a tried (wrong) choice is greyed out, not red: no red anywhere in the Breakpoint UI */
+.ct-phone .evt-app .evt-choice-wrong { background-color: rgba(162,162,162,0.22); opacity: 0.55; }
+.ct-phone .evt-app .evt-choice-wrong .evt-choice-letter { background-color: #4e4e4e; color: #ffffff; }
+.ct-phone .evt-app .evt-choice-wrong .evt-choice-label { color: #4e4e4e; }
+.ct-phone .evt-app .evt-q-done { opacity: 0.6; }
+.ct-phone .evt-app .evt-q-cooldown { color: #aa67fb; -unity-font-definition: url("Fonts/Events/GeistMono-Medium.ttf"); }
+.ct-phone .evt-app .evt-irl-you {
+    padding: 0 22px; height: 56px; border-radius: 28px; background-color: #aa67fb; color: #ffffff; -unity-text-align: middle-center;
+    font-size: var(--duo-footnote); -unity-font-definition: url("Fonts/Events/GeistMono-Medium.ttf"); letter-spacing: 2px;
+}
+.ct-phone .evt-app .evt-q-result { font-size: var(--duo-subhead); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); margin: 10px 0 0; padding: 0; color: var(--duo-label2); }
+
+/* calendar rows */
+.ct-phone .evt-app .evt-cal { margin: 0 30px; flex-shrink: 0; }
+.ct-phone .evt-app .evt-cal-row { flex-direction: row; align-items: center; padding: 20px 6px; border-bottom-width: 1px; border-bottom-color: var(--duo-sep); }
+.ct-phone .evt-app .evt-cal-date { width: 96px; height: 96px; border-radius: 24px; background-color: #f2f2f7; margin-right: 22px; align-items: center; justify-content: center; }
+.ct-phone .evt-app .evt-cal-mon { font-size: var(--duo-caption); -unity-font-definition: url("Fonts/Events/GeistMono-SemiBold.ttf"); color: #8a4fe0; margin: 0; padding: 0; letter-spacing: 1px; }
+.ct-phone .evt-app .evt-cal-day { font-size: 40px; -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); color: var(--duo-label); margin: -2px 0 0; padding: 0; }
+.ct-phone .evt-app .evt-cal-main { flex-grow: 1; flex-shrink: 1; }
+.ct-phone .evt-app .evt-cal-title { font-size: var(--duo-headline); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); color: var(--duo-label); margin: 0; padding: 0; }
+.ct-phone .evt-app .evt-cal-sub { font-size: var(--duo-footnote); color: var(--duo-label2); margin: 2px 0 0; padding: 0; }
+.ct-phone .evt-app .evt-cal-in { font-size: var(--duo-footnote); -unity-font-definition: url("Fonts/Events/GeistMono-SemiBold.ttf"); color: #8a4fe0; margin: 0; padding: 0; }
+
+/* ---------------------------------------------------------------- the Duo home: the events row under the widgets */
+.ct-phone .evt-home-row {
+    flex-direction: row; align-items: center; margin: 0 34px 12px; padding: 16px 22px; border-radius: 8px; border-width: 0;
+    background-color: rgba(0,0,0,0.82); flex-shrink: 0;
+}
+.ct-phone .evt-home-row:active { scale: 0.98 0.98; }
+.ct-phone .evt-home-dot { width: 14px; height: 14px; border-radius: 0; background-color: #aa67fb; margin-right: 16px; }
+.ct-phone .evt-home-title { flex-grow: 1; font-size: 25px; -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); color: #ffffff; margin: 0; padding: 0; }
+.ct-phone .evt-home-in { font-size: 23px; -unity-font-definition: url("Fonts/Events/GeistMono-SemiBold.ttf"); color: #aa67fb; margin: 0; padding: 0; }
+
+/* ---------------------------------------------------------------- nameplates: the Breakpoint lanyard / IRL badge */
+.ct-tag-badge {
+    margin: 0 0 0 8px; padding: 1px 8px 2px; border-radius: 3px; background-color: #aa67fb; color: #000000;
+    font-size: 14px; -unity-font-definition: url("Fonts/Events/GeistMono-SemiBold.ttf"); letter-spacing: 0.6px; white-space: nowrap;
+}
+.ct-tag-badge-irl { background-color: #f2b33d; color: #000000; }
+
+/* ---------------------------------------------------------------- IRL check-in (Events app, claim) */
+.ct-phone .evt-app .evt-irl {
+    margin: 22px 30px 0; padding: 28px 32px 30px; border-radius: 8px; background-color: #000000; border-width: 2px;
+    border-color: rgba(242,179,61,0.55); flex-shrink: 0;
+}
+.ct-phone .evt-app .evt-irl-kicker { font-size: var(--duo-caption); -unity-font-definition: url("Fonts/Events/GeistMono-SemiBold.ttf"); color: #f2b33d; letter-spacing: 2px; margin: 0; padding: 0; }
+.ct-phone .evt-app .evt-irl-head { flex-direction: row; align-items: center; margin: 8px 0 0; }
+.ct-phone .evt-app .evt-irl-title { flex-grow: 1; font-size: var(--duo-title2); -unity-font-definition: url("Fonts/Events/Geist-SemiBold.ttf"); color: #ffffff; letter-spacing: -1px; margin: 0; padding: 0; }
+.ct-phone .evt-app .evt-irl-badge { width: 110px; height: 110px; -unity-background-scale-mode: scale-to-fit; }
+.ct-phone .evt-app .evt-irl-body { font-size: var(--duo-subhead); color: rgba(255,255,255,0.82); margin: 10px 0 0; padding: 0; white-space: normal; }
+.ct-phone .evt-app .evt-irl-btn {
+    margin: 22px 0 0; height: 104px; border-radius: 4px; border-width: 0; background-color: #f2b33d; color: #000000;
+    font-size: var(--duo-headline); -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf");
+}
+.ct-phone .evt-app .evt-irl-btn:active { scale: 0.97 0.97; }
+.ct-phone .evt-app .evt-irl-done { font-size: var(--duo-headline); -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); color: #f2b33d; margin: 12px 0 0; padding: 0; }
+.ct-phone .evt-app .evt-irl-toggle {
+    margin: 18px 0 0; height: 88px; border-radius: 44px; border-width: 0; background-color: rgba(255,255,255,0.12); color: #ffffff;
+    font-size: var(--duo-subhead); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); -unity-text-align: middle-left; padding: 0 30px;
+}
+.ct-phone .evt-app .evt-irl-toggle.evt-on { background-color: rgba(242,179,61,0.22); color: #f2b33d; }
+.ct-phone .evt-app .evt-irl-note { font-size: var(--duo-footnote); color: rgba(255,255,255,0.6); margin: 8px 0 0; padding: 0; white-space: normal; }
+.ct-phone .evt-app .evt-irl-error { font-size: var(--duo-subhead); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); color: #c79bff; margin: 14px 0 0; padding: 0; white-space: normal; }
+.ct-phone .evt-app .evt-irl-privacy { font-size: var(--duo-footnote); color: rgba(255,255,255,0.55); margin: 18px 0 0; padding: 18px 0 0; white-space: normal; border-top-width: 1px; border-top-color: rgba(255,255,255,0.14); }
+.ct-phone .evt-app .evt-irl-av { margin-right: 22px; }
+.ct-phone .evt-app .evt-irl-hi {
+    height: 70px; padding: 0 26px; border-radius: 35px; border-width: 0; background-color: #000000; color: #ffffff;
+    font-size: var(--duo-subhead); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf");
+}
+.ct-phone .evt-app .evt-irl-hi.evt-off { background-color: rgba(120,120,128,0.18); color: var(--duo-label2); }
+.evt-claim-panel.evt-claim-gold { border-color: #f2b33d; }
+.evt-claim-badge { position: absolute; right: -40px; bottom: 30px; width: 150px; height: 150px; -unity-background-scale-mode: scale-to-fit; rotate: 8deg; }

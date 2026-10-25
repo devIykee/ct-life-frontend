@@ -23,8 +23,25 @@ namespace CTLife.UI
         private int _minute = -1;
         private string _activeDistrict;
 
+        /// <summary>
+        /// The events row under the widgets (lane B, 2026-10-24): the next real-world event and its countdown, or LIVE.
+        /// Set by City Life (EventsOverlays); null or a null line hides the row. Tapping opens <see cref="EventsAppId"/>.
+        /// </summary>
+        public static Func<(string title, string when, bool live)?> EventsLine;
+        public const string EventsAppId = "events";
+        /// <summary>The row element; PhoneLauncher places it between the widgets and the app grid.</summary>
+        public readonly Button EventsRow;
+        private readonly Label _eventsTitle, _eventsWhen;
+
         public PhoneWidgets(Action<string> launch)
         {
+            EventsRow = new Button(() => launch?.Invoke(EventsAppId)) { text = "", enableRichText = false, name = "phone-events-row" };
+            EventsRow.AddToClassList("evt-home-row");
+            _eventsTitle = Copy("evt-home-title"); _eventsWhen = Copy("evt-home-in");
+            var dot = new VisualElement { pickingMode = PickingMode.Ignore };
+            dot.AddToClassList("evt-home-dot");
+            EventsRow.Add(dot); EventsRow.Add(_eventsTitle); EventsRow.Add(_eventsWhen);
+            EventsRow.style.display = DisplayStyle.None;
             AddToClassList("ct-phone-widgets");
             pickingMode = PickingMode.Ignore;
             _calendar = Widget("week", launch, "ct-phone-widget-calendar");
@@ -48,6 +65,15 @@ namespace CTLife.UI
 
         public void Refresh()
         {
+            (string title, string when, bool live)? ev = null;
+            try { ev = EventsLine?.Invoke(); } catch (Exception e) { Log.Debug("ui", "events row: " + e.Message); }
+            EventsRow.style.display = ev.HasValue ? DisplayStyle.Flex : DisplayStyle.None;
+            if (ev.HasValue)
+            {
+                if (_eventsTitle.text != ev.Value.title) _eventsTitle.text = ev.Value.title;
+                if (_eventsWhen.text != ev.Value.when) _eventsWhen.text = ev.Value.when;
+                EventsRow.tooltip = ev.Value.title + " · " + ev.Value.when;
+            }
             var now = DateTime.Now;
             bool dateChanged = now.Date != _date;
             if (dateChanged)

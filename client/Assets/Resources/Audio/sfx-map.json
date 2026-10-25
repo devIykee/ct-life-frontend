@@ -111,7 +111,18 @@
     "sfx_vr_leave": "sfx.sfx_vr_leave",
     "sfx_vr_promoted": "sfx.sfx_vr_promoted",
     "sfx_vr_raise_hand": "sfx.sfx_vr_raise_hand",
-    "sfx_whale_horn": "sfx.sfx_whale_horn"
+    "sfx_whale_horn": "sfx.sfx_whale_horn",
+    "sfx_slot_lever": "sfx.sfx_slot_lever",
+    "sfx_slot_spin": "sfx.sfx_slot_spin",
+    "sfx_slot_stop": "sfx.sfx_slot_stop",
+    "sfx_slot_win": "sfx.sfx_slot_win",
+    "sfx_slot_bigwin": "sfx.sfx_slot_bigwin",
+    "sfx_chips": "sfx.sfx_chips",
+    "sfx_coin_flip": "sfx.sfx_coin_flip",
+    "sfx_coin_land": "sfx.sfx_coin_land",
+    "sfx_rug_pull": "sfx.sfx_rug_pull",
+    "sfx_cashout_ok": "sfx.sfx_cashout_ok",
+    "amb_rug_room": "ambience.rug_room"
   },
   "surfaces": {
     "_note": "Footstep floor default per venue id (CTLife.Audio SurfaceResolver).",
@@ -1476,6 +1487,336 @@
         "quality": 0.6,
         "preloadAudioData": true
       }
+    },
+    "sfx_slot_lever": {
+      "files": [
+        "sfx/sfx_slot_lever.wav"
+      ],
+      "volume": 0.631,
+      "pitchJitter": 0.03,
+      "category": "casino",
+      "volume_db": -4,
+      "channels": 1,
+      "loop": false,
+      "duration_s": 0.598,
+      "true_peak_dbtp": -1.0,
+      "ducks_music": false,
+      "status": "recorded",
+      "desc": "slot machine handle pulled: a real lever with its two clacks",
+      "sources": [
+        "lever.wav — Krokulator (freesound 696746)"
+      ],
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_page": "https://freesound.org/people/Krokulator/sounds/696746/",
+      "source_pages": [
+        "https://freesound.org/people/Krokulator/sounds/696746/"
+      ],
+      "license_checked": "2026-10-24",
+      "processing": "{\"window_s\": [0, 0.598]}; mono; 48 kHz; peak-normalised to -1 dBFS",
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
+        "preloadAudioData": true
+      }
+    },
+    "sfx_slot_spin": {
+      "files": [
+        "sfx/sfx_slot_spin.wav"
+      ],
+      "volume": 0.316,
+      "pitchJitter": 0.0,
+      "category": "casino",
+      "volume_db": -10,
+      "channels": 1,
+      "loop": true,
+      "duration_s": 1.6,
+      "true_peak_dbtp": -1.0,
+      "ducks_music": false,
+      "status": "recorded",
+      "desc": "slot reels spinning: a real machine's whir in a small casino (loop)",
+      "sources": [
+        "Slot machine in a small casino (Chile) — felix.blume (freesound 499767)"
+      ],
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_page": "https://freesound.org/people/felix.blume/sounds/499767/",
+      "source_pages": [
+        "https://freesound.org/people/felix.blume/sounds/499767/"
+      ],
+      "license_checked": "2026-10-24",
+      "processing": "{\"window_s\": [0.25, 1.85], \"xfade_s\": 0.25, \"search_window_s\": [3.3, 7.6]}; mono; 48 kHz; peak-normalised to -1 dBFS",
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
+        "preloadAudioData": true
+      }
+    },
+    "sfx_slot_stop": {
+      "files": [
+        "sfx/sfx_slot_stop.wav"
+      ],
+      "volume": 0.631,
+      "pitchJitter": 0.03,
+      "category": "casino",
+      "volume_db": -4,
+      "channels": 1,
+      "loop": false,
+      "duration_s": 0.28,
+      "true_peak_dbtp": -1.0,
+      "ducks_music": false,
+      "status": "recorded",
+      "desc": "a reel stopping: a real slot machine's clack",
+      "sources": [
+        "SLOTPLAY_0329.wav — gthall (freesound 204487)"
+      ],
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_page": "https://freesound.org/people/gthall/sounds/204487/",
+      "source_pages": [
+        "https://freesound.org/people/gthall/sounds/204487/"
+      ],
+      "license_checked": "2026-10-24",
+      "processing": "{\"window_s\": [2.46, 2.74]}; mono; 48 kHz; peak-normalised to -1 dBFS",
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
+        "preloadAudioData": true
+      }
+    },
+    "sfx_slot_win": {
+      "files": [
+        "sfx/sfx_slot_win.wav"
+      ],
+      "volume": 0.501,
+      "pitchJitter": 0.03,
+      "category": "casino",
+      "volume_db": -6,
+      "channels": 1,
+      "loop": false,
+      "duration_s": 2.24,
+      "true_peak_dbtp": -1.0,
+      "ducks_music": false,
+      "status": "recorded",
+      "desc": "a win: a real desk bell ding",
+      "sources": [
+        "Service bell louder — Squidems (freesound 709925)"
+      ],
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_page": "https://freesound.org/people/Squidems/sounds/709925/",
+      "source_pages": [
+        "https://freesound.org/people/Squidems/sounds/709925/"
+      ],
+      "license_checked": "2026-10-24",
+      "processing": "{\"window_s\": [1.36, 3.6]}; mono; 48 kHz; peak-normalised to -1 dBFS",
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
+        "preloadAudioData": true
+      }
+    },
+    "sfx_slot_bigwin": {
+      "files": [
+        "sfx/sfx_slot_bigwin.wav"
+      ],
+      "volume": 0.562,
+      "pitchJitter": 0.03,
+      "category": "casino",
+      "volume_db": -5,
+      "channels": 1,
+      "loop": false,
+      "duration_s": 6.0,
+      "true_peak_dbtp": -1.0,
+      "ducks_music": false,
+      "status": "recorded",
+      "desc": "a big win: real coins pouring from a machine's tray",
+      "sources": [
+        "quarters from machine.wav — DisasterServices (freesound 320006)"
+      ],
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_page": "https://freesound.org/people/DisasterServices/sounds/320006/",
+      "source_pages": [
+        "https://freesound.org/people/DisasterServices/sounds/320006/"
+      ],
+      "license_checked": "2026-10-24",
+      "processing": "{\"window_s\": [45.3, 51.3]}; mono; 48 kHz; peak-normalised to -1 dBFS",
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
+        "preloadAudioData": true
+      }
+    },
+    "sfx_chips": {
+      "files": [
+        "sfx/sfx_chips.wav"
+      ],
+      "volume": 0.631,
+      "pitchJitter": 0.03,
+      "category": "casino",
+      "volume_db": -4,
+      "channels": 1,
+      "loop": false,
+      "duration_s": 0.23,
+      "true_peak_dbtp": -1.0,
+      "ducks_music": false,
+      "status": "recorded",
+      "desc": "casino chips stacked (stake placed)",
+      "sources": [
+        "Casino Audio — chips-stack-4.ogg — Kenney (Kenney Vleugels)"
+      ],
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_page": "https://kenney.nl/assets/casino-audio",
+      "source_pages": [
+        "https://kenney.nl/assets/casino-audio"
+      ],
+      "license_checked": "2026-10-24",
+      "processing": "{\"window_s\": [0, 0.23]}; mono; 48 kHz; peak-normalised to -1 dBFS",
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
+        "preloadAudioData": true
+      }
+    },
+    "sfx_coin_flip": {
+      "files": [
+        "sfx/sfx_coin_flip.wav"
+      ],
+      "volume": 0.631,
+      "pitchJitter": 0.03,
+      "category": "casino",
+      "volume_db": -4,
+      "channels": 1,
+      "loop": false,
+      "duration_s": 0.75,
+      "true_peak_dbtp": -1.0,
+      "ducks_music": false,
+      "status": "recorded",
+      "desc": "a real coin flicked off the thumb, ringing",
+      "sources": [
+        "2 € Coin Flip.MP3 — fedecortex (freesound 587022)"
+      ],
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_page": "https://freesound.org/people/fedecortex/sounds/587022/",
+      "source_pages": [
+        "https://freesound.org/people/fedecortex/sounds/587022/"
+      ],
+      "license_checked": "2026-10-24",
+      "processing": "{\"window_s\": [0.0, 0.75]}; mono; 48 kHz; peak-normalised to -1 dBFS",
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
+        "preloadAudioData": true
+      }
+    },
+    "sfx_coin_land": {
+      "files": [
+        "sfx/sfx_coin_land.wav"
+      ],
+      "volume": 0.631,
+      "pitchJitter": 0.03,
+      "category": "casino",
+      "volume_db": -4,
+      "channels": 1,
+      "loop": false,
+      "duration_s": 0.76,
+      "true_peak_dbtp": -1.0,
+      "ducks_music": false,
+      "status": "recorded",
+      "desc": "a real coin landing on a table",
+      "sources": [
+        "CoinFlip.WAV — jrsevers3 (freesound 452867)"
+      ],
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_page": "https://freesound.org/people/jrsevers3/sounds/452867/",
+      "source_pages": [
+        "https://freesound.org/people/jrsevers3/sounds/452867/"
+      ],
+      "license_checked": "2026-10-24",
+      "processing": "{\"window_s\": [8.94, 9.7]}; mono; 48 kHz; peak-normalised to -1 dBFS",
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
+        "preloadAudioData": true
+      }
+    },
+    "sfx_rug_pull": {
+      "files": [
+        "sfx/sfx_rug_pull.wav"
+      ],
+      "volume": 0.708,
+      "pitchJitter": 0.03,
+      "category": "casino",
+      "volume_db": -3,
+      "channels": 1,
+      "loop": false,
+      "duration_s": 1.13,
+      "true_peak_dbtp": -1.0,
+      "ducks_music": false,
+      "status": "recorded",
+      "desc": "a rug yanked and shaken out: real cloth whumps",
+      "sources": [
+        "Shaking out rug, dust being shaken off a rug. recorded on H6Zoom XY capsule — Rinaldobowles56 (freesound 708090)"
+      ],
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_page": "https://freesound.org/people/Rinaldobowles56/sounds/708090/",
+      "source_pages": [
+        "https://freesound.org/people/Rinaldobowles56/sounds/708090/"
+      ],
+      "license_checked": "2026-10-24",
+      "processing": "{\"window_s\": [0.42, 1.55]}; mono; 48 kHz; peak-normalised to -1 dBFS",
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
+        "preloadAudioData": true
+      }
+    },
+    "sfx_cashout_ok": {
+      "files": [
+        "sfx/sfx_cashout_ok.wav"
+      ],
+      "volume": 0.501,
+      "pitchJitter": 0.03,
+      "category": "casino",
+      "volume_db": -6,
+      "channels": 1,
+      "loop": false,
+      "duration_s": 1.379,
+      "true_peak_dbtp": -1.0,
+      "ducks_music": false,
+      "status": "recorded",
+      "desc": "a clean crystal bell (a cash-out-free 'done' chime)",
+      "sources": [
+        "2022-01-14-crystal-bell-01.flac — arseniiv (freesound 614833)"
+      ],
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_page": "https://freesound.org/people/arseniiv/sounds/614833/",
+      "source_pages": [
+        "https://freesound.org/people/arseniiv/sounds/614833/"
+      ],
+      "license_checked": "2026-10-24",
+      "processing": "{\"window_s\": [0, 1.379]}; mono; 48 kHz; peak-normalised to -1 dBFS",
+      "unity_import": {
+        "loadType": "DecompressOnLoad",
+        "compressionFormat": "Vorbis",
+        "quality": 0.6,
+        "preloadAudioData": true
+      }
     }
   },
   "footsteps": {
@@ -1906,6 +2247,34 @@
         "raw/freesound/640625.ogg",
         "raw/freesound/757838.ogg"
       ],
+      "unity_import": {
+        "loadType": "Streaming",
+        "compressionFormat": "Vorbis",
+        "quality": 0.35,
+        "preloadAudioData": false,
+        "loadInBackground": true
+      }
+    },
+    "rug_room": {
+      "id": "amb_rug_room",
+      "file": "ambience/amb_rug_room.wav",
+      "volume": 1.0,
+      "category": "ambience",
+      "venue_status": "walk-in room (R3)",
+      "channels": 2,
+      "loop": true,
+      "loop_start_sample": 0,
+      "loop_end_sample": 1440000,
+      "duration_s": 30.0,
+      "loudness_lufs": -24.0,
+      "true_peak_dbtp": -9.6,
+      "status": "recorded",
+      "desc": "Casino floor: a real casino field recording (Phoenix AZ) with a second casino room layered",
+      "sources": [
+        "raw/freesound/277444.ogg",
+        "raw/freesound/438129.ogg"
+      ],
+      "processing": "freesound 277444 from 35.85 s; freesound 438129 from 9.0 s; 30.0 s, 0.5 s equal-power loop crossfade, RMS -27.0 dBFS, right channel +11 ms",
       "unity_import": {
         "loadType": "Streaming",
         "compressionFormat": "Vorbis",

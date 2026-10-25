@@ -204,6 +204,8 @@ def frame(v):
     x0, x1 = mn[0] - 0.3, mn[0] + sz[0] + 0.3
     z0, z1 = walk[1] - 0.7, mn[1] + sz[1] + 0.3
     h = v['shell']['h']
+    if v.get('walkin'):            # a walk-in landmark (The Rug Room): the streamed room's entrance, 1.2 x 2.3 m
+        return x0, x1, z0, z1, h, v['walkin'][0], v['walkin'][1]
     if v.get('nodoor'):            # the landmark buildings: no door, no interior
         return x0, x1, z0, z1, h, 0.0, 0.0
     dw = min(5.2, (x1 - x0) * 0.4)
@@ -971,7 +973,121 @@ def helius_depot(v):
     return ore_refinery(v, clad='corrugated:4a4c52', plant=False, hazard='accent:e8402a')
 
 
-LANDMARKS = {'superteam_hq': superteam_hq, 'jupiter_observatory': jupiter_observatory, 'seeker_shop': seeker_shop, 'helius_depot': helius_depot}
+# ---------------------------------------------------------------------------------------------------- The Rug Room (R3)
+def rug_room(v):
+    """The Rug Room (2026-10-24): a Miami Art-Deco casino pavilion at the boardwalk's arcade pier. Cream stucco over a black
+    granite plinth, a stepped central tower with gold fins and the neon name board, a marquee canopy on slim gold columns
+    over a plum runner, dark glazing in gold frames either side of the walk-in door (1.2 x 2.3 m, the streamed room's
+    entrance), blind plum panels down the sides, gold speed lines under a stepped parapet. Neon tubes (pink and gold) are
+    exported as quads in 'neon' and drawn by the sign's emissive material."""
+    x0, x1, z0, z1, h, dw, dh = frame(v)
+    Pt = venue_parts()
+    F, B, L, R, T = Pt['front'], Pt['back'], Pt['left'], Pt['right'], Pt['roof']
+    t, base = 0.4, -0.7
+    cream, granite, gold, plum, glass = 'plaster:f3eadb', 'stone:3a3a40', 'alu:c9a24e', 'accent:2a0d34', 'glass'
+    neon = []
+
+    def tube(p, q, col, w=0.09, out=-0.06):
+        """A neon tube from p to q (x, y) on the plane z = out (venue frame); horizontal or vertical."""
+        (ax, ay, az), (bx, by, bz) = p, q
+        if abs(ay - by) < 1e-3:
+            neon.append(dict(c=col, q=[[ax, ay - w / 2, az + out], [ax, ay + w / 2, az + out], [bx, by + w / 2, bz + out], [bx, by - w / 2, bz + out]]))
+        else:
+            neon.append(dict(c=col, q=[[ax - w / 2, ay, az + out], [ax - w / 2, by, az + out], [ax + w / 2, by, az + out], [ax + w / 2, ay, az + out]]))
+
+    # ---- walls: the front with the door and two glazed bays, sides and back blind (a casino keeps its daylight out)
+    bay = (0.75, 2.6, 0.35, 3.2)
+    holes = [(-dw / 2, dw / 2, base, dh), (-bay[1], -bay[0], bay[2], bay[3]), (bay[0], bay[1], bay[2], bay[3])]
+    win = [(-6.9, -5.9), (-5.0, -4.0), (4.0, 5.0), (5.9, 6.9)]
+    holes += [(a, b, 1.3, 6.6) for a, b in win]
+    wall_openings(F, 'z', z0, -1, x0, x1, base, h, t, holes, cream)
+    wall_openings(B, 'z', z1, 1, x0, x1, base, h, t, [], cream)
+    wall_openings(L, 'x', x0, -1, z0 + t, z1 - t, base, h, t, [], cream)
+    wall_openings(R, 'x', x1, 1, z0 + t, z1 - t, base, h, t, [], cream)
+    # glazing: dark glass in gold frames (the entrance bays carry a gold transom grid)
+    for a, b in ((-bay[1], -bay[0]), (bay[0], bay[1])):
+        window(F, 'z', z0, -1, a, b, bay[2], bay[3], gold, glass=glass, reveal=0.2, mull=1, sill=None)
+        F.box(a, b, 2.35, 2.43, z0 + 0.12, z0 + 0.2, gold)
+    for a, b in win:
+        window(F, 'z', z0, -1, a, b, 1.3, 6.6, gold, glass=glass, reveal=0.22, mull=0, sill=granite)
+        for y in (2.9, 4.5):
+            F.box(a, b, y, y + 0.07, z0 + 0.14, z0 + 0.22, gold)
+    # the door's gold surround
+    F.box(-dw / 2 - 0.16, -dw / 2, base, dh + 0.16, z0 - 0.1, z0 + t, gold)
+    F.box(dw / 2, dw / 2 + 0.16, base, dh + 0.16, z0 - 0.1, z0 + t, gold)
+    F.box(-dw / 2 - 0.16, dw / 2 + 0.16, dh, dh + 0.16, z0 - 0.1, z0 + t, gold)
+    # ---- the granite plinth (left open at the door) and the corner pilasters
+    for P, side in ((F, 'front'), (B, 'back'), (L, 'left'), (R, 'right')):
+        axis, plane, out, a0, a1 = side_frame(side, x0, x1, z0, z1)
+        if side == 'front':
+            for lo, hi in ((a0 - 0.15, -bay[1]), (-bay[0], -dw / 2 - 0.16), (dw / 2 + 0.16, bay[0]), (bay[1], a1 + 0.15)):
+                abox(P, axis, plane, out, lo, hi, base, 0.35 if abs(lo) < 3 and abs(hi) < 3 else 0.9, -0.05, 0.14, granite)
+        else:
+            abox(P, axis, plane, out, a0 - 0.15, a1 + 0.15, base, 0.9, -0.05, 0.14, granite)
+        # speed lines: three gold bands under the parapet
+        for y in (7.25, 7.6, 7.95):
+            abox(P, axis, plane, out, a0 + 0.6, a1 - 0.6, y, y + 0.1, -0.02, 0.09, gold)
+        # cornice, parapet, coping
+        abox(P, axis, plane, out, a0 - 0.2, a1 + 0.2, h - 0.3, h, -0.05, 0.3, cream)
+        abox(P, axis, plane, out, a0 - 0.05, a1 + 0.05, h, h + 0.7, -0.3, 0.05, cream)
+        abox(P, axis, plane, out, a0 - 0.12, a1 + 0.12, h + 0.7, h + 0.82, -0.36, 0.12, gold)
+    for x in (x0, x1 - 0.7):
+        F.box(x, x + 0.7, base, h + 1.3, z0 - 0.22, z0 + 0.4, cream)
+        F.box(x - 0.04, x + 0.74, h + 1.3, h + 1.42, z0 - 0.26, z0 + 0.44, gold)
+        for y in (h + 0.25, h + 0.55):
+            F.box(x - 0.02, x + 0.72, y, y + 0.08, z0 - 0.26, z0 + 0.4, gold)
+    # blind plum panels in gold frames down the sides and the back
+    for P, side in ((L, 'left'), (R, 'right'), (B, 'back')):
+        axis, plane, out, a0, a1 = side_frame(side, x0, x1, z0, z1)
+        n = 5 if axis == 'x' else 4
+        span = (a1 - a0 - 2.4) / n
+        for k in range(n):
+            lo = a0 + 1.2 + k * span + 0.35; hi = lo + span - 0.7
+            abox(P, axis, plane, out, lo, hi, 1.4, 6.6, 0.0, 0.05, plum)
+            for a, b, c, d in ((lo - 0.08, lo, 1.32, 6.68), (hi, hi + 0.08, 1.32, 6.68), (lo - 0.08, hi + 0.08, 1.32, 1.4), (lo - 0.08, hi + 0.08, 6.6, 6.68)):
+                abox(P, axis, plane, out, a, b, c, d, 0.0, 0.08, gold)
+    # ---- the stepped central tower over the entrance (projects 0.5 m), gold fins, the name board
+    tz = z0 - 0.5
+    for x in (-3.3, 2.9):
+        F.box(x, x + 0.4, base, 11.0, tz, z0 + 0.4, cream)                         # piers framing the entrance bay
+    F.box(-3.3, 3.3, 3.45, 11.0, tz, tz + 0.5, cream)                                 # the face over the canopy (board here)
+    F.box(-2.5, 2.5, 11.0, 12.4, tz + 0.4, z0 + 2.5, cream)
+    F.box(-1.6, 1.6, 12.4, 13.6, tz + 0.8, z0 + 2.0, cream)
+    for y, w in ((11.0, 3.3), (12.4, 2.5), (13.6, 1.6)):
+        F.box(-w - 0.06, w + 0.06, y - 0.1, y + 0.02, tz - 0.06 + (0.0 if y == 11.0 else (0.4 if y == 12.4 else 0.8)), z0 + 0.6, gold)
+    for k in range(5):
+        x = -1.6 + k * 0.8
+        F.box(x - 0.09, x + 0.09, 7.0, 12.2, tz - 0.32, tz, gold)                     # fins
+    F.box(-1.9, 1.9, 6.85, 7.0, tz - 0.36, tz, gold)
+    T.box(-0.08, 0.08, 13.6, 15.4, tz + 1.3, tz + 1.46, gold)                         # spire
+    # ---- the marquee canopy on two gold columns, a plum fascia with gold rims, a soffit, the runner
+    cz0, cz1, cy0, cy1 = z0 - 3.4, tz, 3.45, 3.95
+    F.box(-3.7, 3.7, cy0, cy1, cz0, cz1, plum)
+    F.box(-3.76, 3.76, cy1, cy1 + 0.07, cz0 - 0.06, cz1, gold)
+    F.box(-3.76, 3.76, cy0 - 0.05, cy0, cz0 - 0.06, cz1, gold)
+    F.box(-3.6, 3.6, cy0 - 0.02, cy0, cz0 + 0.1, cz1 - 0.1, 'inner')
+    for x in (-3.35, 3.35):
+        F.box(x - 0.11, x + 0.11, 0.0, cy0, cz0 + 0.2, cz0 + 0.42, gold)
+        F.box(x - 0.2, x + 0.2, 0.0, 0.12, cz0 + 0.11, cz0 + 0.51, granite)
+    F.box(-0.95, 0.95, 0.0, 0.025, cz0 + 0.1, z0, 'accent:5c0f30')
+    # ---- the roof: slab, plant boxes
+    T.box(x0 + t, x1 - t, h - 0.4, h + 0.15, z0 + t, z1 - t, 'concrete')
+    roof_plant(T, h, [(-5.5, -3.0, 4.0, 6.5, 1.4, 'steel'), (2.5, 5.5, 3.0, 5.0, 1.1, 'alu'), (-1.0, 1.0, 7.0, 8.5, 0.9, 'steel')])
+    # ---- neon: pink round the canopy fascia and the tower's steps, gold up the piers and the pilasters
+    pk, gd = 'pink', 'gold'
+    tube((-3.7, cy0 + 0.25, cz0), (3.7, cy0 + 0.25, cz0), pk, out=-0.08)
+    tube((-3.7, cy1 - 0.08, cz0), (3.7, cy1 - 0.08, cz0), pk, w=0.05, out=-0.08)
+    for x in (-3.1, 3.1):
+        tube((x, 3.95, tz), (x, 10.9, tz), gd)
+    for y, w, dz in ((11.08, 3.3, 0.0), (12.48, 2.5, 0.4), (13.68, 1.6, 0.8)):
+        tube((-w, y, tz + dz), (w, y, tz + dz), pk, w=0.07, out=-0.12)
+    for x in (x0 + 0.35, x1 - 0.35):
+        tube((x, 1.0, z0 - 0.22), (x, h + 1.25, z0 - 0.22), gd, w=0.07)
+    return dict(parts=[F, B, L, R, T], sign=dict(y=4.6, z=tz - 0.06, w=6.0), neon=neon)
+
+
+LANDMARKS = {'superteam_hq': superteam_hq, 'jupiter_observatory': jupiter_observatory, 'seeker_shop': seeker_shop, 'helius_depot': helius_depot,
+             'rug_room': rug_room}
 
 
 BUILDERS = {'conference_hall': conference_hall, 'perp_pit': perp_pit, 'hackathon_house': hackathon_house, 'prediction_pit': prediction_pit,
@@ -987,7 +1103,7 @@ def main():
         if lb['id'] in LANDMARKS:
             sx, sz = lb['size']
             venues[lb['id']] = dict(id=lb['id'], frame_min=[-sx / 2, -sz / 2], frame_size=[sx, sz], walk=[-sx / 2 + 1, -sz / 2 + 0.7, sx / 2 - 1, sz / 2 - 1],
-                                    shell=dict(h=lb['h']), nodoor=True)
+                                    shell=dict(h=lb['h']), nodoor=True, walkin=lb.get('walkin'))
     BUILDERS.update(LANDMARKS)
     ids = [a for a in ARGS if a in BUILDERS] or list(BUILDERS)
     os.makedirs(OUT, exist_ok=True)
@@ -1011,6 +1127,7 @@ def main():
         x0, x1, z0, z1, h, dw, dh = frame(venues[vid])
         tris1 = sum(sum(len(t) for t in d['sub'].values()) // 3 for d in lod1.values())
         out = dict(venue=vid, footprint=[x0, x1, z0, z1], height=h, door=[dw, dh], tris=tris, tris_lod1=tris1, parts=parts, lod1=lod1, sign=res['sign'],
+                   neon=res.get('neon'),
                    note='art/pipeline/world_venue_shells.py (world fix-ups 2026-10-23)')
         json.dump(out, open(os.path.join(OUT, vid + '.json'), 'w'), separators=(',', ':'))
         print('[venues]', vid, 'tris', tris, 'lod1', tris1, {k: sum(len(t) for t in d['sub'].values()) // 3 for k, d in parts.items()}, flush=True)

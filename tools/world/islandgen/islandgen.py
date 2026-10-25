@@ -291,7 +291,7 @@ def main():
             continue
         (cx, cz), (w, d) = lb['at'], lb['size']
         pts = np.array([[cx + u, cz + v] for u in (-w / 2, 0, w / 2) for v in (-d / 2, 0, d / 2)])
-        y = float(np.median(T.sample(h, pts[:, 0], pts[:, 1]))) + 0.12
+        y = (lb['fix_y'] if lb.get('fix_y') is not None else float(np.median(T.sample(h, pts[:, 0], pts[:, 1])))) + 0.12
         lb['y'] = round(y - 0.12, 3)
         lm_pads.append(dict(cx=cx, cz=cz, w=w + 6.0, d=d + 6.0, yaw=lb['yaw'], y=y))
     h = T.carve_pads(h, heli_pads + lm_pads + [v['pad'] for v in venues + homes])      # venue pads last and exact ...

@@ -19,6 +19,8 @@ namespace CTLife.Net
             "delivery_out", "delivery_arrived",
             // gm streak + quests (backend PR #9): a server event moved one of your quests (RetentionService)
             "quest_progress",
+            // the real-world event calendar (backend PR #11): Breakpoint goes live / ends (EventsService)
+            "event_live", "event_ended", "irl_checkin",
         };
 
         /// <summary>The server also broadcasts these on every `ratio_arena` venue instance (the feed drops the duplicate).</summary>

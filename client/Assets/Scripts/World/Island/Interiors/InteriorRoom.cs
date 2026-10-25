@@ -21,7 +21,20 @@ namespace CTLife.World
             public Vector3 approach;   // room space: where the sitter stands first (floor)
         }
 
+        /// <summary>A use point on the floor (The Rug Room's slot bank, crash screen, coinflip table): standing within
+        /// <see cref="range"/> of <see cref="position"/> offers the game (CasinoFloor). Room space, yaw like a seat's.</summary>
+        [Serializable]
+        public struct Spot
+        {
+            public string id;
+            public string game;
+            public Vector3 position;
+            public float yaw;
+            public float range;
+        }
+
         public string roomId;
+        public Spot[] spots = Array.Empty<Spot>();
         public Vector3 boundsMin, boundsMax;
         public float doorWidth = 1.1f, doorHeight = 2.2f;
         public Seat[] seats = Array.Empty<Seat>();

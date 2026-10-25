@@ -280,7 +280,8 @@ class Dress:
         for hp in self.plan['helipads']:
             o.disc(hp[0], hp[2], 15, Occupancy.VENUE)
         # landmark sites (W3 heroes stand here): kept clear of lots, props and forest
-        clear = {'lighthouse': 26, 'jupiter_observatory': 36, 'superteam_hq': 30, 'seeker_shop': 12, 'helius_depot': 22, 'mtndao_summit': 16}
+        clear = {'lighthouse': 26, 'jupiter_observatory': 36, 'superteam_hq': 30, 'seeker_shop': 12, 'helius_depot': 22, 'mtndao_summit': 16,
+                 'rug_room': 18}
         for lm in L.LANDMARKS:
             r = clear.get(lm['id'])
             if r and lm.get('at'):
@@ -1518,6 +1519,16 @@ class Dress:
             unit = 'flat:lgmf_%s_%s:0' % (_m(cx), _m(cz))
             self.interior_doors.append(dict(p=[round(float(q[0]), 3), round(float(ybase), 3), round(float(q[1]), 3)], yaw=round(yaw % 360.0, 2),
                                             floor=round(float(floor), 3), building=pid, box=box, room=room, unit=unit))
+        # walk-in landmark buildings (The Rug Room, R3): the door at the centre of the front wall (local z = -d/2, the front
+        # faces local -z, so the way out is the building's yaw + 180); the pad is level, the floor at the pad's top
+        for lb in self.plan.get('landmarkBuildings', []):
+            if not lb.get('walkin'):
+                continue
+            (cx, cz), (w, d) = lb['at'], lb['size']
+            qx, qz = G.local_to_world(cx, cz, lb['yaw'], 0.0, -d / 2.0)
+            y0 = float(lb['y'])
+            self.interior_doors.append(dict(p=[round(float(qx), 3), round(y0 + 0.12, 3), round(float(qz), 3)], yaw=round((lb['yaw'] + 180.0) % 360.0, 2),
+                                            floor=round(y0 + 0.15, 3), building=lb['id'], room=lb['id']))
         log(f'v3 interior doors: {len(self.interior_doors)}')
 
     def v3_districts(self):

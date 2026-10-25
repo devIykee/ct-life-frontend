@@ -62,6 +62,7 @@ ICONS = {
  "app":      (tile("#b4b7bf", "#6f727b"), ("ph", "squares-four", ("#ffffff", "#e9eaee"), 0.622)),
  "duoshop":  (tile("#5aa8ff", "#0a5fe0"), ("ph", "storefront", ("#ffffff", "#dcebff"), 0.672)),
  "quests":   (tile("#ff7aa8", "#ff2d6f"), ("ph", "target", ("#ffffff", "#ffe0ea"), 0.672)),
+ "events":   (tile("#c69aff", "#8a3ff0"), ("ph", "calendar-dots", ("#ffffff", "#efe4ff"), 0.672)),
 }
 
 def defs(uid, t, g=None):

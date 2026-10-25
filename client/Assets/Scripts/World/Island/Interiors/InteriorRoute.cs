@@ -76,6 +76,9 @@ namespace CTLife.World
 
         public static async Task Run(VenueSession s, Func<bool> alive, CancellationToken ct, bool districts = true, bool second = false)
         {
+            // R3: `islandRoom=casino|casino_in|casino_play` is The Rug Room's route (World/Casino/CasinoRoute.cs)
+            var mode = CTLife.Core.LaunchArgs.Get("islandRoom");
+            if (mode != null && mode.StartsWith("casino", StringComparison.Ordinal)) { await CasinoRoute.Run(s, alive, ct, mode); return; }
             PerfSegments.Ensure();
             var me = s.LocalPlayer;
             if (districts)

@@ -1,0 +1,252 @@
+/* CT Life · The Rug Room (backend PR #12). A full-screen casino over the game: Art-Deco velvet and brass, Lilita numbers,
+   Inter caps captions. Panel units: 2400 x 1080 landscape. Policy: the disclaimer bar is on every screen; no cash-out
+   wording anywhere. */
+
+.rr-sheet { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+.rr-sheet Label { color: rgb(255, 246, 232); -unity-font-definition: url("../Fonts/Phone/Inter-Bold.ttf"); }
+.rr-sheet .unity-button, .rr-sheet .unity-button:hover, .rr-sheet .unity-button:focus, .rr-sheet .unity-button:active {
+    background-image: none; background-color: rgba(0, 0, 0, 0); border-width: 0; margin: 0; padding: 0;
+    -unity-background-image-tint-color: rgb(255, 255, 255);
+}
+.rr-sheet .ct-button-depth, .rr-sheet .ct-button-glint { display: none; }
+
+/* ---------------------------------------------------------------- backdrop */
+.rr-bg { position: absolute; left: -200px; top: -200px; right: -200px; bottom: -200px; background-color: rgb(13, 5, 14); -unity-background-scale-mode: stretch-to-fill; }   /* past the modal layer's safe-area insets: the world camera draws nothing behind the casino */
+.rr-glow { position: absolute; background-image: url("../Kit/soft-glow.png"); -unity-background-scale-mode: stretch-to-fill; }
+.rr-glow--top { left: 500px; top: -520px; width: 1800px; height: 1100px; -unity-background-image-tint-color: rgb(150, 18, 60); opacity: 0.75; }
+.rr-glow--low { left: 1100px; top: 700px; width: 1500px; height: 900px; -unity-background-image-tint-color: rgb(200, 130, 40); opacity: 0.22; }
+.rr-glow--left { left: -300px; top: 420px; width: 1200px; height: 1000px; -unity-background-image-tint-color: rgb(90, 20, 120); opacity: 0.35; }
+.rr-deco { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+
+/* ---------------------------------------------------------------- top bar */
+.rr-top { position: absolute; left: 0; right: 0; top: 0; height: 128px; flex-direction: row; align-items: center; padding: 18px 40px 0 40px; }
+.rr-logo { width: 300px; height: 112px; -unity-background-scale-mode: scale-to-fit; margin-right: 26px; flex-shrink: 0; }
+.rr-tabs { flex-direction: row; align-items: center; flex-grow: 1; }
+.rr-tab { height: 70px; padding: 0 30px; margin-right: 12px; border-radius: 35px; justify-content: center;
+    background-color: rgb(40, 14, 32); border-width: 2px; border-color: rgba(244, 201, 93, 0.18); }
+.rr-sheet .rr-tab-label { font-size: 23px; letter-spacing: 3px; color: rgba(255, 236, 200, 0.62); -unity-text-align: middle-center; }
+.rr-tab--on { background-color: rgb(244, 201, 93); border-color: rgb(255, 233, 168); }
+.rr-sheet .rr-tab--on .rr-tab-label { color: rgb(44, 10, 22); }
+.rr-pill { height: 70px; flex-direction: row; align-items: center; padding: 0 24px 0 14px; border-radius: 35px; margin-left: 12px;
+    background-color: rgba(0, 0, 0, 0.45); border-width: 2px; border-color: rgba(244, 201, 93, 0.35); }
+.rr-pill-coin { width: 40px; height: 40px; border-radius: 20px; background-color: rgb(244, 201, 93); border-width: 3px; border-color: rgb(168, 118, 30); margin-right: 12px; }
+.rr-sheet .rr-pill-cap { font-size: 14px; letter-spacing: 2px; color: rgba(255, 236, 200, 0.55); }
+.rr-sheet .rr-pill-value { -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); font-size: 32px; color: rgb(255, 255, 255); margin-top: -4px; }
+.rr-pill-col { flex-direction: column; }
+.rr-icon-btn { height: 70px; padding: 0 24px; border-radius: 35px; margin-left: 12px; align-items: center; justify-content: center;
+    background-color: rgb(46, 16, 36); border-width: 2px; border-color: rgba(244, 201, 93, 0.25); }
+.rr-sheet .rr-icon-btn-label { font-size: 20px; letter-spacing: 1px; color: rgb(255, 233, 168); -unity-text-align: middle-center; }
+.rr-icon-btn--on { background-color: rgba(244, 201, 93, 0.25); border-color: rgb(244, 201, 93); }
+.rr-close { width: 70px; height: 70px; border-radius: 35px; margin-left: 18px; align-items: center; justify-content: center; background-color: rgb(56, 20, 42); }
+.rr-sheet .rr-close-x { font-size: 44px; color: rgb(255, 255, 255); margin-top: -6px; -unity-text-align: middle-center; }
+
+/* ---------------------------------------------------------------- body + footer */
+.rr-body { position: absolute; left: 40px; right: 40px; top: 146px; bottom: 74px; }
+.rr-panel { position: absolute; left: 0; top: 0; right: 0; bottom: 0; flex-direction: row; }
+.rr-foot { position: absolute; left: 0; right: 0; bottom: 0; height: 60px; flex-direction: row; align-items: center; justify-content: center;
+    background-color: rgba(0, 0, 0, 0.55); border-top-width: 1px; border-color: rgba(244, 201, 93, 0.22); }
+.rr-sheet .rr-disclaimer { font-size: 20px; letter-spacing: 2px; color: rgb(255, 233, 168); }
+.rr-sheet .rr-foot-sep { font-size: 20px; color: rgba(255, 233, 168, 0.4); margin: 0 18px; }
+.rr-sheet .rr-foot-note { font-size: 18px; letter-spacing: 1px; color: rgba(255, 236, 200, 0.55); }
+
+/* ---------------------------------------------------------------- shared: cards, captions, CTA, chips */
+.rr-card { background-color: rgba(28, 8, 22, 0.82); border-radius: 30px; border-width: 2px; border-color: rgba(244, 201, 93, 0.22); padding: 24px 28px; }
+.rr-side { width: 640px; margin-left: 28px; flex-shrink: 0; }
+.rr-main { flex-grow: 1; align-items: center; justify-content: center; }
+.rr-sheet .rr-cap { font-size: 17px; letter-spacing: 3px; color: rgba(255, 220, 160, 0.62); margin-bottom: 10px; }
+.rr-sheet .rr-note { font-size: 19px; color: rgba(255, 236, 214, 0.66); white-space: normal; -unity-font-definition: url("../Fonts/Phone/Inter-Medium.ttf"); }
+.rr-sheet .rr-h { -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); font-size: 46px; color: rgb(255, 246, 232); letter-spacing: 1px; }
+.rr-row { flex-direction: row; align-items: center; }
+.rr-grow { flex-grow: 1; }
+
+.rr-chips { flex-direction: row; flex-wrap: wrap; margin-bottom: 6px; }
+.rr-chip { width: 74px; height: 74px; margin: 0 8px 10px 0; }
+.rr-chip--off { opacity: 0.28; }
+.rr-sheet .rr-chip-label { position: absolute; left: 0; right: 0; top: 0; bottom: 0; -unity-text-align: middle-center;
+    -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); font-size: 22px; color: rgb(255, 255, 255);
+    -unity-text-outline-width: 1px; -unity-text-outline-color: rgba(0, 0, 0, 0.6); }
+.rr-sheet .rr-stake-max { font-size: 16px; color: rgba(255, 236, 200, 0.5); }
+
+.rr-cta { height: 118px; border-radius: 26px; align-items: center; justify-content: center; margin-top: 14px;
+    background-color: rgb(61, 220, 132); border-bottom-width: 12px; border-color: rgb(23, 138, 82); }
+.rr-cta--gold { background-color: rgb(244, 201, 93); border-color: rgb(168, 118, 30); }
+.rr-cta--red { background-color: rgb(255, 77, 109); border-color: rgb(160, 26, 56); }
+.rr-cta--busy { opacity: 0.6; }
+.rr-cta:disabled { opacity: 0.35; }
+.rr-sheet .rr-cta-label { -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); font-size: 50px; color: rgb(255, 255, 255); letter-spacing: 2px;
+    -unity-text-outline-width: 1px; -unity-text-outline-color: rgba(0, 60, 30, 0.6); -unity-text-align: middle-center; }
+.rr-sheet .rr-cta--gold .rr-cta-label { color: rgb(60, 20, 8); -unity-text-outline-width: 0; }
+.rr-sheet .rr-cta-sub { font-size: 20px; letter-spacing: 1px; color: rgba(255, 255, 255, 0.85); margin-top: -6px; -unity-text-align: middle-center; }
+.rr-sheet .rr-cta--gold .rr-cta-sub { color: rgba(60, 20, 8, 0.8); }
+
+.rr-plain { height: 64px; border-radius: 32px; padding: 0 26px; align-items: center; justify-content: center; background-color: rgb(56, 20, 42);
+    border-width: 2px; border-color: rgba(244, 201, 93, 0.3); }
+.rr-sheet .rr-plain-label { font-size: 21px; letter-spacing: 1px; color: rgb(255, 233, 168); -unity-text-align: middle-center; }
+.rr-plain--mint { background-color: rgb(61, 220, 132); border-color: rgb(61, 220, 132); }
+.rr-sheet .rr-plain--mint .rr-plain-label { color: rgb(8, 40, 22); }
+.rr-plain--danger { background-color: rgba(255, 77, 109, 0.18); border-color: rgba(255, 77, 109, 0.6); }
+.rr-sheet .rr-plain--danger .rr-plain-label { color: rgb(255, 170, 185); }
+.rr-plain:disabled { opacity: 0.35; }
+
+.rr-toast { position: absolute; left: 50%; bottom: 96px; width: 900px; margin-left: -450px; padding: 18px 30px; border-radius: 26px;
+    background-color: rgba(20, 6, 16, 0.95); border-width: 2px; border-color: rgba(255, 77, 109, 0.7); align-items: center; }
+.rr-sheet .rr-toast-label { font-size: 24px; color: rgb(255, 220, 226); white-space: normal; -unity-text-align: middle-center; }
+.rr-toast--good { border-color: rgba(61, 220, 132, 0.8); }
+.rr-sheet .rr-toast--good .rr-toast-label { color: rgb(200, 255, 222); }
+
+/* ---------------------------------------------------------------- slots */
+.rr-cab { width: 1080px; height: 800px; align-items: center; }
+.rr-marquee { width: 980px; height: 110px; border-radius: 40px 40px 14px 14px; background-color: rgb(60, 10, 30); border-width: 5px; border-color: rgb(244, 201, 93);
+    align-items: center; justify-content: center; }
+.rr-bulbs { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+.rr-bulb { position: absolute; width: 14px; height: 14px; border-radius: 7px; background-color: rgb(255, 233, 168); }
+.rr-bulb--dim { background-color: rgb(110, 70, 30); }
+.rr-sheet .rr-marquee-label { -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); font-size: 54px; color: rgb(255, 233, 168); letter-spacing: 4px;
+    -unity-text-outline-width: 1px; -unity-text-outline-color: rgb(120, 40, 10); }
+.rr-marquee--win .rr-marquee-label { color: rgb(124, 255, 196); }
+.rr-frame { width: 1040px; height: 560px; margin-top: 12px; border-radius: 36px; padding: 22px; background-color: rgb(168, 118, 30);
+    border-width: 6px; border-color: rgb(255, 222, 140); }
+.rr-window { flex-grow: 1; flex-direction: row; border-radius: 22px; background-color: rgb(14, 6, 16); padding: 12px; overflow: hidden; }
+.rr-reel { flex-grow: 1; margin: 0 6px; border-radius: 16px; overflow: hidden; background-color: rgb(250, 244, 232); }
+.rr-cell { position: absolute; left: 0; right: 0; height: 160px; align-items: center; justify-content: center; }
+.rr-cell-art { width: 150px; height: 150px; -unity-background-scale-mode: scale-to-fit; }
+.rr-cell-glow { position: absolute; left: 10%; top: 4%; width: 80%; height: 92%; background-image: url("../Kit/soft-glow.png");
+    -unity-background-image-tint-color: rgb(255, 200, 60); opacity: 0; }
+.rr-reel-shade { position: absolute; left: 0; right: 0; height: 120px; }
+.rr-reel-shade--top { top: 0; }
+.rr-reel-shade--bottom { bottom: 0; }
+.rr-payline { position: absolute; left: 0; right: 0; top: 50%; height: 6px; margin-top: -3px; background-color: rgba(255, 61, 139, 0.55); }
+.rr-payline--win { background-color: rgb(124, 255, 196); }
+.rr-payline-tab { position: absolute; top: 50%; width: 34px; height: 54px; margin-top: -27px; background-color: rgb(255, 61, 139); border-radius: 8px; }
+.rr-payline-tab--l { left: -28px; }
+.rr-payline-tab--r { right: -28px; }
+.rr-cab-base { width: 980px; height: 86px; margin-top: 12px; border-radius: 14px 14px 30px 30px; background-color: rgb(46, 10, 26);
+    border-width: 4px; border-color: rgba(244, 201, 93, 0.7); flex-direction: row; align-items: center; justify-content: center; }
+.rr-sheet .rr-win-label { -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); font-size: 50px; color: rgb(124, 255, 196); }
+.rr-sheet .rr-lose-label { font-size: 24px; letter-spacing: 1px; color: rgba(255, 236, 214, 0.6); }
+
+.rr-pay { flex-direction: row; flex-wrap: wrap; margin-bottom: 8px; }
+.rr-pay-row { width: 50%; flex-direction: row; align-items: center; height: 64px; }
+.rr-pay-art { width: 54px; height: 54px; -unity-background-scale-mode: scale-to-fit; margin-right: 12px; }
+.rr-sheet .rr-pay-x { -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); font-size: 30px; color: rgb(255, 233, 168); }
+.rr-sheet .rr-pay-two { font-size: 17px; color: rgba(255, 236, 200, 0.55); margin-left: 10px; }
+
+.rr-bigwin { position: absolute; left: 0; top: 0; right: 0; bottom: 0; align-items: center; justify-content: center; }
+.rr-bigwin-rays { position: absolute; left: 50%; top: 50%; width: 1500px; height: 1500px; margin-left: -750px; margin-top: -750px; }
+.rr-sheet .rr-bigwin-title { -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); font-size: 150px; color: rgb(255, 222, 92); letter-spacing: 6px;
+    -unity-text-outline-width: 2px; -unity-text-outline-color: rgb(110, 40, 6); }
+.rr-sheet .rr-bigwin-amount { -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); font-size: 96px; color: rgb(255, 255, 255);
+    -unity-text-outline-width: 2px; -unity-text-outline-color: rgb(20, 80, 40); }
+
+/* ---------------------------------------------------------------- crash */
+.rr-chart-wrap { flex-grow: 1; border-radius: 30px; overflow: hidden; background-color: rgb(16, 8, 26); border-width: 2px; border-color: rgba(244, 201, 93, 0.22); }
+.rr-chart { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+.rr-rocket { position: absolute; width: 150px; height: 150px; left: 0; top: 0; -unity-background-scale-mode: scale-to-fit; }
+.rr-rug { position: absolute; width: 520px; height: 520px; left: 0; top: 0; -unity-background-scale-mode: scale-to-fit; opacity: 0; }
+.rr-mult { position: absolute; left: 0; right: 0; top: 70px; align-items: center; }
+.rr-sheet .rr-mult-label { -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); font-size: 150px; color: rgb(255, 255, 255);
+    -unity-text-outline-width: 2px; -unity-text-outline-color: rgba(0, 0, 0, 0.5); }
+.rr-sheet .rr-mult-sub { font-size: 26px; letter-spacing: 3px; color: rgba(255, 236, 214, 0.7); margin-top: -8px; }
+.rr-mult--rug .rr-mult-label { color: rgb(255, 77, 109); }
+.rr-mult--took .rr-mult-label { color: rgb(124, 255, 196); }
+.rr-flash { position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: rgb(255, 40, 70); opacity: 0; }
+.rr-history { position: absolute; left: 24px; top: 20px; flex-direction: row; }
+.rr-hist { height: 40px; padding: 0 14px; border-radius: 20px; margin-right: 8px; justify-content: center; background-color: rgba(255, 77, 109, 0.22); }
+.rr-hist--good { background-color: rgba(61, 220, 132, 0.22); }
+.rr-sheet .rr-hist-label { font-size: 18px; color: rgb(255, 236, 214); }
+.rr-auto { flex-direction: row; align-items: center; margin-top: 8px; }
+.rr-toggle { width: 92px; height: 52px; border-radius: 26px; background-color: rgb(70, 26, 52); margin-right: 16px; }
+.rr-toggle-knob { position: absolute; left: 5px; top: 5px; width: 42px; height: 42px; border-radius: 21px; background-color: rgb(255, 255, 255); }
+.rr-toggle--on { background-color: rgb(61, 220, 132); }
+.rr-toggle--on .rr-toggle-knob { left: 45px; }
+.rr-step { width: 64px; height: 64px; border-radius: 32px; background-color: rgb(56, 20, 42); align-items: center; justify-content: center; }
+.rr-sheet .rr-step-label { -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); font-size: 38px; color: rgb(255, 233, 168); -unity-text-align: middle-center; margin-top: -4px; }
+.rr-sheet .rr-auto-value { -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); font-size: 40px; color: rgb(255, 255, 255); width: 150px; -unity-text-align: middle-center; }
+.rr-presets { flex-direction: row; margin-top: 10px; }
+.rr-preset { height: 48px; padding: 0 16px; margin-right: 8px; border-radius: 24px; justify-content: center; background-color: rgb(46, 16, 36); }
+.rr-sheet .rr-preset-label { font-size: 18px; color: rgba(255, 236, 214, 0.8); }
+.rr-preset--on { background-color: rgba(61, 220, 132, 0.25); }
+
+/* ---------------------------------------------------------------- coinflip */
+.rr-coin-stage { flex-grow: 1; align-items: center; justify-content: center; }
+.rr-coin-area { width: 520px; height: 520px; align-items: center; justify-content: flex-end; }
+.rr-coin-shadow { position: absolute; bottom: 30px; left: 50%; width: 300px; height: 52px; margin-left: -150px; border-radius: 150px; background-color: rgba(0, 0, 0, 0.55); }
+.rr-coin { position: absolute; left: 50%; bottom: 70px; width: 330px; height: 330px; margin-left: -165px; -unity-background-scale-mode: scale-to-fit; }
+.rr-sheet .rr-coin-banner { -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); font-size: 64px; color: rgb(255, 246, 232); -unity-text-align: middle-center; height: 80px; }
+.rr-coin-banner--won { color: rgb(124, 255, 196); }
+.rr-sheet .rr-coin-vs { font-size: 26px; letter-spacing: 3px; color: rgb(255, 233, 168); -unity-text-align: middle-center; height: 36px; }
+.rr-sides { flex-direction: row; margin-bottom: 16px; flex-shrink: 0; }
+.rr-sidecard { flex-grow: 1; flex-basis: 0; flex-shrink: 0; height: 120px; margin-right: 12px; border-radius: 24px; flex-direction: row; align-items: center; padding: 0 18px;
+    background-color: rgb(42, 15, 34); border-width: 3px; border-color: rgba(244, 201, 93, 0.18); }
+.rr-sidecard--on { background-color: rgba(244, 201, 93, 0.18); border-color: rgb(244, 201, 93); }
+.rr-sidecard-art { width: 84px; height: 84px; -unity-background-scale-mode: scale-to-fit; margin-right: 14px; }
+.rr-sheet .rr-sidecard-name { -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); font-size: 36px; color: rgb(255, 246, 232); }
+.rr-sheet .rr-sidecard-sub { font-size: 16px; letter-spacing: 2px; color: rgba(255, 236, 200, 0.55); }
+.rr-h2h { flex-grow: 1; margin-top: 16px; }
+.rr-ch { flex-direction: row; align-items: center; padding: 12px 0; border-bottom-width: 1px; border-color: rgba(244, 201, 93, 0.14); }
+.rr-ch-ring { width: 56px; height: 56px; margin-right: 14px; }
+.rr-sheet .rr-ch-ring-label { position: absolute; left: 0; right: 0; top: 0; bottom: 0; -unity-text-align: middle-center; font-size: 13px; color: rgb(255, 233, 168); }
+.rr-sheet .rr-ch-title { font-size: 21px; color: rgb(255, 246, 232); overflow: hidden; }
+.rr-ch-copy { flex-grow: 1; flex-shrink: 1; overflow: hidden; margin-right: 8px; }
+.rr-sheet .rr-ch-sub { font-size: 16px; color: rgba(255, 236, 214, 0.58); }
+.rr-ch-actions { flex-direction: row; }
+.rr-ch-actions .rr-plain { height: 54px; margin-left: 8px; padding: 0 18px; }
+.rr-sheet .rr-ch-status { font-size: 18px; color: rgba(255, 236, 214, 0.6); }
+.rr-sheet .rr-ch-status--won { color: rgb(124, 255, 196); }
+
+/* ---------------------------------------------------------------- modal (challenge picker, exclusion confirm, session reminder) */
+.rr-modal { position: absolute; left: 0; top: 0; right: 0; bottom: 0; align-items: center; justify-content: center; background-color: rgba(5, 0, 6, 0.975); }
+.rr-modal-card { width: 1000px; padding: 40px 48px; border-radius: 40px; background-color: rgb(34, 10, 26); border-width: 3px; border-color: rgba(244, 201, 93, 0.45); }
+.rr-sheet .rr-modal-title { -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); font-size: 54px; color: rgb(255, 246, 232); white-space: normal; margin-bottom: 10px; }
+.rr-sheet .rr-modal-body { font-size: 24px; color: rgba(255, 236, 214, 0.75); white-space: normal; margin-bottom: 24px; -unity-font-definition: url("../Fonts/Phone/Inter-Medium.ttf"); }
+.rr-modal-actions { flex-direction: row; justify-content: flex-end; margin-top: 20px; }
+.rr-modal-actions .rr-plain { margin-left: 14px; height: 76px; padding: 0 34px; }
+.rr-peers { max-height: 360px; }
+.rr-peer { flex-direction: row; align-items: center; height: 76px; padding: 0 20px; border-radius: 20px; margin-bottom: 8px; background-color: rgb(40, 14, 32); }
+.rr-peer--on { background-color: rgba(244, 201, 93, 0.22); }
+.rr-peer-dot { width: 46px; height: 46px; border-radius: 23px; background-color: rgb(120, 40, 80); margin-right: 16px; align-items: center; justify-content: center; }
+.rr-sheet .rr-peer-initial { -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); font-size: 26px; color: rgb(255, 233, 168); }
+.rr-sheet .rr-peer-name { font-size: 24px; color: rgb(255, 246, 232); }
+.rr-hold { height: 86px; border-radius: 43px; overflow: hidden; background-color: rgba(255, 77, 109, 0.25); border-width: 2px; border-color: rgb(255, 77, 109); justify-content: center; }
+.rr-hold-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background-color: rgb(255, 77, 109); }
+.rr-sheet .rr-hold-label { font-size: 26px; letter-spacing: 2px; color: rgb(255, 255, 255); -unity-text-align: middle-center; }
+
+/* ---------------------------------------------------------------- gates */
+.rr-gate { position: absolute; left: 0; top: 0; right: 0; bottom: 0; align-items: center; justify-content: center; background-color: rgba(13, 5, 14, 0.985); border-radius: 30px; }
+.rr-gate-badge { width: 190px; height: 190px; border-radius: 95px; border-width: 8px; border-color: rgb(255, 77, 109); align-items: center; justify-content: center; margin-bottom: 28px;
+    background-color: rgba(255, 77, 109, 0.12); }
+.rr-gate-badge--calm { border-color: rgb(244, 201, 93); background-color: rgba(244, 201, 93, 0.10); }
+.rr-sheet .rr-gate-badge-label { -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); font-size: 70px; color: rgb(255, 246, 232); -unity-text-align: middle-center; }
+.rr-sheet .rr-gate-title { -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); font-size: 72px; color: rgb(255, 246, 232); -unity-text-align: middle-center; }
+.rr-sheet .rr-gate-body { width: 1100px; font-size: 28px; color: rgba(255, 236, 214, 0.78); white-space: normal; -unity-text-align: middle-center; margin-top: 12px;
+    -unity-font-definition: url("../Fonts/Phone/Inter-Medium.ttf"); }
+.rr-sheet .rr-gate-note { font-size: 22px; color: rgba(255, 220, 160, 0.6); margin-top: 18px; -unity-text-align: middle-center; white-space: normal; width: 1000px; }
+.rr-gate-actions { flex-direction: row; margin-top: 34px; }
+.rr-gate-actions .rr-plain { margin: 0 8px; height: 76px; padding: 0 36px; }
+
+/* ---------------------------------------------------------------- fairness + limits */
+.rr-fair-steps { width: 760px; margin-right: 28px; flex-shrink: 0; }
+.rr-fair-step { flex-direction: row; margin-bottom: 18px; }
+.rr-fair-n { width: 46px; height: 46px; border-radius: 23px; background-color: rgba(244, 201, 93, 0.2); margin-right: 16px; align-items: center; justify-content: center; flex-shrink: 0; }
+.rr-sheet .rr-fair-n-label { -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); font-size: 24px; color: rgb(255, 233, 168); }
+.rr-fair-step .rr-note { flex-shrink: 1; flex-grow: 1; }
+.rr-rounds { flex-grow: 1; }
+.rr-round { padding: 14px 6px; border-bottom-width: 1px; border-color: rgba(244, 201, 93, 0.12); }
+.rr-sheet .rr-round-title { font-size: 21px; color: rgb(255, 246, 232); -unity-text-align: middle-left; }
+.rr-sheet .rr-round-net { -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); font-size: 26px; color: rgba(255, 236, 214, 0.7); }
+.rr-sheet .rr-round-net--up { color: rgb(124, 255, 196); }
+.rr-round-detail { margin-top: 10px; padding: 16px; border-radius: 18px; background-color: rgba(0, 0, 0, 0.35); }
+.rr-sheet .rr-mono { font-size: 17px; color: rgb(255, 233, 168); white-space: normal; -unity-font-definition: url("../Fonts/Phone/Inter-Medium.ttf"); letter-spacing: 1px; margin-bottom: 10px; }
+.rr-sheet .rr-verdict { font-size: 19px; color: rgb(124, 255, 196); white-space: normal; margin-top: 8px; }
+.rr-sheet .rr-verdict--bad { color: rgb(255, 120, 140); }
+.rr-meter { height: 22px; border-radius: 11px; background-color: rgb(56, 20, 42); margin: 8px 0 18px; overflow: hidden; }
+.rr-meter-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 11px; background-color: rgb(244, 201, 93); }
+.rr-meter-fill--hot { background-color: rgb(255, 77, 109); }
+.rr-sheet .rr-meter-value { -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); font-size: 30px; color: rgb(255, 246, 232); }
+.rr-days { flex-direction: row; flex-wrap: wrap; margin: 12px 0; }
+.rr-day { height: 60px; padding: 0 22px; margin: 0 10px 10px 0; border-radius: 30px; justify-content: center; background-color: rgb(46, 16, 36);
+    border-width: 2px; border-color: rgba(244, 201, 93, 0.2); }
+.rr-day--on { background-color: rgba(244, 201, 93, 0.25); border-color: rgb(244, 201, 93); }
+.rr-sheet .rr-day-label { font-size: 21px; color: rgb(255, 236, 214); }
+.rr-sheet .rr-row { border-width: 0; background-color: rgba(0, 0, 0, 0); }
+.rr-sheet .rr-round .rr-row { padding: 6px 0; }

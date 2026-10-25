@@ -534,4 +534,5 @@ def main():
     log('done', rid, entry[rid]['tris'], entry[rid]['size_m'])
 
 
-main()
+if __name__ == '__main__':      # casino_room.py imports the bake helpers
+    main()

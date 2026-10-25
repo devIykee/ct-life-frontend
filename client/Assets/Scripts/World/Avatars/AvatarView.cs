@@ -29,6 +29,8 @@ namespace CTLife.World
         /// <summary>Street people and traffic drivers: scenery, not someone to meet (no name tag, no profile on tap).</summary>
         public bool ambient;
         public string tribeId;
+        /// <summary>The worn accessory (look[6], e.g. the Breakpoint lanyard) as the room state reports it; null when unknown.</summary>
+        public string accId;
 
         public Transform HeadAnchor { get; private set; }
         public AudioSource Voice { get; private set; }

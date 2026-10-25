@@ -157,6 +157,23 @@ namespace CTLife.EditorTools.IslandV2
             }
             var cpath = ((JArray)plan["causeway"]["path"]).Select(IslandV2Paths.V2).ToList();
             float cgap = (float)plan["causeway"]["half_width"] + 4f;
+            // R3: a walk-in landmark on a pad pushed out over the water (The Rug Room on the pier): the natural coast runs
+            // through it, so its walls would stand inside the casino floor (a body caught in one was pushed out of the room on
+            // the Seeker). No coast wall within the pad; the pad's own sea edges get walls instead (below).
+            var pads = new List<(Vector2 c, Vector2 half, float yaw)>();
+            if (plan["landmarkBuildings"] is JArray lbs)
+                foreach (JObject lb in lbs)
+                    if (lb["walkin"] != null && lb["fix_y"] != null)
+                        pads.Add((IslandV2Paths.V2(lb["at"]), IslandV2Paths.V2(lb["size"]) * 0.5f + new Vector2(3f, 3f), (float)lb["yaw"]));
+            bool InPad(Vector2 q, float margin)
+            {
+                foreach (var (c, half, yaw) in pads)
+                {
+                    var l = Quaternion.Euler(0f, -yaw, 0f) * new Vector3(q.x - c.x, 0f, q.y - c.y);
+                    if (Mathf.Abs(l.x) < half.x + margin && Mathf.Abs(l.z) < half.y + margin) return true;
+                }
+                return false;
+            }
             for (int i = 0; i < n; i++)
             {
                 var a = line[i]; var b = line[(i + 1) % n];
@@ -164,12 +181,50 @@ namespace CTLife.EditorTools.IslandV2
                 if (d.sqrMagnitude < 0.25f) continue;
                 var m2 = new Vector2((a.x + b.x) * 0.5f, (a.z + b.z) * 0.5f);
                 if (cpath.Count > 1 && SegDist(m2, cpath[0], cpath[1]) < cgap) continue;   // the causeway leaves the beach here
+                if (InPad(new Vector2(a.x, a.z), 0.5f) || InPad(new Vector2(b.x, b.z), 0.5f) || InPad(m2, 0.5f)) continue;
                 float y0 = h.Sea - 6f, y1 = Mathf.Max(top[i], top[(i + 1) % n]);
                 o.Add(new CellGeo.BoxCol
                 {
                     Center = (a + b) * 0.5f + new Vector3(0f, (y0 + y1) * 0.5f, 0f), Rotation = Quaternion.LookRotation(d.normalized, Vector3.up),
                     Size = new Vector3(0.6f, y1 - y0, d.magnitude + 0.6f), Layer = Layers.CoastWall, Name = "coast",
                 });
+            }
+            // the walk-in pads' sea edges: the pad's outline in 2 m pieces, a wall piece wherever the natural coast says sea
+            // (exactly where the coast walls were taken out above), so the pier stays closed to the water and open to the beach
+            bool Land(float x, float z)
+            {
+                bool inside = false;
+                for (int i = 0, j = n - 1; i < n; j = i++)
+                {
+                    var pi = coast[i]; var pj = coast[j];
+                    if ((pi.z > z) != (pj.z > z) && x < (pj.x - pi.x) * (z - pi.z) / (pj.z - pi.z + 1e-6f) + pi.x) inside = !inside;
+                }
+                return inside;
+            }
+            foreach (var (c, half, yaw) in pads)
+            {
+                var r = Quaternion.Euler(0f, yaw, 0f);
+                var corners = new[] { new Vector3(-half.x, 0f, -half.y), new Vector3(half.x, 0f, -half.y), new Vector3(half.x, 0f, half.y), new Vector3(-half.x, 0f, half.y) };
+                var centre = new Vector3(c.x, 0f, c.y);
+                for (int k = 0; k < 4; k++)
+                {
+                    var a = centre + r * corners[k]; var b = centre + r * corners[(k + 1) % 4];
+                    var outward = (((a + b) * 0.5f) - centre).normalized;
+                    int pieces = Mathf.Max(1, Mathf.CeilToInt(Vector3.Distance(a, b) / 2f));
+                    for (int q = 0; q < pieces; q++)
+                    {
+                        var p0 = Vector3.Lerp(a, b, q / (float)pieces) + outward * 1f; var p1 = Vector3.Lerp(a, b, (q + 1) / (float)pieces) + outward * 1f;
+                        var mid = (p0 + p1) * 0.5f;
+                        if (Land(mid.x, mid.z)) continue;
+                        var d = p1 - p0;
+                        float y0 = h.Sea - 6f, y1 = Mathf.Max(h.Sample(mid.x, mid.z), h.Sea) + 2.8f;
+                        o.Add(new CellGeo.BoxCol
+                        {
+                            Center = mid + new Vector3(0f, (y0 + y1) * 0.5f, 0f), Rotation = Quaternion.LookRotation(d.normalized, Vector3.up),
+                            Size = new Vector3(0.6f, y1 - y0, d.magnitude + 0.3f), Layer = Layers.CoastWall, Name = "coast_pad",
+                        });
+                    }
+                }
             }
             // islet ring and causeway sides
             var ic = IslandV2Paths.V2(plan["islet"]["center"]);

@@ -82,6 +82,7 @@ namespace CTLife.World
             _view.isSeeker = s.isSeeker;
             _view.minerTier = s.minerTier;
             _view.tribeId = s.tribeId;
+            _view.accId = s.look != null && s.look.Count > 6 ? s.look[6] : null;
             _view.SetTalking(s.talking);
 
             if (!string.IsNullOrEmpty(s.spotId) && _venue.TryGetSpot(s.spotId, out var seat, out var seatRot))

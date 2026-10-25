@@ -23,7 +23,9 @@ def main():
     areas = {a['id']: a for a in json.load(open(os.path.join(REPO, 'client', 'Assets', 'Resources', 'UI', 'Map', 'areas.json')))['areas']}
     n = 0
     items = [(vid, sh, (sh.get('sign') or areas.get(vid, {}).get('title') or vid.replace('_', ' ')).upper()) for vid, sh in L.SHELLS.items()]
-    items += [(lb['id'], lb, lb['sign'] if lb['sign'] == lb['sign'].lower() else lb['sign'].upper()) for lb in getattr(L, 'LANDMARK_BUILDINGS', []) if lb.get('sign')]
+    # sign_art: the board is drawn elsewhere (The Rug Room's neon board: art/source/casino, install.sh)
+    items += [(lb['id'], lb, lb['sign'] if lb['sign'] == lb['sign'].lower() else lb['sign'].upper()) for lb in getattr(L, 'LANDMARK_BUILDINGS', [])
+              if lb.get('sign') and not lb.get('sign_art')]
     for vid, sh, title in items:
         W, H = 1024, 256
         bg = tuple(int(c * 255) for c in sh['accent'])

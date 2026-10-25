@@ -107,6 +107,15 @@ namespace CTLife.World
                    gate.Verdict(_doors[index].unit) == DoorVerdict.Locked;
         }
 
+        /// <summary>The first walk-in door into this room (The Rug Room: rug_room); false when the island has none.</summary>
+        public bool TryGetRoomDoor(string roomId, out int index, out Vector3 position, out Quaternion rotation)
+        {
+            for (int i = 0; i < _doors.Length; i++)
+                if (_doors[i].room == roomId) { index = i; position = _doors[i].pos; rotation = _doors[i].rot; return true; }
+            index = -1; position = default; rotation = Quaternion.identity;
+            return false;
+        }
+
         /// <summary>A walk-in door: its floor centre and facing (+Z out of the building).</summary>
         public bool TryGetDoor(int index, out Vector3 position, out Quaternion rotation)
         {
@@ -251,6 +260,16 @@ namespace CTLife.World
                     if (Mathf.Abs(t.x - d.boxCenter.x) < 0.8f && Mathf.Abs(t.z - d.boxCenter.z) < 0.8f) a.building.Add(c);
                 }
             }
+            // R3: nothing from the outside world may stand inside a room (a coast wall or a vehicle blocker crossing the floor
+            // pushed a body out of The Rug Room): while the player is in the room or its doorway, those colliders are ignored
+            var inner = room.transform;
+            var ctr = (room.boundsMin + room.boundsMax) * 0.5f; var ext = (room.boundsMax - room.boundsMin) * 0.5f;
+            ext.z = Mathf.Max(0.1f, ext.z - 0.45f); ctr.z -= 0.2f;           // inside the front wall: the facade's colliders stay
+            var intruders = Physics.OverlapBox(inner.TransformPoint(ctr), new Vector3(Mathf.Max(0.1f, ext.x - 0.1f), ext.y, ext.z), inner.rotation,
+                                               (1 << 15) | (1 << 16), QueryTriggerInteraction.Ignore);
+            foreach (var c in intruders)
+                if (!c.transform.IsChildOf(inner) && !a.building.Contains(c)) a.building.Add(c);
+            if (intruders.Length > 0) Debug.Log($"CTLIFE [interiors] room {d.room}: {intruders.Length} outside colliders cross the room; ignored inside");
             _active = a;
             var ic = player.GetComponent<InteractionController>();
             if (ic != null) ic.SetExtraInteractables(SeatsFor(d, room));
