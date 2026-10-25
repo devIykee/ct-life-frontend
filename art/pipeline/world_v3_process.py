@@ -153,6 +153,23 @@ def debrand(cfg):
         W.log('debranded', name, (x0, r0, x1, r1))
 
 
+def retex(cfg):
+    """Replace whole SOURCE images before atlasing: cfg retex = [(image_name, png path relative to art/)], same size and
+    orientation as stored (our own signage over a model's real-world ads and fleet names)."""
+    art = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+    for name, rel in cfg.get('retex', []):
+        im = bpy.data.images.get(name)
+        if im is None or im.size[0] == 0:
+            W.log('retex: no image', name)
+            continue
+        new = bpy.data.images.load(os.path.join(art, rel))
+        if tuple(new.size) != tuple(im.size):
+            new.scale(im.size[0], im.size[1])
+        im.pixels.foreach_set(np.array(new.pixels[:], np.float32))
+        bpy.data.images.remove(new)
+        W.log('retextured', name, rel)
+
+
 def process_pack(uid, cfg):
     W.reset()
     path = os.path.join(RAW, uid, uid + '.glb')
@@ -163,6 +180,7 @@ def process_pack(uid, cfg):
         return {}
     W.import_glb(path)
     rescale(cfg)
+    retex(cfg)
     debrand(cfg)
     drop_mats(cfg)
     m = cfg.get('meta') or meta(uid)

@@ -92,6 +92,12 @@ namespace CTLife.App
                 // gm streak, daily chest, quests and push (backend PR #9): quest toasts over the game; push / quest deep links
                 _overlays.Add(new CTLife.CityLife.RetentionOverlays(ui.ToastLayer));
                 CTLife.CityLife.RetentionService.Opener = id => { if (_phone == null || !Alive) return false; _phone.Open(id); return true; };
+                // The Rug Room (backend PR #12): the casino floor's machines and the Duo app open the casino screens
+                _overlays.Add(new CTLife.CityLife.Casino.CasinoOverlays());
+                // Breakpoint 2026: the London skin on the Conference Center, booths, nods, trivia and the claim (backend PR #11)
+                _overlays.Add(new CTLife.CityLife.EventsOverlays(ui.ModalLayer));
+                CTLife.CityLife.EventsService.Opener = id => { if (_phone != null) _phone.Open(id); };
+                CTLife.CityLife.EventsService.Closer = () => { if (_phone != null && _phone.IsOpen) _phone.Close(); };
                 _overlays.Add(new BusyOverlay(ui.ToastLayer));
                 var worldLife = new CTLife.WorldLife.WorldLifeHub();
                 _overlays.Add(worldLife);
@@ -595,6 +601,17 @@ namespace CTLife.App
                     var s = VenueSession.Current;
                     if (s == null || !s.IsIsland) { Log.Warn("island", "homeShop: not on CT Island"); return; }
                     await CTLife.CityLife.HomeShopRoute.Run(s, LaunchArgs.Get("homeShop"), () => GameAlive(game), game.Token);
+                });
+                // Breakpoint 2026 (dev builds only): `bp=plaza|booth|nod|trivia|claim|walk|upcoming|app` (CityLife BreakpointRoute)
+                if (!string.IsNullOrEmpty(LaunchArgs.Get("bp"))) RunGameAction(game, async () =>
+                {
+                    float deadline = Time.realtimeSinceStartup + 90f;
+                    while (GameAlive(game) && (VenueSession.Current == null || !VenueSession.Current.IsActive) && Time.realtimeSinceStartup < deadline)
+                        await Awaitable.WaitForSecondsAsync(0.5f, game.Token);
+                    await Awaitable.WaitForSecondsAsync(4f, game.Token);
+                    var s = VenueSession.Current;
+                    if (s == null || !s.IsIsland) { Log.Warn("island", "bp: not on CT Island"); return; }
+                    await CTLife.CityLife.BreakpointRoute.Run(s, LaunchArgs.Get("bp"), () => GameAlive(game), game.Token);
                 });
                 // Device feature pass (dev builds only): `integration=1 [peer=<userId>]`. The editor driver calls it directly.
                 if (LaunchArgs.Flag("integration") && !Application.isEditor) RunGameAction(game, async () =>

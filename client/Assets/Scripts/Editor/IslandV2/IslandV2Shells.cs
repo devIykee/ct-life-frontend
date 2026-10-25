@@ -24,6 +24,10 @@ namespace CTLife.EditorTools.IslandV2
             public Vector3 Origin; public float Yaw; public Rect Footprint; public float Height;
             public Vector3[] Normals, Centres;
             public bool HasDoor = true;
+            /// <summary>The door gap in the front wall's collider (m); 0 = the shell's default (min(5.2, 0.4 width)).</summary>
+            public float DoorW;
+            /// <summary>A walk-in landmark (The Rug Room): its room streams in behind the door (IslandInteriors), so no fader.</summary>
+            public bool WalkIn;
             /// <summary>Landmark extras (dome, phone, bunting, cairn) in their own renderer, and their materials.</summary>
             public MeshBuilder Extra; public Material ExtraMat;
             /// <summary>World fix-ups: real architecture (art/pipeline/world_venue_shells.py) in place of the procedural walls
@@ -79,7 +83,13 @@ namespace CTLife.EditorTools.IslandV2
                         ["walk"] = new JArray(-size.x / 2f + 1f, -size.y / 2f + 0.7f, size.x / 2f - 1f, size.y / 2f - 1f),
                     };
                     Def def;
-                    if ((float)lb["h"] > 0f) { def = Shell(v, lb, mats, door: false); }
+                    // R3: a walk-in landmark keeps a door the size of the streamed room's entrance (layout walkin = (w, h))
+                    var walkin = lb["walkin"] as JArray;
+                    if ((float)lb["h"] > 0f)
+                    {
+                        def = Shell(v, lb, mats, door: walkin != null);
+                        if (walkin != null) { def.DoorW = (float)walkin[0] + 0.1f; def.WalkIn = true; }
+                    }
                     else def = new Def { VenueId = (string)lb["id"], Origin = new Vector3(at.x, y, at.y), Yaw = (float)lb["yaw"], Footprint = new Rect(-size / 2f, size), HasDoor = false };
                     Extras(def, lb, mats);
                     cells.At(def.Origin).Shells.Add(def);
@@ -254,6 +264,23 @@ namespace CTLife.EditorTools.IslandV2
                     int t2 = sg.Add(W(doorX + w / 2f, y + hh, z), rot * Vector3.back, new Vector2(1f, 1f));
                     int t3 = sg.Add(W(doorX + w / 2f, y, z), rot * Vector3.back, new Vector2(1f, 0f));
                     sg.Tri(t0, t1, t2); sg.Tri(t0, t2, t3);
+                    def.Sign = sg;
+                }
+                // R3: neon tubes drawn with the sign's emissive material: each quad samples the sign texture's top rows (pink
+                // tube) or bottom rows (gold tube), so a walk-in landmark's neon costs no extra draw
+                if (arch["neon"] is JArray neon && neon.Count > 0)
+                {
+                    var sg = def.Sign ?? new MeshBuilder();
+                    foreach (JObject nq in neon)
+                    {
+                        float v0 = (string)nq["c"] == "gold" ? 0.012f : 0.988f;
+                        var q = (JArray)nq["q"];
+                        var pts = Enumerable.Range(0, 4).Select(i => W((float)q[i][0], (float)q[i][1], (float)q[i][2])).ToArray();
+                        var nrm = Vector3.Cross(pts[1] - pts[0], pts[2] - pts[0]).normalized;
+                        int a0 = sg.Add(pts[0], nrm, new Vector2(0.3f, v0)), a1 = sg.Add(pts[1], nrm, new Vector2(0.3f, v0));
+                        int a2 = sg.Add(pts[2], nrm, new Vector2(0.7f, v0)), a3 = sg.Add(pts[3], nrm, new Vector2(0.7f, v0));
+                        sg.Tri(a0, a1, a2); sg.Tri(a0, a2, a3); sg.Tri(a0, a2, a1); sg.Tri(a0, a3, a2);
+                    }
                     def.Sign = sg;
                 }
             }
@@ -462,6 +489,10 @@ namespace CTLife.EditorTools.IslandV2
                 case "neon":
                     if (def.SignMat != null) def.SignMat.SetColor("_Emission", new Color(1.6f, 0.55f, 0.3f));
                     break;
+                case "neon_rug":
+                    // The Rug Room's neon board and tubes (white emission keeps the sign art's own pink and gold)
+                    if (def.SignMat != null) def.SignMat.SetColor("_Emission", new Color(1.5f, 1.5f, 1.5f));
+                    break;
             }
             if (!b.Empty)
             {
@@ -662,7 +693,7 @@ namespace CTLife.EditorTools.IslandV2
                 cgo.transform.SetPositionAndRotation(c, Quaternion.LookRotation(dir, Vector3.up));
                 cgo.AddComponent<BoxCollider>().size = new Vector3(0.4f, d.Height + 0.8f, len);
             }
-            float doorW = Mathf.Min(5.2f, f.width * 0.4f);
+            float doorW = d.DoorW > 0f ? d.DoorW : Mathf.Min(5.2f, f.width * 0.4f);
             if (d.HasDoor)
             {
                 Col(new Vector2(f.xMin, f.yMin), new Vector2(-doorW / 2f, f.yMin));
@@ -672,6 +703,19 @@ namespace CTLife.EditorTools.IslandV2
             Col(new Vector2(f.xMax, f.yMax), new Vector2(f.xMin, f.yMax));
             Col(new Vector2(f.xMin, f.yMax), new Vector2(f.xMin, f.yMin));
             Col(new Vector2(f.xMax, f.yMin), new Vector2(f.xMax, f.yMax));
+            if (d.WalkIn)
+            {
+                // R3 walk-in landmark (The Rug Room): the streamed room is the inside, so no fader (the merged outside renderer
+                // stays on); the marquee's two columns stop bodies too
+                Object.DestroyImmediate(vs);
+                foreach (var x in new[] { -3.35f, 3.35f })
+                {
+                    var cgo = new GameObject("column_col") { layer = Layers.Building };
+                    cgo.transform.SetParent(go.transform, false);
+                    cgo.transform.SetPositionAndRotation(d.Origin + rot * new Vector3(x, 1.7f, f.yMin - 3.4f + 0.31f), rot);
+                    cgo.AddComponent<BoxCollider>().size = new Vector3(0.3f, 3.4f, 0.3f);
+                }
+            }
         }
     }
 }

@@ -34,6 +34,18 @@ PACKS = {
     'e0b0d0342be24e6c923319991a2a4d3d': dict(prefix='dz_industrial', family='v3_harbour', kind='building', mode='cluster', skip=[24], nonmetal=True),
     '772f4be391a245f699c54e6cf157c58d': dict(prefix='sh_container', family='v3_harbour', kind='prop', mode='whole', lod0=3000),
     '49851dc7a51b43bda6aea06856c26a85': dict(prefix='ch_tower_crane', family='v3_harbour', kind='prop', mode='whole', lod0=8000, lod1=2000),
+    # ---------------------------------------------------------------- Breakpoint 2026 London skin (lane B, 2026-10-24, CC-BY)
+    # the bus: a 1930s AEC Regent look-alike; its real ads (an airline, a gum maker), the operator's fleet name and the real
+    # route blind are replaced with our own Breakpoint signage (art/source/events/bp26/vehicle/*.png)
+    '2e32927de49e42fe913ec01c097fb257': dict(prefix='bp26_bus', family='v3_events', kind='prop', mode='whole', lod0=24000, lod1=6000,
+                                             retex=[('Image_16', 'source/events/bp26/vehicle/bus_ads.png'),
+                                                    ('Image_14', 'source/events/bp26/vehicle/bus_dest.png'),
+                                                    ('Image_17', 'source/events/bp26/vehicle/bus_decals.png'),
+                                                    ('Image_18', 'source/events/bp26/vehicle/bus_decals_mask.png')]),
+    # the K6-style phone box at 2.5 m; the roof crowns painted out (a royal emblem), "TELEPHONE" kept (a generic word)
+    'b9033372814b421a8fb225990c8f2226': dict(prefix='bp26_phonebox', family='v3_events', kind='prop', mode='whole', lod0=8000, lod1=2000,
+                                             height=2.5, debrand=[(im, box) for im in ('Image_6', 'Image_7', 'Image_8')
+                                                                  for box in ((0.240, 0.222, 0.281, 0.283), (0.510, 0.145, 0.550, 0.206))]),
     # ---------------------------------------------------------------- shops / storefronts
     # shop interiors (one 2k atlas with baked emissive), for the venue-interior pass: one 58 m 'prop' as it stands (needs
     # its real scale and a split per shop), so not processed yet
@@ -199,8 +211,12 @@ PACKS = {
     'ph3_long_life_food': dict(prefix='fu_pantry', family='v3_furniture', kind='prop', mode='whole', path='/Users/mac/Documents/codes/projects/ct-life-repair/art/raw/polyhaven/long_life_food/long_life_food_1k.gltf', lod0=2500, lod1=800,
                    meta=dict(name='Long Life Food', display='Poly Haven', url='https://polyhaven.com/a/long_life_food', lic='CC0')),
     # ---------------------------------------------------------------- casino: The Rug Room (Sketchfab CC BY, vetted 2026-10-24)
-    'b853ed93538a4405949800ab501606d8': dict(prefix='cs_slot_machine', family='v3_casino', kind='prop', mode='whole', lod0=5000, lod1=1500),
-    '18a27b0e326644a0b47887d07e0d0f99': dict(prefix='cs_roulette_table', family='v3_casino', kind='prop', mode='whole', lod0=12000, lod1=3000),
-    '5c335b7eff684213bd955b05ef90a354': dict(prefix='cs_poker_table', family='v3_casino', kind='prop', mode='whole', lod0=4000, lod1=1200),
-    'baf7e3cbd14140ca81ea1a79d28fb635': dict(prefix='cs_blackjack_table', family='v3_casino', kind='prop', mode='whole', lod0=5000, lod1=1500),
+    # real sizes (R3, 2026-10-24): the slot pair 1.8 m to the top light (two cabinets ~0.86 m wide each); the roulette
+    # download is the wheel alone (4.2 m across as shipped) -> a 0.82 m wheel that the Rug Room builder sets into its own
+    # table; poker table 0.76 m to the rail (1.43 m across); blackjack 0.80 m to the rail (felt at ~0.76 m, 2.3 m wide).
+    # The slot atlas is retextured afterwards by casino_slot_retexture.py (our CT symbols, no film IP or brands).
+    'b853ed93538a4405949800ab501606d8': dict(prefix='cs_slot_machine', family='v3_casino', kind='prop', mode='whole', lod0=5000, lod1=1500, height=1.8),
+    '18a27b0e326644a0b47887d07e0d0f99': dict(prefix='cs_roulette_table', family='v3_casino', kind='prop', mode='whole', lod0=4000, lod1=1000, scale=0.196),
+    '5c335b7eff684213bd955b05ef90a354': dict(prefix='cs_poker_table', family='v3_casino', kind='prop', mode='whole', lod0=4000, lod1=1200, height=0.76),
+    'baf7e3cbd14140ca81ea1a79d28fb635': dict(prefix='cs_blackjack_table', family='v3_casino', kind='prop', mode='whole', lod0=5000, lod1=1500, height=0.80),
 }

@@ -1,0 +1,28 @@
+<!doctype html><html><body style="margin:0;background:#0d050e">
+<!-- Rug Room screens backdrop (2026-10-25): baked once so the casino draws one opaque layer instead of three full-screen
+     alpha glows and a Painter2D sunburst (Infinix fill-rate). Render: headless Chrome, 1280x576, -> Resources/UI/Casino/backdrop.png -->
+<canvas id="c" width="1280" height="576"></canvas>
+<script>
+const c = document.getElementById('c'), g = c.getContext('2d'), W = 1280, H = 576;
+g.fillStyle = '#0d050e'; g.fillRect(0, 0, W, H);
+function glow(x, y, rx, ry, rgb, a) {
+  g.save(); g.translate(x, y); g.scale(1, ry / rx);
+  const r = g.createRadialGradient(0, 0, 0, 0, 0, rx);
+  r.addColorStop(0, `rgba(${rgb},${a})`); r.addColorStop(0.55, `rgba(${rgb},${a * 0.35})`); r.addColorStop(1, `rgba(${rgb},0)`);
+  g.fillStyle = r; g.beginPath(); g.arc(0, 0, rx, 0, Math.PI * 2); g.fill(); g.restore();
+}
+glow(W * 0.62, -40, 820, 460, '170,22,72', 1.0);
+glow(-60, H * 0.85, 520, 420, '100,24,135', 0.55);
+glow(W * 0.92, H * 1.05, 640, 380, '210,140,48', 0.34);
+// Art-Deco sunburst from the top centre, thin brass fans
+const cx = W * 0.5, cy = -45, R = H * 1.7;
+for (let i = 0; i < 26; i++) {
+  const a = Math.PI * (0.08 + 0.84 * i / 25), w = 0.012;
+  g.fillStyle = `rgba(245,199,92,${i % 2 ? 0.02 : 0.04})`;
+  g.beginPath(); g.moveTo(cx, cy);
+  g.lineTo(cx + Math.cos(a - w) * R, cy + Math.sin(a - w) * R); g.lineTo(cx + Math.cos(a + w) * R, cy + Math.sin(a + w) * R);
+  g.closePath(); g.fill();
+}
+g.strokeStyle = 'rgba(245,199,92,0.09)'; g.lineWidth = 1.2;
+for (const rad of [H * 0.55, H * 0.62]) { g.beginPath(); g.arc(cx, cy, rad, Math.PI * 15 / 180, Math.PI * 165 / 180); g.stroke(); }
+</script></body></html>

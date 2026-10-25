@@ -162,6 +162,7 @@ namespace CTLife.World
             if (CharacterBody.GroundAt(_target, out float floor)) _target.y = floor;
             _yaw = (float)p.rotY * Mathf.Rad2Deg;
             _view.displayName = p.name; _view.isSeeker = p.isSeeker; _view.minerTier = p.minerTier; _view.tribeId = p.tribeId; _view.SetTalking(p.talking);
+            _view.accId = p.look != null && p.look.Count > 6 ? p.look[6] : null;
             if (initial) transform.SetPositionAndRotation(_target, Quaternion.Euler(0, _yaw, 0));
             string emote = p.emoteId + "@" + p.emoteAt;
             if (!string.IsNullOrEmpty(p.emoteId) && emote != _emote && (!initial || ServerClock.SecondsUntil(p.emoteAt) > -3))

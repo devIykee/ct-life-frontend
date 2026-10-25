@@ -116,6 +116,17 @@ namespace CTLife.EditorTools.IslandV2
             new View("room_hall", new Vector3(0.2f, 1.6f, 0.8f), new Vector3(0.2f, 1.4f, -4f), 70f),
             new View("room_living", new Vector3(-0.3f, 1.6f, -3.6f), new Vector3(-3f, 1.0f, -7f), 75f),
             new View("room_back", new Vector3(-2.5f, 1.6f, -8.5f), new Vector3(0f, 1.2f, -2f), 75f),
+            // R3 (2026-10-24): The Rug Room at the arcade pier, outside, and its floor (rr_room_*: room space of the rug_room
+            // door, +Z out to the beach, the floor at -Z, the slot bank at +x; -ctlife-room rug_room places that room)
+            new View("rr_ext", new Vector3(116f, 1.7f, -231f), new Vector3(126f, 5.5f, -256f), 60f, true),
+            new View("rr_ext_wide", new Vector3(92f, 2.0f, -214f), new Vector3(126f, 4f, -258f), 58f, true),
+            new View("rr_ext_3q", new Vector3(106f, 4.5f, -234f), new Vector3(126f, 4.5f, -255f), 58f, true),
+            new View("rr_ext_air", new Vector3(160f, 38f, -205f), new Vector3(122f, 0f, -262f), 55f),
+            new View("rr_room_entry", new Vector3(0.6f, 1.7f, -1.0f), new Vector3(-1.2f, 1.3f, -10f), 70f),
+            new View("rr_room_slots", new Vector3(1.6f, 1.7f, -4.2f), new Vector3(6.4f, 1.1f, -7.6f), 68f),
+            new View("rr_room_crash", new Vector3(-1.4f, 1.7f, -5.2f), new Vector3(-6.4f, 1.8f, -7.4f), 68f),
+            new View("rr_room_coinflip", new Vector3(0.3f, 2.2f, -5.8f), new Vector3(0f, 0.9f, -9.4f), 68f),
+            new View("rr_room_back", new Vector3(0.5f, 1.8f, -6.0f), new Vector3(-0.5f, 1.6f, -16f), 72f),
         };
 
         public static void Run()
@@ -171,7 +182,8 @@ namespace CTLife.EditorTools.IslandV2
             var doorsTa = AssetDatabase.LoadAssetAtPath<TextAsset>(IslandV2Interiors.DoorsAsset);
             if (doorsTa != null && JObject.Parse(doorsTa.text)["doors"] is JArray dl && dl.Count > 0)
             {
-                var d0 = (JObject)dl[0];
+                var want = Arg("-ctlife-room");
+                var d0 = (JObject)(dl.FirstOrDefault(d => want != null && (string)d["room"] == want) ?? dl[0]);
                 doorPos = new Vector3((float)d0["p"][0], (float)d0["floor"], (float)d0["p"][2]);
                 doorRot = Quaternion.Euler(0f, (float)d0["yaw"], 0f);
                 var rp = AssetDatabase.LoadAssetAtPath<GameObject>(IslandV2Interiors.PrefabDir + "/" + (string)d0["room"] + ".prefab");
@@ -196,6 +208,14 @@ namespace CTLife.EditorTools.IslandV2
             if (Environment.GetCommandLineArgs().Contains("-ctlife-nohaze")) atm.hazeStrength = 0f;
             atm.Apply();
             if (Environment.GetCommandLineArgs().Contains("-ctlife-nofog")) RenderSettings.fog = false;
+            if (Environment.GetCommandLineArgs().Contains("-ctlife-dusk") && atm.Sun != null)
+            {
+                // a look-dev dusk (the game has no day cycle yet): a low warm sun, dim ambient, to judge the neon
+                atm.Sun.intensity *= 0.18f; atm.Sun.color = new Color(1f, 0.55f, 0.35f);
+                atm.Sun.transform.rotation = Quaternion.Euler(6f, 250f, 0f);
+                RenderSettings.ambientIntensity *= 0.3f;
+                RenderSettings.ambientSkyColor *= 0.3f; RenderSettings.ambientEquatorColor *= 0.3f; RenderSettings.ambientGroundColor *= 0.3f;
+            }
             if (Environment.GetCommandLineArgs().Contains("-ctlife-noshadows") && atm.Sun != null) atm.Sun.shadows = LightShadows.None;
             if (Environment.GetCommandLineArgs().Contains("-ctlife-tagmats"))
             {
@@ -234,12 +254,12 @@ namespace CTLife.EditorTools.IslandV2
                 var eye = v.Eye;
                 if (v.Ground) eye.y = h.Sample(eye.x, eye.z) + v.Eye.y;
                 var lookAt = v.Target;
-                if (v.Name.StartsWith("room_")) { eye = doorPos + doorRot * v.Eye; lookAt = doorPos + doorRot * v.Target; }
+                if (v.Name.StartsWith("room_") || v.Name.StartsWith("rr_room_")) { eye = doorPos + doorRot * v.Eye; lookAt = doorPos + doorRot * v.Target; }
                 cam.orthographic = false;
                 cam.fieldOfView = v.Fov;
                 cam.transform.position = eye;
                 cam.transform.LookAt(lookAt);
-                cam.nearClipPlane = v.Name.StartsWith("room_") ? 0.05f : 0.3f;
+                cam.nearClipPlane = v.Name.StartsWith("room_") || v.Name.StartsWith("rr_room_") ? 0.05f : 0.3f;
                 Render(cam, rt, Path.Combine(outDir, "v2-" + v.Name + ".png"));
                 shots.Add(v.Name);
                 stats[v.Name] = new JObject

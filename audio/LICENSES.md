@@ -116,3 +116,20 @@ Replace every synthesized onboarding cue, the synthesized title theme, the synth
 | Industrial Air Horn | mcpable | https://freesound.org/s/131930/ | CC0-1.0 | 2026-10-05 | sfx_moon_horn | `…` |
 | Blast + Flamethrower cooldown | Breviceps | https://freesound.org/s/447941/ | CC0-1.0 | 2026-10-05 | sfx_ore_furnace_whoosh | `…` |
 | Flamethrower | LilMati | https://freesound.org/s/459884/ | CC0-1.0 | 2026-10-05 | sfx_ore_furnace_whoosh | `…` |
+
+## The Rug Room (R3, 2026-10-24): casino sounds, real recordings, CC0
+
+| id | title | author | source | licence | checked |
+| --- | --- | --- | --- | --- | --- |
+| sfx_slot_lever | lever.wav | Krokulator | https://freesound.org/people/Krokulator/sounds/696746/ | CC0 1.0 | 2026-10-24 |
+| sfx_slot_spin | Slot machine in a small casino (Chile) | felix.blume | https://freesound.org/people/felix.blume/sounds/499767/ | CC0 1.0 | 2026-10-24 |
+| sfx_slot_stop | SLOTPLAY_0329.wav | gthall | https://freesound.org/people/gthall/sounds/204487/ | CC0 1.0 | 2026-10-24 |
+| sfx_slot_win | Service bell louder | Squidems | https://freesound.org/people/Squidems/sounds/709925/ | CC0 1.0 | 2026-10-24 |
+| sfx_slot_bigwin | quarters from machine.wav | DisasterServices | https://freesound.org/people/DisasterServices/sounds/320006/ | CC0 1.0 | 2026-10-24 |
+| sfx_chips | Casino Audio — chips-stack-4.ogg | Kenney (Kenney Vleugels) | https://kenney.nl/assets/casino-audio | CC0 1.0 | 2026-10-24 |
+| sfx_coin_flip | 2 € Coin Flip.MP3 | fedecortex | https://freesound.org/people/fedecortex/sounds/587022/ | CC0 1.0 | 2026-10-24 |
+| sfx_coin_land | CoinFlip.WAV | jrsevers3 | https://freesound.org/people/jrsevers3/sounds/452867/ | CC0 1.0 | 2026-10-24 |
+| sfx_rug_pull | Shaking out rug, dust being shaken off a rug. recorded on H6Zoom XY capsule | Rinaldobowles56 | https://freesound.org/people/Rinaldobowles56/sounds/708090/ | CC0 1.0 | 2026-10-24 |
+| sfx_cashout_ok | 2022-01-14-crystal-bell-01.flac | arseniiv | https://freesound.org/people/arseniiv/sounds/614833/ | CC0 1.0 | 2026-10-24 |
+| amb_rug_room | Casino Floor, Phoenix AZ (Audio Field Recording) [mono] | mhtaylor67 | https://freesound.org/people/mhtaylor67/sounds/277444/ | CC0 1.0 | 2026-10-24 |
+| amb_rug_room | G16-05-Casino Ambience.wav | craigsmith | https://freesound.org/people/craigsmith/sounds/438129/ | CC0 1.0 | 2026-10-24 |

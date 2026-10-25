@@ -18,6 +18,9 @@ namespace CTLife.UI
     {
         /// <summary>Is this user a friend (someone the player follows)? Set by the composition root; null = nobody.</summary>
         public static Func<string, bool> IsFriend;
+        /// <summary>A short badge after a player's name (lane B, 2026-10-24: "BP26" for the Breakpoint lanyard worn, "IRL" for
+        /// players checked in at the real event); null = none. Set by City Life.</summary>
+        public static Func<AvatarView, string> Badge;
         /// <summary>An NPC within this distance and inside the facing cone of the player counts as "faced".</summary>
         private const float FacedDistance = 10f;
         private static readonly float FacedCos = Mathf.Cos(50f * Mathf.Deg2Rad);
@@ -135,6 +138,15 @@ namespace CTLife.UI
                 tag.icon.style.display = a.isNpc ? DisplayStyle.Flex : DisplayStyle.None;
                 tag.root.EnableInClassList("ct-tag-npc", a.isNpc);
                 tag.root.EnableInClassList("ct-tag-talking", a.Talking);
+                string badge = null;
+                if (!a.isNpc && Badge != null) { try { badge = Badge(a); } catch (Exception e) { Log.Debug("ui", "badge: " + e.Message); } }
+                var chip = tag.root.Q<Label>("tag-badge");
+                if (badge != null && chip == null) { chip = El.Text("", "ct-tag-badge"); chip.name = "tag-badge"; chip.pickingMode = PickingMode.Ignore; tag.root.Add(chip); }
+                if (chip != null)
+                {
+                    chip.style.display = badge != null ? DisplayStyle.Flex : DisplayStyle.None;
+                    if (badge != null && chip.text != badge) { chip.text = badge; chip.EnableInClassList("ct-tag-badge-irl", badge == "IRL"); }
+                }
             }
 
             _stale.Clear();

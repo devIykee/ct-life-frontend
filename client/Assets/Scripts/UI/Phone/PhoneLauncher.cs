@@ -59,7 +59,7 @@ namespace CTLife.UI
             _searchLayer = El.Div("ct-phone-search-layer", El.Div("ct-phone-search-bar", _searchField, cancel), _searchResults);
             _searchLayer.Show(false);
             var controls = El.Div("ct-phone-control-rail", _dock, search);
-            Add(_widgets); Add(_viewport); Add(_dots); Add(controls); Add(_searchLayer);
+            Add(_widgets); Add(_widgets.EventsRow); Add(_viewport); Add(_dots); Add(controls); Add(_searchLayer);
             RegisterCallback<PointerDownEvent>(_ => SuppressClick = false, TrickleDown.TrickleDown);
             RegisterCallback<NavigationSubmitEvent>(_ => SuppressClick = false, TrickleDown.TrickleDown);
             RegisterCallback<KeyDownEvent>(OnKey);

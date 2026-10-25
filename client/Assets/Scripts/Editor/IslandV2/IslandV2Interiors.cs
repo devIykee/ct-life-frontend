@@ -103,7 +103,9 @@ namespace CTLife.EditorTools.IslandV2
             var bmin = new Vector3((float)jb[0][0], (float)jb[0][1], (float)jb[0][2]);
             var bmax = new Vector3((float)jb[1][0], (float)jb[1][1], (float)jb[1][2]);
             var mb = mesh.bounds;
-            float sx = Mathf.Abs(mb.min.x - bmin.x) + Mathf.Abs(mb.max.x - bmax.x) <= Mathf.Abs(mb.min.x + bmax.x) + Mathf.Abs(mb.max.x + bmin.x) ? 1f : -1f;
+            // a room symmetric in x (The Rug Room) cannot tell the sides apart from its bounds: Unity's FBX import mirrors x
+            // (as the apartment's bounds show), so a tie means -1
+            float sx = Mathf.Abs(mb.min.x - bmin.x) + Mathf.Abs(mb.max.x - bmax.x) + 0.01f < Mathf.Abs(mb.min.x + bmax.x) + Mathf.Abs(mb.max.x + bmin.x) ? 1f : -1f;
             float sz = Mathf.Abs(mb.min.z - bmin.y) + Mathf.Abs(mb.max.z - bmax.y) <= Mathf.Abs(mb.min.z + bmax.y) + Mathf.Abs(mb.max.z + bmin.y) ? 1f : -1f;
             // the room must lie at -Z (into the building): turn it round when the import put it at +Z
             var R = sz > 0f ? Quaternion.Euler(0f, 180f, 0f) : Quaternion.identity;
@@ -165,11 +167,84 @@ namespace CTLife.EditorTools.IslandV2
             }
             room.seats = seats.ToArray();
 
+            // R3 (The Rug Room): use spots (the slot bank, the Moon or Rug screen, the coinflip table) -> CasinoFloor
+            var spots = new System.Collections.Generic.List<InteriorRoom.Spot>();
+            foreach (JObject s in (JArray)item["spots"] ?? new JArray())
+            {
+                var at = (JArray)s["at"];
+                float yaw = (float)s["yaw"] * Mathf.Deg2Rad;
+                var f = R * new Vector3(sx * Mathf.Sin(yaw), 0f, sz * Mathf.Cos(yaw));
+                spots.Add(new InteriorRoom.Spot
+                {
+                    id = (string)s["id"], game = (string)s["game"], position = ToRoom((float)at[0], (float)at[1], 0f),
+                    yaw = Mathf.Atan2(f.x, f.z) * Mathf.Rad2Deg, range = s["range"] != null ? (float)s["range"] : 2.2f,
+                });
+            }
+            room.spots = spots.ToArray();
+            if (id == CasinoHooks.RoomId) root.AddComponent<CasinoFloor>();
+            // R3: unbaked props (their own atlases x baked vertex light, vertex alpha = glow) on CT Life/World/Interior Prop
+            if (item["props"] is JObject props) BuildProps(id, props, root, R);
+
             var prefabPath = $"{PrefabDir}/{id}.prefab";
             PrefabUtility.SaveAsPrefabAsset(root, prefabPath);
             UnityEngine.Object.DestroyImmediate(root);
             Debug.Log($"CTLIFE [interiors] {id}: {mesh.triangles.Length / 3} tris, {walls} wall + {furniture} furniture boxes, {seats.Count} seats, axes x{sx} z{sz}{(sz > 0 ? " turned" : "")}, bounds {room.boundsMin}..{room.boundsMax}");
-            return new JObject { ["id"] = id, ["tris"] = mesh.triangles.Length / 3, ["walls"] = walls, ["furniture"] = furniture, ["seats"] = seats.Count };
+            return new JObject { ["id"] = id, ["tris"] = mesh.triangles.Length / 3, ["walls"] = walls, ["furniture"] = furniture, ["seats"] = seats.Count, ["spots"] = spots.Count };
+        }
+
+        /// <summary>The room's unbaked props mesh: one renderer, a submesh per atlas (in the FBX's material order).</summary>
+        private static void BuildProps(string id, JObject props, GameObject root, Quaternion R)
+        {
+            string src = Path.Combine(IslandV2Paths.Repo, "art", "processed", (string)props["fbx"]);
+            string fbx = $"{Dir}/{id}_props.fbx";
+            File.Copy(src, fbx, true);
+            AssetDatabase.ImportAsset(fbx, ImportAssetOptions.ForceSynchronousImport);
+            var mi = (ModelImporter)AssetImporter.GetAtPath(fbx);
+            mi.materialImportMode = ModelImporterMaterialImportMode.None;
+            mi.importAnimation = false; mi.animationType = ModelImporterAnimationType.None; mi.importCameras = false; mi.importLights = false;
+            mi.importBlendShapes = false; mi.isReadable = false;
+            mi.importNormals = ModelImporterNormals.None; mi.importTangents = ModelImporterTangents.None;
+            mi.SaveAndReimport();
+            var mesh = AssetDatabase.LoadAllAssetsAtPath(fbx).OfType<Mesh>().FirstOrDefault() ?? throw new InvalidOperationException("no mesh in " + fbx);
+            var sh = Shader.Find("CT Life/World/Interior Prop") ?? throw new InvalidOperationException("Interior Prop shader missing");
+            var entries = props["materials"] is JArray arr ? arr.Select(t => ((string)t["name"], (string)t["texture"])).ToList()
+                        : ((JObject)props["materials"]).Properties().Select(p => (p.Name, (string)p.Value)).ToList();
+            var mats = new Material[mesh.subMeshCount];
+            for (int i = 0; i < mats.Length && i < entries.Count; i++)
+            {
+                var (name, rel) = entries[i];
+                string tsrc = Path.Combine(IslandV2Paths.Repo, "art", "processed", rel);
+                string tex = $"{Dir}/{id}_{Path.GetFileName(rel)}";
+                File.Copy(tsrc, tex, true);
+                AssetDatabase.ImportAsset(tex, ImportAssetOptions.ForceSynchronousImport);
+                var ti = (TextureImporter)AssetImporter.GetAtPath(tex);
+                ti.textureType = TextureImporterType.Default; ti.sRGBTexture = true; ti.alphaIsTransparency = false;
+                ti.alphaSource = TextureImporterAlphaSource.FromInput; ti.mipmapEnabled = true; ti.filterMode = FilterMode.Trilinear;
+                ti.anisoLevel = 4; ti.wrapMode = TextureWrapMode.Clamp; ti.maxTextureSize = 2048;
+                var android = ti.GetPlatformTextureSettings("Android");
+                android.overridden = true; android.maxTextureSize = 2048; android.format = TextureImporterFormat.ASTC_4x4;
+                ti.SetPlatformTextureSettings(android);
+                ti.SaveAndReimport();
+                var matPath = $"{Dir}/{name}.mat";
+                var m = AssetDatabase.LoadAssetAtPath<Material>(matPath);
+                if (m == null) { m = new Material(sh) { name = name }; AssetDatabase.CreateAsset(m, matPath); }
+                m.shader = sh;
+                m.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>(tex));
+                m.SetFloat("_LightScale", props["light_scale"] != null ? 1f / (float)props["light_scale"] : 2f);
+                m.enableInstancing = true;
+                EditorUtility.SetDirty(m);
+                mats[i] = m;
+            }
+            var go = new GameObject("props") { layer = 17 };
+            go.transform.SetParent(root.transform, false);
+            go.transform.localRotation = R;
+            go.AddComponent<MeshFilter>().sharedMesh = mesh;
+            var mr = go.AddComponent<MeshRenderer>();
+            mr.sharedMaterials = mats;
+            mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; mr.receiveShadows = false;
+            mr.lightProbeUsage = UnityEngine.Rendering.LightProbeUsage.Off; mr.reflectionProbeUsage = UnityEngine.Rendering.ReflectionProbeUsage.Off;
+            mr.allowOcclusionWhenDynamic = false;
+            Debug.Log($"CTLIFE [interiors] {id} props: {mesh.triangles.Length / 3} tris, {mesh.subMeshCount} submeshes, colours {mesh.colors32?.Length ?? 0}");
         }
     }
 }

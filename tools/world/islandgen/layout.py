@@ -360,6 +360,7 @@ LANDMARKS = [
     dict(id='island_palm', name='Palm islet', kind='palm', at=(800, -646), egg='IslandDAO'),
     dict(id='timeline_screens', name='Timeline screens', kind='billboards', at=(-10, 52), egg=None),
     dict(id='harbour_bridge', name='Harbour bridge', kind='bridge', at=(-510, -400), egg=None),
+    dict(id='rug_room', name='The Rug Room', kind='casino', at=(126, -262), egg=None),
 ]
 # Landmark buildings (W3): non-venue heroes built like venue shells (facade styles as SHELLS) on their own pads.
 # at = centre, size = (w, d) m, yaw degrees (0 = the sign faces south), extra = a feature the builder adds.
@@ -372,6 +373,13 @@ LANDMARK_BUILDINGS = [
          wall=(0.22, 0.22, 0.26), trim=(0.62, 0.40, 0.92), accent=(0.95, 0.50, 0.30), extra='phone'),
     dict(id='helius_depot', at=(-252, -176), size=(20, 14), yaw=40.0, h=7.0, roof='flat', style='industrial', sign='faster',
          wall=(0.16, 0.16, 0.18), trim=(0.91, 0.25, 0.14), accent=(0.91, 0.25, 0.14), extra='neon'),
+    # The Rug Room (R3, 2026-10-24): the Cash-only casino at the arcade pier's east end, door north onto the beach and the
+    # boardwalk, beside the Prediction Pit. Its pad extends the pier (fixed at the pier deck's level, not the median of a
+    # seabed sample); walkin = the streamed room's door (w, h) in its front wall; sign_art = sign_rug_room.png comes from
+    # art/source/casino (neon), not signs.py's board; extra neon_rug lights the board and the facade's neon tubes.
+    dict(id='rug_room', at=(126, -262), size=(16, 20), yaw=180.0, h=9.0, roof='flat', style='plaster', sign='THE RUG ROOM',
+         wall=(0.95, 0.92, 0.86), trim=(0.79, 0.63, 0.31), accent=(1.0, 0.25, 0.64), extra='neon_rug',
+         fix_y=SEA + 2.8, walkin=(1.2, 2.3), sign_art=True),
     dict(id='mtndao_cairn', at=(-182, 513), size=(4, 4), yaw=180.0, h=0.0, roof='none', style='none', sign=None,
          wall=(0.5, 0.5, 0.5), trim=(0.5, 0.5, 0.5), accent=(0.86, 0.32, 0.20), extra='cairn'),
 ]

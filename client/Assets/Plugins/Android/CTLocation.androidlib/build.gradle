@@ -1,0 +1,17 @@
+apply plugin: 'com.android.library'
+// CT Life IRL check-in (lane B, 2026-10-24): one location fix on request, android.location only (no Play services).
+// Returns latitude, longitude, the OS accuracy radius and the OS mock flag (Location.isMock on API 31+,
+// isFromMockProvider before). The fix is handed to the game once and never stored.
+android {
+    namespace 'com.ctlife.location'
+    compileSdk getProperty('unity.compileSdkVersion') as int
+    buildToolsVersion getProperty('unity.buildToolsVersion')
+    compileOptions {
+        sourceCompatibility JavaVersion.valueOf(getProperty('unity.javaCompatabilityVersion'))
+        targetCompatibility JavaVersion.valueOf(getProperty('unity.javaCompatabilityVersion'))
+    }
+    defaultConfig {
+        minSdk getProperty('unity.minSdkVersion') as int
+        targetSdk getProperty('unity.targetSdkVersion') as int
+    }
+}

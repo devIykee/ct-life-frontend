@@ -99,6 +99,8 @@ namespace CTLife.World
         /// <summary>A feature's one-tap offer (WorldOffers: a locked door, a parcel, Decorate) when nothing else is on offer.</summary>
         private WorldOffer _extOffer;
         private string ExtTarget => _extOffer != null ? "ext:" + _extOffer.id : null;
+        /// <summary>The one-tap world offer on the prompt now (dev routes read it), or null.</summary>
+        public WorldOffer ExtOffer => _extOffer;
         private bool _wasDirect;
         private string _lastPromptKey;
 
