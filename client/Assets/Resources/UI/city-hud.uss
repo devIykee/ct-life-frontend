@@ -178,6 +178,44 @@
 .ct-hud .ct-interact-busy .ct-interact { opacity: 0.75; }
 .ct-interact-pointer { position: absolute; width: 22px; height: 22px; bottom: auto; left: 50%; margin-left: 0; border-radius: 11px; background-color: rgb(255,255,255); border-width: 4px; border-color: rgb(42,11,74); }
 .ct-interact-clamped .ct-interact-pointer { display: none; }
+/* Rekt Burger clock-in prompt (UI brief 2026-10-25, approved): the job key in Rekt orange (128 px, clock glyph), a money
+   caption under the verbs, a shown-but-unusable look, a neutral glass key for Clock out, and a pop-in / done flash. */
+.ct-hud .ct-interact-sub {
+    margin-top: 6px; font-size: 18px; color: rgba(255,255,255,0.72); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf");
+    white-space: nowrap; text-shadow: 0 2px 6px rgba(0,0,0,0.7); -unity-text-align: middle-center;
+}
+.ct-hud .ct-interact-sub--good { color: rgb(61,220,132); }
+.ct-hud .ct-interact-sub--warn { color: rgb(255,210,63); }
+.ct-hud .ct-interact-sub--bad { color: rgba(255,59,92,0.85); }
+.ct-hud .ct-interact-job .ct-interact-key {
+    width: 128px; height: 128px; border-radius: 38px; background-color: rgb(242,104,44);
+    border-top-color: rgb(255,184,140); border-left-color: rgb(250,140,88); border-right-color: rgb(250,140,88); border-bottom-color: rgb(160,58,20);
+}
+.ct-hud .ct-interact-job .ct-icon { width: 62px; height: 62px; -unity-background-image-tint-color: rgb(72,22,6); }
+.ct-hud .ct-interact-quiet .ct-interact-key, .ct-hud .ct-interact-job.ct-interact-disabled .ct-interact-key, .ct-hud .ct-interact-disabled .ct-interact-key {
+    background-color: rgba(18,12,36,0.78); border-width: 2px; border-bottom-width: 6px;
+    border-top-color: rgba(255,255,255,0.6); border-left-color: rgba(255,255,255,0.32); border-right-color: rgba(255,255,255,0.32); border-bottom-color: rgba(0,0,0,0.5);
+}
+.ct-hud .ct-interact-quiet .ct-icon, .ct-hud .ct-interact-disabled .ct-icon { -unity-background-image-tint-color: rgb(255,255,255); }
+.ct-hud .ct-interact-disabled .ct-icon, .ct-hud .ct-interact-disabled .ct-interact-label { opacity: 0.5; }
+.ct-hud .ct-interact-held .ct-interact-key { scale: 0.94 0.94; }
+.ct-hud .ct-interact-jobprompt { opacity: 0; scale: 0.88 0.88; transition-property: opacity, scale; transition-duration: 0.16s; transition-timing-function: ease-out-back; }
+.ct-hud .ct-interact-jobprompt.ct-interact-in { opacity: 1; scale: 1 1; }
+.ct-hud .ct-interact-jobprompt .ct-interact-secondary { opacity: 0; transition-property: opacity; transition-duration: 0.16s; transition-delay: 0.04s; }
+.ct-hud .ct-interact-jobprompt.ct-interact-in .ct-interact-secondary { opacity: 1; }
+/* over bright interiors (the terrazzo floor) the verb and the money line sit on compact dark glass, white text, no outline */
+.ct-hud .ct-interact-jobprompt .ct-interact-label {
+    margin-top: 10px; padding: 2px 14px 4px 14px; border-radius: 14px; background-color: rgba(14,9,30,0.80); color: rgb(255,255,255);
+    -unity-text-outline-width: 0; text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+}
+.ct-hud .ct-interact-jobprompt .ct-interact-sub {
+    margin-top: 6px; padding: 3px 12px 4px 12px; border-radius: 12px; background-color: rgba(14,9,30,0.80); color: rgb(255,255,255);
+    -unity-text-outline-width: 0; text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+}
+.ct-hud .ct-interact-jobprompt .ct-interact-sub--good { color: rgb(61,220,132); }
+.ct-hud .ct-interact-jobprompt .ct-interact-sub--warn { color: rgb(255,210,63); }
+.ct-hud .ct-interact-jobprompt .ct-interact-sub--bad { color: rgb(255,120,140); }
+.ct-hud .ct-interact-jobprompt.ct-interact-in.ct-interact-out { opacity: 0; transition-duration: 0.12s; transition-timing-function: ease-in-cubic; }
 
 .ct-landscape .ct-hud .ct-move-controls { left: 0; bottom: 0; }
 .ct-landscape .ct-hud .ct-chat, .ct-landscape .ct-hud .ct-emotes { left: auto; right: 40px; width: 850px; bottom: 190px; max-height: 420px; }
@@ -215,16 +253,20 @@
 .ct-hud .hud-lock-badge .ct-icon { width: 26px; height: 26px; -unity-background-image-tint-color: rgb(42,11,74); }
 .ct-hud .hud-lock-badge.hud-lock-pop { display: flex; scale: 1.3 1.3; opacity: 0; }
 
-/* Sleuth heat: built, hidden until a real heat value exists */
+/* Sleuth heat (backend #17): GTA V's wanted stars under the money, per the approved brief
+   (ct-life-evidence/heat-police-20261025/board): 5 stars in a slim pill, white lit / 30% unlit, red/blue flash in a chase. */
 .ct-hud .hud-heat {
-    margin-top: 10px; flex-direction: row; align-items: center; padding: 6px 16px; border-radius: 14px; background-color: rgba(80,8,30,0.86);
-    border-width: 1px; border-color: rgba(255,59,92,0.5); transition-property: opacity, translate; transition-duration: 0.17s;
+    margin-top: 8px; flex-direction: row; align-items: center; height: 44px; padding: 0 12px; border-radius: 14px;
+    background-color: rgba(20,6,44,0.62); border-width: 2px; border-color: rgba(255,255,255,0.12); transition-property: opacity, translate; transition-duration: 0.17s;
 }
-.ct-hud .hud-heat.hud-off { opacity: 0; translate: 0 -20px; }
-.ct-hud .hud-heat-label { font-size: 17px; letter-spacing: 2px; color: rgb(255,179,193); -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); margin-right: 12px; }
+.ct-hud .hud-heat.hud-off { opacity: 0; translate: 0 -16px; }
+.ct-hud .hud-heat-label { display: none; }
 .ct-hud .hud-heat-pips { flex-direction: row; }
-.ct-hud .hud-heat-pip { width: 34px; height: 34px; margin: 0 2px; -unity-background-image-tint-color: rgba(255,255,255,0.28); }
-.ct-hud .hud-heat-pip--lit { -unity-background-image-tint-color: rgb(255,210,63); }
+.ct-hud .hud-heat-pip { width: 30px; height: 30px; margin: 0 2px; -unity-background-image-tint-color: rgba(255,255,255,0.3); transition-property: scale; transition-duration: 0.2s; transition-timing-function: ease-out-back; }
+.ct-hud .hud-heat-pip--lit { -unity-background-image-tint-color: rgb(255,255,255); }
+.ct-hud .hud-heat-pip--pop { scale: 1.4 1.4; }
+.ct-hud .hud-heat--red .hud-heat-pip--lit { -unity-background-image-tint-color: rgb(255,59,92); }
+.ct-hud .hud-heat--blue .hud-heat-pip--lit { -unity-background-image-tint-color: rgb(70,140,255); }
 
 /* vehicle HUD root and its groups */
 .ct-hud .veh-controls { position: absolute; left: 0; top: 0; right: 0; bottom: 0; transition-property: opacity; transition-duration: 0.17s; transition-timing-function: ease-out-cubic; }

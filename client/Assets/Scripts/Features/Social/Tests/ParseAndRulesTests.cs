@@ -225,6 +225,15 @@ namespace CTLife.SocialFeatures.Tests
             Assert.IsNull(TipRules.CashError("10", 1000, 5000, out var cents));
             Assert.AreEqual(1000, cents);
             Assert.IsNull(TipRules.CashError("10", null, null, out _), "unknown balance: the server decides");
+            // backend #20: 3% burned, at least 1 cent; a 1-cent tip is refused
+            Assert.AreEqual("tip.min", TipRules.CashError("0.01", 1000, null, out _));
+            CollectionAssert.AreEqual(new long[] { 1, 1, 1, 2, 3, 30, 29_970 }, new long[] { 2, 10, 33, 34, 100, 1000, 999_000 }.Select(a => TipRules.FeeCents(a)).ToArray());
+            Assert.AreEqual(970, TipRules.ReceivedCents(1000));
+            Assert.AreEqual(1, TipRules.ReceivedCents(2));
+            var tip = SocialParse.Tip(Newtonsoft.Json.Linq.JToken.Parse("{\"tipId\":\"t\",\"amountCents\":1000,\"feeCents\":30,\"receivedCents\":970}"));
+            Assert.AreEqual(970, tip.ReceivedCents);
+            Assert.AreEqual(30, tip.FeeCents);
+            Assert.IsNull(tip.BalanceCents);
         }
 
         private static string Encode58(byte[] data)

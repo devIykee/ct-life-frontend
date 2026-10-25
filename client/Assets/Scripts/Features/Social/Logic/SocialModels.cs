@@ -313,6 +313,16 @@ namespace CTLife.SocialFeatures
         /// <summary>POST /tips → `{cashCents}` (the sender's new balance). Null when the server sent another shape.</summary>
         public static long? TipBalance(JToken t) => t is JObject o ? SocialWire.OptLong(o["cashCents"]) : null;
 
+        /// <summary>Backend #20's CashTip: what was paid, burned and received (null for another shape).</summary>
+        public static TipResult Tip(JToken t)
+        {
+            if (!(t is JObject o)) return null;
+            var amount = SocialWire.OptLong(o["amountCents"]);
+            if (!amount.HasValue) return null;
+            var fee = SocialWire.OptLong(o["feeCents"]) ?? 0;
+            return new TipResult { AmountCents = amount.Value, FeeCents = fee, ReceivedCents = SocialWire.OptLong(o["receivedCents"]) ?? amount.Value - fee, BalanceCents = SocialWire.OptLong(o["cashCents"]) };
+        }
+
         public static UserCard User(JToken t)
         {
             if (!(t is JObject o)) throw new FormatException("Expected a profile");
@@ -323,5 +333,13 @@ namespace CTLife.SocialFeatures
                 IsSeeker = SocialWire.BoolOr(o["isSeeker"], false),
             };
         }
+    }
+
+    /// <summary>A sent Cash tip (POST /tips, backend #20).</summary>
+    public sealed class TipResult
+    {
+        public long AmountCents, FeeCents, ReceivedCents;
+        /// <summary>The sender's new balance when the server includes it (older shape); else refresh /me.</summary>
+        public long? BalanceCents;
     }
 }

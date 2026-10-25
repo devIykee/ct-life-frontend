@@ -49,6 +49,7 @@ namespace CTLife.CityLife
                 case "app": await App(ct); break;
                 case "irl": await Irl(s, hall, ct); break;
                 case "retry": await Retry(ct); break;
+                case "perf": await PlazaPerf(s, hall, alive, ct); break;
                 case "followups": await Followups(ct); break;
                 default: Mark("unknown mode " + mode); break;
             }
@@ -99,6 +100,23 @@ namespace CTLife.CityLife
             await Awaitable.WaitForSecondsAsync(3f, ct);
             Mark("shot plaza entrance");
             await Awaitable.WaitForSecondsAsync(3f, ct);
+        }
+
+        /// <summary>Perf segments at the Breakpoint plaza (PerfSegments lines "seg=plaza" standing, "seg=plazaWalk" walking).</summary>
+        private static async Task PlazaPerf(VenueSession s, IslandVenue hall, Func<bool> alive, CancellationToken ct)
+        {
+            PerfSegments.Ensure();
+            await StandAt(s, hall, new Vector3(-4f, 0f, -31f), 8f, ct);
+            await Awaitable.WaitForSecondsAsync(4f, ct);
+            PerfSegments.Label = "plaza";
+            await Awaitable.WaitForSecondsAsync(20f, ct);
+            PerfSegments.Label = "plazaWalk";
+            await WalkTo(s, W(hall, new Vector3(-1.2f, 0f, -22f)), alive, ct);
+            await WalkTo(s, W(hall, new Vector3(-12f, 0f, -18f)), alive, ct);
+            await WalkTo(s, W(hall, new Vector3(12f, 0f, -24f)), alive, ct);
+            await WalkTo(s, W(hall, new Vector3(-2f, 0f, -33f)), alive, ct);
+            PerfSegments.Label = null;
+            await Awaitable.WaitForSecondsAsync(1f, ct);
         }
 
         private static async Task Walk(VenueSession s, IslandVenue hall, Func<bool> alive, CancellationToken ct)

@@ -133,3 +133,23 @@ Replace every synthesized onboarding cue, the synthesized title theme, the synth
 | sfx_cashout_ok | 2022-01-14-crystal-bell-01.flac | arseniiv | https://freesound.org/people/arseniiv/sounds/614833/ | CC0 1.0 | 2026-10-24 |
 | amb_rug_room | Casino Floor, Phoenix AZ (Audio Field Recording) [mono] | mhtaylor67 | https://freesound.org/people/mhtaylor67/sounds/277444/ | CC0 1.0 | 2026-10-24 |
 | amb_rug_room | G16-05-Casino Ambience.wav | craigsmith | https://freesound.org/people/craigsmith/sounds/438129/ | CC0 1.0 | 2026-10-24 |
+
+## Rekt Burger (2026-10-25): restaurant and kitchen sounds, real recordings, CC0
+
+| id | title | author | source | licence | checked |
+| --- | --- | --- | --- | --- | --- |
+| sfx_grill_sizzle | Frying_Sausages_Sizzle_2 | SignatureSoundsOrg | https://freesound.org/people/SignatureSoundsOrg/sounds/873540/ | CC0 1.0 | 2026-10-25 |
+| sfx_fryer_drop | kitchen restaurant fries deep fryer basket pickup put down clack metal.flac | kyles | https://freesound.org/people/kyles/sounds/637625/ | CC0 1.0 | 2026-10-25 |
+| sfx_order_bell | ding 2.wav | organicmanpl | https://freesound.org/people/organicmanpl/sounds/149269/ | CC0 1.0 | 2026-10-25 |
+| sfx_ticket_print | epson receipt printer7 | azumarill | https://freesound.org/people/azumarill/sounds/345057/ | CC0 1.0 | 2026-10-25 |
+| sfx_tray_slide | Plate Slide.wav | Cleron | https://freesound.org/people/Cleron/sounds/590084/ | CC0 1.0 | 2026-10-25 |
+| sfx_order_wrong | Desk Thud.wav | JWMalahy | https://freesound.org/people/JWMalahy/sounds/146977/ | CC0 1.0 | 2026-10-25 |
+| amb_rekt_burger | Fast Food restaurant.WAV | logancircle2 | https://freesound.org/people/logancircle2/sounds/405148/ | CC0 1.0 | 2026-10-25 |
+| amb_rekt_burger | Restaurant walla | hz37 | https://freesound.org/people/hz37/sounds/792481/ | CC0 1.0 | 2026-10-25 |
+| amb_rekt_burger | Frying_Sausages_Sizzle | SignatureSoundsOrg | https://freesound.org/people/SignatureSoundsOrg/sounds/873539/ | CC0 1.0 | 2026-10-25 |
+
+## Community nods (2026-10-25): the find chime, a real recording, CC0
+
+| id | title | author | source | licence | checked |
+| --- | --- | --- | --- | --- | --- |
+| sfx_nod_collect | Percussion - C6 (BellTree_Stroke2_v1_Sum.wav) | sgossner | https://freesound.org/people/sgossner/sounds/373394/ | CC0 1.0 | 2026-10-25 |

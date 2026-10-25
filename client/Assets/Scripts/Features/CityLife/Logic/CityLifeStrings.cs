@@ -32,6 +32,7 @@ namespace CTLife.CityLife
             ["err.unknownOutcome"] = "We couldn't confirm that. Try again — it won't be charged twice.",
             ["err.unavailable"] = "Not live on this server yet.",
             ["err.insufficientCash"] = "Not enough Cash (short {0}).",
+            ["err.jailed"] = "You're in CT Jail. Pay bail or wait it out first.",
             ["err.validation"] = "The server didn't accept that.",
             ["err.notFound"] = "Not found.",
             ["err.forbidden"] = "You can't do that.",

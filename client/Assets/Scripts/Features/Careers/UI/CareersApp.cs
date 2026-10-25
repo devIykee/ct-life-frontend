@@ -19,7 +19,7 @@ namespace CTLife.Careers
     /// Duo layout (board #7): segmented Careers / Side gigs, a featured card for the best-paying job you can do now,
     /// App-Store rows with an icon tile and a Work / Apply / Lv pill, details in a sheet.
     /// </summary>
-    public sealed class CareersApp : PhoneApp, IDisposable
+    public sealed partial class CareersApp : PhoneApp, IDisposable
     {
         public const int GigsPhase = 4;
         private static readonly string[] Tints = { "blue", "orange", "purple", "teal", "pink", "indigo", "green", "red" };
@@ -35,7 +35,11 @@ namespace CTLife.Careers
         private DuoSegmented _tabs;
         private Label _held;
         private DuoSheet _details;
-        private bool _showGigs;
+        private bool _showGigs, _showLadder = true;
+        /// <summary>A card shown on top of the Careers list (set by the app: the Rekt Burger fallback job, City Life).</summary>
+        public static Func<VisualElement> ExtraTopCard;
+        /// <summary>Opens the ladder tab next time the app opens (the Duo "career" deep link / promotion card).</summary>
+        public static bool OpenOnLadder;
         private int _version;
         private CancellationTokenSource _viewCts;
         private static bool _shiftRunning;
@@ -57,10 +61,12 @@ namespace CTLife.Careers
             _held = El.Text("", "duo-nav-note");
             _held.name = "careers-held";
             page.Nav.Right.Add(_held);
-            _tabs = new DuoSegmented(new[] { CareersStrings.T("tab.careers"), CareersStrings.T("tab.gigs") }, _showGigs ? 1 : 0,
-                i => { _showGigs = i == 1; Load(); });
-            _tabs.Options[0].name = "careers-tab-careers";
-            _tabs.Options[1].name = "careers-tab-gigs";
+            if (OpenOnLadder) { _showLadder = true; _showGigs = false; OpenOnLadder = false; }
+            _tabs = new DuoSegmented(new[] { CareersStrings.T("tab.ladder"), CareersStrings.T("tab.careers"), CareersStrings.T("tab.gigs") }, TabIndex,
+                i => { _showLadder = i == 0; _showGigs = i == 2; Load(); });
+            _tabs.Options[0].name = "careers-tab-ladder";
+            _tabs.Options[1].name = "careers-tab-careers";
+            _tabs.Options[2].name = "careers-tab-gigs";
             _content = El.Div("duo-jobs-content");
             page.Body.Add(El.Div("duo-jobs-tabs", _tabs));
             page.Body.Add(_content);
@@ -154,10 +160,12 @@ namespace CTLife.Careers
         private void Load()
         {
             if (_page == null) return;
-            _tabs.Select(_showGigs ? 1 : 0, false);
+            _tabs.Select(TabIndex, false);
             StopGigTick();
-            if (_showGigs) LoadGigs(); else LoadCareers();
+            if (_showLadder) LoadLadders(); else if (_showGigs) LoadGigs(); else LoadCareers();
         }
+
+        private int TabIndex => _showLadder ? 0 : _showGigs ? 2 : 1;
 
         private void Message(string text, bool error = false, Action retry = null)
         {
@@ -191,6 +199,11 @@ namespace CTLife.Careers
                 // Featured: the best-paying job you can do right now (hired or hiring), from server/config pay.
                 var best = cards.Where(c => (c.Status == CareerStatus.Hired || c.Status == CareerStatus.CanApply) && c.PayCents > 0)
                     .OrderByDescending(c => c.PayCents).FirstOrDefault();
+                if (ExtraTopCard != null)
+                {
+                    try { var extra = ExtraTopCard(); if (extra != null) _content.Add(extra); }
+                    catch (Exception e) { Log.Exception("careers", e); }
+                }
                 if (best != null) _content.Add(Featured(best));
                 var list = El.Div("duo-list duo-jobs-list");
                 foreach (var card in cards) list.Add(CareerRowView(card));

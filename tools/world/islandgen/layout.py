@@ -361,6 +361,7 @@ LANDMARKS = [
     dict(id='timeline_screens', name='Timeline screens', kind='billboards', at=(-10, 52), egg=None),
     dict(id='harbour_bridge', name='Harbour bridge', kind='bridge', at=(-510, -400), egg=None),
     dict(id='rug_room', name='The Rug Room', kind='casino', at=(126, -262), egg=None),
+    dict(id='rekt_burger', name='Rekt Burger', kind='shop', at=(-301.8, -306.7), egg=None),
 ]
 # Landmark buildings (W3): non-venue heroes built like venue shells (facade styles as SHELLS) on their own pads.
 # at = centre, size = (w, d) m, yaw degrees (0 = the sign faces south), extra = a feature the builder adds.
@@ -380,6 +381,14 @@ LANDMARK_BUILDINGS = [
     dict(id='rug_room', at=(126, -262), size=(16, 20), yaw=180.0, h=9.0, roof='flat', style='plaster', sign='THE RUG ROOM',
          wall=(0.95, 0.92, 0.86), trim=(0.79, 0.63, 0.31), accent=(1.0, 0.25, 0.64), extra='neon_rug',
          fix_y=SEA + 2.8, walkin=(1.2, 2.3), sign_art=True),
+    # Rekt Burger (2026-10-25, backend PR #16): the parody fast-food fallback job, a glass-fronted burger joint on the Coast
+    # Highway in The Trenches, on the seaward side (the shore ~16 m behind), door facing the highway (NW); the lot clears the
+    # highway's shoulder by 2 m and every other road, pad and landmark (the first lot let the asphalt into the room).
+    # walkin = the streamed room's door; sign_art = sign_rekt_burger.png from art/source/rektburger; extra neon_rekt keeps the
+    # board's own orange and mint under the emission.
+    dict(id='rekt_burger', at=(-301.8, -306.7), size=(13, 14), yaw=145.0, h=6.2, roof='flat', style='plaster', sign='REKT BURGER',
+         wall=(0.16, 0.17, 0.19), trim=(1.0, 0.42, 0.17), accent=(0.22, 0.88, 0.64), extra='neon_rekt',
+         walkin=(1.2, 2.3), sign_art=True),
     dict(id='mtndao_cairn', at=(-182, 513), size=(4, 4), yaw=180.0, h=0.0, roof='none', style='none', sign=None,
          wall=(0.5, 0.5, 0.5), trim=(0.5, 0.5, 0.5), accent=(0.86, 0.32, 0.20), extra='cairn'),
 ]

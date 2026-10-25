@@ -513,7 +513,7 @@ namespace CTLife.UI
             _walletValue.text = disconnected ? Strings.T("lobby.wallet.none")
                 : (sol?.Amount >= 10000m ? LobbyAmounts.Compact(sol.Amount.Value) : sol?.Amount != null ? sol.FormatAmount(3) : "—") + " SOL";
             string status = disconnected ? null : stale ? "wallet.stale" : state.IsRefreshing && sol?.Amount == null ? "wallet.refreshing" : failed ? "wallet.unavailable" : null;
-            _walletStatus.text = status != null ? Strings.T(status) : "";
+            _walletStatus.text = status != null ? Strings.F(status, _wallet?.ClusterLabel ?? "MAINNET") : "";
             _walletStatus.style.display = status != null ? DisplayStyle.Flex : DisplayStyle.None;
             _walletPill.EnableInClassList("home-pill--dim", disconnected || stale || failed);
         }
@@ -523,6 +523,7 @@ namespace CTLife.UI
         {
             var state = _wallet?.State;
             string body;
+            string net = _wallet?.ClusterLabel ?? "MAINNET";
             if (state == null || state.Status == WalletBalanceStatus.Disconnected) body = Strings.T("wallet.disconnected");
             else
             {
@@ -532,7 +533,7 @@ namespace CTLife.UI
                     var t = state.Token(symbol);
                     if (t == null) continue;
                     string v = t.Amount.HasValue ? (t.Amount >= 10000m ? LobbyAmounts.Compact(t.Amount.Value) : t.FormatAmount(symbol == "SOL" ? 4 : 2)) : "—";
-                    lines.Add(v + " " + symbol + (t.IsStale ? " · " + Strings.T("wallet.stale") : t.State == WalletTokenState.Unavailable ? " · " + Strings.T("wallet.unavailable") : ""));
+                    lines.Add(v + " " + symbol + (t.IsStale ? " · " + Strings.F("wallet.stale", net) : t.State == WalletTokenState.Unavailable ? " · " + Strings.F("wallet.unavailable", net) : ""));
                 }
                 body = string.Join("\n", lines);
             }

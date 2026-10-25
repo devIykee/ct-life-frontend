@@ -153,9 +153,9 @@ namespace CTLife.SocialFeatures
         public Task Follow(string userId, bool follow, RetainedKey key, CancellationToken ct) =>
             Write(follow ? "POST" : "DELETE", "/follows/" + Seg(userId), null, key, ct);
 
-        /// <summary>POST /tips {toUserId, cashCents} → `{cashCents}` (sender's new balance) or null for other shapes.</summary>
-        public async Task<long?> TipCash(string toUserId, long cashCents, RetainedKey key, CancellationToken ct) =>
-            SocialParse.TipBalance(await Write("POST", "/tips", new JObject { ["toUserId"] = toUserId, ["cashCents"] = cashCents }, key, ct));
+        /// <summary>POST /tips {toUserId, amountCents} → CashTip {amountCents, feeCents, receivedCents} (3% burned, backend #20).</summary>
+        public async Task<TipResult> TipCash(string toUserId, long amountCents, RetainedKey key, CancellationToken ct) =>
+            SocialParse.Tip(await Write("POST", "/tips", new JObject { ["toUserId"] = toUserId, ["amountCents"] = amountCents }, key, ct));
 
         public Task TipOnchain(string toUserId, string signature, RetainedKey key, CancellationToken ct) =>
             Write("POST", "/tips/onchain", new JObject { ["toUserId"] = toUserId, ["signature"] = signature }, key, ct);

@@ -19,7 +19,14 @@ namespace CTLife.World
         public string tagKey;
         /// <summary>The chip adds "LOCKED" (a hovercar the player does not own).</summary>
         public bool tagLocked;
+        /// <summary>World offers: a caption under the verbs and its tone (good | warn | bad), the primary key's brand style
+        /// ("job"), and a shown-but-unusable look.</summary>
+        public string sub, subTone, style;
+        public bool disabled;
     }
+
+    /// <summary>A job action succeeded (the prompt flashes a check, then fades before the next state).</summary>
+    public struct InteractionDoneSignal { }
 
     /// <summary>Presentation only: a fixed spot, or an actor root (never an animated head/hand bone).</summary>
     public readonly struct InteractionPromptAnchor
@@ -195,6 +202,12 @@ namespace CTLife.World
                 _nextScan = 0f;
                 return;
             }
+            if (actionId == "ext2")
+            {
+                var ext = _extOffer;
+                if (Current == this && ext != null && expectedTargetId == ExtTarget) ext.secondaryPerform?.Invoke();
+                return;
+            }
             if (actionId == "drive")
             {
                 if (Current == this && _vehicleOffer != null && expectedTargetId == VehicleTarget && Vehicles.VehicleSystem.Current != null)
@@ -358,7 +371,7 @@ namespace CTLife.World
         {
             var actions = Machine.Actions(Offered);
             var key = Machine.Phase + "|" + string.Join(",", actions) + "|" + (Offered != null ? Offered.id : "") + "|" + VehicleTarget + "|" + LockedTarget + "|" + ExtTarget +
-                (_extOffer != null ? _extOffer.verbKey + _extOffer.tagLocked : "");
+                (_extOffer != null ? _extOffer.verbKey + _extOffer.tagLocked + _extOffer.sub + _extOffer.subTone + _extOffer.disabled + _extOffer.style + _extOffer.busy : "");
             if (!force && key == _lastPromptKey) return;
             _lastPromptKey = key;
             Bus.Publish(GetPrompt());
@@ -391,9 +404,12 @@ namespace CTLife.World
             if (_extOffer != null && Machine.Phase == InteractionPhase.Idle)
             {
                 var o = _extOffer;
+                var acts = new List<InteractionAction> { new InteractionAction("ext", o.verbKey, o.icon, o.primary) };
+                if (o.secondaryPerform != null && !string.IsNullOrEmpty(o.secondaryVerbKey))
+                    acts.Add(new InteractionAction("ext2", o.secondaryVerbKey, o.secondaryIcon ?? "info", false));
                 return new InteractionPromptSignal
                 {
-                    actions = new List<InteractionAction> { new InteractionAction("ext", o.verbKey, o.icon, o.primary) },
+                    actions = acts, sub = o.sub, subTone = o.subTone, style = o.style, disabled = o.disabled, busy = o.busy,
                     targetId = ExtTarget, owner = this, tagKey = o.tagKey, tagLocked = o.tagLocked,
                     anchor = o.follow != null ? new InteractionPromptAnchor(o.position, o.follow, true) : new InteractionPromptAnchor(o.position),
                 };

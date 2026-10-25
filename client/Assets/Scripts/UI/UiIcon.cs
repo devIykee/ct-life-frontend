@@ -15,6 +15,19 @@ namespace CTLife.UI
             AddToClassList("ct-icon");
             AddToClassList("ct-icon-" + kind);
             pickingMode = PickingMode.Ignore;
+            var texture = TextureFor(kind);
+            if (texture != null) style.backgroundImage = Background.FromTexture2D(texture);
+        }
+
+        /// <summary>Swap the glyph in place (the HeatPlate's filled / outlined stars).</summary>
+        public void SetIcon(string kind)
+        {
+            var texture = TextureFor(kind);
+            if (texture != null) style.backgroundImage = Background.FromTexture2D(texture);
+        }
+
+        private static Texture2D TextureFor(string kind)
+        {
             // "duo-<name>": a Phosphor fill file bundled for the Solana Duo kit (asset-sources.json duoAdditions).
             string asset = kind != null && kind.StartsWith("duo-", System.StringComparison.Ordinal) ? kind.Substring(4) : kind switch
             {
@@ -87,12 +100,23 @@ namespace CTLife.UI
                 "locked" => "lock",
                 "buy" => "storefront",
                 "heat" => "magnifying-glass",
+                // Rekt Burger clock-in (2026-10-25, Phosphor fill/bold, MIT)
+                "clock" => "clock",
+                "check" => "check",
+                "info" => "info",
                 "tick-up" => "caret-up",
                 "tick-down" => "caret-down",
                 "tick-left" => "caret-left",
                 "tick-right" => "caret-right",
                 "tick-up2" => "caret-double-up",
                 "tick-down2" => "caret-double-down",
+                // Sleuth heat + police (backend #17, Phosphor fill/bold, MIT): wanted stars, the Steal prompt, sirens, jail
+                "star" => "star",
+                "star-outline" => "star-outline",
+                "steal" => "hand-grabbing",
+                "siren" => "siren",
+                "police" => "police-car",
+                "jail" => "lock",
                 _ => "dots-three",
             };
             if (!Textures.TryGetValue(asset, out var texture))
@@ -101,7 +125,7 @@ namespace CTLife.UI
                 Textures.Add(asset, texture);
                 if (texture == null) Log.Warn("ui", "Missing bundled icon: " + asset);
             }
-            if (texture != null) style.backgroundImage = Background.FromTexture2D(texture);
+            return texture;
         }
     }
 }

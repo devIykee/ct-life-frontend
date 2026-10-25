@@ -1,0 +1,163 @@
+/* CT Life · career promotion card (backend PR #16). Rekt Burger's own palette: charcoal, burnt orange and mint, Lilita
+   numbers, Inter caps. The clock-in prompt, ON SHIFT chip and summary card come from the UI brief (not built here yet). */
+
+.rb-card { width: 1000px; padding: 40px 48px; border-radius: 40px; background-color: rgb(32, 34, 40); border-width: 3px; border-color: rgb(242, 104, 44); align-items: center; }
+.rb-promo .rb-card-kicker { font-size: 20px; letter-spacing: 5px; color: rgb(78, 222, 166); }
+.rb-promo .rb-card-title { -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); font-size: 64px; color: rgb(255, 247, 236); -unity-text-align: middle-center; white-space: normal; }
+.rb-promo .rb-card-body { font-size: 24px; color: rgb(205, 210, 220); -unity-text-align: middle-center; white-space: normal; margin-top: 8px;
+    -unity-font-definition: url("../Fonts/Phone/Inter-Medium.ttf"); }
+.rb-card-actions { flex-direction: row; margin-top: 30px; }
+.rb-btn { height: 80px; padding: 0 40px; margin: 0 8px; border-radius: 40px; justify-content: center; background-color: rgb(52, 56, 66); }
+.rb-btn--primary { background-color: rgb(242, 104, 44); }
+.rb-promo .rb-btn-label { font-size: 24px; color: rgb(255, 255, 255); -unity-text-align: middle-center; }
+
+/* promotion card (over the game, not the shift) */
+.rb-promo { position: absolute; left: 0; top: 0; right: 0; bottom: 0; align-items: center; justify-content: center; background-color: rgba(10, 11, 14, 0.9); }
+.rb-promo Label { color: rgb(255, 247, 236); -unity-font-definition: url("../Fonts/Phone/Inter-Bold.ttf"); }
+.rb-promo-rank { width: 170px; height: 170px; border-radius: 85px; background-color: rgb(78, 222, 166); align-items: center; justify-content: center; margin-bottom: 16px; }
+.rb-promo .rb-promo-rank-n { -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); font-size: 90px; color: rgb(16, 40, 30); }
+
+/* ---------------------------------------------------------------- ON SHIFT chip (UI brief §2, approved 2026-10-25)
+   Under the Cash pill (Hud.TopSlot). HUD plum glass; the brand comes in through the badge in the orange cap ring. */
+.hud-shift { margin-top: 14px; align-items: center; transition-property: opacity, translate; transition-duration: 0.17s; transition-timing-function: ease-out-cubic; }
+.hud-shift--off { opacity: 0; translate: 0 -40px; }
+.hud-shift--offline { opacity: 0.7; }
+.hud-shift-row {
+    flex-direction: row; align-items: center; width: 680px; height: 96px; padding: 0 16px 0 10px;
+    border-radius: 48px; border-width: 3px; border-color: rgba(255,255,255,0.14); background-color: rgba(20,6,44,0.80);
+    transition-property: opacity; transition-duration: 0.15s;
+}
+.hud-shift-compact, .hud-shift-compact:hover, .hud-shift-compact:active, .hud-shift-compact:focus {
+    flex-direction: row; align-items: center; width: 300px; height: 64px; min-height: 64px; padding: 0 18px 0 8px; margin: 0;
+    border-radius: 32px; border-width: 3px; border-color: rgba(255,255,255,0.14); background-color: rgba(20,6,44,0.80);
+    transition-property: opacity; transition-duration: 0.15s;
+}
+.hud-shift-fadein { opacity: 0; }
+.hud-shift-ringwrap { width: 76px; height: 76px; align-items: center; justify-content: center; }
+.hud-shift-ringwrap > CapRing, .hud-shift-ringwrap > .unity-cap-ring { position: absolute; left: 0; top: 0; }
+.hud-shift-ringwrap--compact { width: 48px; height: 48px; }
+.hud-shift-badge { width: 56px; height: 56px; border-radius: 28px; -unity-background-scale-mode: scale-and-crop; }
+.hud-shift-badge--compact { width: 34px; height: 34px; border-radius: 17px; }
+.hud-shift-col { flex-grow: 1; margin-left: 16px; justify-content: center; }
+.hud-shift-caprow { flex-direction: row; align-items: center; }
+.hud-shift-pip { width: 10px; height: 10px; border-radius: 5px; background-color: rgb(61,220,132); margin-right: 8px; transition-property: opacity; transition-duration: 0.8s; }
+.hud-shift-pip--dim { opacity: 0.35; }
+.hud-shift--offline .hud-shift-pip { background-color: rgb(255,59,92); }
+.hud-shift-caption { font-size: 17px; letter-spacing: 2px; color: rgba(255,255,255,0.8); -unity-font-definition: url("../Fonts/Phone/Inter-Bold.ttf"); white-space: nowrap; }
+.hud-shift-caption--cap { color: rgb(61,220,132); }
+.hud-shift-time {
+    -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); font-size: 40px; color: rgb(255,255,255); min-width: 170px; -unity-text-align: middle-left;
+    -unity-text-outline-width: 2px; -unity-text-outline-color: rgb(42,11,74); padding: 0; margin: 0;
+}
+.hud-shift-time--compact { font-size: 28px; min-width: 116px; margin-left: 10px; }
+.hud-shift-time--warn { color: rgb(255,210,63); }
+.hud-shift-paycol { width: 220px; align-items: flex-end; margin: 0 14px; }
+.hud-shift-pay {
+    -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); font-size: 40px; color: rgb(61,220,132); -unity-text-align: middle-right;
+    -unity-text-outline-width: 2px; -unity-text-outline-color: rgb(42,11,74); padding: 0; margin: 0;
+    transition-property: scale; transition-duration: 0.11s; transition-timing-function: ease-out-cubic;
+}
+.hud-shift-pay--compact { font-size: 28px; margin-left: 6px; }
+.hud-shift-pay--pulse { scale: 1.08 1.08; }
+.hud-shift-left { font-size: 16px; color: rgb(170,176,188); -unity-font-definition: url("../Fonts/Phone/Inter-SemiBold.ttf"); white-space: nowrap; }
+.hud-shift-left--warn { color: rgb(255,210,63); }
+CapRing { transition-property: scale; transition-duration: 0.12s; }
+.hud-shift-ring--pulse { scale: 1.08 1.08; }
+.hud-shift-out, .hud-shift-out:hover, .hud-shift-out:focus, .hud-shift-out:active {
+    min-width: 150px; height: 64px; min-height: 64px; margin: 0; padding: 0 18px; border-radius: 32px; justify-content: center; align-items: center;
+    background-color: rgba(255,255,255,0.12); border-width: 2px; border-color: rgba(255,255,255,0.18);
+    transition-property: scale; transition-duration: 0.08s;
+}
+.hud-shift-out:active { scale: 0.94 0.94; }
+.hud-shift-out--confirm, .hud-shift-out--confirm:hover, .hud-shift-out--confirm:focus { border-color: rgb(242,104,44); background-color: rgba(242,104,44,0.18); }
+.hud-shift-out:disabled { opacity: 0.45; }
+.hud-shift-out-label { font-size: 22px; color: rgb(255,255,255); -unity-font-definition: url("../Fonts/Phone/Inter-Bold.ttf"); -unity-text-align: middle-center; white-space: nowrap; }
+
+/* ---------------------------------------------------------------- SHIFT DONE band (UI brief §3, approved 2026-10-25)
+   A GTA "mission passed" band over the running world (one quad, no blur, no scrim); the RB card palette inside. */
+.rb-bandroot { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+.rb-band {
+    position: absolute; left: 0; right: 0; top: 196px; padding: 28px 0 34px 0; align-items: center;
+    background-color: rgba(10,11,14,0.945); border-top-width: 4px; border-bottom-width: 4px; border-color: rgb(242,104,44);
+    scale: 1 0; transition-property: scale; transition-duration: 0.22s; transition-timing-function: ease-out-cubic;
+}
+.rb-in .rb-band { scale: 1 1; }
+.rb-closing .rb-band { scale: 1 0; transition-duration: 0.18s; transition-timing-function: ease-in-cubic; }
+.rb-band Label { padding: 0; margin: 0; }
+.rb-band-head { align-items: center; opacity: 0; translate: 0 -30px; transition-property: opacity, translate; transition-duration: 0.18s; transition-delay: 0.12s; transition-timing-function: ease-out-cubic; }
+.rb-in .rb-band-head { opacity: 1; translate: 0 0; }
+.rb-band-kicker { font-size: 20px; letter-spacing: 5px; color: rgb(78,222,166); -unity-font-definition: url("../Fonts/Phone/Inter-Bold.ttf"); }
+.rb-band-title {
+    -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); font-size: 96px; color: rgb(242,104,44);
+    -unity-text-outline-width: 3px; -unity-text-outline-color: rgb(30,12,6);
+}
+.rb-band-sub { font-size: 24px; color: rgba(255,255,255,0.7); -unity-font-definition: url("../Fonts/Phone/Inter-SemiBold.ttf"); }
+.rb-band-note { font-size: 20px; color: rgb(170,176,188); -unity-font-definition: url("../Fonts/Phone/Inter-SemiBold.ttf"); margin-top: 6px; }
+.rb-tiles { flex-direction: row; margin-top: 24px; }
+.rb-tile {
+    width: 360px; height: 170px; margin: 0 12px; border-radius: 26px; background-color: rgb(32,34,40); border-width: 2px; border-color: rgb(70,74,84);
+    align-items: center; justify-content: center;
+    opacity: 0; translate: 0 24px; transition-property: opacity, translate; transition-duration: 0.24s; transition-timing-function: ease-out-back;
+}
+.rb-in-tiles .rb-tile { opacity: 1; translate: 0 0; }
+.rb-tile--wide { width: 460px; }
+.rb-tile--cash { background-color: rgb(242,104,44); border-color: rgb(160,58,20); border-bottom-width: 10px; }
+.rb-tile-row { flex-direction: row; align-items: center; }
+.rb-tile-n { -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); font-size: 72px; color: rgb(255,247,236); }
+.rb-tile-coin { width: 56px; height: 56px; margin-left: 12px; -unity-background-image-tint-color: rgb(255,247,236); }
+.rb-tile-label { font-size: 18px; letter-spacing: 2px; color: rgb(170,176,188); -unity-font-definition: url("../Fonts/Phone/Inter-Bold.ttf"); margin-top: 2px; }
+.rb-tile--cash .rb-tile-label { color: rgba(255,247,236,0.85); }
+.rb-rank { margin-top: 30px; width: 1180px; align-items: center; }
+.rb-rank-bar { flex-direction: row; align-items: center; width: 100%; }
+.rb-rank-name { width: 220px; font-size: 20px; color: rgb(255,255,255); -unity-font-definition: url("../Fonts/Phone/Inter-Bold.ttf"); -unity-text-align: middle-center; white-space: nowrap; }
+.rb-bar { flex-grow: 1; height: 14px; border-radius: 7px; background-color: rgba(255,255,255,0.18); }
+.rb-bar--cap { height: 10px; border-radius: 5px; margin-right: 8px; }
+.rb-bar-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 100%; border-radius: 7px; transform-origin: 0% 50%; }
+.rb-bar-fill--rank { background-color: rgb(255,210,63); }
+.rb-bar-fill--gain { background-color: rgb(255,230,140); }
+.rb-bar-fill--cap { background-color: rgb(61,220,132); border-radius: 5px; }
+.rb-bar-fill--near { background-color: rgb(255,210,63); }
+.rb-bar-fill--full { background-color: rgb(61,220,132); }
+.rb-bar-fill--anim { transition-property: scale; transition-duration: 0.6s; transition-timing-function: ease-out-cubic; }
+.rb-xpchip {
+    position: absolute; top: -40px; translate: -50% 0; padding: 2px 10px; border-radius: 10px; background-color: rgb(255,210,63);
+    color: rgb(42,11,74); font-size: 18px; -unity-font-definition: url("../Fonts/Phone/Inter-Bold.ttf"); white-space: nowrap;
+    opacity: 0; scale: 0.6 0.6; transition-property: opacity, scale; transition-duration: 0.25s; transition-delay: 0.45s; transition-timing-function: ease-out-back;
+}
+.rb-xpchip--in { opacity: 1; scale: 1 1; }
+.rb-rank-line { font-size: 18px; color: rgb(170,176,188); -unity-font-definition: url("../Fonts/Phone/Inter-SemiBold.ttf"); margin-top: 8px; }
+.rb-rank-line--promo { font-size: 32px; color: rgb(255,210,63); -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); }
+.rb-caprow { flex-direction: row; align-items: center; margin-top: 22px; width: 1180px; }
+.rb-caprow-label { width: 220px; font-size: 18px; color: rgba(255,255,255,0.8); -unity-font-definition: url("../Fonts/Phone/Inter-SemiBold.ttf"); -unity-text-align: middle-center; }
+.rb-caprow-text { width: 400px; margin-left: 20px; font-size: 18px; color: rgba(255,255,255,0.8); -unity-font-definition: url("../Fonts/Phone/Inter-SemiBold.ttf"); white-space: nowrap; }
+.rb-unlock { flex-direction: row; align-items: center; margin-top: 16px; padding: 6px 16px; border-radius: 18px; background-color: rgba(78,222,166,0.16); border-width: 1px; border-color: rgb(78,222,166); }
+.rb-unlock .ct-icon { width: 28px; height: 28px; margin-right: 10px; -unity-background-image-tint-color: rgb(78,222,166); }
+.rb-unlock-text { font-size: 20px; color: rgb(78,222,166); -unity-font-definition: url("../Fonts/Phone/Inter-Bold.ttf"); }
+.rb-band-actions { flex-direction: row; margin-top: 28px; opacity: 0; transition-property: opacity; transition-duration: 0.15s; }
+.rb-in-actions .rb-band-actions { opacity: 1; }
+.rb-bandbtn, .rb-bandbtn:hover, .rb-bandbtn:focus, .rb-bandbtn:active {
+    height: 88px; min-height: 88px; margin: 0 10px; padding: 0; border-radius: 44px; justify-content: center; align-items: center; border-width: 0;
+    transition-property: scale; transition-duration: 0.08s;
+}
+.rb-bandbtn:active { scale: 0.96 0.96; }
+.rb-collect, .rb-collect:hover, .rb-collect:focus, .rb-collect:active { width: 420px; background-color: rgb(242,104,44); border-bottom-width: 10px; border-color: rgb(160,58,20); }
+.rb-again, .rb-again:hover, .rb-again:focus, .rb-again:active { width: 360px; background-color: rgb(52,56,66); }
+.rb-bandbtn-label { font-size: 24px; color: rgb(255,255,255); -unity-font-definition: url("../Fonts/Phone/Inter-Bold.ttf"); -unity-text-align: middle-center; }
+.rb-collect .rb-bandbtn-label { -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); font-size: 32px; color: rgb(255,247,236); }
+.rb-fly {
+    position: absolute; -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); font-size: 72px; color: rgb(255,247,236);
+    -unity-text-outline-width: 3px; -unity-text-outline-color: rgb(42,11,74); margin-left: -120px; margin-top: -45px;
+    transition-property: translate, scale; transition-duration: 0.45s; transition-timing-function: ease-in-out-cubic;
+}
+.rb-fly--go { scale: 0.5 0.5; }
+.rb-hud-dim { opacity: 0.4; transition-property: opacity; transition-duration: 0.17s; }
+.rb-pill-bump { scale: 1.08 1.08; transition-property: scale; transition-duration: 0.12s; }
+/* the kit's depth / glint bars stay off on these buttons (they own their lip) */
+.rb-bandroot .ct-button-depth, .rb-bandroot .ct-button-glint, .hud-shift .ct-button-depth, .hud-shift .ct-button-glint, .rb-promo .ct-button-depth, .rb-promo .ct-button-glint { display: none; }
+/* the rank and cap rows arrive with the tiles, not before the title */
+.rb-rank, .rb-caprow, .rb-unlock, .rb-band-note { opacity: 0; transition-property: opacity; transition-duration: 0.2s; transition-delay: 0.42s; }
+.rb-in-tiles .rb-rank, .rb-in-tiles .rb-caprow, .rb-in-tiles .rb-unlock, .rb-in .rb-band-note { opacity: 1; }
+/* the brief's 0.78 is an sRGB-space alpha; UI Toolkit blends in linear space here (measured on the Seeker: 0.90 read as
+   ~0.67 over the white wall), so 0.945 gives the brief's 0.78 look.
+   While the band is up the world prompt hides (the HUD layer carries this sheet and .rb-hud-dim). */
+.rb-hud-dim .ct-hud .ct-hud-interact, .rb-hud-dim .ct-hud .ct-hud-interact.ct-interact-jobprompt.ct-interact-in { opacity: 0; }

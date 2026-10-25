@@ -284,7 +284,7 @@ class Dress:
                  'rug_room': 18}
         for lm in L.LANDMARKS:
             r = clear.get(lm['id'])
-            if r and lm.get('at'):
+            if r and lm.get('at') and lm['id'] not in self.LATE_CLEAR:
                 o.disc(lm['at'][0], lm['at'][1], r, Occupancy.VENUE)
         # the bay boardwalk and the beach in front of it stay open (no buildings, no trees)
         for bw in self.plan.get('boardwalk', []):
@@ -294,6 +294,48 @@ class Dress:
             o.poly([tuple(q) for q in np.vstack([A, (B + sea * 45.0)[::-1]])], Occupancy.PARK)
             o.poly([tuple(q) for q in np.vstack([A, B[::-1]])], Occupancy.ROAD)
         log('occupancy stamped')
+
+    # landmark sites added after the residences' flats were placed (their unit ids are contract: contract/ids/home_units.json):
+    # never stamped before placement (every stage shares one RNG, so a new site anywhere reshuffles the flats); instead,
+    # once the island is dressed, whatever stands on the site is taken off it (clear_late_landmarks)
+    LATE_CLEAR = {'rekt_burger': 14}
+
+    def clear_late_landmarks(self):
+        cut = 0
+        for lm in L.LANDMARKS:
+            r = self.LATE_CLEAR.get(lm['id'])
+            if not r or not lm.get('at'):
+                continue
+            cx, cz = lm['at']
+            near = lambda x, z: math.hypot(x - cx, z - cz) <= r
+
+            def hit(b):                                 # the building's footprint comes within r of the site centre
+                a = math.radians(b[6])
+                dx, dz = cx - b[0], cz - b[2]
+                u, v = dx * math.cos(a) - dz * math.sin(a), dx * math.sin(a) + dz * math.cos(a)
+                return math.hypot(max(abs(u) - b[3] / 2, 0.0), max(abs(v) - b[5] / 2, 0.0)) <= r
+
+            gone = [b for b in self.boxes if hit(b)]
+            keep = [(b, pid) for b, pid in zip(self.boxes, self.box_ids) if not hit(b)]
+            self.boxes, self.box_ids = [b for b, _ in keep], [pid for _, pid in keep]
+            inb = lambda x, z, m: any(self._in_rect(x, z, b, m) for b in gone)
+            for proto, rows in self.inst.items():
+                kept = [q for q in rows if not (near(q[0], q[2]) or inb(q[0], q[2], 0.5 if proto.startswith(('kc_detail_', 'pp_vending')) else -0.01))]
+                cut += len(rows) - len(kept)
+                self.inst[proto] = kept
+            for name, m in (('wall_decor', 0.6), ('shop_signs', 2.5), ('tree_pits', 0.0), ('bus_shelters', 0.0), ('signposts', 0.0), ('flag_poles', 0.0)):
+                rows = getattr(self, name)
+                kept = [q for q in rows if not (near(q[0], q[2]) or inb(q[0], q[2], m))]
+                cut += len(rows) - len(kept)
+                setattr(self, name, kept)
+            for name in ('signals', 'billboards'):
+                rows = getattr(self, name)
+                kept = [q for q in rows if not (near(q['p'][0], q['p'][2]) or inb(q['p'][0], q['p'][2], 0.5))]
+                cut += len(rows) - len(kept)
+                setattr(self, name, kept)
+            self.occ.disc(cx, cz, r, Occupancy.VENUE)
+            self.stats.setdefault('late_landmarks', {})[lm['id']] = dict(buildings=len(gone))
+        log(f'late landmark sites: {cut} items cleared')
 
     # -------------------------------------------------------------- buildings
     def style_for(self, seg, x, z):
@@ -3629,6 +3671,7 @@ def main():
     d.v3_districts2()
     d.v3_paving_all()
     d.v3_ground_cover()
+    d.clear_late_landmarks()
     d.write_heights()
     d.write(os.path.join(OUT, 'dress.json'))
     log(f'done ({time.time() - t0:.1f}s)')

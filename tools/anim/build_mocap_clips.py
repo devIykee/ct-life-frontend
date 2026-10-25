@@ -40,6 +40,18 @@ LICENCE = {
 }
 
 
+# Capture rate per subject where it is not the usual 120 Hz (the CMU motion list's frame-rate column): 79 and 80 were
+# taken at 60 Hz, so every 2nd frame makes the same 30 fps.
+SRC_RATE = {'79': 60.0, '80': 60.0}
+
+
+def use_rate(subject):
+    global STEP, FPS
+    C.SRC_FPS = SRC_RATE.get(subject, 120.0)
+    STEP = int(round(C.SRC_FPS / 30.0))
+    FPS = C.SRC_FPS / STEP
+
+
 def take_paths(subject, take):
     return os.path.join(RAW, subject, subject + '.asf'), os.path.join(RAW, subject, take + '.amc')
 
@@ -48,6 +60,7 @@ _cache = {}
 
 
 def load(subject, take):
+    use_rate(subject)
     key = (subject, take)
     if key not in _cache:
         asf, amc = take_paths(subject, take)
@@ -295,6 +308,16 @@ CLIPS = [
      'select': sel_fixed(1, 241, '0-2.0 s: right hand up from 0.2 s, waving above the shoulder, down by 1.8 s')},
     {'id': 'shrug', 'subject': '141', 'take': '141_21', 'align': 'start', 'cmu_title': 'Shrug',
      'select': sel_fixed(43, 223, '0.35-1.85 s: both forearms lift with the shoulders at 0.8-1.0 s and settle')},
+    # Rekt Burger stations (2026-10-25): real kitchen-height work for the clock-in loop. Windows read off --preview sheets
+    # (79 and 80 are 60 Hz takes, see SRC_RATE): standing, feet planted, hands at counter height.
+    {'id': 'rb_prep_chop', 'subject': '79', 'take': '79_10', 'align': 'start', 'cmu_title': 'chopping onions',
+     'select': sel_fixed(193, 449, '3.2-7.5 s: both hands working at waist height, steady chopping')},
+    {'id': 'rb_grill_work', 'subject': '80', 'take': '80_02', 'align': 'start', 'cmu_title': 'chopping onions',
+     'select': sel_fixed(217, 487, '3.6-8.1 s: a second performer working at the counter (used at the flat-top)')},
+    {'id': 'rb_fryer_drop', 'subject': '15', 'take': '15_06', 'align': 'start', 'cmu_title': 'lean forward, reach for',
+     'select': sel_fixed(1240, 1460, '10.3-12.2 s: one arm reaches forward and down and comes back (the basket)')},
+    {'id': 'rb_hand_over', 'subject': '15', 'take': '15_06', 'align': 'start', 'cmu_title': 'lean forward, reach for',
+     'select': sel_fixed(950, 1198, '7.9-10.0 s: both arms reach forward over the counter and come back to standing')},
 ]
 
 
@@ -356,6 +379,7 @@ def facing_for(sk, frames, idx, align):
 def build_window(subject, take, start, end, align, bvh_out, fbx_out, png_out, title, rest_bvh, take_name,
                  cells=8, views='side,34', ortho=2.6):
     asf, amc = take_paths(subject, take)
+    use_rate(subject)
     res = C.convert(asf, amc, bvh_out, start, end, STEP, align)
     if res['selfcheck_max_err_m'] >= 0.001:
         raise SystemExit('BVH self-check failed for %s: %r' % (take_name, res))
@@ -555,8 +579,9 @@ def build(only=None):
         bvh = os.path.join(OUT, c['id'] + '.bvh')
         fbx = os.path.join(OUT, c['id'] + '.fbx')
         png = os.path.join(EVIDENCE, c['id'] + '.png')
-        title = '%s  <-  CMU %s "%s" frames %d-%d (120 Hz) -> %d frames @30fps, aligned at %s' % (
-            c['id'], take, c['cmu_title'], st, en, len(range(st, en + 1, STEP)), c['align'])
+        use_rate(sub)
+        title = '%s  <-  CMU %s "%s" frames %d-%d (%d Hz) -> %d frames @30fps, aligned at %s' % (
+            c['id'], take, c['cmu_title'], st, en, C.SRC_FPS, len(range(st, en + 1, STEP)), c['align'])
         res, rep = build_window(sub, take, st, en, c['align'], bvh, fbx, png, title,
                                 os.path.join(OUT, 'cmu_%s_rest.bvh' % sub), c['id'], ortho=c.get('ortho', 2.6))
         nout = res['frames_out']

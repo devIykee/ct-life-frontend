@@ -27,10 +27,17 @@ namespace CTLife.World
             var cam = Camera.main;
             if (cam == null) return;
             if (cam != _applied) { Restore(); _applied = cam; _prevFar = cam.farClipPlane; _prevClear = cam.clearFlags; }
-            if (cam.farClipPlane < farClip) cam.farClipPlane = farClip;
+            // Low graphics tier (CTLife.Core.QualityTier): a shorter far plane (the fog closes in before it) and nearer
+            // prop / plant / interior culls
+            bool low = CTLife.Core.QualityTier.IsLow;
+            float far = low ? Mathf.Min(farClip, CTLife.Core.QualityTier.LowFarClip) : farClip;
+            if (cam.farClipPlane < far || (low && cam.farClipPlane > far)) cam.farClipPlane = far;
             if (skybox && RenderSettings.skybox != null && cam.clearFlags != CameraClearFlags.Skybox) cam.clearFlags = CameraClearFlags.Skybox;
-            _dist[Ground] = groundCull; _dist[Road] = roadCull; _dist[Building] = buildingCull; _dist[Prop] = propCull;
-            _dist[Vegetation] = vegetationCull; _dist[4] = waterCull; _dist[Interior] = interiorCull;
+            _dist[Ground] = groundCull; _dist[Road] = roadCull; _dist[Building] = buildingCull;
+            _dist[Prop] = low ? Mathf.Min(propCull, CTLife.Core.QualityTier.LowPropCull) : propCull;
+            _dist[Vegetation] = low ? Mathf.Min(vegetationCull, CTLife.Core.QualityTier.LowVegetationCull) : vegetationCull;
+            _dist[4] = waterCull;
+            _dist[Interior] = low ? Mathf.Min(interiorCull, CTLife.Core.QualityTier.LowInteriorCull) : interiorCull;
             cam.layerCullDistances = _dist;
             cam.layerCullSpherical = false;
         }

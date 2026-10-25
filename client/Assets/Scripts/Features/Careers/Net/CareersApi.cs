@@ -58,6 +58,13 @@ namespace CTLife.Careers
             return receipt;
         }
 
+        /// <summary>GET /careers?view=ladders (backend PR #16): the five career ladders with my rank, XP and perks.</summary>
+        public async Task<LadderBoard> Ladders(CancellationToken ct) => LadderBoard.Parse(await _rest.Get<JToken>("/careers?view=ladders", ct));
+
+        /// <summary>POST /careers/{ladderId}/join (no body): join, or switch after the cooldown (409 CAREER_SWITCH_COOLDOWN).</summary>
+        public async Task<LadderJoin> JoinLadder(string ladderId, string key, CancellationToken ct) =>
+            LadderJoin.Parse(await Post("/careers/" + Seg(ladderId) + "/join", null, key, ct));
+
         public async Task<List<GigRow>> Gigs(CancellationToken ct)
         {
             var rows = GigRow.ParseList(await _rest.Get<JToken>("/gigs", ct), out int malformed);

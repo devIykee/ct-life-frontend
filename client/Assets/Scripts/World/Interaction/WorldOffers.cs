@@ -22,6 +22,18 @@ namespace CTLife.World
         public Transform follow;            // or: an actor it follows (position is then an offset)
         public float range = 2.2f;          // flat distance from the player
         public Action perform;
+        /// <summary>A caption under the verb ("$30/hr · $38.70 left today"); null = none. Tone: good | warn | bad | null.</summary>
+        public string sub, subTone;
+        /// <summary>A brand style for the primary key ("job" = Rekt orange, a bigger key); null = the default green.</summary>
+        public string style;
+        /// <summary>Shown but not usable (cap reached, offline): dark glass key, dimmed; a tap still runs <see cref="perform"/>
+        /// so the feature can say why.</summary>
+        public bool disabled;
+        /// <summary>The primary's request is in flight (the verb pulses three dots).</summary>
+        public bool busy;
+        /// <summary>An optional second, smaller key beside the primary ("Job info").</summary>
+        public string secondaryVerbKey, secondaryIcon;
+        public Action secondaryPerform;
     }
 
     public static class WorldOffers

@@ -175,6 +175,20 @@ namespace CTLife.Tests
         }
 
         [Test]
+        public void ChipLabelsFollowTheEnvironmentCluster()
+        {
+            // queue 0b (2026-10-25): staging (devnet) showed "WALLET · MAINNET · CHECKING…"
+            var rpc = new FakeRpc();
+            using var devnet = new WalletBalanceService(() => Wallet, Currencies, rpc, SolanaCluster.Devnet);
+            using var mainnet = new WalletBalanceService(() => Wallet, Currencies, rpc, SolanaCluster.Mainnet);
+            Assert.AreEqual("DEVNET", devnet.ClusterLabel);
+            Assert.AreEqual("MAINNET", mainnet.ClusterLabel);
+            Assert.AreEqual("WALLET · DEVNET · CHECKING…", CTLife.UI.Strings.F("wallet.refreshing", devnet.ClusterLabel));
+            Assert.AreEqual("WALLET · MAINNET · LAST CHECK", CTLife.UI.Strings.F("wallet.stale", mainnet.ClusterLabel));
+            var staging = EnvConfig.CreateDefault(EnvId.Staging); Assert.AreEqual(SolanaCluster.Devnet, staging.cluster); UnityEngine.Object.DestroyImmediate(staging);
+        }
+
+        [Test]
         public async Task TinyPositiveBalanceIsNotDisplayedAsZeroAndDisconnectedWalletDoesNotFetch()
         {
             var rpc = new FakeRpc { NativeWait = Task.FromResult(Result(new JValue(1))) };

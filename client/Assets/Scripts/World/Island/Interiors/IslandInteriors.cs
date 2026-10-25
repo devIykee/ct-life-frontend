@@ -368,13 +368,19 @@ namespace CTLife.World
             return new Leaf { go = root, hinge = hinge };
         }
 
+        /// <summary>Keep the active room's door open for a while (Rekt Burger's customers walk in and out through it).</summary>
+        public void HoldDoorOpen(float seconds) => _holdOpenUntil = Mathf.Max(_holdOpenUntil, Time.time + seconds);
+
+        private float _holdOpenUntil;
+
         private void AnimateLeaves(Vector3 p)
         {
             float dt = Time.deltaTime;
             foreach (var l in _leaves)
             {
                 bool ready = _active != null && _active.door == l.door && _active.room != null && _active.room.gameObject.activeSelf;
-                bool open = ready && Flat(l.door.pos, p) < OpenRadius && (MayEnter(l.door.index) || (_active.wasInside && _active.door == l.door));
+                bool open = ready && ((Flat(l.door.pos, p) < OpenRadius && (MayEnter(l.door.index) || (_active.wasInside && _active.door == l.door))) ||
+                                      Time.time < _holdOpenUntil);
                 float target = open ? 1f : 0f;
                 if (Mathf.Approximately(l.angle, target)) continue;
                 l.angle = Mathf.MoveTowards(l.angle, target, dt / 0.55f);

@@ -104,6 +104,10 @@ namespace CTLife.UI
             dnd.name = "settings-dnd";
             body.Add(Duo.Group(notifications, sounds, dnd));
 
+            body.Add(Duo.GroupHeader(Strings.T("settings.graphics")));
+            body.Add(Duo.Group(GraphicsRow()));
+            body.Add(Duo.GroupFooter(Strings.T("settings.graphicsHelp")));
+
             body.Add(Duo.GroupHeader(Strings.T("controls.title")));
             body.Add(Controls());
             var rescue = new DuoRow(() =>
@@ -141,6 +145,24 @@ namespace CTLife.UI
             body.Add(Duo.Group(signOut));
             body.Add(Duo.Footnote(Strings.F("settings.version", Semver.ClientVersion), "duo-settings-version"));
             return page;
+        }
+
+        /// <summary>Graphics tier (QualityTier): tap cycles Auto → Low → High; applied at once.</summary>
+        private DuoRow GraphicsRow()
+        {
+            QualityTier.Init();
+            DuoRow row = null;
+            string Text() => QualityTier.Setting == QualityTier.Pref.Auto
+                ? Strings.F("settings.graphics.auto", Strings.T(QualityTier.Auto == QualityTier.Tier.Low ? "settings.graphics.low" : "settings.graphics.high"))
+                : Strings.T(QualityTier.Setting == QualityTier.Pref.Low ? "settings.graphics.low" : "settings.graphics.high");
+            row = new DuoRow(() =>
+            {
+                QualityTier.Set(QualityTier.Setting == QualityTier.Pref.Auto ? QualityTier.Pref.Low : QualityTier.Setting == QualityTier.Pref.Low ? QualityTier.Pref.High : QualityTier.Pref.Auto);
+                var v = row.Q<Label>(className: "duo-row-value");
+                if (v != null) v.text = Text();
+            }).Leading(Duo.IconSquare("duo-info", "blue")).Title(Strings.T("settings.graphics")).Value(Text());
+            row.name = "settings-graphics";
+            return row;
         }
 
         private DuoRow ProfileRow()

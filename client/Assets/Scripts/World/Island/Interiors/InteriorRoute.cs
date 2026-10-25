@@ -79,6 +79,8 @@ namespace CTLife.World
             // R3: `islandRoom=casino|casino_in|casino_play` is The Rug Room's route (World/Casino/CasinoRoute.cs)
             var mode = CTLife.Core.LaunchArgs.Get("islandRoom");
             if (mode != null && mode.StartsWith("casino", StringComparison.Ordinal)) { await CasinoRoute.Run(s, alive, ct, mode); return; }
+            if (mode != null && mode.StartsWith("rekt", StringComparison.Ordinal)) { await RektBurgerRoute.Run(s, alive, ct, mode); return; }
+            if (mode == "nods") { await NodRoute.Run(s, alive, ct); return; }                  // R4: the community nods (World/Season)
             PerfSegments.Ensure();
             var me = s.LocalPlayer;
             if (districts)

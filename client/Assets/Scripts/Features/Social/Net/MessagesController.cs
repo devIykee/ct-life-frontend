@@ -434,27 +434,31 @@ namespace CTLife.SocialFeatures
         public long? BalanceCents => Services.TryGet<PlayerProfile>(out var p) && p.Me != null ? p.CashCents : (long?)null;
 
         /// <summary>POST /tips. The new balance comes from the server (`cashCents`) or a GET /me; never computed here.</summary>
-        public void TipCash(string toUserId, string amountInput, RetainedKey key, Action<string> done)
+        public void TipCash(string toUserId, string amountInput, RetainedKey key, Action<string> done) =>
+            TipCash(toUserId, amountInput, key, (err, _) => done?.Invoke(err));
+
+        /// <summary>As above, with the server's split (paid / burned / received) on success.</summary>
+        public void TipCash(string toUserId, string amountInput, RetainedKey key, Action<string, TipResult> done)
         {
-            if (!SocialWire.IsSafeId(toUserId) || SocialWire.SameId(toUserId, _hub.Me)) { done?.Invoke("tip.badUser"); return; }
-            if (Features.IsAvailable(Features.LedgerFreeze) == false) { done?.Invoke("tip.frozen"); return; }
+            if (!SocialWire.IsSafeId(toUserId) || SocialWire.SameId(toUserId, _hub.Me)) { done?.Invoke("tip.badUser", null); return; }
+            if (Features.IsAvailable(Features.LedgerFreeze) == false) { done?.Invoke("tip.frozen", null); return; }
             var err = TipRules.CashError(amountInput, BalanceCents, TipCapCents, out var cents);
-            if (err != null) { done?.Invoke(err); return; }
+            if (err != null) { done?.Invoke(err, null); return; }
             _hub.Run(async ct =>
             {
-                var balance = await _hub.Api.TipCash(toUserId, cents, key, ct);
+                var tip = await _hub.Api.TipCash(toUserId, cents, key, ct);
                 key.Complete();
                 if (Services.TryGet<PlayerProfile>(out var profile))
                 {
-                    if (balance.HasValue) profile.SetCash(balance.Value);
+                    if (tip?.BalanceCents is long balance) profile.SetCash(balance);
                     try { await profile.Refresh(ct); } catch (Exception e) when (!(e is OperationCanceledException)) { }
                 }
                 Bus.Publish(new SfxSignal("sfx_ui_success"));
-                done?.Invoke(null);
+                done?.Invoke(null, tip);
             }, e =>
             {
                 if (!e.OutcomeUnknown) key.Complete();
-                done?.Invoke(e.OutcomeUnknown ? "tip.unknown" : e.CopyKey);
+                done?.Invoke(e.OutcomeUnknown ? "tip.unknown" : e.CopyKey, null);
             });
         }
 

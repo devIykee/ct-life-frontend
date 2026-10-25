@@ -14,6 +14,8 @@ namespace CTLife.World.Vehicles
     {
         public string Id;
         public string Kind;
+        /// <summary>Backend #17: the next entry takes the car (`steal: true`): a hijacked traffic car, or the player said so.</summary>
+        public bool Steal;
     }
 
     /// <summary>Island vehicle ownership is granted by the server before the local entry animation.</summary>
@@ -22,6 +24,11 @@ namespace CTLife.World.Vehicles
         public static VehicleNetworkBridge Current { get; private set; }
         public static bool HasClaim => Current != null && !string.IsNullOrEmpty(Current._claimId);
         public static bool IsRegisteredBay(string id) => Current != null && Current._known.Contains(id);
+        /// <summary>Backend #17: entering another player's parked vehicle answered STEAL_REQUIRED. Feature code asks the
+        /// player; on yes it arms the identity's Steal and enters again.</summary>
+        public static Action<Vehicle, string> StealRequired;
+        /// <summary>Any other refused entry (VEHICLE_TAKEN, VEHICLE_NOT_STEALABLE, JAILED, RATE_LIMITED, ...): code, vehicle.</summary>
+        public static Action<string, Vehicle> EnterRefused;
         public static bool IsDriving(string user)
         {
             if (string.IsNullOrEmpty(user) || Current?._channel == null) return false;
@@ -131,8 +138,19 @@ namespace CTLife.World.Vehicles
             using (var owner = CancellationTokenSource.CreateLinkedTokenSource(cancellation, _visit.LifetimeToken))
             {
                 var p = vehicle.transform.position;
-                bool accepted = await channel.Enter(new VehicleEnterMessage { id = identity.Id, kind = kind, x = p.x, y = p.y, z = p.z, yaw = vehicle.transform.eulerAngles.y * Mathf.Deg2Rad }, owner.Token);
-                if (!accepted) return false;
+                bool accepted = await channel.Enter(new VehicleEnterMessage { id = identity.Id, kind = kind, x = p.x, y = p.y, z = p.z, yaw = vehicle.transform.eulerAngles.y * Mathf.Deg2Rad }, owner.Token, identity.Steal);
+                if (!accepted)
+                {
+                    var code = channel.LastEnterRejection;
+                    if (!string.IsNullOrEmpty(code))
+                    {
+                        Log.Info("vehicles", "Entry refused: " + code);
+                        VehicleSystem.SuppressEntryToast = true;   // the feature's own copy says why
+                        if (code == "STEAL_REQUIRED" && !identity.Steal && StealRequired != null) StealRequired(vehicle, kind);
+                        else EnterRefused?.Invoke(code, vehicle);
+                    }
+                    return false;
+                }
                 if (owner.IsCancellationRequested || this == null || vehicle == null || channel != _channel || !channel.CanDrive ||
                     _visit == null || !_visit.IsActive || !channel.Vehicles.TryGetValue(identity.Id, out var acceptedState) || acceptedState.driver != _user)
                 { channel.Exit(identity.Id, p.x, p.z, vehicle != null ? vehicle.transform.eulerAngles.y * Mathf.Deg2Rad : 0); return false; }
