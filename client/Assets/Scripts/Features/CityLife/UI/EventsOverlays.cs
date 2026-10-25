@@ -76,9 +76,8 @@ namespace CTLife.CityLife
         private static string NameBadge(AvatarView a)
         {
             if (a == null) return null;
-            // IRL first: players checked in at the real event and listed (the board, `irl_checkin`), during the event
-            var s = EventsService.Current;
-            if (s != null && s.BreakpointLive && !string.IsNullOrEmpty(a.displayName) && s.IrlAliases.Contains(a.displayName)) return "IRL";
+            // IRL only from the gold lanyard: a grant-only cosmetic from the IRL check-in, equipped through the server's ownership
+            // check. Never match board aliases to display names: names aren't unique, so anyone could take an attendee's name.
             if (a.accId == EventIds.GoldLanyard) return "IRL";
             return a.accId == EventIds.Lanyard ? "BREAKPOINT" : null;
         }
