@@ -2,372 +2,428 @@
 <html lang="en" data-motion="full">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#080a09" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#07080a" />
+    <title>CT Life | Crypto Twitter is a city now</title>
     <meta
       name="description"
-      content="Welcome to Crypto Twitter. A 3D life simulation for Solana Seeker. Trade pretend coins, work jobs and build projects."
+      content="CT Life is a 3D life game for the Solana Seeker. Make a character, pick a tribe, get a job, trade pretend coins and drive around an island built out of Crypto Twitter."
     />
-    <title>CT Life | Welcome to Crypto Twitter</title>
-    <link
-      rel="icon"
-      href="assets/brand/favicon-ct-transparent.png"
-      type="image/png"
-    />
-    <link
-      rel="preload"
-      href="assets/fonts/LeagueSpartan-Variable.woff2"
-      as="font"
-      type="font/woff2"
-      crossorigin
-    />
-    <link
-      rel="preload"
-      href="assets/fonts/Manrope-Regular.woff2"
-      as="font"
-      type="font/woff2"
-      crossorigin
-    />
-    <link rel="stylesheet" href="reference-01.css" />
-    <link rel="stylesheet" href="campaign-preview.css" />
-    <script type="module" src="reference-01.js"></script>
+    <meta property="og:title" content="CT Life | Crypto Twitter is a city now" />
+    <meta property="og:description" content="Make a character, pick a tribe, get a job, trade pretend coins and drive around an island built out of Crypto Twitter." />
+    <meta property="og:image" content="assets/v3/hero-reel.webp" />
+    <link rel="icon" href="assets/brand/favicon-ct-transparent.png" type="image/png" />
+    <link rel="preload" href="assets/fonts/Archivo-var.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="assets/fonts/MartianMono-var.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="assets/v3/hero-reel.webp" as="image" fetchpriority="high" />
+    <script>
+      (function (d) {
+        d.classList.add("js");
+        var seen = false;
+        try { seen = sessionStorage.getItem("ctlife-booted"); } catch (e) {}
+        if (seen || matchMedia("(prefers-reduced-motion: reduce)").matches) d.classList.add("no-boot");
+      })(document.documentElement);
+    </script>
+    <link rel="stylesheet" href="site.css?v=3c" />
+    <script type="module" src="site.js?v=3"></script>
   </head>
   <body>
     <a class="skip" href="#main">Skip to content</a>
-    <header class="masthead" id="top">
-      <a class="identity" href="#top" aria-label="CT Life home"
-        ><img
-          src="assets/brand/ct-mark-transparent-192.png"
-          alt=""
-          width="48"
-          height="48"
-        /><span>CT LIFE</span></a
-      >
-      <nav aria-label="Main navigation">
-        <a href="#life">The world</a><a href="#inside">Inside the game</a
-        ><a href="#questions">Good to know</a>
+
+    <div class="boot" aria-hidden="true">
+      <div class="boot-lines">
+        <span>CT ISLAND // 10 DISTRICTS // 21 VENUES</span>
+        <span>LOADING THE TIMELINE</span>
+        <span class="boot-gm">gm</span>
+      </div>
+      <div class="boot-bar"><i></i></div>
+    </div>
+
+    <header class="bar" id="top">
+      <a class="bar-mark" href="#top" aria-label="CT Life home"
+        ><img src="assets/brand/ct-mark-transparent-192.png" alt="" width="36" height="36"
+      /></a>
+      <nav class="bar-nav" aria-label="Main">
+        <a href="#timeline">Timeline <i>[01]</i></a>
+        <a href="#inside">Inside <i>[02]</i></a>
+        <a href="#places">The city <i>[03]</i></a>
+        <a href="#map">Map <i>[04]</i></a>
+        <a href="#tribes">Tribes <i>[05]</i></a>
       </nav>
-      <a class="download nav-download" href="/ctlife-v1.apk" download
-        >Get the game</a
-      >
+      <a class="bar-cta" href="#availability" data-download>Get the game</a>
     </header>
+
     <main id="main">
-      <section class="opening" aria-labelledby="opening-title">
-        <div class="opening-stage">
-          <figure class="opening-art">
-            <img
-              src="assets/reference-20261009/hero-space.webp"
-              srcset="
-                assets/reference-20261009/hero-space-640.webp  640w,
-                assets/reference-20261009/hero-space-960.webp  960w,
-                assets/reference-20261009/hero-space.webp     1600w
-              "
-              sizes="(max-width:700px) 100vw, 82vw"
-              width="1600"
-              height="901"
-              fetchpriority="high"
-              alt="CT Life concept art: a caller unrolls his very long agenda into a microphone while an exhausted frog moderator reaches for the mute control."
-            />
-          </figure>
-          <div class="scene-heading">
-            <span class="recording-light" aria-hidden="true"></span
-            ><span>THE FIVE-MINUTE SPACE</span
-            ><span class="scene-time">58 minutes later.</span>
-          </div>
-          <div class="opening-copy">
-            <h1 id="opening-title">Welcome to<br />Crypto Twitter</h1>
-            <p>A 3D life simulation for Solana Seeker.</p>
-            <div class="opening-actions">
-              <a href="/ctlife-v1.apk" download>Get the game</a
-              ><a href="#inside">See inside</a>
-            </div>
-          </div>
-          <span class="art-credit">Original concept art</span>
+      <!-- ============================== HERO: gameplay reel -->
+      <section class="hero" aria-labelledby="hero-title" data-hero>
+        <div class="stage" data-stage>
+          <video
+            class="stage-video"
+            muted
+            loop
+            playsinline
+            autoplay
+            preload="auto"
+            poster="assets/v3/hero-reel.webp"
+            aria-label="CT Life gameplay reel: crossing downtown, driving, a hovercar taking off, walking into the Rug Room, getting rugged on Moon or Rug, Breakpoint Park and a delivery van pulling up"
+            data-hero-video
+          >
+            <source src="assets/v3/hero-reel-720.mp4" type="video/mp4" media="(max-width: 900px)" />
+            <source src="assets/v3/hero-reel.mp4" type="video/mp4" />
+          </video>
+          <div class="stage-scan" aria-hidden="true"></div>
+          <span class="corner tl" aria-hidden="true"></span><span class="corner br" aria-hidden="true"></span>
+          <p class="stage-tag" aria-hidden="true"><b></b>GAMEPLAY // CAPTURED ON SEEKER</p>
+          <button class="motion-toggle" type="button" data-motion-toggle aria-pressed="false">
+            <span class="sr">Pause motion</span>
+          </button>
         </div>
-        <aside
-          class="identity-rail"
-          aria-label="CT Life. Extremely online. Now outside."
-        >
-          <span class="rail-top" aria-hidden="true">EST. ON THE TL</span>
-          <div class="rail-type" aria-hidden="true">
-            <span class="rail-word">CT LIFE</span>
+
+        <aside class="rail" aria-label="CT Life">
+          <span class="plus" aria-hidden="true">+</span>
+          <div class="rail-col" aria-hidden="true">
+            <span class="rail-bars"></span>
+            <span>CT ISLAND / EST. ON THE TL</span>
+            <span data-local-time>--:--</span>
           </div>
-          <div class="rail-bottom" aria-hidden="true">
-            <span>EXTREMELY ONLINE.<br />NOW OUTSIDE.</span
-            ><span class="rail-symbol">✳</span>
+          <div class="rail-word" aria-hidden="true">CT LIFE</div>
+          <span class="plus" aria-hidden="true">+</span>
+          <div class="rail-mood" data-mood hidden>
+            <span class="mono">MARKET MOOD</span>
+            <strong data-mood-value>+0.0%</strong>
+            <span class="mono" data-mood-label>SOL 24H</span>
           </div>
         </aside>
-      </section>
-      <div class="opening-strip">
-        <span>MADE FOR SOLANA SEEKER</span
-        ><a href="#life"
-          >Scroll into the city <span aria-hidden="true">↓</span></a
-        ><button type="button" data-motion-toggle aria-pressed="false">
-          Pause motion
-        </button>
-      </div>
 
-      <section class="chapter" id="life" aria-labelledby="chapter-title">
-        <div class="chapter-sticky">
-          <div class="chapter-top">
-            <span>01 / THE WORLD</span><span>SAME CT. DIFFERENT LIFE.</span>
-          </div>
-          <h2 class="chapter-title" id="chapter-title">
-            <span data-line="1">THE TIMELINE</span
-            ><span data-line="2">HAS AN <em>ADDRESS.</em></span>
-          </h2>
-          <div class="chapter-bottom">
-            <span class="chapter-glyph" aria-hidden="true">(gm.)</span>
-            <div class="chapter-note">
-              <p>
-                Trade pretend coins. Pick up a shift.<br />Build something with
-                your people.
-              </p>
-              <p class="muted">
-                A whole city for the lives between the posts.<br />Even the
-                landlord has a thesis.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="world-scene" aria-labelledby="world-title">
-        <figure>
-          <img
-            src="assets/reference-20261009/world-morning.webp"
-            srcset="
-              assets/reference-20261009/world-morning-640.webp  640w,
-              assets/reference-20261009/world-morning-960.webp  960w,
-              assets/reference-20261009/world-morning.webp     1600w
-            "
-            sizes="100vw"
-            width="1600"
-            height="901"
-            loading="lazy"
-            alt="CT Life city concept: the night-shift moderator cycles home through a sunlit neighborhood as a builder opens the workshop."
-          />
-          <figcaption>Original world concept art</figcaption>
-        </figure>
-        <div class="world-story">
-          <span class="section-kicker">06:00 / SOMEONE IS STILL SAYING GM</span>
-          <h2 id="world-title">The city never<br />logs off.</h2>
+        <div class="hero-card">
+          <h1 id="hero-title">Crypto Twitter is a&nbsp;city&nbsp;now.</h1>
           <p>
-            The café. The studio. The next terrible idea.<br />There’s always
-            somewhere to be.
+            Make your character, pick your tribe, get a job, trade pretend coins and drive around an island built out of the timeline.
           </p>
+          <div class="hero-actions">
+            <span class="platform"><img src="assets/brand/ct-mark-transparent-192.png" alt="" width="20" height="20" />Built for Solana&nbsp;Seeker</span>
+            <a class="btn btn-ink" href="#availability" data-download>Get the game</a>
+          </div>
+        </div>
+
+        <div class="ticker" aria-label="In-game news">
+          <div class="ticker-track" data-ticker>
+            <span>JUST IN: rug on the Launchpad. Holders are now long-term holders.</span>
+            <span>Team says funds are SAFU. Funds say otherwise.</span>
+            <span>JUST IN: new CA dropped. Do your own research. You won't.</span>
+            <span>Market today. It's so over. Or is it?</span>
+            <span>JUST IN: exploit alarm on Audit Row. The audit was a vibe check.</span>
+            <span>Locked 80% supply, apparently not that 80%.</span>
+            <span>Rent missed. Landlord is not amused.</span>
+            <span>Too much timeline. Need some grass.</span>
+          </div>
         </div>
       </section>
 
-      <section class="inside" id="inside" aria-labelledby="inside-title">
-        <header class="section-label">
-          <span>02 / INSIDE THE GAME</span><span>CAPTURED ON SEEKER</span>
+      <!-- ============================== TIMELINE (devlog) -->
+      <section class="sect timeline" id="timeline" aria-labelledby="timeline-title">
+        <header class="sect-head">
+          <h2 id="timeline-title"><i>(01)</i> From the timeline</h2>
+          <p class="mono">What landed in the city this week</p>
         </header>
-        <div class="inside-layout">
-          <div class="inside-intro">
-            <h2 id="inside-title">A DAY<br />IN CT LIFE.</h2>
-            <p>Start in the square.<br />Find your next side quest.</p>
+        <div class="posts" data-reveal-group>
+          <article class="tpost">
+            <figure class="frame"><img data-parallax src="assets/v2/timeline/breakpoint.webp" alt="Froggy walking up the carpet to the Breakpoint 26 London entrance in Breakpoint Park" loading="lazy" width="960" height="720" /></figure>
+            <div class="tpost-meta"><img src="assets/brand/ct-mark-transparent-192.png" alt="" width="22" height="22" /><b>CT Life</b><span>10.24.2026</span></div>
+            <p>Breakpoint Park put on its London look for Breakpoint 2026. Booths, trivia and a check-in board by the Conference Hall.</p>
+          </article>
+          <article class="tpost">
+            <figure class="frame"><img data-parallax src="assets/v2/timeline/gm-chest.webp" alt="The Day 7 milestone chest bursting open on the gm streak screen" loading="lazy" width="960" height="720" /></figure>
+            <div class="tpost-meta"><img src="assets/brand/ct-mark-transparent-192.png" alt="" width="22" height="22" /><b>CT Life</b><span>10.24.2026</span></div>
+            <p>gm streaks are in. Say gm every day, crack the chest, and day 7 drops a milestone reward. Keep your streak alive.</p>
+          </article>
+          <article class="tpost">
+            <figure class="frame"><img data-parallax src="assets/v2/timeline/flat.webp" alt="A resident relaxing on the sofa inside a walk-in flat" loading="lazy" width="960" height="720" /></figure>
+            <div class="tpost-meta"><img src="assets/brand/ct-mark-transparent-192.png" alt="" width="22" height="22" /><b>CT Life</b><span>10.23.2026</span></div>
+            <p>Your flat has a front door now. Walk in, sit down, move the furniture, and the Duo Shop courier drops off whatever you ordered.</p>
+          </article>
+          <article class="tpost">
+            <figure class="frame"><img data-parallax src="assets/v2/timeline/quests.webp" alt="Froggy in Timeline Square next to the Quests screen raining confetti after a claim" loading="lazy" width="960" height="720" /></figure>
+            <div class="tpost-meta"><img src="assets/brand/ct-mark-transparent-192.png" alt="" width="22" height="22" /><b>CT Life</b><span>10.23.2026</span></div>
+            <p>Quests showed up in the phone. Make a trade, tip a creator, tick it off. Confetti is not financial advice.</p>
+          </article>
+        </div>
+      </section>
+
+      <!-- ============================== STATEMENT -->
+      <section class="sect statement" id="island" aria-labelledby="statement-title">
+        <p class="mono eyebrow">A life game set on CT Island</p>
+        <h2 id="statement-title" class="mega" data-split data-drift>The timeline has an&nbsp;address.</h2>
+        <div class="statement-grid">
+          <div class="statement-copy">
+            <p class="mono">
+              Ten districts. Twenty-one venues. Streets called Wen, Gm and Hodl. A harbour, a mountain, a palm islet and a downtown that never logs off.
+            </p>
+            <p class="mono">
+              You start with whatever the origin lottery hands you, then work, trade, decorate and drive your way up. Or down. It's CT.
+            </p>
           </div>
-          <figure
-            class="build-frame"
-            id="scene-panel"
-            role="tabpanel"
-            aria-labelledby="tab-square"
-            aria-describedby="build-description"
-          >
-            <div class="build-picture">
-              <img
-                id="build-image"
-                src="assets/campaign-20261008/proof-timeline.webp"
-                width="2670"
-                height="1200"
-                loading="lazy"
-                alt="Seeker development capture of Timeline Square, including the movement controls and in-game phone. Sample data labels are retained."
-              />
-              <div class="build-feedback" hidden>
-                <p role="status"></p>
-                <button type="button" class="build-retry" hidden>
-                  Try this capture again
-                </button>
-              </div>
-            </div>
-            <figcaption>
-              <span id="build-caption">TIMELINE SQUARE</span
-              ><a
-                href="assets/campaign-20261008/proof-timeline.webp"
-                data-preview-gallery
-                >View captures</a
-              >
-            </figcaption>
+          <figure class="statement-clip frame" data-wipe data-autoplay>
+            <video data-parallax muted loop playsinline preload="none" poster="assets/v2/clips/city-wide.webp">
+              <source src="assets/v2/clips/city-wide.mp4" type="video/mp4" />
+            </video>
+            <figcaption class="mono">CAPTURED ON SEEKER // TIMELINE DOWNTOWN FROM ABOVE</figcaption>
           </figure>
-          <div class="build-info" aria-live="polite">
-            <span class="build-index" id="build-index">01 / 03</span>
-            <h3 id="build-title">Find your people.</h3>
-            <p id="build-description">
-              The square is where your day starts. Walk the streets and open
-              your in-game phone.
+          <div class="panel">
+            <p class="mono">A city built out of posts</p>
+            <h3>CT Island</h3>
+            <p>
+              Every corner is a bit. Perp Pit sits in the Trenches next to the Rekt Clinic. Airdrop Farm has a Sybil Barn. The Hackathon House is up the mountain, because of course it is.
             </p>
-            <span class="build-note" id="build-note">V7 · 7 October 2026</span>
+            <button class="btn btn-green panel-btn" type="button" data-teaser>Watch the teaser</button>
           </div>
-          <div
-            class="scene-selector"
-            role="tablist"
-            aria-label="Explore the current build"
-          >
-            <button
-              id="tab-square"
-              type="button"
-              role="tab"
-              aria-selected="true"
-              aria-controls="scene-panel"
-              tabindex="0"
-              data-scene="0"
-            >
-              <span>01</span>The square<span class="tab-mark" aria-hidden="true"
-                >+</span
-              ></button
-            ><button
-              id="tab-work"
-              type="button"
-              role="tab"
-              aria-selected="false"
-              aria-controls="scene-panel"
-              tabindex="-1"
-              data-scene="1"
-            >
-              <span>02</span>The side quest<span
-                class="tab-mark"
-                aria-hidden="true"
-                >+</span
-              ></button
-            ><button
-              id="tab-cafe"
-              type="button"
-              role="tab"
-              aria-selected="false"
-              aria-controls="scene-panel"
-              tabindex="-1"
-              data-scene="2"
-            >
-              <span>03</span>The café<span class="tab-mark" aria-hidden="true"
-                >+</span
-              >
-            </button>
-          </div>
-        </div>
-        <p class="capture-disclosure">
-          Local development captures with sample data. These screens do not show
-          live multiplayer.
-        </p>
-      </section>
-
-      <section
-        class="questions"
-        id="questions"
-        aria-labelledby="questions-title"
-      >
-        <div>
-          <span class="section-kicker">03 / BEFORE YOU PULL UP</span>
-          <h2 id="questions-title">GOOD TO<br />KNOW.</h2>
-        </div>
-        <div class="question-list">
-          <details>
-            <summary>
-              What kind of game is this?<span aria-hidden="true">+</span>
-            </summary>
-            <p>
-              A 3D life simulation set in a city built around Crypto Twitter
-              culture. The game brings together fictional markets, jobs,
-              projects and places to hang out.
-            </p>
-          </details>
-          <details>
-            <summary>
-              Where can I play?<span aria-hidden="true">+</span>
-            </summary>
-            <p>
-              CT Life is a native Android game built for Solana Seeker. Download
-              the current build as an APK and install it on your phone.
-            </p>
-          </details>
-          <details>
-            <summary>
-              Are the markets real?<span aria-hidden="true">+</span>
-            </summary>
-            <p>
-              The trading simulation uses fictional coins and in-game cash. That
-              cash cannot be withdrawn.
-            </p>
-          </details>
-          <details>
-            <summary>
-              Is the artwork actual gameplay?<span aria-hidden="true">+</span>
-            </summary>
-            <p>
-              The opening is original concept art. The images in “Inside the
-              game” are actual development captures from a Solana Seeker, using
-              sample data.
-            </p>
-          </details>
         </div>
       </section>
 
-      <section class="closing" aria-labelledby="closing-title">
+      <!-- ============================== INSIDE: pinned reel -->
+      <section class="reel" id="inside" aria-labelledby="inside-title" data-reel>
+        <div class="reel-pin">
+          <div class="reel-label" aria-hidden="true"><span>INSIDE THE GAME</span></div>
+          <div class="reel-view">
+            <div class="reel-track" data-reel-track>
+              <figure class="reel-slide"><video muted loop playsinline preload="none" poster="assets/v3/p-rugroom.webp"><source src="assets/v3/p-rugroom.mp4" type="video/mp4" /></video></figure>
+              <figure class="reel-slide"><video muted loop playsinline preload="none" poster="assets/v3/p-rugged.webp"><source src="assets/v3/p-rugged.mp4" type="video/mp4" /></video></figure>
+              <figure class="reel-slide"><video muted loop playsinline preload="none" poster="assets/v3/p-drive.webp"><source src="assets/v3/p-drive.mp4" type="video/mp4" /></video></figure>
+              <figure class="reel-slide"><video muted loop playsinline preload="none" poster="assets/v3/p-breakpoint.webp"><source src="assets/v3/p-breakpoint.mp4" type="video/mp4" /></video></figure>
+              <figure class="reel-slide"><video muted loop playsinline preload="none" poster="assets/v3/p-delivery.webp"><source src="assets/v3/p-delivery.mp4" type="video/mp4" /></video></figure>
+            </div>
+            <span class="corner tl" aria-hidden="true"></span><span class="corner br" aria-hidden="true"></span>
+            <div class="reel-count mono" aria-hidden="true"><b data-reel-index>01</b> / 05</div>
+            <ol class="reel-dots" aria-hidden="true"><li></li><li></li><li></li><li></li><li></li></ol>
+          </div>
+          <h2 id="inside-title" class="sr">Inside the game</h2>
+          <div class="reel-cards">
+            <article class="reel-card">
+              <p class="mono">Beachfront Boardwalk</p>
+              <h3>The Rug Room</h3>
+              <p>Walk in off the boardwalk. Slots, Moon or Rug and coinflip, all played with pretend Cash. 18+.</p>
+            </article>
+            <article class="reel-card">
+              <p class="mono">Moon or Rug</p>
+              <h3>Get rugged</h3>
+              <p>Ride the multiplier and take profit before the rug gets pulled. Or don't, and tell the timeline about it.</p>
+            </article>
+            <article class="reel-card">
+              <p class="mono">Thirteen rides</p>
+              <h3>Take the long way</h3>
+              <p>Sports cars, taxis, scooters, a helicopter and a hovercar. Downtown traffic keeps moving whether you're late or not.</p>
+            </article>
+            <article class="reel-card">
+              <p class="mono">Breakpoint Park</p>
+              <h3>Pull up to Breakpoint</h3>
+              <p>Booths, trivia and a check-in board outside the Conference Hall, dressed for Breakpoint 2026.</p>
+            </article>
+            <article class="reel-card">
+              <p class="mono">Residences</p>
+              <h3>Move in</h3>
+              <p>Get a flat, order furniture from the Duo Shop and watch the courier van pull up outside.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================== PLACES carousel -->
+      <section class="sect places" id="places" aria-labelledby="places-title">
+        <header class="sect-head">
+          <h2 id="places-title"><i>(03)</i> Around the city</h2>
+          <div class="rail-ctrl">
+            <button type="button" data-scroll="-1" aria-label="Previous">&larr;</button>
+            <button type="button" data-scroll="1" aria-label="Next">&rarr;</button>
+          </div>
+        </header>
+        <div class="cards" data-cards tabindex="0" aria-label="Places, rides and characters. Scroll sideways.">
+          <article class="card card-lead">
+            <span class="chip"><b>CT</b>ISLAND</span>
+            <h3>The whole island is open</h3>
+            <p>Walk it, drive it or fly over it. Every clip here was captured on a Seeker.</p>
+          </article>
+          <article class="card" data-clip="timeline">
+            <span class="chip"><b>◆</b>DISTRICT</span>
+            <div class="card-media"><img src="assets/v2/clips/timeline.webp" alt="" loading="lazy" width="540" height="720" /></div>
+            <div class="card-foot"><h3>Timeline Downtown</h3><p>Timeline Square, Spaces Studio, Discord Heights. The conversation starts here.</p></div>
+          </article>
+          <article class="card" data-clip="marina">
+            <span class="chip"><b>◆</b>DISTRICT</span>
+            <div class="card-media"><img src="assets/v2/clips/marina.webp" alt="" loading="lazy" width="540" height="720" /></div>
+            <div class="card-foot"><h3>Dubai Marina</h3><p>Cabal Lounge, Penthouse Row, the Yacht Club. Dress up. Dream big. Stay awhile.</p></div>
+          </article>
+          <article class="card" data-clip="boardwalk">
+            <span class="chip"><b>◆</b>DISTRICT</span>
+            <div class="card-media"><img src="assets/v2/clips/boardwalk.webp" alt="" loading="lazy" width="540" height="720" /></div>
+            <div class="card-foot"><h3>Beachfront Boardwalk</h3><p>The arcade pier and the Prediction Pit. Too much timeline? Here's some sand.</p></div>
+          </article>
+          <article class="card" data-clip="breakpoint">
+            <span class="chip"><b>◆</b>DISTRICT</span>
+            <div class="card-media"><img src="assets/v2/clips/breakpoint.webp" alt="" loading="lazy" width="540" height="720" /></div>
+            <div class="card-foot"><h3>Breakpoint Park</h3><p>The Conference Hall and the Ratio Arena. Bring a lanyard.</p></div>
+          </article>
+          <article class="card" data-clip="mtndao">
+            <span class="chip"><b>◆</b>DISTRICT</span>
+            <div class="card-media"><img src="assets/v2/clips/mtndao.webp" alt="" loading="lazy" width="540" height="720" /></div>
+            <div class="card-foot"><h3>MtnDAO Summit</h3><p>Basecamp Lodge, the ORE Refinery and a forest all the way up.</p></div>
+          </article>
+          <article class="card" data-clip="hovercar">
+            <span class="chip chip-alt"><b>▲</b>RIDE</span>
+            <div class="card-media"><img src="assets/v2/clips/hovercar.webp" alt="" loading="lazy" width="540" height="720" /></div>
+            <div class="card-foot"><h3>The hovercar</h3><p>Drive it down the street. Then take off.</p></div>
+          </article>
+          <article class="card" data-clip="sportscar">
+            <span class="chip chip-alt"><b>▲</b>RIDE</span>
+            <div class="card-media"><img src="assets/v2/clips/sportscar.webp" alt="" loading="lazy" width="540" height="720" /></div>
+            <div class="card-foot"><h3>Thirteen rides</h3><p>Scooters, taxis, sports cars, a helicopter. The long way is the fun way.</p></div>
+          </article>
+          <article class="card" data-clip="froggy">
+            <span class="chip chip-alt"><b>●</b>CHARACTER</span>
+            <div class="card-media"><img src="assets/v2/clips/froggy.webp" alt="" loading="lazy" width="540" height="720" /></div>
+            <div class="card-foot"><h3>Ten characters</h3><p>Pick who you walk around as. Yes, the frog.</p></div>
+          </article>
+        </div>
+      </section>
+
+      <!-- ============================== MAP -->
+      <section class="sect map" id="map" aria-labelledby="map-title">
+        <div class="map-stage" data-map data-wipe>
+          <canvas aria-hidden="true"></canvas>
+          <span class="corner tl" aria-hidden="true"></span><span class="corner br" aria-hidden="true"></span>
+          <p class="map-hint mono" aria-hidden="true">DRAG TO TURN // TAP A DISTRICT</p>
+          <div class="map-readout mono" data-map-readout aria-live="polite"></div>
+        </div>
+        <div class="map-info">
+          <div>
+            <h2 id="map-title">CT Island // Field&nbsp;notes</h2>
+            <p>
+              This is the real map, drawn from the same data the game builds the island from. Every block is a building you can walk past. Pick a district to see what's there.
+            </p>
+            <ul class="district-list" data-district-list></ul>
+          </div>
+          <dl class="notes mono">
+            <div><dt>Districts</dt><dd>10</dd></div>
+            <div><dt>Venues</dt><dd>21</dd></div>
+            <div><dt>Buildings</dt><dd>600+</dd></div>
+            <div><dt>Summit</dt><dd>185 m</dd></div>
+            <div class="wide"><dt>Streets</dt><dd>Wen St / Gm St / Hodl St / Liquidity St / Seed Phrase Ln / Cold Wallet Cres / Paper Hands Cl / Diamond Hands Rise</dd></div>
+          </dl>
+        </div>
+      </section>
+
+      <!-- ============================== TRIBES + ORIGIN -->
+      <section class="sect tribes" id="tribes" aria-labelledby="tribes-title">
+        <header class="sect-head">
+          <h2 id="tribes-title"><i>(05)</i> Find your people</h2>
+          <p class="mono">One tribe. One perk.</p>
+        </header>
+        <ul class="tribe-grid" data-reveal-group>
+          <li><img src="assets/v2/tribes/trencher.webp" alt="" width="128" height="128" loading="lazy" /><h3>Trencher</h3><p class="perk">Sees new launches 3 seconds earlier</p><q>Living in the trenches.</q></li>
+          <li><img src="assets/v2/tribes/perp_degen.webp" alt="" width="128" height="128" loading="lazy" /><h3>Perp Degen</h3><p class="perk">Leverage cap +5x</p><q>Max long, no fear.</q></li>
+          <li><img src="assets/v2/tribes/prediction_shark.webp" alt="" width="128" height="128" loading="lazy" /><h3>Prediction Shark</h3><p class="perk">Prediction fee -50%</p><q>I already know the outcome.</q></li>
+          <li><img src="assets/v2/tribes/airdrop_farmer.webp" alt="" width="128" height="128" loading="lazy" /><h3>Airdrop Farmer</h3><p class="perk">Farm yield +15%</p><q>Points are my love language.</q></li>
+          <li><img src="assets/v2/tribes/caller.webp" alt="" width="128" height="128" loading="lazy" /><h3>Caller</h3><p class="perk">Calls reach 2x NPC followers</p><q>Drop the CA. I bring the vibes.</q></li>
+          <li><img src="assets/v2/tribes/builder.webp" alt="" width="128" height="128" loading="lazy" /><h3>Builder</h3><p class="perk">Project launch cost -30%</p><q>Shipping while you scroll.</q></li>
+          <li><img src="assets/v2/tribes/anon.webp" alt="" width="128" height="128" loading="lazy" /><h3>Anon</h3><p class="perk">Hidden from the rich list</p><q>You never saw me.</q></li>
+        </ul>
+
+        <div class="origin">
+          <div class="origin-copy">
+            <p class="mono eyebrow">The origin lottery</p>
+            <h2 class="mega-s" data-split>Where you start is luck. Where you go is&nbsp;yours.</h2>
+            <p>
+              Every new resident gets born into the city with a random start. Most get a basement and a debt. Some get a studio and a head start. Same odds as the game.
+            </p>
+            <button class="btn btn-green" type="button" data-roll>Roll your origin</button>
+            <p class="origin-note mono" data-roll-note>In the game you only get one roll.</p>
+          </div>
+          <div class="origin-card" data-card aria-live="polite">
+            <div class="flip">
+              <img class="face back" src="assets/v2/origin/card-back.webp" alt="" width="640" height="880" />
+              <img class="face front" data-card-img src="assets/v2/origin/exit_liquidity_baby.webp" alt="" width="640" height="880" />
+            </div>
+            <div class="origin-result" data-result hidden>
+              <p class="mono" data-r-rarity></p>
+              <h3 data-r-name></h3>
+              <p data-r-line></p>
+              <dl class="mono">
+                <div><dt>Cash</dt><dd data-r-cash></dd></div>
+                <div><dt>Home</dt><dd data-r-home></dd></div>
+                <div><dt>Owes</dt><dd data-r-debt></dd></div>
+              </dl>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================== FAQ -->
+      <section class="sect faq" id="faq" aria-labelledby="faq-title">
+        <h2 id="faq-title" class="mega-s">Before you pull&nbsp;up</h2>
+        <div class="faq-list">
+          <details>
+            <summary>What is CT Life?</summary>
+            <p>A 3D life game set on CT Island, a city built out of Crypto Twitter. You make a character, pick a tribe, work jobs, trade pretend coins, decorate your flat and get around on foot, by car or by hovercar.</p>
+          </details>
+          <details>
+            <summary>Is this real gameplay?</summary>
+            <p>Yes. Every clip on this page was recorded on a Solana Seeker from current builds of the game, and the map is drawn from the game's own world data.</p>
+          </details>
+          <details>
+            <summary>What do I play it on?</summary>
+            <p>CT Life is built for the Solana Seeker phone.</p>
+          </details>
+          <details>
+            <summary>Is the money real?</summary>
+            <p>No. Cash in CT Life is pretend and can never be withdrawn, including in the Rug Room. If you connect a wallet, your real balances show up separately and never mix with game Cash.</p>
+          </details>
+          <details>
+            <summary>Are those real communities in the city?</summary>
+            <p>They're nods. CT is made of these communities, so you'll find them around the island, from statues downtown to landmarks up the mountain. None of them are sponsors or partners.</p>
+          </details>
+        </div>
+      </section>
+
+      <section class="closing" id="availability" aria-labelledby="closing-title">
         <div class="closing-top">
-          <span>YOUR NEXT LIFE IS EXTREMELY ONLINE.</span
-          ><a class="closing-download" href="/ctlife-v1.apk" download
-            >Get the game</a
-          >
+          <p class="mono">YOUR NEXT LIFE IS EXTREMELY ONLINE</p>
+          <a class="btn btn-ink" href="#availability" data-download>Get the game</a>
         </div>
-        <h2 id="closing-title">SEE YOU<br />ON THE <span>INSIDE.</span></h2>
-      </section>
-      <section
-        class="availability-fallback"
-        id="availability"
-        aria-labelledby="availability-title"
-      >
-        <h2 id="availability-title">Play on Solana Seeker.</h2>
-        <p>
-          <a href="/ctlife-v1.apk" download>Download the Android APK</a> of the
-          current development build.
-        </p>
+        <h2 id="closing-title" class="closing-word" data-split>gm. See you <br />in the&nbsp;square.</h2>
+        <div class="availability-fallback">
+          <p><strong>Coming to your Seeker.</strong> There isn't a public download yet.</p>
+        </div>
       </section>
     </main>
-    <footer>
-      <a class="footer-brand" href="#top"
-        ><img
-          src="assets/brand/ct-mark-transparent-192.png"
-          width="36"
-          height="36"
-          alt=""
-        />CT LIFE</a
-      ><span>A LIFE WELL POSTED.</span
-      ><a href="reference-credits.html">Credits &amp; artwork</a
-      ><a href="#top">Back to top ↑</a>
+
+    <footer class="foot">
+      <div class="foot-quote mono"><p>WHERE YOU START IS LUCK. WHERE YOU GO IS YOURS.</p></div>
+      <div class="foot-label mono"><span>(06)</span><span>On the site</span></div>
+      <ul class="foot-links mono">
+        <li><a href="#timeline">[↗] Timeline</a></li>
+        <li><a href="#inside">[↗] Inside</a></li>
+        <li><a href="#places">[↗] The city</a></li>
+        <li><a href="#map">[↗] Map</a></li>
+        <li><a href="#tribes">[↗] Tribes</a></li>
+        <li><a href="credits.html">[↗] Credits</a></li>
+      </ul>
+      <div class="foot-stripes" aria-hidden="true"></div>
+      <div class="foot-word" aria-hidden="true">CT LIFE</div>
+      <p class="foot-legal mono">Cash in CT Life is pretend and can never be withdrawn. Community names and marks belong to their owners and appear as nods, not endorsements.</p>
     </footer>
-    <dialog class="availability-dialog" aria-labelledby="dialog-title">
-      <button
-        class="dialog-close"
-        type="button"
-        aria-label="Close download information"
-      >
-        Close ×</button
-      ><img
-        src="assets/brand/ct-mark-transparent-192.png"
-        width="64"
-        height="64"
-        alt=""
-      />
-      <p class="section-kicker">CT LIFE / SOLANA SEEKER</p>
-      <h2 id="dialog-title">Get it on<br />your Seeker.</h2>
-      <p><a href="/ctlife-v1.apk" download>Download the Android APK</a></p>
-      <p class="muted">
-        You can explore real captures from the current development build while
-        we get the city ready.
-      </p>
-      <button type="button" class="dialog-preview">
-        See the current build
-      </button>
+
+    <dialog class="dlg" data-dlg="download" aria-labelledby="dlg-dl-title">
+      <button class="dlg-x" type="button" data-close aria-label="Close">×</button>
+      <img src="assets/brand/ct-mark-transparent-192.png" alt="" width="64" height="64" />
+      <h2 id="dlg-dl-title">Coming to your&nbsp;Seeker.</h2>
+      <p>There isn't a public download yet.</p>
+      <button class="btn btn-green" type="button" data-teaser>Watch the teaser</button>
+    </dialog>
+
+    <dialog class="dlg dlg-video" data-dlg="teaser" aria-label="CT Life teaser">
+      <button class="dlg-x" type="button" data-close aria-label="Close">×</button>
+      <video controls playsinline preload="none" poster="assets/v2/clips/teaser.webp">
+        <source src="assets/v2/clips/teaser.mp4" type="video/mp4" />
+      </video>
     </dialog>
   </body>
 </html>
