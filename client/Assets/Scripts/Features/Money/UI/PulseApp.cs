@@ -25,10 +25,17 @@ namespace CTLife.Economy
         /// <summary>Optional deep link (a venue terminal or the Smart Money "copy"): open this coin's page next time.</summary>
         public string PendingCoinId { get; set; }
 
+        /// <summary>Open on this tab next time ("launch" from the Launchpad Tower desk until the Factory screens exist).</summary>
+        public static string PendingTab { get; set; }
+        /// <summary>Open this coin's page next time (the Factory's "Open in Pulse").</summary>
+        public static string PendingCoinNext { get; set; }
+
         internal override MoneyView CreateView(MoneyHub hub)
         {
-            var v = new PulseView(hub, PendingCoinId);
+            var v = new PulseView(hub, PendingCoinId ?? PendingCoinNext, PendingTab);
             PendingCoinId = null;
+            PendingCoinNext = null;
+            PendingTab = null;
             return v;
         }
     }
@@ -58,7 +65,7 @@ namespace CTLife.Economy
         private VisualElement _detailMarket, _orderStatus, _orderReceipt, _sellInfo, _callStatus;
         private string _side = "buy", _cashInput = "", _sellUnits, _targetInput = "", _stopInput = "";
         private int _slippageBps = Tickets.DefaultSlippageBps, _sellPct;
-        private bool _placing, _posting;
+        private bool _placing, _posting, _rugConfirmed;
         private readonly RetainedWrite _tradeWrite = new RetainedWrite();
         private readonly RetainedWrite _callWrite = new RetainedWrite();
         private Button _placeButton;
@@ -76,7 +83,9 @@ namespace CTLife.Economy
         private readonly PollGate _callsGate = new PollGate(30, 60);
         private string _callsUser, _callsAlias;
 
-        public PulseView(MoneyHub hub, string coinId) : base(hub)
+        public PulseView(MoneyHub hub, string coinId) : this(hub, coinId, null) { }
+
+        public PulseView(MoneyHub hub, string coinId, string tab) : base(hub)
         {
             _marketConfig = Services.TryGet<ConfigStore>(out var cfg) ? cfg.Config("market") : null;
             _tabs = new ChipTabs(Select)
@@ -104,10 +113,13 @@ namespace CTLife.Economy
             _page.Add(_bar);
             Hub.Market.Changed += MarketChanged;
             Hub.Market.TapeAdded += TapeAdded;
+            FactoryArt.EnsureStyles(_page);
+            _factory = FactoryService.Current;
+            if (_factory != null) _factory.KnownChanged += FactoryKnown;
             Subs.On<ProfileChangedSignal>(_ => RenderCash());
             Subs.On<DegradedChangedSignal>(_ => Render());
             RenderCash();
-            _tabs.Select(TabMarket, notify: false);
+            _tabs.Select(tab == TabLaunch ? TabLaunch : TabMarket, notify: false);
             if (!string.IsNullOrEmpty(coinId)) OpenCoin(coinId, null);
             else Render();
         }
@@ -116,8 +128,19 @@ namespace CTLife.Economy
         {
             Hub.Market.Changed -= MarketChanged;
             Hub.Market.TapeAdded -= TapeAdded;
+            if (_factory != null) _factory.KnownChanged -= FactoryKnown;
             _orderSheet?.Close();
             base.Dispose();
+        }
+
+        private FactoryService _factory;
+
+        /// <summary>A player coin's Factory facts arrived: redraw the lists (throttled) or the open coin page.</summary>
+        private void FactoryKnown(string coinId)
+        {
+            if (!Alive) return;
+            if (_coinId == coinId) RenderDetailMarket();
+            else _listDirty = true;
         }
 
         private static long Cash => Services.TryGet<PlayerProfile>(out var p) ? p.CashCents : 0;
@@ -256,7 +279,9 @@ namespace CTLife.Economy
         private VisualElement CoinRow(MarketCoin c, VisualElement extra)
         {
             var coin = c;
-            var row = new DuoRow(() => OpenCoin(coin.CoinId, null)).Leading(Duo.Avatar(c.Ticker, c.CoinId, "duo-avatar-s"))
+            bool player = FactoryPulse.IsPlayer(c);
+            if (player && extra == null) extra = FactoryPulse.RowExtra(c);
+            var row = new DuoRow(() => OpenCoin(coin.CoinId, null)).Leading(player ? FactoryPulse.Leading(c) : Duo.Avatar(c.Ticker, c.CoinId, "duo-avatar-s"))
                 .Title("$" + c.Ticker, "duo-row-title-strong")
                 .Subtitle(c.Name + " · " + MoneyStrings.F("pulse.mcap", MoneyFormat.Cash(c.McapCents, true)) + " · " + MoneyStrings.F("pulse.holders", c.Holders), twoLines: true);
             row.name = "pulse-coin-" + c.CoinId;
@@ -280,7 +305,8 @@ namespace CTLife.Economy
             foreach (var c in coins)
             {
                 VisualElement extra = null;
-                if (graduate > 0)
+                if (FactoryPulse.IsPlayer(c)) extra = FactoryPulse.RowExtra(c);   // player coins aim at 3x, not graduation
+                else if (graduate > 0)
                 {
                     // Display ratio of two server values (mcap vs the config threshold); not a money outcome.
                     float pct = Math.Max(0f, Math.Min(1f, (float)((double)c.McapCents / graduate)));
@@ -509,7 +535,13 @@ namespace CTLife.Economy
             var asset = El.Div("duo-perp-asset", Duo.Avatar(coin.Ticker, coin.CoinId, "duo-avatar-s"),
                 El.Text("$" + coin.Ticker + " · " + coin.Name, "duo-perp-asset-name"),
                 El.Text(MoneyStrings.T("pulse.stage." + coin.Stage), "duo-tag duo-tag-blue"));
-            _detailMarket.Add(asset);
+            if (FactoryPulse.IsPlayer(Hub.Market.Find(coin.CoinId) ?? coin))
+            {
+                var live = Hub.Market.Find(coin.CoinId);
+                if (live != null && live.TemplateId != null && coin.TemplateId == null) { coin.TemplateId = live.TemplateId; coin.PlayerLaunched = true; }
+                _detailMarket.Add(FactoryPulse.PageHeader(coin));
+            }
+            else _detailMarket.Add(asset);
             var hero = Duo.Hero("", MoneyFormat.Micros(coin.PriceMicros), MoneyFormat.Bps(coin.Change5mBps), coin.Change5mBps >= 0, MoneyStrings.T("perps.change5m"));
             hero.name = "pulse-hero";
             hero.AddToClassList("duo-pulse-hero");
@@ -645,6 +677,14 @@ namespace CTLife.Economy
             var ticket = _side == "buy"
                 ? Tickets.Buy(_coinId, _cashInput, Cash, minTrade, _slippageBps)
                 : Tickets.Sell(_coinId, _sellUnits, Held?.Units, _slippageBps);
+            // Rugpull Factory (brief beat 6): selling 30 %+ of your own coin's bag always gets the rug warning first
+            if (ticket.Ok && _side == "sell" && !_rugConfirmed && FactoryLaunchFlow.NeedsRugWarning(_factory != null && _factory.IsMine(_coinId), _sellPct))
+            {
+                var ticker = TickerOf(_coinId, null);
+                FactoryLaunchFlow.WarnRug(ticker, () => { _rugConfirmed = true; PlaceOrder(); }, () => { });
+                return;
+            }
+            _rugConfirmed = false;
             _orderStatus.Clear();
             if (!ticket.Ok)
             {
@@ -661,6 +701,7 @@ namespace CTLife.Economy
                 _tradeWrite.Complete();
                 _placing = false;
                 Bus.Publish(new SfxSignal(side == "sell" ? "sfx_sell" : "sfx_buy"));
+                if (side != "sell") Bus.Publish(new GameplayEventSignal { kind = GameplayEvents.TradeOpen, id = "pulse" });   // the first session
                 _orderReceipt.Clear();
                 _orderReceipt.Add(MoneyUi.Notice(MoneyStrings.T("pulse.receipt"), "good"));
                 _orderReceipt.Add(MoneyUi.Pair(MoneyStrings.T("pulse.unitsRow"), MoneyFormat.CoinUnits(receipt.Units)));

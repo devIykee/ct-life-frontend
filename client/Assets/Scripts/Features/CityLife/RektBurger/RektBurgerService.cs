@@ -38,7 +38,9 @@ namespace CTLife.CityLife.RektBurger
         public event Action ShiftChanged;
         public event Action<ShiftSummary> SummaryReady;
         /// <summary>The last shift read failed on the network (the HUD chip freezes pay and disables Clock out).</summary>
-        public bool Offline => _netDown || Application.internetReachability == NetworkReachability.NotReachable;
+        /// <summary>The last request failed, or the phone has no network. A local (USB, adb reverse) backend is reachable
+        /// without any network, so there only failed requests count.</summary>
+        public bool Offline => _netDown || (Application.internetReachability == NetworkReachability.NotReachable && Env.Current?.id != EnvId.Local);
         private bool _netDown;
         /// <summary>A Clock in / Clock out request is in flight (the counter prompt pulses).</summary>
         public bool Busy => _shiftBusy;
@@ -102,6 +104,7 @@ namespace CTLife.CityLife.RektBurger
                 Bus.Publish(new InteractionDoneSignal());
                 SetShift(s);
                 Log.Info("rektburger", "clocked in " + s?.ShiftId);
+                Bus.Publish(new GameplayEventSignal { kind = GameplayEvents.ShiftStart, id = "rekt_burger" });   // the first session
                 return true;
             }
             catch (Exception e)
@@ -310,6 +313,9 @@ namespace CTLife.CityLife.RektBurger
             RektBurgerHooks.Open = what => { if (!_disposed) RektCounterPrompt.Press(); };
             RektBurgerHooks.Prompt = RektCounterPrompt.Build;
             RektBurgerHooks.JobInfo = () => RetentionService.Opener?.Invoke("jobs");
+            // the crew uniform while on shift (cast player_m/f_rekt_crew over the player's own look)
+            UniformDirector.LocalLook = () => Services.TryGet<PlayerProfile>(out var p) ? p.LookArray() : null;
+            UniformDirector.Ensure();
             Bind();
         }
 

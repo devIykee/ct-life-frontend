@@ -14,6 +14,9 @@ from PIL import Image, ImageDraw
 import layout as L
 import render
 
+sys.path.insert(0, os.path.join(HERE, '..', '..'))
+import names_table as N   # noqa: E402  contract/ids/names.json: every venue name comes from the one table
+
 REPO = os.path.abspath(os.path.join(HERE, '..', '..', '..'))
 OUT = os.path.join(REPO, 'client', 'Assets', 'World', 'Island', 'Textures', 'Signs')
 
@@ -22,9 +25,11 @@ def main():
     os.makedirs(OUT, exist_ok=True)
     areas = {a['id']: a for a in json.load(open(os.path.join(REPO, 'client', 'Assets', 'Resources', 'UI', 'Map', 'areas.json')))['areas']}
     n = 0
-    items = [(vid, sh, (sh.get('sign') or areas.get(vid, {}).get('title') or vid.replace('_', ' ')).upper()) for vid, sh in L.SHELLS.items()]
+    items = [(vid, sh, N.upper('venue.' + vid) if N.has('venue.' + vid) else
+              (sh.get('sign') or areas.get(vid, {}).get('title') or vid.replace('_', ' ')).upper()) for vid, sh in L.SHELLS.items()]
     # sign_art: the board is drawn elsewhere (The Rug Room's neon board: art/source/casino, install.sh)
-    items += [(lb['id'], lb, lb['sign'] if lb['sign'] == lb['sign'].lower() else lb['sign'].upper()) for lb in getattr(L, 'LANDMARK_BUILDINGS', [])
+    items += [(lb['id'], lb, N.upper('venue.' + lb['id']) if N.has('venue.' + lb['id']) else
+               (lb['sign'] if lb['sign'] == lb['sign'].lower() else lb['sign'].upper())) for lb in getattr(L, 'LANDMARK_BUILDINGS', [])
               if lb.get('sign') and not lb.get('sign_art')]
     for vid, sh, title in items:
         W, H = 1024, 256
@@ -44,10 +49,20 @@ def main():
         d.text((W / 2, H / 2 + 4), title, font=f, fill=ink, anchor='mm')
         img.save(os.path.join(OUT, f'sign_{vid}.png'), optimize=True)
         n += 1
+    sign_route()
     shop_atlas()
     post_signs()
     event_banners()
     print(f'[signs] {n} signs + the shop-sign atlas in {OUT}', flush=True)
+
+
+def sign_route():
+    """The dev `signTour` launch extra's list (IslandWaypoints.SignTour): each venue with a facade board and where it stands."""
+    plan = json.load(open(os.path.join(HERE, 'out', 'plan.json')))
+    vs = [dict(id=v['id'], x=float(v['center'][0]), z=float(v['center'][1])) for v in plan['venues'] if v['id'] in L.SHELLS]
+    vs += [dict(id=lb['id'], x=float(lb['at'][0]), z=float(lb['at'][1])) for lb in getattr(L, 'LANDMARK_BUILDINGS', []) if lb.get('sign')]
+    p = os.path.join(REPO, 'client', 'Assets', 'Resources', 'World', 'Island', 'sign_route.json')
+    json.dump(dict(version=1, source='tools/world/islandgen/signs.py', venues=vs), open(p, 'w'), indent=1)
 
 
 # Ground-floor shop signs for downtown (W3 street life): small blade signs, 4 x 8 cells of 256 x 128 px in one atlas
@@ -94,7 +109,7 @@ NAVY, CORAL, WHITE = (24, 34, 82), (250, 128, 104), (248, 248, 250)
 
 def post_signs():
     for sid, lines, bg, ink in (('trail', ['SUMMIT TRAIL', '1.2 km  ^'], (110, 72, 44), (250, 240, 220)),
-                                ('checkpoint', ['CHECKPOINT 26', 'MAIN STAGE  >'], NAVY, WHITE)):
+                                ('checkpoint', [N.upper('venue.conference_hall'), 'MAIN STAGE  >'], NAVY, WHITE)):
         img = Image.new('RGB', (512, 256), bg)
         d = ImageDraw.Draw(img)
         if sid == 'trail':
@@ -105,7 +120,10 @@ def post_signs():
                 t = x / 511.0
                 d.line([(x, 220), (x, 256)], fill=tuple(int(CORAL[k] * t + NAVY[k] * (1 - t)) for k in range(3)))
         d.rectangle([10, 10, 501, 245], outline=ink, width=6)
-        d.text((256, 96), lines[0], font=render.font(64, True), fill=ink, anchor='mm')
+        size = 64
+        while size > 24 and d.textlength(lines[0], font=render.font(size, True)) > 450:
+            size -= 2
+        d.text((256, 96), lines[0], font=render.font(size, True), fill=ink, anchor='mm')
         d.text((256, 170), lines[1], font=render.font(40, True), fill=ink, anchor='mm')
         img.save(os.path.join(OUT, f'sign_post_{sid}.png'), optimize=True)
 
@@ -116,9 +134,13 @@ def event_banners():
     for x in range(1024):                                   # arch banner: navy to coral sweep
         t = x / 1023.0
         d.line([(x, 0), (x, 255)], fill=tuple(int(NAVY[k] * (1 - t * 0.85) + CORAL[k] * t * 0.85) for k in range(3)))
-    d.text((512, 110), 'CHECKPOINT 26', font=render.font(120, True), fill=WHITE, anchor='mm')
-    d.text((512, 205), 'SHIP IT  /  MEET BUILDERS  /  GM', font=render.font(40, True), fill=WHITE, anchor='mm')
-    for k, (title, sub) in enumerate((('CHECK', 'POINT'), ('SHIP', 'IT'), ('GM', 'BUILDERS'))):
+    title0 = N.upper('venue.conference_hall')      # the place's name from names.json (no invented event name)
+    size = 120
+    while size > 40 and d.textlength(title0, font=render.font(size, True)) > 960:
+        size -= 4
+    d.text((512, 110), title0, font=render.font(size, True), fill=WHITE, anchor='mm')
+    d.text((512, 205), 'TALKS  /  MEET BUILDERS  /  GM', font=render.font(40, True), fill=WHITE, anchor='mm')
+    for k, (title, sub) in enumerate((('TALKS', 'TODAY'), ('SHIP', 'IT'), ('GM', 'BUILDERS'))):
         x0 = k * 256
         for y in range(256, 1024):
             t = (y - 256) / 767.0
@@ -128,7 +150,6 @@ def event_banners():
             d.ellipse([x0 + 128 - 70 - r * 26, 560 - 70 - r * 26, x0 + 128 + 70 + r * 26, 560 + 70 + r * 26], outline=WHITE, width=3)
         d.text((x0 + 128, 360), title, font=render.font(62 if len(title) <= 5 else 54, True), fill=WHITE, anchor='mm')
         d.text((x0 + 128, 430), sub, font=render.font(46 if len(sub) <= 5 else 34, True), fill=WHITE, anchor='mm')
-        d.text((x0 + 128, 930), '26', font=render.font(70, True), fill=WHITE, anchor='mm')
         d.rectangle([x0 + 6, 262, x0 + 249, 1017], outline=WHITE, width=4)
     img.save(os.path.join(OUT, 'event_banners.png'), optimize=True)
 

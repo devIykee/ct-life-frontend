@@ -14,21 +14,8 @@ namespace CTLife.World
     [RequireComponent(typeof(InteriorRoom))]
     public sealed class RektBurgerCustomers : MonoBehaviour
     {
-        public static readonly string[] Lines =
-        {
-            "One Rug Burger, extra cope.",
-            "Fries please. I got liquidated.",
-            "Whatever's cheapest, I'm down 90%.",
-            "Diamond Hands Shake. Holding it till it melts.",
-            "Exit Liquidity Combo, to go. Fast.",
-            "Paper Hands Nuggets. I'll sell them halfway.",
-            "Can I pay in airdrop points?",
-            "Two Rekt Melts. One's for my bags.",
-            "Ser, this is a Rekt Burger. Large fries.",
-            "Bag Holder Wrap. Obviously.",
-            "Gas Fee Soda. Why is it more today?",
-            "Just a water. Shorted the top again.",
-        };
+        /// <summary>Order lines: the brand table's menu (RektBurgerMenu, contract/ids/brands.json).</summary>
+        public static IReadOnlyList<string> Lines => RektBurgerMenu.Lines;
 
         public const int MaxCustomers = 3;
         public const float Walk = 1.25f;
@@ -161,7 +148,7 @@ namespace CTLife.World
         {
             if (p.said) return;
             p.said = true;
-            string line = Lines[_nextLine++ % Lines.Length];
+            string line = Lines[_nextLine++ % Lines.Count];
             if (p.view.HeadAnchor != null) Bus.Publish(new BubbleSignal { anchor = p.view.HeadAnchor, text = line, isNpc = true, seconds = 4.5f });
             Debug.Log("CTLIFE [rekt-customers] order: " + line);
         }

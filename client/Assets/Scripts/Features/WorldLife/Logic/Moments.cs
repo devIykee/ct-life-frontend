@@ -1,3 +1,4 @@
+using CTLife.Core;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -112,7 +113,7 @@ namespace CTLife.WorldLife
             var crier = lines?.ResolveEvent(MoodKey(e.EventId, plan.MoodDirection), p, plan.EventKey)
                         ?? lines?.ResolveEvent(e.EventId, p, plan.EventKey);
             plan.CrierText = crier?.Text;
-            plan.TimelineText = plan.CrierText ?? WireText.Str(cfg, "label");
+            plan.TimelineText = plan.CrierText ?? NameTable.Apply(WireText.Str(cfg, "label"));
 
             string crowdKey = plan.MoodDirection > 0 ? "crowdUp" : plan.MoodDirection < 0 ? "crowdDown" : "crowd";
             var anims = WireText.Strs(cfg[crowdKey]);

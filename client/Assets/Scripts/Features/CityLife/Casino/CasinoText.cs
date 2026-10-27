@@ -77,7 +77,9 @@ namespace CTLife.CityLife.Casino
             ["flip.lost"] = "{0}. Not this time.",
             ["flip.h2h"] = "HEAD-TO-HEAD",
             ["flip.challenge"] = "Challenge a friend",
-            ["flip.h2hNote"] = "Both stakes make the pot; the winner takes it minus a {0}% house cut. {1} s to accept.",
+            ["flip.h2hNote"] = "Bragging rights only: no Cash changes hands. They get {0} s to accept.",
+            ["flip.h2hWon"] = "{0}! You win the flip.",
+            ["flip.h2hLost"] = "{0}. They take this one.",
             ["flip.incoming"] = "INCOMING",
             ["flip.outgoing"] = "SENT",
             ["flip.recent"] = "RECENT",
@@ -90,18 +92,18 @@ namespace CTLife.CityLife.Casino
             ["flip.youChallenge"] = "@{0} · {1} · you're {2}",
             ["flip.youAre"] = "you're {0}",
             ["flip.expiresIn"] = "{0}s",
-            ["flip.status.settled.won"] = "Won {0}",
+            ["flip.status.settled.won"] = "You won",
             ["flip.status.settled.lost"] = "Lost",
-            ["flip.status.expired"] = "Expired · refunded",
-            ["flip.status.declined"] = "Declined · refunded",
-            ["flip.status.cancelled"] = "Cancelled · refunded",
+            ["flip.status.expired"] = "Expired",
+            ["flip.status.declined"] = "Declined",
+            ["flip.status.cancelled"] = "Cancelled",
             ["flip.pick"] = "Who do you want to flip?",
-            ["flip.pickSub"] = "{0} each · you're {1}. They get 120 s to accept; otherwise your stake comes back.",
+            ["flip.pickSub"] = "You're {0}. Bragging rights only, no Cash. They get 120 s to accept.",
             ["flip.pickNone"] = "Nobody to challenge yet: send someone a DM first (Messages).",
             ["flip.send"] = "SEND CHALLENGE",
             ["flip.sent"] = "Challenge sent to @{0}",
-            ["flip.toast"] = "@{0} challenged you to a {1} coinflip",
-            ["flip.expired"] = "That challenge expired; the stake was refunded.",
+            ["flip.toast"] = "@{0} challenged you to a coinflip",
+            ["flip.expired"] = "That challenge expired.",
             ["flip.anon"] = "player",
 
             // fairness
@@ -174,7 +176,8 @@ namespace CTLife.CityLife.Casino
             ["err.RATE_LIMITED"] = "Easy: one bet at a time.",
         };
 
-        public static string T(string key) => En.TryGetValue(key, out var v) ? v : key;
+        public static string T(string key) => key == "app.title" || key == "app.label" ? NameTable.Get("app.rugroom", "Casino")   // the title is the name itself
+            : En.TryGetValue(key, out var v) ? NameTable.Apply(v) : key;
         public static string F(string key, params object[] args) => string.Format(CultureInfo.InvariantCulture, T(key), args);
         public static bool Has(string key) => En.ContainsKey(key);
 

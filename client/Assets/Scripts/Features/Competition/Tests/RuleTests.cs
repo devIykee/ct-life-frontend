@@ -188,7 +188,7 @@ namespace CTLife.Competition.Tests
         [Test] public void InviteAndJailAndUnknown()
         {
             StringAssert.Contains("invited", GateRules.Message(new VenueAccess { ReasonCode = "INVITE_REQUIRED" }));
-            StringAssert.Contains("Sybil", GateRules.Message(new VenueAccess { ReasonCode = "SYBIL_JAILED" }));
+            StringAssert.Contains(CTLife.Core.NameTable.Get("venue.sybil_barn", "Sybil Barn"), GateRules.Message(new VenueAccess { ReasonCode = "SYBIL_JAILED" }));
             Assert.AreEqual(CompStrings.T("gate.denied"), GateRules.Message(new VenueAccess { ReasonCode = "SOMETHING_NEW" }));
         }
         // Device (Railway staging, backend 91c0edc venues-gating.ts): the server's own codes for cabal_lounge and sybil_barn

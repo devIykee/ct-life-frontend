@@ -160,7 +160,7 @@ namespace CTLife.Tests
         }
 
         [Test]
-        public void CloseCollisionLift_HidesAvatarUntilTheBoomRecovers()
+        public void CloseCollisionLift_KeepsTheLensOutOfTheAvatarUntilTheBoomRecovers()
         {
             var visibleBody = _actor.AddComponent<MeshRenderer>();
             _rig.Target = _actor.transform; // Include the real renderer in the camera's visibility ownership.
@@ -179,7 +179,10 @@ namespace CTLife.Tests
                 Assert.Greater(cameraOffset.y, .6f, "the existing close-obstacle lift must still operate");
                 Assert.Greater(cameraOffset.magnitude, CameraRig.HideWithin,
                     "lift places the lens outside the old pivot-distance hide test despite the shortened boom");
-                Assert.IsTrue(visibleBody.forceRenderingOff, "a lifted close-up must not show the inside of the avatar");
+                // motion + camera pass (2026-10-26): the lens keeps clear of the body instead of hiding it
+                Assert.GreaterOrEqual(CameraRig.BodyDistance(_camera.transform.position, _actor.transform.position), CameraRig.MinBodyDistance - 0.01f,
+                    "a lifted close-up never puts the lens inside the avatar");
+                Assert.IsFalse(visibleBody.forceRenderingOff, "kept clear of the body, the player stays visible");
 
                 Object.DestroyImmediate(wall);
                 Physics.SyncTransforms();

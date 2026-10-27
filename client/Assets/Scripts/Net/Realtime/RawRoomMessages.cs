@@ -26,6 +26,8 @@ namespace CTLife.Net
             // Sleuth heat + police (backend PR #17): a pursuit starts / ends, CT Jail (HeatService); the street room sends the
             // pursuit pair to bystanders too and the vehicles room the stolen / returned pair (both forwarded here)
             "police_pursuit", "police_pursuit_end", "jailed", "released",
+            // group chats (backend #33): a message in one of my groups / a direct invite (GroupsController)
+            "group_msg", "group_invite",
         };
 
         /// <summary>The server also broadcasts these on every `ratio_arena` venue instance (the feed drops the duplicate).</summary>

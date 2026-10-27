@@ -283,7 +283,7 @@ namespace CTLife.CityLife.Heat
     {
         private static readonly Dictionary<string, string> S = new Dictionary<string, string>
         {
-            ["level.cool"] = "COOL", ["level.warm"] = "WARM", ["level.hot"] = "HOT", ["level.wanted"] = "WANTED",
+            ["level.cool"] = "WANTED LEVEL", ["level.warm"] = "WANTED", ["level.hot"] = "WANTED", ["level.wanted"] = "WANTED",   // approved names 2026-10-26: a wanted level (stars), not COOL/WARM/HOT
             ["steal.verb"] = "Steal", ["steal.tag"] = "+{0} heat",
             ["steal.confirmTitle"] = "Not your ride", ["steal.confirmBody"] = "This {0} belongs to another player. Taking it adds {1} Sleuth heat, and it goes back to its owner when you get out.",
             ["steal.confirm"] = "Steal it", ["steal.cancel"] = "Leave it",
@@ -295,16 +295,20 @@ namespace CTLife.CityLife.Heat
             ["pursuit.escaped"] = "Heat cooled.", ["pursuit.caught"] = "BUSTED",
             ["passed.escaped"] = "LOST THEM", ["passed.free"] = "FREE",
             ["pursuit.nearby"] = "Police chase nearby",
-            ["jail.title"] = "Compliance Jail", ["jail.sub"] = "Booked by The Sleuth", ["jail.left"] = "Release in", ["jail.bail"] = "PAY BAIL · {0}",
+            ["jail.title"] = "CT Jail", ["jail.sub"] = "Booked by The Sleuth", ["jail.left"] = "Release in", ["jail.bail"] = "PAY BAIL · {0}",
             ["jail.rules"] = "You're in {0}. No launches, buys, perps, bets, cars or other venues until you're out. Selling still works.",
             ["steal.help"] = "This {0} belongs to another player. Steal it? {1}",
             ["jail.body"] = "No coin launches, buys, new perps, casino bets, cars or other venues until you're out. Selling and closing positions still work.",
-            ["jail.paying"] = "PAYING…", ["jail.free"] = "Out of Compliance Jail. Watch your heat.", ["jail.blocked"] = "You're in CT Jail ({0} left). Pay bail to get out.",
+            ["jail.paying"] = "PAYING…", ["jail.free"] = "Out of CT Jail. Watch your heat.", ["jail.blocked"] = "You're in CT Jail ({0} left). Pay bail to get out.",
             ["bail.short"] = "Not enough Cash for bail. Wait it out.", ["err.rate"] = "Too fast. Try again in a moment.", ["err.generic"] = "Something went wrong.",
-            ["explain.title"] = "Sleuth heat", ["explain.body"] = "Stealing cars and rugging coins heats you up. When you hit WANTED, The Sleuth sends cruisers. Get away, or do time in Compliance Jail.",
+            // v2 cards (2026-10-27, mockup c)
+            ["bail.title"] = "Bail out of CT Jail?", ["bail.sub"] = "Pay now and walk out, or wait it out for free.", ["bail.label"] = "Bail", ["bail.free"] = "Free in",
+            ["bail.pay"] = "Pay {0}", ["bail.wait"] = "Wait it out", ["bail.short.btn"] = "Bail",
+            ["steal.title"] = "Steal this {0}?", ["steal.body"] = "It belongs to another player. The police will notice.",
+            ["explain.title"] = "Sleuth heat", ["explain.body"] = "Stealing cars and rugging coins heats you up. When you hit WANTED, The Sleuth sends cruisers. Get away, or do time in CT Jail.",
         };
 
-        public static string T(string key) => S.TryGetValue(key, out var v) ? v : key;
+        public static string T(string key) => S.TryGetValue(key, out var v) ? NameTable.Apply(v) : key;
         public static string F(string key, params object[] args) => string.Format(System.Globalization.CultureInfo.InvariantCulture, T(key), args);
     }
 }

@@ -1,3 +1,4 @@
+using CTLife.Core;
 using System.Collections.Generic;
 using System.Globalization;
 
@@ -46,7 +47,7 @@ namespace CTLife.UI
             ["5.a"] = "Last quarter profit", ["5.b"] = "This quarter profit", ["5.note"] = "Current diluted share count: {0}k. Divide this quarter’s profit by current shares.",
             ["5.reason"] = "This quarter’s {1} profit ÷ {3}k current shares = {2}. Higher total profit alone does not tell you what each share earns."
         };
-        public static string T(string key) => Copy.TryGetValue(key, out string value) ? value : key;
+        public static string T(string key) => Copy.TryGetValue(key, out string value) ? NameTable.Apply(value) : key;
         public static string F(string key, params object[] values) => string.Format(CultureInfo.CurrentCulture, T(key), values);
         public static string Option(EarningsReport report, decimal value)
         {

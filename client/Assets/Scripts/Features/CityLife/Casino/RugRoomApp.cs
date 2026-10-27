@@ -95,7 +95,7 @@ namespace CTLife.CityLife.Casino
                 _today = CityUi.Text("");
                 Body.Add(_today);
                 Body.Add(Duo.SectionHeader("Games"));
-                foreach (var (game, title, icon) in new[] { (CasinoHooks.Slots, "Slots", "rocket"), (CasinoHooks.Crash, "Moon or Rug", "rug"), (CasinoHooks.Coinflip, "Coinflip", "diamond_hands") })
+                foreach (var (game, title, icon) in new[] { (CasinoHooks.Slots, "Slots", "rocket"), (CasinoHooks.Crash, NameTable.Get("game.crash", "Moon or Rug"), "rug"), (CasinoHooks.Coinflip, "Coinflip", "diamond_hands") })
                 {
                     var g = game;
                     var row = RugRoomSheet.Btn("", () => Open(g), "duo-comp-pair");

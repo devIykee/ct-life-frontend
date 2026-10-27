@@ -137,6 +137,9 @@ namespace CTLife.CityLife
         public string Date, Week;
         public long DailyResetsAtMs, WeeklyResetsAtMs;
         public readonly List<Quest> Daily = new List<Quest>(), Weekly = new List<Quest>();
+        /// <summary>The one-time starter quests (backend #24, pool "starter": first shift / first trade / GM chest). Empty for
+        /// accounts created before the onboarding migration and on older servers.</summary>
+        public readonly List<Quest> Starter = new List<Quest>();
 
         public static QuestBoard Parse(JToken t)
         {
@@ -147,12 +150,16 @@ namespace CTLife.CityLife
             b.Week = CityWire.Str(w?["week"]); b.WeeklyResetsAtMs = CityWire.TimeMs(w?["resetsAt"]) ?? 0;
             foreach (var q in CityWire.List(d, "quests")) b.Daily.Add(Quest.Parse(q));
             foreach (var q in CityWire.List(w, "quests")) b.Weekly.Add(Quest.Parse(q));
+            var st = t["starter"];
+            if (st != null && st.Type != JTokenType.Null)
+                try { foreach (var q in CityWire.List(st, "quests")) b.Starter.Add(Quest.Parse(q)); } catch (FormatException) { }
             b.Weekly.Sort((x, y) => x.Step.CompareTo(y.Step));
             return b;
         }
 
         public Quest Find(string id)
         {
+            foreach (var q in Starter) if (q.Id == id) return q;
             foreach (var q in Daily) if (q.Id == id) return q;
             foreach (var q in Weekly) if (q.Id == id) return q;
             return null;
@@ -160,7 +167,7 @@ namespace CTLife.CityLife
 
         public int DailyDone { get { int n = 0; foreach (var q in Daily) if (q.Completed) n++; return n; } }
         public int WeeklyDone { get { int n = 0; foreach (var q in Weekly) if (q.Completed) n++; return n; } }
-        public int Claimable { get { int n = 0; foreach (var q in Daily) if (q.Claimable) n++; foreach (var q in Weekly) if (q.Claimable) n++; return n; } }
+        public int Claimable { get { int n = 0; foreach (var q in Starter) if (q.Claimable) n++; foreach (var q in Daily) if (q.Claimable) n++; foreach (var q in Weekly) if (q.Claimable) n++; return n; } }
 
         /// <summary>The weekly chain is walked in order: the first unclaimed step is the one in play.</summary>
         public Quest CurrentWeekly
@@ -215,6 +222,8 @@ namespace CTLife.CityLife
             ["jobs"] = "jobs", ["perps"] = "perps", ["predictions"] = "predict", ["alpha"] = "pulse", ["calls"] = "calls",
             ["timeline"] = "timeline", ["neighbours"] = "map", ["neighbors"] = "map", ["home"] = "home", ["daily-clue"] = "week",
             ["events"] = "week", ["shop"] = "shop", ["duoshop"] = "duoshop",
+            // the starter quests (backend #24): the first trade opens Pulse, the GM chest opens Quests (the chest sheet)
+            ["pulse"] = "pulse", ["chest"] = QuestsApp,
         };
 
         /// <summary>The app id for a link, or null. Accepts `ctlife://jobs`, `ctlife://jobs/...` and `ctlife://jobs?x=1`.</summary>

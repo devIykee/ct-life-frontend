@@ -150,7 +150,7 @@ namespace CTLife.CityLife
         {
             0 => ("Validator Row", "Stake with the city", "#19c6b5"),
             1 => ("Duo", "The phone is the wallet", "#0a7cff"),
-            2 => ("Perp Pit", "Leverage, responsibly", "#2bd96b"),
+            2 => (NameTable.Get("venue.perp_pit", "Perp Pit"), "Leverage, responsibly", "#2bd96b"),
             3 => ("Buildooor Station", "Ship before the keynote", "#ff8a3d"),
             4 => ("Timeline", "Post it before it is alpha", "#a68bff"),
             _ => ("CT Parcel", "Same-day, door to door", "#0a54db"),

@@ -24,6 +24,10 @@ namespace CTLife.UI
         public VisualElement PhoneLayer { get; private set; }
         public VisualElement ModalLayer { get; private set; }
         public VisualElement ToastLayer { get; private set; }
+        /// <summary>The design system's one modal host (scrim + dialog/sheet/screen + back) and its toast channel.</summary>
+        public VisualElement DsModalLayer { get; private set; }
+        public CTLife.UI.DS.DsModalHost Modals { get; private set; }
+        public CTLife.UI.DS.DsToastHost Toasts { get; private set; }
 
 #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
         private Dev.QaUiSnapshotExporter _qaUi;
@@ -104,6 +108,9 @@ namespace CTLife.UI
                 var detailSheet = Resources.Load<StyleSheet>("UI/" + name);
                 if (detailSheet != null) Root.styleSheets.Add(detailSheet);
             }
+            // The design system (approved 2026-10-26) loads last so its ds-* components win over older generic rules.
+            // Loaded here rather than by a TSS @import, so nothing depends on how imports resolve in a player build.
+            CTLife.UI.DS.Ds.Ensure(Root);
 
             WorldLayer = Layer("layer-world", PickingMode.Position);
             LabelLayer = Layer("layer-labels", PickingMode.Ignore);
@@ -113,7 +120,10 @@ namespace CTLife.UI
             ScreenLayer = Layer("layer-screens", PickingMode.Ignore);
             PhoneLayer = Layer("layer-phone", PickingMode.Ignore);
             ModalLayer = Layer("layer-modal", PickingMode.Ignore);
+            DsModalLayer = Layer("layer-ds-modal", PickingMode.Ignore);
             ToastLayer = Layer("layer-toast", PickingMode.Ignore);
+            Modals = new CTLife.UI.DS.DsModalHost(DsModalLayer);
+            Toasts = new CTLife.UI.DS.DsToastHost(ToastLayer);
             WorldInputLayer.Attach(WorldLayer);
             UiFontWarmup.Run(Root);   // glyphs and kerning before play: no mid-game font-atlas hitches
             Root.RegisterCallback<GeometryChangedEvent>(_ => ApplySafeArea(true));
@@ -157,7 +167,7 @@ namespace CTLife.UI
             _lastSafeArea = sa;
             _lastPanelSize = size;
             float sx = size.x / Screen.width, sy = size.y / Screen.height;
-            foreach (var layer in new[] { HudLayer, ScreenLayer, PhoneLayer, ModalLayer, ToastLayer })
+            foreach (var layer in new[] { HudLayer, ScreenLayer, PhoneLayer, ModalLayer, DsModalLayer, ToastLayer })
             {
                 layer.style.top = Mathf.Max(0f, Screen.height - sa.yMax) * sy;
                 layer.style.bottom = Mathf.Max(0f, sa.yMin) * sy;

@@ -268,7 +268,9 @@ namespace CTLife.World
                 _nextScan = Time.unscaledTime + 0.1f;
                 if (_focused != null && (!_occupancy.IsFree(_focused, Me) || InteractionFinder.Flat(transform.position, _focused.approach) > InteractionFinder.FocusRange)) _focused = null;
                 var fwd = transform.forward;
-                Offered = Machine.Phase == InteractionPhase.Idle && !_view.SeatPresentationActive && !_local.InVehicle
+                // A world offer marked overSeats (the Launchpad Tower's launch desk) wins over the seat it stands at.
+                var ext = Machine.Phase == InteractionPhase.Idle && !_local.InVehicle && !_view.SeatPresentationActive ? WorldOffers.Best(transform.position) : null;
+                Offered = Machine.Phase == InteractionPhase.Idle && !_view.SeatPresentationActive && !_local.InVehicle && (ext == null || !ext.overSeats)
                     ? InteractionFinder.Best(transform.position, fwd, _catalog, it => _occupancy.IsFree(it, Me), Offered, _focused)
                     : null;
                 // Feel lane F2: a free vehicle beside the player offers Drive / Ride / Fly unless a seat is nearer.
@@ -279,8 +281,7 @@ namespace CTLife.World
                 _vehicleOffer = offer;
                 _lockedOffer = offer == null && Offered == null && Machine.Phase == InteractionPhase.Idle && vehicles != null && !_local.InVehicle &&
                     vehicles.Driving == null ? vehicles.LockedOffer : null;
-                _extOffer = offer == null && _lockedOffer == null && Offered == null && Machine.Phase == InteractionPhase.Idle && !_local.InVehicle &&
-                    !_view.SeatPresentationActive ? WorldOffers.Best(transform.position) : null;
+                _extOffer = offer == null && _lockedOffer == null && Offered == null ? ext : null;
                 Publish(force: false);
             }
             UpdateHighlight();

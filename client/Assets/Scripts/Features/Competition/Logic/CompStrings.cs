@@ -1,3 +1,4 @@
+using CTLife.Core;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -373,7 +374,7 @@ namespace CTLife.Competition
 
         public static bool Has(string key) => key != null && En.ContainsKey(key);
 
-        public static string T(string key) => key != null && En.TryGetValue(key, out var v) ? v : key ?? "";
+        public static string T(string key) => key != null && En.TryGetValue(key, out var v) ? NameTable.Apply(v) : key ?? "";
 
         public static string F(string key, params object[] args)
         {

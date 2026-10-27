@@ -40,6 +40,8 @@ namespace CTLife.World
         public Mesh[] PlaceholderLods { get; private set; }
         public bool Talking { get; private set; }
         public int LodTier { get; set; }
+        /// <summary>Nearness rank among all avatars (0 = nearest to the player; the local player is ranked too), set by AvatarLod.</summary>
+        public int CrowdRank { get; set; }
         public bool Culled { get; set; }
         public bool HasLodAssignment { get; private set; }
         /// <summary>Enabled renderers, not proof of frustum visibility or submitted draw calls.</summary>
@@ -268,6 +270,28 @@ namespace CTLife.World
         internal void ReapplySeatExitPresentation() => _seatExit?.ApplyPose();
         private void OnApplicationPause(bool paused) { if (paused) CancelSeatExitPresentation(); }
         private void OnApplicationFocus(bool focused) { if (!focused) CancelSeatExitPresentation(); }
+
+        /// <summary>
+        /// Swap the visual model in place (an outfit such as the Rekt Burger crew uniform, 2026-10-25): the actor, its colliders,
+        /// voice, name tag and server pose stay; the new model's Animator and body take over and replay the current base anim.
+        /// The previous model is the caller's (AvatarOutfit keeps it hidden for a quick restore).
+        /// </summary>
+        public void ReplaceModel(Animator animator, SkinnedMeshRenderer body)
+        {
+            if (animator == null) return;
+            if (SeatTransitionActive) CancelSeatTransition();
+            if (_runCorrection != null) { Destroy(_runCorrection); _runCorrection = null; }
+            Animator = animator;
+            Body = body;
+            PlaceholderLods = null;
+            _renderers = GetComponentsInChildren<Renderer>(false);
+            _rendererEnabledAtInit = new bool[_renderers.Length];
+            for (int i = 0; i < _renderers.Length; i++) _rendererEnabledAtInit[i] = _renderers[i].enabled;
+            _lodGroup = null; _lodGroupChecked = false;
+            if (animator.transform.parent == transform) { _modelBaseLocal = animator.transform.localPosition; _hasModelBase = true; }
+            ReplayBase();
+            if (HasLodAssignment) ApplyLod(LodTier, Culled, AvatarLod.ThermalScale);
+        }
 
         /// <summary>Exact prefab/Avatar/clip profile; absent data leaves ordinary animation unchanged.</summary>
         public bool BindRunCorrection(SnowRunCorrectionProfile profile,GameObject sourcePrefab)

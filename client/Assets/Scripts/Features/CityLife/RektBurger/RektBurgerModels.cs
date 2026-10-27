@@ -1,3 +1,4 @@
+using CTLife.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +13,7 @@ namespace CTLife.CityLife.RektBurger
     /// </summary>
     public sealed class RbState
     {
-        public string JobId = "rekt-burger", Name = "Rekt Burger", VenueId = "the_trenches", PropId = "rekt_burger_counter";
+        public string JobId = "rekt-burger", Name = NameTable.Get("job.rekt_burger", "Rekt Burger"), VenueId = "the_trenches", PropId = "rekt_burger_counter";
         public bool Unlocked, Employed, HasUniform;
         public string Reason;                     // trencher | broke | liquidated | null
         public long HintCashCents, HintDebtCents, BrokeCashAtMost, LiquidationCashBelow;
@@ -33,7 +34,7 @@ namespace CTLife.CityLife.RektBurger
             var s = new RbState
             {
                 JobId = CityWire.Str(t["jobId"]) ?? "rekt-burger",
-                Name = CityWire.Plain(t["name"], 40) is string n && n.Length > 0 ? n : "Rekt Burger",
+                Name = CityWire.Plain(t["name"], 40) is string n && n.Length > 0 ? NameTable.Apply(n) : NameTable.Get("job.rekt_burger", "Rekt Burger"),
                 VenueId = CityWire.Str(t["venueId"]) ?? "the_trenches",
                 PropId = CityWire.Str(t["propId"]) ?? "rekt_burger_counter",
                 Unlocked = CityWire.BoolOr(t["unlocked"], false),

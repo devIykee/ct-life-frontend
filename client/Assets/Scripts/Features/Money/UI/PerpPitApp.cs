@@ -435,6 +435,7 @@ namespace CTLife.Economy
             RenderTradeControls();
             Run(ct => Hub.Api.OpenPerp(body, key, ct), perp =>
             {
+                Bus.Publish(new GameplayEventSignal { kind = GameplayEvents.TradeOpen, id = "perps" });   // the first session
                 _openWrite.Complete();
                 _opening = false;
                 Hub.Market.Remember(perp.CoinId, perp.Ticker);

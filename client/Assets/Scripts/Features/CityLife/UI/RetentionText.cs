@@ -67,7 +67,7 @@ namespace CTLife.CityLife
             ["toast.progress"] = "{0} {1}/{2}",
         };
 
-        public static string T(string key) => En.TryGetValue(key, out var v) ? v : key;
+        public static string T(string key) => En.TryGetValue(key, out var v) ? NameTable.Apply(v) : key;
         public static string F(string key, params object[] args) => string.Format(CultureInfo.InvariantCulture, T(key), args);
         public static string Money(long cents) => CTLife.Core.Money.Cash(cents);
     }

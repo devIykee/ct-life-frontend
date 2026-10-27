@@ -1,4 +1,7 @@
-/* CT Life · city HUD (2026-10-17, map/HUD job). The Arena lobby's language kept minimal: dark plum glass, Lilita One,
+/* CT Life · city HUD. ON-FOOT HUD MIGRATED to the design system 2026-10-26: plate, Cash/wallet, rounds, jump, minimap
+   caption, ladder chip and joystick take their look from Resources/UI/DS (ds-* classes set in Hud.cs); rules here are
+   layout only for those. The vehicle cluster, chat/emotes and the needs card are still the old look (next steps).
+   (Originally 2026-10-17, map/HUD job.) The Arena lobby's language kept minimal: dark plum glass, Lilita One,
    Icons8 fluent icons, thick plum outlines. Corners: plate (TL), Cash/wallet (T), minimap + Duo (TR), joystick (BL),
    round context actions (BR). The world stays open in the middle. Panel units on a 1080 short axis; HUD layer is safe-area inset. */
 /* Each HUD button below sets its own look; only the kit's depth bars are dropped. */
@@ -7,90 +10,71 @@
 
 /* ---------------------------------------------------------------- top-left plate */
 .hud-recovery-veil { position: absolute; left: 0; right: 0; top: 0; bottom: 0; background-color: var(--ct-deep); opacity: 0; }
-.ct-hud.hud-arena .hud-plate-row { position: absolute; left: 28px; top: 22px; flex-direction: row; align-items: flex-start; }
-.ct-hud.hud-arena .hud-plate, .ct-hud.hud-arena .hud-plate:hover, .ct-hud.hud-arena .hud-plate:active, .ct-hud.hud-arena .hud-plate:focus {
-    position: relative; left: auto; right: auto; top: auto; flex-direction: row; align-items: center; height: 108px; min-height: 108px; padding: 0 28px 0 0; margin: 0 14px 0 0;
-    border-radius: 54px; border-width: 3px; border-color: rgba(255,255,255,0.14); background-color: rgba(20,6,44,0.78);
-}
-.ct-hud.hud-arena .ct-needs-alert { border-color: rgb(255,59,92); }
-.ct-hud.hud-arena .ct-needs-open { border-color: rgb(61,220,132); }
-.hud-avatar {
-    width: 108px; height: 108px; border-radius: 54px; border-width: 6px; border-color: rgb(255,255,255); margin: -3px 18px -3px -3px;
-    background-color: rgb(93,52,200); -unity-background-scale-mode: scale-and-crop; align-items: center; justify-content: center; overflow: hidden;
-}
-.hud-avatar-letter { -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 50px; color: rgb(255,255,255); -unity-text-align: middle-center; padding: 0; margin: 0; }
+.ct-hud.hud-arena .hud-plate-row { position: absolute; left: 40px; top: 28px; flex-direction: column; align-items: flex-start; }
+/* v2 plate: the avatar tile, then the name pill beside it */
+.ct-hud.hud-arena .hud-plate-pill { margin-left: 20px; }
+.ct-hud.hud-arena .hud-plate-row-top { flex-direction: row; align-items: flex-start; }
+/* the dream ladder chip (queue 18): current rung -> next, a thin bar; Trophy Road's "you are here" in our pill tokens */
+.ct-hud .hud-ladder, .ct-hud .hud-ladder:hover, .ct-hud .hud-ladder:active, .ct-hud .hud-ladder:focus { margin: 10px 0 0 0; flex-direction: column; align-items: stretch; transition-property: scale, border-color, opacity, translate; transition-duration: 0.2s; }
+.ct-hud .hud-ladder.hud-off { opacity: 0; translate: -20px 0; }
+.ct-hud .hud-ladder--pulse { scale: 1.06 1.06; }
+.ct-hud .hud-ladder-row { flex-direction: row; align-items: center; }
+.ct-hud .hud-ladder-row .ct-icon { width: 26px; height: 26px; margin-right: 8px; }
+.ct-hud .hud-ladder-from { margin: 0; }
+.ct-hud .hud-ladder-arrow { margin: 0 6px; }
+.ct-hud .hud-ladder-to { margin: 0; }
+.ct-hud .hud-ladder-track { height: 6px; margin-top: 6px; }
+.ct-hud .hud-ladder-fill { height: 6px; width: 0; transition-property: width; transition-duration: 0.4s; }
+.ct-hud .hud-ladder--top .hud-ladder-to { }
+.ct-hud.hud-arena .hud-plate, .ct-hud.hud-arena .hud-plate:hover, .ct-hud.hud-arena .hud-plate:active, .ct-hud.hud-arena .hud-plate:focus { position: relative; left: auto; right: auto; top: auto; flex-direction: row; align-items: center; margin: 0 14px 0 0; }
+.ct-hud.hud-arena .ct-needs-alert { }
+.ct-hud.hud-arena .ct-needs-open { }
+.hud-avatar { align-items: center; justify-content: center; overflow: hidden; }
+.hud-avatar-letter { padding: 0; }
 .hud-plate-copy { justify-content: center; }
 .hud-meters { }
 .hud-meter { flex-direction: row; align-items: center; height: 34px; }
-.hud-meter-icon { width: 30px; height: 30px; margin-right: 10px; -unity-background-scale-mode: scale-to-fit; }
-.hud-meter-track { width: 132px; height: 13px; border-radius: 7px; background-color: rgba(255,255,255,0.2); overflow: hidden; }
-.hud-meter-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; border-radius: 7px; }
-.hud-meter-fill--energy { background-color: rgb(255,210,63); }
-.hud-meter-fill--sanity { background-color: rgb(255,126,182); }
-.hud-meter-fill--low { background-color: rgb(255,59,92); }
-.ct-hud.hud-arena .hud-needs-summary { font-size: 18px; color: rgb(255,170,160); -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); margin: 2px 0 0 0; white-space: nowrap; display: none; }
+.hud-meter-icon { width: 30px; height: 30px; margin-right: 10px; }
+.hud-meter-track { width: 132px; height: 13px; overflow: hidden; }
+.hud-meter-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; }
+.hud-meter-fill--energy { }
+.hud-meter-fill--sanity { }
+.hud-meter-fill--low { }
+.ct-hud.hud-arena .hud-needs-summary { margin: 2px 0 0 0; white-space: nowrap;  }
 
 /* Small round utilities (Lobby, Duo). */
-.ct-hud.hud-arena .ct-dock-action, .ct-hud.hud-arena .ct-dock-action:hover, .ct-hud.hud-arena .ct-dock-action:active, .ct-hud.hud-arena .ct-dock-action:focus {
-    width: 112px; min-width: 112px; height: 138px; min-height: 138px; margin: 0 6px; padding: 0; align-items: center; justify-content: flex-start;
-    background-color: rgba(0,0,0,0); border-width: 0; border-radius: 0;
-}
-.ct-hud.hud-arena .ct-hud-keycap {
-    width: 104px; height: 104px; border-radius: 52px; border-width: 4px; border-color: rgb(42,11,74);
-    background-color: rgba(20,6,44,0.82); align-items: center; justify-content: center;
-}
-.ct-hud.hud-arena .hud-icon { width: 58px; height: 58px; -unity-background-scale-mode: scale-to-fit; }
-.ct-hud.hud-arena .ct-dock-label {
-    width: 140px; margin-top: 4px; font-size: 21px; color: rgb(255,255,255); -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf");
-    -unity-text-align: upper-center; -unity-text-outline-width: 2px; -unity-text-outline-color: rgb(42,11,74); text-shadow: 0 2px 0 rgb(42,11,74); white-space: nowrap;
-}
-.ct-hud.hud-arena .ct-dock-action:focus .ct-hud-keycap { border-color: rgb(61,220,132); }
+.ct-hud.hud-arena .ct-dock-action, .ct-hud.hud-arena .ct-dock-action:hover, .ct-hud.hud-arena .ct-dock-action:active, .ct-hud.hud-arena .ct-dock-action:focus { margin: 0 6px; padding: 0; align-items: center; justify-content: flex-start; }
+.ct-hud.hud-arena .ct-hud-keycap { align-items: center; justify-content: center; }
+.ct-hud.hud-arena .hud-icon { width: 58px; height: 58px; }
+.ct-hud.hud-arena .ct-dock-label { width: 140px; margin-top: 4px; white-space: nowrap; }
+.ct-hud.hud-arena .ct-dock-action:focus .ct-hud-keycap { }
 .ct-hud.hud-arena .ct-dock-action:disabled { opacity: 0.6; }
-.ct-hud.hud-arena .ct-dock-action.ct-btn-live .ct-hud-keycap { background-color: rgb(61,220,132); border-color: rgb(42,11,74); }
-.ct-hud.hud-arena .ct-dock-primary .ct-hud-keycap { background-color: rgb(43,44,49); }
-.ct-hud.hud-arena .ct-hud-badge {
-    position: absolute; right: 2px; top: -6px; min-width: 40px; height: 40px; padding: 0 8px; border-radius: 20px;
-    background-color: rgb(255,59,92); border-width: 4px; border-color: rgb(42,11,74);
-    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 22px; color: rgb(255,255,255); -unity-text-align: middle-center;
-}
+.ct-hud.hud-arena .ct-dock-action.ct-btn-live .ct-hud-keycap { }
+.ct-hud.hud-arena .ct-dock-primary .ct-hud-keycap { }
+.ct-hud.hud-arena .ct-hud-badge { position: absolute; right: 2px; top: -6px; min-width: 40px; height: 40px; padding: 0 8px; }
 
 /* ---------------------------------------------------------------- top-centre currencies */
 .ct-hud.hud-arena .ct-hud-top { position: absolute; left: 50%; right: auto; top: 30px; translate: -50% 0; flex-direction: column; align-items: center; }
+.ct-hud.hud-arena .hud-pill-cash { margin-left: 30px; }
 .hud-currency-row { flex-direction: row; align-items: center; }
-.hud-pill {
-    flex-direction: row; align-items: center; height: 64px; padding: 0 22px 0 8px; margin: 0 8px; border-radius: 18px;
-    border-width: 3px; border-color: rgba(255,255,255,0.14); background-color: rgba(20,6,44,0.8);
-}
-.ct-hud.hud-arena .hud-pill-wallet, .ct-hud.hud-arena .hud-pill-wallet:hover, .ct-hud.hud-arena .hud-pill-wallet:active, .ct-hud.hud-arena .hud-pill-wallet:focus {
-    height: 64px; padding: 0 22px 0 14px; margin: 0 8px; border-radius: 18px; border-width: 3px; border-color: rgba(255,255,255,0.14); background-color: rgba(20,6,44,0.8);
-}
-.hud-pill-icon { width: 48px; height: 48px; margin-right: 10px; -unity-background-scale-mode: scale-to-fit; }
+.hud-pill { flex-direction: row; align-items: center; margin: 0 8px; }
+.ct-hud.hud-arena .hud-pill-wallet, .ct-hud.hud-arena .hud-pill-wallet:hover, .ct-hud.hud-arena .hud-pill-wallet:active, .ct-hud.hud-arena .hud-pill-wallet:focus { margin: 0 8px; }
+.hud-pill-icon { width: 48px; margin-right: 10px; }
 .hud-sol-mark { width: 40px; height: 30px; margin-right: 10px; background-image: url("Brand/solana-logomark.png"); -unity-background-scale-mode: scale-to-fit; }
-.ct-hud.hud-arena .ct-cash, .ct-hud.hud-arena .hud-pill-value {
-    font-size: 30px; color: rgb(255,255,255); -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); white-space: nowrap; margin: 0; padding: 0;
-}
+.ct-hud.hud-arena .ct-cash, .ct-hud.hud-arena .hud-pill-value { white-space: nowrap; margin: 0; }
 .hud-pill--dim .hud-pill-value { opacity: 0.6; }
 
 /* ---------------------------------------------------------------- top-right minimap + Duo */
-.ct-hud.hud-arena .ct-hud-personal { position: absolute; left: auto; right: 28px; top: 22px; bottom: auto; flex-direction: row; align-items: flex-start; }
-.ct-hud.hud-arena .hud-map-button, .ct-hud.hud-arena .hud-map-button:hover, .ct-hud.hud-arena .hud-map-button:active, .ct-hud.hud-arena .hud-map-button:focus {
-    width: 324px; flex-direction: column; align-items: center; padding: 0; margin: 0; background-color: rgba(0,0,0,0); border-width: 0; overflow: visible;
-}
+.ct-hud.hud-arena .ct-hud-personal { position: absolute; left: auto; right: 16px; top: 4px; bottom: auto; flex-direction: row; align-items: flex-start; }
+.ct-hud.hud-arena .hud-map-button, .ct-hud.hud-arena .hud-map-button:hover, .ct-hud.hud-arena .hud-map-button:active, .ct-hud.hud-arena .hud-map-button:focus { width: 324px; flex-direction: column; align-items: center; padding: 0; margin: 0; overflow: visible; }
 .ct-hud.hud-arena .hud-map-button:active { scale: 0.98 0.98; }
-.hud-place { margin-top: 10px; align-items: center; width: 324px; overflow: visible; }
-.ct-hud.hud-arena .ct-venue-name {
-    font-size: 26px; color: rgb(255,255,255); -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); background-color: rgba(0,0,0,0);
-    -unity-text-outline-width: 2px; -unity-text-outline-color: rgb(42,11,74); text-shadow: 0 2px 0 rgb(42,11,74);
-    padding: 0 4px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 324px; -unity-text-align: middle-center;
-}
+.hud-place { margin-top: 16px; align-items: center; width: 324px; overflow: visible; }
+.ct-hud.hud-arena .ct-venue-name { padding: 0 4px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 324px; }
 .ct-hud.hud-arena .ct-hud-presence { flex-direction: row; margin-top: 2px; justify-content: center; }
-.ct-hud.hud-arena .ct-pill {
-    font-size: 17px; color: rgb(255,255,255); -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); background-color: rgba(20,6,44,0.7);
-    padding: 3px 10px; margin: 0 3px; border-radius: 10px; border-width: 0; white-space: nowrap;
-}
-.ct-hud.hud-arena .ct-pill.ct-green { color: rgb(124,255,196); }
-.ct-hud.hud-arena .ct-pill.ct-red { color: rgb(255,170,160); }
-.ct-hud.hud-arena .hud-corner .ct-dock-action { margin: 0 14px 0 0; }
+.ct-hud.hud-arena .ct-pill { padding: 3px 10px; margin: 0 3px; white-space: nowrap; }
+.ct-hud.hud-arena .ct-pill.ct-green { }
+.ct-hud.hud-arena .ct-pill.ct-red { }
+.ct-hud.hud-arena .hud-corner .hud-round { margin: 20px 24px 0 0; }
 
 /* ---------------------------------------------------------------- needs card (under the plate) */
 .ct-hud.hud-arena .ct-needs {
@@ -105,20 +89,26 @@
 .ct-hud.hud-arena .ct-need-low { background-color: rgb(255,59,92); }
 
 /* ---------------------------------------------------------------- bottom-right context actions */
-.ct-hud.hud-arena .ct-hud-social { position: absolute; left: auto; right: 226px; bottom: 22px; top: auto; flex-direction: row; align-items: flex-end; }
+/* bottom-right: three small rounds in an arc around Jump (SYSTEM.md 3.11, mockup 01a); the hovercar (owners only) leads it */
+.ct-hud.hud-arena .ct-hud-social { position: absolute; left: auto; top: auto; right: 0; bottom: 0; width: 480px; height: 400px; }
+.ct-hud.hud-arena .ct-hud-social > .hud-round { position: absolute; margin: 0; }
+.ct-hud.hud-arena .ct-hud-social > #hud-mic { right: 270px; bottom: 76px; }
+.ct-hud.hud-arena .ct-hud-social > #hud-emotes { right: 224px; bottom: 212px; }
+.ct-hud.hud-arena .ct-hud-social > #hud-chat { right: 88px; bottom: 268px; }
+.ct-hud.hud-arena .ct-hud-social > #hud-hovercar { right: 390px; bottom: 30px; }
 
 /* ---------------------------------------------------------------- joystick (ref 6: thin ring, soft fill). Feel lane F1: a floating
    stick. The container is the whole lower-left touch area; MovementControls places the ring under the thumb (left/top) and
    parks it bottom-left at rest, dimmed. The edge band lights up gold in the sprint zone. */
 .ct-hud .ct-move-controls { left: 0; bottom: 0; width: 44%; height: 78%; }
 .ct-hud .ct-move-zone { width: 100%; height: 100%; }
-.ct-hud .ct-move-ring { width: 260px; height: 260px; left: 70px; top: auto; border-width: 3px; border-color: rgba(255,255,255,0.55); background-color: rgba(20,6,44,0.16); border-radius: 130px; opacity: 0.7; }
-.ct-hud .ct-move-thumb { border-width: 5px; border-color: rgb(42,11,74); background-color: rgba(255,255,255,0.92); }
-.ct-hud .ct-move-active .ct-move-ring { opacity: 1; background-color: rgba(20,6,44,0.34); border-color: rgb(255,255,255); }
-.ct-hud .ct-move-active .ct-move-thumb { background-color: rgb(255,255,255); }
-.ct-hud .ct-move-running .ct-move-thumb { background-color: rgb(61,220,132); }
-.ct-hud .ct-move-sprint .ct-move-ring { border-width: 7px; border-color: rgb(255,210,63); }
-.ct-hud .ct-move-sprint .ct-move-thumb { background-color: rgb(255,210,63); }
+.ct-hud .ct-move-ring { width: 260px; height: 260px; left: 70px; top: auto; opacity: 0.7; }
+.ct-hud .ct-move-thumb { }
+.ct-hud .ct-move-active .ct-move-ring { opacity: 1; }
+.ct-hud .ct-move-active .ct-move-thumb { }
+.ct-hud .ct-move-running .ct-move-thumb { }
+.ct-hud .ct-move-sprint .ct-move-ring { }
+.ct-hud .ct-move-sprint .ct-move-thumb { }
 .ct-hud .ct-move-hint { opacity: 0; width: 320px; right: auto; bottom: auto; font-size: 26px; color: rgb(255,255,255); -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); -unity-text-outline-width: 2px; -unity-text-outline-color: rgb(42,11,74); }
 .ct-hud .ct-move-active .ct-move-hint { opacity: 1; }
 .ct-hud .ct-move-arrows { left: 40px; top: auto; bottom: 16px; }
@@ -136,86 +126,10 @@
 .ct-hud .ct-chat.ct-chat-keyboard, .ct-landscape .ct-hud .ct-chat.ct-chat-keyboard { top: 16px; bottom: auto; }
 .ct-hud .ct-chat-history { margin-bottom: 8px; }
 
-/* ---------------------------------------------------------------- in-world prompts (sit/stand/door): Arena pills near the object.
-   InteractionPrompt owns the left/top projection and collision placement. */
-.ct-hud .ct-hud-interact { position: absolute; right: auto; bottom: auto; flex-direction: column; align-items: center; padding-bottom: 18px; }
-.ct-interact-actions { flex-direction: row; align-items: center; }
-/* City HUD v2 prompt: a tag chip with the object's name, then per verb a tactile squircle (one Phosphor glyph) and the verb. */
-.ct-hud .ct-interact-tag {
-    margin-bottom: 10px; padding: 4px 14px; border-radius: 12px; background-color: rgba(14,9,30,0.82); border-width: 1px; border-color: rgba(255,255,255,0.16);
-    font-size: 17px; letter-spacing: 2px; color: rgb(255,255,255); -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); white-space: nowrap;
-}
-.ct-hud .ct-interact, .ct-hud .ct-interact:hover, .ct-hud .ct-interact:focus, .ct-hud .ct-interact:active {
-    flex-direction: column; align-items: center; height: auto; min-height: 0; min-width: 0; margin: 0 10px; padding: 0;
-    border-width: 0; border-radius: 0; background-color: rgba(0,0,0,0); color: rgb(255,255,255);
-}
-.ct-hud .ct-interact > .ct-button-depth, .ct-hud .ct-interact > .ct-button-glint { display: none; }
-.ct-hud .ct-interact-key {
-    width: 112px; height: 112px; border-radius: 34px; align-items: center; justify-content: center;
-    background-color: rgb(52,214,126); border-width: 3px; border-bottom-width: 9px;
-    border-top-color: rgb(170,255,212); border-left-color: rgb(120,240,178); border-right-color: rgb(120,240,178); border-bottom-color: rgb(12,115,64);
-    transition-property: scale; transition-duration: 0.08s;
-}
-.ct-hud .ct-interact .ct-icon { width: 56px; height: 56px; margin: 0; -unity-background-image-tint-color: rgb(8,72,40); }
-.ct-hud .ct-interact-label {
-    margin-top: 8px; font-size: 26px; color: rgb(255,255,255); -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); white-space: nowrap;
-    text-shadow: 0 2px 6px rgba(0,0,0,0.7);
-}
-.ct-hud .ct-interact-secondary .ct-interact-key {
-    width: 92px; height: 92px; border-radius: 28px; background-color: rgba(18,12,36,0.78); border-width: 2px; border-bottom-width: 6px;
-    border-top-color: rgba(255,255,255,0.6); border-left-color: rgba(255,255,255,0.32); border-right-color: rgba(255,255,255,0.32); border-bottom-color: rgba(0,0,0,0.5);
-}
-.ct-hud .ct-interact-secondary .ct-icon { width: 46px; height: 46px; -unity-background-image-tint-color: rgb(255,255,255); }
-.ct-hud .ct-interact-secondary .ct-interact-label { font-size: 22px; }
-.ct-hud .ct-interact-locked .ct-interact-key { width: 112px; height: 112px; border-radius: 34px; opacity: 1; }
-.ct-hud .ct-interact-lock {
-    position: absolute; right: -14px; top: -14px; width: 44px; height: 44px; border-radius: 22px; align-items: center; justify-content: center;
-    background-color: rgb(255,210,63); border-width: 3px; border-color: rgb(42,11,74);
-}
-.ct-hud .ct-interact .ct-interact-lock .ct-icon { width: 24px; height: 24px; -unity-background-image-tint-color: rgb(42,11,74); }
-.ct-hud .ct-interact:active .ct-interact-key { scale: 0.94 0.94; }
-.ct-hud .ct-interact:focus .ct-interact-key { border-top-color: rgb(255,226,122); }
-.ct-hud .ct-interact-busy .ct-interact { opacity: 0.75; }
-.ct-interact-pointer { position: absolute; width: 22px; height: 22px; bottom: auto; left: 50%; margin-left: 0; border-radius: 11px; background-color: rgb(255,255,255); border-width: 4px; border-color: rgb(42,11,74); }
-.ct-interact-clamped .ct-interact-pointer { display: none; }
-/* Rekt Burger clock-in prompt (UI brief 2026-10-25, approved): the job key in Rekt orange (128 px, clock glyph), a money
-   caption under the verbs, a shown-but-unusable look, a neutral glass key for Clock out, and a pop-in / done flash. */
-.ct-hud .ct-interact-sub {
-    margin-top: 6px; font-size: 18px; color: rgba(255,255,255,0.72); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf");
-    white-space: nowrap; text-shadow: 0 2px 6px rgba(0,0,0,0.7); -unity-text-align: middle-center;
-}
-.ct-hud .ct-interact-sub--good { color: rgb(61,220,132); }
-.ct-hud .ct-interact-sub--warn { color: rgb(255,210,63); }
-.ct-hud .ct-interact-sub--bad { color: rgba(255,59,92,0.85); }
-.ct-hud .ct-interact-job .ct-interact-key {
-    width: 128px; height: 128px; border-radius: 38px; background-color: rgb(242,104,44);
-    border-top-color: rgb(255,184,140); border-left-color: rgb(250,140,88); border-right-color: rgb(250,140,88); border-bottom-color: rgb(160,58,20);
-}
-.ct-hud .ct-interact-job .ct-icon { width: 62px; height: 62px; -unity-background-image-tint-color: rgb(72,22,6); }
-.ct-hud .ct-interact-quiet .ct-interact-key, .ct-hud .ct-interact-job.ct-interact-disabled .ct-interact-key, .ct-hud .ct-interact-disabled .ct-interact-key {
-    background-color: rgba(18,12,36,0.78); border-width: 2px; border-bottom-width: 6px;
-    border-top-color: rgba(255,255,255,0.6); border-left-color: rgba(255,255,255,0.32); border-right-color: rgba(255,255,255,0.32); border-bottom-color: rgba(0,0,0,0.5);
-}
-.ct-hud .ct-interact-quiet .ct-icon, .ct-hud .ct-interact-disabled .ct-icon { -unity-background-image-tint-color: rgb(255,255,255); }
-.ct-hud .ct-interact-disabled .ct-icon, .ct-hud .ct-interact-disabled .ct-interact-label { opacity: 0.5; }
-.ct-hud .ct-interact-held .ct-interact-key { scale: 0.94 0.94; }
-.ct-hud .ct-interact-jobprompt { opacity: 0; scale: 0.88 0.88; transition-property: opacity, scale; transition-duration: 0.16s; transition-timing-function: ease-out-back; }
-.ct-hud .ct-interact-jobprompt.ct-interact-in { opacity: 1; scale: 1 1; }
-.ct-hud .ct-interact-jobprompt .ct-interact-secondary { opacity: 0; transition-property: opacity; transition-duration: 0.16s; transition-delay: 0.04s; }
-.ct-hud .ct-interact-jobprompt.ct-interact-in .ct-interact-secondary { opacity: 1; }
-/* over bright interiors (the terrazzo floor) the verb and the money line sit on compact dark glass, white text, no outline */
-.ct-hud .ct-interact-jobprompt .ct-interact-label {
-    margin-top: 10px; padding: 2px 14px 4px 14px; border-radius: 14px; background-color: rgba(14,9,30,0.80); color: rgb(255,255,255);
-    -unity-text-outline-width: 0; text-shadow: 0 1px 2px rgba(0,0,0,0.6);
-}
-.ct-hud .ct-interact-jobprompt .ct-interact-sub {
-    margin-top: 6px; padding: 3px 12px 4px 12px; border-radius: 12px; background-color: rgba(14,9,30,0.80); color: rgb(255,255,255);
-    -unity-text-outline-width: 0; text-shadow: 0 1px 2px rgba(0,0,0,0.6);
-}
-.ct-hud .ct-interact-jobprompt .ct-interact-sub--good { color: rgb(61,220,132); }
-.ct-hud .ct-interact-jobprompt .ct-interact-sub--warn { color: rgb(255,210,63); }
-.ct-hud .ct-interact-jobprompt .ct-interact-sub--bad { color: rgb(255,120,140); }
-.ct-hud .ct-interact-jobprompt.ct-interact-in.ct-interact-out { opacity: 0; transition-duration: 0.12s; transition-timing-function: ease-in-cubic; }
+/* ---------------------------------------------------------------- in-world prompts: look lives in DS (.ds-prompt, .ds-orb).
+   InteractionPrompt owns the left/top projection and collision placement; this keeps only its anchoring. */
+.ct-hud .ct-hud-interact { position: absolute; right: auto; bottom: auto; padding-bottom: 18px; }
+.ct-interact-pointer { position: absolute; width: 22px; height: 22px; }
 
 .ct-landscape .ct-hud .ct-move-controls { left: 0; bottom: 0; }
 .ct-landscape .ct-hud .ct-chat, .ct-landscape .ct-hud .ct-emotes { left: auto; right: 40px; width: 850px; bottom: 190px; max-height: 420px; }
@@ -236,37 +150,21 @@
 }
 
 /* Jump (on foot): glass round, bottom-right corner */
-.ct-hud .hud-jump {
-    position: absolute; right: 47px; bottom: 60px; width: 155px; height: 155px; align-items: center; justify-content: center;
-    background-image: url("Hud/round.png"); -unity-background-scale-mode: stretch-to-fill; transition-property: scale, opacity, translate; transition-duration: 0.09s, 0.17s, 0.17s;
-}
-.ct-hud .hud-jump .ct-icon { width: 70px; height: 70px; -unity-background-image-tint-color: rgb(255,255,255); }
-.ct-hud .hud-jump.veh-down { background-image: url("Hud/round-down.png"); scale: 0.94 0.94; }
+.ct-hud .hud-jump { position: absolute; right: 44px; bottom: 52px; align-items: center; justify-content: center; transition-property: scale, opacity, translate; transition-duration: 0.09s, 0.17s, 0.17s; }
+.ct-hud .hud-jump .ct-icon { }
+.ct-hud .hud-jump.veh-down { scale: 0.94 0.94; }
 .ct-hud .hud-jump .veh-caption { margin-top: 4px; }
 
 /* locked hovercar dock button: a yellow lock badge (still tappable: it opens the Duo Shop) */
-.ct-hud .hud-lock-badge {
-    position: absolute; right: 0; top: -6px; width: 48px; height: 48px; border-radius: 24px; align-items: center; justify-content: center;
-    background-color: rgb(255,210,63); border-width: 3px; border-color: rgb(42,11,74); display: none; transition-property: scale, opacity; transition-duration: 0.2s;
-}
+.ct-hud .hud-lock-badge { position: absolute; right: 0; top: -6px; width: 48px; height: 48px; align-items: center; justify-content: center; display: none; transition-property: scale, opacity; transition-duration: 0.2s; }
 .ct-hud .hud-locked .hud-lock-badge { display: flex; }
-.ct-hud .hud-lock-badge .ct-icon { width: 26px; height: 26px; -unity-background-image-tint-color: rgb(42,11,74); }
+.ct-hud .hud-lock-badge .ct-icon { width: 26px; height: 26px; }
 .ct-hud .hud-lock-badge.hud-lock-pop { display: flex; scale: 1.3 1.3; opacity: 0; }
 
-/* Sleuth heat (backend #17): GTA V's wanted stars under the money, per the approved brief
-   (ct-life-evidence/heat-police-20261025/board): 5 stars in a slim pill, white lit / 30% unlit, red/blue flash in a chase. */
-.ct-hud .hud-heat {
-    margin-top: 8px; flex-direction: row; align-items: center; height: 44px; padding: 0 12px; border-radius: 14px;
-    background-color: rgba(20,6,44,0.62); border-width: 2px; border-color: rgba(255,255,255,0.12); transition-property: opacity, translate; transition-duration: 0.17s;
-}
+/* Sleuth heat: the wanted-stars pill (look in DS: .ds-hud-pill.ds-hud-stars); layout + fade only here */
+.ct-hud .hud-heat { margin-top: 12px; transition-property: opacity, translate; transition-duration: 0.17s; }
 .ct-hud .hud-heat.hud-off { opacity: 0; translate: 0 -16px; }
 .ct-hud .hud-heat-label { display: none; }
-.ct-hud .hud-heat-pips { flex-direction: row; }
-.ct-hud .hud-heat-pip { width: 30px; height: 30px; margin: 0 2px; -unity-background-image-tint-color: rgba(255,255,255,0.3); transition-property: scale; transition-duration: 0.2s; transition-timing-function: ease-out-back; }
-.ct-hud .hud-heat-pip--lit { -unity-background-image-tint-color: rgb(255,255,255); }
-.ct-hud .hud-heat-pip--pop { scale: 1.4 1.4; }
-.ct-hud .hud-heat--red .hud-heat-pip--lit { -unity-background-image-tint-color: rgb(255,59,92); }
-.ct-hud .hud-heat--blue .hud-heat-pip--lit { -unity-background-image-tint-color: rgb(70,140,255); }
 
 /* vehicle HUD root and its groups */
 .ct-hud .veh-controls { position: absolute; left: 0; top: 0; right: 0; bottom: 0; transition-property: opacity; transition-duration: 0.17s; transition-timing-function: ease-out-cubic; }

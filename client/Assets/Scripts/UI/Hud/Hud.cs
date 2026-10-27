@@ -20,6 +20,8 @@ namespace CTLife.UI
         private readonly VisualElement _needs;
         private readonly Button _needsToggle;
         private readonly Label _needsSummary;
+        private readonly Label _plateName, _modalCash;
+        private readonly VisualElement _modalCashPill;
         private bool _needsExpanded, _micPending, _disposed;
         private readonly CancellationTokenSource _life = new CancellationTokenSource();
         private readonly Button _mic;
@@ -31,6 +33,7 @@ namespace CTLife.UI
         private readonly VehicleControls _vehicle;
         private VisualElement _droneAction, _lockBadge, _jump;
         private readonly HeatPlate _heat = new HeatPlate();
+        private LadderChip _ladder;
         private VisualElement _recoveryVeil;
         private IVisualElementScheduledItem _recoveryFade;
         private bool _shown = true;
@@ -88,28 +91,52 @@ namespace CTLife.UI
             _micLabel = _mic.Q<Label>();
 
             // Top-left: compact player plate (avatar + Energy/Sanity) opening the needs card; Lobby beside it.
+            // Design system (2026-10-26, mockup 01a): the plate is a HUD pill, avatar + name over one caption; the needs card
+            // opens on tap. The Energy/Sanity meters live in that card now (one fact per pill).
+            // v2 (mockup d): an avatar tile, then the name on a chunky glass pill; the needs line shows only when one is low.
             _needsToggle.AddToClassList("hud-plate");
+            _needsToggle.AddToClassList("ds-bare");
             _needsToggle.Clear();
-            _avatar = El.Div("hud-avatar");
+            _avatar = El.Div("hud-avatar ds-hud-avatar-art");
             _avatar.pickingMode = PickingMode.Ignore;
             _energyFill = El.Div("hud-meter-fill hud-meter-fill--energy");
             _sanityFill = El.Div("hud-meter-fill hud-meter-fill--sanity");
-            var meters = El.Div("hud-meters", Meter("lightning-bolt", _energyFill), Meter("brain", _sanityFill));
-            _needsSummary.AddToClassList("hud-needs-summary");
-            _needsToggle.Add(_avatar);
-            _needsToggle.Add(El.PassThrough(El.Div("hud-plate-copy", meters, _needsSummary)));
-            var lobby = HudAction("lobby", Strings.T("hud.lobby"), () => OpenUtility(OpenHome), "home-page");
+            _plateName = CTLife.UI.DS.Ds.Text("", "ds-t-hud");
+            _plateName.name = "hud-plate-name";
+            _needsSummary.AddToClassList("ds-t-hud-caption");
+            _needsToggle.Add(El.PassThrough(El.Div("ds-hud-avatar hud-avatar-tile", _avatar)));
+            _needsToggle.Add(El.PassThrough(El.Div("ds-hud-pill hud-plate-pill", El.PassThrough(El.Div("ds-hud-pill-col", _plateName, _needsSummary)))));
+            var lobby = HudAction("lobby", Strings.T("hud.lobby"), () => OpenUtility(OpenHome), "house-line");
             lobby.AddToClassList("hud-small-action");
             lobby.AddToClassList("hud-fade");
-            var plate = El.Div("hud-plate-row", _needsToggle, lobby);
+            var plateRow = El.Div("hud-plate-row-top", _needsToggle, lobby);
+            plateRow.pickingMode = PickingMode.Ignore;
+            // the dream ladder chip under the plate (queue 18): set by City Life from the rented home and Cash
+            _ladder = new LadderChip();
+            var plate = El.Div("hud-plate-row", plateRow, _ladder.Element);
             plate.pickingMode = PickingMode.Ignore;
 
             // Top-centre: Cash and wallet pills, small.
-            var cash = El.Div("hud-pill hud-pill-cash", LobbyArt.Icon("coins", "hud-pill-icon"), _cash);
+            var coin = El.Div("ds-hud-pill-art hud-coin");
+            coin.pickingMode = PickingMode.Ignore;
+            if (CTLife.UI.DS.Ds.IconTexture(CTLife.UI.DS.Ds.Coin) is Texture2D coinArt) coin.style.backgroundImage = Background.FromTexture2D(coinArt);
+            _cash.AddToClassList("ds-t-hud");
+            var cash = El.Div("hud-pill hud-pill-cash ds-hud-pill ds-hud-pill--art", coin, _cash);
             cash.name = "hud-cash";
             El.PassThrough(cash);
-            _walletValue = El.Text("", "hud-pill-value");
-            _walletPill = El.Btn("", () => OpenUtility(() => OpenApp?.Invoke("wallet")), "hud-pill hud-pill-wallet");
+            // v2: while a card is up the HUD steps back and this mirror of the Cash pill stays above the scrim (top-right),
+            // so the collect coin still has a target
+            var modalCoin = El.Div("ds-hud-pill-art");
+            modalCoin.pickingMode = PickingMode.Ignore;
+            if (CTLife.UI.DS.Ds.IconTexture(CTLife.UI.DS.Ds.Coin) is Texture2D coinArt2) modalCoin.style.backgroundImage = Background.FromTexture2D(coinArt2);
+            _modalCash = CTLife.UI.DS.Ds.Text("$0.00", "ds-t-hud");
+            _modalCashPill = El.Div("ds-hud-pill ds-hud-pill--art", modalCoin, _modalCash);
+            _modalCashPill.name = "hud-cash-modal";
+            _modalCashPill.pickingMode = PickingMode.Ignore;
+            CTLife.UI.DS.DsModalHost.Current?.CashSlot.Add(_modalCashPill);
+            _walletValue = El.Text("", "hud-pill-value ds-t-hud");
+            _walletPill = new Button(() => OpenUtility(() => OpenApp?.Invoke("wallet"))) { text = "" };
+            _walletPill.AddToClassList("hud-pill"); _walletPill.AddToClassList("hud-pill-wallet"); _walletPill.AddToClassList("ds-hud-pill");
             _walletPill.name = "hud-wallet";
             _walletPill.tooltip = Strings.T("lobby.wallet.title");
             _walletPill.Add(El.PassThrough(El.Div("hud-sol-mark")));
@@ -123,25 +150,32 @@ namespace CTLife.UI
             top.pickingMode = PickingMode.Ignore;
             TopSlot = slot;
             TopSlotChanged?.Invoke();
+            if (CTLife.UI.DS.DsToastHost.Current != null) CTLife.UI.DS.DsToastHost.Current.Anchor = top;
 
             // Top-right: the live minimap (tap = full map) with the place and presence under it, the Duo tucked beside it.
             _minimap = new Map.Minimap();
-            var location = El.Btn("", () => OpenUtility(OpenMap), "ct-hud-location hud-map-button");
+            var location = El.Btn("", () => OpenUtility(OpenMap), "ct-hud-location hud-map-button ds-bare");
             location.name = "hud-map";
             location.tooltip = Strings.T("hud.map");
-            location.Add(_minimap);
-            var place = El.Div("hud-place hud-fade", _venue, El.Div("ct-hud-presence", _online, _mood));
+            _minimap.AddToClassList("ds-minimap-frame");
+            location.Add(El.PassThrough(El.Div("ds-minimap-card hud-minimap-card", _minimap)));
+            // the area name sits on a glass chip (text never sits on the world); the presence chips moved off the HUD
+            _venue.AddToClassList("hud-venue-text");
+            var presence = El.Div("ct-hud-presence", _online, _mood);
+            presence.style.display = DisplayStyle.None;
+            var place = El.Div("hud-place hud-fade", El.Div("ds-hud-caption-chip", _venue), presence);
             location.Add(El.PassThrough(place));
             var phone = PhoneAction();
             phone.AddToClassList("hud-small-action");
+            phone.AddToClassList("ds-hud-round--square");
             var personal = El.Div("ct-hud-personal hud-corner", phone, location);
             personal.pickingMode = PickingMode.Ignore;
 
             // Bottom-right: Jump (a glass round in the corner), then the round, icon-led context actions. Bottom-left: the joystick.
             _jump = JumpButton();
             var social = El.Div("ct-hud-social hud-fade",
-                HudAction("chat", Strings.T("hud.chat"), () => { CollapseNeeds(); _emotes.Hide(); _chat.Toggle(); }, "speech-bubble"),
-                HudAction("emotes", Strings.T("hud.emote"), () => { CollapseNeeds(); _chat.Hide(); _emotes.Toggle(); }, "smiling"), _mic);
+                HudAction("chat", Strings.T("hud.chat"), () => { CollapseNeeds(); _emotes.Hide(); _chat.Toggle(); }, "chat-circle-dots"),
+                HudAction("emotes", Strings.T("hud.emote"), () => { CollapseNeeds(); _chat.Hide(); _emotes.Toggle(); }, "smiley"), _mic);
             // The owned flyer (CT Island only): since vehicles v3 the hovercar comes to the player and they get in. The quadcopter
             // (VehicleSystem.DeployDrone) is no longer on the default HUD.
             // The hovercar is a bought asset (a scarce right-to-drive NFT, real money only): without it the button stays, locked
@@ -151,7 +185,7 @@ namespace CTLife.UI
                 var vs = CTLife.World.Vehicles.VehicleSystem.Current;
                 if (vs != null && vs.CanDeployDrone) vs.SummonHovercar();
                 else OpenShop();   // locked: real money only, sold in the Duo Shop (never a Cash price)
-            }, "rocket");
+            }, "rocket-launch");
             _lockBadge = El.PassThrough(El.Div("hud-lock-badge", new UiIcon("locked")));
             _droneAction.Add(_lockBadge);
             _droneAction.style.display = DisplayStyle.None;
@@ -160,7 +194,10 @@ namespace CTLife.UI
             El.PassThrough(_needs);
             // The stick's touch area is the whole lower-left of the screen (a floating stick), so it goes first: every
             // other control sits above it and keeps its taps.
-            _root = El.Div("ct-hud hud-arena", _movement.Element, _vehicle.Element, plate, top, _needs, _emotes.Element, _chat.Element, social, _jump, personal, _interact.Element);
+            // speech bubbles keep out of the top HUD rows (WorldLabels)
+            WorldLabels.SafeZones.Clear();
+            WorldLabels.SafeZones.Add(plate); WorldLabels.SafeZones.Add(top); WorldLabels.SafeZones.Add(personal);
+            _root = El.Div("ct-hud hud-arena ds-hud-back", _movement.Element, _vehicle.Element, plate, top, _needs, _emotes.Element, _chat.Element, social, _jump, personal, _interact.Element);
             _root.pickingMode = PickingMode.Ignore;
             _recoveryVeil = El.Div("hud-recovery-veil");
             _recoveryVeil.name = "hud-recovery-veil";
@@ -172,6 +209,7 @@ namespace CTLife.UI
             if (Services.TryGet<WalletBalanceService>(out var wallet)) { _wallet = wallet; _wallet.Changed += RefreshWallet; RefreshWallet(); }
 
             _subs.On<ProfileChangedSignal>(_ => RefreshProfile());
+            _subs.On<CTLife.UI.DS.DsModalChangedSignal>(s => _root?.EnableInClassList("ds-hud-away", s.open));
             _subs.On<CTLife.World.Vehicles.VehicleChangedSignal>(s =>
             {
                 // driving or flying: the vehicle controls replace the walking stick and the social buttons
@@ -279,8 +317,9 @@ namespace CTLife.UI
         /// <summary>Jump: a glass round in the bottom-right corner; a small hop on the local player.</summary>
         private VisualElement JumpButton()
         {
-            var b = El.Div("hud-jump hud-fade", new UiIcon("jump"), El.Text(Strings.T("hud.jump"), "veh-caption"));
+            var b = El.Div("hud-jump hud-fade ds-hud-round ds-hud-round--big", CTLife.UI.DS.Ds.Icon("arrow-fat-up", 64, "white"));
             b.name = "hud-jump";
+            b.tooltip = Strings.T("hud.jump");
             b.RegisterCallback<PointerDownEvent>(e =>
             {
                 if (e.button != 0) return;
@@ -297,21 +336,22 @@ namespace CTLife.UI
         /// <summary>The phone action carries the Duo's total unread count (red badge, cleared when read).</summary>
         private Button PhoneAction()
         {
-            var button = HudAction("phone", Strings.T("lobby.duo"), () => OpenUtility(OpenPhone), "smartphone", primary: true); // the device is the Solana Duo (as in the lobby)
-            _phoneBadge = Duo.Badge(DuoNotificationCenter.TotalBadge, "ct-hud-badge");
-            _phoneBadge.name = "hud-phone-badge";
-            button.Add(_phoneBadge);
-            _subs.On<DuoBadgesChangedSignal>(s => Duo.SetBadge(_phoneBadge, s.total));
+            var button = HudAction("phone", Strings.T("lobby.duo"), () => OpenUtility(OpenPhone), "device-mobile", primary: true);
+            CTLife.UI.DS.Ds.SetBadge(button, DuoNotificationCenter.TotalBadge);
+            _subs.On<DuoBadgesChangedSignal>(s => CTLife.UI.DS.Ds.SetBadge(button, s.total));
             return button;
         }
 
+        /// <summary>A HUD round (design system 3.11): glass, one Phosphor icon, no text label (the name is the tooltip; the
+        /// hidden label keeps the accessible name).</summary>
         private static Button HudAction(string id, string label, Action action, string icon = null, bool primary = false)
         {
-            var button = El.Btn("", action, primary ? "ct-dock-action ct-dock-primary" : "ct-dock-action");
-            button.name = "hud-" + id;
+            var button = CTLife.UI.DS.Ds.HudRound(icon ?? id, action, name: "hud-" + id);
+            button.AddToClassList("hud-round");   // layout only (the old ct-dock-action look is global in ctlife.uss)
             button.tooltip = label;
-            button.Add(El.PassThrough(El.Div("ct-hud-keycap", LobbyArt.Icon(icon ?? id, "hud-icon"))));
-            button.Add(El.PassThrough(El.Text(label, "ct-dock-label")));
+            var hidden = El.Text(label, "ct-dock-label");
+            hidden.style.display = DisplayStyle.None;
+            button.Add(hidden);
             return button;
         }
 
@@ -342,6 +382,7 @@ namespace CTLife.UI
             _avatarHead = head;
             var portrait = string.IsNullOrEmpty(head) ? null : Resources.Load<Texture2D>("UI/Customizer/Portraits/" + head);
             _avatar.Clear();
+            _avatar.EnableInClassList("ds-hud-pill-art--letter", portrait == null);
             if (portrait != null) _avatar.style.backgroundImage = new StyleBackground(portrait);
             else
             {
@@ -387,6 +428,8 @@ namespace CTLife.UI
             bool on = voice && _venueMic()?.MicOn == true;
             _micLabel.text = Strings.T(!voice ? "hud.voiceUnavailable" : on ? "hud.micOn" : "hud.micOff");
             _mic.EnableInClassList("ct-btn-live", on);
+            _mic.EnableInClassList("ds-hud-round--live", on);
+            _mic.tooltip = _micLabel.text;
         }
 
         private void RefreshProfile()
@@ -396,6 +439,8 @@ namespace CTLife.UI
             _cash.text = Math.Abs(cash) >= 10000m ? "$" + LobbyAmounts.Compact(cash) : Money.Cash(p.CashCents);
             _cash.tooltip = Money.Cash(p.CashCents);
             RefreshAvatar(p);
+            CTLife.UI.DS.Ds.SetText(_plateName, p.Alias);
+            _modalCash.text = _cash.text;
             if (_wallet != null) RefreshWallet();
             var n = p.Me.Needs;
             if (n == null) return;

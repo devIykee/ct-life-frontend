@@ -81,6 +81,8 @@ namespace CTLife.Net
             c.change5mBps = (int)Long(get("change5mBps"), c.change5mBps);
             c.holders = (int)Long(get("holders"), c.holders);
             c.launchedAt = Long(get("launchedAt"), c.launchedAt);
+            c.playerLaunched = Bool(get("playerLaunched"), c.playerLaunched);
+            c.templateId = Str(get("templateId"), c.templateId);
         }
 
         private static bool SameItems(IReadOnlyList<string> current, List<string> next)

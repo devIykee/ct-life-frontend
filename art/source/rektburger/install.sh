@@ -5,7 +5,7 @@ set -e
 HERE="$(cd "$(dirname "$0")" && pwd)"; REPO="$(cd "$HERE/../../.." && pwd)"
 DST="$REPO/client/Assets/Resources/UI/RektBurger"; TPL="$REPO/client/Assets/Resources/UI/Lobby/Icons/goal.png.meta"
 mkdir -p "$DST"
-for id in logo bun_top bun_bottom patty cheese lettuce tomato onion pickle fries drink burger_done ticket_bg tray sticker_perfect sticker_wrong; do
+for id in logo; do   # the 2D stacker art (ingredients, ticket, tray, stickers) left the client with the clock-in job
   case $id in logo) sz=1024 ;; ticket_bg|tray) sz=512 ;; sticker_*|*) sz=256 ;; esac
   cp "$HERE/out/png/$id.png" "$DST/$id.png"
   if [ ! -f "$DST/$id.png.meta" ]; then

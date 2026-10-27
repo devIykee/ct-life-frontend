@@ -1,3 +1,4 @@
+using CTLife.Core;
 using System.Collections.Generic;
 namespace CTLife.UI
 {
@@ -7,6 +8,6 @@ namespace CTLife.UI
         {
             ["timeout"]="Jobs are taking too long to load. Try again.",
         };
-        public static string T(string key)=>English.TryGetValue(key,out var value)?value:key;
+        public static string T(string key)=>English.TryGetValue(key,out var value)? NameTable.Apply(value) :key;
     }
 }

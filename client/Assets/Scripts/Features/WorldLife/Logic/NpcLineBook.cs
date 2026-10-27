@@ -1,3 +1,4 @@
+using CTLife.Core;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -46,7 +47,7 @@ namespace CTLife.WorldLife
         public static string Fill(string template, IReadOnlyDictionary<string, string> parameters)
         {
             if (template == null) return null;
-            var sb = new StringBuilder(template);
+            var sb = new StringBuilder(NameTable.Apply(template));   // approved names (names.json)
             foreach (var slot in Slots(template))
             {
                 string raw = null;

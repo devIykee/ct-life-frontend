@@ -1,3 +1,4 @@
+using CTLife.Core;
 using System.Collections.Generic;
 using System.Globalization;
 
@@ -60,7 +61,7 @@ namespace CTLife.UI
             ["c9.reason"] = "Welcome the newcomer. Asking for help is allowed.",
         };
 
-        public static string T(string key) => Copy.TryGetValue(key, out var value) ? value : key;
+        public static string T(string key) => Copy.TryGetValue(key, out var value) ? NameTable.Apply(value) : key;
         public static string F(string key, params object[] args) => string.Format(CultureInfo.CurrentCulture, T(key), args);
     }
 }

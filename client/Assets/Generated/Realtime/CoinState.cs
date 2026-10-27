@@ -41,5 +41,11 @@ namespace CTLife.Realtime {
 
 		[global::Colyseus.Schema.Type(9, "bigint64")]
 		public long launchedAt = default(long);
+
+		[global::Colyseus.Schema.Type(10, "boolean")]
+		public bool playerLaunched = false;
+
+		[global::Colyseus.Schema.Type(11, "string")]
+		public string templateId = "";
 	}
 }

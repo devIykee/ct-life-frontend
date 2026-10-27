@@ -1,3 +1,4 @@
+using CTLife.Core;
 using System.Collections.Generic;
 using System.Globalization;
 
@@ -364,36 +365,10 @@ namespace CTLife.SocialFeatures
             ["feed.followed"] = "Followed.",
             ["feed.unfollowed"] = "Unfollowed.",
             ["feed.message"] = "Message",
-            ["feed.tip"] = "Tip",
             ["feed.more"] = "More",
             ["feed.notAdvice"] = "In-game posts only. Never real-money advice; posting never earns rewards.",
 
             // ---- tips (#28)
-            ["tip.title"] = "Tip {0}",
-            ["tip.cash"] = "Cash tip",
-            ["tip.cashHint"] = "Game Cash only. It never leaves the game.",
-            ["tip.amount"] = "Amount in Cash (e.g. 25)",
-            ["tip.capKnown"] = "Daily cap: {0}",
-            ["tip.capServer"] = "The server applies the daily cap.",
-            ["tip.balance"] = "Your Cash: {0}",
-            ["tip.send"] = "Send tip",
-            ["tip.sent"] = "Tipped {0}.",
-            ["tip.sentNet"] = "Tipped {0}: they got {1} ({2} fee burned).",
-            ["tip.fee"] = "{0}% fee, they get {1}",
-            ["tip.feeHint"] = "{0}% of every Cash tip is burned.",
-            ["tip.min"] = "The smallest tip is $0.02.",
-            ["tip.onchain"] = "Record a wallet tip",
-            ["tip.onchainHint"] = "Sent USDC, SOL or SKR to them from your wallet? Paste the transaction signature so it shows on your profile. CT Life never moves it.",
-            ["tip.signature"] = "Transaction signature",
-            ["tip.record"] = "Record",
-            ["tip.recorded"] = "Recorded.",
-            ["tip.badAmount"] = "Enter an amount like 25 or 12.50.",
-            ["tip.overCap"] = "That's over today's tip cap.",
-            ["tip.overBalance"] = "You don't have that much Cash.",
-            ["tip.badUser"] = "You can't tip that player.",
-            ["tip.frozen"] = "Cash moves are paused right now.",
-            ["tip.unknown"] = "We couldn't confirm the tip. Try again: it won't send twice.",
-            ["tip.badSignature"] = "That doesn't look like a Solana transaction signature.",
 
             // ---- profile actions (ProfileCard hook)
             ["profile.message"] = "Message",
@@ -401,10 +376,9 @@ namespace CTLife.SocialFeatures
             ["profile.unfollow"] = "Unfollow",
             ["profile.call"] = "Video call",
             ["profile.paidCall"] = "Paid call",
-            ["profile.tip"] = "Tip",
         };
 
-        public static string T(string key) => key != null && En.TryGetValue(key, out var v) ? v : key ?? "";
+        public static string T(string key) => key != null && En.TryGetValue(key, out var v) ? NameTable.Apply(v) : key ?? "";
         public static string F(string key, params object[] args) => string.Format(CultureInfo.InvariantCulture, T(key), args);
         public static bool Has(string key) => key != null && En.ContainsKey(key);
     }

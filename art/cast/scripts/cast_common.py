@@ -8,7 +8,9 @@ import numpy as np
 from pathlib import Path
 from mathutils import Vector
 
-REPO = Path('/Users/mac/Documents/codes/projects/ct-life')
+import os
+# CTLIFE_REPO points the pipeline at another checkout (lanes work in their own worktrees); default: the main clone
+REPO = Path(os.environ.get('CTLIFE_REPO', '/Users/mac/Documents/codes/projects/ct-life'))
 CAST = REPO / 'art/cast'
 EXPORT = CAST / 'export'
 PREVIEWS = CAST / 'previews'

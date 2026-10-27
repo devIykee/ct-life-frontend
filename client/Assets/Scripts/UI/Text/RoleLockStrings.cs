@@ -1,3 +1,4 @@
+using CTLife.Core;
 using System.Collections.Generic;
 using System.Globalization;
 
@@ -58,7 +59,7 @@ namespace CTLife.UI
             ["board.4.joke"] = "A shiny badge is not a support qualification.",
             ["board.4.success"] = "Tickets answered. The badge printer remains supervised."
         };
-        public static string T(string key) => En.TryGetValue(key, out var value) ? value : key;
+        public static string T(string key) => En.TryGetValue(key, out var value) ? NameTable.Apply(value) : key;
         public static string F(string key, params object[] args) => string.Format(CultureInfo.CurrentCulture, T(key), args);
         public static string Board(RoleLockBoard board, string key) => T("board." + board.Story + "." + key);
         public static string Summary(RoleLockResult result) => F("summary", result.CorrectBoards, result.LockedBoards, result.ExtraGrants, result.MissingGrants);

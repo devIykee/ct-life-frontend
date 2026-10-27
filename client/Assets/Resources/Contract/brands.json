@@ -1,0 +1,110 @@
+{
+  "_owner": "FE",
+  "_note": "Every real brand MARK the game draws (logos, colours), in one place beside names.json (user decision 2026-10-26: McDonald's branded like McDonald's). The art generators read this file; to drop or swap a mark, edit the entry (or point 'mark' at a neutral SVG) and re-run the generators listed in 'used_by'. The mark geometry is the UI v2 arches (design-system/v2/src/build_v2.py), so 3D signage and UI cards match. The trademark question is the user's call (flagged by the coordinator).",
+  "version": 1,
+  "brands": {
+    "brand.mcdonalds": {
+      "name": "venue.rekt_burger",
+      "mark": "art/source/brands/mcdonalds_mark.svg",
+      "colors": {
+        "red": "#DA291C",
+        "yellow": "#FFC72C",
+        "dark": "#27251F"
+      },
+      "used_by": [
+        "art/source/rektburger/build.py (storefront board, UI logo and badge, the restaurant's sign atlas)",
+        "art/pipeline/rekt_room.py (wall palette)",
+        "UI v2 brand table (design-system/v2 DELTA.md: brand id mcdonalds; the BrandTable sprite is mark_png, rendered from this SVG)",
+        "client World/Jobs/RektBurgerMenu.cs (customer order lines, via Resources/Contract/brands.json, a copy of this file)"
+      ],
+      "ui_id": "mcdonalds",
+      "ui_tokens": {
+        "title": "#DA291C",
+        "primary": "#FFC72C",
+        "primary_top": "#FFDA6B",
+        "primary_base": "#D39A00",
+        "label": "#27251F"
+      },
+      "mark_png": "client/Assets/Resources/UI/Brands/mcdonalds_mark.png",
+      "menu": [
+        {
+          "item": "Big Mac",
+          "price": "$5.69"
+        },
+        {
+          "item": "Quarter Pounder",
+          "price": "$6.29"
+        },
+        {
+          "item": "McChicken",
+          "price": "$3.49"
+        },
+        {
+          "item": "Happy Meal",
+          "price": "$4.99"
+        },
+        {
+          "item": "10 pc McNuggets",
+          "price": "$5.99"
+        },
+        {
+          "item": "Large Fries",
+          "price": "$3.79"
+        },
+        {
+          "item": "McFlurry",
+          "price": "$4.39"
+        },
+        {
+          "item": "Medium Coke",
+          "price": "$1.99"
+        }
+      ],
+      "order_lines": [
+        {
+          "text": "One {item}, extra cope.",
+          "item": 0
+        },
+        {
+          "text": "{item}. I got liquidated.",
+          "item": 4
+        },
+        {
+          "text": "{item}, no salt. I'm down 90%.",
+          "item": 5
+        },
+        {
+          "text": "A {item}. Holding it till it melts.",
+          "item": 6
+        },
+        {
+          "text": "{item}, to go. Fast.",
+          "item": 1
+        },
+        {
+          "text": "Can I pay in airdrop points?"
+        },
+        {
+          "text": "Two {item}s. One's for my bags.",
+          "item": 2
+        },
+        {
+          "text": "Ser, this is a {name}. {item}.",
+          "item": 5
+        },
+        {
+          "text": "A {item}. I need the toy more than the coin.",
+          "item": 3
+        },
+        {
+          "text": "{item}. Why is it more today?",
+          "item": 7
+        },
+        {
+          "text": "Just a water. Shorted the top again."
+        }
+      ],
+      "_menu_note": "Menu item names are the brand's real product names (user decision 2026-10-26, real branding); the menu boards (art/source/rektburger/build.py) and the customers' lines read them here."
+    }
+  }
+}

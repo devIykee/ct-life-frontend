@@ -23,6 +23,9 @@ namespace CTLife.UI
             public string identityId;
             public string identityLabelKey;
             public string species = "human";
+            /// <summary>Kept (assets, existing players) but not offered in the look picker. Coordinator 2026-10-27: creature
+            /// and robot looks are off so every new player character matches the realistic cast; flip back to offer them.</summary>
+            public bool hidden;
             public string[] look = new string[7];
             public string Display => Strings.T(labelKey) != labelKey ? Strings.T(labelKey) : (string.IsNullOrEmpty(label) ? labelKey : label);
             public float previewYaw = 180f;
@@ -65,11 +68,12 @@ namespace CTLife.UI
         {
             if (look == null) return 0f;
             var key = string.Join("|", look);
-            foreach (var e in Available()) if (e.look != null && string.Join("|", e.look) == key) return e.previewYaw;
+            foreach (var e in Available(true)) if (e.look != null && string.Join("|", e.look) == key) return e.previewYaw;
             return 0f;
         }
 
-        public static List<Entry> Available()
+        /// <summary>The looks the picker offers (hidden ones left out unless <paramref name="includeHidden"/>).</summary>
+        public static List<Entry> Available(bool includeHidden = false)
         {
             var result = new List<Entry>();
             var catalog = Resources.Load<CreatorLookCatalog>("UI/CreatorLookCatalog");
@@ -82,6 +86,7 @@ namespace CTLife.UI
             foreach (var choice in choices)
             {
                 if (choice?.look == null || choice.look.Length != Slots.Length || string.IsNullOrWhiteSpace(choice.labelKey)) continue;
+                if (choice.hidden && !includeHidden) continue;
                 if (Strings.T(choice.labelKey) == choice.labelKey && string.IsNullOrWhiteSpace(choice.label)) continue;
                 bool complete = true;
                 foreach (var id in choice.look) if (string.IsNullOrWhiteSpace(id)) { complete = false; break; }

@@ -6,6 +6,8 @@ using CTLife.Core;
 using CTLife.Net;
 using CTLife.UI.Kit;
 using UnityEngine;
+using UnityEngine.UIElements;
+using CTLife.UI;
 
 namespace CTLife.CityLife.Season
 {
@@ -156,8 +158,67 @@ namespace CTLife.CityLife.Season
             ["nod.slow"] = "Easy, one nod at a time.",
             ["nod.found"] = "Nod found: {0} · +{1} Season XP",
             ["nod.set"] = "Set complete: {0}! Reward in your wardrobe.",
+            // the season screens (UI brief 2026-10-25)
+            ["ui.offline"] = "The season isn't available right now.",
+            ["ui.loading"] = "Loading…",
+            ["ui.kicker"] = "SEASON PASS",
+            ["ui.ends"] = "Ends in {0}",
+            ["ui.ended"] = "Season over",
+            ["ui.tierOf"] = "Tier {0}/{1}",
+            ["ui.xpNext"] = "{0} / {1} XP",
+            ["ui.xpMax"] = "{0} XP · all tiers",
+            ["ui.foot"] = "Season rewards are in-game only and can't be traded or withdrawn. Season XP comes from quests and nods.",
+            ["ui.earn"] = "Earn Season XP from daily and weekly quests and by finding nods around the city.",
+            ["tab.season"] = "SEASON",
+            ["tab.book"] = "NODS BOOK",
+            ["tab.hunters"] = "HUNTERS",
+            ["ui.passRow"] = "SEASON PASS",
+            ["ui.passOn"] = "Active this season",
+            ["ui.passOff"] = "Unlocks the gold track",
+            ["ui.activate"] = "Activate",
+            ["ui.freeRow"] = "FREE",
+            ["ui.freeSub"] = "For everyone",
+            ["ui.tagPass"] = "PASS",
+            ["ui.tagFree"] = "FREE",
+            ["ui.tagTier"] = "TIER {0}",
+            ["ui.claimChip"] = "CLAIM",
+            ["ui.claim"] = "Claim",
+            ["ui.getPass"] = "Season Pass",
+            ["ui.claimed"] = "Claimed",
+            ["ui.ready"] = "Ready to claim",
+            ["ui.reach"] = "Reach tier {0} · {1} XP to go",
+            ["ui.passTier"] = "Season Pass reward · needs {0} XP",
+            ["ui.passReached"] = "Season Pass reward · tier reached",
+            ["ui.claimedToast"] = "{0} claimed!",
+            ["ui.alreadyClaimed"] = "{0} was already yours",
+            ["ui.needPass"] = "This one is on the Season Pass track.",
+            ["ui.notYet"] = "Not reached yet. Keep earning Season XP.",
+            ["kind.cash"] = "CASH", ["kind.cash.short"] = "Cash",
+            ["kind.cosmetic"] = "WARDROBE", ["kind.cosmetic.short"] = "Wardrobe",
+            ["kind.furniture"] = "HOME", ["kind.furniture.short"] = "Home",
+            ["book.count"] = "{0}/{1}",
+            ["book.reward"] = "Complete the set: {0}",
+            ["book.rewardGot"] = "Set complete · {0} is in your wardrobe",
+            ["book.unknown"] = "Not found yet",
+            ["book.hint"] = "Somewhere in the city. Look for the painted disc.",
+            ["book.district"] = "District",
+            ["book.kind"] = "Community",
+            ["book.rarity"] = "Rarity",
+            ["book.found"] = "Found",
+            ["book.knownAs"] = "Known as “{0}”",
+            ["tier.A"] = "Hero", ["tier.B"] = "Poster", ["tier.C"] = "Deep cut",
+            ["hunt.title"] = "Nod Hunters",
+            ["hunt.total"] = "{0} nods to find",
+            ["hunt.empty"] = "No one has found a nod yet. Be the first.",
+            ["hunt.unit"] = "nods",
+            ["card.title"] = "{0}",
+            ["card.sub"] = "Tier {0}/{1} · {2}",
+            ["card.claim"] = "{0} to claim",
+            ["card.none"] = "Keep earning Season XP",
+            ["card.book"] = "Nods Book · {0}/{1} found",
+            ["card.open"] = "Open",
         };
-        public static string T(string key) => En.TryGetValue(key, out var v) ? v : key;
+        public static string T(string key) => En.TryGetValue(key, out var v) ? NameTable.Apply(v) : key;
         public static string F(string key, params object[] a) => string.Format(System.Globalization.CultureInfo.InvariantCulture, T(key), a);
     }
 
@@ -192,6 +253,8 @@ namespace CTLife.CityLife.Season
                 _ = svc.Collect(id, me != null ? me.transform.position : Vector3.zero);
             };
             CTLife.World.NodHooks.NotifyFoundRefreshed();
+            QuestsApp.SeasonCard = svc == null ? (Func<VisualElement>)null : SeasonCard.Build;
+            if (svc == null) SeasonSheet.CloseOpen();
         }
 
         private static void Toast(NodCollect r)
@@ -210,6 +273,42 @@ namespace CTLife.CityLife.Season
             _svc = null;
             CTLife.World.NodHooks.IsFound = null;
             CTLife.World.NodHooks.TryCollect = null;
+            QuestsApp.SeasonCard = null;
+            SeasonSheet.CloseOpen();
+        }
+    }
+
+    /// <summary>The season's card on top of the Quests app (Season XP comes from quests): tier, rewards to claim, the book.</summary>
+    public static class SeasonCard
+    {
+        public static VisualElement Build()
+        {
+            var svc = SeasonService.Current;
+            if (svc == null) return null;
+            var s = svc.Season;
+            var card = El.Btn("", () => SeasonSheet.Show(SeasonSheet.TabSeason), "quests-season");
+            card.name = "quests-season";
+            card.RemoveFromClassList("unity-button");
+            var col = El.Div("quests-season-copy");
+            col.Add(El.Text(s?.Name ?? SeasonText.T("ui.kicker"), "quests-season-title"));
+            int tiers = s == null ? 0 : Math.Max(s.Free.Count, s.Paid.Count);
+            string claim = s == null ? "" : s.ClaimableCount > 0 ? SeasonText.F("card.claim", s.ClaimableCount) : SeasonText.T("card.none");
+            col.Add(El.Text(s == null ? SeasonText.T("ui.loading") : SeasonText.F("card.sub", s.Tier, tiers, claim), "quests-season-sub"));
+            var b = svc.Book;
+            if (b != null) col.Add(El.Text(SeasonText.F("card.book", b.Collected, b.Total), "quests-season-sub"));
+            var fill = El.Div("quests-season-fill");
+            fill.style.scale = new Scale(new Vector3(s?.TierProgress ?? 0f, 1f, 1f));
+            col.Add(El.Div("quests-season-bar", fill));
+            card.Add(El.Div("quests-season-badge", El.Text(s?.Tier.ToString() ?? "-", "quests-season-n")));
+            card.Add(col);
+            var book = El.Btn("", () => SeasonSheet.Show(SeasonSheet.TabBook), "quests-season-book");
+            book.name = "quests-season-book";
+            book.RemoveFromClassList("unity-button");
+            book.Add(new UiIcon("heat"));
+            card.Add(book);
+            card.EnableInClassList("quests-season--claim", s != null && s.ClaimableCount > 0);
+            foreach (var e in card.Query<VisualElement>().ToList()) if (e != card && e != book && e.parent != book) e.pickingMode = PickingMode.Ignore;
+            return card;
         }
     }
 }

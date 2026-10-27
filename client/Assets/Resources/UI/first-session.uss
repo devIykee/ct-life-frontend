@@ -1,0 +1,101 @@
+/* The guided first session + the dream ladder sheet (queue 17 + 18, lane B 2026-10-25).
+   Approved brief: ct-life-evidence/onboarding-17/BRIEF.md (W2-W6). The objective line and the passed line reuse the heat work's
+   GTA language; the ladder sheet is Clash Royale's Trophy Road / Duolingo's path in our HUD tokens: LilitaOne display,
+   Inter body, deep purple rgb(20,6,44), yellow rgb(255,210,63). */
+
+/* objective subtitle: bottom centre, one line, keywords yellow */
+.fs-subtitle {
+    position: absolute; bottom: 210px; left: 50%; translate: -50% 12px; max-width: 64%; padding: 10px 22px; border-radius: 12px;
+    background-color: rgba(0,0,0,0.6); opacity: 0; transition-property: opacity, translate; transition-duration: 0.2s;
+}
+.fs-subtitle.fs-in { opacity: 1; translate: -50% 0; }
+.fs-subtitle-text { font-size: 26px; color: rgb(255,255,255); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); -unity-text-align: middle-center; white-space: normal; margin: 0; padding: 0; }
+
+/* MISSION PASSED line: FIRST DAY DONE / STUDIO UNLOCKED */
+.fs-passed { position: absolute; top: 22%; left: 0; right: 0; align-items: center; opacity: 0; translate: 0 10px; transition-property: opacity, translate; transition-duration: 0.22s; }
+.fs-passed.fs-in { opacity: 1; translate: 0 0; }
+.fs-passed-word {
+    font-size: 88px; color: rgb(255,210,63); -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); letter-spacing: 4px; margin: 0; padding: 0;
+    -unity-text-outline-width: 1.5px; -unity-text-outline-color: rgb(20,6,44);
+}
+.fs-passed-sub { font-size: 24px; color: rgb(255,255,255); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); margin: 0; padding: 0; -unity-text-outline-width: 0.4px; -unity-text-outline-color: rgba(0,0,0,0.7); }
+
+/* Skip intro: a small dark pill under the minimap */
+.fs-skip, .fs-skip:hover, .fs-skip:active, .fs-skip:focus {
+    position: absolute; right: 40px; top: 430px; height: 50px; padding: 0 22px; margin: 0; border-radius: 25px; border-width: 2px;
+    border-color: rgba(255,255,255,0.22); background-color: rgba(20,6,44,0.78); color: rgb(255,255,255); font-size: 20px;
+    -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); opacity: 0; transition-property: opacity; transition-duration: 0.2s;
+}
+.fs-skip.fs-in { opacity: 0.92; }
+.fs-skip:active { scale: 0.96 0.96; }
+
+/* the joystick ring's pulse: first steps, no text */
+.fs-joy-pulse {
+    position: absolute; border-radius: 150px; border-width: 6px;
+    border-color: rgb(255,210,63); opacity: 0.95; scale: 1 1; transition-property: scale, opacity; transition-duration: 0.65s;
+}
+.fs-joy-pulse--out { scale: 1.16 1.16; opacity: 0.25; }
+
+/* the one coach ring on a real control (Pulse: Buy, then Place) */
+.fs-coach { border-width: 5px; border-color: rgb(255,210,63); }
+
+/* ---------------------------------------------------------------- the dream ladder sheet (W6) */
+.fs-ladder-scrim {
+    position: absolute; left: 0; top: 0; right: 0; bottom: 0; align-items: flex-start; justify-content: center; padding-left: 90px;
+    background-color: rgba(10,2,22,0.55); opacity: 0; transition-property: opacity; transition-duration: 0.2s;
+}
+.fs-ladder-scrim.fs-in { opacity: 1; }
+.fs-ladder-card {
+    width: 640px; padding: 26px 30px 24px 30px; border-radius: 26px; border-width: 3px; border-color: rgb(76,40,88);
+    background-color: rgb(28,10,48); translate: -30px 0; transition-property: translate; transition-duration: 0.22s;
+}
+.fs-ladder-scrim.fs-in .fs-ladder-card { translate: 0 0; }
+.fs-ladder-head { flex-direction: row; align-items: flex-start; padding-bottom: 14px; border-bottom-width: 2px; border-color: rgb(76,40,88); }
+.fs-ladder-head-copy { flex-grow: 1; flex-shrink: 1; }
+.fs-ladder-caption { font-size: 20px; letter-spacing: 3px; color: rgb(190,166,216); -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); margin: 0; padding: 0; }
+.fs-ladder-dream { font-size: 36px; color: rgb(255,210,63); -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); margin: 4px 0 0 0; padding: 0; white-space: normal; }
+.fs-ladder-close, .fs-ladder-close:hover, .fs-ladder-close:active, .fs-ladder-close:focus {
+    width: 56px; height: 56px; margin: 0; padding: 0; border-radius: 28px; border-width: 0; background-color: rgba(255,255,255,0.1);
+    color: rgb(255,255,255); font-size: 26px; -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf");
+}
+.fs-ladder-rungs { margin-top: 10px; }
+.fs-ladder-rung, .fs-ladder-rung:hover, .fs-ladder-rung:active, .fs-ladder-rung:focus {
+    flex-direction: row; align-items: center; height: 62px; padding: 0 14px; margin: 3px 0; border-radius: 14px; border-width: 0;
+    background-color: rgba(0,0,0,0);
+}
+.fs-ladder-icon { width: 40px; height: 40px; border-radius: 12px; align-items: center; justify-content: center; background-color: rgb(52,24,78); margin-right: 14px; }
+.fs-ladder-icon .ct-icon, .fs-ladder-icon > * { -unity-background-image-tint-color: rgb(206,186,236); width: 24px; height: 24px; }
+.fs-ladder-name { font-size: 28px; color: rgb(236,226,255); -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); margin: 0; padding: 0; }
+.fs-ladder-right { font-size: 22px; color: rgb(190,166,216); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); margin: 0; padding: 0; }
+.fs-ladder-badge {
+    font-size: 15px; letter-spacing: 2px; color: rgb(28,10,48); background-color: rgb(186,132,255); border-radius: 8px; padding: 3px 8px;
+    margin: 0 0 0 12px; -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf");
+}
+.fs-ladder-rung--dream .fs-ladder-name { color: rgb(186,132,255); }
+.fs-ladder-rung--dream .fs-ladder-icon { background-color: rgb(60,30,96); }
+.fs-ladder-rung--dream .fs-ladder-right { color: rgb(186,132,255); }
+.fs-ladder-rung--owned .fs-ladder-badge { background-color: rgb(255,210,63); }
+.fs-ladder-rung--below .fs-ladder-name, .fs-ladder-rung--below .fs-ladder-right { color: rgb(130,108,156); }
+.fs-ladder-rung--here { background-color: rgba(255,210,63,0.1); }
+.fs-ladder-rung--here .fs-ladder-name, .fs-ladder-rung--here .fs-ladder-right { color: rgb(255,210,63); }
+.fs-ladder-rung--here .fs-ladder-icon { background-color: rgb(255,210,63); }
+.fs-ladder-rung--here .fs-ladder-icon > * { -unity-background-image-tint-color: rgb(28,10,48); }
+.fs-ladder-rung--next { background-color: rgb(58,26,86); border-width: 2px; border-color: rgb(255,210,63); }
+.fs-ladder-rung--next .fs-ladder-right { color: rgb(255,210,63); -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); }
+.fs-ladder-foot { margin-top: 14px; padding-top: 14px; border-top-width: 2px; border-color: rgb(76,40,88); }
+.fs-ladder-bar { height: 12px; border-radius: 6px; background-color: rgb(52,24,78); overflow: hidden; }
+.fs-ladder-fill { height: 12px; border-radius: 6px; background-color: rgb(255,210,63); }
+.fs-ladder-note { font-size: 21px; color: rgb(220,206,240); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); margin: 10px 0 0 0; padding: 0; white-space: normal; }
+.fs-ladder-actions { flex-direction: row; margin-top: 14px; }
+.fs-ladder-pill, .fs-ladder-pill:hover, .fs-ladder-pill:active, .fs-ladder-pill:focus {
+    height: 58px; padding: 0 26px; margin: 0 12px 0 0; border-radius: 29px; border-width: 0; background-color: rgb(255,210,63);
+    color: rgb(28,10,48); font-size: 24px; -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); letter-spacing: 1px;
+}
+.fs-ladder-pill--go, .fs-ladder-pill--go:hover, .fs-ladder-pill--go:active, .fs-ladder-pill--go:focus { background-color: rgb(20,241,149); }
+.fs-ladder-earn-row { flex-direction: row; margin-top: 12px; }
+.fs-ladder-chip, .fs-ladder-chip:hover, .fs-ladder-chip:active, .fs-ladder-chip:focus {
+    flex-direction: row; align-items: center; height: 54px; padding: 0 20px; margin: 0 10px 0 0; border-radius: 27px; border-width: 2px;
+    border-color: rgb(76,40,88); background-color: rgb(40,16,64);
+}
+.fs-ladder-chip > .ct-icon, .fs-ladder-chip > * { -unity-background-image-tint-color: rgb(255,255,255); }
+.fs-ladder-chip-text { font-size: 22px; color: rgb(255,255,255); -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); margin: 0 0 0 8px; padding: 0; }

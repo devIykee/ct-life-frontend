@@ -215,7 +215,17 @@ namespace CTLife.World.Vehicles
             GuardPeople(_v.Occupied || speed > 4f ? speed : 0f);
             SkidAmount = Mathf.MoveTowards(SkidAmount, skid, 4f * dt);
             Rpm01 = Mathf.Clamp01(Mathf.Abs(fwdSpeed) / Mathf.Max(1f, _s.topSpeed) * 1.15f + Mathf.Abs(drive) * 0.12f);
+            // Parked and settled on every wheel: put the body to sleep. The suspension's own forces (AddForce wakes a body)
+            // otherwise kept every parked car awake, casting its wheel rays each step for ever; a hit or a driver wakes it.
+            if (parked && groundedCount == _wheels.Length && speed < 0.05f && _rb.angularVelocity.sqrMagnitude < 0.0025f)
+            {
+                _settledFor += dt;
+                if (_settledFor > 0.5f) { _rb.Sleep(); _settledFor = 0f; }
+            }
+            else _settledFor = 0f;
         }
+
+        private float _settledFor;
 
         /// <summary>One tyre's inputs, in its own ground frame (vf along, vs sideways, m/s; forces in N).</summary>
         public struct TyreIn

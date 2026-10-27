@@ -1,3 +1,4 @@
+using CTLife.Core;
 using System.Collections.Generic;
 using System.Globalization;
 
@@ -38,7 +39,7 @@ namespace CTLife.UI
             ["applause.6"]="The bug report included steps to reproduce.", ["applause.7"]="The panel agreed to define one acronym.",
             ["applause.8"]="The backup cable has saved the show.", ["applause.9"]="The last slide contains a working link."
         };
-        public static string T(string key) => En.TryGetValue(key, out var value) ? value : key;
+        public static string T(string key) => En.TryGetValue(key, out var value) ? NameTable.Apply(value) : key;
         public static string F(string key, params object[] args) => string.Format(CultureInfo.CurrentCulture, T(key), args);
         public static string Action(LiveCueAction action) => T(action.ToString().ToLowerInvariant());
         public static string Cue(LiveCue cue) => T(cue.Action.ToString().ToLowerInvariant()+"."+cue.Copy);

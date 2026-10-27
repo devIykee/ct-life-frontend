@@ -6,6 +6,7 @@ using CTLife.Core;
 using CTLife.World;
 using CTLife.World.Vehicles;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace CTLife.CityLife.Heat
 {
@@ -81,13 +82,14 @@ namespace CTLife.CityLife.Heat
             }
             if (offer == null) { Mark("no steal offer"); return; }
             // the help box a player's parked car asks with, on foot beside it (look check)
-            var near = offer.follow != null ? offer.follow.GetComponent<Vehicle>() : null;
+            var near = offer.follow != null ? (offer.follow.GetComponent<TrafficCar>()?.Vehicle ?? offer.follow.GetComponentInChildren<Vehicle>()) : null;
+            Mark("help box car: " + (near != null ? near.specId : "none"));
             if (near != null)
             {
                 HeatOverlays.Current?.DevHelpBox(near);
                 await Awaitable.WaitForSecondsAsync(1.2f, ct);
                 Mark("shot steal help box");
-                await Awaitable.WaitForSecondsAsync(1.5f, ct);
+                await Awaitable.WaitForSecondsAsync(4f, ct);
                 HeatOverlays.Current?.DevCloseHelpBox();
                 await Awaitable.WaitForSecondsAsync(0.5f, ct);
                 offer = WorldOffers.Best(s.LocalPlayer.transform.position);
@@ -187,11 +189,22 @@ namespace CTLife.CityLife.Heat
         {
             if (!svc.Jailed) { Mark("not jailed"); return; }
             Mark($"jail: {(svc.Jail.UntilMs - svc.NowMs) / 1000}s left, bail {svc.Jail.BailCents}");
-            await Awaitable.WaitForSecondsAsync(3f, ct);
-            Mark("shot jail panel");
+            await Awaitable.WaitForSecondsAsync(4.5f, ct);
+            Mark("shot jail panel");   // v2: the bail card (mockup c) over the jail
             await Awaitable.WaitForSecondsAsync(2f, ct);
-            try { await svc.PayBail(); Mark("bail paid"); }
-            catch (Exception e) { Mark("bail failed: " + e.Message); }
+            // press the card's real Pay button (falls back to the service when the card is not up)
+            var pay = CTLife.UI.UiRoot.Instance?.Modals?.Top?.Q<UnityEngine.UIElements.Button>("heat-bail-pay");
+            if (pay != null)
+            {
+                using (var e = UnityEngine.UIElements.NavigationSubmitEvent.GetPooled()) { e.target = pay; pay.SendEvent(e); }
+                for (int i = 0; i < 40 && svc.Jailed; i++) await Awaitable.WaitForSecondsAsync(0.25f, ct);
+                Mark(svc.Jailed ? "bail failed (card)" : "bail paid (card)");
+            }
+            else
+            {
+                try { await svc.PayBail(); Mark("bail paid"); }
+                catch (Exception e) { Mark("bail failed: " + e.Message); }
+            }
             await Awaitable.WaitForSecondsAsync(2f, ct);
             Mark("shot released");
         }

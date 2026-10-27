@@ -13,7 +13,7 @@ namespace CTLife.CityLife.Casino
     /// <summary>
     /// Coinflip (`POST /casino/coinflip/bet`, head-to-head `…/challenges`): our gold coin, BULL (heads) or BEAR (tails).
     /// Against the house a win pays 1.9x; the coin is tossed once the server has flipped it and lands on `outcome.result`.
-    /// Head-to-head: challenge someone from your DMs (stake escrowed, 120 s to accept, polled), incoming challenges with a
+    /// Head-to-head (bragging rights, no Cash: backend #25): challenge someone from your DMs (120 s to accept, polled), incoming challenges with a
     /// countdown ring and Accept / Decline, your sent ones with Cancel, and the last results. An accepted challenge is tossed
     /// on both phones (the challenger's when the poll sees it settle).
     /// </summary>
@@ -121,7 +121,7 @@ namespace CTLife.CityLife.Casino
             if (sub != null) sub.text = CasinoText.Money(Sheet.StakeCents) + "  ·  " + CasinoText.F("flip.pays", (State?.CoinflipPayout ?? 1.9).ToString("0.0#"));
             _flip.EnableInClassList("rr-cta--busy", Busy);
             var note = this.Q<Label>("rr-h2h-note");
-            if (note != null) note.text = CasinoText.F("flip.h2hNote", ((State?.H2HHouseCutBps ?? 500) / 100.0).ToString("0.#"), State?.ChallengeTtlSeconds ?? 120);
+            if (note != null) note.text = CasinoText.F("flip.h2hNote", State?.ChallengeTtlSeconds ?? 120);
         }
 
         public override void StateChanged() { _chips.Refresh(); Refresh(); }
@@ -188,6 +188,17 @@ namespace CTLife.CityLife.Casino
                 _banner.RemoveFromClassList("rr-coin-banner--won");
                 DeviceFeel.Reject();
             }
+            Motion.Pop(_banner, 1.1f, 0.25f);
+        }
+
+        /// <summary>A head-to-head result: bragging rights, no Cash line (nothing was staked).</summary>
+        private void H2HOutcome(bool won, string result, string vs)
+        {
+            if (vs != null) _vs.text = vs;
+            _banner.text = CasinoText.F(won ? "flip.h2hWon" : "flip.h2hLost", CasinoText.Side(result));
+            _banner.EnableInClassList("rr-coin-banner--won", won);
+            if (won) { _burst.Confetti(40); Cues.Play("sfx_slot_win", 0.9f); DeviceFeel.Confirm(); }
+            else DeviceFeel.Reject();
             Motion.Pop(_banner, 1.1f, 0.25f);
         }
 
@@ -284,7 +295,7 @@ namespace CTLife.CityLife.Casino
                     bool won = c.IWon(Svc.UserId);
                     var vs = CasinoText.F("flip.vs", "@" + Alias(c.ChallengerAlias), "@" + Alias(c.OpponentAlias));
                     _vs.text = vs;
-                    Toss(c.Result, () => { Outcome(won, c.Result, won ? c.PayoutCents ?? 0 : 0, vs); _ = Svc.RefreshState(); if (Services.TryGet<PlayerProfile>(out var p)) _ = p.Refresh().ContinueWith(_ => { }); });
+                    Toss(c.Result, () => H2HOutcome(won, c.Result, vs));
                 }
             }
             TickRings();
@@ -310,7 +321,7 @@ namespace CTLife.CityLife.Casino
                 if (tex != null && c.Result != null) art.style.backgroundImage = new StyleBackground(tex);
                 row.Add(art);
             }
-            var title = El.Text("@" + Alias(c.PeerAlias) + "  ·  " + CasinoText.Money(c.StakeCents), "rr-ch-title");
+            var title = El.Text("@" + Alias(c.PeerAlias), "rr-ch-title");
             title.enableRichText = false;
             var sub = El.Text(CasinoText.F("flip.youAre", CasinoText.Side(c.MySide)), "rr-ch-sub");
             var copy = El.Div("rr-ch-copy", title, sub);
@@ -336,7 +347,7 @@ namespace CTLife.CityLife.Casino
             else
             {
                 string key = c.Status == "settled" ? (c.IWon(Svc.UserId) ? "flip.status.settled.won" : "flip.status.settled.lost") : "flip.status." + c.Status;
-                var st = El.Text(CasinoText.Has(key) ? CasinoText.F(key, CasinoText.Money(c.PayoutCents ?? 0)) : c.Status, "rr-ch-status");
+                var st = El.Text(CasinoText.Has(key) ? CasinoText.T(key) : c.Status, "rr-ch-status");
                 st.EnableInClassList("rr-ch-status--won", c.Status == "settled" && c.IWon(Svc.UserId));
                 row.Add(st);
             }
@@ -359,8 +370,6 @@ namespace CTLife.CityLife.Casino
             if (_answering.Contains(c.ChallengeId) || (verb == "accept" && Busy)) return;
             if (verb == "accept")
             {
-                var s = State;
-                if (s != null && c.StakeCents > s.StakeRoomCents) { Sheet.Toast(CasinoText.T(s.StakeRemainingCents < c.StakeCents ? "err.STAKE_CAP_REACHED" : "err.LOSS_CAP_REACHED")); Cues.Nope(); return; }
                 _requesting = true;
                 _vs.text = CasinoText.F("flip.vs", "@" + Alias(c.ChallengerAlias), "@" + Alias(c.OpponentAlias));
                 _banner.text = CasinoText.Side(c.MySide) + "…";
@@ -384,11 +393,10 @@ namespace CTLife.CityLife.Casino
                     bool won = ch.IWon(Svc.UserId);
                     var vs = CasinoText.F("flip.vs", "@" + Alias(ch.ChallengerAlias), "@" + Alias(ch.OpponentAlias));
                     Log.Info("casino", $"challenge accepted {ch.ChallengeId}: {ch.Result} won {won}");
-                    Toss(ch.Result, () => { Svc.AfterBet(reply, reply.CashCents); Outcome(won, ch.Result, won ? ch.PayoutCents ?? 0 : 0, vs); });
+                    Toss(ch.Result, () => { Svc.Apply(reply); H2HOutcome(won, ch.Result, vs); });
                 }
                 else
                 {
-                    Svc.AfterBet(reply, reply.CashCents);
                     Sheet.Toast(CasinoText.T(verb == "cancel" ? "flip.status.cancelled" : "flip.status.declined"), good: true);
                 }
             }
@@ -416,7 +424,7 @@ namespace CTLife.CityLife.Casino
             var card = El.Div("rr-modal-card");
             card.name = "rr-picker";
             card.Add(El.Text(CasinoText.T("flip.pick"), "rr-modal-title"));
-            card.Add(El.Text(CasinoText.F("flip.pickSub", CasinoText.Money(Sheet.StakeCents), CasinoText.Side(_side)), "rr-modal-body"));
+            card.Add(El.Text(CasinoText.F("flip.pickSub", CasinoText.Side(_side)), "rr-modal-body"));
             var peers = new ScrollView(ScrollViewMode.Vertical);
             peers.AddToClassList("rr-peers");
             peers.verticalScrollerVisibility = ScrollerVisibility.Hidden;
@@ -431,11 +439,11 @@ namespace CTLife.CityLife.Casino
                 send.SetEnabled(false);
                 try
                 {
-                    var reply = await Svc.Api.Challenge(chosen, Sheet.StakeCents, _side, key, Svc.Life);
-                    Svc.AfterBet(reply, reply.CashCents);
+                    var reply = await Svc.Api.Challenge(chosen, _side, key, Svc.Life);
+                    Svc.Apply(reply);
                     _statusSeen[reply.Challenge.ChallengeId] = reply.Challenge.Status;
                     Svc.Upsert(reply.Challenge);
-                    Log.Info("casino", $"challenge sent {reply.Challenge.ChallengeId} to {chosenAlias} {reply.Challenge.StakeCents}c {reply.Challenge.ChallengerSide}");
+                    Log.Info("casino", $"challenge sent {reply.Challenge.ChallengeId} to {chosenAlias} {reply.Challenge.ChallengerSide}");
                     Sheet.CloseModal(modal);
                     Sheet.Toast(CasinoText.F("flip.sent", Alias(chosenAlias)), good: true);
                     Cues.Play("sfx_chips");

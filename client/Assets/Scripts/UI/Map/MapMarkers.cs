@@ -32,7 +32,8 @@ namespace CTLife.UI.Map
             foreach (var a in venue.Anchors)
             {
                 if (a == null) continue;
-                var kind = KindFor(a.kind, venue.LocalSpotId(a.spotId));
+                // only an exit needs its local spot id (building it allocates; this runs every frame)
+                var kind = KindFor(a.kind, string.Equals(a.kind, "exit", StringComparison.OrdinalIgnoreCase) ? venue.LocalSpotId(a.spotId) : null);
                 if (kind == null) continue;
                 var local = venue.ToLocal(a.transform.position);
                 into.Add(new MapMarker { Kind = kind.Value, Atlas = MapMath.AtlasFromLocal(placement, local), Id = a.spotId });
@@ -50,13 +51,14 @@ namespace CTLife.UI.Map
         }
 
         /// <summary>Spot kind to marker (null = not drawn). Only the exit spot is the door; seats are too many to be useful.</summary>
-        public static MarkerKind? KindFor(string spotKind, string localSpotId) => (spotKind ?? "").ToLowerInvariant() switch
+        public static MarkerKind? KindFor(string spotKind, string localSpotId)
         {
-            "exit" => localSpotId == "exit" ? MarkerKind.Door : (MarkerKind?)null,
-            "terminal" => MarkerKind.Desk,
-            "stage" => MarkerKind.Mic,
-            _ => null,
-        };
+            // case-insensitive without a lowered copy (called for every anchor every frame by the minimap)
+            if (string.Equals(spotKind, "exit", StringComparison.OrdinalIgnoreCase)) return localSpotId == "exit" ? MarkerKind.Door : (MarkerKind?)null;
+            if (string.Equals(spotKind, "terminal", StringComparison.OrdinalIgnoreCase)) return MarkerKind.Desk;
+            if (string.Equals(spotKind, "stage", StringComparison.OrdinalIgnoreCase)) return MarkerKind.Mic;
+            return null;
+        }
 
         /// <summary>The door of a venue you are not in, from the registry spots (venue-local), placed on the island.</summary>
         public static bool RegistryDoor(string venueId, MapPlacement placement, out Vector2 atlas)

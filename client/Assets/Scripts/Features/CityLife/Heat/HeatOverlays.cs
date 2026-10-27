@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using CTLife.Core;
 using CTLife.Net;
 using CTLife.UI;
+using CTLife.UI.DS;
 using CTLife.World;
 using CTLife.World.Vehicles;
 using UnityEngine;
@@ -26,9 +27,12 @@ namespace CTLife.CityLife.Heat
         private readonly Session _session;
         private HeatService _svc;
         private PolicePursuits _police;
-        private VisualElement _jail, _banner, _sheet;
-        private Label _jailClock;
-        private Button _bail;
+        private VisualElement _jail, _banner, _sheet, _bailCard;
+        private Label _jailClock, _bailClock;
+        private Button _bail, _bailPay;
+        private bool _bailBusy;
+        private string _toastedPursuit;
+        private HeatPlate _plate;
         private IVisualElementScheduledItem _tick;
         private bool _disposed, _explained;
         private float _confineAt;
@@ -86,7 +90,8 @@ namespace CTLife.CityLife.Heat
             _svc = null;
             CloseJail();
             _banner?.RemoveFromHierarchy(); _banner = null;
-            _sheet?.RemoveFromHierarchy(); _sheet = null;
+            if (_sheet != null) UiRoot.Instance?.Modals?.Close(_sheet);
+            _sheet = null;
             HeatPlate.Current?.Set(0);
         }
 
@@ -103,6 +108,9 @@ namespace CTLife.CityLife.Heat
             string word = HeatText.T("level." + level.ToString().ToLowerInvariant());
             HeatPlate.Current?.Set(stars, word, level == HeatLevel.Wanted || chased ? 3 : level == HeatLevel.Hot ? 2 : level == HeatLevel.Warm ? 1 : 0, chased);
             if (stars > 0 && !_explained) Explain();
+            // a chase already running when the game (re)starts gets its objective too
+            var mine = _svc.MyPursuit;
+            if (mine != null && mine.PursuitId != null && mine.PursuitId != _toastedPursuit && mine.TargetUserId == _svc.UserId) OnPursuit(mine);
             if (_svc.Jailed && _jail == null) OnJailed(_svc.Jail);
         }
 
@@ -110,12 +118,14 @@ namespace CTLife.CityLife.Heat
         {
             _explained = true;
             try { PlayerPrefs.SetInt("heat.explained", 1); PlayerPrefs.Save(); } catch (Exception) { }
-            Subtitle(HeatText.T("explain.body"), 7000);
+            Objective(HeatText.T("explain.body"), 7000, "info");
         }
 
         private void Tick()
         {
             if (_svc == null) return;
+            // a HUD built after the last server read (venue change, first frame) gets the current stars at once
+            if (HeatPlate.Current != _plate) { _plate = HeatPlate.Current; Render(); }
             if (_jail != null) UpdateJail();
         }
 
@@ -166,11 +176,13 @@ namespace CTLife.CityLife.Heat
         private void OnStealRequired(Vehicle v, string kind)
         {
             if (_disposed || v == null) return;
-            _sheet?.RemoveFromHierarchy();
+            var ui = UiRoot.Instance;
+            if (ui?.Modals == null) { Log.Warn("heat", "steal confirm: no modal host"); return; }
+            if (_sheet != null) ui.Modals.Close(_sheet);
+            Log.Info("heat", "steal confirm for a player's " + VehicleName(v));
             var name = VehicleName(v);
-            var body = El.Text(HeatText.F("steal.help", Y(name), "<color=#FF3B5C>+" + HeatRules.StealPlayerHeat + " heat</color>"), "heat-help-text");
-            body.enableRichText = true;
-            var yes = El.Btn(HeatText.T("steal.confirm"), () =>
+            // design system confirm (v2): the police car hero, one line, the heat it costs, Steal it / Leave it
+            var yes = new DsAction { Label = HeatText.T("steal.confirm"), Kind = BtnKind.Danger, Name = "heat-steal-yes", OnClick = () =>
             {
                 CloseSheet();
                 var id = v != null ? v.GetComponent<VehicleNetworkIdentity>() : null;
@@ -178,16 +190,15 @@ namespace CTLife.CityLife.Heat
                 id.Steal = true;
                 Log.Info("heat", "steal: player vehicle confirmed");
                 VehicleSystem.Current.Enter(v);
-            }, "heat-pill heat-pill-steal");
-            var no = El.Btn(HeatText.T("steal.cancel"), CloseSheet, "heat-pill heat-pill-ghost");
-            // GTA's help box: dark, plain, the keywords coloured; two pills
-            _sheet = El.Div("heat-sheet", body, El.Div("heat-sheet-actions", no, yes));
+            } };
+            var no = new DsAction { Label = HeatText.T("steal.cancel"), Kind = BtnKind.Text, Name = "heat-steal-no", OnClick = CloseSheet };
+            _sheet = Ds.Confirm(HeatText.F("steal.title", name), HeatText.T("steal.body"), yes, no, Ds.Hero("police-car", Tone.Danger),
+                Ds.Chip(HeatText.F("steal.tag", HeatRules.StealPlayerHeat), Tone.Danger, "star"));
             _sheet.name = "heat-steal-sheet";
-            _layer.Add(_sheet);
-            In(_sheet);
+            ui.Modals.Show(_sheet, DismissMode.Back, () => _sheet = null);
         }
 
-        private void CloseSheet() { var s = _sheet; _sheet = null; Out(s); }
+        private void CloseSheet() { var s = _sheet; _sheet = null; if (s != null) UiRoot.Instance?.Modals?.Close(s); }
 
         private void OnEnterRefused(string code, Vehicle v)
         {
@@ -228,8 +239,9 @@ namespace CTLife.CityLife.Heat
             if (_svc == null) return;
             if (p.TargetUserId == _svc.UserId)
             {
+                _toastedPursuit = p.PursuitId;
                 Bus.Publish(new SfxSignal("sfx_ui_error"));
-                Subtitle(HeatText.F("pursuit.start", Y("The Sleuth"), Y((int)p.EscapeRadiusM + " m"), Y((int)p.EscapeSeconds + " s")), 5500);
+                Objective(HeatText.F("pursuit.start", NameTable.Get("npc.sleuth", "The Sleuth"), (int)p.EscapeRadiusM + " m", (int)p.EscapeSeconds + " s"), 5500, "siren");
             }
             else Toast(HeatText.T("pursuit.nearby"), ToastKind.Info);
             Render();
@@ -266,21 +278,11 @@ namespace CTLife.CityLife.Heat
             p.schedule.Execute(() => p.RemoveFromHierarchy()).ExecuteLater(2700);
         }
 
-        /// <summary>GTA's objective subtitle: one line at the bottom centre, keywords in yellow (rich text).</summary>
-        private void Subtitle(string richText, int ms)
+        /// <summary>A police objective on the one toast channel (v2: the police mark tile, plain text).</summary>
+        private static void Objective(string text, int ms, string icon)
         {
-            _banner?.RemoveFromHierarchy();
-            var label = El.Text(richText, "heat-subtitle-text");
-            label.enableRichText = true;
-            var b = El.Div("heat-subtitle", label);
-            b.pickingMode = PickingMode.Ignore;
-            _banner = b;
-            _layer.Add(b);
-            In(b);
-            b.schedule.Execute(() => { if (_banner == b) { _banner = null; Out(b); } }).ExecuteLater(ms);
+            UiRoot.Instance?.Toasts?.Show(new DsToastSpec { Text = text, Brand = BrandTable.Police, Icon = icon, Seconds = ms / 1000f, Key = "heat-objective" });
         }
-
-        private static string Y(string s) => "<color=#FFD23F>" + s + "</color>";
 
         // ------------------------------------------------------------------ jail
 
@@ -291,18 +293,26 @@ namespace CTLife.CityLife.Heat
             if (sys != null && sys.Driving != null) sys.Exit();
             _ = ToJail();
             if (_jail != null) { UpdateJail(); return; }
-            _jailClock = El.Text("", "heat-timer-value");
-            _bail = El.Btn("", PayBail, "heat-bail");
-            _bail.name = "heat-bail";
-            // GTA timer bars under the minimap: the release countdown, and the yellow bail pill
-            _jail = El.Div("heat-jail",
-                El.Div("heat-timer", El.Text(HeatText.T("jail.left").ToUpperInvariant(), "heat-timer-label"), _jailClock),
-                _bail);
-            Subtitle(HeatText.F("jail.rules", Y(HeatText.T("jail.title"))), 7000);
-            _jail.name = "heat-jail";
+            // v2: a jail pill under the minimap (the release clock + Bail, which reopens the card) and the bail card (mockup c)
+            _jailClock = Ds.Text("", "ds-t-hud");
+            _bail = new Button(ShowBailCard) { text = "", name = "heat-bail" };
+            _bail.AddToClassList("ds-btn"); _bail.AddToClassList("ds-btn--primary"); _bail.AddToClassList("ds-btn--sm"); _bail.AddToClassList("heat-bail-btn");
+            _bail.Add(Ds.Text(HeatText.T("bail.short.btn"), "ds-btn-label"));
+            var badge = new VisualElement { pickingMode = PickingMode.Ignore };
+            badge.AddToClassList("ds-badge-ic");
+            badge.Add(Ds.Icon("clock", 36, "white"));
+            var col = new VisualElement { pickingMode = PickingMode.Ignore };
+            col.AddToClassList("ds-hud-pill-col");
+            col.Add(_jailClock);
+            col.Add(Ds.Text(HeatText.T("jail.title"), "ds-t-hud-caption"));
+            _jail = new VisualElement { name = "heat-jail" };
+            _jail.AddToClassList("heat-jail"); _jail.AddToClassList("ds-hud-pill"); _jail.AddToClassList(BrandTable.ClassFor(BrandTable.Police));
+            _jail.Add(badge); _jail.Add(col); _jail.Add(_bail);
             _layer.Add(_jail);
             In(_jail);
             UpdateJail();
+            // after the BUSTED band
+            _layer.schedule.Execute(ShowBailCard).ExecuteLater(_svc != null && _svc.MyPursuit == null ? 3200 : 300);
         }
 
         private void UpdateJail()
@@ -312,19 +322,52 @@ namespace CTLife.CityLife.Heat
             if (j == null) { CloseJail(); return; }
             long left = j.UntilMs - _svc.NowMs;
             _jailClock.text = HeatRules.Clock(Math.Max(0, left));
-            if (_bail.enabledSelf || _bail.text.Length == 0) _bail.text = HeatText.F("jail.bail", Money.Cash(j.BailCents));
+            if (_bailClock != null) _bailClock.text = HeatRules.Clock(Math.Max(0, left));
             if (left <= -3000) _svc.Refresh();
             // kept inside the jail until released (the server refuses other venues and cars anyway)
             if (Time.unscaledTime >= _confineAt) { _confineAt = Time.unscaledTime + 1f; Confine(); }
         }
 
-        private async void PayBail()
+        /// <summary>The bail card (v2 mockup c): Bail / Free in tiles, Pay (police blue), Wait it out.</summary>
+        private void ShowBailCard()
         {
-            if (_svc == null || _bail == null) return;
-            _bail.SetEnabled(false); _bail.text = HeatText.T("jail.paying");
-            try { await _svc.PayBail(); }
-            catch (Exception e) { Toast(HeatService.Explain(e), ToastKind.Warning); }
-            finally { if (_bail != null) { _bail.SetEnabled(true); _bail.text = ""; } }
+            var ui = UiRoot.Instance;
+            var j = _svc?.Jail;
+            if (_disposed || ui?.Modals == null || j == null || (_bailCard != null && _bailCard.panel != null)) return;
+            var bail = Ds.Stat(HeatText.T("bail.label"), Money.Cash(j.BailCents), Ds.Coin, name: "heat-bail-amount");
+            var free = Ds.Stat(HeatText.T("bail.free"), HeatRules.Clock(Math.Max(0, j.UntilMs - _svc.NowMs)), "clock", name: "heat-bail-free");
+            _bailClock = free.Q<Label>("ds-tile-value");
+            VisualElement card = null;
+            card = Ds.Dialog(new DialogSpec
+            {
+                Name = "heat-bail-card",
+                Brand = BrandTable.Police,
+                Hero = Ds.HeroBrand(BrandTable.Police),
+                Title = HeatText.F("bail.title", HeatText.T("jail.title")),
+                Subtitle = HeatText.T("bail.sub"),
+                Tiles = { bail, free },
+                Width = DialogWidth.Confirm,
+                Primary = new DsAction { Label = HeatText.F("bail.pay", Money.Cash(j.BailCents)), Name = "heat-bail-pay", OnClick = () => PayBail(card) },
+                Secondary = new DsAction { Label = HeatText.T("bail.wait"), Kind = BtnKind.Text, Name = "heat-bail-wait", OnClick = () => ui.Modals.Close(card) },
+            });
+            _bailPay = card.Q<Button>("heat-bail-pay");
+            _bailCard = card;
+            ui.Modals.Show(card, DismissMode.Back, () => { _bailCard = null; _bailClock = null; }, "heat-bail-card");
+        }
+
+        private async void PayBail(VisualElement card)
+        {
+            if (_svc == null || _bailBusy) return;
+            _bailBusy = true;
+            Ds.SetBusy(_bailPay, true);
+            Ds.SetError(card, null);
+            try
+            {
+                await _svc.PayBail();
+                UiRoot.Instance?.Modals?.Close(card);
+            }
+            catch (Exception e) { Ds.SetError(card, HeatService.Explain(e)); }
+            finally { _bailBusy = false; if (_bailPay != null) Ds.SetBusy(_bailPay, false); }
         }
 
         private void OnReleased(string reason)
@@ -337,6 +380,8 @@ namespace CTLife.CityLife.Heat
         private void CloseJail()
         {
             var j = _jail; _jail = null; _jailClock = null; _bail = null;
+            if (_bailCard != null) UiRoot.Instance?.Modals?.Close(_bailCard);
+            _bailCard = null; _bailClock = null; _bailPay = null;
             Out(j);
         }
 
@@ -386,7 +431,7 @@ namespace CTLife.CityLife.Heat
 
 #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
         /// <summary>Dev captures: the help box for another player's car, without needing a second player.</summary>
-        public void DevHelpBox(Vehicle v) => OnStealRequired(v, v != null ? v.specId : "sedan");
+        public void DevHelpBox(Vehicle v) { Log.Info("heat", "dev: steal confirm " + (v != null ? v.specId : "none")); OnStealRequired(v, v != null ? v.specId : "sedan"); }
         public void DevCloseHelpBox() => CloseSheet();
 #endif
 

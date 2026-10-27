@@ -112,6 +112,21 @@
 .ob-origin-value--debt { color: rgb(255, 166, 80); }
 .ob-origin-value--home { font-size: 44px; white-space: normal; }
 .ob-origin-note { font-size: 30px; color: rgb(190, 166, 216); margin-top: 16px; white-space: normal; }
+/* the dream ladder strip: "you start here" (queue 18, W1), one compact row so the card keeps its height */
+.ob-ladder { flex-direction: row; align-items: center; margin-top: 12px; flex-shrink: 0; }
+.ob-ladder-title, .ob-ladder-name {
+    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); margin: 0; padding: 0; -unity-text-outline-width: 0; white-space: nowrap;
+}
+.ob-ladder-title { font-size: 24px; letter-spacing: 2px; color: rgb(255, 214, 64); margin-right: 16px; }
+.ob-ladder-row { flex-direction: row; align-items: center; flex-shrink: 1; }
+.ob-ladder-rung { flex-direction: row; align-items: center; margin-right: 14px; }
+.ob-ladder-dot { width: 16px; height: 16px; border-radius: 8px; border-width: 3px; border-color: rgb(120, 92, 150); background-color: rgb(42, 18, 52); margin-right: 6px; }
+.ob-ladder-name { font-size: 22px; color: rgb(170, 146, 196); }
+.ob-ladder-rung--below .ob-ladder-dot { background-color: rgb(120, 92, 150); }
+.ob-ladder-rung--here .ob-ladder-dot { border-color: rgb(255, 214, 64); background-color: rgb(255, 214, 64); }
+.ob-ladder-rung--here .ob-ladder-name { color: rgb(255, 214, 64); }
+.ob-ladder-dream .ob-ladder-dot { border-color: rgb(186, 132, 255); border-radius: 3px; }
+.ob-ladder-dream .ob-ladder-name { color: rgb(186, 132, 255); }
 
 /* ------------------------------------------------------------------ creator: the character */
 

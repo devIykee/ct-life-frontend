@@ -212,6 +212,31 @@ if mode == 'tiers':
         cells += tier_cells(sc, cam, fam, lid)
     grid_sheet(cells, 'LOD COMPARISON - ORIGINAL CREATOR MESH VS HERO / LOD0 / LOD1 / LOD2', PREVIEWS / 'cast_lod_comparison.jpg', 5, FOOT)
 
+elif mode == 'looks':
+    # args: looks <out.jpg> <title> fam:lookId:Tier ... -> those looks at that tier (body + 3/4 head), one sheet
+    out, title = Path(args[1]), args[2]
+    sc, cam = reset_scene()
+    man = load_manifest()
+    cells = []
+    for spec in args[3:]:
+        fam, lid, tier = spec.split(':')
+        e = man[lid]
+        with bpy.data.libraries.load(str(fam_dir(fam) / 'looks.blend'), link=False) as (src, dst):
+            dst.objects = [f'{lid}_{tier}', FAMILIES[fam]['rig']]
+        m, r = dst.objects
+        sc.collection.objects.link(m); sc.collection.objects.link(r)
+        m.parent = r
+        m.modifiers['Game skin'].object = r
+        sv = e.get('scale', 1.0)
+        r.scale = (sv, sv, sv)
+        pose_relaxed(r)
+        bpy.context.view_layer.update()
+        b = render_obj(sc, cam, m, r, 'body', TMP / f'{lid}_{tier}_b.png', (CW, BH))
+        hd = render_obj(sc, cam, m, r, 'head3q', TMP / f'{lid}_{tier}_h.png', (CW, HH))
+        cells.append(([lid.upper()[:28], f'{tier} {tri_count(m):,} TRIS'], b, hd))
+        clear_meshes(sc)
+    grid_sheet(cells, title, out, 4, FOOT)
+
 elif mode == 'family':
     # args: family <fam> -> every look of that family on one sheet (full body + 3/4 head)
     fam = args[1]

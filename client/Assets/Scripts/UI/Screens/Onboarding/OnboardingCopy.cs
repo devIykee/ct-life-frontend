@@ -103,7 +103,7 @@ namespace CTLife.UI
             ["deep_pockets"] = ("rent penalty 0.5x", "Rent penalty halved"),
             ["iron_will"] = ("Sanity decay 0.8x", "Sanity drains 20% slower"),
             ["early_bird"] = ("shift pay +10% before noon", "+10% shift pay before noon"),
-            ["sleuth"] = ("Sleuth NPC pays you for tips", "The detective pays for your tips"),
+            ["sleuth"] = ("Sleuth NPC pays you for tips", "The police pay for your tips"),
             ["rug_veteran"] = ("REKT card visual variant", "A special look on your REKT card"),
         };
 
@@ -111,7 +111,9 @@ namespace CTLife.UI
         {
             if (trait == null) return null;
             var raw = trait.description;
-            if (TraitEffects.TryGetValue(trait.id ?? "", out var copy) && string.Equals(raw, copy.registry, System.StringComparison.Ordinal))
+            // backend #38 (approved names) sends the friendly text itself; older servers send the registry text: both match
+            if (TraitEffects.TryGetValue(trait.id ?? "", out var copy) &&
+                (string.Equals(raw, copy.registry, System.StringComparison.Ordinal) || string.Equals(raw, copy.friendly, System.StringComparison.Ordinal)))
                 return copy.friendly;
             return string.IsNullOrWhiteSpace(raw) ? null : raw;
         }

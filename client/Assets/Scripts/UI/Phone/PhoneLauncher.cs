@@ -156,7 +156,7 @@ namespace CTLife.UI
             int matches = 0;
             foreach (var app in _catalog)
             {
-                if (query.Length > 0 && app.Title.IndexOf(query, StringComparison.OrdinalIgnoreCase) < 0) continue;
+                if (query.Length > 0 && app.DisplayTitle.IndexOf(query, StringComparison.OrdinalIgnoreCase) < 0) continue;
                 var button = _tile(app);
                 button.AddToClassList("ct-phone-search-result");
                 _searchResults.Add(button);

@@ -1,3 +1,4 @@
+using CTLife.Core;
 using System.Collections.Generic;
 using System.Globalization;
 
@@ -49,7 +50,7 @@ namespace CTLife.UI
             ["reportUnavailable"] = "Reporting options are unavailable. You can leave the room now.",
             ["moreRooms"] = "Show more rooms", ["moreHands"] = "Show more hands", ["city"] = "Return to city", ["unavailableRoom"] = "This room is unavailable. Your mic is off.",
         };
-        public static string T(string key) => Copy.TryGetValue(key, out var value) ? value : key;
+        public static string T(string key) => Copy.TryGetValue(key, out var value) ? NameTable.Apply(value) : key;
         public static string F(string key, params object[] args) => string.Format(CultureInfo.CurrentCulture, T(key), args);
     }
 }

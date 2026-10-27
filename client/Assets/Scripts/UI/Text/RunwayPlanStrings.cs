@@ -1,3 +1,4 @@
+using CTLife.Core;
 using System.Collections.Generic;
 using System.Globalization;
 namespace CTLife.UI
@@ -28,7 +29,7 @@ namespace CTLife.UI
             ["board.3.line.0"]="Deploy runners", ["board.3.line.1"]="Inbox team", ["board.3.line.2"]="Launch party", ["board.3.line.3"]="Promo clips", ["board.3.line.4"]="Coffee tier",
             ["board.3.joke"]="The launch budget now contains a budget for the actual launch."
         };
-        public static string T(string key)=>En.TryGetValue(key,out var value)?value:key;
+        public static string T(string key)=>En.TryGetValue(key,out var value)? NameTable.Apply(value) :key;
         public static string F(string key,params object[] args)=>string.Format(CultureInfo.CurrentCulture,T(key),args);
         public static string Board(RunwayBoard board,string key)=>T("board."+board.Story+"."+key);
         public static string Level(int preset)=>T(preset==0?"full":preset==1?"lean":"minimum");

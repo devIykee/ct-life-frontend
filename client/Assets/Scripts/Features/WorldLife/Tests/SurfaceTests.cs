@@ -323,12 +323,19 @@ namespace CTLife.WorldLife.Tests
         }
 
         [Test]
-        public void HouseAdsAreParodyAndComplete()
+        public void HouseAdsNamePlacesFromTheTableAndAreComplete()
         {
             var ads = TestData.HouseAds;
             Assert.GreaterOrEqual(ads["billboard"].Count(), 8);
             Assert.GreaterOrEqual(ads["pixelTiles"].Count(), 12);
-            Assert.IsTrue(ads["billboard"].Any(a => ((string)a["headline"]).Contains("ADVERTISE")), "an advertise-here CTA is in the rotation");
+            Assert.IsTrue(ads["billboard"].Any(a => ((string)a["headline"] ?? "").Contains("ADVERTISE")), "an advertise-here CTA is in the rotation");
+            foreach (var ad in ads["billboard"].Append(ads["timeline"]))
+            {
+                var id = (string)ad["nameId"];
+                if (id == null) continue;
+                Assert.IsNotNull(CTLife.Core.NameTable.Get(id), id + " must be in contract/ids/names.json");
+                Assert.AreEqual(CTLife.Core.NameTable.Get(id).ToUpperInvariant(), LiveSurfaces.Headline(ad), id);
+            }
             foreach (var rule in ads["surfaces"]["rules"]) StringAssert.StartsWith("Screen_", (string)rule["prefix"]);
         }
     }

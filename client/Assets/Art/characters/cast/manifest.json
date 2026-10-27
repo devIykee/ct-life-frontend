@@ -7723,6 +7723,2520 @@
     "description": "Restore the accidentally culled right pupil cap; four added vertices and two triangles per existing tier. Existing geometry, UVs, weights, normals and skeleton unchanged.",
     "generator": "art/cast/scripts/repair_rain_pupil.py"
    }
+  },
+  "snow_everyday_rekt_crew": {
+   "family": "m",
+   "rig": "SnowAdult_Rig",
+   "archetype": null,
+   "kind": "uniform",
+   "label": "Rekt Burger crew (Snow / Everyday)",
+   "parts": {
+    "head": {},
+    "skin": {},
+    "hair_buzz": {},
+    "top_shirt": {
+     "color": "#ff6a2b",
+     "kind": "cotton",
+     "features": [
+      "placket",
+      "buttons"
+     ],
+     "detail": 0.25,
+     "grain": 0.025,
+     "bump": 0.35,
+     "prints": [
+      {
+       "image": "art/source/rektburger/badge_print.png",
+       "where": "chest",
+       "dx": 0.075,
+       "w": 0.06,
+       "h": 0.06
+      }
+     ]
+    },
+    "bottom": {
+     "color": "#1b1d22",
+     "kind": "cotton",
+     "detail": 0.3
+    },
+    "shoes": {
+     "color": "#1b1d22",
+     "kind": "leather",
+     "detail": 0.6
+    },
+    "hat_cap": {
+     "acc_a": "#1b1d22",
+     "acc_b": "#ff6a2b",
+     "smooth": 0.3,
+     "prints": [
+      {
+       "image": "art/source/rektburger/badge_print.png",
+       "w": 0.062,
+       "h": 0.062
+      }
+     ]
+    }
+   },
+   "slots": {
+    "head": "HEAD",
+    "skin": "SKIN",
+    "hair_buzz": "HAIR",
+    "top_shirt": "TOP",
+    "bottom": "BOTTOM",
+    "shoes": "SHOES",
+    "hat_cap": "ACC_A"
+   },
+   "hidden_body_regions": [
+    "waist"
+   ],
+   "skin_tone": null,
+   "hair_color": null,
+   "body": null,
+   "face": null,
+   "scale": 1.0,
+   "tiers": {
+    "hero": {
+     "triangles": 10059,
+     "vertices": 5557,
+     "max_influences": 4
+    },
+    "lod0": {
+     "triangles": 5009,
+     "vertices": 2936,
+     "max_influences": 4
+    },
+    "lod1": {
+     "triangles": 2381,
+     "vertices": 1506,
+     "max_influences": 4
+    },
+    "lod2": {
+     "triangles": 1188,
+     "vertices": 817,
+     "max_influences": 2
+    }
+   },
+   "files": {
+    "crowd_fbx": "art/cast/export/looks/snow_everyday_rekt_crew/snow_everyday_rekt_crew.fbx",
+    "hero_fbx": "art/cast/export/looks/snow_everyday_rekt_crew/snow_everyday_rekt_crew_Hero.fbx",
+    "base": "art/cast/export/looks/snow_everyday_rekt_crew/snow_everyday_rekt_crew_BaseColor.png",
+    "normal": "art/cast/export/looks/snow_everyday_rekt_crew/snow_everyday_rekt_crew_Normal.png",
+    "ms": "art/cast/export/looks/snow_everyday_rekt_crew/snow_everyday_rekt_crew_MetallicSmoothness.png"
+   },
+   "emissive": false,
+   "atlas_size": 1024,
+   "tribe": null,
+   "notes": ""
+  },
+  "player_m_trencher_rekt_crew": {
+   "family": "m",
+   "rig": "SnowAdult_Rig",
+   "archetype": null,
+   "kind": "uniform",
+   "label": "Rekt Burger crew (Trencher (hoodie, joggers, headset))",
+   "parts": {
+    "head": {},
+    "skin": {},
+    "hair_buzz": {},
+    "top_shirt": {
+     "color": "#ff6a2b",
+     "kind": "cotton",
+     "features": [
+      "placket",
+      "buttons"
+     ],
+     "detail": 0.25,
+     "grain": 0.025,
+     "bump": 0.35,
+     "prints": [
+      {
+       "image": "art/source/rektburger/badge_print.png",
+       "where": "chest",
+       "dx": 0.075,
+       "w": 0.06,
+       "h": 0.06
+      }
+     ]
+    },
+    "bottom": {
+     "color": "#1b1d22",
+     "kind": "cotton",
+     "detail": 0.3
+    },
+    "shoes": {
+     "color": "#1b1d22",
+     "kind": "leather",
+     "detail": 0.6
+    },
+    "hat_cap": {
+     "acc_a": "#1b1d22",
+     "acc_b": "#ff6a2b",
+     "smooth": 0.3,
+     "prints": [
+      {
+       "image": "art/source/rektburger/badge_print.png",
+       "w": 0.062,
+       "h": 0.062
+      }
+     ]
+    }
+   },
+   "slots": {
+    "head": "HEAD",
+    "skin": "SKIN",
+    "hair_buzz": "HAIR",
+    "top_shirt": "TOP",
+    "bottom": "BOTTOM",
+    "shoes": "SHOES",
+    "hat_cap": "ACC_A"
+   },
+   "hidden_body_regions": [
+    "waist"
+   ],
+   "skin_tone": "brown",
+   "hair_color": "black",
+   "body": null,
+   "face": null,
+   "scale": 1.0,
+   "tiers": {
+    "hero": {
+     "triangles": 10059,
+     "vertices": 5557,
+     "max_influences": 4
+    },
+    "lod0": {
+     "triangles": 5009,
+     "vertices": 2936,
+     "max_influences": 4
+    },
+    "lod1": {
+     "triangles": 2381,
+     "vertices": 1506,
+     "max_influences": 4
+    },
+    "lod2": {
+     "triangles": 1188,
+     "vertices": 817,
+     "max_influences": 2
+    }
+   },
+   "files": {
+    "crowd_fbx": "art/cast/export/looks/player_m_trencher_rekt_crew/player_m_trencher_rekt_crew.fbx",
+    "hero_fbx": "art/cast/export/looks/player_m_trencher_rekt_crew/player_m_trencher_rekt_crew_Hero.fbx",
+    "base": "art/cast/export/looks/player_m_trencher_rekt_crew/player_m_trencher_rekt_crew_BaseColor.png",
+    "normal": "art/cast/export/looks/player_m_trencher_rekt_crew/player_m_trencher_rekt_crew_Normal.png",
+    "ms": "art/cast/export/looks/player_m_trencher_rekt_crew/player_m_trencher_rekt_crew_MetallicSmoothness.png"
+   },
+   "emissive": false,
+   "atlas_size": 1024,
+   "tribe": null,
+   "notes": ""
+  },
+  "player_m_perp_rekt_crew": {
+   "family": "m",
+   "rig": "SnowAdult_Rig",
+   "archetype": null,
+   "kind": "uniform",
+   "label": "Rekt Burger crew (Perp Degen)",
+   "parts": {
+    "head": {},
+    "skin": {},
+    "hair_buzz": {},
+    "top_shirt": {
+     "color": "#ff6a2b",
+     "kind": "cotton",
+     "features": [
+      "placket",
+      "buttons"
+     ],
+     "detail": 0.25,
+     "grain": 0.025,
+     "bump": 0.35,
+     "prints": [
+      {
+       "image": "art/source/rektburger/badge_print.png",
+       "where": "chest",
+       "dx": 0.075,
+       "w": 0.06,
+       "h": 0.06
+      }
+     ]
+    },
+    "bottom": {
+     "color": "#1b1d22",
+     "kind": "cotton",
+     "detail": 0.3
+    },
+    "shoes": {
+     "color": "#1b1d22",
+     "kind": "leather",
+     "detail": 0.6
+    },
+    "hat_cap": {
+     "acc_a": "#1b1d22",
+     "acc_b": "#ff6a2b",
+     "smooth": 0.3,
+     "prints": [
+      {
+       "image": "art/source/rektburger/badge_print.png",
+       "w": 0.062,
+       "h": 0.062
+      }
+     ]
+    }
+   },
+   "slots": {
+    "head": "HEAD",
+    "skin": "SKIN",
+    "hair_buzz": "HAIR",
+    "top_shirt": "TOP",
+    "bottom": "BOTTOM",
+    "shoes": "SHOES",
+    "hat_cap": "ACC_A"
+   },
+   "hidden_body_regions": [
+    "waist"
+   ],
+   "skin_tone": "tan",
+   "hair_color": "black",
+   "body": null,
+   "face": null,
+   "scale": 1.0,
+   "tiers": {
+    "hero": {
+     "triangles": 10059,
+     "vertices": 5557,
+     "max_influences": 4
+    },
+    "lod0": {
+     "triangles": 5009,
+     "vertices": 2936,
+     "max_influences": 4
+    },
+    "lod1": {
+     "triangles": 2381,
+     "vertices": 1506,
+     "max_influences": 4
+    },
+    "lod2": {
+     "triangles": 1188,
+     "vertices": 817,
+     "max_influences": 2
+    }
+   },
+   "files": {
+    "crowd_fbx": "art/cast/export/looks/player_m_perp_rekt_crew/player_m_perp_rekt_crew.fbx",
+    "hero_fbx": "art/cast/export/looks/player_m_perp_rekt_crew/player_m_perp_rekt_crew_Hero.fbx",
+    "base": "art/cast/export/looks/player_m_perp_rekt_crew/player_m_perp_rekt_crew_BaseColor.png",
+    "normal": "art/cast/export/looks/player_m_perp_rekt_crew/player_m_perp_rekt_crew_Normal.png",
+    "ms": "art/cast/export/looks/player_m_perp_rekt_crew/player_m_perp_rekt_crew_MetallicSmoothness.png"
+   },
+   "emissive": false,
+   "atlas_size": 1024,
+   "tribe": null,
+   "notes": ""
+  },
+  "player_m_shark_rekt_crew": {
+   "family": "m",
+   "rig": "SnowAdult_Rig",
+   "archetype": null,
+   "kind": "uniform",
+   "label": "Rekt Burger crew (Prediction Shark)",
+   "parts": {
+    "head": {},
+    "skin": {},
+    "hair_buzz": {},
+    "top_shirt": {
+     "color": "#ff6a2b",
+     "kind": "cotton",
+     "features": [
+      "placket",
+      "buttons"
+     ],
+     "detail": 0.25,
+     "grain": 0.025,
+     "bump": 0.35,
+     "prints": [
+      {
+       "image": "art/source/rektburger/badge_print.png",
+       "where": "chest",
+       "dx": 0.075,
+       "w": 0.06,
+       "h": 0.06
+      }
+     ]
+    },
+    "bottom": {
+     "color": "#1b1d22",
+     "kind": "cotton",
+     "detail": 0.3
+    },
+    "shoes": {
+     "color": "#1b1d22",
+     "kind": "leather",
+     "detail": 0.6
+    },
+    "hat_cap": {
+     "acc_a": "#1b1d22",
+     "acc_b": "#ff6a2b",
+     "smooth": 0.3,
+     "prints": [
+      {
+       "image": "art/source/rektburger/badge_print.png",
+       "w": 0.062,
+       "h": 0.062
+      }
+     ]
+    }
+   },
+   "slots": {
+    "head": "HEAD",
+    "skin": "SKIN",
+    "hair_buzz": "HAIR",
+    "top_shirt": "TOP",
+    "bottom": "BOTTOM",
+    "shoes": "SHOES",
+    "hat_cap": "ACC_A"
+   },
+   "hidden_body_regions": [
+    "waist"
+   ],
+   "skin_tone": "olive",
+   "hair_color": "darkbrown",
+   "body": null,
+   "face": null,
+   "scale": 1.0,
+   "tiers": {
+    "hero": {
+     "triangles": 10059,
+     "vertices": 5557,
+     "max_influences": 4
+    },
+    "lod0": {
+     "triangles": 5009,
+     "vertices": 2936,
+     "max_influences": 4
+    },
+    "lod1": {
+     "triangles": 2381,
+     "vertices": 1506,
+     "max_influences": 4
+    },
+    "lod2": {
+     "triangles": 1188,
+     "vertices": 817,
+     "max_influences": 2
+    }
+   },
+   "files": {
+    "crowd_fbx": "art/cast/export/looks/player_m_shark_rekt_crew/player_m_shark_rekt_crew.fbx",
+    "hero_fbx": "art/cast/export/looks/player_m_shark_rekt_crew/player_m_shark_rekt_crew_Hero.fbx",
+    "base": "art/cast/export/looks/player_m_shark_rekt_crew/player_m_shark_rekt_crew_BaseColor.png",
+    "normal": "art/cast/export/looks/player_m_shark_rekt_crew/player_m_shark_rekt_crew_Normal.png",
+    "ms": "art/cast/export/looks/player_m_shark_rekt_crew/player_m_shark_rekt_crew_MetallicSmoothness.png"
+   },
+   "emissive": false,
+   "atlas_size": 1024,
+   "tribe": null,
+   "notes": ""
+  },
+  "player_m_farmer_rekt_crew": {
+   "family": "m",
+   "rig": "SnowAdult_Rig",
+   "archetype": null,
+   "kind": "uniform",
+   "label": "Rekt Burger crew (Airdrop Farmer)",
+   "parts": {
+    "head": {},
+    "skin": {},
+    "hair_buzz": {},
+    "top_shirt": {
+     "color": "#ff6a2b",
+     "kind": "cotton",
+     "features": [
+      "placket",
+      "buttons"
+     ],
+     "detail": 0.25,
+     "grain": 0.025,
+     "bump": 0.35,
+     "prints": [
+      {
+       "image": "art/source/rektburger/badge_print.png",
+       "where": "chest",
+       "dx": 0.075,
+       "w": 0.06,
+       "h": 0.06
+      }
+     ]
+    },
+    "bottom": {
+     "color": "#1b1d22",
+     "kind": "cotton",
+     "detail": 0.3
+    },
+    "shoes": {
+     "color": "#1b1d22",
+     "kind": "leather",
+     "detail": 0.6
+    },
+    "hat_cap": {
+     "acc_a": "#1b1d22",
+     "acc_b": "#ff6a2b",
+     "smooth": 0.3,
+     "prints": [
+      {
+       "image": "art/source/rektburger/badge_print.png",
+       "w": 0.062,
+       "h": 0.062
+      }
+     ]
+    }
+   },
+   "slots": {
+    "head": "HEAD",
+    "skin": "SKIN",
+    "hair_buzz": "HAIR",
+    "top_shirt": "TOP",
+    "bottom": "BOTTOM",
+    "shoes": "SHOES",
+    "hat_cap": "ACC_A"
+   },
+   "hidden_body_regions": [
+    "waist"
+   ],
+   "skin_tone": "fair",
+   "hair_color": "ginger",
+   "body": null,
+   "face": null,
+   "scale": 1.0,
+   "tiers": {
+    "hero": {
+     "triangles": 10059,
+     "vertices": 5557,
+     "max_influences": 4
+    },
+    "lod0": {
+     "triangles": 5009,
+     "vertices": 2936,
+     "max_influences": 4
+    },
+    "lod1": {
+     "triangles": 2381,
+     "vertices": 1506,
+     "max_influences": 4
+    },
+    "lod2": {
+     "triangles": 1188,
+     "vertices": 817,
+     "max_influences": 2
+    }
+   },
+   "files": {
+    "crowd_fbx": "art/cast/export/looks/player_m_farmer_rekt_crew/player_m_farmer_rekt_crew.fbx",
+    "hero_fbx": "art/cast/export/looks/player_m_farmer_rekt_crew/player_m_farmer_rekt_crew_Hero.fbx",
+    "base": "art/cast/export/looks/player_m_farmer_rekt_crew/player_m_farmer_rekt_crew_BaseColor.png",
+    "normal": "art/cast/export/looks/player_m_farmer_rekt_crew/player_m_farmer_rekt_crew_Normal.png",
+    "ms": "art/cast/export/looks/player_m_farmer_rekt_crew/player_m_farmer_rekt_crew_MetallicSmoothness.png"
+   },
+   "emissive": false,
+   "atlas_size": 1024,
+   "tribe": null,
+   "notes": ""
+  },
+  "player_m_kol_rekt_crew": {
+   "family": "m",
+   "rig": "SnowAdult_Rig",
+   "archetype": null,
+   "kind": "uniform",
+   "label": "Rekt Burger crew (Caller / KOL)",
+   "parts": {
+    "head": {},
+    "skin": {},
+    "hair_buzz": {},
+    "top_shirt": {
+     "color": "#ff6a2b",
+     "kind": "cotton",
+     "features": [
+      "placket",
+      "buttons"
+     ],
+     "detail": 0.25,
+     "grain": 0.025,
+     "bump": 0.35,
+     "prints": [
+      {
+       "image": "art/source/rektburger/badge_print.png",
+       "where": "chest",
+       "dx": 0.075,
+       "w": 0.06,
+       "h": 0.06
+      }
+     ]
+    },
+    "bottom": {
+     "color": "#1b1d22",
+     "kind": "cotton",
+     "detail": 0.3
+    },
+    "shoes": {
+     "color": "#1b1d22",
+     "kind": "leather",
+     "detail": 0.6
+    },
+    "hat_cap": {
+     "acc_a": "#1b1d22",
+     "acc_b": "#ff6a2b",
+     "smooth": 0.3,
+     "prints": [
+      {
+       "image": "art/source/rektburger/badge_print.png",
+       "w": 0.062,
+       "h": 0.062
+      }
+     ]
+    }
+   },
+   "slots": {
+    "head": "HEAD",
+    "skin": "SKIN",
+    "hair_buzz": "HAIR",
+    "top_shirt": "TOP",
+    "bottom": "BOTTOM",
+    "shoes": "SHOES",
+    "hat_cap": "ACC_A"
+   },
+   "hidden_body_regions": [
+    "waist"
+   ],
+   "skin_tone": "dark",
+   "hair_color": "black",
+   "body": null,
+   "face": null,
+   "scale": 1.0,
+   "tiers": {
+    "hero": {
+     "triangles": 10059,
+     "vertices": 5557,
+     "max_influences": 4
+    },
+    "lod0": {
+     "triangles": 5009,
+     "vertices": 2936,
+     "max_influences": 4
+    },
+    "lod1": {
+     "triangles": 2381,
+     "vertices": 1506,
+     "max_influences": 4
+    },
+    "lod2": {
+     "triangles": 1188,
+     "vertices": 817,
+     "max_influences": 2
+    }
+   },
+   "files": {
+    "crowd_fbx": "art/cast/export/looks/player_m_kol_rekt_crew/player_m_kol_rekt_crew.fbx",
+    "hero_fbx": "art/cast/export/looks/player_m_kol_rekt_crew/player_m_kol_rekt_crew_Hero.fbx",
+    "base": "art/cast/export/looks/player_m_kol_rekt_crew/player_m_kol_rekt_crew_BaseColor.png",
+    "normal": "art/cast/export/looks/player_m_kol_rekt_crew/player_m_kol_rekt_crew_Normal.png",
+    "ms": "art/cast/export/looks/player_m_kol_rekt_crew/player_m_kol_rekt_crew_MetallicSmoothness.png"
+   },
+   "emissive": false,
+   "atlas_size": 1024,
+   "tribe": null,
+   "notes": ""
+  },
+  "player_m_builder_rekt_crew": {
+   "family": "m",
+   "rig": "SnowAdult_Rig",
+   "archetype": null,
+   "kind": "uniform",
+   "label": "Rekt Burger crew (Builder (hackathon))",
+   "parts": {
+    "head": {},
+    "skin": {},
+    "hair_buzz": {},
+    "top_shirt": {
+     "color": "#ff6a2b",
+     "kind": "cotton",
+     "features": [
+      "placket",
+      "buttons"
+     ],
+     "detail": 0.25,
+     "grain": 0.025,
+     "bump": 0.35,
+     "prints": [
+      {
+       "image": "art/source/rektburger/badge_print.png",
+       "where": "chest",
+       "dx": 0.075,
+       "w": 0.06,
+       "h": 0.06
+      }
+     ]
+    },
+    "bottom": {
+     "color": "#1b1d22",
+     "kind": "cotton",
+     "detail": 0.3
+    },
+    "shoes": {
+     "color": "#1b1d22",
+     "kind": "leather",
+     "detail": 0.6
+    },
+    "hat_cap": {
+     "acc_a": "#1b1d22",
+     "acc_b": "#ff6a2b",
+     "smooth": 0.3,
+     "prints": [
+      {
+       "image": "art/source/rektburger/badge_print.png",
+       "w": 0.062,
+       "h": 0.062
+      }
+     ]
+    }
+   },
+   "slots": {
+    "head": "HEAD",
+    "skin": "SKIN",
+    "hair_buzz": "HAIR",
+    "top_shirt": "TOP",
+    "bottom": "BOTTOM",
+    "shoes": "SHOES",
+    "hat_cap": "ACC_A"
+   },
+   "hidden_body_regions": [
+    "waist"
+   ],
+   "skin_tone": "deep",
+   "hair_color": "black",
+   "body": null,
+   "face": null,
+   "scale": 1.0,
+   "tiers": {
+    "hero": {
+     "triangles": 10059,
+     "vertices": 5557,
+     "max_influences": 4
+    },
+    "lod0": {
+     "triangles": 5009,
+     "vertices": 2936,
+     "max_influences": 4
+    },
+    "lod1": {
+     "triangles": 2381,
+     "vertices": 1506,
+     "max_influences": 4
+    },
+    "lod2": {
+     "triangles": 1188,
+     "vertices": 817,
+     "max_influences": 2
+    }
+   },
+   "files": {
+    "crowd_fbx": "art/cast/export/looks/player_m_builder_rekt_crew/player_m_builder_rekt_crew.fbx",
+    "hero_fbx": "art/cast/export/looks/player_m_builder_rekt_crew/player_m_builder_rekt_crew_Hero.fbx",
+    "base": "art/cast/export/looks/player_m_builder_rekt_crew/player_m_builder_rekt_crew_BaseColor.png",
+    "normal": "art/cast/export/looks/player_m_builder_rekt_crew/player_m_builder_rekt_crew_Normal.png",
+    "ms": "art/cast/export/looks/player_m_builder_rekt_crew/player_m_builder_rekt_crew_MetallicSmoothness.png"
+   },
+   "emissive": false,
+   "atlas_size": 1024,
+   "tribe": null,
+   "notes": ""
+  },
+  "player_m_anon_rekt_crew": {
+   "family": "m",
+   "rig": "SnowAdult_Rig",
+   "archetype": null,
+   "kind": "uniform",
+   "label": "Rekt Burger crew (Anon (hood, mask))",
+   "parts": {
+    "head": {},
+    "skin": {},
+    "hair_buzz": {},
+    "top_shirt": {
+     "color": "#ff6a2b",
+     "kind": "cotton",
+     "features": [
+      "placket",
+      "buttons"
+     ],
+     "detail": 0.25,
+     "grain": 0.025,
+     "bump": 0.35,
+     "prints": [
+      {
+       "image": "art/source/rektburger/badge_print.png",
+       "where": "chest",
+       "dx": 0.075,
+       "w": 0.06,
+       "h": 0.06
+      }
+     ]
+    },
+    "bottom": {
+     "color": "#1b1d22",
+     "kind": "cotton",
+     "detail": 0.3
+    },
+    "shoes": {
+     "color": "#1b1d22",
+     "kind": "leather",
+     "detail": 0.6
+    },
+    "hat_cap": {
+     "acc_a": "#1b1d22",
+     "acc_b": "#ff6a2b",
+     "smooth": 0.3,
+     "prints": [
+      {
+       "image": "art/source/rektburger/badge_print.png",
+       "w": 0.062,
+       "h": 0.062
+      }
+     ]
+    }
+   },
+   "slots": {
+    "head": "HEAD",
+    "skin": "SKIN",
+    "hair_buzz": "HAIR",
+    "top_shirt": "TOP",
+    "bottom": "BOTTOM",
+    "shoes": "SHOES",
+    "hat_cap": "ACC_A"
+   },
+   "hidden_body_regions": [
+    "waist"
+   ],
+   "skin_tone": "light",
+   "hair_color": "black",
+   "body": null,
+   "face": null,
+   "scale": 1.0,
+   "tiers": {
+    "hero": {
+     "triangles": 10059,
+     "vertices": 5557,
+     "max_influences": 4
+    },
+    "lod0": {
+     "triangles": 5009,
+     "vertices": 2936,
+     "max_influences": 4
+    },
+    "lod1": {
+     "triangles": 2381,
+     "vertices": 1506,
+     "max_influences": 4
+    },
+    "lod2": {
+     "triangles": 1188,
+     "vertices": 817,
+     "max_influences": 2
+    }
+   },
+   "files": {
+    "crowd_fbx": "art/cast/export/looks/player_m_anon_rekt_crew/player_m_anon_rekt_crew.fbx",
+    "hero_fbx": "art/cast/export/looks/player_m_anon_rekt_crew/player_m_anon_rekt_crew_Hero.fbx",
+    "base": "art/cast/export/looks/player_m_anon_rekt_crew/player_m_anon_rekt_crew_BaseColor.png",
+    "normal": "art/cast/export/looks/player_m_anon_rekt_crew/player_m_anon_rekt_crew_Normal.png",
+    "ms": "art/cast/export/looks/player_m_anon_rekt_crew/player_m_anon_rekt_crew_MetallicSmoothness.png"
+   },
+   "emissive": false,
+   "atlas_size": 1024,
+   "tribe": null,
+   "notes": ""
+  },
+  "player_m_lagos_kaftan_rekt_crew": {
+   "family": "m",
+   "rig": "SnowAdult_Rig",
+   "archetype": null,
+   "kind": "uniform",
+   "label": "Rekt Burger crew (Lagos senator/kaftan + fila)",
+   "parts": {
+    "head": {},
+    "skin": {},
+    "beard_goatee": {},
+    "hair_buzz": {},
+    "top_shirt": {
+     "color": "#ff6a2b",
+     "kind": "cotton",
+     "features": [
+      "placket",
+      "buttons"
+     ],
+     "detail": 0.25,
+     "grain": 0.025,
+     "bump": 0.35,
+     "prints": [
+      {
+       "image": "art/source/rektburger/badge_print.png",
+       "where": "chest",
+       "dx": 0.075,
+       "w": 0.06,
+       "h": 0.06
+      }
+     ]
+    },
+    "bottom": {
+     "color": "#1b1d22",
+     "kind": "cotton",
+     "detail": 0.3
+    },
+    "shoes": {
+     "color": "#1b1d22",
+     "kind": "leather",
+     "detail": 0.6
+    },
+    "hat_cap": {
+     "acc_a": "#1b1d22",
+     "acc_b": "#ff6a2b",
+     "smooth": 0.3,
+     "prints": [
+      {
+       "image": "art/source/rektburger/badge_print.png",
+       "w": 0.062,
+       "h": 0.062
+      }
+     ]
+    }
+   },
+   "slots": {
+    "head": "HEAD",
+    "skin": "SKIN",
+    "beard_goatee": "BEARD",
+    "hair_buzz": "HAIR",
+    "top_shirt": "TOP",
+    "bottom": "BOTTOM",
+    "shoes": "SHOES",
+    "hat_cap": "ACC_A"
+   },
+   "hidden_body_regions": [
+    "waist"
+   ],
+   "skin_tone": "deep",
+   "hair_color": "black",
+   "body": null,
+   "face": null,
+   "scale": 1.0,
+   "tiers": {
+    "hero": {
+     "triangles": 10319,
+     "vertices": 5771,
+     "max_influences": 4
+    },
+    "lod0": {
+     "triangles": 5139,
+     "vertices": 3070,
+     "max_influences": 4
+    },
+    "lod1": {
+     "triangles": 2441,
+     "vertices": 1576,
+     "max_influences": 4
+    },
+    "lod2": {
+     "triangles": 1188,
+     "vertices": 832,
+     "max_influences": 2
+    }
+   },
+   "files": {
+    "crowd_fbx": "art/cast/export/looks/player_m_lagos_kaftan_rekt_crew/player_m_lagos_kaftan_rekt_crew.fbx",
+    "hero_fbx": "art/cast/export/looks/player_m_lagos_kaftan_rekt_crew/player_m_lagos_kaftan_rekt_crew_Hero.fbx",
+    "base": "art/cast/export/looks/player_m_lagos_kaftan_rekt_crew/player_m_lagos_kaftan_rekt_crew_BaseColor.png",
+    "normal": "art/cast/export/looks/player_m_lagos_kaftan_rekt_crew/player_m_lagos_kaftan_rekt_crew_Normal.png",
+    "ms": "art/cast/export/looks/player_m_lagos_kaftan_rekt_crew/player_m_lagos_kaftan_rekt_crew_MetallicSmoothness.png"
+   },
+   "emissive": false,
+   "atlas_size": 1024,
+   "tribe": null,
+   "notes": ""
+  },
+  "player_m_tradfi_rekt_crew": {
+   "family": "m",
+   "rig": "SnowAdult_Rig",
+   "archetype": null,
+   "kind": "uniform",
+   "label": "Rekt Burger crew (TradFi suit (conference week))",
+   "parts": {
+    "head": {},
+    "skin": {},
+    "hair_buzz": {},
+    "top_shirt": {
+     "color": "#ff6a2b",
+     "kind": "cotton",
+     "features": [
+      "placket",
+      "buttons"
+     ],
+     "detail": 0.25,
+     "grain": 0.025,
+     "bump": 0.35,
+     "prints": [
+      {
+       "image": "art/source/rektburger/badge_print.png",
+       "where": "chest",
+       "dx": 0.075,
+       "w": 0.06,
+       "h": 0.06
+      }
+     ]
+    },
+    "bottom": {
+     "color": "#1b1d22",
+     "kind": "cotton",
+     "detail": 0.3
+    },
+    "shoes": {
+     "color": "#1b1d22",
+     "kind": "leather",
+     "detail": 0.6
+    },
+    "hat_cap": {
+     "acc_a": "#1b1d22",
+     "acc_b": "#ff6a2b",
+     "smooth": 0.3,
+     "prints": [
+      {
+       "image": "art/source/rektburger/badge_print.png",
+       "w": 0.062,
+       "h": 0.062
+      }
+     ]
+    }
+   },
+   "slots": {
+    "head": "HEAD",
+    "skin": "SKIN",
+    "hair_buzz": "HAIR",
+    "top_shirt": "TOP",
+    "bottom": "BOTTOM",
+    "shoes": "SHOES",
+    "hat_cap": "ACC_A"
+   },
+   "hidden_body_regions": [
+    "waist"
+   ],
+   "skin_tone": "light",
+   "hair_color": "brown",
+   "body": null,
+   "face": null,
+   "scale": 1.0,
+   "tiers": {
+    "hero": {
+     "triangles": 10059,
+     "vertices": 5557,
+     "max_influences": 4
+    },
+    "lod0": {
+     "triangles": 5009,
+     "vertices": 2936,
+     "max_influences": 4
+    },
+    "lod1": {
+     "triangles": 2381,
+     "vertices": 1506,
+     "max_influences": 4
+    },
+    "lod2": {
+     "triangles": 1188,
+     "vertices": 817,
+     "max_influences": 2
+    }
+   },
+   "files": {
+    "crowd_fbx": "art/cast/export/looks/player_m_tradfi_rekt_crew/player_m_tradfi_rekt_crew.fbx",
+    "hero_fbx": "art/cast/export/looks/player_m_tradfi_rekt_crew/player_m_tradfi_rekt_crew_Hero.fbx",
+    "base": "art/cast/export/looks/player_m_tradfi_rekt_crew/player_m_tradfi_rekt_crew_BaseColor.png",
+    "normal": "art/cast/export/looks/player_m_tradfi_rekt_crew/player_m_tradfi_rekt_crew_Normal.png",
+    "ms": "art/cast/export/looks/player_m_tradfi_rekt_crew/player_m_tradfi_rekt_crew_MetallicSmoothness.png"
+   },
+   "emissive": false,
+   "atlas_size": 1024,
+   "tribe": null,
+   "notes": ""
+  },
+  "player_m_coat_rekt_crew": {
+   "family": "m",
+   "rig": "SnowAdult_Rig",
+   "archetype": null,
+   "kind": "uniform",
+   "label": "Rekt Burger crew (Camel coat + beanie)",
+   "parts": {
+    "head": {},
+    "skin": {},
+    "beard_full": {},
+    "hair_buzz": {},
+    "top_shirt": {
+     "color": "#ff6a2b",
+     "kind": "cotton",
+     "features": [
+      "placket",
+      "buttons"
+     ],
+     "detail": 0.25,
+     "grain": 0.025,
+     "bump": 0.35,
+     "prints": [
+      {
+       "image": "art/source/rektburger/badge_print.png",
+       "where": "chest",
+       "dx": 0.075,
+       "w": 0.06,
+       "h": 0.06
+      }
+     ]
+    },
+    "bottom": {
+     "color": "#1b1d22",
+     "kind": "cotton",
+     "detail": 0.3
+    },
+    "shoes": {
+     "color": "#1b1d22",
+     "kind": "leather",
+     "detail": 0.6
+    },
+    "hat_cap": {
+     "acc_a": "#1b1d22",
+     "acc_b": "#ff6a2b",
+     "smooth": 0.3,
+     "prints": [
+      {
+       "image": "art/source/rektburger/badge_print.png",
+       "w": 0.062,
+       "h": 0.062
+      }
+     ]
+    }
+   },
+   "slots": {
+    "head": "HEAD",
+    "skin": "SKIN",
+    "beard_full": "BEARD",
+    "hair_buzz": "HAIR",
+    "top_shirt": "TOP",
+    "bottom": "BOTTOM",
+    "shoes": "SHOES",
+    "hat_cap": "ACC_A"
+   },
+   "hidden_body_regions": [
+    "waist"
+   ],
+   "skin_tone": "olive",
+   "hair_color": "darkbrown",
+   "body": null,
+   "face": null,
+   "scale": 1.0,
+   "tiers": {
+    "hero": {
+     "triangles": 10557,
+     "vertices": 5899,
+     "max_influences": 4
+    },
+    "lod0": {
+     "triangles": 5229,
+     "vertices": 3124,
+     "max_influences": 4
+    },
+    "lod1": {
+     "triangles": 2481,
+     "vertices": 1606,
+     "max_influences": 4
+    },
+    "lod2": {
+     "triangles": 1188,
+     "vertices": 828,
+     "max_influences": 2
+    }
+   },
+   "files": {
+    "crowd_fbx": "art/cast/export/looks/player_m_coat_rekt_crew/player_m_coat_rekt_crew.fbx",
+    "hero_fbx": "art/cast/export/looks/player_m_coat_rekt_crew/player_m_coat_rekt_crew_Hero.fbx",
+    "base": "art/cast/export/looks/player_m_coat_rekt_crew/player_m_coat_rekt_crew_BaseColor.png",
+    "normal": "art/cast/export/looks/player_m_coat_rekt_crew/player_m_coat_rekt_crew_Normal.png",
+    "ms": "art/cast/export/looks/player_m_coat_rekt_crew/player_m_coat_rekt_crew_MetallicSmoothness.png"
+   },
+   "emissive": false,
+   "atlas_size": 1024,
+   "tribe": null,
+   "notes": ""
+  },
+  "player_m_skr_rekt_crew": {
+   "family": "m",
+   "rig": "SnowAdult_Rig",
+   "archetype": null,
+   "kind": "uniform",
+   "label": "Rekt Burger crew (.skr tee)",
+   "parts": {
+    "head": {},
+    "skin": {},
+    "hair_buzz": {},
+    "top_shirt": {
+     "color": "#ff6a2b",
+     "kind": "cotton",
+     "features": [
+      "placket",
+      "buttons"
+     ],
+     "detail": 0.25,
+     "grain": 0.025,
+     "bump": 0.35,
+     "prints": [
+      {
+       "image": "art/source/rektburger/badge_print.png",
+       "where": "chest",
+       "dx": 0.075,
+       "w": 0.06,
+       "h": 0.06
+      }
+     ]
+    },
+    "bottom": {
+     "color": "#1b1d22",
+     "kind": "cotton",
+     "detail": 0.3
+    },
+    "shoes": {
+     "color": "#1b1d22",
+     "kind": "leather",
+     "detail": 0.6
+    },
+    "hat_cap": {
+     "acc_a": "#1b1d22",
+     "acc_b": "#ff6a2b",
+     "smooth": 0.3,
+     "prints": [
+      {
+       "image": "art/source/rektburger/badge_print.png",
+       "w": 0.062,
+       "h": 0.062
+      }
+     ]
+    }
+   },
+   "slots": {
+    "head": "HEAD",
+    "skin": "SKIN",
+    "hair_buzz": "HAIR",
+    "top_shirt": "TOP",
+    "bottom": "BOTTOM",
+    "shoes": "SHOES",
+    "hat_cap": "ACC_A"
+   },
+   "hidden_body_regions": [
+    "waist"
+   ],
+   "skin_tone": "dark",
+   "hair_color": "black",
+   "body": null,
+   "face": null,
+   "scale": 1.0,
+   "tiers": {
+    "hero": {
+     "triangles": 10059,
+     "vertices": 5557,
+     "max_influences": 4
+    },
+    "lod0": {
+     "triangles": 5009,
+     "vertices": 2936,
+     "max_influences": 4
+    },
+    "lod1": {
+     "triangles": 2381,
+     "vertices": 1506,
+     "max_influences": 4
+    },
+    "lod2": {
+     "triangles": 1188,
+     "vertices": 817,
+     "max_influences": 2
+    }
+   },
+   "files": {
+    "crowd_fbx": "art/cast/export/looks/player_m_skr_rekt_crew/player_m_skr_rekt_crew.fbx",
+    "hero_fbx": "art/cast/export/looks/player_m_skr_rekt_crew/player_m_skr_rekt_crew_Hero.fbx",
+    "base": "art/cast/export/looks/player_m_skr_rekt_crew/player_m_skr_rekt_crew_BaseColor.png",
+    "normal": "art/cast/export/looks/player_m_skr_rekt_crew/player_m_skr_rekt_crew_Normal.png",
+    "ms": "art/cast/export/looks/player_m_skr_rekt_crew/player_m_skr_rekt_crew_MetallicSmoothness.png"
+   },
+   "emissive": false,
+   "atlas_size": 1024,
+   "tribe": null,
+   "notes": ""
+  },
+  "rain_breeze_rekt_crew": {
+   "family": "f",
+   "rig": "RainAdult_Rig",
+   "archetype": null,
+   "kind": "uniform",
+   "label": "Rekt Burger crew (Rain / Breeze)",
+   "parts": {
+    "head": {},
+    "skin": {},
+    "hair_buzz": {},
+    "top_shirt": {
+     "color": "#ff6a2b",
+     "kind": "cotton",
+     "features": [
+      "placket",
+      "buttons"
+     ],
+     "detail": 0.25,
+     "grain": 0.025,
+     "bump": 0.35,
+     "prints": [
+      {
+       "image": "art/source/rektburger/badge_print.png",
+       "where": "chest",
+       "dx": 0.075,
+       "w": 0.06,
+       "h": 0.06
+      }
+     ]
+    },
+    "bottom": {
+     "color": "#1b1d22",
+     "kind": "cotton",
+     "detail": 0.3
+    },
+    "shoes": {
+     "color": "#1b1d22",
+     "kind": "leather",
+     "detail": 0.6
+    },
+    "hat_cap": {
+     "acc_a": "#1b1d22",
+     "acc_b": "#ff6a2b",
+     "smooth": 0.3,
+     "prints": [
+      {
+       "image": "art/source/rektburger/badge_print.png",
+       "w": 0.062,
+       "h": 0.062
+      }
+     ]
+    }
+   },
+   "slots": {
+    "head": "HEAD",
+    "skin": "SKIN",
+    "hair_buzz": "HAIR",
+    "top_shirt": "TOP",
+    "bottom": "BOTTOM",
+    "shoes": "SHOES",
+    "hat_cap": "ACC_A"
+   },
+   "hidden_body_regions": [
+    "torso",
+    "waist"
+   ],
+   "skin_tone": null,
+   "hair_color": null,
+   "body": null,
+   "face": null,
+   "scale": 1.0,
+   "tiers": {
+    "hero": {
+     "triangles": 10354,
+     "vertices": 5821,
+     "max_influences": 4
+    },
+    "lod0": {
+     "triangles": 4983,
+     "vertices": 2952,
+     "max_influences": 4
+    },
+    "lod1": {
+     "triangles": 2359,
+     "vertices": 1499,
+     "max_influences": 4
+    },
+    "lod2": {
+     "triangles": 1190,
+     "vertices": 805,
+     "max_influences": 2
+    }
+   },
+   "files": {
+    "crowd_fbx": "art/cast/export/looks/rain_breeze_rekt_crew/rain_breeze_rekt_crew.fbx",
+    "hero_fbx": "art/cast/export/looks/rain_breeze_rekt_crew/rain_breeze_rekt_crew_Hero.fbx",
+    "base": "art/cast/export/looks/rain_breeze_rekt_crew/rain_breeze_rekt_crew_BaseColor.png",
+    "normal": "art/cast/export/looks/rain_breeze_rekt_crew/rain_breeze_rekt_crew_Normal.png",
+    "ms": "art/cast/export/looks/rain_breeze_rekt_crew/rain_breeze_rekt_crew_MetallicSmoothness.png"
+   },
+   "emissive": false,
+   "atlas_size": 1024,
+   "tribe": null,
+   "notes": ""
+  },
+  "player_f_trencher_rekt_crew": {
+   "family": "f",
+   "rig": "RainAdult_Rig",
+   "archetype": null,
+   "kind": "uniform",
+   "label": "Rekt Burger crew (Trencher)",
+   "parts": {
+    "head": {},
+    "skin": {},
+    "hair_buzz": {},
+    "top_shirt": {
+     "color": "#ff6a2b",
+     "kind": "cotton",
+     "features": [
+      "placket",
+      "buttons"
+     ],
+     "detail": 0.25,
+     "grain": 0.025,
+     "bump": 0.35,
+     "prints": [
+      {
+       "image": "art/source/rektburger/badge_print.png",
+       "where": "chest",
+       "dx": 0.075,
+       "w": 0.06,
+       "h": 0.06
+      }
+     ]
+    },
+    "bottom": {
+     "color": "#1b1d22",
+     "kind": "cotton",
+     "detail": 0.3
+    },
+    "shoes": {
+     "color": "#1b1d22",
+     "kind": "leather",
+     "detail": 0.6
+    },
+    "hat_cap": {
+     "acc_a": "#1b1d22",
+     "acc_b": "#ff6a2b",
+     "smooth": 0.3,
+     "prints": [
+      {
+       "image": "art/source/rektburger/badge_print.png",
+       "w": 0.062,
+       "h": 0.062
+      }
+     ]
+    }
+   },
+   "slots": {
+    "head": "HEAD",
+    "skin": "SKIN",
+    "hair_buzz": "HAIR",
+    "top_shirt": "TOP",
+    "bottom": "BOTTOM",
+    "shoes": "SHOES",
+    "hat_cap": "ACC_A"
+   },
+   "hidden_body_regions": [
+    "torso",
+    "waist"
+   ],
+   "skin_tone": "warm",
+   "hair_color": "brown",
+   "body": null,
+   "face": null,
+   "scale": 1.0,
+   "tiers": {
+    "hero": {
+     "triangles": 10354,
+     "vertices": 5821,
+     "max_influences": 4
+    },
+    "lod0": {
+     "triangles": 4983,
+     "vertices": 2952,
+     "max_influences": 4
+    },
+    "lod1": {
+     "triangles": 2359,
+     "vertices": 1499,
+     "max_influences": 4
+    },
+    "lod2": {
+     "triangles": 1190,
+     "vertices": 805,
+     "max_influences": 2
+    }
+   },
+   "files": {
+    "crowd_fbx": "art/cast/export/looks/player_f_trencher_rekt_crew/player_f_trencher_rekt_crew.fbx",
+    "hero_fbx": "art/cast/export/looks/player_f_trencher_rekt_crew/player_f_trencher_rekt_crew_Hero.fbx",
+    "base": "art/cast/export/looks/player_f_trencher_rekt_crew/player_f_trencher_rekt_crew_BaseColor.png",
+    "normal": "art/cast/export/looks/player_f_trencher_rekt_crew/player_f_trencher_rekt_crew_Normal.png",
+    "ms": "art/cast/export/looks/player_f_trencher_rekt_crew/player_f_trencher_rekt_crew_MetallicSmoothness.png"
+   },
+   "emissive": false,
+   "atlas_size": 1024,
+   "tribe": null,
+   "notes": ""
+  },
+  "player_f_lagos_ankara_rekt_crew": {
+   "family": "f",
+   "rig": "RainAdult_Rig",
+   "archetype": null,
+   "kind": "uniform",
+   "label": "Rekt Burger crew (Lagos ankara + gele)",
+   "parts": {
+    "head": {},
+    "skin": {},
+    "hair_buzz": {},
+    "top_shirt": {
+     "color": "#ff6a2b",
+     "kind": "cotton",
+     "features": [
+      "placket",
+      "buttons"
+     ],
+     "detail": 0.25,
+     "grain": 0.025,
+     "bump": 0.35,
+     "prints": [
+      {
+       "image": "art/source/rektburger/badge_print.png",
+       "where": "chest",
+       "dx": 0.075,
+       "w": 0.06,
+       "h": 0.06
+      }
+     ]
+    },
+    "bottom": {
+     "color": "#1b1d22",
+     "kind": "cotton",
+     "detail": 0.3
+    },
+    "shoes": {
+     "color": "#1b1d22",
+     "kind": "leather",
+     "detail": 0.6
+    },
+    "hat_cap": {
+     "acc_a": "#1b1d22",
+     "acc_b": "#ff6a2b",
+     "smooth": 0.3,
+     "prints": [
+      {
+       "image": "art/source/rektburger/badge_print.png",
+       "w": 0.062,
+       "h": 0.062
+      }
+     ]
+    }
+   },
+   "slots": {
+    "head": "HEAD",
+    "skin": "SKIN",
+    "hair_buzz": "HAIR",
+    "top_shirt": "TOP",
+    "bottom": "BOTTOM",
+    "shoes": "SHOES",
+    "hat_cap": "ACC_A"
+   },
+   "hidden_body_regions": [
+    "torso",
+    "waist"
+   ],
+   "skin_tone": "deep",
+   "hair_color": "black",
+   "body": null,
+   "face": null,
+   "scale": 1.0,
+   "tiers": {
+    "hero": {
+     "triangles": 10354,
+     "vertices": 5821,
+     "max_influences": 4
+    },
+    "lod0": {
+     "triangles": 4983,
+     "vertices": 2952,
+     "max_influences": 4
+    },
+    "lod1": {
+     "triangles": 2359,
+     "vertices": 1499,
+     "max_influences": 4
+    },
+    "lod2": {
+     "triangles": 1190,
+     "vertices": 805,
+     "max_influences": 2
+    }
+   },
+   "files": {
+    "crowd_fbx": "art/cast/export/looks/player_f_lagos_ankara_rekt_crew/player_f_lagos_ankara_rekt_crew.fbx",
+    "hero_fbx": "art/cast/export/looks/player_f_lagos_ankara_rekt_crew/player_f_lagos_ankara_rekt_crew_Hero.fbx",
+    "base": "art/cast/export/looks/player_f_lagos_ankara_rekt_crew/player_f_lagos_ankara_rekt_crew_BaseColor.png",
+    "normal": "art/cast/export/looks/player_f_lagos_ankara_rekt_crew/player_f_lagos_ankara_rekt_crew_Normal.png",
+    "ms": "art/cast/export/looks/player_f_lagos_ankara_rekt_crew/player_f_lagos_ankara_rekt_crew_MetallicSmoothness.png"
+   },
+   "emissive": false,
+   "atlas_size": 1024,
+   "tribe": null,
+   "notes": ""
+  },
+  "player_f_blazer_rekt_crew": {
+   "family": "f",
+   "rig": "RainAdult_Rig",
+   "archetype": null,
+   "kind": "uniform",
+   "label": "Rekt Burger crew (Blazer + Checkpoint lanyard)",
+   "parts": {
+    "head": {},
+    "skin": {},
+    "hair_buzz": {},
+    "top_shirt": {
+     "color": "#ff6a2b",
+     "kind": "cotton",
+     "features": [
+      "placket",
+      "buttons"
+     ],
+     "detail": 0.25,
+     "grain": 0.025,
+     "bump": 0.35,
+     "prints": [
+      {
+       "image": "art/source/rektburger/badge_print.png",
+       "where": "chest",
+       "dx": 0.075,
+       "w": 0.06,
+       "h": 0.06
+      }
+     ]
+    },
+    "bottom": {
+     "color": "#1b1d22",
+     "kind": "cotton",
+     "detail": 0.3
+    },
+    "shoes": {
+     "color": "#1b1d22",
+     "kind": "leather",
+     "detail": 0.6
+    },
+    "hat_cap": {
+     "acc_a": "#1b1d22",
+     "acc_b": "#ff6a2b",
+     "smooth": 0.3,
+     "prints": [
+      {
+       "image": "art/source/rektburger/badge_print.png",
+       "w": 0.062,
+       "h": 0.062
+      }
+     ]
+    }
+   },
+   "slots": {
+    "head": "HEAD",
+    "skin": "SKIN",
+    "hair_buzz": "HAIR",
+    "top_shirt": "TOP",
+    "bottom": "BOTTOM",
+    "shoes": "SHOES",
+    "hat_cap": "ACC_A"
+   },
+   "hidden_body_regions": [
+    "torso",
+    "waist"
+   ],
+   "skin_tone": "light",
+   "hair_color": "black",
+   "body": null,
+   "face": null,
+   "scale": 1.0,
+   "tiers": {
+    "hero": {
+     "triangles": 10354,
+     "vertices": 5821,
+     "max_influences": 4
+    },
+    "lod0": {
+     "triangles": 4983,
+     "vertices": 2952,
+     "max_influences": 4
+    },
+    "lod1": {
+     "triangles": 2359,
+     "vertices": 1499,
+     "max_influences": 4
+    },
+    "lod2": {
+     "triangles": 1190,
+     "vertices": 805,
+     "max_influences": 2
+    }
+   },
+   "files": {
+    "crowd_fbx": "art/cast/export/looks/player_f_blazer_rekt_crew/player_f_blazer_rekt_crew.fbx",
+    "hero_fbx": "art/cast/export/looks/player_f_blazer_rekt_crew/player_f_blazer_rekt_crew_Hero.fbx",
+    "base": "art/cast/export/looks/player_f_blazer_rekt_crew/player_f_blazer_rekt_crew_BaseColor.png",
+    "normal": "art/cast/export/looks/player_f_blazer_rekt_crew/player_f_blazer_rekt_crew_Normal.png",
+    "ms": "art/cast/export/looks/player_f_blazer_rekt_crew/player_f_blazer_rekt_crew_MetallicSmoothness.png"
+   },
+   "emissive": false,
+   "atlas_size": 1024,
+   "tribe": null,
+   "notes": ""
+  },
+  "player_f_kol_rekt_crew": {
+   "family": "f",
+   "rig": "RainAdult_Rig",
+   "archetype": null,
+   "kind": "uniform",
+   "label": "Rekt Burger crew (Caller / KOL)",
+   "parts": {
+    "head": {},
+    "skin": {},
+    "hair_buzz": {},
+    "top_shirt": {
+     "color": "#ff6a2b",
+     "kind": "cotton",
+     "features": [
+      "placket",
+      "buttons"
+     ],
+     "detail": 0.25,
+     "grain": 0.025,
+     "bump": 0.35,
+     "prints": [
+      {
+       "image": "art/source/rektburger/badge_print.png",
+       "where": "chest",
+       "dx": 0.075,
+       "w": 0.06,
+       "h": 0.06
+      }
+     ]
+    },
+    "bottom": {
+     "color": "#1b1d22",
+     "kind": "cotton",
+     "detail": 0.3
+    },
+    "shoes": {
+     "color": "#1b1d22",
+     "kind": "leather",
+     "detail": 0.6
+    },
+    "hat_cap": {
+     "acc_a": "#1b1d22",
+     "acc_b": "#ff6a2b",
+     "smooth": 0.3,
+     "prints": [
+      {
+       "image": "art/source/rektburger/badge_print.png",
+       "w": 0.062,
+       "h": 0.062
+      }
+     ]
+    }
+   },
+   "slots": {
+    "head": "HEAD",
+    "skin": "SKIN",
+    "hair_buzz": "HAIR",
+    "top_shirt": "TOP",
+    "bottom": "BOTTOM",
+    "shoes": "SHOES",
+    "hat_cap": "ACC_A"
+   },
+   "hidden_body_regions": [
+    "torso",
+    "waist"
+   ],
+   "skin_tone": "tan",
+   "hair_color": "blonde",
+   "body": null,
+   "face": null,
+   "scale": 1.0,
+   "tiers": {
+    "hero": {
+     "triangles": 10354,
+     "vertices": 5821,
+     "max_influences": 4
+    },
+    "lod0": {
+     "triangles": 4983,
+     "vertices": 2952,
+     "max_influences": 4
+    },
+    "lod1": {
+     "triangles": 2359,
+     "vertices": 1499,
+     "max_influences": 4
+    },
+    "lod2": {
+     "triangles": 1190,
+     "vertices": 805,
+     "max_influences": 2
+    }
+   },
+   "files": {
+    "crowd_fbx": "art/cast/export/looks/player_f_kol_rekt_crew/player_f_kol_rekt_crew.fbx",
+    "hero_fbx": "art/cast/export/looks/player_f_kol_rekt_crew/player_f_kol_rekt_crew_Hero.fbx",
+    "base": "art/cast/export/looks/player_f_kol_rekt_crew/player_f_kol_rekt_crew_BaseColor.png",
+    "normal": "art/cast/export/looks/player_f_kol_rekt_crew/player_f_kol_rekt_crew_Normal.png",
+    "ms": "art/cast/export/looks/player_f_kol_rekt_crew/player_f_kol_rekt_crew_MetallicSmoothness.png"
+   },
+   "emissive": false,
+   "atlas_size": 1024,
+   "tribe": null,
+   "notes": ""
+  },
+  "player_f_builder_rekt_crew": {
+   "family": "f",
+   "rig": "RainAdult_Rig",
+   "archetype": null,
+   "kind": "uniform",
+   "label": "Rekt Burger crew (Builder)",
+   "parts": {
+    "head": {},
+    "skin": {},
+    "hair_buzz": {
+     "cornrows": true
+    },
+    "top_shirt": {
+     "color": "#ff6a2b",
+     "kind": "cotton",
+     "features": [
+      "placket",
+      "buttons"
+     ],
+     "detail": 0.25,
+     "grain": 0.025,
+     "bump": 0.35,
+     "prints": [
+      {
+       "image": "art/source/rektburger/badge_print.png",
+       "where": "chest",
+       "dx": 0.075,
+       "w": 0.06,
+       "h": 0.06
+      }
+     ]
+    },
+    "bottom": {
+     "color": "#1b1d22",
+     "kind": "cotton",
+     "detail": 0.3
+    },
+    "shoes": {
+     "color": "#1b1d22",
+     "kind": "leather",
+     "detail": 0.6
+    },
+    "hat_cap": {
+     "acc_a": "#1b1d22",
+     "acc_b": "#ff6a2b",
+     "smooth": 0.3,
+     "prints": [
+      {
+       "image": "art/source/rektburger/badge_print.png",
+       "w": 0.062,
+       "h": 0.062
+      }
+     ]
+    }
+   },
+   "slots": {
+    "head": "HEAD",
+    "skin": "SKIN",
+    "hair_buzz": "HAIR",
+    "top_shirt": "TOP",
+    "bottom": "BOTTOM",
+    "shoes": "SHOES",
+    "hat_cap": "ACC_A"
+   },
+   "hidden_body_regions": [
+    "torso",
+    "waist"
+   ],
+   "skin_tone": "brown",
+   "hair_color": "black",
+   "body": null,
+   "face": null,
+   "scale": 1.0,
+   "tiers": {
+    "hero": {
+     "triangles": 10354,
+     "vertices": 5821,
+     "max_influences": 4
+    },
+    "lod0": {
+     "triangles": 4983,
+     "vertices": 2952,
+     "max_influences": 4
+    },
+    "lod1": {
+     "triangles": 2359,
+     "vertices": 1499,
+     "max_influences": 4
+    },
+    "lod2": {
+     "triangles": 1190,
+     "vertices": 805,
+     "max_influences": 2
+    }
+   },
+   "files": {
+    "crowd_fbx": "art/cast/export/looks/player_f_builder_rekt_crew/player_f_builder_rekt_crew.fbx",
+    "hero_fbx": "art/cast/export/looks/player_f_builder_rekt_crew/player_f_builder_rekt_crew_Hero.fbx",
+    "base": "art/cast/export/looks/player_f_builder_rekt_crew/player_f_builder_rekt_crew_BaseColor.png",
+    "normal": "art/cast/export/looks/player_f_builder_rekt_crew/player_f_builder_rekt_crew_Normal.png",
+    "ms": "art/cast/export/looks/player_f_builder_rekt_crew/player_f_builder_rekt_crew_MetallicSmoothness.png"
+   },
+   "emissive": false,
+   "atlas_size": 1024,
+   "tribe": null,
+   "notes": ""
+  },
+  "player_f_anon_rekt_crew": {
+   "family": "f",
+   "rig": "RainAdult_Rig",
+   "archetype": null,
+   "kind": "uniform",
+   "label": "Rekt Burger crew (Anon)",
+   "parts": {
+    "head": {},
+    "skin": {},
+    "hair_buzz": {},
+    "top_shirt": {
+     "color": "#ff6a2b",
+     "kind": "cotton",
+     "features": [
+      "placket",
+      "buttons"
+     ],
+     "detail": 0.25,
+     "grain": 0.025,
+     "bump": 0.35,
+     "prints": [
+      {
+       "image": "art/source/rektburger/badge_print.png",
+       "where": "chest",
+       "dx": 0.075,
+       "w": 0.06,
+       "h": 0.06
+      }
+     ]
+    },
+    "bottom": {
+     "color": "#1b1d22",
+     "kind": "cotton",
+     "detail": 0.3
+    },
+    "shoes": {
+     "color": "#1b1d22",
+     "kind": "leather",
+     "detail": 0.6
+    },
+    "hat_cap": {
+     "acc_a": "#1b1d22",
+     "acc_b": "#ff6a2b",
+     "smooth": 0.3,
+     "prints": [
+      {
+       "image": "art/source/rektburger/badge_print.png",
+       "w": 0.062,
+       "h": 0.062
+      }
+     ]
+    }
+   },
+   "slots": {
+    "head": "HEAD",
+    "skin": "SKIN",
+    "hair_buzz": "HAIR",
+    "top_shirt": "TOP",
+    "bottom": "BOTTOM",
+    "shoes": "SHOES",
+    "hat_cap": "ACC_A"
+   },
+   "hidden_body_regions": [
+    "torso",
+    "waist"
+   ],
+   "skin_tone": "olive",
+   "hair_color": "black",
+   "body": null,
+   "face": null,
+   "scale": 1.0,
+   "tiers": {
+    "hero": {
+     "triangles": 10354,
+     "vertices": 5821,
+     "max_influences": 4
+    },
+    "lod0": {
+     "triangles": 4983,
+     "vertices": 2952,
+     "max_influences": 4
+    },
+    "lod1": {
+     "triangles": 2359,
+     "vertices": 1499,
+     "max_influences": 4
+    },
+    "lod2": {
+     "triangles": 1190,
+     "vertices": 805,
+     "max_influences": 2
+    }
+   },
+   "files": {
+    "crowd_fbx": "art/cast/export/looks/player_f_anon_rekt_crew/player_f_anon_rekt_crew.fbx",
+    "hero_fbx": "art/cast/export/looks/player_f_anon_rekt_crew/player_f_anon_rekt_crew_Hero.fbx",
+    "base": "art/cast/export/looks/player_f_anon_rekt_crew/player_f_anon_rekt_crew_BaseColor.png",
+    "normal": "art/cast/export/looks/player_f_anon_rekt_crew/player_f_anon_rekt_crew_Normal.png",
+    "ms": "art/cast/export/looks/player_f_anon_rekt_crew/player_f_anon_rekt_crew_MetallicSmoothness.png"
+   },
+   "emissive": false,
+   "atlas_size": 1024,
+   "tribe": null,
+   "notes": ""
+  },
+  "player_f_perp_rekt_crew": {
+   "family": "f",
+   "rig": "RainAdult_Rig",
+   "archetype": null,
+   "kind": "uniform",
+   "label": "Rekt Burger crew (Perp Degen)",
+   "parts": {
+    "head": {},
+    "skin": {},
+    "hair_buzz": {},
+    "top_shirt": {
+     "color": "#ff6a2b",
+     "kind": "cotton",
+     "features": [
+      "placket",
+      "buttons"
+     ],
+     "detail": 0.25,
+     "grain": 0.025,
+     "bump": 0.35,
+     "prints": [
+      {
+       "image": "art/source/rektburger/badge_print.png",
+       "where": "chest",
+       "dx": 0.075,
+       "w": 0.06,
+       "h": 0.06
+      }
+     ]
+    },
+    "bottom": {
+     "color": "#1b1d22",
+     "kind": "cotton",
+     "detail": 0.3
+    },
+    "shoes": {
+     "color": "#1b1d22",
+     "kind": "leather",
+     "detail": 0.6
+    },
+    "hat_cap": {
+     "acc_a": "#1b1d22",
+     "acc_b": "#ff6a2b",
+     "smooth": 0.3,
+     "prints": [
+      {
+       "image": "art/source/rektburger/badge_print.png",
+       "w": 0.062,
+       "h": 0.062
+      }
+     ]
+    }
+   },
+   "slots": {
+    "head": "HEAD",
+    "skin": "SKIN",
+    "hair_buzz": "HAIR",
+    "top_shirt": "TOP",
+    "bottom": "BOTTOM",
+    "shoes": "SHOES",
+    "hat_cap": "ACC_A"
+   },
+   "hidden_body_regions": [
+    "torso",
+    "waist"
+   ],
+   "skin_tone": "dark",
+   "hair_color": "black",
+   "body": null,
+   "face": null,
+   "scale": 1.0,
+   "tiers": {
+    "hero": {
+     "triangles": 10354,
+     "vertices": 5821,
+     "max_influences": 4
+    },
+    "lod0": {
+     "triangles": 4983,
+     "vertices": 2952,
+     "max_influences": 4
+    },
+    "lod1": {
+     "triangles": 2359,
+     "vertices": 1499,
+     "max_influences": 4
+    },
+    "lod2": {
+     "triangles": 1190,
+     "vertices": 805,
+     "max_influences": 2
+    }
+   },
+   "files": {
+    "crowd_fbx": "art/cast/export/looks/player_f_perp_rekt_crew/player_f_perp_rekt_crew.fbx",
+    "hero_fbx": "art/cast/export/looks/player_f_perp_rekt_crew/player_f_perp_rekt_crew_Hero.fbx",
+    "base": "art/cast/export/looks/player_f_perp_rekt_crew/player_f_perp_rekt_crew_BaseColor.png",
+    "normal": "art/cast/export/looks/player_f_perp_rekt_crew/player_f_perp_rekt_crew_Normal.png",
+    "ms": "art/cast/export/looks/player_f_perp_rekt_crew/player_f_perp_rekt_crew_MetallicSmoothness.png"
+   },
+   "emissive": false,
+   "atlas_size": 1024,
+   "tribe": null,
+   "notes": ""
+  },
+  "player_f_farmer_rekt_crew": {
+   "family": "f",
+   "rig": "RainAdult_Rig",
+   "archetype": null,
+   "kind": "uniform",
+   "label": "Rekt Burger crew (Airdrop Farmer)",
+   "parts": {
+    "head": {},
+    "skin": {},
+    "hair_buzz": {},
+    "top_shirt": {
+     "color": "#ff6a2b",
+     "kind": "cotton",
+     "features": [
+      "placket",
+      "buttons"
+     ],
+     "detail": 0.25,
+     "grain": 0.025,
+     "bump": 0.35,
+     "prints": [
+      {
+       "image": "art/source/rektburger/badge_print.png",
+       "where": "chest",
+       "dx": 0.075,
+       "w": 0.06,
+       "h": 0.06
+      }
+     ]
+    },
+    "bottom": {
+     "color": "#1b1d22",
+     "kind": "cotton",
+     "detail": 0.3
+    },
+    "shoes": {
+     "color": "#1b1d22",
+     "kind": "leather",
+     "detail": 0.6
+    },
+    "hat_cap": {
+     "acc_a": "#1b1d22",
+     "acc_b": "#ff6a2b",
+     "smooth": 0.3,
+     "prints": [
+      {
+       "image": "art/source/rektburger/badge_print.png",
+       "w": 0.062,
+       "h": 0.062
+      }
+     ]
+    }
+   },
+   "slots": {
+    "head": "HEAD",
+    "skin": "SKIN",
+    "hair_buzz": "HAIR",
+    "top_shirt": "TOP",
+    "bottom": "BOTTOM",
+    "shoes": "SHOES",
+    "hat_cap": "ACC_A"
+   },
+   "hidden_body_regions": [
+    "torso",
+    "waist"
+   ],
+   "skin_tone": "fair",
+   "hair_color": "auburn",
+   "body": null,
+   "face": null,
+   "scale": 1.0,
+   "tiers": {
+    "hero": {
+     "triangles": 10354,
+     "vertices": 5821,
+     "max_influences": 4
+    },
+    "lod0": {
+     "triangles": 4983,
+     "vertices": 2952,
+     "max_influences": 4
+    },
+    "lod1": {
+     "triangles": 2359,
+     "vertices": 1499,
+     "max_influences": 4
+    },
+    "lod2": {
+     "triangles": 1190,
+     "vertices": 805,
+     "max_influences": 2
+    }
+   },
+   "files": {
+    "crowd_fbx": "art/cast/export/looks/player_f_farmer_rekt_crew/player_f_farmer_rekt_crew.fbx",
+    "hero_fbx": "art/cast/export/looks/player_f_farmer_rekt_crew/player_f_farmer_rekt_crew_Hero.fbx",
+    "base": "art/cast/export/looks/player_f_farmer_rekt_crew/player_f_farmer_rekt_crew_BaseColor.png",
+    "normal": "art/cast/export/looks/player_f_farmer_rekt_crew/player_f_farmer_rekt_crew_Normal.png",
+    "ms": "art/cast/export/looks/player_f_farmer_rekt_crew/player_f_farmer_rekt_crew_MetallicSmoothness.png"
+   },
+   "emissive": false,
+   "atlas_size": 1024,
+   "tribe": null,
+   "notes": ""
+  },
+  "player_f_shark_rekt_crew": {
+   "family": "f",
+   "rig": "RainAdult_Rig",
+   "archetype": null,
+   "kind": "uniform",
+   "label": "Rekt Burger crew (Prediction Shark)",
+   "parts": {
+    "head": {},
+    "skin": {},
+    "hair_buzz": {},
+    "top_shirt": {
+     "color": "#ff6a2b",
+     "kind": "cotton",
+     "features": [
+      "placket",
+      "buttons"
+     ],
+     "detail": 0.25,
+     "grain": 0.025,
+     "bump": 0.35,
+     "prints": [
+      {
+       "image": "art/source/rektburger/badge_print.png",
+       "where": "chest",
+       "dx": 0.075,
+       "w": 0.06,
+       "h": 0.06
+      }
+     ]
+    },
+    "bottom": {
+     "color": "#1b1d22",
+     "kind": "cotton",
+     "detail": 0.3
+    },
+    "shoes": {
+     "color": "#1b1d22",
+     "kind": "leather",
+     "detail": 0.6
+    },
+    "hat_cap": {
+     "acc_a": "#1b1d22",
+     "acc_b": "#ff6a2b",
+     "smooth": 0.3,
+     "prints": [
+      {
+       "image": "art/source/rektburger/badge_print.png",
+       "w": 0.062,
+       "h": 0.062
+      }
+     ]
+    }
+   },
+   "slots": {
+    "head": "HEAD",
+    "skin": "SKIN",
+    "hair_buzz": "HAIR",
+    "top_shirt": "TOP",
+    "bottom": "BOTTOM",
+    "shoes": "SHOES",
+    "hat_cap": "ACC_A"
+   },
+   "hidden_body_regions": [
+    "torso",
+    "waist"
+   ],
+   "skin_tone": "tan",
+   "hair_color": "darkbrown",
+   "body": null,
+   "face": null,
+   "scale": 1.0,
+   "tiers": {
+    "hero": {
+     "triangles": 10354,
+     "vertices": 5821,
+     "max_influences": 4
+    },
+    "lod0": {
+     "triangles": 4983,
+     "vertices": 2952,
+     "max_influences": 4
+    },
+    "lod1": {
+     "triangles": 2359,
+     "vertices": 1499,
+     "max_influences": 4
+    },
+    "lod2": {
+     "triangles": 1190,
+     "vertices": 805,
+     "max_influences": 2
+    }
+   },
+   "files": {
+    "crowd_fbx": "art/cast/export/looks/player_f_shark_rekt_crew/player_f_shark_rekt_crew.fbx",
+    "hero_fbx": "art/cast/export/looks/player_f_shark_rekt_crew/player_f_shark_rekt_crew_Hero.fbx",
+    "base": "art/cast/export/looks/player_f_shark_rekt_crew/player_f_shark_rekt_crew_BaseColor.png",
+    "normal": "art/cast/export/looks/player_f_shark_rekt_crew/player_f_shark_rekt_crew_Normal.png",
+    "ms": "art/cast/export/looks/player_f_shark_rekt_crew/player_f_shark_rekt_crew_MetallicSmoothness.png"
+   },
+   "emissive": false,
+   "atlas_size": 1024,
+   "tribe": null,
+   "notes": ""
+  },
+  "player_f_coat_rekt_crew": {
+   "family": "f",
+   "rig": "RainAdult_Rig",
+   "archetype": null,
+   "kind": "uniform",
+   "label": "Rekt Burger crew (Red coat)",
+   "parts": {
+    "head": {},
+    "skin": {},
+    "hair_buzz": {},
+    "top_shirt": {
+     "color": "#ff6a2b",
+     "kind": "cotton",
+     "features": [
+      "placket",
+      "buttons"
+     ],
+     "detail": 0.25,
+     "grain": 0.025,
+     "bump": 0.35,
+     "prints": [
+      {
+       "image": "art/source/rektburger/badge_print.png",
+       "where": "chest",
+       "dx": 0.075,
+       "w": 0.06,
+       "h": 0.06
+      }
+     ]
+    },
+    "bottom": {
+     "color": "#1b1d22",
+     "kind": "cotton",
+     "detail": 0.3
+    },
+    "shoes": {
+     "color": "#1b1d22",
+     "kind": "leather",
+     "detail": 0.6
+    },
+    "hat_cap": {
+     "acc_a": "#1b1d22",
+     "acc_b": "#ff6a2b",
+     "smooth": 0.3,
+     "prints": [
+      {
+       "image": "art/source/rektburger/badge_print.png",
+       "w": 0.062,
+       "h": 0.062
+      }
+     ]
+    }
+   },
+   "slots": {
+    "head": "HEAD",
+    "skin": "SKIN",
+    "hair_buzz": "HAIR",
+    "top_shirt": "TOP",
+    "bottom": "BOTTOM",
+    "shoes": "SHOES",
+    "hat_cap": "ACC_A"
+   },
+   "hidden_body_regions": [
+    "torso",
+    "waist"
+   ],
+   "skin_tone": "olive",
+   "hair_color": "black",
+   "body": null,
+   "face": null,
+   "scale": 1.0,
+   "tiers": {
+    "hero": {
+     "triangles": 10354,
+     "vertices": 5821,
+     "max_influences": 4
+    },
+    "lod0": {
+     "triangles": 4983,
+     "vertices": 2952,
+     "max_influences": 4
+    },
+    "lod1": {
+     "triangles": 2359,
+     "vertices": 1499,
+     "max_influences": 4
+    },
+    "lod2": {
+     "triangles": 1190,
+     "vertices": 805,
+     "max_influences": 2
+    }
+   },
+   "files": {
+    "crowd_fbx": "art/cast/export/looks/player_f_coat_rekt_crew/player_f_coat_rekt_crew.fbx",
+    "hero_fbx": "art/cast/export/looks/player_f_coat_rekt_crew/player_f_coat_rekt_crew_Hero.fbx",
+    "base": "art/cast/export/looks/player_f_coat_rekt_crew/player_f_coat_rekt_crew_BaseColor.png",
+    "normal": "art/cast/export/looks/player_f_coat_rekt_crew/player_f_coat_rekt_crew_Normal.png",
+    "ms": "art/cast/export/looks/player_f_coat_rekt_crew/player_f_coat_rekt_crew_MetallicSmoothness.png"
+   },
+   "emissive": false,
+   "atlas_size": 1024,
+   "tribe": null,
+   "notes": ""
+  },
+  "player_f_lagos_kaftan_rekt_crew": {
+   "family": "f",
+   "rig": "RainAdult_Rig",
+   "archetype": null,
+   "kind": "uniform",
+   "label": "Rekt Burger crew (Ankara kaftan)",
+   "parts": {
+    "head": {},
+    "skin": {},
+    "hair_buzz": {},
+    "top_shirt": {
+     "color": "#ff6a2b",
+     "kind": "cotton",
+     "features": [
+      "placket",
+      "buttons"
+     ],
+     "detail": 0.25,
+     "grain": 0.025,
+     "bump": 0.35,
+     "prints": [
+      {
+       "image": "art/source/rektburger/badge_print.png",
+       "where": "chest",
+       "dx": 0.075,
+       "w": 0.06,
+       "h": 0.06
+      }
+     ]
+    },
+    "bottom": {
+     "color": "#1b1d22",
+     "kind": "cotton",
+     "detail": 0.3
+    },
+    "shoes": {
+     "color": "#1b1d22",
+     "kind": "leather",
+     "detail": 0.6
+    },
+    "hat_cap": {
+     "acc_a": "#1b1d22",
+     "acc_b": "#ff6a2b",
+     "smooth": 0.3,
+     "prints": [
+      {
+       "image": "art/source/rektburger/badge_print.png",
+       "w": 0.062,
+       "h": 0.062
+      }
+     ]
+    }
+   },
+   "slots": {
+    "head": "HEAD",
+    "skin": "SKIN",
+    "hair_buzz": "HAIR",
+    "top_shirt": "TOP",
+    "bottom": "BOTTOM",
+    "shoes": "SHOES",
+    "hat_cap": "ACC_A"
+   },
+   "hidden_body_regions": [
+    "torso",
+    "waist"
+   ],
+   "skin_tone": "brown",
+   "hair_color": "black",
+   "body": null,
+   "face": null,
+   "scale": 1.0,
+   "tiers": {
+    "hero": {
+     "triangles": 10354,
+     "vertices": 5821,
+     "max_influences": 4
+    },
+    "lod0": {
+     "triangles": 4983,
+     "vertices": 2952,
+     "max_influences": 4
+    },
+    "lod1": {
+     "triangles": 2359,
+     "vertices": 1499,
+     "max_influences": 4
+    },
+    "lod2": {
+     "triangles": 1190,
+     "vertices": 805,
+     "max_influences": 2
+    }
+   },
+   "files": {
+    "crowd_fbx": "art/cast/export/looks/player_f_lagos_kaftan_rekt_crew/player_f_lagos_kaftan_rekt_crew.fbx",
+    "hero_fbx": "art/cast/export/looks/player_f_lagos_kaftan_rekt_crew/player_f_lagos_kaftan_rekt_crew_Hero.fbx",
+    "base": "art/cast/export/looks/player_f_lagos_kaftan_rekt_crew/player_f_lagos_kaftan_rekt_crew_BaseColor.png",
+    "normal": "art/cast/export/looks/player_f_lagos_kaftan_rekt_crew/player_f_lagos_kaftan_rekt_crew_Normal.png",
+    "ms": "art/cast/export/looks/player_f_lagos_kaftan_rekt_crew/player_f_lagos_kaftan_rekt_crew_MetallicSmoothness.png"
+   },
+   "emissive": false,
+   "atlas_size": 1024,
+   "tribe": null,
+   "notes": ""
   }
  },
  "parts": {

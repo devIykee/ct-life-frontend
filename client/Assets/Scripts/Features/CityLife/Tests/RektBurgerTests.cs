@@ -94,5 +94,35 @@ namespace CTLife.CityLife.Tests
             Assert.IsFalse(last.CapKnown);
             Assert.IsTrue(last.WhileAway);
         }
+
+        [Test]
+        public void V2_SummaryLine_AndRankRow()
+        {
+            var sum = new ShiftSummary { PaidCents = 63, DurationSec = 70, Minutes = 1, EndReason = "clock_out" };
+            StringAssert.Contains("left to earn today", ShiftBand.Subtitle(sum, 3442, "2h 6m"));
+            StringAssert.Contains("Back in 2h 6m", ShiftBand.Subtitle(sum, 0, "2h 6m"));
+            sum.DurationSec = 30;
+            Assert.AreEqual(RbText.T("band.tiny"), ShiftBand.Subtitle(sum, 3442, null));
+            var mine = new CTLife.Careers.Ladder { Id = "builder", Rank = 1, Xp = 12, Title = "Intern" };
+            mine.Ranks.Add(new CTLife.Careers.LadderRank { Rank = 1, XpRequired = 0, Title = "Intern" });
+            mine.Ranks.Add(new CTLife.Careers.LadderRank { Rank = 2, XpRequired = 50, Title = "Junior Dev" });
+            var v = RektRank.Describe(mine, 2);
+            Assert.AreEqual("Junior Dev", v.Title);
+            Assert.AreEqual("12", v.Count);
+            Assert.AreEqual("50", v.Of);
+            Assert.AreEqual(10f / 50f, v.From, 1e-5);
+            Assert.AreEqual(12f / 50f, v.To, 1e-5);
+            StringAssert.Contains("38 XP", v.Divider);
+        }
+
+        [Test]
+        public void JailName_ComesFromTheNamesTable()
+        {
+            var name = CTLife.Core.NameTable.Get("venue.ct_jail", "Jail");
+            Assert.AreEqual(name, CTLife.CityLife.Heat.HeatText.T("jail.title"));
+            StringAssert.Contains("of " + name + "?", CTLife.CityLife.Heat.HeatText.T("bail.title"));
+            StringAssert.Contains(name, CTLife.CityLife.Heat.HeatText.T("jail.free"));
+            StringAssert.DoesNotContain("Compliance", CTLife.CityLife.Heat.HeatText.T("jail.free"));
+        }
     }
 }

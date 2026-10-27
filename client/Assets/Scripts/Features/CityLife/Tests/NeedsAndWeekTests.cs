@@ -377,7 +377,7 @@ namespace CTLife.CityLife.Tests
             CollectionAssert.Contains(lines, "Mood: " + CityLifeStrings.T("mood.red") + " (-3.50%)");
             CollectionAssert.Contains(lines, "Rent: Paid up");
             var card = WeekRecap.Card("anon", "2026-W41", lines);
-            StringAssert.StartsWith("anon · CT City 2026-W41", card.Text());
+            StringAssert.StartsWith("anon · " + CTLife.Core.NameTable.Get("place.city", "CT City") + " 2026-W41", card.Text());
             StringAssert.Contains("• Cash up $500.00", card.Text());
         }
 

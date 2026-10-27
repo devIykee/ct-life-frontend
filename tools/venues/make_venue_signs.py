@@ -19,6 +19,9 @@ import sys
 
 from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageFont
 
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
+import names_table as N  # noqa: E402  venue and app names come from contract/ids/names.json (QUALITY-BAR.md)
+
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 FONTS = os.path.join(ROOT, "client", "Assets", "Resources", "UI", "Fonts")
 OUT = os.path.join(ROOT, "client", "Assets", "World", "Venues")
@@ -1148,7 +1151,7 @@ def venue_signs(vid):
     s = common()
     if vid == "perp_pit":
         s.update({
-            "pp_title": neon(1024, 136, "PERP PIT", GREEN),
+            "pp_title": neon(1024, 136, N.upper("venue.perp_pit"), GREEN),
             "pp_ticker": ticker(2032, 48, "PERPS ON BTC · OIL · GOLD · US10Y (LOL)  ·  LONGS LIQUIDATED  ·  SHORTS LIQUIDATED  ·  "
                                          "FUNDING FLIPPED  ·  SOMEONE WENT 40x ON A FROG  ·  MARK PRICE, NOT LAST PRICE  ·  "),
             "pp_leverage_idle": board(1024, 512, "LEVERAGE BOARD", ["PAIR", "SIDE", "LEV", "SIZE", "LIQ PRICE", "PNL"],
@@ -1170,7 +1173,7 @@ def venue_signs(vid):
         })
     elif vid == "rekt_clinic":
         s.update({
-            "rc_title": neon(1024, 160, "REKT CLINIC", RED, sub="WALK-INS WELCOME · NO PNL SCREENSHOTS", sub_color=WHITE),
+            "rc_title": neon(1024, 160, N.upper("venue.rekt_clinic"), RED, sub="WALK-INS WELCOME · NO PNL SCREENSHOTS", sub_color=WHITE),
             "rc_triage": poster(512, 256, ["TRIAGE", "HOW MANY X WERE YOU?"], accent=RED),
             "rc_chart": poster(512, 640, ["PATIENT CHART", "POSITION: 100x LONG", "ENTRY: THE TOP", "DIAGNOSIS: REKT",
                                           ("PRESCRIPTION: TOUCH GRASS", GREEN)], accent=RED, bg=(236, 240, 242), fg=(40, 46, 56)),
@@ -1185,11 +1188,11 @@ def venue_signs(vid):
         })
     elif vid == "ore_refinery":
         s.update({
-            "ore_title": neon(1024, 150, "ORE REFINERY", ORE, sub="STAKE REAL ORE · EARN A SHARE OF PROTOCOL REVENUE", sub_color=WHITE),
+            "ore_title": neon(1024, 150, N.upper("venue.ore_refinery"), ORE, sub="STAKE REAL ORE · EARN A SHARE OF PROTOCOL REVENUE", sub_color=WHITE),
             "ore_board_label": poster(1024, 160, ["LIVE ORE BOARD · 5 × 5"], accent=ORE, bg=(30, 22, 10)),
             "ore_timer_idle": board(512, 384, "ROUND", ["TIME LEFT"], rows=1, accent=ORE, footer="ROUND FEED · STANDBY"),
             "ore_mother_idle": board(512, 384, "MOTHERLODE", ["ORE"], rows=1, accent=GOLD, footer="TREASURY FEED · STANDBY"),
-            "ore_stake_screen": screen(512, 256, "stake", ORE, "REFINERY TERMINAL"),
+            "ore_stake_screen": screen(512, 256, "stake", ORE, "ORE TERMINAL"),
             "ore_tiers": poster(512, 640, ["MINER BADGES", ("PROSPECTOR · HOLDS ORE", WHITE), ("MINER · STAKES 1+ ORE", WHITE),
                                            ("REFINER · STAKES 10+ ORE", WHITE), ("HARD HAT WHILE STAKED", ORE)], accent=ORE, bg=(34, 28, 20)),
             "ore_mine_link": poster(768, 256, ["WANT TO MINE?", "MINING HAPPENS ON ore.com — NOT IN THIS APP"], accent=ORE, bg=(34, 28, 20)),
@@ -1198,14 +1201,14 @@ def venue_signs(vid):
         })
     elif vid == "launchpad_tower":
         s.update({
-            "lt_title": neon(1024, 150, "LAUNCHPAD TOWER", PURPLE, sub="A NEW FICTIONAL COIN EVERY FEW MINUTES", sub_color=WHITE),
-            "lt_board_idle": board(1024, 576, "PULSE-ISH", ["FRESH MINTS", "FINAL LAP", "GRADUATED"], rows=4, accent=PURPLE,
+            "lt_title": neon(1024, 150, N.upper("venue.launchpad_tower"), PURPLE, sub="A NEW FICTIONAL COIN EVERY FEW MINUTES", sub_color=WHITE),
+            "lt_board_idle": board(1024, 576, N.upper("app.pulse"), ["FRESH MINTS", "FINAL LAP", "GRADUATED"], rows=4, accent=PURPLE,
                                    tabs=["NEW", "TRENDING"], footer="LAUNCH FEED · STANDBY"),
             "lt_countdown_idle": board(512, 320, "NEXT LAUNCH", ["T-MINUS"], rows=1, accent=GREEN, footer="LAUNCH CLOCK · STANDBY"),
             "lt_bonding": poster(768, 512, ["BONDING CURVE", "BUY EARLY · CURVE GOES UP", "GRADUATES AT THE TOP", ("(MOST NEVER DO)", RED)], accent=GREEN),
-            "lt_desk": poster(768, 192, ["LAUNCH DESK", "FAIR LAUNCH ONLY (ALLEGEDLY)"], accent=GOLD),
+            "lt_desk": poster(768, 192, ["LAUNCH DESK"], accent=GOLD),
             "lt_rules": poster(512, 512, ["LAUNCH RULES", "NO INSIDERS", "NO SNIPERS", "NO BUNDLES", ("(TRUST ME BRO)", RED)], accent=PINK),
-            "lt_terminal": screen(512, 256, "pulse", PURPLE, "PULSE-ISH TERMINAL"),
+            "lt_terminal": screen(512, 256, "pulse", PURPLE, N.upper("app.pulse") + " TERMINAL"),
             "lt_window": window_view(1024, 512, "day"),
             "lt_feejar": badge(512, 160, "CREATOR FEE JAR", (60, 40, 100), GOLD),
             "lt_fountain": badge(512, 160, "HOLDER-REWARDS FOUNTAIN", (40, 60, 110), CYAN),
@@ -1214,7 +1217,7 @@ def venue_signs(vid):
         })
     elif vid == "prediction_pit":
         s.update({
-            "pd_title": neon(1024, 150, "PREDICTION PIT", BLUE, sub="CALL IT · GAME CASH ONLY · NEVER WITHDRAWABLE", sub_color=WHITE),
+            "pd_title": neon(1024, 150, N.upper("venue.prediction_pit"), BLUE, sub="CALL IT · GAME CASH ONLY · NEVER WITHDRAWABLE", sub_color=WHITE),
             "pd_board_idle": board(1024, 576, "ODDSBOARD", ["MARKET", "% CHANCE", "YES ¢", "NO ¢", "$ VOL"], rows=5, accent=BLUE,
                                    tabs=["TRENDING", "BREAKING", "NEW"], footer="MARKET FEED · STANDBY · RESOLVES ON IN-GAME EVENTS"),
             "pd_tabs": poster(2032, 160, ["TRENDING · BREAKING · POLITICS · AI · CELEBS · MACRO · CITY · BEEFS"], accent=WHITE, bg=(18, 30, 60), border=False),
@@ -1226,7 +1229,7 @@ def venue_signs(vid):
         })
     elif vid == "ratio_arena":
         s.update({
-            "ra_title": neon(1024, 150, "RATIO ARENA", PINK, sub="REPLIES > LIKES = RATIO", sub_color=WHITE),
+            "ra_title": neon(1024, 150, N.upper("venue.ratio_arena"), PINK, sub="REPLIES > LIKES = RATIO", sub_color=WHITE),
             "ra_score_idle": board(1024, 512, "RATIO METER", ["THE OP", "THE REPLY"], rows=2, accent=PINK,
                                    subtitle="REPLIES — vs LIKES —", footer="RATIO STATUS · PENDING"),
             "ra_banner1": poster(1024, 256, ["L + RATIO", "+ YOU FELL OFF"], accent=PINK),
@@ -1237,7 +1240,7 @@ def venue_signs(vid):
         })
     elif vid == "conference_hall":
         s.update({
-            "cc_title": neon(1024, 150, "COIN2050", CYAN, sub="CONFERENCE CENTER · FEELS LIKE A BOARD MEETING", sub_color=WHITE),
+            "cc_title": neon(1024, 150, N.upper("venue.conference_hall"), CYAN, sub="MAIN STAGE · TALKS · SIDE EVENTS", sub_color=WHITE),
             "cc_stage_idle": board(1024, 512, "MAIN STAGE", ["NOW", "NEXT"], rows=2, accent=CYAN, subtitle="ON STAGE: —",
                                    footer="AGENDA FEED · STANDBY"),
             "cc_village": poster(768, 256, ["STARTUP HAMLET", "18 DECKS · 0 PRODUCTS"], accent=GREEN),
@@ -1254,7 +1257,7 @@ def venue_signs(vid):
         })
     elif vid == "ct_jail":
         s.update({
-            "cj_title": neon(1024, 150, "COMPLIANCE JAIL", ORANGE, sub="BAIL PAYABLE IN GAME CASH", sub_color=WHITE),
+            "cj_title": neon(1024, 150, N.upper("venue.ct_jail"), ORANGE, sub="BAIL PAYABLE IN GAME CASH", sub_color=WHITE),
             "cj_kyc": poster(512, 640, ["KNOW YOUR DEGEN", "NAME: ____", "DOB: ____", "ADDRESS: ____", ("SOURCE OF WEALTH: \"TRUST ME\"", ORANGE)],
                              accent=ORANGE, bg=(236, 236, 230), fg=(40, 40, 46)),
             "cj_booking": poster(768, 256, ["COMPLIANCE DEPT", "BOOKING · STAND ON THE LINE"], accent=ORANGE),
@@ -1295,7 +1298,7 @@ def venue_signs(vid):
         })
     elif vid == "discord_heights":
         s.update({
-            "dh_title": neon(1024, 150, "DISCORDIA HEIGHTS", BLURPLE, sub="SERVER LOUNGE · 99+ UNREAD", sub_color=WHITE),
+            "dh_title": neon(1024, 150, N.upper("venue.discord_heights"), BLURPLE, sub="SERVER LOUNGE · 99+ UNREAD", sub_color=WHITE),
             "dh_announce_idle": board(1024, 448, "#announcements", ["FROM", "MESSAGE"], rows=3, accent=BLURPLE, footer="@everyone · FEED STANDBY"),
             "dh_general": badge(512, 128, "# general", (54, 57, 63), WHITE), "dh_alpha": badge(512, 128, "# alpha-maybe", (54, 57, 63), GOLD),
             "dh_gm": badge(512, 128, "# gm", (54, 57, 63), GREEN), "dh_wen": badge(512, 128, "# wen-token", (54, 57, 63), PINK),
@@ -1334,7 +1337,7 @@ def venue_signs(vid):
         })
     elif vid == "sybil_barn":
         s.update({
-            "sb_title": neon(1024, 150, "SYBIL BARN", ORANGE, sub="CLONES RAISED HERE", sub_color=WHITE),
+            "sb_title": neon(1024, 150, N.upper("venue.sybil_barn"), ORANGE, sub="CLONES RAISED HERE", sub_color=WHITE),
             "sb_pen1": badge(512, 128, "WALLETS 0001 – 0420", (90, 40, 30), WHITE),
             "sb_pen2": badge(512, 128, "WALLETS 0421 – 0840", (90, 40, 30), WHITE),
             "sb_pen3": badge(512, 128, "WALLETS 0841 – ∞", (90, 40, 30), GOLD),
@@ -1357,8 +1360,8 @@ def venue_signs(vid):
         })
     elif vid == "cabal_lounge":
         s.update({
-            "cl_title": neon(1024, 150, "CABAL LOUNGE", GOLD, sub="MEMBERS ONLY · YOU ARE NOT A MEMBER", sub_color=WHITE),
-            "cl_chat_idle": board(1024, 512, "CABAL CHAT", ["MEMBER", "MESSAGE"], rows=4, accent=GOLD, subtitle="7 MEMBERS · 0 LEAKS",
+            "cl_title": neon(1024, 150, N.upper("venue.cabal_lounge"), GOLD, sub="MEMBERS ONLY · YOU ARE NOT A MEMBER", sub_color=WHITE),
+            "cl_chat_idle": board(1024, 512, "VIP CHAT", ["MEMBER", "MESSAGE"], rows=4, accent=GOLD, subtitle="7 MEMBERS · 0 LEAKS",
                                   footer="ENCRYPTED · FEED STANDBY"),
             "cl_guest": poster(768, 256, ["GUEST LIST ONLY", "DRESS CODE: MATCHING PFPs · NO SCREENSHOTS"], accent=GOLD, bg=(40, 10, 16)),
             "cl_bundle": neon(1024, 160, "100% NOT BUNDLED", PINK),
@@ -1373,7 +1376,7 @@ def venue_signs(vid):
             "yc_hull2": badge(1024, 128, "EXIT LIQUIDITY", (245, 247, 252), (120, 20, 30)),
             "yc_bar": poster(768, 256, ["BOTTLE SERVICE", "PAY IN GAME CASH"], accent=GOLD, bg=(20, 40, 60)),
             "yc_dress": poster(512, 256, ["DRESS CODE", "LINEN · NO LANYARDS"], accent=WHITE, bg=(20, 40, 60)),
-            "yc_side": poster(768, 256, ["YACHT PARTY TONIGHT", "INVITE ONLY · ASK A CABAL MEMBER"], accent=PINK, bg=(20, 40, 60)),
+            "yc_side": poster(768, 256, ["YACHT PARTY TONIGHT", "INVITE ONLY · ASK A VIP MEMBER"], accent=PINK, bg=(20, 40, 60)),
             "yc_govfee": poster(512, 384, ["GOV FEE KIOSK", "PAY YOUR VISA IN CRYPTO", ("(NOT IN GAME CASH)", GOLD)], accent=CYAN, bg=(20, 40, 60)),
             "yc_board_idle": board(1024, 448, "MARINA DEPARTURES", ["YACHT", "OWNER", "STATUS"], rows=3, accent=CYAN,
                                    footer="HARBOUR FEED · STANDBY"),

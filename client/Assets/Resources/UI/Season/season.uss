@@ -1,0 +1,203 @@
+/* CT Life · Season pass + nods book (backend #13; UI brief ct-life-evidence/season-r4/ui-refs/BRIEF.md, approved 2026-10-25).
+   Full screen over the game like the casino. Our own palette: deep plum with the season's sky accent (Airdrop Season) and
+   a gold pass track. Lilita for numbers and titles, Inter for labels. Panel units 2400 x 1080 landscape.
+   Alphas are set for UI Toolkit's linear-space blend (a brief's sRGB 0.80 is ~0.94 here). */
+
+.ss-sheet { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+.ss-sheet Label { color: rgb(255, 255, 255); -unity-font-definition: url("../Fonts/Phone/Inter-Bold.ttf"); padding: 0; margin: 0; }
+.ss-sheet .unity-button, .ss-sheet .unity-button:hover, .ss-sheet .unity-button:focus, .ss-sheet .unity-button:active {
+    background-image: none; background-color: rgba(0, 0, 0, 0); border-width: 0; margin: 0; padding: 0;
+}
+.ss-sheet .ct-button-depth, .ss-sheet .ct-button-glint { display: none; }
+.ss-sheet .ss-bg { position: absolute; left: -200px; top: -200px; right: -200px; bottom: -200px; background-color: rgb(20, 9, 38); }
+
+/* ---------------------------------------------------------------- top bar */
+.ss-sheet .ss-top { position: absolute; left: -200px; right: -200px; top: -200px; height: 332px; flex-direction: row; align-items: center; padding: 216px 240px 0 240px; background-color: rgb(30, 14, 56); }
+.ss-sheet .ss-close { width: 72px; height: 72px; border-radius: 36px; align-items: center; justify-content: center; background-color: rgb(52, 28, 92); margin-right: 22px; flex-shrink: 0; }
+.ss-sheet .ss-close .ct-icon { width: 34px; height: 34px; -unity-background-image-tint-color: rgb(255, 255, 255); }
+.ss-sheet .ss-title { flex-shrink: 0; margin-right: 34px; }
+.ss-sheet .ss-kicker { font-size: 16px; letter-spacing: 4px; color: rgb(88, 214, 255); }
+.ss-sheet .ss-name { -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); font-size: 48px; color: rgb(255, 255, 255); margin-top: -4px; }
+.ss-sheet .ss-ends { font-size: 17px; color: rgba(255, 255, 255, 0.62); -unity-font-definition: url("../Fonts/Phone/Inter-SemiBold.ttf"); }
+.ss-sheet .ss-tabs { flex-direction: row; align-items: center; flex-grow: 1; }
+.ss-sheet .ss-tab { height: 70px; padding: 0 30px; margin-right: 12px; border-radius: 35px; justify-content: center; flex-direction: row; align-items: center;
+    background-color: rgb(40, 20, 72); border-width: 2px; border-color: rgba(255, 255, 255, 0.10); }
+.ss-sheet .ss-tab .ct-icon { width: 30px; height: 30px; margin-right: 10px; -unity-background-image-tint-color: rgba(255, 255, 255, 0.7); }
+.ss-sheet .ss-tab-label { font-size: 22px; letter-spacing: 2px; color: rgba(255, 255, 255, 0.7); }
+.ss-sheet .ss-tab--on { background-color: rgb(88, 214, 255); border-color: rgb(186, 238, 255); }
+.ss-sheet .ss-tab--on .ss-tab-label { color: rgb(14, 30, 52); }
+.ss-sheet .ss-tab--on .ct-icon { -unity-background-image-tint-color: rgb(14, 30, 52); }
+.ss-sheet .ss-tab-badge { margin-left: 10px; min-width: 30px; height: 30px; border-radius: 15px; padding: 0 8px; background-color: rgb(255, 196, 64); align-items: center; justify-content: center; }
+.ss-sheet .ss-tab-badge Label { font-size: 16px; color: rgb(40, 20, 6); -unity-text-align: middle-center; }
+
+/* XP block (Apex: level badge at the start of the bar; Fall Guys: n/N beside the title) */
+.ss-sheet .ss-xp { flex-direction: row; align-items: center; flex-shrink: 0; }
+.ss-sheet .ss-xp-badge { width: 84px; height: 84px; border-radius: 42px; background-color: rgb(88, 214, 255); border-width: 5px; border-color: rgb(186, 238, 255);
+    align-items: center; justify-content: center; margin-right: 16px; }
+.ss-sheet .ss-xp-badge-n { -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); font-size: 42px; color: rgb(14, 30, 52); -unity-text-align: middle-center; }
+.ss-sheet .ss-xp-col { width: 360px; }
+.ss-sheet .ss-xp-row { flex-direction: row; justify-content: space-between; margin-bottom: 8px; }
+.ss-sheet .ss-xp-tier { font-size: 18px; letter-spacing: 2px; color: rgba(255, 255, 255, 0.8); }
+.ss-sheet .ss-xp-num { font-size: 18px; color: rgba(255, 255, 255, 0.62); -unity-font-definition: url("../Fonts/Phone/Inter-SemiBold.ttf"); }
+.ss-sheet .ss-bar { height: 16px; border-radius: 8px; background-color: rgba(255, 255, 255, 0.14); overflow: hidden; }
+.ss-sheet .ss-bar-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 100%; border-radius: 8px; background-color: rgb(88, 214, 255); transform-origin: 0% 50%;
+    transition-property: scale; transition-duration: 0.5s; transition-timing-function: ease-out-cubic; }
+
+.ss-sheet .ss-body { position: absolute; left: 40px; right: 40px; top: 150px; bottom: 70px; }
+.ss-sheet .ss-foot { position: absolute; left: 40px; right: 40px; bottom: 16px; height: 40px; flex-direction: row; align-items: center; justify-content: center; }
+.ss-sheet .ss-foot Label { font-size: 17px; color: rgba(255, 255, 255, 0.5); -unity-font-definition: url("../Fonts/Phone/Inter-SemiBold.ttf"); }
+
+/* ---------------------------------------------------------------- Season tab: hero preview + two tracks */
+.ss-sheet .ss-season { flex-direction: row; flex-grow: 1; }
+.ss-sheet .ss-hero { width: 600px; flex-shrink: 0; margin-right: 28px; border-radius: 34px; background-color: rgb(34, 17, 62); border-width: 2px; border-color: rgba(255, 255, 255, 0.08);
+    align-items: center; padding: 30px 34px; }
+.ss-sheet .ss-hero-art { width: 320px; height: 320px; border-radius: 160px; background-color: rgb(48, 26, 88); align-items: center; justify-content: center; margin-top: 6px;
+    -unity-background-scale-mode: scale-to-fit; }
+.ss-sheet .ss-hero-art--free { border-width: 6px; border-color: rgb(88, 214, 255); }
+.ss-sheet .ss-hero-art--paid { border-width: 6px; border-color: rgb(255, 196, 64); }
+.ss-sheet .ss-hero-art .ct-icon { width: 170px; height: 170px; }
+.ss-sheet .ss-hero-thumb { position: absolute; left: 30px; top: 30px; right: 30px; bottom: 30px; -unity-background-scale-mode: scale-to-fit; }
+.ss-sheet .ss-hero-tags { flex-direction: row; margin-top: 24px; }
+.ss-sheet .ss-tag { height: 36px; padding: 0 16px; border-radius: 18px; margin: 0 6px; justify-content: center; background-color: rgba(255, 255, 255, 0.10); }
+.ss-sheet .ss-tag Label { font-size: 16px; letter-spacing: 2px; color: rgb(255, 255, 255); -unity-text-align: middle-center; }
+.ss-sheet .ss-tag--free { background-color: rgb(88, 214, 255); }
+.ss-sheet .ss-tag--free Label { color: rgb(14, 30, 52); }
+.ss-sheet .ss-tag--paid { background-color: rgb(255, 196, 64); }
+.ss-sheet .ss-tag--paid Label { color: rgb(48, 26, 4); }
+.ss-sheet .ss-hero-name { -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); font-size: 54px; margin-top: 14px; -unity-text-align: middle-center; white-space: normal; }
+.ss-sheet .ss-hero-sub { font-size: 21px; color: rgba(255, 255, 255, 0.66); margin-top: 6px; -unity-font-definition: url("../Fonts/Phone/Inter-SemiBold.ttf"); -unity-text-align: middle-center; white-space: normal; }
+.ss-sheet .ss-hero-btn { margin-top: 26px; height: 92px; width: 420px; border-radius: 46px; justify-content: center; align-items: center;
+    transition-property: scale; transition-duration: 0.08s; }
+.ss-sheet .ss-hero-btn:active { scale: 0.96 0.96; }
+.ss-sheet .ss-hero-btn--claim { background-color: rgb(255, 196, 64); border-bottom-width: 10px; border-color: rgb(170, 110, 20); }
+.ss-sheet .ss-hero-btn--claim Label { -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); font-size: 38px; color: rgb(48, 26, 4); }
+.ss-sheet .ss-hero-btn--pass { background-color: rgb(52, 28, 92); border-width: 3px; border-color: rgb(255, 196, 64); flex-direction: row; }
+.ss-sheet .ss-hero-btn--pass .ct-icon { width: 34px; height: 34px; margin-right: 12px; -unity-background-image-tint-color: rgb(255, 196, 64); }
+.ss-sheet .ss-hero-btn--pass Label { font-size: 26px; color: rgb(255, 196, 64); }
+.ss-sheet .ss-hero-note { font-size: 19px; color: rgba(255, 255, 255, 0.55); margin-top: auto; padding-top: 18px; -unity-font-definition: url("../Fonts/Phone/Inter-SemiBold.ttf"); -unity-text-align: middle-center; white-space: normal; }
+
+.ss-sheet .ss-tracks { flex-grow: 1; border-radius: 34px; background-color: rgb(28, 13, 52); border-width: 2px; border-color: rgba(255, 255, 255, 0.06); flex-direction: row; overflow: hidden; align-items: center; }
+.ss-sheet .ss-rowlabels { width: 190px; height: 560px; flex-shrink: 0; padding: 24px 0 24px 22px; justify-content: flex-start; }
+.ss-sheet .ss-rowgap { height: 88px; }
+.ss-sheet .ss-rowlabel { height: 204px; justify-content: center; }
+.ss-sheet .ss-rowlabel-title { font-size: 20px; letter-spacing: 3px; }
+.ss-sheet .ss-rowlabel-sub { font-size: 16px; color: rgba(255, 255, 255, 0.55); margin-top: 6px; -unity-font-definition: url("../Fonts/Phone/Inter-SemiBold.ttf"); white-space: normal; }
+.ss-sheet .ss-rowlabel--paid .ss-rowlabel-title { color: rgb(255, 196, 64); }
+.ss-sheet .ss-rowlabel--free .ss-rowlabel-title { color: rgb(88, 214, 255); }
+.ss-sheet .ss-activate { margin-top: 12px; height: 54px; width: 150px; border-radius: 27px; background-color: rgb(255, 196, 64); justify-content: center; align-items: center; flex-direction: row;
+    transition-property: scale; transition-duration: 0.08s; }
+.ss-sheet .ss-activate:active { scale: 0.95 0.95; }
+.ss-sheet .ss-activate .ct-icon { width: 22px; height: 22px; margin-right: 6px; -unity-background-image-tint-color: rgb(48, 26, 4); }
+.ss-sheet .ss-activate Label { font-size: 18px; color: rgb(48, 26, 4); }
+.ss-sheet .ss-scroll { flex-grow: 1; height: 560px; }
+.ss-sheet .ss-scroll .unity-scroll-view__content-container { flex-direction: row; padding: 24px 30px 24px 6px; }
+.ss-sheet .ss-col { width: 196px; align-items: center; }
+.ss-sheet .ss-node { height: 88px; width: 196px; align-items: center; justify-content: center; }
+.ss-sheet .ss-line { position: absolute; left: 0; right: 0; top: 40px; height: 8px; background-color: rgba(255, 255, 255, 0.12); }
+.ss-sheet .ss-line-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 100%; background-color: rgb(88, 214, 255); transform-origin: 0% 50%; }
+.ss-sheet .ss-node-n { width: 56px; height: 56px; border-radius: 28px; background-color: rgb(52, 28, 92); border-width: 3px; border-color: rgba(255, 255, 255, 0.18); align-items: center; justify-content: center; }
+.ss-sheet .ss-node-n Label { -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); font-size: 26px; color: rgba(255, 255, 255, 0.8); -unity-text-align: middle-center; }
+.ss-sheet .ss-node--reached .ss-node-n { background-color: rgb(88, 214, 255); border-color: rgb(186, 238, 255); }
+.ss-sheet .ss-node--reached .ss-node-n Label { color: rgb(14, 30, 52); }
+.ss-sheet .ss-node--current .ss-node-n { width: 66px; height: 66px; border-radius: 33px; border-width: 5px; border-color: rgb(255, 255, 255); }
+
+.ss-sheet .ss-tile { width: 172px; height: 172px; border-radius: 30px; margin: 16px 0; align-items: center; justify-content: center; background-color: rgb(46, 24, 84);
+    border-width: 3px; border-color: rgba(255, 255, 255, 0.10); transition-property: scale, border-color; transition-duration: 0.12s; }
+.ss-sheet .ss-tile:active { scale: 0.95 0.95; }
+.ss-sheet .ss-tile--paid { background-color: rgb(58, 34, 40); border-color: rgba(255, 196, 64, 0.28); }
+.ss-sheet .ss-tile--free { border-color: rgba(88, 214, 255, 0.28); }
+.ss-sheet .ss-tile .ct-icon { width: 82px; height: 82px; -unity-background-image-tint-color: rgb(255, 255, 255); }
+.ss-sheet .ss-tile--paid .ct-icon { -unity-background-image-tint-color: rgb(255, 214, 120); }
+.ss-sheet .ss-tile--free .ct-icon { -unity-background-image-tint-color: rgb(170, 232, 255); }
+.ss-sheet .ss-tile-thumb { position: absolute; left: 14px; top: 10px; right: 14px; bottom: 36px; -unity-background-scale-mode: scale-to-fit; }
+.ss-sheet .ss-tile-amt { position: absolute; left: 0; right: 0; bottom: 14px; font-size: 20px; -unity-text-align: middle-center; -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); }
+.ss-sheet .ss-tile--locked { opacity: 0.55; }
+.ss-sheet .ss-tile--claimed { opacity: 0.6; }
+.ss-sheet .ss-tile--claimable { border-color: rgb(255, 196, 64); border-width: 5px; background-color: rgb(84, 50, 30); }
+.ss-sheet .ss-tile--claimable.ss-tile--free { border-color: rgb(255, 255, 255); background-color: rgb(30, 70, 110); }
+.ss-sheet .ss-tile--pulse { scale: 1.05 1.05; }
+.ss-sheet .ss-tile--sel { border-color: rgb(255, 255, 255); border-width: 5px; }
+.ss-sheet .ss-tile-badge { position: absolute; right: -10px; top: -10px; width: 46px; height: 46px; border-radius: 23px; align-items: center; justify-content: center;
+    border-width: 3px; border-color: rgb(20, 9, 38); }
+.ss-sheet .ss-tile-badge .ct-icon { width: 24px; height: 24px; }
+.ss-sheet .ss-tile-badge--lock { background-color: rgb(110, 96, 140); }
+.ss-sheet .ss-tile-badge--lock .ct-icon { -unity-background-image-tint-color: rgb(255, 255, 255); }
+.ss-sheet .ss-tile-badge--pass { background-color: rgb(255, 196, 64); }
+.ss-sheet .ss-tile-badge--pass .ct-icon { -unity-background-image-tint-color: rgb(48, 26, 4); }
+.ss-sheet .ss-tile-badge--done { background-color: rgb(61, 220, 132); }
+.ss-sheet .ss-tile-badge--done .ct-icon { -unity-background-image-tint-color: rgb(10, 50, 28); }
+.ss-sheet .ss-claim-chip { position: absolute; bottom: 12px; height: 32px; padding: 0 14px; border-radius: 16px; background-color: rgb(255, 196, 64); justify-content: center; }
+.ss-sheet .ss-claim-chip Label { font-size: 15px; letter-spacing: 2px; color: rgb(48, 26, 4); -unity-text-align: middle-center; }
+
+/* ---------------------------------------------------------------- Nods Book (Another Crab's album + Astro's "?" grid + Apex's set reward) */
+.ss-sheet .ss-book { flex-direction: row; flex-grow: 1; }
+.ss-sheet .ss-sets { width: 420px; flex-shrink: 0; margin-right: 24px; }
+.ss-sheet .ss-set { height: 112px; margin-bottom: 10px; border-radius: 26px; flex-direction: row; align-items: center; padding: 0 18px; background-color: rgb(34, 17, 62);
+    border-width: 2px; border-color: rgba(255, 255, 255, 0.06); }
+.ss-sheet .ss-set--on { background-color: rgb(52, 28, 92); border-color: rgb(88, 214, 255); }
+.ss-sheet .ss-set-disc { width: 76px; height: 76px; border-radius: 38px; -unity-background-scale-mode: scale-and-crop; margin-right: 16px; }
+.ss-sheet .ss-set-col { flex-grow: 1; }
+.ss-sheet .ss-set-name { font-size: 22px; }
+.ss-sheet .ss-set-count { font-size: 17px; color: rgba(255, 255, 255, 0.6); margin-top: 4px; -unity-font-definition: url("../Fonts/Phone/Inter-SemiBold.ttf"); }
+.ss-sheet .ss-set-bar { height: 8px; border-radius: 4px; margin-top: 8px; background-color: rgba(255, 255, 255, 0.12); overflow: hidden; }
+.ss-sheet .ss-set-bar-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 100%; background-color: rgb(88, 214, 255); transform-origin: 0% 50%; border-radius: 4px; }
+.ss-sheet .ss-set--done .ss-set-bar-fill { background-color: rgb(61, 220, 132); }
+.ss-sheet .ss-set-check { width: 36px; height: 36px; border-radius: 18px; background-color: rgb(61, 220, 132); align-items: center; justify-content: center; }
+.ss-sheet .ss-set-check .ct-icon { width: 20px; height: 20px; -unity-background-image-tint-color: rgb(10, 50, 28); }
+
+.ss-sheet .ss-album { flex-grow: 1; border-radius: 34px; background-color: rgb(245, 236, 216); padding: 22px 26px; margin-right: 24px; }
+.ss-sheet .ss-album-head { flex-direction: row; align-items: center; margin-bottom: 14px; }
+.ss-sheet .ss-album-title { -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); font-size: 40px; color: rgb(58, 34, 20); flex-grow: 1; }
+.ss-sheet .ss-album-count { -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); font-size: 34px; color: rgb(110, 76, 46); }
+.ss-sheet .ss-album-reward { flex-direction: row; align-items: center; height: 54px; border-radius: 16px; padding: 0 16px; background-color: rgba(58, 34, 20, 0.08); margin-bottom: 14px; }
+.ss-sheet .ss-album-reward .ct-icon { width: 30px; height: 30px; margin-right: 10px; -unity-background-image-tint-color: rgb(110, 76, 46); }
+.ss-sheet .ss-album-reward Label { font-size: 19px; color: rgb(88, 58, 34); }
+.ss-sheet .ss-album-reward--done { background-color: rgba(61, 180, 110, 0.18); }
+.ss-sheet .ss-grid-scroll { flex-grow: 1; }
+.ss-sheet .ss-grid { flex-direction: row; flex-wrap: wrap; }
+.ss-sheet .ss-nod { width: 150px; height: 176px; margin: 0 12px 14px 0; border-radius: 22px; align-items: center; padding-top: 12px; background-color: rgba(58, 34, 20, 0.07);
+    border-width: 3px; border-color: rgba(58, 34, 20, 0); transition-property: scale; transition-duration: 0.08s; }
+.ss-sheet .ss-nod:active { scale: 0.95 0.95; }
+.ss-sheet .ss-nod--sel { border-color: rgb(88, 160, 220); background-color: rgba(88, 160, 220, 0.12); }
+.ss-sheet .ss-nod-disc { width: 110px; height: 110px; border-radius: 55px; -unity-background-scale-mode: scale-and-crop; align-items: center; justify-content: center; }
+.ss-sheet .ss-nod--missing .ss-nod-disc { background-image: none; background-color: rgba(58, 34, 20, 0.14); border-width: 3px; border-color: rgba(58, 34, 20, 0.18); }
+.ss-sheet .ss-nod--missing .ct-icon { width: 54px; height: 54px; -unity-background-image-tint-color: rgba(58, 34, 20, 0.35); }
+.ss-sheet .ss-nod-name { font-size: 16px; color: rgb(58, 34, 20); margin-top: 8px; -unity-text-align: middle-center; white-space: nowrap; overflow: hidden; max-width: 136px; text-overflow: ellipsis; }
+.ss-sheet .ss-nod--missing .ss-nod-name { color: rgba(58, 34, 20, 0.4); }
+
+.ss-sheet .ss-detail { width: 500px; flex-shrink: 0; border-radius: 34px; background-color: rgb(34, 17, 62); border-width: 2px; border-color: rgba(255, 255, 255, 0.08);
+    align-items: center; padding: 30px; }
+.ss-sheet .ss-detail-disc { width: 260px; height: 260px; border-radius: 130px; -unity-background-scale-mode: scale-and-crop; align-items: center; justify-content: center; margin-top: 10px; }
+.ss-sheet .ss-detail--missing .ss-detail-disc { background-image: none; background-color: rgb(48, 26, 88); border-width: 4px; border-color: rgba(255, 255, 255, 0.12); }
+.ss-sheet .ss-detail--missing .ss-detail-disc .ct-icon { width: 110px; height: 110px; -unity-background-image-tint-color: rgba(255, 255, 255, 0.3); }
+.ss-sheet .ss-detail-name { -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); font-size: 46px; margin-top: 22px; -unity-text-align: middle-center; white-space: normal; }
+.ss-sheet .ss-detail-set { font-size: 18px; letter-spacing: 2px; color: rgb(88, 214, 255); margin-top: 6px; }
+.ss-sheet .ss-detail-lines { margin-top: 22px; width: 100%; }
+.ss-sheet .ss-detail-line { flex-direction: row; justify-content: space-between; height: 46px; align-items: center; border-bottom-width: 1px; border-color: rgba(255, 255, 255, 0.08); }
+.ss-sheet .ss-detail-key { font-size: 18px; color: rgba(255, 255, 255, 0.55); -unity-font-definition: url("../Fonts/Phone/Inter-SemiBold.ttf"); }
+.ss-sheet .ss-detail-val { font-size: 19px; color: rgb(255, 255, 255); }
+.ss-sheet .ss-detail-quote { font-size: 20px; color: rgba(255, 255, 255, 0.85); margin-top: 20px; -unity-text-align: middle-center; white-space: normal; -unity-font-definition: url("../Fonts/Phone/Inter-SemiBold.ttf"); }
+
+/* ---------------------------------------------------------------- Hunters */
+.ss-sheet .ss-hunters { flex-grow: 1; align-items: center; }
+.ss-sheet .ss-board { width: 1180px; flex-grow: 1; border-radius: 34px; background-color: rgb(34, 17, 62); padding: 22px 30px; }
+.ss-sheet .ss-board-head { flex-direction: row; align-items: center; margin-bottom: 12px; }
+.ss-sheet .ss-board-head .ct-icon { width: 40px; height: 40px; margin-right: 14px; -unity-background-image-tint-color: rgb(255, 196, 64); }
+.ss-sheet .ss-board-title { -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); font-size: 40px; flex-grow: 1; }
+.ss-sheet .ss-board-total { font-size: 19px; color: rgba(255, 255, 255, 0.6); -unity-font-definition: url("../Fonts/Phone/Inter-SemiBold.ttf"); }
+.ss-sheet .ss-row { flex-direction: row; align-items: center; height: 76px; border-radius: 20px; padding: 0 22px; margin-bottom: 6px; background-color: rgba(255, 255, 255, 0.04); }
+.ss-sheet .ss-row--me { background-color: rgba(88, 214, 255, 0.18); border-width: 2px; border-color: rgb(88, 214, 255); }
+.ss-sheet .ss-row-rank { width: 90px; -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); font-size: 32px; color: rgba(255, 255, 255, 0.75); }
+.ss-sheet .ss-row--top1 .ss-row-rank { color: rgb(255, 196, 64); }
+.ss-sheet .ss-row--top2 .ss-row-rank { color: rgb(214, 222, 236); }
+.ss-sheet .ss-row--top3 .ss-row-rank { color: rgb(226, 150, 90); }
+.ss-sheet .ss-row-name { flex-grow: 1; font-size: 24px; }
+.ss-sheet .ss-row-count { -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); font-size: 32px; color: rgb(88, 214, 255); }
+.ss-sheet .ss-row-unit { font-size: 16px; color: rgba(255, 255, 255, 0.5); margin-left: 8px; -unity-font-definition: url("../Fonts/Phone/Inter-SemiBold.ttf"); }
+.ss-sheet .ss-empty { font-size: 22px; color: rgba(255, 255, 255, 0.6); margin-top: 40px; -unity-text-align: middle-center; -unity-font-definition: url("../Fonts/Phone/Inter-SemiBold.ttf"); white-space: normal; }
+.ss-sheet .ss-burst { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+.ss-sheet .ss-toast { position: absolute; top: 150px; align-self: center; height: 64px; padding: 0 30px; border-radius: 32px; background-color: rgb(52, 28, 92); justify-content: center;
+    border-width: 2px; border-color: rgb(255, 196, 64); }
+.ss-sheet .ss-toast Label { font-size: 22px; -unity-text-align: middle-center; }
+
+.ss-sheet .ss-tile--claimable .ss-tile-amt { display: none; }

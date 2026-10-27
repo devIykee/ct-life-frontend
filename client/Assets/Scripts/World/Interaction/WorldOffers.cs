@@ -34,6 +34,8 @@ namespace CTLife.World
         /// <summary>An optional second, smaller key beside the primary ("Job info").</summary>
         public string secondaryVerbKey, secondaryIcon;
         public Action secondaryPerform;
+        /// <summary>Beats a seat offer at the same spot (the Launchpad Tower's launch desk has a stage seat behind it).</summary>
+        public bool overSeats;
     }
 
     public static class WorldOffers

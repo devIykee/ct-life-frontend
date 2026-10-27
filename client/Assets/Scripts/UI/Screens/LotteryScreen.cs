@@ -49,6 +49,8 @@ namespace CTLife.UI
             public string id;
             public VisualElement root, surface, glow, portrait, art, fallback, ribbon, info, stats, debtCell;
             public Label odds, rarity, chance, name, line, alias, perk, cash, home, debt;
+            /// <summary>The dream ladder strip: "you start here" (queue 18, W1 of the approved brief).</summary>
+            public VisualElement ladder;
             public float homeX;
             public bool wide;
             public bool hasSurface;
@@ -198,10 +200,28 @@ namespace CTLife.UI
             c.debtCell = El.Div("ob-origin-stat ob-origin-stat--debt", El.Text(Strings.T("ob.lottery.stat.debt"), "ob-origin-label"), c.debt);
             c.stats = El.Div("ob-origin-stats", cashCell, homeCell, c.debtCell);
             var note = El.Text(Strings.T("ob.lottery.note"), "ob-origin-note");
-            var info = El.Div("ob-origin-info", El.Div("ob-origin-head", top, c.alias, c.name, c.line), c.perk,
+            c.ladder = LadderStrip();
+            var info = El.Div("ob-origin-info", El.Div("ob-origin-head", top, c.alias, c.name, c.line), c.ladder, c.perk,
                 El.Div("ob-origin-benefits", c.stats, note));
             info.pickingMode = PickingMode.Ignore;
             return info;
+        }
+
+        /// <summary>"YOU START HERE": the four Cash rungs of the dream ladder and the hovercar dream badge, lit at the start rung.</summary>
+        private static VisualElement LadderStrip()
+        {
+            var row = El.Div("ob-ladder-row");
+            for (int i = 0; i < DreamLadder.Cash.Length; i++)
+            {
+                var rung = El.Div("ob-ladder-rung", El.Div("ob-ladder-dot"), El.Text(Strings.T("ladder." + DreamLadder.Cash[i]), "ob-ladder-name"));
+                rung.name = "ob-ladder-" + i;
+                row.Add(rung);
+            }
+            row.Add(El.Div("ob-ladder-rung ob-ladder-dream", El.Div("ob-ladder-dot"), El.Text(Strings.T("ladder.Hovercar"), "ob-ladder-name")));
+            var strip = El.Div("ob-ladder", El.Text(Strings.T("ladder.startHere"), "ob-ladder-title"), row);
+            strip.style.display = DisplayStyle.None;
+            strip.pickingMode = PickingMode.Ignore;
+            return strip;
         }
 
         /// <summary>One frame of the result reveal: the illustration moves left as its details enter beside it.</summary>
@@ -228,6 +248,10 @@ namespace CTLife.UI
         {
             c.wide = true;
             c.root.AddToClassList("ob-card--wide");
+            // design system v2 (coordinator 2026-10-27): the painted panel stays hidden; the card is a tactile v2 frame with
+            // the outcome's art on the left and the live details rebuilt in v2 type, tiles and ladder on the right
+            c.root.AddToClassList("ob-card--v2");
+            c.hasSurface = false;
             c.surface.style.display = c.hasSurface ? DisplayStyle.Flex : DisplayStyle.None;
             c.ribbon.style.display = DisplayStyle.None;
             c.portrait.style.flexGrow = 0f;
@@ -675,6 +699,13 @@ namespace CTLife.UI
             var c = ResultCard(id);
             MakeWide(c);
             FillCard(c, r, id);
+            // the ladder strip comes in once the coin burst has settled, so no particle sits over it
+            if (animate && c.ladder != null)
+            {
+                c.ladder.style.opacity = 0f;
+                var strip = c.ladder;
+                strip.schedule.Execute(() => strip.style.opacity = 1f).ExecuteLater(1700);
+            }
             CountUp(c.cash, r.CashCents, animate);
             _frame.Cta.Text = Strings.T("ob.lottery.continue");
             _frame.Cta.SetEnabled(true);
@@ -702,6 +733,18 @@ namespace CTLife.UI
             c.debt.text = r.DebtCents > 0 ? LotteryModel.CashWhole(r.DebtCents) : "";
             c.debtCell.style.display = r.DebtCents > 0 ? DisplayStyle.Flex : DisplayStyle.None;
             c.cash.text = LotteryModel.CashWhole(0);
+            if (c.ladder != null && !string.IsNullOrEmpty(r.HomeId))
+            {
+                int start = DreamLadder.StartIndex(r.HomeId);
+                for (int i = 0; i < DreamLadder.Cash.Length; i++)
+                {
+                    var rung = c.ladder.Q("ob-ladder-" + i);
+                    rung?.EnableInClassList("ob-ladder-rung--here", i == start);
+                    rung?.EnableInClassList("ob-ladder-rung--below", i < start);
+                }
+                c.ladder.style.display = DisplayStyle.Flex;
+                Log.Info("lottery", "result card: start rung " + DreamLadder.Cash[Math.Min(start, DreamLadder.Cash.Length - 1)]);
+            }
         }
 
         private static string BoundText(string value, int maxLength) =>
@@ -739,6 +782,8 @@ namespace CTLife.UI
                 await Delay(0.5f);
                 if (!_started) OnRoll();
                 while (_rolling) await Delay(0.25f);
+                // `holdLottery=1` (dev captures): hold on the result card so it can be photographed after the burst settles
+                if (CTLife.Core.LaunchArgs.Flag("holdLottery")) { await Delay(2.5f); Log.Info("lottery", "shot result"); await Delay(6f); }
                 await Delay(1f);
                 if (_revealed && IsActive) OnRoll();
             }

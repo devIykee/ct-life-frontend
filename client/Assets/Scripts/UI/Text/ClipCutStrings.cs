@@ -1,3 +1,4 @@
+using CTLife.Core;
 using System.Collections.Generic;
 using System.Globalization;
 namespace CTLife.UI
@@ -25,7 +26,7 @@ namespace CTLife.UI
             ["story.3.title"]="Roadmap reveal",["story.3.0"]="Three milestones.",["story.3.1"]="Task: make roadmap.",["story.3.2"]="All milestones green.",["story.3.3"]="Blank summary slide",["story.3.4"]="Sticker close-up",["story.3.5"]="Holding slide",["story.3.6"]="Coffee break",["story.3.7"]="Empty title slide",
             ["story.4.title"]="Support ticket",["story.4.0"]="Mascot montage",["story.4.1"]="Blank screen",["story.4.2"]="Logo animation",["story.4.3"]="Waiting room",["story.4.4"]="User: app is broken.",["story.4.5"]="Support: which button?",["story.4.6"]="Screenshot arrives.",["story.4.7"]="It’s the calculator."
         };
-        public static string T(string key)=>En.TryGetValue(key,out var value)?value:key;
+        public static string T(string key)=>En.TryGetValue(key,out var value)? NameTable.Apply(value) :key;
         public static string F(string key,params object[] args)=>string.Format(CultureInfo.CurrentCulture,T(key),args);
         public static string Title(ClipReel reel)=>T("story."+reel.Story+".title");
         public static string Frame(ClipReel reel,int frame)=>T("story."+reel.Story+"."+frame);

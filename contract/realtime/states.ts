@@ -73,7 +73,7 @@ export class StreetState extends Schema {
 /** One vehicle in the island-wide vehicles room. Island metres and radians. */
 export class VehicleState extends Schema {
   @type('string') id = '';
-  /** compact | suv | sports | moped | roadstar | heli | drone */
+  /** compact | suv | sports | moped | roadstar | heli | drone | sedan | taxi | police | pickup | van | bike */
   @type('string') kind = '';
   /** userId of the driver, '' when parked. */
   @type('string') driver = '';
@@ -109,6 +109,10 @@ export class CoinState extends Schema {
   @type('int32') change5mBps = 0;
   @type('int32') holders = 0;
   @type('bigint64') launchedAt = 0n;
+  /** True for a coin a player launched through the Rugpull Factory. */
+  @type('boolean') playerLaunched = false;
+  /** Factory art id (rf_*); empty for house coins. */
+  @type('string') templateId = '';
   // hidden_arc lives on the server only. Never set on the schema.
 }
 

@@ -1,0 +1,78 @@
+/* Timeline as the world feed (queue 36), approved brief ct-life-evidence/timeline-36/ui-refs/BRIEF.md (2026-10-26).
+   Duo kit tokens (duo-kit.uss): --duo-label, --duo-label2, --duo-sep, --duo-fill, --duo-blue, --duo-green, --duo-red,
+   --duo-orange; Inter. Rows reuse .duo-post from duo-apps.uss. All player text renders with rich text off. */
+
+/* inline composer row */
+.ct-phone .tl-compose { flex-direction: row; align-items: center; padding: 20px 30px; border-bottom-width: 1px; border-bottom-color: var(--duo-sep); }
+.ct-phone .tl-compose > .duo-avatar { margin-right: 22px; }
+.ct-phone .tl-compose-prompt { flex-grow: 1; font-size: var(--duo-body); color: var(--duo-label2); margin: 0; padding: 0; }
+
+/* action cards */
+.ct-phone .tl-card {
+    flex-direction: row; align-items: center; margin-top: 14px; padding: 18px 20px; border-radius: 28px;
+    background-color: var(--duo-fill); border-width: 1px; border-color: var(--duo-sep);
+}
+.ct-phone .tl-card-art { width: 76px; height: 76px; margin-right: 18px; -unity-background-scale-mode: scale-to-fit; flex-shrink: 0; }
+.ct-phone .tl-card-col { flex-grow: 1; flex-shrink: 1; min-width: 0; }
+.ct-phone .tl-card-title { font-size: var(--duo-headline); color: var(--duo-label); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); margin: 0; padding: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ct-phone .tl-card-sub { flex-direction: row; align-items: center; margin-top: 4px; }
+.ct-phone .tl-card-sub > Label { font-size: var(--duo-subhead); color: var(--duo-label2); margin: 0 14px 0 0; padding: 0; }
+.ct-phone .tl-card-sub > .tl-up { color: var(--duo-green); }
+.ct-phone .tl-card-sub > .tl-down { color: var(--duo-red); }
+.ct-phone .tl-card-tag { height: 34px; padding: 0 12px; border-radius: 12px; margin-right: 12px; justify-content: center; background-color: var(--duo-red); }
+.ct-phone .tl-card-tag > Label { font-size: var(--duo-caption); color: rgb(255,255,255); -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); margin: 0; padding: 0; letter-spacing: 1px; }
+.ct-phone .tl-card-tag--dead { background-color: rgba(120,120,128,0.5); }
+.ct-phone .tl-card--rugged { border-color: var(--duo-red); }
+.ct-phone .tl-card-place { margin-top: 12px; padding: 12px 18px; border-radius: 22px; }
+.ct-phone .tl-card-place .ct-icon { width: 34px; height: 34px; margin-right: 12px; -unity-background-image-tint-color: var(--duo-blue); }
+.ct-phone .tl-pill { height: 60px; min-width: 120px; padding: 0 26px; margin: 0 0 0 12px; border-radius: 30px; border-width: 0; background-color: var(--duo-blue); color: rgb(255,255,255); font-size: var(--duo-subhead); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); }
+.ct-phone .tl-pill--ghost { background-color: rgba(10,124,255,0.12); color: var(--duo-blue); }
+
+/* attached Sleuth verdict under a post about the coin (X's context box) */
+.ct-phone .tl-verdict { margin-top: 12px; padding: 16px 20px 16px 22px; border-radius: 18px; border-left-width: 6px; border-color: var(--duo-red); background-color: rgba(255,59,48,0.06); }
+.ct-phone .tl-verdict-head { font-size: var(--duo-caption); color: var(--duo-red); letter-spacing: 1px; -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); margin: 0; padding: 0; }
+.ct-phone .tl-verdict-text { font-size: var(--duo-subhead); color: var(--duo-label); white-space: normal; margin: 6px 0 0; padding: 0; }
+.ct-phone .tl-verdict-row { flex-direction: row; justify-content: flex-end; margin-top: 8px; }
+
+/* one-line city event cards */
+.ct-phone .tl-event { flex-direction: row; align-items: center; padding: 16px 30px; border-bottom-width: 1px; border-bottom-color: var(--duo-sep); }
+.ct-phone .tl-event-icon { width: 64px; height: 64px; border-radius: 32px; margin-right: 22px; align-items: center; justify-content: center; background-color: var(--duo-fill); flex-shrink: 0; }
+.ct-phone .tl-event-icon .ct-icon { width: 34px; height: 34px; -unity-background-image-tint-color: var(--duo-label2); }
+.ct-phone .tl-event--launch .tl-event-icon { background-color: rgba(52,199,89,0.14); }
+.ct-phone .tl-event--launch .tl-event-icon .ct-icon { -unity-background-image-tint-color: var(--duo-green); }
+.ct-phone .tl-event--rug .tl-event-icon, .ct-phone .tl-event--liquidation .tl-event-icon { background-color: rgba(255,59,48,0.12); }
+.ct-phone .tl-event--rug .tl-event-icon .ct-icon, .ct-phone .tl-event--liquidation .tl-event-icon .ct-icon { -unity-background-image-tint-color: var(--duo-red); }
+.ct-phone .tl-event-col { flex-grow: 1; flex-shrink: 1; min-width: 0; }
+.ct-phone .tl-event-text { font-size: var(--duo-subhead); color: var(--duo-label); white-space: normal; margin: 0; padding: 0; -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); }
+.ct-phone .tl-event--rug .tl-event-text { color: var(--duo-red); }
+.ct-phone .tl-event-time { font-size: var(--duo-caption); color: var(--duo-label2); margin: 2px 0 0; padding: 0; }
+
+/* the Sleuth's exposé: newspaper paper inside the white feed (D5) */
+.ct-phone .tl-sleuth { margin: 18px 24px; border-width: 2px; border-color: var(--duo-label); background-color: rgb(251,246,234); flex-shrink: 0; }
+.ct-phone .tl-sleuth-mast { flex-direction: row; justify-content: space-between; align-items: center; padding: 10px 18px; background-color: rgb(14,14,16); }
+.ct-phone .tl-sleuth-mast > Label { font-size: var(--duo-caption); color: rgb(255,255,255); letter-spacing: 2px; -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); margin: 0; padding: 0; }
+.ct-phone .tl-sleuth-body { padding: 18px 22px 20px; }
+.ct-phone .tl-sleuth-headline { font-size: var(--duo-title3); color: rgb(14,14,16); -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); white-space: normal; margin: 0; padding: 0; }
+.ct-phone .tl-sleuth-text { font-size: var(--duo-subhead); color: rgb(40,40,44); white-space: normal; margin: 8px 0 0; padding: 0; }
+.ct-phone .tl-sleuth-facts { flex-direction: row; align-items: center; margin-top: 14px; }
+.ct-phone .tl-sleuth-box { padding: 8px 16px; border-width: 3px; border-color: rgb(14,14,16); margin-right: 18px; }
+.ct-phone .tl-sleuth-box > Label { font-size: var(--duo-headline); color: rgb(14,14,16); -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); margin: 0; padding: 0; letter-spacing: 1px; }
+.ct-phone .tl-sleuth-heat { font-size: var(--duo-subhead); color: var(--duo-red); -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); margin: 0; padding: 0; }
+.ct-phone .tl-sleuth-actions { flex-direction: row; flex-wrap: wrap; margin-top: 16px; }
+.ct-phone .tl-sleuth-actions > .tl-pill { margin: 0 12px 8px 0; background-color: rgb(14,14,16); }
+.ct-phone .tl-sleuth-actions > .tl-pill--ghost { background-color: rgba(14,14,16,0.08); color: rgb(14,14,16); }
+
+/* City tab */
+.ct-phone .tl-filters { flex-direction: row; flex-wrap: wrap; padding: 16px 24px 4px; }
+.ct-phone .tl-chip { height: 56px; padding: 0 22px; margin: 0 12px 12px 0; border-radius: 28px; border-width: 1px; border-color: var(--duo-sep); background-color: rgba(0,0,0,0); color: var(--duo-label); font-size: var(--duo-subhead); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); }
+.ct-phone .tl-chip--on { background-color: var(--duo-label); color: rgb(255,255,255); border-color: var(--duo-label); }
+.ct-phone .tl-mood { margin: 4px 24px 12px; padding: 14px 20px; border-radius: 18px; background-color: var(--duo-fill); flex-direction: row; align-items: center; }
+.ct-phone .tl-mood > Label { font-size: var(--duo-subhead); color: var(--duo-label); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); margin: 0; padding: 0; }
+.ct-phone .tl-mood--up > Label { color: var(--duo-green); }
+.ct-phone .tl-mood--down > Label { color: var(--duo-red); }
+.ct-phone .tl-quiet { font-size: var(--duo-subhead); color: var(--duo-label2); margin: 26px 30px 6px; padding: 0; white-space: normal; }
+.ct-phone .tl-npc { font-size: var(--duo-caption); color: rgb(255,255,255); background-color: var(--duo-label2); padding: 2px 10px; border-radius: 8px; margin: 0 10px 0 0; -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); }
+.ct-phone .tl-more { align-items: center; padding: 22px 0 30px; }
+.ct-phone .tl-call { font-size: var(--duo-footnote); color: var(--duo-label2); margin: 8px 0 0; padding: 0; -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); }
+.ct-phone .tl-toggle { margin: 14px 0 0; }
+.ct-phone .tl-toggle Label { font-size: var(--duo-subhead); color: var(--duo-label); }

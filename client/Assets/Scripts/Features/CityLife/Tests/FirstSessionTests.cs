@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using CTLife.Core;
 using NUnit.Framework;
 
 namespace CTLife.CityLife.Tests
@@ -53,28 +54,51 @@ namespace CTLife.CityLife.Tests
         }
 
         [Test]
+        public void ServerFlagReadsLikeTheLocalState()
+        {
+            var active = FirstSessionState.FromWire("active", 500, 0, new[] { "origin", "character", "home", "trade", "bogus", "3" }, 900);
+            Assert.AreEqual(500, active.StartedAtMs);
+            Assert.IsTrue(active.IsDone(FirstBeat.Trade));
+            Assert.AreEqual(FirstBeat.Moved, active.Next());
+            Assert.IsTrue(active.Active());
+            var skipped = FirstSessionState.FromWire("skipped", 500, 0, new[] { "origin", "shift" }, 900);
+            Assert.IsTrue(skipped.Skipped);
+            Assert.IsFalse(skipped.Active());
+            Assert.IsTrue(skipped.IsDone(FirstBeat.Shift), "beats after a skip still record");
+            var done = FirstSessionState.FromWire("done", 500, 800, new[] { "origin" }, 900);
+            Assert.IsTrue(done.Completed);
+            Assert.AreEqual(800, done.CompletedAtMs);
+            var old = FirstSessionState.FromWire("done", 0, 0, new string[0], 900);
+            Assert.IsTrue(old.Completed && old.IsDone(FirstBeat.Chest), "an account from before the migration never sees it");
+            Assert.AreEqual("moved", FirstSessionState.Wire(FirstBeat.Moved));
+        }
+
+        [Test]
         public void LadderGoalsAreWeeksOfTheNextRungsRent()
         {
-            var rent = new Dictionary<string, long> { ["parents_basement"] = 2000, ["hacker_house"] = 6000, ["studio"] = 18000, ["flat"] = 18000, ["penthouse"] = 150000, ["marina_villa"] = 500000 };
-            var basement = DreamLadder.Compute("parents_basement", false, 25200, false, rent);
+            var rent = new Dictionary<string, long> { ["parents_basement"] = 2000, ["hacker_house"] = 6000, ["studio"] = 18000, ["penthouse"] = 150000, ["marina_villa"] = 500000 };
+            var basement = DreamLadder.Compute("parents_basement", false, 8400, false, rent);
             Assert.AreEqual(LadderRung.Basement, basement.Current);
-            Assert.AreEqual(LadderRung.Studio, basement.Next);
-            Assert.AreEqual(72000, basement.GoalCents, "4 weeks of the studio's $180");
+            Assert.AreEqual(LadderRung.HackerHouse, basement.Next);
+            Assert.AreEqual(24000, basement.GoalCents, "4 weeks of the hacker house's $60");
             Assert.AreEqual(0.35f, basement.Fraction, 0.001f);
             Assert.IsFalse(basement.CanReachNext);
-            var flat = DreamLadder.Compute("studio", true, 700000, false, rent);
-            Assert.AreEqual(LadderRung.Flat, flat.Current);
-            Assert.AreEqual(600000, flat.GoalCents);
-            Assert.IsTrue(flat.CanReachNext);
-            var pent = DreamLadder.Compute("penthouse", false, 1, false, rent);
+            var studio = DreamLadder.Compute("studio", false, 700000, false, rent);
+            Assert.AreEqual(LadderRung.Penthouse, studio.Next);
+            Assert.AreEqual(600000, studio.GoalCents);
+            Assert.IsTrue(studio.CanReachNext);
+            Assert.AreEqual(LadderRung.Studio, DreamLadder.Compute("hacker_house", true, 0, false, rent).Current, "a $180 flat door is the studio rung");
+            var pent = DreamLadder.Compute("marina_villa", false, 1, false, rent);
+            Assert.AreEqual(LadderRung.Penthouse, pent.Current);
             Assert.IsTrue(pent.NextIsEntitlement, "the hovercar is never Cash");
             Assert.AreEqual(0, pent.GoalCents);
-            var top = DreamLadder.Compute("parents_basement", false, 0, true, rent);
-            Assert.AreEqual(LadderRung.Hovercar, top.Current);
+            var top = DreamLadder.Compute("penthouse", false, 0, true, rent);
             Assert.IsNull(top.Next);
             Assert.AreEqual(1f, top.Fraction);
+            Assert.IsTrue(DreamLadder.Compute("parents_basement", false, 0, true, rent).HasHovercar, "the badge can light before the penthouse");
             Assert.AreEqual(LadderRung.Basement, DreamLadder.Compute(null, false, -500, false, rent).Current, "homeless: the bottom rung, debt is not progress");
             Assert.AreEqual(0, DreamLadder.Compute(null, false, -500, false, rent).ProgressCents);
+            Assert.AreEqual(1, DreamLadder.StartIndex("hacker_house"));
         }
     }
 }

@@ -110,7 +110,7 @@ namespace CTLife.UI.Map
             }
             else
             {
-                var title = LobbyArt.Outlined(MapCatalog.Atlas.Name ?? "CT Island", "map-city-title");
+                var title = LobbyArt.Outlined(NameTable.Get("place.island", MapCatalog.Atlas.Name ?? "CT Island"), "map-city-title");
                 top.Add(title);
                 var close = Control("map-close", null, () => Close?.Invoke(), "multiply");
                 close.AddToClassList("map-close");

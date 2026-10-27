@@ -17,11 +17,11 @@ namespace CTLife.UI
         public static HeatPlate Current { get; private set; }
 
         public VisualElement Element { get; }
-        private readonly UiIcon[] _pips = new UiIcon[MaxPips];
+        private readonly VisualElement _stars;
         private readonly Label _label;
         private IVisualElementScheduledItem _flash;
         private bool _flashOn;
-        private int _stars;
+        private int _shown, _logged = -1;
         // the last real state: a HUD rebuilt on a venue change shows it at once (not only on the next server read)
         private static int _lastStars, _lastTier;
         private static string _lastWord;
@@ -29,11 +29,12 @@ namespace CTLife.UI
 
         public HeatPlate()
         {
-            var row = El.Div("hud-heat-pips");
-            for (int i = 0; i < MaxPips; i++) { _pips[i] = new UiIcon("star-outline"); _pips[i].AddToClassList("hud-heat-pip"); row.Add(_pips[i]); }
+            // design system v2: the wanted-stars HUD pill (five stars, a danger edge while wanted, red / blue in a chase)
+            _stars = CTLife.UI.DS.Ds.Stars(0, MaxPips);
+            _stars.name = "hud-heat-stars";
             _label = El.Text(Strings.T("hud.heat").ToUpperInvariant(), "hud-heat-label");
             _label.style.display = DisplayStyle.None;   // GTA-plain (approved brief 2026-10-25): stars only
-            Element = El.Div("hud-heat", _label, row);
+            Element = El.Div("hud-heat ds-hud-pill ds-hud-stars", _label, _stars);
             Element.name = "hud-heat";
             Element.pickingMode = PickingMode.Ignore;
             foreach (var c in Element.Query<VisualElement>().ToList()) c.pickingMode = PickingMode.Ignore;
@@ -50,39 +51,36 @@ namespace CTLife.UI
         {
             int n = System.Math.Max(0, System.Math.Min(MaxPips, stars));
             _lastStars = n; _lastWord = word; _lastTier = tier; _lastPursuit = pursuit;
-            for (int i = 0; i < MaxPips; i++)
-            {
-                bool lit = i < n;
-                _pips[i].EnableInClassList("hud-heat-pip--lit", lit);
-                _pips[i].SetIcon(lit ? "star" : "star-outline");
-                // a new star pops in (the GTA "star gained" beat)
-                if (lit && i >= _stars && _stars > 0) Pop(_pips[i]);
-            }
-            _stars = n;
+            CTLife.UI.DS.Ds.SetStars(_stars, n, MaxPips);
+            // a new star pops in (the GTA "star gained" beat)
+            for (int i = _shown; i < n && _shown > 0; i++) Pop(_stars[i]);
+            _shown = n;
             if (!string.IsNullOrEmpty(word)) _label.text = word;
             Element.EnableInClassList("hud-heat--warm", tier == 1);
             Element.EnableInClassList("hud-heat--hot", tier == 2);
             Element.EnableInClassList("hud-heat--wanted", tier >= 3);
+            Element.EnableInClassList("ds-hud-pill--danger", tier >= 3 || pursuit);
             Flash(pursuit && n > 0);
             HudFade.Set(Element, n > 0 || pursuit);
+            if (n != _logged) { _logged = n; CTLife.Core.Log.Info("heat", $"plate {n} stars tier {tier} pursuit {pursuit} attached {Element.panel != null}"); }
         }
 
         private void Flash(bool on)
         {
             if (on == (_flash != null)) return;
             // the lit stars flash red / blue (GTA's chase stars), not the pill
-            if (on) _flash = Element.schedule.Execute(() => { _flashOn = !_flashOn; Element.EnableInClassList("hud-heat--red", _flashOn); Element.EnableInClassList("hud-heat--blue", !_flashOn); }).Every(320);
+            if (on) _flash = Element.schedule.Execute(() => { _flashOn = !_flashOn; _stars.EnableInClassList("ds-stars--red", _flashOn); _stars.EnableInClassList("ds-stars--blue", !_flashOn); }).Every(320);
             else
             {
                 _flash.Pause(); _flash = null;
-                Element.RemoveFromClassList("hud-heat--red"); Element.RemoveFromClassList("hud-heat--blue");
+                _stars.RemoveFromClassList("ds-stars--red"); _stars.RemoveFromClassList("ds-stars--blue");
             }
         }
 
         private static void Pop(VisualElement e)
         {
-            e.AddToClassList("hud-heat-pip--pop");
-            e.schedule.Execute(() => e.RemoveFromClassList("hud-heat-pip--pop")).ExecuteLater(220);
+            e.AddToClassList("ds-star--pop");
+            e.schedule.Execute(() => e.RemoveFromClassList("ds-star--pop")).ExecuteLater(220);
         }
     }
 }

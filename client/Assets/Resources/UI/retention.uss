@@ -205,3 +205,34 @@
 .ct-phone .quests .quests-bottom-space { height: 120px; flex-shrink: 0; }
 .ct-phone .quests .quests-burst { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
 .ct-phone .quests .quests-paid { position: absolute; left: 0; top: 0; font-size: var(--duo-title2); -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); color: var(--duo-green); white-space: nowrap; }
+
+/* the season's card (Season pass + nods book, 2026-10-25): deep plum with the season's sky accent, opens the season screens */
+.ct-phone .quests .quests-season {
+    flex-direction: row; align-items: center; margin: 10px 38px 8px 38px; padding: 22px 26px; border-radius: 34px; height: auto; min-height: 0; flex-shrink: 0;
+    background-color: rgb(30, 14, 56); border-width: 2px; border-color: rgba(88, 214, 255, 0.35);
+}
+.ct-phone .quests .quests-season:active { background-color: rgb(44, 22, 80); }
+.ct-phone .quests .quests-season--claim { border-color: rgb(255, 196, 64); }
+.ct-phone .quests .quests-season .ct-button-depth, .ct-phone .quests .quests-season .ct-button-glint { display: none; }
+.ct-phone .quests .quests-season-badge { width: 92px; height: 92px; border-radius: 46px; background-color: rgb(88, 214, 255); border-width: 5px; border-color: rgb(186, 238, 255);
+    align-items: center; justify-content: center; margin-right: 22px; }
+.ct-phone .quests .quests-season-n { -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 44px; color: rgb(14, 30, 52); margin: 0; padding: 0; -unity-text-align: middle-center; }
+.ct-phone .quests .quests-season-copy { flex-grow: 1; flex-shrink: 1; align-items: flex-start; }
+.ct-phone .quests .quests-season-title { -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 36px; color: rgb(255, 255, 255); margin: 0; padding: 0; }
+.ct-phone .quests .quests-season-sub { font-size: 22px; color: rgba(255, 255, 255, 0.72); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); margin: 2px 0 0 0; padding: 0; -unity-text-align: middle-left; }
+.ct-phone .quests .quests-season-bar { width: 100%; height: 12px; border-radius: 6px; background-color: rgba(255, 255, 255, 0.14); margin-top: 10px; overflow: hidden; }
+.ct-phone .quests .quests-season-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 100%; background-color: rgb(88, 214, 255); transform-origin: 0% 50%; border-radius: 6px; }
+.ct-phone .quests .quests-season-book, .ct-phone .quests .quests-season-book:hover, .ct-phone .quests .quests-season-book:active {
+    width: 84px; height: 84px; border-radius: 42px; margin: 0 0 0 16px; padding: 0; background-color: rgb(52, 28, 92); border-width: 0; align-items: center; justify-content: center; }
+.ct-phone .quests .quests-season-book .ct-icon { width: 40px; height: 40px; -unity-background-image-tint-color: rgb(255, 255, 255); }
+
+/* design system v2 (2026-10-27): COLLECT as the DS 3D primary, the back square bottom-left; the footer starts after it */
+.gm-sheet .gm-collect.ds-btn {
+    width: 420px; height: 128px; padding: 0 32px; border-radius: 32px; background-color: var(--b-primary);
+    border-left-width: 0; border-right-width: 0; border-top-width: 6px; border-bottom-width: 12px; border-top-color: var(--b-primary-top); border-bottom-color: var(--b-primary-base);
+}
+.gm-sheet .gm-collect.ds-btn:hover { background-color: var(--b-primary); }
+.gm-sheet .gm-collect.ds-btn:active { scale: 1 1; translate: 0 9px; border-bottom-width: 3px; }
+.gm-sheet .gm-collect.ds-btn > Label { color: var(--b-on-primary); }
+.gm-sheet .ds-back > .ds-ic { -unity-background-image-tint-color: var(--ds-ink); }
+.gm-sheet .gm-footer { left: 190px; }

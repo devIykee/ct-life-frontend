@@ -25,10 +25,19 @@ namespace CTLife.Core
     public sealed class WalletException : Exception
     {
         public readonly bool UserDeclined;
+        /// <summary>A machine-readable reason when it is not the player's choice: <see cref="TxChanged"/> (nothing was
+        /// sent because the SDK would have altered the server's transaction), <see cref="TxUnreadable"/>.</summary>
+        public readonly string Code;
+        public const string TxChanged = "TX_CHANGED", TxUnreadable = "TX_UNREADABLE";
 
         public WalletException(string message, bool userDeclined = false, Exception inner = null) : base(message, inner)
         {
             UserDeclined = userDeclined;
+        }
+
+        public WalletException(string message, string code, Exception inner = null) : base(message, inner)
+        {
+            Code = code;
         }
     }
 

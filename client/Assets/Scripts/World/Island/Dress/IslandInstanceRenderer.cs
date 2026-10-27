@@ -43,7 +43,16 @@ namespace CTLife.World
         // mode: 0 drawn as usual, 2 outgoing LOD of a cross-fade, 3 incoming LOD of a cross-fade (none of them cast shadows)
         private sealed class Stage
         {
-            public Matrix4x4[] m = new Matrix4x4[Batch]; public Vector4[] t = new Vector4[Batch]; public float[] f = new float[Batch]; public int n; public bool tinted;
+            // grown on demand up to Batch (a full-size stage is 85 KB; most hold a few dozen instances)
+            public Matrix4x4[] m = new Matrix4x4[32]; public Vector4[] t = new Vector4[32]; public float[] f = new float[32]; public int n; public bool tinted;
+            public void Reserve(int count)
+            {
+                if (count <= m.Length) return;
+                int size = Mathf.Min(Batch, Mathf.Max(count, m.Length * 2));
+                System.Array.Resize(ref m, size); System.Array.Resize(ref t, size); System.Array.Resize(ref f, size);
+                // a property block's array length is fixed once set: start a new block for the longer arrays
+                mpb = null; sentSig = -1; sentN = -1;
+            }
             // its own property block, whose tint array is re-sent only when the stage's contents change (sig: the chunk runs
             // appended this frame); fading stages send their fade array every frame
             public MaterialPropertyBlock mpb; public long sig, sentSig = -1; public int sentN = -1;
@@ -112,9 +121,41 @@ namespace CTLife.World
             return f;
         }
 
+        /// <summary>Low tier: the chunk loop (culling, LODs, copies) runs at most every other frame; in between, the staged
+        /// batches are drawn again as long as the camera has moved less than <see cref="ReuseMove"/> metres and turned less
+        /// than <see cref="ReuseAngle"/> degrees. The loop culls against a frustum widened by that angle so a reused frame
+        /// still covers the view.</summary>
+        public const float ReuseAngle = 4f, ReuseMove = 0.75f;
+        private int _builtFrame = -10, _builtSets;
+        private bool _reused;
+        private Vector3 _builtEye;
+        private Quaternion _builtRot;
+        private IslandKit _builtKit;
+        /// <summary>Frames the last Render reused the previous frame's batches (perf harness: 1 or 0).</summary>
+        public static int LastReused { get; private set; }
+
         public void Render(Camera cam)
         {
-            GeometryUtility.CalculateFrustumPlanes(cam, _planes);
+            bool low = CTLife.Core.QualityTier.IsLow && CTLife.Core.QualityTier.CpuPass && !CollectStats && TargetCamera == null;
+            var camT = cam.transform;
+            if (low && CTLife.Core.QualityTier.LowKitReuse && !_reused && _builtFrame == Time.frameCount - 1 && _builtKit != null && Sets.Count == _builtSets
+                && (camT.position - _builtEye).sqrMagnitude < ReuseMove * ReuseMove && Quaternion.Angle(camT.rotation, _builtRot) < ReuseAngle)
+            {
+                _reused = true; LastReused = 1;
+                LastOccMs = LastLoopMs = 0;
+                var t0 = System.Diagnostics.Stopwatch.StartNew();
+                Submit(_builtKit, camT.position);
+                LastSubmitMs = t0.Elapsed.TotalMilliseconds;
+                return;
+            }
+            _reused = false; LastReused = 0;
+            _builtFrame = Time.frameCount; _builtSets = Sets.Count; _builtEye = camT.position; _builtRot = camT.rotation; _builtKit = null;
+            if (low && CTLife.Core.QualityTier.LowKitReuse)
+            {
+                var proj = Matrix4x4.Perspective(Mathf.Min(170f, cam.fieldOfView + 2f * ReuseAngle), cam.aspect, cam.nearClipPlane, cam.farClipPlane);
+                GeometryUtility.CalculateFrustumPlanes(proj * cam.worldToCameraMatrix, _planes);
+            }
+            else GeometryUtility.CalculateFrustumPlanes(cam, _planes);
             for (int i = 0; i < 6; i++)
             {
                 var n = _planes[i].normal;
@@ -145,7 +186,8 @@ namespace CTLife.World
                 if (set == null || set.kit == null) continue;
                 kit = set.kit;
                 // whole cell out of reach (or, casting no shadows, out of view): skip its chunks
-                if (set.MaxCull > 0f && (set.AllBounds.SqrDistance(eye) > set.MaxCull * distanceScale * set.MaxCull * distanceScale
+                float setD2 = set.AllBounds.SqrDistance(eye);
+                if (set.MaxCull > 0f && (setD2 > set.MaxCull * distanceScale * set.MaxCull * distanceScale
                     || (!castAny && !InFrustum(set.AllBounds)))) continue;
                 foreach (var g in set.Groups)
                 {
@@ -154,6 +196,8 @@ namespace CTLife.World
                     int lodCount = Mathf.Min(p.lods.Length, p.lodEnd.Length);
                     if (lodCount == 0) continue;
                     float cull = p.lodEnd[lodCount - 1] * distanceScale;
+                    // the whole cell is beyond this prototype's reach: every chunk would fail the distance test below
+                    if (setD2 > cull * cull && CTLife.Core.QualityTier.CpuPass) continue;
                     bool protoCasts = castAny && p.shadowRange > 0f;
                     foreach (var ch in g.Value)
                     {
@@ -169,7 +213,12 @@ namespace CTLife.World
                         while (lod < lodCount - 1 && d > p.lodEnd[lod] * distanceScale) lod++;
                         float end = p.lodEnd[lod] * distanceScale;
                         float band = Mathf.Clamp(end * fadeBand, 2f, 25f);
-                        bool fading = d > end - band;
+                        // Low: props switch LOD without the dithered cross-fade (half the kit draws in a band: the plaza's main
+                        // thread); buildings keep it - switching them without it cost the Infinix's GPU more in far views
+                        // (drive 16 -> 11 fps, skyline 25 -> 18 on 2026-10-27)
+                        int lowFade = CTLife.Core.QualityTier.LowKitFade;
+                        bool fades = !low || lowFade == 1 || (lowFade == 2 && p.kind == "building");
+                        bool fading = fades && d > end - band;
                         float t = fading ? Mathf.Clamp01((d - (end - band)) / band) : 0f;
                         // runs of instances that pass the occlusion test (all of them without it)
                         int n = ch.matrices.Length;
@@ -197,7 +246,17 @@ namespace CTLife.World
             }
             LastLoopMs = sw.Elapsed.TotalMilliseconds - LastOccMs;
             if (kit == null) return;
+            _builtKit = kit;
+            LastOccluded = occluded; LastOccluders = occ ? _occ.Occluders : 0;
+            Submit(kit, eye);
+            LastSubmitMs = sw.Elapsed.TotalMilliseconds - LastOccMs - LastLoopMs;
+        }
+
+        /// <summary>Draws the staged batches (main pass, then shadow casters).</summary>
+        private void Submit(IslandKit kit, Vector3 eye)
+        {
             int draws = 0, inst = 0, block = 0;
+            LastCasters = 0;
             var bounds = new Bounds(eye, Vector3.one * 8000f);
             foreach (var kv in _stages)
             {
@@ -261,8 +320,7 @@ namespace CTLife.World
                 }
                 LastCasters += st.n;
             }
-            LastSubmitMs = sw.Elapsed.TotalMilliseconds - LastOccMs - LastLoopMs;
-            LastDraws = draws; LastInstances = inst; LastOccluded = occluded; LastOccluders = occ ? _occ.Occluders : 0;
+            LastDraws = draws; LastInstances = inst;
         }
 
         /// <summary>The v3 building's backing box (LOD2's box shrunk inside the shell, as world_v3_lib.building_lods bakes it
@@ -410,6 +468,7 @@ namespace CTLife.World
                     if (st == null) { st = new Stage(); list.Add(st); }
                 }
                 int k = Mathf.Min(Batch - st.n, total - src);
+                st.Reserve(st.n + k);
                 st.sig = st.sig * 1000003L + System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(ch) * 7919L + src * 131L + k;
                 System.Array.Copy(ch.matrices, src, st.m, st.n, k);
                 System.Array.Copy(ch.tints, src, st.t, st.n, k);

@@ -25,7 +25,7 @@ namespace CTLife.Tests
             int totalVisibleBeyondOldWindow = 0;
             foreach (string id in new[] { "rain", "ubc_m", "pm_shark" })
             {
-                var look = CreatorLookCatalog.Available().First(entry => entry.look[1] == "head_" + id).look;
+                var look = CreatorLookCatalog.Available(true).First(entry => entry.look[1] == "head_" + id).look;
                 var preview = new AvatarPreview(512, 512, transparent: true);
                 Texture2D image = null;
                 var squareImage = new Texture2D(512, 512, TextureFormat.RGBA32, false);
