@@ -1,0 +1,375 @@
+/* CT Life design system: components. v2 skin (approved 2026-10-27, ct-life-evidence/design-system/v2/DELTA.md + mockups
+   a-d): Lilita One display (titles, stat values, buttons, HUD values) + Inter body; tactile light cards (two-tone frame +
+   base, inner well, recessed tiles, 3D primary with a press-down); chunky glass HUD with bases; brand slots (--b-*).
+   Depth is drawn with per-side borders (USS has no inset shadows): light top edge, darker bottom base.
+   The only sheet (with ds-tokens.uss) allowed to set colours, fonts, radii, font sizes and borders. Feature sheets do
+   layout only. Units are panel units on the ~2400 x 1080 landscape canvas. Built by Scripts/UI/DS/Ds.cs; feature code
+   never writes these class names itself. Motion: only opacity / scale / translate / width transition. */
+
+/* ------------------------------------------------------------------ type (Inter only) */
+.ds-t, .ds-t-display, .ds-t-title, .ds-t-headline, .ds-t-stat, .ds-t-body, .ds-t-label, .ds-t-hud, .ds-t-hud-caption {
+    margin: 0; padding: 0; white-space: normal; -unity-font-definition: url("../Fonts/Phone/Inter-Regular.ttf"); color: var(--ds-ink);
+}
+.ds-t-display { font-size: 74px; letter-spacing: 0.5px; -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); }
+.ds-t-title { font-size: 74px; letter-spacing: 0.5px; color: var(--b-title); -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); text-shadow: 0 4px 0 var(--ds-title-drop); -unity-text-align: middle-center; }
+/* Lilita One covers Latin-1 + a few extras only (no Cyrillic, no arrows): Ds.Display falls back to this for other text */
+.ds-font-body { -unity-font-definition: url("../Fonts/Phone/Inter-Bold.ttf"); letter-spacing: 0; }
+.ds-t-headline { font-size: 36px; letter-spacing: -0.4px; -unity-font-definition: url("../Fonts/Phone/Inter-SemiBold.ttf"); }
+.ds-t-stat { font-size: 60px; letter-spacing: 0.3px; -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); }
+.ds-t-body { font-size: 30px; color: var(--ds-ink-2); -unity-font-definition: url("../Fonts/Phone/Inter-SemiBold.ttf"); }
+.ds-t-label { font-size: 22px; letter-spacing: 1.4px; color: var(--ds-ink-3); -unity-font-definition: url("../Fonts/Phone/Inter-Bold.ttf"); }
+.ds-t-hud { font-size: 42px; letter-spacing: 0.5px; color: var(--ds-hud-ink); -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); white-space: nowrap; text-shadow: 0 3px 0 var(--ds-hud-drop); }
+.ds-t-hud-caption { font-size: 24px; color: var(--ds-hud-ink-2); letter-spacing: 0.2px; -unity-font-definition: url("../Fonts/Phone/Inter-SemiBold.ttf"); white-space: nowrap; }
+.ds-center { -unity-text-align: middle-center; }
+.ds-ink-accent { color: var(--ds-accent-ink); }
+.ds-ink-danger { color: var(--ds-danger-ink); }
+.ds-ink-warn { color: var(--ds-warn-ink); }
+.ds-ink-3 { color: var(--ds-ink-3); }
+
+/* ------------------------------------------------------------------ icons (Phosphor, tinted) */
+.ds-ic { width: 40px; height: 40px; flex-shrink: 0; -unity-background-scale-mode: scale-to-fit; -unity-background-image-tint-color: var(--ds-ink); }
+.ds-ic--28 { width: 28px; height: 28px; }
+.ds-ic--32 { width: 32px; height: 32px; }
+.ds-ic--44 { width: 44px; height: 44px; }
+.ds-ic--48 { width: 48px; height: 48px; }
+.ds-ic--60 { width: 60px; height: 60px; }
+.ds-ic--64 { width: 64px; height: 64px; }
+.ds-ic--36 { width: 36px; height: 36px; }
+.ds-ic--54 { width: 54px; height: 54px; }
+.ds-ic--56 { width: 56px; height: 56px; }
+.ds-ic--76 { width: 76px; height: 76px; }
+.ds-ic--112 { width: 112px; height: 112px; }
+.ds-ic--ink { -unity-background-image-tint-color: var(--ds-ink); }
+.ds-ic--white { -unity-background-image-tint-color: var(--ds-hud-ink); }
+.ds-ic--ink2 { -unity-background-image-tint-color: var(--ds-ink-2); }
+.ds-ic--accent { -unity-background-image-tint-color: var(--ds-accent-ink); }
+.ds-ic--danger { -unity-background-image-tint-color: var(--ds-danger-ink); }
+.ds-ic--warn { -unity-background-image-tint-color: var(--ds-warn-ink); }
+.ds-ic--on-accent { -unity-background-image-tint-color: var(--ds-on-accent); }
+.ds-ic--art { -unity-background-image-tint-color: var(--ds-white); }   /* real art (coin): untinted */
+
+/* ------------------------------------------------------------------ scrim + modal host */
+.ds-modal-layer { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+.ds-scrim { position: absolute; left: -400px; top: -400px; right: -400px; bottom: -400px; background-color: var(--ds-scrim); opacity: 0; transition-property: opacity; transition-duration: 0.15s; transition-timing-function: ease-out-cubic; }
+.ds-scrim.ds-in { opacity: 1; }
+.ds-modal-slot { position: absolute; left: 0; top: 0; right: 0; bottom: 0; align-items: center; justify-content: center; }
+
+/* ------------------------------------------------------------------ card + dialog */
+.ds-card-wrap { align-items: stretch; }
+.ds-card-shadow { position: absolute; left: -40px; right: -40px; top: -24px; bottom: -56px; background-image: url("Sprites/ds-card-shadow.png"); -unity-slice-left: 72; -unity-slice-right: 72; -unity-slice-top: 72; -unity-slice-bottom: 72; }
+.ds-card { background-color: var(--ds-frame); border-radius: 44px; border-width: 0; border-top-width: 4px; border-bottom-width: 10px;
+    border-top-color: var(--ds-frame-hi); border-bottom-color: var(--ds-frame-base); padding: 22px 40px 24px 40px; }
+/* motion: pop 0.92 -> 1 + fade, 180 ms ease-out-back (about 1.04 overshoot); out 120 ms */
+.ds-dialog { width: 980px; max-height: 1060px; opacity: 0; scale: 0.92 0.92; transition-property: opacity, scale; transition-duration: 0.18s; transition-timing-function: ease-out-back; }
+.ds-dialog.ds-in { opacity: 1; scale: 1 1; }
+.ds-dialog.ds-out { opacity: 0; scale: 0.96 0.96; transition-duration: 0.12s; transition-timing-function: ease-in-cubic; }
+.ds-dialog--confirm { width: 900px; }
+.ds-dialog--wide { width: 1400px; }
+.ds-dialog--hero { margin-top: 124px; }
+/* art band (v2 hero slot): edge to edge over the card's 40 padding, top corners follow the card; the hero icon sits on its lower edge */
+.ds-dialog-art { height: 280px; margin: -40px -40px 24px -40px; border-top-left-radius: var(--ds-r-lg); border-top-right-radius: var(--ds-r-lg); background-color: var(--ds-tile); -unity-background-scale-mode: scale-and-crop; overflow: hidden; }
+.ds-dialog--art .ds-hero { margin-top: -92px; }
+.ds-dialog > .ds-card > * { margin-bottom: 14px; }
+.ds-dialog > .ds-card > .ds-last { margin-bottom: 0; }
+/* hero: a 184 rounded-square brand tile, white 10 ring, a 12 base, overlapping the card top */
+.ds-hero { width: 204px; height: 216px; border-radius: 62px; background-color: var(--ds-frame-base); align-self: center; margin-top: -156px; margin-bottom: 4px; }
+.ds-hero-tile { width: 204px; height: 204px; border-radius: 62px; border-width: 10px; border-color: var(--ds-white); background-color: var(--b-hero); align-items: center; justify-content: center; }
+.ds-hero-mark { width: 140px; height: 120px; -unity-background-scale-mode: scale-to-fit; }
+.ds-hero--danger .ds-hero-tile { background-color: var(--ds-danger); }
+.ds-hero--warn .ds-hero-tile { background-color: var(--ds-warn); }
+.ds-head { align-items: center; }
+.ds-head > .ds-t-body { margin-top: 2px; -unity-text-align: middle-center; }
+.ds-head > .ds-t-title { -unity-text-align: middle-center; }
+.ds-section { background-color: var(--ds-well); border-radius: 32px; border-width: 0; border-bottom-width: 6px; border-bottom-color: var(--ds-well-base); padding: 24px 24px 24px 24px; }
+/* the inner well: tiles + divider + reward row live here */
+.ds-well { background-color: var(--ds-well); border-radius: 32px; border-bottom-width: 6px; border-bottom-color: var(--ds-well-base); padding: 20px 22px 20px 22px; }
+.ds-well > * { margin-bottom: 14px; }
+.ds-well > .ds-last { margin-bottom: 0; }
+.ds-divider { flex-direction: row; align-items: center; }
+.ds-divider-line { flex-grow: 1; height: 3px; border-radius: 2px; background-color: var(--ds-well-base); }
+.ds-divider > .ds-t-label { margin: 0 16px; }
+.ds-error { color: var(--ds-danger-ink); font-size: 26px; -unity-font-definition: url("../Fonts/Phone/Inter-SemiBold.ttf"); -unity-text-align: middle-center; white-space: normal; margin: 0; padding: 0; }
+
+/* ------------------------------------------------------------------ stat tiles */
+.ds-tiles { flex-direction: row; }
+.ds-tiles > .ds-tile { margin-left: 18px; }
+.ds-tiles > .ds-tile.ds-first { margin-left: 0; }
+.ds-tile { flex-grow: 1; flex-basis: 0; min-height: 120px; padding: 12px 24px 14px 24px; border-radius: 24px; background-color: var(--ds-tile);
+    border-top-width: 4px; border-bottom-width: 3px; border-top-color: var(--ds-tile-top); border-bottom-color: var(--ds-tile-bottom); justify-content: center; align-items: center; }
+.ds-tile-value { flex-direction: row; align-items: center; justify-content: center; margin-top: 4px; }
+.ds-tile-value > .ds-ic, .ds-tile-value > .ds-badge-ic { margin-right: 14px; }
+/* a brand-coloured icon badge (the clock on Time worked) */
+.ds-badge-ic { width: 60px; height: 60px; border-radius: 30px; background-color: var(--b-hero); border-bottom-width: 4px; border-bottom-color: var(--ds-fill-base); align-items: center; justify-content: center; flex-shrink: 0; }
+
+/* ------------------------------------------------------------------ progress row */
+/* progress / reward row: a recessed row, a 100 picture (or icon) in a white ring, the name in the brand colour over the 26 bar, a count */
+.ds-progress-row { flex-direction: row; align-items: center; padding: 8px 26px 10px 10px; border-radius: 24px; background-color: var(--ds-tile);
+    border-top-width: 4px; border-bottom-width: 3px; border-top-color: var(--ds-tile-top); border-bottom-color: var(--ds-tile-bottom); }
+.ds-progress-lead { width: 100px; height: 106px; border-radius: 27px; background-color: var(--ds-frame-base); margin-right: 22px; flex-shrink: 0; }
+.ds-progress-pic { width: 100px; height: 100px; border-radius: 27px; border-width: 5px; border-color: var(--ds-white); background-color: var(--ds-well); align-items: center; justify-content: center; -unity-background-scale-mode: scale-and-crop; }
+.ds-progress-mid { flex-grow: 1; flex-shrink: 1; margin-right: 22px; }
+.ds-progress-top { flex-direction: row; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.ds-progress-title { font-size: 44px; color: var(--b-title); -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); letter-spacing: 0.3px; }
+.ds-progress-meta { font-size: 24px; color: var(--ds-ink-3); -unity-font-definition: url("../Fonts/Phone/Inter-SemiBold.ttf"); margin: 0 0 0 12px; padding: 0; }
+.ds-bar { height: 26px; border-radius: 13px; background-color: var(--ds-track); border-top-width: 4px; border-top-color: var(--ds-track-top); overflow: hidden; }
+.ds-bar-fill { height: 100%; width: 0; border-radius: 13px; background-color: var(--b-fill); border-bottom-width: 4px; border-bottom-color: var(--ds-fill-base);
+    transition-property: width; transition-duration: 0.4s; transition-timing-function: ease-out-cubic; }
+.ds-bar-hi { position: absolute; left: 0; right: 0; top: 0; height: 38%; background-color: var(--b-fill-top); }
+.ds-bar--danger > .ds-bar-fill { background-color: var(--ds-danger); }
+.ds-bar--danger > .ds-bar-fill > .ds-bar-hi { background-color: var(--ds-danger-tint); }
+.ds-bar--warn > .ds-bar-fill { background-color: var(--ds-warn); }
+.ds-bar--warn > .ds-bar-fill > .ds-bar-hi { background-color: var(--ds-warn-tint); }
+.ds-progress-count { flex-direction: row; align-items: flex-end; flex-shrink: 0; }
+.ds-progress-count > .ds-t-stat { font-size: 52px; }
+.ds-progress-of { font-size: 52px; color: var(--ds-ink); }
+
+/* ------------------------------------------------------------------ buttons (press state on every one) */
+/* 3D: fill + a 6 lighter top band + a 12 darker base; pressed: base 12 -> 3 and down 9, 80 ms */
+.ds-btn {
+    height: 128px; margin: 0; padding: 0 32px; border-radius: 32px; border-width: 0; border-top-width: 6px; border-bottom-width: 12px;
+    flex-direction: row; justify-content: center; align-items: center;
+    font-size: 56px; letter-spacing: 0.6px; -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); -unity-text-align: middle-center;
+    transition-property: translate, border-bottom-width, opacity; transition-duration: 0.08s; transition-timing-function: ease-out-cubic;
+}
+.ds-btn--md { height: 96px; font-size: 42px; border-bottom-width: 9px; }
+.ds-btn--sm { height: 60px; padding: 0 24px; border-radius: 20px; border-top-width: 4px; border-bottom-width: 7px; }
+.ds-btn--sm > Label { font-size: 30px; }
+.ds-btn--sm:active { translate: 0 5px; border-bottom-width: 2px; }
+.ds-btn > Label { margin: 0; padding: 0; -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); }
+.ds-btn-sub { font-size: 36px; opacity: 0.8; margin-left: 12px; }
+.ds-btn > .ds-ic { margin-right: 16px; }
+.ds-btn--primary, .ds-btn--primary:hover { background-color: var(--b-primary); border-top-color: var(--b-primary-top); border-bottom-color: var(--b-primary-base); border-left-color: var(--b-primary); border-right-color: var(--b-primary); color: var(--b-on-primary); }
+.ds-btn--primary > Label { color: var(--b-on-primary); }
+.ds-btn--danger, .ds-btn--danger:hover { background-color: var(--ds-danger); border-top-color: var(--ds-danger); border-bottom-color: var(--ds-danger-depth); color: var(--ds-on-danger); }
+.ds-btn--danger > Label { color: var(--ds-on-danger); }
+.ds-btn--secondary, .ds-btn--secondary:hover { background-color: var(--ds-frame); border-top-color: var(--ds-frame-hi); border-bottom-color: var(--ds-frame-base); color: var(--ds-ink); }
+.ds-btn--secondary > Label { color: var(--ds-ink); }
+.ds-btn--text, .ds-btn--text:hover { height: 64px; background-color: var(--ds-clear); border-top-width: 0; border-bottom-width: 0; color: var(--ds-ink-2); font-size: 30px; -unity-font-definition: url("../Fonts/Phone/Inter-Bold.ttf"); }
+.ds-btn--text > Label { color: var(--ds-ink-2); font-size: 30px; -unity-font-definition: url("../Fonts/Phone/Inter-Bold.ttf"); letter-spacing: 0; }
+.ds-btn:active, .ds-btn.ds-pressed { translate: 0 9px; border-bottom-width: 3px; }
+.ds-btn--text:active, .ds-btn--text.ds-pressed { translate: 0 0; border-bottom-width: 0; opacity: 0.6; }
+.ds-btn:disabled, .ds-btn.ds-disabled { background-color: var(--ds-disabled); border-top-color: var(--ds-disabled); border-bottom-color: var(--ds-well-base); color: var(--ds-disabled-ink); opacity: 1; }
+.ds-btn:disabled > Label, .ds-btn.ds-disabled > Label { color: var(--ds-disabled-ink); }
+.ds-btn--text:disabled { background-color: var(--ds-clear); }
+.ds-btn-spinner { width: 56px; height: 56px; background-image: url("../Icons/arrows-clockwise.png"); -unity-background-image-tint-color: var(--b-on-primary); rotate: 0; }
+.ds-btn--block { align-self: stretch; }
+
+/* back: the only dismiss control, bottom-left */
+/* back: a light rounded square in the card's depth language */
+.ds-back { position: absolute; left: 40px; bottom: 40px; width: 120px; height: 120px; margin: 0; padding: 0; border-radius: 36px; border-width: 0; border-top-width: 4px; border-bottom-width: 10px;
+    border-top-color: var(--ds-frame-hi); border-bottom-color: var(--ds-frame-base); background-color: var(--ds-frame); align-items: center; justify-content: center;
+    transition-property: translate, border-bottom-width; transition-duration: 0.08s; }
+.ds-back:hover { background-color: var(--ds-frame); }
+.ds-back:active { translate: 0 7px; border-bottom-width: 3px; }
+
+/* ------------------------------------------------------------------ chips */
+.ds-chips { flex-direction: row; justify-content: center; flex-wrap: wrap; }
+.ds-chips > .ds-chip { margin: 0 5px 10px 5px; }
+.ds-chip { height: 48px; padding: 0 18px; border-radius: var(--ds-r-pill); flex-direction: row; align-items: center; background-color: var(--ds-tile); border-width: 0; margin: 0; }
+.ds-chip > .ds-ic { margin-right: 8px; -unity-background-image-tint-color: var(--ds-ink-2); }
+.ds-chip-text { font-size: 24px; color: var(--ds-ink-2); -unity-font-definition: url("../Fonts/Phone/Inter-SemiBold.ttf"); margin: 0; padding: 0; white-space: nowrap; }
+.ds-chip--accent { background-color: var(--ds-accent-tint); }
+.ds-chip--accent > .ds-chip-text { color: var(--ds-accent-ink); }
+.ds-chip--accent > .ds-ic { -unity-background-image-tint-color: var(--ds-accent-ink); }
+.ds-chip--danger { background-color: var(--ds-danger-tint); }
+.ds-chip--danger > .ds-chip-text { color: var(--ds-danger-ink); }
+.ds-chip--danger > .ds-ic { -unity-background-image-tint-color: var(--ds-danger-ink); }
+.ds-chip--warn { background-color: var(--ds-warn-tint); }
+.ds-chip--warn > .ds-chip-text { color: var(--ds-warn-ink); }
+.ds-chip--warn > .ds-ic { -unity-background-image-tint-color: var(--ds-warn-ink); }
+.ds-chip--ink { background-color: var(--ds-ink); }
+.ds-chip--ink > .ds-chip-text { color: var(--ds-white); }
+.ds-chip--ink > .ds-ic { -unity-background-image-tint-color: var(--ds-white); }
+.ds-chip--glass { background-color: var(--ds-hud); border-width: 2px; border-color: var(--ds-hud-line); }
+.ds-chip--glass > .ds-chip-text { color: var(--ds-hud-ink); }
+.ds-chip--glass > .ds-ic { -unity-background-image-tint-color: var(--ds-hud-ink); }
+Button.ds-chip:active { scale: 0.96 0.96; }
+
+/* ------------------------------------------------------------------ list row */
+.ds-row { height: 104px; flex-direction: row; align-items: center; border-top-width: 2px; border-color: var(--ds-line); background-color: var(--ds-clear); margin: 0; padding: 0 8px; border-radius: 0; }
+.ds-row.ds-first { border-top-width: 0; }
+.ds-row:active { background-color: var(--ds-tile); }
+.ds-row-lead { width: 64px; height: 64px; border-radius: var(--ds-r-md); background-color: var(--ds-tile); align-items: center; justify-content: center; margin-right: 20px; flex-shrink: 0; }
+.ds-row-text { flex-grow: 1; flex-shrink: 1; }
+.ds-row-title { font-size: 30px; }
+.ds-row-meta { font-size: 24px; color: var(--ds-ink-3); margin: 2px 0 0 0; padding: 0; }
+.ds-row-value { font-size: 30px; margin-left: 16px; }
+
+/* ------------------------------------------------------------------ toast (one channel, top centre): v2 objective pill */
+.ds-toast-host { position: absolute; left: 0; right: 0; top: 126px; align-items: center; }
+.ds-toast { min-height: 68px; padding: 6px 28px 10px 10px; border-radius: 34px; border-width: 2px; border-bottom-width: 6px; border-color: var(--ds-hud-line); border-bottom-color: var(--ds-hud-base);
+    background-color: var(--ds-hud); flex-direction: row; align-items: center;
+    opacity: 0; translate: 0 -24px; transition-property: opacity, translate; transition-duration: 0.2s; transition-timing-function: ease-out-cubic; }
+.ds-toast.ds-in { opacity: 1; translate: 0 0; }
+.ds-toast.ds-out { opacity: 0; translate: 0 -24px; transition-duration: 0.12s; transition-timing-function: ease-in-cubic; }
+.ds-toast-dot { width: 52px; height: 52px; border-radius: 14px; align-items: center; justify-content: center; margin-right: 14px; background-color: var(--ds-ink-2); flex-shrink: 0; }
+.ds-toast-dot--accent { background-color: var(--ds-accent); }
+.ds-toast-dot--danger { background-color: var(--ds-danger); }
+.ds-toast-dot--warn { background-color: var(--ds-warn); }
+.ds-toast-dot--brand { background-color: var(--b-hero); }
+.ds-toast-dot > .ds-ic { -unity-background-image-tint-color: var(--ds-white); }
+.ds-toast-text { font-size: 32px; letter-spacing: 0.4px; color: var(--ds-hud-ink); -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); margin: 0; padding: 0; white-space: nowrap; text-shadow: 0 3px 0 var(--ds-hud-drop); max-width: 1100px; }
+.ds-toast-trail { font-size: 32px; color: var(--b-primary); -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); margin: 0 0 0 14px; padding: 0; white-space: nowrap; text-shadow: 0 3px 0 var(--ds-hud-drop); }
+.ds-toast-col { flex-shrink: 1; }
+.ds-toast-detail { font-size: 22px; color: var(--ds-hud-ink-2); -unity-font-definition: url("../Fonts/Phone/Inter-SemiBold.ttf"); margin: 2px 0 0 0; padding: 0; white-space: normal; max-width: 1100px; }
+.ds-toast .ds-bar { margin-top: 8px; height: 10px; border-top-width: 0; background-color: var(--ds-hud-line); }
+
+/* ------------------------------------------------------------------ world prompt (v2: chunky orb with a white ring and a base, Lilita pills) */
+.ds-prompt { align-items: center; }
+.ds-prompt-where { height: 48px; padding: 0 18px 4px 18px; border-radius: 24px; border-width: 2px; border-bottom-width: 5px; border-color: var(--ds-hud-line); border-bottom-color: var(--ds-hud-base); background-color: var(--ds-hud); justify-content: center; margin-bottom: 10px; }
+.ds-prompt-where > Label { font-size: 24px; letter-spacing: 0.5px; color: var(--ds-hud-ink); -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); margin: 0; padding: 0; white-space: nowrap; text-shadow: 0 3px 0 var(--ds-hud-drop); }
+.ds-prompt-acts { flex-direction: row; align-items: flex-start; }
+.ds-prompt-act { align-items: center; margin: 0 14px; }
+.ds-orb { width: 132px; height: 132px; border-radius: 66px; margin: 0; padding: 6px; align-items: stretch; justify-content: center; border-width: 0;
+    transition-property: translate, scale; transition-duration: 0.08s; transition-timing-function: ease-out-cubic; }
+.ds-orb-key { flex-grow: 1; border-radius: 60px; align-items: center; justify-content: center; border-bottom-width: 9px; transition-property: border-bottom-width; transition-duration: 0.08s; }
+.ds-orb--main, .ds-orb--main:hover { background-color: var(--ds-white); }
+.ds-orb--main > .ds-orb-key { background-color: var(--b-primary); border-bottom-color: var(--b-primary-base); }
+.ds-orb-ring { display: none; }
+.ds-orb--alt, .ds-orb--alt:hover, .ds-orb--quiet, .ds-orb--quiet:hover { background-color: var(--ds-hud); border-width: 2px; border-color: var(--ds-hud-line); padding: 0; }
+.ds-orb--alt { width: 104px; height: 104px; border-radius: 52px; margin-top: 14px; }
+.ds-orb--alt > .ds-orb-key, .ds-orb--quiet > .ds-orb-key { background-color: var(--ds-clear); border-bottom-width: 7px; border-bottom-color: var(--ds-hud-base); border-radius: 52px; }
+.ds-orb--quiet > .ds-orb-key { border-radius: 64px; }
+.ds-orb--danger, .ds-orb--danger:hover { background-color: var(--ds-white); }
+.ds-orb--danger > .ds-orb-key { background-color: var(--ds-danger); border-bottom-color: var(--ds-danger-depth); }
+.ds-orb--off, .ds-orb--off:hover { background-color: var(--ds-hud-line); }
+.ds-orb--off > .ds-orb-key { background-color: var(--ds-disabled); border-bottom-color: var(--ds-well-base); }
+.ds-orb:active { translate: 0 6px; }
+.ds-orb:active > .ds-orb-key, .ds-orb--held > .ds-orb-key { border-bottom-width: 3px; }
+.ds-orb--held { translate: 0 6px; }
+.ds-prompt-label { height: 52px; padding: 0 22px 5px 22px; margin-top: 10px; border-radius: 26px; border-width: 2px; border-bottom-width: 5px; border-color: var(--ds-hud-line); border-bottom-color: var(--ds-hud-base); background-color: var(--ds-hud); justify-content: center; }
+.ds-prompt-label > Label { font-size: 30px; letter-spacing: 0.4px; color: var(--ds-hud-ink); -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); margin: 0; padding: 0; white-space: nowrap; text-shadow: 0 3px 0 var(--ds-hud-drop); }
+.ds-prompt-meta { margin-top: 10px; height: 48px; padding: 0 18px 4px 18px; border-radius: 24px; background-color: var(--ds-hud); border-width: 2px; border-bottom-width: 5px; border-color: var(--ds-hud-line); border-bottom-color: var(--ds-hud-base); justify-content: center; }
+.ds-prompt-meta > Label { font-size: 24px; color: var(--ds-hud-ink); -unity-font-definition: url("../Fonts/Phone/Inter-Bold.ttf"); margin: 0; padding: 0; white-space: nowrap; }
+.ds-prompt-meta--warn > Label { color: var(--ds-warn); }
+.ds-prompt-meta--good > Label { color: var(--ds-accent); }
+.ds-prompt-meta--bad > Label { color: var(--ds-danger-tint); }
+.ds-prompt-pop { opacity: 0; scale: 0.9 0.9; transition-property: opacity, scale; transition-duration: 0.16s; transition-timing-function: ease-out-back; }
+.ds-prompt-pop.ds-in { opacity: 1; scale: 1 1; }
+.ds-prompt-pop.ds-in.ds-prompt-out { opacity: 0; transition-duration: 0.12s; transition-timing-function: ease-in-cubic; }
+.ds-orb-lock { position: absolute; top: -4px; right: -4px; width: 44px; height: 44px; border-radius: 22px; border-width: 2px; border-color: var(--ds-hud-line); background-color: var(--ds-hud); align-items: center; justify-content: center; }
+.ds-ic--24 { width: 24px; height: 24px; }
+.ds-prompt-busy .ds-orb { opacity: 0.75; }
+.ds-prompt .ct-interact-pointer { display: none; }
+.ds-prompt-where--heat { border-color: var(--ds-danger); border-bottom-color: var(--ds-danger-depth); }
+
+/* ------------------------------------------------------------------ HUD */
+/* chunky glass: a 6 darker base, Lilita values with a 3 drop; lead art (coin, brand mark) overlaps the pill's left edge */
+.ds-hud-pill { height: 76px; padding: 0 30px 4px 30px; border-radius: 38px; border-width: 2px; border-bottom-width: 6px; border-color: var(--ds-hud-line); border-bottom-color: var(--ds-hud-base);
+    background-color: var(--ds-hud); flex-direction: row; align-items: center; margin: 0; }
+.ds-hud-pill:hover { background-color: var(--ds-hud); border-color: var(--ds-hud-line); border-bottom-color: var(--ds-hud-base); }
+.ds-hud-pill--danger { border-color: var(--ds-danger); border-bottom-color: var(--ds-danger-depth); }
+.ds-hud-pill--art { padding-left: 74px; }
+.ds-hud-pill-art { position: absolute; left: -22px; top: -8px; width: 88px; height: 88px; -unity-background-scale-mode: scale-to-fit; align-items: center; justify-content: center; }
+.ds-hud-pill--flat .ds-hud-pill-art { position: relative; left: 0; top: 0; width: 56px; height: 56px; border-radius: 28px; margin-right: 12px; -unity-background-scale-mode: scale-and-crop; overflow: hidden; }
+.ds-hud-pill-art--letter { background-color: var(--ds-ink-2); border-radius: 44px; }
+.ds-hud-pill-art > Label { font-size: 36px; color: var(--ds-hud-ink); -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); margin: 0; padding: 0; -unity-text-align: middle-center; }
+.ds-hud-mark { width: 52px; height: 52px; border-radius: 14px; background-color: var(--b-hero); align-items: center; justify-content: center; margin: 0 14px 0 -16px; flex-shrink: 0; }
+.ds-hud-mark > .ds-hero-mark { width: 40px; height: 34px; }
+/* the player's avatar tile with a level pip */
+.ds-hud-avatar { width: 104px; height: 104px; border-radius: 32px; border-width: 2px; border-bottom-width: 7px; border-color: var(--ds-hud-line); border-bottom-color: var(--ds-hud-base); background-color: var(--ds-hud); align-items: center; justify-content: center; padding: 0; }
+.ds-hud-avatar-art { width: 86px; height: 86px; border-radius: 26px; -unity-background-scale-mode: scale-and-crop; overflow: hidden; align-items: center; justify-content: center; }
+.ds-pip { position: absolute; min-width: 40px; height: 40px; padding: 0 10px; border-radius: 20px; border-width: 4px; border-color: var(--ds-badge-edge); background-color: var(--ds-pip); justify-content: center; }
+.ds-pip > Label { font-size: 26px; color: var(--ds-white); -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); margin: 0; padding: 0; -unity-text-align: middle-center; }
+.ds-pip--level { left: -10px; bottom: -14px; background-color: var(--ds-accent); }
+.ds-pip--level > Label { color: var(--ds-on-accent); }
+.ds-hud-pill-col { justify-content: center; }
+.ds-hud-pill-col > .ds-t-hud-caption { margin-top: -2px; }
+.ds-hud-round { width: 104px; height: 104px; border-radius: 52px; border-width: 2px; border-bottom-width: 7px; border-color: var(--ds-hud-line); border-bottom-color: var(--ds-hud-base);
+    background-color: var(--ds-hud); align-items: center; justify-content: center; margin: 0; padding: 0; transition-property: translate, border-bottom-width; transition-duration: 0.08s; }
+.ds-hud-round:hover { background-color: var(--ds-hud); border-color: var(--ds-hud-line); border-bottom-color: var(--ds-hud-base); }
+.ds-hud-round:active { translate: 0 5px; border-bottom-width: 2px; }
+.ds-hud-round--big { width: 164px; height: 164px; border-radius: 82px; }
+.ds-hud-round--square { width: 112px; height: 112px; border-radius: 30px; }
+.ds-badge { position: absolute; top: -12px; right: -12px; min-width: 40px; height: 40px; padding: 0 10px; border-radius: 20px; border-width: 4px; border-color: var(--ds-badge-edge); background-color: var(--ds-pip); justify-content: center; }
+.ds-badge > Label { font-size: 26px; color: var(--ds-on-danger); -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); margin: 0; padding: 0; -unity-text-align: middle-center; }
+.ds-stars { flex-direction: row; align-items: center; }
+.ds-star { width: 40px; height: 40px; margin: 0 2px; background-image: url("../Icons/star.png"); -unity-background-image-tint-color: var(--ds-hud-off); }
+.ds-star--on { -unity-background-image-tint-color: var(--ds-hud-ink); }
+.ds-minimap-frame { border-radius: 42px; overflow: hidden; }
+/* the minimap's chunky white frame (v2 HUD): white, a 10 base */
+.ds-minimap-card { padding: 12px 12px 12px 12px; border-radius: 52px; background-color: var(--ds-white); border-bottom-width: 10px; border-bottom-color: var(--ds-frame-base); }
+.ds-hud-caption-chip { height: 58px; padding: 0 24px 5px 24px; border-radius: 29px; border-width: 2px; border-bottom-width: 5px; border-color: var(--ds-hud-line); border-bottom-color: var(--ds-hud-base); background-color: var(--ds-hud); justify-content: center; }
+.ds-hud-caption-chip > Label { font-size: 30px; letter-spacing: 0.4px; color: var(--ds-hud-ink); -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); margin: 0; padding: 0; white-space: nowrap; text-shadow: 0 3px 0 var(--ds-hud-drop); }
+
+/* ------------------------------------------------------------------ segmented control */
+.ds-seg { flex-direction: row; padding: 6px; border-radius: var(--ds-r-pill); border-width: 2px; border-color: var(--ds-hud-line); background-color: var(--ds-hud); }
+.ds-seg--tile { background-color: var(--ds-tile); border-width: 0; }
+.ds-seg-item { height: 72px; padding: 0 32px; margin: 0 2px; border-radius: var(--ds-r-pill); border-width: 0; background-color: var(--ds-clear); justify-content: center; transition-property: background-color; transition-duration: 0.12s; }
+.ds-seg-item:hover { background-color: var(--ds-clear); }
+.ds-seg-item > Label { font-size: 28px; color: var(--ds-hud-ink-2); -unity-font-definition: url("../Fonts/Phone/Inter-SemiBold.ttf"); margin: 0; padding: 0; white-space: nowrap; }
+.ds-seg--tile .ds-seg-item > Label { color: var(--ds-ink-2); }
+.ds-seg-item--on, .ds-seg-item--on:hover { background-color: var(--ds-white); }
+.ds-seg-item--on > Label, .ds-seg--tile .ds-seg-item--on > Label { color: var(--ds-ink); }
+
+/* ------------------------------------------------------------------ sheet + screen */
+.ds-sheet { position: absolute; right: 40px; top: 32px; bottom: 32px; width: 760px; opacity: 0; translate: 40px 0; transition-property: opacity, translate; transition-duration: 0.2s; transition-timing-function: ease-out-cubic; }
+.ds-sheet.ds-in { opacity: 1; translate: 0 0; }
+.ds-sheet.ds-out { opacity: 0; translate: 40px 0; transition-duration: 0.12s; transition-timing-function: ease-in-cubic; }
+.ds-sheet > .ds-card { flex-grow: 1; }
+.ds-sheet-head { margin-bottom: 24px; }
+.ds-screen { position: absolute; left: 0; top: 0; right: 0; bottom: 0; opacity: 0; transition-property: opacity; transition-duration: 0.18s; transition-timing-function: ease-out-cubic; }
+.ds-screen.ds-in { opacity: 1; }
+.ds-topbar { position: absolute; left: 40px; right: 40px; top: 32px; height: 96px; flex-direction: row; align-items: center; }
+.ds-topbar > * { margin-right: 24px; }
+.ds-screen-title { font-size: 52px; letter-spacing: -1px; color: var(--ds-hud-ink); -unity-font-definition: url("../Fonts/Phone/Inter-Bold.ttf"); margin: 0; padding: 0; }
+.ds-screen-body { position: absolute; left: 40px; right: 40px; top: 160px; bottom: 72px; flex-direction: row; }
+.ds-footnote { position: absolute; left: 0; right: 0; bottom: 18px; font-size: 24px; color: var(--ds-hud-ink-2); -unity-text-align: middle-center; -unity-font-definition: url("../Fonts/Phone/Inter-Medium.ttf"); margin: 0; padding: 0; }
+
+/* joystick (floating stick; MovementControls owns placement): thin ring, soft fill, a white knob */
+.ds-joystick-ring { border-radius: 130px; border-width: 4px; border-bottom-width: 9px; border-color: var(--ds-joystick-ring); border-bottom-color: var(--ds-hud-base); background-color: var(--ds-joystick); }
+.ds-joystick-knob { border-width: 0; border-bottom-width: 8px; border-bottom-color: var(--ds-frame-base); background-color: var(--ds-joystick-knob); }
+.ct-move-active .ds-joystick-ring { border-color: var(--ds-hud-ink); }
+.ct-move-active .ds-joystick-knob { background-color: var(--ds-hud-ink); }
+.ct-move-sprint .ds-joystick-ring { border-width: 6px; border-color: var(--ds-accent); }
+.ct-move-sprint .ds-joystick-knob, .ct-move-running .ds-joystick-knob { background-color: var(--ds-accent); }
+.ds-hud-round--live { border-color: var(--ds-accent); background-color: var(--ds-accent); }
+.ds-hud-round--live > .ds-ic { -unity-background-image-tint-color: var(--ds-on-accent); }
+.ds-hud-round.hud-locked > .ds-ic { opacity: 0.55; }
+
+/* ------------------------------------------------------------------ on-shift pill, money motion (McDonald's job, 2026-10-26) */
+.ds-hud-pill.ds-onshift { height: 68px; padding: 0 28px 4px 24px; transition-property: opacity, translate, scale; transition-duration: 0.18s; transition-timing-function: ease-out-cubic; margin-top: 22px; }
+.ds-onshift-row { flex-direction: row; align-items: center; }
+.ds-onshift .ds-t-hud { font-size: 32px; }
+.ds-onshift-trail { font-size: 32px; letter-spacing: 0.4px; color: var(--b-primary); -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); margin: 0 0 0 14px; padding: 0; white-space: nowrap; text-shadow: 0 3px 0 var(--ds-hud-drop); }
+.ds-onshift-trail.ds-ink-warn { color: var(--ds-warn); }
+.ds-hud-pill.ds-onshift--off { opacity: 0; translate: 0 -24px; }
+.ds-onshift-pay { min-width: 112px; }                      /* proportional digits (device probe): fixed width, no jitter */
+.ds-live-dot { position: absolute; right: 2px; bottom: 2px; width: 18px; height: 18px; border-radius: 9px; border-width: 3px; border-color: var(--ds-hud); background-color: var(--ds-accent); }
+.ds-onshift--offline .ds-live-dot { background-color: var(--ds-warn); }
+.ds-onshift .ds-hud-pill-art { overflow: visible; }
+.ds-hud-pill { transition-property: scale; transition-duration: 0.12s; transition-timing-function: ease-out-cubic; }
+/* while a card is up the HUD steps back; only the Cash pill stays (top-right, above the scrim: the collect coin's target) */
+.ds-modal-cash { position: absolute; right: 40px; top: 36px; opacity: 0; transition-property: opacity, scale; transition-duration: 0.15s; }
+.ds-modal-cash.ds-in { opacity: 1; }
+.ds-bump { scale: 1.08 1.08; }
+.ds-t-hud-caption.ds-ink-warn { color: var(--ds-warn); }
+.ds-fly { position: absolute; transition-property: translate, scale, opacity; transition-duration: 0.45s; transition-timing-function: ease-in-out-cubic; }
+.ds-fly--go { scale: 0.7 0.7; }
+
+/* the live minimap inside its DS frame (Map/Minimap.cs keeps its own clip + ring; SYSTEM.md 3.11: 248, radius 32) */
+.ds-minimap-frame.map-mini { width: 300px; height: 300px; border-width: 0; overflow: visible; }
+.ds-minimap-frame .map-mini-clip { border-radius: 42px; }
+.ds-minimap-frame .map-mini-ring { display: none; }
+.ds-minimap-frame .map-mini-north { background-color: var(--ds-ink); color: var(--ds-white); font-size: 26px; -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); }
+
+/* a button with no chrome of its own (the minimap: its frame is the map) */
+.ds-bare, .ds-bare:hover, .ds-bare:active, .ds-bare:focus { background-color: var(--ds-clear); border-width: 0; padding: 0; margin: 0; }
+/* a two-line HUD pill (caption row + a thin progress track: the home ladder) */
+.ds-hud-pill--stack, .ds-hud-pill--stack:hover { height: auto; min-height: 64px; padding: 10px 24px 14px 20px; flex-direction: column; align-items: stretch; border-radius: var(--ds-r-md); }
+.ds-hud-pill .ds-bar { height: 6px; background-color: var(--ds-hud-line); }
+
+/* the display font's fallback (Ds.LilitaCovers): Inter Bold for text Lilita One cannot draw. Type + class beats the
+   single-class type rules above. */
+Label.ds-font-body, .ds-btn > Label.ds-font-body, .ds-toast-col > Label.ds-font-body { -unity-font-definition: url("../Fonts/Phone/Inter-Bold.ttf"); letter-spacing: 0; }
+/* while a card is up the HUD steps back (the Cash pill is mirrored above the scrim, .ds-modal-cash) */
+.ds-hud-away { opacity: 0; transition-property: opacity; transition-duration: 0.15s; }
+.ds-hud-back { transition-property: opacity; transition-duration: 0.15s; }
+.ds-hud-avatar-art > Label { font-size: 44px; color: var(--ds-hud-ink); -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); margin: 0; padding: 0; -unity-text-align: middle-center; }
+
+/* the wanted-stars pill (v2): five stars, the lit ones white; a chase flashes them red / blue */
+.ds-hud-stars { padding: 0 22px 4px 22px; }
+.ds-star { transition-property: scale; transition-duration: 0.12s; }
+.ds-star--pop { scale: 1.35 1.35; }
+.ds-stars--red > .ds-star--on { -unity-background-image-tint-color: var(--ds-danger); }
+.ds-stars--blue > .ds-star--on { -unity-background-image-tint-color: var(--ds-siren); }

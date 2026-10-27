@@ -1,3 +1,4 @@
+using CTLife.Core;
 using System.Collections.Generic;
 using System.Globalization;
 
@@ -228,7 +229,7 @@ namespace CTLife.Ventures
             ["pevent.line"] = "{0}: {1}", ["pevent.delta"] = "{0}",
         };
 
-        public static string T(string key) => key != null && En.TryGetValue(key, out var s) ? s : key ?? "";
+        public static string T(string key) => key != null && En.TryGetValue(key, out var s) ? NameTable.Apply(s) : key ?? "";
 
         public static bool Has(string key) => key != null && En.ContainsKey(key);
 

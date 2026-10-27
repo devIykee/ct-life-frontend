@@ -1,3 +1,4 @@
+using CTLife.Core;
 using System;
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
@@ -133,7 +134,7 @@ namespace CTLife.UI.Map
                 var a = new MapArea
                 {
                     Id = (string)t["id"], VenueId = (string)t["venueId"], HomeId = (string)t["homeId"], District = (string)t["district"],
-                    Title = (string)t["title"], Texture = (string)t["texture"], Min = V(t["min"]), Size = V(t["size"]),
+                    Title = (t["venueId"] is JToken vid && vid.Type == JTokenType.String ? NameTable.Get("venue." + (string)vid, NameTable.Apply((string)t["title"])) : NameTable.Apply((string)t["title"])), Texture = (string)t["texture"], Min = V(t["min"]), Size = V(t["size"]),
                     RotationDeg = (float?)t["rotation"] ?? 0f,
                     Pixels = new Vector2Int((int?)t["pixels"]?[0] ?? 0, (int?)t["pixels"]?[1] ?? 0),
                     Walkable = w != null && w.Count == 4 ? Rect.MinMaxRect((float)w[0], (float)w[1], (float)w[2], (float)w[3]) : default,
@@ -148,10 +149,10 @@ namespace CTLife.UI.Map
             var at = new MapAtlas();
             if (string.IsNullOrEmpty(json)) return at;
             var o = JObject.Parse(json);
-            at.Name = (string)o["name"]; at.Texture = (string)o["texture"];
+            at.Name = NameTable.Get("place.island", (string)o["name"]); at.Texture = (string)o["texture"];
             at.Min = V(o["min"]); at.Size = V(o["size"]); at.PlotSize = (float?)o["plotSize"] ?? 120f;
             foreach (var p in (JArray)o["plots"] ?? new JArray())
-                at.Plots.Add(new MapPlot { Id = (string)p["id"], Name = (string)p["name"], Kind = (string)p["kind"], Center = V(p["center"]) });
+                at.Plots.Add(new MapPlot { Id = (string)p["id"], Name = NameTable.Apply((string)p["name"]), Kind = (string)p["kind"], Center = V(p["center"]) });
             foreach (var p in (JArray)o["areas"] ?? new JArray())
             {
                 var pl = new MapPlacement { AreaId = (string)p["id"], Plot = (string)p["plot"], Origin = V(p["origin"]),

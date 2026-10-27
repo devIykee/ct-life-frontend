@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
-"""Rekt Burger art studio (2026-10-25): original vector art for the parody fast-food job, rendered with headless Chrome.
+"""Burger restaurant art studio (2026-10-25, renamed 2026-10-26): vector art for the fast-food job, rendered with headless Chrome.
 
-Our own brand: the name, the mark (a burger cracked by a falling chart) and the palette (charcoal, burnt orange, mint,
-cream) are original. No real chain's name, logo, mascot, colours or slogans (no arches, no red-and-yellow trade dress).
+The restaurant's name is read from contract/ids/names.json (venue.rekt_burger; the user approved real brand names
+2026-10-26). Only the name is used, set in our own lettering: no logo, arches, mascot, slogans or red-and-yellow trade dress
+are copied [Inference: plain lettering is the safer side until the trademark question is cleared]. The mark (a burger
+in a disc) and the palette (charcoal, burnt orange, mint, cream) are our own.
 Lettering: Google Fonts under the SIL OFL (Bowlby One, Archivo Black, Inter).
 
 Assets (id: size):
@@ -15,9 +17,22 @@ Assets (id: size):
   sign_rekt_burger    1024x256  the storefront's lit sign board
   rb_signs            2048x1024 the restaurant's signs atlas (menu boards, order screen, logo wall)
 """
-import json, math, os
+import html, json, math, os, re, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.join(HERE, '..', '..', '..', 'tools'))
+import names_table as N   # noqa: E402  the restaurant's name comes from contract/ids/names.json (QUALITY-BAR.md)
+NAME = html.escape(N.name('venue.rekt_burger'))
+BRAND = N.brand('brand.mcdonalds')    # the mark and colours (contract/ids/brands.json: one place to swap them)
+BR_RED, BR_YELLOW, BR_DARK = BRAND['colors']['red'], BRAND['colors']['yellow'], BRAND['colors']['dark']
+
+
+def mark(x, y, w):
+    """The brand mark (brands.json 'mark' SVG) at (x, y), w px wide, keeping its aspect."""
+    vb = re.search(r'viewBox="([^"]+)"', BRAND['svg']).group(1).split()
+    h = w * float(vb[3]) / float(vb[2])
+    inner = re.sub(r'^<svg[^>]*>|</svg>\s*$', '', BRAND['svg'].strip())
+    return f'<svg x="{x:.1f}" y="{y:.1f}" width="{w:.1f}" height="{h:.1f}" viewBox="{' '.join(vb)}">{inner}</svg>'
 OUT = os.path.join(HERE, 'out', 'html')
 os.makedirs(OUT, exist_ok=True)
 
@@ -26,6 +41,7 @@ COAL, COAL2 = '#1b1d22', '#2b2e36'
 ORANGE, ORANGE_D = '#ff6a2b', '#d4431a'
 MINT, MINT_D = '#38e0a2', '#12a673'
 CREAM, CREAM_D = '#fff3df', '#e9d3ad'
+RED, RED_D, YELLOW = '#c8261e', '#8e1610', '#ffbe1a'   # the restaurant's palette (2026-10-26: red and yellow)
 FONTS = '<link href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Archivo+Black&family=Inter:wght@600;800&display=block" rel="stylesheet">'
 
 
@@ -224,13 +240,16 @@ def badge(cx, cy, r):
 
 
 def logo():
+    """UI logo: the brand mark on a red tile and the name (brands.json mark and colours, names.json name)."""
     W, H = 1024, 384
-    d, b = badge(192, 192, 150)
-    b = f'<g filter="url(#drop)">{b}</g>'
-    b += (f'<text x="372" y="210" font-family="Bowlby One" font-size="150" fill="{ORANGE}" stroke="{INK}" stroke-width="10" paint-order="stroke" letter-spacing="2">REKT</text>'
-          f'<text x="378" y="300" font-family="Archivo Black" font-size="84" fill="{CREAM}" stroke="{INK}" stroke-width="9" paint-order="stroke" letter-spacing="10">BURGER</text>'
-          f'<rect x="378" y="318" width="560" height="10" rx="5" fill="{MINT}"/>')
-    return svg(W, H, d, b)
+    b = (f'<rect x="24" y="24" width="336" height="336" rx="56" fill="{BR_RED}"/>' + mark(62, 92, 260)
+         + f'<text x="400" y="232" font-family="Archivo Black" font-size="112" fill="{BR_DARK}" textLength="{min(600, len(NAME) * 70)}" lengthAdjust="spacingAndGlyphs">{NAME}</text>')
+    return svg(W, H, '', f'<g filter="url(#drop)">{b}</g>')
+
+
+def logo_badge():
+    """The clock-in chip's badge (128 px): the mark on the red tile."""
+    return svg(128, 128, '', f'<rect x="4" y="4" width="120" height="120" rx="24" fill="{BR_RED}"/>' + mark(18, 26, 92))
 
 
 def ticket_bg():
@@ -276,57 +295,75 @@ def sticker(kind):
 
 
 def sign_board():
-    """The storefront's lit board (IslandV2Shells sign, 4:1, lit by emission): charcoal with the logo; the top 8 rows are
-    the orange neon-tube colour and the bottom 8 the mint one (the facade's light strips sample them)."""
+    """The storefront's lit board (IslandV2Shells sign, 4:1, lit by emission): brand red with the yellow mark and the name;
+    the top 8 rows are the yellow neon-tube colour and the bottom 8 the red one (the facade's light strips sample them)."""
     W, H = 1024, 256
-    d0, mark = badge(140, 128, 104)
-    d = d0 + lg('sb', [(0, '#2d3038', None), (1, '#16181c', None)])
-    b = (f'<rect width="{W}" height="{H}" fill="url(#sb)"/><rect x="10" y="10" width="{W-20}" height="{H-20}" rx="12" fill="none" stroke="{ORANGE}" stroke-width="5"/>'
-         + mark
-         + f'<text x="268" y="150" font-family="Bowlby One" font-size="100" fill="{ORANGE}" letter-spacing="2">REKT</text>'
-         + f'<text x="600" y="148" font-family="Archivo Black" font-size="74" fill="{CREAM}" letter-spacing="4">BURGER</text>'
-         + f'<text x="276" y="206" font-family="Inter" font-weight="800" font-size="30" fill="{MINT}" letter-spacing="6">FLIPPING SINCE THE LAST TOP</text>'
-         + f'<rect x="0" y="0" width="{W}" height="8" fill="{ORANGE}"/><rect x="0" y="{H-8}" width="{W}" height="8" fill="{MINT}"/>')
-    return svg(W, H, d, b)
+    b = (f'<rect width="{W}" height="{H}" fill="{BR_RED}"/>' + mark(54, 40, 206)
+         + f'<text x="640" y="166" text-anchor="middle" font-family="Archivo Black" font-size="104" fill="#ffffff" textLength="{min(660, len(NAME) * 64)}" lengthAdjust="spacingAndGlyphs">{NAME}</text>'
+         + f'<rect x="0" y="0" width="{W}" height="8" fill="{BR_YELLOW}"/><rect x="0" y="{H-8}" width="{W}" height="8" fill="{BR_RED}"/>')
+    return svg(W, H, '', b)
 
 
-MENU = [('Rug Pull Burger', '$4.20'), ('Liquidation Fries', '$1.99'), ('Diamond Hands Shake', '$3.69'),
-        ('Exit Liquidity Combo', '$6.90'), ('Paper Hands Nuggets', '$2.49'), ('Bag Holder Wrap', '$3.33'),
-        ('Gas Fee Soda', '$0.99'), ('Rekt Melt', '$4.04')]
+MENU = [(html.escape(m['item']), m['price']) for m in BRAND['menu']]   # the brand table's menu (contract/ids/brands.json)
 
 
 def rb_signs():
     """2048 x 1024 atlas for the restaurant (rekt_room.py maps its quads onto these boxes):
     menu board A (0, 0, 1024, 512); menu board B (1024, 0, 2048, 512); logo wall (0, 512, 1024, 896);
-    order screen (1024, 512, 1536, 896); KITCHEN header (1536, 512, 2048, 704); hours plaque (1536, 704, 2048, 896)."""
+    order screen (1024, 512, 1536, 896); KITCHEN header (1536, 512, 2048, 704); hours plaque (1536, 704, 2048, 896).
+    Digital menu boards (near-black screens, yellow headings, white items), the logo wall in brand red with the mark."""
     W, H = 2048, 1024
-    d0, mark = badge(170, 704, 130)
-    d = d0 + lg('mb', [(0, '#24272e', None), (1, '#15171b', None)]) + lg('scr', [(0, '#0f2a22', None), (1, '#071510', None)])
+    d = lg('mb', [(0, '#2b2a26', None), (1, '#161512', None)]) + lg('scr', [(0, '#1d1c19', None), (1, '#0c0c0a', None)])
     b = ''
-    for bx, items, title in ((0, MENU[:4], 'BURGERS & COMBOS'), (1024, MENU[4:], 'SIDES & SIPS')):
-        b += f'<rect x="{bx}" y="0" width="1024" height="512" fill="url(#mb)"/><rect x="{bx + 10}" y="10" width="1004" height="492" rx="14" fill="none" stroke="{ORANGE}" stroke-width="6"/>'
-        b += f'<text x="{bx + 512}" y="84" text-anchor="middle" font-family="Archivo Black" font-size="52" letter-spacing="6" fill="{ORANGE}">{title}</text>'
+    for bx, items, title in ((0, MENU[:4], 'BURGERS &amp; MEALS'), (1024, MENU[4:], 'SIDES &amp; DRINKS')):
+        b += f'<rect x="{bx}" y="0" width="1024" height="512" fill="url(#mb)"/>'
+        b += f'<rect x="{bx}" y="0" width="1024" height="110" fill="{BR_RED}"/>' + mark(bx + 40, 20, 84)
+        b += f'<text x="{bx + 560}" y="76" text-anchor="middle" font-family="Archivo Black" font-size="50" letter-spacing="4" fill="{BR_YELLOW}">{title}</text>'
         for k, (name, price) in enumerate(items):
-            y = 170 + k * 88
-            b += (f'<text x="{bx + 60}" y="{y}" font-family="Inter" font-weight="800" font-size="44" fill="{CREAM}">{name}</text>'
-                  f'<text x="{bx + 964}" y="{y}" text-anchor="end" font-family="Archivo Black" font-size="44" fill="{MINT}">{price}</text>'
-                  f'<line x1="{bx + 60}" y1="{y + 24}" x2="{bx + 964}" y2="{y + 24}" stroke="#3a3e47" stroke-width="2"/>')
-        b += f'<text x="{bx + 512}" y="490" text-anchor="middle" font-family="Inter" font-weight="600" font-size="24" fill="#8a8f99">Prices in Cash. Cash is game money and can never be withdrawn.</text>'
-    # logo wall
-    b += f'<rect x="0" y="512" width="1024" height="384" fill="{COAL}"/>' + mark
-    b += (f'<text x="340" y="700" font-family="Bowlby One" font-size="140" fill="{ORANGE}">REKT</text>'
-          f'<text x="346" y="800" font-family="Archivo Black" font-size="84" letter-spacing="10" fill="{CREAM}">BURGER</text>'
-          f'<rect x="346" y="822" width="600" height="10" rx="5" fill="{MINT}"/>')
+            y = 182 + k * 82
+            b += (f'<text x="{bx + 60}" y="{y}" font-family="Inter" font-weight="800" font-size="44" fill="#ffffff">{name}</text>'
+                  f'<text x="{bx + 964}" y="{y}" text-anchor="end" font-family="Archivo Black" font-size="44" fill="{BR_YELLOW}">{price}</text>'
+                  f'<line x1="{bx + 60}" y1="{y + 24}" x2="{bx + 964}" y2="{y + 24}" stroke="#3a3833" stroke-width="2"/>')
+        b += f'<text x="{bx + 512}" y="494" text-anchor="middle" font-family="Inter" font-weight="600" font-size="24" fill="#a8a49a">Prices in Cash. Cash is game money and can never be withdrawn.</text>'
+    # logo wall: brand red, the big mark, the name
+    b += f'<rect x="0" y="512" width="1024" height="384" fill="{BR_RED}"/>' + mark(60, 560, 330)
+    b += f'<text x="440" y="745" font-family="Archivo Black" font-size="112" fill="#ffffff" textLength="{min(540, len(NAME) * 66)}" lengthAdjust="spacingAndGlyphs">{NAME}</text>'
     # order screen
     b += f'<rect x="1024" y="512" width="512" height="384" fill="url(#scr)"/>'
-    b += f'<text x="1280" y="580" text-anchor="middle" font-family="Archivo Black" font-size="38" fill="{MINT}">NOW SERVING</text>'
-    for k, n in enumerate((' #042', ' #069', ' #420')):
-        b += f'<text x="1280" y="{660 + k*72}" text-anchor="middle" font-family="Archivo Black" font-size="60" fill="{CREAM}">{n.strip()}</text>'
+    b += f'<text x="1280" y="580" text-anchor="middle" font-family="Archivo Black" font-size="38" fill="{BR_YELLOW}">NOW SERVING</text>'
+    for k, n in enumerate(('#042', '#069', '#420')):
+        b += f'<text x="1280" y="{660 + k*72}" text-anchor="middle" font-family="Archivo Black" font-size="60" fill="#ffffff">{n}</text>'
     # kitchen header + plaque
-    b += (f'<rect x="1536" y="512" width="512" height="192" fill="{ORANGE}"/><text x="1792" y="636" text-anchor="middle" font-family="Archivo Black" font-size="72" letter-spacing="8" fill="{COAL}">KITCHEN</text>'
-          f'<rect x="1536" y="704" width="512" height="192" fill="{CREAM}"/><text x="1792" y="782" text-anchor="middle" font-family="Archivo Black" font-size="34" fill="{COAL}">OPEN 24/7</text>'
-          f'<text x="1792" y="836" text-anchor="middle" font-family="Inter" font-weight="800" font-size="19" fill="{ORANGE_D}">WE NEVER CLOSE. NEITHER DO MARKETS.</text>')
-    b += f'<rect x="0" y="896" width="2048" height="128" fill="{COAL}"/>'
+    b += (f'<rect x="1536" y="512" width="512" height="192" fill="{BR_YELLOW}"/><text x="1792" y="636" text-anchor="middle" font-family="Archivo Black" font-size="72" letter-spacing="8" fill="{BR_DARK}">KITCHEN</text>'
+          f'<rect x="1536" y="704" width="512" height="192" fill="#ffffff"/><text x="1792" y="782" text-anchor="middle" font-family="Archivo Black" font-size="34" fill="{BR_DARK}">OPEN 24/7</text>'
+          f'<text x="1792" y="836" text-anchor="middle" font-family="Inter" font-weight="800" font-size="22" fill="{BR_RED}">DINE IN OR TAKE AWAY</text>')
+    b += f'<rect x="0" y="896" width="2048" height="128" fill="{BR_DARK}"/>'
+    return svg(W, H, d, b)
+
+
+def rb_window():
+    """The storefront panes seen from inside (1024 x 720, the whole pane 0.45-3.0 m): a bright day street (soft sky, the
+    far side's facades and a passing bus as blurred shapes, frosted glass at eye height) so the room is not a box."""
+    W, H = 1024, 720
+    d = (lg('sky', [(0, '#cfe3f7', None), (0.55, '#eef4fa', None), (1, '#f7f3ea', None)])
+         + lg('frost', [(0, '#ffffff', .0), (.25, '#ffffff', .62), (.75, '#ffffff', .62), (1, '#ffffff', .0)])
+         + '<filter id="far" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="7"/></filter>')
+    b = f'<rect width="{W}" height="{H}" fill="url(#sky)"/>'
+    g = ''
+    x = -20
+    import random
+    rnd = random.Random(7)
+    while x < W:
+        w = rnd.randint(110, 220); h = rnd.randint(260, 480); c = rnd.choice(['#b9c3cf', '#c9bfb2', '#aeb8b0', '#c4b4a8', '#b4bccb'])
+        g += f'<rect x="{x}" y="{560 - h}" width="{w}" height="{h}" fill="{c}"/>'
+        for wy in range(560 - h + 30, 520, 46):
+            for wx in range(x + 18, x + w - 30, 38):
+                g += f'<rect x="{wx}" y="{wy}" width="20" height="26" fill="#8fa2b6" opacity=".7"/>'
+        x += w + rnd.randint(4, 18)
+    g += '<rect x="0" y="560" width="1024" height="160" fill="#9a9a96"/><rect x="0" y="600" width="1024" height="8" fill="#e8e2c8" opacity=".6"/>'
+    g += '<rect x="560" y="470" width="300" height="120" rx="14" fill="#c93a2e"/><rect x="580" y="490" width="260" height="40" fill="#2f3a44" opacity=".8"/>'
+    b += f'<g filter="url(#far)" opacity=".85">{g}</g>'
+    b += '<rect x="0" y="340" width="1024" height="150" fill="url(#frost)"/>'
     return svg(W, H, d, b)
 
 
@@ -370,7 +407,7 @@ def rb_tile():
 
 
 ASSETS = {
-    'logo': (logo, 1024, 384),
+    'logo': (logo, 1024, 384), 'logo_badge': (logo_badge, 128, 128),
     'bun_top': (lambda: icon(bun_top_g), 256, 256), 'bun_bottom': (lambda: icon(bun_bottom_g), 256, 256),
     'patty': (lambda: icon(patty_g), 256, 256), 'cheese': (lambda: icon(cheese_g), 256, 256),
     'lettuce': (lambda: icon(lettuce_g), 256, 256), 'tomato': (lambda: icon(tomato_g), 256, 256),
@@ -379,7 +416,7 @@ ASSETS = {
     'ticket_bg': (ticket_bg, 384, 576), 'tray': (tray, 512, 320),
     'sticker_perfect': (lambda: sticker('perfect'), 192, 192), 'sticker_wrong': (lambda: sticker('wrong'), 192, 192),
     'sign_rekt_burger': (sign_board, 1024, 256), 'rb_signs': (rb_signs, 2048, 1024),
-    'rb_floor': (rb_floor, 1024, 1024), 'rb_tile': (rb_tile, 1024, 1024),
+    'rb_floor': (rb_floor, 1024, 1024), 'rb_window': (rb_window, 1024, 720), 'rb_tile': (rb_tile, 1024, 1024),
 }
 
 if __name__ == '__main__':

@@ -149,13 +149,11 @@ namespace CTLife.SocialFeatures.Tests
         }
 
         [Test]
-        public void CreatorTipAndUser()
+        public void CreatorAndUser()
         {
             var c = SocialParse.Creator(JToken.Parse("{\"enabled\":true,\"ratePerMinUsdc\":\"2000000\",\"maxMinutes\":10}"));
             Assert.AreEqual("2000000", c.RatePerMinUsdc);
             Assert.Throws<FormatException>(() => SocialParse.Creator(JToken.Parse("{\"enabled\":true,\"ratePerMinUsdc\":\"2.5\"}")));
-            Assert.AreEqual(12345, SocialParse.TipBalance(JToken.Parse("{\"cashCents\":12345}")));
-            Assert.IsNull(SocialParse.TipBalance(JToken.Parse("{\"tipId\":\"t\",\"amountCents\":100}")), "backend TipRow carries no balance");
             var u = SocialParse.User(JToken.Parse("{\"id\":\"u\",\"alias\":\"Froggy\",\"isSeeker\":true}"));
             Assert.AreEqual("Froggy", u.Alias);
             Assert.IsTrue(u.IsSeeker);
@@ -216,26 +214,6 @@ namespace CTLife.SocialFeatures.Tests
         [Test]
         public void CashFormat() => Assert.AreEqual("$1,234.50", CashInput.Format(123450));
 
-        [Test]
-        public void TipChecksCapThenBalance()
-        {
-            Assert.AreEqual("tip.badAmount", TipRules.CashError("x", 1000, null, out _));
-            Assert.AreEqual("tip.overCap", TipRules.CashError("60", 100_000, 5000, out _));
-            Assert.AreEqual("tip.overBalance", TipRules.CashError("20", 1000, null, out _));
-            Assert.IsNull(TipRules.CashError("10", 1000, 5000, out var cents));
-            Assert.AreEqual(1000, cents);
-            Assert.IsNull(TipRules.CashError("10", null, null, out _), "unknown balance: the server decides");
-            // backend #20: 3% burned, at least 1 cent; a 1-cent tip is refused
-            Assert.AreEqual("tip.min", TipRules.CashError("0.01", 1000, null, out _));
-            CollectionAssert.AreEqual(new long[] { 1, 1, 1, 2, 3, 30, 29_970 }, new long[] { 2, 10, 33, 34, 100, 1000, 999_000 }.Select(a => TipRules.FeeCents(a)).ToArray());
-            Assert.AreEqual(970, TipRules.ReceivedCents(1000));
-            Assert.AreEqual(1, TipRules.ReceivedCents(2));
-            var tip = SocialParse.Tip(Newtonsoft.Json.Linq.JToken.Parse("{\"tipId\":\"t\",\"amountCents\":1000,\"feeCents\":30,\"receivedCents\":970}"));
-            Assert.AreEqual(970, tip.ReceivedCents);
-            Assert.AreEqual(30, tip.FeeCents);
-            Assert.IsNull(tip.BalanceCents);
-        }
-
         private static string Encode58(byte[] data)
         {
             const string a = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
@@ -247,15 +225,12 @@ namespace CTLife.SocialFeatures.Tests
         }
 
         [Test]
-        public void SignatureMustBe64BytesOfBase58()
+        public void Base58DecodesSignatures()
         {
             var bytes = Enumerable.Range(1, 64).Select(i => (byte)(i * 3)).ToArray();
             var sig = Encode58(bytes);
-            Assert.IsTrue(TipRules.IsSignature(sig));
             CollectionAssert.AreEqual(bytes, Base58Lite.Decode(sig));
-            Assert.IsFalse(TipRules.IsSignature(sig.Substring(0, 60)));
-            Assert.IsFalse(TipRules.IsSignature(sig.Replace(sig[3], '0')), "0 is not base58");
-            Assert.IsFalse(TipRules.IsSignature(Encode58(Enumerable.Repeat((byte)7, 32).ToArray())), "a 32-byte address is not a signature");
+            Assert.IsNull(Base58Lite.Decode(sig.Replace(sig[3], '0')), "0 is not base58");
             var leadingZeros = new byte[64]; leadingZeros[63] = 9; leadingZeros[2] = 1;
             CollectionAssert.AreEqual(leadingZeros, Base58Lite.Decode(Encode58(leadingZeros)));
         }

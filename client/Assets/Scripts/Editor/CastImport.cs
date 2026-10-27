@@ -296,6 +296,68 @@ namespace CTLife.EditorTools
             if (!ModelAvatarValid(path)) throw new InvalidDataException("Cast look did not build a valid Humanoid Avatar: " + path);
         }
 
+        /// <summary>Registry key of a uniform look (kind "uniform": worn by job state, never a creator choice).</summary>
+        public const string UniformKeyPrefix = "uniform:";
+
+        /// <summary>
+        /// Only the manifest's uniform looks (Rekt Burger crew, 2026-10-25): copy their files, build their Avatars, materials and
+        /// prefabs, and bind them in the registry under "uniform:&lt;lookId&gt;". Nothing else in the cast is touched.
+        /// Batch: -executeMethod CTLife.EditorTools.CastImport.UniformsBatch
+        /// </summary>
+        public static void ImportUniforms()
+        {
+            _manifest = null;
+            var manifestPath = Path.Combine(RepoExport, "manifest.json");
+            var manifest = JObject.Parse(File.ReadAllText(manifestPath));
+            File.Copy(manifestPath, ManifestAsset, true);
+            _manifest = manifest;
+            var ids = ((JObject)manifest["looks"]).Properties().Where(p => (string)p.Value["kind"] == "uniform").Select(p => p.Name).ToList();
+            foreach (var id in ids)
+            {
+                var dst = Path.Combine(LooksRoot, id);
+                Directory.CreateDirectory(dst);
+                foreach (var f in ((JObject)manifest["looks"][id]["files"]).Properties())
+                {
+                    var src = Path.GetFullPath(Path.Combine(Application.dataPath, "../..", f.Value.ToString()));
+                    File.Copy(src, Path.Combine(dst, Path.GetFileName(src)), true);
+                }
+            }
+            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
+            int avatars = ConfigureAvatars(force: false);
+            var shader = Shader.Find("Universal Render Pipeline/Lit") ?? throw new InvalidOperationException("URP Lit shader missing");
+            var registry = AssetDatabase.LoadAssetAtPath<CharacterRegistry>(RegistryPath) ?? throw new FileNotFoundException(RegistryPath);
+            foreach (var id in ids)
+            {
+                var look = (JObject)manifest["looks"][id];
+                var mat = BuildMaterial(id, look, shader);
+                var crowd = BuildPrefab(id, look, mat, hero: false);
+                var hero = look["files"]?["hero_fbx"] != null ? BuildPrefab(id, look, mat, hero: true) : null;
+                Upsert(registry.looks, UniformKeyPrefix + id, crowd, hero, FamilyController(id));
+                Debug.Log($"CTLIFE [cast] uniform {id} -> {AssetDatabase.GetAssetPath(crowd)}");
+            }
+            // uniforms no longer in the manifest (the first single crew looks) leave the registry and the project
+            foreach (var stale in registry.looks.Where(e => e != null && e.key != null && e.key.StartsWith(UniformKeyPrefix, StringComparison.Ordinal) &&
+                         !ids.Contains(e.key.Substring(UniformKeyPrefix.Length))).ToList())
+            {
+                var sid = stale.key.Substring(UniformKeyPrefix.Length);
+                registry.looks.Remove(stale);
+                foreach (var path in new[] { $"{LooksRoot}/{sid}", $"{PrefabRoot}/{sid}.prefab", $"{PrefabRoot}/{sid}_Hero.prefab", $"{MaterialRoot}/{sid}.mat" })
+                    if (AssetDatabase.LoadMainAssetAtPath(path) != null || AssetDatabase.IsValidFolder(path)) AssetDatabase.DeleteAsset(path);
+                Debug.Log($"CTLIFE [cast] stale uniform {sid} removed");
+            }
+            EditorUtility.SetDirty(registry);
+            AssetDatabase.SaveAssets();
+            Debug.Log($"CTLIFE [cast] {ids.Count} uniform looks imported ({avatars} Avatars built)");
+        }
+
+        public static void UniformsBatch()
+        {
+            int code = 0;
+            try { ImportUniforms(); }
+            catch (Exception e) { Debug.LogException(e); code = 1; }
+            if (Application.isBatchMode) EditorApplication.Exit(code);
+        }
+
         public static void RunBatch()
         {
             int code = 0;

@@ -170,7 +170,7 @@ namespace CTLife.SocialFeatures
 
     /// <summary>
     /// Social actions for the player profile card (ProfileCard hook, see docs/progress/requests.md): Message, Follow, Video
-    /// call, Paid call (devnet builds) and Tip. Returns a row to append under Block/Report.
+    /// call and Paid call (devnet builds). No Tip: Cash never moves between players (backend #25). Returns a row to append under Block/Report.
     /// </summary>
     public static class SocialProfileActions
     {
@@ -191,7 +191,6 @@ namespace CTLife.SocialFeatures
                 row.Add(SocialUi.Btn("profile.call", () => { CallsApp.PendingCallee = userId; Go("calls"); }));
                 if (CallController.PaidCallsAllowedHere) row.Add(SocialUi.Btn("profile.paidCall", () => { CallsApp.PendingPaidCreator = userId; Go("calls"); }));
             }
-            if (Features.IsAvailable(Features.Feed)) row.Add(SocialUi.Btn("profile.tip", () => { TimelineApp.PendingTipUser = userId; TimelineApp.PendingTipName = name; Go("timeline"); }));
             return row;
         }
     }

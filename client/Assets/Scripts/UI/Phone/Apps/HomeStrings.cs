@@ -1,3 +1,4 @@
+using CTLife.Core;
 using System.Collections.Generic;
 
 namespace CTLife.UI
@@ -15,6 +16,6 @@ namespace CTLife.UI
             ["working"] = "Taking a moment…",
             ["unconfirmed"] = "That action wasn't confirmed. Your needs may have changed.",
         };
-        public static string T(string key) => English.TryGetValue(key, out var value) ? value : key;
+        public static string T(string key) => English.TryGetValue(key, out var value) ? NameTable.Apply(value) : key;
     }
 }

@@ -75,11 +75,16 @@ CLIPS = [
       period_tol=0.35, replaces='(new) phone idle (act_phone_call is UAL keyframe)',
       note='100STYLE OnPhoneRight_ID: phone held to the right ear (a call, not a screen check)'),
     # ---- locomotion loops (in place, start at the LEFT foot plant: walk / jog / sprint blend in phase)
+    # step_widen_m / arm_swing_gain (motion pass 2026-10-26): wider feet (a measured adult step width is ~18 cm; the
+    # takes land 11-15 cm apart, which reads as knees closing on these bodies) and a fuller arm swing
     c(id='loco_walk', bvh=cmu('16_22'), mode='loop', window=[0.1, 2.5], period=0.96, knee_offset_deg=12,
+      step_widen_m=0.05, arm_swing_gain=1.25, arm_max_deg=16,
       replaces='loco_walk (UAL1 Walk_Loop; Snow: SnowWalkContact.anim)', note='CMU 16_22 "walk"'),
     c(id='loco_jog', bvh=cmu('09_07'), mode='loop', window=[0.05, 1.1], period=0.75, knee_offset_deg=8,
+      step_widen_m=0.06, arm_swing_gain=1.2, arm_max_deg=16,
       replaces='loco_jog (UAL1 Jog_Fwd_Loop = the run band)', note='CMU 09_07 "run"'),
     c(id='loco_sprint', bvh=cmu('143_01'), mode='loop', window=[0.0, 0.82], period=0.62, knee_offset_deg=6,
+      step_widen_m=0.065, arm_swing_gain=1.0,
       replaces='loco_run (UAL1 Sprint_Loop)', note='CMU 143_01 "Run"'),
     # ---- starts / stops (translation kept in the hips; start at the origin facing -Y)
     c(id='loco_walk_start', bvh=cmu('16_32'), mode='oneshot', window=[0.70, 2.60], knee_offset_deg=12,

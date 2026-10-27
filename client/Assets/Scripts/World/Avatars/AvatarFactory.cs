@@ -101,6 +101,9 @@ namespace CTLife.World
             float height = 1.75f;
             var reg = CharacterRegistry.Instance;
             CharacterPaletteSelection paletteSelection = null;
+            // A worn uniform cosmetic (reward_rekt_burger_uniform) resolves to the family's crew look for everyone.
+            CharacterRegistry.Entry uniform = null;
+            if (!isNpc && selectedEntry == null) selectedEntry = uniform = Uniforms.AtSpawn(look);
             if (!isNpc && selectedEntry == null) CharacterPaletteResolver.TryResolve(look, out paletteSelection);
             var entry = selectedEntry ?? paletteSelection?.Entry ?? (reg == null ? null : isNpc ? reg.ForArchetype(archetypeId) : reg.ForLook(look));
 
@@ -173,6 +176,7 @@ namespace CTLife.World
 
             try { CharacterPaletteResolver.Apply(go, paletteSelection); }
             catch { go.SetActive(false); Object.Destroy(go); throw; }
+            if (uniform != null) Uniforms.CarryPalette(go, uniform, look);
             var col = go.AddComponent<CapsuleCollider>();
             col.center = new Vector3(0, 0.9f, 0);
             col.height = 1.8f;

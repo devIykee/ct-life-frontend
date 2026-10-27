@@ -23,6 +23,8 @@ namespace CTLife.UI
 
         /// <summary>An extra settings section from a feature lane (Phase 6 verified X link); null = none.</summary>
         public static Func<VisualElement> ExtraSection;
+        /// <summary>"Replay the first day" (queue 17): the guided first session again; null hides the row.</summary>
+        public static Action ReplayFirstDay;
         public override string Id => "settings";
         public override string Title => Strings.T("app.settings");
         public override string Color => "#4b6584";
@@ -124,6 +126,14 @@ namespace CTLife.UI
                 !VenueSession.Current.LocalPlayer.InVehicle);
             body.Add(Duo.Group(rescue));
             body.Add(Duo.GroupFooter(Strings.T("settings.unstickHelp")));
+            if (ReplayFirstDay != null)
+            {
+                var replay = new DuoRow(() => { Phone?.Close(); ReplayFirstDay?.Invoke(); }).Leading(Duo.IconSquare("star", "orange"))
+                    .Title(Strings.T("settings.replayFirstDay"));
+                replay.name = "settings-replay-first-day";
+                body.Add(Duo.Group(replay));
+                body.Add(Duo.GroupFooter(Strings.T("settings.replayFirstDayHelp")));
+            }
 
             var wallet = new DuoRow(() => Phone?.Open("wallet")).Leading(Duo.IconSquare("wallet", "graphite"))
                 .Title(Strings.T("settings.wallet")).Chevron();

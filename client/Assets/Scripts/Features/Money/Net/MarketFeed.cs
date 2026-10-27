@@ -213,6 +213,8 @@ namespace CTLife.Economy
                 Change5mBps = s.change5mBps,
                 Holders = s.holders,
                 LaunchedAtMs = s.launchedAt > 0 ? s.launchedAt : (long?)null,
+                PlayerLaunched = s.playerLaunched,
+                TemplateId = MoneyParse.TemplateIdOrNull(s.templateId),
             };
             _room[c.CoinId] = c;
             Remember(c.CoinId, c.Ticker);

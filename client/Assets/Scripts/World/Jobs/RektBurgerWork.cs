@@ -22,9 +22,11 @@ namespace CTLife.World
 
         public static readonly Station[] Stations =
         {
-            new Station { id = "grill", x = -4.15f, y = 10.85f, face = 1f, clip = "act_rb_grill", hold = 4.5f },
-            new Station { id = "fryer", x = -2.55f, y = 10.85f, face = 1f, clip = "act_rb_fryer", hold = 3.7f, oneShot = true },
-            new Station { id = "prep", x = -0.4f, y = 10.85f, face = 1f, clip = "act_rb_prep", hold = 4.27f },
+            // the grill works with the prep clip (CMU 79_10): act_rb_grill's source (CMU 80_02) stands with crossed feet
+            new Station { id = "grill", x = -4.15f, y = 10.85f, face = 1f, clip = "act_rb_prep", hold = 4.27f },
+            // the fry station and the prep table are shallower than the clamshell grill (re-dress 2026-10-26): step closer
+            new Station { id = "fryer", x = -2.55f, y = 11.1f, face = 1f, clip = "act_rb_fryer", hold = 3.7f, oneShot = true },
+            new Station { id = "prep", x = -0.4f, y = 11.05f, face = 1f, clip = "act_rb_prep", hold = 4.27f },
             new Station { id = "pass", x = -0.3f, y = 7.25f, face = -1f, clip = "act_rb_hand_over", hold = 4.2f, oneShot = true },
         };
 

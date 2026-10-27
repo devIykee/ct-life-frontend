@@ -42,8 +42,10 @@ def hides_for(look):
     h = set()
     for part in look['parts']:
         h |= set(part_info(look['fam'], part)['hides'])
-        if part.startswith(('top', 'outer')) and look.get('kind') != 'identity':
+        if part.startswith(('top', 'outer')) and look.get('kind') not in ('identity', 'uniform'):
             h.add('waist')  # hanging tops cover the trouser waistband (region 7 on bottoms)
+        # uniforms keep the waistband and the skin under it: the crew shirt is worn tucked-in style, so bending over a
+        # station shows dark trousers under the hem, never a hole through the body (Seeker capture 2026-10-26)
         if part in ('top_jacket', 'top_coat', 'top_kaftan'):
             h.add('hip')    # hem-extended tops also cover the hip band (region 8 on bottoms)
     return h
@@ -171,6 +173,37 @@ def stamp(t, text, center, size, color, facing=(0, -1, 0), emissive=False, mask=
     if emissive:
         t.emis[hit] = T.hexrgb(color)
 
+_IMG = {}
+def stamp_image(t, path, center, size, facing=(0, -1, 0), mask=None, round_=True):
+    """An image decal (our own art, e.g. the Rekt Burger badge) composited by its alpha, cropped to a disc when round_."""
+    if center is None:
+        return
+    if path not in _IMG:
+        _IMG[path] = read_image(REPO / path, 4)          # HxWx4 sRGB, row0 = bottom
+    img = _IMG[path]
+    H, W = img.shape[:2]
+    u, vv, ok = T.decal_coords(t, center, size, facing)
+    if mask is not None:
+        ok &= mask
+    if round_:
+        ok &= ((u - 0.5) ** 2 + (vv - 0.5) ** 2) <= 0.25
+    uu = np.clip(u * (W - 1), 0, W - 1).astype(int)
+    vi = np.clip(vv * (H - 1), 0, H - 1).astype(int)
+    px = img[vi, uu]
+    a = px[..., 3:4] * ok[..., None]
+    lb = L(t.base)
+    lb = lb * (1 - a) + L(px[..., :3]) * a
+    t.base = T.lin_to_srgb(lb)
+    t.normal[ok & (px[..., 3] > 0.5)] = (0.5, 0.5, 1.0)
+
+def stamp_print(t, pr, center, size, facing, glow=False, mask=None):
+    if center is not None and 'dx' in pr:
+        center = np.array(center, dtype=np.float32) + np.array([pr['dx'], 0, 0], dtype=np.float32)
+    if pr.get('image'):
+        stamp_image(t, pr['image'], center, size, facing, mask=mask)
+    else:
+        stamp(t, pr['text'], center, size, pr.get('color', '#ffffff'), facing, glow, mask=mask)
+
 def shape_mask(t, center, size, facing, fn):
     if center is None:
         return np.zeros(t.cov.shape, bool)
@@ -198,7 +231,8 @@ def fabric(t, v, fam, part):
     ref = float(np.median(Lum[orig])) if orig.any() else 0.5
     shade_o = np.clip(Lum / max(ref, 1e-4), 0.25, 1.8) ** v.get('detail', 0.9)
     nf = fine_noise(t, 700, seed=hash(part) % 97)
-    shade_n = np.clip(t.ao, 0.2, 1) ** 0.9 * (0.94 + 0.12 * nf)
+    g = v.get('grain', 0.12)
+    shade_n = np.clip(t.ao, 0.2, 1) ** 0.9 * (1 - g / 2 + g * nf)
     shade = np.where(orig, shade_o, shade_n)
     col = pattern(t, v, t.cov)
     out = col * shade[..., None]
@@ -297,8 +331,8 @@ def fabric(t, v, fam, part):
         c = front_center(t, z, facing=1 if where == 'back' else -1)
         if where == 'leg' and c is None:
             continue
-        w = pr.get('w', 0.05 * max(2, len(pr['text'])) * 0.6)
-        stamp(t, pr['text'], c, (w, pr.get('h', 0.07)), pr.get('color', '#ffffff'), facing, pr.get('glow', False), mask=t.cov & ~dk)
+        w = pr.get('w', 0.05 * max(2, len(pr.get('text') or 'XX')) * 0.6)
+        stamp_print(t, pr, c, (w, pr.get('h', 0.07)), facing, pr.get('glow', False), mask=t.cov & ~dk)
     return t
 
 def head_tex(look, fam):
@@ -316,6 +350,8 @@ def head_tex(look, fam):
         t.base = T.tone_shift(t.base, face, T.SKIN_TONES[tone], src_ref=skin_ref(fam))
     if look.get('hair_color'):
         t.base = T.hair_recolor(t.base, t.mask('brows'), T.HAIR_COLORS[look['hair_color']])
+        if v.get('scalp_hair'):   # a close crop under a cap: the scalp (temples, hairline, nape) in the hair colour
+            t.base = T.hair_recolor(t.base, t.mask('scalp'), T.HAIR_COLORS[look['hair_color']])
     p, n = t.pos, t.nrm
     front = n[..., 1] < -0.2
     lb = L(t.base)
@@ -498,8 +534,7 @@ def acc_tex(look, fam, part, slot):
         c = np.median(t.pos[sel], axis=0)
         if 'offset' in pr:
             c = c + np.array(pr['offset'])
-        stamp(t, pr['text'], c, (pr.get('w', 0.08), pr.get('h', 0.04)), pr.get('color', '#ffffff'), tuple(facing),
-              pr.get('glow', False), mask=sel)
+        stamp_print(t, pr, c, (pr.get('w', 0.08), pr.get('h', 0.04)), tuple(facing), pr.get('glow', False), mask=sel)
     return t
 
 def part_tex(look, part):
@@ -727,6 +762,40 @@ LOOKS += [
         'bottom': trousers('#1a3d8f'), 'shoes': SNEAK('#b48a5a')}, kind=P_, label='Ankara kaftan', skin_tone='brown', hair_color='black', tiers=TIERS),
 ]
 
+# ---------------------------------------------------------- Rekt Burger crew uniform (2026-10-25, option A; our own brand)
+# Worn while on shift and with the reward_rekt_burger_uniform cosmetic. One crew variant PER player look (and the two identity
+# looks), so the player keeps their own head, face, skin tone, hair colour, brows and beard: only the clothes change (review
+# 2026-10-26: identity first). Palette from art/source/rektburger/build.py (orange #ff6a2b, coal #1b1d22); the badge is the
+# original Rekt Burger mark. Clean fabric (low grain, soft weave) so the brand orange reads flat in game.
+# 2026-10-27 (real branding, user decision): McDonald's crew wear a dark grey polo and a black cap with the small arches
+# mark; the mark comes from the brand table (contract/ids/brands.json 'mark_png'), the one place brand marks live.
+RB_ORANGE, RB_COAL = '#34363b', '#16171a'      # shirt (dark grey), trousers / shoes / cap (near black)
+RB_BADGE = json.loads((REPO / 'contract' / 'ids' / 'brands.json').read_text())['brands']['brand.mcdonalds']['mark_png']
+def rb_cap():
+    return {'acc_a': RB_COAL, 'acc_b': RB_COAL, 'smooth': 0.3, 'prints': [{'image': RB_BADGE, 'w': 0.06, 'h': 0.05}]}
+def rb_shirt():
+    return {'color': RB_ORANGE, 'kind': 'cotton', 'features': ['placket', 'buttons'], 'detail': 0.25, 'grain': 0.025, 'bump': 0.35,
+            'prints': [{'image': RB_BADGE, 'where': 'chest', 'dx': 0.075, 'w': 0.05, 'h': 0.042}]}
+U_ = 'uniform'
+# under the cap: close-cropped hair in the player's own colour (cornrows kept); bigger styles would clip through the crown
+CAP_HAIR = ('hair_buzz',)
+def crew_of(look):
+    p = look['parts']
+    parts = {'head': dict(p.get('head', {}), scalp_hair=True), 'skin': {}}
+    for k, v in p.items():
+        if k.startswith('beard_') or k == 'acc_glasses':   # beards and prescription glasses are the person, not the outfit
+            parts[k] = v
+    hair = next((k for k in p if k == 'hair' or k.startswith('hair_')), None)
+    hv = p.get(hair, {}) if hair else {}
+    parts['hair_buzz'] = dict(hv) if hair in CAP_HAIR else ({'cornrows': True} if hv.get('cornrows') else {})
+    parts.update({'top_shirt': rb_shirt(), 'bottom': trousers(RB_COAL, detail=0.3), 'shoes': SNEAK(RB_COAL), 'hat_cap': rb_cap()})
+    kw = {k: look[k] for k in ('skin_tone', 'hair_color', 'body', 'face', 'scale') if k in look}
+    kw.setdefault('hair_color', 'darkbrown' if look['fam'] == 'm' else 'brown')   # identity looks: their authored hair
+    # LOD2 keeps the LOD1 head, hair and cap (the LOD2 decimation mangled the face under the brim)
+    return L_(look['id'] + '_rekt_crew', look['fam'], parts, kind=U_, crew_of=look['id'], label='McDonald\'s crew (' + look.get('label', look['id']) + ')',
+              tiers=TIERS, tier_map={'lod2': {'head': 'lod1', 'hair_buzz': 'lod1', 'hat_cap': 'lod1'}}, caps={'lod2': 1900},
+              part_offset={'hat_cap': (0.0, 0.0, 0.014, 1.03)}, **kw)
+
 # ---------------------------------------------------------- updates from docs/research/ct-now-2026-10 (archetypes + fashion)
 # Fashion there is mostly inference (direction, not fact). Parody only: no real logos/brands/people.
 OVR = [
@@ -842,3 +911,6 @@ NEW = [  # dossier "new" archetypes (no contract IDs yet: proposals)
 ]
 _ovr = {l['id']: l for l in OVR}
 LOOKS = [_ovr.get(l['id'], l) for l in LOOKS] + NEW
+
+# the crew variants last, so every player look defined above gets one
+LOOKS += [crew_of(l) for l in {l['id']: l for l in LOOKS if l['id'] in ('snow_everyday', 'rain_breeze') or l.get('kind') == 'player'}.values()]

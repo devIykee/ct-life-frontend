@@ -56,5 +56,18 @@ namespace CTLife.CityLife.Tests
             Assert.IsTrue(c.SetCompleted);
             Assert.AreEqual("reward_nod_memecoin_pin", c.SetRewardCosmeticId);
         }
+    
+        [Test]
+        public void Rewards_PrettyNames()
+        {
+            Assert.AreEqual("GM Cap", SeasonRewards.Pretty("reward_s1_gm_cap"));
+            Assert.AreEqual("TGE Hoodie", SeasonRewards.Pretty("reward_s1_tge_hoodie"));
+            Assert.AreEqual("Memecoin Pin", SeasonRewards.Pretty("reward_nod_memecoin_pin"));
+            Assert.AreEqual("Zebra Plant", SeasonRewards.Pretty("plant_zebra"));
+            Assert.AreEqual("Architect Lamp", SeasonRewards.Pretty("lamp_architect"));
+            var cash = SeasonRewards.Describe(SeasonReward.Parse(Newtonsoft.Json.Linq.JToken.Parse(@"{""cashCents"":500}")));
+            Assert.AreEqual("kind.cash", cash.KindKey);
+            Assert.IsNotNull(cash.Amount);
+        }
     }
 }

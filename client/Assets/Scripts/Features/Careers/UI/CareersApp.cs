@@ -243,7 +243,7 @@ namespace CTLife.Careers
             card.Add(El.PassThrough(sheen));
             card.Add(El.PassThrough(El.Div("duo-feature-art", new UiIcon("jobs"))));
             card.Add(El.Text(CareersStrings.T("best").ToUpperInvariant(), "duo-feature-kicker"));
-            card.Add(El.Text(c.Name, "duo-feature-title"));
+            card.Add(El.Text(NameTable.Apply(c.Name), "duo-feature-title"));
             card.Add(El.Text(PayLine(c), "duo-feature-meta"));
             var action = PrimaryAction(c);
             if (action != null)

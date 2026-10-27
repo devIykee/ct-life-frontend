@@ -98,6 +98,33 @@ namespace CTLife.CityLife
             return st;
         }
 
+        /// <summary>
+        /// The server's `flags.firstSession` (backend #24): {state: active|skipped|done, startedAt, completedAt, beats[]}.
+        /// Beats are lower case on the wire ("moved"); unknown ones are ignored. "done" with no start (an account from before
+        /// the onboarding migration) reads as returning.
+        /// </summary>
+        public static FirstSessionState FromWire(string state, long startedAtMs, long completedAtMs, IEnumerable<string> beats, long nowMs)
+        {
+            if (state == "done" && startedAtMs <= 0) return ForReturning(nowMs);
+            var st = new FirstSessionState { StartedAtMs = Math.Max(0, startedAtMs) };
+            if (beats != null)
+                foreach (var name in beats)
+                    if (TryBeat(name, out var b)) st._done.Add(b);
+            st.Skipped = state == "skipped";
+            if (state == "done") st.CompletedAtMs = completedAtMs > 0 ? completedAtMs : nowMs;
+            if (st.StartedAtMs <= 0 && state == "active") st.StartedAtMs = nowMs;
+            return st;
+        }
+
+        /// <summary>The wire name of a beat ("moved").</summary>
+        public static string Wire(FirstBeat b) => b.ToString().ToLowerInvariant();
+
+        public static bool TryBeat(string wire, out FirstBeat beat)
+        {
+            beat = default;
+            return !string.IsNullOrEmpty(wire) && Enum.TryParse(wire, true, out beat) && Array.IndexOf(Order, beat) >= 0 && !int.TryParse(wire, out _);
+        }
+
         /// <summary>A player who already has a life (a returning account, a reinstall with history) never sees it.</summary>
         public static FirstSessionState ForReturning(long nowMs)
         {

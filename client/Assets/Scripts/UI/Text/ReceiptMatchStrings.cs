@@ -1,3 +1,4 @@
+using CTLife.Core;
 using System.Collections.Generic;
 using System.Globalization;
 
@@ -32,7 +33,7 @@ namespace CTLife.UI
             ["board.4.title"]="Launch-week closeout", ["board.4.joke"]="Nobody is expensing conviction. Check the actual numbers.",
             ["board.4.item.0"]="Backdrop hire", ["board.4.item.1"]="Camera deposit", ["board.4.item.2"]="Backdrop delivery", ["board.4.item.3"]="Camera hire"
         };
-        public static string T(string key)=>En.TryGetValue(key,out var value)?value:key;
+        public static string T(string key)=>En.TryGetValue(key,out var value)? NameTable.Apply(value) :key;
         public static string F(string key,params object[] args)=>string.Format(CultureInfo.CurrentCulture,T(key),args);
         public static string Board(ReceiptMatchBoard board,string key)=>T("board."+board.Story+"."+key);
         public static string Letter(int receipt)=>((char)('A'+receipt)).ToString();

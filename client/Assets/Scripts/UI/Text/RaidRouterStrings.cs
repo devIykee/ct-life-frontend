@@ -1,3 +1,4 @@
+using CTLife.Core;
 using System.Collections.Generic;
 using System.Globalization;
 namespace CTLife.UI
@@ -24,7 +25,7 @@ namespace CTLife.UI
             ["raid.0"]="FREE CLAIM ×99", ["raid.1"]="WALLET CHECK ×99", ["raid.2"]="ADMIN DM ×99", ["raid.3"]="SECRET LINK ×99",
             ["raid.4"]="URGENT CLAIM ×99", ["raid.5"]="VERIFY NOW ×99", ["raid.6"]="MIRROR MINT ×99", ["raid.7"]="BONUS AIRDROP ×99"
         };
-        public static string T(string key)=>En.TryGetValue(key,out var value)?value:key;
+        public static string T(string key)=>En.TryGetValue(key,out var value)? NameTable.Apply(value) :key;
         public static string F(string key,params object[] args)=>string.Format(CultureInfo.CurrentCulture,T(key),args);
         public static string Summary(RaidRouterResult result)=>F("summary",result.RaidsStopped,result.ChatsBlocked,result.BestCombo,result.CloseCalls);
     }

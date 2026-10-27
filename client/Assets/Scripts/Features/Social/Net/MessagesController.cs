@@ -313,7 +313,8 @@ namespace CTLife.SocialFeatures
     /// </summary>
     public sealed class TimelineController : IDisposable
     {
-        public const double PollMs = 30000;
+        public const double PollMs = 30000, BackgroundPollMs = 60000;
+        public const int EventKeep = 60;
         private readonly SocialHub _hub;
         private readonly Dictionary<string, FeedTimeline> _feeds = new Dictionary<string, FeedTimeline>();
         private readonly Dictionary<string, double> _loadedAt = new Dictionary<string, double>();
@@ -329,7 +330,102 @@ namespace CTLife.SocialFeatures
         private int _viewers;
         private bool _disposed;
 
-        public TimelineController(SocialHub hub) { _hub = hub; }
+        /// <summary>The city's event cards from realtime events (the fake until the server writes them as posts).</summary>
+        private readonly List<FeedPostRow> _events = new List<FeedPostRow>();
+        public IReadOnlyList<FeedPostRow> Events => _events;
+        /// <summary>The City tab's chip (null = All).</summary>
+        public string CityFilter { get; private set; }
+        /// <summary>The newest `evt_mood_change` (the City tab's mood strip), or null.</summary>
+        public FeedPostRow Mood { get; private set; }
+        private readonly TimelineToastPolicy _toasts = new TimelineToastPolicy();
+        // backend #32: server tabs (posts in the server's order, cards built by the server)
+        private readonly Dictionary<string, List<FeedPostRow>> _pages = new Dictionary<string, List<FeedPostRow>>();
+        private readonly Dictionary<string, string> _cursors = new Dictionary<string, string>();
+        /// <summary>The server answered with tabs (backend #32). False on an older server: the client mixes instead.</summary>
+        public bool ServerTabs { get; private set; }
+        /// <summary>For you is the city's last moments because nobody posted (show the "Quiet" line).</summary>
+        public bool Quiet { get; private set; }
+        public bool LoadingMore { get; private set; }
+        private double _refreshSoonAt = double.PositiveInfinity;
+        private string PageKey(string tab) => tab == "city" ? "city:" + (CityFilter ?? "all") : tab;
+        /// <summary>Opt-in: posts carry a place card for the venue you're at (remembered per player; off by default).</summary>
+        public bool WithPlace
+        {
+            get => _hub.Store.Get("timeline.withPlace") == "1";
+            set { _hub.Store.Set("timeline.withPlace", value ? "1" : ""); Notify(); }
+        }
+        public bool HasMore => _cursors.TryGetValue(PageKey(Tab), out var c) && !string.IsNullOrEmpty(c);
+        private string Tab => Scope == "following" ? "following" : Scope == "city" ? "city" : "foryou";
+        private double _bgAt = double.NegativeInfinity;
+        private bool _firstLoad = true;
+
+        public TimelineController(SocialHub hub)
+        {
+            _hub = hub;
+            _subs.On<CTLife.Realtime.EventMessage>(e => { try { OnEvent(e); } catch (Exception x) { Log.Warn("timeline", "event card failed: " + x.Message); } });
+        }
+
+        private readonly Subscriptions _subs = new Subscriptions();
+
+        /// <summary>A realtime city event becomes an event card (and maybe a district toast).</summary>
+        public void OnEvent(CTLife.Realtime.EventMessage e)
+        {
+            if (_disposed) return;
+            var card = CityEventCards.FromEvent(e, ServerClock.NowMs);
+            if (card == null) return;
+            if (card.Kind == EventKinds.Mood) { Mood = card; Notify(); return; }
+            if (_events.Exists(x => x.PostId == card.PostId)) return;
+            _events.Insert(0, card);
+            if (_events.Count > EventKeep) _events.RemoveRange(EventKeep, _events.Count - EventKeep);
+            ConsiderToast(card, fromFeed: false);
+            if (ServerTabs && _viewers > 0) _refreshSoonAt = SocialHub.NowMs + 2500;   // the server writes the card; fetch it
+            Notify();
+        }
+
+        public void SetCityFilter(string kind) { CityFilter = kind; if (ServerTabs) Refresh(); Notify(); }
+
+        /// <summary>The rows the current tab shows (For you mixes events in; City is events only).</summary>
+        public IReadOnlyList<FeedPostRow> Rows
+        {
+            get
+            {
+                if (ServerTabs)
+                    return _pages.TryGetValue(PageKey(Tab), out var page) ? page.Where(p => !_hub.Blocks.Contains(p.UserId)).ToList() : new List<FeedPostRow>();
+                if (Scope == "city") return TimelineMix.City(GlobalVisible, _events, CityFilter);
+                if (Scope == "following") return Visible;
+                return TimelineMix.ForYou(Visible, _events);
+            }
+        }
+
+        private IReadOnlyList<FeedPostRow> GlobalVisible =>
+            _feeds.TryGetValue("global", out var g) ? g.Visible(_hub.Blocks.Contains) : (IReadOnlyList<FeedPostRow>)Array.Empty<FeedPostRow>();
+
+        /// <summary>HUD toasts (approved: posts about you, or a big moment in your district, max one per 2 min).</summary>
+        private void ConsiderToast(FeedPostRow p, bool fromFeed = true)
+        {
+            // city moments come from the realtime events (instant); a feed row only toasts when it is about me
+            if (fromFeed && p != null && EventKinds.IsCity(p.Kind)) return;
+            var me = _hub.Me;
+            string alias = Services.TryGet<PlayerProfile>(out var prof) ? prof.Alias : null;
+            if (p == null || _hub.Blocks.Contains(p.UserId)) return;   // never surface a blocked author
+            var reason = _toasts.Decide(p, me, alias, CurrentDistrict(), DistrictOfVenue, ServerClock.NowMs, _hub.Blocks.Contains);
+            if (reason == TimelineToastPolicy.Reason.None) return;
+            var text = TimelineText.Toast(p, reason);
+            if (text == null) return;
+            Log.Info("timeline", "toast " + reason + ": " + p.Kind + " " + p.PostId);
+            Bus.Publish(ToastSignal.Text(text, reason == TimelineToastPolicy.Reason.AboutMe ? ToastKind.Event : ToastKind.Info));
+        }
+
+        private static string CurrentDistrict()
+        {
+            var s = CTLife.World.VenueSession.Current;
+            if (s == null || s.LocalPlayer == null) return null;
+            if (s.IsIsland && s.Island != null) return s.Island.DistrictAt(s.LocalPlayer.transform.position);
+            return DistrictOfVenue(s.VenueId);
+        }
+
+        private static string DistrictOfVenue(string venueId) =>
+            venueId != null && Services.TryGet<ConfigStore>(out var c) && c.Registries != null && c.Registries.Venues.TryGetValue(venueId, out var v) ? v.districtId : null;
 
         private void Notify() { if (!_disposed) _hub.NotifyChanged(); }
 
@@ -341,7 +437,7 @@ namespace CTLife.SocialFeatures
 
         public void SetScope(string scope)
         {
-            Scope = scope == "following" ? "following" : "global";
+            Scope = scope == "following" ? "following" : scope == "city" ? "city" : "global";
             Error = null;
             Refresh();
             Notify();
@@ -349,9 +445,89 @@ namespace CTLife.SocialFeatures
 
         public void Refresh()
         {
+            if (ServerTabs || !_loadedAt.ContainsKey("tabs-probed")) { LoadTab(Tab, null); return; }
+            Load(Scope == "city" ? "global" : Scope);
+        }
+
+        /// <summary>Backend #32 tabs; the first answer tells whether the server has them (else the legacy scopes are used).</summary>
+        private void LoadTab(string tab, string before)
+        {
+            if (_disposed || !Features.IsAvailable(Features.Feed)) return;
+            if (before == null ? Loading : LoadingMore) return;
+            if (before == null) Loading = true; else LoadingMore = true;
+            Notify();
+            var key = PageKey(tab);
+            var filter = tab == "city" ? CityFilter : null;
+            _hub.Run(async ct =>
+            {
+                try
+                {
+                    var page = await _hub.Api.Timeline(tab, filter, before, ct);
+                    _loadedAt["tabs-probed"] = SocialHub.NowMs;
+                    if (page.Quiet == null && before == null)
+                    {
+                        // an older server: no tabs, no cards
+                        ServerTabs = false;
+                        var legacy = tab == "following" ? "following" : "global";
+                        _feeds.TryGetValue(legacy, out var f);
+                        if (f == null) _feeds[legacy] = f = new FeedTimeline(legacy);
+                        f.Replace(page.Posts);
+                        return;
+                    }
+                    ServerTabs = true;
+                    foreach (var p in page.Posts) _hub.Names.Remember(p.UserId, p.Alias);
+                    if (before == null) { _pages[key] = page.Posts; if (tab == "foryou") Quiet = page.Quiet == true; }
+                    else if (_pages.TryGetValue(key, out var list)) list.AddRange(page.Posts.Where(p => !list.Exists(x => x.PostId == p.PostId)));
+                    _cursors[key] = page.NextBefore;
+                    // keep the legacy global feed in step (verdict lookups, the Sleuth toast) from For you
+                    if (tab == "foryou" && before == null)
+                    {
+                        _feeds.TryGetValue("global", out var g);
+                        if (g == null) _feeds["global"] = g = new FeedTimeline("global");
+                        g.Replace(page.Posts);
+                        foreach (var p in page.Posts)
+                        {
+                            if (_hub.Blocks.Contains(p.UserId)) continue;   // blocked authors never toast (security review)
+                            if (_firstLoad) _toasts.Decide(p, null, null, null, null, double.MaxValue); else ConsiderToast(p);
+                        }
+                        _firstLoad = false;
+                    }
+                    Error = null;
+                }
+                finally { Loading = false; LoadingMore = false; _loadedAt[key] = SocialHub.NowMs; Notify(); }
+            }, e => { Loading = false; LoadingMore = false; _loadedAt[key] = SocialHub.NowMs; Error = e.Kind == ErrorKind.RouteMissing ? "err.routeMissing" : e.CopyKey; Notify(); });
+        }
+
+        public void LoadMore()
+        {
+            if (!ServerTabs || !_cursors.TryGetValue(PageKey(Tab), out var c) || string.IsNullOrEmpty(c)) return;
+            LoadTab(Tab, c);
+        }
+
+        private readonly RetainedKey _checkinKey = new RetainedKey();
+
+        /// <summary>Opt-in check-in at a venue (backend #32). Done gets null on success or a copy key.</summary>
+        public void CheckIn(string venueId, Action<string> done)
+        {
+            if (string.IsNullOrEmpty(venueId)) { done?.Invoke("timeline.checkinNowhere"); return; }
+            _hub.Run(async ct =>
+            {
+                var post = await _hub.Api.CheckIn(venueId, _checkinKey, ct);
+                _checkinKey.Complete();
+                if (_pages.TryGetValue("foryou", out var list) && post != null) list.Insert(0, post);
+                Notify();
+                done?.Invoke(null);
+            }, e =>
+            {
+                if (!e.OutcomeUnknown) _checkinKey.Complete();
+                done?.Invoke(e.Code == "VALIDATION_FAILED" ? "timeline.checkinFar" : e.Code == "RATE_LIMITED" ? "timeline.checkinSoon" : e.CopyKey);
+            });
+        }
+
+        private void Load(string scope)
+        {
             if (Loading || _disposed || !Features.IsAvailable(Features.Feed)) return;
             Loading = true; Notify();
-            var scope = Scope;
             _hub.Run(async ct =>
             {
                 try
@@ -362,6 +538,12 @@ namespace CTLife.SocialFeatures
                     if (f == null) _feeds[scope] = f = new FeedTimeline(scope);
                     f.Replace(page);
                     Error = null;
+                    if (scope == "global") foreach (var p in page)
+                        {
+                            if (_hub.Blocks.Contains(p.UserId)) continue;   // blocked authors never toast (security review)
+                            if (_firstLoad) _toasts.Decide(p, null, null, null, null, double.MaxValue); else ConsiderToast(p);
+                        }
+                    if (scope == "global") _firstLoad = false;
                 }
                 finally { Loading = false; _loadedAt[scope] = SocialHub.NowMs; Notify(); }
             }, e => { Loading = false; _loadedAt[scope] = SocialHub.NowMs; Error = e.Kind == ErrorKind.RouteMissing ? "err.routeMissing" : e.CopyKey; Notify(); });
@@ -379,12 +561,13 @@ namespace CTLife.SocialFeatures
             _hub.Run(async ct =>
             {
                 FeedPostRow post;
-                try { post = await _hub.Api.Post(text, _postKey, ct); }
+                try { post = await _hub.Api.Post(text, _postKey, ct, WithPlace); }
                 finally { Posting = false; }
                 _postKey.Complete(); _pendingPost = null;
                 if (string.IsNullOrWhiteSpace(post.Alias)) post.Alias = _hub.Names.Name(_hub.Me);
                 Feed.Add(post);
                 if (Scope != "global" && _feeds.TryGetValue("global", out var g)) g.Add(post);
+                if (_pages.TryGetValue("foryou", out var fy) && !fy.Exists(x => x.PostId == post.PostId)) fy.Insert(0, post);
                 Message = "feed.posted";
                 Bus.Publish(new SfxSignal("sfx_ui_success"));
                 Notify();
@@ -420,74 +603,25 @@ namespace CTLife.SocialFeatures
             }, e => { _followBusy.Remove(userId); Message = e.CopyKey; Notify(); });
         }
 
-        // ---------------------------------------------------------------- tips (#28)
-
-        public long? TipCapCents
-        {
-            get
-            {
-                var economy = Services.TryGet<ConfigStore>(out var c) ? c.Config("economy") : null;
-                return SocialWire.OptLong(economy?[TipRules.CapKey]);
-            }
-        }
-
-        public long? BalanceCents => Services.TryGet<PlayerProfile>(out var p) && p.Me != null ? p.CashCents : (long?)null;
-
-        /// <summary>POST /tips. The new balance comes from the server (`cashCents`) or a GET /me; never computed here.</summary>
-        public void TipCash(string toUserId, string amountInput, RetainedKey key, Action<string> done) =>
-            TipCash(toUserId, amountInput, key, (err, _) => done?.Invoke(err));
-
-        /// <summary>As above, with the server's split (paid / burned / received) on success.</summary>
-        public void TipCash(string toUserId, string amountInput, RetainedKey key, Action<string, TipResult> done)
-        {
-            if (!SocialWire.IsSafeId(toUserId) || SocialWire.SameId(toUserId, _hub.Me)) { done?.Invoke("tip.badUser", null); return; }
-            if (Features.IsAvailable(Features.LedgerFreeze) == false) { done?.Invoke("tip.frozen", null); return; }
-            var err = TipRules.CashError(amountInput, BalanceCents, TipCapCents, out var cents);
-            if (err != null) { done?.Invoke(err, null); return; }
-            _hub.Run(async ct =>
-            {
-                var tip = await _hub.Api.TipCash(toUserId, cents, key, ct);
-                key.Complete();
-                if (Services.TryGet<PlayerProfile>(out var profile))
-                {
-                    if (tip?.BalanceCents is long balance) profile.SetCash(balance);
-                    try { await profile.Refresh(ct); } catch (Exception e) when (!(e is OperationCanceledException)) { }
-                }
-                Bus.Publish(new SfxSignal("sfx_ui_success"));
-                done?.Invoke(null, tip);
-            }, e =>
-            {
-                if (!e.OutcomeUnknown) key.Complete();
-                done?.Invoke(e.OutcomeUnknown ? "tip.unknown" : e.CopyKey, null);
-            });
-        }
-
-        /// <summary>POST /tips/onchain {toUserId, signature}: records a wallet-to-wallet tip the player already sent.</summary>
-        public void RecordOnchainTip(string toUserId, string signatureInput, RetainedKey key, Action<string> done)
-        {
-            var sig = (signatureInput ?? "").Trim();
-            if (!SocialWire.IsSafeId(toUserId) || SocialWire.SameId(toUserId, _hub.Me)) { done?.Invoke("tip.badUser"); return; }
-            if (!TipRules.IsSignature(sig)) { done?.Invoke("tip.badSignature"); return; }
-            _hub.Run(async ct =>
-            {
-                await _hub.Api.TipOnchain(toUserId, sig, key, ct);
-                key.Complete();
-                done?.Invoke(null);
-            }, e =>
-            {
-                if (!e.OutcomeUnknown) key.Complete();
-                done?.Invoke(e.OutcomeUnknown ? "tip.unknown" : e.CopyKey);
-            });
-        }
-
         public void OnOnline() { _loadedAt.Clear(); }
 
         public void Tick(double now)
         {
-            if (_disposed || _viewers <= 0 || _hub.Offline) return;
-            if (!_loadedAt.TryGetValue(Scope, out var at) || now - at >= PollMs) Refresh();
+            if (_disposed || _hub.Offline) return;
+            var scope = Scope == "city" ? "global" : Scope;
+            if (_viewers > 0)
+            {
+                var key = ServerTabs ? PageKey(Tab) : scope;
+                if (now >= _refreshSoonAt) { _refreshSoonAt = double.PositiveInfinity; Refresh(); return; }
+                if (!_loadedAt.TryGetValue(key, out var at) || now - at >= PollMs) Refresh();
+                return;
+            }
+            // closed app: a slow global poll so "the Sleuth posted about you" can reach the HUD
+            if (now - _bgAt < BackgroundPollMs) return;
+            _bgAt = now;
+            if (ServerTabs) LoadTab("foryou", null); else Load("global");
         }
 
-        public void Dispose() { _disposed = true; }
+        public void Dispose() { _disposed = true; _subs.Dispose(); }
     }
 }

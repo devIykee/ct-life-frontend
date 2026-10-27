@@ -40,6 +40,130 @@ namespace CTLife.SocialFeatures
     {
         public string PostId, UserId, Alias, Text;
         public long AtMs;
+        /// <summary>player (a normal post), sleuth (the Sleuth's exposé of a creator dump, backend #14) or career (a server-written
+        /// post about the author's own career). Unknown kinds read as player.</summary>
+        public string Kind = FeedKinds.Player;
+        /// <summary>Server meta for sleuth / career posts (null for player posts).</summary>
+        public SleuthMeta Sleuth;
+        /// <summary>`meta.deepLink` (sleuth: `venue:launchpad_tower`; career: the job's link); null when absent.</summary>
+        public string DeepLink;
+        /// <summary>The server's meta for non-player posts (event cards: coinId, ticker, alias, venueId...); null otherwise.</summary>
+        public JObject Meta;
+        /// <summary>Backend #32: the city, the Sleuth or an NPC caller (shows the NPC badge).</summary>
+        public bool IsNpc;
+        /// <summary>Backend #32: the one server-built action card, an optional second (venue) card, the Sleuth's verdict box
+        /// under a coin card, and launch cards' holders + followed buyers. Null on older servers.</summary>
+        public ServerCard Card, SecondaryCard;
+        public PostVerdict Verdict;
+        public PostSocial Social;
+        public bool IsSleuth => Kind == FeedKinds.Sleuth;
+    }
+
+    /// <summary>A server action card (backend #32 docs/TIMELINE.md): coin (live price, rugged red / dead grey), venue or profile.</summary>
+    public sealed class ServerCard
+    {
+        public string Type, CoinId, Ticker, Name, Stage, VenueId, UserId, Alias, DeepLink;
+        public long McapCents;
+        public int Change5mBps, Holders;
+        public bool Rugged, Dead;
+
+        public static ServerCard Parse(JToken t)
+        {
+            if (!(t is JObject o)) return null;
+            var type = SocialWire.Str(o["type"]);
+            if (type != "coin" && type != "venue" && type != "profile") return null;
+            var c = new ServerCard
+            {
+                Type = type,
+                CoinId = SafeOrNull(SocialWire.Str(o["coinId"])),
+                Ticker = Plain(o["ticker"], 16),
+                Name = Plain(o["name"], 48),
+                Stage = Plain(o["stage"], 16),
+                VenueId = VenueOrNull(SocialWire.Str(o["venueId"])),
+                UserId = SafeOrNull(SocialWire.Str(o["userId"])),
+                Alias = Plain(o["alias"], 40),
+                DeepLink = SocialWire.Str(o["deepLink"]) is string d && d.Length <= 120 ? d : null,
+                McapCents = SocialWire.OptLong(o["mcapCents"]) ?? 0,
+                Change5mBps = SocialWire.IntOr(o["change5mBps"], 0),
+                Holders = SocialWire.IntOr(o["holders"], 0),
+                Rugged = SocialWire.BoolOr(o["rugged"], false),
+                Dead = SocialWire.BoolOr(o["dead"], false),
+            };
+            if (type == "coin" && c.CoinId == null || type == "venue" && c.VenueId == null || type == "profile" && c.UserId == null) return null;
+            return c;
+        }
+
+        private static string Plain(JToken t, int max) { var s = SocialWire.Plain(SocialWire.Str(t), max); return string.IsNullOrEmpty(s) ? null : s; }
+        private static string SafeOrNull(string id) => SocialWire.IsSafeId(id) ? id : null;
+        private static string VenueOrNull(string id) => CTLife.Core.VenueLinks.TryParse("venue:" + (id ?? ""), out var v) ? v : null;
+    }
+
+    public sealed class PostVerdict
+    {
+        public string PostId, Text;
+        public int SellSharePct;
+        public static PostVerdict Parse(JToken t) => t is JObject o && !string.IsNullOrEmpty(SocialWire.Str(o["text"]))
+            ? new PostVerdict { PostId = SocialWire.Str(o["postId"]), Text = SocialWire.Plain(SocialWire.Str(o["text"]), 280), SellSharePct = SocialWire.IntOr(o["sellSharePct"], 0) }
+            : null;
+    }
+
+    public sealed class PostSocial
+    {
+        public int Holders;
+        public List<(string userId, string alias)> Followed = new List<(string, string)>();
+        public static PostSocial Parse(JToken t)
+        {
+            if (!(t is JObject o)) return null;
+            var s = new PostSocial { Holders = SocialWire.IntOr(o["holders"], 0) };
+            if (o["followed"] is JArray a)
+                foreach (var f in a.Take(5))
+                    if (SocialWire.IsSafeId(SocialWire.Str(f["userId"]))) s.Followed.Add((SocialWire.Str(f["userId"]), SocialWire.Plain(SocialWire.Str(f["alias"]), 40)));
+            return s;
+        }
+    }
+
+    /// <summary>A Timeline page (backend #32): posts in the server's order, the cursor, and the "quiet" flag (null = old server).</summary>
+    public sealed class FeedPage
+    {
+        public List<FeedPostRow> Posts = new List<FeedPostRow>();
+        public string NextBefore;
+        public bool? Quiet;
+        public int Skipped;
+    }
+
+    public static class FeedKinds
+    {
+        public const string Player = "player", Sleuth = "sleuth", Career = "career";
+        /// <summary>Known kinds pass through (sleuth, career, and the city's event kinds in <see cref="EventKinds"/>); anything
+        /// else reads as a player post.</summary>
+        public static string Of(string raw) => raw == Sleuth ? Sleuth : raw == Career ? Career
+            : raw == EventKinds.Caller ? EventKinds.Caller : raw == EventKinds.Checkin ? EventKinds.Checkin
+            : EventKinds.IsCity(raw) ? raw : Player;
+    }
+
+    /// <summary>A Sleuth exposé's facts (`meta {coinId, ticker, launcherUserId, launcherAlias, sellSharePct, heat, deepLink}`).</summary>
+    public sealed class SleuthMeta
+    {
+        public string CoinId, Ticker, LauncherUserId, LauncherAlias;
+        public int SellSharePct, Heat;
+
+        public static SleuthMeta Parse(JToken meta)
+        {
+            if (!(meta is JObject m)) return null;
+            var coin = SocialWire.Str(m["coinId"]);
+            var ticker = SocialWire.Plain(SocialWire.Str(m["ticker"]), 16);
+            if (!SocialWire.IsSafeId(coin) || string.IsNullOrEmpty(ticker)) return null;
+            var launcher = SocialWire.Str(m["launcherUserId"]);
+            return new SleuthMeta
+            {
+                CoinId = coin,
+                Ticker = ticker,
+                LauncherUserId = SocialWire.IsSafeId(launcher) ? launcher : null,
+                LauncherAlias = SocialWire.Plain(SocialWire.Str(m["launcherAlias"]), 40),
+                SellSharePct = Math.Max(0, Math.Min(100, SocialWire.IntOr(m["sellSharePct"], 0))),
+                Heat = Math.Max(0, Math.Min(100, SocialWire.IntOr(m["heat"], 0))),
+            };
+        }
     }
 
     public sealed class DmThreadRow
@@ -162,14 +286,39 @@ namespace CTLife.SocialFeatures
         public static FeedPostRow Post(JToken t)
         {
             if (!(t is JObject o)) throw new FormatException("Expected a post");
-            return new FeedPostRow
+            var row = new FeedPostRow
             {
                 PostId = SocialWire.ReqStr(SocialWire.First(o, "postId", "id"), "postId"),
                 UserId = SocialWire.ReqStr(o["userId"], "userId"),
                 Alias = SocialWire.Plain(SocialWire.Str(o["alias"]), 40),
                 Text = SocialWire.Plain(SocialWire.Str(o["text"]), 280),
                 AtMs = SocialWire.TimeMs(SocialWire.First(o, "at", "createdAt")) ?? 0,
+                Kind = FeedKinds.Of(SocialWire.Str(o["kind"])),
             };
+            row.IsNpc = SocialWire.BoolOr(o["isNpc"], false);
+            row.Card = ServerCard.Parse(o["card"]);
+            row.SecondaryCard = ServerCard.Parse(o["secondaryCard"]);
+            row.Verdict = PostVerdict.Parse(o["verdict"]);
+            row.Social = PostSocial.Parse(o["social"]);
+            if (row.Kind != FeedKinds.Player && o["meta"] is JObject meta)
+            {
+                row.Meta = meta;
+                var link = SocialWire.Str(meta["deepLink"]);
+                row.DeepLink = !string.IsNullOrEmpty(link) && link.Length <= 120 ? link : null;
+                if (row.Kind == FeedKinds.Sleuth) row.Sleuth = SleuthMeta.Parse(meta);
+            }
+            return row;
+        }
+
+        public static FeedPage Page(JToken t)
+        {
+            var page = new FeedPage { Posts = Feed(t, out var skipped), Skipped = skipped };
+            if (t is JObject o)
+            {
+                page.NextBefore = SocialWire.Str(o["nextBefore"]);
+                if (o["quiet"] != null && o["quiet"].Type == JTokenType.Boolean) page.Quiet = (bool)o["quiet"];
+            }
+            return page;
         }
 
         public static List<FeedPostRow> Feed(JToken t, out int skipped)
@@ -310,19 +459,6 @@ namespace CTLife.SocialFeatures
             return start;
         }
 
-        /// <summary>POST /tips → `{cashCents}` (the sender's new balance). Null when the server sent another shape.</summary>
-        public static long? TipBalance(JToken t) => t is JObject o ? SocialWire.OptLong(o["cashCents"]) : null;
-
-        /// <summary>Backend #20's CashTip: what was paid, burned and received (null for another shape).</summary>
-        public static TipResult Tip(JToken t)
-        {
-            if (!(t is JObject o)) return null;
-            var amount = SocialWire.OptLong(o["amountCents"]);
-            if (!amount.HasValue) return null;
-            var fee = SocialWire.OptLong(o["feeCents"]) ?? 0;
-            return new TipResult { AmountCents = amount.Value, FeeCents = fee, ReceivedCents = SocialWire.OptLong(o["receivedCents"]) ?? amount.Value - fee, BalanceCents = SocialWire.OptLong(o["cashCents"]) };
-        }
-
         public static UserCard User(JToken t)
         {
             if (!(t is JObject o)) throw new FormatException("Expected a profile");
@@ -333,13 +469,5 @@ namespace CTLife.SocialFeatures
                 IsSeeker = SocialWire.BoolOr(o["isSeeker"], false),
             };
         }
-    }
-
-    /// <summary>A sent Cash tip (POST /tips, backend #20).</summary>
-    public sealed class TipResult
-    {
-        public long AmountCents, FeeCents, ReceivedCents;
-        /// <summary>The sender's new balance when the server includes it (older shape); else refresh /me.</summary>
-        public long? BalanceCents;
     }
 }

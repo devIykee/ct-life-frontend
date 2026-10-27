@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using CTLife.Core;
 using CTLife.UI;
+using CTLife.UI.DS;
 using CTLife.UI.Kit;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -104,46 +105,33 @@ namespace CTLife.CityLife.RektBurger
 
         public static void Show(CareerPromotion p)
         {
-            if (p == null || UiRoot.Instance == null) return;
-            _open?.RemoveFromHierarchy();
-            var root = El.Div("rb-promo");
-            root.name = "career-promotion";
-            root.pickingMode = PickingMode.Position;
-            var sheet = Resources.Load<StyleSheet>("UI/RektBurger/rektburger");
-            if (sheet != null) root.styleSheets.Add(sheet);
-            var card = El.Div("rb-card");
-            card.style.borderTopColor = card.style.borderBottomColor = card.style.borderLeftColor = card.style.borderRightColor = new Color(0.31f, 0.87f, 0.65f);
-            card.Add(El.Div("rb-promo-rank", El.Text(p.ToRank.ToString(), "rb-promo-rank-n")));
-            card.Add(El.Text(RbText.T("promo.kicker"), "rb-card-kicker"));
-            card.Add(El.Text(p.Title, "rb-card-title"));
-            var lines = new List<string> { RbText.F("promo.rank", p.ToRank, p.LadderName ?? "") };
-            if (p.PayBonusBps > 0) lines.Add(RbText.F("promo.bonus", (p.PayBonusBps / 100.0).ToString("0.#"), p.LadderName ?? ""));
-            if (p.VenueAccess.Count > 0) lines.Add(RbText.F("promo.access", string.Join(", ", p.VenueAccess.ConvertAll(Area))));
-            if (p.CosmeticIds.Count > 0) lines.Add(RbText.T("promo.cosmetic"));
-            card.Add(El.Text(string.Join("\n", lines), "rb-card-body"));
-            var actions = El.Div("rb-card-actions");
-            actions.Add(Btn(RbText.T("promo.view"), () => { root.RemoveFromHierarchy(); OpenCareer?.Invoke(); }, true, "career-promotion-view"));
-            actions.Add(Btn(RbText.T("promo.ok"), () => root.RemoveFromHierarchy(), false, "career-promotion-ok"));
-            card.Add(actions);
-            root.Add(card);
+            var ui = UiRoot.Instance;
+            if (p == null || ui?.Modals == null) return;
+            if (_open != null) ui.Modals.Close(_open);
+            // design-system dialog: trophy hero, the new title, rank line, what it opens as chips, View career / Nice
+            var chips = Ds.Chips(
+                p.PayBonusBps > 0 ? Ds.Chip(RbText.F("promo.bonus", (p.PayBonusBps / 100.0).ToString("0.#"), p.LadderName ?? ""), Tone.Accent, "coins") : null,
+                p.VenueAccess.Count > 0 ? Ds.Chip(RbText.F("promo.access", string.Join(", ", p.VenueAccess.ConvertAll(Area))), Tone.Neutral, "door-open") : null,
+                p.CosmeticIds.Count > 0 ? Ds.Chip(RbText.T("promo.cosmetic"), Tone.Neutral, "t-shirt") : null);
+            VisualElement dialog = null;
+            dialog = Ds.Dialog(new DialogSpec
+            {
+                Name = "career-promotion",
+                Hero = Ds.Hero("trophy", Tone.Accent),
+                Title = p.Title,
+                Subtitle = RbText.F("promo.rank", p.ToRank, p.LadderName ?? ""),
+                Body = chips.childCount > 0 ? chips : null,
+                Primary = new DsAction { Label = RbText.T("promo.view"), Name = "career-promotion-view", OnClick = () => { ui.Modals.Close(dialog); _open = null; OpenCareer?.Invoke(); } },
+                Secondary = new DsAction { Label = RbText.T("promo.ok"), Kind = BtnKind.Text, Name = "career-promotion-ok", OnClick = () => { ui.Modals.Close(dialog); _open = null; } },
+            });
             var burst = new CelebrationBurst(coins: 0, confetti: 90, puffs: 0);
-            root.Add(burst);
-            UiRoot.Instance.ModalLayer.Add(root);
-            _open = root;
-            Motion.Enter(card, 0f, 60f, 0.35f);
-            root.schedule.Execute(() => burst.Confetti(90)).StartingIn(120);
+            burst.pickingMode = PickingMode.Ignore;
+            dialog.Add(burst);
+            _open = dialog;
+            ui.Modals.Show(dialog, DismissMode.Back, () => _open = null);
+            dialog.schedule.Execute(() => burst.Confetti(90)).StartingIn(200);
             Cues.Play("sfx_rank_up");
             DeviceFeel.Confirm();
-        }
-
-        private static Button Btn(string text, Action click, bool primary, string name)
-        {
-            var b = El.Btn("", click, "rb-btn" + (primary ? " rb-btn--primary" : ""));
-            b.RemoveFromClassList("unity-button");
-            b.name = name;
-            var l = El.Text(text, "rb-btn-label"); l.pickingMode = PickingMode.Ignore;
-            b.Add(l);
-            return b;
         }
 
         private static string Area(string flag)

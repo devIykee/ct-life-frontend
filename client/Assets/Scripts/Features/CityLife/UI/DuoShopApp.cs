@@ -19,7 +19,7 @@ namespace CTLife.CityLife
     {
         public override string Id => HomeShopService.AppId;
         public override string Title => ShopText.T("app");
-        public override string HomeLabel => "Duo Shop";
+        public override string HomeLabel => NameTable.Get("app.duoshop", "Duo Shop");
         public override string Color => "#0a7cff";
         public override DuoChrome Chrome => DuoChrome.Plain;
 

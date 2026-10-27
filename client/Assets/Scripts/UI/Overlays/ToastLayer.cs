@@ -12,14 +12,11 @@ namespace CTLife.UI
     /// </summary>
     public sealed class ToastLayer : IDisposable
     {
-        private const int MaxVisible = 3;
         private readonly UiRoot _ui;
         private readonly IncidentPresentation _incidents;
         private readonly DuoBannerLayer _banners;
         private bool _disposed;
         private readonly VisualElement _layer;
-        private readonly Queue<(string text, string detail, ToastKind kind)> _queue = new Queue<(string, string, ToastKind)>();
-        private readonly List<(VisualElement el, float until)> _live = new List<(VisualElement, float)>();
         private readonly Subscriptions _subs = new Subscriptions();
 
         public ToastLayer(VisualElement layer)
@@ -31,7 +28,6 @@ namespace CTLife.UI
             _incidents = new IncidentPresentation(_ui);
             // Notification banners share this layer and material, above toasts, so both read as one system.
             _banners = new DuoBannerLayer(_layer);
-            _ui.AddUpdater(Tick);
         }
 
         private void OnToast(ToastSignal t)
@@ -47,34 +43,24 @@ namespace CTLife.UI
 
         private void Enqueue(string text, string detail, ToastKind kind)
         {
-            _queue.Enqueue((text, detail, kind));
-            Pump();
+            // Design system: one channel (SYSTEM.md 3.9), the DS toast host under the Cash pill, one at a time.
+            var host = _ui != null ? _ui.Toasts : CTLife.UI.DS.DsToastHost.Current;
+            if (host == null) return;
+            host.Show(Spec(text, detail, kind));
         }
 
-        private void Pump()
+        /// <summary>Pure mapping from the game's toast kinds to a design-system toast (tone + icon + time).</summary>
+        public static CTLife.UI.DS.DsToastSpec Spec(string text, string detail, ToastKind kind)
         {
-            while (_live.Count < MaxVisible && _queue.Count > 0)
+            var (icon, tone) = kind switch
             {
-                var (text, detail, kind) = _queue.Dequeue();
-                ToastNotice el = null;
-                el = new ToastNotice(text, detail, kind, () => Dismiss(el));
-                _layer.Add(el);
-                _live.Add((el, Time.unscaledTime + (kind == ToastKind.Event ? 5f : 3.5f)));
-                el.Reveal();
-            }
-        }
-
-        private void Dismiss(VisualElement element)
-        {
-            if (_disposed) return;
-            for (int i = _live.Count - 1; i >= 0; i--)
-                if (_live[i].el == element)
-                {
-                    element.RemoveFromHierarchy();
-                    _live.RemoveAt(i);
-                    break;
-                }
-            Pump();
+                ToastKind.Good => ("check", CTLife.UI.DS.Tone.Accent),
+                ToastKind.Bad => ("x", CTLife.UI.DS.Tone.Danger),
+                ToastKind.Warning => ("info", CTLife.UI.DS.Tone.Warn),
+                ToastKind.Event => ("bell", CTLife.UI.DS.Tone.Accent),
+                _ => ("info", CTLife.UI.DS.Tone.Neutral),
+            };
+            return new CTLife.UI.DS.DsToastSpec { Icon = icon, Text = text, Detail = detail, Tone = tone, Seconds = kind == ToastKind.Event ? 5f : 3.5f };
         }
 
         private void OnDetached(DetachFromPanelEvent e)
@@ -88,24 +74,8 @@ namespace CTLife.UI
             _disposed = true;
             _layer.UnregisterCallback<DetachFromPanelEvent>(OnDetached);
             _subs.Dispose();
-            if (_ui != null) _ui.RemoveUpdater(Tick);
             _incidents.Dispose();
             _banners.Dispose();
-            foreach (var toast in _live) toast.el.RemoveFromHierarchy();
-            _live.Clear();
-            _queue.Clear();
-        }
-
-        private void Tick()
-        {
-            if (_disposed) return;
-            for (int i = _live.Count - 1; i >= 0; i--)
-            {
-                if (Time.unscaledTime < _live[i].until) continue;
-                _live[i].el.RemoveFromHierarchy();
-                _live.RemoveAt(i);
-            }
-            Pump();
         }
     }
 }

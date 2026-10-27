@@ -1,3 +1,4 @@
+using CTLife.Core;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -423,7 +424,7 @@ namespace CTLife.CityLife
             ["kiosk"] = "Play trivia", ["visit"] = "Visit booth", ["spot"] = "Spot it", ["stream"] = "Watch stream", ["countdown"] = "Events",
         };
 
-        public static string T(string key) => En.TryGetValue(key, out var v) ? v : key;
+        public static string T(string key) => En.TryGetValue(key, out var v) ? NameTable.Apply(v) : key;
         public static string F(string key, params object[] args) => string.Format(CultureInfo.CurrentCulture, T(key), args);
     }
 }

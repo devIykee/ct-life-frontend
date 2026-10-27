@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""The Rug Room art studio (2026-10-24): original vector art for the casino, rendered with headless Chrome.
+"""Casino art studio (2026-10-24, renamed 2026-10-26: names from contract/ids/names.json): original vector art for the casino, rendered with headless Chrome.
 
 Writes one HTML page per asset into out/html/, then (render.sh) screenshots each at its exact size with a transparent
 background. All shapes are drawn here (original); lettering uses Google Fonts under the SIL OFL / Apache 2.0
@@ -11,9 +11,13 @@ Assets (id: size):
   crash         crash_rocket 256x256, crash_rug 512x512
   wordmark      rugroom_logo 1024x384 (neon)
 """
-import json, math, os
+import html, json, math, os, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.join(HERE, '..', '..', '..', 'tools'))
+import names_table as N   # noqa: E402  names from contract/ids/names.json (QUALITY-BAR.md), never hard-coded
+CASINO = html.escape(N.upper('venue.rug_room'))
+U = lambda k: html.escape(N.upper(k))
 OUT = os.path.join(HERE, 'out', 'html')
 os.makedirs(OUT, exist_ok=True)
 
@@ -330,8 +334,7 @@ def a_logo():
              f'<rect x="24" y="24" width="{W-48}" height="{H-48}" rx="40" fill="none" stroke="#ffcf4a" stroke-width="5"/>'
              f'<rect x="24" y="24" width="{W-48}" height="{H-48}" rx="40" fill="none" stroke="#fff6d6" stroke-width="1.8"/>')
     body = (frame
-            + neon('The', 512, 138, 110, 'Yellowtail', '#ffcf4a', 0, 5)
-            + neon('RUG ROOM', 512, 300, 164, 'Righteous', '#ff3fa4', 6, 8))
+            + neon(CASINO, 512, 250, 190 if len(CASINO) <= 7 else int(1330 / len(CASINO)), 'Righteous', '#ff3fa4', 10, 8))
     return svg(W, H, d, body)
 
 
@@ -469,8 +472,7 @@ def sign_board():
     body = (f'<rect width="{W}" height="{H}" fill="url(#sbg)"/>'
             f'<rect x="12" y="12" width="{W-24}" height="{H-24}" rx="10" fill="none" stroke="#c9a24e" stroke-width="5"/>'
             + bulbs
-            + _neon_text('The', 160, 150, 74, 'Yellowtail', '#ffcf4a', 0, 4)
-            + _neon_text('RUG ROOM', 610, 172, 118, 'Righteous', '#ff3fa4', 6, 6)
+            + _neon_text(CASINO, 512, 172, 132 if len(CASINO) <= 7 else int(920 / len(CASINO)), 'Righteous', '#ff3fa4', 14, 6)
             + f'<rect x="0" y="0" width="{W}" height="8" fill="#ff6fbc"/><rect x="0" y="{H-8}" width="{W}" height="8" fill="#ffd36a"/>')
     return svg(W, H, d, body)
 
@@ -496,7 +498,7 @@ def carpet():
 def rr_signs():
     """2048 x 1024 atlas for the floor's signs (casino_room.py maps its quads onto these boxes):
     logo board (0, 0, 1024, 384); crash screen (1024, 0, 2048, 576); plaque (0, 384, 1024, 640);
-    SLOTS (0, 640, 512, 896); COINFLIP (512, 640, 1024, 896); MOON OR RUG header (1024, 576, 2048, 832)."""
+    SLOTS (0, 640, 512, 896); COINFLIP (512, 640, 1024, 896); CRASH header (1024, 576, 2048, 832)."""
     W, H = 2048, 1024
     d = (rg('lb', [(0, '#2c0b38', None), (1, '#0e0414', None)], .5, .5, .8)
          + lg('brass', [(0, '#f2d48a', None), (.5, '#c9a24e', None), (1, '#8a6a26', None)])
@@ -520,20 +522,19 @@ def rr_signs():
           f'<path d="{area}" fill="url(#fill)"/><path d="{path}" fill="none" stroke="url(#line)" stroke-width="10" stroke-linecap="round"/>'
           f'<image href="../png/crash_rocket.png" x="{pts[-1][0]-70:.0f}" y="{pts[-1][1]-110:.0f}" width="150" height="150"/>'
           f'<text x="1300" y="200" text-anchor="middle" font-family="Luckiest Guy" font-size="130" fill="#ffffff" stroke="#ff3fa4" stroke-width="4">2.48x</text>'
-          f'<text x="1300" y="270" text-anchor="middle" font-family="Righteous" font-size="38" letter-spacing="6" fill="#29e3ff">GET OUT BEFORE THE RUG</text>')
+          f'<text x="1300" y="270" text-anchor="middle" font-family="Righteous" font-size="38" letter-spacing="6" fill="#29e3ff">CASH OUT IN TIME</text>')
     # plaque
     b += (f'<rect x="0" y="384" width="1024" height="256" fill="url(#brass)"/><rect x="14" y="398" width="996" height="228" rx="10" fill="none" stroke="#6b4f18" stroke-width="5"/>'
-          f'<text x="512" y="478" text-anchor="middle" font-family="Righteous" font-size="46" letter-spacing="8" fill="#3b2a08">THE RUG ROOM</text>'
+          f'<text x="512" y="478" text-anchor="middle" font-family="Righteous" font-size="46" letter-spacing="8" fill="#3b2a08">{CASINO}</text>'
           f'<text x="512" y="552" text-anchor="middle" font-family="Righteous" font-size="52" fill="#2a1d05">Play money. No cash value. 18+</text>'
           f'<text x="512" y="602" text-anchor="middle" font-family="Righteous" font-size="26" fill="#4a3810">Cash is game money and can never be withdrawn.</text>')
     # SLOTS / COINFLIP neon signs
-    for x0, word, col in ((0, 'SLOTS', '#ff3fa4'), (512, 'COINFLIP', '#ffcf4a')):
+    for x0, word, col in ((0, U('game.slots'), '#ff3fa4'), (512, U('game.coinflip'), '#ffcf4a')):
         b += (f'<rect x="{x0}" y="640" width="512" height="256" fill="#0e0414"/><rect x="{x0+8}" y="648" width="496" height="240" rx="14" fill="none" stroke="url(#brass)" stroke-width="6"/>'
               + _neon_text(word, x0 + 256, 800, 96 if len(word) < 6 else 78, 'Righteous', col, 4, 5))
-    # MOON OR RUG header
+    # Crash header
     b += (f'<rect x="1024" y="576" width="1024" height="256" fill="#0e0414"/><rect x="1032" y="584" width="1008" height="240" rx="14" fill="none" stroke="url(#brass)" stroke-width="6"/>'
-          + _neon_text('MOON', 1270, 742, 104, 'Righteous', '#29e3ff', 4, 5) + _neon_text('or', 1536, 735, 72, 'Yellowtail', '#ffcf4a', 0, 4)
-          + _neon_text('RUG', 1790, 742, 104, 'Righteous', '#ff3fa4', 4, 5))
+          + _neon_text(U('game.crash'), 1536, 745, 120, 'Righteous', '#29e3ff', 12, 5))
     b += f'<rect x="0" y="896" width="2048" height="128" fill="#0e0414"/><rect x="1024" y="832" width="1024" height="64" fill="#0e0414"/>'
     return svg(W, H, d, b)
 

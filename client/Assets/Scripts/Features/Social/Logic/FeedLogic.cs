@@ -135,50 +135,6 @@ namespace CTLife.SocialFeatures
         }
     }
 
-    /// <summary>Tip input rules (feature #28). Server values win; these only stop unsendable input.</summary>
-    public static class TipRules
-    {
-        /// <summary>
-        /// The contract says the daily Cash tip cap "comes from config", but rc1's economy.json has no such key.
-        /// [Proposal] `economy.tipCapCentsPerDay` (mirrors `topUpCapCentsPerDay`); read when present, else the server decides.
-        /// </summary>
-        public const string CapKey = "tipCapCentsPerDay";
-
-        /// <summary>Backend #20: 3% of every Cash tip is burned (TIP_FEE_BPS, default 300).</summary>
-        public const int FeeBps = 300;
-        /// <summary>A 1-cent tip would be all fee: the server refuses it, so 2 cents is the least.</summary>
-        public const long MinCents = 2;
-
-        /// <summary>The burned fee: ceil(amount * bps / 10000), at least 1 cent (the backend's tipFeeCents).</summary>
-        public static long FeeCents(long amountCents, int bps = FeeBps)
-        {
-            if (bps <= 0 || amountCents <= 0) return 0;
-            return Math.Max(1L, (amountCents * bps + 9999) / 10000);
-        }
-
-        /// <summary>What the recipient gets: amount - fee.</summary>
-        public static long ReceivedCents(long amountCents, int bps = FeeBps) => Math.Max(0L, amountCents - FeeCents(amountCents, bps));
-
-        public static string CashError(string input, long? balanceCents, long? capCents, out long cents)
-        {
-            if (!CashInput.TryCents(input, out cents)) return "tip.badAmount";
-            if (cents < MinCents) return "tip.min";
-            if (capCents.HasValue && capCents.Value > 0 && cents > capCents.Value) return "tip.overCap";
-            if (balanceCents.HasValue && cents > balanceCents.Value) return "tip.overBalance";
-            return null;
-        }
-
-        /// <summary>A Solana transaction signature: base58 of 64 bytes (86–88 characters).</summary>
-        public static bool IsSignature(string s)
-        {
-            if (string.IsNullOrWhiteSpace(s)) return false;
-            s = s.Trim();
-            if (s.Length < 80 || s.Length > 90) return false;
-            var bytes = Base58Lite.Decode(s);
-            return bytes != null && bytes.Length == 64;
-        }
-    }
-
     /// <summary>Bitcoin-alphabet base58 decode (pure, local so the Logic layer has no UnityEngine dependency).</summary>
     public static class Base58Lite
     {

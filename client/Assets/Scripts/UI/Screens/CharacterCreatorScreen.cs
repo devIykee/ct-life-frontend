@@ -1383,9 +1383,22 @@ namespace CTLife.UI
             var want = LaunchArgs.Get("look");
             if (!string.IsNullOrEmpty(want))
             {
-                int index = _models.FindIndex(m => m.look != null && Array.IndexOf(m.look, "head_" + want) >= 0);
+                // a look can be the identity's own (its base) or one of its outfits (player_f_kol is an outfit of a female base)
+                bool Has(string[] look) => look != null && Array.IndexOf(look, "head_" + want) >= 0;
+                int index = _models.FindIndex(m => Has(m.look) || m.outfits.Any(o => Has(o.look)));
                 if (index >= 0 && index != _lookIndex) PickModel(index);
                 if (index < 0) Log.Warn("creator", "look " + want + " is not in the creator");
+                else if (!Has(_models[index].look) && _spec != null)
+                {
+                    var outfit = _models[index].outfits.First(o => Has(o.look));
+                    var option = new CustomizerOption
+                    {
+                        category = LookCategory.Outfit, kind = OptionKind.Outfit, key = _models[index].id,
+                        value = string.Join("|", outfit.look), authoredLook = (string[])outfit.look.Clone(),
+                    };
+                    SetSpec(option.ApplyTo(_spec));
+                }
+                Log.Info("creator", "automation look " + want + (index >= 0 ? " selected" : " missing"));
             }
             _draft.tribeId = _reg.TribeOrder.FirstOrDefault()?.id;
             _draft.traitIds.Clear();

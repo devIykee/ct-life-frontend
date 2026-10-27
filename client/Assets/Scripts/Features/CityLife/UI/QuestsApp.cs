@@ -24,11 +24,15 @@ namespace CTLife.CityLife
 
         internal override CityView CreateView(CityLifeHub hub) => new QuestsView(hub);
 
+        /// <summary>The season's card under the streak (Season XP comes from quests); set by SeasonOverlays.</summary>
+        public static Func<VisualElement> SeasonCard;
+
         private static readonly Dictionary<string, (string icon, string tint)> Verbs = new Dictionary<string, (string, string)>
         {
             ["shift_complete"] = ("jobs", "blue"), ["perp_open"] = ("perps", "green"), ["perp_close"] = ("perps", "teal"),
             ["prediction_place"] = ("predict", "purple"), ["alpha_call"] = ("ads", "orange"), ["paid_call"] = ("calls", "indigo"),
             ["tip_send"] = ("cash", "pink"), ["home_visit"] = ("home", "red"),
+            ["shift_start"] = ("jobs", "blue"), ["trade_open"] = ("pulse", "green"), ["chest_open"] = ("star", "orange"),
         };
 
         private sealed class QuestsView : CityView
@@ -56,6 +60,8 @@ namespace CTLife.CityLife
                 _svc.QuestsChanged += Render;
                 _svc.StatusChanged += Render;
                 Render();
+                Bus.Publish(new GameplayEventSignal { kind = GameplayEvents.QuestsOpen, id = "quests" });
+                if (FirstSessionService.Current != null) FirstSessionService.Current.Changed += Render;
                 _ = _svc.RefreshQuests();
                 _ = _svc.RefreshStatus(force: false);
             }
@@ -63,6 +69,7 @@ namespace CTLife.CityLife
             public override void Dispose()
             {
                 if (_svc != null) { _svc.QuestsChanged -= Render; _svc.StatusChanged -= Render; }
+                if (FirstSessionService.Current != null) FirstSessionService.Current.Changed -= Render;
                 base.Dispose();
             }
 
@@ -105,7 +112,22 @@ namespace CTLife.CityLife
                     foreach (var e in card.Query<VisualElement>().ToList()) if (e != card) e.pickingMode = PickingMode.Ignore;
                     Body.Add(card);
                 }
+                var season = SeasonCard?.Invoke();
+                if (season != null) Body.Add(season);
                 var b = _svc.Board;
+                // ---- the starter card (queue 17, W5): the server's starter quests; before the server has them, a client
+                // checklist of the same three steps from the first session (ticks only, no amounts: rewards are the server's)
+                if (b != null && b.Starter.Count > 0 && !AllClaimed(b.Starter))
+                {
+                    int done = 0; foreach (var q in b.Starter) if (q.Completed) done++;
+                    Body.Add(Duo.SectionHeader(FirstText.F("starter.title", done, b.Starter.Count)));
+                    var starter = El.Div("quests-list quests-starter");
+                    starter.name = "quests-starter";
+                    foreach (var q in b.Starter) starter.Add(Row(q, false));
+                    Body.Add(starter);
+                }
+                else if ((b == null || b.Starter.Count == 0) && FirstSessionService.Current is FirstSessionService fs && fs.Guiding)
+                    Body.Add(LocalStarter(fs));
                 if (b == null) { Body.Add(Duo.Empty(RetentionText.T("app.empty"))); return; }
 
                 // ---- today
@@ -166,9 +188,44 @@ namespace CTLife.CityLife
                 return row;
             }
 
+            private static bool AllClaimed(List<Quest> list) { foreach (var q in list) if (!q.Claimed) return false; return true; }
+
+            /// <summary>The client starter checklist (an older backend without starter quests): the same three steps, ticked.</summary>
+            private VisualElement LocalStarter(FirstSessionService fs)
+            {
+                var (done, total) = fs.State.Progress(FirstSessionCopy.Starter, fs.Available);
+                var list = El.Div("quests-list quests-starter");
+                list.name = "quests-starter";
+                foreach (var beat in FirstSessionCopy.Starter)
+                {
+                    if (!fs.Available(beat)) continue;
+                    bool ok = fs.State.IsDone(beat);
+                    string key = beat.ToString().ToLowerInvariant();
+                    var row = El.Div("quests-row");
+                    row.name = "quest-starter-" + key;
+                    row.EnableInClassList("quests-row--done", ok);
+                    var title = El.Text(FirstText.T("starter." + key), "quests-title");
+                    var desc = El.Text(FirstText.T("starter." + key + ".desc"), "quests-desc");
+                    var (icon, tint) = beat == FirstBeat.Shift ? ("jobs", "blue") : beat == FirstBeat.Trade ? ("pulse", "green") : ("star", "orange");
+                    row.Add(El.Div("quests-lead", Duo.IconSquare(icon, tint)));
+                    row.Add(El.Div("quests-body", title, desc));
+                    var link = beat == FirstBeat.Shift ? "ctlife://jobs" : beat == FirstBeat.Trade ? "ctlife://pulse" : "ctlife://chest";
+                    var action = ok ? Duo.Pill("✓", null, Duo.PillKind.Locked) : Duo.Pill(RetentionText.T("app.go"), () => Go(new Quest { Id = "starter-" + key, DeepLink = link }), Duo.PillKind.Plain);
+                    if (ok) action.SetEnabled(false);
+                    row.Add(action);
+                    list.Add(row);
+                }
+                return El.Div(null, Duo.SectionHeader(FirstText.F("starter.title", done, total)), list);
+            }
+
             private void Go(Quest q)
             {
                 if (string.IsNullOrEmpty(q.DeepLink)) return;
+                if (DeepLinks.AppFor(q.DeepLink) == DeepLinks.QuestsApp && q.DeepLink.IndexOf("chest", StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    if (_svc.Status != null) DailyChestSheet.Show(_svc);   // the GM chest step opens the chest itself
+                    return;
+                }
                 Log.Info("retention", "quest go " + q.Id + " -> " + q.DeepLink);
                 RetentionService.Route(q.DeepLink);
             }

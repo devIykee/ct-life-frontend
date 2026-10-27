@@ -104,7 +104,7 @@ namespace CTLife.World
         /// mock) the route clocks in itself, then watches the work loop and the customers for 60 s (label rb_shift).</summary>
         private static async Task Shift(LocalPlayerController me, Func<bool> alive, CancellationToken ct, InteriorRoom room)
         {
-            for (int i = 0; i < 12 && alive() && !RektBurgerHooks.OnShift; i++) await Awaitable.WaitForSecondsAsync(0.25f, ct);
+            for (int i = 0; i < 80 && alive() && !RektBurgerHooks.OnShift; i++)   // v2: the counter opens a card first await Awaitable.WaitForSecondsAsync(0.25f, ct);
             if (!RektBurgerHooks.OnShift) { Mark("no shift from City Life: clocking in locally (dev)"); RektBurgerHooks.SetOnShift(true); }
             PerfSegments.Label = "rb_shift";
             var work = room.GetComponent<RektBurgerWork>();

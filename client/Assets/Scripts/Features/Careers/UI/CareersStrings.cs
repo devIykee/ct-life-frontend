@@ -1,3 +1,4 @@
+using CTLife.Core;
 using System.Collections.Generic;
 using System.Globalization;
 
@@ -90,7 +91,7 @@ namespace CTLife.Careers
             ["gigs.note"] = "Pay is set and confirmed by the server.",
         };
 
-        public static string T(string key) => key != null && Copy.TryGetValue(key, out var v) ? v : key;
+        public static string T(string key) => key != null && Copy.TryGetValue(key, out var v) ? NameTable.Apply(v) : key;
         public static string F(string key, params object[] args) => string.Format(CultureInfo.InvariantCulture, T(key), args);
 
         public static string Duration(double seconds)

@@ -25,7 +25,7 @@ namespace CTLife.Careers
         /// <summary>A label that never interprets rich text (server and content strings are plain).</summary>
         public static Label L(string text, string classes = null)
         {
-            var label = El.Text(text ?? "", classes);
+            var label = El.Text(NameTable.Apply(text ?? ""), classes);   // content copy reads with the approved names
             label.enableRichText = false;
             return label;
         }

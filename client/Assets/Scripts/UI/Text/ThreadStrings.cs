@@ -1,3 +1,4 @@
+using CTLife.Core;
 using System.Collections.Generic;
 using System.Globalization;
 
@@ -174,7 +175,7 @@ namespace CTLife.UI
             ["29.2"] = "The only hot take was the plate.",
             ["29.reason"] = "The dinner plan sets an intention. Putting phones away fulfills it. The plate gives hot take a literal ending."
         };
-        public static string T(string key) => Copy.TryGetValue(key, out var value) ? value : key;
+        public static string T(string key) => Copy.TryGetValue(key, out var value) ? NameTable.Apply(value) : key;
         public static string F(string key, params object[] values) => string.Format(CultureInfo.CurrentCulture, T(key), values);
         public static string Fragment(int story, int piece) => T(story + "." + piece);
     }

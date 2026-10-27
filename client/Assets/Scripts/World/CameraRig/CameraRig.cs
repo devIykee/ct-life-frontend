@@ -62,7 +62,8 @@ namespace CTLife.World
         public Rect Bounds { get; set; } = new Rect(-30, -30, 60, 60);
         public Camera Camera { get; private set; }
 
-        private Vector3 _pivot, _lastTarget;
+        private Vector3 _pivot, _lastTarget, _pivotVel, _ahead, _aheadVel;
+        private float _boomVel, _occludedFor, _bigOccludedFor, _riseLift, _riseVel, _climb, _climbVel, _diagAt;
         private float _lastOrbitAt = -10f, _zoom = 1f, _boom = OutdoorDistance;
         private bool _interiorFlag, _ceiling;
         private float _ceilingCheckAt;
@@ -92,24 +93,36 @@ namespace CTLife.World
               (1 << CharacterLayers.CoastWall));
         /// <summary>Heights on the body (from the feet) the lens must see at least one of.</summary>
         public static readonly float[] BodyChecks = { 0.55f, 1.15f };
-        public const float NearBody = 0.7f, MinSeenBoom = 1.3f;
+        public const float NearBody = 0.7f, MinSeenBoom = 1.3f, BodySideCheck = 0.3f;
+        private static readonly float[] BodySideOffsets = { 0f, -1f, 1f };
 
         /// <summary>
         /// The longest boom (at most <paramref name="boom"/>) from which some of the player's body is in sight: the boom cast
         /// only keeps the line pivot-to-lens clear, so a planter or a wall between the lens and the body (seen from a low
         /// angle) hid the player behind it. When every body point is blocked, the lens moves in front of the nearest blocker.
         /// </summary>
-        public static float VisibleBoom(Vector3 pivot, Vector3 back, float boom, Vector3 feet, int mask)
+        public static float VisibleBoom(Vector3 pivot, Vector3 back, float boom, Vector3 feet, int mask) =>
+            VisibleBoom(pivot, back, boom, feet, mask, out _);
+
+        /// <param name="tooClose">Every body point is hidden and in front of the blocker would put the lens in the player's
+        /// face: the caller rises over it instead (the boom stays).</param>
+        public static float VisibleBoom(Vector3 pivot, Vector3 back, float boom, Vector3 feet, int mask, out bool tooClose)
         {
+            tooClose = false;
             float b = boom;
             for (int iter = 0; iter < 4; iter++)
             {
                 var lens = pivot + back * b;
                 float nearest = 1f;   // fraction of body-to-lens where the blocker nearest the lens sits
                 bool seen = false;
+                var side = Vector3.Cross(Vector3.up, back); side.y = 0f;
+                side = side.sqrMagnitude > 1e-6f ? side.normalized * BodySideCheck : Vector3.zero;
                 foreach (float h in BodyChecks)
+                foreach (float o in BodySideOffsets)
                 {
-                    var p = feet + Vector3.up * h;
+                    // a lamp post or a sign pole hides a sliver of the player, not the player: any of three points
+                    // across the body in sight counts as seen
+                    var p = feet + Vector3.up * h + side * o;
                     var d = lens - p;
                     float l = d.magnitude;
                     if (l < 0.05f) { seen = true; break; }
@@ -123,10 +136,36 @@ namespace CTLife.World
                 if (seen) return b;
                 b = b * nearest - 0.25f;
                 // in front of it would put the lens in the player's face: keep the view (the lift looks over instead)
-                if (b < MinSeenBoom) return boom;
+                if (b < MinSeenBoom) { tooClose = true; return boom; }
             }
             return b;
         }
+
+        /// <summary>
+        /// Motion + camera pass (2026-10-26): the on-foot boom is a critically damped spring (SmoothDamp) toward its target,
+        /// with speed limits. Solid geometry pulls in fast (and the lens never sits more than its radius inside it); a thin
+        /// pole or a change of desired distance (a door into a room) eases in; coming back out is slow and calm.
+        /// </summary>
+        public static float BoomSpring(float boom, float target, ref float velocity, bool solid, float clear, float dt)
+        {
+            if (dt <= 0f) return boom;
+            float next = target < boom
+                ? Mathf.SmoothDamp(boom, target, ref velocity, solid ? BoomInSolidTime : BoomInTime, solid ? BoomInSolidSpeed : BoomInSpeed, dt)
+                : Mathf.SmoothDamp(boom, target, ref velocity, BoomOutTime, BoomOutSpeed, dt);
+            // never deeper into a solid surface than the lens radius (the cast already keeps that margin)
+            if (solid && next > clear + CollisionRadius) { next = clear + CollisionRadius; velocity = Mathf.Min(velocity, 0f); }
+            return next;
+        }
+
+        public const float BoomInSolidTime = 0.07f, BoomInSolidSpeed = 16f, BoomInTime = 0.18f, BoomInSpeed = 6f, BoomOutTime = 0.45f, BoomOutSpeed = 3f;
+        /// <summary>Something hiding the player is only acted on after this long (a lamp post or a passer-by never moves the lens).</summary>
+        public const float OcclusionGrace = 0.35f;
+        /// <summary>Over a large blocker (a kiosk, the plaza's snowman) the lens rises by up to this much instead of diving in.</summary>
+        public const float OcclusionRise = 1.4f, RiseTime = 0.35f;
+        /// <summary>Boom shorter than this behind a solid: the lens climbs (steeper pitch, in steps, up to ClimbMaxPitch).</summary>
+        public const float ClimbBelow = 2.0f, ClimbStep = 6f, ClimbMaxPitch = 62f, ClimbTime = 0.15f;
+        /// <summary>Pivot follow: horizontal / vertical smoothing and a short look-ahead along the travel direction.</summary>
+        public const float PivotTime = 0.06f, PivotTimeY = 0.12f, LookAheadSeconds = 0.18f, LookAheadMax = 0.6f, LookAheadTime = 0.35f;
 
         /// <summary>The boom length this frame: solid surfaces pull it in at once, thin ones quickly but smoothly; it eases out.</summary>
         private static float Boom(float boom, float clear, bool thinOnly, float outRate, float dt)
@@ -299,6 +338,7 @@ namespace CTLife.World
             pitch = DefaultPitch;
             _seated = false; _seatT = 0f; _steerT = 1f;
             _boom = DesiredDistance();
+            ResetSprings();
             _lastOrbitAt = -10f;
             LateUpdate();
         }
@@ -366,6 +406,7 @@ namespace CTLife.World
             _lastTarget = TargetPosition;
             pitch = DefaultPitch;
             _boom = DesiredDistance();
+            ResetSprings();
             _lastOrbitAt = Time.time;   // like a manual orbit: recentring behind the player waits a moment
         }
 
@@ -439,8 +480,21 @@ namespace CTLife.World
             UpdateSeat(dt);
             float seat = SeatAmount;
             float pivotHeight = Mathf.Lerp(PivotHeight, SeatPivotHeight, seat);
-            if (speed > 12f) _pivot = target + Vector3.up * pivotHeight; // a teleport: no swoop across the map
-            _pivot = Vector3.Lerp(_pivot, target + Vector3.up * pivotHeight, 1f - Mathf.Exp(-followSharpness * dt));
+            // a short look-ahead along the travel (smoothed: the view leads a running player a little, never jerks)
+            var aheadWant = speed > 0.3f && speed <= 12f ? Vector3.ClampMagnitude(travel / Mathf.Max(dt, 1e-4f) * LookAheadSeconds, LookAheadMax) : Vector3.zero;
+            if (seat > 0f) aheadWant = Vector3.zero;
+            _ahead = Vector3.SmoothDamp(_ahead, aheadWant, ref _aheadVel, LookAheadTime, 4f, dt);
+            var pivotWant = target + Vector3.up * pivotHeight + _ahead;
+            bool teleported = speed > 12f;
+            if (teleported) { _pivot = pivotWant; _pivotVel = Vector3.zero; } // a teleport: no swoop across the map
+            else
+            {
+                // critically damped follow (horizontal tight, vertical a little softer so steps and stairs do not bob the view)
+                float px = Mathf.SmoothDamp(_pivot.x, pivotWant.x, ref _pivotVel.x, PivotTime, Mathf.Infinity, dt);
+                float pz = Mathf.SmoothDamp(_pivot.z, pivotWant.z, ref _pivotVel.z, PivotTime, Mathf.Infinity, dt);
+                float py = Mathf.SmoothDamp(_pivot.y, pivotWant.y, ref _pivotVel.y, PivotTimeY, Mathf.Infinity, dt);
+                _pivot = new Vector3(px, py, pz);
+            }
             if (Time.time >= _ceilingCheckAt)
             {
                 _ceilingCheckAt = Time.time + 0.25f;
@@ -461,27 +515,137 @@ namespace CTLife.World
             }
             else yaw = Recenter(yaw, Target.eulerAngles.y, speed, idle, dt);
             if (!direct && idle > RecenterDelay + 0.8f && speed > 0.5f) pitch = Mathf.Lerp(pitch, DefaultPitch, 1f - Mathf.Exp(-1.2f * dt));
-            var rot = Quaternion.Euler(pitch, yaw, 0f);
+            // A big solid thing right behind the player (a kiosk, the plaza's snowman, a doorway's wall): climb over it like
+            // GTA's camera, a few degrees steeper, instead of diving into the player's face. Eased; returns when clear.
+            float wantClimb = 0f;
+            if (seat <= 0f)
+            {
+                float desired = DesiredDistance();
+                // look along the whole boom, so the climb starts before the lens reaches the blocker (not once it is there)
+                float reach = Mathf.Max(ClimbBelow, desired * 0.8f);
+                if (desired > ClimbBelow && BigBlocker(_pivot, Quaternion.Euler(pitch, yaw, 0f) * Vector3.back, reach))
+                    for (float extra = ClimbStep; pitch + extra <= ClimbMaxPitch; extra += ClimbStep)
+                        if (!BigBlocker(_pivot, Quaternion.Euler(pitch + extra, yaw, 0f) * Vector3.back, reach))
+                        { wantClimb = extra; break; }
+            }
+            _climb = Mathf.SmoothDamp(_climb, wantClimb, ref _climbVel, ClimbTime, 90f, dt);
             float want = Mathf.Lerp(DesiredDistance(), (Interior ? SeatDistanceIndoor : SeatDistance) * _zoom, seat);
-            float clear = Clearance(_pivot, rot * Vector3.back, want, CollisionMask, out bool thinOnly);
-            // Something between the lens and the body (not the pivot): come in front of it, smoothly.
-            float seen = VisibleBoom(_pivot, rot * Vector3.back, clear, target, OcclusionMask);
-            if (seen < clear - 0.05f) { clear = seen; thinOnly = true; }
-            // Pull in at once when something solid comes between (quickly but smoothly for a pole or a trunk); ease back out.
-            // (the seat blend eases the boom out in step with the angle instead of the usual slow drift)
-            _boom = Boom(_boom, clear, thinOnly, seat > 0f && seat < 1f || _steerT < 1f ? 9f : 3f, dt);
+            // Room framing: when the room squeezes the boom (a counter, a booth, a small shop), frame the player instead of
+            // hugging the back of the head: the lens goes higher (steeper) and over the right shoulder, so the head sits low
+            // and to one side and the room ahead stays visible. Driven by the clearance along the plain view (not the framed
+            // one, which would feed back) and eased in and out.
+            float frameWant = 0f;
+            if (seat <= 0f)
+            {
+                float plain = Clearance(_pivot, Quaternion.Euler(pitch + _climb, yaw, 0f) * Vector3.back, want, CollisionMask, out _);
+                frameWant = RoomFraming(plain, want);
+            }
+            if (teleported) { _frame = frameWant; _frameVel = 0f; }
+            else _frame = Mathf.SmoothDamp(_frame, frameWant, ref _frameVel, FrameTime, 4f, dt);
+            var rot = Quaternion.Euler(pitch + _climb + FramePitch * _frame, yaw, 0f);
+            var pivot = _pivot;
+            if (_frame > 0.001f)
+            {
+                var right = Quaternion.Euler(0f, yaw, 0f) * Vector3.right;
+                float side = FrameShoulder * _frame;
+                if (Physics.SphereCast(_pivot, CollisionRadius, right, out var wall, side + 0.05f, CollisionMask, QueryTriggerInteraction.Ignore))
+                    side = Mathf.Max(0f, wall.distance - 0.05f);
+                pivot = _pivot + right * side;
+            }
+            float clear = Clearance(pivot, rot * Vector3.back, want, CollisionMask, out bool thinOnly);
+            // Something between the lens and the body (not the pivot): after a short grace, come in front of it, smoothly;
+            // a large blocker the lens cannot get in front of makes the lens rise and look over it instead.
+            float seen = VisibleBoom(pivot, rot * Vector3.back, clear, target, OcclusionMask, out bool tooClose);
+            bool occluded = seen < clear - 0.05f;
+            _occludedFor = occluded ? _occludedFor + dt : 0f;
+            _bigOccludedFor = tooClose ? _bigOccludedFor + dt : 0f;
+            float goal = occluded && _occludedFor >= OcclusionGrace ? seen : clear;
+            bool solid = !thinOnly && clear < _boom - 0.02f;
+            // (the seat blend eases the boom in step with the angle: it keeps the older, quicker exponential)
+            if (seat > 0f && seat < 1f || _steerT < 1f) { _boom = Boom(_boom, goal, thinOnly || occluded, 9f, dt); _boomVel = 0f; }
+            else if (teleported) { _boom = goal; _boomVel = 0f; _climb = _climbVel = 0f; } // a teleport (a door into a room) is a cut: frame it at once
+            else _boom = BoomSpring(_boom, goal, ref _boomVel, solid, clear, dt);
+#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
+            // camera pass diagnostics: what pulls the boom in (dev builds; no positions logged)
+            if (_boom < 1.6f && Time.unscaledTime >= _diagAt)
+            {
+                _diagAt = Time.unscaledTime + 0.5f;
+                string what = "-";
+                if (Physics.SphereCast(pivot, CollisionRadius, rot * Vector3.back, out var dh, want, CollisionMask, QueryTriggerInteraction.Ignore))
+                    what = dh.collider.name + "@" + LayerMask.LayerToName(dh.collider.gameObject.layer) + " d=" + dh.distance.ToString("0.00");
+                Debug.Log($"CTLIFE [cam] close boom={_boom:0.00} want={want:0.00} clear={clear:0.00} seen={seen:0.00} occl={occluded} big={tooClose} solid={solid} thin={thinOnly} climb={_climb:0.0} hit={what}");
+            }
+#endif
+            float riseWant = _bigOccludedFor >= OcclusionGrace ? OcclusionRise : 0f;
+            _riseLift = Mathf.SmoothDamp(_riseLift, riseWant, ref _riseVel, RiseTime, 4f, dt);
             // Backed against something: rise over the head and look past it (seeing the inside of the head is not a view).
-            float lift = MaxLift * Mathf.Clamp01((CloseBoom - _boom) / (CloseBoom - 0.35f));
-            if (lift > 0f && Physics.SphereCast(_pivot, CollisionRadius, Vector3.up, out var roof, lift + 0.1f, CollisionMask, QueryTriggerInteraction.Ignore))
+            float closeLift = MaxLift * Mathf.Clamp01((CloseBoom - _boom) / (CloseBoom - 0.35f));
+            float lift = Mathf.Max(closeLift, _riseLift);
+            if (lift > 0f && Physics.SphereCast(pivot, CollisionRadius, Vector3.up, out var roof, lift + 0.1f, CollisionMask, QueryTriggerInteraction.Ignore))
                 lift = Mathf.Max(0f, roof.distance - 0.1f);
-            var position = _pivot + rot * Vector3.back * _boom + Vector3.up * lift;
-            var look = _pivot + Vector3.up * LookAbove + (rot * Vector3.forward) * (lift * 1.5f);
+            var position = pivot + rot * Vector3.back * _boom + Vector3.up * lift;
+            // never inside the player's own body: a lens closer than MinBodyDistance to the body's capsule (walking in through
+            // a door toward the lens, a tight room) rises clear of it; only if that is impossible does the body hide
+            float bodyDist = BodyDistance(position, target);
+            if (bodyDist < MinBodyDistance)
+            {
+                float up = MinBodyDistance - bodyDist + 0.05f;
+                if (Physics.SphereCast(position, CollisionRadius, Vector3.up, out var head, up + 0.05f, CollisionMask, QueryTriggerInteraction.Ignore))
+                    up = Mathf.Max(0f, head.distance - 0.05f);
+                position += Vector3.up * up;
+                bodyDist = BodyDistance(position, target);
+            }
+            // backed against a wall the lens looks past the head; rising over a blocker it keeps looking at the player
+            var look = pivot + Vector3.up * LookAbove + (rot * Vector3.forward) * (Mathf.Min(lift, closeLift) * 1.5f);
             var lookRot = Quaternion.LookRotation(look - position);
             // seated: tilt the lens up so the sitter sits in the lower third and the room fills the frame
             if (seat > 0f) lookRot = lookRot * Quaternion.Euler(-SeatLookUp * seat, 0f, 0f);
             transform.SetPositionAndRotation(position, lookRot);
             // The lift must not make a collision-shortened boom count as clear of the body again.
-            ShowTarget(_boom > HideWithin);
+            // the lens keeps clear of the body (above), so the player only hides when even that was impossible
+            ShowTarget(bodyDist > HideBodyWithin);
+        }
+
+        /// <summary>Room framing: below FrameFrom metres of clear boom it starts, at FrameFull it is complete (FramePitch degrees
+        /// steeper, FrameShoulder metres over the right shoulder), eased over FrameTime seconds.</summary>
+        public const float FrameFrom = 2.4f, FrameFull = 1.2f, FramePitch = 14f, FrameShoulder = 0.42f, FrameTime = 0.35f;
+        private float _frame, _frameVel;
+        /// <summary>Framing amount for a plain-view clearance (0 = the normal follow view, 1 = full room framing). Pure.</summary>
+        public static float RoomFraming(float clearance, float want)
+        {
+            float from = Mathf.Min(FrameFrom, want - 0.05f);
+            if (from <= FrameFull) return 0f;
+            return Mathf.Clamp01((from - clearance) / (from - FrameFull));
+        }
+
+        /// <summary>The lens keeps this far from the player's body capsule (rising if needed); closer than HideBodyWithin the body hides.</summary>
+        public const float MinBodyDistance = 0.6f, HideBodyWithin = 0.35f, BodyBottom = 0.3f, BodyTop = 1.75f;
+
+        /// <summary>Distance from a point to the player's body capsule axis (feet + BodyBottom .. feet + BodyTop). Pure.</summary>
+        public static float BodyDistance(Vector3 point, Vector3 feet)
+        {
+            float y = Mathf.Clamp(point.y, feet.y + BodyBottom, feet.y + BodyTop);
+            return Vector3.Distance(point, new Vector3(feet.x, y, feet.z));
+        }
+
+        /// <summary>
+        /// Is something big (a wall, a kiosk, the snowman: not a pole or a bench) closer than <paramref name="within"/> along
+        /// the boom? Props count when their bounds are at least BigBlockerSize across; buildings and solid ground always.
+        /// </summary>
+        public static bool BigBlocker(Vector3 pivot, Vector3 back, float within)
+        {
+            if (!Physics.SphereCast(pivot, ThinRadius, back, out var hit, within, CollisionMask | ThinMask, QueryTriggerInteraction.Ignore)) return false;
+            if (((1 << hit.collider.gameObject.layer) & CollisionMask) != 0 && ((1 << hit.collider.gameObject.layer) & ThinMask) == 0) return true;
+            var b = hit.collider.bounds.size;
+            return Mathf.Max(b.x, b.z) >= BigBlockerSize && b.y >= 1.0f;
+        }
+
+        public const float BigBlockerSize = 1.2f;
+
+        private void ResetSprings()
+        {
+            _boomVel = _riseLift = _riseVel = _occludedFor = _bigOccludedFor = _climb = _climbVel = _frame = _frameVel = 0f;
+            _pivotVel = _ahead = _aheadVel = Vector3.zero;
         }
 
         private void ShowTarget(bool show)

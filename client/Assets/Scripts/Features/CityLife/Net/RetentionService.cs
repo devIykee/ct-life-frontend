@@ -95,6 +95,7 @@ namespace CTLife.CityLife
             _writes++;
             Status = c; _statusAt = Time.realtimeSinceStartup;
             Log.Info("retention", $"claimed day {c.ClaimedDay} ${c.Claimed.CashCents / 100.0:0.00} cosmetic {c.Claimed.CosmeticKey ?? "-"} already {c.AlreadyClaimed} reset {c.Reset} freezesUsed {c.FreezesUsed}");
+            Bus.Publish(new GameplayEventSignal { kind = GameplayEvents.ChestOpen, id = "daily" });   // the first session
             StatusChanged?.Invoke();
             return c;
         }
@@ -280,6 +281,22 @@ namespace CTLife.CityLife
         /// <summary>Opens the app a `ctlife://` link names (quests, a quest's deep link, a push tap).</summary>
         public static bool Route(string link)
         {
+            if (VenueLinks.TryParse(link, out var venue))   // `venue:<id>` (a Sleuth exposé): travel there
+            {
+                Log.Info("push", "deep link " + link + " -> travel " + venue);
+                return VenueLinks.Open(link);
+            }
+            if (VenueLinks.TryParseProfile(link, out var profileId))   // `ctlife://profile/<id>`: the profile card
+            {
+                Bus.Publish(new AvatarTappedSignal { userId = profileId });
+                return true;
+            }
+            if (VenueLinks.TryParseCoin(link, out var coin))   // `ctlife://coin/<id>`: the coin in Pulse
+            {
+                if (VenueLinks.OpenCoin == null) return false;
+                VenueLinks.OpenCoin(coin);
+                return true;
+            }
             var app = DeepLinks.AppFor(link);
             if (app == null) { Log.Warn("push", "unknown deep link " + link); return true; }
             if (Opener == null || !Opener(app)) return false;

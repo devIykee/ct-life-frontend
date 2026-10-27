@@ -98,6 +98,8 @@ namespace CTLife.App
                 _overlays.Add(new CTLife.CityLife.RektBurger.RektBurgerOverlays());
                 // Season tracks + the community nods book (backend #13): the world's nods collect through it
                 _overlays.Add(new CTLife.CityLife.Season.SeasonOverlays());
+                // Rugpull Factory (backend #14): the Launchpad Tower desk prompt and the Factory service
+                _overlays.Add(new CTLife.Economy.FactoryOverlays(id => { if (_phone != null) _phone.Open(id); }));
                 CTLife.Careers.CareersApp.ExtraTopCard = CTLife.CityLife.RektBurger.RektBurgerCard.Build;
                 CTLife.CityLife.RektBurger.RektBurgerCard.CloseDuo = () => _phone?.Close();
                 CTLife.CityLife.RektBurger.PromotionCard.OpenCareer = () => { CTLife.Careers.CareersApp.OpenOnLadder = true; if (_phone != null && Alive) _phone.Open("jobs"); };
@@ -107,6 +109,11 @@ namespace CTLife.App
                 CTLife.CityLife.EventsService.Closer = () => { if (_phone != null && _phone.IsOpen) _phone.Close(); };
                 // Sleuth heat, carjacking, police pursuits and CT Jail (backend PR #17)
                 _overlays.Add(new CTLife.CityLife.Heat.HeatOverlays(ui.ModalLayer));
+                // The guided first session + the dream ladder (queue 17 + 18, backend #24)
+                CTLife.CityLife.FirstSessionOverlays.InWorld = () => _lobby == null && !_travelling && (_phone == null || !_phone.IsOpen);
+                CTLife.CityLife.FirstSessionOverlays.OpenApp = id => { if (_phone != null && Alive) _phone.Open(id); };
+                _overlays.Add(new CTLife.CityLife.FirstSessionOverlays(ui.ModalLayer));
+                SettingsApp.ReplayFirstDay = () => CTLife.CityLife.FirstSessionService.Current?.Replay();
                 _overlays.Add(new BusyOverlay(ui.ToastLayer));
                 var worldLife = new CTLife.WorldLife.WorldLifeHub();
                 _overlays.Add(worldLife);
@@ -425,6 +432,7 @@ namespace CTLife.App
             WorldLabels.IsFriend = null;
             SettingsApp.ExtraSection = null;
             CTLife.Competition.CompetitionLinks.OpenApp = null;
+            CTLife.CityLife.FirstSessionOverlays.TravelTo = null;
             // Resets the live Phase 6 state, so a second account never sees the first one's jail, invites or flags.
             CTLife.Competition.CompetitionRuntime.Unbind();
         }
@@ -447,6 +455,7 @@ namespace CTLife.App
                 await game.Wait(profile.Refresh(game.Token));
                 // Choices come first on screen; the lottery write still precedes character creation on the server.
                 _firstLobby = Onboarding.NeedsCharacter(profile.Me);
+                if (_firstLobby) CTLife.CityLife.FirstSessionService.BeganNewLife();
                 if (Onboarding.NeedsCharacter(profile.Me)) await game.Wait(CreateCharacter(game));
                 // An equipped personal character must be restored before entering the world. A failed asset load
                 // goes through the existing connection/retry flow; it is never silently replaced by a stock body.
@@ -505,6 +514,40 @@ namespace CTLife.App
                         await Awaitable.WaitForSecondsAsync(2f, game.Token);
                     }
                 });
+                // Design-system kitchen sink + device probes (dev builds only): `dsKitchen=1`
+                if (LaunchArgs.Flag("dsKitchen")) RunGameAction(game, () => CTLife.UI.DS.DsKitchenSink.Run(game.Token));
+                // Design-system McDonald's job capture (dev builds only): `rektDs=1` with `islandRoom=rekt_shift`
+                if (LaunchArgs.Flag("rektDs")) RunGameAction(game, () => CTLife.CityLife.RektBurger.RektDsRoute.Run(game.Token));
+                // Design-system GM chest capture (dev builds only): `gmChest=1`
+                if (LaunchArgs.Flag("gmChest")) RunGameAction(game, () => CTLife.CityLife.DailyChestSheet.DevRoute(game.Token));
+                // Approved names device pass (dev builds only): `namesTour=1` opens the HUD, the phone home and the main apps in turn
+                if (LaunchArgs.Flag("namesTour")) RunGameAction(game, async () =>
+                {
+                    float deadline = Time.realtimeSinceStartup + 300f;
+                    while (GameAlive(game) && (VenueSession.Current == null || !VenueSession.Current.IsActive) && Time.realtimeSinceStartup < deadline)
+                        await Awaitable.WaitForSecondsAsync(0.5f, game.Token);
+                    await Awaitable.WaitForSecondsAsync(5f, game.Token);
+                    void Mark(string m) => Debug.Log("CTLIFE [names-tour] " + m);
+                    Mark("shot hud");
+                    await Awaitable.WaitForSecondsAsync(4f, game.Token);
+                    _phone?.Open();
+                    await Awaitable.WaitForSecondsAsync(2.5f, game.Token);
+                    Mark("shot home");
+                    await Awaitable.WaitForSecondsAsync(4f, game.Token);
+                    foreach (var id in new[] { "map", "pulse", "perps", "predict", CTLife.CityLife.Casino.RugRoomApp.AppId, CTLife.CityLife.HomeShopService.AppId, "jobs", "timeline", "richlist" })
+                    {
+                        if (!GameAlive(game)) return;
+                        _phone?.Open(id);
+                        await Awaitable.WaitForSecondsAsync(3f, game.Token);
+                        Mark("shot app" + id.Replace("_", ""));
+                        await Awaitable.WaitForSecondsAsync(4f, game.Token);
+                    }
+                    _phone?.Close();
+                    Mark("done");
+                });
+                // World-feed Timeline device check (dev builds only, queue 36): `timelineRoute=1`
+                if (LaunchArgs.Flag("timelineRoute")) RunGameAction(game, () => CTLife.SocialFeatures.TimelineRoute.Run(
+                    id => { if (_phone != null) _phone.Open(id); }, () => { if (_phone != null && _phone.IsOpen) _phone.Close(); }, game.Token));
                 // Open-world device tour (dev builds only): `islandTour=timeline_square,yacht_club,...` fast-travels to each venue
                 // door in turn and stays 8 s (streaming + render check; FpsMeter logs every 5 s).
                 if (!string.IsNullOrEmpty(LaunchArgs.Get("islandTour"))) RunGameAction(game, async () =>
@@ -572,6 +615,19 @@ namespace CTLife.App
                     if (s == null || !s.IsIsland) { Log.Warn("island", "islandShot: not on CT Island"); return; }
                     await IslandWaypoints.Shot(s, LaunchArgs.Get("islandShot"), game.Token);
                 });
+                // Sign tour (dev builds only, names pass 2026-10-26): `signTour=<venueId,...|all>` frames each shell's sign board.
+                if (!string.IsNullOrEmpty(LaunchArgs.Get("signTour"))) RunGameAction(game, async () =>
+                {
+                    float deadline = Time.realtimeSinceStartup + 90f;
+                    while (GameAlive(game) && (VenueSession.Current == null || !VenueSession.Current.IsActive) && Time.realtimeSinceStartup < deadline)
+                        await Awaitable.WaitForSecondsAsync(0.5f, game.Token);
+                    await Awaitable.WaitForSecondsAsync(3f, game.Token);
+                    var s = VenueSession.Current;
+                    if (s == null || !s.IsIsland) { Log.Warn("island", "signTour: not on CT Island"); return; }
+                    if (float.TryParse(LaunchArgs.Get("signTourDist"), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var sd))
+                        IslandWaypoints.Dist = sd;
+                    await IslandWaypoints.SignTour(s, LaunchArgs.Get("signTour"), game.Token);
+                });
                 // Hitch attribution (dev builds only, perf lane 2): `hitchProbe=1` logs the marker breakdown of every frame over 50 ms.
                 if (LaunchArgs.Get("hitchProbe") == "1") PerfSegments.EnsureHitchProbe();
                 // Perf route (dev builds only): `islandPerf=1` measures the same downtown spots every run (World/Perf/PerfRoute.cs).
@@ -633,29 +689,27 @@ namespace CTLife.App
                     if (s == null || !s.IsIsland) { Log.Warn("island", "heat: not on CT Island"); return; }
                     await CTLife.CityLife.Heat.HeatRoute.Run(s, LaunchArgs.Get("heat"), () => GameAlive(game), game.Token);
                 });
-                // Tip sheet (dev builds only, backend PR #20): `tipDev=<userId>` opens the Timeline tip sheet, types $10, sends it
-                if (LaunchArgs.Get("tipDev") is string tipUser && tipUser.Length > 0) RunGameAction(game, async () =>
+                // Motion + camera quality pass (dev builds only): `motion=1` (CityLife MotionRoute)
+                if (LaunchArgs.Flag("motion")) RunGameAction(game, async () =>
                 {
-                    float deadline = Time.realtimeSinceStartup + 90f;
-                    while (GameAlive(game) && (VenueSession.Current == null || !VenueSession.Current.IsActive) && Time.realtimeSinceStartup < deadline)
+                    float deadline = Time.realtimeSinceStartup + 120f;
+                    while (GameAlive(game) && (VenueSession.Current == null || !VenueSession.Current.IsActive || _lobby != null) && Time.realtimeSinceStartup < deadline)
                         await Awaitable.WaitForSecondsAsync(0.5f, game.Token);
-                    await Awaitable.WaitForSecondsAsync(5f, game.Token);
-                    CTLife.SocialFeatures.TimelineApp.PendingTipUser = tipUser;
-                    CTLife.SocialFeatures.TimelineApp.PendingTipName = "dev peer";
-                    _phone?.Open("timeline");
+                    await Awaitable.WaitForSecondsAsync(4f, game.Token);
+                    var s = VenueSession.Current;
+                    if (s == null || !s.IsIsland) { Log.Warn("island", "motion: not on CT Island"); return; }
+                    await CTLife.CityLife.MotionRoute.Run(s, () => GameAlive(game), game.Token);
+                });
+                // The first session (dev builds only, queue 17): `first=1` plays a fresh account's first day (CityLife FirstRoute)
+                if (LaunchArgs.Flag("first")) RunGameAction(game, async () =>
+                {
+                    float deadline = Time.realtimeSinceStartup + 120f;
+                    while (GameAlive(game) && (VenueSession.Current == null || !VenueSession.Current.IsActive || _lobby != null) && Time.realtimeSinceStartup < deadline)
+                        await Awaitable.WaitForSecondsAsync(0.5f, game.Token);
                     await Awaitable.WaitForSecondsAsync(3f, game.Token);
-                    var root = UiRoot.Instance != null ? UiRoot.Instance.Root : null;
-                    var field = root?.Q<UnityEngine.UIElements.TextField>("tip-amount");
-                    if (field != null) field.value = "10";
-                    await Awaitable.WaitForSecondsAsync(1.5f, game.Token);
-                    Debug.Log("CTLIFE [bp-route] shot tip fee " + (root?.Q<UnityEngine.UIElements.Label>("tip-fee")?.text ?? "none"));
-                    await Awaitable.WaitForSecondsAsync(1.5f, game.Token);
-                    var send = root?.Q<UnityEngine.UIElements.Button>("social-tip-send");
-                    if (send != null) { using var ev = UnityEngine.UIElements.NavigationSubmitEvent.GetPooled(); ev.target = send; send.SendEvent(ev); }
-                    await Awaitable.WaitForSecondsAsync(3f, game.Token);
-                    Debug.Log("CTLIFE [bp-route] shot tip sent");
-                    await Awaitable.WaitForSecondsAsync(1.5f, game.Token);
-                    Debug.Log("CTLIFE [bp-route] done tip");
+                    var s = VenueSession.Current;
+                    if (s == null || !s.IsIsland) { Log.Warn("island", "first: not on CT Island"); return; }
+                    await CTLife.CityLife.FirstRoute.Run(s, id => { if (GameAlive(game)) _phone?.Open(id); }, () => _phone?.Close(), () => GameAlive(game), game.Token);
                 });
                 // Device feature pass (dev builds only): `integration=1 [peer=<userId>]`. The editor driver calls it directly.
                 if (LaunchArgs.Flag("integration") && !Application.isEditor) RunGameAction(game, async () =>
@@ -858,12 +912,54 @@ namespace CTLife.App
             return game.Wait(done.Task);
         }
 
+        /// <summary>Timeline coin cards (queue 36): a ticker's live coin and its card facts from the market and the Factory.</summary>
+        private static CTLife.Economy.MoneyHub _timelineHub;
+        private static readonly string[] TimelineStages = { "new", "final", "graduated" };
+
+        /// <summary>The market for Timeline cards: the shared hub (held while the game runs) pumped on read.</summary>
+        private static CTLife.Economy.MarketFeed TimelineMarket()
+        {
+            if (_timelineHub == null || _timelineHub.Disposed) _timelineHub = CTLife.Economy.MoneyHub.Current ?? CTLife.Economy.MoneyHub.Acquire();
+            if (_timelineHub == null || _timelineHub.Disposed) return null;
+            _timelineHub.Market.Pump(TimelineStages, _timelineHub.Life);
+            return _timelineHub.Market;
+        }
+
+        private static string TimelineCoinByTicker(string ticker)
+        {
+            var market = TimelineMarket();
+            if (market == null || string.IsNullOrEmpty(ticker)) return null;
+            return market.List(null).FirstOrDefault(c => string.Equals(c.Ticker, ticker, StringComparison.OrdinalIgnoreCase))?.CoinId;
+        }
+
+        private static CTLife.SocialFeatures.CoinCardInfo TimelineCoin(string coinId)
+        {
+            var c = TimelineMarket()?.Find(coinId);
+            var f = CTLife.Economy.FactoryService.Current?.Known(coinId);
+            if (c == null && f == null) return null;
+            var coin = c ?? f.Coin;
+            string art = coin.TemplateId ?? f?.TemplateId;
+            return new CTLife.SocialFeatures.CoinCardInfo
+            {
+                CoinId = coin.CoinId, Ticker = coin.Ticker, Name = coin.Name, Stage = coin.Stage,
+                McapCents = coin.McapCents, Change5mBps = coin.Change5mBps,
+                Player = coin.PlayerLaunched || f != null, Rugged = f?.RugFlagged == true,
+                Art = art != null ? CTLife.Economy.FactoryArt.Face(art) : null,
+            };
+        }
+
         private void BuildHudAndPhone(FlowLifetime game)
         {
             game.ThrowIfClosed();
             var ui = UiRoot.Instance;
             _phone?.Dispose();
             _phone = new PhoneShell(ui.PhoneLayer);
+            // `venue:<id>` server deep links (a Sleuth exposé's meta.deepLink) use the same travel as the map's Go
+            // the casino pier (backend #32 cards say `rug_room`) is not a placed venue: travel to the boardwalk's Prediction Pit door
+            VenueLinks.Travel = id => RunGameAction(game, () => Travel(game, id == "rug_room" ? "prediction_pit" : id));
+            VenueLinks.OpenCoin = id => { CTLife.Economy.PulseApp.PendingCoinNext = id; if (_phone != null && Alive) _phone.Open("pulse"); };
+            CTLife.SocialFeatures.TimelineLinks.CoinIdByTicker = TimelineCoinByTicker;
+            CTLife.SocialFeatures.TimelineLinks.Coin = TimelineCoin;
             PhoneCatalog.Register(_phone, id => RunGameAction(game, () => Travel(game, id)), () => RunGameAction(game, SignOut),
                 homeOverride: new CTLife.CityLife.CityHomeApp(() => RunGameAction(game, () => EnterOwnHome(game)),
                     () => RunGameAction(game, () => ReturnFromHome(game)),
@@ -881,6 +977,8 @@ namespace CTLife.App
             SettingsApp.ExtraSection = CTLife.Competition.XLinkPanel.Build;
             CTLife.Competition.CompetitionRuntime.Bind();
             CTLife.Competition.CompetitionLinks.OpenApp = app => _phone?.Open(app);
+            // the first shift DM (queue 17): a Trencher's tap fast-travels to the Trenches by the Rekt Burger counter
+            CTLife.CityLife.FirstSessionOverlays.TravelTo = id => { if (GameAlive(game)) RunGameAction(game, () => Travel(game, id)); };
 
             _hud?.Element.RemoveFromHierarchy();
             _hud?.Dispose();

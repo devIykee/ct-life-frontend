@@ -141,15 +141,20 @@ namespace CTLife.Solana
 
         /// <summary>
         /// Signs and submits a server-built transaction with MWA `sign_and_send_transactions` (contract section 4,
-        /// PaymentIntent.tx; section 6, paid calls). The server sends unsigned v0 transactions.
-        /// [Unverified] VersionedTransaction round-trip through the SDK's `Transaction[]` API; verify on the Seeker in
-        /// Phase 2, else fall back to the raw-bytes MWA client.
+        /// PaymentIntent.tx; section 6, paid calls; the Factory launch). Payments are unsigned v0, the Factory launch is a
+        /// legacy tx partially signed by the mint: <see cref="TxGuard"/> reads either and refuses (code TX_CHANGED, nothing
+        /// sent, logged) unless the SDK's re-serialization equals the server's bytes. A caller with a sign-only endpoint
+        /// (Factory /launch/submit) can fall back on that code; the raw-bytes MWA client is [Unverified] on the Seeker.
         /// </summary>
         public async Task<string> SignAndSendBase64(string transactionBase64, CancellationToken ct)
         {
             if (!(Web3.Wallet is SolanaWalletAdapter adapter)) throw new WalletException("No MWA session; sign in with the wallet first.");
-            var bytes = Convert.FromBase64String(transactionBase64);
-            Transaction tx = VersionedTransaction.Deserialize(bytes);
+            byte[] bytes;
+            try { bytes = Convert.FromBase64String(transactionBase64 ?? ""); }
+            catch (FormatException e) { throw new WalletException("This transaction from the server can't be read. Nothing was sent.", WalletException.TxUnreadable, e); }
+            // legacy or v0 by its header, and only if the SDK will hand the wallet these exact bytes (TxGuard)
+            Transaction tx = TxGuard.Prepare(bytes, out var format);
+            Log.Info("wallet", $"sign_and_send {format} tx, {bytes.Length} bytes, byte-exact");
             var result = await adapter.SignAndSendTransactions(new[] { tx });
             ct.ThrowIfCancellationRequested();
             switch (result)

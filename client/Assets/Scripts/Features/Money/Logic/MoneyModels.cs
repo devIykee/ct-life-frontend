@@ -14,6 +14,10 @@ namespace CTLife.Economy
         public long PriceMicros, McapCents, Vol5mCents;
         public int Change5mBps, Holders;
         public long? LaunchedAtMs;
+        /// <summary>A Rugpull Factory coin (market room `CoinState.playerLaunched`, or a /factory/coins row).</summary>
+        public bool PlayerLaunched;
+        /// <summary>The Factory art id (rf_*); null for house coins.</summary>
+        public string TemplateId;
     }
 
     public sealed class CoinPage
@@ -200,7 +204,18 @@ namespace CTLife.Economy
                 Change5mBps = (int)Wire.LongOr(c["change5mBps"], 0),
                 Holders = (int)Wire.LongOr(c["holders"], 0),
                 LaunchedAtMs = SafeTime(c["launchedAt"]),
+                PlayerLaunched = c["playerLaunched"]?.Type == JTokenType.Boolean && (bool)c["playerLaunched"],
+                TemplateId = TemplateIdOrNull(c["templateId"]),
             };
+        }
+
+        /// <summary>A Factory art id (`rf_` + lower-case letters/digits/underscores, at most 32 chars) or null.</summary>
+        public static string TemplateIdOrNull(JToken t)
+        {
+            var s = Wire.Str(t);
+            if (string.IsNullOrEmpty(s) || s.Length > 32 || !s.StartsWith("rf_", StringComparison.Ordinal)) return null;
+            foreach (var ch in s) if (!(ch >= 'a' && ch <= 'z' || ch >= '0' && ch <= '9' || ch == '_')) return null;
+            return s;
         }
 
         public static CoinPage Coins(JToken t)
@@ -220,9 +235,14 @@ namespace CTLife.Economy
         /// `candles1m: [{at, priceMicros}]`, `topHolders: [{alias, units}]`, `riskHint: {level, reason?}`.
         /// A price point becomes a flat candle (open = high = low = close) for the chart.
         /// </summary>
-        public static CoinDetail Detail(JToken t)
+        public static CoinDetail Detail(JToken t) => DetailOf(Coin(t?["coin"]), t);
+
+        /// <summary>A detail whose coin fields sit at the top level (`GET /factory/coins/{id}`), not under `coin`.</summary>
+        public static CoinDetail DetailFlat(JToken t) => DetailOf(Coin(t), t);
+
+        private static CoinDetail DetailOf(MarketCoin coin, JToken t)
         {
-            var d = new CoinDetail { Coin = Coin(t?["coin"]) };
+            var d = new CoinDetail { Coin = coin };
             if (t["candles1m"] is JArray candles)
                 foreach (var k in candles)
                 {

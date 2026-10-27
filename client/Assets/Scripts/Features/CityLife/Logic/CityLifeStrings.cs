@@ -1,3 +1,4 @@
+using CTLife.Core;
 using System.Collections.Generic;
 using System.Globalization;
 
@@ -382,7 +383,7 @@ namespace CTLife.CityLife
             ["app.biz"] = "Business",
         };
 
-        public static string T(string key) => key != null && En.TryGetValue(key, out var v) ? v : key;
+        public static string T(string key) => key != null && En.TryGetValue(key, out var v) ? NameTable.Apply(v) : key;
 
         public static string F(string key, params object[] args)
         {

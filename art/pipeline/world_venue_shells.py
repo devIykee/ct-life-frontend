@@ -25,6 +25,7 @@ Output: art/processed/world_v3/v3_venues/<venue>.json  {"parts": {side: {"v": [.
 Run: art/pipeline/blender.sh art/pipeline/world_venue_shells.py [-- venue ...] [--sheet <png>]
 """
 import json, math, os, sys
+import re
 import bpy, bmesh
 from mathutils import Vector
 
@@ -309,7 +310,8 @@ def perp_pit(v):
     T.box(x0 + 0.5, x1 - 0.5, h - 0.4, h + 0.2, z0 + 0.6, z1 - 0.5, 'concrete')
     T.box(-8.0, -3.0, h + 0.2, h + 1.6, 1.0, 6.0, 'alu')
     T.box(3.0, 9.0, h + 0.2, h + 1.2, -3.0, 2.0, 'alu')
-    return dict(parts=[F, B, L, R, T], sign=None)
+    # the name board clears the portal's top beam (names pass 2026-10-27: the beam hid the lower half of the letters)
+    return dict(parts=[F, B, L, R, T], sign=dict(y=dh + 1.0, z=z0 - 0.15, w=8.0))
 
 
 def hackathon_house(v):
@@ -613,7 +615,8 @@ def rekt_clinic(v):
     F.box(c - 0.9, c + 0.9, h + 0.7, h + 1.3, z0 - 0.32, z0 - 0.25, 'accent:d83a3a')
     F.box(c - 0.3, c + 0.3, h + 0.1, h + 1.9, z0 - 0.32, z0 - 0.25, 'accent:d83a3a')
     roof_plant(Pt['roof'], h, [(-6, -2, 1, 5, 1.2, 'alu')])
-    return dict(parts=list(Pt.values()), sign=None)
+    # the name board stands above the canopy (it sat behind it: only a strip showed from the street)
+    return dict(parts=list(Pt.values()), sign=dict(y=dh + 0.95, z=z0 - 0.15, w=7.5))
 
 
 def audit_row(v):
@@ -759,26 +762,30 @@ def glass_tower(v, fh=3.6, spandrel='steel', mframe='steel', pier='alu', fins=No
 def launchpad_tower(v):
     """Launchpad Tower: a tall glass tower striped with orange launch fins, a white crown and a launch mast on the roof."""
     Pt = glass_tower(v, fh=3.6, spandrel='steel:2b2f36', fins='accent:ef6a2a', fin_every=3.4, crown='alu', mast='accent:ef6a2a', pier='alu')
-    return dict(parts=list(Pt.values()), sign=None)
+    x0, x1, z0, z1, h, dw, dh = frame(v)
+    return dict(parts=list(Pt.values()), sign=dict(y=dh + 1.0, z=z0 - 0.8, w=7.5))   # above the canopy, in front of the fins
 
 
 def discord_heights(v):
     """Discord Heights: a glass block with blurple spandrel bands and a white crown."""
     Pt = glass_tower(v, fh=3.4, spandrel='accent:5865f2', crown='alu', pier='steel:2b2f36', glass='glass')
-    return dict(parts=list(Pt.values()), sign=None)
+    x0, x1, z0, z1, h, dw, dh = frame(v)
+    return dict(parts=list(Pt.values()), sign=dict(y=dh + 1.0, z=z0 - 0.8, w=7.5))   # above the canopy, in front of the fins
 
 
 def vc_row(v):
     """VC Row: a glass office with warm timber fins and a dark crown (the money in the timber)."""
     Pt = glass_tower(v, fh=3.8, spandrel='steel:30343a', fins='wood_post', fin_every=1.5, crown='steel:30343a', pier='steel:30343a')
-    return dict(parts=list(Pt.values()), sign=None)
+    x0, x1, z0, z1, h, dw, dh = frame(v)
+    return dict(parts=list(Pt.values()), sign=dict(y=dh + 1.0, z=z0 - 0.8, w=7.5))   # above the canopy, in front of the fins
 
 
 def cabal_lounge(v):
     """Cabal Lounge: smoked dark glass in gold frames, gold fins, a gold-edged canopy - discreet, expensive."""
     Pt = glass_tower(v, fh=4.6, spandrel='steel:1a1a1f', mframe='alu:c9a24a', fins='alu:c9a24a', fin_every=2.2, crown='steel:1a1a1f',
                      pier='steel:1a1a1f', canopy='alu:c9a24a', glass='glass:5c5a66')
-    return dict(parts=list(Pt.values()), sign=None)
+    x0, x1, z0, z1, h, dw, dh = frame(v)
+    return dict(parts=list(Pt.values()), sign=dict(y=dh + 1.0, z=z0 - 0.8, w=7.5))   # above the canopy, in front of the fins
 
 
 def sybil_barn(v):
@@ -952,7 +959,8 @@ def ratio_arena(v):
 def superteam_hq(v):
     """Builder HQ: a slim glass tower, violet spandrels and gold fins, a white crown (the bunting hangs from it)."""
     Pt = glass_tower(v, fh=3.6, spandrel='accent:5a3fd0', fins='alu:e8a21a', fin_every=2.6, crown='alu', pier='steel:2b2f36')
-    return dict(parts=list(Pt.values()), sign=None)
+    x0, x1, z0, z1, h, dw, dh = frame(v)
+    return dict(parts=list(Pt.values()), sign=dict(y=3.4, z=z0 - 0.8, w=7.5))   # in front of the gold fins (they cut the letters)
 
 
 def jupiter_observatory(v):
@@ -1086,6 +1094,26 @@ def rug_room(v):
     return dict(parts=[F, B, L, R, T], sign=dict(y=4.6, z=tz - 0.06, w=6.0), neon=neon)
 
 
+def svg_path_points(d, per_curve=12):
+    """Points along an SVG path made of absolute M / L / C commands (the brand marks in contract/ids/brands.json)."""
+    toks = re.findall(r'[MLC]|-?[0-9.]+', d)
+    pts, cur, i, cmd = [], None, 0, None
+    while i < len(toks):
+        if toks[i] in 'MLC':
+            cmd = toks[i]; i += 1
+        if cmd == 'M':
+            cur = (float(toks[i]), float(toks[i + 1])); i += 2; pts.append(cur); cmd = 'L'
+        elif cmd == 'L':
+            cur = (float(toks[i]), float(toks[i + 1])); i += 2; pts.append(cur)
+        elif cmd == 'C':
+            c1 = (float(toks[i]), float(toks[i + 1])); c2 = (float(toks[i + 2]), float(toks[i + 3])); e = (float(toks[i + 4]), float(toks[i + 5])); i += 6
+            for k in range(1, per_curve + 1):
+                t = k / per_curve; mt = 1 - t
+                pts.append(tuple(mt ** 3 * cur[j] + 3 * mt * mt * t * c1[j] + 3 * mt * t * t * c2[j] + t ** 3 * e[j] for j in range(2)))
+            cur = e
+    return pts
+
+
 def rekt_burger(v):
     """Rekt Burger (2026-10-25): the parody fast-food fallback job's restaurant on the Coast Highway in The Trenches. A
     modern drive-to burger joint: charcoal composite panels on a concrete plinth, a full-width dark-glass storefront with
@@ -1097,7 +1125,11 @@ def rekt_burger(v):
     Pt = venue_parts()
     F, B, L, R, T = Pt['front'], Pt['back'], Pt['left'], Pt['right'], Pt['roof']
     t, base = 0.35, -0.6
-    coal, frame_, orange, mint, glass, plinth = 'plaster:2a2d34', 'alu:1c1e22', 'accent:ff6a2b', 'accent:38e0a2', 'glass', 'concrete'
+    # the brand's colours from the brand table (contract/ids/brands.json; user decision 2026-10-26: McDonald's branded):
+    # yellow where the orange was, red where the mint was; the dark composite panels stay (a modern store)
+    br = json.load(open(os.path.join(HERE, '..', '..', 'contract', 'ids', 'brands.json')))['brands']['brand.mcdonalds']
+    coal, frame_, glass, plinth = 'plaster:2a2d34', 'alu:1c1e22', 'glass', 'concrete'
+    orange, mint = 'accent:' + br['colors']['yellow'][1:].lower(), 'accent:' + br['colors']['red'][1:].lower()
     neon = []
 
     def tube(p, q, col, w=0.08, out=-0.06):
@@ -1152,6 +1184,21 @@ def rekt_burger(v):
     # ---- the fascia above the canopy carries the board (sign): a black frame round it
     F.box(-4.0, 4.0, 3.9, 6.0, z0 - 0.12, z0, frame_)
     tube((-4.0, 3.95, z0 - 0.12), (4.0, 3.95, z0 - 0.12), 'orange', w=0.05, out=-0.03)
+    # ---- the pylon by the road: a pole carrying a red panel with the brand mark (brands.json 'mark', its SVG path traced
+    # in yellow beams through the panel, so both faces show it); the panel faces along the road
+    px, pz, ptop = x0 - 2.6, z0 - 3.0, h + 6.5     # off the building's front-left corner, clear of the storefront
+    F.box(px - 0.22, px + 0.22, base, ptop - 2.6, pz - 0.22, pz + 0.22, 'steel:2b2f36')
+    pw, ph_ = 3.2, 2.7
+    F.box(px - 0.12, px + 0.12, ptop - ph_, ptop, pz - pw / 2, pz + pw / 2, mint)
+    F.box(px - 0.16, px + 0.16, ptop - ph_ - 0.12, ptop - ph_, pz - pw / 2 - 0.05, pz + pw / 2 + 0.05, frame_)
+    svg = open(os.path.join(HERE, '..', '..', br['mark'])).read()
+    vb = [float(t) for t in re.search(r'viewBox="([^"]+)"', svg).group(1).split()]
+    sw = float(re.search(r'stroke-width="([0-9.]+)"', svg).group(1))
+    pts = svg_path_points(re.search(r' d="([^"]+)"', svg).group(1), 14)
+    k = (pw - 0.5) / vb[2]
+    to3 = lambda u, w_: (px, ptop - 0.2 - (w_ - vb[1]) * k, pz + (u - vb[0] - vb[2] / 2) * k)
+    for (u0, w0), (u1, w1) in zip(pts[:-1], pts[1:]):
+        F.beam(to3(u0, w0), to3(u1, w1), sw * k, 0.4, orange, up=(1, 0, 0))
     # ---- the roof: slab and plant
     T.box(x0 + t, x1 - t, h - 0.35, h + 0.12, z0 + t, z1 - t, 'concrete')
     roof_plant(T, h, [(-4.5, -2.0, 2.0, 4.5, 1.2, 'steel'), (1.0, 3.5, 3.0, 5.0, 0.9, 'alu'), (-1.0, 0.6, -3.0, -1.5, 0.7, 'steel')])

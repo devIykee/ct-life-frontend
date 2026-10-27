@@ -34,11 +34,17 @@ def part_obj(part, tier):
 def assemble(look, tier):
     objs = []
     hides = S.hides_for(look) | set(look.get('hide_regions', []))
+    tmap = (look.get('tier_map') or {}).get(tier, {})
     for part in S.resolved_parts(look):
-        src = part_obj(part, tier)
+        src = part_obj(part, tmap.get(part, tier))
         if src is None:
             raise RuntimeError(f'missing part {part} {tier}')
         o = duplicate(src, f'__{look["id"]}_{part}_{tier}')
+        off = (look.get('part_offset') or {}).get(part)
+        if off:   # (dx, dy, dz, scale): e.g. the crew cap lifted off the brows, a touch larger so the crown never pokes out
+            co = np.empty(len(o.data.vertices) * 3, np.float32); o.data.vertices.foreach_get('co', co); co = co.reshape(-1, 3)
+            c = co.mean(axis=0); co = (co - c) * off[3] + c + np.array(off[:3], np.float32)
+            o.data.vertices.foreach_set('co', co.ravel()); o.data.update()
         o.parent = rig
         hid_b = {REGION[h] for h in ('waist', 'hip') if h in hides}
         if part.startswith('bottom') and hid_b:
@@ -65,8 +71,9 @@ def assemble(look, tier):
         o.modifiers.new('Game skin', 'ARMATURE').object = rig
     # body type / face morphs (functions of rest position + weights; skeleton untouched)
     M.apply(o, look, meta, BONES)
-    if tri_count(o) > CAPS[tier]:
-        fit_budget(o, CAPS[tier] - 12)
+    cap = (look.get('caps') or {}).get(tier, CAPS[tier])
+    if tri_count(o) > cap:
+        fit_budget(o, cap - 12)
     limit_weights(o, BONES, MAX_INFL[tier])
     for name in [a.name for a in o.data.attributes if a.name in ('Col', 'SSS', 'Viewport', 'Rain', 'Reflections', 'iris', 'Mask', 'source_part_id', 'crease_edge', 'bevel_weight_edge', 'face_maps')]:
         o.data.attributes.remove(o.data.attributes[name])
@@ -166,7 +173,7 @@ for look in looks:
         o.data.materials.clear(); o.data.materials.append(mat)
         tris = tri_count(o)
         mi = max_influences(o)
-        assert tris <= CAPS[tier], (lid, tier, tris)
+        assert tris <= (look.get('caps') or {}).get(tier, CAPS[tier]), (lid, tier, tris)
         assert mi <= MAX_INFL[tier], (lid, tier, mi)
         objs[tier] = o
         info[tier] = {'triangles': tris, 'vertices': len(o.data.vertices), 'max_influences': mi}

@@ -11,7 +11,8 @@ namespace CTLife.World
     /// - Hands: resting on the table top when seated at a table (not while typing, which is authored).
     /// - Seated feet: on IK-goal seated states (Codex's café fits, typing), soles that would sink under the floor are lifted;
     ///   on the fitted seat-height blends, the pose's measured soles go onto the real surface (rugs, trims) or a stool's bar.
-    /// Cost: ≤4 raycasts per character per frame (feet), attention re-picked every 0.3 s; disabled beyond LOD0.
+    /// Cost: ≤4 raycasts per character per frame (feet), attention re-picked every 0.3 s; disabled beyond LOD0 (on the Low
+    /// graphics tier: the local player and the nearest QualityTier.LowIkAvatars only).
     /// </summary>
     [RequireComponent(typeof(Animator))]
     public sealed class CharacterIK : MonoBehaviour
@@ -46,7 +47,8 @@ namespace CTLife.World
             _view = GetComponentInParent<AvatarView>();
         }
 
-        private bool Allowed => Enabled && _view != null && _view.Animator == _animator && !_view.Culled && _view.LodTier == 0 && !_view.Suppressed;
+        private bool Allowed => Enabled && _view != null && _view.Animator == _animator && !_view.Culled && _view.LodTier == 0 && !_view.Suppressed
+            && (_view.isLocal || !CTLife.Core.QualityTier.IsLow || !CTLife.Core.QualityTier.CpuPass || _view.CrowdRank < CTLife.Core.QualityTier.LowIkAvatars);
 
         /// <summary>The animated body (centre of mass) position of the last IK pass: readable only inside the pass.</summary>
         public Vector3 BodyPosition { get; private set; }

@@ -38,3 +38,82 @@
 .ob-lottery .ob-origin-value--home { -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); font-size: 26px; white-space: normal; }
 .ob-lottery .ob-origin-value--debt { font-size: 48px; }
 .ob-lottery .ob-origin-note { position: absolute; left: 0; right: 0; top: 116px; -unity-font-definition: url("Fonts/Manrope-Semibold.ttf"); font-size: 18px; margin: 0; white-space: normal; }
+
+/* the dream ladder strip (queue 18, W1): in the free band above the perk rule, in the card's ink. The title on its own
+   line at the label size; the rungs at the body size with the start rung as a yellow pill. Fades in after the coin burst. */
+.ob-lottery .ob-ladder {
+    position: absolute; left: 26px; right: 46px; top: 330px; margin: 0; flex-direction: column; align-items: flex-start;
+    transition-property: opacity; transition-duration: 0.35s;
+}
+.ob-lottery .ob-ladder-title { color: rgb(58, 20, 64); font-size: 22px; letter-spacing: 1px; margin: 0 0 6px 0; }
+.ob-lottery .ob-ladder-row { flex-wrap: nowrap; }
+.ob-lottery .ob-ladder-rung { margin-right: 8px; padding: 4px 6px; border-radius: 16px; }
+.ob-lottery .ob-ladder-name { color: rgb(128, 108, 150); font-size: 26px; }
+.ob-lottery .ob-ladder-dot { width: 14px; height: 14px; border-radius: 7px; border-color: rgb(170, 150, 190); background-color: rgb(255, 255, 255); }
+.ob-lottery .ob-ladder-rung--below .ob-ladder-dot { background-color: rgb(170, 150, 190); }
+.ob-lottery .ob-ladder-rung--here { padding: 4px 12px; background-color: rgb(255, 210, 63); border-width: 2px; border-color: rgb(58, 20, 64); }
+.ob-lottery .ob-ladder-rung--here .ob-ladder-dot { border-color: rgb(58, 20, 64); background-color: rgb(58, 20, 64); }
+.ob-lottery .ob-ladder-rung--here .ob-ladder-name { color: rgb(58, 20, 64); }
+.ob-lottery .ob-ladder-dream .ob-ladder-dot { border-color: rgb(140, 90, 230); border-radius: 3px; }
+.ob-lottery .ob-ladder-dream .ob-ladder-name { color: rgb(140, 90, 230); }
+
+/* ------------------------------------------------------------------ design system v2 (2026-10-27): the result card
+   The painted surface is hidden; the card is a v2 tactile frame, the outcome art (its painted rim cropped off) on the left,
+   the live details in v2 type, a pill, recessed tiles, a well row for the perk and a segmented ladder on the right.
+   Colours and fonts come from the design system tokens (var(--ds-*)). */
+.ob-lottery .ob-card--wide.ob-card--v2 {
+    background-color: var(--ds-frame); border-radius: 44px; border-width: 0; border-top-width: 4px; border-bottom-width: 10px;
+    border-color: var(--ds-frame-base); border-top-color: var(--ds-frame-hi); padding: 30px 40px 30px 30px; overflow: hidden;
+}
+.ob-lottery .ob-card--v2 > .ob-origin-surface, .ob-lottery .ob-card--v2 > .ob-card-glow, .ob-lottery .ob-card--v2 > .ob-card-ribbon { display: none; }
+.ob-lottery .ob-card--v2 .ob-origin-portrait { max-height: 690px; border-radius: 32px; overflow: hidden; margin-right: 40px; }
+.ob-lottery .ob-card--v2 .ob-card-art { left: -10%; right: -10%; top: -7%; bottom: -7%; }
+.ob-lottery .ob-card--v2 .ob-origin-info { flex-grow: 1; flex-shrink: 1; height: auto; justify-content: flex-start; }
+.ob-lottery .ob-card--v2 .ob-origin-head, .ob-lottery .ob-card--v2 .ob-ladder, .ob-lottery .ob-card--v2 .ob-origin-perk,
+.ob-lottery .ob-card--v2 .ob-origin-benefits, .ob-lottery .ob-card--v2 .ob-origin-note { position: relative; left: auto; right: auto; top: auto; }
+.ob-lottery .ob-card--v2 .ob-origin-head { margin-top: 6px; }
+.ob-lottery .ob-card--v2 .ob-origin-top { flex-direction: row; align-items: center; min-height: 0; margin-bottom: 12px; }
+.ob-lottery .ob-card--v2 .ob-origin-rarity {
+    font-size: 24px; letter-spacing: 0.5px; padding: 6px 18px; border-radius: 22px; color: var(--ds-ink-2); background-color: var(--ds-tile);
+    -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); margin: 0;
+}
+.ob-lottery .ob-card--v2.ob-card--rare .ob-origin-rarity { color: var(--ds-warn-ink); background-color: var(--ds-warn-tint); }
+.ob-lottery .ob-card--v2.ob-card--seeker .ob-origin-rarity { color: var(--ds-accent-ink); background-color: var(--ds-accent-tint); }
+.ob-lottery .ob-card--v2 .ob-origin-chance { font-size: 26px; color: var(--ds-ink-3); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); margin: 0 0 0 14px; }
+.ob-lottery .ob-card--v2 .ob-origin-alias { font-size: 26px; color: var(--ds-ink-3); -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); margin: 0; }
+.ob-lottery .ob-card--v2 .ob-origin-name {
+    font-size: 78px; color: var(--ds-ink); -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); letter-spacing: 0.5px;
+    text-shadow: 0 4px 0 var(--ds-title-drop); margin: 0; -unity-text-outline-width: 0;
+}
+.ob-lottery .ob-card--v2 .ob-origin-line { font-size: 30px; color: var(--ds-ink-2); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); margin: 4px 0 0 0; }
+/* the dream ladder: five segments, lit up to the start rung, names under them */
+.ob-lottery .ob-card--v2 .ob-ladder { margin: 22px 0 0 0; align-items: stretch; }
+.ob-lottery .ob-card--v2 .ob-ladder-title { font-size: 22px; letter-spacing: 1.4px; color: var(--ds-ink-3); -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); margin: 0 0 10px 0; }
+.ob-lottery .ob-card--v2 .ob-ladder-row { flex-direction: row; }
+.ob-lottery .ob-card--v2 .ob-ladder-rung { flex-grow: 1; flex-basis: 0; flex-direction: column; align-items: stretch; margin: 0 4px; padding: 0; border-width: 0; border-radius: 0; background-color: var(--ds-clear); }
+.ob-lottery .ob-card--v2 .ob-ladder-dot { width: auto; height: 16px; border-radius: 8px; border-width: 0; border-top-width: 3px; border-top-color: var(--ds-track-top); background-color: var(--ds-track); }
+.ob-lottery .ob-card--v2 .ob-ladder-rung--below .ob-ladder-dot, .ob-lottery .ob-card--v2 .ob-ladder-rung--here .ob-ladder-dot {
+    background-color: var(--ds-accent); border-top-color: var(--ds-accent); border-bottom-width: 3px; border-bottom-color: var(--ds-accent-depth);
+}
+.ob-lottery .ob-card--v2 .ob-ladder-name { font-size: 22px; color: var(--ds-ink-3); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); -unity-text-align: upper-center; white-space: normal; margin: 8px 0 0 0; }
+.ob-lottery .ob-card--v2 .ob-ladder-rung--here .ob-ladder-name { color: var(--ds-accent-ink); -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); }
+.ob-lottery .ob-card--v2 .ob-ladder-dream .ob-ladder-dot { border-radius: 8px; border-color: var(--ds-track-top); }
+.ob-lottery .ob-card--v2 .ob-ladder-dream .ob-ladder-name { color: var(--ds-ink-3); }
+/* the perk: one well row */
+.ob-lottery .ob-card--v2 .ob-origin-perk {
+    margin: 22px 0 0 0; padding: 16px 24px 18px 24px; border-radius: 24px; background-color: var(--ds-well);
+    border-bottom-width: 6px; border-bottom-color: var(--ds-well-base); font-size: 28px; color: var(--ds-ink); -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf");
+}
+/* starting cash / home / debt: recessed tiles */
+.ob-lottery .ob-card--v2 .ob-origin-benefits { margin: 20px 0 0 0; }
+.ob-lottery .ob-card--v2 .ob-origin-stats { flex-direction: row; align-items: stretch; }
+.ob-lottery .ob-card--v2 .ob-origin-stat {
+    flex-grow: 1; flex-basis: 0; width: auto; min-width: 0; margin-right: 16px; padding: 12px 22px 14px 22px; border-radius: 24px; background-color: var(--ds-tile);
+    border-top-width: 4px; border-bottom-width: 3px; border-top-color: var(--ds-tile-top); border-bottom-color: var(--ds-tile-bottom);
+}
+.ob-lottery .ob-card--v2 .ob-origin-stat--debt { margin-right: 0; }
+.ob-lottery .ob-card--v2 .ob-origin-label { font-size: 20px; letter-spacing: 1.4px; color: var(--ds-ink-3); -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); margin: 0; }
+.ob-lottery .ob-card--v2 .ob-origin-value { font-size: 52px; color: var(--ds-ink); -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); margin: 4px 0 0 0; -unity-text-outline-width: 0; }
+.ob-lottery .ob-card--v2 .ob-origin-value--home { font-size: 34px; white-space: normal; }
+.ob-lottery .ob-card--v2 .ob-origin-value--debt { color: var(--ds-danger-ink); }
+.ob-lottery .ob-card--v2 .ob-origin-note { font-size: 20px; color: var(--ds-ink-3); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); margin: 12px 0 0 0; }

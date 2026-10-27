@@ -185,11 +185,10 @@ namespace CTLife.CityLife.Casino
         }
     }
 
+    /// <summary>A head-to-head coinflip (backend #25): bragging rights, no Cash. The challenge has no stake, pot, cut or payout.</summary>
     public sealed class CasinoChallenge
     {
         public string ChallengeId, Role, ChallengerId, ChallengerAlias, OpponentId, OpponentAlias, ChallengerSide, Status, SeedHash, Seed, Result, WinnerId;
-        public long StakeCents;
-        public long? PotCents, HouseCutCents, PayoutCents;
         public long CreatedAtMs, ExpiresAtMs;
         public long? SettledAtMs;
 
@@ -214,16 +213,12 @@ namespace CTLife.CityLife.Casino
                 ChallengerAlias = CityWire.Plain(t["challengerAlias"], 24),
                 OpponentId = CityWire.Str(t["opponentId"]) ?? "",
                 OpponentAlias = CityWire.Plain(t["opponentAlias"], 24),
-                StakeCents = CityWire.LongOr(t["stakeCents"], 0),
                 ChallengerSide = CityWire.Str(t["challengerSide"]) ?? CasinoGames.Heads,
                 Status = CityWire.Str(t["status"]) ?? "open",
                 SeedHash = CityWire.Str(t["seedHash"]) ?? "",
                 Seed = CityWire.Str(t["seed"]),
                 Result = CityWire.Str(t["result"]),
                 WinnerId = CityWire.Str(t["winnerId"]),
-                PotCents = CityWire.OptLong(t["potCents"]),
-                HouseCutCents = CityWire.OptLong(t["houseCutCents"]),
-                PayoutCents = CityWire.OptLong(t["payoutCents"]),
                 CreatedAtMs = CityWire.TimeMsOrNull(t["createdAt"]) ?? 0,
                 ExpiresAtMs = CityWire.TimeMsOrNull(t["expiresAt"]) ?? 0,
                 SettledAtMs = CityWire.TimeMsOrNull(t["settledAt"]),
@@ -245,7 +240,7 @@ namespace CTLife.CityLife.Casino
     public sealed class CasinoChallengeReply : CasinoMeta
     {
         public CasinoChallenge Challenge;
-        public CasinoRound Round;   // accept only: the caller's round
+        /// <summary>The caller's Cash, unchanged by a head-to-head (no round, no ledger row).</summary>
         public long CashCents;
 
         public static CasinoChallengeReply Parse(JToken t)
@@ -253,7 +248,6 @@ namespace CTLife.CityLife.Casino
             var r = new CasinoChallengeReply();
             r.ReadMeta(t);
             r.Challenge = CasinoChallenge.Parse(t?["challenge"]);
-            if (t?["round"] is JObject ro) r.Round = CasinoRound.Parse(ro);
             r.CashCents = CityWire.LongOr(t?["cashCents"], -1);
             return r;
         }

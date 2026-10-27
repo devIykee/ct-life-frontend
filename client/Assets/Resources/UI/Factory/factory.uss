@@ -1,0 +1,157 @@
+/* Rugpull Factory (backend #14), approved brief ct-life-evidence/factory-r5/ui-refs/BRIEF.md (2026-10-26).
+   Venue skin = the HUD's: plum glass rgba(20,6,44,0.90), rim rgba(255,255,255,0.14) 3 px, outline plum rgb(42,11,74),
+   green rgb(61,220,132) money, yellow rgb(255,210,63) attention + stars, red rgb(255,59,92) rug/danger.
+   LilitaOne numbers and titles, Inter Bold/SemiBold labels. Panel px on the 2400 x 1080 landscape reference.
+   Low-end rules: no blur, no full-screen scrim, animate opacity/translate/scale only. */
+
+/* ------------------------------------------------------------------ the launch sheet (right side, world on the left) */
+.rf-sheet {
+    position: absolute; right: 28px; top: 22px; bottom: 22px; width: 1000px; padding: 0;
+    border-radius: 36px; border-width: 3px; border-color: rgba(255,255,255,0.14); background-color: rgba(20,6,44,0.90);
+    translate: 1040px 0; opacity: 0; transition-property: translate, opacity; transition-duration: 0.22s; transition-timing-function: ease-out-cubic;
+}
+.rf-sheet.rf-in { translate: 0 0; opacity: 1; }
+.rf-sheet Label { color: rgb(255,255,255); -unity-font-definition: url("../Fonts/Phone/Inter-SemiBold.ttf"); margin: 0; padding: 0; }
+.rf-head { flex-direction: row; align-items: center; height: 96px; padding: 0 28px 0 18px; border-bottom-width: 2px; border-color: rgba(255,255,255,0.10); }
+.rf-back { width: 64px; height: 64px; border-radius: 32px; border-width: 0; background-color: rgba(255,255,255,0.10); align-items: center; justify-content: center; margin: 0 14px 0 0; padding: 0; }
+.rf-back .ct-icon { width: 30px; height: 30px; -unity-background-image-tint-color: rgb(255,255,255); }
+.rf-sheet .rf-title { flex-grow: 1; font-size: 34px; -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); letter-spacing: 1px; }
+.rf-sheet .rf-cash { font-size: 30px; color: rgb(61,220,132); -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); -unity-text-outline-width: 1px; -unity-text-outline-color: rgb(42,11,74); }
+.rf-rail { flex-direction: row; align-items: center; justify-content: center; height: 64px; }
+.rf-step { flex-direction: row; align-items: center; opacity: 0.5; }
+.rf-step--on, .rf-step--done { opacity: 1; }
+.rf-step-n { width: 34px; height: 34px; border-radius: 17px; background-color: rgba(255,255,255,0.16); align-items: center; justify-content: center; margin-right: 10px; }
+.rf-step--on .rf-step-n { background-color: rgb(255,210,63); }
+.rf-step--done .rf-step-n { background-color: rgb(61,220,132); }
+.rf-sheet .rf-step-n Label { font-size: 18px; color: rgb(20,6,44); -unity-font-definition: url("../Fonts/Phone/Inter-Bold.ttf"); -unity-text-align: middle-center; }
+.rf-sheet .rf-step-label { font-size: 20px; letter-spacing: 3px; -unity-font-definition: url("../Fonts/Phone/Inter-Bold.ttf"); }
+.rf-step-line { width: 70px; height: 3px; margin: 0 16px; background-color: rgba(255,255,255,0.18); }
+.rf-step-line--done { background-color: rgb(61,220,132); }
+.rf-body { flex-grow: 1; padding: 18px 40px 0 40px; }
+.rf-foot { flex-direction: row; align-items: center; justify-content: flex-end; height: 120px; padding: 0 40px; }
+.rf-sheet .rf-foot-note { flex-grow: 1; font-size: 20px; color: rgba(255,255,255,0.72); white-space: normal; }
+.rf-next { height: 72px; min-width: 260px; padding: 0 40px; margin: 0; border-radius: 36px; border-width: 0; background-color: rgb(61,220,132); }
+.rf-sheet .rf-next Label, .rf-next { color: rgb(20,6,44); font-size: 30px; -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); -unity-text-align: middle-center; }
+.rf-next:disabled { opacity: 0.45; }
+
+/* ART: 4 x 3 tiles */
+.rf-grid { flex-direction: row; flex-wrap: wrap; justify-content: center; }
+.rf-tile {
+    width: 176px; height: 176px; margin: 10px; border-radius: 28px; border-width: 3px; border-color: rgba(255,255,255,0.14);
+    background-color: rgba(255,255,255,0.06); align-items: center; justify-content: center; padding: 0;
+    transition-property: scale; transition-duration: 0.1s;
+}
+.rf-tile:active { scale: 0.95 0.95; }
+.rf-tile--on { border-width: 4px; border-color: rgb(255,210,63); background-color: rgba(255,210,63,0.12); }
+.rf-tile-art { width: 112px; height: 112px; -unity-background-scale-mode: scale-to-fit; }
+.rf-sheet .rf-tile-name { font-size: 17px; letter-spacing: 2px; color: rgba(255,255,255,0.8); margin-top: 6px; -unity-font-definition: url("../Fonts/Phone/Inter-Bold.ttf"); }
+
+/* NAME: fields at the top so the landscape keyboard can't cover them */
+.rf-field-head { flex-direction: row; justify-content: space-between; margin: 8px 0 8px 0; }
+.rf-sheet .rf-label { font-size: 17px; letter-spacing: 3px; color: rgba(255,255,255,0.8); -unity-font-definition: url("../Fonts/Phone/Inter-Bold.ttf"); }
+.rf-sheet .rf-count { font-size: 17px; color: rgba(255,255,255,0.6); -unity-font-definition: url("../Fonts/Phone/Inter-Bold.ttf"); }
+.rf-input-row { flex-direction: row; align-items: center; height: 84px; border-radius: 20px; border-width: 3px; border-color: rgba(255,255,255,0.14); background-color: rgba(0,0,0,0.35); margin-bottom: 14px; }
+.rf-input-row--bad { border-color: rgb(255,59,92); }
+.rf-sheet .rf-dollar { width: 64px; height: 100%; font-size: 34px; color: rgb(255,210,63); -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); -unity-text-align: middle-center; border-right-width: 2px; border-color: rgba(255,255,255,0.14); }
+.rf-input { flex-grow: 1; margin: 0; padding: 0 18px; }
+.rf-input .unity-base-text-field__input, .rf-input TextInput {
+    background-color: rgba(0,0,0,0); border-width: 0; color: rgb(255,255,255); font-size: 34px; -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf");
+    --unity-cursor-color: rgb(255,210,63); --unity-selection-color: rgba(255,210,63,0.35); padding: 0; margin: 0;
+}
+.rf-sheet .rf-error { font-size: 20px; color: rgb(255,59,92); white-space: normal; margin: -4px 0 12px 4px; }
+
+/* BAG: sliders, chips, split bar, the rug meter */
+.rf-row { flex-direction: row; align-items: center; justify-content: space-between; }
+.rf-sheet .rf-value { font-size: 40px; -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); -unity-text-outline-width: 1px; -unity-text-outline-color: rgb(42,11,74); }
+.rf-sheet .rf-value--green { color: rgb(61,220,132); }
+.rf-sheet .rf-value--yellow { color: rgb(255,210,63); }
+.rf-slider { margin: 6px 0 4px 0; height: 52px; }
+.rf-slider .unity-base-slider__drag-container { height: 52px; }
+.rf-slider .unity-base-slider__tracker { height: 14px; margin-top: -7px; border-radius: 7px; border-width: 0; background-color: rgba(255,255,255,0.16); }
+.rf-slider .unity-base-slider__dragger { width: 44px; height: 44px; margin-top: -22px; border-radius: 22px; border-width: 4px; border-color: rgb(42,11,74); background-color: rgb(255,255,255); }
+.rf-slider--green .unity-base-slider__dragger { background-color: rgb(61,220,132); }
+.rf-slider--yellow .unity-base-slider__dragger { background-color: rgb(255,210,63); }
+.rf-chips { flex-direction: row; margin: 4px 0 18px 0; }
+.rf-chip { height: 52px; padding: 0 22px; margin: 0 12px 0 0; border-radius: 26px; border-width: 2px; border-color: rgba(255,255,255,0.18); background-color: rgba(255,255,255,0.06); }
+.rf-sheet .rf-chip Label, .rf-chip { font-size: 22px; color: rgb(255,255,255); -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); }
+.rf-chip--on { background-color: rgba(61,220,132,0.22); border-color: rgb(61,220,132); }
+.rf-split { flex-direction: row; height: 46px; border-radius: 12px; overflow: hidden; margin: 6px 0 18px 0; background-color: rgba(255,255,255,0.08); }
+.rf-split-you { background-color: rgb(255,210,63); justify-content: center; padding-left: 12px; }
+.rf-split-float { flex-grow: 1; justify-content: center; padding-left: 14px; }
+.rf-sheet .rf-split-you Label { color: rgb(20,6,44); font-size: 18px; -unity-font-definition: url("../Fonts/Phone/Inter-Bold.ttf"); white-space: nowrap; }
+.rf-sheet .rf-split-float Label { color: rgba(255,255,255,0.85); font-size: 18px; -unity-font-definition: url("../Fonts/Phone/Inter-Bold.ttf"); white-space: nowrap; }
+.rf-meter-row { flex-direction: row; align-items: center; margin: 6px 0 8px 0; }
+.rf-meter { flex-direction: row; width: 360px; height: 30px; }
+.rf-seg { flex-grow: 1; margin-right: 6px; border-radius: 6px; background-color: rgba(255,255,255,0.12); }
+.rf-seg--on { background-color: rgb(255,59,92); }
+.rf-sheet .rf-meter-heat { font-size: 22px; color: rgb(255,59,92); margin: 0 16px; -unity-font-definition: url("../Fonts/Phone/Inter-Bold.ttf"); }
+.rf-stars { flex-direction: row; }
+.rf-star { width: 30px; height: 30px; margin-right: 2px; -unity-background-image-tint-color: rgb(255,210,63); }
+.rf-star--off { -unity-background-image-tint-color: rgba(255,255,255,0.28); }
+.rf-sheet .rf-rug-word { font-size: 26px; color: rgb(255,59,92); -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); letter-spacing: 2px; }
+.rf-sheet .rf-note { font-size: 20px; color: rgba(255,255,255,0.72); white-space: normal; margin-bottom: 8px; }
+.rf-sheet .rf-total { font-size: 34px; -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); }
+.rf-sheet .rf-total-detail { font-size: 20px; color: rgba(255,255,255,0.72); margin-left: 14px; }
+
+/* REVIEW + hold to launch */
+.rf-sheet .rf-review-title { font-size: 44px; -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); margin-top: 18px; white-space: normal; }
+.rf-sheet .rf-review-line { font-size: 26px; color: rgba(255,255,255,0.85); margin-top: 12px; white-space: normal; }
+.rf-hold-wrap { align-items: center; margin-top: 46px; }
+.rf-hold {
+    width: 560px; height: 112px; border-radius: 56px; border-width: 0; margin: 0; padding: 0; background-color: rgb(255,59,92);
+    align-items: center; justify-content: center; transition-property: scale; transition-duration: 0.08s;
+}
+.rf-hold--down { scale: 0.97 0.97; }
+.rf-hold:disabled { opacity: 0.45; }
+.rf-sheet .rf-hold-label { font-size: 40px; color: rgb(255,255,255); -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); letter-spacing: 2px; -unity-text-outline-width: 1.5px; -unity-text-outline-color: rgb(120,10,40); }
+.rf-hold-ring { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+.rf-sheet .rf-hold-hint { font-size: 20px; color: rgba(255,255,255,0.6); margin-top: 14px; }
+
+/* ------------------------------------------------------------------ launch band (heat.uss .heat-band, yellow) */
+.rf-band .heat-band-word { color: rgb(255,210,63); font-size: 84px; }
+.rf-band-actions { position: absolute; top: 40%; margin-top: 196px; left: 0; right: 0; flex-direction: row; justify-content: center; opacity: 0; transition-property: opacity; transition-duration: 0.2s; }
+.rf-band-actions.heat-in { opacity: 1; }
+.rf-pill-yellow { background-color: rgb(255,210,63); color: rgb(20,6,44); }
+
+/* ------------------------------------------------------------------ rules card + rug warning (heat help box) */
+.rf-rules { width: 760px; }
+.rf-rules .rf-credit { font-size: 15px; color: rgba(255,255,255,0.5); -unity-font-definition: url("../Fonts/Phone/Inter-SemiBold.ttf"); margin: -4px 0 12px 0; padding: 0; white-space: normal; }
+.rf-rug-sheet { width: 760px; border-width: 3px; border-color: rgba(255,59,92,0.7); }
+
+/* ------------------------------------------------------------------ Pulse (Duo kit): player coin rows and page */
+.rf-art { -unity-background-scale-mode: scale-to-fit; flex-shrink: 0; }
+.rf-art-s { width: 52px; height: 52px; margin-right: 4px; }
+.rf-art-l { width: 120px; height: 120px; margin-right: 18px; }
+.rf-player-badge { height: 26px; padding: 0 10px; margin-left: 8px; border-radius: 13px; background-color: rgb(255,149,0); justify-content: center; }
+.rf-player-badge Label { font-size: 15px; color: rgb(255,255,255); -unity-font-definition: url("../Fonts/Phone/Inter-Bold.ttf"); letter-spacing: 1px; margin: 0; padding: 0; }
+.rf-rugged-badge { background-color: rgb(255,59,92); }
+.rf-moon { flex-direction: row; align-items: center; margin-top: 6px; }
+.rf-moon-bar { flex-grow: 1; height: 10px; border-radius: 5px; background-color: rgba(120,120,128,0.2); overflow: hidden; }
+.rf-moon-fill { height: 100%; border-radius: 5px; background-color: rgb(255,149,0); }
+.rf-moon--hit .rf-moon-fill { background-color: rgb(48,199,94); }
+.rf-moon Label { font-size: 15px; color: rgb(60,60,67); margin: 0 0 0 10px; padding: 0; -unity-font-definition: url("../Fonts/Phone/Inter-Bold.ttf"); }
+.rf-devbag { height: 26px; padding: 0 10px; margin-left: 10px; border-radius: 13px; background-color: rgba(120,120,128,0.16); justify-content: center; }
+.rf-devbag Label { font-size: 14px; color: rgb(60,60,67); -unity-font-definition: url("../Fonts/Phone/Inter-Bold.ttf"); margin: 0; padding: 0; letter-spacing: 1px; }
+.rf-devbag--high { background-color: rgb(255,149,0); }
+.rf-devbag--high Label { color: rgb(255,255,255); }
+.rf-page-head { flex-direction: row; align-items: center; margin: 6px 0 10px 0; }
+.rf-page-col { flex-grow: 1; flex-shrink: 1; }
+.rf-page-name { font-size: 28px; color: rgb(11,11,13); -unity-font-definition: url("../Fonts/Phone/Inter-Bold.ttf"); white-space: normal; margin: 0; padding: 0; }
+.rf-page-sub { flex-direction: row; align-items: center; flex-wrap: wrap; margin-top: 4px; }
+.rf-page-sub > Label { font-size: 18px; color: rgb(60,60,67); margin: 0; padding: 0; }
+.rf-page-goal { font-size: 16px; color: rgb(60,60,67); margin: 2px 0 8px 0; padding: 0; }
+
+/* ------------------------------------------------------------------ KING OF THE TOWER board (rendered to the venue's board) */
+.rf-board { width: 100%; height: 100%; background-color: rgb(14,6,30); padding: 28px 40px; }
+.rf-board Label { color: rgb(255,255,255); margin: 0; padding: 0; -unity-font-definition: url("../Fonts/Phone/Inter-Bold.ttf"); }
+.rf-board-kicker { font-size: 34px; letter-spacing: 8px; color: rgb(255,210,63); -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); }
+.rf-board-king { flex-direction: row; align-items: center; margin-top: 18px; }
+.rf-board-art { width: 230px; height: 230px; -unity-background-scale-mode: scale-to-fit; margin-right: 36px; }
+.rf-board-ticker { font-size: 96px; -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); }
+.rf-board-name { font-size: 34px; color: rgba(255,255,255,0.75); }
+.rf-board-mc { font-size: 44px; color: rgb(61,220,132); -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); margin-top: 6px; }
+.rf-board-new { flex-direction: row; align-items: center; margin-top: 26px; padding: 14px 22px; border-radius: 18px; background-color: rgba(255,59,92,0.2); }
+.rf-board-new--flash { background-color: rgb(255,59,92); }
+.rf-board-new-art { width: 76px; height: 76px; -unity-background-scale-mode: scale-to-fit; margin-right: 18px; }
+.rf-board-new-text { font-size: 40px; -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); }
+.rf-board-empty { font-size: 40px; color: rgba(255,255,255,0.6); margin-top: 40px; white-space: normal; }

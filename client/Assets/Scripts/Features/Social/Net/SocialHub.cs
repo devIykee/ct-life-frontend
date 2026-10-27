@@ -114,6 +114,7 @@ namespace CTLife.SocialFeatures
         public readonly CallController Calls;
         public readonly MessagesController Messages;
         public readonly TimelineController Timeline;
+        public readonly GroupsController Groups;
         public bool Disposed { get; private set; }
         public bool Offline => _reach == NetworkReachability.NotReachable;
         public CancellationToken Life => _life.Token;
@@ -155,6 +156,7 @@ namespace CTLife.SocialFeatures
             Calls = new CallController(this);
             Messages = new MessagesController(this);
             Timeline = new TimelineController(this);
+            Groups = new GroupsController(this);
             _subs.On<SpaceUpdateMessage>(m => Guard(() => Spaces.OnSpaceUpdate(m?.spaceId)));
             _subs.On<DmMessage>(m => Guard(() => Messages.OnRealtime(m)));
             _subs.On<CallInviteMessage>(m => Guard(() => Calls.OnInvite(m)));
@@ -184,13 +186,14 @@ namespace CTLife.SocialFeatures
                 _reach = reach;
                 Log.Info("social", "Network changed: " + reach);
                 if (reach != NetworkReachability.NotReachable)
-                    Guard(() => { Spaces.OnNetworkChanged(now); Calls.OnNetworkChanged(now); if (wasOffline) { Messages.OnOnline(); Timeline.OnOnline(); } });
+                    Guard(() => { Spaces.OnNetworkChanged(now); Calls.OnNetworkChanged(now); if (wasOffline) { Messages.OnOnline(); Timeline.OnOnline(); Groups.OnOnline(); } });
                 Changed?.Invoke();
             }
             Guard(() => Spaces.Tick(now));
             Guard(() => Calls.Tick(now));
             Guard(() => Messages.Tick(now));
             Guard(() => Timeline.Tick(now));
+            Guard(() => Groups.Tick(now));
         }
 
         private static void Guard(Action a)
@@ -227,6 +230,7 @@ namespace CTLife.SocialFeatures
                 await Api.Block(userId, key, ct);
                 Blocks.Set(userId, true);
                 Messages.OnBlocked(userId);
+                Groups.OnBlocked(userId);
                 Bus.Publish(ToastSignal.Text(SocialStrings.F("block.done", Names.Name(userId)), ToastKind.Good));
                 Changed?.Invoke();
                 done?.Invoke(null);
@@ -256,6 +260,7 @@ namespace CTLife.SocialFeatures
             Guard(Calls.Dispose);
             Guard(Messages.Dispose);
             Guard(Timeline.Dispose);
+            Guard(Groups.Dispose);
             if (ReferenceEquals(_shared, this)) _shared = null;
             Changed?.Invoke();
         }

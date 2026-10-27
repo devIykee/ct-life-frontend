@@ -84,6 +84,13 @@ namespace CTLife.World
             return defaultPlayer != null ? new Entry { key = "defaultPlayer", prefab = defaultPlayer } : null;
         }
 
+        /// <summary>An exact looks key ("uniform:player_m_rekt_crew"), or null.</summary>
+        public Entry ForLookKey(string key)
+        {
+            Index();
+            return key != null && _look.TryGetValue(key, out var e) ? e : null;
+        }
+
         private void OnValidate() => _arch = null;
     }
 }

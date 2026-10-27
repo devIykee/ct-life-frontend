@@ -109,6 +109,7 @@ namespace CTLife.Careers
                 await ShowFailure(Deadline.Describe(e), ct);
                 return false;
             }
+            Bus.Publish(new GameplayEventSignal { kind = GameplayEvents.ShiftStart, id = _card.Id });   // the first session
             double assignedAt = CUi.Now;
             var registry = Services.TryGet<ConfigStore>(out var config) ? config.Registries : null;
             var plan = ShiftPlan.Build(ticket, _card.Id, id =>

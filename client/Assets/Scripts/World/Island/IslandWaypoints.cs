@@ -143,6 +143,73 @@ namespace CTLife.World
             }
         }
 
+        /// <summary>
+        /// `signTour=<venueId,...|all>` (dev builds, 2026-10-26 names pass): for each venue in Resources/World/Island/sign_route.json
+        /// (written by tools/world/islandgen/signs.py), loads the cells round it, stands the player 9 m in front of its shell's
+        /// sign board and holds the camera on the board for 6 s. Log: <c>CTLIFE [island] signTour perp_pit held</c>.
+        /// </summary>
+        /// <summary>How far in front of a board the tour stands (m): the distance a player passes a building at.</summary>
+        public static float Dist = 9f;
+
+        public static async Task SignTour(VenueSession s, string arg, CancellationToken ct)
+        {
+            var ta = Resources.Load<TextAsset>("World/Island/sign_route");
+            if (ta == null) { Log.Warn("island", "signTour: sign_route missing"); return; }
+            var want = string.IsNullOrEmpty(arg) || arg == "all" ? null : new HashSet<string>(arg.Split(','));
+            foreach (var v in (JArray)JObject.Parse(ta.text)["venues"])
+            {
+                var id = (string)v["id"];
+                if (want != null && !want.Contains(id)) continue;
+                var at = new Vector3((float)v["x"], 0f, (float)v["z"]);
+                await IslandStreamer.EnsureLoaded(at, 160f, ct);
+                Renderer sign = null; VenueShell shell = null;
+                for (int tries = 0; tries < 20 && sign == null; tries++)     // a far cell can take a few seconds to stream in
+                {
+                    await Awaitable.WaitForSecondsAsync(0.5f, ct);
+                    shell = UnityEngine.Object.FindObjectsByType<VenueShell>(FindObjectsInactive.Include, FindObjectsSortMode.None)
+                        .Where(x => x.venueId == id && x.sign != null)
+                        .OrderBy(x => (new Vector2(x.origin.x, x.origin.z) - new Vector2(at.x, at.z)).sqrMagnitude).FirstOrDefault();
+                    // landmark shells: the board is the renderer drawn with the sign_<id> material
+                    sign = shell != null ? shell.sign : UnityEngine.Object.FindObjectsByType<MeshRenderer>(FindObjectsInactive.Include, FindObjectsSortMode.None)
+                        .FirstOrDefault(r => r.sharedMaterial != null && r.sharedMaterial.name.StartsWith("sign_" + id, StringComparison.Ordinal));
+                    if (sign == null && tries == 6 && s.LocalPlayer != null)    // still nothing: stand near it so the streamer keeps its cell
+                        { float gh = IslandStreamer.GroundHeight(at.x, at.z); s.LocalPlayer.SnapTo(new Vector3(at.x, float.IsNaN(gh) ? 2f : gh + 0.3f, at.z), 0f); }
+                }
+                var mf = sign != null ? sign.GetComponent<MeshFilter>() : null;
+                if (mf == null || mf.sharedMesh == null || s.LocalPlayer == null) { Log.Warn("island", "signTour " + id + ": no shell sign loaded"); continue; }
+                // the mesh's own bounds (a faded or culled renderer reports empty world bounds)
+                var b = new Bounds(sign.transform.TransformPoint(mf.sharedMesh.bounds.center), Vector3.one);
+                var n = mf.sharedMesh.normals.Length > 0 ? sign.transform.TransformDirection(mf.sharedMesh.normals[0]) : Vector3.forward;
+                n.y = 0f; n = n.sqrMagnitude > 0.01f ? n.normalized : Vector3.forward;
+                // face out of the building: some boards are wound inward (the tour then framed the street behind it)
+                var hub = shell != null ? shell.origin : new Vector3(at.x, b.center.y, at.z);
+                var outv = b.center - hub; outv.y = 0f;
+                if (outv.sqrMagnitude > 0.25f && Vector3.Dot(n, outv) < 0f) n = -n;
+                var feet = b.center + n * Dist;
+                float ground = IslandStreamer.GroundHeight(feet.x, feet.z);
+                var w = new Waypoint
+                {
+                    shot = 0, id = "sign_" + id, title = id, x = feet.x, z = feet.z, y = float.IsNaN(ground) ? (float?)null : ground + 0.3f,
+                    yaw = Mathf.Atan2(-n.x, -n.z) * Mathf.Rad2Deg, subject = b.center, camDist = 1.5f, camSide = 1.2f, camHeight = 1.7f, fov = 50f,
+                };
+                await Jump(s, w, ct);
+                // the spot may sit inside another venue's room (the boards round the Timeline plaza face it): let the room
+                // handoff settle, then stand there again
+                await Awaitable.WaitForSecondsAsync(3.0f, ct);
+                if (VenueSession.Current != null) s = VenueSession.Current;
+                await Jump(s, w, ct);
+                await Awaitable.WaitForSecondsAsync(0.4f, ct);
+                var rig = CameraRig.Instance;
+                if (rig == null || rig.Camera == null || s.LocalPlayer == null) return;
+                var hold = rig.gameObject.GetComponent<ShotHold>() ?? rig.gameObject.AddComponent<ShotHold>();
+                hold.Begin(rig, s.LocalPlayer.transform, w);
+                Log.Info("island", $"signTour {id} held (board {b.center.x:0},{b.center.z:0} facing {n.x:0.0},{n.z:0.0}; route {at.x:0},{at.z:0})");
+                await Awaitable.WaitForSecondsAsync(6f, ct);
+                hold.Stop();
+            }
+            Log.Info("island", "signTour done");
+        }
+
         public static async Task Run(VenueSession s, string arg, Func<bool> alive, CancellationToken ct)
         {
             var all = Load();

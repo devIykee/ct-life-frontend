@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "_note": "House ads shown on billboards, kiosks and the Pixel Wall when GET /ads/live has no creative for the slot. Parody names only (no real brands, people or projects). The baked house art on each screen stays in the rotation as entry 0.",
+  "_note": "House ads shown on billboards, kiosks and the Pixel Wall when GET /ads/live has no creative for the slot. Headlines name in-game places by nameId (contract/ids/names.json, shown in caps), so renames need no new copy; no ads invented for third-party products. The baked house art on each screen stays in the rotation as entry 0.",
   "rotationSeconds": 12,
   "surfaces": {
     "_note": "Screen materials are named Screen_<screenId> by VenueContentBuilder. First matching prefix wins; unmatched screens (shop signs) are left alone.",
@@ -26,83 +26,78 @@
   },
   "billboard": [
     {
-      "headline": "POMP.FUN",
-      "sub": "263,000 coins a day. Now with Holder Rewards.",
+      "nameId": "venue.launchpad_tower",
+      "sub": "Launch a coin at the desk. Game cash only.",
       "tag": "house ad"
     },
     {
-      "headline": "BITGOT EXCHANGE",
-      "sub": "Withdrawals paused for maintenance. Again.",
+      "nameId": "venue.prediction_pit",
+      "sub": "Call it before it happens.",
       "tag": "house ad"
     },
     {
-      "headline": "REKT CLINIC",
-      "sub": "Walk-ins welcome. Stimmy not guaranteed.",
+      "nameId": "venue.rekt_clinic",
+      "sub": "Walk-ins welcome. Open all night.",
       "tag": "house ad"
     },
     {
-      "headline": "PERP PIT",
-      "sub": "25x leverage. 0x sleep.",
+      "nameId": "venue.perp_pit",
+      "sub": "Perps on BTC, oil and gold. In game cash.",
       "tag": "house ad"
     },
     {
-      "headline": "COPE BAKERY",
-      "sub": "Fresh copium, baked every red day.",
+      "nameId": "venue.rug_room",
+      "sub": "Slots, Coinflip and Crash. 18+, game cash only.",
       "tag": "house ad"
     },
     {
-      "headline": "TERMINAL CAFE",
-      "sub": "8 terminals. 0 profitable traders. Great coffee.",
+      "nameId": "venue.rekt_burger",
+      "sub": "Now hiring. Clock in at the counter.",
       "tag": "house ad"
     },
     {
-      "headline": "AUDIT ROW",
-      "sub": "Audited by a guy. He seemed nice.",
+      "nameId": "venue.terminal_cafe",
+      "sub": "Coffee, wifi and charts.",
       "tag": "house ad"
     },
     {
-      "headline": "THE CABAL LOUNGE",
-      "sub": "You are not on the list.",
+      "nameId": "venue.audit_row",
+      "sub": "We read the code so you don't have to.",
       "tag": "house ad"
     },
     {
-      "headline": "TOUCH GRASS PARK",
-      "sub": "Open 24/7. Nobody comes.",
+      "nameId": "venue.cabal_lounge",
+      "sub": "Members only.",
       "tag": "house ad"
     },
     {
-      "headline": "$TIPZ",
-      "sub": "Send money to billionaires and hope they tweet back.",
+      "nameId": "venue.conference_hall",
+      "sub": "Talks and side events all week.",
       "tag": "house ad"
     },
     {
-      "headline": "AIRDROP FARM",
-      "sub": "Season 2 points are live. TGE wen? Yes.",
+      "nameId": "venue.airdrop_fields",
+      "sub": "Farm points. Touch grass.",
       "tag": "house ad"
     },
     {
-      "headline": "HYPERLIQUOR",
-      "sub": "Oil perps. Gold perps. Rent perps.",
+      "nameId": "venue.spaces_studio",
+      "sub": "Live tonight. Grab a mic.",
       "tag": "house ad"
     },
     {
-      "headline": "BLOOMBAG TERMINAL",
-      "sub": "Now streaming memecoin charts to your boss.",
+      "nameId": "venue.ore_refinery",
+      "sub": "Stake ORE. Earn a share.",
       "tag": "house ad"
     },
     {
-      "headline": "ROBBINGHOOD",
-      "sub": "24/7 perps up to 10x. For your safety.",
+      "nameId": "venue.discord_heights",
+      "sub": "Your server is waiting.",
       "tag": "house ad"
     },
     {
-      "headline": "COIN2050 SINGAPURA",
-      "sub": "1,000 side events. 0 sessions attended.",
-      "tag": "house ad"
-    },
-    {
-      "headline": "CHECKPOINT LONDON",
-      "sub": "The Token Supercycle. Bring a hoodie.",
+      "nameId": "venue.hackathon_house",
+      "sub": "Ship it before the deadline.",
       "tag": "house ad"
     },
     {
@@ -160,7 +155,7 @@
     "holder rewards"
   ],
   "timeline": {
-    "title": "THE TIMELINE",
+    "nameId": "app.timeline",
     "empty": "Quiet on the Timeline. Too quiet."
   }
 }

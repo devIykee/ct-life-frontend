@@ -95,8 +95,8 @@ namespace CTLife.World
 
         public string DistrictName(string id)
         {
-            foreach (var d in districts) if (d.id == id) return d.name;
-            return id == "countryside" ? "CT Island" : id;
+            foreach (var d in districts) if (d.id == id) return NameTable.Get("district." + id, d.name);
+            return id == "countryside" ? NameTable.Get("place.island", "CT Island") : id;
         }
 
         private NavMeshDataInstance _nav;

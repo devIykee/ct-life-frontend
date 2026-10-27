@@ -1,3 +1,4 @@
+using CTLife.Core;
 using System.Collections.Generic;
 using System.Globalization;
 
@@ -42,7 +43,7 @@ namespace CTLife.UI
             ["ore.body"] = "The city received an ORE motherlode report.",
         };
 
-        public static string T(string key) => Copy.TryGetValue(key, out var text) ? text : key;
+        public static string T(string key) => Copy.TryGetValue(key, out var text) ? NameTable.Apply(text) : key;
         public static string F(string key, params object[] args) => string.Format(CultureInfo.CurrentCulture, T(key), args);
     }
 }

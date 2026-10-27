@@ -94,8 +94,8 @@ namespace CTLife.UI
 
         public MovementControls()
         {
-            _thumb = El.Div("ct-move-thumb");
-            _ring = El.Div("ct-move-ring", _thumb);
+            _thumb = El.Div("ct-move-thumb ds-joystick-knob");
+            _ring = El.Div("ct-move-ring ds-joystick-ring", _thumb);
             _zone = El.Div("ct-move-zone", _ring);
             _ring.pickingMode = _thumb.pickingMode = PickingMode.Ignore;
             _arrows = El.Div("ct-move-arrows");

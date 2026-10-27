@@ -37,7 +37,8 @@ namespace CTLife.Tests
             Assert.AreEqual("Rent penalty halved", E("deep_pockets", "rent penalty 0.5x"));
             Assert.AreEqual("Sanity drains 20% slower", E("iron_will", "Sanity decay 0.8x"));
             Assert.AreEqual("+10% shift pay before noon", E("early_bird", "shift pay +10% before noon"));
-            Assert.AreEqual("The detective pays for your tips", E("sleuth", "Sleuth NPC pays you for tips"));
+            Assert.AreEqual("The police pay for your tips", E("sleuth", "Sleuth NPC pays you for tips"));   // approved names 2026-10-26
+            Assert.AreEqual("The police pay for your tips", E("sleuth", "The police pay for your tips"));   // after backend #38
             Assert.AreEqual("A special look on your REKT card", E("rug_veteran", "REKT card visual variant"));
             foreach (var label in new[] { "Iron Will", "Sleuth" })
                 foreach (var id in new[] { "iron_will", "sleuth" })

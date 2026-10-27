@@ -51,9 +51,10 @@ namespace CTLife.CityLife.Casino
         public async Task<CasinoBet> Flip(long stakeCents, string side, string key, CancellationToken ct) =>
             CasinoBet.Parse(await Write("/casino/coinflip/bet", new JObject { ["stakeCents"] = stakeCents, ["side"] = side }, key, ct));
 
-        public async Task<CasinoChallengeReply> Challenge(string opponentUserId, long stakeCents, string side, string key, CancellationToken ct) =>
+        /// <summary>A head-to-head is bragging rights only (backend #25: Cash never moves between players): no stake, no pot.</summary>
+        public async Task<CasinoChallengeReply> Challenge(string opponentUserId, string side, string key, CancellationToken ct) =>
             CasinoChallengeReply.Parse(await Write("/casino/coinflip/challenges",
-                new JObject { ["opponentUserId"] = opponentUserId, ["stakeCents"] = stakeCents, ["side"] = side }, key, ct));
+                new JObject { ["opponentUserId"] = opponentUserId, ["side"] = side }, key, ct));
 
         public async Task<(CasinoMeta meta, List<CasinoChallenge> list)> Challenges(CancellationToken ct)
         {

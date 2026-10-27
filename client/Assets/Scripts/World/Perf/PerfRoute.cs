@@ -41,16 +41,18 @@ namespace CTLife.World
             "PreUpdate.AIUpdatePostScript", "PreLateUpdate.DirectorUpdateAnimationBegin", "PreLateUpdate.DirectorUpdateAnimationEnd",
             "PostLateUpdate.UpdateAllRenderers", "PostLateUpdate.FinishFrameRendering", "Inl_UniversalRenderTotal", "Inl_Shadows",
             "Gfx.WaitForPresentOnGfxThread", "Gfx.WaitForRenderThread", "Gfx.WaitForGfxCommandsFromMainThread", "GC.Alloc", "Update.ScriptRunDelayedTasks",
-            "FixedUpdate.ScriptRunBehaviourFixedUpdate", "PostLateUpdate.UpdateAudio", "Culling", "CullScriptable" };
+            "FixedUpdate.ScriptRunBehaviourFixedUpdate", "PostLateUpdate.UpdateAudio", "Culling", "CullScriptable",
+            "PostLateUpdate.UIElementsRepaintPanels", "PreLateUpdate.UIElementsUpdatePanels", "PostLateUpdate.UIElementsUpdatePanels", "GC.Collect", "GC Allocated In Frame" };
         private readonly System.Collections.Generic.List<(string name, ProfilerRecorder rec)> _markers = new System.Collections.Generic.List<(string, ProfilerRecorder)>();
         private double[] _markerSum;
-        private double _kitMs, _occluded, _casters, _occMs, _loopMs, _submitMs;
+        private double _kitMs, _occluded, _casters, _occMs, _loopMs, _submitMs, _reuse;
 
         public static void EnsureHitchProbe() => HitchProbe.Ensure();
 
         public static void Ensure()
         {
             if (LaunchArgs.Get("hitchProbe") == "1") HitchProbe.Ensure();
+            if (LaunchArgs.Get("markerSweep") == "1") MarkerSweep.Ensure();
             if (FindAnyObjectByType<PerfSegments>() != null) return;
             var go = new GameObject("PerfSegments"); DontDestroyOnLoad(go); go.AddComponent<PerfSegments>();
         }
@@ -97,7 +99,7 @@ namespace CTLife.World
             _draws += dc; _tris += tr; _kit += IslandInstanceRenderer.LastDraws;
             _drawsMax = Math.Max(_drawsMax, dc); _trisMax = Math.Max(_trisMax, tr);
             _kitMs += IslandInstanceRenderer.LastCpuMs; _occluded += IslandInstanceRenderer.LastOccluded; _casters += IslandInstanceRenderer.LastCasters;
-            _occMs += IslandInstanceRenderer.LastOccMs; _loopMs += IslandInstanceRenderer.LastLoopMs; _submitMs += IslandInstanceRenderer.LastSubmitMs;
+            _reuse += IslandInstanceRenderer.LastReused; _occMs += IslandInstanceRenderer.LastOccMs; _loopMs += IslandInstanceRenderer.LastLoopMs; _submitMs += IslandInstanceRenderer.LastSubmitMs;
             for (int i = 0; i < _markers.Count; i++) if (_markers[i].rec.Valid) _markerSum[i] += _markers[i].rec.LastValue;
         }
 
@@ -112,13 +114,13 @@ namespace CTLife.World
                     $"seg={_cur} frames={_n} seconds={_sumDt:0.0} avg={_n / _sumDt:0.0} min={1f / _worst:0.0} gpuMs={_gpu / k:0.0} mainMs={_main / k:0.0} renderMs={_rt / k:0.0} ") +
                     FormattableString.Invariant($"draws={_draws / _n:0} drawsMax={_drawsMax} tris={_tris / _n / 1e6:0.00}M trisMax={_trisMax / 1e6:0.00}M kitDraws={_kit / _n:0} ") +
                     FormattableString.Invariant($"tier={QualityTier.Current} renderScale={(urp != null ? urp.renderScale : 0f):0.00} fixedDt={Time.fixedDeltaTime:0.000} targetFps={Application.targetFrameRate} {thermal}"));
-                var sb = new System.Text.StringBuilder(FormattableString.Invariant($"seg={_cur} cpu kitRenderMs={_kitMs / _n:0.00} kitOccluded={_occluded / _n:0} kitCasters={_casters / _n:0} kitOccMs={_occMs / _n:0.00} kitLoopMs={_loopMs / _n:0.00} kitSubmitMs={_submitMs / _n:0.00}"));
+                var sb = new System.Text.StringBuilder(FormattableString.Invariant($"seg={_cur} cpu kitRenderMs={_kitMs / _n:0.00} kitOccluded={_occluded / _n:0} kitCasters={_casters / _n:0} kitOccMs={_occMs / _n:0.00} kitLoopMs={_loopMs / _n:0.00} kitSubmitMs={_submitMs / _n:0.00} kitReuse={_reuse / _n:0.00}"));
                 for (int i = 0; i < _markers.Count; i++)
-                    sb.Append(' ').Append(_markers[i].name).Append('=').Append((_markerSum[i] / _n / (_markers[i].name == "GC.Alloc" ? 1 : 1e6)).ToString("0.00", CultureInfo.InvariantCulture));
+                    sb.Append(' ').Append(_markers[i].name).Append('=').Append((_markerSum[i] / _n / (_markers[i].name == "GC.Alloc" ? 1 : _markers[i].name == "GC Allocated In Frame" ? 1024 : 1e6)).ToString("0.00", CultureInfo.InvariantCulture));
                 Log.Info("perf", sb.ToString());
             }
             _censused = false;
-            _n = 0; _timed = 0; _sumDt = _gpu = _main = _rt = _draws = _tris = _kit = _kitMs = _occluded = _casters = _occMs = _loopMs = _submitMs = 0; _worst = 0f; _drawsMax = _trisMax = 0;
+            _n = 0; _timed = 0; _sumDt = _gpu = _main = _rt = _draws = _tris = _kit = _kitMs = _occluded = _casters = _occMs = _loopMs = _submitMs = _reuse = 0; _worst = 0f; _drawsMax = _trisMax = 0;
             if (_markerSum != null) Array.Clear(_markerSum, 0, _markerSum.Length);
         }
     }
@@ -394,6 +396,111 @@ namespace CTLife.World
             PerfSegments.Label = null;
             await Awaitable.NextFrameAsync(ct);
             Log.Info("perf", "route done");
+        }
+    }
+    /// <summary>
+    /// Dev builds only (lane B, Low-tier perf): <c>markerSweep=1</c> records every timed profiler marker registered in the
+    /// player (scripts' Update/LateUpdate, animation, physics, rendering, UI) for each perf segment and logs the 45 most
+    /// expensive as mean ms per frame ("CTLIFE [sweep] seg=... name=ms ..."). Nested markers include their children. A
+    /// diagnostic: the recorders themselves cost main-thread time, so its runs are not before/after numbers.
+    /// </summary>
+    public sealed class MarkerSweep : MonoBehaviour
+    {
+        private readonly List<(string name, ProfilerRecorder rec)> _rec = new List<(string, ProfilerRecorder)>();
+        private readonly HashSet<string> _seen = new HashSet<string>();
+        private double[] _sum = new double[0];
+        private int _n;
+        private string _cur;
+
+        public static void Ensure()
+        {
+            if (FindAnyObjectByType<MarkerSweep>() != null) return;
+            var go = new GameObject("MarkerSweep"); DontDestroyOnLoad(go); go.AddComponent<MarkerSweep>();
+        }
+
+        private void Discover()
+        {
+            var handles = new List<Unity.Profiling.LowLevel.Unsafe.ProfilerRecorderHandle>();
+            Unity.Profiling.LowLevel.Unsafe.ProfilerRecorderHandle.GetAvailable(handles);
+            foreach (var h in handles)
+            {
+                var d = Unity.Profiling.LowLevel.Unsafe.ProfilerRecorderHandle.GetDescription(h);
+                if (d.UnitType != ProfilerMarkerDataUnit.TimeNanoseconds || !_seen.Add(d.Name)) continue;
+                _rec.Add((d.Name, ProfilerRecorder.StartNew(d.Category, d.Name, 1, ProfilerRecorderOptions.Default | ProfilerRecorderOptions.SumAllSamplesInFrame)));
+            }
+            if (_sum.Length < _rec.Count) Array.Resize(ref _sum, _rec.Count);
+        }
+
+        private void OnDisable() { foreach (var r in _rec) r.rec.Dispose(); _rec.Clear(); }
+
+        private void LateUpdate()
+        {
+            if (PerfSegments.Label != _cur)
+            {
+                Flush();
+                _cur = PerfSegments.Label;
+                if (_cur != null) { Discover(); Log.Info("sweep", "recording " + _rec.Count + " markers for " + _cur); }
+                return;                                                                       // the discovery frame is not counted
+            }
+            if (_cur == null) return;
+            _n++;
+            for (int i = 0; i < _rec.Count; i++) if (_rec[i].rec.Valid) _sum[i] += _rec[i].rec.LastValue;
+        }
+
+        /// <summary>What physics and animation have to chew on: bodies (awake / kinematic), colliders by type, animators.</summary>
+        private void Census()
+        {
+            int bodies = 0, awake = 0, kinematic = 0, interp = 0, animators = 0, animAlways = 0, cc = 0;
+            foreach (var rb in FindObjectsByType<Rigidbody>(FindObjectsSortMode.None))
+            {
+                bodies++;
+                if (rb.isKinematic) kinematic++; else if (!rb.IsSleeping()) awake++;
+                if (rb.interpolation != RigidbodyInterpolation.None) interp++;
+            }
+            var types = new Dictionary<string, int>();
+            foreach (var c in FindObjectsByType<Collider>(FindObjectsSortMode.None))
+            {
+                if (!c.enabled) continue;
+                if (c is CharacterController) cc++;
+                var k = c.GetType().Name + (c is MeshCollider mc && mc.convex ? "(convex)" : "") + (c.isTrigger ? "(trigger)" : "");
+                types[k] = types.TryGetValue(k, out var v) ? v + 1 : 1;
+            }
+            foreach (var a in FindObjectsByType<Animator>(FindObjectsSortMode.None))
+            {
+                if (!a.isActiveAndEnabled) continue;
+                animators++;
+                if (a.cullingMode == AnimatorCullingMode.AlwaysAnimate) animAlways++;
+            }
+            var sb = new System.Text.StringBuilder(FormattableString.Invariant($"census seg={_cur} bodies={bodies} awake={awake} kinematic={kinematic} interpolated={interp} animators={animators} alwaysAnimate={animAlways} controllers={cc} colliders:"));
+            foreach (var kv in types) sb.Append(' ').Append(kv.Key).Append('=').Append(kv.Value);
+            Log.Info("sweep", sb.ToString());
+        }
+
+        private void Flush()
+        {
+            if (_cur != null && _n > 10)
+            {
+                var top = new List<(string, double)>();
+                for (int i = 0; i < _rec.Count; i++)
+                {
+                    var name = _rec[i].name;
+                    // thread totals and waits say nothing about what costs
+                    if (name == "Idle" || name == "Main Thread" || name.StartsWith("CPU ", StringComparison.Ordinal) || name.StartsWith("Semaphore", StringComparison.Ordinal)
+                        || name.StartsWith("GfxResource", StringComparison.Ordinal) || name.StartsWith("Gfx.WaitFor", StringComparison.Ordinal)) continue;
+                    if (_sum[i] / _n > 100_000) top.Add((name, _sum[i] / _n / 1e6));
+                }
+                top.Sort((a, b) => b.Item2.CompareTo(a.Item2));
+                // logcat cuts a line near 1 KB: ten markers a line
+                for (int i = 0; i < top.Count && i < 90; i += 10)
+                {
+                    var sb = new System.Text.StringBuilder("seg=" + _cur + " frames=" + _n + " part=" + (i / 10));
+                    for (int k = i; k < top.Count && k < i + 10; k++) sb.Append(" | ").Append(top[k].Item1).Append('=').Append(top[k].Item2.ToString("0.00", CultureInfo.InvariantCulture));
+                    Log.Info("sweep", sb.ToString());
+                }
+                Census();
+            }
+            _n = 0;
+            Array.Clear(_sum, 0, _sum.Length);
         }
     }
 }

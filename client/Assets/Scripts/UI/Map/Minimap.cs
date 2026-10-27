@@ -180,7 +180,9 @@ namespace CTLife.UI.Map
                     continue;
                 }
                 var e = Get(_pool, _markers, used++, "map-marker");
-                Dress(e, m.Kind);
+                // re-dress only when the pooled element changes kind: dressing every frame re-resolved its styles and
+                // reloaded its icon each frame (UI and GC cost on entry phones)
+                if (!(e.userData is MarkerKind dressed) || dressed != m.Kind) { Dress(e, m.Kind); e.userData = m.Kind; }
                 e.style.translate = new Translate(px.x - 22f, px.y - 22f);
             }
             for (int i = used; i < _pool.Count; i++) _pool[i].style.display = DisplayStyle.None;

@@ -1,3 +1,4 @@
+using CTLife.Core;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -323,7 +324,7 @@ namespace CTLife.CityLife
             ["owned"] = "In storage", ["placedHere"] = "Placed",
         };
 
-        public static string T(string key) => En.TryGetValue(key, out var v) ? v : CityLifeStrings.T(key);
+        public static string T(string key) => En.TryGetValue(key, out var v) ? NameTable.Apply(v) : CityLifeStrings.T(key);
         public static string F(string key, params object[] args) => string.Format(CultureInfo.InvariantCulture, T(key), args);
         public static string Category(string cat) => En.TryGetValue("cat." + cat, out var v) ? v : CityLifeStrings.Readable(cat);
         public static string Window(string w) => En.TryGetValue("w." + w, out var v) ? v : w;

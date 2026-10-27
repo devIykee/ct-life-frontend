@@ -52,6 +52,33 @@ namespace CTLife.CityLife
             foreach (var sheet in new[] { "UI/kit", "UI/home", "UI/retention" }) Resources.LoadAsync<StyleSheet>(sheet);
         }
 
+#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !CTLIFE_PROD
+        /// <summary>Dev captures (`gmChest=1`): open the sheet, tap the chest, collect.</summary>
+        public static async System.Threading.Tasks.Task DevRoute(System.Threading.CancellationToken ct)
+        {
+            void Mark(string m) => Debug.Log("CTLIFE [gm-chest] " + m);
+            float end = Time.realtimeSinceStartup + 120f;
+            while ((RetentionService.Current?.Status == null || CTLife.World.VenueSession.Current == null || !CTLife.World.VenueSession.Current.IsActive) && Time.realtimeSinceStartup < end)
+                await Awaitable.WaitForSecondsAsync(0.5f, ct);
+            await Awaitable.WaitForSecondsAsync(4f, ct);
+            Show(RetentionService.Current);
+            if (_open == null) { Mark("FAIL no sheet"); return; }
+            await Awaitable.WaitForSecondsAsync(2.5f, ct);
+            Mark("shot chest " + (_open._status.ClaimedToday ? "claimed" : "unclaimed"));
+            await Awaitable.WaitForSecondsAsync(3f, ct);
+            if (!_open._status.ClaimedToday)
+            {
+                _open.TapChest();
+                await Awaitable.WaitForSecondsAsync(5f, ct);
+                Mark("shot reward");
+                await Awaitable.WaitForSecondsAsync(3f, ct);
+                if (_open != null && _open._collect != null) _open.Collect();
+                await Awaitable.WaitForSecondsAsync(2f, ct);
+            }
+            Mark("done");
+        }
+#endif
+
         public static void Show(RetentionService svc)
         {
             if (_open != null || svc?.Status == null || UiRoot.Instance == null) return;
@@ -114,20 +141,18 @@ namespace CTLife.CityLife
             _buyFreeze = El.Btn("", BuyFreeze, "gm-freeze-buy");
             _buyFreeze.name = "gm-buy-freeze";
             var freezeRow = El.Div("gm-freeze-row", LobbyArt.Icon("snowflake", "gm-freeze-icon"), _freezeLabel, _buyFreeze);
-            _collect = new Button(Collect) { name = "gm-collect" };
+            // design system v2: COLLECT is the 3D primary (press-down), the dismiss is the back square bottom-left (no X)
+            _collect = new Button(Collect) { name = "gm-collect", text = "" };
             _collect.AddToClassList("gm-collect");
-            var cta = new SkewBox("gm-collect-box") { Fill = new Color32(0x3d, 0xdc, 0x84, 0xff), Lip = new Color32(0x17, 0x8a, 0x52, 0xff), LipHeight = 12f }.Shape(14f, 14f);
-            cta.pickingMode = PickingMode.Ignore;
-            var ctaLabel = El.Text(RetentionText.T("chest.collect"), "gm-collect-label");
-            ctaLabel.pickingMode = PickingMode.Ignore;
-            cta.Add(ctaLabel);
-            _collect.Add(cta);
+            _collect.AddToClassList("ds-btn");
+            _collect.AddToClassList("ds-btn--primary");
+            _collect.Add(CTLife.UI.DS.Ds.Text(RetentionText.T("chest.collect"), "ds-btn-label"));
             _collect.Show(false);
             _footer = El.Div("gm-footer", _notice, freezeRow, _collect);
             Add(_footer);
-            _close = El.Btn("", Close, "gm-close");
+            _close = CTLife.UI.DS.Ds.Back(Close);
             _close.name = "gm-close";
-            _close.Add(El.Text("×", "gm-close-x"));
+            _close.AddToClassList("gm-close-v2");
             Add(_close);
 
             _burst = new CelebrationBurst(coins: 28, confetti: _milestone ? 110 : 40, puffs: 0);

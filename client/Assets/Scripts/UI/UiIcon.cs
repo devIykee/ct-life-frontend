@@ -26,7 +26,7 @@ namespace CTLife.UI
             if (texture != null) style.backgroundImage = Background.FromTexture2D(texture);
         }
 
-        private static Texture2D TextureFor(string kind)
+        public static Texture2D TextureFor(string kind)
         {
             // "duo-<name>": a Phosphor fill file bundled for the Solana Duo kit (asset-sources.json duoAdditions).
             string asset = kind != null && kind.StartsWith("duo-", System.StringComparison.Ordinal) ? kind.Substring(4) : kind switch
@@ -104,6 +104,13 @@ namespace CTLife.UI
                 "clock" => "clock",
                 "check" => "check",
                 "info" => "info",
+                // Season pass + nods book (2026-10-25, Phosphor fill/bold, MIT)
+                "tshirt" => "t-shirt",
+                "question" => "question",
+                "crown" => "crown",
+                "furniture" => "armchair",
+                "ranking" => "ranking",
+                "trophy" => "trophy",
                 "tick-up" => "caret-up",
                 "tick-down" => "caret-down",
                 "tick-left" => "caret-left",

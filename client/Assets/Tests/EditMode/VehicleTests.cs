@@ -92,7 +92,8 @@ namespace CTLife.Tests
                 foreach (var t in prefab.GetComponentsInChildren<Transform>(true)) names.Add(t.name);
                 if (s.kind == VehicleKind.Car || s.kind == VehicleKind.Roadstar)
                     foreach (var part in new[] { "Wheel_FL", "Wheel_FR", "Wheel_RL", "Wheel_RR", "Door_FL", "Seat_Driver", "Entry_Driver", "SteeringCenter" })
-                        Assert.IsTrue(names.Contains(part), s.id + " " + part);
+                        // the v3 studio roadstar (e5c61231d) is an open hovercar: no front-left door to swing
+                        if (!(part == "Door_FL" && s.kind == VehicleKind.Roadstar)) Assert.IsTrue(names.Contains(part), s.id + " " + part);
                 if (s.kind == VehicleKind.Scooter) foreach (var part in new[] { "Wheel_F", "Wheel_R", "Seat_Driver", "Handlebar" }) Assert.IsTrue(names.Contains(part), s.id + " " + part);
                 if (s.kind == VehicleKind.Helicopter) Assert.IsTrue(names.Contains("Rotor_Main") && names.Contains("Seat_Driver"), s.id);
                 if (s.kind == VehicleKind.Drone) Assert.IsTrue(names.Contains("Rotor_FL") && names.Contains("Rotor_BR"), s.id);

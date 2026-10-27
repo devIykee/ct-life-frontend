@@ -108,7 +108,7 @@ namespace CTLife.Tests
             Assert.That(SystemInfo.graphicsDeviceType, Is.Not.EqualTo(GraphicsDeviceType.Null));
             foreach (string id in new[] { "head_snow", "head_rain" })
             {
-                var look = CreatorLookCatalog.Available().First(e => e.look[1] == id).look;
+                var look = CreatorLookCatalog.Available(true).First(e => e.look[1] == id).look;
                 var preview = new AvatarPreview(400, 400, transparent: true);
                 var image = new Texture2D(400, 400, TextureFormat.RGBA32, false);
                 var previous = RenderTexture.active;

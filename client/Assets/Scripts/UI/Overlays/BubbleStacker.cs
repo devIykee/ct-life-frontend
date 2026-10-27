@@ -50,6 +50,32 @@ namespace CTLife.UI
             }
         }
 
+        /// <summary>
+        /// Keeps bubbles out of the HUD's safe zones (coordinator 2026-10-27: a customer's line sat behind the on-shift pill).
+        /// A bubble that would overlap a zone moves down to just under it (the zones are the top HUD rows; a speaker high on
+        /// screen gets their line below the pills, never behind them). Pure; unit-tested.
+        /// </summary>
+        public static void KeepOut(List<Rect> placed, IList<Rect> zones)
+        {
+            if (placed == null || zones == null || zones.Count == 0) return;
+            for (int i = 0; i < placed.Count; i++)
+            {
+                var r = placed[i];
+                for (int pass = 0; pass < zones.Count; pass++)
+                {
+                    bool moved = false;
+                    foreach (var z in zones)
+                    {
+                        if (z.width <= 0 || z.height <= 0 || !Overlaps(r, z)) continue;
+                        r.y = z.yMax + Gap;
+                        moved = true;
+                    }
+                    if (!moved) break;
+                }
+                placed[i] = r;
+            }
+        }
+
         /// <summary>Overlap including the gap, so stacked bubbles never touch.</summary>
         public static bool Overlaps(Rect a, Rect b) =>
             a.xMin < b.xMax + Gap && b.xMin < a.xMax + Gap && a.yMin < b.yMax + Gap && b.yMin < a.yMax + Gap;

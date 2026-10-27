@@ -16,6 +16,10 @@ namespace CTLife.UI
         {
             ["settings.unstick"] = "Unstick me",
             ["settings.unstickHelp"] = "Move back onto safe ground while on foot.",
+            // the dream ladder (queue 18) and the first session (queue 17)
+            ["ladder.Basement"] = "Basement", ["ladder.HackerHouse"] = "Hacker House", ["ladder.Studio"] = "Studio", ["ladder.Penthouse"] = "Penthouse",
+            ["ladder.Hovercar"] = "Hovercar", ["ladder.startHere"] = "YOU START HERE",
+            ["settings.replayFirstDay"] = "Replay the first day", ["settings.replayFirstDayHelp"] = "The first-day guide again: your first shift, trade and chest.",
             ["settings.graphics"] = "Graphics", ["settings.graphics.auto"] = "Auto ({0})", ["settings.graphics.low"] = "Low", ["settings.graphics.high"] = "High",
             ["settings.graphicsHelp"] = "Low draws a smaller image without shadows or post effects, with less traffic and a nearer horizon, for a smoother game on entry phones. Auto picks it for this phone's memory and graphics chip.",
             ["settings.unstickUnavailable"] = "Get out of your vehicle first, then try again on the island.",
@@ -32,6 +36,8 @@ namespace CTLife.UI
             ["interact.knock"] = "Knock", ["interact.pickup"] = "Pick up", ["interact.collect"] = "Collect", ["interact.decorate"] = "Decorate",
             ["casino.play.slots"] = "Play slots", ["casino.play.crash"] = "Moon or Rug", ["casino.play.coinflip"] = "Coinflip", ["casino.tag"] = "The Rug Room",
             ["nod.collect"] = "Collect", ["nod.tag"] = "Community nod",
+            ["factory.launch"] = "Launch a coin", ["factory.board"] = "Board", ["factory.tag"] = "Rugpull Factory",
+            ["factory.tagDesk"] = "Launchpad Tower \u00b7 Launch desk", ["factory.rules"] = "Rules",
             ["rekt.shift"] = "Clock in", ["rekt.hiring"] = "Rekt Burger is hiring", ["rekt.info"] = "Menu", ["rekt.tag"] = "Rekt Burger",
             ["rekt.tagCounter"] = "Rekt Burger \u00b7 Counter", ["rekt.clockout"] = "Clock out", ["rekt.capped"] = "Cap reached",
             ["rekt.getjob"] = "Get the job", ["rekt.jobinfo"] = "Job info", ["rekt.clocking"] = "Clocking in",
@@ -496,7 +502,8 @@ namespace CTLife.UI
             ["rekt.dismiss"] = "We're so back",
         };
 
-        public static string T(string key) => Copy.TryGetValue(key, out var text) ? text : key;
+        /// <summary>A name-bearing key reads names.json first (NameTable `strings`), so a brand changes in one place.</summary>
+        public static string T(string key) => NameTable.TryString(key, out var named) ? named : Copy.TryGetValue(key, out var text) ? NameTable.Apply(text) : key;
         public static string F(string key, params object[] args) => string.Format(CultureInfo.CurrentCulture, T(key), args);
         public static string ReadableId(string id) => string.IsNullOrEmpty(id) ? "—" : CultureInfo.CurrentCulture.TextInfo.ToTitleCase(id.Replace('_', ' '));
         public static string DistrictDetail(string id) => Copy.TryGetValue("district." + id, out var text) ? text : "";
@@ -572,6 +579,7 @@ namespace CTLife.UI
                 Log.UnknownId("toasts", id);
                 return id;
             }
+            t = NameTable.Apply(t);   // approved names (names.json)
             if (p == null) return t;
             foreach (var kv in p)
             {
@@ -584,7 +592,7 @@ namespace CTLife.UI
 
         public static string Error(string code, string serverMessage = null)
         {
-            if (code != null && Errors.TryGetValue(code, out var m)) return m;
+            if (code != null && Errors.TryGetValue(code, out var m)) return NameTable.Apply(m);
             return T("common.error");
         }
 

@@ -76,6 +76,7 @@ namespace CTLife.World
                 float d = Vector3.Distance(a.PresentationPosition, focus);
                 bool culled = !a.isLocal && d > (a.cullDistance > 0f ? a.cullDistance : CullDistance);
                 int tier = a.isLocal || i < Lod0Count ? 0 : i < Lod0Count + Lod1Count ? 1 : 2;
+                a.CrowdRank = i;
                 a.ApplyLod(tier, culled, ThermalScale);
             }
         }

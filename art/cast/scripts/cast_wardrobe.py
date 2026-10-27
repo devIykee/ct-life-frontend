@@ -1038,13 +1038,64 @@ def scalp_mask(fd, lo=0.025, back_lo=-0.06):
     temple = (np.abs(c[:, 0]) > SKULL_HALF_W * 0.75) & (c[:, 2] < EYE_Z + 0.025) & (c[:, 1] < EYE_Y + 0.03)
     return (fd['sub'] == SUB['face']) & (c[:, 2] > hairline) & ~ears & ~temple & (n[:, 2] > -0.5)
 
+def skull_back_shell(offset=0.0018, back_lo=-0.06):
+    """The authored Snow head is a face mask: its cranium stops above the ears at the back (the authored hair covered it),
+    so a close crop showed a hole through the head from behind (Seeker, Rekt Burger crew, 2026-10-26). A scalp shell over
+    the missing part: an axis-aligned ellipsoid fitted to the head's own upper surface, kept where the head has no surface,
+    one ring wider so it tucks under the head's edge. Rain's head is closed, so nothing is added there."""
+    h = P['head']
+    co = mesh_arrays(h)
+    # the skull from the head's own landmarks (a least-squares ellipsoid does not fit a face mask): forehead in front, the
+    # nape behind (the back is closed below eye level), the skull's half width, the crown on top
+    nape = co[(co[:, 2] > EYE_Z - 0.06 * S) & (co[:, 2] < EYE_Z)]
+    brow = co[co[:, 2] > EYE_Z + 0.03 * S]
+    yb, yf = float(nape[:, 1].max()), float(brow[:, 1].min())
+    cy, ry = (yb + yf) / 2, (yb - yf) / 2
+    cz = EYE_Z - 0.005 * S
+    rx, rz = SKULL_HALF_W + 0.002, HEAD_TOP - cz
+    polys = [tuple(p.vertices) for p in h.data.polygons]
+    bvh = BVHTree.FromPolygons([Vector(v) for v in co], polys)
+    bm = bmesh.new()
+    verts = bm_sphere(bm, (0.0, cy, cz), (rx, ry, rz), seg=32, rings=20)
+    hair_lo = EYE_Z + back_lo * S
+    bare = set()
+    for f in bm.faces:
+        c = f.calc_center_median()
+        if c.z < hair_lo or c.y < EYE_Y + 0.06 * S:     # the back and the sides behind the temples only (never the face)
+            continue
+        hit = bvh.find_nearest(c)
+        if hit[0] is None or hit[3] > 0.006:
+            bare.add(f)
+    if len(bare) < 8:
+        bm.free()
+        log('skull shell: head is closed, none added')
+        return None
+    ring = {g2 for f in bare for v in f.verts for g2 in v.link_faces if g2.calc_center_median().z >= hair_lo - 0.01 and g2.calc_center_median().y >= EYE_Y + 0.05 * S}
+    keep = bare | ring
+    bmesh.ops.delete(bm, geom=[f for f in bm.faces if f not in keep], context='FACES')
+    bm.normal_update()
+    for v in bm.verts:
+        v.co += v.normal * offset
+    o = new_mesh_obj('__skull', bm, SUB['scalp'])
+    bm.free()
+    rigid(o, {'Head': 1.0})
+    smart_uv(o)
+    log('skull shell', dict(cy=round(cy, 3), cz=round(cz, 3), rx=round(rx, 3), ry=round(ry, 3), rz=round(rz, 3), faces=len(o.data.polygons)))
+    return o
+
+
 def build_hair():
     hfd = FD['head']
     if want('hair_buzz') or want('hair_locs'):
         sc = derive(P['head'], '__buzz', scalp_mask(hfd), offset=0.0018, sub=SUB['scalp'])
         if want('hair_buzz'):
-            register(duplicate(sc, '__buzz2'), 'hair_buzz', 'HAIR', (700, 330, 160, 70),
-                     notes='Close crop/buzz/cornrow base: scalp shell from the authored head.')
+            skull = skull_back_shell()
+            buzz = duplicate(sc, '__buzz2')
+            if skull is not None:
+                buzz = join([buzz, skull], '__buzz3')
+            register(buzz, 'hair_buzz', 'HAIR', (700, 330, 160, 70),
+                     notes='Close crop/buzz/cornrow base: scalp shell from the authored head (+ the back of the skull where '
+                           'the authored head is open).')
         if want('hair_locs'):
             bm = bmesh.new(); bm.faces.layers.int.new('sub'); bm.loops.layers.uv.new('AtlasUV')
             rng = np.random.default_rng(7)

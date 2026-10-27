@@ -135,10 +135,10 @@ namespace CTLife.CityLife.Casino
                     if (!c.Incoming || !c.Open || _seenIncoming.Contains(c.ChallengeId)) continue;
                     _seenIncoming.Add(c.ChallengeId);
                     if (_firstChallenges) continue;
-                    Log.Info("casino", $"incoming challenge {c.ChallengeId} from {c.ChallengerAlias} {c.StakeCents}c");
+                    Log.Info("casino", $"incoming challenge {c.ChallengeId} from {c.ChallengerAlias}");
                     Cues.Play("sfx_chips", 0.8f);
                     if (!ScreensOpen)
-                        Bus.Publish(ToastSignal.Text(CasinoText.F("flip.toast", string.IsNullOrEmpty(c.ChallengerAlias) ? CasinoText.T("flip.anon") : c.ChallengerAlias, CasinoText.Money(c.StakeCents)), ToastKind.Event));
+                        Bus.Publish(ToastSignal.Text(CasinoText.F("flip.toast", string.IsNullOrEmpty(c.ChallengerAlias) ? CasinoText.T("flip.anon") : c.ChallengerAlias), ToastKind.Event));
                     Incoming?.Invoke(c);
                 }
                 _firstChallenges = false;

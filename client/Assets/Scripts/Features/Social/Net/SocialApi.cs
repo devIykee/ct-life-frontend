@@ -142,23 +142,145 @@ namespace CTLife.SocialFeatures
         public async Task<DmRow> SendDm(string userId, string text, RetainedKey key, CancellationToken ct) =>
             SocialParse.Dm(await Write("POST", "/dms/" + Seg(userId), new JObject { ["text"] = text }, key, ct));
 
-        // ---------------------------------------------------------------- Timeline, follows, tips (Ph 3)
+        // ---------------------------------------------------------------- Timeline, follows (Ph 3; Cash tips removed, backend #25)
 
         public async Task<List<FeedPostRow>> Feed(string scope, CancellationToken ct) =>
             SocialParse.Feed(await Get("/feed?scope=" + (scope == "following" ? "following" : "global"), ct), out _);
 
-        public async Task<FeedPostRow> Post(string text, RetainedKey key, CancellationToken ct) =>
-            SocialParse.Post(await Write("POST", "/feed/posts", new JObject { ["text"] = text }, key, ct));
+        /// <summary>Backend #32: GET /feed?tab=foryou|following|city&amp;type=&amp;before= → posts, nextBefore, quiet.</summary>
+        public async Task<FeedPage> Timeline(string tab, string type, string before, CancellationToken ct)
+        {
+            var t = tab == "following" ? "following" : tab == "city" ? "city" : "foryou";
+            var q = "/feed?tab=" + t;
+            if (t == "city" && !string.IsNullOrEmpty(type)) q += "&type=" + Uri.EscapeDataString(type);
+            if (!string.IsNullOrEmpty(before)) q += "&before=" + Uri.EscapeDataString(before);
+            return SocialParse.Page(await Get(q, ct));
+        }
+
+        public async Task<FeedPostRow> Post(string text, RetainedKey key, CancellationToken ct, bool withPlace = false)
+        {
+            var body = new JObject { ["text"] = text };
+            if (withPlace) body["withPlace"] = true;
+            return SocialParse.Post(await Write("POST", "/feed/posts", body, key, ct));
+        }
+
+        /// <summary>Backend #32: POST /feed/checkins {venueId} (opt-in; within 60 m of the door; once per 15 min).</summary>
+        public async Task<FeedPostRow> CheckIn(string venueId, RetainedKey key, CancellationToken ct) =>
+            SocialParse.Post(await Write("POST", "/feed/checkins", new JObject { ["venueId"] = venueId }, key, ct));
 
         public Task Follow(string userId, bool follow, RetainedKey key, CancellationToken ct) =>
             Write(follow ? "POST" : "DELETE", "/follows/" + Seg(userId), null, key, ct);
+        // ---------------------------------------------------------------- Groups (backend #33, docs/GROUPS.md)
 
-        /// <summary>POST /tips {toUserId, amountCents} → CashTip {amountCents, feeCents, receivedCents} (3% burned, backend #20).</summary>
-        public async Task<TipResult> TipCash(string toUserId, long amountCents, RetainedKey key, CancellationToken ct) =>
-            SocialParse.Tip(await Write("POST", "/tips", new JObject { ["toUserId"] = toUserId, ["amountCents"] = amountCents }, key, ct));
+        public async Task<List<GroupSummary>> Groups(CancellationToken ct) => GroupParse.Summaries(await Get("/groups", ct));
 
-        public Task TipOnchain(string toUserId, string signature, RetainedKey key, CancellationToken ct) =>
-            Write("POST", "/tips/onchain", new JObject { ["toUserId"] = toUserId, ["signature"] = signature }, key, ct);
+        public async Task<GroupSummary> CreateGroup(string kind, string name, IReadOnlyList<string> inviteUserIds, RetainedKey key, CancellationToken ct)
+        {
+            var body = new JObject { ["kind"] = kind, ["name"] = name };
+            if (inviteUserIds != null && inviteUserIds.Count > 0) body["inviteUserIds"] = new JArray(inviteUserIds);
+            return GroupParse.Summary(await Write("POST", "/groups", body, key, ct)) ?? throw new FormatException("Bad group");
+        }
+
+        public async Task<List<GroupInvitePreview>> GroupInvites(CancellationToken ct) => GroupParse.Previews(await Get("/groups/invites", ct));
+
+        public async Task<GroupInfo> Group(string groupId, CancellationToken ct) => GroupParse.Info(await Get("/groups/" + Seg(groupId), ct));
+
+        /// <summary>PATCH /groups/:id {name?, rules?, slowMode?} (slowMode: the whole map, see GroupRules.SlowModeBody).</summary>
+        public async Task<GroupInfo> PatchGroup(string groupId, string name, string rules, JObject slowMode, RetainedKey key, CancellationToken ct)
+        {
+            var body = new JObject();
+            if (name != null) body["name"] = name;
+            if (rules != null) body["rules"] = rules;
+            if (slowMode != null) body["slowMode"] = slowMode;
+            return GroupParse.Info(await Write("PATCH", "/groups/" + Seg(groupId), body, key, ct));
+        }
+
+        public async Task<List<GroupMember>> GroupMembers(string groupId, CancellationToken ct) => GroupParse.Members(await Get("/groups/" + Seg(groupId) + "/members", ct));
+
+        public Task RemoveMember(string groupId, string userId, RetainedKey key, CancellationToken ct) =>
+            Write("POST", "/groups/" + Seg(groupId) + "/members/" + Seg(userId) + "/remove", null, key, ct);
+
+        public Task SetRole(string groupId, string userId, string role, RetainedKey key, CancellationToken ct) =>
+            Write("POST", "/groups/" + Seg(groupId) + "/members/" + Seg(userId) + "/role", new JObject { ["role"] = role }, key, ct);
+
+        public Task LeaveGroup(string groupId, RetainedKey key, CancellationToken ct) => Write("POST", "/groups/" + Seg(groupId) + "/leave", null, key, ct);
+
+        /// <summary>POST /groups/:id/mute {hours} (0 unmutes) → mutedUntil (ms) or null.</summary>
+        public async Task<long?> MuteGroup(string groupId, int hours, RetainedKey key, CancellationToken ct)
+        {
+            var r = await Write("POST", "/groups/" + Seg(groupId) + "/mute", new JObject { ["hours"] = hours }, key, ct);
+            try { return SocialWire.TimeMs((r as JObject)?["mutedUntil"]); } catch (FormatException) { return null; }
+        }
+
+        public Task ReadGroup(string groupId, RetainedKey key, CancellationToken ct) => Write("POST", "/groups/" + Seg(groupId) + "/read", null, key, ct);
+
+        public Task ReportGroup(string groupId, string reasonId, string note, RetainedKey key, CancellationToken ct)
+        {
+            var body = new JObject { ["reasonId"] = reasonId };
+            if (!string.IsNullOrWhiteSpace(note)) body["note"] = note;
+            return Write("POST", "/groups/" + Seg(groupId) + "/report", body, key, ct);
+        }
+
+        public async Task<GroupInviteLink> CreateInviteLink(string groupId, int? maxUses, int? ttlHours, RetainedKey key, CancellationToken ct)
+        {
+            var body = new JObject();
+            if (maxUses.HasValue) body["maxUses"] = maxUses.Value;
+            if (ttlHours.HasValue) body["ttlHours"] = ttlHours.Value;
+            return GroupParse.Link(await Write("POST", "/groups/" + Seg(groupId) + "/invites", body, key, ct));
+        }
+
+        public Task InviteUser(string groupId, string userId, RetainedKey key, CancellationToken ct) =>
+            Write("POST", "/groups/" + Seg(groupId) + "/invites/user", new JObject { ["userId"] = userId }, key, ct);
+
+        public async Task<GroupInvitePreview> InvitePreview(string code, CancellationToken ct) =>
+            GroupParse.Preview(await Get("/invites/" + InviteSeg(code), ct)) ?? throw new FormatException("Bad invite");
+
+        public async Task<GroupSummary> AcceptInvite(string code, RetainedKey key, CancellationToken ct) =>
+            GroupParse.Summary(await Write("POST", "/invites/" + InviteSeg(code) + "/accept", null, key, ct)) ?? throw new FormatException("Bad group");
+
+        public Task DeclineInvite(string code, RetainedKey key, CancellationToken ct) => Write("POST", "/invites/" + InviteSeg(code) + "/decline", null, key, ct);
+
+        public async Task<GroupMessagePage> GroupMessages(string groupId, string topic, string before, CancellationToken ct)
+        {
+            var q = "/groups/" + Seg(groupId) + "/messages?topic=" + Uri.EscapeDataString(topic ?? GroupTopics.Chat);
+            if (!string.IsNullOrEmpty(before)) q += "&before=" + Uri.EscapeDataString(before);
+            return GroupParse.Page(await Get(q, ct));
+        }
+
+        public async Task<GroupMessage> SendGroupChat(string groupId, string topic, string text, RetainedKey key, CancellationToken ct) =>
+            GroupParse.Message(await Write("POST", "/groups/" + Seg(groupId) + "/messages", new JObject { ["topic"] = topic, ["text"] = text }, key, ct))
+            ?? throw new FormatException("Bad message");
+
+        /// <summary>An alpha call (owner only): the server prices the entry and grades it like any alpha call.</summary>
+        public async Task<GroupMessage> SendGroupCall(string groupId, string coinId, double targetX, int stopPct, string text, RetainedKey key, CancellationToken ct)
+        {
+            var body = new JObject { ["topic"] = GroupTopics.Calls, ["coinId"] = coinId, ["targetX"] = targetX, ["stopPct"] = stopPct };
+            if (!string.IsNullOrWhiteSpace(text)) body["text"] = text;
+            return GroupParse.Message(await Write("POST", "/groups/" + Seg(groupId) + "/messages", body, key, ct)) ?? throw new FormatException("Bad message");
+        }
+
+        public async Task<GroupMessage> SendGroupWin(string groupId, string coinId, string text, RetainedKey key, CancellationToken ct)
+        {
+            var body = new JObject { ["topic"] = GroupTopics.Wins, ["coinId"] = coinId };
+            if (!string.IsNullOrWhiteSpace(text)) body["text"] = text;
+            return GroupParse.Message(await Write("POST", "/groups/" + Seg(groupId) + "/messages", body, key, ct)) ?? throw new FormatException("Bad message");
+        }
+
+        public Task DeleteGroupMessage(string groupId, string messageId, RetainedKey key, CancellationToken ct) =>
+            Write("DELETE", "/groups/" + Seg(groupId) + "/messages/" + Seg(messageId), null, key, ct);
+
+        public async Task<List<BoothRow>> Booths(string venueId, CancellationToken ct) => GroupParse.Booths(await Get("/venues/" + Seg(venueId) + "/booths", ct));
+
+        public Task ClaimBooth(string groupId, string venueId, string boothId, RetainedKey key, CancellationToken ct) =>
+            Write("POST", "/groups/" + Seg(groupId) + "/booth", new JObject { ["venueId"] = venueId, ["boothId"] = boothId }, key, ct);
+
+        public Task ReleaseBooth(string groupId, RetainedKey key, CancellationToken ct) => Write("DELETE", "/groups/" + Seg(groupId) + "/booth", null, key, ct);
+
+        private static string InviteSeg(string code)
+        {
+            if (!GroupLinks.IsCode(code)) throw new ArgumentException("Bad invite code");
+            return Uri.EscapeDataString(code);
+        }
     }
 
     /// <summary>Static facts about the endpoint set, for the progress log and diagnostics.</summary>
@@ -171,10 +293,16 @@ namespace CTLife.SocialFeatures
             "POST /video-calls", "POST /video-calls/{id}/end", "PUT /creator", "POST /paid-calls", "POST /paid-calls/{id}/submitted", "POST /paid-calls/{id}/accept",
             "POST /paid-calls/{id}/decline", "POST /paid-calls/{id}/end", "GET /paid-calls/{id}",
             "GET /dms", "GET /dms/{userId}?before=", "POST /dms/{userId}", "GET /feed?scope=", "POST /feed/posts",
-            "POST /follows/{userId}", "DELETE /follows/{userId}", "POST /tips", "POST /tips/onchain",
+            "POST /follows/{userId}", "DELETE /follows/{userId}",
             "GET /users/{id}", "POST /blocks/{userId}", "POST /reports",
+            "GET /groups", "POST /groups", "GET /groups/invites", "GET /groups/{id}", "PATCH /groups/{id}", "GET /groups/{id}/members",
+            "POST /groups/{id}/members/{userId}/remove", "POST /groups/{id}/members/{userId}/role", "POST /groups/{id}/leave",
+            "POST /groups/{id}/mute", "POST /groups/{id}/read", "POST /groups/{id}/report", "POST /groups/{id}/invites",
+            "POST /groups/{id}/invites/user", "GET /invites/{code}", "POST /invites/{code}/accept", "POST /invites/{code}/decline",
+            "GET /groups/{id}/messages?topic=&before=", "POST /groups/{id}/messages", "DELETE /groups/{id}/messages/{messageId}",
+            "GET /venues/{venueId}/booths", "POST /groups/{id}/booth", "DELETE /groups/{id}/booth",
         };
 
-        public static readonly IReadOnlyList<string> Realtime = new[] { "city space_update", "city dm", "city call_invite" };
+        public static readonly IReadOnlyList<string> Realtime = new[] { "city space_update", "city dm", "city call_invite", "city group_msg", "city group_invite" };
     }
 }

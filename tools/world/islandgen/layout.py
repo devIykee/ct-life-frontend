@@ -365,6 +365,14 @@ LANDMARKS = [
 ]
 # Landmark buildings (W3): non-venue heroes built like venue shells (facade styles as SHELLS) on their own pads.
 # at = centre, size = (w, d) m, yaw degrees (0 = the sign faces south), extra = a feature the builder adds.
+
+def _BRAND_RGB(key, brand='brand.mcdonalds'):
+    """A brand colour (sRGB 0..1) from contract/ids/brands.json, the one place brand marks and colours live."""
+    import json as _j, os as _o
+    h = _j.load(open(_o.path.join(_o.path.dirname(_o.path.abspath(__file__)), '..', '..', '..', 'contract', 'ids', 'brands.json')))['brands'][brand]['colors'][key]
+    return tuple(round(int(h[k:k + 2], 16) / 255, 3) for k in (1, 3, 5))
+
+
 LANDMARK_BUILDINGS = [
     dict(id='superteam_hq', at=(392, 372), size=(16, 16), yaw=200.0, h=30.0, roof='flat', style='glass', sign='BUILDER HQ',
          wall=(0.40, 0.24, 0.86), trim=(0.97, 0.66, 0.08), accent=(0.97, 0.66, 0.08), extra='bunting'),
@@ -386,8 +394,9 @@ LANDMARK_BUILDINGS = [
     # highway's shoulder by 2 m and every other road, pad and landmark (the first lot let the asphalt into the room).
     # walkin = the streamed room's door; sign_art = sign_rekt_burger.png from art/source/rektburger; extra neon_rekt keeps the
     # board's own orange and mint under the emission.
-    dict(id='rekt_burger', at=(-301.8, -306.7), size=(13, 14), yaw=145.0, h=6.2, roof='flat', style='plaster', sign='REKT BURGER',
-         wall=(0.16, 0.17, 0.19), trim=(1.0, 0.42, 0.17), accent=(0.22, 0.88, 0.64), extra='neon_rekt',
+    # 2026-10-27: McDonald's branding (contract/ids/brands.json): trim in the brand yellow, accent in the brand red
+    dict(id='rekt_burger', at=(-301.8, -306.7), size=(13, 14), yaw=145.0, h=6.2, roof='flat', style='plaster', sign="McDonald's",
+         wall=(0.16, 0.17, 0.19), trim=_BRAND_RGB('yellow'), accent=_BRAND_RGB('red'), extra='neon_rekt',
          walkin=(1.2, 2.3), sign_art=True),
     dict(id='mtndao_cairn', at=(-182, 513), size=(4, 4), yaw=180.0, h=0.0, roof='none', style='none', sign=None,
          wall=(0.5, 0.5, 0.5), trim=(0.5, 0.5, 0.5), accent=(0.86, 0.32, 0.20), extra='cairn'),

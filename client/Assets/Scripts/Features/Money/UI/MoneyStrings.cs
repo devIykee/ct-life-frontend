@@ -1,3 +1,4 @@
+using CTLife.Core;
 using System.Collections.Generic;
 using System.Globalization;
 
@@ -371,7 +372,7 @@ namespace CTLife.Economy
             return words.Length == 0 ? outcomeId : char.ToUpperInvariant(words[0]) + words.Substring(1);
         }
 
-        public static string T(string key) => key != null && Copy.TryGetValue(key, out var s) ? s : key ?? "";
+        public static string T(string key) => key != null && Copy.TryGetValue(key, out var s) ? NameTable.Apply(s) : key ?? "";
 
         public static string F(string key, params object[] args)
         {

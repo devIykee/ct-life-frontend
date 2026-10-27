@@ -130,5 +130,16 @@ namespace CTLife.Tests
                 Assert.IsFalse(BubbleStacker.Overlaps(_placed[i], _placed[j]), $"{i} vs {j}: {_placed[i]} {_placed[j]}");
             for (int i = 0; i < 3; i++) Assert.LessOrEqual(_placed[i].y, wanted[i].y, "bubbles only move up");
         }
+
+        [Test]
+        public void Bubbles_KeepOutOfTheHudZones()
+        {
+            // a customer's line high on screen would sit behind the on-shift pill (top centre): it moves just under it
+            var placed = new System.Collections.Generic.List<UnityEngine.Rect> { new UnityEngine.Rect(900, 100, 300, 60), new UnityEngine.Rect(900, 600, 300, 60) };
+            var zones = new[] { new UnityEngine.Rect(850, 20, 400, 180) };
+            CTLife.UI.BubbleStacker.KeepOut(placed, zones);
+            Assert.AreEqual(200 + CTLife.UI.BubbleStacker.Gap, placed[0].y, 1e-3);
+            Assert.AreEqual(600, placed[1].y, 1e-3, "a bubble clear of the HUD stays where it was");
+        }
     }
 }

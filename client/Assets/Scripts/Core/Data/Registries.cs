@@ -97,13 +97,13 @@ namespace CTLife.Core
 
             var venues = ids["venues"];
             if (venues?["districts"] is JArray districts)
-                foreach (var d in districts) Districts[d.Str("id")] = d.Str("name");
+                foreach (var d in districts) Districts[d.Str("id")] = NameTable.Get("district." + d.Str("id"), d.Str("name"));
             foreach (var v in ItemsOf(venues, "venues"))
             {
                 var id = v.Str("id");
                 var def = new VenueDef
                 {
-                    id = id, name = Label(v),
+                    id = id, name = NameTable.Get("venue." + id, Label(v)),   // one table for every name (names.json)
                     districtId = v.Str("districtId") ?? (FallbackDistricts.TryGetValue(id ?? "", out var dd) ? dd : "timeline"),
                     sceneKey = v.Str("sceneKey", v.Str("scene_key")), phase = v.Int("phase", 1),
                     maxPlayers = v.Int("maxPlayers", v.Int("maxClients", 50)),
@@ -113,7 +113,7 @@ namespace CTLife.Core
                 VenueOrder.Add(def);
             }
             if (Districts.Count == 0)
-                foreach (var (id, name) in FallbackDistrictNames) Districts[id] = name;
+                foreach (var (id, name) in FallbackDistrictNames) Districts[id] = NameTable.Get("district." + id, name);
 
             if (ids["spots"]?["venues"] is JObject spotVenues)
             {
@@ -168,7 +168,7 @@ namespace CTLife.Core
                 if (homes.Count == 0 && a.Str("venueId") != null) homes.Add(a.Str("venueId"));
                 Archetypes[a.Str("id")] = new ArchetypeDef
                 {
-                    id = a.Str("id"), name = Label(a), phase = a.Int("phase", 1), conditional = a.Str("conditional"),
+                    id = a.Str("id"), name = NameTable.Get("npc." + a.Str("id"), NameTable.Apply(Label(a))), phase = a.Int("phase", 1), conditional = a.Str("conditional"),
                     maxPerInstance = a.Int("maxPerInstance", 1), homeVenueIds = homes,
                 };
             }

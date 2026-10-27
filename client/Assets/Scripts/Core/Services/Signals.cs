@@ -117,6 +117,18 @@ namespace CTLife.Core
         public string districtId;
     }
 
+    /// <summary>
+    /// A gameplay moment other features can count (lane B, the first session, queue 17): a shift clocked in (Rekt Burger,
+    /// a career), a trade opened (a coin buy, a perp), the GM chest opened, the Quests app opened. Published after the
+    /// server accepted it.
+    /// </summary>
+    public struct GameplayEventSignal { public string kind; public string id; }
+
+    public static class GameplayEvents
+    {
+        public const string ShiftStart = "shift_start", TradeOpen = "trade_open", ChestOpen = "chest_open", QuestsOpen = "quests_open";
+    }
+
     /// <summary>A player was blocked (POST /blocks/{userId} succeeded).</summary>
     public struct UserBlockedSignal { public string userId; }
 }

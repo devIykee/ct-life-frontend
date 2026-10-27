@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using CTLife.Core;
+using CTLife.UI.DS;
 using CTLife.World;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -14,7 +15,7 @@ namespace CTLife.UI
     public sealed class InteractionPrompt : IDisposable
     {
         private readonly Subscriptions _subs = new Subscriptions();
-        private readonly VisualElement _actions, _pointer;
+        private readonly VisualElement _actions, _pointer, _where, _meta;
         private readonly Label _tag, _sub;
         private Label _busyLabel;
         private string _busyText;
@@ -34,14 +35,19 @@ namespace CTLife.UI
 
         public InteractionPrompt()
         {
-            _actions = El.Div("ct-interact-actions");
+            // Design system (SYSTEM.md 3.10, mockup 01a): a where-chip, the main orb + label pill (+ meta chip under it),
+            // at most one secondary glass orb. The pointer tail is kept for the capture harness but not drawn.
+            _actions = El.Div("ct-interact-actions ds-prompt-acts");
             _pointer = El.Div("ct-interact-pointer");
             _tag = El.Text("", "ct-interact-tag");
             _tag.pickingMode = PickingMode.Ignore;
+            _where = El.PassThrough(El.Div("ds-prompt-where", _tag));
+            _where.Show(false);
             _sub = El.Text("", "ct-interact-sub");
             _sub.pickingMode = PickingMode.Ignore;
-            _sub.Show(false);
-            Element = El.Div("ct-hud-interact", _pointer, _tag, _actions, _sub);
+            _meta = El.PassThrough(El.Div("ds-prompt-meta", _sub));
+            _meta.Show(false);
+            Element = El.Div("ct-hud-interact ds-prompt ds-prompt-pop", _pointer, _where, _actions);
             Element.name = "scene-interaction";
             Element.pickingMode = _pointer.pickingMode = _actions.pickingMode = PickingMode.Ignore;
             Element.style.position = Position.Absolute;
@@ -81,13 +87,14 @@ namespace CTLife.UI
             var key = primary.Q(className: "ct-interact-key");
             if (key == null) return;
             key.Clear();
-            key.Add(new UiIcon("check"));
+            key.Add(OrbIcon("check", true, false));
+            primary.Q(className: "ds-orb")?.AddToClassList("ds-orb--held");
             primary.AddToClassList("ct-interact-held");
             _holdUntil = Time.unscaledTime + 0.32f;
-            Element.schedule.Execute(() => Element.AddToClassList("ct-interact-out")).StartingIn(200);
+            Element.schedule.Execute(() => Element.AddToClassList("ds-prompt-out")).StartingIn(200);
             Element.schedule.Execute(() =>
             {
-                Element.RemoveFromClassList("ct-interact-out");
+                Element.RemoveFromClassList("ds-prompt-out");
                 if (_pendingRender) { _pendingRender = false; Render(_state); }
             }).StartingIn(330);
         }
@@ -114,42 +121,57 @@ namespace CTLife.UI
             SetPresented(false); // Wait for a measured action row; never flash at layout origin.
             bool job = s.style != null && s.style.StartsWith("job", StringComparison.Ordinal);
             Element.EnableInClassList("ct-interact-jobprompt", job);
-            Element.RemoveFromClassList("ct-interact-in");
+            Element.RemoveFromClassList("ds-in");
             _sub.text = s.sub ?? "";
-            _sub.Show(any && !string.IsNullOrEmpty(s.sub));
-            foreach (var tone in new[] { "good", "warn", "bad" }) _sub.EnableInClassList("ct-interact-sub--" + tone, s.subTone == tone);
+            _meta.Show(any && !string.IsNullOrEmpty(s.sub));
+            foreach (var tone in new[] { "good", "warn", "bad" }) _meta.EnableInClassList("ds-prompt-meta--" + tone, s.subTone == tone);
             if (!any) return;
-            // City HUD v2: the object's name on a chip, then each verb as a squircle with one glyph and the verb under it.
+            // The object's name on the where-chip (UPPERCASE in code: USS has no text-transform)
             string tag = string.IsNullOrEmpty(s.tagKey) ? "" : Strings.T(s.tagKey);
             if (tag == s.tagKey) tag = "";   // no string for this object: no chip rather than a raw key
             if (tag.Length > 0 && s.tagLocked) tag += " \u00b7 " + Strings.T("vehicle.locked");
             _tag.text = tag.ToUpperInvariant();
-            _tag.Show(tag.Length > 0);
-            // Sleuth heat (backend #17): a steal's heat chip is red, like the wanted stars' alarm colour
-            _tag.EnableInClassList("ct-interact-tag--heat", s.tagKey != null && s.tagKey.StartsWith("heat.", System.StringComparison.Ordinal));
+            _where.Show(tag.Length > 0);
+            // Sleuth heat (backend #17): a steal's heat chip reads in the danger colour, like the wanted stars
+            _where.EnableInClassList("ds-prompt-where--heat", s.tagKey != null && s.tagKey.StartsWith("heat.", System.StringComparison.Ordinal));
+            bool mainPlaced = false;
             foreach (var a in s.actions)
             {
+                // SYSTEM.md 3.10: one main orb. [Inference] Objects offering 3+ verbs keep them all (dropping one would
+                // remove a feature); they render as extra glass orbs until those offers are trimmed at the source.
+                bool main = a.primary && !mainPlaced;
                 var id = a.id;
                 var label = Strings.T(a.labelKey);
                 var owner = s.owner;
                 var target = s.targetId;
-                var button = El.Btn("", () =>
-                    { if (!_disposed && owner != null && InteractionController.Current == owner) owner.Perform(id, target); },
-                    a.primary ? "ct-interact ct-interact-primary" : "ct-interact ct-interact-secondary");
-                if (id == "buy" || (id == "ext" && s.tagLocked)) button.AddToClassList("ct-interact-locked");
-                if (a.primary && job) button.AddToClassList(s.style == "jobquiet" ? "ct-interact-quiet" : "ct-interact-job");
-                if (a.primary && s.disabled) button.AddToClassList("ct-interact-disabled");
+                var button = new Button(() =>
+                    { if (!_disposed && owner != null && InteractionController.Current == owner) owner.Perform(id, target); })
+                    { text = "", enableRichText = false };
+                bool locked = id == "buy" || (id == "ext" && s.tagLocked);
+                bool quiet = main && s.style == "jobquiet";
+                bool danger = main && s.style == "jobred";
+                bool off = main && s.disabled;
+                button.AddToClassList("ct-interact");
+                button.AddToClassList(main ? "ct-interact-primary" : "ct-interact-secondary");
+                button.AddToClassList("ds-orb");
+                button.AddToClassList(off ? "ds-orb--off" : danger ? "ds-orb--danger" : quiet ? "ds-orb--quiet" : main ? "ds-orb--main" : "ds-orb--alt");
+                if (off) button.AddToClassList("ct-interact-disabled");
+                if (locked) button.AddToClassList("ct-interact-locked");
                 button.name = "scene-action-" + id.Replace(':', '-');
                 button.tooltip = label;
-                var key = El.PassThrough(El.Div("ct-interact-key", new UiIcon(a.icon)));
-                if (id == "buy" || (id == "ext" && s.tagLocked)) key.Add(El.PassThrough(El.Div("ct-interact-lock", new UiIcon("locked"))));
+                if (main && !off && !danger && !quiet) button.Add(El.PassThrough(El.Div("ds-orb-ring")));
+                var key = El.PassThrough(El.Div("ct-interact-key ds-orb-key", OrbIcon(a.icon, main && !off && !danger && !quiet, off, main ? 60 : 44)));
                 button.Add(key);
+                if (locked) button.Add(El.PassThrough(El.Div("ct-interact-lock ds-orb-lock", OrbIcon("locked", false, false, 24))));
                 var verb = El.Text(label, "ct-interact-label");
-                button.Add(El.PassThrough(verb));
-                _actions.Add(button);
-                if (a.primary && s.busy && job) { _busyLabel = verb; _busyText = label; _dots = 0; _busyPulse.Resume(); }
+                var col = El.PassThrough(El.Div("ds-prompt-act", button, El.PassThrough(El.Div("ds-prompt-label", verb))));
+                if (main) { col.Add(_meta); _actions.Insert(0, col); mainPlaced = true; }
+                else _actions.Add(col);
+                if (main && s.busy && job) { _busyLabel = verb; _busyText = label; _dots = 0; _busyPulse.Resume(); }
             }
+            if (!mainPlaced) Element.Add(_meta);
             Element.EnableInClassList("ct-interact-busy", s.busy);
+            Element.EnableInClassList("ds-prompt-busy", s.busy);
         }
 
         /// <summary>Public for the Editor capture harness; production is driven after CameraRig's LateUpdate.</summary>
@@ -233,10 +255,18 @@ namespace CTLife.UI
             if (_presented == visible) return;
             _presented = visible;
             Element.style.visibility = visible ? Visibility.Visible : Visibility.Hidden;
-            // the job prompt pops in (opacity + scale, USS transition) one frame after it becomes visible
-            if (visible && Element.ClassListContains("ct-interact-jobprompt"))
-                Element.schedule.Execute(() => Element.AddToClassList("ct-interact-in"));
-            else if (!visible) Element.RemoveFromClassList("ct-interact-in");
+            // every prompt pops in (opacity + scale 160 ms, USS transition) one frame after it becomes visible
+            if (visible) Element.schedule.Execute(() => Element.AddToClassList("ds-in"));
+            else Element.RemoveFromClassList("ds-in");
+        }
+
+        /// <summary>An action glyph (UiIcon's kind names) as a design-system icon: 60 on the main orb, 44 on the secondary.</summary>
+        private static VisualElement OrbIcon(string kind, bool onAccent, bool off, int size = 0)
+        {
+            var e = Ds.Icon(null, size > 0 ? size : onAccent || off ? 60 : 44, off ? "ink2" : onAccent ? "on-accent" : "white");
+            var t = UiIcon.TextureFor(kind);
+            if (t != null) e.style.backgroundImage = Background.FromTexture2D(t);
+            return e;
         }
 
         private static bool Visible(VisualElement element)

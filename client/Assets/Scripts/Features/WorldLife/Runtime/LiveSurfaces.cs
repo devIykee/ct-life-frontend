@@ -456,10 +456,19 @@ namespace CTLife.WorldLife
             root.style.alignItems = Align.Center;
             root.style.paddingLeft = root.style.paddingRight = h * 0.08f;
             root.style.backgroundColor = new Color(0.07f, 0.09f, 0.16f, 1f);
-            root.Add(Text(WireText.Clean(WireText.Str(ad, "headline"), 40) ?? "CT CITY", h * 0.22f, true, new Color(0.99f, 0.8f, 0.2f)));
-            root.Add(Text(WireText.Clean(WireText.Str(ad, "sub"), 90) ?? "", h * 0.1f, false, Color.white));
+            root.Add(Text(WireText.Clean(Headline(ad), 40) ?? NameTable.Get("place.city", "City").ToUpperInvariant(), h * 0.22f, true, new Color(0.99f, 0.8f, 0.2f)));
+            root.Add(Text(WireText.Clean(NameTable.Apply(WireText.Str(ad, "sub")), 90) ?? "", h * 0.1f, false, Color.white));
             var tag = WireText.Clean(WireText.Str(ad, "tag"), 24);
             if (tag != null) root.Add(Chip(tag, h, new Color(1f, 1f, 1f, 0.18f)));
+        }
+
+        /// <summary>A house ad's headline: "nameId" names a place or app in contract/ids/names.json (shown in caps), so a
+        /// rename never needs new ad copy; a plain "headline" still passes through the names table's replace map.</summary>
+        public static string Headline(JToken ad)
+        {
+            var id = WireText.Str(ad, "nameId");
+            var named = string.IsNullOrEmpty(id) ? null : NameTable.Get(id);
+            return named != null ? named.ToUpperInvariant() : NameTable.Apply(WireText.Str(ad, "headline"));
         }
 
         private void BuildCreative(VisualElement root, Surface s, Texture tex)
@@ -520,11 +529,11 @@ namespace CTLife.WorldLife
             root.style.paddingTop = h * 0.03f;
             root.style.backgroundColor = new Color(0.03f, 0.05f, 0.09f, 1f);
             // This screen also contains local NPC flavour and retained city events, so it must not claim a live connection.
-            var title = Text(WireText.Str(_data.HouseAds["timeline"], "title") ?? "THE TIMELINE", h * 0.11f, true, new Color(0.11f, 0.85f, 0.95f));
+            var title = Text(Headline(_data.HouseAds["timeline"]) ?? NameTable.Get("app.timeline", "X").ToUpperInvariant(), h * 0.11f, true, new Color(0.11f, 0.85f, 0.95f));
             title.style.unityTextAlign = TextAnchor.MiddleLeft;
             root.Add(title);
             var lines = _feed.Lines(6, 72);
-            if (lines.Count == 0) lines.Add(WireText.Str(_data.HouseAds["timeline"], "empty") ?? "");
+            if (lines.Count == 0) lines.Add(NameTable.Apply(WireText.Str(_data.HouseAds["timeline"], "empty")) ?? "");
             foreach (var line in lines)
             {
                 var row = Text(line, h * 0.068f, false, Color.white);

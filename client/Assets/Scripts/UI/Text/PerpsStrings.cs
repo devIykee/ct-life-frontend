@@ -1,3 +1,4 @@
+using CTLife.Core;
 using System.Collections.Generic;
 using System.Globalization;
 
@@ -46,7 +47,7 @@ namespace CTLife.UI
             ["reviewOnly"] = "DEVELOPMENT REVIEW · SIMULATED RESPONSES · NO ORDERS", ["reviewAction"] = "Review only — no order can be submitted.",
             ["limitNote"] = "Showing recent positions. Older receipts may not be included.", ["scroll"] = "Scroll for order controls and positions.",
         };
-        public static string T(string key) => Copy.TryGetValue(key, out var value) ? value : key;
+        public static string T(string key) => Copy.TryGetValue(key, out var value) ? NameTable.Apply(value) : key;
         public static string F(string key, params object[] args) => string.Format(CultureInfo.CurrentCulture, T(key), args);
         public static string Cash(decimal cents) => (cents / 100m).ToString("N2", CultureInfo.CurrentCulture);
         public static string Price(long micros) => (micros / 1000000m).ToString("0.######", CultureInfo.CurrentCulture);

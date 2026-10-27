@@ -290,232 +290,6 @@
   "target": "hazmat"
  },
  {
-  "id": "loco_walk",
-  "source_bvh": "/Users/mac/Documents/codes/projects/ct-life-repair/art/raw/animations/loco_v3_bvh/cmu_16_22.bvh",
-  "mode": "loop",
-  "scale_leg_ratio": 1.0122,
-  "cycle_match_cost": 0.00557,
-  "source_window_s": [
-   0.9083,
-   1.8833
-  ],
-  "source_frames": [
-   109,
-   226
-  ],
-  "source_fps": 120.0000480000192,
-  "travel_speed_src_mps": 1.5912,
-  "closure_residual": {
-   "hips_m": 0.0089,
-   "max_rot_deg": 8.32,
-   "worst_bones": [
-    [
-     8.3,
-     "lowerarm_r"
-    ],
-    [
-     8.3,
-     "hand_r"
-    ],
-    [
-     7.1,
-     "upperarm_r"
-    ],
-    [
-     6.3,
-     "ball_r"
-    ]
-   ]
-  },
-  "head_pitch_mean_deg_src": -13.2,
-  "gaze_lift_deg": 9.2,
-  "phase_shift_frames": 12,
-  "hips_raised_m": -0.0064,
-  "knee_offset_hips_raise_m": [
-   0.0102,
-   0.023
-  ],
-  "arm_abduction_added_deg_max": {
-   "l": 2.0,
-   "r": 6.0
-  },
-  "arm_body_intersections": {
-   "frames_before": 17,
-   "frames_after": 0,
-   "tri_pairs_before_max": 173,
-   "tri_pairs_after_max": 0
-  },
-  "ik_goal_clamped_frames": 9,
-  "frames": 30,
-  "fps": 30,
-  "duration_s": 0.9667,
-  "time_warp": 1.0086,
-  "metres_per_cycle": 1.5703,
-  "native_speed_mps": 1.6245,
-  "stance_foot_backward_speed_mps": {
-   "l": 1.618,
-   "r": 1.6313
-  },
-  "stance_frames": {
-   "l": 13,
-   "r": 13
-  },
-  "lowest_foot_joint_z_m": 0.0598,
-  "fbx": "/Users/mac/Documents/codes/projects/ct-life-repair/client/Assets/Art/animations/mocap_v3/hazmat/loco_walk.fbx",
-  "fbx_bytes": 626988,
-  "target": "hazmat"
- },
- {
-  "id": "loco_jog",
-  "source_bvh": "/Users/mac/Documents/codes/projects/ct-life-repair/art/raw/animations/loco_v3_bvh/cmu_09_07.bvh",
-  "mode": "loop",
-  "scale_leg_ratio": 0.9827,
-  "cycle_match_cost": 0.00962,
-  "source_window_s": [
-   0.2417,
-   1.0
-  ],
-  "source_frames": [
-   29,
-   120
-  ],
-  "source_fps": 120.0000480000192,
-  "travel_speed_src_mps": 3.4251,
-  "closure_residual": {
-   "hips_m": 0.0098,
-   "max_rot_deg": 12.89,
-   "worst_bones": [
-    [
-     12.9,
-     "ball_r"
-    ],
-    [
-     5.9,
-     "hand_r"
-    ],
-    [
-     5.4,
-     "neck_01"
-    ],
-    [
-     4.7,
-     "spine_02"
-    ]
-   ]
-  },
-  "head_pitch_mean_deg_src": 3.6,
-  "phase_shift_frames": 19,
-  "hips_raised_m": -0.0031,
-  "knee_offset_hips_raise_m": [
-   0.0055,
-   0.0173
-  ],
-  "arm_abduction_added_deg_max": {
-   "l": 0,
-   "r": 0
-  },
-  "arm_body_intersections": {
-   "frames_before": 0,
-   "frames_after": 0,
-   "tri_pairs_before_max": 0,
-   "tri_pairs_after_max": 0
-  },
-  "ik_goal_clamped_frames": 7,
-  "frames": 24,
-  "fps": 30,
-  "duration_s": 0.7667,
-  "time_warp": 0.9891,
-  "metres_per_cycle": 2.5525,
-  "native_speed_mps": 3.3293,
-  "stance_foot_backward_speed_mps": {
-   "l": 3.1861,
-   "r": 3.1859
-  },
-  "stance_frames": {
-   "l": 5,
-   "r": 5
-  },
-  "lowest_foot_joint_z_m": 0.0538,
-  "fbx": "/Users/mac/Documents/codes/projects/ct-life-repair/client/Assets/Art/animations/mocap_v3/hazmat/loco_jog.fbx",
-  "fbx_bytes": 590764,
-  "target": "hazmat"
- },
- {
-  "id": "loco_sprint",
-  "source_bvh": "/Users/mac/Documents/codes/projects/ct-life-repair/art/raw/animations/loco_v3_bvh/cmu_143_01.bvh",
-  "mode": "loop",
-  "scale_leg_ratio": 1.1448,
-  "cycle_match_cost": 0.15158,
-  "source_window_s": [
-   0.0667,
-   0.7833
-  ],
-  "source_frames": [
-   8,
-   94
-  ],
-  "source_fps": 120.0000480000192,
-  "travel_speed_src_mps": 5.9583,
-  "closure_residual": {
-   "hips_m": 0.0235,
-   "max_rot_deg": 40.02,
-   "worst_bones": [
-    [
-     40.0,
-     "hand_r"
-    ],
-    [
-     38.5,
-     "lowerarm_r"
-    ],
-    [
-     23.3,
-     "ball_l"
-    ],
-    [
-     22.3,
-     "upperarm_r"
-    ]
-   ]
-  },
-  "head_pitch_mean_deg_src": -5.1,
-  "phase_shift_frames": 0,
-  "hips_raised_m": 0.04,
-  "knee_offset_hips_raise_m": [
-   0.0094,
-   0.0125
-  ],
-  "arm_abduction_added_deg_max": {
-   "l": 0,
-   "r": 12.0
-  },
-  "arm_body_intersections": {
-   "frames_before": 9,
-   "frames_after": 3,
-   "tri_pairs_before_max": 150,
-   "tri_pairs_after_max": 112
-  },
-  "ik_goal_clamped_frames": 8,
-  "frames": 23,
-  "fps": 30,
-  "duration_s": 0.7333,
-  "time_warp": 0.9773,
-  "metres_per_cycle": 4.8882,
-  "native_speed_mps": 6.6657,
-  "stance_foot_backward_speed_mps": {
-   "l": 6.3802,
-   "r": null
-  },
-  "stance_frames": {
-   "l": 3,
-   "r": null
-  },
-  "lowest_foot_joint_z_m": 0.0426,
-  "fbx": "/Users/mac/Documents/codes/projects/ct-life-repair/client/Assets/Art/animations/mocap_v3/hazmat/loco_sprint.fbx",
-  "fbx_bytes": 584220,
-  "target": "hazmat"
- },
- {
   "id": "loco_walk_start",
   "source_bvh": "/Users/mac/Documents/codes/projects/ct-life-repair/art/raw/animations/loco_v3_bvh/cmu_16_32.bvh",
   "mode": "oneshot",
@@ -1242,6 +1016,237 @@
   "lowest_foot_joint_z_m": 0.0249,
   "fbx": "/Users/mac/Documents/codes/projects/ct-life-repair/client/Assets/Art/animations/mocap_v3/hazmat/turn_180_walk.fbx",
   "fbx_bytes": 750156,
+  "target": "hazmat"
+ },
+ {
+  "id": "loco_walk",
+  "source_bvh": "/Users/mac/Documents/codes/projects/ct-life-lane-b/art/raw/animations/loco_v3_bvh/cmu_16_22.bvh",
+  "mode": "loop",
+  "scale_leg_ratio": 1.0122,
+  "cycle_match_cost": 0.00557,
+  "source_window_s": [
+   0.9083,
+   1.8833
+  ],
+  "source_frames": [
+   109,
+   226
+  ],
+  "source_fps": 120.0000480000192,
+  "travel_speed_src_mps": 1.5912,
+  "step_widen_m": 0.05,
+  "closure_residual": {
+   "hips_m": 0.0089,
+   "max_rot_deg": 8.32,
+   "worst_bones": [
+    [
+     8.3,
+     "lowerarm_r"
+    ],
+    [
+     8.3,
+     "hand_r"
+    ],
+    [
+     7.1,
+     "upperarm_r"
+    ],
+    [
+     6.3,
+     "ball_r"
+    ]
+   ]
+  },
+  "head_pitch_mean_deg_src": -13.2,
+  "gaze_lift_deg": 9.2,
+  "phase_shift_frames": 12,
+  "hips_raised_m": -0.0061,
+  "knee_offset_hips_raise_m": [
+   0.0105,
+   0.0225
+  ],
+  "arm_swing_gain": 1.25,
+  "arm_abduction_added_deg_max": {
+   "l": 2.0,
+   "r": 8.0
+  },
+  "arm_body_intersections": {
+   "frames_before": 24,
+   "frames_after": 0,
+   "tri_pairs_before_max": 182,
+   "tri_pairs_after_max": 0
+  },
+  "ik_goal_clamped_frames": 9,
+  "frames": 30,
+  "fps": 30,
+  "duration_s": 0.9667,
+  "time_warp": 1.0086,
+  "metres_per_cycle": 1.5703,
+  "native_speed_mps": 1.6245,
+  "stance_foot_backward_speed_mps": {
+   "l": 1.6417,
+   "r": 1.6563
+  },
+  "stance_frames": {
+   "l": 13,
+   "r": 13
+  },
+  "lowest_foot_joint_z_m": 0.0598,
+  "fbx": "/Users/mac/Documents/codes/projects/ct-life-lane-b/client/Assets/Art/animations/mocap_v3/hazmat/loco_walk.fbx",
+  "fbx_bytes": 626988,
+  "target": "hazmat"
+ },
+ {
+  "id": "loco_jog",
+  "source_bvh": "/Users/mac/Documents/codes/projects/ct-life-lane-b/art/raw/animations/loco_v3_bvh/cmu_09_07.bvh",
+  "mode": "loop",
+  "scale_leg_ratio": 0.9827,
+  "cycle_match_cost": 0.00962,
+  "source_window_s": [
+   0.2417,
+   1.0
+  ],
+  "source_frames": [
+   29,
+   120
+  ],
+  "source_fps": 120.0000480000192,
+  "travel_speed_src_mps": 3.4251,
+  "step_widen_m": 0.06,
+  "closure_residual": {
+   "hips_m": 0.0098,
+   "max_rot_deg": 12.89,
+   "worst_bones": [
+    [
+     12.9,
+     "ball_r"
+    ],
+    [
+     5.9,
+     "hand_r"
+    ],
+    [
+     5.4,
+     "neck_01"
+    ],
+    [
+     4.7,
+     "spine_02"
+    ]
+   ]
+  },
+  "head_pitch_mean_deg_src": 3.6,
+  "phase_shift_frames": 19,
+  "hips_raised_m": -0.0029,
+  "knee_offset_hips_raise_m": [
+   0.0053,
+   0.0177
+  ],
+  "arm_swing_gain": 1.2,
+  "arm_abduction_added_deg_max": {
+   "l": 0,
+   "r": 0
+  },
+  "arm_body_intersections": {
+   "frames_before": 0,
+   "frames_after": 0,
+   "tri_pairs_before_max": 0,
+   "tri_pairs_after_max": 0
+  },
+  "ik_goal_clamped_frames": 7,
+  "frames": 24,
+  "fps": 30,
+  "duration_s": 0.7667,
+  "time_warp": 0.9891,
+  "metres_per_cycle": 2.5525,
+  "native_speed_mps": 3.3293,
+  "stance_foot_backward_speed_mps": {
+   "l": 3.1644,
+   "r": 3.1659
+  },
+  "stance_frames": {
+   "l": 5,
+   "r": 5
+  },
+  "lowest_foot_joint_z_m": 0.0538,
+  "fbx": "/Users/mac/Documents/codes/projects/ct-life-lane-b/client/Assets/Art/animations/mocap_v3/hazmat/loco_jog.fbx",
+  "fbx_bytes": 590764,
+  "target": "hazmat"
+ },
+ {
+  "id": "loco_sprint",
+  "source_bvh": "/Users/mac/Documents/codes/projects/ct-life-lane-b/art/raw/animations/loco_v3_bvh/cmu_143_01.bvh",
+  "mode": "loop",
+  "scale_leg_ratio": 1.1448,
+  "cycle_match_cost": 0.15158,
+  "source_window_s": [
+   0.0667,
+   0.7833
+  ],
+  "source_frames": [
+   8,
+   94
+  ],
+  "source_fps": 120.0000480000192,
+  "travel_speed_src_mps": 5.9583,
+  "step_widen_m": 0.065,
+  "closure_residual": {
+   "hips_m": 0.0235,
+   "max_rot_deg": 40.02,
+   "worst_bones": [
+    [
+     40.0,
+     "hand_r"
+    ],
+    [
+     38.5,
+     "lowerarm_r"
+    ],
+    [
+     23.3,
+     "ball_l"
+    ],
+    [
+     22.3,
+     "upperarm_r"
+    ]
+   ]
+  },
+  "head_pitch_mean_deg_src": -5.1,
+  "phase_shift_frames": 0,
+  "hips_raised_m": 0.04,
+  "knee_offset_hips_raise_m": [
+   0.0087,
+   0.0125
+  ],
+  "arm_abduction_added_deg_max": {
+   "l": 0,
+   "r": 12.0
+  },
+  "arm_body_intersections": {
+   "frames_before": 9,
+   "frames_after": 3,
+   "tri_pairs_before_max": 157,
+   "tri_pairs_after_max": 101
+  },
+  "ik_goal_clamped_frames": 8,
+  "frames": 23,
+  "fps": 30,
+  "duration_s": 0.7333,
+  "time_warp": 0.9773,
+  "metres_per_cycle": 4.8882,
+  "native_speed_mps": 6.6657,
+  "stance_foot_backward_speed_mps": {
+   "l": 6.4141,
+   "r": null
+  },
+  "stance_frames": {
+   "l": 3,
+   "r": null
+  },
+  "lowest_foot_joint_z_m": 0.0426,
+  "fbx": "/Users/mac/Documents/codes/projects/ct-life-lane-b/client/Assets/Art/animations/mocap_v3/hazmat/loco_sprint.fbx",
+  "fbx_bytes": 584220,
   "target": "hazmat"
  }
 ]

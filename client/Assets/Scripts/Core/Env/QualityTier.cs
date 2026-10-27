@@ -40,6 +40,16 @@ namespace CTLife.Core
         public static float LowFarClip = 1500f;
         public static float LowPropCull = 90f, LowVegetationCull = 200f, LowInteriorCull = 120f;
         public static int LowTrafficCars = 5, LowPedestrians = 6;
+        /// <summary>Characters (by nearness, the local player included) that get the IK pass (feet, look-at, hands) on Low.</summary>
+        public static int LowIkAvatars = 4;
+        /// <summary>The 2026-10-27 main-thread pass (kit batch reuse on Low, the kit's per-prototype cell skip, IK for the
+        /// nearest few on Low). Dev builds: launch extra <c>lowCpu=0</c> turns it off for before/after runs on one build.</summary>
+        public static bool CpuPass = true;
+        /// <summary>Low: the kit renderer reuses its batches every other frame / keeps the LOD cross-fade (dev bisection
+        /// extra <c>lowReuse=0|1</c>; <c>lowFade=0|1|2</c> below).</summary>
+        public static bool LowKitReuse = true;
+        /// <summary>Low: which kit LOD switches keep the dithered cross-fade: 0 none, 1 all, 2 buildings only (the far views).</summary>
+        public static int LowKitFade = 2;
         public static float LowLodBias = 0.4f;
         /// <summary>Physics step on Low (High keeps the project's 0.02 s): one step per frame at 24-30 fps instead of two.</summary>
         public static float LowFixedDelta = 1f / 30f;
@@ -68,6 +78,9 @@ namespace CTLife.Core
             Knob("lowFar", ref LowFarClip);
             Knob("lowFixed", ref LowFixedDelta);
             if (LaunchArgs.Get("lowOcc") is string occ) LowKitOcclusion = occ == "1";
+            if (LaunchArgs.Get("lowCpu") == "0") CpuPass = false;
+            if (LaunchArgs.Get("lowReuse") is string reuse) LowKitReuse = reuse == "1";
+            if (LaunchArgs.Get("lowFade") is string fade && int.TryParse(fade, out int fadeMode)) LowKitFade = Mathf.Clamp(fadeMode, 0, 2);
 #endif
             Current = Resolve(Setting, Auto);
             Log.Info("quality", $"tier={Current} setting={Setting} auto={Auto} ({AutoReason}) ram={SystemInfo.systemMemorySize}MB gpu='{SystemInfo.graphicsDeviceName}' cpu={SystemInfo.processorCount}x{SystemInfo.processorFrequency}MHz");

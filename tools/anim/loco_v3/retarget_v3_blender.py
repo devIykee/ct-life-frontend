@@ -314,7 +314,7 @@ def choose_cycle(S, spec, yaw0):
     return best
 
 
-def solve_frame(S_fr, T, A, scale, z_src, z_tgt, offset, hand_follow=0.5):
+def solve_frame(S_fr, T, A, scale, z_src, z_tgt, offset, hand_follow=0.5, widen=0.0):
     """returns armature-space orientation quats per target bone name + hips head + ankle goals"""
     m = T.m
     W = {}
@@ -342,6 +342,16 @@ def solve_frame(S_fr, T, A, scale, z_src, z_tgt, offset, hand_follow=0.5):
     o_t = T.head('hips') - (T.head('th_l') + T.head('th_r')) * 0.5
     hq = W[m['hips']] @ T.rrest(m['hips']).inverted()
     hips = sp(mid) + hq @ o_t
+    if widen:
+        # open the hips by the same amount, so the knees move out with the feet (the leg IK keeps the knee plane of the
+        # FK thigh: widening only the ankle goals would bend the knees inward)
+        leg = (T.head('ca_l') - T.head('th_l')).length + (T.head('ft_l') - T.head('ca_l')).length
+        ang = math.asin(max(-0.5, min(0.5, widen / leg)))
+        fwd = hq @ Vector((0, 1, 0))
+        for s_, sg in (('l', -1.0), ('r', 1.0)):
+            th = m['th_' + s_]
+            if th in W:
+                W[th] = Quaternion(fwd, sg * ang) @ W[th]
     goals = {s: sp(S_fr['ft_' + s][1]) for s in ('l', 'r')}
     # keep each foot under ITS hip joint as in the source: shift the goals sideways by the hip-width difference
     # (a bulky rig with hip joints 21 cm out would otherwise cross its feet on a source's 9 cm hips)
@@ -352,7 +362,7 @@ def solve_frame(S_fr, T, A, scale, z_src, z_tgt, offset, hand_follow=0.5):
         for s_, sg in (('l', 1.0), ('r', -1.0)):
             t_half = abs((T.head('th_' + s_) - T.head('hips')).x)
             s_half = abs((S_HALF_HIP[0])) * scale
-            goals[s_] = goals[s_] + lat * (sg * (t_half - s_half))
+            goals[s_] = goals[s_] + lat * (sg * (t_half - s_half + widen))
     return W, hips, goals
 
 
@@ -856,7 +866,13 @@ def process_clip(T, prof, spec, out_dir):
     ank = sorted(min(f['ft_l'][1].z, f['ft_r'][1].z) for f in frs)
     z_src = spec.get('z_src', ank[max(0, len(ank) // 10)])
     z_tgt = T.head('ft_l').z
-    sols = [solve_frame(f, T, A, scale, z_src, z_tgt, Vector(), spec.get('hand_follow', 0.5)) for f in frs]
+    # step_widen_m (motion pass 2026-10-26): CMU 16_22 lands its feet ~15 cm apart (11 cm at the narrowest) on these
+    # cartoon-proportioned bodies with thick legs, which reads as knees closing; a measured healthy adult step width is
+    # ~18 cm. Each ankle goal moves outward by this much; the leg IK opens the hips to reach it.
+    widen = spec.get('step_widen_m', 0.0)
+    sols = [solve_frame(f, T, A, scale, z_src, z_tgt, Vector(), spec.get('hand_follow', 0.5), widen) for f in frs]
+    if widen:
+        rep['step_widen_m'] = widen
     if mode == 'loop':
         W0, h0, g0 = sols[0]
         WN, hN, gN = sols[-1]
@@ -973,6 +989,34 @@ def process_clip(T, prof, spec, out_dir):
                 sm[-1] = sm[0]
             sols = [(W, h + Vector((0, 0, sm[i])), g) for i, (W, h, g) in enumerate(sols)]
             rep['knee_offset_hips_raise_m'] = [round(min(sm), 4), round(max(sm), 4)]
+    gain = spec.get('arm_swing_gain', 1.0)
+    if abs(gain - 1.0) > 1e-3:
+        m_ = T.m
+        for s_ in ('l', 'r'):
+            sh, ua, fa, hd = m_['sh_' + s_], m_['ua_' + s_], m_['fa_' + s_], m_['hand_' + s_]
+            if not all(b_ in sols[0][0] for b_ in (sh, ua)):
+                continue
+            rel = [W[sh].inverted() @ W[ua] for W, _, _ in sols]
+            ref = rel[0]
+            acc = [0.0, 0.0, 0.0, 0.0]
+            for q in rel:
+                q2 = q if q.dot(ref) >= 0 else -q
+                for j in range(4):
+                    acc[j] += q2[j]
+            mean = Quaternion(acc).normalized()
+            for i, (W, h, g) in enumerate(sols):
+                dev = rel[i] @ mean.inverted()
+                if dev.w < 0:
+                    dev = -dev
+                ax, ang = dev.to_axis_angle()
+                new_rel = Quaternion(ax, ang * gain) @ mean
+                old_ua = W[ua]
+                W[ua] = W[sh] @ new_rel
+                # the forearm and hand keep their pose relative to the upper arm
+                for child in (fa, hd):
+                    if child in W:
+                        W[child] = W[ua] @ (old_ua.inverted() @ W[child])
+        rep['arm_swing_gain'] = gain
     # pose: FK -> leg IK -> arm clearance -> hands -> FK
     Ms, clamp, pen_before, pen_after, arm_corr = [], 0, [], [], []
     corr = {'l': [], 'r': []}

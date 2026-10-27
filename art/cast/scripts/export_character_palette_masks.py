@@ -21,7 +21,7 @@ records=[]
 def sha(p): return hashlib.sha256(Path(p).read_bytes()).hexdigest()
 def hexcolor(c): return '#'+''.join(f'{round(float(x)*255):02x}' for x in np.clip(c,0,1))
 for lid,record in manifest['looks'].items():
-    if lid not in ('snow_everyday','rain_breeze') and not lid.startswith('player_'): continue
+    if lid not in ('snow_everyday','rain_breeze') and not lid.startswith('player_') and not lid.endswith('_rekt_crew'): continue
     fam=record['family']; resolution=record['atlas_size']; assert resolution==1024
     masks=[np.zeros((resolution,resolution,4),np.float32) for _ in range(2)]
     supports={r:0 for r in REGIONS}
@@ -67,7 +67,7 @@ for lid,record in manifest['looks'].items():
     head='head_snow' if lid=='snow_everyday' else 'head_rain' if lid=='rain_breeze' else 'head_'+lid
     if lid=='snow_everyday': look=['skin_tone3',head,'hair_snow_bun','top_vneck_charcoal','bottom_denim_light','shoes_sneakers_blue','acc_none']
     elif lid=='rain_breeze': look=['skin_tone3',head,'hair_rain_ponytail','top_sleeveless_white','bottom_denim_fitted','shoes_canvas_ochre','acc_scarf_sky']
-    else: look=['skin_'+record['skin_tone'],head,'hair_'+lid,'top_'+lid,'bottom_'+lid,'shoes_'+lid,'acc_none']
+    else: look=['skin_'+(record.get('skin_tone') or 'tone3'),head,'hair_'+lid,'top_'+lid,'bottom_'+lid,'shoes_'+lid,'acc_none']
     records.append({'id':lid,'headId':head,'look':look,'family':fam,'resolution':resolution,
         'files':{'mask0':lid+'_Mask0.png','mask1':lid+'_Mask1.png'},
         'sha256':{f'mask{i}':sha(ROOT/(lid+f'_Mask{i}.png')) for i in range(2)},

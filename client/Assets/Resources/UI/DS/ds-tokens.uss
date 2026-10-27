@@ -1,0 +1,93 @@
+/* CT Life design system: tokens. v2 skin approved 2026-10-27 (ct-life-evidence/design-system/v2/DELTA.md): tactile light
+   cards (two-tone frame + base, recessed tiles, 3D primary), Lilita One display, per-brand theming (.brand-<id> below).
+   Every colour in the game comes from here. USS var() cannot nest in rgba() and has no arithmetic, so each alpha
+   variant is its own token. Defined on :root and .ct-root (UiRoot adds ct-root) so sheets added at runtime inherit. */
+:root, .ct-root {
+    /* v2 tactile light: card frame + base, inner well, recessed tiles, recessed progress track */
+    --ds-frame: #E9ECF2;
+    --ds-frame-base: #BAC2CF;
+    --ds-frame-hi: rgba(255,255,255,0.75);
+    --ds-well: #F8F9FB;
+    --ds-well-base: #D3D9E2;
+    --ds-tile-top: #CBD2DC;
+    --ds-tile-bottom: #F4F6F9;
+    --ds-track: #C6CDD8;
+    --ds-track-top: #B3BBC8;
+    --ds-fill-base: rgba(0,0,0,0.12);
+    --ds-title-drop: rgba(0,0,0,0.10);
+    --ds-hud-drop: rgba(0,0,0,0.45);
+    --ds-pip: #E5383B;
+    --ds-siren: #2563EB;
+    /* brand slots: a dialog / toast tied to a venue takes its brand on these (overridden by .brand-<id>) */
+    --b-title: #161B24;
+    --b-primary: #2BD47D;
+    --b-primary-top: #5BE39C;
+    --b-primary-base: #17985A;
+    --b-on-primary: #04210F;
+    --b-hero: #2BD47D;
+    --b-fill: #2BD47D;
+    --b-fill-top: #7BEBB2;
+    /* light surfaces: cards, sheets, screens */
+    --ds-card: #F7F8FA;
+    --ds-tile: #DEE3EA;
+    --ds-white: #FFFFFF;
+    --ds-line: #D9DEE5;
+    --ds-card-edge: rgba(16,21,28,0.06);
+    /* ink */
+    --ds-ink: #161B24;
+    --ds-ink-2: #444D5B;
+    --ds-ink-3: #535C69;
+    /* the one accent: go / earn / up */
+    --ds-accent: #2BD47D;
+    --ds-accent-depth: #19A35C;
+    --ds-on-accent: #04210F;
+    --ds-accent-ink: #0A7A40;
+    --ds-accent-tint: #DCF6E7;
+    --ds-accent-ring: rgba(43,212,125,0.28);
+    /* semantic */
+    --ds-warn: #F5A524;
+    --ds-on-warn: #2B1A00;
+    --ds-warn-ink: #8A5200;
+    --ds-warn-tint: #FDF0D5;
+    --ds-danger: #D92D2F;
+    --ds-danger-depth: #A81F22;
+    --ds-on-danger: #FFFFFF;
+    --ds-danger-ink: #B42318;
+    --ds-danger-tint: #FDE4E3;
+    --ds-disabled: #E2E6EB;
+    --ds-disabled-ink: #727B88;
+    /* HUD: dark glass over the world, no blur */
+    /* Linear colour space: UI Toolkit blends alpha in linear space, so a dark fill over the bright world reads lighter than
+       the same alpha in the mockups (device probe 2026-10-26, Infinix: 0.72 glass and 0.55 scrim read washed out). Dark
+       over-world fills use a' = 1 - (1 - a)^2.2 to match the mockup look; whites and lines are left as specified. */
+    --ds-hud: rgba(14,17,23,0.95);            /* = v2 mockup 0.74 (linear-space blending, see note) */
+    --ds-hud-base: rgba(5,6,9,0.97);         /* = v2 glass with its 0.42 black inset: drawn as the bottom border */
+    --ds-hud-line: rgba(255,255,255,0.14);
+    --ds-hud-ink: #FFFFFF;
+    --ds-hud-ink-2: rgba(255,255,255,0.70);
+    --ds-hud-off: rgba(255,255,255,0.28);
+    --ds-badge-edge: rgba(12,15,20,0.90);
+    --ds-joystick: rgba(12,15,20,0.47);       /* = mockup 0.25 */
+    --ds-joystick-ring: rgba(255,255,255,0.45);
+    --ds-joystick-knob: rgba(255,255,255,0.85);
+    --ds-minimap-edge: rgba(255,255,255,0.22);
+    --ds-scrim: rgba(8,10,14,0.73);           /* = v2 0.45: the world at about 55% brightness behind every card */
+    --ds-clear: rgba(0,0,0,0);
+    /* radii (only these four) */
+    --ds-r-sm: 12px;
+    --ds-r-md: 20px;
+    --ds-r-lg: 32px;
+    --ds-r-pill: 999px;
+}
+
+/* ------------------------------------------------------------------ brand themes: ONE table (v2/DELTA.md)
+   A dialog or toast tied to a venue takes its brand on exactly four things: hero mark, title colour, primary button,
+   progress fill. The marks live in Resources/UI/Brands (BrandTable.cs); these are the colours. */
+.brand-mcdonalds {
+    --b-title: #DA291C; --b-primary: #FFC72C; --b-primary-top: #FFDA6B; --b-primary-base: #D39A00; --b-on-primary: #27251F;
+    --b-hero: #DA291C; --b-fill: #FFC72C; --b-fill-top: #FFE08A;
+}
+.brand-police {
+    --b-title: #1E3A8A; --b-primary: #2563EB; --b-primary-top: #4F86F7; --b-primary-base: #1A44A8; --b-on-primary: #FFFFFF;
+    --b-hero: #1E3A8A; --b-fill: #2563EB; --b-fill-top: #6C9BF8;
+}

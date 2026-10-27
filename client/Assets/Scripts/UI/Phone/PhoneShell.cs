@@ -12,6 +12,8 @@ namespace CTLife.UI
     {
         public abstract string Id { get; }
         public abstract string Title { get; }
+        /// <summary>The name players see: names.json `app.&lt;id&gt;` when present (one table for every name), else <see cref="Title"/>.</summary>
+        public string DisplayTitle => NameTable.Get("app." + Id, Title);
         public virtual string Monogram => Title.Substring(0, Math.Min(2, Title.Length));
         /// <summary>Short name under the home-screen icon (iOS labels are one short word); the app title stays.</summary>
         public virtual string HomeLabel => Title;
@@ -283,15 +285,15 @@ namespace CTLife.UI
             var tile = El.Btn("", () =>
             {
                 if (_home.SuppressClick) return;
-                if (app.Phase > CurrentPhase) Bus.Publish(ToastSignal.Text(Strings.F("phone.soon", app.Title)));
-                else if (!Features.IsAvailable(app.Feature)) Bus.Publish(ToastSignal.Text(Strings.F("phone.unavailable", app.Title), ToastKind.Bad));
+                if (app.Phase > CurrentPhase) Bus.Publish(ToastSignal.Text(Strings.F("phone.soon", app.DisplayTitle)));
+                else if (!Features.IsAvailable(app.Feature)) Bus.Publish(ToastSignal.Text(Strings.F("phone.unavailable", app.DisplayTitle), ToastKind.Bad));
                 else Launch(app);
             }, "ct-app");
             tile.name = "phone-app-" + app.Id;
-            tile.tooltip = app.Title + (!open ? " · " + Strings.T("common.soon") : !available ? " · " + Strings.T("common.unavailable") : "");
+            tile.tooltip = app.DisplayTitle + (!open ? " · " + Strings.T("common.soon") : !available ? " · " + Strings.T("common.unavailable") : "");
             tile.EnableInClassList("ct-app-locked", !open || !available);
             tile.Add(El.PassThrough(icon));
-            tile.Add(El.PassThrough(El.Text(app.HomeLabel, "ct-app-label")));
+            tile.Add(El.PassThrough(El.Text(NameTable.Get("app." + app.Id, NameTable.Apply(app.HomeLabel)), "ct-app-label")));
             if (!open) tile.Add(El.PassThrough(El.Text(Strings.T("common.soon"), "ct-app-phase")));
             else if (!available) tile.Add(El.PassThrough(El.Text(Strings.T("common.unavailable"), "ct-app-phase")));
             return tile;
@@ -303,7 +305,7 @@ namespace CTLife.UI
             if (app.Phase > CurrentPhase || !Features.IsAvailable(app.Feature))
             {
                 Home();
-                Bus.Publish(ToastSignal.Text(Strings.F(app.Phase > CurrentPhase ? "phone.soon" : "phone.unavailable", app.Title)));
+                Bus.Publish(ToastSignal.Text(Strings.F(app.Phase > CurrentPhase ? "phone.soon" : "phone.unavailable", app.DisplayTitle)));
                 return;
             }
             _current?.Closed();
@@ -312,7 +314,7 @@ namespace CTLife.UI
             _frame.RemoveFromClassList("ct-phone-at-home");
             SetChrome(app.Chrome);
             _back.Show(true);
-            _title.text = app.Title;
+            _title.text = app.DisplayTitle;
             _homeControl.tooltip = Strings.T("phone.home");
             _home.Suspend();
             _home.Show(false);
@@ -322,7 +324,7 @@ namespace CTLife.UI
             {
                 var page = app.Open();
                 var heading = page.Q<Label>(className: "ct-h1");
-                if (heading != null && heading.text == app.Title)
+                if (heading != null && heading.text == app.DisplayTitle)
                     heading.AddToClassList("ct-phone-repeated-title");
                 _body.Add(page);
             }

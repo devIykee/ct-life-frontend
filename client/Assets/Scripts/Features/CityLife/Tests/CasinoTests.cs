@@ -72,8 +72,8 @@ namespace CTLife.CityLife.Tests
         public void Challenge_RolesAndSides()
         {
             var list = CasinoChallenge.ParseList(JObject.Parse(@"{""challenges"":[{""challengeId"":""c1"",""role"":""opponent"",""challengerId"":""u1"",""challengerAlias"":""degen"",
-                ""opponentId"":""u2"",""opponentAlias"":""me"",""stakeCents"":500,""challengerSide"":""heads"",""status"":""open"",""seedHash"":""h"",""seed"":null,
-                ""result"":null,""winnerId"":null,""potCents"":null,""houseCutCents"":null,""payoutCents"":null,""createdAt"":""2026-10-24T10:00:00Z"",
+                ""opponentId"":""u2"",""opponentAlias"":""me"",""challengerSide"":""heads"",""status"":""open"",""seedHash"":""h"",""seed"":null,
+                ""result"":null,""winnerId"":null,""createdAt"":""2026-10-24T10:00:00Z"",
                 ""expiresAt"":""2026-10-24T10:02:00Z"",""settledAt"":null}]}"));
             Assert.AreEqual(1, list.Count);
             var c = list[0];
@@ -81,6 +81,11 @@ namespace CTLife.CityLife.Tests
             Assert.AreEqual("tails", c.MySide);
             Assert.AreEqual("degen", c.PeerAlias);
             Assert.AreEqual(120.0, c.SecondsLeft(c.CreatedAtMs), 0.001);
+            // backend #25: the accept reply carries the challenge and the (unchanged) Cash, no round
+            var reply = CasinoChallengeReply.Parse(JObject.Parse(@"{""challenge"":{""challengeId"":""c1"",""role"":""opponent"",""challengerSide"":""heads"",
+                ""status"":""settled"",""result"":""tails"",""winnerId"":""u2""},""cashCents"":30000}"));
+            Assert.IsTrue(reply.Challenge.IWon("u2"));
+            Assert.AreEqual(30000, reply.CashCents);
         }
 
         [Test]

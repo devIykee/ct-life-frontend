@@ -42,6 +42,9 @@ namespace CTLife.CityLife
         private void OnQuestMoved(Quest q, QuestBoard board)
         {
             if (_disposed || q == null || board == null) return;
+            // design system: quest progress rides the one toast channel (objective pill with a thin bar), not its own capsule
+            var host = UiRoot.Instance?.Toasts;
+            if (host != null) { host.Show(QuestToast.Spec(q, board)); return; }
             if (_toast == null || _toast.parent == null) { _toast = new QuestToast(); _toastLayer.Add(_toast); }
             _toast.Show(q, board);
         }
@@ -75,6 +78,24 @@ namespace CTLife.CityLife
         private IVisualElementScheduledItem _next;
         private Tween _bar;
         private bool _showing;
+
+        /// <summary>Pure: the DS toast for a quest update ("Make a trade 1/3" with its bar; a completion "Quest 2/3: ..." with a check).</summary>
+        public static CTLife.UI.DS.DsToastSpec Spec(Quest q, QuestBoard board)
+        {
+            bool weekly = q.Weekly;
+            int done = weekly ? board.WeeklyDone : board.DailyDone, total = weekly ? board.Weekly.Count : board.Daily.Count;
+            string name = string.IsNullOrEmpty(q.Title) ? q.Description : q.Title;
+            return new CTLife.UI.DS.DsToastSpec
+            {
+                Icon = q.Completed ? "check" : "flag",
+                Tone = q.Completed ? CTLife.UI.DS.Tone.Accent : CTLife.UI.DS.Tone.Neutral,
+                Text = q.Completed ? RetentionText.F(weekly ? "toast.weekly" : "toast.daily", done, Math.Max(total, 1), name) : name,
+                Trailing = q.Completed ? null : q.Progress + "/" + q.Target,
+                Progress01 = q.Completed ? (float?)null : q.Fraction,
+                Seconds = q.Completed ? 2.6f : 1.8f,
+                Key = "quest:" + q.Id,
+            };
+        }
 
         public QuestToast()
         {

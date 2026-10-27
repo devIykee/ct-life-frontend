@@ -1,3 +1,4 @@
+using CTLife.Core;
 using System.Collections.Generic;
 using System.Globalization;
 
@@ -80,12 +81,41 @@ namespace CTLife.CityLife.RektBurger
             ["band.collect"] = "Collect",
             ["band.again"] = "Clock in again",
             ["band.jobs"] = "Jobs",
+            // design-system dialogs (mockup 01b, 2026-10-26)
+            ["card.shift"] = "Your shift",
+            ["chip.clock"] = "On shift \u00b7 {0}",
+            ["dlg.done"] = "Shift done!",
+            ["dlg.maxed"] = "Maxed out for today",
+            ["dlg.onShift"] = "On shift",
+            ["dlg.time"] = "Time worked",
+            ["dlg.earned"] = "Earned",
+            ["dlg.soFar"] = "Earned so far",
+            ["dlg.xp"] = "Career XP",
+            ["dlg.resets"] = "resets in {0}",
+            ["dlg.collect"] = "Collect {0}",
+            ["dlg.ok"] = "OK",
+            ["dlg.keep"] = "Keep working",
+            ["dlg.away"] = "While you were away",
+            ["dlg.fullLength"] = "Ran its full length",
+            ["dlg.rank"] = "+{0} XP \u00b7 {1} XP to {2}",
+            // v2 cards (2026-10-27, mockups a/b)
+            ["clockin.sub"] = "Work the counter. You earn Cash for every minute on shift.",
+            ["clockin.pay"] = "Pay",
+            ["clockin.rate"] = "{0}/hr",
+            ["clockin.left"] = "Left today",
+            ["dlg.left"] = "{0} left to earn today.",
+            ["dlg.nice"] = "Nice work.",
+            ["dlg.capBack"] = "Maxed out for today. Back in {0}.",
+            ["rank.divider"] = "Earn {0} XP to get promoted",
+            ["rank.top"] = "Top rank",
+            ["uniform.divider"] = "Work 2 minutes on shift to earn it",
+            ["uniform.got"] = "New: the crew uniform is yours",
 
             ["leave.glow"] = "Glow-up! Posted to your Timeline.",
             ["leave.done"] = "Apron hung up.",
         };
 
-        public static string T(string key) => En.TryGetValue(key, out var v) ? v : key;
+        public static string T(string key) => En.TryGetValue(key, out var v) ? NameTable.Apply(v) : key;
         public static string F(string key, params object[] args) => string.Format(CultureInfo.InvariantCulture, T(key), args);
         public static string Money(long cents) => CTLife.Core.Money.Cash(cents);
     }

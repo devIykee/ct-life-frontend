@@ -1,3 +1,4 @@
+using CTLife.Core;
 using System.Collections.Generic;
 
 namespace CTLife.UI
@@ -27,6 +28,6 @@ namespace CTLife.UI
             ["name.SKR"] = "Seeker",
             ["name.ORE"] = "Ore",
         };
-        public static string T(string key) => English.TryGetValue(key, out var value) ? value : key;
+        public static string T(string key) => English.TryGetValue(key, out var value) ? NameTable.Apply(value) : key;
     }
 }

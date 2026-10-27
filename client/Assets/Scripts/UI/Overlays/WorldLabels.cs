@@ -32,7 +32,9 @@ namespace CTLife.UI
             new Dictionary<AvatarView, (VisualElement, Label, VisualElement)>();
         private readonly List<(Transform anchor, VisualElement el, float until)> _bubbles = new List<(Transform, VisualElement, float)>();
         private readonly List<VisualElement> _bubbleShown = new List<VisualElement>();
-        private readonly List<Rect> _bubbleWanted = new List<Rect>(), _bubblePlaced = new List<Rect>();
+        private readonly List<Rect> _bubbleWanted = new List<Rect>(), _bubblePlaced = new List<Rect>(), _hudZones = new List<Rect>();
+        /// <summary>The HUD pieces bubbles must not cover (set by Hud: the plate row, the top centre column, the top-right corner).</summary>
+        public static readonly List<VisualElement> SafeZones = new List<VisualElement>();
         private readonly Subscriptions _subs = new Subscriptions();
         private readonly List<AvatarView> _stale = new List<AvatarView>();
         private readonly List<AvatarView> _avatars = new List<AvatarView>();
@@ -173,6 +175,16 @@ namespace CTLife.UI
                 else el.style.display = DisplayStyle.None;
             }
             BubbleStacker.Resolve(_bubbleWanted, _bubblePlaced);
+            _hudZones.Clear();
+            foreach (var z in SafeZones)
+            {
+                if (z == null || z.panel == null || z.resolvedStyle.display == DisplayStyle.None || z.resolvedStyle.visibility == Visibility.Hidden) continue;
+                var wb = z.worldBound;
+                if (float.IsNaN(wb.width) || wb.width <= 0) continue;
+                var min = _layer.WorldToLocal(wb.min); var max = _layer.WorldToLocal(wb.max);
+                _hudZones.Add(Rect.MinMaxRect(min.x, min.y, max.x, max.y));
+            }
+            BubbleStacker.KeepOut(_bubblePlaced, _hudZones);
             for (int i = 0; i < _bubbleShown.Count; i++)
                 _bubbleShown[i].style.translate = new Translate(_bubblePlaced[i].x, _bubblePlaced[i].y);
         }

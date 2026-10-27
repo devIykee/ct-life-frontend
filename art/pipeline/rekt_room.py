@@ -82,6 +82,13 @@ def setup_materials():
     mat_img('wood', os.path.join(PH, 'tex_planks_brown_10', 'planks_brown_10_diff_1k.png'), 1.6, tint=(0.85, 0.72, 0.6), rough=0.5)
     mat_img('charcoal', None, 1, tint=(0.035, 0.038, 0.045), rough=0.55)
     mat_img('orange', None, 1, tint=(0.92, 0.2, 0.03), rough=0.45)
+    # the brand palette (contract/ids/brands.json brand.mcdonalds, user 2026-10-26): a modern store's warm charcoal wainscot,
+    # a yellow stripe and trim, the logo wall in brand red (sRGB hex -> linear tints)
+    br = json.load(open(os.path.join(REPO, 'contract', 'ids', 'brands.json')))['brands']['brand.mcdonalds']['colors']
+    lin = lambda h: tuple(((int(h[i:i + 2], 16) / 255) / 12.92 if int(h[i:i + 2], 16) / 255 <= 0.04045 else ((int(h[i:i + 2], 16) / 255 + 0.055) / 1.055) ** 2.4) for i in (1, 3, 5))
+    mat_img('red', None, 1, tint=lin(br['red']), rough=0.45)
+    mat_img('yellow', None, 1, tint=lin(br['yellow']), rough=0.4)
+    mat_img('wainscot', None, 1, tint=lin('#3d3a35'), rough=0.5)
     mat_img('vinyl', None, 1, tint=(0.85, 0.18, 0.03), rough=0.35)
     mat_img('vinyl_dark', None, 1, tint=(0.04, 0.04, 0.045), rough=0.4)
     mat_img('quartz', None, 1, tint=(0.88, 0.86, 0.83), rough=0.25)
@@ -97,8 +104,17 @@ def setup_materials():
     mat_img('panel', None, 1, tint=(0, 0, 0), emit=(WI.kelvin_rgb(4200), 3.0))
     mat_img('kpanel', None, 1, tint=(0, 0, 0), emit=(WI.kelvin_rgb(5200), 3.2))
     mat_img('daylight', None, 1, tint=(0, 0, 0), emit=((0.78, 0.86, 1.0), 2.2))
+    # the storefront panes: an out-of-focus day street (art/source/rektburger rb_window.png) lit as daylight
+    m = bpy.data.materials.new('street'); m.use_nodes = True
+    nt = m.node_tree; b = nt.nodes['Principled BSDF']
+    t = nt.nodes.new('ShaderNodeTexImage'); t.image = bpy.data.images.load(os.path.join(PNG, 'rb_window.png'))
+    uvn = nt.nodes.new('ShaderNodeUVMap'); uvn.uv_map = 'UVMap'; nt.links.new(uvn.outputs['UV'], t.inputs['Vector'])
+    b.inputs['Base Color'].default_value = (0, 0, 0, 1)
+    nt.links.new(t.outputs['Color'], b.inputs['Emission Color']); b.inputs['Emission Strength'].default_value = 2.4
+    MATS['street'] = m
     mat_img('mint_glow', None, 1, tint=(0, 0, 0), emit=((0.22, 0.88, 0.64), 4.0))
     mat_img('orange_glow', None, 1, tint=(0, 0, 0), emit=((1.0, 0.42, 0.17), 4.0))
+    mat_img('yellow_glow', None, 1, tint=(0, 0, 0), emit=((1.0, 0.72, 0.18), 4.0))
     mat_img('heat', None, 1, tint=(0, 0, 0), emit=((1.0, 0.38, 0.12), 6.0))
     mat_img('lamp', None, 1, tint=(0, 0, 0), emit=(WI.kelvin_rgb(2700), 6.0))
 
@@ -181,8 +197,8 @@ def shell(B):
         B.quad(pts if facing > 0 else pts[::-1], mat)
 
     dx = DOOR_W / 2
-    din = [(0.0, 1.05, 'charcoal'), (1.05, 1.13, 'orange'), (1.13, ZH, 'plaster')]
-    kit = [(0.0, 2.4, 'tile'), (2.4, ZH, 'plaster')]
+    din = [(0.0, 1.05, 'wainscot'), (1.05, 1.13, 'yellow'), (1.13, ZH, 'plaster')]
+    kit = [(0.0, 2.32, 'tile'), (2.32, 2.4, 'yellow'), (2.4, ZH, 'plaster')]   # a brand-yellow band tops the tiles
     # the storefront: panes either side of the door (z 0.45 .. 3.0), the front wall round them
     panes = [(-4.6, -0.95), (0.95, 4.6)]
     for za, zb, m in din:
@@ -202,15 +218,17 @@ def shell(B):
                     wall_y(FRONT_T, xa, xb, za, min(zb, lo), m, +1)
                 if zb > hi:
                     wall_y(FRONT_T, xa, xb, max(za, hi), zb, m, +1)
-        wall_x(x0, FRONT_T, CY1, za, zb, m, +1)
+        wall_x(x0, FRONT_T, CY1, za, zb, 'red' if m == 'plaster' else m, +1)    # the booth wall: a brand-red feature wall
         wall_x(x1, FRONT_T, CY1, za, zb, m, -1)
     for za, zb, m in kit:
         wall_y(YD, x0, x1, za, zb, m, -1)
         wall_x(x0, CY1, YD, za, zb, m, +1)
         wall_x(x1, CY1, YD, za, zb, m, -1)
     # the panes: daylight behind slim black mullions (the street is not drawn from inside), sills
-    for a, b in panes:
-        B.quad([(a, FRONT_T - 0.05, 0.45), (b, FRONT_T - 0.05, 0.45), (b, FRONT_T - 0.05, 3.0), (a, FRONT_T - 0.05, 3.0)][::-1], 'daylight')
+    for k, (a, b) in enumerate(panes):
+        u0, u1 = (0.0, 1.0) if k == 0 else (1.0, 0.0)      # the second pane mirrored, so the street does not repeat
+        B.quad([(a, FRONT_T - 0.05, 0.45), (b, FRONT_T - 0.05, 0.45), (b, FRONT_T - 0.05, 3.0), (a, FRONT_T - 0.05, 3.0)][::-1], 'street',
+               uv=[(u0, 1.0), (u1, 1.0), (u1, 0.0), (u0, 0.0)])
         for xa, xb in ((a, a + 0.06), (b - 0.06, b)):
             B.box(xa, xb, FRONT_T - 0.06, FRONT_T + 0.02, 0.45, 3.0, 'black')
         n = int(round((b - a) / 1.25))
@@ -228,9 +246,9 @@ def shell(B):
     B.quad([(-dx, 0, DOOR_H), (-dx, FRONT_T, DOOR_H), (dx, FRONT_T, DOOR_H), (dx, 0, DOOR_H)], 'black')
     B.quad([(-dx, 0, 0), (dx, 0, 0), (dx, FRONT_T, 0), (-dx, FRONT_T, 0)], 'terrazzo')
     B.quad([(-dx, 0, DOOR_H), (-dx, 0, 2.6), (dx, 0, 2.6), (dx, 0, DOOR_H)][::-1], 'charcoal')
-    B.box(-dx - 0.1, -dx, FRONT_T, FRONT_T + 0.04, 0, DOOR_H + 0.1, 'orange', skip=('-y',))
-    B.box(dx, dx + 0.1, FRONT_T, FRONT_T + 0.04, 0, DOOR_H + 0.1, 'orange', skip=('-y',))
-    B.box(-dx - 0.1, dx + 0.1, FRONT_T, FRONT_T + 0.04, DOOR_H, DOOR_H + 0.1, 'orange', skip=('-y',))
+    B.box(-dx - 0.1, -dx, FRONT_T, FRONT_T + 0.04, 0, DOOR_H + 0.1, 'yellow', skip=('-y',))
+    B.box(dx, dx + 0.1, FRONT_T, FRONT_T + 0.04, 0, DOOR_H + 0.1, 'yellow', skip=('-y',))
+    B.box(-dx - 0.1, dx + 0.1, FRONT_T, FRONT_T + 0.04, DOOR_H, DOOR_H + 0.1, 'yellow', skip=('-y',))
     # ceiling (faces down) and light panels (just below it)
     B.quad([(x0, FRONT_T, ZH), (x1, FRONT_T, ZH), (x1, YD, ZH), (x0, YD, ZH)][::-1], 'ceiling')
     for (cx, cy) in ((-2.6, 1.8), (0.0, 1.8), (2.6, 1.8), (-2.6, 4.4), (0.0, 4.4), (2.6, 4.4)):
@@ -240,36 +258,13 @@ def shell(B):
         B.box(cx - 1.25, cx + 1.25, 8.6, 9.2, ZH - 0.04, ZH, 'steel_dark', skip=('+z',))
         B.quad([(cx - 1.2, 8.65, ZH - 0.045), (cx - 1.2, 9.15, ZH - 0.045), (cx + 1.2, 9.15, ZH - 0.045), (cx + 1.2, 8.65, ZH - 0.045)], 'kpanel')
     # an orange cove line round the dining room's ceiling edge, skirting
-    B.box(x0 + 0.02, x0 + 0.06, FRONT_T, CY1, ZH - 0.18, ZH - 0.14, 'orange_glow')
-    B.box(x1 - 0.06, x1 - 0.02, FRONT_T, CY1, ZH - 0.18, ZH - 0.14, 'orange_glow')
+    B.box(x0 + 0.02, x0 + 0.06, FRONT_T, CY1, ZH - 0.18, ZH - 0.14, 'yellow_glow')
+    B.box(x1 - 0.06, x1 - 0.02, FRONT_T, CY1, ZH - 0.18, ZH - 0.14, 'yellow_glow')
 
 
 def counter(B):
-    """The counter: charcoal front with an orange band and a mint kick light, a quartz top, the staff way in on the right,
-    the pass shelf under heat lamps, the order screen's stand; the menu boards' frames hanging above."""
-    B.box(CX0, CX1, CY0 + 0.05, CY1, 0.0, 1.02, 'charcoal')
-    B.box(CX0, CX1, CY0 + 0.03, CY0 + 0.05, 0.62, 0.74, 'orange')
-    B.box(CX0, CX1, CY0 + 0.0, CY0 + 0.05, 0.04, 0.08, 'mint_glow')
-    B.box(CX0 - 0.04, CX1 + 0.04, CY0 - 0.06, CY1 + 0.04, 1.02, 1.08, 'quartz')
-    # the end panel to the left wall (the kitchen side is closed there); on the right the staff way in stays open (the
-    # clock-in loop walks the player through it to the stations), an orange-capped post marking it
-    B.box(-XW, CX0, CY0 + 0.05, CY1, 0.0, 1.08, 'charcoal')
-    B.box(XW - 0.12, XW, CY0 + 0.05, CY1, 0.0, 1.0, 'steel')
-    B.box(XW - 0.14, XW, CY0 + 0.03, CY1 + 0.02, 1.0, 1.06, 'orange')
-    # pass shelf over the counter's middle, a heat-lamp bar above it (warm glow onto the shelf)
-    for x in (-1.7, 1.1):
-        B.box(x - 0.025, x + 0.025, CY0 + 0.3, CY0 + 0.35, 1.08, 1.95, 'steel')
-    B.box(-1.75, 1.15, CY0 + 0.15, CY0 + 0.55, 1.42, 1.46, 'steel')
-    B.box(-1.75, 1.15, CY0 + 0.2, CY0 + 0.5, 1.9, 1.98, 'steel_dark')
-    B.box(-1.65, 1.05, CY0 + 0.25, CY0 + 0.45, 1.885, 1.9, 'heat')
-    # trays waiting on the pass (charcoal with a mint liner)
-    for x in (-1.2, 0.1):
-        B.box(x - 0.24, x + 0.24, CY0 + 0.18, CY0 + 0.52, 1.46, 1.48, 'vinyl_dark')
-        B.box(x - 0.2, x + 0.2, CY0 + 0.21, CY0 + 0.49, 1.48, 1.485, 'pan_green')
-    # order screen stand (the screen is a props quad)
-    B.box(-2.75, -2.55, CY0 + 0.3, CY0 + 0.4, 1.08, 1.32, 'steel_dark')
-    B.box(-3.05, -2.25, CY0 + 0.24, CY0 + 0.3, 1.3, 1.9, 'black')
-    # menu boards' frames and their hangers (faces are props quads)
+    """Signage only (the counter itself is a ready-made model, see furnish()): the menu boards' frames and hangers above
+    the counter (their faces are props quads on the sign atlas)."""
     for a, b in ((-3.95, -0.65), (-0.35, 2.95)):
         B.box(a - 0.05, b + 0.05, CY1 + 0.08, CY1 + 0.14, 2.2, 3.1, 'black')
         for x in (a + 0.3, b - 0.3):
@@ -277,99 +272,85 @@ def counter(B):
 
 
 def kitchen(B):
-    """The line along the back wall: grill and fryers under a hood, the prep fridge with pans, the drink fountain, the
-    tall fridge."""
-    yb0, yb1 = YD - 0.85, YD
-    # flat-top grill
-    B.box(-5.0, -3.3, yb0, yb1, 0.0, 0.86, 'steel')
-    B.box(-5.0, -3.3, yb0, yb1, 0.86, 0.92, 'black')
-    B.box(-5.0, -3.3, yb0 - 0.04, yb0, 0.78, 0.86, 'steel_dark')
-    for k in range(4):
-        x = -4.85 + k * 0.42
-        B.cyl(x, yb0 - 0.03, 0.62, 0.66, 0.035, 'black', n=8)
-    # patties on the grill
-    for x, y in ((-4.6, yb0 + 0.3), (-4.2, yb0 + 0.45), (-3.8, yb0 + 0.28)):
-        B.cyl(x, y, 0.92, 0.94, 0.07, 'oil', n=10)
-    # fryers: two oil wells with baskets
-    B.box(-3.2, -1.9, yb0, yb1, 0.0, 0.92, 'steel')
-    for x in (-2.85, -2.25):
-        B.box(x - 0.24, x + 0.24, yb0 + 0.12, yb1 - 0.12, 0.88, 0.9, 'oil')
-        B.box(x - 0.2, x + 0.2, yb0 + 0.18, yb1 - 0.22, 0.9, 1.0, 'steel_dark')
-        B.box(x - 0.02, x + 0.02, yb0 - 0.05, yb0 + 0.2, 0.98, 1.02, 'black')
-    # the hood over grill and fryers, a lamp strip underneath
-    B.box(-5.1, -1.8, YD - 1.25, YD, 2.35, 3.1, 'steel')
-    B.box(-5.0, -1.9, YD - 1.15, YD - 1.05, 2.33, 2.35, 'kpanel')
-    B.box(-5.1, -1.8, YD - 0.2, YD, 3.1, ZH, 'steel')
-    # prep fridge with ingredient pans
-    B.box(-1.7, 0.9, yb0, yb1, 0.0, 0.9, 'steel')
-    B.box(-1.7, 0.9, yb0 - 0.02, yb0, 0.1, 0.8, 'steel_dark')
-    pans = ['pan_red', 'pan_green', 'pan_yellow', 'pan_white', 'pan_green', 'pan_red']
-    for k, m in enumerate(pans):
-        x = -1.55 + k * 0.41
-        B.box(x, x + 0.36, yb0 + 0.12, yb0 + 0.5, 0.86, 0.92, 'steel_dark')
-        B.box(x + 0.02, x + 0.34, yb0 + 0.14, yb0 + 0.48, 0.92, 0.93, m)
-    B.box(-1.7, 0.9, yb0 + 0.55, yb1, 0.9, 1.25, 'steel')
-    # drink fountain on a cabinet
-    B.box(1.1, 2.5, yb0, yb1, 0.0, 0.92, 'charcoal')
-    B.box(1.2, 2.4, yb0 + 0.15, yb1, 0.92, 1.75, 'black')
-    B.box(1.25, 2.35, yb0 + 0.13, yb0 + 0.15, 1.2, 1.7, 'orange')
-    for k in range(4):
-        x = 1.38 + k * 0.28
-        B.box(x - 0.04, x + 0.04, yb0 + 0.06, yb0 + 0.16, 1.12, 1.2, 'steel')
-    B.box(1.2, 2.4, yb0 + 0.02, yb0 + 0.3, 0.92, 0.95, 'steel_dark')
-    # tall fridge
-    B.box(2.9, 4.6, YD - 0.85, YD, 0.0, 2.25, 'steel')
-    B.box(3.74, 3.76, YD - 0.87, YD - 0.85, 0.05, 2.2, 'black')
-    for x in (3.6, 3.9):
-        B.box(x - 0.02, x + 0.02, YD - 0.92, YD - 0.87, 0.8, 1.6, 'steel_dark')
-    # the KITCHEN header's backing on the back wall
+    """Signage only: the KITCHEN header's backing on the back wall and the pass screen's frame and hangers (the line is
+    ready-made models, see furnish())."""
     B.box(1.1, 2.5, YD - 0.05, YD, 2.45, 3.0, 'black')
+    for cx in (-0.55, 0.95, 2.7):        # the kitchen order screens' bezels
+        B.box(cx - 0.46, cx + 0.46, YD - 0.04, YD, 1.58, 2.16, 'black')
+    yo = CY1 + 0.16
+    B.box(-0.8, 0.2, yo - 0.06, yo - 0.005, 1.95, 2.71, 'black')
+    for x in (-0.6, 0.0):
+        B.box(x - 0.01, x + 0.01, yo - 0.04, yo - 0.02, 2.71, ZH, 'steel')
 
 
 def dining(B):
-    """Two booths on the left (orange vinyl, charcoal backs, quartz tables on steel pedestals) with pendants; four two-seat
-    tables on the right with chairs; the logo wall's frame on the right wall."""
+    """The logo wall's backing panel (right wall) and the booth seats' spots (the booths are ready-made models, see
+    furnish()). Seat ids, positions and approaches are unchanged (the server's seat list)."""
     seats = []
     for k, c in enumerate((1.75, 4.15)):
         for sy, face in ((c - 0.8, 0), (c + 0.8, 180)):
-            y0, y1 = (sy - 0.28, sy + 0.22) if face == 0 else (sy - 0.22, sy + 0.28)
-            B.box(-XW, -3.55, y0, y1, 0.0, 0.42, 'vinyl_dark')
-            B.box(-XW, -3.55, y0, y1, 0.42, 0.5, 'vinyl')
-            by0, by1 = (sy - 0.36, sy - 0.22) if face == 0 else (sy + 0.22, sy + 0.36)
-            B.box(-XW, -3.55, by0, by1, 0.0, 1.15, 'vinyl_dark')
-            B.box(-XW, -3.55, by0 + (0.0 if face == 0 else -0.04), by1 + (0.04 if face == 0 else 0.0), 0.5, 1.05, 'vinyl')
             seats.append(dict(id=f'booth_{k}_{face}', kind='seat', at=[-4.35, sy, 0.5], yaw=face, approach=[-3.1, sy]))
-        B.box(-XW + 0.05, -3.75, c - 0.42, c + 0.42, 0.72, 0.76, 'quartz')
-        B.cyl(-4.45, c, 0.0, 0.72, 0.05, 'steel', n=10, caps=False)
-        B.cyl(-4.45, c, 0.0, 0.03, 0.26, 'steel', n=14)
-        # pendant
-        B.cyl(-4.45, c, 2.3, ZH, 0.008, 'black', n=6, caps=False)
-        B.cyl(-4.45, c, 2.15, 2.32, 0.2, 'orange', n=16)
-        B.quad([(-4.45 + 0.19 * math.cos(2 * math.pi * i / 4 + math.pi / 4), c + 0.19 * math.sin(2 * math.pi * i / 4 + math.pi / 4), 2.149) for i in range(3, -1, -1)], 'lamp')
-    for (tx, ty) in ((0.9, 2.1), (3.2, 2.1), (0.9, 4.4), (3.2, 4.4)):
-        B.box(tx - 0.36, tx + 0.36, ty - 0.36, ty + 0.36, 0.72, 0.76, 'wood')
-        B.cyl(tx, ty, 0.0, 0.72, 0.04, 'black', n=8, caps=False)
-        B.box(tx - 0.22, tx + 0.22, ty - 0.22, ty + 0.22, 0.0, 0.02, 'black')
-        for sy in (-1, 1):
-            cy = ty + sy * 0.62
-            B.box(tx - 0.21, tx + 0.21, cy - 0.2, cy + 0.2, 0.44, 0.48, 'orange')
-            for lx in (-0.18, 0.18):
-                for ly in (-0.17, 0.17):
-                    B.box(tx + lx - 0.015, tx + lx + 0.015, cy + ly - 0.015, cy + ly + 0.015, 0.0, 0.44, 'black')
-            by = cy + sy * 0.18
-            B.box(tx - 0.21, tx + 0.21, by - 0.02, by + 0.02, 0.48, 0.86, 'black')
-    # logo wall frame (right wall, faces -x)
-    B.box(XW - 0.06, XW, 1.45, 5.25, 1.35, 2.95, 'charcoal', skip=('+x',))
+    B.box(XW - 0.06, XW, 1.45, 5.25, 1.35, 2.95, 'red', skip=('+x',))
     return seats
 
 
+def furnish():
+    """Every piece of furniture and equipment is a ready-made CC BY model (Sketchfab, vetted 2026-10-26; credits in
+    art/LICENSES.md), processed into art/processed/world_v3/v3_kitchen and placed by slot. Stations keep their spots:
+    grill x -4.15, fryer -2.55, prep -0.4 (y 10.85, facing the back wall); the pass x -0.3 at the counter's staff face."""
+    P = []
+    yb = YD - 0.02
+    # ---- the line, backs to the back wall (left to right): clamshell grill, fry station, prep table, flat-top, sink, fridge
+    P += fit_prop('kt_platen_grill', -4.5, yb, w=1.25, anchor='back')
+    P += fit_prop('kt_deep_fryer', -2.62, yb, w=2.42, anchor='back')
+    P += fit_prop('kt_steel_table', -0.55, yb, yaw=90, w=1.6, anchor='back')
+    P += fit_prop('kt_fast_food', -0.75, yb - 0.32, w=0.33, z=0.9, anchor='centre')
+    P += fit_prop('kt_flat_top_grill', 0.95, yb, w=1.1, anchor='back')
+    P += fit_prop('kt_sink', 2.7, yb, w=2.2, anchor='back')
+    P += fit_prop('kt_reach_in_fridge', 4.5, yb, w=1.28, anchor='back')
+    # hoods over the grill and the fryers
+    for x in (-4.5, -3.25, -2.0):
+        P += fit_prop('kt_hood', x, yb, w=1.2, z=2.25, anchor='back')
+    # side walls: shelving (right, facing -x) and the dishwasher (left, facing +x)
+    P += fit_prop('kt_steel_shelving', XW - 0.02, 10.2, yaw=-90, h=1.85, anchor='back_x')
+    P += fit_prop('kt_dishwasher', -XW + 0.02, 7.9, yaw=90, h=1.9, anchor='back_x')
+    # back-of-house shelving closes the run between the left wall and the counter's end (staff only past the counter)
+    P += fit_prop('kt_steel_shelving', (-XW + CX0) / 2, CY0 + 0.1, yaw=0, w=CX0 + XW - 0.05, h=1.85, anchor='front', stretch_x=True)
+    # ---- the front counter: the pub counter stretched along the run, its stools cropped; POS, soda tower, trays on the pass
+    P += fit_prop('kt_pub_counter', (CX0 + CX1) / 2, CY0, yaw=180, w=CX1 - CX0, h=1.1, anchor='front', stretch_x=True, crop_y=(-0.32, 9.0))
+    P += fit_prop('kt_pos', -2.65, CY0 + 0.45, yaw=180, w=0.6, z=1.1, anchor='centre')
+    P += fit_prop('kt_soda_dispenser', 2.6, CY0 + 0.45, yaw=0, h=0.85, z=1.1, anchor='centre')
+    for x in (-0.9, 0.2):
+        P += fit_prop('kt_fast_food', x, CY0 + 0.4, w=0.33, z=1.1, anchor='centre')
+    # ---- the dining room: booths on the left wall (seat spots in dining()), tables on the right, kiosks by the counter
+    for c in (1.75, 4.15):
+        P += fit_prop('kt_booths_03', -XW + 0.02, c, yaw=90, h=0.91, anchor='back_x', outward=True)
+        P += fit_prop('kt_booths_03', XW - 0.02, c, yaw=-90, h=0.91, anchor='back_x', outward=True)
+    for x, y in ((-2.0, 1.75), (-2.0, 4.15), (2.0, 1.75), (2.0, 4.15)):     # the middle: the same red booth pairs, free-standing
+        P += fit_prop('kt_booths_03', x, y, yaw=90, h=0.91, anchor='centre', outward=True)
+    for x, y in ((-4.45, 1.75), (-4.45, 4.15), (4.45, 1.75), (4.45, 4.15), (-2.0, 1.75), (-2.0, 4.15), (2.0, 1.75), (2.0, 4.15)):
+        P += fit_prop('kt_napkins', x + 0.18, y + 0.12, h=0.16, z=TABLE_TOP.get((x, y), 0.76), anchor='centre')
+    for x in (-2.4, -1.5):
+        P += fit_prop('kt_order_kiosk', x, CY0 - 0.85, yaw=0, h=1.85, anchor='centre')
+    # ---- back of house: bun and food trays on the racks, a drink tower facing the crew behind the counter
+    for z in (0.47, 0.87, 1.27):        # the racks carry the low-detail tray (its LOD1): they are seen from a few metres
+        for yy in (9.75, 10.55):
+            P += fit_prop('kt_fast_food', XW - 0.3, yy, yaw=90, w=0.3, z=z, anchor='centre', lod1=True)
+        P += fit_prop('kt_fast_food', -4.6, CY0 + 0.38, w=0.3, z=z, anchor='centre', lod1=True)
+    return P
+
+
+TABLE_TOP = {}
+
+
 # ------------------------------------------------------------------ imported props
-def import_fbx(path, at, yaw_deg, name):
+def import_fbx(path, at, yaw_deg, name, lod1=False):
     before = set(bpy.data.objects)
     bpy.ops.import_scene.fbx(filepath=path)
     new = [o for o in bpy.data.objects if o not in before]
     meshes = [o for o in new if o.type == 'MESH']
-    keep = [o for o in meshes if not o.name.endswith('_LOD1') and not o.name.endswith('_LOD1.001')]
+    is1 = lambda o: '_LOD1' in o.name
+    keep = [o for o in meshes if is1(o) == lod1] or [o for o in meshes if not is1(o)]
     for o in new:
         if o not in keep:
             bpy.data.objects.remove(o)
@@ -383,6 +364,132 @@ def import_fbx(path, at, yaw_deg, name):
         o.name = name
         out.append(o)
     return out
+
+
+def kit_prop(fam, pid, at, yaw, lod1=False):
+    """A processed ready-made model (art/processed/world_v3/<fam>/<pid>.fbx + its baked atlas) placed with its own origin
+    (lod1: its low-detail mesh instead)."""
+    objs = import_fbx(os.path.join(PROC, fam, pid + '.fbx'), at, yaw, pid, lod1=lod1)
+    man = json.load(open(os.path.join(PROC, fam, 'manifest.json')))
+    tex = os.path.join(PROC, fam, 'textures', man[pid]['textures'][0])
+    for o in objs:
+        for sl in o.material_slots:
+            sl.material = atlas_material('M_' + pid, tex)
+        if not o.data.uv_layers:
+            o.data.uv_layers.new(name='UVMap')
+        o.data.uv_layers[0].name = 'UVMap'
+    return objs
+
+
+def dedupe_twins(o):
+    """Coincident back-to-back face pairs bake one side black (z-fighting in game): of each pair keep the face whose normal
+    points away from its connected part's centre."""
+    bm = bmesh.new(); bm.from_mesh(o.data)
+    bm.verts.ensure_lookup_table()
+    comp = {}
+    for v in bm.verts:
+        if v.index in comp:
+            continue
+        stack, cid = [v], len(set(comp.values()))
+        comp[v.index] = cid
+        while stack:
+            a = stack.pop()
+            for e in a.link_edges:
+                b = e.other_vert(a)
+                if b.index not in comp:
+                    comp[b.index] = cid; stack.append(b)
+    cen = {}
+    for v in bm.verts:
+        cen.setdefault(comp[v.index], []).append(v.co.copy())
+    cen = {k: sum(vs, Vector()) / len(vs) for k, vs in cen.items()}
+    groups = {}
+    for f in bm.faces:
+        key = tuple(sorted((round(v.co.x, 3), round(v.co.y, 3), round(v.co.z, 3)) for v in f.verts))
+        groups.setdefault(key, []).append(f)
+    kill = []
+    for fs in groups.values():
+        if len(fs) < 2:
+            continue
+        def out(f):
+            c = f.calc_center_median()
+            return f.normal.dot(c - cen[comp[f.verts[0].index]])
+        fs = sorted(fs, key=out, reverse=True)
+        kill += fs[1:]
+    bmesh.ops.delete(bm, geom=kill, context='FACES')
+    # single panels wound inward: a ray along the normal hits the part's own other side within a few cm -> flip it
+    from mathutils.bvhtree import BVHTree
+    bm.normal_update()
+    tree = BVHTree.FromBMesh(bm)
+    flip = []
+    for f in bm.faces:
+        c = f.calc_center_median()
+        hit = tree.ray_cast(c + f.normal * 0.002, f.normal, 0.26)
+        if hit[0] is not None:
+            flip.append(f)
+    # the outer hull: a face near the piece's outer extent along its normal's axis must face out of the piece
+    vs = np.array([v.co[:] for v in bm.verts]); lo, hi = vs.min(0), vs.max(0); mid, half = (lo + hi) / 2, (hi - lo) / 2
+    fs = set(flip)
+    for f in bm.faces:
+        n = f.normal; ax = max((0, 1), key=lambda i: abs(n[i]))
+        if abs(n[ax]) < 0.7:
+            continue
+        c = f.calc_center_median(); off = c[ax] - mid[ax]
+        if abs(off) > 0.8 * half[ax]:
+            wrong = (n[ax] * off) < 0
+            if wrong != (f in fs):
+                fs.symmetric_difference_update({f})
+    bmesh.ops.reverse_faces(bm, faces=list(fs))
+    flip = list(fs)
+    bm.to_mesh(o.data); bm.free()
+    # the download's custom split normals still point the old way: drop them (shading falls back to the faces)
+    if o.data.has_custom_normals:
+        with bpy.context.temp_override(object=o, active_object=o, selected_editable_objects=[o]):
+            bpy.ops.mesh.customdata_custom_splitnormals_clear()
+    log('twins removed', len(kill), 'flipped', len(flip))
+
+
+def fit_prop(pid, x, y, yaw=0, fam='v3_kitchen', w=None, d=None, h=None, z=0.0, anchor='front', stretch_x=False, crop_h=None, keep_y=None, crop_y=None, outward=False, lod1=False):
+    """Place a ready-made model in a slot: yaw first (0 = its front faces -y, towards the door, as processed), then a uniform
+    scale so it fits inside w x d x h (any of them may be None; stretch_x: x scaled to w on its own, the rest by h), then
+    x centred and the base at z. y puts the slot's 'front' face (min y), 'back' face (max y) or 'centre' there; 'back_x'
+    stands it against a side wall at x (its back to the wall, the wall side picked by x's sign) centred on y.
+    crop_h drops faces above that height (m, after scaling), keep_y drops faces outside (y0, y1) (room y), crop_y keeps only
+    faces inside (y0, y1) of the turned model before it is fitted: stools or clutter a download carries."""
+    objs = kit_prop(fam, pid, (0, 0, 0), yaw, lod1=lod1)
+    if outward:   # a download built double-sided (each panel twice, back to back): keep the copy facing out of its part
+        for o in objs:
+            dedupe_twins(o)
+    if crop_y is not None:
+        for o in objs:
+            bm = bmesh.new(); bm.from_mesh(o.data)
+            bmesh.ops.delete(bm, geom=[f for f in bm.faces if not crop_y[0] <= f.calc_center_median().y <= crop_y[1]], context='FACES')
+            bm.to_mesh(o.data); bm.free()
+    vs = np.concatenate([np.array([v.co[:] for v in o.data.vertices]) for o in objs])
+    mn, mx = vs.min(0), vs.max(0); size = mx - mn
+    if stretch_x:
+        sz_ = (h / max(1e-6, size[2])) if h else 1.0
+        S = (w / max(1e-6, size[0]) if w else sz_, sz_, sz_)
+    else:
+        s1 = min([lim / max(1e-6, sz) for lim, sz in ((w, size[0]), (d, size[1]), (h, size[2])) if lim] or [1.0])
+        S = (s1, s1, s1)
+    sx, sy, sz = S
+    if anchor == 'back_x':
+        cx = x - mx[0] * sx if x > 0 else x - mn[0] * sx
+        tx, ty = cx, y - (mn[1] + mx[1]) / 2 * sy
+    else:
+        tx = x - (mn[0] + mx[0]) / 2 * sx
+        ty = {'front': y - mn[1] * sy, 'back': y - mx[1] * sy, 'centre': y - (mn[1] + mx[1]) / 2 * sy}[anchor]
+    M = Matrix.Translation(Vector((tx, ty, z - mn[2] * sz))) @ Matrix.Diagonal(Vector((sx, sy, sz, 1.0)))
+    for o in objs:
+        o.data.transform(M)
+        if crop_h is not None or keep_y is not None:
+            bm = bmesh.new(); bm.from_mesh(o.data)
+            kill = [f for f in bm.faces if (crop_h is not None and f.calc_center_median().z > z + crop_h)
+                    or (keep_y is not None and not keep_y[0] <= f.calc_center_median().y <= keep_y[1])]
+            bmesh.ops.delete(bm, geom=kill, context='FACES')
+            bm.to_mesh(o.data); bm.free()
+    log('prop', pid, 'scale', tuple(round(float(v), 3) for v in S), 'size', tuple(round(float(v * k), 2) for v, k in zip(size, S)))
+    return objs
 
 
 def atlas_material(name, tex, blend=False):
@@ -418,9 +525,13 @@ def signs():
     yb = CY1 + 0.075
     face([(-3.95, yb, 2.2), (-0.65, yb, 2.2), (-0.65, yb, 3.1), (-3.95, yb, 3.1)], (0, 0, 1024, 512))
     face([(-0.35, yb, 2.2), (2.95, yb, 2.2), (2.95, yb, 3.1), (-0.35, yb, 3.1)], (1024, 0, 2048, 512))
-    # order screen (faces -y)
-    ys = CY0 + 0.235
-    face([(-3.0, ys, 1.34), (-2.3, ys, 1.34), (-2.3, ys, 1.86), (-3.0, ys, 1.86)], (1024, 512, 1536, 896))
+    # kitchen order screens on the back wall over the prep table, the flat-top and the sink (face -y, to the crew)
+    yk2 = YD - 0.045
+    for cx in (-0.55, 0.95, 2.7):
+        face([(cx - 0.42, yk2, 1.62), (cx + 0.42, yk2, 1.62), (cx + 0.42, yk2, 2.12), (cx - 0.42, yk2, 2.12)], (1024, 512, 1536, 896))
+    # the order screen over the pass, facing the crew (+y)
+    yo = CY1 + 0.16
+    face([(0.15, yo, 2.0), (-0.75, yo, 2.0), (-0.75, yo, 2.66), (0.15, yo, 2.66)], (1024, 512, 1536, 896))
     # logo wall (right wall, faces -x: seen from the room, left = +y)
     xw = XW - 0.065
     face([(xw, 5.15, 1.45), (xw, 1.55, 1.45), (xw, 1.55, 2.85), (xw, 5.15, 2.85)], (0, 512, 1024, 896))
@@ -448,7 +559,9 @@ def add_lights():
     for i, (cx, cy) in enumerate(((-2.6, 1.8), (0.0, 1.8), (2.6, 1.8), (-2.6, 4.4), (0.0, 4.4), (2.6, 4.4))):
         area(f'panel{i}', (cx, cy, ZH - 0.06), 1.15, 190, 4200)
     for i, cx in enumerate((-2.4, 2.0)):
-        area(f'kpanel{i}', (cx, 8.9, ZH - 0.06), 2.4, 300, 5200, sy=0.5)
+        area(f'kpanel{i}', (cx, 8.9, ZH - 0.06), 2.4, 300, 4000, sy=0.5)
+    # a warm wash down the kitchen's back wall (it read as a flat white box)
+    area('kwash', (0.0, YD - 1.2, ZH - 0.1), 8.0, 260, 3200, rot=(math.radians(-30), 0, 0), sy=0.6)
     for i, c in enumerate((1.75, 4.15)):
         area(f'pend{i}', (-4.45, c, 2.12), 0.35, 60, 2700)
     area('hood', (-3.45, YD - 1.1, 2.3), 3.0, 180, 5000, sy=0.3)
@@ -490,8 +603,12 @@ def main():
     counter(B)
     kitchen(B)
     seats = dining(B)
-    room = B.to_object('room')
+    built = B.to_object('built')
+    built.data.uv_layers[0].name = 'UVMap'
+    room = W.join_parts([built] + furnish(), 'room')
     room.data.uv_layers[0].name = 'UVMap'
+    while len(room.data.uv_layers) > 1:
+        room.data.uv_layers.remove(room.data.uv_layers[1])
     sg = signs()
     props = W.join_parts([sg], 'props')
     log('room tris', W.tris(room), 'props tris', W.tris(props), 'materials', [m.name for m in room.data.materials])
@@ -499,7 +616,9 @@ def main():
     if preview:
         sc = bpy.context.scene; sc.render.engine = 'CYCLES'; sc.cycles.samples = 48
         sc.render.resolution_x, sc.render.resolution_y = 1280, 720; sc.view_settings.view_transform = 'AgX'
-        for tag, loc, look in (('a', (2.8, 0.9, 1.7), (-1.0, 10.0, 1.2)), ('b', (-3.0, 5.0, 1.6), (2.0, 11.5, 1.3))):
+        for tag, loc, look in (('a', (2.8, 0.9, 1.7), (-1.0, 10.0, 1.2)), ('b', (-3.0, 5.0, 1.6), (2.0, 11.5, 1.3)),
+                               ('c', (3.2, 9.6, 1.7), (-2.5, 3.0, 0.9)), ('d', (0.0, 0.7, 1.6), (0.0, 9.0, 1.3)),
+                               ('e', (2.5, 5.2, 1.7), (-4.8, 2.5, 0.6)), ('f', (2.0, 9.0, 1.6), (-0.3, 6.6, 2.2)), ('g', (0.5, 7.4, 1.6), (0.5, 12.2, 1.4))):
             cam = bpy.data.objects.new('cam' + tag, bpy.data.cameras.new('cam' + tag)); sc.collection.objects.link(cam)
             cam.data.lens = 16; cam.location = loc
             cam.rotation_euler = (Vector(look) - cam.location).to_track_quat('-Z', 'Y').to_euler()

@@ -235,14 +235,16 @@ namespace CTLife.Tests
             yield return null;
             var roadstar = MakeVehicle("roadstar"); Property(typeof(VehicleSystem), "Driving", _system, roadstar);
             Bus.Publish(new VehicleChangedSignal { vehicle = roadstar }); yield return null;
-            var hand = _controls.Element.Q("veh-handbrake");
-            Down(Gas, 12); Steer(13); Down(hand, 14); Tick();
-            Assert.IsTrue(roadstar.Input.handbrake); Assert.IsTrue(hand.HasPointerCapture(14));
+            // City HUD v2 (0f8463143): the hovercar has no handbrake round at all (veh-drift hidden on the ground and in the
+            // air), so nothing can stay latched across take-off; gas and steering holds still survive it.
+            var hand = _controls.Element.Q("veh-drift");
+            Down(Gas, 12); Steer(13); Tick();
+            Assert.AreEqual(DisplayStyle.None, hand.style.display.value, "no handbrake on the hovercar");
+            Assert.IsFalse(roadstar.Input.handbrake);
             roadstar.Flying = true; Tick();
-            Assert.IsFalse(_controls.Compose().handbrake, "a hidden handbrake cannot remain latched in flight");
-            Assert.IsFalse(hand.HasPointerCapture(14)); Assert.IsFalse(hand.ClassListContains("veh-down"));
+            Assert.IsFalse(_controls.Compose().handbrake, "nothing latched in flight");
             Assert.AreEqual(1f, roadstar.Input.throttle); Assert.Greater(roadstar.Input.steer, .1f);
-            roadstar.Flying = false; Tick(); Assert.IsFalse(roadstar.Input.handbrake, "landing must not revive the old hold");
+            roadstar.Flying = false; Tick(); Assert.IsFalse(roadstar.Input.handbrake, "landing does not invent a hold");
         }
 
         [UnityTest]
