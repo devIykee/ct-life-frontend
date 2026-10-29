@@ -1,5 +1,9 @@
+import { inject } from '@vercel/analytics';
 import { initPreviewGallery } from "./campaign-preview.js";
 import { initCampaignMotion } from "./campaign-motion.js";
+
+// Initialize Vercel Web Analytics
+inject();
 
 const cityScenes = {
   social: {
