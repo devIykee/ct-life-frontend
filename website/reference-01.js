@@ -1,5 +1,9 @@
+import { inject } from '@vercel/analytics';
 import { initReferenceMotion } from "./reference-motion.js";
 import { initPreviewGallery } from "./campaign-preview.js";
+
+// Initialize Vercel Web Analytics
+inject();
 
 initReferenceMotion();
 document.body.classList.add("js-ready");
