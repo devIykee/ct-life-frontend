@@ -38,6 +38,7 @@ namespace CTLife.UI
         private IVisualElementScheduledItem _recoveryFade;
         private bool _shown = true;
         private readonly InteractionPrompt _interact;
+        private readonly WaypointGuide _guide = new WaypointGuide();
         private readonly Func<IVenueMic> _venueMic;
         private readonly Map.Minimap _minimap;
         private readonly VisualElement _avatar, _energyFill, _sanityFill;
@@ -197,7 +198,7 @@ namespace CTLife.UI
             // speech bubbles keep out of the top HUD rows (WorldLabels)
             WorldLabels.SafeZones.Clear();
             WorldLabels.SafeZones.Add(plate); WorldLabels.SafeZones.Add(top); WorldLabels.SafeZones.Add(personal);
-            _root = El.Div("ct-hud hud-arena ds-hud-back", _movement.Element, _vehicle.Element, plate, top, _needs, _emotes.Element, _chat.Element, social, _jump, personal, _interact.Element);
+            _root = El.Div("ct-hud hud-arena ds-hud-back", _movement.Element, _vehicle.Element, plate, top, _needs, _emotes.Element, _chat.Element, social, _jump, personal, _guide.Element, _interact.Element);
             _root.pickingMode = PickingMode.Ignore;
             _recoveryVeil = El.Div("hud-recovery-veil");
             _recoveryVeil.name = "hud-recovery-veil";
@@ -224,6 +225,7 @@ namespace CTLife.UI
             });
             _subs.On<OpenDuoAppRequestSignal>(s => { if (s.app == "shop") OpenShop(); else if (!string.IsNullOrEmpty(s.app)) OpenUtility(() => OpenApp?.Invoke(s.app)); });
             _subs.On<OpenMapRequestSignal>(_ => OpenUtility(OpenMap)); // the door interaction
+            RawRoomMessages.Received += OnRawRoom;
             _subs.On<DegradedChangedSignal>(_ => RefreshDegraded());
             _subs.On<OnlineCountSignal>(s => _online.text = Strings.F("hud.online", s.online));
             // The count only changes on joins/leaves; show the value the city room already has.
@@ -472,6 +474,36 @@ namespace CTLife.UI
 
         private void CollapseNeeds() { if (_needsExpanded) ToggleNeeds(); }
 
+        // ------------------------------------------------------------------ presence: "dana joined"
+
+        /// <summary>Joins inside this window after a toast are summed into one "N more players joined" toast.</summary>
+        public const long JoinBatchMs = 4000;
+        private double _joinWindowUntil;
+        private int _joinsHeld;
+
+        private void OnRawRoom(string type, object payload)
+        {
+            if (_disposed || type != "player_joined" || !(payload is System.Collections.Generic.IDictionary<string, object> d)) return;
+            if (!d.TryGetValue("alias", out var a) || !(a is string alias) || alias.Length == 0 || alias.Length > 40) return;
+            string userId = d.TryGetValue("userId", out var u) ? u as string : null;
+            if (userId != null && Services.TryGet<PlayerProfile>(out var me) && me.UserId == userId) return;
+            double now = Time.realtimeSinceStartupAsDouble * 1000.0;
+            bool friend = userId != null && WorldLabels.IsFriend != null && WorldLabels.IsFriend(userId);
+            if (!friend && now < _joinWindowUntil) { _joinsHeld++; return; }
+            Bus.Publish(ToastSignal.Text(Strings.F(friend ? "hud.friendOnline" : "hud.playerJoined", alias), ToastKind.Info));
+            if (friend) return;
+            _joinWindowUntil = now + JoinBatchMs;
+            _root.schedule.Execute(FlushJoins).StartingIn(JoinBatchMs);
+        }
+
+        private void FlushJoins()
+        {
+            if (_disposed || _joinsHeld == 0) return;
+            int n = _joinsHeld;
+            _joinsHeld = 0;
+            Bus.Publish(ToastSignal.Text(n == 1 ? Strings.T("hud.oneMoreJoined") : Strings.F("hud.moreJoined", n), ToastKind.Info));
+        }
+
         private void OpenUtility(Action open)
         {
             CollapseNeeds(); _chat.Hide(); _emotes.Hide();
@@ -542,6 +574,8 @@ namespace CTLife.UI
             _vehicle.Dispose();
             _chat.Dispose();
             _interact.Dispose();
+            RawRoomMessages.Received -= OnRawRoom;
+            _guide.Dispose();
             _subs.Dispose();
             if (_wallet != null) _wallet.Changed -= RefreshWallet;
         }

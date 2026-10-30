@@ -121,7 +121,7 @@ namespace CTLife.UI.Map
             _hasHeading = true;
             _surface.Refresh();
 
-            if (Source == null) MapMarkers.Live(session, _area, _placement, _live);
+            if (Source == null) { MapMarkers.Live(session, _area, _placement, _live); MapMarkers.AddPin(_live); }
             PlaceMarkers();
             PlaceNorth();
         }
@@ -154,6 +154,7 @@ namespace CTLife.UI.Map
             // The current zone's markers (its root sits at its atlas origin, so placement math holds).
             var zoneArea = MapCatalog.ForVisit(session.VenueId, null);
             MapMarkers.Live(session, zoneArea, MapCatalog.PlacementOf(zoneArea), _live);
+            MapMarkers.AddPin(_live);
             PlaceMarkers();
             PlaceNorth();
         }
@@ -175,6 +176,7 @@ namespace CTLife.UI.Map
                 {
                     var arrow = Get(_arrowPool, _arrows, arrows++, "map-edge-arrow");
                     arrow.EnableInClassList("map-edge-arrow--friend", m.Kind == MarkerKind.Friend);
+                    arrow.EnableInClassList("map-edge-arrow--pin", m.Kind == MarkerKind.Pin);
                     arrow.style.translate = new Translate(px.x - 18f, px.y - 18f);
                     arrow.style.rotate = new Rotate(angle * Mathf.Rad2Deg);
                     continue;

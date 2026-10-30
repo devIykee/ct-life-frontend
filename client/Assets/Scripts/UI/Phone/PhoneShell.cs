@@ -181,6 +181,7 @@ namespace CTLife.UI
             if (IsOpen) Bus.Publish(new SfxSignal("sfx_ui_close"));
             var current = _current;
             _current = null;
+            SetAppTheme(null);
             try { current?.Closed(); }
             finally
             {
@@ -243,6 +244,7 @@ namespace CTLife.UI
             if (_disposed) return;
             _current?.Closed();
             _current = null;
+            SetAppTheme(null);
             SetChrome(DuoChrome.Legacy);
             _frame.AddToClassList("ct-phone-at-home");
             _back.Show(false);
@@ -299,6 +301,16 @@ namespace CTLife.UI
             return tile;
         }
 
+        private string _appTheme;
+
+        /// <summary>Tags the phone with the open app (`duo-app--&lt;id&gt;`) so duo-themes.uss can give each app its own look.</summary>
+        private void SetAppTheme(string appId)
+        {
+            if (_appTheme != null) _frame.RemoveFromClassList(_appTheme);
+            _appTheme = string.IsNullOrEmpty(appId) ? null : "duo-app--" + appId;
+            if (_appTheme != null) _frame.AddToClassList(_appTheme);
+        }
+
         private void Launch(PhoneApp app)
         {
             if (_disposed) return;
@@ -312,6 +324,7 @@ namespace CTLife.UI
             _current = app;
             ReportForeground();
             _frame.RemoveFromClassList("ct-phone-at-home");
+            SetAppTheme(app.Id);
             SetChrome(app.Chrome);
             _back.Show(true);
             _title.text = app.DisplayTitle;

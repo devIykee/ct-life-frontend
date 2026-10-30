@@ -29,10 +29,37 @@ namespace CTLife.Net
         public string Alias => Me?.Character?.Alias ?? "anon";
         public string UserId => Me?.User?.Id.ToString();
 
+        private Task<Me> _inflight, _queued;
+
+        /// <summary>
+        /// GET /me. Many features refresh after their own action, often at the same moment: a call while a request is running
+        /// joins one follow-up request (started after the running one, so it still sees that caller's change). A burst
+        /// costs at most two requests. Each caller keeps its own cancellation for the wait.
+        /// </summary>
         public async Task<Me> Refresh(CancellationToken ct = default)
         {
-            var current = await _api.GetMe(ct);
-            ct.ThrowIfCancellationRequested();
+            Task<Me> task;
+            if (_inflight == null || _inflight.IsCompleted) task = _inflight = Fetch();
+            else task = _queued ??= After(_inflight);
+            if (ct.CanBeCanceled && !task.IsCompleted)
+            {
+                var cancelled = new TaskCompletionSource<bool>();
+                using (ct.Register(() => cancelled.TrySetResult(true))) await Task.WhenAny(task, cancelled.Task);
+                ct.ThrowIfCancellationRequested();
+            }
+            return await task;
+        }
+
+        private async Task<Me> After(Task<Me> running)
+        {
+            try { await running; } catch { /* the follow-up is a fresh attempt */ }
+            _queued = null;
+            return await (_inflight = Fetch());
+        }
+
+        private async Task<Me> Fetch()
+        {
+            var current = await _api.GetMe(CancellationToken.None);
             Me = current;
             LikenessJobId = _api.LastLikenessJobId;
             (DebtDueAtMs, DebtWeeklyDueCents) = DebtSchedule.From(current);

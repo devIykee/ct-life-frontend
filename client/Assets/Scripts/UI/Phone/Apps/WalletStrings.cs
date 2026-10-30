@@ -27,6 +27,14 @@ namespace CTLife.UI
             ["name.USDC"] = "USD Coin",
             ["name.SKR"] = "Seeker",
             ["name.ORE"] = "Ore",
+            ["copy"] = "Copy address",
+            ["copied"] = "Wallet address copied",
+            ["receive"] = "Receive",
+            ["topUp"] = "Top up",
+            ["trade"] = "Trade",
+            ["refreshShort"] = "Refresh",
+            ["inGame"] = "In CT Life",
+            ["cashTicker"] = "Spend anywhere in the city",
         };
         public static string T(string key) => English.TryGetValue(key, out var value) ? NameTable.Apply(value) : key;
     }
