@@ -285,3 +285,23 @@
 .ct-hud .veh-alt-label { font-size: 17px; letter-spacing: 2px; color: rgb(110,228,255); -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); margin: 0 14px 0 0; padding: 0; }
 .ct-hud .veh-alt-value { font-size: 30px; color: rgb(255,255,255); -unity-font-definition: url("Fonts/Phone/Inter-Bold.ttf"); margin: 0; padding: 0; }
 .ct-hud .veh-alt-note { font-size: 16px; color: rgb(255,214,80); -unity-font-definition: url("Fonts/Phone/Inter-SemiBold.ttf"); margin: 0; padding: 0; white-space: nowrap; }
+
+/* ---------------------------------------------------------------- map pin guide (WaypointGuide) */
+.ct-guide { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+.ct-guide-over { position: absolute; left: 0; top: 0; width: 0; height: 0; overflow: visible; align-items: center; }
+.ct-guide-arrow { position: absolute; left: -38px; top: -100px; width: 76px; height: 76px; transform-origin: 38px 38px; }
+.ct-guide-distance {
+    position: absolute; left: -80px; top: -24px; width: 160px; -unity-text-align: middle-center;
+    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 30px; color: rgb(255,255,255);
+    text-shadow: 0 3px 0 rgb(42,11,74); padding: 0; margin: 0;
+}
+.ct-guide-target { position: absolute; left: 0; top: 0; width: 0; height: 0; overflow: visible; }
+.ct-guide-pin {
+    position: absolute; left: -36px; top: -72px; width: 72px; height: 72px;
+    -unity-background-scale-mode: scale-to-fit; -unity-background-image-tint-color: rgb(255,84,112);
+}
+.ct-guide-target-distance {
+    position: absolute; left: -160px; top: 4px; width: 320px; -unity-text-align: upper-center;
+    -unity-font-definition: url("Fonts/LilitaOne-Regular.ttf"); font-size: 26px; color: rgb(255,255,255);
+    text-shadow: 0 3px 0 rgb(42,11,74); padding: 0; margin: 0; white-space: nowrap;
+}

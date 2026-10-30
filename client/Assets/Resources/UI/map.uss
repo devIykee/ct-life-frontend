@@ -152,3 +152,13 @@
     align-items: center; justify-content: center;
 }
 .map-landmark-icon { width: 38px; height: 38px; -unity-background-scale-mode: scale-to-fit; }
+
+/* ---------------------------------------------------------------- map pin (Waypoint) */
+.map-pin {
+    position: absolute; left: -32px; top: -64px; width: 64px; height: 64px;
+    -unity-background-scale-mode: scale-to-fit; -unity-background-image-tint-color: rgb(255,84,112);
+}
+.map-full .map-pin { left: -36px; top: -72px; width: 72px; height: 72px; }
+.map-marker--pin { background-color: rgb(255,84,112); border-color: rgb(255,255,255); }
+.map-edge-arrow--pin { border-color: rgb(255,84,112); }
+.map-card-guide, .map-card-guide:hover, .map-card-guide:active, .map-card-guide:focus { background-color: rgb(255,255,255); color: rgb(42,11,74); }

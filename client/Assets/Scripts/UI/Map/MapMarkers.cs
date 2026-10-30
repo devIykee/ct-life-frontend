@@ -6,15 +6,15 @@ using UnityEngine;
 
 namespace CTLife.UI.Map
 {
-    public enum MarkerKind { Door, Desk, Mic, Player, Friend }
+    public enum MarkerKind { Door, Desk, Mic, Player, Friend, Pin }
 
     public struct MapMarker
     {
         public MarkerKind Kind;
         public Vector2 Atlas;      // atlas metres
         public string Id, Label;
-        /// <summary>Doors and friends get an edge arrow on the minimap when out of view.</summary>
-        public bool OfInterest => Kind == MarkerKind.Door || Kind == MarkerKind.Friend;
+        /// <summary>Doors, friends and the player's map pin get an edge arrow on the minimap when out of view.</summary>
+        public bool OfInterest => Kind == MarkerKind.Door || Kind == MarkerKind.Friend || Kind == MarkerKind.Pin;
     }
 
     /// <summary>
@@ -48,6 +48,12 @@ namespace CTLife.UI.Map
                 into.Add(new MapMarker { Kind = friend ? MarkerKind.Friend : MarkerKind.Player, Atlas = MapMath.AtlasFromLocal(placement, local),
                     Id = user ?? kv.Key, Label = p.State?.name });
             }
+        }
+
+        /// <summary>The player's map pin (<see cref="Waypoint"/>), when one is set.</summary>
+        public static void AddPin(List<MapMarker> into)
+        {
+            if (Waypoint.Active) into.Add(new MapMarker { Kind = MarkerKind.Pin, Atlas = Waypoint.Atlas, Id = "pin", Label = Waypoint.Label });
         }
 
         /// <summary>Spot kind to marker (null = not drawn). Only the exit spot is the door; seats are too many to be useful.</summary>
@@ -93,6 +99,7 @@ namespace CTLife.UI.Map
             MarkerKind.Door => "door",
             MarkerKind.Desk => "laptop",
             MarkerKind.Mic => "microphone",
+            MarkerKind.Pin => "place-marker",
             _ => null,
         };
     }

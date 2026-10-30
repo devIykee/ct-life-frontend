@@ -45,6 +45,12 @@ namespace CTLife.UI.Map
         private readonly List<VisualElement> _livePool = new List<VisualElement>();
         private string _selected;
         private bool _relayoutQueued;
+        private readonly VisualElement _pin;
+        private float _downTime; private bool _longFired;
+        /// <summary>Hold this long (seconds, finger still) to drop a pin anywhere.</summary>
+        public const float LongPressSeconds = 0.5f;
+        /// <summary>Zoomed in at least this far, a tap on open ground drops the pin.</summary>
+        public const float TapPinFrom = 4f;
 
         public MapView View => _view;
         public string Selected => _selected;
@@ -72,6 +78,10 @@ namespace CTLife.UI.Map
             _me.Add(new VisualElement { pickingMode = PickingMode.Ignore }.With("map-full-me-dot"));
             _viewport.Add(_surface);
             _viewport.Add(_markers);
+            _pin = new VisualElement { pickingMode = PickingMode.Ignore, name = "map-pin" }.With("map-pin");
+            if (Resources.Load<Texture2D>("UI/Lobby/Icons/place-marker") is Texture2D pinIcon) _pin.style.backgroundImage = Background.FromTexture2D(pinIcon);
+            _pin.style.display = DisplayStyle.None;
+            _viewport.Add(_pin);
             _viewport.Add(_meCone);
             _viewport.Add(_me);
             _viewport.Add(_labels);
@@ -129,7 +139,8 @@ namespace CTLife.UI.Map
             _viewport.RegisterCallback<PointerCancelEvent>(e => { _pointers.Remove(e.pointerId); });
             _viewport.RegisterCallback<WheelEvent>(e => { ZoomAround(e.localMousePosition, Mathf.Pow(1.0015f, -e.delta.y * 40f)); e.StopPropagation(); });
             _viewport.RegisterCallback<GeometryChangedEvent>(_ => Layout());
-            RegisterCallback<AttachToPanelEvent>(_ => { _tick ??= schedule.Execute(Tick).Every(0); });
+            RegisterCallback<AttachToPanelEvent>(_ => { _tick ??= schedule.Execute(Tick).Every(0); Waypoint.Changed += PlacePin; PlacePin(); });
+            RegisterCallback<DetachFromPanelEvent>(_ => Waypoint.Changed -= PlacePin);
             BuildLayers();
             BuildPins();
         }
@@ -274,6 +285,12 @@ namespace CTLife.UI.Map
         private void Tick()
         {
             if (!_ready || panel == null) return;
+            // Hold a finger still on the map to drop a pin there.
+            if (_pointers.Count == 1 && !_pinched && !_longFired && _moved < 14f && Time.unscaledTime - _downTime >= LongPressSeconds)
+            {
+                _longFired = true;
+                DropPin(_view.Unproject(_downAt));
+            }
             PlaceLive();
             float pulse = 1f + 0.35f * (0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 4f));
             var ring = _me.ElementAt(0);
@@ -308,8 +325,35 @@ namespace CTLife.UI.Map
         /// <summary>Captures: a driven player position (atlas metres) and facing.</summary>
         public Func<(Vector2 atlas, Vector2 dir)?> PlayerOverride;
 
+        private void PlacePin()
+        {
+            if (!_ready) { _pin.style.display = DisplayStyle.None; return; }
+            _pin.style.display = Waypoint.Active ? DisplayStyle.Flex : DisplayStyle.None;
+            if (Waypoint.Active) { var px = _view.Project(Waypoint.Atlas); _pin.style.translate = new Translate(px.x, px.y); }
+        }
+
+        /// <summary>Pins a spot and starts the overhead guide arrow (<see cref="Waypoint"/>).</summary>
+        public void DropPin(Vector2 atlas, string label = null)
+        {
+            DeviceFeel.Tick();
+            Waypoint.Set(atlas, label);
+            ShowPinCard();
+        }
+
+        private void ShowPinCard()
+        {
+            if (!Waypoint.Active) return;
+            _selected = null;
+            string sub = TryPlayer(out var me, out _)
+                ? Strings.F("map.pinSub", WaypointGuide.Format(Vector2.Distance(me, Waypoint.Atlas)))
+                : Strings.T("map.pinHint");
+            ShowCard(string.IsNullOrEmpty(Waypoint.Label) ? Strings.T("map.pinTitle") : Waypoint.Label, sub,
+                () => { Waypoint.Clear(); HideCard(); }, Strings.T("map.removePin"), "place-marker");
+        }
+
         private void PlaceLive()
         {
+            PlacePin();
             bool here = TryPlayer(out var me, out var dir);
             _me.style.display = _meCone.style.display = here ? DisplayStyle.Flex : DisplayStyle.None;
             if (here)
@@ -352,7 +396,7 @@ namespace CTLife.UI.Map
         {
             _pointers[e.pointerId] = e.localPosition;
             _viewport.CapturePointer(e.pointerId);
-            if (_pointers.Count == 1) { _downAt = e.localPosition; _moved = 0f; _pinched = false; }
+            if (_pointers.Count == 1) { _downAt = e.localPosition; _moved = 0f; _pinched = false; _downTime = Time.unscaledTime; _longFired = false; }
             StopFly();
         }
 
@@ -381,7 +425,7 @@ namespace CTLife.UI.Map
         {
             if (!_pointers.Remove(e.pointerId)) return;
             if (_viewport.HasPointerCapture(e.pointerId)) _viewport.ReleasePointer(e.pointerId);
-            if (_pointers.Count == 0 && !_pinched && _moved < 14f) Tap(e.localPosition);
+            if (_pointers.Count == 0 && !_pinched && !_longFired && _moved < 14f) Tap(e.localPosition);
         }
 
         /// <summary>A tap on the map: the venue under it opens its card; a plot flies in.</summary>
@@ -390,9 +434,12 @@ namespace CTLife.UI.Map
             var at = _view.Unproject(local);
             foreach (var p in MapCatalog.Atlas.Placements.Values)
                 if (MapCatalog.Areas.TryGetValue(p.AreaId, out var a) && MapSurface.AreaContains(a, p, at)) { Select(a.Id, fly: _view.PixelsPerMeter < 8f); return; }
+            // An open card closes first; zoomed in, open ground takes a pin; zoomed out, a plot flies in.
+            if (_card.style.display.value == DisplayStyle.Flex) { HideCard(); return; }
+            if (_view.PixelsPerMeter >= TapPinFrom) { DropPin(at); return; }
             var plot = MapCatalog.Atlas.Plots.FirstOrDefault(pl => Mathf.Abs(at.x - pl.Center.x) < MapCatalog.Atlas.PlotSize / 2f && Mathf.Abs(at.y - pl.Center.y) < MapCatalog.Atlas.PlotSize / 2f);
             if (plot != null) SelectPlot(plot.Id);
-            else HideCard();
+            else DropPin(at);
         }
 
         private void ZoomBy(float k) => ZoomAround(_view.Viewport / 2f, k);
@@ -468,7 +515,20 @@ namespace CTLife.UI.Map
                 act = () => Travel?.Invoke(id); actText = Strings.T("map.go");
             }
             else status = Strings.T("map.closed");
-            ShowCard(Title(a), (plot?.Name ?? "") + " · " + status, act, actText, a.IsHome ? "home-page" : "place-marker");
+            Action guide = null;
+            if (!here)
+            {
+                var target = MapMarkers.RegistryDoor(a.VenueId, p, out var door) ? door : MapSurface.AreaAtlasBounds(a, p).center;
+                var name = Title(a);
+                guide = () =>
+                {
+                    DeviceFeel.Tick();
+                    Waypoint.Set(target, name);
+                    Bus.Publish(ToastSignal.Text(Strings.F("map.guiding", name), ToastKind.Good));
+                    if (Close != null) Close(); else HideCard();
+                };
+            }
+            ShowCard(Title(a), (plot?.Name ?? "") + " · " + status, act, actText, a.IsHome ? "home-page" : "place-marker", guide);
         }
 
         private void SelectPlot(string plotId)
@@ -481,7 +541,7 @@ namespace CTLife.UI.Map
             HideCard();
         }
 
-        private void ShowCard(string title, string subtitle, Action act, string actText, string icon)
+        private void ShowCard(string title, string subtitle, Action act, string actText, string icon, Action guide = null)
         {
             _card.Clear();
             _card.Add(LobbyArt.Icon(icon, "map-card-icon"));
@@ -497,6 +557,14 @@ namespace CTLife.UI.Map
                 else { go = new Button(act) { text = actText }; go.AddToClassList("map-card-go"); }
                 go.name = "map-go";
                 _card.Add(go);
+            }
+            if (guide != null)
+            {
+                Button g;
+                if (_look == Look.Duo) g = Duo.Pill(Strings.T("map.guide"), guide, Duo.PillKind.Plain);
+                else { g = new Button(guide) { text = Strings.T("map.guide") }; g.AddToClassList("map-card-go"); g.AddToClassList("map-card-guide"); }
+                g.name = "map-guide";
+                _card.Add(g);
             }
             var close = new Button(HideCard) { name = "map-card-close", tooltip = Strings.T("common.close") };
             close.AddToClassList("map-card-close");

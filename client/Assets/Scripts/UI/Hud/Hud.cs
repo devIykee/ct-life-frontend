@@ -38,6 +38,7 @@ namespace CTLife.UI
         private IVisualElementScheduledItem _recoveryFade;
         private bool _shown = true;
         private readonly InteractionPrompt _interact;
+        private readonly WaypointGuide _guide = new WaypointGuide();
         private readonly Func<IVenueMic> _venueMic;
         private readonly Map.Minimap _minimap;
         private readonly VisualElement _avatar, _energyFill, _sanityFill;
@@ -197,7 +198,7 @@ namespace CTLife.UI
             // speech bubbles keep out of the top HUD rows (WorldLabels)
             WorldLabels.SafeZones.Clear();
             WorldLabels.SafeZones.Add(plate); WorldLabels.SafeZones.Add(top); WorldLabels.SafeZones.Add(personal);
-            _root = El.Div("ct-hud hud-arena ds-hud-back", _movement.Element, _vehicle.Element, plate, top, _needs, _emotes.Element, _chat.Element, social, _jump, personal, _interact.Element);
+            _root = El.Div("ct-hud hud-arena ds-hud-back", _movement.Element, _vehicle.Element, plate, top, _needs, _emotes.Element, _chat.Element, social, _jump, personal, _guide.Element, _interact.Element);
             _root.pickingMode = PickingMode.Ignore;
             _recoveryVeil = El.Div("hud-recovery-veil");
             _recoveryVeil.name = "hud-recovery-veil";
@@ -542,6 +543,7 @@ namespace CTLife.UI
             _vehicle.Dispose();
             _chat.Dispose();
             _interact.Dispose();
+            _guide.Dispose();
             _subs.Dispose();
             if (_wallet != null) _wallet.Changed -= RefreshWallet;
         }
