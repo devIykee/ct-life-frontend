@@ -210,7 +210,7 @@ namespace CTLife.Core
             var cfg = root["config"] as JObject ?? new JObject();
             root["ids"] = ids;
             root["config"] = cfg;
-            foreach (var k in new[] { "version", "minClientVersion", "contractVersion", "degraded" })
+            foreach (var k in new[] { "version", "minClientVersion", "contractVersion", "degraded", "livePhase", "phase", "flags" })
                 if (r[k] != null) root[k] = r[k].DeepClone();
 
             MergeRegistry(ids, "venues", r["venues"], (item, v) =>

@@ -111,6 +111,9 @@ namespace CTLife.World
         private bool _wasDirect;
         private string _lastPromptKey;
 
+        /// <summary>How far short of an approach point a stalled walk may stop and still engage (metres).</summary>
+        public const float ArriveSlack = 1.6f;
+
         private double Now => Time.realtimeSinceStartupAsDouble;
         private bool Online => _channel != null && _channel.IsJoined;
         private string Me => _channel != null ? _channel.SessionId : "local";
@@ -259,7 +262,10 @@ namespace CTLife.World
             {
                 float d = InteractionFinder.Flat(transform.position, Machine.Target.approach);
                 if (!_local.HasDestination && d < 0.4f) Exec(Machine.Arrived(Now));
-                else if (!_local.HasDestination && !_local.IsMoving && Now - _walkIssuedAt > 0.75) Exec(Machine.WalkFailed());
+                // Furniture (a desk chair, a sofa arm) often stops the walk just short of the approach point; engaging
+                // snaps the actor onto the spot, so a near miss still counts as arriving.
+                else if (!_local.HasDestination && !_local.IsMoving && Now - _walkIssuedAt > 0.75)
+                    Exec(d < ArriveSlack ? Machine.Arrived(Now) : Machine.WalkFailed());
             }
 
             if (Time.unscaledTime >= _nextOccupancy) { _nextOccupancy = Time.unscaledTime + 0.25f; RefreshOccupancy(); }
@@ -319,7 +325,12 @@ namespace CTLife.World
         private void OnSeatChanged(string spotId)
         {
             if (string.IsNullOrEmpty(spotId)) Exec(Machine.Stood());
-            else Exec(Machine.ServerSpot(spotId, Find));
+            else
+            {
+                bool wasEngaged = Machine.Phase == InteractionPhase.Engaged;
+                Exec(Machine.ServerSpot(spotId, Find));
+                if (!wasEngaged && Machine.Phase == InteractionPhase.Engaged) OpenTerminalApp(Machine.Target);
+            }
             Publish(force: true);
         }
 
@@ -338,13 +349,15 @@ namespace CTLife.World
                 {
                     case InteractionCommandKind.WalkTo:
                         _walkIssuedAt = Now;
-                        if (!_local.MoveTo(c.target.approach)) Exec(Machine.WalkFailed());
+                        if (!_local.MoveTo(c.target.approach))
+                            Exec(InteractionFinder.Flat(transform.position, c.target.approach) < ArriveSlack ? Machine.Arrived(Now) : Machine.WalkFailed());
                         break;
                     case InteractionCommandKind.RequestSeat:
                         if (!_local.RequestSeat(c.target.id)) { Exec(Machine.Rejected()); Toast("interact.noResponse"); }
                         break;
                     case InteractionCommandKind.EngageLocal:
                         _local.EngageLocal(c.target.id, c.target.position, c.target.yaw, c.target.anim, c.target.Sits ? "act_sit_down" : null, c.target.sitStandOff);
+                        OpenTerminalApp(c.target);
                         break;
                     case InteractionCommandKind.ReleaseSeat:
                     case InteractionCommandKind.Disengage:
@@ -364,6 +377,12 @@ namespace CTLife.World
                         break;
                 }
             }
+        }
+
+        /// <summary>Sitting down at a trading terminal opens Pulse on the Duo (spec: "trade at a terminal").</summary>
+        private static void OpenTerminalApp(Interactable target)
+        {
+            if (target != null && target.kind == InteractionKind.Terminal) Bus.Publish(new OpenDuoAppRequestSignal { app = "pulse" });
         }
 
         private static void Toast(string key) => Bus.Publish(new InteractionToastSignal { key = key });

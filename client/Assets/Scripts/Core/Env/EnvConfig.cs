@@ -108,7 +108,7 @@ namespace CTLife.Core
                     c.realtimeUrl = "wss://ctlife-realtime-production.up.railway.app";
                     c.cluster = SolanaCluster.Devnet;
                     c.allowDevAuth = false;
-                    c.livePhase = 1;
+                    c.livePhase = 6;
                     break;
                 case EnvId.Prod:
                     c.restBaseUrl = "https://api" + PlaceholderHost + "/v1";

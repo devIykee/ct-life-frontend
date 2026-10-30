@@ -123,6 +123,10 @@ namespace CTLife.World
             var p = new Vector3((float)m.x, 0, (float)m.z); p.y = IslandStreamer.GroundHeight(p.x, p.z);
             _visit.LocalPlayer.SnapTo(p, _visit.LocalPlayer.transform.eulerAngles.y * Mathf.Deg2Rad);
         }
+        /// <summary>The display name of a street player by session id, or null.</summary>
+        public string NameOf(string sessionId) =>
+            sessionId != null && _actors.TryGetValue(sessionId, out var a) && a != null ? a.GetComponent<AvatarView>()?.displayName : null;
+
         private void Said(SaidMessage m)
         {
             if (_actors.TryGetValue(m.sessionId ?? "", out var a) && a != null)

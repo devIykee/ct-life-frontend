@@ -60,7 +60,7 @@ namespace CTLife.UI
                 ToastKind.Event => ("bell", CTLife.UI.DS.Tone.Accent),
                 _ => ("info", CTLife.UI.DS.Tone.Neutral),
             };
-            return new CTLife.UI.DS.DsToastSpec { Icon = icon, Text = text, Detail = detail, Tone = tone, Seconds = kind == ToastKind.Event ? 5f : 3.5f };
+            return new CTLife.UI.DS.DsToastSpec { Icon = icon, Text = text, Detail = detail, Tone = tone, Seconds = kind == ToastKind.Event ? 6f : 5f };
         }
 
         private void OnDetached(DetachFromPanelEvent e)
