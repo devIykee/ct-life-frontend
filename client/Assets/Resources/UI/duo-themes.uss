@@ -1,0 +1,201 @@
+/* Per-app looks for the Solana Duo (2026-10-30). PhoneShell tags the phone with `duo-app--<id>` while an app is open,
+   so each app reads like its real-life counterpart instead of one shared Settings look. Specificity (.ct-phone.duo-app--x
+   + one class) beats the kit (.ct-phone + one class), whatever the load order. Palette first, then surfaces the kit
+   paints with fixed colours. */
+
+/* ---------- timeline: X: true black, hairline posts, blue accent */
+.ct-phone.duo-app--timeline { --duo-label: #E7E9EA; --duo-label2: #A3AEB9; --duo-label3: #71767B; --duo-sep: #2F3336; --duo-grouped: #000000; --duo-fill: #202327; --duo-pressed: #2C3036; --duo-blue: #1D9BF0; --duo-tint: #1D9BF0; --duo-on-blue: #FFFFFF; --duo-green: #00BA7C; --duo-red: #F4212E; }
+.ct-phone.duo-app--timeline.ct-phone-app-chrome .ct-phone-glass, .ct-phone.duo-app--timeline.ct-phone-app-chrome .ct-phone-body, .ct-phone.duo-app--timeline.ct-phone-app-chrome .ct-phone-home-control,
+.ct-phone.duo-app--timeline.ct-phone-grouped .ct-phone-glass, .ct-phone.duo-app--timeline.ct-phone-grouped .ct-phone-body, .ct-phone.duo-app--timeline.ct-phone-grouped .ct-phone-home-control,
+.ct-phone.duo-app--timeline .duo-page, .ct-phone.duo-app--timeline .duo-page-grouped, .ct-phone.duo-app--timeline .ct-phone-bar, .ct-phone.duo-app--timeline .duo-tabs, .ct-phone.duo-app--timeline .duo-calls-incall { background-color: #000000; }
+.ct-phone.duo-app--timeline .ct-phone-bar { border-bottom-color: #2F3336; }
+.ct-phone.duo-app--timeline .duo-group, .ct-phone.duo-app--timeline .duo-sheet, .ct-phone.duo-app--timeline .duo-page-grouped .duo-circle-face, .ct-phone.duo-app--timeline .duo-circle-face { background-color: #16181C; }
+.ct-phone.duo-app--timeline .duo-nav-backdrop { background-color: #000000; border-bottom-color: #2F3336; }
+.ct-phone.duo-app--timeline .duo-glass-circle .duo-circle-face, .ct-phone.duo-app--timeline .duo-bottom-bar-face, .ct-phone.duo-app--timeline .duo-board-pin-face, .ct-phone.duo-app--timeline .duo-call-controls { background-color: #16181C; border-color: #2F3336; }
+.ct-phone.duo-app--timeline .duo-segmented { background-color: #202327; }
+.ct-phone.duo-app--timeline .duo-segmented-thumb, .ct-phone.duo-app--timeline .duo-slider-thumb-face, .ct-phone.duo-app--timeline .duo-control-on .duo-control-face { background-color: #2C3036; }
+.ct-phone.duo-app--timeline .duo-search .duo-search-field > .unity-base-text-field__input--placeholder { color: #71767B; }
+.ct-phone.duo-app--timeline .duo-value-positive, .ct-phone.duo-app--timeline .duo-positive .duo-hero-delta, .ct-phone.duo-app--timeline .duo-row .duo-row-value.duo-value-positive, .ct-phone.duo-app--timeline .duo-row-subtitle.duo-value-positive, .ct-phone.duo-app--timeline .duo-hero-value.duo-value-positive, .ct-phone.duo-app--timeline .duo-perp-hero-pnl.duo-value-positive, .ct-phone.duo-app--timeline .duo-comp-pair .duo-value-positive, .ct-phone.duo-app--timeline .duo-space-state-on, .ct-phone.duo-app--timeline .duo-timeframe-on .duo-pill-label { color: #00BA7C; }
+.ct-phone.duo-app--timeline .duo-value-negative { color: #F4212E; }
+.ct-phone.duo-app--timeline .duo-notice-info .duo-notice-text, .ct-phone.duo-app--timeline .duo-money-notice-info { color: #00BA7C; }
+.ct-phone.duo-app--timeline .duo-post { border-bottom-color: #2F3336; }
+
+/* ---------- spaces: X Spaces: deep violet, purple accent */
+.ct-phone.duo-app--spaces { --duo-label: #F4F0FF; --duo-label2: #BDB0E6; --duo-label3: #8C80B5; --duo-sep: #2E2550; --duo-grouped: #0E0A1C; --duo-fill: #271E45; --duo-pressed: #33285A; --duo-blue: #9B6BFF; --duo-tint: #9B6BFF; --duo-on-blue: #FFFFFF; --duo-green: #3DDC97; --duo-red: #FF5C7A; }
+.ct-phone.duo-app--spaces.ct-phone-app-chrome .ct-phone-glass, .ct-phone.duo-app--spaces.ct-phone-app-chrome .ct-phone-body, .ct-phone.duo-app--spaces.ct-phone-app-chrome .ct-phone-home-control,
+.ct-phone.duo-app--spaces.ct-phone-grouped .ct-phone-glass, .ct-phone.duo-app--spaces.ct-phone-grouped .ct-phone-body, .ct-phone.duo-app--spaces.ct-phone-grouped .ct-phone-home-control,
+.ct-phone.duo-app--spaces .duo-page, .ct-phone.duo-app--spaces .duo-page-grouped, .ct-phone.duo-app--spaces .ct-phone-bar, .ct-phone.duo-app--spaces .duo-tabs, .ct-phone.duo-app--spaces .duo-calls-incall { background-color: #0E0A1C; }
+.ct-phone.duo-app--spaces .ct-phone-bar { border-bottom-color: #2E2550; }
+.ct-phone.duo-app--spaces .duo-group, .ct-phone.duo-app--spaces .duo-sheet, .ct-phone.duo-app--spaces .duo-page-grouped .duo-circle-face, .ct-phone.duo-app--spaces .duo-circle-face { background-color: #1B1431; }
+.ct-phone.duo-app--spaces .duo-nav-backdrop { background-color: #0E0A1C; border-bottom-color: #2E2550; }
+.ct-phone.duo-app--spaces .duo-glass-circle .duo-circle-face, .ct-phone.duo-app--spaces .duo-bottom-bar-face, .ct-phone.duo-app--spaces .duo-board-pin-face, .ct-phone.duo-app--spaces .duo-call-controls { background-color: #1B1431; border-color: #2E2550; }
+.ct-phone.duo-app--spaces .duo-segmented { background-color: #271E45; }
+.ct-phone.duo-app--spaces .duo-segmented-thumb, .ct-phone.duo-app--spaces .duo-slider-thumb-face, .ct-phone.duo-app--spaces .duo-control-on .duo-control-face { background-color: #33285A; }
+.ct-phone.duo-app--spaces .duo-search .duo-search-field > .unity-base-text-field__input--placeholder { color: #8C80B5; }
+.ct-phone.duo-app--spaces .duo-value-positive, .ct-phone.duo-app--spaces .duo-positive .duo-hero-delta, .ct-phone.duo-app--spaces .duo-row .duo-row-value.duo-value-positive, .ct-phone.duo-app--spaces .duo-row-subtitle.duo-value-positive, .ct-phone.duo-app--spaces .duo-hero-value.duo-value-positive, .ct-phone.duo-app--spaces .duo-perp-hero-pnl.duo-value-positive, .ct-phone.duo-app--spaces .duo-comp-pair .duo-value-positive, .ct-phone.duo-app--spaces .duo-space-state-on, .ct-phone.duo-app--spaces .duo-timeframe-on .duo-pill-label { color: #3DDC97; }
+.ct-phone.duo-app--spaces .duo-value-negative { color: #FF5C7A; }
+.ct-phone.duo-app--spaces .duo-notice-info .duo-notice-text, .ct-phone.duo-app--spaces .duo-money-notice-info { color: #3DDC97; }
+.ct-phone.duo-app--spaces .duo-post { border-bottom-color: #2E2550; }
+
+/* ---------- pulse: trading terminal: near-black, green up / red down */
+.ct-phone.duo-app--pulse { --duo-label: #EAECEF; --duo-label2: #A1ABB9; --duo-label3: #6E7887; --duo-sep: #262D36; --duo-grouped: #0B0E11; --duo-fill: #1E242C; --duo-pressed: #28303A; --duo-blue: #00D18B; --duo-tint: #00D18B; --duo-on-blue: #04210F; --duo-green: #00D18B; --duo-red: #FF4D5E; }
+.ct-phone.duo-app--pulse.ct-phone-app-chrome .ct-phone-glass, .ct-phone.duo-app--pulse.ct-phone-app-chrome .ct-phone-body, .ct-phone.duo-app--pulse.ct-phone-app-chrome .ct-phone-home-control,
+.ct-phone.duo-app--pulse.ct-phone-grouped .ct-phone-glass, .ct-phone.duo-app--pulse.ct-phone-grouped .ct-phone-body, .ct-phone.duo-app--pulse.ct-phone-grouped .ct-phone-home-control,
+.ct-phone.duo-app--pulse .duo-page, .ct-phone.duo-app--pulse .duo-page-grouped, .ct-phone.duo-app--pulse .ct-phone-bar, .ct-phone.duo-app--pulse .duo-tabs, .ct-phone.duo-app--pulse .duo-calls-incall { background-color: #0B0E11; }
+.ct-phone.duo-app--pulse .ct-phone-bar { border-bottom-color: #262D36; }
+.ct-phone.duo-app--pulse .duo-group, .ct-phone.duo-app--pulse .duo-sheet, .ct-phone.duo-app--pulse .duo-page-grouped .duo-circle-face, .ct-phone.duo-app--pulse .duo-circle-face { background-color: #151A21; }
+.ct-phone.duo-app--pulse .duo-nav-backdrop { background-color: #0B0E11; border-bottom-color: #262D36; }
+.ct-phone.duo-app--pulse .duo-glass-circle .duo-circle-face, .ct-phone.duo-app--pulse .duo-bottom-bar-face, .ct-phone.duo-app--pulse .duo-board-pin-face, .ct-phone.duo-app--pulse .duo-call-controls { background-color: #151A21; border-color: #262D36; }
+.ct-phone.duo-app--pulse .duo-segmented { background-color: #1E242C; }
+.ct-phone.duo-app--pulse .duo-segmented-thumb, .ct-phone.duo-app--pulse .duo-slider-thumb-face, .ct-phone.duo-app--pulse .duo-control-on .duo-control-face { background-color: #28303A; }
+.ct-phone.duo-app--pulse .duo-search .duo-search-field > .unity-base-text-field__input--placeholder { color: #6E7887; }
+.ct-phone.duo-app--pulse .duo-value-positive, .ct-phone.duo-app--pulse .duo-positive .duo-hero-delta, .ct-phone.duo-app--pulse .duo-row .duo-row-value.duo-value-positive, .ct-phone.duo-app--pulse .duo-row-subtitle.duo-value-positive, .ct-phone.duo-app--pulse .duo-hero-value.duo-value-positive, .ct-phone.duo-app--pulse .duo-perp-hero-pnl.duo-value-positive, .ct-phone.duo-app--pulse .duo-comp-pair .duo-value-positive, .ct-phone.duo-app--pulse .duo-space-state-on, .ct-phone.duo-app--pulse .duo-timeframe-on .duo-pill-label { color: #00D18B; }
+.ct-phone.duo-app--pulse .duo-value-negative { color: #FF4D5E; }
+.ct-phone.duo-app--pulse .duo-notice-info .duo-notice-text, .ct-phone.duo-app--pulse .duo-money-notice-info { color: #00D18B; }
+.ct-phone.duo-app--pulse .duo-post { border-bottom-color: #262D36; }
+
+/* ---------- perps: perps desk: same terminal palette */
+.ct-phone.duo-app--perps { --duo-label: #EAECEF; --duo-label2: #A1ABB9; --duo-label3: #6E7887; --duo-sep: #262D36; --duo-grouped: #0B0E11; --duo-fill: #1E242C; --duo-pressed: #28303A; --duo-blue: #00D18B; --duo-tint: #00D18B; --duo-on-blue: #04210F; --duo-green: #00D18B; --duo-red: #FF4D5E; }
+.ct-phone.duo-app--perps.ct-phone-app-chrome .ct-phone-glass, .ct-phone.duo-app--perps.ct-phone-app-chrome .ct-phone-body, .ct-phone.duo-app--perps.ct-phone-app-chrome .ct-phone-home-control,
+.ct-phone.duo-app--perps.ct-phone-grouped .ct-phone-glass, .ct-phone.duo-app--perps.ct-phone-grouped .ct-phone-body, .ct-phone.duo-app--perps.ct-phone-grouped .ct-phone-home-control,
+.ct-phone.duo-app--perps .duo-page, .ct-phone.duo-app--perps .duo-page-grouped, .ct-phone.duo-app--perps .ct-phone-bar, .ct-phone.duo-app--perps .duo-tabs, .ct-phone.duo-app--perps .duo-calls-incall { background-color: #0B0E11; }
+.ct-phone.duo-app--perps .ct-phone-bar { border-bottom-color: #262D36; }
+.ct-phone.duo-app--perps .duo-group, .ct-phone.duo-app--perps .duo-sheet, .ct-phone.duo-app--perps .duo-page-grouped .duo-circle-face, .ct-phone.duo-app--perps .duo-circle-face { background-color: #151A21; }
+.ct-phone.duo-app--perps .duo-nav-backdrop { background-color: #0B0E11; border-bottom-color: #262D36; }
+.ct-phone.duo-app--perps .duo-glass-circle .duo-circle-face, .ct-phone.duo-app--perps .duo-bottom-bar-face, .ct-phone.duo-app--perps .duo-board-pin-face, .ct-phone.duo-app--perps .duo-call-controls { background-color: #151A21; border-color: #262D36; }
+.ct-phone.duo-app--perps .duo-segmented { background-color: #1E242C; }
+.ct-phone.duo-app--perps .duo-segmented-thumb, .ct-phone.duo-app--perps .duo-slider-thumb-face, .ct-phone.duo-app--perps .duo-control-on .duo-control-face { background-color: #28303A; }
+.ct-phone.duo-app--perps .duo-search .duo-search-field > .unity-base-text-field__input--placeholder { color: #6E7887; }
+.ct-phone.duo-app--perps .duo-value-positive, .ct-phone.duo-app--perps .duo-positive .duo-hero-delta, .ct-phone.duo-app--perps .duo-row .duo-row-value.duo-value-positive, .ct-phone.duo-app--perps .duo-row-subtitle.duo-value-positive, .ct-phone.duo-app--perps .duo-hero-value.duo-value-positive, .ct-phone.duo-app--perps .duo-perp-hero-pnl.duo-value-positive, .ct-phone.duo-app--perps .duo-comp-pair .duo-value-positive, .ct-phone.duo-app--perps .duo-space-state-on, .ct-phone.duo-app--perps .duo-timeframe-on .duo-pill-label { color: #00D18B; }
+.ct-phone.duo-app--perps .duo-value-negative { color: #FF4D5E; }
+.ct-phone.duo-app--perps .duo-notice-info .duo-notice-text, .ct-phone.duo-app--perps .duo-money-notice-info { color: #00D18B; }
+.ct-phone.duo-app--perps .duo-post { border-bottom-color: #262D36; }
+
+/* ---------- predict: prediction market: navy, blue accent */
+.ct-phone.duo-app--predict { --duo-label: #E8EDF5; --duo-label2: #A3B0C2; --duo-label3: #6F7D90; --duo-sep: #263040; --duo-grouped: #0D1117; --duo-fill: #1F2835; --duo-pressed: #2A3546; --duo-blue: #2E6BFF; --duo-tint: #2E6BFF; --duo-on-blue: #FFFFFF; --duo-green: #2FD18B; --duo-red: #FF5C5C; }
+.ct-phone.duo-app--predict.ct-phone-app-chrome .ct-phone-glass, .ct-phone.duo-app--predict.ct-phone-app-chrome .ct-phone-body, .ct-phone.duo-app--predict.ct-phone-app-chrome .ct-phone-home-control,
+.ct-phone.duo-app--predict.ct-phone-grouped .ct-phone-glass, .ct-phone.duo-app--predict.ct-phone-grouped .ct-phone-body, .ct-phone.duo-app--predict.ct-phone-grouped .ct-phone-home-control,
+.ct-phone.duo-app--predict .duo-page, .ct-phone.duo-app--predict .duo-page-grouped, .ct-phone.duo-app--predict .ct-phone-bar, .ct-phone.duo-app--predict .duo-tabs, .ct-phone.duo-app--predict .duo-calls-incall { background-color: #0D1117; }
+.ct-phone.duo-app--predict .ct-phone-bar { border-bottom-color: #263040; }
+.ct-phone.duo-app--predict .duo-group, .ct-phone.duo-app--predict .duo-sheet, .ct-phone.duo-app--predict .duo-page-grouped .duo-circle-face, .ct-phone.duo-app--predict .duo-circle-face { background-color: #161D27; }
+.ct-phone.duo-app--predict .duo-nav-backdrop { background-color: #0D1117; border-bottom-color: #263040; }
+.ct-phone.duo-app--predict .duo-glass-circle .duo-circle-face, .ct-phone.duo-app--predict .duo-bottom-bar-face, .ct-phone.duo-app--predict .duo-board-pin-face, .ct-phone.duo-app--predict .duo-call-controls { background-color: #161D27; border-color: #263040; }
+.ct-phone.duo-app--predict .duo-segmented { background-color: #1F2835; }
+.ct-phone.duo-app--predict .duo-segmented-thumb, .ct-phone.duo-app--predict .duo-slider-thumb-face, .ct-phone.duo-app--predict .duo-control-on .duo-control-face { background-color: #2A3546; }
+.ct-phone.duo-app--predict .duo-search .duo-search-field > .unity-base-text-field__input--placeholder { color: #6F7D90; }
+.ct-phone.duo-app--predict .duo-value-positive, .ct-phone.duo-app--predict .duo-positive .duo-hero-delta, .ct-phone.duo-app--predict .duo-row .duo-row-value.duo-value-positive, .ct-phone.duo-app--predict .duo-row-subtitle.duo-value-positive, .ct-phone.duo-app--predict .duo-hero-value.duo-value-positive, .ct-phone.duo-app--predict .duo-perp-hero-pnl.duo-value-positive, .ct-phone.duo-app--predict .duo-comp-pair .duo-value-positive, .ct-phone.duo-app--predict .duo-space-state-on, .ct-phone.duo-app--predict .duo-timeframe-on .duo-pill-label { color: #2FD18B; }
+.ct-phone.duo-app--predict .duo-value-negative { color: #FF5C5C; }
+.ct-phone.duo-app--predict .duo-notice-info .duo-notice-text, .ct-phone.duo-app--predict .duo-money-notice-info { color: #2FD18B; }
+.ct-phone.duo-app--predict .duo-post { border-bottom-color: #263040; }
+
+/* ---------- ore: refinery: dark bronze, amber accent */
+.ct-phone.duo-app--ore { --duo-label: #F6EDE3; --duo-label2: #C9B49F; --duo-label3: #8F7A66; --duo-sep: #33281D; --duo-grouped: #100C08; --duo-fill: #2A2018; --duo-pressed: #362A1F; --duo-blue: #F59E0B; --duo-tint: #F59E0B; --duo-on-blue: #2A1A00; --duo-green: #3DDC97; --duo-red: #FF5C5C; }
+.ct-phone.duo-app--ore.ct-phone-app-chrome .ct-phone-glass, .ct-phone.duo-app--ore.ct-phone-app-chrome .ct-phone-body, .ct-phone.duo-app--ore.ct-phone-app-chrome .ct-phone-home-control,
+.ct-phone.duo-app--ore.ct-phone-grouped .ct-phone-glass, .ct-phone.duo-app--ore.ct-phone-grouped .ct-phone-body, .ct-phone.duo-app--ore.ct-phone-grouped .ct-phone-home-control,
+.ct-phone.duo-app--ore .duo-page, .ct-phone.duo-app--ore .duo-page-grouped, .ct-phone.duo-app--ore .ct-phone-bar, .ct-phone.duo-app--ore .duo-tabs, .ct-phone.duo-app--ore .duo-calls-incall { background-color: #100C08; }
+.ct-phone.duo-app--ore .ct-phone-bar { border-bottom-color: #33281D; }
+.ct-phone.duo-app--ore .duo-group, .ct-phone.duo-app--ore .duo-sheet, .ct-phone.duo-app--ore .duo-page-grouped .duo-circle-face, .ct-phone.duo-app--ore .duo-circle-face { background-color: #1D1610; }
+.ct-phone.duo-app--ore .duo-nav-backdrop { background-color: #100C08; border-bottom-color: #33281D; }
+.ct-phone.duo-app--ore .duo-glass-circle .duo-circle-face, .ct-phone.duo-app--ore .duo-bottom-bar-face, .ct-phone.duo-app--ore .duo-board-pin-face, .ct-phone.duo-app--ore .duo-call-controls { background-color: #1D1610; border-color: #33281D; }
+.ct-phone.duo-app--ore .duo-segmented { background-color: #2A2018; }
+.ct-phone.duo-app--ore .duo-segmented-thumb, .ct-phone.duo-app--ore .duo-slider-thumb-face, .ct-phone.duo-app--ore .duo-control-on .duo-control-face { background-color: #362A1F; }
+.ct-phone.duo-app--ore .duo-search .duo-search-field > .unity-base-text-field__input--placeholder { color: #8F7A66; }
+.ct-phone.duo-app--ore .duo-value-positive, .ct-phone.duo-app--ore .duo-positive .duo-hero-delta, .ct-phone.duo-app--ore .duo-row .duo-row-value.duo-value-positive, .ct-phone.duo-app--ore .duo-row-subtitle.duo-value-positive, .ct-phone.duo-app--ore .duo-hero-value.duo-value-positive, .ct-phone.duo-app--ore .duo-perp-hero-pnl.duo-value-positive, .ct-phone.duo-app--ore .duo-comp-pair .duo-value-positive, .ct-phone.duo-app--ore .duo-space-state-on, .ct-phone.duo-app--ore .duo-timeframe-on .duo-pill-label { color: #3DDC97; }
+.ct-phone.duo-app--ore .duo-value-negative { color: #FF5C5C; }
+.ct-phone.duo-app--ore .duo-notice-info .duo-notice-text, .ct-phone.duo-app--ore .duo-money-notice-info { color: #3DDC97; }
+.ct-phone.duo-app--ore .duo-post { border-bottom-color: #33281D; }
+
+/* ---------- wallet: Phantom-like: dark with lavender accent */
+.ct-phone.duo-app--wallet { --duo-label: #F5F3FF; --duo-label2: #B8B1D6; --duo-label3: #8780A6; --duo-sep: #332F44; --duo-grouped: #17151F; --duo-fill: #2E2A3C; --duo-pressed: #3A354B; --duo-blue: #AB9FF2; --duo-tint: #AB9FF2; --duo-on-blue: #1B1530; --duo-green: #3DDC97; --duo-red: #FF6B81; }
+.ct-phone.duo-app--wallet.ct-phone-app-chrome .ct-phone-glass, .ct-phone.duo-app--wallet.ct-phone-app-chrome .ct-phone-body, .ct-phone.duo-app--wallet.ct-phone-app-chrome .ct-phone-home-control,
+.ct-phone.duo-app--wallet.ct-phone-grouped .ct-phone-glass, .ct-phone.duo-app--wallet.ct-phone-grouped .ct-phone-body, .ct-phone.duo-app--wallet.ct-phone-grouped .ct-phone-home-control,
+.ct-phone.duo-app--wallet .duo-page, .ct-phone.duo-app--wallet .duo-page-grouped, .ct-phone.duo-app--wallet .ct-phone-bar, .ct-phone.duo-app--wallet .duo-tabs, .ct-phone.duo-app--wallet .duo-calls-incall { background-color: #17151F; }
+.ct-phone.duo-app--wallet .ct-phone-bar { border-bottom-color: #332F44; }
+.ct-phone.duo-app--wallet .duo-group, .ct-phone.duo-app--wallet .duo-sheet, .ct-phone.duo-app--wallet .duo-page-grouped .duo-circle-face, .ct-phone.duo-app--wallet .duo-circle-face { background-color: #23202E; }
+.ct-phone.duo-app--wallet .duo-nav-backdrop { background-color: #17151F; border-bottom-color: #332F44; }
+.ct-phone.duo-app--wallet .duo-glass-circle .duo-circle-face, .ct-phone.duo-app--wallet .duo-bottom-bar-face, .ct-phone.duo-app--wallet .duo-board-pin-face, .ct-phone.duo-app--wallet .duo-call-controls { background-color: #23202E; border-color: #332F44; }
+.ct-phone.duo-app--wallet .duo-segmented { background-color: #2E2A3C; }
+.ct-phone.duo-app--wallet .duo-segmented-thumb, .ct-phone.duo-app--wallet .duo-slider-thumb-face, .ct-phone.duo-app--wallet .duo-control-on .duo-control-face { background-color: #3A354B; }
+.ct-phone.duo-app--wallet .duo-search .duo-search-field > .unity-base-text-field__input--placeholder { color: #8780A6; }
+.ct-phone.duo-app--wallet .duo-value-positive, .ct-phone.duo-app--wallet .duo-positive .duo-hero-delta, .ct-phone.duo-app--wallet .duo-row .duo-row-value.duo-value-positive, .ct-phone.duo-app--wallet .duo-row-subtitle.duo-value-positive, .ct-phone.duo-app--wallet .duo-hero-value.duo-value-positive, .ct-phone.duo-app--wallet .duo-perp-hero-pnl.duo-value-positive, .ct-phone.duo-app--wallet .duo-comp-pair .duo-value-positive, .ct-phone.duo-app--wallet .duo-space-state-on, .ct-phone.duo-app--wallet .duo-timeframe-on .duo-pill-label { color: #3DDC97; }
+.ct-phone.duo-app--wallet .duo-value-negative { color: #FF6B81; }
+.ct-phone.duo-app--wallet .duo-notice-info .duo-notice-text, .ct-phone.duo-app--wallet .duo-money-notice-info { color: #3DDC97; }
+.ct-phone.duo-app--wallet .duo-post { border-bottom-color: #332F44; }
+
+/* ---------- rugroom: casino: dark red felt, gold accent */
+.ct-phone.duo-app--rugroom { --duo-label: #FFF4E6; --duo-label2: #E3C3A2; --duo-label3: #A8876A; --duo-sep: #3A1D1D; --duo-grouped: #120707; --duo-fill: #2E1717; --duo-pressed: #3B1E1E; --duo-blue: #F5C542; --duo-tint: #F5C542; --duo-on-blue: #2A1A00; --duo-green: #3DDC97; --duo-red: #FF5C5C; }
+.ct-phone.duo-app--rugroom.ct-phone-app-chrome .ct-phone-glass, .ct-phone.duo-app--rugroom.ct-phone-app-chrome .ct-phone-body, .ct-phone.duo-app--rugroom.ct-phone-app-chrome .ct-phone-home-control,
+.ct-phone.duo-app--rugroom.ct-phone-grouped .ct-phone-glass, .ct-phone.duo-app--rugroom.ct-phone-grouped .ct-phone-body, .ct-phone.duo-app--rugroom.ct-phone-grouped .ct-phone-home-control,
+.ct-phone.duo-app--rugroom .duo-page, .ct-phone.duo-app--rugroom .duo-page-grouped, .ct-phone.duo-app--rugroom .ct-phone-bar, .ct-phone.duo-app--rugroom .duo-tabs, .ct-phone.duo-app--rugroom .duo-calls-incall { background-color: #120707; }
+.ct-phone.duo-app--rugroom .ct-phone-bar { border-bottom-color: #3A1D1D; }
+.ct-phone.duo-app--rugroom .duo-group, .ct-phone.duo-app--rugroom .duo-sheet, .ct-phone.duo-app--rugroom .duo-page-grouped .duo-circle-face, .ct-phone.duo-app--rugroom .duo-circle-face { background-color: #211010; }
+.ct-phone.duo-app--rugroom .duo-nav-backdrop { background-color: #120707; border-bottom-color: #3A1D1D; }
+.ct-phone.duo-app--rugroom .duo-glass-circle .duo-circle-face, .ct-phone.duo-app--rugroom .duo-bottom-bar-face, .ct-phone.duo-app--rugroom .duo-board-pin-face, .ct-phone.duo-app--rugroom .duo-call-controls { background-color: #211010; border-color: #3A1D1D; }
+.ct-phone.duo-app--rugroom .duo-segmented { background-color: #2E1717; }
+.ct-phone.duo-app--rugroom .duo-segmented-thumb, .ct-phone.duo-app--rugroom .duo-slider-thumb-face, .ct-phone.duo-app--rugroom .duo-control-on .duo-control-face { background-color: #3B1E1E; }
+.ct-phone.duo-app--rugroom .duo-search .duo-search-field > .unity-base-text-field__input--placeholder { color: #A8876A; }
+.ct-phone.duo-app--rugroom .duo-value-positive, .ct-phone.duo-app--rugroom .duo-positive .duo-hero-delta, .ct-phone.duo-app--rugroom .duo-row .duo-row-value.duo-value-positive, .ct-phone.duo-app--rugroom .duo-row-subtitle.duo-value-positive, .ct-phone.duo-app--rugroom .duo-hero-value.duo-value-positive, .ct-phone.duo-app--rugroom .duo-perp-hero-pnl.duo-value-positive, .ct-phone.duo-app--rugroom .duo-comp-pair .duo-value-positive, .ct-phone.duo-app--rugroom .duo-space-state-on, .ct-phone.duo-app--rugroom .duo-timeframe-on .duo-pill-label { color: #3DDC97; }
+.ct-phone.duo-app--rugroom .duo-value-negative { color: #FF5C5C; }
+.ct-phone.duo-app--rugroom .duo-notice-info .duo-notice-text, .ct-phone.duo-app--rugroom .duo-money-notice-info { color: #3DDC97; }
+.ct-phone.duo-app--rugroom .duo-post { border-bottom-color: #3A1D1D; }
+
+/* ---------- messages: iMessage: white, blue bubbles */
+.ct-phone.duo-app--messages { --duo-blue: #0A84FF; --duo-tint: #0A6FD6; --duo-on-blue: #FFFFFF; --duo-grouped: #FFFFFF; }
+.ct-phone.duo-app--messages.ct-phone-grouped .ct-phone-glass, .ct-phone.duo-app--messages.ct-phone-grouped .ct-phone-body, .ct-phone.duo-app--messages.ct-phone-grouped .ct-phone-home-control, .ct-phone.duo-app--messages .duo-page-grouped { background-color: #FFFFFF; }
+
+/* ---------- calls: iPhone Phone: green call accent */
+.ct-phone.duo-app--calls { --duo-blue: #34C759; --duo-tint: #248A3D; --duo-on-blue: #FFFFFF; --duo-grouped: #F2F2F7; }
+.ct-phone.duo-app--calls.ct-phone-grouped .ct-phone-glass, .ct-phone.duo-app--calls.ct-phone-grouped .ct-phone-body, .ct-phone.duo-app--calls.ct-phone-grouped .ct-phone-home-control, .ct-phone.duo-app--calls .duo-page-grouped { background-color: #F2F2F7; }
+
+/* ---------- bank: banking app: cool white, bank blue */
+.ct-phone.duo-app--bank { --duo-blue: #0666EB; --duo-tint: #0550B8; --duo-on-blue: #FFFFFF; --duo-grouped: #F3F6FC; }
+.ct-phone.duo-app--bank.ct-phone-grouped .ct-phone-glass, .ct-phone.duo-app--bank.ct-phone-grouped .ct-phone-body, .ct-phone.duo-app--bank.ct-phone-grouped .ct-phone-home-control, .ct-phone.duo-app--bank .duo-page-grouped { background-color: #F3F6FC; }
+
+/* ---------- profile: profile: soft violet */
+.ct-phone.duo-app--profile { --duo-blue: #7C5CFF; --duo-tint: #5B3FD6; --duo-on-blue: #FFFFFF; --duo-grouped: #F4F2FB; }
+.ct-phone.duo-app--profile.ct-phone-grouped .ct-phone-glass, .ct-phone.duo-app--profile.ct-phone-grouped .ct-phone-body, .ct-phone.duo-app--profile.ct-phone-grouped .ct-phone-home-control, .ct-phone.duo-app--profile .duo-page-grouped { background-color: #F4F2FB; }
+
+/* ---------- jobs: jobs board: LinkedIn-style blue */
+.ct-phone.duo-app--jobs { --duo-blue: #0A66C2; --duo-tint: #0A58A8; --duo-on-blue: #FFFFFF; --duo-grouped: #F3F2EF; }
+.ct-phone.duo-app--jobs.ct-phone-grouped .ct-phone-glass, .ct-phone.duo-app--jobs.ct-phone-grouped .ct-phone-body, .ct-phone.duo-app--jobs.ct-phone-grouped .ct-phone-home-control, .ct-phone.duo-app--jobs .duo-page-grouped { background-color: #F3F2EF; }
+
+/* ---------- shop: shop: warm, orange buy buttons */
+.ct-phone.duo-app--shop { --duo-blue: #FF6A00; --duo-tint: #C25100; --duo-on-blue: #FFFFFF; --duo-grouped: #FFF8F2; }
+.ct-phone.duo-app--shop.ct-phone-grouped .ct-phone-glass, .ct-phone.duo-app--shop.ct-phone-grouped .ct-phone-body, .ct-phone.duo-app--shop.ct-phone-grouped .ct-phone-home-control, .ct-phone.duo-app--shop .duo-page-grouped { background-color: #FFF8F2; }
+
+/* ---------- duoshop: delivery shop: warm, orange */
+.ct-phone.duo-app--duoshop { --duo-blue: #FF6A00; --duo-tint: #C25100; --duo-on-blue: #FFFFFF; --duo-grouped: #FFF8F2; }
+.ct-phone.duo-app--duoshop.ct-phone-grouped .ct-phone-glass, .ct-phone.duo-app--duoshop.ct-phone-grouped .ct-phone-body, .ct-phone.duo-app--duoshop.ct-phone-grouped .ct-phone-home-control, .ct-phone.duo-app--duoshop .duo-page-grouped { background-color: #FFF8F2; }
+
+/* ---------- events: calendar: white, red */
+.ct-phone.duo-app--events { --duo-blue: #FF3B30; --duo-tint: #D70015; --duo-on-blue: #FFFFFF; --duo-grouped: #FFFFFF; }
+.ct-phone.duo-app--events.ct-phone-grouped .ct-phone-glass, .ct-phone.duo-app--events.ct-phone-grouped .ct-phone-body, .ct-phone.duo-app--events.ct-phone-grouped .ct-phone-home-control, .ct-phone.duo-app--events .duo-page-grouped { background-color: #FFFFFF; }
+
+/* ---------- quests: quests: warm gold */
+.ct-phone.duo-app--quests { --duo-blue: #FFB800; --duo-tint: #9A6B00; --duo-on-blue: #2A1A00; --duo-grouped: #FFF9EC; }
+.ct-phone.duo-app--quests.ct-phone-grouped .ct-phone-glass, .ct-phone.duo-app--quests.ct-phone-grouped .ct-phone-body, .ct-phone.duo-app--quests.ct-phone-grouped .ct-phone-home-control, .ct-phone.duo-app--quests .duo-page-grouped { background-color: #FFF9EC; }
+
+/* ---------- map: maps: system blue */
+.ct-phone.duo-app--map { --duo-blue: #007AFF; --duo-tint: #0062CC; --duo-on-blue: #FFFFFF; --duo-grouped: #F2F2F7; }
+.ct-phone.duo-app--map.ct-phone-grouped .ct-phone-glass, .ct-phone.duo-app--map.ct-phone-grouped .ct-phone-body, .ct-phone.duo-app--map.ct-phone-grouped .ct-phone-home-control, .ct-phone.duo-app--map .duo-page-grouped { background-color: #F2F2F7; }
+
+/* ---------- richlist: leaderboard: gold */
+.ct-phone.duo-app--richlist { --duo-blue: #F5A524; --duo-tint: #9A6200; --duo-on-blue: #2A1A00; --duo-grouped: #FFFBF0; }
+.ct-phone.duo-app--richlist.ct-phone-grouped .ct-phone-glass, .ct-phone.duo-app--richlist.ct-phone-grouped .ct-phone-body, .ct-phone.duo-app--richlist.ct-phone-grouped .ct-phone-home-control, .ct-phone.duo-app--richlist .duo-page-grouped { background-color: #FFFBF0; }
+
+/* ---------- home: home: warm neutral */
+.ct-phone.duo-app--home { --duo-blue: #2BD47D; --duo-tint: #0A7A40; --duo-on-blue: #04210F; --duo-grouped: #F7F4EF; }
+.ct-phone.duo-app--home.ct-phone-grouped .ct-phone-glass, .ct-phone.duo-app--home.ct-phone-grouped .ct-phone-body, .ct-phone.duo-app--home.ct-phone-grouped .ct-phone-home-control, .ct-phone.duo-app--home .duo-page-grouped { background-color: #F7F4EF; }
+
+/* ---------- week: week planner: indigo */
+.ct-phone.duo-app--week { --duo-blue: #5856D6; --duo-tint: #4341B5; --duo-on-blue: #FFFFFF; --duo-grouped: #F3F6FC; }
+.ct-phone.duo-app--week.ct-phone-grouped .ct-phone-glass, .ct-phone.duo-app--week.ct-phone-grouped .ct-phone-body, .ct-phone.duo-app--week.ct-phone-grouped .ct-phone-home-control, .ct-phone.duo-app--week .duo-page-grouped { background-color: #F3F6FC; }
+
+/* ---------- biz: business: teal */
+.ct-phone.duo-app--biz { --duo-blue: #0F766E; --duo-tint: #0F766E; --duo-on-blue: #FFFFFF; --duo-grouped: #F3F6FC; }
+.ct-phone.duo-app--biz.ct-phone-grouped .ct-phone-glass, .ct-phone.duo-app--biz.ct-phone-grouped .ct-phone-body, .ct-phone.duo-app--biz.ct-phone-grouped .ct-phone-home-control, .ct-phone.duo-app--biz .duo-page-grouped { background-color: #F3F6FC; }
+
+/* ---------- every app: softer, roomier cards and bolder titles (iOS 17/18 proportions) */
+.ct-phone .duo-group { border-radius: 34px; border-width: 1px; border-color: rgba(0,0,0,0.04); }
+.ct-phone .duo-large-title { letter-spacing: -2px; }
+.ct-phone .duo-row { min-height: 136px; }
