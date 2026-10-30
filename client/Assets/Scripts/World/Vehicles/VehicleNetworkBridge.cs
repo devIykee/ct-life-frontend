@@ -138,7 +138,17 @@ namespace CTLife.World.Vehicles
             using (var owner = CancellationTokenSource.CreateLinkedTokenSource(cancellation, _visit.LifetimeToken))
             {
                 var p = vehicle.transform.position;
-                bool accepted = await channel.Enter(new VehicleEnterMessage { id = identity.Id, kind = kind, x = p.x, y = p.y, z = p.z, yaw = vehicle.transform.eulerAngles.y * Mathf.Deg2Rad }, owner.Token, identity.Steal);
+                var request = new VehicleEnterMessage { id = identity.Id, kind = kind, x = p.x, y = p.y, z = p.z, yaw = vehicle.transform.eulerAngles.y * Mathf.Deg2Rad };
+                bool accepted = await channel.Enter(request, owner.Token, identity.Steal);
+                // The server checks entry against the street position it last stored (written every 250 ms). Right after a
+                // join, a district change or a sprint up to the car that position can be missing or behind: let the
+                // street room catch up once and try again.
+                if (!accepted && (channel.LastEnterRejection == "POSITION_UNKNOWN" || channel.LastEnterRejection == "VEHICLE_TOO_FAR") &&
+                    !owner.IsCancellationRequested && channel == _channel && channel.CanDrive)
+                {
+                    await Task.Delay(600, owner.Token);
+                    accepted = await channel.Enter(request, owner.Token, identity.Steal);
+                }
                 if (!accepted)
                 {
                     var code = channel.LastEnterRejection;

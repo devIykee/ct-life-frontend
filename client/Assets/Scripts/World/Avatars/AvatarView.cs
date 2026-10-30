@@ -209,7 +209,7 @@ namespace CTLife.World
         private void LateUpdate()
         {
             _runCorrection?.AfterAnimation();
-            ApplySprintLean();
+            ApplyPosture();
             _seatExit?.ApplyPose();
             // Ramp the seat fit (τ 0.3 s): lands as the sit-down clip settles; eases out through the stand-up.
             _seatApplied = Vector3.Lerp(_seatApplied, _seatTarget, 1f - Mathf.Exp(-Time.deltaTime / 0.3f));
@@ -236,34 +236,59 @@ namespace CTLife.World
                 }
             }
         }
-        // Mocap v3 sprint lean: the 100STYLE sprint runs upright; from the jog speed to the full sprint the spine pitches
-        // forward up to SprintLean degrees (spine, chest, upper chest share it) and the head gives back a third, so the gaze
-        // stays on the road. Applied after animation and IK (the legs and planted feet are untouched), near actors only.
-        private const float SprintLean = 10f;
-        private Transform _leanSpine, _leanChest, _leanUpper, _leanHead;
+        // Locomotion posture (playtest 2026-10-30: "players look slanted when they walk"). Measured from the shipped
+        // mocap v3 clips (spine hips->neck, averaged over a cycle): walk ~1 deg forward, jog 15-17 deg forward, sprint 19-23 deg
+        // forward with 6-7 deg sideways and 8 deg of shoulder roll, before the old +10 deg sprint lean on top. After animation
+        // and IK this measures the pose's average spine tilt (low-passed over about a step, so the gait's own sway stays) and
+        // rotates the spine chain so the average sits upright sideways and leans forward at most MaxLean for the speed.
+        private const float WalkLean = 2f, MaxLean = 8f, PostureTau = 0.35f;
+        private Transform _leanHips, _leanSpine, _leanChest, _leanUpper, _leanNeck, _leanHead;
         private Animator _leanFor;
+        private Vector3 _postureAvg;          // filtered spine direction in actor space (x right, y up, z forward)
+        private bool _postureValid;
 
-        private void ApplySprintLean()
+        private void ApplyPosture()
         {
-            if (Animator == null || !Animator.isHuman || Culled || LodTier > 1 || Suppressed || SeatPresentationActive || !_hasLocoRate) return;
-            if (_baseState != "loco_run" && _baseState != "loco_walk") return;
-            float t = Mathf.InverseLerp(LocomotionTuning.BlendRun, LocomotionTuning.BlendSprint, Animator.GetFloat(AnimationLibrary.SpeedParam));
-            if (t <= 0.001f) return;
+            if (Animator == null || !Animator.isHuman || !Animator.enabled || Culled || LodTier > 1 || Suppressed || SeatPresentationActive)
+            { _postureValid = false; return; }
+            if (_baseState != "loco_run" && _baseState != "loco_walk") { _postureValid = false; return; }
             if (_leanFor != Animator)
             {
                 _leanFor = Animator;
+                _leanHips = Animator.GetBoneTransform(HumanBodyBones.Hips);
                 _leanSpine = Animator.GetBoneTransform(HumanBodyBones.Spine);
                 _leanChest = Animator.GetBoneTransform(HumanBodyBones.Chest);
                 _leanUpper = Animator.GetBoneTransform(HumanBodyBones.UpperChest);
                 _leanHead = Animator.GetBoneTransform(HumanBodyBones.Head);
+                _leanNeck = Animator.GetBoneTransform(HumanBodyBones.Neck) ?? _leanHead;
+                _postureValid = false;
             }
-            if (_leanSpine == null) return;
-            var axis = transform.right;
-            float total = SprintLean * t;
-            void Pitch(Transform b, float deg) { if (b != null) b.rotation = Quaternion.AngleAxis(deg, axis) * b.rotation; }
-            if (_leanUpper != null) { Pitch(_leanSpine, total * 0.4f); Pitch(_leanChest, total * 0.35f); Pitch(_leanUpper, total * 0.25f); }
-            else { Pitch(_leanSpine, total * 0.5f); Pitch(_leanChest, total * 0.5f); }
-            Pitch(_leanHead, -total / 3f);
+            if (_leanHips == null || _leanSpine == null || _leanNeck == null) return;
+            // The Animator rewrites every humanoid bone when it evaluates; one culled off screen keeps the corrected pose, which
+            // nobody sees and the next evaluation replaces.
+            var raw = transform.InverseTransformDirection(_leanNeck.position - _leanHips.position);
+            if (raw.y <= 0.01f) return;
+            raw.Normalize();
+            float k = _postureValid ? 1f - Mathf.Exp(-Time.deltaTime / PostureTau) : 1f;
+            _postureAvg = Vector3.Slerp(_postureValid ? _postureAvg : raw, raw, k);
+            _postureValid = true;
+
+            // Allowed forward lean grows with speed: a walk stays upright, a sprint leans a little into it.
+            float run = _hasLocoRate ? Mathf.InverseLerp(LocomotionTuning.BlendWalk, LocomotionTuning.BlendSprint, Animator.GetFloat(AnimationLibrary.SpeedParam)) : 0f;
+            float allowed = Mathf.Lerp(WalkLean, MaxLean, run);
+            var avg = _postureAvg.normalized;
+            float forward = Mathf.Atan2(avg.z, avg.y) * Mathf.Rad2Deg;
+            float target = Mathf.Clamp(forward, -allowed, allowed);
+            var goal = new Vector3(0f, Mathf.Cos(target * Mathf.Deg2Rad), Mathf.Sin(target * Mathf.Deg2Rad));
+            var fix = transform.rotation * Quaternion.FromToRotation(avg, goal) * Quaternion.Inverse(transform.rotation);
+            if (Quaternion.Angle(Quaternion.identity, fix) < 0.25f) return;
+
+            void Turn(Transform b, float share) { if (b != null) b.rotation = Quaternion.Slerp(Quaternion.identity, fix, share) * b.rotation; }
+            if (_leanUpper != null) { Turn(_leanSpine, 0.4f); Turn(_leanChest, 0.35f); Turn(_leanUpper, 0.25f); }
+            else if (_leanChest != null) { Turn(_leanSpine, 0.5f); Turn(_leanChest, 0.5f); }
+            else Turn(_leanSpine, 1f);
+            // The faster clips lift the gaze to make up for their lean; give most of the change back so the eyes stay on the road.
+            if (_leanHead != null && _leanHead != _leanNeck) _leanHead.rotation = Quaternion.Slerp(Quaternion.identity, Quaternion.Inverse(fix), 0.6f) * _leanHead.rotation;
         }
 
         // A remote logical parent can move during Update. Re-pin before Animator/IK evaluates.
