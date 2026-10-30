@@ -1,8 +1,4 @@
-import { inject } from '@vercel/analytics';
 import { mountIslandMap } from "./map.js?v=3";
-
-// Initialize Vercel Web Analytics
-inject();
 
 // Set this to the store/APK link on launch day; every "Get the game" follows it.
 const DOWNLOAD_URL = "";
