@@ -19,6 +19,8 @@ namespace CTLife.SocialFeatures
     public sealed class MessagesController : IDisposable
     {
         public const double ThreadPollMs = 8000, InboxPollMs = 30000;
+        /// <summary>With the city room joined the server pushes each `dm` live; the open thread only needs a slow safety refresh.</summary>
+        public const double PushedThreadPollMs = 30000;
 
         private readonly SocialHub _hub;
         public readonly DmInbox Inbox = new DmInbox();
@@ -299,7 +301,8 @@ namespace CTLife.SocialFeatures
         {
             if (_disposed || _hub.Offline || !Features.IsAvailable(Features.Dms)) return;
             var open = Inbox.OpenPeer;
-            if (open != null && now - _threadAt >= ThreadPollMs && !Loading(open)) LoadPage(open, false);
+            bool pushed = Services.TryGet<IRealtimeService>(out var rt) && rt.City != null && rt.City.IsJoined;
+            if (open != null && now - _threadAt >= (pushed ? PushedThreadPollMs : ThreadPollMs) && !Loading(open)) LoadPage(open, false);
             if (_inboxViewers > 0 && open == null && now - _inboxAt >= InboxPollMs && !ServerInboxUnavailable) RefreshInbox();
         }
 
