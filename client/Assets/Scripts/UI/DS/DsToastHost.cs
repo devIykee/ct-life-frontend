@@ -128,7 +128,7 @@ namespace CTLife.UI.DS
             {
                 string tint = spec.Tone switch { Tone.Accent => "accent", Tone.Danger => "danger", Tone.Warn => "warn", _ => "ink2" };
                 if (spec.Tone == Tone.Accent || spec.Tone == Tone.Danger || spec.Tone == Tone.Warn) dot.AddToClassList("ds-toast-dot--" + tint);
-                dot.Add(Ds.Icon(spec.Icon ?? "info", 32, "white"));
+                dot.Add(Ds.Icon(spec.Icon ?? "info", 44, "white"));
             }
             t.Add(dot);
             var col = new VisualElement { pickingMode = PickingMode.Ignore };

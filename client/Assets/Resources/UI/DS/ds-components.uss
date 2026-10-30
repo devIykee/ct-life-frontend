@@ -197,27 +197,27 @@ Button.ds-chip:active { scale: 0.96 0.96; }
 
 /* ------------------------------------------------------------------ toast (one channel, top centre): v2 objective pill */
 .ds-toast-host { position: absolute; left: 0; right: 0; top: 126px; align-items: center; }
-.ds-toast { min-height: 68px; padding: 6px 28px 10px 10px; border-radius: 34px; border-width: 2px; border-bottom-width: 6px; border-color: var(--ds-hud-line); border-bottom-color: var(--ds-hud-base);
+.ds-toast { min-height: 92px; padding: 10px 36px 14px 14px; border-radius: 46px; border-width: 2px; border-bottom-width: 6px; border-color: var(--ds-hud-line); border-bottom-color: var(--ds-hud-base);
     background-color: var(--ds-hud); flex-direction: row; align-items: center;
     opacity: 0; translate: 0 -24px; transition-property: opacity, translate; transition-duration: 0.2s; transition-timing-function: ease-out-cubic; }
 .ds-toast.ds-in { opacity: 1; translate: 0 0; }
 .ds-toast.ds-out { opacity: 0; translate: 0 -24px; transition-duration: 0.12s; transition-timing-function: ease-in-cubic; }
-.ds-toast-dot { width: 52px; height: 52px; border-radius: 14px; align-items: center; justify-content: center; margin-right: 14px; background-color: var(--ds-ink-2); flex-shrink: 0; }
+.ds-toast-dot { width: 70px; height: 70px; border-radius: 18px; align-items: center; justify-content: center; margin-right: 18px; background-color: var(--ds-ink-2); flex-shrink: 0; }
 .ds-toast-dot--accent { background-color: var(--ds-accent); }
 .ds-toast-dot--danger { background-color: var(--ds-danger); }
 .ds-toast-dot--warn { background-color: var(--ds-warn); }
 .ds-toast-dot--brand { background-color: var(--b-hero); }
 .ds-toast-dot > .ds-ic { -unity-background-image-tint-color: var(--ds-white); }
-.ds-toast-text { font-size: 32px; letter-spacing: 0.4px; color: var(--ds-hud-ink); -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); margin: 0; padding: 0; white-space: nowrap; text-shadow: 0 3px 0 var(--ds-hud-drop); max-width: 1100px; }
-.ds-toast-trail { font-size: 32px; color: var(--b-primary); -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); margin: 0 0 0 14px; padding: 0; white-space: nowrap; text-shadow: 0 3px 0 var(--ds-hud-drop); }
+.ds-toast-text { font-size: 44px; letter-spacing: 0.4px; color: var(--ds-hud-ink); -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); margin: 0; padding: 0; white-space: nowrap; text-shadow: 0 3px 0 var(--ds-hud-drop); max-width: 1100px; }
+.ds-toast-trail { font-size: 44px; color: var(--b-primary); -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); margin: 0 0 0 14px; padding: 0; white-space: nowrap; text-shadow: 0 3px 0 var(--ds-hud-drop); }
 .ds-toast-col { flex-shrink: 1; }
-.ds-toast-detail { font-size: 22px; color: var(--ds-hud-ink-2); -unity-font-definition: url("../Fonts/Phone/Inter-SemiBold.ttf"); margin: 2px 0 0 0; padding: 0; white-space: normal; max-width: 1100px; }
+.ds-toast-detail { font-size: 30px; color: var(--ds-hud-ink-2); -unity-font-definition: url("../Fonts/Phone/Inter-SemiBold.ttf"); margin: 2px 0 0 0; padding: 0; white-space: normal; max-width: 1100px; }
 .ds-toast .ds-bar { margin-top: 8px; height: 10px; border-top-width: 0; background-color: var(--ds-hud-line); }
 
 /* ------------------------------------------------------------------ world prompt (v2: chunky orb with a white ring and a base, Lilita pills) */
 .ds-prompt { align-items: center; }
-.ds-prompt-where { height: 48px; padding: 0 18px 4px 18px; border-radius: 24px; border-width: 2px; border-bottom-width: 5px; border-color: var(--ds-hud-line); border-bottom-color: var(--ds-hud-base); background-color: var(--ds-hud); justify-content: center; margin-bottom: 10px; }
-.ds-prompt-where > Label { font-size: 24px; letter-spacing: 0.5px; color: var(--ds-hud-ink); -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); margin: 0; padding: 0; white-space: nowrap; text-shadow: 0 3px 0 var(--ds-hud-drop); }
+.ds-prompt-where { height: 58px; padding: 0 22px 4px 22px; border-radius: 29px; border-width: 2px; border-bottom-width: 5px; border-color: var(--ds-hud-line); border-bottom-color: var(--ds-hud-base); background-color: var(--ds-hud); justify-content: center; margin-bottom: 10px; }
+.ds-prompt-where > Label { font-size: 30px; letter-spacing: 0.5px; color: var(--ds-hud-ink); -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); margin: 0; padding: 0; white-space: nowrap; text-shadow: 0 3px 0 var(--ds-hud-drop); }
 .ds-prompt-acts { flex-direction: row; align-items: flex-start; }
 .ds-prompt-act { align-items: center; margin: 0 14px; }
 .ds-orb { width: 132px; height: 132px; border-radius: 66px; margin: 0; padding: 6px; align-items: stretch; justify-content: center; border-width: 0;
@@ -237,10 +237,10 @@ Button.ds-chip:active { scale: 0.96 0.96; }
 .ds-orb:active { translate: 0 6px; }
 .ds-orb:active > .ds-orb-key, .ds-orb--held > .ds-orb-key { border-bottom-width: 3px; }
 .ds-orb--held { translate: 0 6px; }
-.ds-prompt-label { height: 52px; padding: 0 22px 5px 22px; margin-top: 10px; border-radius: 26px; border-width: 2px; border-bottom-width: 5px; border-color: var(--ds-hud-line); border-bottom-color: var(--ds-hud-base); background-color: var(--ds-hud); justify-content: center; }
-.ds-prompt-label > Label { font-size: 30px; letter-spacing: 0.4px; color: var(--ds-hud-ink); -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); margin: 0; padding: 0; white-space: nowrap; text-shadow: 0 3px 0 var(--ds-hud-drop); }
-.ds-prompt-meta { margin-top: 10px; height: 48px; padding: 0 18px 4px 18px; border-radius: 24px; background-color: var(--ds-hud); border-width: 2px; border-bottom-width: 5px; border-color: var(--ds-hud-line); border-bottom-color: var(--ds-hud-base); justify-content: center; }
-.ds-prompt-meta > Label { font-size: 24px; color: var(--ds-hud-ink); -unity-font-definition: url("../Fonts/Phone/Inter-Bold.ttf"); margin: 0; padding: 0; white-space: nowrap; }
+.ds-prompt-label { height: 62px; padding: 0 26px 5px 26px; margin-top: 10px; border-radius: 31px; border-width: 2px; border-bottom-width: 5px; border-color: var(--ds-hud-line); border-bottom-color: var(--ds-hud-base); background-color: var(--ds-hud); justify-content: center; }
+.ds-prompt-label > Label { font-size: 36px; letter-spacing: 0.4px; color: var(--ds-hud-ink); -unity-font-definition: url("../Fonts/LilitaOne-Regular.ttf"); margin: 0; padding: 0; white-space: nowrap; text-shadow: 0 3px 0 var(--ds-hud-drop); }
+.ds-prompt-meta { margin-top: 10px; height: 58px; padding: 0 22px 4px 22px; border-radius: 29px; background-color: var(--ds-hud); border-width: 2px; border-bottom-width: 5px; border-color: var(--ds-hud-line); border-bottom-color: var(--ds-hud-base); justify-content: center; }
+.ds-prompt-meta > Label { font-size: 30px; color: var(--ds-hud-ink); -unity-font-definition: url("../Fonts/Phone/Inter-Bold.ttf"); margin: 0; padding: 0; white-space: nowrap; }
 .ds-prompt-meta--warn > Label { color: var(--ds-warn); }
 .ds-prompt-meta--good > Label { color: var(--ds-accent); }
 .ds-prompt-meta--bad > Label { color: var(--ds-danger-tint); }

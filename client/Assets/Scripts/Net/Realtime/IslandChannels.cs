@@ -32,7 +32,7 @@ namespace CTLife.Net
         protected override void OnJoined()
         {
             On<CorrectedMessage>("corrected", m => Corrected?.Invoke(m));
-            On<SaidMessage>("said", m => Said?.Invoke(m));
+            On<SaidMessage>("said", m => { Said?.Invoke(m); Bus.Publish(m); });
             // backend #17: a pursuit of a player in this street room (bystanders see the same cruisers); HeatService dedupes
             On<Dictionary<string, object>>("police_pursuit", m => RawRoomMessages.Publish("police_pursuit", m));
             On<Dictionary<string, object>>("police_pursuit_end", m => RawRoomMessages.Publish("police_pursuit_end", m));

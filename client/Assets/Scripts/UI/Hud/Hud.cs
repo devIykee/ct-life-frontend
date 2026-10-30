@@ -222,7 +222,7 @@ namespace CTLife.UI
                 HudFade.Set(place, !driving);
                 if (driving) { _chat.Hide(); _emotes.Hide(); }
             });
-            _subs.On<OpenDuoAppRequestSignal>(s => { if (s.app == "shop") OpenShop(); });
+            _subs.On<OpenDuoAppRequestSignal>(s => { if (s.app == "shop") OpenShop(); else if (!string.IsNullOrEmpty(s.app)) OpenUtility(() => OpenApp?.Invoke(s.app)); });
             _subs.On<OpenMapRequestSignal>(_ => OpenUtility(OpenMap)); // the door interaction
             _subs.On<DegradedChangedSignal>(_ => RefreshDegraded());
             _subs.On<OnlineCountSignal>(s => _online.text = Strings.F("hud.online", s.online));
@@ -619,6 +619,7 @@ namespace CTLife.UI
             string who = "Someone";
             if (visit != null && visit.Players.TryGetValue(m.sessionId ?? "", out var rp) && rp != null)
                 who = rp.GetComponent<AvatarView>()?.displayName ?? who;
+            else who = CTLife.World.StreetNetworkBridge.Current?.NameOf(m.sessionId) ?? who;
             AddLine(who + ": " + m.text);
         }
 
@@ -651,7 +652,7 @@ namespace CTLife.UI
             var text = _field.value?.Trim();
             if (string.IsNullOrEmpty(text)) return;
             var room = _room();
-            if (room == null) return;
+            if (room == null) { Bus.Publish(ToastSignal.Text(Strings.T("hud.chatOffline"), ToastKind.Warning)); return; }
             float wait = room.Say(text);
             if (wait > 0f)
             {
@@ -679,8 +680,33 @@ namespace CTLife.UI
         {
             var visit = VenueSession.Current;
             var channel = visit != null ? visit.Channel : null;
+            if (channel != null && channel.IsJoined) return new VenueChatRoom(visit, channel);
+            // On the streets (and in rooms without a venue channel) the district's street room carries the chat.
+            var street = CTLife.World.StreetNetworkBridge.Current?.Channel;
+            if (street != null && street.IsJoined) return new StreetChatRoom(visit, street);
             return channel != null ? new VenueChatRoom(visit, channel) : null;
         }
+
+        public string SessionId => _channel.SessionId;
+        public float Say(string text) => _channel.Say(text);
+        public Transform OwnBubbleAnchor
+        {
+            get
+            {
+                var local = _visit != null ? _visit.LocalPlayer : null;
+                var view = local != null ? local.GetComponent<AvatarView>() : null;
+                return view != null ? view.HeadAnchor : null;
+            }
+        }
+    }
+
+    /// <summary>The district's street room as the chat bar's room (open-world streets).</summary>
+    internal sealed class StreetChatRoom : IChatRoom
+    {
+        private readonly VenueSession _visit;
+        private readonly CTLife.Net.StreetChannel _channel;
+
+        public StreetChatRoom(VenueSession visit, CTLife.Net.StreetChannel channel) { _visit = visit; _channel = channel; }
 
         public string SessionId => _channel.SessionId;
         public float Say(string text) => _channel.Say(text);
