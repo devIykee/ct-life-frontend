@@ -81,16 +81,13 @@ namespace CTLife.Tests
         }
 
         [Test]
-        public void CardStackShowsNoLoanWithoutDebtAndBringsTappedCardForward()
+        public void WalletListsCashButNoLoanWithoutDebt()
         {
             var page = Open(new BalanceRpc(), null);
-            Assert.IsNull(page.Q("wallet-card-loan"), "no debt reported, no Loan card");
-            var stack = page.Q<DuoWalletStack>();
-            Assert.AreEqual(DuoWalletStack.Card.Solana, stack.Front, "the Wallet app opens on the Solana card");
-            Assert.IsTrue(page.Q("wallet-card-solana").ClassListContains("duo-wcard-front"));
-            stack.Show(DuoWalletStack.Card.Cash);
-            Assert.IsTrue(page.Q("wallet-card-cash").ClassListContains("duo-wcard-front"));
-            Assert.IsTrue(page.Q("wallet-card-solana").ClassListContains("duo-wcard-stacked"));
+            Assert.IsNotNull(page.Q<DuoTokenWallet>(), "the Wallet app uses the token wallet layout");
+            Assert.IsNotNull(page.Q("wallet-token-cash"), "game Cash is always listed");
+            Assert.IsNull(page.Q("wallet-token-loan"), "no debt reported, no Loan row");
+            Assert.AreEqual(4, page.Q("wallet-tokens").Query(className: "duo-tw-row").ToList().Count, "SOL, USDC, SKR and ORE rows");
             Assert.IsEmpty(page.Query<Label>(className: "ct-wallet-amount").ToList(), "disconnected: no token amounts at all");
         }
 

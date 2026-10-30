@@ -111,6 +111,11 @@ namespace CTLife.SocialFeatures
             }
 
             private static StyleSheet _style;
+            /// <summary>Posts drawn now. A render rebuilds every row (on any social change, up to 4 times a second), so the
+            /// feed draws a page at a time and grows on Show more before it asks the server for older posts.</summary>
+            private int _shown = PageSize;
+            private string _shownScope;
+            public const int PageSize = 40;
 
             public override VisualElement Container => _frame;
 
@@ -208,6 +213,7 @@ namespace CTLife.SocialFeatures
                     }
                 }
                 if (_t.Error != null) Body.Add(Duo.Notice(SocialStrings.T(_t.Error), Duo.Tone.Danger));
+                if (_shownScope != _t.Scope) { _shownScope = _t.Scope; _shown = PageSize; }
                 if (_t.Scope == "city") { RenderCity(); return; }
                 Body.Add(ComposeRow());
                 var rows = _t.Rows;
@@ -227,13 +233,20 @@ namespace CTLife.SocialFeatures
                 }
                 var verdicts = TimelineMix.Verdicts(_t.Visible);
                 var list = El.Div("duo-feed");
-                foreach (var p in rows.Take(200)) list.Add(RenderRow(p, verdicts));
+                foreach (var p in rows.Take(_shown)) list.Add(RenderRow(p, verdicts));
                 Body.Add(list);
-                AddLoadMore();
+                AddLoadMore(rows.Count);
             }
 
-            private void AddLoadMore()
+            private void AddLoadMore(int loaded)
             {
+                if (loaded > _shown)
+                {
+                    var page = Duo.Pill(TimelineText.T("more"), () => { _shown += PageSize; MarkDirty(); });
+                    page.name = "timeline-show-more";
+                    Body.Add(El.Div("tl-more", page));
+                    return;
+                }
                 if (!_t.HasMore) return;
                 var more = Duo.Pill(SocialStrings.T(_t.LoadingMore ? "common.loading" : "timeline.more"), _t.LoadMore);
                 more.text = _t.LoadingMore ? SocialStrings.T("common.loading") : TimelineText.T("more");
@@ -275,9 +288,9 @@ namespace CTLife.SocialFeatures
                 var rows = _t.Rows;
                 if (rows.Count == 0) { Body.Add(Duo.Empty(TimelineText.T("cityEmpty"))); return; }
                 var list = El.Div("duo-feed");
-                foreach (var p in rows.Take(200)) list.Add(RenderEvent(p));
+                foreach (var p in rows.Take(_shown)) list.Add(RenderEvent(p));
                 Body.Add(list);
-                AddLoadMore();
+                AddLoadMore(rows.Count);
             }
 
             private VisualElement RenderRow(FeedPostRow p, System.Collections.Generic.Dictionary<string, FeedPostRow> verdicts)

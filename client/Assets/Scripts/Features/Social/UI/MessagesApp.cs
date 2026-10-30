@@ -58,6 +58,10 @@ namespace CTLife.SocialFeatures
 
         private sealed class View : SocialView
         {
+            /// <summary>Bubbles drawn in the open thread (the newest); grows by a page on Load older.</summary>
+            private int _threadShown = ThreadPage;
+            private string _threadPeer;
+            private const int ThreadPage = 80;
             private readonly MessagesController _m;
             private readonly VisualElement _frame;
             private readonly DuoNav _nav;
@@ -371,9 +375,17 @@ namespace CTLife.SocialFeatures
                 }
                 if (_m.Message != null) Body.Add(Duo.Notice(SocialStrings.T(_m.Message), Duo.Tone.Danger));
 
-                if (t.HasOlder && t.Loaded)
+                if (_threadPeer != peer) { _threadPeer = peer; _threadShown = ThreadPage; }
+                if (t.Messages.Count > _threadShown)
                 {
-                    var older = El.Btn(SocialStrings.T("dm.loadOlder"), () => _m.LoadOlder(peer), "duo-link duo-load-older");
+                    // Older messages already here: draw them before asking the server (each render rebuilds every bubble).
+                    var earlier = El.Btn(SocialStrings.T("dm.loadOlder"), () => { _threadShown += ThreadPage; MarkDirty(); }, "duo-link duo-load-older");
+                    earlier.name = "social-dm-showOlder";
+                    Body.Add(earlier);
+                }
+                else if (t.HasOlder && t.Loaded)
+                {
+                    var older = El.Btn(SocialStrings.T("dm.loadOlder"), () => { _threadShown += ThreadPage; _m.LoadOlder(peer); }, "duo-link duo-load-older");
                     older.name = "social-dm-loadOlder";
                     older.SetEnabled(!_m.Loading(peer));
                     Body.Add(older);
@@ -382,7 +394,7 @@ namespace CTLife.SocialFeatures
                 if (!t.Loaded) Body.Add(Duo.Footnote(SocialStrings.T("common.loading")));
 
                 var list = El.Div("duo-thread");
-                var rows = t.Messages.Skip(Math.Max(0, t.Messages.Count - 300)).ToList();
+                var rows = t.Messages.Skip(Math.Max(0, t.Messages.Count - _threadShown)).ToList();
                 var now = DateTime.Now;
                 for (int i = 0; i < rows.Count; i++)
                 {

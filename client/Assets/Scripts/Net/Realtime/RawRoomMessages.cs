@@ -28,6 +28,8 @@ namespace CTLife.Net
             "police_pursuit", "police_pursuit_end", "jailed", "released",
             // group chats (backend #33): a message in one of my groups / a direct invite (GroupsController)
             "group_msg", "group_invite",
+            // presence (backend player_joined): a player came online (Hud: "dana joined")
+            "player_joined",
         };
 
         /// <summary>The server also broadcasts these on every `ratio_arena` venue instance (the feed drops the duplicate).</summary>
